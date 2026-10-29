@@ -32,7 +32,7 @@ the app — what it does, how it computes and why it is built that way.
 ## Getting Started
 
 ```bash
-npm install
+npm install         # here or at the repository root: one workspace for the whole toolkit
 npm run data        # the NTv2 grids, by version and SHA-256 (data.json)
 npm run dev
 ```

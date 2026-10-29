@@ -24,8 +24,8 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: apps/open-layout-tool/package-lock.json
       - run: npm ci --no-audit --no-fund
+        working-directory: .
       - run: node tools/data.mjs
       - run: npm run build:local
       - name: Pack

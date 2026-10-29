@@ -10,7 +10,7 @@ code (`parseProjectsPayload`, `validateProject`, decision 91).
 
 ## Run
 
-Node 22. `npm install` here, then
+Node 22. `npm install` at the repository root (one npm workspace with the apps and packages), then
 
     node bin/olt-server.mjs create-admin <login> [name]   # start password printed, changed at first sign-in
     node bin/olt-server.mjs serve

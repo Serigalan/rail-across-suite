@@ -20,6 +20,11 @@ One repository holds the core, every module and the services
 | `docs/` | data model, decisions, glossary, conventions |
 | `tools/` | repository checks (`npm run check`) |
 
+The JavaScript parts — apps, packages and the server — are one npm workspace: `npm install` at the root installs
+them all, `npm run check` checks the repository's rules. Data kept out of the history is fetched per app
+([decision 0008](docs/decisions/0008-data-outside-history.md)), for the Open-Layout-Tool with `npm run data` in
+`apps/open-layout-tool/`.
+
 How to contribute: [CONTRIBUTING.md](CONTRIBUTING.md).
 
 The project was called Open-Rail-Designer until it was renamed ([decision 0007](docs/decisions/0007-project-name.md)).

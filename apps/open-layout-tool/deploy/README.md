@@ -260,6 +260,6 @@ und `/optimizer` an `OLT_OPTIMIZER_TARGET` (Standard `http://127.0.0.1:8099`)
 weiter, wie Caddy im Betrieb. Dienste lokal:
 
 ```bash
-cd server && npm ci && OLT_SERVER_INSECURE_COOKIE=1 OLT_SERVER_DB=/tmp/olt.sqlite node bin/olt-server.mjs serve
+npm ci && cd server && OLT_SERVER_INSECURE_COOKIE=1 OLT_SERVER_DB=/tmp/olt.sqlite node bin/olt-server.mjs serve
 python3 -m venv .venv && .venv/bin/pip install -c services/optimizer/requirements.lock -e 'services/optimizer[terrain]' && .venv/bin/olt-optimizer-serve
 ```

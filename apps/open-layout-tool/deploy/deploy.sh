@@ -75,15 +75,12 @@ if [ "$build" = 1 ]; then
     fi
   fi
 
-  if changed npm apps/open-layout-tool/package-lock.json || [ ! -d apps/open-layout-tool/node_modules ]; then
-    step "npm ci (app)"
-    (cd apps/open-layout-tool && npm ci --no-audit --no-fund)
-    mark_done npm apps/open-layout-tool/package-lock.json
-  fi
-  if changed npm-server server/package-lock.json || [ ! -d server/node_modules ]; then
-    step "npm ci (project server)"
-    (cd server && npm ci --omit=dev --no-audit --no-fund)
-    mark_done npm-server server/package-lock.json
+  # One npm workspace: the app, the packages and the project server share
+  # node_modules/ at the root (the build tools with them).
+  if changed npm package-lock.json || [ ! -d node_modules ]; then
+    step "npm ci (app, packages, project server)"
+    npm ci --no-audit --no-fund
+    mark_done npm package-lock.json
   fi
   if changed pip services/optimizer/pyproject.toml services/optimizer/requirements.lock || [ ! -x "$OLT_VENV/bin/olt-optimizer-serve" ]; then
     step "pip install (optimizer, editable)"

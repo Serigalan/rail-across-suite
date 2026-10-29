@@ -27,12 +27,9 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: |
-            apps/open-layout-tool/package-lock.json
-            server/package-lock.json
+      # One install for the whole workspace: apps, packages and the server.
       - run: npm ci --no-audit --no-fund
-      - run: npm ci --no-audit --no-fund
-        working-directory: server
+        working-directory: .
       - run: node tools/data.mjs
       - run: npm run lint
       - run: npm run knip

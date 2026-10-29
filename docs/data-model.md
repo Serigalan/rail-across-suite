@@ -1,7 +1,7 @@
 # Rail-Data-Core — data model proposal
 
-Status: **proposal, under review** — hardened against concrete cases (section 2). It is the design input for
-phases 1 and 2 of the [roadmap](../ROADMAP.md).
+Status: **accepted** (reviewed 2026-10-29) — hardened against concrete cases (section 2). It is the design input
+for phases 1 and 2 of the [roadmap](../ROADMAP.md).
 
 Every module of Rail-Across-Suite reads and writes one shared description of the railway. This page proposes
 how that description is structured and stored. It starts from what already works, the project format of the
@@ -318,15 +318,25 @@ migration chain at the one door (S-R10):
 | platform and end mark fields of their own | the core location types `TrackRange` and `TrackEnd` |
 | one record for everything | the `core` and `layout` domains in the hash tree (section 5) |
 
-## 7. Open questions
+## 7. Decisions taken
 
-1. *Answered:* Rail-Data-Core lives in this repository together with the modules, since R3, R4 and S-R10 need
-   all modules on the same core version ([decision 0001](decisions/0001-one-repository.md)).
-2. *Answered:* signalling is the first new module; it tests locations, ranges, functional objects and
-   topology at once.
-3. *Answered:* ids on tracks, not on their elements; a track is edited by one person at a time
-   ([decision 0004](decisions/0004-ids-on-tracks.md)).
-4. *Answered:* construction stages are lifespans on one state, not variants
-   ([decision 0003](decisions/0003-construction-stages.md)).
-5. *Answered:* for now changes to the core schema are approved by @serigalan, the code owner of `packages/`
-   and `schemas/`.
+| Question | Answer | Recorded in |
+|---|---|---|
+| Where does the Rail-Data-Core live? | in this repository, with the modules: R3, R4 and S-R10 need all modules on the same core version | [decision 0001](decisions/0001-one-repository.md) |
+| Which module tests the generalised core first? | signalling: locations, ranges, functional objects and topology at once | [roadmap, phase 3](../ROADMAP.md#phase-3--first-new-infrastructure-modules) |
+| Do the elements of a track get ids? | no; ids on tracks, a track is edited by one person at a time | [decision 0004](decisions/0004-ids-on-tracks.md) |
+| How are construction stages held? | as lifespans on one state, not as variants | [decision 0003](decisions/0003-construction-stages.md) |
+| Who approves a change to the core schema? | for now @serigalan, the code owner of `packages/` and `schemas/` | [CODEOWNERS](../.github/CODEOWNERS) |
+| How does one try something without the other disciplines? | in a sketch, which returns only through a takeover | [decision 0005](decisions/0005-sketch-mode.md) |
+| What does capacity simulation build on? | OSRD, run as a service; only the adapter is ours | [decision 0006](decisions/0006-capacity-on-osrd.md) |
+| What are the project and its files called? | Rail-Across-Suite; files `.railacross` | [decision 0007](decisions/0007-project-name.md) |
+
+## 8. Open questions
+
+Each names the phase that decides it and the proposal it starts from.
+
+| Question | Proposal | Decided in |
+|---|---|---|
+| Which tolerance applies when an orphan is attached again by its plane position (R7)? | about 0.5 m across the axis — well below half a track spacing — and a direction within 2°, as the Open-Layout-Tool finds its links; never automatic, always confirmed | phase 2, on real data |
+| What happens to objects anchored by kilometrage (`anchor: km`) when the designed kilometrage changes? | they follow it, which is what the anchor is for; the change lists every object it moves, like a report of carried references | phase 2 |
+| Who writes the coordination domain of R9, should a relation between disciplines ever not be derivable from location? | decided when such a relation first occurs; so far every one could be derived | phase 3 |

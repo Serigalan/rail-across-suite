@@ -147,6 +147,9 @@ the Open-Layout-Tool's documentation does.
 | Planungsstatus: Bestand / Neubau / Rückbau / Provisorium | planning status: existing / new / removal / temporary | `status` | derived from the lifespan |
 | Löschen | deletion | — | the object never existed (drawn or imported by mistake); not a removal |
 | Variante | variant | — | a named state of a project |
+| Skizze, Skizzenmodus | sketch, sketch mode | a variant marked as sketch | the core and one domain, for trying; never merged back |
+| Umfang (einer Skizze) | scope | — | the domain a sketch is about |
+| Übernahme | takeover | — | the only way back from a sketch: a merge limited to its scope |
 | Revision | revision | — | an immutable stored state |
 | Arbeitskopie | working copy | — | |
 | Einchecken | check in | — | |

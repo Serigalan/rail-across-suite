@@ -84,12 +84,19 @@ Goal: the core can carry what the planned modules need, before they are written.
   kilometrage) and discipline domains that store references only into the core.
 - Storage as a hash tree: revision → manifest → domain → collection; bulk point arrays as blobs; canonical JSON
   after RFC 8785, the same bytes from JavaScript and Python; the `.ord` exchange container.
-- Server: rights per domain; a domain the author may not write may only change by carrying.
+- Server: rights per domain; a domain the author may not write may only change by carrying or by orphans
+  moved to their plane position.
+- **Sketches** ([decision 0005](docs/decisions/0005-sketch-mode.md)): variants with a scope domain that hold only
+  the core and that domain; the takeover as a merge limited to the scope, with carrying through the id logs and
+  orphans in the plane for the sketch's own tracks; the server's refusal to merge a sketch back; orphans as
+  warnings, attached again by their plane position.
 - Migration chain per domain at the one door.
 
 **Exit:** a test domain of located objects, unknown to the layout tool, survives split, join, reversal, length
 change, deletion, a concurrent merge and a format migration — every object in the right place or orphaned with
-a finding and its plane position; JavaScript and Python give the same hashes for the shared vectors; a part of a track rebuilt over three stages gives a valid network in every stage.
+a finding and its plane position; JavaScript and Python give the same hashes for the shared vectors; a part of
+a track rebuilt over three stages gives a valid network in every stage; a sketch with a crossover of its own is
+taken over with its signals carried or orphaned in the plane, and its crossover listed as a proposal.
 
 ## Phase 3 — First new infrastructure modules
 
@@ -133,6 +140,7 @@ Construction stages and lifespans are part of the core from phase 2
 | Exchange | RailJSON, railML 3, IFC 4.3, PlanPro, LandXML, Verm.ESN — translations at the edge, never the working format |
 | Rules | rule and form catalogues as data (as OLT's `constraints/`), shared by JavaScript and Python |
 | Tests | chain invariants, shared vectors JS/Python, real data sets, architecture checks for layers and domains |
+| Sketch mode | every app opens an infrastructure as a sketch of its own domain; the way back is the takeover ([decision 0005](docs/decisions/0005-sketch-mode.md)) |
 | Documentation | one page per core module and domain, with its decisions |
 
 See [docs/data-model.md](docs/data-model.md) for how the data is structured and stored.

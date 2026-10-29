@@ -115,6 +115,14 @@ work.
 → Containment (R13): an object exists only while what it refers to exists. What would outlive its target is a
 finding for its owner, who ends the signal with its track or puts a new one on the new part that `replaces` it.
 
+**F12 — A signalling sketch with an extra crossover is taken over.** In a sketch
+([decision 0005](decisions/0005-sketch-mode.md)) the signalling planner adds a crossover to try a concept and puts
+signals on it. The integrated model has no such tracks. Merging the sketch would bring its tracks along; leaving
+its signals behind would lose the work.
+→ A sketch returns only through a takeover limited to its scope domain (R14): signals on tracks that descend from
+the same base are carried through the id logs; signals on the sketch's own tracks arrive orphaned with their
+plane position, as warnings (R7); the crossover is listed as a proposal for the layout tool.
+
 ### Cases about storage
 
 **S1 — Editing a platform stores two kilometres of surveyed axis again.** A reference axis keeps a point every
@@ -172,13 +180,14 @@ side is taken, the other change is made again. A track is edited by one person a
 | R4 | **One remap.** Whenever the net changes ids or stations (split, join, reverse, delete, a length change before an object, a plane change) or the stage list loses a stage (lifespans that name it move to the following stage), the core carries every declared reference in every domain, in the same step, and records the changed ids in the id log. No module writes its own remap. A build that cannot carry a domain refuses the edit. | F1, F3, F10 |
 | R5 | **A location is one value**: compared, merged and carried whole, never `trackId` and `station` separately. | F2 |
 | R6 | **Merge: carry first, then compare.** Base, mine and theirs are carried into the newest ids through both id logs before the three-way comparison, so a change that is only carrying is no change. | F2 |
-| R7 | **Deleting never deletes another domain's work.** Deleting means an object never existed; taking it out of service is a removal, i.e. the end of its lifespan (R12), and containment applies (R13). Within its own domain a module cascades a deletion. Objects of other domains are left orphaned, with a finding for their owner, and the user is told beforehand what stands there. **An orphan keeps its place in the plane:** in the same step the core turns its location into the anchor `plane` (easting, northing, EPSG, direction as a bearing) without a track, since a station means nothing without its track. Id and every reference to it stay, so it can be attached to a new track later. | F4 |
+| R7 | **Deleting never deletes another domain's work.** Deleting means an object never existed; taking it out of service is a removal, i.e. the end of its lifespan (R12), and containment applies (R13). Within its own domain a module cascades a deletion. Objects of other domains are left orphaned, with a finding for their owner, and the user is told beforehand what stands there. **An orphan keeps its place in the plane:** in the same step the core turns its location into the anchor `plane` (easting, northing, EPSG, direction as a bearing) without a track, since a station means nothing without its track. Id and every reference to it stay. An orphan is a warning, not an error; it is attached to a track again by its plane position — within a tolerance, to exactly one track, confirmed by the user. | F4, F12 |
 | R8 | **Upward is derived.** "What stands on this track" is a reverse index built on load from the declared references, never stored. | F4 |
 | R9 | **No stored references between sibling domains.** Relations between disciplines are derived from their shared locations and checked by **coordination checks**, which read several domains and store nothing but findings. A relation that cannot be derived from location goes into a coordination domain above both. | F5 |
 | R10 | **One fact, one owner.** If two domains seem to need the same fact, it is two facts (design / permitted speed, station identity / boundaries), or it moves into the core. | F6, F8 |
 | R11 | **A location states its anchor**: `station` (follows the track), `km` (keeps its kilometrage) or `plane` (stays where it is). The anchor's value is stored, the others are derived. Objects drawn in a tool default to `station`; existing, imported objects to the form they were delivered in (plane or km). | F9 |
 | R12 | **Objects have a lifespan** `{ from, to }` over the ordered construction stages of the core; the planning status (existing, new, removal, temporary) is derived from it. A stage is a view; every stage is checked as a network, and its errors count like all others (only new ones block). Objects do not change between stages: a change is a replacement that names its predecessor in `replaces`. The stage list is part of the core and written by the layout tool; the `construction` domain adds sequences and closures that refer to the stages. | S6 |
 | R13 | **Containment.** An object exists only while what it refers to exists (a connector while its tracks do, a signal while its track does). What would outlive its target is a finding for its owner, never changed for them. | F11, S6 |
+| R14 | **Sketches return only through a takeover.** A sketch holds the core and one scope domain and may change its core freely; it is never merged back. A takeover merges the scope domain's objects, all or selected, into a target variant: carried through the id logs where tracks descend from the same base, orphaned with their plane position where they stand on the sketch's own tracks. Changes the sketch made to the core are never taken over; they are listed as proposals for the layout tool. In the layout tool the scope is the core and `layout`, and the takeover is the regular merge ([decision 0005](decisions/0005-sketch-mode.md)). | F12 |
 
 Findings caused by another domain's change (an orphaned signal, a mast now too close) do not block that
 change's check-in; they are listed for the owner of the affected domain. A check-in is blocked only by new errors
@@ -199,7 +208,7 @@ core, and derived results above them:
 | discipline | `operations` | open-timetable-tool | train runs, timetable, rolling stock |
 | discipline | `construction` | open-construction-sim | closures, temporary speed restrictions, tracks in operation per stage |
 | base | `core` | open-layout-tool | **reference**: coordinate systems, km lines and designed kilometrage, operational point register, catalogue versions (rules, switch forms, profiles) · **net**: tracks (elements, heights, cant, superstructure), switches and connectors · **context**: platforms, end marks, structures (bridges, tunnels, level crossings) · **stages**: the ordered construction stages · **types**: `TrackLocation`, `TrackRange`, `TrackEnd`, `TrackPath`, `Lifespan`, `Ref` |
-| project | — | server | variants, approvals, comments — they refer into revisions, never back |
+| project | — | server | variants and sketches, approvals, comments — they refer into revisions, never back |
 
 Discipline domains store references only into the core (R2, R9). Open-Capacity-Sim writes no domain: its results
 are derived.
@@ -270,9 +279,10 @@ blobs: canonical JSON of each collection · bulk point arrays · schemas · imag
 | S-R5 | **The server checks per domain**: the author's right for every changed domain; a changed domain the author may not write must equal the base carried through the id log (R4), with its orphans moved to their plane position (R7). A domain whose own and dependency hashes are unchanged is not validated again. | S5 |
 | S-R6 | **Derived results are caches keyed by input hashes** (coordination findings, simulation results, reverse index), never in a revision; a simulation result also by its construction stage. An **approval** pins a domain hash plus the hashes of its dependencies; whether a later change affects it is decided by the diff, restricted to the approved stages and area. | S3, S7 |
 | S-R7 | **Partial loading is for reading.** Editing the core loads every domain that references it. | S4 |
-| S-R8 | **Project level, outside revisions**: variants, approvals, comments. They refer into revisions; revisions never refer to them. | S6 |
+| S-R8 | **Project level, outside revisions**: variants and sketches, approvals, comments. They refer into revisions; revisions never refer to them. | S6 |
 | S-R9 | **Exchange**: a zip container (`.ord`) with the manifest, the canonical collection files, schemas and blobs. A single-file JSON for small projects holds the same canonical documents and gives the same hashes. | — |
 | S-R10 | **Versions**: each domain has its own version; the one door runs an explicit, tested migration chain per domain. Behind the door only the current version exists. | F10 |
+| S-R11 | **Sketches** are variants marked as sketch, with their scope domain and the revision they start from; their revisions hold the core and the scope domain only, so with hashes per collection the copied core costs nothing. The server refuses to merge a sketch into a regular variant; a takeover is checked in on the target like any change. A sketch is visible to its author until shared with the project's members. | F12 |
 
 Server: SQLite (`revision`, `manifest`, `blob`) until several instances or cross-project queries are needed, then
 Postgres with the same tables. Spatial search across projects is a derived index, never the source of truth.

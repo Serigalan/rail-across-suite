@@ -46,5 +46,4 @@ Searched on 2026-10-29 against existing products and file extensions; no tradema
 
 - *Across* is a brand of Across Systems GmbH for translation software — another market, but software as well.
   The name is checked in the registers of the DPMA and the EUIPO before the first release.
-- The repository on GitHub is renamed to `rail-across-suite` by its owner; GitHub forwards the old address.
 - The MIME type is registered with the IANA once the format is published.

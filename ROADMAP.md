@@ -28,6 +28,8 @@ Done:
 - [Glossary](docs/glossary.md) German ↔ English and [conventions](docs/conventions.md) (units, signs,
   coordinates, stations, precision), taken over from OLT.
 - A check that apps import packages and never each other (`npm run check`, run by CI).
+- Project named Rail-Across-Suite ([decision 0007](docs/decisions/0007-project-name.md)); the repository renamed
+  to `rail-across-suite` on GitHub.
 - [Data model](docs/data-model.md) reviewed by its code owner and accepted; the questions left open name the phase
   that decides them.
 
@@ -41,8 +43,8 @@ Open:
 - Third-party material listed in [THIRD-PARTY.md](THIRD-PARTY.md): the NTv2 grids come with their licences;
   the kilometrage data moves into test fixtures and leaves the published apps; the guideline is the project's
   own (CC BY 4.0); the values from the DB guidelines may be taken over.
-- The name ([decision 0007](docs/decisions/0007-project-name.md)): the repository renamed to `rail-across-suite`
-  on GitHub; *Across* checked in the registers of the DPMA and the EUIPO before the first release.
+- The name ([decision 0007](docs/decisions/0007-project-name.md)): *Across* checked in the registers of the DPMA
+  and the EUIPO before the first release.
 
 **Exit:** the data model is reviewed, and every question left open names the phase that decides it; the
 Open-Layout-Tool builds, tests and deploys from this repository.

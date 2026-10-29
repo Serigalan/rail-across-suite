@@ -7,6 +7,7 @@
 // the module's own business. See docs/modules/geometry.md.
 
 export { epsgMismatches, nodeGaps, untrueLengths } from './chainChecks'
+export { clamp } from './numbers'
 export {
   clothoidRadiusAt, computeClothoidUtm, curvatureOf, projectOnTransitionUtm, radiusOfCurvature,
   cantEnds, sampleTransitionUtm, transitionBearingAtUtm, transitionCantEnds, transitionPointAtUtm, withCantRamp,

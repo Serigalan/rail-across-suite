@@ -3,7 +3,7 @@ import {
   transitionPointAtUtm, transitionBearingAtUtm, SAGITTA_ELEMENT, STRAIGHT_VERTEX_SPACING,
 } from '../geometry'
 import { heightAt } from './heightUtils'
-import { clamp } from '../common'
+import { clamp } from '../geometry'
 
 /**
  * A platform is anchored to one track: the two picked points are stations along

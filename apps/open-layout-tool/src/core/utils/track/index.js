@@ -49,7 +49,7 @@ export {
   pruneEndMarks, remapEndMarks,
 } from './trackEndMarks'
 export {
-  assignmentFields, assignTracks, groupHeading, groupTitle, groupTracks, plannedNames,
+  assignmentFields, assignTracks, groupHeading, groupTitle, groupTracks, kmTrackName, plannedNames,
   trackGroupKey, trackKind, trackListLabel, trackTypeName,
 } from './trackGroups'
 export { existingLinks, findTrackJoints, JOINT_TOL, linkAllJoints, linksForJoints, linkSymbol } from './trackLinkUtils'

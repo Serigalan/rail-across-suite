@@ -18,7 +18,7 @@
 import { cantEnds, transitionCantEnds, transformPlanePoint, utmToWgs84 } from '../geometry'
 import { edgeOffsets, elementStations, pointOnElement, DEFAULT_PLATFORM_HEIGHT } from '../track'
 import { QUERSCHNITT_KATALOG } from './gaugeProfiles'
-import { clamp } from '../common'
+import { clamp } from '../geometry'
 
 /** Distance between the two running circles, and between the rail inner faces [mm]. */
 export const RUNNING_CIRCLE_DISTANCE = 1500

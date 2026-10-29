@@ -1,7 +1,6 @@
 // Small helpers for numbers that every part of the app used to write itself.
-
-/** `v` held between `lo` and `hi`. */
-export const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v))
+// `clamp` is geometry's, which the computing modules share; offered here too.
+export { clamp } from '../geometry'
 
 /** `v` rounded to `digits` decimals (as a number). */
 const roundTo = (v, digits = 3) => Math.round(v * 10 ** digits) / 10 ** digits

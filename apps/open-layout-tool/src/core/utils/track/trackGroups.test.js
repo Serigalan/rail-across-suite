@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   trackKind, trackTypeName, trackGroupKey, groupTracks, groupTitle, assignTracks, plannedNames,
 } from './trackGroups'
-import { kmTrackName } from '../km/lineLookup'
+import { kmTrackName } from './trackGroups'
 import { buildTypeFields } from './identifierUtils'
 
 const line = (id, lineNumber, extra = {}) => ({ id, name: id, trackType: 1, lineNumber, ...extra })

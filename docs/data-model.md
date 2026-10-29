@@ -51,9 +51,8 @@ A prototype that first carries base, mine and theirs through both id logs and th
 → Carry first, then compare (R6); a location is one value (R5).
 
 **F3 — A track is reversed. (tested)** In the Open-Layout-Tool (as of October 2026), `reverseTrackDirection` flips
-the switch ports and end marks of the track,
-but not its platforms: a platform at 120–260 m on the left of a 400 m track stays at 120–260 on the left —
-counted from the other end now, so it has moved 20 m and changed sides.
+the switch ports and end marks of the track, but not its platforms: a platform at 120–260 m on the left of a
+400 m track stays at 120–260 on the left — counted from the other end now, so it has moved 20 m and changed sides.
 Every object kind carries its own remap code there, and one of them was forgotten. With signals, balises, masts
 and speed boards the number of such places would multiply.
 → One location type, one remap, owned by the core (R4).
@@ -61,8 +60,8 @@ and speed boards the number of such places would multiply.
 **F4 — A track is deleted on which another discipline's objects stand.** Deleting means the track never existed:
 it was drawn or imported by mistake. A track taken out of service is not deleted but removed — its lifespan ends
 (`to:`), and containment applies (R13, case F11). Within its own data the layout tool cascades a deletion (end
-marks and platforms go with the track). Deleting twelve masts of the catenary planner the same way
-would destroy work its owner never saw.
+marks and platforms go with the track). Deleting twelve masts of the catenary planner the same way would destroy
+work its owner never saw.
 → Never delete another domain's work; orphan it with a finding, and warn before (R7). The warning needs to know
 what stands on the track, which only the domains above know → reverse index, derived (R8).
 
@@ -77,12 +76,14 @@ which track ends meet instead of storing it.
 **F6 — Station Halle-Trotha.** In oltjson, station tracks and platforms name their station by text
 (`stationName`, `uicStation`, `code`). Operational points can therefore not sit in a layer above the net: tracks
 and platforms refer to them, so such references would point upward. Moreover, an operational point has an
-identity (name, RL100 code, UIC number) and an extent. A station's extent is set by its entry signals, i.e. by
-the signalling plan; a halt has no entry signals, its extent is in practice its platform. A new halt has no
-RL100 code yet.
-→ Identity and extent are two facts with two owners (R10): an operational point register in the core with UUIDs
-(codes are attributes, added when they exist); a station's extent in the signalling domain, a halt's following
-from its platforms in the core.
+identity (name, RL100 code, UIC number) and boundaries. By EBO §4 a station's boundaries are, in general, its
+entry signals or trapezoid boards, otherwise its entry switches; a halt has no entry signals, its extent is in
+practice its platform. Special cases differ from that rule. A new halt has no RL100 code yet.
+→ Identity and boundaries are two facts with two owners (R10): an operational point register in the core with
+UUIDs (codes are attributes, added when they exist); the boundaries **stored** in the signalling domain, so that
+special cases can be stated — each as a reference to what marks it (an entry signal or trapezoid board, an entry
+switch, a halt's platform), never as a position of its own. A boundary that differs from the general rule is a
+special-case finding with a justification, as the rule catalogue handles special cases.
 
 **F7 — Kilometrage of a new line.** Kilometrage looks like reference data below the net, and for an existing
 line it is (DB km lines). For a new line it is defined *by* the designed axis: a start km on a run of tracks plus
@@ -128,16 +129,21 @@ oltjson stores the whole record per revision today.
 → Canonical JSON after RFC 8785, rounding first, hashing the uncompressed bytes (S-R3).
 
 **S3 — The signalling plan is approved; then a track is shifted by 5 cm.** The signalling document did not
-change, so a hash of it alone says "still approved" — yet its meaning changed.
-→ An approval pins the domain's hash *and* the hashes of what it depends on; a change below shows it as affected
-(S-R6).
+change, so a hash of it alone says "still approved" — yet its meaning changed. The other way round, the hash of
+the tracks changes with every edit of any track, also with a temporary track in stage 7 far from what was
+approved.
+→ An approval pins the domain's hash *and* the hashes of what it depends on: equal hashes answer "nothing below
+changed" at once. Whether a change *affects* the approval is decided by the diff: it does when changed objects
+exist in the approved stages and lie in the approved area (S-R6).
 
 **S4 — A timetable viewer and a track editor.** The viewer only needs the core and the operations domain.
 The track editor must carry every reference into the net (F1), so it needs every domain that has one.
 → Partial loading is for read-only use; editing the core loads all referencing domains (S-R7).
 
-**S5 — A catenary planner without signalling rights splits a track.** Her check-in changes the signalling domain
-(carried references). The server must accept that but nothing more.
+**S5 — A track planner without signalling rights lays a turnout into a track with signals.** The check-in
+changes the signalling domain: the signals' references are carried onto the new tracks. The server must accept
+that but nothing more. Only the layout tool writes the core, so only track planners cause such changes; the other
+disciplines place their objects by location and never split a track.
 → A changed domain that the author may not write must equal the base carried through the id log, which the
 server recomputes (S-R5) — the Open-Layout-Tool already checks measured axes against a right in this way.
 
@@ -147,8 +153,14 @@ would have to refer to variants from outside the revisions.
 → Stages are lifespans on one state ([decision 0003](decisions/0003-construction-stages.md), R12, R13): the
 record holds existing, final and temporary objects once; a stage is a view; the stage list is part of the record.
 
-**S7 — A capacity simulation result.** It follows from the timetable, signalling and core.
-→ A cache keyed by the hashes of its inputs, never part of a revision (S-R6).
+**S7 — A capacity simulation result.** It follows from the timetable, signalling and core, for one construction
+stage.
+→ A cache keyed by the hashes of its inputs and the stage, never part of a revision (S-R6).
+
+**S8 — Alice and Bob change the same track at once.** Alice changes the radius of one arc, Bob the cant of another
+arc of the same track. Elements have no ids, so a track's `elements` are one value in the merge: a conflict, one
+side is taken, the other change is made again. A track is edited by one person at a time, so this is rare.
+→ Ids on tracks, not on their elements ([decision 0004](decisions/0004-ids-on-tracks.md)).
 
 ## 3. Rules for references
 
@@ -163,7 +175,7 @@ record holds existing, final and temporary objects once; a stage is a view; the 
 | R7 | **Deleting never deletes another domain's work.** Deleting means an object never existed; taking it out of service is a removal, i.e. the end of its lifespan (R12), and containment applies (R13). Within its own domain a module cascades a deletion. Objects of other domains are left orphaned, with a finding for their owner, and the user is told beforehand what stands there. **An orphan keeps its place in the plane:** in the same step the core turns its location into the anchor `plane` (easting, northing, EPSG, direction as a bearing) without a track, since a station means nothing without its track. Id and every reference to it stay, so it can be attached to a new track later. | F4 |
 | R8 | **Upward is derived.** "What stands on this track" is a reverse index built on load from the declared references, never stored. | F4 |
 | R9 | **No stored references between sibling domains.** Relations between disciplines are derived from their shared locations and checked by **coordination checks**, which read several domains and store nothing but findings. A relation that cannot be derived from location goes into a coordination domain above both. | F5 |
-| R10 | **One fact, one owner.** If two domains seem to need the same fact, it is two facts (design / permitted speed, station identity / extent), or it moves into the core. | F6, F8 |
+| R10 | **One fact, one owner.** If two domains seem to need the same fact, it is two facts (design / permitted speed, station identity / boundaries), or it moves into the core. | F6, F8 |
 | R11 | **A location states its anchor**: `station` (follows the track), `km` (keeps its kilometrage) or `plane` (stays where it is). The anchor's value is stored, the others are derived. Objects drawn in a tool default to `station`; existing, imported objects to the form they were delivered in (plane or km). | F9 |
 | R12 | **Objects have a lifespan** `{ from, to }` over the ordered construction stages of the core; the planning status (existing, new, removal, temporary) is derived from it. A stage is a view, every stage must be a valid network, and checks run per stage. Objects do not change between stages: a change is a replacement that names its predecessor in `replaces`. | S6 |
 | R13 | **Containment.** An object exists only while what it refers to exists (a connector while its tracks do, a signal while its track does). What would outlive its target is a finding for its owner, never changed for them. | F11, S6 |
@@ -186,7 +198,7 @@ core, and derived results above them:
                   axes, track runs,  wires, sections,    track sections, signal timetable,
                   plan header        El signals          routes, LST switch     rolling stock
                                                          elements, station
-                                                         extents, speed profile
+                                                         boundaries, speed profile
                         │                │                   │                     │
                         └────────────────┴─────────┬─────────┴─────────────────────┘
                                                    ▼  stored references only into the core
@@ -261,7 +273,7 @@ blobs: canonical JSON of each collection · bulk point arrays · schemas · imag
 | S-R3 | **Canonical bytes**: numbers rounded to the field's precision first, then serialised after RFC 8785 (JCS); set-like collections sorted by id, sequences (`elements`, `heights`) kept in order (the schema says which). The hash is SHA-256 of the uncompressed bytes; compression is a storage detail. Shared test vectors for JavaScript and Python. | S2 |
 | S-R4 | Revisions are immutable; variants are named heads; the browser merges, the server appends and checks (as in the Open-Layout-Tool). | — |
 | S-R5 | **The server checks per domain**: the author's right for every changed domain; a changed domain the author may not write must equal the base carried through the id log. A domain whose own and dependency hashes are unchanged is not validated again. | S5 |
-| S-R6 | **Derived results are caches keyed by input hashes** (coordination findings, simulation results, reverse index), never in a revision. An **approval** pins a domain hash plus the hashes of its dependencies. | S3, S7 |
+| S-R6 | **Derived results are caches keyed by input hashes** (coordination findings, simulation results, reverse index), never in a revision; a simulation result also by its construction stage. An **approval** pins a domain hash plus the hashes of its dependencies; whether a later change affects it is decided by the diff, restricted to the approved stages and area. | S3, S7 |
 | S-R7 | **Partial loading is for reading.** Editing the core loads every domain that references it. | S4 |
 | S-R8 | **Project level, outside revisions**: variants, approvals, comments. They refer into revisions; revisions never refer to them. | S6 |
 | S-R9 | **Exchange**: a zip container (`.ord`) with the manifest, the canonical collection files, schemas and blobs. A single-file JSON for small projects holds the same canonical documents and gives the same hashes. | — |

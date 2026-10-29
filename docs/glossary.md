@@ -111,6 +111,8 @@ the Open-Layout-Tool's documentation does.
 |---|---|---|---|
 | Leit- und Sicherungstechnik (LST) | control-command and signalling (CCS) | — | the signalling domain |
 | Hauptsignal, Vorsignal | main signal, distant signal | — | |
+| Einfahrsignal, Trapeztafel | entry signal, trapezoid board | — | mark a station boundary (EBO §4) |
+| Bahnhofsgrenze | station boundary | — | stored in the signalling domain as a reference to what marks it |
 | Haltetafel, Geschwindigkeitstafel | stop board, speed board | — | |
 | Achszähler | axle counter | — | |
 | Gleisfreimeldeabschnitt | track section | — | track vacancy detection |

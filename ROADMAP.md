@@ -22,7 +22,8 @@ Goal: agree on how decisions are made and bring the code into one repository bef
   ([decision 0001](docs/decisions/0001-one-repository.md)); directory layout in place.
 - `CODEOWNERS` in place (`.github/CODEOWNERS`); its review becomes required for `main` once a second maintainer
   is named.
-- Licence, contribution guide, decision records (`docs/decisions/`), glossary German ↔ English (Gleis/track, Weiche/turnout, Betriebsstelle/operational
+- Licences in place: code under Apache-2.0, documentation under CC BY 4.0 (see the README).
+- Contribution guide (sign-off after the DCO), decision records (`docs/decisions/`), glossary German ↔ English (Gleis/track, Weiche/turnout, Betriebsstelle/operational
   point, Bauzustand/construction stage …).
 - Conventions taken over from OLT: units, signs, coordinates, stations, precision.
 - **Move the Open-Layout-Tool** into `apps/layout-tool/` with its history; its server to `server/`, its Python

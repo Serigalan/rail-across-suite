@@ -27,7 +27,7 @@ rides into the result. Collections are compared by id:
 |---|---|---|
 | `tracks` | `id` | field by field; `elements` and `heights` are one field each (elements have no ids) |
 | `switches` | `switchId` | field by field; `ports` is one field |
-| `platforms` | `id` | field by field |
+| `platforms` | `id` | field by field; its location — `trackId`, `startStation`, `endStation`, `side` — is one field, `at` |
 | `kmLines` | `lineNumber` | whole object |
 | `endMarks`, `axisSurveys`, `referenceAxes`, `routes` | `id` | whole object |
 
@@ -35,15 +35,26 @@ The project's own fields (title, settings, plan header, image hash …) are merg
 
 ## The rules
 
-1. Compare collections by id: added, removed, changed.
-2. Merge field by field: different fields changed on the two sides → both taken; the same field changed
-   differently → conflict; changed alike → no conflict.
-3. Deleted against changed is always a conflict.
-4. Apply id remaps: splitting and joining give pieces new ids; the working copy logs them as
-   `{ from, to: [ids] }`, and the merge carries the other side's references over.
+1. Carry first, then compare (data model, R6). The tracks are merged first; then base, mine and theirs are
+   each carried onto the tracks the result has, through both id logs — splitting and joining give pieces new
+   ids, and the working copy logs them as `{ from, to: [ids] }`. Only then are the other collections compared,
+   so a change that is only carrying is no change. What still names a track the result does not have
+   afterwards (a choice taking an object from one side) is carried once more.
+2. Compare collections by id: added, removed, changed.
+3. Merge field by field: different fields changed on the two sides → both taken; the same field changed
+   differently → conflict; changed alike → no conflict. A location is one field (R5): a platform's track,
+   stations and side are never taken from different sides.
+4. Deleted against changed is always a conflict.
 5. Validate the result (`project/validateProject`); an error the merge brings in is a conflict on the object,
    decided by taking the whole object from one side (`object:<collection>:<id>`), after which it is validated
    again. Warnings it brings in (e.g. a track drawn on both sides) are listed.
+
+**Case F2 of the data model.** Alice splits track `T` at 100 m, which re-stations platform `P` (120–260 m) to
+`T2` at 20–160 m; Bob, on the old state, moves `P` to 135–275 m on `T`. Compared field by field and carried
+afterwards, the merge took `trackId = T2` from Alice and a conflict on the stations — and either side of it was
+wrong: Bob's put `P` 100 m off, Alice's lost his move. Carried first, base and Alice say `T2` at 20–160, Bob
+`T2` at 35–175: only Bob changed it, and the result is `T2` at 35–175 without a conflict, in both directions
+(`merge.test.js`).
 
 **Nothing repairs.** Where both sides changed the same thing differently it is a conflict, decided by choosing
 a side, never by mixing. The merged record is dehydrated; whoever adopts it hydrates it.

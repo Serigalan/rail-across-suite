@@ -47,6 +47,14 @@ export function valueText(t, c, value) {
     return fill(t, 'merge_value_elements', { n: value.length, length: round(length, 1) })
   }
   if (c.field === 'heights' && Array.isArray(value)) return fill(t, 'merge_value_heights', { n: value.length })
+  // A platform's location, merged as one value (data model, R5): its stations
+  // and its side.
+  if (c.field === 'at' && value && typeof value === 'object') {
+    return fill(t, 'merge_value_at', {
+      from: round(value.startStation, 1), to: round(value.endStation, 1),
+      side: value.side === 'right' ? t('switch_side_right') : t('switch_side_left'),
+    })
+  }
   if (c.field === 'ports' && value && typeof value === 'object') {
     return Object.entries(value).filter(([k]) => k.endsWith('_endpoint'))
       .map(([k, v]) => `${k.replace(/^port|_endpoint$/g, '')}: ${v}`).join(', ')

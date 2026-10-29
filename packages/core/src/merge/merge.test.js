@@ -7,6 +7,8 @@ import { joinTracks } from '../track/trackModel'
 import { diffProject, diffSize, mergeProject, resolve } from './index'
 import { primary } from './diff'
 import { portTrack, portEnd, withPort } from '../track/switchModel'
+import { straightElement } from '../geometry/elementFactory'
+import { rebuildCoords } from '../track/trackModel'
 
 const SWITCH_1 = '00000000-0000-4000-8000-000000000001'
 const A = 'a9f56232-878c-4eef-ab79-09131c7c1212'     // 6050.001, switch.001's toe at its END
@@ -162,10 +164,12 @@ describe.skipIf(!hasPek)('mergeProject — PEK Halle–Könnern', () => {
     const { b, log } = split(mine, A, 30)
     // Theirs repoints switch.001's toe from A.END to A.BEGIN.
     switchOf(theirs, SWITCH_1).ports.A.endpoint = 'BEGIN'
-    // Mine left that switch alone apart from the split's own repoint, so its
-    // ports changed on both sides — as they did.
-    const { conflicts } = mergeProject({ base, mine, theirs, remapsMine: log })
-    expect(conflicts.map(c => c.field)).toEqual(['ports'])
+    // Mine left that switch alone apart from the split's own repoint: carried
+    // first, that is no change (data model, R6), and theirs' repoint is taken —
+    // onto the piece that holds A's beginning.
+    const { conflicts, merged } = mergeProject({ base, mine, theirs, remapsMine: log })
+    expect(conflicts).toEqual([])
+    expect(switchOf(merged, SWITCH_1).ports.A).toMatchObject({ trackId: b.id, endpoint: 'BEGIN' })
     // A new switch theirs added at A.BEGIN goes to b.BEGIN.
     const t2 = loadPek()
     t2.switches.push({ ...withPort(switchOf(t2, SWITCH_1), 'A', { trackId: A, endpoint: 'BEGIN' }), switchId: 'sw-new' })
@@ -208,6 +212,58 @@ describe.skipIf(!hasPek)('mergeProject — PEK Halle–Könnern', () => {
     expect(pf.startStation).toBeCloseTo(lb + 10, 2)
     // c.BEGIN is the joint now, no end any more: the mark cannot follow.
     expect(merged.endMarks[0].trackId).toBe(c.id)
+  })
+})
+
+// Case F2 of the data model: Alice splits track T at 100 m, which re-stations
+// platform P (120–260 m) onto the second piece at 20–160 m; Bob, on the old
+// state, moves P to 135–275 m on T. Carried first and then compared, Bob's move
+// lands on the piece at 35–175 m — no conflict, whichever side merges which.
+describe('a platform moved on a track the other side split (data model, case F2)', () => {
+  const EPSG = 25832
+  const P = (x) => ({ easting: 500000 + x, northing: 5700000, zone: EPSG })
+  const track = (id, x0, x1) => {
+    const elements = [straightElement(P(x0), P(x1), { speed: 80 })]
+    return { id, epsg: EPSG, elements, coordinates: rebuildCoords(elements) }
+  }
+  const platform = (trackId, startStation, endStation, extra = {}) =>
+    ({ id: 'P', trackId, startStation, endStation, side: 'left', height: 550, ...extra })
+  const state = (tracks, pl) => primary({ id: 'f2', title: 'F2', tracks, switches: [], platforms: [pl] })
+
+  const base = state([track('T', 0, 400)], platform('T', 120, 260))
+  const alice = state([track('T1', 0, 100), track('T2', 100, 400)], platform('T2', 20, 160))
+  const aliceLog = [{ from: 'T', to: ['T1', 'T2'] }]
+  const bob = state([track('T', 0, 400)], platform('T', 135, 275))
+
+  it('takes Bob\'s move onto Alice\'s piece, Bob merging Alice\'s state into his', () => {
+    const { merged, conflicts } = mergeProject({ base, mine: bob, theirs: alice, remapsTheirs: aliceLog })
+    expect(conflicts).toEqual([])
+    expect(merged.tracks.map(t => t.id).sort()).toEqual(['T1', 'T2'])
+    expect(merged.platforms).toEqual([platform('T2', 35, 175)])
+  })
+
+  it('does the same the other way round, Alice merging Bob\'s state into hers', () => {
+    const { merged, conflicts } = mergeProject({ base, mine: alice, theirs: bob, remapsMine: aliceLog })
+    expect(conflicts).toEqual([])
+    expect(merged.platforms).toEqual([platform('T2', 35, 175)])
+  })
+
+  it('reports nothing taken over where the only change was the carrying', () => {
+    const { merged, conflicts, applied } = mergeProject({ base, mine: base, theirs: alice, remapsTheirs: aliceLog })
+    expect(conflicts).toEqual([])
+    expect(merged.platforms).toEqual([platform('T2', 20, 160)])
+    expect(applied.filter(a => a.collection === 'platforms').map(a => a.kind)).toEqual(['carried'])
+  })
+
+  it('merges track, stations and side as one value: two different moves are one conflict, never a mix', () => {
+    const turned = state([track('T1', 0, 100), track('T2', 100, 400)], platform('T2', 20, 160, { side: 'right' }))
+    const { merged, conflicts } = mergeProject({ base, mine: bob, theirs: turned, remapsTheirs: aliceLog })
+    expect(conflicts).toEqual([expect.objectContaining({ collection: 'platforms', objectId: 'P', field: 'at' })])
+    // Mine stands until decided — carried onto the piece, all of it from one side.
+    expect(merged.platforms).toEqual([platform('T2', 35, 175)])
+    const taken = resolve(mergeProject({ base, mine: bob, theirs: turned, remapsTheirs: aliceLog }),
+      { 'platforms:P:at': 'theirs' })
+    expect(taken.platforms).toEqual([platform('T2', 20, 160, { side: 'right' })])
   })
 })
 

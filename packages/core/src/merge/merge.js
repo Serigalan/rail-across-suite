@@ -5,10 +5,18 @@ import {
 import { primary } from './diff'
 import { carryReferences, remapKind } from './remap'
 import { newFindings, validateProject } from '../project'
+import { portsOf, portTrack } from '../track'
 
 /**
  * Three-way merge of two states of a project against the state both came from
  * (merge rules 1–5 in the roadmap, phase 10).
+ *
+ * Carry first, then compare (data model, R6): the tracks are merged first;
+ * then base, mine and theirs are each carried onto the tracks the result has,
+ * through both id logs, and only then are the other collections compared. A
+ * change that is only carrying — a platform re-stationed because the other
+ * side split its track — is no change, and a move one side made is taken onto
+ * the track the other side's split left (case F2).
  *
  *   base   – the common ancestor
  *   mine   – the state the result is written into (the working copy, the
@@ -52,10 +60,13 @@ export function mergeProject({ base, mine, theirs, remapsMine = [], remapsTheirs
   // The tracks of all three states, for naming an end mark by its track.
   const allTracks = new Map([...(B.tracks ?? []), ...(T.tracks ?? []), ...(M.tracks ?? [])].map(t => [t.id, t]))
 
-  // ── the collections ──
-  for (const name of COLLECTION_NAMES) {
-    const bi = indexCollection(B, name), mi = indexCollection(M, name), ti = indexCollection(T, name)
-    if (!B[name] && !M[name] && !T[name]) continue
+  // ── the collections, the tracks first ──
+  const sides = { base: B, mine: M, theirs: T }
+  const carriedBefore = []
+  for (const name of ['tracks', ...COLLECTION_NAMES.filter(n => n !== 'tracks')]) {
+    const { base: Bc, mine: Mc, theirs: Tc } = sides
+    const bi = indexCollection(Bc, name), mi = indexCollection(Mc, name), ti = indexCollection(Tc, name)
+    if (!Bc[name] && !Mc[name] && !Tc[name]) continue
     const out = new Map()
 
     // Mine's order first, then what only theirs has, in theirs' order.
@@ -97,6 +108,17 @@ export function mergeProject({ base, mine, theirs, remapsMine = [], remapsTheirs
       // In base alone: deleted on both sides.
     }
     merged[name] = [...out.values()]
+    if (name === 'tracks') {
+      // Every reference of the three states onto the tracks the result has.
+      const onto = (p, side) => {
+        const { project, carried } = carryReferences({ ...p, tracks: merged.tracks }, [remapsMine, remapsTheirs], oldTrackOf(B, T, M))
+        carriedBefore.push(...carried.map(c => ({ ...c, side })))
+        return { ...project, tracks: p.tracks }
+      }
+      sides.base = onto(B, 'base')
+      sides.mine = onto(M, 'mine')
+      sides.theirs = onto(T, 'theirs')
+    }
   }
 
   const context = {
@@ -105,7 +127,15 @@ export function mergeProject({ base, mine, theirs, remapsMine = [], remapsTheirs
     known: validateProject(M),
   }
   const { project, carried } = carry(merged, context)
-  for (const c of carried) {
+  // What was carried onto a track mine's object does not name: carried before
+  // the comparison on mine's or theirs' side, or after it.
+  const reported = new Set()
+  for (const c of [...carriedBefore.filter(c => c.side !== 'base'), ...carried]) {
+    const key = `${c.collection}:${c.id}`
+    if (reported.has(key)) continue
+    const before = (M[c.collection] ?? []).find(o => keyOf(c.collection, o) === String(c.id))
+    if (before && String(c.to).split(',').every(id => refersTo(c.collection, before, id))) continue
+    reported.add(key)
     applied.push({ collection: c.collection, id: c.id, label: null, kind: 'carried', from: c.from, to: c.to })
   }
   const checked = validationConflicts(project, context)
@@ -189,12 +219,22 @@ function applyChoice(record, c, value) {
   list[at] = objectFromFields(c.collection, fields)
 }
 
+/** Whether an object of a collection names the track `trackId`. */
+function refersTo(collection, obj, trackId) {
+  if (collection === 'switches') return portsOf(obj).some(({ port }) => portTrack(obj, port) === trackId)
+  if (collection === 'routes') return (obj.trackIds ?? []).includes(trackId)
+  return obj.trackId === trackId
+}
+
+/** A track by id from the first of the states that has it: base, theirs, mine. */
+function oldTrackOf(...states) {
+  const sources = states.map(p => new Map((p.tracks ?? []).map(t => [t.id, t])))
+  return (id) => sources.map(s => s.get(id)).find(Boolean) ?? null
+}
+
 function carry(record, context) {
   const { base, mine, theirs, remapsMine, remapsTheirs } = context
-  const tracksOf = (p) => new Map((p.tracks ?? []).map(t => [t.id, t]))
-  const sources = [tracksOf(base), tracksOf(theirs), tracksOf(mine)]
-  const oldTrack = (id) => sources.map(s => s.get(id)).find(Boolean) ?? null
-  return carryReferences(record, [remapsMine, remapsTheirs], oldTrack)
+  return carryReferences(record, [remapsMine, remapsTheirs], oldTrackOf(base, theirs, mine))
 }
 
 /**

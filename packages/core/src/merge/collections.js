@@ -8,7 +8,10 @@
  * `heights` are one field each (the elements carry no ids of their own,
  * decision 92), for a switch its `ports` are one field (they are one object
  * on the record, oltjson-1.0), and a km line, an end mark or a measured axis
- * (axisSurvey) is one value altogether.
+ * (axisSurvey) is one value altogether. A platform's location — its track,
+ * its two stations and its side — is one value too, `at` (data model, R5):
+ * a station means nothing without its track, so the two are never taken from
+ * different sides.
  */
 
 /** The value the "whole entry" collections are compared as. */
@@ -17,7 +20,7 @@ export const WHOLE = '*'
 const COLLECTIONS = [
   { name: 'tracks',    key: 'id' },
   { name: 'switches',  key: 'switchId' },
-  { name: 'platforms', key: 'id' },
+  { name: 'platforms', key: 'id', location: ['trackId', 'startStation', 'endStation', 'side'] },
   { name: 'kmLines',   key: 'lineNumber', whole: true },
   { name: 'endMarks',  key: 'id', whole: true },
   { name: 'axisSurveys', key: 'id', whole: true },
@@ -26,6 +29,9 @@ const COLLECTIONS = [
 ]
 
 export const COLLECTION_NAMES = COLLECTIONS.map(c => c.name)
+
+/** The field a location is merged as, where a collection has one. */
+export const LOCATION = 'at'
 
 const BY_NAME = Object.fromEntries(COLLECTIONS.map(c => [c.name, c]))
 
@@ -49,9 +55,14 @@ export function fieldsOf(collection, obj) {
     fields.set(WHOLE, obj)
     return fields
   }
+  const located = BY_NAME[collection].location ?? []
+  const at = {}
   for (const [k, v] of Object.entries(obj ?? {})) {
-    if (v !== undefined) fields.set(k, v)
+    if (v === undefined) continue
+    if (located.includes(k)) at[k] = v
+    else fields.set(k, v)
   }
+  if (Object.keys(at).length) fields.set(LOCATION, at)
   return fields
 }
 
@@ -60,7 +71,9 @@ export function objectFromFields(collection, fields) {
   if (BY_NAME[collection].whole) return fields.get(WHOLE)
   const obj = {}
   for (const [k, v] of fields) {
-    if (v !== undefined) obj[k] = v
+    if (v === undefined) continue
+    if (k === LOCATION && BY_NAME[collection].location) Object.assign(obj, v)
+    else obj[k] = v
   }
   return obj
 }

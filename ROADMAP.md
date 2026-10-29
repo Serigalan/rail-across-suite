@@ -36,8 +36,9 @@ Open:
   its own; the running server of the Open-Layout-Tool is not migrated.
 - Large binary data (NTv2 grids, kilometrage tiles, map images) out of the history: Git LFS, release assets or a
   data repository, referenced by version.
-- Third-party material of the Open-Layout-Tool: the values from the DB guidelines may be taken over; the
-  sources of the guideline PDF, the NTv2 grids and the kilometrage data are named with their licences.
+- Third-party material listed in [THIRD-PARTY.md](THIRD-PARTY.md): the NTv2 grids come with their licences;
+  the kilometrage data moves into test fixtures and leaves the published apps; the guideline is the project's
+  own (CC BY 4.0); the values from the DB guidelines may be taken over.
 - Review of the data model by its code owner (its open questions are answered).
 
 **Exit:** the data model proposal is reviewed and its open questions are answered; the Open-Layout-Tool builds,

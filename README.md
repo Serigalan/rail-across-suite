@@ -33,7 +33,7 @@ Copyright 2026 Serigalan and the Open-Rail-Designer contributors.
   [Apache License 2.0](LICENSE) (`Apache-2.0`).
 - **Documentation** — `README.md`, `ROADMAP.md`, the `README.md` files in the directories, everything in `docs/`
   and `architecture.svg` — under [Creative Commons Attribution 4.0 International](LICENSE-docs) (`CC-BY-4.0`).
-- **Third-party material** keeps its own licence, named where it is used.
+- **Third-party material** keeps its own licence, listed in [THIRD-PARTY.md](THIRD-PARTY.md).
 
 Contributions are made under these licences and signed off (`Signed-off-by:`) after the
 [Developer Certificate of Origin](https://developercertificate.org/).

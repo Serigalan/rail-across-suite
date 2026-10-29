@@ -8,7 +8,7 @@ version: its project format oltjson-1.1 already holds the track network.
 The phases are ordered by dependency, not by date. A phase is done when its exit criteria hold.
 
 ```
-Phase 0  Foundation ─▶ Phase 1  Core from OLT ─▶ Phase 2  Generalised core ─┬▶ Phase 3  Catenary / Signalling
+Phase 0  Foundation ─▶ Phase 1  Core from OLT ─▶ Phase 2  Generalised core ─┬▶ Phase 3  Signalling / Catenary
                                                                             ├▶ Phase 4  Operations · Timetable · Capacity
                                                                             └▶ Phase 5  Construction-Sim
                                               cross-cutting: storage & server · exchange · rules · tests
@@ -41,6 +41,8 @@ Open:
 - Third-party material listed in [THIRD-PARTY.md](THIRD-PARTY.md): the NTv2 grids come with their licences;
   the kilometrage data moves into test fixtures and leaves the published apps; the guideline is the project's
   own (CC BY 4.0); the values from the DB guidelines may be taken over.
+- The name ([decision 0007](docs/decisions/0007-project-name.md)): the repository renamed to `rail-across-suite`
+  on GitHub; *Across* checked in the registers of the DPMA and the EUIPO before the first release.
 
 **Exit:** the data model is reviewed, and every question left open names the phase that decides it; the
 Open-Layout-Tool builds, tests and deploys from this repository.
@@ -53,7 +55,8 @@ Goal: the core exists as a package of its own and OLT runs on it **without any c
   switch records, ports and remaps, heights, topology, project load/hydrate/dehydrate/validate, diff and merge.
 - JSON Schema for the `core` domain; schema-derived types; the one door (`parse` → `validate`).
 - Python package reading the same schema (for optimizer and simulations), held to shared test vectors.
-- Conversion oltjson-1.1 → core 1.0 at the door (the first entry of the migration chain).
+- Conversion oltjson-1.1 → core 1.0 at the door (the first entry of the migration chain). Ids stay on tracks,
+  not on their elements ([decision 0004](docs/decisions/0004-ids-on-tracks.md)).
 - The three remap defects the data model cases found, fixed on the way
   ([data model §6](docs/data-model.md#6-consequences-for-the-open-layout-tool)): the merge carries all three
   states before it compares, and a reversed or spliced track carries its platforms.
@@ -86,7 +89,8 @@ Goal: the core can carry what the planned modules need, before they are written.
 - Domains with ownership: `core` (net, platforms, end marks, structures, operational point register, designed
   kilometrage) and discipline domains that store references only into the core.
 - Storage as a hash tree: revision → manifest → domain → collection; bulk point arrays as blobs; canonical JSON
-  after RFC 8785, the same bytes from JavaScript and Python; the exchange container (`.railacross`).
+  after RFC 8785, the same bytes from JavaScript and Python; the exchange container (`.railacross`) with its
+  `mimetype` entry.
 - Server: rights per domain; a domain the author may not write may only change by carrying or by orphans
   moved to their plane position.
 - **Sketches** ([decision 0005](docs/decisions/0005-sketch-mode.md)): variants with a scope domain that hold only
@@ -94,6 +98,8 @@ Goal: the core can carry what the planned modules need, before they are written.
   orphans in the plane for the sketch's own tracks; the server's refusal to merge a sketch back; orphans as
   warnings, attached again by their plane position.
 - Migration chain per domain at the one door.
+- Decided in this phase ([data model §8](docs/data-model.md#8-open-questions)): the tolerance for attaching
+  orphans again, and what a change of the designed kilometrage does to objects anchored by km.
 
 **Exit:** a test domain of located objects, unknown to the layout tool, survives split, join, reversal, length
 change, deletion, a concurrent merge and a format migration — every object in the right place or orphaned with
@@ -108,7 +114,9 @@ Goal: prove the core with a second real module.
 - **Open-Catenary-Tool**: masts, cantilevers, contact wire height and stagger, tension and feeding sections —
   located objects and ranges along the track, reading geometry, cant and heights from the core.
 - **Open-Signalling-Tool**: signals, detection points, balises, track sections, signalling routes, speed
-  profiles; export towards PlanPro / EULYNX.
+  profiles; station boundaries stored as references to what marks them (entry signals, trapezoid boards, entry
+  switches, platforms), with a special-case finding where they differ from EBO §4; export towards PlanPro /
+  EULYNX.
 
 **Signalling goes first**: it needs locations, ranges, functional objects and topology, and so tests the
 generalised core most. Catenary follows.
@@ -117,6 +125,8 @@ generalised core most. Catenary follows.
   (signal on a mast, El signals before a neutral section, signal sight past masts).
 - **Adaptations of OSRD** for Open-Capacity-Sim agreed with OSRD's maintainers while the signalling domain takes
   shape — DB signalling systems first ([decision 0006](docs/decisions/0006-capacity-on-osrd.md)).
+- Decided in this phase: who writes a coordination domain, should a relation between disciplines not be
+  derivable from location ([data model §8](docs/data-model.md#8-open-questions)).
 
 **Exit:** the module works on the same project as OLT; editing tracks in OLT keeps the module's objects placed.
 
@@ -142,7 +152,7 @@ Construction stages and lifespans are part of the core from phase 2
 
 | Topic | Direction |
 |---|---|
-| Storage and server | one project server for all modules: users, projects, variants, immutable revisions, merge in the browser, validation on check-in |
+| Storage and server | one project server for all modules: users, projects, variants and sketches, immutable revisions, merge in the browser, validation on check-in, approvals pinned by hashes and checked by the diff (data model S-R6) |
 | Exchange | RailJSON, railML 3, IFC 4.3, PlanPro, LandXML, Verm.ESN — translations at the edge, never the working format |
 | Rules | rule and form catalogues as data (as OLT's `constraints/`), shared by JavaScript and Python |
 | Tests | chain invariants, shared vectors JS/Python, real data sets, architecture checks for layers and domains |

@@ -162,6 +162,6 @@ the Open-Layout-Tool's documentation does.
 | Planlage | plane position | `anchor: "plane"` | easting, northing in a plane |
 | verwaist | orphaned | — | an object whose track is gone |
 | Umhängen | carrying (a reference) | — | the core's remap |
-| ID-Protokoll | id log | `idLog` | which tracks became which |
+| ID-Protokoll | id log | `idLog` | which tracks and stages became which |
 | abgeleitet | derived | — | rebuilt on load, never stored |
 | Rückwärtsindex | reverse index | — | what stands on a track |

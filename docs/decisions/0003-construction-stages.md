@@ -1,13 +1,17 @@
 # 0003 — Construction stages as lifespans on one state
 
-Status: **accepted** · replaces the Open-Layout-Tool's decision "time stages are variants, not years on tracks"
+Status: **accepted** · replaces the Open-Layout-Tool's decision "time stages are variants, not years on tracks" ·
+amended 2026-10-29: who writes the stage list; stages are checked like everything else
 
 ## Decision
 
 1. **One record holds the existing state, the final state and everything temporary** — as the Open-Layout-Tool's
    record already holds existing and final state through `status`.
 2. **The core holds an ordered list of construction stages** (`stages`): stage 0 is the existing state, the last
-   one the final state, each with its period. A project without stages of its own has just these two.
+   one the final state, each with its period. A project without stages of its own has just these two. The list
+   is written by the layout tool, where the parts rebuilt per stage are drawn; the `construction` domain adds
+   sequences and closures that refer to the stages. A stage that is removed hands its lifespans on to the stage
+   after it.
 3. **Every object has a lifespan** `lifespan: { from, to }` — the first stage it exists in, and the first it no
    longer exists in; absent ends are open. The planning status is derived from it:
 
@@ -21,7 +25,8 @@ Status: **accepted** · replaces the Open-Layout-Tool's decision "time stages ar
    The lifespan is a core type like the location types, so every domain uses it alike: a temporary track, a
    temporary signal, a temporary catenary.
 4. **A stage is a view**: what exists in it. Topology, rule checks, clearance, the check for tracks drawn twice
-   and later the capacity run per stage, and every stage has to be a valid network.
+   and later the capacity run per stage. Every stage is checked as a network, and its errors count like all
+   others: only new ones block, so a stage may be incomplete while it is planned.
 5. **Objects do not change between stages.** A change is a replacement: the old object ends in stage *k*, the
    new one begins there and names it in `replaces` — as a DB drawing shows old in yellow and new in red.
 6. **Rebuilding part of a track** splits it at the tie-in points. The part that stays has no lifespan; the old

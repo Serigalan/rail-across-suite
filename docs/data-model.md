@@ -1,6 +1,6 @@
 # Rail-Data-Core — data model proposal
 
-Status: **proposal, second draft** — hardened against concrete cases (section 2). It is the design input for
+Status: **proposal, under review** — hardened against concrete cases (section 2). It is the design input for
 phases 1 and 2 of the [roadmap](../ROADMAP.md).
 
 Every module of Open-Rail-Designer reads and writes one shared description of the railway. This page proposes
@@ -8,10 +8,7 @@ how that description is structured and stored. It starts from what already works
 Open-Layout-Tool, **oltjson-1.1** (`open-layout-tool/docs/data-format.md`), and generalises it where the
 planned modules need more than a track layout.
 
-The first draft proposed five layers with "references only downward" and "one JSON document per domain". Both
-ideas survive, but section 2 shows where each of them breaks as first stated: the layers were cut in the wrong
-places, "downward" alone does not say who repairs a reference, and a whole domain is too coarse a unit to store.
-Sections 3 and 4 give the rules that follow from the cases.
+Section 2 tests the model against concrete cases; sections 3 to 5 give the rules that follow from them.
 
 ## 1. What oltjson-1.1 gets right — and keeps
 
@@ -21,10 +18,11 @@ Sections 3 and 4 give the rules that follow from the cases.
 | **Derived data is never stored.** Polylines, symbols, polygons are rebuilt on load and stripped on save. | What is not stored cannot disagree. Diffs and merges see only real changes. |
 | **Stable UUIDs, references by id** (plus `BEGIN`/`END` for track ends), never names, never array indices. | Modules reference each other's objects across revisions, variants and merges. |
 | **Collections keyed by id.** | Field-by-field three-way merge. |
-| **Plane coordinates, one plane per track**, links where the plane changes. | Survey data stays exactly as delivered. |
+| **Plane coordinates, one plane per track**, joined by two-end connectors (`link`) where the plane changes or a rebuilt part ties in. | Survey data stays exactly as delivered. |
 | **Stations along the track** for whatever is placed on it. | Survives re-shaping of the horizontal alignment. |
-| **One door.** One parse/validate function decides what is accepted; everything behind it trusts the model. | No "field might be missing" scattered through six modules. |
+| **One door.** One parse/validate function decides what is accepted; everything behind it trusts the model. Where oltjson refuses an older format, the core migrates it there, explicitly and tested (S-R10), and refuses only what cannot be migrated. | No "field might be missing" scattered through six modules. |
 | **Shared validation** in browser and server; only *new* errors block. | Imported data with real defects stays workable. |
+| **Precision with a reason**: positions, lengths and stations to 1 µm, heights to 0.1 mm, bearings to 10⁻⁹° ([conventions](conventions.md)). | A turnout laid into a track read back at 0.1 mm would inherit a tangent break ten times what the chain checks allow; a rounded bearing walks a long track off course. |
 
 ## 2. The cases
 

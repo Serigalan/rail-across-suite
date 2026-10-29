@@ -266,9 +266,10 @@ What the cases found in today's code, independent of the new modules:
 
 1. *Answered:* Rail-Data-Core lives in this repository together with the modules, since R3, R4 and S-R10 need
    all modules on the same core version ([decision 0001](decisions/0001-one-repository.md)).
-2. Which module validates the generalised core first — catenary (locations and ranges) or signalling (also
-   functional objects)?
+2. *Answered:* signalling is the first new module; it tests locations, ranges, functional objects and
+   topology at once.
 3. Should element chains get ids (finer merge, larger records)? oltjson merges a track's elements as one value.
 4. Construction stages: twelve variants with merges for every correction of the existing state (S6), or stages
    as overlays on one state? To be decided before phase 5; the storage supports both.
-5. Who approves a change to the core schema?
+5. *Answered:* for now changes to the core schema are approved by @serigalan, the code owner of `packages/`
+   and `schemas/`.

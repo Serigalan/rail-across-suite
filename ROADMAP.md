@@ -32,13 +32,14 @@ Done:
 Open:
 
 - **Move the Open-Layout-Tool** into `apps/layout-tool/` with its history; its server to `server/`, its Python
-  service to `services/optimizer/`; CI and deployment scripts on the new paths. A step of its own, prepared with
-  whoever runs the deployment.
+  service to `services/optimizer/`; CI and deployment scripts on the new paths. The toolkit gets a new server of
+  its own; the running server of the Open-Layout-Tool is not migrated.
 - Large binary data (NTv2 grids, kilometrage tiles, map images) out of the history: Git LFS, release assets or a
   data repository, referenced by version.
-- Third-party material of the Open-Layout-Tool checked for its licence before it moves (guideline PDF, values
-  from the DB guidelines, NTv2 grids, kilometrage data).
-- Review of the data model and answers to its [open questions](docs/data-model.md#7-open-questions) 2–5.
+- Third-party material of the Open-Layout-Tool: the values from the DB guidelines may be taken over; the
+  sources of the guideline PDF, the NTv2 grids and the kilometrage data are named with their licences.
+- Review of the data model and answers to its [open questions](docs/data-model.md#7-open-questions) 3 and 4 (element ids, construction
+  stages).
 
 **Exit:** the data model proposal is reviewed and its open questions are answered; the Open-Layout-Tool builds,
 tests and deploys from this repository.
@@ -94,8 +95,8 @@ Goal: prove the core with a second real module.
 - **Open-Signalling-Tool**: signals, detection points, balises, track sections, signalling routes, speed
   profiles; export towards PlanPro / EULYNX.
 
-Which one goes first is an open question; catenary needs only locations and ranges, signalling also functional
-objects and topology.
+**Signalling goes first**: it needs locations, ranges, functional objects and topology, and so tests the
+generalised core most. Catenary follows.
 
 - **Coordination checks** between the disciplines, derived from shared locations and storing only findings
   (signal on a mast, El signals before a neutral section, signal sight past masts).

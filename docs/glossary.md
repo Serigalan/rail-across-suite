@@ -64,6 +64,7 @@ the Open-Layout-Tool's documentation does.
 | Einfache / Doppelte Kreuzungsweiche | single / double slip | `single_slip` / `double_slip` | |
 | Weichenanfang (WA) | toe of the turnout | port `A` | |
 | Weichenende (WE) | end of the turnout | — | |
+| letzte durchgehende Schwelle (ldS) | last common sleeper (LCS) | — | the LCS line is derived (`lcsCoords`) |
 | gerader Strang / abzweigender Strang | main route / branch | `switchRoute: "main"` / `"branch"` | the turnout's two routes |
 | Weichenform, Bauform | switch form | `label`, `formVersion` | from the form tables of Ril 800.0120 |
 | Weichenverbindung, Gleisverbindung | switch connection, crossover | — | |

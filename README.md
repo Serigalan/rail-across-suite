@@ -16,3 +16,8 @@ One repository holds the core, every module and the services
 | `server/` | the project server for all modules |
 | `services/` | the Python services |
 | `docs/` | roadmap material, data model, decisions |
+
+## Roadmap
+
+The [roadmap](ROADMAP.md) starts with the Rail-Data-Core; how its data is structured and stored is proposed in
+[docs/data-model.md](docs/data-model.md).

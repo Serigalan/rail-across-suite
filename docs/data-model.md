@@ -27,13 +27,14 @@ Section 2 tests the model against concrete cases; sections 3 to 5 give the rules
 ## 2. The cases
 
 Each case names what happens, what it breaks, and the rule it leads to. Cases marked **tested** were run against
-the Open-Layout-Tool's code (branch of 2026-10-29); the test files are kept outside the repositories.
+the Open-Layout-Tool's code as of 2026-10-29; the defects they found are fixed in phase 1 (section 6). The test
+files are kept outside the repositories.
 
 ### Cases about references
 
 **F1 — A turnout is laid into a track that carries signals and masts.** The layout tool splits track `T` into
 `T1` and `T2`; `T` is gone. The signals and masts on `T` belong to the signalling and catenary domains, which the
-layout tool does not understand. If it "keeps unknown domains unchanged", as the first draft said, they now name
+layout tool does not understand. If it kept the domains it does not understand unchanged, they would now name
 a track that does not exist.
 → The core must carry references in **every** domain, including those the running module does not know. It can
 do so only if it can *find* them: references are declared in each domain's schema through core types (rules
@@ -41,7 +42,7 @@ R3, R4).
 
 **F2 — Concurrent edit: Alice splits a track, Bob moves a platform on it. (tested)** Base: platform `P` on `T`
 at 120–260 m. Alice splits `T` at 100 m; her step re-stations `P` to `T2` at 20–160. Bob, on the old state, moves
-`P` to 135–275 on `T`. Today's merge compares field by field: it takes `trackId = T2` from Alice and reports a
+`P` to 135–275 on `T`. The Open-Layout-Tool's merge (as of October 2026) compares field by field: it takes `trackId = T2` from Alice and reports a
 conflict on both stations, although Alice never touched the platform. Whichever side is chosen, the result is
 wrong: Bob's side gives `T2` at 135–275, **100 m off** and still within the track, so no check notices; Alice's
 side loses Bob's move.
@@ -49,40 +50,45 @@ A prototype that first carries base, mine and theirs through both id logs and th
 35–175 without a conflict, in both merge directions.
 → Carry first, then compare (R6); a location is one value (R5).
 
-**F3 — A track is reversed. (tested)** `reverseTrackDirection` flips the switch ports and end marks of the track,
+**F3 — A track is reversed. (tested)** In the Open-Layout-Tool (as of October 2026), `reverseTrackDirection` flips
+the switch ports and end marks of the track,
 but not its platforms: a platform at 120–260 m on the left of a 400 m track stays at 120–260 on the left —
 counted from the other end now, so it has moved 20 m and changed sides.
-Every object kind carries its own remap code today, and one of them was forgotten. With signals, balises, masts
+Every object kind carries its own remap code there, and one of them was forgotten. With signals, balises, masts
 and speed boards the number of such places would multiply.
 → One location type, one remap, owned by the core (R4).
 
-**F4 — A track is deleted on which another discipline's objects stand.** Within its own data the layout tool
-cascades (end marks and platforms go with the track). Deleting twelve masts of the catenary planner the same way
+**F4 — A track is deleted on which another discipline's objects stand.** Deleting means the track never existed:
+it was drawn or imported by mistake. A track taken out of service is not deleted but removed — its lifespan ends
+(`to:`), and containment applies (R13, case F11). Within its own data the layout tool cascades a deletion (end
+marks and platforms go with the track). Deleting twelve masts of the catenary planner the same way
 would destroy work its owner never saw.
 → Never delete another domain's work; orphan it with a finding, and warn before (R7). The warning needs to know
 what stands on the track, which only the domains above know → reverse index, derived (R8).
 
 **F5 — A signal hangs on a catenary mast; El signals stand before a neutral section; masts must not block the
-sight of a signal.** Signalling and catenary each need the other: the first draft's single direction cannot
-hold, and storing references both ways makes a cycle.
+sight of a signal.** Signalling and catenary each need the other: references in one direction only cannot
+express that, and storing them both ways makes a cycle.
 All three relations are positions on the same track: same station and side, a distance before a range, a
 sight line along the track. They can be **derived** from the shared location, like the Open-Layout-Tool derives
 which track ends meet instead of storing it.
 → No stored references between sibling domains; coordination checks derive and check these relations (R9).
 
-**F6 — Station Halle-Trotha.** Station tracks and platforms name their station today by text (`stationName`,
-`uicStation`, `code`). The first draft put operational points into the top layer — but tracks and platforms
-below it name them, so the references would point upward. Moreover, a station has an identity (name, RL100 code,
-UIC number) and an extent, and the extent is set by its entry signals, i.e. by the signalling plan. A new halt
-has no RL100 code yet.
+**F6 — Station Halle-Trotha.** In oltjson, station tracks and platforms name their station by text
+(`stationName`, `uicStation`, `code`). Operational points can therefore not sit in a layer above the net: tracks
+and platforms refer to them, so such references would point upward. Moreover, an operational point has an
+identity (name, RL100 code, UIC number) and an extent. A station's extent is set by its entry signals, i.e. by
+the signalling plan; a halt has no entry signals, its extent is in practice its platform. A new halt has no
+RL100 code yet.
 → Identity and extent are two facts with two owners (R10): an operational point register in the core with UUIDs
-(codes are attributes, added when they exist), the extent in the signalling domain.
+(codes are attributes, added when they exist); a station's extent in the signalling domain, a halt's following
+from its platforms in the core.
 
-**F7 — Kilometrage of a new line.** The first draft put kilometrage below the net as reference data. For an
-existing line it is (DB km lines). For a new line it is defined *by* the designed axis: a start km on a run of
-tracks plus km jumps.
-→ Designed kilometrage lives next to the tracks in the core, not below them. "Layers" are a picture; the rule
-is an acyclic graph of domains (R2).
+**F7 — Kilometrage of a new line.** Kilometrage looks like reference data below the net, and for an existing
+line it is (DB km lines). For a new line it is defined *by* the designed axis: a start km on a run of tracks plus
+km jumps.
+→ Designed kilometrage lives next to the tracks in the core, not below them. What holds is not a stack of
+layers but an acyclic graph of domains (R2).
 
 **F8 — Speed.** The rule checks of the layout tool use the design speed on each element. Signalling plans the
 permitted speed (speed boards, speed profile). If the layout check read the permitted speed, the layout would
@@ -100,12 +106,20 @@ fields; the layout tool built against signalling 1.0 (or not knowing signalling 
 → The schema travels with the data, so references can be found in any domain version (R3). A build that meets a
 location type it does not know refuses the edit, rather than leaving references behind (R4).
 
+**F11 — A part of a track is rebuilt in stage 3, and a signal stands on the old part.** The track is split at the
+tie-in points; the old part ends in stage 3 (`to: 3`), the new part begins there, each joined by a connector of
+its own ([decision 0003](decisions/0003-construction-stages.md)). The signal on the old part would outlive its
+track: from stage 3 on it would stand on nothing. The layout tool must not end or move it — it is signalling's
+work.
+→ Containment (R13): an object exists only while what it refers to exists. What would outlive its target is a
+finding for its owner, who ends the signal with its track or puts a new one on the new part that `replaces` it.
+
 ### Cases about storage
 
 **S1 — Editing a platform stores two kilometres of surveyed axis again.** A reference axis keeps a point every
 centimetre, at most 2 km: about **1.3 MB of JSON and 20–200 kB gzipped** (measured on synthetic data: smooth vs.
 ±1.5 mm survey noise). The whole network of the PEK Halle–Könnern data set (22 tracks, 13 switches) is ~15 kB
-gzipped. In one domain document, as the first draft had it, every platform edit stores the axis anew — as
+gzipped. Stored as one document per domain, every platform edit would store the axis anew — as
 oltjson stores the whole record per revision today.
 → Address storage per collection, not per domain; bulk point arrays as blobs of their own (S-R1, S-R2).
 
@@ -146,13 +160,13 @@ record holds existing, final and temporary objects once; a stage is a view; the 
 | R4 | **One remap.** Whenever the net changes ids or stations (split, join, reverse, delete, a length change before an object, a plane change), the core carries every declared reference in every domain, in the same step. No module writes its own remap. A build that cannot carry a domain refuses the edit. | F1, F3, F10 |
 | R5 | **A location is one value**: compared, merged and carried whole, never `trackId` and `station` separately. | F2 |
 | R6 | **Merge: carry first, then compare.** Base, mine and theirs are carried into the newest ids through both id logs before the three-way comparison, so a change that is only carrying is no change. | F2 |
-| R7 | **Deleting never deletes another domain's work.** Within its own domain a module cascades. Objects of other domains are left orphaned, with a finding for their owner, and the user is told beforehand what stands there. **An orphan keeps its place in the plane:** in the same step the core turns its location into the anchor `plane` (easting, northing, EPSG, direction as a bearing) without a track, since a station means nothing without its track. Id and every reference to it stay, so it can be attached to a new track later. | F4 |
+| R7 | **Deleting never deletes another domain's work.** Deleting means an object never existed; taking it out of service is a removal, i.e. the end of its lifespan (R12), and containment applies (R13). Within its own domain a module cascades a deletion. Objects of other domains are left orphaned, with a finding for their owner, and the user is told beforehand what stands there. **An orphan keeps its place in the plane:** in the same step the core turns its location into the anchor `plane` (easting, northing, EPSG, direction as a bearing) without a track, since a station means nothing without its track. Id and every reference to it stay, so it can be attached to a new track later. | F4 |
 | R8 | **Upward is derived.** "What stands on this track" is a reverse index built on load from the declared references, never stored. | F4 |
 | R9 | **No stored references between sibling domains.** Relations between disciplines are derived from their shared locations and checked by **coordination checks**, which read several domains and store nothing but findings. A relation that cannot be derived from location goes into a coordination domain above both. | F5 |
 | R10 | **One fact, one owner.** If two domains seem to need the same fact, it is two facts (design / permitted speed, station identity / extent), or it moves into the core. | F6, F8 |
 | R11 | **A location states its anchor**: `station` (follows the track), `km` (keeps its kilometrage) or `plane` (stays where it is). The anchor's value is stored, the others are derived. Objects drawn in a tool default to `station`; existing, imported objects to the form they were delivered in (plane or km). | F9 |
 | R12 | **Objects have a lifespan** `{ from, to }` over the ordered construction stages of the core; the planning status (existing, new, removal, temporary) is derived from it. A stage is a view, every stage must be a valid network, and checks run per stage. Objects do not change between stages: a change is a replacement that names its predecessor in `replaces`. | S6 |
-| R13 | **Containment.** An object exists only while what it refers to exists (a connector while its tracks do, a signal while its track does). What would outlive its target is a finding for its owner, never changed for them. | S6, F4 |
+| R13 | **Containment.** An object exists only while what it refers to exists (a connector while its tracks do, a signal while its track does). What would outlive its target is a finding for its owner, never changed for them. | F11, S6 |
 
 Findings caused by another domain's change (an orphaned signal, a mast now too close) do not block that
 change's check-in; they are listed for the owner of the affected domain. A check-in is blocked only by new errors
@@ -160,8 +174,9 @@ in domains its author changed beyond carrying.
 
 ## 4. Structure
 
-The five layers of the first draft were cut in the wrong places (F6, F7). What remains is a core that everyone
-depends on, discipline domains that depend only on the core, and derived results above them:
+A stack of layers — reference data, net, located objects, functional objects, operations — cannot be cut
+cleanly (F6, F7). The structure is a core that everyone depends on, discipline domains that depend only on the
+core, and derived results above them:
 
 ```
  derived, never in a revision:  coordination checks · simulation results · reverse index   (caches by input hashes)
@@ -257,7 +272,7 @@ Postgres with the same tables. Spatial search across projects is a derived index
 
 ## 6. Consequences for the Open-Layout-Tool
 
-What the cases found in today's code, independent of the new modules:
+What the cases found in the Open-Layout-Tool's code as of October 2026, independent of the new modules:
 
 1. **Merge after a split (F2):** a platform moved on a track that the other side split ends up off by the
    distance to the cut (100 m in the example), or loses the move. Fix: carry all three states first, then

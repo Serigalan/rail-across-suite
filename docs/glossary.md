@@ -143,6 +143,7 @@ the Open-Layout-Tool's documentation does.
 | Domäne, Fachdomäne | domain, discipline domain | — | unit of ownership, schema and version |
 | Kern | core | `core` | the shared domain every other depends on |
 | Planungsstatus: Bestand / Neubau / Rückbau / Provisorium | planning status: existing / new / removal / temporary | `status` | derived from the lifespan |
+| Löschen | deletion | — | the object never existed (drawn or imported by mistake); not a removal |
 | Variante | variant | — | a named state of a project |
 | Revision | revision | — | an immutable stored state |
 | Arbeitskopie | working copy | — | |

@@ -68,7 +68,7 @@ the Open-Layout-Tool's documentation does.
 | gerader Strang / abzweigender Strang | main route / branch | `switchRoute: "main"` / `"branch"` | the turnout's two routes |
 | Weichenform, Bauform | switch form | `label`, `formVersion` | from the form tables of Ril 800.0120 |
 | Weichenverbindung, Gleisverbindung | switch connection, crossover | — | |
-| Übergang zwischen Lagesystemen | link | `kind: "link"` | two tracks in two planes meeting at a node |
+| Verbinder | connector | `kind: "link"` | two track ends joined at a node: where the plane changes, or where a rebuilt part ties in |
 | Prellbock | buffer stop | `endMarks`, `kind: "buffer_stop"` | |
 | Planungsgrenze | planning-area boundary | `endMarks`, `kind: "boundary"` | |
 
@@ -142,13 +142,16 @@ the Open-Layout-Tool's documentation does.
 | Fachplanung | discipline | — | layout, catenary, signalling, … |
 | Domäne, Fachdomäne | domain, discipline domain | — | unit of ownership, schema and version |
 | Kern | core | `core` | the shared domain every other depends on |
-| Planungsstatus: Bestand / Neubau / Rückbau | planning status: existing / new / removal | `status` | |
+| Planungsstatus: Bestand / Neubau / Rückbau / Provisorium | planning status: existing / new / removal / temporary | `status` | derived from the lifespan |
 | Variante | variant | — | a named state of a project |
 | Revision | revision | — | an immutable stored state |
 | Arbeitskopie | working copy | — | |
 | Einchecken | check in | — | |
 | Zusammenführen | merge | — | |
-| Bauzustand, Bauzustandsplan | construction stage, stage plan | — | |
+| Bauzustand | construction stage | `stages` | ordered, from the existing to the final state |
+| Lebensspanne | lifespan | `lifespan: { from, to }` | the stages an object exists in |
+| Ersatz | replacement | `replaces` | a new object taking an old one's place from a stage on |
+| Sperrung, Langsamfahrstelle (La) | closure, temporary speed restriction | — | the construction domain |
 | Freigabe | approval | — | |
 | Befund | finding | — | of a validation or check |
 | Koordinationsprüfung | coordination check | — | between disciplines, stores only findings |

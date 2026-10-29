@@ -129,11 +129,11 @@ The track editor must carry every reference into the net (F1), so it needs every
 → A changed domain that the author may not write must equal the base carried through the id log, which the
 server recomputes (S-R5) — the Open-Layout-Tool already checks measured axes against a right in this way.
 
-**S6 — Twelve construction stages.** Stages are variants (an Open-Layout-Tool decision). With per-collection
-hashes, collections no stage changes are stored once. A stage plan (order and dates of the stages) refers to
-variants and so must live outside the revisions, at project level, or it would refer to itself.
-Open risk: a survey correction of the existing state must reach all twelve stages, which means twelve merges.
-F2's rule makes them free of false conflicts, but it is work. This is decided in phase 5.
+**S6 — Twelve construction stages.** As variants (the Open-Layout-Tool's decision), the existing and the final
+state exist once per stage: a survey correction of the existing state means twelve merges, and a stage plan
+would have to refer to variants from outside the revisions.
+→ Stages are lifespans on one state ([decision 0003](decisions/0003-construction-stages.md), R12, R13): the
+record holds existing, final and temporary objects once; a stage is a view; the stage list is part of the record.
 
 **S7 — A capacity simulation result.** It follows from the timetable, signalling and core.
 → A cache keyed by the hashes of its inputs, never part of a revision (S-R6).
@@ -153,6 +153,8 @@ F2's rule makes them free of false conflicts, but it is work. This is decided in
 | R9 | **No stored references between sibling domains.** Relations between disciplines are derived from their shared locations and checked by **coordination checks**, which read several domains and store nothing but findings. A relation that cannot be derived from location goes into a coordination domain above both. | F5 |
 | R10 | **One fact, one owner.** If two domains seem to need the same fact, it is two facts (design / permitted speed, station identity / extent), or it moves into the core. | F6, F8 |
 | R11 | **A location states its anchor**: `station` (follows the track), `km` (keeps its kilometrage) or `plane` (stays where it is). The anchor's value is stored, the others are derived. Objects drawn in a tool default to `station`; existing, imported objects to the form they were delivered in (plane or km). | F9 |
+| R12 | **Objects have a lifespan** `{ from, to }` over the ordered construction stages of the core; the planning status (existing, new, removal, temporary) is derived from it. A stage is a view, every stage must be a valid network, and checks run per stage. Objects do not change between stages: a change is a replacement that names its predecessor in `replaces`. | S6 |
+| R13 | **Containment.** An object exists only while what it refers to exists (a connector while its tracks do, a signal while its track does). What would outlive its target is a finding for its owner, never changed for them. | S6, F4 |
 
 Findings caused by another domain's change (an orphaned signal, a mast now too close) do not block that
 change's check-in; they are listed for the owner of the affected domain. A check-in is blocked only by new errors
@@ -179,11 +181,16 @@ depends on, discipline domains that depend only on the core, and derived results
                               catalogue versions (rules, switch forms, profiles)
                   net         tracks (elements, heights, cant, superstructure) · switches and links
                   context     platforms · end marks · structures (bridges, tunnels, level crossings)
-                  types       TrackLocation · TrackRange · TrackEnd · TrackPath · Ref
+                  stages      the ordered construction stages, from the existing to the final state
+                  types       TrackLocation · TrackRange · TrackEnd · TrackPath · Ref · Lifespan
  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────
- project level    variants · construction stage plan · approvals · comments   (refer into revisions, never back)
+ project level    variants · approvals · comments   (refer into revisions, never back)
 ```
 
+- **Operations per construction stage** (closures, temporary speed restrictions, tracks in operation) form a
+  further discipline domain, `construction`.
+- **Connectors with two ends** (`link`) join two track ends at a node: where the plane changes, and where a
+  rebuilt part of a track ties in ([decision 0003](decisions/0003-construction-stages.md)).
 - **The core is written by the layout tool** (and carried by the core library, R4). Platforms, end marks and
   structures are in the core because several disciplines place things relative to them.
 - **One physical thing, several discipline objects.** A turnout is a core switch (geometry, form, topology); the
@@ -243,7 +250,7 @@ blobs: canonical JSON of each collection · bulk point arrays · schemas · imag
 | S-R5 | **The server checks per domain**: the author's right for every changed domain; a changed domain the author may not write must equal the base carried through the id log. A domain whose own and dependency hashes are unchanged is not validated again. | S5 |
 | S-R6 | **Derived results are caches keyed by input hashes** (coordination findings, simulation results, reverse index), never in a revision. An **approval** pins a domain hash plus the hashes of its dependencies. | S3, S7 |
 | S-R7 | **Partial loading is for reading.** Editing the core loads every domain that references it. | S4 |
-| S-R8 | **Project level, outside revisions**: variants, stage plans, approvals, comments. They refer into revisions; revisions never refer to them. | S6 |
+| S-R8 | **Project level, outside revisions**: variants, approvals, comments. They refer into revisions; revisions never refer to them. | S6 |
 | S-R9 | **Exchange**: a zip container (`.ord`) with the manifest, the canonical collection files, schemas and blobs. A single-file JSON for small projects holds the same canonical documents and gives the same hashes. | — |
 | S-R10 | **Versions**: each domain has its own version; the one door runs an explicit, tested migration chain per domain. Behind the door only the current version exists. | F10 |
 
@@ -268,8 +275,9 @@ What the cases found in today's code, independent of the new modules:
    all modules on the same core version ([decision 0001](decisions/0001-one-repository.md)).
 2. *Answered:* signalling is the first new module; it tests locations, ranges, functional objects and
    topology at once.
-3. Should element chains get ids (finer merge, larger records)? oltjson merges a track's elements as one value.
-4. Construction stages: twelve variants with merges for every correction of the existing state (S6), or stages
-   as overlays on one state? To be decided before phase 5; the storage supports both.
+3. *Answered:* ids on tracks, not on their elements; a track is edited by one person at a time
+   ([decision 0004](decisions/0004-ids-on-tracks.md)).
+4. *Answered:* construction stages are lifespans on one state, not variants
+   ([decision 0003](decisions/0003-construction-stages.md)).
 5. *Answered:* for now changes to the core schema are approved by @serigalan, the code owner of `packages/`
    and `schemas/`.

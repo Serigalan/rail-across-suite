@@ -38,8 +38,7 @@ Open:
   data repository, referenced by version.
 - Third-party material of the Open-Layout-Tool: the values from the DB guidelines may be taken over; the
   sources of the guideline PDF, the NTv2 grids and the kilometrage data are named with their licences.
-- Review of the data model and answers to its [open questions](docs/data-model.md#7-open-questions) 3 and 4 (element ids, construction
-  stages).
+- Review of the data model by its code owner (its open questions are answered).
 
 **Exit:** the data model proposal is reviewed and its open questions are answered; the Open-Layout-Tool builds,
 tests and deploys from this repository.
@@ -75,6 +74,11 @@ Goal: the core can carry what the planned modules need, before they are written.
   plane coordinates (easting, northing, EPSG, and the direction as a bearing) in the same step, because a station
   means nothing without its track. The object keeps its id and every reference to it, so it can be attached to
   a new track later.
+- **Construction stages** in the core: the ordered stage list, lifespans `{ from, to }` on every object, the
+  planning status derived from them, a stage as a view with every check run per stage, replacements naming
+  their predecessor, containment as a check, and two-end connectors (`link`) also within one plane for parts
+  of a track that are rebuilt ([decision 0003](docs/decisions/0003-construction-stages.md)). The status of
+  oltjson-1.1 converts at the door: new = from the final stage, removal = up to it.
 - Domains with ownership: `core` (net, platforms, end marks, structures, operational point register, designed
   kilometrage) and discipline domains that store references only into the core.
 - Storage as a hash tree: revision → manifest → domain → collection; bulk point arrays as blobs; canonical JSON
@@ -84,7 +88,7 @@ Goal: the core can carry what the planned modules need, before they are written.
 
 **Exit:** a test domain of located objects, unknown to the layout tool, survives split, join, reversal, length
 change, deletion, a concurrent merge and a format migration — every object in the right place or orphaned with
-a finding and its plane position; JavaScript and Python give the same hashes for the shared vectors.
+a finding and its plane position; JavaScript and Python give the same hashes for the shared vectors; a part of a track rebuilt over three stages gives a valid network in every stage.
 
 ## Phase 3 — First new infrastructure modules
 
@@ -112,11 +116,13 @@ generalised core most. Catenary follows.
 
 ## Phase 5 — Construction simulation
 
-- Construction stages as variants (the OLT decision), ordered by a **stage plan** with dates, kept at project
-  level outside the revisions. Before this phase: decide whether corrections of the existing state reach every
-  stage by merges or whether stages become overlays on one state (data model, open question 4).
-- The work between stages as the diff between them; closures and temporary operation checked per stage with
-  the same validation and, later, the capacity simulation.
+Construction stages and lifespans are part of the core from phase 2
+([decision 0003](docs/decisions/0003-construction-stages.md)); this phase builds on them.
+
+- `construction` domain: closures, temporary speed restrictions and the tracks in operation per stage.
+- The stages' periods and the work between two stages — what ends and begins there — as the base of the
+  construction sequence; activities, durations and resources.
+- Every stage checked as a network with the same validation, signalling and, later, the capacity simulation.
 
 ## Cross-cutting, in every phase
 

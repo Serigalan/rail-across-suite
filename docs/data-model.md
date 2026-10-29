@@ -248,12 +248,12 @@ signal is new from stage `c41e…` on — drawn red.
 
 | Option | Strengths | Weaknesses |
 |---|---|---|
-| **A. One JSON document per project** (oltjson today) | simple; diff and merge are pure functions; works offline | every revision stores everything (S1); one schema version for all modules |
+| **A. One JSON document per project** (oltjson, as of 2026) | simple; diff and merge are pure functions; works offline | every revision stores everything (S1); one schema version for all modules |
 | **B. Documents per domain, content-addressed per collection** | unchanged collections cost nothing; per-domain rights, versions and approvals | manifest, hash store and canonical bytes to maintain |
 | **C. Relational DB, normalised** | queries across projects, spatial indexes | variants and three-way merge become hard; a second model for offline browsers; tempts to store derived geometry |
 | **D. Operation log / CRDT** | live multi-user editing | geometric constructions (splice, turnout insertion) are not field operations; validating a state needs the state anyway |
 
-### 5.2 Recommendation: B, hardened
+### 5.2 Recommendation: B
 
 A project state is logically a set of **domain documents** (unit of ownership, schema and version). Physically it
 is a **hash tree**:
@@ -278,14 +278,18 @@ blobs: canonical JSON of each collection · bulk point arrays · schemas · imag
 | S-R4 | Revisions are immutable; variants are named heads; the browser merges, the server appends and checks (as in the Open-Layout-Tool). | — |
 | S-R5 | **The server checks per domain**: the author's right for every changed domain; a changed domain the author may not write must equal the base carried through the id log (R4), with its orphans moved to their plane position (R7). A domain whose own and dependency hashes are unchanged is not validated again. | S5 |
 | S-R6 | **Derived results are caches keyed by input hashes** (coordination findings, simulation results, reverse index), never in a revision; a simulation result also by its construction stage. An **approval** pins a domain hash plus the hashes of its dependencies; whether a later change affects it is decided by the diff, restricted to the approved stages and area. | S3, S7 |
-| S-R7 | **Partial loading is for reading.** Editing the core loads every domain that references it. | S4 |
-| S-R8 | **Project level, outside revisions**: variants and sketches, approvals, comments. They refer into revisions; revisions never refer to them. | S6 |
-| S-R9 | **Exchange**: a zip container (`.ord`) with the manifest, the canonical collection files, schemas and blobs. A single-file JSON for small projects holds the same canonical documents and gives the same hashes. | — |
+| S-R7 | **Partial loading is for reading.** Editing the core loads every domain that references it — except in a sketch, which holds no other domains (S-R11). | S4, F12 |
+| S-R8 | **Project level, outside revisions**: variants and sketches, approvals, comments. They refer into revisions; revisions never refer to them. | S3, F12 |
+| S-R9 | **Exchange**: a zip container with the manifest, the canonical collection files, schemas and blobs. A single-file JSON for small projects holds the same canonical documents and gives the same hashes. The file extension is still open: `.ord`, the working name, already stands for Bentley's OpenRoads and OpenRail Designer in civil design. | — |
 | S-R10 | **Versions**: each domain has its own version; the one door runs an explicit, tested migration chain per domain. Behind the door only the current version exists. | F10 |
 | S-R11 | **Sketches** are variants marked as sketch, with their scope domain and the revision they start from; their revisions hold the core and the scope domain only, so with hashes per collection the copied core costs nothing. The server refuses to merge a sketch into a regular variant; a takeover is checked in on the target like any change. A sketch is visible to its author until shared with the project's members. | F12 |
 
 Server: SQLite (`revision`, `manifest`, `blob`) until several instances or cross-project queries are needed, then
 Postgres with the same tables. Spatial search across projects is a derived index, never the source of truth.
+
+Browser: working copies in IndexedDB with the same hash tree (manifest and blobs), each with its base revision
+and its id log, as in the Open-Layout-Tool. The local build without a server keeps its projects the same way.
+Point clouds stay in the browser's private file system (OPFS) or on the server, outside the record.
 
 ## 6. Consequences for the Open-Layout-Tool
 

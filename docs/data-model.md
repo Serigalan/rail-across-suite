@@ -212,8 +212,8 @@ core, and derived results above them:
 | base | `core` | open-layout-tool | **reference**: coordinate systems, km lines and designed kilometrage, operational point register, catalogue versions (rules, switch forms, profiles) · **net**: tracks (elements, heights, cant, superstructure), switches and connectors · **context**: platforms, end marks, structures (bridges, tunnels, level crossings) · **stages**: the ordered construction stages · **types**: `TrackLocation`, `TrackRange`, `TrackEnd`, `TrackPath`, `Lifespan`, `Ref` |
 | project | — | server | variants and sketches, approvals, comments — they refer into revisions, never back |
 
-Discipline domains store references only into the core (R2, R9). Open-Capacity-Sim writes no domain: its results
-are derived.
+Discipline domains store references only into the core (R2, R9). Open-Capacity-Sim writes no domain: it builds on
+OSRD, and its results are derived ([decision 0006](decisions/0006-capacity-on-osrd.md)).
 
 - **Connectors with two ends** (`link`) join two track ends at a node: where the plane changes, and where a
   rebuilt part of a track ties in ([decision 0003](decisions/0003-construction-stages.md)).

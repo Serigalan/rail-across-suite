@@ -66,7 +66,8 @@ pass.
 Goal: the core can carry what the planned modules need, before they are written.
 
 - Location types `TrackLocation`, `TrackRange`, `TrackEnd`, `TrackPath`, `Ref`, each one value, with the anchors
-  station / km / plane.
+  station / km / plane. Before they are written: a look at libLRS, the linear referencing library of the
+  OpenRail Association.
 - References declared in each domain's schema through these types; the schema travels with the data.
 - **One** remap in the core that carries every declared reference in every domain — also in domains the running
   module does not understand; platforms and end marks moved onto it.
@@ -113,6 +114,8 @@ generalised core most. Catenary follows.
 
 - **Coordination checks** between the disciplines, derived from shared locations and storing only findings
   (signal on a mast, El signals before a neutral section, signal sight past masts).
+- **Adaptations of OSRD** for Open-Capacity-Sim agreed with OSRD's maintainers while the signalling domain takes
+  shape — DB signalling systems first ([decision 0006](docs/decisions/0006-capacity-on-osrd.md)).
 
 **Exit:** the module works on the same project as OLT; editing tracks in OLT keeps the module's objects placed.
 
@@ -120,8 +123,9 @@ generalised core most. Catenary follows.
 
 - `operations` domain: train types, rolling stock, train runs, stopping patterns.
 - **Open-Timetable-Tool**: timetable construction on operational points and paths.
-- **Open-Capacity-Sim**: running times and capacity from geometry, speed profiles, signalling and timetable
-  (export to OSRD RailJSON as a first back end).
+- **Open-Capacity-Sim builds on OSRD** ([decision 0006](docs/decisions/0006-capacity-on-osrd.md)): an adapter
+  from one construction stage of a project to OSRD's infrastructure and timetable, and OSRD's results back as
+  derived results; OSRD at a pinned version, its adaptations contributed upstream.
 
 ## Phase 5 — Construction simulation
 

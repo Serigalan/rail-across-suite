@@ -26,6 +26,12 @@ Attribution: "NTv2 grids © AdV, HVBG Hessen (dl-de/by-2-0), LVGL Saarland (CC B
 The kilometrage lines shipped with the Open-Layout-Tool (`public/data/km`, `km_linie.pmtiles`) are **for tests
 only**. They are not published with the apps; they stay in test fixtures, and their source is named there.
 
+## Used, not included
+
+| Software | Used for | Licence |
+|---|---|---|
+| [OSRD](https://github.com/OpenRailAssociation/osrd), OpenRail Association | the base of Open-Capacity-Sim, run as a service at a pinned version ([decision 0006](docs/decisions/0006-capacity-on-osrd.md)) | LGPL-3.0 |
+
 ## Project pictures
 
 The default project pictures use country outlines from [Natural Earth](https://www.naturalearthdata.com) 1:50m

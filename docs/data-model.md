@@ -50,11 +50,13 @@ A prototype that first carries base, mine and theirs through both id logs and th
 35–175 without a conflict, in both merge directions.
 → Carry first, then compare (R6); a location is one value (R5).
 
-**F3 — A track is reversed. (tested)** In the Open-Layout-Tool (as of October 2026), `reverseTrackDirection` flips
-the switch ports and end marks of the track, but not its platforms: a platform at 120–260 m on the left of a
-400 m track stays at 120–260 on the left — counted from the other end now, so it has moved 20 m and changed sides.
-Every object kind carries its own remap code there, and one of them was forgotten. With signals, balises, masts
-and speed boards the number of such places would multiply.
+**F3 — A track is reversed; two tracks are spliced. (tested)** In the Open-Layout-Tool (as of October 2026),
+`reverseTrackDirection` flips the switch ports and end marks of the track, but not its platforms: a platform at
+120–260 m on the left of a 400 m track stays at 120–260 on the left — counted from the other end now, so it has
+moved 20 m and changed sides. Splicing two tracks into one ("Zwei Gleise zusammenfügen") carries switch ports and
+end marks onto the new track, but a platform keeps naming the old track, which is gone.
+Every object kind carries its own remap code there, and in two places one was forgotten. With signals, balises,
+masts and speed boards the number of such places would multiply.
 → One location type, one remap, owned by the core (R4).
 
 **F4 — A track is deleted on which another discipline's objects stand.** Deleting means the track never existed:
@@ -293,15 +295,28 @@ Point clouds stay in the browser's private file system (OPFS) or on the server, 
 
 ## 6. Consequences for the Open-Layout-Tool
 
-What the cases found in the Open-Layout-Tool's code as of October 2026, independent of the new modules:
+**Defects** the cases found in its code as of October 2026, fixed in phase 1 of the roadmap:
 
 1. **Merge after a split (F2):** a platform moved on a track that the other side split ends up off by the
    distance to the cut (100 m in the example), or loses the move. Fix: carry all three states first, then
    compare; merge a platform's track, stations and side as one value.
-2. **Reversal (F3):** platforms are not carried when a track is reversed. Fix: carry platforms like end marks —
-   and in the core, one remap for every location.
-3. **Names as references (F6):** `stationName`, `uicStation`, `code` become a reference to the operational point
-   register when the core is extracted.
+2. **Reversal (F3):** platforms are not carried when a track is reversed. Fix: carry platforms like end marks.
+3. **Splice (F3):** platforms on the two spliced tracks keep naming a track that is gone. Fix: carry them onto
+   the new track like end marks.
+
+In the core, all three become one remap for every location (R4).
+
+**Model changes** the Open-Layout-Tool goes through in phase 2, each brought to existing data by a step of the
+migration chain at the one door (S-R10):
+
+| oltjson-1.1 | Core after phase 2 |
+|---|---|
+| `stationName`, `uicStation`, `code` as text (F6) | references to the operational point register |
+| `status`: `existing`, `new`, `removal` | `lifespan`: none, `from` the final stage, `to` the final stage; the status is derived (R12) |
+| `routes`, named runs of tracks | `trackPaths` in the `layout` domain, of the core type `TrackPath` |
+| `link` only where the plane changes | two-end connector also within one plane, for rebuilt parts (decision 0003) |
+| platform and end mark fields of their own | the core location types `TrackRange` and `TrackEnd` |
+| one record for everything | the `core` and `layout` domains in the hash tree (section 5) |
 
 ## 7. Open questions
 

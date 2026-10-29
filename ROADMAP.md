@@ -53,12 +53,13 @@ Goal: the core exists as a package of its own and OLT runs on it **without any c
 - JSON Schema for the `core` domain; schema-derived types; the one door (`parse` → `validate`).
 - Python package reading the same schema (for optimizer and simulations), held to shared test vectors.
 - Conversion oltjson-1.1 → core 1.0 at the door (the first entry of the migration chain).
-- The two remap defects the data model cases found, fixed on the way
+- The three remap defects the data model cases found, fixed on the way
   ([data model §6](docs/data-model.md#6-consequences-for-the-open-layout-tool)): the merge carries all three
-  states before it compares, and a reversed track carries its platforms.
+  states before it compares, and a reversed or spliced track carries its platforms.
 
 **Exit:** OLT imports its model only from the core; all OLT tests and the PEK data set pass; an oltjson-1.1
-file opens and saves losslessly; the cases F2 and F3 of the data model are tests and pass.
+file opens and saves losslessly; the cases F2 and F3 (reversal and splice) of the data model are tests and
+pass.
 
 ## Phase 2 — Generalised core
 

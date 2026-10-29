@@ -1,0 +1,18 @@
+# Who reviews what (decision 0001). GitHub asks the owners named here for a review of every pull request that
+# touches their paths; the last matching line wins.
+#
+# Not yet required by branch protection: while there is one maintainer, a required review would block every
+# pull request, since nobody can approve their own. Turn on "Require review from Code Owners" for `main` once a
+# second maintainer is named below.
+
+# Everything, unless a line further down says otherwise.
+*                   @serigalan
+
+# The shared core and its contract: every module depends on them.
+/packages/          @serigalan
+/schemas/           @serigalan
+/docs/data-model.md @serigalan
+/docs/decisions/    @serigalan
+
+# Repository rules.
+/.github/           @serigalan

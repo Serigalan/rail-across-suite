@@ -20,8 +20,9 @@ Goal: agree on how decisions are made and bring the code into one repository bef
 
 - One repository for core, modules and services — decided
   ([decision 0001](docs/decisions/0001-one-repository.md)); directory layout in place.
-- Licence, contribution guide, `CODEOWNERS` (the core and the schemas need their owners' review), decision
-  records (`docs/decisions/`), glossary German ↔ English (Gleis/track, Weiche/turnout, Betriebsstelle/operational
+- `CODEOWNERS` in place (`.github/CODEOWNERS`); its review becomes required for `main` once a second maintainer
+  is named.
+- Licence, contribution guide, decision records (`docs/decisions/`), glossary German ↔ English (Gleis/track, Weiche/turnout, Betriebsstelle/operational
   point, Bauzustand/construction stage …).
 - Conventions taken over from OLT: units, signs, coordinates, stations, precision.
 - **Move the Open-Layout-Tool** into `apps/layout-tool/` with its history; its server to `server/`, its Python

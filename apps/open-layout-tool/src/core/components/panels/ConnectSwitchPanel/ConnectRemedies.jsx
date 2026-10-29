@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { ruleById, severityLabelKey } from '../../../utils/rules'
-import { connectRemedies } from '../../../utils/commands'
+import { ruleById, severityLabelKey } from '@rail-across/core/rules'
+import { connectRemedies } from '@rail-across/core/commands'
 import { useI18n } from '../../../locales/i18nContext'
 
 /**

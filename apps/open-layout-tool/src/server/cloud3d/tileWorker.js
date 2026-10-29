@@ -7,7 +7,7 @@
 // matrix takes them on into the view, placement.js), colour and intensity as
 // bytes; or { type: 'error', id, message }.
 import { decodeCloudSegment, segmentPlacement, planeMapper } from '../../core/utils/pointCloud'
-import { loadNtv2Grid, loadGridsFor, crsDatum } from '../../core/utils/geometry'
+import { loadNtv2Grid, loadGridsFor, crsDatum } from '@rail-across/core/geometry'
 
 let ready = Promise.resolve()
 const mappers = new Map()

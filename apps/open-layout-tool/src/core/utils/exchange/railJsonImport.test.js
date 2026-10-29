@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { planRailJsonImport } from './railJsonImport'
-import { straightFrom } from '../geometry/elementFactory'
+import { straightFrom } from '@rail-across/core/src/geometry/elementFactory.js'
 
 const EPSG = 25832
 const el = straightFrom({ easting: 500000, northing: 5700000, zone: EPSG }, 90, 100)

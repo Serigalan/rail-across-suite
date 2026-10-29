@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { inGerman, t } from '../../core/test/i18n'
-import { mergeProject } from '../../core/utils/merge'
+import { mergeProject } from '@rail-across/core/merge'
 import ConflictDialog from './ConflictDialog'
 import CompareOverlay from '../../core/components/collab/CompareOverlay'
 

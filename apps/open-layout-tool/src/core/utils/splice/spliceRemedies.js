@@ -1,4 +1,4 @@
-import { catalogLimit, severityRank, CANT_DEFICIENCY_COEFF, SPEED_STEP, computeAutoC } from '../rules'
+import { catalogLimit, severityRank, CANT_DEFICIENCY_COEFF, SPEED_STEP, computeAutoC } from '@rail-across/core/rules'
 
 // What a splice can change when the catalogue rejects a curvature jump on the
 // stretch it writes (LP.KS.01, Vergleichsradius): the speed at the joint, the

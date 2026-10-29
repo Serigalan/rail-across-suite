@@ -1,6 +1,6 @@
 import { PARTIES, STAFF, todayIso } from './planHeader'
 import { findBasemap } from '../../basemaps'
-import { DEFAULT_HEIGHT_EPSG, heightDatumLabel, STATUSES } from '../track'
+import { DEFAULT_HEIGHT_EPSG, heightDatumLabel, STATUSES } from '@rail-across/core/track'
 import { PAPER_FORMATS, SCALES, TITLE_COLUMN_MM } from './planExport'
 import { planSheets } from './planLayout'
 import { buildPlan } from './planModel'

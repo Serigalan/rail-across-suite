@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest'
 import { solveSplice } from './solveSplice'
-import { buildSplice, picksAtSpeed, spliceFromAnswer, splicePick, spliceRequest } from '../commands/splice'
-import { straightElement, straightFrom, arcFrom, transitionElement } from '../geometry/elementFactory'
-import { bearingAfterUtm, endPointCurvedUtm, endPointStraightUtm } from '../geometry/elementUtils'
-import { rebuildCoords } from '../track/trackModel'
-import { expectValidTrack } from '../../test/chainInvariants'
+import { buildSplice, picksAtSpeed, spliceFromAnswer, splicePick, spliceRequest } from '@rail-across/core/src/commands/splice.js'
+import { straightElement, straightFrom, arcFrom, transitionElement } from '@rail-across/core/src/geometry/elementFactory.js'
+import { bearingAfterUtm, endPointCurvedUtm, endPointStraightUtm } from '@rail-across/core/src/geometry/elementUtils.js'
+import { rebuildCoords } from '@rail-across/core/src/track/trackModel.js'
+import { expectValidTrack } from '@rail-across/core/test/chainInvariants.js'
 import serviceAnswers from './serviceAnswers.json'
-import coreAnswers from '../../test/fixtures/splice_answers.json'
+import coreAnswers from '@rail-across/core/test/fixtures/splice_answers.json'
 
 // The splice is computed in the browser (decision 294), ported from the
 // optimizer service's splice.py. It is held against what the service answers

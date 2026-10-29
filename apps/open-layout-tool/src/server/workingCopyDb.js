@@ -1,5 +1,5 @@
 import { storedBytes } from '../core/localStore'
-import { FORMAT_NAME } from '../core/utils/project'
+import { FORMAT_NAME } from '@rail-across/core/project'
 
 // Thin promise wrapper around IndexedDB for the working copies (phase 10).
 //

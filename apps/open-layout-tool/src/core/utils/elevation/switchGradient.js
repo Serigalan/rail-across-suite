@@ -33,9 +33,9 @@
  * there (decision 383).
  */
 
-import { gradientAt, pointAtStation, turnoutLinePort, portTrack } from '../track'
-import { RUNNING_CIRCLE_DISTANCE, sectionAtStation } from '../crossSection'
-import { mainRouteLength, routeFrom, sleeperOffsets, sleeperThrough, switchLds, turnoutSleepers } from '../switch'
+import { gradientAt, pointAtStation, turnoutLinePort, portTrack } from '@rail-across/core/track'
+import { RUNNING_CIRCLE_DISTANCE, sectionAtStation } from '@rail-across/core/crossSection'
+import { mainRouteLength, routeFrom, sleeperOffsets, sleeperThrough, switchLds, turnoutSleepers } from '@rail-across/core/switch'
 
 export { switchLds }
 

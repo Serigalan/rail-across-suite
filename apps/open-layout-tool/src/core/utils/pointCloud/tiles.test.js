@@ -4,7 +4,7 @@ import {
   intensityShift, tileOf, originalGrid, segmentPlacement,
 } from './tiles'
 import { planeMapper } from './cloudCrs'
-import { transformPlanePoint } from '../geometry/coordinateUtils'
+import { transformPlanePoint } from '@rail-across/core/src/geometry/coordinateUtils.js'
 
 const columns = (pts) => ({
   count: pts.length,

@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { loadTracks, loadSwitches, commitImport } from '../../storage'
-import { generateId, rebuildCoords, nextTrackName, linkAllJoints } from '../../utils/track'
+import { generateId, rebuildCoords, nextTrackName, linkAllJoints } from '@rail-across/core/track'
 import {
   readProviArchive, listProviAxes, buildProviTracks, proviPlaceableUnits, proviHeights,
   proviSwitchCandidates, proviProject, PROVI_FRAMES, placeMdbSwitches,

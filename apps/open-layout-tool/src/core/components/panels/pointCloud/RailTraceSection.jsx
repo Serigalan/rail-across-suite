@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { loadTracks } from '../../../storage'
-import { trackLabel, generateId } from '../../../utils/track'
-import { RAILS, DEFAULT_RAIL, superstructureAt } from '../../../utils/crossSection'
-import { wgs84ToUTM, utmToWgs84 } from '../../../utils/geometry'
+import { trackLabel, generateId } from '@rail-across/core/track'
+import { RAILS, DEFAULT_RAIL, superstructureAt } from '@rail-across/core/crossSection'
+import { wgs84ToUTM, utmToWgs84 } from '@rail-across/core/geometry'
 import {
   traceTrack, trackGuide, lineGuide, TRACE_STEP, cloudRefsOf, runIsActive, runsOnServer,
   serverRunHook,
 } from '../../../utils/pointCloud'
-import { surveyFromTrace, surveyPoints } from '../../../utils/survey'
+import { surveyFromTrace, surveyPoints } from '@rail-across/core/survey'
 import { saveAxisSurvey } from '../../../storage'
 import { useMayEditClouds } from '../../../hooks/useCurrentUser'
 import { useI18n } from '../../../locales/i18nContext'

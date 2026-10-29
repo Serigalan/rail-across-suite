@@ -1,18 +1,18 @@
 import { describe, it, expect } from 'vitest'
-import { rebuildCoords } from '../utils/track/trackModel'
-import { buildConnectCurved, buildConnectStraight, buildCurvedLineTrack, buildLineTrack, cantAtTrackEnd, trackOf } from '../utils/commands/tracks'
-import { buildSwitchOnTrack, switchOnTrackPlacement } from '../utils/commands/switches'
-import { arcFrom, straightFrom, transitionElement } from '../utils/geometry/elementFactory'
-import { endPointStraightUtm, endPointCurvedUtm } from '../utils/geometry/elementUtils'
-import { cantEnds } from '../utils/geometry/clothoidUtils'
+import { rebuildCoords } from '@rail-across/core/src/track/trackModel.js'
+import { buildConnectCurved, buildConnectStraight, buildCurvedLineTrack, buildLineTrack, cantAtTrackEnd, trackOf } from '@rail-across/core/src/commands/tracks.js'
+import { buildSwitchOnTrack, switchOnTrackPlacement } from '@rail-across/core/src/commands/switches.js'
+import { arcFrom, straightFrom, transitionElement } from '@rail-across/core/src/geometry/elementFactory.js'
+import { endPointStraightUtm, endPointCurvedUtm } from '@rail-across/core/src/geometry/elementUtils.js'
+import { cantEnds } from '@rail-across/core/src/geometry/clothoidUtils.js'
 import {
   ALL_SWITCH_TYPES, SWITCH_TYPES, hasCompoundBranch, switchBranchSections, switchStraightLength, switchVariants,
-} from '../utils/switch/catalogue'
-import { dehydrateProjects, hydrateProjects } from '../utils/project/persistenceUtils'
-import { hasRuleError } from '../utils/rules/trassierungCheck'
+} from '@rail-across/core/src/switch/catalogue.js'
+import { dehydrateProjects, hydrateProjects } from '@rail-across/core/src/project/persistenceUtils.js'
+import { hasRuleError } from '@rail-across/core/src/rules/trassierungCheck.js'
 import {
   expectValidTrack, expectNodesJoin, expectTangentsContinuous, expectSwitchCantAdmissible, expectSwitchRoutesCarved,
-} from './chainInvariants'
+} from '@rail-across/core/test/chainInvariants.js'
 
 /**
  * The audit of "create element" and "connect element": the chains those forms

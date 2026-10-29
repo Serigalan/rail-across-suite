@@ -1,7 +1,7 @@
-import { elementStations, pointOnElement } from '../../core/utils/track'
+import { elementStations, pointOnElement } from '@rail-across/core/track'
 import {
   sectionAtStation, crossSection, superstructureAt, RUNNING_CIRCLE_DISTANCE,
-} from '../../core/utils/crossSection'
+} from '@rail-across/core/crossSection'
 import { trackHeightAt } from '../../core/utils/elevation'
 
 /**

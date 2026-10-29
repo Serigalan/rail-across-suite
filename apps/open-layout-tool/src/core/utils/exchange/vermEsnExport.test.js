@@ -6,12 +6,12 @@ import { unzipSync, strFromU8 } from 'fflate'
 import { parseRecords, buildElements, parseGradient } from './vermEsnImport'
 import { traBytes, graBytes, traRecords, exportVermEsn, routeAsTrack } from './vermEsnExport'
 import { lagesystemForEpsg, epsgForLagesystem } from './mdbImport'
-import { reverseTrack } from '../track/trackModel'
-import { arcFrom, straightFrom } from '../geometry/elementFactory'
-import { resolveRoute } from '../track/routes'
-import { tangentLength } from '../track/heightUtils'
-import { hasPekBestand, loadPekBestand } from '../../test/pekFixture'
-import { hydrateProjects } from '../project/persistenceUtils'
+import { reverseTrack } from '@rail-across/core/src/track/trackModel.js'
+import { arcFrom, straightFrom } from '@rail-across/core/src/geometry/elementFactory.js'
+import { resolveRoute } from '@rail-across/core/src/track/routes.js'
+import { tangentLength } from '@rail-across/core/src/track/heightUtils.js'
+import { hasPekBestand, loadPekBestand } from '@rail-across/core/test/pekFixture.js'
+import { hydrateProjects } from '@rail-across/core/src/project/persistenceUtils.js'
 
 const EPSG = 5684
 const bufferOf = (bytes) => bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength)

@@ -3,7 +3,7 @@
 Every project of the Open Layout Tool exists in exactly one form, **oltjson-1.1** — in an exported file, in
 the browser (local projects and working copies), in the server's revisions and, plus derived display data, as
 the model the app works on in memory. This page specifies the format and gives the reasons for its shape.
-The code is `src/core/utils/project/persistenceUtils.js` (see [project](modules/project.md)).
+The code is `packages/core/src/project/persistenceUtils.js` (see [project](../../../packages/core/docs/project.md)).
 
 ## Envelope
 
@@ -196,7 +196,7 @@ the direction it runs each one is derived from where they meet.
   around the project's tracks; the third value is the kilometrage in metres. `source: "mdb"` marks a line
   taken from an imported file, which is kept instead of the shipped one.
 - `axisSurveys`: `{ id, name, epsg, rail, guide, cloudNames, cloudRefs?, createdAt, step, gaps, points: { e0,
-  n0, z0, st, de, dn, zl, zr, ga, q } }` — parallel arrays of whole millimetres (see [survey](modules/survey.md)).
+  n0, z0, st, de, dn, zl, zr, ga, q } }` — parallel arrays of whole millimetres (see [survey](../../../packages/core/docs/survey.md)).
 - `referenceAxes`: `{ id, name, epsg, heightEpsg, source, points: { s0, step, count, e0, n0, de, dn, z } }` —
   a point every centimetre, millimetre differences.
 

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { api, splitDataUrl } from '../api/client'
-import { parseProjectsPayload, PayloadError, withImportSystem } from '../../core/utils/project'
+import { parseProjectsPayload, PayloadError, withImportSystem } from '@rail-across/core/project'
 import { loadHome } from '../collab/homeModel'
 import { LogoIcon, UserIcon } from '../../core/components/icons'
 import PasswordForm from '../collab/PasswordForm'

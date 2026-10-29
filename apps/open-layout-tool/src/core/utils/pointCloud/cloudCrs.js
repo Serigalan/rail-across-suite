@@ -1,4 +1,4 @@
-import { transformPlanePoint } from '../geometry'
+import { transformPlanePoint } from '@rail-across/core/geometry'
 import { invertMatrix } from './registration'
 
 /**

@@ -1,6 +1,6 @@
 import { PAPER_FORMATS, makeTransform, drawingArea } from './planExport'
 import { trackPathUtm, trackPointAt } from './planGeometry'
-import { trackLength } from '../track'
+import { trackLength } from '@rail-across/core/track'
 import { format } from '../../locales/i18n'
 
 /**

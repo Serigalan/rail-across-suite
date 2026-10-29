@@ -1,16 +1,16 @@
 import { describe, it, expect } from 'vitest'
-import { rebuildCoords } from '../utils/track/trackModel'
+import { rebuildCoords } from '@rail-across/core/src/track/trackModel.js'
 import {
   computeStraightValuesUtm, computeCurvedValuesUtm, arcCoordsFromRadiusUtm,
   endPointStraightUtm, endPointCurvedUtm, bearingAfterUtm,
-} from '../utils/geometry/elementUtils'
-import { utmToWgs84 } from '../utils/geometry/coordinateUtils'
-import { SAGITTA_ELEMENT, SAGITTA_TRACK } from '../utils/geometry/geometryPrecision'
-import { MAX_EDIT_SWITCHES, MAX_EDIT_TRACKS } from '../utils/commands/editGeometry'
-import { newSwitchFields, switchElementMark } from '../utils/track/switchModel'
-import { planElementChange, mergeElementEdits } from '../utils/commands/editGeometry'
-import { expectValidTrack } from './chainInvariants'
-import { transitionElement } from '../utils/geometry/elementFactory'
+} from '@rail-across/core/src/geometry/elementUtils.js'
+import { utmToWgs84 } from '@rail-across/core/src/geometry/coordinateUtils.js'
+import { SAGITTA_ELEMENT, SAGITTA_TRACK } from '@rail-across/core/src/geometry/geometryPrecision.js'
+import { MAX_EDIT_SWITCHES, MAX_EDIT_TRACKS } from '@rail-across/core/src/commands/editGeometry.js'
+import { newSwitchFields, switchElementMark } from '@rail-across/core/src/track/switchModel.js'
+import { planElementChange, mergeElementEdits } from '@rail-across/core/src/commands/editGeometry.js'
+import { expectValidTrack } from '@rail-across/core/test/chainInvariants.js'
+import { transitionElement } from '@rail-across/core/src/geometry/elementFactory.js'
 
 /**
  * AP 5.1 — how far one change in the track editor reaches.

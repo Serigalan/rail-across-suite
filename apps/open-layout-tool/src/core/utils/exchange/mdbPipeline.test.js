@@ -3,7 +3,7 @@ import { ALL_STRECKEN, runMdbImport, toPlane } from './mdbPipeline'
 import { parseMdbPayload } from './mdbImport'
 import fixture from '../../test/fixtures/mdb_weiche.json'
 import thueringen from '../../test/fixtures/mdb_thueringen.json'
-import { endPointStraightUtm } from '../geometry/elementUtils'
+import { endPointStraightUtm } from '@rail-across/core/src/geometry/elementUtils.js'
 
 // The notes come back as key + params, so the test sees what was said.
 const fill = (key, params) => `${key} ${JSON.stringify(params)}`

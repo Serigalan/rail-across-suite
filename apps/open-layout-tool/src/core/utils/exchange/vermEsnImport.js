@@ -1,7 +1,7 @@
 import { unzipSync } from 'fflate'
-import { generateId, nextTrackName, rebuildCoords } from '../track'
+import { generateId, nextTrackName, rebuildCoords } from '@rail-across/core/track'
 import { gradientStretch } from './proviImport'
-import { arcFrom, straightFrom, transitionElement } from '../geometry'
+import { arcFrom, straightFrom, transitionElement } from '@rail-across/core/geometry'
 import { axisLine, END_TOL, endMismatch, gradientOnTrack } from './vermEsnKmGradient'
 import { withFileCants } from './fileCants'
 

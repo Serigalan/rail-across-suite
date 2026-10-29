@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { useProject, useSwitchDesign } from '../../hooks/useStore'
 import { setSwitchDesignMode } from '../../storage'
 import { switchMisfits } from '../../utils/elevation'
-import { portTrack, turnoutLinePort } from '../../utils/track'
+import { portTrack, turnoutLinePort } from '@rail-across/core/track'
 import InfoTip from '../form/InfoTip'
 import { useI18n } from '../../locales/i18nContext'
 

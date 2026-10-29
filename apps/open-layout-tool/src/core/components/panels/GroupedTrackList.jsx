@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { groupHeading, groupTracks, trackListLabel, trackMatches } from '../../utils/track'
+import { groupHeading, groupTracks, trackListLabel, trackMatches } from '@rail-across/core/track'
 import { fitToTracks } from '../../map/mapRenderUtils'
 import { useI18n } from '../../locales/i18nContext'
 import { useMap } from '../../map/MapContext'

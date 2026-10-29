@@ -1,5 +1,5 @@
 import { useCallback, useReducer } from 'react'
-import { DEFAULT_HEIGHT_EPSG } from '../utils/track'
+import { DEFAULT_HEIGHT_EPSG } from '@rail-across/core/track'
 
 const initialState = {
   owner: 'DB',

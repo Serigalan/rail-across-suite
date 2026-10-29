@@ -1,5 +1,5 @@
 import { PAPER_FORMATS, SCALES, SCHEMATIC_SCALES, DEFAULT_CORRIDOR } from '../../../utils/plan'
-import { groupHeading, groupTracks, trackListLabel } from '../../../utils/track'
+import { groupHeading, groupTracks, trackListLabel } from '@rail-across/core/track'
 import { useI18n } from '../../../locales/i18nContext'
 import { useTracks } from '../../../hooks/useStore'
 import NumberInput from '../../form/NumberInput'

@@ -18,9 +18,9 @@
  * connection or a cant ramp.
  */
 
-import { catalogLimit, evaluateRules, rulesForScope, severityRank, worstSeverity } from '../rules'
-import { tangentLength, trackKind, portsOf, portTrack, portEnd, LINE_CATEGORIES } from '../track'
-import { cantEnds } from '../geometry'
+import { catalogLimit, evaluateRules, rulesForScope, severityRank, worstSeverity } from '@rail-across/core/rules'
+import { tangentLength, trackKind, portsOf, portTrack, portEnd, LINE_CATEGORIES } from '@rail-across/core/track'
+import { cantEnds } from '@rail-across/core/geometry'
 import { switchBodySpans } from './switchGradient'
 
 const DEFAULT_LINE_CATEGORY = 'main'

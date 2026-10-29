@@ -1,6 +1,6 @@
 import { Fragment, useState } from 'react'
-import { weichenGruppen, WEICHEN_REGELWERK } from '../utils/switch'
-import { switchKindLabelKey } from '../utils/track'
+import { weichenGruppen, WEICHEN_REGELWERK } from '@rail-across/core/switch'
+import { switchKindLabelKey } from '@rail-across/core/track'
 import { useI18n } from '../locales/i18nContext'
 import InfoTip from './form/InfoTip'
 

@@ -4,11 +4,11 @@
 // scalars a polyline cannot express — and differ only in where it sits and
 // what surrounds it. The import (osrdImport) reads either.
 
-import { cantEnds } from '../geometry'
+import { cantEnds } from '@rail-across/core/geometry'
 import {
   portsOf, portTrack, portEnd, BUFFER_STOP, BUFFER_STOP_LENGTH, BUFFER_STOP_TYPES,
   DEFAULT_BUFFER_STOP_TYPE, bufferStopStations,
-} from '../track'
+} from '@rail-across/core/track'
 
 const DEG2GON = 10 / 9
 // Everything that defines the geometry is written at full precision: the

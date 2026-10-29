@@ -1,14 +1,14 @@
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import { loadTracks, loadSwitches, commitSwitchConnection, commitSwitchConnectionEdit } from '../../../storage'
-import { elementStations, stationFromClick } from '../../../utils/track'
-import { wgs84ToUTM } from '../../../utils/geometry'
-import { SWITCH_TYPES, CONNECTION_SPEEDS, computeSwitchConnections, DEFAULT_MIDS } from '../../../utils/switch'
+import { elementStations, stationFromClick } from '@rail-across/core/track'
+import { wgs84ToUTM } from '@rail-across/core/geometry'
+import { SWITCH_TYPES, CONNECTION_SPEEDS, computeSwitchConnections, DEFAULT_MIDS } from '@rail-across/core/switch'
 import { ZOOM_LINE_WIDTH } from '../../../map/style'
 import { useI18n } from '../../../locales/i18nContext'
 import {
   REASON_MSG, buildSCurve, computeShiftBounds, connectionPick, editCommit, isUsableStem, preferredShift,
   settleConnection, shiftSnaps, stems, waOffset, SLIDER_REACH,
-} from '../../../utils/commands'
+} from '@rail-across/core/commands'
 import StationSlider from '../../form/StationSlider'
 import { splitUnit } from '../../../locales/i18n'
 import { TRACKS_HOVER_LAYER } from '../../../map/layerIds'

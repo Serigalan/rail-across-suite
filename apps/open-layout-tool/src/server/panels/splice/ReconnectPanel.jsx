@@ -3,12 +3,12 @@ import { loadTracks, commitReconnect, currentProject } from '../../../core/stora
 import {
   axisPoints, buildReconnect, reconnectFromAnswer, reconnectPick, reconnectRange, reconnectRequest,
   replacedSpan, stretchDefaults, neighbourAxisNear,
-} from '../../../core/utils/commands'
-import { gaugeProfile } from '../../../core/utils/crossSection'
-import { utmToWgs84 } from '../../../core/utils/geometry'
-import { trackLabel } from '../../../core/utils/track'
+} from '@rail-across/core/commands'
+import { gaugeProfile } from '@rail-across/core/crossSection'
+import { utmToWgs84 } from '@rail-across/core/geometry'
+import { trackLabel } from '@rail-across/core/track'
 import { reconnectOnServer } from '../../optimizerService'
-import { severityRank } from '../../../core/utils/rules'
+import { severityRank } from '@rail-across/core/rules'
 import { ZOOM_LINE_WIDTH } from '../../../core/map/style'
 import { TRACKS_HOVER_LAYER } from '../../../core/map/layerIds'
 import usePreview from '../../../core/map/usePreview'

@@ -1,4 +1,4 @@
-import { SWITCH_PICK_TYPES } from '../../../utils/switch'
+import { SWITCH_PICK_TYPES } from '@rail-across/core/switch'
 import { useI18n } from '../../../locales/i18nContext'
 
 /**

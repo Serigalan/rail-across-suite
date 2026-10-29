@@ -1,9 +1,9 @@
 import { unzipSync } from 'fflate'
-import { cantSign } from '../rules'
+import { cantSign } from '@rail-across/core/rules'
 import { epsgForLagesystem, parseBauform, RAIL_NAME } from './mdbImport'
 import { offsetOnElement } from './mdbSwitchDerive'
-import { heightAt, trackLength } from '../track'
-import { arcFrom, straightFrom, transitionElement } from '../geometry'
+import { heightAt, trackLength } from '@rail-across/core/track'
+import { arcFrom, straightFrom, transitionElement } from '@rail-across/core/geometry'
 
 /**
  * ProVI's interface files, delivered as a zip archive of text files without an

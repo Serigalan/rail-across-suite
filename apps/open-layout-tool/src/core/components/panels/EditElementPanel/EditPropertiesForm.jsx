@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { loadTracks, replaceAllTracks } from '../../../storage'
-import { SIDE_NAMES, buildTypeFields, trackStatus, DEFAULT_HEIGHT_EPSG, trackTypeName } from '../../../utils/track'
+import { SIDE_NAMES, buildTypeFields, trackStatus, DEFAULT_HEIGHT_EPSG, trackTypeName } from '@rail-across/core/track'
 import useTrackFields from '../../../hooks/useTrackFields'
 import TrackFields from '../TrackFields'
 import StatusField from '../StatusField'

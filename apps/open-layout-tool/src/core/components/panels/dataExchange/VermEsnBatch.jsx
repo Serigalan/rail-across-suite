@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react'
 import { commitImport } from '../../../storage'
-import { HEIGHT_DATUMS, heightDatumLabel } from '../../../utils/track'
+import { HEIGHT_DATUMS, heightDatumLabel } from '@rail-across/core/track'
 import {
   batchReferences, buildVermEsnBatch, gradientHeightCode, readKmLines, readVermEsnArchive,
 } from '../../../utils/exchange'
 import { readFileBuffer } from '../../../utils/common'
-import { REFERENCE_MAX_LENGTH, buildReferenceAxis, referenceStretches } from '../../../utils/survey'
+import { REFERENCE_MAX_LENGTH, buildReferenceAxis, referenceStretches } from '@rail-across/core/survey'
 import { useI18n } from '../../../locales/i18nContext'
 import { useProject, useTracks } from '../../../hooks/useStore'
 import FilePickButton from '../../form/FilePickButton'

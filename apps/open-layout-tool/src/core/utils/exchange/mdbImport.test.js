@@ -3,7 +3,7 @@ import {
   parseBauform, parseMdbPayload, splitKnoten, mdbRows,
   listMdbStrecken, buildTracksFromMdb, mdbSwitchInventory, epsgForLagesystem,
 } from './mdbImport'
-import { expectValidTrack } from '../../test/chainInvariants'
+import { expectValidTrack } from '@rail-across/core/test/chainInvariants.js'
 
 import fixture from '../../test/fixtures/mdb_ausschnitt.json'
 

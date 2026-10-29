@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { crsLabel } from '../../../utils/geometry'
-import { HEIGHT_DATUMS, heightDatumLabel } from '../../../utils/track'
+import { crsLabel } from '@rail-across/core/geometry'
+import { HEIGHT_DATUMS, heightDatumLabel } from '@rail-across/core/track'
 import {
   fileSource, readCloudHeader, probeExtent, projectPlane, startImport, previewPoints, formatName,
   pointsAsText, PREVIEW_POINTS, persistStorage, estimateCloudBytes, CLOUD_CRS, count, crsHint,

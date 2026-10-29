@@ -1,5 +1,5 @@
-import { cantEnds, transitionCantEnds, withCantRamp } from '../geometry'
-import { cantSign } from '../rules'
+import { cantEnds, transitionCantEnds, withCantRamp } from '@rail-across/core/geometry'
+import { cantSign } from '@rail-across/core/rules'
 
 // The exchange files (the Verm.ESN TRA, the Gleislage cant CSV) state the cant
 // at both ends of every element, relative to the curve it lies in: positive

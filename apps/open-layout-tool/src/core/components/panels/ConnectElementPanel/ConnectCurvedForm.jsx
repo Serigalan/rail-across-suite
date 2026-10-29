@@ -3,11 +3,11 @@ import { addElementsToTrack, loadTracks } from '../../../storage'
 import {
   computeCurvedValuesUtm, arcCoordsFromRadiusUtm, projectOnBearingUtm, endPointCurvedUtm,
   wgs84ToUTM, toWgs, computeClothoidUtm, SAGITTA_ELEMENT,
-} from '../../../utils/geometry'
+} from '@rail-across/core/geometry'
 import {
   cantSign, computeAutoC, computeCantDefSigned, endRun, MAX_CANT, hasRuleError, transitionChain,
   transitionHasError,
-} from '../../../utils/rules'
+} from '@rail-across/core/rules'
 import RuleFindings from '../RuleFindings'
 import CantField from '../CantField'
 import useDerivedField from '../../../hooks/useDerivedField'
@@ -16,9 +16,9 @@ import TransitionCurveSection from './TransitionCurveSection'
 import { useI18n } from '../../../locales/i18nContext'
 import useDrawPreview from '../../../map/useDrawPreview'
 import useMapPick, { useSelectedOnMap } from '../../../map/useMapPick'
-import { trackEndAnchor, inheritedSpeed } from '../../../utils/track'
+import { trackEndAnchor, inheritedSpeed } from '@rail-across/core/track'
 import useMapEvents from '../../../map/useMapEvents'
-import { buildConnectCurved, cantAtTrackEnd, curveCant } from '../../../utils/commands'
+import { buildConnectCurved, cantAtTrackEnd, curveCant } from '@rail-across/core/commands'
 import NewStretchShiftValues from '../shift/NewStretchShiftValues'
 import CommitBar from '../../form/CommitBar'
 import ReadOnlyField from '../../form/ReadOnlyField'

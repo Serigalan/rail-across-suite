@@ -4,12 +4,12 @@ import { commitImport } from '../../../core/storage'
 import {
   ALIGN_DEFAULTS, alignRequest, deleteStraight, elementReport, fittedCurvature, gradientReport,
   parseAxisPointFile, straightRanges, surveyAxis, trackFromFit,
-} from '../../../core/utils/survey'
+} from '@rail-across/core/survey'
 import { alignOnServer, optimizerReachable, OptimizerError } from '../../optimizerService'
-import { optimizeErrorText } from '../../../core/utils/commands'
+import { optimizeErrorText } from '@rail-across/core/commands'
 import {
   reconstructElements, FILE_CRS_OPTIONS, crsLabel, projectCrsOptions, utmToWgs84,
-} from '../../../core/utils/geometry'
+} from '@rail-across/core/geometry'
 import { useI18n } from '../../../core/locales/i18nContext'
 import { useAxisSurveys, useTracks } from '../../../core/hooks/useStore'
 import { useMap } from '../../../core/map/MapContext'

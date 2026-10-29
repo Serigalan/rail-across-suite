@@ -1,15 +1,15 @@
 import { useDeferredValue, useEffect, useMemo, useState } from 'react'
 import { loadTracks, loadSwitches, loadEndMarks, commitSwitchConnection } from '../../../storage'
-import { wgs84ToUTM } from '../../../utils/geometry'
+import { wgs84ToUTM } from '@rail-across/core/geometry'
 import {
   SWITCH_PICK_TYPES, DEFAULT_SWITCH_TYPE_IDX, clickStation, connectionAnchor, END_CHAIN_OPEN, endChainDefault,
   endChainOpen, negR,
-} from '../../../utils/switch'
+} from '@rail-across/core/switch'
 import {
   computeSwitchCant, computeCantDef, computeCantDefSigned, switchCantError, MAX_SWITCH_CANT_DEF,
-} from '../../../utils/rules'
-import { buildSwitchConnect, switchConnectChainSolutions, switchConnectOutcome, switchConnectSolutions } from '../../../utils/commands'
-import { trackLabel, trackLength } from '../../../utils/track'
+} from '@rail-across/core/rules'
+import { buildSwitchConnect, switchConnectChainSolutions, switchConnectOutcome, switchConnectSolutions } from '@rail-across/core/commands'
+import { trackLabel, trackLength } from '@rail-across/core/track'
 import SwitchNumberField from '../SwitchNumberField'
 import SwitchCantField from './SwitchCantField'
 import SwitchFormField from './SwitchFormField'

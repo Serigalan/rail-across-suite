@@ -1,4 +1,4 @@
-import { STATUSES } from '../../utils/track'
+import { STATUSES } from '@rail-across/core/track'
 import { useI18n } from '../../locales/i18nContext'
 
 /**

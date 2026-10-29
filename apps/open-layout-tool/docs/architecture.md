@@ -30,9 +30,9 @@ server part.
 |---|---|
 | `src/core` never imports from `src/server`, not even indirectly. Server parts appear in core only through the extension points of `core/extensions.js`, filled by `src/server/register.js` before the first render. | ESLint rule, `tools/boundary.mjs --core`, architecture test |
 | The local entry imports nothing of `src/server`; the main entry docks the server on before anything else. | architecture test |
-| Code outside a module of `src/core/utils` imports from its `index.js` and nowhere else. | `tools/modules.mjs`, architecture test |
+| Code outside a module of `src/core/utils` imports from its `index.js` and nowhere else; a module of the core as `@rail-across/core/<module>`. | `tools/modules.mjs`, architecture test |
 | The modules depend on each other without a cycle. | `tools/modules.mjs` |
-| A module imports nothing of the interface (components, map, shell, hooks, store) — only the extension points, translations, palette, basemaps and rulebooks. | `tools/modules.mjs` |
+| A module imports nothing of the interface (components, map, shell, hooks, store) — only the extension points, translations, palette and basemaps; the rulebooks are the core's. | `tools/modules.mjs` |
 | Every module has a page in `docs/modules/`. | `tools/modules.mjs` |
 | No module reads the store. | architecture test |
 
@@ -41,31 +41,36 @@ rules, all tests, both builds, and — with a Python environment — the optimiz
 
 ## The computing modules
 
-`src/core/utils` is cut into modules by subject. Each is a directory with an `index.js` (its public interface,
-generated from what the rest of the app uses and kept by hand from there) and a page here. In dependency order —
-each needs only modules above it:
+The computing code is cut into modules by subject. Each is a directory with an `index.js` (its public interface,
+generated from what the rest of the app uses and kept by hand from there) and a page of its own. The model
+modules — marked *core* — are the Rail-Data-Core: they live in the repository's `packages/core/src/`, and the
+app imports them as `@rail-across/core/<module>` (roadmap, phase 1); their pages are in `packages/core/docs/`.
+A core module never needs a module of the app. The others are the app's own, in `src/core/utils`. In dependency
+order — each needs only modules above it:
 
 | Module | Needs | Subject |
 |---|---|---|
 | [common](modules/common.md) | — | formatting, files, keyboard, user settings, chart axes, SVG paths, logo |
-| [geometry](modules/geometry.md) | — | planes and datums, elements, transitions, parallels, plane changes, chain invariants |
-| [km](modules/km.md) | geometry | kilometrage lines, line and track names |
-| [rules](modules/rules.md) | geometry | rule catalogue DB Ril 800.0110, expression language, alignment checks, cant/speed/length limits |
+| [geometry](../../../packages/core/docs/geometry.md) *core* | — | planes and datums, elements, transitions, parallels, plane changes, chain invariants |
+| [km](modules/km.md) | geometry | kilometrage lines, line names |
+| [rules](../../../packages/core/docs/rules.md) *core* | geometry | rule catalogue DB Ril 800.0110, expression language, alignment checks, cant/speed/length limits |
 | [splice](modules/splice.md) | geometry, rules | joining two track ends (port of the service's splice) |
-| [track](modules/track.md) | common, geometry, km, rules | tracks, switch records and ports, heights, links, track ends, platforms, routes |
-| [crossSection](modules/crossSection.md) | common, geometry, track | cross section, superstructure, clearance contours |
-| [switch](modules/switch.md) | geometry, rules, track | switch forms, routes, symbols, crossings, switch connections, deletion |
-| [topology](modules/topology.md) | track | connection diagram |
-| [commands](modules/commands.md) | crossSection, geometry, rules, switch, track | what the dialogs commit |
+| [track](../../../packages/core/docs/track.md) *core* | geometry, rules | tracks, switch records and ports, heights, links, track ends, platforms, routes |
+| [crossSection](../../../packages/core/docs/crossSection.md) *core* | geometry, track | cross section, superstructure, clearance contours |
+| [switch](../../../packages/core/docs/switch.md) *core* | geometry, rules, track | switch forms, routes, symbols, crossings, switch connections, deletion |
+| [topology](../../../packages/core/docs/topology.md) *core* | track | connection diagram |
+| [commands](../../../packages/core/docs/commands.md) *core* | crossSection, geometry, rules, switch, track | what the dialogs commit |
 | [elevation](modules/elevation.md) | common, crossSection, geometry, rules, switch, track | Höhenplan rules, turnout planes, coupling on request, terrain |
 | [plan](modules/plan.md) | common, geometry, km, rules, switch, track | plan export (PDF/SVG) |
 | [exchange](modules/exchange.md) | elevation, geometry, rules, switch, track | RailJSON, Verm.ESN, ProVI, CSV, MDB |
-| [survey](modules/survey.md) | commands, geometry, track | measured axes, reference axes, shift values, alignment fit |
+| [survey](../../../packages/core/docs/survey.md) *core* | commands, geometry, track | measured axes, reference axes, shift values, alignment fit |
 | [pointCloud](modules/pointCloud.md) | crossSection, elevation, geometry, km, survey, track | point clouds |
-| [project](modules/project.md) | geometry, survey, switch, track | the record: format, settings, validation |
-| [merge](modules/merge.md) | geometry, project, survey, track | three-way merge, comparison |
+| [project](../../../packages/core/docs/project.md) *core* | geometry, survey, switch, track | the record: format, settings, validation |
+| [merge](../../../packages/core/docs/merge.md) *core* | geometry, project, survey, track | three-way merge, diff, carrying ids |
+| [compare](modules/compare.md) | geometry, project, survey, track | two states of a project on the map |
 
-`node tools/modules.mjs --order` prints this order from the code.
+`node tools/modules.mjs --order` prints the order of the app's modules from the code, `node tools/modules.mjs` in
+`packages/core/` that of the core's.
 
 **Why modules with a facade.** Before, `utils` was some 130 files side by side; what belonged together and what
 another part of the app was meant to use could only be read from the imports. Now a module says what it offers
@@ -117,10 +122,10 @@ own module, and a worker only the server build needs lives in `src/server` (the 
 ## Testing
 
 - Unit tests next to every module file (`*.test.js`), run by Vitest under Node (no DOM).
-- **Chain invariants** (`src/core/test/chainInvariants.js`): every construction that builds or changes element
+- **Chain invariants** (`packages/core/test/chainInvariants.js`): every construction that builds or changes element
   chains asserts `expectValidTrack`, `expectSwitchCantAdmissible` and `expectSwitchRoutesCarved`.
 - **Shared vectors** between JavaScript and Python: the rule expression language, the alignment check and
-  transition lengths (`src/core/constraints/tests/`), and the splice answers (`splice/serviceAnswers.json`).
+  transition lengths (`packages/core/constraints/tests/`), and the splice answers (`splice/serviceAnswers.json`).
 - **Real data**: MDB, ProVI and point cloud excerpts in `src/core/test/fixtures/`; the PEK Halle–Könnern data set
   where present (tests skip without it).
 - **Architecture tests** for layers, modules, colours in components and accessible buttons.

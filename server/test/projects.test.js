@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { PW, setup, signIn } from './helpers.js'
-import { hasPek, loadPek } from '../../apps/open-layout-tool/src/core/test/pekFixture.js'
+import { hasPek, loadPek } from '@rail-across/core/test/pekFixture.js'
 
 let ctx
 afterEach(async () => { await ctx?.app.close(); ctx?.db.close() })

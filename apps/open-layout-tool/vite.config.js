@@ -22,13 +22,14 @@ const entryFor = (mode) => ({
   },
 })
 
-// The computing modules under src/core/utils do nothing when they are loaded
+// The computing modules under src/core/utils and those of the core package
+// (packages/core/src, imported as @rail-across/core) do nothing when they are loaded
 // but define functions and constants — the workers' own entries aside, which
 // are entries anyway (docs/architecture.md). Saying so lets the bundler drop
 // whatever a module's index re-exports and nobody uses, even where a constant
 // is computed on load (the catalogue parsed, a table built).
 const treeshake = {
-  moduleSideEffects: (id) => !/\/src\/core\/utils\/(?!.*Worker\.js$)/.test(id),
+  moduleSideEffects: (id) => !/\/(src\/core\/utils|packages\/core\/src)\/(?!.*Worker\.js$)/.test(id),
 }
 
 // https://vite.dev/config/

@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import { loadTracks, commitSwitchConnection, currentProject } from '../../../storage'
-import { computeAutoC, severityRank } from '../../../utils/rules'
+import { computeAutoC, severityRank } from '@rail-across/core/rules'
 import {
   buildSplice, clearanceRequest, neighbourAxis, secondPickRefusal, settleLengths, spliceFromAnswer,
   picksAtSpeed, spliceKeptCant, splicePick, spliceRequest,
-} from '../../../utils/commands'
-import { gaugeProfile } from '../../../utils/crossSection'
-import { utmToWgs84 } from '../../../utils/geometry'
-import { trackLabel } from '../../../utils/track'
+} from '@rail-across/core/commands'
+import { gaugeProfile } from '@rail-across/core/crossSection'
+import { utmToWgs84 } from '@rail-across/core/geometry'
+import { trackLabel } from '@rail-across/core/track'
 import { solveSpliceInWorker, hasJumpError, spliceRemedies } from '../../../utils/splice'
 import { provided } from '../../../extensions'
 import { ZOOM_LINE_WIDTH } from '../../../map/style'
@@ -27,7 +27,7 @@ import { SPLICE_DEFAULTS, adoptedSettings, solutionKey, spliceErrorText, spliceM
 import CancelButton from '../../form/CancelButton'
 import { spacingMessage } from './spacingMessage'
 import ShiftValuesSection from '../shift/ShiftValuesSection'
-import { comparedLine } from '../../../utils/survey'
+import { comparedLine } from '@rail-across/core/survey'
 
 const SPLICE_PREVIEW_SOURCE = 'splice-preview-source'
 // The tightest place to the track the splice keeps its distance to: a line

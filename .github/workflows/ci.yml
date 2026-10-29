@@ -15,6 +15,23 @@ jobs:
           node-version: 22
       - run: npm run check
 
+  # The Rail-Data-Core: its tests and its module rules.
+  core:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: packages/core
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+        working-directory: .
+      - run: node tools/modules.mjs
+      - run: npm test
+
   # The Open-Layout-Tool with the project server, whose tests its vitest runs.
   open-layout-tool:
     runs-on: ubuntu-24.04

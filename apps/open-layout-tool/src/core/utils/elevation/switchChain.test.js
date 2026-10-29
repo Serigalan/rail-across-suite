@@ -4,11 +4,11 @@ import {
   switchMisfits, withAllLdsPoints, withSwitchHeights, withToesJoined, withTurnoutTwin,
 } from './switchChain'
 import { couplingOf, ldsLift } from './switchGradient'
-import { pointAtStation, stationOnTrack } from '../track'
-import { endPointCurvedUtm, endPointStraightUtm } from '../geometry/elementUtils'
-import { formOf } from '../../test/turnoutFixture'
-import { hasPek, loadPek } from '../../test/pekFixture'
-import { hydrateProjects } from '../project/persistenceUtils'
+import { pointAtStation, stationOnTrack } from '@rail-across/core/track'
+import { endPointCurvedUtm, endPointStraightUtm } from '@rail-across/core/src/geometry/elementUtils.js'
+import { formOf } from '@rail-across/core/test/turnoutFixture.js'
+import { hasPek, loadPek } from '@rail-across/core/test/pekFixture.js'
+import { hydrateProjects } from '@rail-across/core/src/project/persistenceUtils.js'
 
 // Turnouts of the TEST form (WA–WE 30 m, ldS 10 m behind WE) on R 500 to
 // the left, built anywhere: `at` the toe, `bearing` the way the main route

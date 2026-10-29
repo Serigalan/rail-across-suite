@@ -1,7 +1,7 @@
 import {
   PayloadError, dehydrateProjects, parseProjectsPayload, projectsPayload, newFindings,
   validateProject,
-} from '../../apps/open-layout-tool/src/core/utils/project'
+} from '@rail-across/core/project'
 import { ApiError } from './errors.js'
 
 /**

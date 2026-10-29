@@ -1,15 +1,15 @@
 import { describe, it, expect } from 'vitest'
-import { rebuildCoords } from '../utils/track/trackModel'
-import { computeStraightValuesUtm, endPointStraightUtm, resolveEndBearing, nodeUtm } from '../utils/geometry/elementUtils'
-import { utmToWgs84 } from '../utils/geometry/coordinateUtils'
-import { SWITCH_TYPES } from '../utils/switch/catalogue'
-import { switchEndAnchorRefusal } from '../utils/switch/switchPlacement'
-import { carveSwitchRoute } from '../utils/track/trackSplitUtils'
-import { planSwitchDeletion } from '../utils/switch/switchDelete'
+import { rebuildCoords } from '@rail-across/core/src/track/trackModel.js'
+import { computeStraightValuesUtm, endPointStraightUtm, resolveEndBearing, nodeUtm } from '@rail-across/core/src/geometry/elementUtils.js'
+import { utmToWgs84 } from '@rail-across/core/src/geometry/coordinateUtils.js'
+import { SWITCH_TYPES } from '@rail-across/core/src/switch/catalogue.js'
+import { switchEndAnchorRefusal } from '@rail-across/core/src/switch/switchPlacement.js'
+import { carveSwitchRoute } from '@rail-across/core/src/track/trackSplitUtils.js'
+import { planSwitchDeletion } from '@rail-across/core/src/switch/switchDelete.js'
 import {
   expectValidTrack, expectSwitchRoutesCarved, expectNodesJoin,
-} from './chainInvariants'
-import { buildSwitchAtTrackEnd } from '../utils/commands/switches'
+} from '@rail-across/core/test/chainInvariants.js'
+import { buildSwitchAtTrackEnd } from '@rail-across/core/src/commands/switches.js'
 
 /**
  * AP 1.3 — the element boundary at a switch end, across all four dialogs.

@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { SWITCH_PICK_TYPES } from '../../../utils/switch'
-import { RAILS, DEFAULT_RAIL } from '../../../utils/crossSection'
+import { SWITCH_PICK_TYPES } from '@rail-across/core/switch'
+import { RAILS, DEFAULT_RAIL } from '@rail-across/core/crossSection'
 import { useI18n } from '../../../locales/i18nContext'
 import { useSwitches } from '../../../hooks/useStore'
 import useMapPick, { useSelectedOnMap } from '../../../map/useMapPick'

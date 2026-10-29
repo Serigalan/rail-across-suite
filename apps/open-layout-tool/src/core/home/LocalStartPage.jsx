@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { PayloadError } from '../utils/project'
+import { PayloadError } from '@rail-across/core/project'
 import { downloadJSON } from '../utils/common'
 import { persistStorage } from '../utils/pointCloud'
 import { useI18n } from '../locales/i18nContext'

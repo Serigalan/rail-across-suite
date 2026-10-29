@@ -3,9 +3,9 @@ import { loadTracks, loadPlatforms, loadSwitches, currentProject } from '../stor
 import {
   trackLength, tracksOnFrom, resolveRoute, routeAt, routeStationOf, pointAtStation,
   DEFAULT_HEIGHT_EPSG, HEIGHT_DATUMS,
-} from '../utils/track'
+} from '@rail-across/core/track'
 import { trackHeightAt, sampleHeightsWithSource, terrainSourceLabel, chosenTerrainSource } from '../utils/elevation'
-import { utmToWgs84, transformGridBearing } from '../utils/geometry'
+import { utmToWgs84, transformGridBearing } from '@rail-across/core/geometry'
 import { PLATFORM_FILL_COLOR, PLATFORM_OUTLINE_COLOR } from '../map/mapRenderUtils'
 import TerrainSourceSelect from './TerrainSourceSelect'
 import {
@@ -13,7 +13,7 @@ import {
   sectionNeighbours, sectionLinePoints, sectionLevels, sectionOrigin, PLANUM_EDGE, RAILS, SLEEPERS,
   gaugeProfile, gaugeProfileRing, gaugeProfileAreas, gaugeProfileLabelKey, LICHTRAUM_SOURCE,
   DEFAULT_GAUGE_PROFILE,
-} from '../utils/crossSection'
+} from '@rail-across/core/crossSection'
 import {
   readableClouds, planeMapper, applyMatrix, invertMatrix, registrationHook, cloudSectionPoints,
   paintCloudCanvas, coloringsFor, INTRUSION_COLOR, checkClearance, BOTTOM_BAND, detectInClouds,

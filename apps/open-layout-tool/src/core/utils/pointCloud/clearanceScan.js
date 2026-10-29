@@ -1,7 +1,7 @@
 import { cloudSectionPoints } from './cloudSection'
 import { checkClearance } from './clearanceCheck'
-import { sectionOrigin, sectionAtStation } from '../crossSection'
-import { trackLength } from '../track'
+import { sectionOrigin, sectionAtStation } from '@rail-across/core/crossSection'
+import { trackLength } from '@rail-across/core/track'
 import { trackHeightAt } from '../elevation'
 
 /**

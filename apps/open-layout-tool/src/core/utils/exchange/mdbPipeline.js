@@ -1,5 +1,5 @@
-import { generateId, nextTrackName, rebuildCoords, linkAllJoints } from '../track'
-import { crsDatum, crsLabel, transformTrackToPlane, loadGridsFor } from '../geometry'
+import { generateId, nextTrackName, rebuildCoords, linkAllJoints } from '@rail-across/core/track'
+import { crsDatum, crsLabel, transformTrackToPlane, loadGridsFor } from '@rail-across/core/geometry'
 import {
   buildAllTracksFromMdb, buildTracksFromMdb, mdbSwitchInventory, mdbBufferStops, matchMdbBufferStops,
 } from './mdbImport'

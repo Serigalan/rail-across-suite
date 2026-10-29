@@ -1,4 +1,4 @@
-import { KATALOG, severityLabelKey } from '../utils/rules'
+import { KATALOG, severityLabelKey } from '@rail-across/core/rules'
 import { useI18n } from '../locales/i18nContext'
 import InfoTip from './form/InfoTip'
 

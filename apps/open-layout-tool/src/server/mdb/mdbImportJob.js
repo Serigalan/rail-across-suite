@@ -1,5 +1,5 @@
 import { runMdbImport } from '../../core/utils/exchange'
-import { loadRegionalGrids, loadedRegionalGrids } from '../../core/utils/geometry'
+import { loadRegionalGrids, loadedRegionalGrids } from '@rail-across/core/geometry'
 
 /**
  * runMdbImport in a worker, so the page stays responsive while a database is

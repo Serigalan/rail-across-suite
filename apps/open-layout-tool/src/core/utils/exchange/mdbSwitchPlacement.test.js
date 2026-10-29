@@ -1,19 +1,19 @@
 import { describe, it, expect } from 'vitest'
 import { parseMdbPayload, buildTracksFromMdb, mdbSwitchInventory, buildAllTracksFromMdb } from './mdbImport'
 import { placeMdbSwitches, locateMdbSwitches, switchTypeFor } from './mdbSwitchPlacement'
-import { switchRoutesFromTracks, rebuildSwitchSymbol, crossingRoutesFromTracks } from '../switch/symbol'
-import { elementBelongsToSwitch, switchPorts, isModelledSwitch, portTrack } from '../track/switchModel'
+import { switchRoutesFromTracks, rebuildSwitchSymbol, crossingRoutesFromTracks } from '@rail-across/core/src/switch/symbol.js'
+import { elementBelongsToSwitch, switchPorts, isModelledSwitch, portTrack } from '@rail-across/core/src/track/switchModel.js'
 import {
   expectEpsgThroughout, expectNodesJoin,
   expectLengthsTrue, expectRenderCoordsConsistent, expectSwitchRoutesCarved,
-} from '../../test/chainInvariants'
-import { resolveEndBearing } from '../geometry/elementUtils'
+} from '@rail-across/core/test/chainInvariants.js'
+import { resolveEndBearing } from '@rail-across/core/src/geometry/elementUtils.js'
 
 import fixture from '../../test/fixtures/mdb_weiche.json'
 import crossingFixture from '../../test/fixtures/mdb_kreuzungsweiche.json'
 import bogenFixture from '../../test/fixtures/mdb_bogenkreuzungsweiche.json'
 import symFixture from '../../test/fixtures/mdb_symmetrische_weiche.json'
-import { parseProjectsPayload, hydrateProjects, dehydrateProjects, projectsPayload } from '../project/persistenceUtils'
+import { parseProjectsPayload, hydrateProjects, dehydrateProjects, projectsPayload } from '@rail-across/core/src/project/persistenceUtils.js'
 
 /**
  * AP 6.3 — the inventory put onto the tracks the same import built.

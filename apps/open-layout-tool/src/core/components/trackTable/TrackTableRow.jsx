@@ -1,12 +1,12 @@
-import { cantEnds, crsLabel, hasCantEnds } from '../../utils/geometry'
+import { cantEnds, crsLabel, hasCantEnds } from '@rail-across/core/geometry'
 import {
   cantDefLevel, computeCantDefSigned, CANT_STEP, governing, ruleById,
   severityLabelKey,
-} from '../../utils/rules'
+} from '@rail-across/core/rules'
 import { useI18n } from '../../locales/i18nContext'
 import { EditCell, TextCell } from './cells'
 import RuleCell from './RuleCell'
-import { rolesFor } from '../../utils/commands'
+import { rolesFor } from '@rail-across/core/commands'
 import {
   isTransition, typeLabel, switchNote, hintNote, cantNote, cantClass, defClass, defNote,
   degText, lengthText, radiusText, comparisonRadiusText,

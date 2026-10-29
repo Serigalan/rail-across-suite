@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll } from 'vitest'
-import { sleeperAtX, xAtMain } from './test/turnoutFixture'
+import { sleeperAtX, xAtMain } from '@rail-across/core/test/turnoutFixture.js'
 import {
   withUndo, openProject, saveTrack, saveSwitch, loadTracks, loadSwitches,
   undo, canUndo, loadImportReports, saveImportReport, clearImportReports,
@@ -11,8 +11,8 @@ import {
   hiddenKmLines, setKmLinesHidden,
   setTrackHeights, setHeightsForTracks, setSwitchDesignMode, switchDesignMode, addDependentPoint, commitReconnect, loadPlatforms, commitImport, historySteps, travelHistory,
 } from './storage'
-import { newBufferStop, newBoundary } from './utils/track/trackEndMarks'
-import { endPointCurvedUtm, endPointStraightUtm } from './utils/geometry/elementUtils'
+import { newBufferStop, newBoundary } from '@rail-across/core/src/track/trackEndMarks.js'
+import { endPointCurvedUtm, endPointStraightUtm } from '@rail-across/core/src/geometry/elementUtils.js'
 
 // Outside the browser the store keeps its project in memory; the import
 // reports and the settings still go to localStorage — a stub is all the node

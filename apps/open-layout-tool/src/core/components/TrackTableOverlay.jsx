@@ -4,11 +4,11 @@ import { useTracks, useProject, useRoutes } from '../hooks/useStore'
 import {
   planElementChange, planIntermediateChange, mergeElementEdits, withRole, inRun, rowOf, tableParts, tableRoles,
   tableRows, trackEdit, writeRows,
-} from '../utils/commands'
-import { mergeChain, rebuildCoords } from '../utils/track'
-import { withCantEdit } from '../utils/geometry'
-import { coupleSwitchCants } from '../utils/switch'
-import { boundaryScope, cantLimit, checkTrack, clampCant, maxSpeeds, ruleMaxSpeedsOf } from '../utils/rules'
+} from '@rail-across/core/commands'
+import { mergeChain, rebuildCoords } from '@rail-across/core/track'
+import { withCantEdit } from '@rail-across/core/geometry'
+import { coupleSwitchCants } from '@rail-across/core/switch'
+import { boundaryScope, cantLimit, checkTrack, clampCant, maxSpeeds, ruleMaxSpeedsOf } from '@rail-across/core/rules'
 import { filterForElement, FILTER_NONE, mapIsLive } from '../map/pick'
 import { useMap } from '../map/MapContext'
 import { TRACKS_SELECTED_LAYER } from '../map/layerIds'

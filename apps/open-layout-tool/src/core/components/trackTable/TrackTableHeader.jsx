@@ -1,4 +1,4 @@
-import { SPEED_STEP } from '../../utils/rules'
+import { SPEED_STEP } from '@rail-across/core/rules'
 import { useI18n } from '../../locales/i18nContext'
 import { lengthText } from './rowText'
 import CloseButton from '../form/CloseButton'

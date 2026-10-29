@@ -3,7 +3,7 @@
 // database, and the page would stand still for them. The notes come back as
 // { key, params } — the translation stays with the page, which has the language.
 import { runMdbImport } from '../../core/utils/exchange'
-import { loadNtv2Grid, loadRegionalGrids, loadGridsFor, loadedRegionalGrids } from '../../core/utils/geometry'
+import { loadNtv2Grid, loadRegionalGrids, loadGridsFor, loadedRegionalGrids } from '@rail-across/core/geometry'
 
 self.onmessage = async (e) => {
   const { base, grids, ...args } = e.data

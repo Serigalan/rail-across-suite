@@ -1,5 +1,5 @@
 import { useContext, useEffect } from 'react'
-import { checkTrack, fieldFindings, ruleById, severityLabelKey, worstSeverity } from '../../utils/rules'
+import { checkTrack, fieldFindings, ruleById, severityLabelKey, worstSeverity } from '@rail-across/core/rules'
 import { RuleFieldsContext } from '../form/ruleFieldsContext'
 import { useI18n } from '../../locales/i18nContext'
 

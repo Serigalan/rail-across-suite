@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   parseMdbPayload, mdbRows, listMdbStrecken, buildAllTracksFromMdb, epsgForLagesystem,
 } from './mdbImport'
-import { crsName, utmToWgs84 } from '../geometry/coordinateUtils'
+import { crsName, utmToWgs84 } from '@rail-across/core/src/geometry/coordinateUtils.js'
 import fixture from '../../test/fixtures/mdb_ohne_abschnitt.json'
 
 /**

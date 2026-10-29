@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { straightFrom } from '../geometry/elementFactory'
-import { resolveRoute } from '../track/routes'
+import { straightFrom } from '@rail-across/core/src/geometry/elementFactory.js'
+import { resolveRoute } from '@rail-across/core/src/track/routes.js'
 import { routeProfile, routeFindings, trackAsRoute } from './routeProfile'
 import { checkVertical, verticalFindings } from './gradientCheck'
 

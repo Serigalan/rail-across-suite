@@ -1,12 +1,12 @@
 import {
   hydrateProjects, dehydrateProjects, projectsPayload, moveTracksToPlane, withImportSystem,
-} from './utils/project'
+} from '@rail-across/core/project'
 import {
   elementBelongsToSwitch, portsOf, unmarkSwitchElement, portTrack, portEnd, sliceHeights,
   flipSwitchEndpoints, makeTrack, nextTrackName, portTracks, referencesTrack, remapSwitches,
   reverseTrack, generateId, remapEndMarks, flipEndMarks, pruneEndMarks, endKey, repairRoutes,
-} from './utils/track'
-import { coupleSwitchCants, rebuildSwitchSymbol } from './utils/switch'
+} from '@rail-across/core/track'
+import { coupleSwitchCants, rebuildSwitchSymbol } from '@rail-across/core/switch'
 import {
   addDependentAt, lengthGovernedRadii, lockBreach, releaseDependency, restoreDependency, setDependencyMode, switchMisfits,
   withAllLdsPoints, withSwitchHeights, setToeLead, withToesJoined, withTurnoutTwin,

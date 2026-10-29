@@ -1,4 +1,4 @@
-import { grundText } from '../../../core/utils/commands'
+import { grundText } from './optimizeReport'
 import { useI18n } from '../../../core/locales/i18nContext'
 
 /** One curve of the report: what changed in it and what held it, or that it stayed. */

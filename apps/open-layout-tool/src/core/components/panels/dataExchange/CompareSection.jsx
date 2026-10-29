@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { currentProject } from '../../../storage'
-import { parseProjectsPayload, PayloadError } from '../../../utils/project'
+import { parseProjectsPayload, PayloadError } from '@rail-across/core/project'
 import { readFileText } from '../../../utils/common'
 import { useI18n } from '../../../locales/i18nContext'
 import { useProject } from '../../../hooks/useStore'

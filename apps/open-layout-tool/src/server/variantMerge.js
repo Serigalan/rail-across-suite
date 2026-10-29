@@ -1,6 +1,6 @@
 import { ApiError, api } from './api/client'
 import { discardWorkingCopy, loadWorkingCopy } from './workingCopies'
-import { mergeProject } from '../core/utils/merge'
+import { mergeProject } from '@rail-across/core/merge'
 import { localChanges } from './workingCopySync'
 
 /**

@@ -3,8 +3,8 @@ import {
   exact, round3, round4, buildCoords, totalLength, horizontalElements, startAnchor, endAnchor,
   kindForOsrdType, switchesToPorts, endMarksToBufferStops, bufferStopsToEndMarks,
 } from './alignmentCodec'
-import { straightFrom, arcFrom, transitionElement } from '../geometry/elementFactory'
-import { BUFFER_STOP, BOUNDARY, BUFFER_STOP_LENGTH, DEFAULT_BUFFER_STOP_TYPE } from '../track/trackEndMarks'
+import { straightFrom, arcFrom, transitionElement } from '@rail-across/core/src/geometry/elementFactory.js'
+import { BUFFER_STOP, BOUNDARY, BUFFER_STOP_LENGTH, DEFAULT_BUFFER_STOP_TYPE } from '@rail-across/core/src/track/trackEndMarks.js'
 
 // A track in EPSG 25832: 100 m straight due east (bearing 90°), a 60 m clothoid
 // into R 500 to the right, 80 m of that arc.

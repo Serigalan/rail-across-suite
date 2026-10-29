@@ -1,5 +1,5 @@
 import { sampleHeights } from './elevationSource'
-import { heightStations, trackSamplePoints, trackLength, jointGroup, jointHeightUpdates } from '../track'
+import { heightStations, trackSamplePoints, trackLength, jointGroup, jointHeightUpdates } from '@rail-across/core/track'
 
 const STATION_TOL = 0.001   // m
 

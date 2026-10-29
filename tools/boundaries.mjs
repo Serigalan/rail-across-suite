@@ -98,9 +98,10 @@ export function breach(from, to) {
 }
 
 /**
- * Breaches allowed for now, as `from → to`. The project server still runs modules
- * of the Open-Layout-Tool (the project checks, the point clouds) until phase 1 of
- * the roadmap moves them into packages; remove an entry with its last import.
+ * Breaches allowed for now, as `from → to`. The project server checks records
+ * with the core (@rail-across/core) but still prepares point clouds with the
+ * Open-Layout-Tool's pointCloud module, until that moves into a package of its
+ * own; remove an entry with its last import.
  */
 export const TRANSITIONAL = new Set(['server → app:open-layout-tool'])
 

@@ -1,5 +1,5 @@
 import { zipSync, strToU8 } from 'fflate'
-import { tangentLength, heightDatumLabel, reverseTrack, trackLabel } from '../track'
+import { tangentLength, heightDatumLabel, reverseTrack, trackLabel } from '@rail-across/core/track'
 import { lagesystemForEpsg } from './mdbImport'
 import { routeProfile } from '../elevation'
 import { fileCants } from './fileCants'

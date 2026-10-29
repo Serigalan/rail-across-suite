@@ -1,4 +1,4 @@
-import { utmToWgs84 } from '../geometry'
+import { utmToWgs84 } from '@rail-across/core/geometry'
 import { projectBox } from '../km'
 
 // Before an import, on the page: which plane the tiles go into, and whether

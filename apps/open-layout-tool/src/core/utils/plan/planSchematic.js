@@ -1,7 +1,7 @@
 import { trackPointAt } from './planGeometry'
-import { trackLength, isLinkSwitch, portsOf, turnoutLinePort, portTrack, portEnd, trackStatus } from '../track'
+import { trackLength, isLinkSwitch, portsOf, turnoutLinePort, portTrack, portEnd, trackStatus } from '@rail-across/core/track'
 import { kmForTrackPoint } from '../km'
-import { utmToWgs84, wgs84ToUTM } from '../geometry'
+import { utmToWgs84, wgs84ToUTM } from '@rail-across/core/geometry'
 
 /**
  * The track network as a schematic strip: the lines of the layout become

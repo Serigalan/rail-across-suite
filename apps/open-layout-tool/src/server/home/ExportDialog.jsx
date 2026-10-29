@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { api, blobUrl } from '../api/client'
-import { projectsPayload } from '../../core/utils/project'
+import { projectsPayload } from '@rail-across/core/project'
 import { downloadJSON } from '../../core/utils/common'
 import { useI18n } from '../../core/locales/i18nContext'
 import FormDialog from '../../core/components/home/FormDialog'

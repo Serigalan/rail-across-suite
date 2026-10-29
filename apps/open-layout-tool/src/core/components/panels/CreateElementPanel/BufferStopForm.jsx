@@ -3,7 +3,7 @@ import { loadTracks, loadSwitches, loadEndMarks, saveEndMark, deleteEndMark } fr
 import {
   classifyTrackEnds, freeEnds, BUFFER_STOP_TYPES, DEFAULT_BUFFER_STOP_TYPE, BUFFER_STOP_LENGTH,
   BUFFER_STOP, defaultBrakeLength, bufferStopFits, newBufferStop, bufferStopFeatures, trackLength,
-} from '../../../utils/track'
+} from '@rail-across/core/track'
 import { useI18n } from '../../../locales/i18nContext'
 import CommitBar from '../../form/CommitBar'
 import { useProject } from '../../../hooks/useStore'

@@ -1,11 +1,11 @@
 import { useRef, useState } from 'react'
 import { commitImport, loadTracks } from '../../../storage'
-import { generateId, nextTrackName, rebuildCoords } from '../../../utils/track'
+import { generateId, nextTrackName, rebuildCoords } from '@rail-across/core/track'
 import {
   parseGleislageCsv, parseUeberhoehungCsv, listStrecken, buildTracksFromCsv, CSV_EPSG,
 } from '../../../utils/exchange'
 import { readFileText } from '../../../utils/common'
-import { FILE_CRS_OPTIONS } from '../../../utils/geometry'
+import { FILE_CRS_OPTIONS } from '@rail-across/core/geometry'
 import { useI18n } from '../../../locales/i18nContext'
 import { useProject } from '../../../hooks/useStore'
 import FilePickButton from '../../form/FilePickButton'

@@ -1,4 +1,4 @@
-import { TYPE_CODES, SIDE_CODES, TRACK_USES } from '../../utils/track'
+import { TYPE_CODES, SIDE_CODES, TRACK_USES } from '@rail-across/core/track'
 import StationNameInput from './StationNameInput'
 import useLineNameSuggestion from '../../hooks/useLineNameSuggestion'
 import { useI18n } from '../../locales/i18nContext'

@@ -1,7 +1,7 @@
 import { api } from './api/client'
 import { clearUndo } from '../core/storage'
 import { adoptWorkingCopy, currentWorkingCopy, loadWorkingCopy, markCheckedIn, openWorkingCopy } from './workingCopies'
-import { diffEntries, diffProject, mergeProject } from '../core/utils/merge'
+import { diffEntries, diffProject, mergeProject } from '@rail-across/core/merge'
 
 /**
  * The working copy against the server (AP 10.6): opening a variant, the list

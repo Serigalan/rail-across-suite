@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { redo, undo } from '../storage'
 import { useLastStep } from '../hooks/useStore'
-import { describeStep, stepTrackIds } from '../utils/project'
+import { describeStep, stepTrackIds } from '@rail-across/core/project'
 import { fitToTracks } from '../map/mapRenderUtils'
 import { FILTER_NONE, mapIsLive } from '../map/pick'
 import { TRACKS_FLASH_LAYER } from '../map/layerIds'

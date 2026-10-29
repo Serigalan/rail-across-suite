@@ -4,15 +4,17 @@
 // Each directory under src/core/utils is a module: geometry, track, switch, …
 // Its index.js is its public face. The rules:
 //
-//   1. Code outside a module imports from its index.js and nowhere else.
+//   1. Code outside a module imports from its index.js and nowhere else — and
+//      a module of the core package as @rail-across/core/<module>, never a file
+//      of it (packages/core/tools/modules.mjs checks the core's own rules).
 //      Tests may reach inside (they test the parts), and a module's own files
 //      import each other directly.
 //   2. The modules depend on each other without a cycle — there is an order
 //      in which each needs only the ones before it (printed by --order).
 //   3. A module is computation, not interface: it imports nothing of the
 //      app's interface (components, map, shell, hooks, the store) — only the
-//      extension points, the translations, the palette, the basemaps and the
-//      rulebooks.
+//      extension points, the translations, the palette and the basemaps. (The
+//      rulebooks are the core's, packages/core/constraints.)
 //   4. Every module has its page in docs/modules/.
 //
 //   node tools/modules.mjs           check, exit 1 on a breach
@@ -26,7 +28,7 @@ const UTILS = join(ROOT, 'src/core/utils')
 const CORE = join(ROOT, 'src/core')
 
 /** What a module may use of src/core outside the modules (rule 3). */
-const CORE_ALLOWED = ['extensions.js', 'locales/', 'styles/', 'basemaps.js', 'constraints/']
+const CORE_ALLOWED = ['extensions.js', 'locales/', 'styles/', 'basemaps.js']
 
 const files = (dir) => readdirSync(dir).flatMap(name => {
   const path = join(dir, name)
@@ -52,7 +54,13 @@ export function checkModules() {
   const needs = new Map(MODULES.map(m => [m, new Set()]))
   for (const path of sources()) {
     const from = moduleOf(path)
-    const deps = specifiersOf(readFileSync(path, 'utf8')).map(s => resolveSpecifier(path, s)).filter(Boolean)
+    const specs = specifiersOf(readFileSync(path, 'utf8'))
+    // Rule 1 for the core package: its modules too through their index
+    // (@rail-across/core/<module>), never its files (@rail-across/core/src/…).
+    for (const s of specs.filter(s => s.startsWith('@rail-across/core/src/'))) {
+      if (!isTest(path)) breaches.push(`${relative(ROOT, path)} imports ${s} — import from @rail-across/core/${s.split('/')[3]} (its index.js)`)
+    }
+    const deps = specs.map(s => resolveSpecifier(path, s)).filter(Boolean)
     for (const dep of deps) {
       const to = moduleOf(dep)
       // Rule 3: a module reaches only the parts of core it may.

@@ -12,7 +12,8 @@ import { join, dirname, relative, resolve, basename } from 'node:path'
 const ROOT = resolve(dirname(new URL(import.meta.url).pathname), '..')
 // The repository the app lives in: the docs also name the server and the services.
 const REPO = resolve(ROOT, '../..')
-const DOCS = join(ROOT, 'docs')
+// The app's pages, and those of the core package the app's pages link into.
+const DOCS = [join(ROOT, 'docs'), join(REPO, 'packages/core/docs')]
 
 const SKIP = new Set(['node_modules', '.git', 'dist', 'dist-local', '__pycache__', 'archiv'])
 const files = (dir) => readdirSync(dir).flatMap(name => {
@@ -34,9 +35,9 @@ export function checkDocs() {
   const names = new Set(repo.map(p => basename(p)))
   const paths = new Set(repo.flatMap(p => [relative(ROOT, p), relative(REPO, p)]))
   const breaches = []
-  for (const page of files(DOCS).filter(p => p.endsWith('.md'))) {
+  for (const page of DOCS.flatMap(files).filter(p => p.endsWith('.md'))) {
     const text = readFileSync(page, 'utf8')
-    const where = relative(ROOT, page)
+    const where = relative(page.startsWith(ROOT) ? ROOT : REPO, page)
     for (const [, target] of text.matchAll(/\]\(([^)\s]+)\)/g)) {
       if (/^[a-z]+:/.test(target) || target.startsWith('#')) continue
       const file = resolve(dirname(page), target.split('#')[0])

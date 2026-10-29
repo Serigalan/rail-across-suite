@@ -9,23 +9,23 @@ import {
   heightLinks, heightRoles, routeElements, routeFindings, routeProfile, routeStationOfPart, trackAsRoute, DEPENDENCY_MODES,
   fillHeights, chosenTerrainSource,
 } from '../utils/elevation'
-import { ruleById, severityLabelKey } from '../utils/rules'
+import { ruleById, severityLabelKey } from '@rail-across/core/rules'
 import {
   adjacentTracks, neighbourStub, jointHeightUpdates, verticalCurves, verticalCurveOverlaps,
   elementAtStation, solveHeightPoint, pointGrades, GIVEN_MODES, partStation,
   resolveRoute, routeAt, routePointAt, reverseTrack, pointAtStation, stationOnTrack,
-} from '../utils/track'
+} from '@rail-across/core/track'
 import { filterForElements, FILTER_NONE, heightPointAt, mapIsLive, pickAt, setPickingDependent } from '../map/pick'
 import {
   comparedLine, heightsComparable, nearestAxis, referenceProfile, shiftValues,
-} from '../utils/survey'
+} from '@rail-across/core/survey'
 import { loadSettings, saveSettings, clamp } from '../utils/common'
 import useReferenceAxesOnMap from '../map/useReferenceAxesOnMap'
 import { useI18n } from '../locales/i18nContext'
 import { useMap } from '../map/MapContext'
 import usePreview from '../map/usePreview'
 import useMapEvents from '../map/useMapEvents'
-import { utmToWgs84, wgs84ToUTM } from '../utils/geometry'
+import { utmToWgs84, wgs84ToUTM } from '@rail-across/core/geometry'
 import { ELEVATION_POINTS_LAYER, TRACKS_SELECTED_LAYER } from '../map/layerIds'
 import { PALETTE } from '../styles/palette'
 import { fitToTracks } from '../map/mapRenderUtils'

@@ -1,4 +1,4 @@
-import { wgs84ToUTM } from '../geometry'
+import { wgs84ToUTM } from '@rail-across/core/geometry'
 
 /**
  * Referencing a point against a kilometrage line.

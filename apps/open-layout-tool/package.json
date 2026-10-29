@@ -26,8 +26,8 @@
     "i18n:unused": "node tools/i18n-unused.mjs"
   },
   "dependencies": {
+    "@rail-across/core": "*",
     "fflate": "^0.8.3",
-    "geotiff": "^2.1.3",
     "jspdf": "^4.2.1",
     "laz-perf": "^0.0.7",
     "maplibre-gl": "^5.21.0",

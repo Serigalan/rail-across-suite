@@ -1,7 +1,7 @@
 import { cloudSectionPoints } from './cloudSection'
 import { detectTrack } from './railDetect'
-import { sectionOrigin } from '../crossSection'
-import { trackLength } from '../track'
+import { sectionOrigin } from '@rail-across/core/crossSection'
+import { trackLength } from '@rail-across/core/track'
 
 /**
  * Finding a track's rail heads in the point clouds of a project (phase 12):

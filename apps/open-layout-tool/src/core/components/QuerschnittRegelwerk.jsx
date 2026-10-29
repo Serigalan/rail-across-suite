@@ -1,7 +1,7 @@
 import {
   QUERSCHNITT_KATALOG, GAUGE_PROFILES, gaugeProfileRing, gaugeProfileAreas, gaugeProfileLabelKey,
   LICHTRAUM_SOURCE,
-} from '../utils/crossSection'
+} from '@rail-across/core/crossSection'
 import { useI18n } from '../locales/i18nContext'
 import { PALETTE } from '../styles/palette'
 import InfoTip from './form/InfoTip'

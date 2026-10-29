@@ -5,7 +5,7 @@ import useLineNameSuggestion from '../../../hooks/useLineNameSuggestion'
 import {
   assignTracks, assignmentFields, groupTitle, groupTracks, plannedNames, trackGroupKey,
   trackListLabel,
-} from '../../../utils/track'
+} from '@rail-across/core/track'
 import { elementsPath, identifyTrackLine } from '../../../utils/km'
 import { FILTER_NONE, mapIsLive } from '../../../map/pick'
 import GroupedTrackList from '../GroupedTrackList'

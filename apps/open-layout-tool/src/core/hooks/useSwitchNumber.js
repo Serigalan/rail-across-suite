@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { loadSwitches } from '../storage'
-import { switchDesignation, nextSwitchNumber, switchNumbersInUse } from '../utils/track'
+import { switchDesignation, nextSwitchNumber, switchNumbersInUse } from '@rail-across/core/track'
 
 /**
  * The number a new switch is created under, and the designation composed from

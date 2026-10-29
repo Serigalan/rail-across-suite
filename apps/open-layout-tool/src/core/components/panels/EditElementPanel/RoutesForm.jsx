@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { deleteRoute, saveRoute } from '../../../storage'
 import { useRoutes, useSwitches, useTracks } from '../../../hooks/useStore'
-import { closeGaps, extendRoute, nextRouteName, resolveRoute, generateId, trackListLabel } from '../../../utils/track'
+import { closeGaps, extendRoute, nextRouteName, resolveRoute, generateId, trackListLabel } from '@rail-across/core/track'
 import { fitToTracks } from '../../../map/mapRenderUtils'
 import { useI18n } from '../../../locales/i18nContext'
 import { useMap } from '../../../map/MapContext'

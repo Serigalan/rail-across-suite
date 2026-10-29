@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { exportVermEsn } from '../../../utils/exchange'
-import { trackLabel, resolveRoute } from '../../../utils/track'
+import { trackLabel, resolveRoute } from '@rail-across/core/track'
 import { downloadBlob } from '../../../utils/common'
 import { useI18n } from '../../../locales/i18nContext'
 import { useProject, useRoutes, useSwitches, useTracks } from '../../../hooks/useStore'

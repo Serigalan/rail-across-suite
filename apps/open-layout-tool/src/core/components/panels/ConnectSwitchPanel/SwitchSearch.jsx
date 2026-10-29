@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import maplibregl from 'maplibre-gl'
-import { switchMatches } from '../../../utils/track'
+import { switchMatches } from '@rail-across/core/track'
 import { useI18n } from '../../../locales/i18nContext'
 import { useMap } from '../../../map/MapContext'
 import { useSwitches } from '../../../hooks/useStore'

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useI18n } from '../../../locales/i18nContext'
 import { provided } from '../../../extensions'
-import { adoptCrossover, crossoverRequest, optimizeErrorText } from '../../../utils/commands'
+import { adoptCrossover, crossoverRequest, optimizeErrorText } from '@rail-across/core/commands'
 
 const fmt = (v, digits = 1) => v.toFixed(digits)
 

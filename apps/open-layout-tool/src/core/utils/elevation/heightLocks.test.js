@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { heightRoles, withSwitchHeights } from './switchChain'
 import { lockBreach } from './heightLocks'
-import { endPointCurvedUtm, endPointStraightUtm } from '../geometry/elementUtils'
-import { formOf } from '../../test/turnoutFixture'
+import { endPointCurvedUtm, endPointStraightUtm } from '@rail-across/core/src/geometry/elementUtils.js'
+import { formOf } from '@rail-across/core/test/turnoutFixture.js'
 
 // Entscheidung 382 — on the turnout of switchChain.test.js: approach `a`
 // (100 m, ending at WA), main `m` (60 m, ldS at 40 m), branch `b` on R 500.

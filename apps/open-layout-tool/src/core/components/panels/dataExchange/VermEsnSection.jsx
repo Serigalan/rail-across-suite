@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react'
 import { commitImport, saveReferenceAxis } from '../../../storage'
-import { generateId, rebuildCoords, HEIGHT_DATUMS, heightDatumLabel } from '../../../utils/track'
+import { generateId, rebuildCoords, HEIGHT_DATUMS, heightDatumLabel } from '@rail-across/core/track'
 import {
   gradientHeightCode, gradientReferences, kmLineEntries, kmLineNumber, parseGradient, readAxis, referencedHeights,
 } from '../../../utils/exchange'
 import { readFileBuffer } from '../../../utils/common'
-import { REFERENCE_MAX_LENGTH, buildReferenceAxis } from '../../../utils/survey'
-import { FILE_CRS_OPTIONS, projectCrsOptions } from '../../../utils/geometry'
+import { REFERENCE_MAX_LENGTH, buildReferenceAxis } from '@rail-across/core/survey'
+import { FILE_CRS_OPTIONS, projectCrsOptions } from '@rail-across/core/geometry'
 import { useI18n } from '../../../locales/i18nContext'
 import { useProject, useTracks } from '../../../hooks/useStore'
 import FilePickButton from '../../form/FilePickButton'

@@ -7,8 +7,8 @@ import {
   proviProject, proviHeights,
 } from './proviImport'
 import { placeMdbSwitches } from './mdbSwitchPlacement'
-import { trackLength, pointAtStationUtm } from '../track/heightUtils'
-import { expectNodesJoin, expectLengthsTrue, expectSwitchRoutesCarved } from '../../test/chainInvariants'
+import { trackLength, pointAtStationUtm } from '@rail-across/core/src/track/heightUtils.js'
+import { expectNodesJoin, expectLengthsTrue, expectSwitchRoutesCarved } from '@rail-across/core/test/chainInvariants.js'
 
 /**
  * The fixture is a cut from a delivered ProVI archive: the two main tracks

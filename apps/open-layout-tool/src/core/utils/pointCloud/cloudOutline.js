@@ -1,4 +1,4 @@
-import { planeCoordsToWgs84 } from '../geometry'
+import { planeCoordsToWgs84 } from '@rail-across/core/geometry'
 import { cloudPlane, cloudToPlane } from './cloudCrs'
 
 /**

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useMap } from './MapContext'
-import { GEOJSON_MAXZOOM } from '../utils/geometry'
+import { GEOJSON_MAXZOOM } from '@rail-across/core/geometry'
 import { FILTER_NONE, mapIsLive } from './pick'
 import { EMPTY_FC, asGeoJSON } from './geojson'
 import { highlightColors, resolveHighlight } from './mapColors'

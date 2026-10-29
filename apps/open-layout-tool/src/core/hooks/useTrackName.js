@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { loadTracks } from '../storage'
-import { nextTrackName } from '../utils/track'
-import { kmTrackName } from '../utils/track'
+import { nextTrackName } from '@rail-across/core/track'
+import { kmTrackName } from '@rail-across/core/track'
 import useLineStation from './useLineStation'
 
 /** Prefix a new track's name is built from: line number, station name, else 'track'. */

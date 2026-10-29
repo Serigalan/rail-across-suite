@@ -1,4 +1,4 @@
-import { ruleById, severityLabelKey } from '../../../utils/rules'
+import { ruleById, severityLabelKey } from '@rail-across/core/rules'
 import { useI18n } from '../../../locales/i18nContext'
 
 /**

@@ -1,6 +1,6 @@
 // Small helpers for numbers that every part of the app used to write itself.
 // `clamp` is geometry's, which the computing modules share; offered here too.
-export { clamp } from '../geometry'
+export { clamp } from '@rail-across/core/geometry'
 
 /** `v` rounded to `digits` decimals (as a number). */
 const roundTo = (v, digits = 3) => Math.round(v * 10 ** digits) / 10 ** digits

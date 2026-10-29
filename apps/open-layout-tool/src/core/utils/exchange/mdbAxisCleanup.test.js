@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { parseMdbPayload, buildAllTracksFromMdb } from './mdbImport'
 import { dropCoveredTracks, COVER_TOL } from './mdbAxisCleanup'
-import { endPointStraightUtm, endPointCurvedUtm } from '../geometry/elementUtils'
+import { endPointStraightUtm, endPointCurvedUtm } from '@rail-across/core/src/geometry/elementUtils.js'
 
 /**
  * Axis fragments stated twice. The survey is laid out the way the interface

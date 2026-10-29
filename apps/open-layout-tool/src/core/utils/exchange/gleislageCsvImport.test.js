@@ -3,7 +3,7 @@ import {
   CSV_EPSG, TYPE_STRAIGHT, TYPE_ARC, TYPE_CLOTHOID, CANT_CONSTANT,
   parseGleislageCsv, parseUeberhoehungCsv, listStrecken, buildTracksFromCsv,
 } from './gleislageCsvImport'
-import { arcFrom, straightFrom } from '../geometry/elementFactory'
+import { arcFrom, straightFrom } from '@rail-across/core/src/geometry/elementFactory.js'
 
 // A small export of line 6340 in DB_REF GK zone 3, written the way the
 // Gleislage export writes it: one row per element, each with its own start

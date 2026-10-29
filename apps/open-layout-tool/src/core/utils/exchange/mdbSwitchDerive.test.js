@@ -4,9 +4,9 @@ import { placeMdbSwitches } from './mdbSwitchPlacement'
 import {
   formFromGeometry, formInCatalogue, offsetOnTrack, offsetOnElement, deriveMdbTurnouts, AXIS_TOL,
 } from './mdbSwitchDerive'
-import { computeClothoidUtm } from '../geometry/clothoidUtils'
-import { pointAtStationUtm } from '../track/heightUtils'
-import { endPointStraightUtm, endPointCurvedUtm } from '../geometry/elementUtils'
+import { computeClothoidUtm } from '@rail-across/core/src/geometry/clothoidUtils.js'
+import { pointAtStationUtm } from '@rail-across/core/src/track/heightUtils.js'
+import { endPointStraightUtm, endPointCurvedUtm } from '@rail-across/core/src/geometry/elementUtils.js'
 
 /**
  * Checking the switches a file states, and reading the ones it does not.

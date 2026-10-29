@@ -1,4 +1,4 @@
-import { resolveEndBearing, transformPlanePoint, gkZone, arcFrom, straightFrom, transitionElement } from '../geometry'
+import { resolveEndBearing, transformPlanePoint, gkZone, arcFrom, straightFrom, transitionElement } from '@rail-across/core/geometry'
 import { withFileCants } from './fileCants'
 
 const GON2DEG = 0.9

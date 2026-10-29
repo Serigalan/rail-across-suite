@@ -1,16 +1,16 @@
 import {
   nodeUtm, endPointStraightUtm, endPointCurvedUtm, bearingAfterUtm, sampleTransitionUtm,
   transitionBearingAtUtm,
-} from '../geometry'
+} from '@rail-across/core/geometry'
 import {
   elementAtStation, pointAtStationUtm, trackLength, switchNumberOf, isLinkSwitch, portTrack,
   portEnd,
-} from '../track'
+} from '@rail-across/core/track'
 import {
   lcsLineUtm, switchFillRing, switchRoutePointsUtm, switchRoutesFromTracks,
   crossingRoutesFromTracks, crossingBodyUtm, crossingEndDistance, switchChainPointUtm,
   switchChainBearingAt, switchChainBauform, switchMark,
-} from '../switch'
+} from '@rail-across/core/switch'
 
 /**
  * Everything a plan needs to draw, in the track's own projected plane — paths,

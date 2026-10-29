@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import fs from 'node:fs'
 import { epsgForLagesystem, isOfficialLagesystem, parseMdbPayload, buildTracksFromMdb, mdbRows } from './mdbImport'
-import { crsName, utmToWgs84 } from '../geometry/coordinateUtils'
-import { loadNtv2Grid } from '../geometry/ntv2Grid'
+import { crsName, utmToWgs84 } from '@rail-across/core/src/geometry/coordinateUtils.js'
+import { loadNtv2Grid } from '@rail-across/core/src/geometry/ntv2Grid.js'
 import fixture from '../../test/fixtures/mdb_thueringen.json'
 
 /**

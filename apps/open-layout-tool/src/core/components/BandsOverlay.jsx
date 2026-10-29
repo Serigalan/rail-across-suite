@@ -4,15 +4,15 @@ import { useProject, useSwitches, useTracks } from '../hooks/useStore'
 import {
   trackProfile, verticalCurves, gradientAt, curvatureBand, cantBand, speedBand, bandValueAt,
   bandRuns, bandRange, elementSpans, bandFindings, withBandValue, withCantEnds, pointAtStation,
-} from '../utils/track'
-import { checkTrack, ruleById, severityLabelKey, worstSeverity, maxSpeeds } from '../utils/rules'
+} from '@rail-across/core/track'
+import { checkTrack, ruleById, severityLabelKey, worstSeverity, maxSpeeds } from '@rail-across/core/rules'
 import { checkVertical, trackHeightAt } from '../utils/elevation'
 import { filterForElements, FILTER_NONE, mapIsLive } from '../map/pick'
 import { useMap } from '../map/MapContext'
 import { TRACKS_SELECTED_LAYER } from '../map/layerIds'
 import { useI18n } from '../locales/i18nContext'
 import usePreview from '../map/usePreview'
-import { transitionCantEnds, utmToWgs84 } from '../utils/geometry'
+import { transitionCantEnds, utmToWgs84 } from '@rail-across/core/geometry'
 import { PALETTE } from '../styles/palette'
 import { clamp, niceStep, stepDecimals, ticks } from '../utils/common'
 import { useDrag, useElementSize, useOverlayHeight, useWheelZoom } from './chart/useChartViewport'

@@ -2,13 +2,13 @@ import {
   ALL_SWITCH_TYPES, CROSSING_TYPES, switchStraightLength, switchBranchLength, crossingEndDistance,
   crossingAngle, crossingLegRadius, rebuildSwitchSymbol, switchRouteBearingAt, switchElementRoute,
   placeSwitchOnTrack, switchBranchPointAt,
-} from '../switch'
+} from '@rail-across/core/switch'
 import {
   newSwitchFields, switchElementMark, splitTrackAtJoint, splitElementAt, carveSwitchRoute,
   elementAtStation, pointAtStationUtm, generateId, nextSwitchNumber, switchDesignation,
   remapSwitches,
-} from '../track'
-import { resolveEndBearing } from '../geometry'
+} from '@rail-across/core/track'
+import { resolveEndBearing } from '@rail-across/core/geometry'
 import { epsgForLagesystem } from './mdbImport'
 import { deriveMdbTurnouts, offsetOnTrack, offsetOnElement, AXIS_TOL } from './mdbSwitchDerive'
 

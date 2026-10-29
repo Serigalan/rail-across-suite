@@ -1,7 +1,7 @@
 import { kmForTrackPoint, formatKm } from '../km'
 import { trackPathUtm, mainPoints, switchSymbolUtm, trackPointAt, isArc, isTransition } from './planGeometry'
-import { pointAtStationUtm, trackLength, BUFFER_STOP, bufferStopStations, FACE_HALF_WIDTH } from '../track'
-import { cantExceptionOf, computeCantDef, worstCantOf } from '../rules'
+import { pointAtStationUtm, trackLength, BUFFER_STOP, bufferStopStations, FACE_HALF_WIDTH } from '@rail-across/core/track'
+import { cantExceptionOf, computeCantDef, worstCantOf } from '@rail-across/core/rules'
 import {
   CAP_CENTRE, PRIO, STYLE, arrowItems, circlePath, fmtNum, line, mapPath, pageAngle, pageDown,
   pageLeft, path, polyPath, readable, text, textWidth,

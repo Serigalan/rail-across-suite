@@ -2,10 +2,10 @@ import { describe, it, expect, vi, afterEach } from 'vitest'
 import {
   optimizeOnServer, optimizerReachable, fetchRegelwerke, fetchRegelwerk, OptimizerError, alignOnServer,
 } from './optimizerService'
-import { bundledCatalogHash } from '../core/utils/rules/catalogHash'
-import { reconstructElements } from '../core/utils/geometry/elementReconstruct'
+import { bundledCatalogHash } from '@rail-across/core/src/rules/catalogHash.js'
+import { reconstructElements } from '@rail-across/core/src/geometry/elementReconstruct.js'
 
-import { expectValidTrack } from '../core/test/chainInvariants'
+import { expectValidTrack } from '@rail-across/core/test/chainInvariants.js'
 import korbbogen from '../core/test/fixtures/optimizer_service_korbbogen.json'
 
 // What the service promises over the wire is checked against a running one in

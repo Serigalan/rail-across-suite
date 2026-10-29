@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
-import { diffEntries, diffProject, primary } from '../../utils/merge'
+import { diffEntries, diffProject, primary } from '@rail-across/core/merge'
 import {
   COMPARE_COLORS, clearFeatures, comparisonFeatures, comparisonTopology, drawable,
   showFeaturesSoon, trackStylesOf, zoomToFeatures,
-} from '../../utils/merge'
+} from '../../utils/compare'
 import TopologyGraphOverlay from '../TopologyGraphOverlay'
 import { entryText } from './mergeText'
 import './collab.css'

@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { loadTracks, updateTrack } from '../../core/storage'
-import { trackLabel } from '../../core/utils/track'
+import { trackLabel } from '@rail-across/core/track'
 import {
   optimizeOnServer, optimizerReachable, fetchRegelwerke, OptimizerError,
 } from '../optimizerService'
-import { reconstructElements } from '../../core/utils/geometry'
+import { reconstructElements } from '@rail-across/core/geometry'
 import { ZOOM_LINE_WIDTH } from '../../core/map/style'
-import { optimizeRequest, optimizedTrack, optimizeErrorText } from '../../core/utils/commands'
+import { optimizeRequest, optimizedTrack, optimizeErrorText } from '@rail-across/core/commands'
 import { OptimizeTrackModeIcon, OptimizeElementModeIcon, AxisFitModeIcon } from '../../core/components/icons'
 import { useI18n } from '../../core/locales/i18nContext'
 import { useMap } from '../../core/map/MapContext'

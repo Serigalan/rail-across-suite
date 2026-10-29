@@ -1,15 +1,15 @@
 import {
   endPointStraightUtm, endPointCurvedUtm, arcCoordsFromRadiusUtm, reverseElement, utmToWgs84,
   SAGITTA_ELEMENT, arcFrom, straightFrom, transitionElement,
-} from '../geometry'
+} from '@rail-across/core/geometry'
 import {
   ALL_SWITCH_TYPES, switchBranchSections, switchStraightLength, CROSSING_TYPES, bauform,
   crossingAngle, crossingEndDistance, crossingLegRadius, computeCrossingGeometryUtm, lcsLine,
   switchFillRing, switchLabelGeometry, switchMark,
-} from '../switch'
+} from '@rail-across/core/switch'
 import {
   newSwitchFields, switchElementMark, LINK_KIND, TYPE_CODES, SIDE_CODES, LINE_CATEGORIES, STATUSES,
-} from '../track'
+} from '@rail-across/core/track'
 import { kindForOsrdType, bufferStopsToEndMarks } from './alignmentCodec'
 import { withSignedCants } from './fileCants'
 

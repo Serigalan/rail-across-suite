@@ -1,7 +1,7 @@
-import { switchKindLabelKey, switchRouteLabelKey } from '../../utils/track'
+import { switchKindLabelKey, switchRouteLabelKey } from '@rail-across/core/track'
 import {
   ruleById, severityLabelKey, severityRank, cantExceedsLimit, cantExceptionOf, cantLimit, limitCantDef,
-} from '../../utils/rules'
+} from '@rail-across/core/rules'
 import { formatNum } from '../../locales/i18n'
 
 // What the cells of the element table say — the words and marks of one row,

@@ -139,7 +139,7 @@ A small HTTP service (`service.py`) around the package `olt_optimizer`, behind t
 | `GET /dem/<z>/<x>/<y>.png` | Terrain-RGB map tiles (zoom 16–17) from the same DGM1, heights to the centimetre; gaps filled from DGM5, 404 outside these Länder (`dem_tiles.py`) |
 | `GET /health`, `GET /regelwerke`, `GET /regelwerke/<id>` | Status; the catalogues a run can be held to, with the catalogue hash for the drift check |
 
-The service reads the **same rule catalogue** as the app (`src/core/constraints`, through a symlink in the package)
+The service reads the **same rule catalogue** as the app (`packages/core/constraints`, through a symlink in the package)
 and evaluates it with a Python port of the expression language; a rule it cannot place makes it refuse, not skip.
 `physics.json` is the readable derivation its constants are checked against. Acceptance tests in `tests/`
 (`verify*.py`, shared vectors, the splice answers fixture) run in CI.

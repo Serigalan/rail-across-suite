@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react'
-import { routePointAt } from '../utils/track'
-import { utmToWgs84 } from '../utils/geometry'
+import { routePointAt } from '@rail-across/core/track'
+import { utmToWgs84 } from '@rail-across/core/geometry'
 import { ensureMarkerImages, ARROW_ICON_IMAGE } from './markerImages'
 import { ZOOM_ICON_SIZE, lineWidthTimes } from './style'
 import { PALETTE } from '../styles/palette'

@@ -9,7 +9,7 @@ import { currentProject, deleteKmLine, loadSwitches, loadTracks, redo, saveKmLin
 import { useHiddenTracks, useProject } from '../hooks/useStore'
 import { FILTER_NONE } from '../map/pick'
 import { highlightTopology, zoomToTopologyTracks } from '../map/topologyLayer'
-import { selectionHighlight } from '../utils/topology'
+import { selectionHighlight } from '@rail-across/core/topology'
 import { ensureKmLines } from '../utils/km'
 import { isMultilineTarget, isProjectRedo, isProjectUndo, loadSettings, saveSettings } from '../utils/common'
 import { escapeAction, frontHandler } from './escape'

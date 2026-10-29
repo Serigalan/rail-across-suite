@@ -35,7 +35,7 @@ python3 -m venv .venv          # im Wurzelverzeichnis des Repos
 |---|---|
 | `--corridor-cm` | max. Abrückung zur Bestandsachse in cm (Default 50) |
 | `--grenzwert {reg,discretion}` | gegen welche Grenze des Regelwerks gerechnet wird: `reg` = Regelwert (Default, kein Vorschlag schlechter als ein Hinweis), `discretion` = Ermessensgrenze (höchstens Warnungen, jede begründungspflichtig) |
-| `--regelwerk` | Id des Regelkatalogs aus `apps/open-layout-tool/src/core/constraints/` (Default `db-ril-800-0110`) |
+| `--regelwerk` | Id des Regelkatalogs aus `packages/core/constraints/` (Default `db-ril-800-0110`) |
 | `--per-curve` | nur Baseline: Geraden bleiben fix (Verhalten des App-Panels) |
 | `--uebergang {bestand,bloss,auto}` | Übergangsbogen-Profil: wie vorhanden lassen, alle Rampen auf Bloss, oder automatisch die zulässige Variante mit höherer Engpass-v (Default: auto). Bloss nur an der Ermessensgrenze: LP.UB.02 nennt einen Blossbogen auf der (in dieser App immer geraden) Rampe einen Sonderfall, am Regelwert rechnet `auto` deshalb nur den Bestand |
 | `--maxiter`, `--seed` | Differential-Evolution-Steuerung |
@@ -49,7 +49,7 @@ python3 -m venv .venv          # im Wurzelverzeichnis des Repos
 * Nebenbedingungen: Abrückung ≤ Korridor (beidseitig gesampelt), Track-Endpunkte
   und Richtungen fix — und **jede Regel des Regelkatalogs** auf der gewählten
   Stufe. Kein Grenzwert steht im Code: ein Lauf liest
-  `apps/open-layout-tool/src/core/constraints/db-ril-800-0110.json` (im Paket über den Symlink
+  `packages/core/constraints/db-ril-800-0110.json` (im Paket über den Symlink
   `olt_optimizer/constraints`) und wertet ihn mit derselben Ausdruckssprache aus
   wie die App (`ruleexpr.py`, `katalog.py`). `grenzen.py` macht daraus die
   Schranken eines Laufs: Entwurfsgeschwindigkeit (40…300 km/h im 5-km/h-Raster),
@@ -75,7 +75,7 @@ python3 -m venv .venv          # im Wurzelverzeichnis des Repos
 .venv/bin/python tests/vectors.py          # gemeinsame Testvektoren mit der App
 ```
 
-`tests/vectors.py` liest `apps/open-layout-tool/src/core/constraints/tests/` — Ausdrücke der Regelsprache,
+`tests/vectors.py` liest `packages/core/constraints/tests/` — Ausdrücke der Regelsprache,
 Elementketten mit den erwarteten Befunden des Regelkatalogs (`olt_optimizer/pruefung.py`)
 und die kürzesten Übergangsbogenlängen (Regel- und Mindestlänge,
 `grenzen.transition_lengths`). Die App liest dieselben Dateien

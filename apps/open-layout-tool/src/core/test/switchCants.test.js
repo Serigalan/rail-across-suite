@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeAll } from 'vitest'
 import { loadTracks, openProject, undo, updateTrack } from '../storage'
-import { trackOf } from '../utils/commands/tracks'
-import { buildSwitchOnTrack, switchOnTrackPlacement } from '../utils/commands/switches'
-import { straightFrom } from '../utils/geometry/elementFactory'
-import { cantEnds, withCantEdit } from '../utils/geometry/clothoidUtils'
-import { SWITCH_TYPES, switchStraightLength } from '../utils/switch/catalogue'
-import { coupleSwitchCants } from '../utils/switch/switchCants'
+import { trackOf } from '@rail-across/core/src/commands/tracks.js'
+import { buildSwitchOnTrack, switchOnTrackPlacement } from '@rail-across/core/src/commands/switches.js'
+import { straightFrom } from '@rail-across/core/src/geometry/elementFactory.js'
+import { cantEnds, withCantEdit } from '@rail-across/core/src/geometry/clothoidUtils.js'
+import { SWITCH_TYPES, switchStraightLength } from '@rail-across/core/src/switch/catalogue.js'
+import { coupleSwitchCants } from '@rail-across/core/src/switch/switchCants.js'
 
 // A turnout's two routes carry one cant, whichever is edited (Entscheidung 376).
 

@@ -1,5 +1,5 @@
-import { endOfIndex, trackLength, partStation } from '../track'
-import { worstSeverity } from '../rules'
+import { endOfIndex, trackLength, partStation } from '@rail-across/core/track'
+import { worstSeverity } from '@rail-across/core/rules'
 
 /**
  * The vertical alignment along a route (Paket RT, decision 251): the height

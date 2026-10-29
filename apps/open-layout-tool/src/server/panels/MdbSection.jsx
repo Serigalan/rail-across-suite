@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { commitImport, loadSwitches, loadTracks } from '../../core/storage'
-import { EPSG_OPTIONS } from '../../core/utils/geometry'
+import { EPSG_OPTIONS } from '@rail-across/core/geometry'
 import { ALL_STRECKEN } from '../../core/utils/exchange'
 import { importMdb } from '../mdb/mdbImportJob'
 import { useI18n } from '../../core/locales/i18nContext'

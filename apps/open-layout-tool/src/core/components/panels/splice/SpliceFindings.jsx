@@ -1,6 +1,6 @@
 import { useContext, useEffect } from 'react'
-import { fieldFindings, ruleById, severityLabelKey } from '../../../utils/rules'
-import { RuleFieldsContext } from '../../../components/form/ruleFieldsContext'
+import { fieldFindings, ruleById, severityLabelKey } from '@rail-across/core/rules'
+import { RuleFieldsContext } from '../../form/ruleFieldsContext'
 import { useI18n } from '../../../locales/i18nContext'
 
 const TYPE_KEY = { 0: 'table_type_straight', 1: 'table_type_arc', 2: 'transition_curve' }

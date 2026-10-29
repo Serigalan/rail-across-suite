@@ -48,7 +48,7 @@
 import {
   endOfIndex, heightAt, jointGroup, pointAtStation, roundHeight, stationOnTrack, trackLength, turnoutDivergingPort, turnoutLinePort,
   portTrack, portEnd,
-} from '../track'
+} from '@rail-across/core/track'
 import { ldsLift, planeFrom, roundMm, STATION_TOL, switchCouplings, Z_TOL } from './switchGradient'
 
 const MAX_STEPS = 400

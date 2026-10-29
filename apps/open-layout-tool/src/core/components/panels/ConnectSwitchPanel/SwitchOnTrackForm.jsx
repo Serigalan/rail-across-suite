@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import { loadTracks, commitSwitchConnection } from '../../../storage'
-import { wgs84ToUTM } from '../../../utils/geometry'
+import { wgs84ToUTM } from '@rail-across/core/geometry'
 import {
   SWITCH_PICK_TYPES, DEFAULT_SWITCH_TYPE_IDX, switchBranchLength, switchStraightLength,
   switchRouteVaries, clickStation, nearestValid, settleStation,
-} from '../../../utils/switch'
+} from '@rail-across/core/switch'
 import {
   computeSwitchCant, computeCantDef, computeCantDefSigned, switchCantError, MAX_SWITCH_CANT_DEF,
-} from '../../../utils/rules'
+} from '@rail-across/core/rules'
 import { elementPath } from '../../../utils/km'
 import useTrackFields from '../../../hooks/useTrackFields'
 import useTrackName from '../../../hooks/useTrackName'
@@ -26,11 +26,11 @@ import useMapPick from '../../../map/useMapPick'
 import {
   buildSwitchOnTrack, switchOnTrackPlacement, switchOnTrackRemnant, switchOnTrackSlider,
   switchOnTrackToeValid,
-} from '../../../utils/commands'
+} from '@rail-across/core/commands'
 import CommitBar from '../../form/CommitBar'
 import SwitchOrientationPicker from '../../form/SwitchOrientationPicker'
 import StationSlider from '../../form/StationSlider'
-import { DEFAULT_HEIGHT_EPSG, heightDatumLabel } from '../../../utils/track'
+import { DEFAULT_HEIGHT_EPSG, heightDatumLabel } from '@rail-across/core/track'
 import ReadOnlyField from '../../form/ReadOnlyField'
 import AdvancedInfo from '../../form/AdvancedInfo'
 import FormSection from '../../form/FormSection'

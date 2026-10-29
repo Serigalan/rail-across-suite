@@ -6,10 +6,10 @@ import {
   TYPE_STRAIGHT, TYPE_KINK, TYPE_ARC, TYPE_CLOTHOID, TYPE_BLOSS,
   CANT_CONSTANT,
 } from './gleislageCsvImport'
-import { utmToWgs84 } from '../geometry'
+import { utmToWgs84 } from '@rail-across/core/geometry'
 import {
   classifyTrackEnds, freeEnds, JOINT_TOL, newBufferStop, DEFAULT_BUFFER_STOP_TYPE, heightDatumLabel,
-} from '../track'
+} from '@rail-across/core/track'
 
 /**
  * Adapter for the DB ASCII interface delivered as an Access database (Satzarten

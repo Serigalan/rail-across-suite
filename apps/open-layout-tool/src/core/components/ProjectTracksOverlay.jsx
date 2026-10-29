@@ -4,13 +4,13 @@ import { useProject } from '../hooks/useStore'
 import {
   LINE_CATEGORIES, trackLength, trackStatus, groupHeading, groupTracks, trackListLabel,
   trackTypeName, trackMatches,
-} from '../utils/track'
+} from '@rail-across/core/track'
 import { projectLineCategory } from '../utils/elevation'
 import {
   ownLineCategory, planeGroup, planeInSystem, previewTracksToPlane, projectSystem, systemChoices,
   systemDeviates, withLineCategory, zoneChoices,
-} from '../utils/project'
-import { crsName, crsSystem, crsSystemName } from '../utils/geometry'
+} from '@rail-across/core/project'
+import { crsName, crsSystem, crsSystemName } from '@rail-across/core/geometry'
 import { fitToTracks } from '../map/mapRenderUtils'
 import { formatNum } from '../locales/i18n'
 import { useI18n } from '../locales/i18nContext'

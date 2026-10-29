@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import {
   readableClouds, scanClearance, runIsActive, runsOnServer, serverRunHook, registrationHook,
 } from '../../utils/pointCloud'
-import { gaugeProfile, gaugeProfileRing, gaugeProfileAreas, DEFAULT_GAUGE_PROFILE } from '../../utils/crossSection'
+import { gaugeProfile, gaugeProfileRing, gaugeProfileAreas, DEFAULT_GAUGE_PROFILE } from '@rail-across/core/crossSection'
 import { heightContext } from '../../utils/elevation'
 import { currentProject } from '../../storage'
 import { useI18n } from '../../locales/i18nContext'

@@ -1,6 +1,6 @@
-import { projectOnArcUtm, projectOnTransitionUtm, clothoidRadiusAt } from '../geometry'
-import { pointAtStationUtm } from '../track'
-import { ALL_SWITCH_TYPES, asRadius, switchBranchLength } from '../switch'
+import { projectOnArcUtm, projectOnTransitionUtm, clothoidRadiusAt } from '@rail-across/core/geometry'
+import { pointAtStationUtm } from '@rail-across/core/track'
+import { ALL_SWITCH_TYPES, asRadius, switchBranchLength } from '@rail-across/core/switch'
 
 /**
  * The switches a file does not state — read out of the alignment itself.

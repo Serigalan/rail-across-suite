@@ -1,6 +1,6 @@
 import {
   endPointCurvedUtm, endPointStraightUtm, nodeUtm, sampleTransitionUtm,
-} from '../geometry'
+} from '@rail-across/core/geometry'
 
 // A Verm.ESN gradient is often stationed along the kilometrage line (the axis
 // whose file name ends in `S`, e.g. `6340S.TRA`), not along the track it

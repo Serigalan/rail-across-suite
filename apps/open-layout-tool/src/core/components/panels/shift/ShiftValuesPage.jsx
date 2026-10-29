@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
-import { comparedLine } from '../../../utils/survey'
-import { trackLabel } from '../../../utils/track'
+import { comparedLine } from '@rail-across/core/survey'
+import { trackLabel } from '@rail-across/core/track'
 import { useTracks } from '../../../hooks/useStore'
 import { useI18n } from '../../../locales/i18nContext'
 import useMapPick, { useSelectedOnMap } from '../../../map/useMapPick'

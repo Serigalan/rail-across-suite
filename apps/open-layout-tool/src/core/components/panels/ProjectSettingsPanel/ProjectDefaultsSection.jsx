@@ -1,11 +1,11 @@
 import { updateProject } from '../../../storage'
-import { LINE_CATEGORIES } from '../../../utils/track'
+import { LINE_CATEGORIES } from '@rail-across/core/track'
 import { projectLineCategory } from '../../../utils/elevation'
-import { dominantSystem, projectSystemSetting, systemChoices } from '../../../utils/project'
-import { crsSystemName } from '../../../utils/geometry'
+import { dominantSystem, projectSystemSetting, systemChoices } from '@rail-across/core/project'
+import { crsSystemName } from '@rail-across/core/geometry'
 import {
   GAUGE_PROFILES, DEFAULT_GAUGE_PROFILE, gaugeProfileLabelKey, LICHTRAUM_SOURCE,
-} from '../../../utils/crossSection'
+} from '@rail-across/core/crossSection'
 import { useI18n } from '../../../locales/i18nContext'
 import FormSection from '../../form/FormSection'
 import InfoTip from '../../form/InfoTip'

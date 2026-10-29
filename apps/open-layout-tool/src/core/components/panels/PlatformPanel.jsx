@@ -3,8 +3,8 @@ import { loadTracks, savePlatform, updatePlatform, deletePlatform } from '../../
 import {
   generateId, PLATFORM_CODE_MAX, platformRing, stationFromClick, platformLength,
   EMPTY_PLATFORM_FORM, pickedStation, platformDraft, platformForm, platformFormValid,
-} from '../../utils/track'
-import { wgs84ToUTM } from '../../utils/geometry'
+} from '@rail-across/core/track'
+import { wgs84ToUTM } from '@rail-across/core/geometry'
 import { PLATFORM_FILL_COLOR, PLATFORM_FILL_OPACITY } from '../../map/mapRenderUtils'
 import { useI18n } from '../../locales/i18nContext'
 import CommitBar from '../form/CommitBar'

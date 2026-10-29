@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { checkVertical, lengthGovernedRadii, lengthGovernedRadius, lineCategoryOf, regularVerticalRadius, verticalFindings } from './gradientCheck'
-import { ruleById, evaluateRule } from '../rules/regelkatalog'
+import { ruleById, evaluateRule } from '@rail-across/core/src/rules/regelkatalog.js'
 
 // A straight line track of `length` metres at `speed`, with the given height points.
 const line = (heights, { speed = 100, length = 2000, ...rest } = {}) => ({

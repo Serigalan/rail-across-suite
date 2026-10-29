@@ -20,21 +20,21 @@ whoever maintains or reviews the tool. User guidance is in the app (*Leitfaden*,
 
 | Module | |
 |---|---|
-| [geometry](modules/geometry.md) | coordinate systems, NTv2 grids, elements, clothoid and Bloss transitions, parallels, plane changes |
-| [track](modules/track.md) | tracks, switch records and ports, heights, links, track ends, platforms, routes |
-| [switch](modules/switch.md) | switch forms, turnouts on any stem, crossings, switch connections, connecting to a track, deletion |
-| [rules](modules/rules.md) | the rule catalogue and its expression language, cant, speed and length limits, alignment checks |
+| [geometry](../../../packages/core/docs/geometry.md) | coordinate systems, NTv2 grids, elements, clothoid and Bloss transitions, parallels, plane changes |
+| [track](../../../packages/core/docs/track.md) | tracks, switch records and ports, heights, links, track ends, platforms, routes |
+| [switch](../../../packages/core/docs/switch.md) | switch forms, turnouts on any stem, crossings, switch connections, connecting to a track, deletion |
+| [rules](../../../packages/core/docs/rules.md) | the rule catalogue and its expression language, cant, speed and length limits, alignment checks |
 | [elevation](modules/elevation.md) | Höhenplan rules, the turnout plane and coupling points, a switch's other tracks on request, terrain |
-| [crossSection](modules/crossSection.md) | cross section, superstructure, clearance contours |
-| [commands](modules/commands.md) | what the dialogs commit |
+| [crossSection](../../../packages/core/docs/crossSection.md) | cross section, superstructure, clearance contours |
+| [commands](../../../packages/core/docs/commands.md) | what the dialogs commit |
 | [splice](modules/splice.md) | joining two track ends |
-| [survey](modules/survey.md) | measured axes, reference axes, shift values, alignment fit |
+| [survey](../../../packages/core/docs/survey.md) | measured axes, reference axes, shift values, alignment fit |
 | [exchange](modules/exchange.md) | RailJSON/OSRD, Verm.ESN, ProVI, Gleislage CSV, MDB |
 | [plan](modules/plan.md) | plan export |
-| [topology](modules/topology.md) | connection diagram |
+| [topology](../../../packages/core/docs/topology.md) | connection diagram |
 | [km](modules/km.md) | kilometrage lines |
-| [project](modules/project.md) | the record as a whole: format, settings, validation |
-| [merge](modules/merge.md) | three-way merge and comparison |
+| [project](../../../packages/core/docs/project.md) | the record as a whole: format, settings, validation |
+| [merge](../../../packages/core/docs/merge.md) | three-way merge and comparison |
 | [pointCloud](modules/pointCloud.md) | point clouds |
 | [common](modules/common.md) | small helpers |
 
@@ -45,4 +45,4 @@ whoever maintains or reviews the tool. User guidance is in the app (*Leitfaden*,
 - [`server/README.md`](../../../server/README.md) — the project server
 - [`services/optimizer/README.md`](../../../services/optimizer/README.md) — the optimizer (German)
 - [`tools/local/README.md`](../tools/local/README.md) — the local version as handed out
-- `src/core/constraints/*.json` — the rulebooks themselves (DB Ril 800.0110, 800.0120, 800.0130, physics)
+- `packages/core/constraints/*.json` — the rulebooks themselves (DB Ril 800.0110, 800.0120, 800.0130, physics)

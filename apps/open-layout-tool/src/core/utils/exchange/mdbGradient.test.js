@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { mdbStation, mdbGradientChains, gradientForTrack, stationsAlong, hoehensystemOf } from './mdbGradient'
 import { parseMdbPayload, buildAllTracksFromMdb } from './mdbImport'
-import { trackLength } from '../track/heightUtils'
+import { trackLength } from '@rail-across/core/src/track/heightUtils.js'
 import fixture from '../../test/fixtures/mdb_gradiente.json'
 
 /**

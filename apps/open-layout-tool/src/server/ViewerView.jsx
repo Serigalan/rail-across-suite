@@ -5,8 +5,8 @@ import useMapInstance from '../core/map/useMapInstance'
 import TiltToggle from '../core/map/TiltToggle'
 import {
   clearFeatures, comparisonFeatures, drawable, recordFeatures, showFeaturesSoon, zoomToFeatures,
-} from '../core/utils/merge'
-import { diffEntries, diffProject } from '../core/utils/merge'
+} from '../core/utils/compare'
+import { diffEntries, diffProject } from '@rail-across/core/merge'
 import CompareOverlay from '../core/components/collab/CompareOverlay'
 import ConflictDialog from './collab/ConflictDialog'
 

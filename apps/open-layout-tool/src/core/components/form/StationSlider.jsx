@@ -1,5 +1,5 @@
 import NumberInput from './NumberInput'
-import { settleStation } from '../../utils/switch'
+import { settleStation } from '@rail-across/core/switch'
 import { formatNum } from '../../locales/i18n'
 import { useI18n } from '../../locales/i18nContext'
 

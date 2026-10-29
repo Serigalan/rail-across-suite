@@ -1,7 +1,7 @@
 import {
   PLATFORM_FRONT_OFFSET, PLATFORM_HEIGHTS, platformLength, pointAtStation, platformEdgeElevation,
   trackLength, trackLabel,
-} from '../../../utils/track'
+} from '@rail-across/core/track'
 import { useI18n } from '../../../locales/i18nContext'
 import FormSection from '../../form/FormSection'
 import ReadOnlyField from '../../form/ReadOnlyField'

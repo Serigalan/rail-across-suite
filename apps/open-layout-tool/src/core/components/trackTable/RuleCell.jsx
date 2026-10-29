@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { MAX_SWITCH_CANT, MAX_SWITCH_CANT_EXCEPTION } from '../../utils/rules'
+import { MAX_SWITCH_CANT, MAX_SWITCH_CANT_EXCEPTION } from '@rail-across/core/rules'
 import { useI18n } from '../../locales/i18nContext'
 import Modal from '../Modal'
 import { SWITCH_CANT_RULE, findingText, reasonOf, ruleGroups, ruleNote } from './rowText'

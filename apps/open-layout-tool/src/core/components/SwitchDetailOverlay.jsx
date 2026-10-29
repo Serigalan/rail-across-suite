@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from 'react'
 import { loadSwitches, loadTracks } from '../storage'
-import { formDetail, switchDetailScene, switchTypeByLabel } from '../utils/switch'
+import { formDetail, switchDetailScene, switchTypeByLabel } from '@rail-across/core/switch'
 import { useI18n } from '../locales/i18nContext'
 import { useProject } from '../hooks/useStore'
 import { PALETTE } from '../styles/palette'

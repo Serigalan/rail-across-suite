@@ -4,7 +4,7 @@ import ConfirmModal from './ConfirmModal'
 import {
   buildTopologyGraph, topologyClusters, selectionHighlight, layoutClusterLanes, labelBox,
   placeLabels,
-} from '../utils/topology'
+} from '@rail-across/core/topology'
 import { TOPOLOGY_RED } from '../map/topologyLayer'
 import { useI18n } from '../locales/i18nContext'
 import { useProject } from '../hooks/useStore'

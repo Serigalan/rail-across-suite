@@ -1,4 +1,4 @@
-import { cantAngle, cantPivot, rotatePoint } from '../crossSection'
+import { cantAngle, cantPivot, rotatePoint } from '@rail-across/core/crossSection'
 
 /**
  * The clearance check of a cloud slice (AP 11.5): which measured points lie

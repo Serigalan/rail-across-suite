@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { GIVEN_MODES, pointGrades, solveHeightPoint, tangentLength } from '../utils/track'
+import { GIVEN_MODES, pointGrades, solveHeightPoint, tangentLength } from '@rail-across/core/track'
 import { useI18n } from '../locales/i18nContext'
 import NumberInput from './form/NumberInput'
 

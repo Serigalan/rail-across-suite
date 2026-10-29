@@ -1,4 +1,4 @@
-import { pointAtStationUtm } from '../track'
+import { pointAtStationUtm } from '@rail-across/core/track'
 import { offsetOnElement } from './mdbSwitchDerive'
 
 /**

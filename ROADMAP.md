@@ -33,16 +33,20 @@ Done:
 - [Data model](docs/data-model.md) reviewed by its code owner and accepted; the questions left open name the phase
   that decides them.
 
+- The Open-Layout-Tool moved into `apps/open-layout-tool/` with its history; its server to `server/`, its Python
+  service to `services/optimizer/`; CI and deployment scripts on the new paths. The toolkit gets a new server of
+  its own; the running server of the Open-Layout-Tool is not migrated. Until phase 1 the server still imports
+  the app's modules — allowed for now by `npm run check` (`TRANSITIONAL` in `tools/boundaries.mjs`).
+- Large binary data out of the history, fetched by version and SHA-256
+  ([decision 0008](docs/decisions/0008-data-outside-history.md)): the NTv2 grids as release assets; the
+  kilometrage tiles not published at all.
+- Third-party material listed in [THIRD-PARTY.md](THIRD-PARTY.md): the NTv2 grids with their licences; the
+  kilometrage data outside the repository and every published build; the guideline is the project's own
+  (CC BY 4.0); the values from the DB guidelines may be taken over.
+
 Open:
 
-- **Move the Open-Layout-Tool** into `apps/open-layout-tool/` with its history; its server to `server/`, its Python
-  service to `services/optimizer/`; CI and deployment scripts on the new paths. The toolkit gets a new server of
-  its own; the running server of the Open-Layout-Tool is not migrated.
-- Large binary data (NTv2 grids, kilometrage tiles, map images) out of the history: Git LFS, release assets or a
-  data repository, referenced by version.
-- Third-party material listed in [THIRD-PARTY.md](THIRD-PARTY.md): the NTv2 grids come with their licences;
-  the kilometrage data moves into test fixtures and leaves the published apps; the guideline is the project's
-  own (CC BY 4.0); the values from the DB guidelines may be taken over.
+- Upload the NTv2 grids as the assets of release `data-1` (until then they come from cdn.proj.org).
 - The name ([decision 0007](docs/decisions/0007-project-name.md)): *Across* checked in the registers of the DPMA
   and the EUIPO before the first release.
 

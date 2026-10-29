@@ -190,30 +190,20 @@ A stack of layers — reference data, net, located objects, functional objects, 
 cleanly (F6, F7). The structure is a core that everyone depends on, discipline domains that depend only on the
 core, and derived results above them:
 
-```
- derived, never in a revision:  coordination checks · simulation results · reverse index   (caches by input hashes)
- ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────
- discipline       layout-work        catenary            signalling             operations
- domains          surveys, reference masts, cantilevers, signals, detection,    train runs,
-                  axes, track runs,  wires, sections,    track sections, signal timetable,
-                  plan header        El signals          routes, LST switch     rolling stock
-                                                         elements, station
-                                                         boundaries, speed profile
-                        │                │                   │                     │
-                        └────────────────┴─────────┬─────────┴─────────────────────┘
-                                                   ▼  stored references only into the core
- core             reference   coordinate systems · km lines and designed kilometrage · operational point register ·
-                              catalogue versions (rules, switch forms, profiles)
-                  net         tracks (elements, heights, cant, superstructure) · switches and links
-                  context     platforms · end marks · structures (bridges, tunnels, level crossings)
-                  stages      the ordered construction stages, from the existing to the final state
-                  types       TrackLocation · TrackRange · TrackEnd · TrackPath · Ref · Lifespan
- ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────
- project level    variants · approvals · comments   (refer into revisions, never back)
-```
+| Level | Domain | Written by | Content |
+|---|---|---|---|
+| derived | — | — | stage views, coordination checks, simulation results, reverse index — caches keyed by input hashes, never in a revision |
+| discipline | `layout` | open-layout-tool | surveys, reference axes, named track paths, plan header |
+| discipline | `signalling` | open-signalling-tool | signals, detection points, track sections, signalling routes, LST switch elements, station boundaries, speed profile |
+| discipline | `catenary` | open-catenary-tool | masts, cantilevers, wires, sections, El signals |
+| discipline | `operations` | open-timetable-tool | train runs, timetable, rolling stock |
+| discipline | `construction` | open-construction-sim | closures, temporary speed restrictions, tracks in operation per stage |
+| base | `core` | open-layout-tool | **reference**: coordinate systems, km lines and designed kilometrage, operational point register, catalogue versions (rules, switch forms, profiles) · **net**: tracks (elements, heights, cant, superstructure), switches and connectors · **context**: platforms, end marks, structures (bridges, tunnels, level crossings) · **stages**: the ordered construction stages · **types**: `TrackLocation`, `TrackRange`, `TrackEnd`, `TrackPath`, `Lifespan`, `Ref` |
+| project | — | server | variants, approvals, comments — they refer into revisions, never back |
 
-- **Operations per construction stage** (closures, temporary speed restrictions, tracks in operation) form a
-  further discipline domain, `construction`.
+Discipline domains store references only into the core (R2, R9). Open-Capacity-Sim writes no domain: its results
+are derived.
+
 - **Connectors with two ends** (`link`) join two track ends at a node: where the plane changes, and where a
   rebuilt part of a track ties in ([decision 0003](decisions/0003-construction-stages.md)).
 - **The core is written by the layout tool** (and carried by the core library, R4). Platforms, end marks and
@@ -221,22 +211,27 @@ core, and derived results above them:
 - **One physical thing, several discipline objects.** A turnout is a core switch (geometry, form, topology); the
   signalling domain has its own switch element referring to it (drive, position detection, interlocking name),
   as PlanPro models it. Each discipline names it in its own terms; the core switch carries the geometry once.
-- **Words are reserved per meaning.** Today "route" means a named run of tracks (layout), the two ways through a
-  turnout, and will mean a signalling route (Fahrstraße). In the core: `TrackPath` for a run of tracks, "route"
-  only for signalling.
+- **Words are reserved per meaning.** In the Open-Layout-Tool "route" names a named run of tracks (`routes`) and
+  the two ways through a turnout; signalling will need it for the signalling route (Fahrstraße). A bare "route"
+  is therefore reserved for signalling. A run of tracks is a `TrackPath`, a core type; the layout tool's named
+  runs become `trackPaths` in the `layout` domain; the ways through a turnout keep their compound name
+  `switchRoute`.
 
-A located object, here a signal, with its location as one value:
+A located object, here a new signal, with its location and its lifespan as one value each:
 
 ```json
 {
   "id": "5d1c…", "kind": "main", "name": "N3",
   "at": { "trackId": "a9f5…", "station": 812.400, "side": "right", "offset": 2.90,
-          "direction": "down", "anchor": "station" }
+          "direction": "down", "anchor": "station" },
+  "lifespan": { "from": "c41e…" }
 }
 ```
 
-The signalling schema declares `"at": { "$ref": "core#/$defs/TrackLocation" }`. Any build finds this reference
-through the schema, carries it through a split, and can list the signal as standing on track `a9f5…`.
+The signalling schema declares `"at": { "$ref": "core#/$defs/TrackLocation" }` and
+`"lifespan": { "$ref": "core#/$defs/Lifespan" }`. Any build finds both references through the schema: it carries
+`at` through a split, can list the signal as standing on track `a9f5…`, and derives from `lifespan` that the
+signal is new from stage `c41e…` on — drawn red.
 
 ## 5. Storage
 
@@ -259,7 +254,7 @@ revision   { parents, author, time, message, manifest: sha256:…, idLog: [ { fr
    └─ manifest
         ├─ core        { version: "1.0", schema: sha256:…, fields: sha256:…,
         │                collections: { tracks: sha256:…, switches: sha256:…, platforms: sha256:…, … } }
-        ├─ layout-work { version: "1.0", schema: sha256:…, dependsOn: ["core"],
+        ├─ layout      { version: "1.0", schema: sha256:…, dependsOn: ["core"],
         │                collections: { referenceAxes: sha256:…, … } }
         │                   └─ a reference axis names its point arrays: { points: "sha256:…" }
         └─ signalling  { version: "0.3", schema: sha256:…, dependsOn: ["core"], collections: { … } }

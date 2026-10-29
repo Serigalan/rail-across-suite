@@ -239,3 +239,41 @@ export function stationFromClick(track, elIdx, clickUtm) {
 /** Length of the platform along the track [m]. */
 export const platformLength = (platform) =>
   Math.abs((platform?.endStation ?? 0) - (platform?.startStation ?? 0))
+
+/** Tolerance [m] for a platform end on the end of what a track keeps. */
+const CARRY_TOL = 1e-6
+
+/**
+ * Carry platforms through a change of their tracks' stations. Each entry
+ * `{ oldId, newId, from, to, offset, flip }` says that the stations `from`–`to`
+ * of the old track lie on the new one at `offset + s`, or at `offset - s` where
+ * the new track runs the other way (`flip`) — which also puts a platform on the
+ * other side. A platform one entry holds whole is re-stationed onto it; one the
+ * entries of its track do not hold goes, as when elements are deleted.
+ * Platforms on tracks no entry names stay as they are.
+ */
+export function carryPlatforms(platforms, carries) {
+  if (!platforms?.length || !carries?.length) return platforms
+  return platforms.flatMap(pl => {
+    const mine = carries.filter(c => c.oldId === pl.trackId)
+    if (!mine.length) return [pl]
+    const a = pl.startStation ?? 0, b = pl.endStation ?? 0
+    const lo = Math.min(a, b), hi = Math.max(a, b)
+    const c = mine.find(c => lo >= c.from - CARRY_TOL && hi <= c.to + CARRY_TOL)
+    if (!c) return []
+    const at = (s) => (c.flip ? c.offset - s : c.offset + s)
+    const [start, end] = c.flip ? [at(b), at(a)] : [at(a), at(b)]
+    return [{
+      ...pl, trackId: c.newId, startStation: start, endStation: end,
+      ...(c.flip && pl.side ? { side: pl.side === 'left' ? 'right' : 'left' } : {}),
+    }]
+  })
+}
+
+/**
+ * The platforms of a track that was reversed: a platform at `s0`–`s1` on its
+ * left is at `length - s1`–`length - s0` on its right.
+ */
+export function flipPlatforms(platforms, trackId, length) {
+  return carryPlatforms(platforms, [{ oldId: trackId, newId: trackId, from: 0, to: length, offset: length, flip: true }])
+}

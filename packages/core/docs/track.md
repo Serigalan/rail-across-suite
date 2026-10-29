@@ -22,7 +22,7 @@ the importers, the merge and the Node project server use the same code.
 | `topology.js` | The state of every track end (switch, link, joint, buffer stop, boundary, open); which tracks continue from an end |
 | `trackEndMarks.js` | Buffer stops and planning-area boundaries at free track ends |
 | `bufferStopGeometry.js` | How a buffer stop is drawn |
-| `platformUtils.js` | Platforms anchored to a track by two stations; stationing helpers (`pointAtStation`, `stationOnTrack`, `pointOnElement`) |
+| `platformUtils.js` | Platforms anchored to a track by two stations; stationing helpers (`pointAtStation`, `stationOnTrack`, `pointOnElement`); carrying platforms when their track turns round or goes into another (`carryPlatforms`, `flipPlatforms`) |
 | `platformForm.js` | The platform dialog's fields and the record they make |
 | `routes.js` | Routes: named runs of connected tracks with their own stationing |
 | `trackGroups.js` | Grouping tracks by line or station for lists and assignment; the name of a line track from its kilometrage |
@@ -166,6 +166,13 @@ are perpendicular offsets of the track axis: the front edge at 1.68 m (`frontOff
 design stage — but overridable. Vertically it is stated over the top of rail (`height` in mm: 380, 550 or
 760), so its absolute elevation is the track's gradient at that station plus the height, and the two are
 never kept side by side. The drawn polygon is derived on load and stripped on save.
+
+**A platform goes where its track goes** (data model, case F3). Turned round, a track takes its platforms
+along: one at 120–260 m on the left of a 400 m track is at 140–280 m on its right (`flipPlatforms`). Spliced
+into another, a track hands over where the part the merged track keeps lies on it — `{ oldId, newId, from,
+to, offset, flip }`, the merged station being `offset ± s` — and a platform that part holds whole is
+re-stationed onto the merged track (`carryPlatforms`); one reaching into what the splice re-shaped goes, as when
+elements are deleted. Either way it stands where it stood, edge for edge, which the tests check point by point.
 
 ## Routes
 

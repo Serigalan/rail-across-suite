@@ -26,8 +26,8 @@ export {
 export { STATUS_COLOR, STATUSES, switchStatus, trackStatus } from './planStatus'
 export { EMPTY_PLATFORM_FORM, pickedStation, platformDraft, platformForm, platformFormValid } from './platformForm'
 export {
-  DEFAULT_PLATFORM_HEIGHT, edgeOffsets, elementStations, PLATFORM_CODE_MAX, PLATFORM_FRONT_OFFSET,
-  PLATFORM_HEIGHTS, platformEdgeElevation, platformLength, platformRing, pointAtStation,
+  carryPlatforms, DEFAULT_PLATFORM_HEIGHT, edgeOffsets, elementStations, flipPlatforms, PLATFORM_CODE_MAX,
+  PLATFORM_FRONT_OFFSET, PLATFORM_HEIGHTS, platformEdgeElevation, platformLength, platformRing, pointAtStation,
   pointOnElement, rebuildPlatformSymbol, stationFromClick, stationOnTrack,
 } from './platformUtils'
 export {

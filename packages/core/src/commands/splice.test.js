@@ -5,6 +5,8 @@ import {
 import { straightElement, arcElement, transitionElement } from '../geometry/elementFactory'
 import { rebuildCoords } from '../track/trackModel'
 import { expectValidTrack } from '../../test/chainInvariants'
+import { edgeAt } from '../../test/platformEdge'
+import { carryPlatforms } from '../track'
 import answers from '../../test/fixtures/splice_answers.json'
 
 // The construction is the service's (olt_optimizer/splice.py); what is tested
@@ -420,5 +422,65 @@ describe('the cant proposed for the arc a splice inserts (Entscheidung 315)', ()
   })
   it('is free for the Regelüberhöhung with a transition either side', () => {
     expect(spliceKeptCant(picks, [true, true])).toBeNull()
+  })
+})
+
+// Case F3 of the data model: two tracks spliced into one take their platforms
+// along — each re-stationed onto the merged track and standing where it stood,
+// whichever way either track comes in. What the splice re-shapes holds none.
+describe('the platforms of the two tracks (data model, case F3)', () => {
+  const arcTrack = (id, side, { request }) => track(id, [arcElement(at(request[side].start), at(request[side].end),
+    request[side].radius, { speed: 90, cant: 30 })])
+  const cases = {
+    'both in their own direction': () => {
+      const sol = best(answers.corner.answer, [splicePick(a, 0), splicePick(b, 0)])
+      return { tracks: [a, b], sol }
+    },
+    'the departure run backwards': () => {
+      const a2 = track('a2', [straightElement(P(200, 0), P(0, 0), { speed: 80 })])
+      const sol = best(answers.startToStart.answer, [splicePick(b, 0), splicePick(a2, 0)])
+      return { tracks: [a2, b], sol }
+    },
+    'the arrival folded in backwards': () => {
+      const c = arcTrack('c', 'dep', answers.arcsStraight), d = arcTrack('d', 'arr', answers.arcsStraight)
+      return { tracks: [c, d], sol: best(answers.arcsStraight.answer, [splicePick(c, 0), splicePick(d, 0)]) }
+    },
+  }
+  for (const [name, setup] of Object.entries(cases)) {
+    it(`stands where it stood — ${name}`, () => {
+      const { tracks, sol } = setup()
+      const commit = buildSplice({ tracks, solution: sol, speed: 60, cant: 30, newId })
+      const [merged] = commit.addTracks
+      expect(commit.carry.map(c => c.oldId)).toEqual([sol.dep.trackId, sol.arr.trackId])
+      for (const c of commit.carry) {
+        const old = tracks.find(t => t.id === c.oldId)
+        // A platform over the middle of what the merged track keeps of each.
+        const third = (c.to - c.from) / 3
+        const pl = { id: `p-${c.oldId}`, trackId: c.oldId, startStation: c.from + third, endStation: c.to - third,
+          side: 'left', frontOffset: 1.68 }
+        const [moved] = carryPlatforms([pl], commit.carry)
+        expect(moved.trackId).toBe(merged.id)
+        // Its ends, and the ends of the kept part itself, are the same points.
+        const ends = c.flip
+          ? [[pl.startStation, moved.endStation], [pl.endStation, moved.startStation]]
+          : [[pl.startStation, moved.startStation], [pl.endStation, moved.endStation]]
+        const at = (s) => (c.flip ? c.offset - s : c.offset + s)
+        for (const [s0, s1] of [...ends, [c.from, at(c.from)], [c.to, at(c.to)]]) {
+          const [e0, n0] = edgeAt(old, pl, s0)
+          const [e1, n1] = edgeAt(merged, moved, s1)
+          expect(Math.hypot(e1 - e0, n1 - n0), `${c.oldId} at ${s0}`).toBeLessThan(1e-6)
+        }
+      }
+    })
+  }
+
+  it('lets a platform go that reaches into what the splice re-shapes', () => {
+    const sol = best(answers.corner.answer, [splicePick(a, 0), splicePick(b, 0)])
+    const commit = buildSplice({ tracks: [a, b], solution: sol, speed: 60, cant: 30, newId })
+    // Track a is kept to the tangent point 100 m along; a platform at 50–150 m
+    // stood beside the straight the arc now leaves.
+    expect(commit.carry[0]).toMatchObject({ oldId: 'a', from: 0, offset: 0, flip: false })
+    expect(commit.carry[0].to).toBeCloseTo(100, 6)
+    expect(carryPlatforms([{ id: 'p', trackId: 'a', startStation: 50, endStation: 150, side: 'left' }], commit.carry)).toEqual([])
   })
 })

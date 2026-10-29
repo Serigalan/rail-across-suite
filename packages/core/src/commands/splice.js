@@ -347,6 +347,46 @@ function overlapOf(piece, orig, node, pieceNode) {
 const plain = ({ rv: _rv, la: _la, ...p }) => p
 
 /**
+ * How much of each track the merged one still runs over: of the departure
+ * from its far end in travel up to where the merged track leaves the picked
+ * element (its end where it departs backwards), of the arrival from where the
+ * merged track runs on it again to its far end (its start where it is folded
+ * in reversed).
+ */
+function keptLengths({ depTrack, arrTrack, dep, arr, chain, reverseDep, reverseArr }) {
+  const depOrig = depTrack.elements[dep.elIdx]
+  const arrOrig = arrTrack.elements[arr.elIdx]
+  const depPiece = chain.find(el => el.role === 'dep')
+  const arrPiece = [...chain].reverse().find(el => el.role === 'arr')
+  const depRest = reverseDep ? towardEnd(depTrack, dep) : towardStart(depTrack, dep)
+  const depKeep = lengthOf(depRest)
+    + (dep.virtual ? 0 : overlapOf(depPiece, depOrig, reverseDep ? depOrig.endNode : depOrig.startNode, 'startNode'))
+  const arrRest = reverseArr ? towardStart(arrTrack, arr) : towardEnd(arrTrack, arr)
+  const arrKeep = lengthOf(arrRest)
+    + (arr.virtual ? 0 : overlapOf(arrPiece, arrOrig, reverseArr ? arrOrig.startNode : arrOrig.endNode, 'endNode'))
+  return { depKeep, arrKeep }
+}
+
+/**
+ * Where the stations of the two tracks lie on the merged one, for what is
+ * stationed along them (carryPlatforms): the departure's kept part from the
+ * merged track's start, the arrival's up to its end — each turned round where
+ * its track comes in reversed.
+ */
+function spliceCarries({ depTrack, arrTrack, reverseDep, reverseArr, mergedLength, depKeep, arrKeep, id }) {
+  const depLength = trackLength(depTrack), arrLength = trackLength(arrTrack)
+  const arrFrom = mergedLength - arrKeep
+  return [
+    reverseDep
+      ? { oldId: depTrack.id, newId: id, from: depLength - depKeep, to: depLength, offset: depLength, flip: true }
+      : { oldId: depTrack.id, newId: id, from: 0, to: depKeep, offset: 0, flip: false },
+    reverseArr
+      ? { oldId: arrTrack.id, newId: id, from: 0, to: arrKeep, offset: arrFrom + arrKeep, flip: true }
+      : { oldId: arrTrack.id, newId: id, from: arrLength - arrKeep, to: arrLength, offset: arrFrom - (arrLength - arrKeep), flip: false },
+  ]
+}
+
+/**
  * The vertical alignment of the merged track: the departure track's gradient
  * as far as the merged track still runs over it, the arrival track's from
  * where it does again, and between the two a single straight gradient from
@@ -360,20 +400,7 @@ const plain = ({ rv: _rv, la: _la, ...p }) => p
  * the tracks has a gradient at all, the merged track keeps that one alone.
  */
 function spliceHeights({ depTrack, arrTrack, dep, arr, chain, reverseDep, reverseArr, mergedLength }) {
-  const depOrig = depTrack.elements[dep.elIdx]
-  const arrOrig = arrTrack.elements[arr.elIdx]
-  const depPiece = chain.find(el => el.role === 'dep')
-  const arrPiece = [...chain].reverse().find(el => el.role === 'arr')
-  // The departure's gradient up to where the merged track leaves its element:
-  // from its far end in travel, which is its end where it departs backwards.
-  const depRest = reverseDep ? towardEnd(depTrack, dep) : towardStart(depTrack, dep)
-  const depKeep = lengthOf(depRest)
-    + (dep.virtual ? 0 : overlapOf(depPiece, depOrig, reverseDep ? depOrig.endNode : depOrig.startNode, 'startNode'))
-  // The arrival's from where the merged track runs on it again: its far end in
-  // travel, which is its start where it is folded in reversed.
-  const arrRest = reverseArr ? towardStart(arrTrack, arr) : towardEnd(arrTrack, arr)
-  const arrKeep = lengthOf(arrRest)
-    + (arr.virtual ? 0 : overlapOf(arrPiece, arrOrig, reverseArr ? arrOrig.startNode : arrOrig.endNode, 'endNode'))
+  const { depKeep, arrKeep } = keptLengths({ depTrack, arrTrack, dep, arr, chain, reverseDep, reverseArr })
   const offset = mergedLength - arrKeep
 
   const depHeights = reverseDep ? reverseHeights(depTrack.heights, trackLength(depTrack)) : depTrack.heights
@@ -445,7 +472,8 @@ function mergedChain({ dep, arr, result }, depTrack, arrTrack, { speed, cant }) 
 /**
  * The splice as one commit: both tracks go, the merged one — a new id, the
  * metadata of the track that keeps its direction (of the departure where both
- * do) — comes, and the switches and end marks on them follow it. Each track
+ * do) — comes, and the switches, end marks and platforms on them follow it
+ * (`carry`: where their stations lie on the merged track). Each track
  * is cut behind its picked element, on the side away from the splice, so the
  * two ends beyond the cuts are gone — whatever stood on them (a buffer stop)
  * goes with them.
@@ -468,10 +496,12 @@ export function buildSplice({ tracks, solution, speed, cant, newId = generateId 
     depTrack, arrTrack, dep, arr, chain, reverseDep, reverseArr, mergedLength: lengthOf(merged),
   })
   const { heights: _h, ...meta } = reverseDep ? arrTrack : depTrack
+  const kept = keptLengths({ depTrack, arrTrack, dep, arr, chain, reverseDep, reverseArr })
   return {
     removeTrackIds: [dep.trackId, arr.trackId],
     addTracks: [{ ...meta, id, elements: merged, coordinates: rebuildCoords(merged), ...(heights ? { heights } : {}) }],
     remap: [{ oldId: dep.trackId, newId: id, flip: reverseDep }, { oldId: arr.trackId, newId: id, flip: reverseArr }],
+    carry: spliceCarries({ depTrack, arrTrack, reverseDep, reverseArr, mergedLength: lengthOf(merged), ...kept, id }),
     consumed: [
       { trackId: dep.trackId, endpoint: reverseDep ? 'BEGIN' : 'END' },
       { trackId: arr.trackId, endpoint: reverseArr ? 'END' : 'BEGIN' },

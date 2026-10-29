@@ -225,6 +225,47 @@ describe('buffer stops and boundaries in the store', () => {
   })
 })
 
+// Case F3 of the data model: a platform is stationed along its track, so a
+// track reversed or spliced into another takes it along.
+describe('platforms when their track is reversed or spliced (data model, case F3)', () => {
+  const el = (x0, length) => ({ elementType: 0, length, bearing: 90, startNode: [x0, 0], endNode: [x0 + length, 0] })
+  const platform = (id, trackId, startStation, endStation, side) =>
+    ({ id, trackId, startStation, endStation, side, frontOffset: 1.68, height: 550 })
+
+  it('turns round with a reversed track: 120–260 m on the left of 400 m is 140–280 m on the right', () => {
+    openProject({ id: 'f3a', tracks: [{ id: 't', elements: [el(0, 150), el(150, 250)] }], switches: [],
+      platforms: [platform('p', 't', 120, 260, 'left'), platform('q', 'u', 10, 20, 'left')] })
+    reverseTrackDirection('t')
+    expect(loadPlatforms()).toEqual([platform('p', 't', 140, 280, 'right'), platform('q', 'u', 10, 20, 'left')])
+    // Twice round is where it began.
+    reverseTrackDirection('t')
+    expect(loadPlatforms()[0]).toEqual(platform('p', 't', 120, 260, 'left'))
+    undo()
+    undo()
+    expect(loadPlatforms()[0]).toEqual(platform('p', 't', 120, 260, 'left'))
+  })
+
+  it('follows a spliced track onto the merged one, and goes where the splice re-shaped its stretch', () => {
+    openProject({ id: 'f3b', tracks: [{ id: 'a', elements: [el(0, 200)] }, { id: 'b', elements: [el(400, 200)] }],
+      switches: [], platforms: [
+        platform('pa', 'a', 20, 80, 'left'), platform('pb', 'b', 120, 180, 'right'), platform('cut', 'a', 50, 150, 'left'),
+      ] })
+    // What buildSplice hands over for a splice that keeps a to 100 m and b
+    // from 100 m, both in their own direction, with 150 m of new track between.
+    commitSwitchConnection({
+      removeTrackIds: ['a', 'b'], addTracks: [{ id: 'm', elements: [el(0, 100), el(100, 150), el(250, 100)] }],
+      remap: [{ oldId: 'a', newId: 'm', flip: false }, { oldId: 'b', newId: 'm', flip: false }],
+      carry: [
+        { oldId: 'a', newId: 'm', from: 0, to: 100, offset: 0, flip: false },
+        { oldId: 'b', newId: 'm', from: 100, to: 200, offset: 150, flip: false },
+      ],
+    })
+    expect(loadPlatforms()).toEqual([platform('pa', 'm', 20, 80, 'left'), platform('pb', 'm', 270, 330, 'right')])
+    undo()
+    expect(loadPlatforms().map(p => p.trackId)).toEqual(['a', 'b', 'a'])
+  })
+})
+
 describe('the id log of splits and joins (decision 93)', () => {
   const el = (length) => ({ elementType: 0, length, bearing: 90, startNode: [0, 0], endNode: [length, 0] })
 

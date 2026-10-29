@@ -5,6 +5,7 @@ import {
   elementBelongsToSwitch, portsOf, unmarkSwitchElement, portTrack, portEnd, sliceHeights,
   flipSwitchEndpoints, makeTrack, nextTrackName, portTracks, referencesTrack, remapSwitches,
   reverseTrack, generateId, remapEndMarks, flipEndMarks, pruneEndMarks, endKey, repairRoutes,
+  carryPlatforms, flipPlatforms, trackLength,
 } from '@rail-across/core/track'
 import { coupleSwitchCants, rebuildSwitchSymbol } from '@rail-across/core/switch'
 import {
@@ -958,7 +959,8 @@ export function addElementToTrack(trackId, element) {
  * Reverse a track's direction. The element order and every element flip, so the
  * track's BEGIN/END swap — switch ports referencing it are flipped with it, all
  * under a single undo step. Stations follow from the new element order; the height
- * points are stationed along the track, so they mirror about its length.
+ * points are stationed along the track, so they mirror about its length, and so do
+ * its platforms, which change sides with it (data model, case F3).
  */
 export function reverseTrackDirection(trackId) {
   return mutate(p => {
@@ -970,6 +972,7 @@ export function reverseTrackDirection(trackId) {
       tracks:   p.tracks.map(t => (t.id === trackId ? reversed : t)),
       switches: flipSwitchEndpoints(p.switches, trackId),
       endMarks: flipEndMarks(p.endMarks, trackId),
+      ...(p.platforms ? { platforms: flipPlatforms(p.platforms, trackId, trackLength(track)) } : {}),
     }
   })
 }
@@ -1180,8 +1183,10 @@ export function updateSwitch(switchId, patch) {
  *                                       (a trailing turnout's through route)
  * @param {object[]} [ops.restation]     [{ trackId, shift }] tracks that grew at their start:
  *                                       their platforms move by `shift` [m]
+ * @param {object[]} [ops.carry]         where the stations of removed tracks lie on the new
+ *                                       ones (carryPlatforms): their platforms follow (a splice)
  */
-export function commitSwitchConnection({ removeTrackIds = [], addTracks, addSwitches, remap, addEndMarks, append = [], consumed = [], restation = [] }) {
+export function commitSwitchConnection({ removeTrackIds = [], addTracks, addSwitches, remap, addEndMarks, append = [], consumed = [], restation = [], carry = [] }) {
   return mutate(p => {
     const removeSet = new Set(removeTrackIds)
     const appendTo = new Map(append.map(a => [a.trackId, a.elements]))
@@ -1198,6 +1203,8 @@ export function commitSwitchConnection({ removeTrackIds = [], addTracks, addSwit
     }
     next = { ...next, switches: [...(next.switches ?? []), ...(addSwitches ?? [])] }
     if (addEndMarks?.length) next = { ...next, endMarks: [...(next.endMarks ?? []), ...addEndMarks] }
+    // Platforms on a removed track follow it onto the new one (data model, case F3).
+    if (carry.length && next.platforms?.length) next = { ...next, platforms: carryPlatforms(next.platforms, carry) }
     // A track that grew at its start moves everything stationed along it.
     const shiftOf = new Map(restation.map(r => [r.trackId, r.shift]))
     if (shiftOf.size && next.platforms?.length) {

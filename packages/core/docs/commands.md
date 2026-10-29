@@ -75,8 +75,9 @@ departure is the pick whose end faces the gap, whichever was clicked first; wher
 meet, the **shorter** track is reversed and folded in, and the merged track keeps the name and data of the
 one that keeps its direction. The speed defaults to the larger of the two picks (none: not checked). The
 merged track's gradient: the departure's up to where the new track leaves it, the arrival's from where it
-rejoins it, and one straight gradient between — no point and no curve at the two junctions. Platforms and
-height points are re-stationed. With a spacing to a neighbouring track the request goes to the optimizer
+rejoins it, and one straight gradient between — no point and no curve at the two junctions. Height points
+are re-stationed; so are the platforms of both tracks, through the `carry` the commit states for each — where
+the part of it the merged track keeps lies on the merged one (`carryPlatforms` in the track module). With a spacing to a neighbouring track the request goes to the optimizer
 service instead (only the server build has it).
 
 **Reconnect** (`reconnect.js`, server build): the stretch between two clicks on one track is replaced by the

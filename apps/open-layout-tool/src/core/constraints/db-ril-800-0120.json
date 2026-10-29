@@ -1,0 +1,4156 @@
+{
+  "katalog": {
+    "id": "db-ril-800-0120",
+    "title": "DB Ril 800.0120 | Auswahl der Weichen und Kreuzungen",
+    "katalog_version": "0.6.0",
+    "status": "draft",
+    "date": "2026-10-20",
+    "language": "de",
+    "scope": {
+      "included": [
+        "Formen der Weichen, Kreuzungen und Kreuzungsweichen mit ihren Maßen",
+        "Klasse je Form: Regelform (A01) oder Sonderbauform (A02)",
+        "Lage der letzten durchgehenden Schwelle (ldS) je Weichenform — Grenze des Weichenbereichs im Höhenplan"
+      ],
+      "excluded": [
+        "Linienführung — eigener Katalog db-ril-800-0110",
+        "Geometrie: wie aus Radius, Neigung und geradem Endstück ein Weichenkörper wird, rechnet switchUtils.js",
+        "Regelteil (Mindestzwischengerade, gebogene Weiche, Krümmungssprung in der Weiche) — folgt, siehe open_points"
+      ]
+    },
+    "label_note": "Die Labels sind Schlüssel: ein gespeichertes Projekt schlägt seine Form darüber nach (switchTypeByLabel, switchModel.SWITCH_FORM_VERSION). Ein Label wird deshalb nicht umbenannt, auch wenn die Ril die Form anders schreibt."
+  },
+  "changelog": [
+    {
+      "version": "0.6.0",
+      "date": "2026-10-20",
+      "changes": [
+        "Neu: die Klothoiden- und Korbbogenweichen der Weichentabelle DB 800.0120 (05/2024) als eigene Formen: 6000/3700 – 1:32.5 fb, 7000/6000 – 1:42 fb, 3000/1500 – 1:18.132 fb, 3000/1500/∞ – 1:23.735 fb, 4800/2450 – 1:24.257 fb, 4800/2450/∞ – 1:30.686 fb, 10000/4000 – 1:32.05 fb, 10000/4000/∞ – 1:39.113 fb, 16000/6100 – 1:40.154 fb (Paket WD, Entscheidung 344)",
+        "Neuer Abschnitt clothoid im Zweig, Bögen mit eigener Länge; R der Form ist ihr kleinster Radius, die Geschwindigkeit folgt aus ihm (Entscheidung 348), die Weichenmarke aus switchMarkDistance mit t2 (Entscheidung 346)",
+        "Neues Feld s_we: bei den drei Formen mit Auslaufklothoide (…/∞) liegt das WE dort, wo der Gleisabstand das s der Tabelle erreicht — 3,57 m hinter dem Ende der Elemente bzw. 0,58 m und 4,15 m davor; so treffen t1 und t2 die Tabelle auf 2 cm"
+      ]
+    },
+    {
+      "version": "0.5.0",
+      "date": "2026-10-20",
+      "changes": [
+        "Neu: die fb- und gb-Weichen der Weichentabelle DB 800.0120 (05/2024) als eigene Formen mit Feld herzstueck (federnd bzw. gelenkig beweglich, u_f = 130 mm): 500 – 1:12 fb, 760 – 1:14 fb, 1200 – 1:18.5 fb, 300 – 1:9 gb, 300 – 1:9.4 gb, 500 – 1:11 fb, 500 – 1:12 gb, 500 – 1:14 fb, 760 – 1:14 gb, 760 – 1:15 fb, 760 – 1:18.5 fb, 1200 – 1:18 fb, 1200 – 1:18.5 gb, 1200 – 1:19.277 fb, 2500 – 1:27.85 fb (Paket WD, Entscheidung 343)",
+        "2500 – 1:26.5 ist eine fb-Weiche (herzstueck fb) — die Tabelle führt sie nur so",
+        "Geschwindigkeit nach dem Radius wie bei den starren Formen (Entscheidung 348); Weichenmarke aus switchMarkDistance (Entscheidung 346); ldS aus der Tabelle, wo eine starre Form gleicher Geometrie sie genauer nennt, deren Wert; keine Mindestzwischengerade und keine Stufe der Weichenverbindung — sie werden nie selbsttätig gewählt"
+      ]
+    },
+    {
+      "version": "0.4.0",
+      "date": "2026-10-20",
+      "changes": [
+        "Neues Feld varianten: die Ausführungen jeder Form nach der Weichentabelle DB 800.0120 (05/2024) — Profil, Schwellen, DB-Nummer, Schwellenzahl mit Klammer, ZS–WA, R IBW min und die Tabellenmaße (Paket WD, Entscheidungen 342, 345, 347)",
+        "Die Konstruktion aus R, 1:n und lz trifft alle Tabellenzeilen auf 3 mm; die ldS der Formen bleibt (die Tabelle rundet auf 0,1 m, 215 – 1:4.8 bleibt 0 statt −0,244)",
+        "190 – 1:6.3 und die Bogenkreuzungsweichen stehen nicht in der Tabelle und haben keine Varianten"
+      ]
+    },
+    {
+      "version": "0.3.1",
+      "date": "2026-10-06",
+      "changes": [
+        "190 – 1:6.3: lds 0 — WE ist die ldS, wie bei 215 – 1:4.8 (geliefert vom Auftraggeber); damit führen alle Weichenformen lds, OP.W.06 erledigt"
+      ]
+    },
+    {
+      "version": "0.3.0",
+      "date": "2026-10-06",
+      "changes": [
+        "Neues Feld lds: Abstand der letzten durchgehenden Schwelle hinter dem Weichenende entlang des Stammgleises, geliefert vom Auftraggeber am 2026-10-06 für vierzehn der fünfzehn Weichenformen. Bis WA–ldS liegen Stamm- und Zweiggleis in einer Ebene, ihre Gradiente ist gekoppelt; der Höhenplan behandelt WA–ldS als Weichenbereich (db-ril-800-0110, HP.AR.06)",
+        "Für 190 – 1:6.3 steht der Wert aus (OP.W.06)"
+      ]
+    },
+    {
+      "version": "0.2.0",
+      "date": "2026-09-22",
+      "changes": [
+        "Neu aufgenommen: EBKW und DBKW 1:9 – 500,860, die Bogenkreuzungsweichen der A02 — gleichsinnig gekrümmte Kreuzungsgleise (Rk), Enden entlang dieser Bögen (lb), bei der DBKW der innenliegende Bogen (Ri)",
+        "Vom Auftraggeber entschieden: l_KW = 2·l_b, und c folgt aus der Konstruktion statt aus der gelieferten Zahl (OP.W.02)",
+        "Die DBKW trägt die Kreuzung der EBKW — ihre eigene Zeile ist nicht geliefert (OP.W.02)"
+      ]
+    },
+    {
+      "version": "0.1.0",
+      "date": "2026-09-22",
+      "changes": [
+        "Erste maschinenlesbare Fassung: die fünf Formentabellen aus switchUtils.js als Datei",
+        "Klasse je Form nach der Einteilung der Ril: Regelform (A01), Sonderbauform (A02) — die frühere App-Einteilung in Regeltabelle, zwei Ausweichtabellen und Bestandsformen entfällt",
+        "Sym. ABW 215 – 1:4,8 ist eine Regelform und wird geplant, nicht nur erkannt; 190 – 1:6,3 ist eine Sonderbauform",
+        "Neu aufgenommen: EW 300 – 1:14, Kr 1:14, Kr 1:18,5 (geliefert 2026-09-22)",
+        "Geschwindigkeit je Fahrweg für die vier Kreuzungsweichen (geliefert 2026-09-22)",
+        "Die Ausweichreihenfolge der Weichenverbindung steht als verbindung.stufe/rang an der Form — Festlegung dieses Werkzeugs, nicht der Ril"
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "id": "RIL_800_0120_A01",
+      "title": "DB Ril 800.0120A01 — Regelformen"
+    },
+    {
+      "id": "RIL_800_0120_A02",
+      "title": "DB Ril 800.0120A02 — Sonderbauformen"
+    },
+    {
+      "id": "DB_800_0120_TABELLE_2024_05",
+      "title": "Weichentabelle DB 800.0120 (05/2024), geliefert vom Auftraggeber am 2026-10-19 (Weichengeometrie.md)"
+    }
+  ],
+  "klassen": [
+    {
+      "id": "regel",
+      "title": "Regelform",
+      "source": "RIL_800_0120_A01",
+      "meaning": "Es sollen Regelformen verwendet werden."
+    },
+    {
+      "id": "sonderbauform",
+      "title": "Sonderbauform",
+      "source": "RIL_800_0120_A02",
+      "meaning": "Zulässig, aber nicht die Regel — die Stufe, mit der eine Sonderbauform gemeldet wird, steht noch aus (OP.W.05)."
+    }
+  ],
+  "felder": {
+    "label": "Name der Form, zugleich ihr Schlüssel",
+    "art": "weiche oder kreuzung (Kreuzungen und Kreuzungsweichen)",
+    "klasse": "regel oder sonderbauform",
+    "kind": "Bauart einer Kreuzung: crossing, single_slip (EKW, EBKW), double_slip (DKW, DBKW)",
+    "R": "Radius [m] des Bogenstrangs (bei einer Weiche) bzw. der Verbindungsbögen (bei einer Kreuzungsweiche). Die Bogenkreuzungsweiche hat keinen einheitlichen Radius und nennt ihre Radien einzeln (Rk, Ri)",
+    "Rk": "Radius der Kreuzungsgleise [m] — nur bei der Bogenkreuzungsweiche (EBKW, DBKW), deren Kreuzungsgleise gleichsinnig gekrümmt sind. Fehlt er, sind die Kreuzungsgleise gerade",
+    "Ri": "Radius des innenliegenden Verbindungsbogens [m] — nur bei der DBKW. Ihre andere Verbindung ist gerade, wie die einzige Verbindung der EBKW",
+    "lb": "Bogenlänge vom Kreuzungspunkt bis zu jedem der vier Enden [m], entlang der gekrümmten Kreuzungsgleise — das l_b der Bogenkreuzungsweiche. Ihre Länge l_KW ist 2·l_b (OP.W.02)",
+    "ratio": "Neigung 1:n als n — bei einer Kreuzung der Kreuzungswinkel",
+    "speed": "zulässige Geschwindigkeit [km/h] auf dem abzweigenden bzw. dem Kreuzungsfahrweg",
+    "routen": "Geschwindigkeit und Radius je Fahrweg, wo eine Form mehrere trägt (Kreuzungsweichen)",
+    "dLcs": "Abstand der Weichenmarke vom Weichen- bzw. Kreuzungsende [m]; bei einer Kreuzung negativ möglich",
+    "minl": "Mindestzwischengerade [m] zwischen zwei Weichen — steht hier noch je Form, gehört aber an v (OP.W.01)",
+    "lds": "Abstand der letzten durchgehenden Schwelle (ldS) hinter dem Weichenende (WE) [m], entlang des Stammgleises; 0 bei einer Form, deren WE die ldS ist. Vom Weichenanfang (WA) aus liegt die ldS um die Länge der Weiche (WA bis WE) und diesen Abstand weiter. Bis dorthin liegen Stamm- und Zweiggleis auf einer Ebene: das Zweiggleis hat die Höhe des Stammgleises, in der Überhöhung um u/1500 · Achsabstand gehoben bzw. gesenkt. Fehlt der Wert, wird nicht gekoppelt, und der Weichenbereich reicht im Höhenplan bis WE",
+    "branch": "Der Zweig als Folge seiner Abschnitte ab der Spitze: arc (Radius R der Form, oder ein eigener R; mit length, wo er einer von mehreren ist), clothoid (von R1 nach R2, R2 = null für die Gerade, mit length) und straight mit eigener Länge [m]. Fehlt der Eintrag, ist der Zweig genau ein Bogen bis zur Neigung der Form.",
+    "symmetric": "Beide Fahrwege verlassen die Spitze auf demselben Radius, je durch den halben Winkel — die Form hat keinen durchgehenden Strang",
+    "lt": "Tangente einer Kreuzung [m]: vom Kreuzungspunkt bis zu jedem ihrer vier Enden",
+    "masse": "Die gelieferte Tabellenzeile im Wortlaut der Ril, soweit sie vorliegt. Nichts rechnet damit: sie bindet (B.10) und ist der Prüfstein für die Konstruktion aus R, ratio und branch.",
+    "verbindung": "stufe und rang der Ausweichreihenfolge — Festlegung dieses Werkzeugs, siehe verbindung unten",
+    "varianten": "Die Ausführungen einer Form nach der Weichentabelle DB 800.0120 (05/2024): DB-Nummer, Bezeichnung, Schienenprofil, Schwellen (beton oder holz), Klasse der Ausführung, zungen (gekürzt bzw. innen/außen), schwellenzahl von WA bis ldS, klammer = [Schwellen vor WA, hinter der ldS im Stammgleis, hinter der ldS im Zweiggleis], zs_wa (Zungenspitze vor WA [m]), r_ibw_min (kleinster Radius als Innenbogenweiche [m]) und masse — die Tabellenzeile im Wortlaut (a, b, l, lz, s, c, lds; bei Kreuzungen l1, l2, t1, t2, lz, lds je Seite). Die Geometrie bleibt die der Form, und ihre ldS bindet (Entscheidung 342): masse.lds ist auf 0,1 m gerundet und wird nicht verwendet.",
+    "herzstueck": "Herzstück, wo es nicht starr ist: fb = federnd beweglich, gb = gelenkig beweglich — die Weiche wird mit u_f = 130 mm befahren. Eine solche Form ist eine eigene Form, auch wo ihre Geometrie einer starren gleicht (Entscheidung 343). Fehlt das Feld, ist das Herzstück starr.",
+    "s_we": "Gleisabstand am WE [m] — nur bei einem Zweig, der mit einer Klothoide bis zur Geraden ausläuft: die Weiche reicht bis dorthin, wo die beiden Gleise s_we auseinander stehen (das s der Tabelle), vor dem Ende der Auslaufklothoide oder auf der Geraden dahinter. Die Abzweigelemente stehen, wie die Tabelle sie nennt."
+  },
+  "verbindung": {
+    "note": "Festlegung dieses Werkzeugs, nicht der Ril. Die Weichenverbindung versucht die Formen Stufe für Stufe: erreicht keine Form einer Stufe die Mindestzwischengerade für den gegebenen Abstand, geht sie zur nächsten. Innerhalb einer Stufe entscheidet rang — bei gleicher Geschwindigkeit steht die flachere Form voran, weil die schärfere das ist, worauf ausgewichen wird.",
+    "ohne_stufe": "Eine Form ohne verbindung wird nie selbsttätig gewählt. Bei 215 – 1:4,8 folgt das aus der Form selbst: sie hat keinen durchgehenden Strang, ein Gleiswechsel braucht ihn aber beidseitig. Angeboten wird sie trotzdem überall dort, wo eine Weiche von Hand gesetzt wird."
+  },
+  "formen": [
+    {
+      "label": "190 – 1:7.5",
+      "lds": 3.348,
+      "art": "weiche",
+      "klasse": "regel",
+      "R": 190,
+      "ratio": 7.5,
+      "speed": 40,
+      "dLcs": 0.3,
+      "minl": 6,
+      "branch": [
+        {
+          "type": "arc"
+        },
+        {
+          "type": "straight",
+          "length": 0.64
+        }
+      ],
+      "verbindung": {
+        "stufe": 1,
+        "rang": 2
+      },
+      "varianten": [
+        {
+          "nr": 1000,
+          "bezeichnung": "49-190-1:7.5",
+          "profil": "49E5",
+          "klasse": "regel",
+          "schwellen": "beton",
+          "schwellenzahl": 48,
+          "klammer": [
+            3,
+            5,
+            6
+          ],
+          "zs_wa": 1.248,
+          "r_ibw_min": 175,
+          "masse": {
+            "a": 12.611,
+            "b": 13.251,
+            "l": 25.862,
+            "lz": 0.64,
+            "s": 1.755,
+            "c": 1.751,
+            "lds": 3.3
+          }
+        },
+        {
+          "nr": 1004,
+          "bezeichnung": "54-190-1:7.5",
+          "profil": "54E4",
+          "klasse": "regel",
+          "schwellen": "beton",
+          "schwellenzahl": 49,
+          "klammer": [
+            3,
+            5,
+            6
+          ],
+          "r_ibw_min": 175,
+          "masse": {
+            "a": 12.611,
+            "b": 13.251,
+            "l": 25.862,
+            "lz": 0.64,
+            "s": 1.755,
+            "c": 1.751,
+            "lds": 3.3
+          }
+        },
+        {
+          "nr": 1021,
+          "bezeichnung": "49-190-1:7.5",
+          "profil": "49E5",
+          "klasse": "regel",
+          "schwellen": "holz",
+          "schwellenzahl": 48,
+          "klammer": [
+            3,
+            5,
+            6
+          ],
+          "zs_wa": 1.248,
+          "r_ibw_min": 175,
+          "masse": {
+            "a": 12.611,
+            "b": 13.251,
+            "l": 25.862,
+            "lz": 0.64,
+            "s": 1.755,
+            "c": 1.751,
+            "lds": 3.3
+          }
+        },
+        {
+          "nr": 1026,
+          "bezeichnung": "54-190-1:7.5",
+          "profil": "54E4",
+          "klasse": "regel",
+          "schwellen": "holz",
+          "schwellenzahl": 49,
+          "klammer": [
+            3,
+            5,
+            6
+          ],
+          "r_ibw_min": 175,
+          "masse": {
+            "a": 12.611,
+            "b": 13.251,
+            "l": 25.862,
+            "lz": 0.64,
+            "s": 1.755,
+            "c": 1.751,
+            "lds": 3.3
+          }
+        }
+      ]
+    },
+    {
+      "label": "190 – 1:9",
+      "lds": 3.94,
+      "art": "weiche",
+      "klasse": "regel",
+      "R": 190,
+      "ratio": 9,
+      "speed": 40,
+      "dLcs": 3.9,
+      "minl": 6,
+      "branch": [
+        {
+          "type": "arc"
+        },
+        {
+          "type": "straight",
+          "length": 6.092
+        }
+      ],
+      "verbindung": {
+        "stufe": 1,
+        "rang": 1
+      },
+      "varianten": [
+        {
+          "nr": 1001,
+          "bezeichnung": "49-190-1:9",
+          "profil": "49E5",
+          "klasse": "regel",
+          "schwellen": "beton",
+          "schwellenzahl": 51,
+          "klammer": [
+            3,
+            5,
+            6
+          ],
+          "zs_wa": 1.248,
+          "r_ibw_min": 175,
+          "masse": {
+            "a": 10.523,
+            "b": 16.616,
+            "l": 27.139,
+            "lz": 6.092,
+            "s": 1.838,
+            "c": 1.835,
+            "lds": 3.9
+          }
+        },
+        {
+          "nr": 1005,
+          "bezeichnung": "54-190-1:9",
+          "profil": "54E4",
+          "klasse": "regel",
+          "schwellen": "beton",
+          "schwellenzahl": 52,
+          "klammer": [
+            3,
+            5,
+            6
+          ],
+          "r_ibw_min": 175,
+          "masse": {
+            "a": 10.523,
+            "b": 16.616,
+            "l": 27.139,
+            "lz": 6.092,
+            "s": 1.838,
+            "c": 1.835,
+            "lds": 3.9
+          }
+        },
+        {
+          "nr": 1022,
+          "bezeichnung": "49-190-1:9",
+          "profil": "49E5",
+          "klasse": "regel",
+          "schwellen": "holz",
+          "schwellenzahl": 51,
+          "klammer": [
+            3,
+            5,
+            6
+          ],
+          "zs_wa": 1.248,
+          "r_ibw_min": 175,
+          "masse": {
+            "a": 10.523,
+            "b": 16.616,
+            "l": 27.139,
+            "lz": 6.092,
+            "s": 1.838,
+            "c": 1.835,
+            "lds": 3.9
+          }
+        },
+        {
+          "nr": 1027,
+          "bezeichnung": "54-190-1:9",
+          "profil": "54E4",
+          "klasse": "regel",
+          "schwellen": "holz",
+          "schwellenzahl": 52,
+          "klammer": [
+            3,
+            5,
+            6
+          ],
+          "r_ibw_min": 175,
+          "masse": {
+            "a": 10.523,
+            "b": 16.616,
+            "l": 27.139,
+            "lz": 6.092,
+            "s": 1.838,
+            "c": 1.835,
+            "lds": 3.9
+          }
+        }
+      ]
+    },
+    {
+      "label": "215 – 1:4.8",
+      "lds": 0,
+      "art": "weiche",
+      "klasse": "regel",
+      "R": 215,
+      "ratio": 4.8,
+      "speed": 40,
+      "dLcs": 0.3,
+      "minl": 6,
+      "symmetric": true,
+      "varianten": [
+        {
+          "nr": 1006,
+          "bezeichnung": "54-215-1:4.8",
+          "profil": "54E4",
+          "klasse": "regel",
+          "schwellen": "beton",
+          "schwellenzahl": 37,
+          "klammer": [
+            3,
+            4,
+            4
+          ],
+          "masse": {
+            "a": 11.05,
+            "b": 11.05,
+            "l": 22.08,
+            "lz": 0,
+            "s": 2.266,
+            "c": 2.254,
+            "lds": -0.244
+          }
+        },
+        {
+          "nr": 1023,
+          "bezeichnung": "49-215-1:4.8",
+          "profil": "49E5",
+          "klasse": "regel",
+          "schwellen": "holz",
+          "masse": {
+            "a": 11.05,
+            "b": 11.05,
+            "l": 22.08,
+            "lz": 0,
+            "s": 2.266,
+            "c": 2.254,
+            "lds": -0.24
+          }
+        },
+        {
+          "nr": 1028,
+          "bezeichnung": "54-215-1:4.8",
+          "profil": "54E4",
+          "klasse": "regel",
+          "schwellen": "holz",
+          "schwellenzahl": 37,
+          "klammer": [
+            3,
+            4,
+            4
+          ],
+          "masse": {
+            "a": 11.05,
+            "b": 11.05,
+            "l": 22.08,
+            "lz": 0,
+            "s": 2.266,
+            "c": 2.254,
+            "lds": -0.244
+          }
+        }
+      ]
+    },
+    {
+      "label": "300 – 1:9",
+      "lds": 3.94,
+      "art": "weiche",
+      "klasse": "regel",
+      "R": 300,
+      "ratio": 9,
+      "speed": 50,
+      "dLcs": 3.9,
+      "minl": 5,
+      "verbindung": {
+        "stufe": 1,
+        "rang": 3
+      },
+      "varianten": [
+        {
+          "nr": 1002,
+          "bezeichnung": "49-300-1:9",
+          "profil": "49E5",
+          "klasse": "regel",
+          "schwellen": "beton",
+          "schwellenzahl": 61,
+          "klammer": [
+            3,
+            5,
+            6
+          ],
+          "zs_wa": 1.5,
+          "r_ibw_min": 175,
+          "masse": {
+            "a": 16.616,
+            "b": 16.616,
+            "l": 33.231,
+            "lz": 0,
+            "s": 1.838,
+            "c": 1.835,
+            "lds": 3.9
+          }
+        },
+        {
+          "nr": 1007,
+          "bezeichnung": "54-300-1:9",
+          "profil": "54E4",
+          "klasse": "regel",
+          "schwellen": "beton",
+          "schwellenzahl": 62,
+          "klammer": [
+            3,
+            5,
+            6
+          ],
+          "r_ibw_min": 175,
+          "masse": {
+            "a": 16.616,
+            "b": 16.616,
+            "l": 33.231,
+            "lz": 0,
+            "s": 1.838,
+            "c": 1.835,
+            "lds": 3.9
+          }
+        },
+        {
+          "nr": 1011,
+          "bezeichnung": "60-300-1:9",
+          "profil": "60E2A1",
+          "klasse": "regel",
+          "schwellen": "beton",
+          "schwellenzahl": 62,
+          "klammer": [
+            3,
+            5,
+            6
+          ],
+          "r_ibw_min": 175,
+          "masse": {
+            "a": 16.616,
+            "b": 16.616,
+            "l": 33.231,
+            "lz": 0,
+            "s": 1.838,
+            "c": 1.835,
+            "lds": 3.9
+          }
+        },
+        {
+          "nr": 1024,
+          "bezeichnung": "49-300-1:9",
+          "profil": "49E5",
+          "klasse": "regel",
+          "schwellen": "holz",
+          "schwellenzahl": 61,
+          "klammer": [
+            3,
+            5,
+            6
+          ],
+          "zs_wa": 1.5,
+          "r_ibw_min": 175,
+          "masse": {
+            "a": 16.616,
+            "b": 16.616,
+            "l": 33.231,
+            "lz": 0,
+            "s": 1.838,
+            "c": 1.835,
+            "lds": 3.9
+          }
+        },
+        {
+          "nr": 1029,
+          "bezeichnung": "54-300-1:9",
+          "profil": "54E4",
+          "klasse": "regel",
+          "schwellen": "holz",
+          "schwellenzahl": 62,
+          "klammer": [
+            3,
+            5,
+            6
+          ],
+          "r_ibw_min": 175,
+          "masse": {
+            "a": 16.616,
+            "b": 16.616,
+            "l": 33.231,
+            "lz": 0,
+            "s": 1.838,
+            "c": 1.835,
+            "lds": 3.9
+          }
+        },
+        {
+          "nr": 1033,
+          "bezeichnung": "60-300-1:9",
+          "profil": "60E2A1",
+          "klasse": "regel",
+          "schwellen": "holz",
+          "schwellenzahl": 62,
+          "klammer": [
+            3,
+            5,
+            6
+          ],
+          "r_ibw_min": 175,
+          "masse": {
+            "a": 16.616,
+            "b": 16.616,
+            "l": 33.231,
+            "lz": 0,
+            "s": 1.838,
+            "c": 1.835,
+            "lds": 3.9
+          }
+        }
+      ]
+    },
+    {
+      "label": "500 – 1:12",
+      "lds": 6.334,
+      "art": "weiche",
+      "klasse": "regel",
+      "R": 500,
+      "ratio": 12,
+      "speed": 60,
+      "dLcs": 6.3,
+      "minl": 6,
+      "verbindung": {
+        "stufe": 1,
+        "rang": 4
+      },
+      "varianten": [
+        {
+          "nr": 1003,
+          "bezeichnung": "49-500-1:12",
+          "profil": "49E5",
+          "klasse": "regel",
+          "schwellen": "beton",
+          "r_ibw_min": 200,
+          "masse": {
+            "a": 20.797,
+            "b": 20.797,
+            "l": 41.595,
+            "lz": 0,
+            "s": 1.729,
+            "c": 1.727,
+            "lds": 6.3
+          }
+        },
+        {
+          "nr": 1008,
+          "bezeichnung": "54-500-1:12",
+          "profil": "54E4",
+          "klasse": "regel",
+          "schwellen": "beton",
+          "schwellenzahl": 80,
+          "klammer": [
+            3,
+            7,
+            8
+          ],
+          "r_ibw_min": 200,
+          "masse": {
+            "a": 20.797,
+            "b": 20.797,
+            "l": 41.595,
+            "lz": 0,
+            "s": 1.729,
+            "c": 1.727,
+            "lds": 6.3
+          }
+        },
+        {
+          "nr": 1012,
+          "bezeichnung": "60-500-1:12",
+          "profil": "60E2A1",
+          "klasse": "regel",
+          "schwellen": "beton",
+          "schwellenzahl": 80,
+          "klammer": [
+            3,
+            7,
+            8
+          ],
+          "r_ibw_min": 200,
+          "masse": {
+            "a": 20.797,
+            "b": 20.797,
+            "l": 41.595,
+            "lz": 0,
+            "s": 1.729,
+            "c": 1.727,
+            "lds": 6.31
+          }
+        },
+        {
+          "nr": 1025,
+          "bezeichnung": "49-500-1:12",
+          "profil": "49E5",
+          "klasse": "regel",
+          "schwellen": "holz",
+          "r_ibw_min": 200,
+          "masse": {
+            "a": 20.797,
+            "b": 20.797,
+            "l": 41.595,
+            "lz": 0,
+            "s": 1.729,
+            "c": 1.727,
+            "lds": 6.3
+          }
+        },
+        {
+          "nr": 1030,
+          "bezeichnung": "54-500-1:12",
+          "profil": "54E4",
+          "klasse": "regel",
+          "schwellen": "holz",
+          "schwellenzahl": 80,
+          "klammer": [
+            3,
+            7,
+            8
+          ],
+          "r_ibw_min": 200,
+          "masse": {
+            "a": 20.797,
+            "b": 20.797,
+            "l": 41.595,
+            "lz": 0,
+            "s": 1.729,
+            "c": 1.727,
+            "lds": 6.3
+          }
+        },
+        {
+          "nr": 1034,
+          "bezeichnung": "60-500-1:12",
+          "profil": "60E2A1",
+          "klasse": "regel",
+          "schwellen": "holz",
+          "schwellenzahl": 80,
+          "klammer": [
+            3,
+            7,
+            8
+          ],
+          "r_ibw_min": 200,
+          "masse": {
+            "a": 20.797,
+            "b": 20.797,
+            "l": 41.595,
+            "lz": 0,
+            "s": 1.729,
+            "c": 1.727,
+            "lds": 6.31
+          }
+        },
+        {
+          "nr": 1076,
+          "bezeichnung": "54-500-1:12 mit gek. Zungen",
+          "profil": "54E4",
+          "klasse": "sonderbauform",
+          "schwellen": "holz",
+          "zungen": "gekürzt",
+          "schwellenzahl": 80,
+          "klammer": [
+            3,
+            7,
+            8
+          ],
+          "r_ibw_min": 200,
+          "masse": {
+            "a": 20.797,
+            "b": 20.797,
+            "l": 41.595,
+            "lz": 0,
+            "s": 1.729,
+            "c": 1.727,
+            "lds": 6.3
+          }
+        }
+      ]
+    },
+    {
+      "label": "760 – 1:14",
+      "lds": 5.125,
+      "art": "weiche",
+      "klasse": "regel",
+      "R": 760,
+      "ratio": 14,
+      "speed": 80,
+      "dLcs": 9.9,
+      "minl": 12,
+      "verbindung": {
+        "stufe": 1,
+        "rang": 5
+      },
+      "varianten": [
+        {
+          "nr": 1009,
+          "bezeichnung": "54-760-1:14",
+          "profil": "54E4",
+          "klasse": "regel",
+          "schwellen": "beton",
+          "schwellenzahl": 99,
+          "klammer": [
+            3,
+            7,
+            8
+          ],
+          "r_ibw_min": 300,
+          "masse": {
+            "a": 27.108,
+            "b": 27.108,
+            "l": 54.217,
+            "lz": 0,
+            "s": 1.933,
+            "c": 1.931,
+            "lds": 5.1
+          }
+        },
+        {
+          "nr": 1013,
+          "bezeichnung": "60-760-1:14",
+          "profil": "60E2A1",
+          "klasse": "regel",
+          "schwellen": "beton",
+          "schwellenzahl": 99,
+          "klammer": [
+            0,
+            7,
+            8
+          ],
+          "r_ibw_min": 300,
+          "masse": {
+            "a": 27.108,
+            "b": 27.108,
+            "l": 54.217,
+            "lz": 0,
+            "s": 1.933,
+            "c": 1.931,
+            "lds": 5.1
+          }
+        },
+        {
+          "nr": 1031,
+          "bezeichnung": "54-760-1:14",
+          "profil": "54E4",
+          "klasse": "regel",
+          "schwellen": "holz",
+          "schwellenzahl": 99,
+          "klammer": [
+            3,
+            7,
+            8
+          ],
+          "r_ibw_min": 300,
+          "masse": {
+            "a": 27.108,
+            "b": 27.108,
+            "l": 54.217,
+            "lz": 0,
+            "s": 1.933,
+            "c": 1.931,
+            "lds": 5.1
+          }
+        },
+        {
+          "nr": 1035,
+          "bezeichnung": "60-760-1:14",
+          "profil": "60E2A1",
+          "klasse": "regel",
+          "schwellen": "holz",
+          "schwellenzahl": 99,
+          "klammer": [
+            0,
+            7,
+            8
+          ],
+          "r_ibw_min": 300,
+          "masse": {
+            "a": 27.108,
+            "b": 27.108,
+            "l": 54.217,
+            "lz": 0,
+            "s": 1.933,
+            "c": 1.931,
+            "lds": 5.1
+          }
+        },
+        {
+          "nr": 1044,
+          "bezeichnung": "54-760-1:14 mit gek. Zungen",
+          "profil": "54E4",
+          "klasse": "sonderbauform",
+          "schwellen": "beton",
+          "zungen": "gekürzt",
+          "schwellenzahl": 99,
+          "klammer": [
+            3,
+            7,
+            8
+          ],
+          "r_ibw_min": 300,
+          "masse": {
+            "a": 27.108,
+            "b": 27.108,
+            "l": 54.217,
+            "lz": 0,
+            "s": 1.933,
+            "c": 1.931,
+            "lds": 5.1
+          }
+        },
+        {
+          "nr": 1073,
+          "bezeichnung": "49-760-1:14",
+          "profil": "49E5",
+          "klasse": "sonderbauform",
+          "schwellen": "holz",
+          "r_ibw_min": 300,
+          "masse": {
+            "a": 27.108,
+            "b": 27.108,
+            "l": 54.217,
+            "lz": 0,
+            "s": 1.933,
+            "c": 1.931,
+            "lds": 4.04
+          }
+        },
+        {
+          "nr": 1079,
+          "bezeichnung": "54-760-1:14 mit gek. Zungen",
+          "profil": "54E4",
+          "klasse": "sonderbauform",
+          "schwellen": "holz",
+          "zungen": "gekürzt",
+          "schwellenzahl": 99,
+          "klammer": [
+            3,
+            7,
+            8
+          ],
+          "r_ibw_min": 300,
+          "masse": {
+            "a": 27.108,
+            "b": 27.108,
+            "l": 54.217,
+            "lz": 0,
+            "s": 1.933,
+            "c": 1.931,
+            "lds": 5.1
+          }
+        }
+      ]
+    },
+    {
+      "label": "1200 – 1:18.5",
+      "lds": 9.92,
+      "art": "weiche",
+      "klasse": "regel",
+      "R": 1200,
+      "ratio": 18.5,
+      "speed": 100,
+      "dLcs": 11,
+      "minl": 15,
+      "verbindung": {
+        "stufe": 1,
+        "rang": 6
+      },
+      "varianten": [
+        {
+          "nr": 1010,
+          "bezeichnung": "54-1200-1:18.5",
+          "profil": "54E4",
+          "klasse": "regel",
+          "schwellen": "beton",
+          "schwellenzahl": 125,
+          "klammer": [
+            3,
+            10,
+            12
+          ],
+          "r_ibw_min": 441.552,
+          "masse": {
+            "a": 32.409,
+            "b": 32.409,
+            "l": 64.818,
+            "lz": 0,
+            "s": 1.75,
+            "c": 1.749,
+            "lds": 9.9
+          }
+        },
+        {
+          "nr": 1014,
+          "bezeichnung": "60-1200-1:18.5",
+          "profil": "60E2A1",
+          "klasse": "regel",
+          "schwellen": "beton",
+          "schwellenzahl": 124,
+          "klammer": [
+            3,
+            10,
+            12
+          ],
+          "r_ibw_min": 441.552,
+          "masse": {
+            "a": 32.409,
+            "b": 32.409,
+            "l": 64.818,
+            "lz": 0,
+            "s": 1.75,
+            "c": 1.749,
+            "lds": 9.9
+          }
+        },
+        {
+          "nr": 1032,
+          "bezeichnung": "54-1200-1:18.5",
+          "profil": "54E4",
+          "klasse": "regel",
+          "schwellen": "holz",
+          "schwellenzahl": 125,
+          "klammer": [
+            3,
+            10,
+            12
+          ],
+          "r_ibw_min": 441.552,
+          "masse": {
+            "a": 32.409,
+            "b": 32.409,
+            "l": 64.818,
+            "lz": 0,
+            "s": 1.75,
+            "c": 1.749,
+            "lds": 9.9
+          }
+        },
+        {
+          "nr": 1036,
+          "bezeichnung": "60-1200-1:18.5",
+          "profil": "60E2A1",
+          "klasse": "regel",
+          "schwellen": "holz",
+          "schwellenzahl": 124,
+          "klammer": [
+            3,
+            10,
+            12
+          ],
+          "r_ibw_min": 441.552,
+          "masse": {
+            "a": 32.409,
+            "b": 32.409,
+            "l": 64.818,
+            "lz": 0,
+            "s": 1.75,
+            "c": 1.749,
+            "lds": 9.9
+          }
+        },
+        {
+          "nr": 1074,
+          "bezeichnung": "49-1200-1:18.5",
+          "profil": "49E5",
+          "klasse": "sonderbauform",
+          "schwellen": "holz",
+          "r_ibw_min": 441.552,
+          "masse": {
+            "a": 32.409,
+            "b": 32.409,
+            "l": 64.818,
+            "lz": 0,
+            "s": 1.75,
+            "c": 1.749,
+            "lds": 9.217
+          }
+        }
+      ]
+    },
+    {
+      "label": "2500 – 1:26.5",
+      "lds": 13.145,
+      "art": "weiche",
+      "klasse": "regel",
+      "R": 2500,
+      "ratio": 26.5,
+      "speed": 130,
+      "dLcs": 12.9,
+      "minl": 26,
+      "verbindung": {
+        "stufe": 1,
+        "rang": 7
+      },
+      "varianten": [
+        {
+          "nr": 1018,
+          "bezeichnung": "60-2500-1:26.5 fb",
+          "profil": "60E2A1",
+          "klasse": "regel",
+          "schwellen": "beton",
+          "schwellenzahl": 180,
+          "klammer": [
+            3,
+            15,
+            17
+          ],
+          "r_ibw_min": 941,
+          "masse": {
+            "a": 47.153,
+            "b": 47.153,
+            "l": 94.306,
+            "lz": 0,
+            "s": 1.778,
+            "c": 1.778,
+            "lds": 13.5
+          }
+        },
+        {
+          "nr": 1040,
+          "bezeichnung": "60-2500-1:26.5 fb",
+          "profil": "60E2A1",
+          "klasse": "regel",
+          "schwellen": "holz",
+          "schwellenzahl": 180,
+          "klammer": [
+            3,
+            15,
+            17
+          ],
+          "r_ibw_min": 941,
+          "masse": {
+            "a": 47.153,
+            "b": 47.153,
+            "l": 94.306,
+            "lz": 0,
+            "s": 1.778,
+            "c": 1.778,
+            "lds": 13.5
+          }
+        }
+      ],
+      "herzstueck": "fb"
+    },
+    {
+      "label": "500 – 1:12 fb",
+      "lds": 2.7,
+      "art": "weiche",
+      "klasse": "regel",
+      "herzstueck": "fb",
+      "R": 500,
+      "ratio": 12,
+      "speed": 60,
+      "minl": null,
+      "branch": [
+        {
+          "type": "arc"
+        },
+        {
+          "type": "straight",
+          "length": 3.766
+        }
+      ],
+      "varianten": [
+        {
+          "nr": 1015,
+          "bezeichnung": "60-500-1:12 fb",
+          "profil": "60E2A1",
+          "klasse": "regel",
+          "schwellen": "beton",
+          "schwellenzahl": 80,
+          "klammer": [
+            0,
+            7,
+            8
+          ],
+          "r_ibw_min": 200,
+          "masse": {
+            "a": 20.797,
+            "b": 24.564,
+            "l": 45.361,
+            "lz": 3.766,
+            "s": 2.042,
+            "c": 2.04,
+            "lds": 2.7
+          }
+        },
+        {
+          "nr": 1037,
+          "bezeichnung": "60-500-1:12 fb",
+          "profil": "60E2A1",
+          "klasse": "regel",
+          "schwellen": "holz",
+          "schwellenzahl": 80,
+          "klammer": [
+            0,
+            7,
+            8
+          ],
+          "r_ibw_min": 200,
+          "masse": {
+            "a": 20.797,
+            "b": 24.564,
+            "l": 45.361,
+            "lz": 3.766,
+            "s": 2.042,
+            "c": 2.04,
+            "lds": 2.7
+          }
+        }
+      ]
+    },
+    {
+      "label": "760 – 1:14 fb",
+      "lds": 5.125,
+      "art": "weiche",
+      "klasse": "regel",
+      "herzstueck": "fb",
+      "R": 760,
+      "ratio": 14,
+      "speed": 80,
+      "minl": null,
+      "varianten": [
+        {
+          "nr": 1016,
+          "bezeichnung": "60-760-1:14 fb",
+          "profil": "60E2A1",
+          "klasse": "regel",
+          "schwellen": "beton",
+          "schwellenzahl": 99,
+          "klammer": [
+            0,
+            7,
+            8
+          ],
+          "r_ibw_min": 300,
+          "masse": {
+            "a": 27.108,
+            "b": 27.108,
+            "l": 54.217,
+            "lz": 0,
+            "s": 1.933,
+            "c": 1.931,
+            "lds": 5.1
+          }
+        },
+        {
+          "nr": 1038,
+          "bezeichnung": "60-760-1:14 fb",
+          "profil": "60E2A1",
+          "klasse": "regel",
+          "schwellen": "holz",
+          "schwellenzahl": 99,
+          "klammer": [
+            0,
+            7,
+            8
+          ],
+          "r_ibw_min": 300,
+          "masse": {
+            "a": 27.108,
+            "b": 27.108,
+            "l": 54.217,
+            "lz": 0,
+            "s": 1.933,
+            "c": 1.931,
+            "lds": 5.1
+          }
+        }
+      ]
+    },
+    {
+      "label": "1200 – 1:18.5 fb",
+      "lds": 8.1,
+      "art": "weiche",
+      "klasse": "regel",
+      "herzstueck": "fb",
+      "R": 1200,
+      "ratio": 18.5,
+      "speed": 100,
+      "minl": null,
+      "branch": [
+        {
+          "type": "arc"
+        },
+        {
+          "type": "straight",
+          "length": 1.798
+        }
+      ],
+      "varianten": [
+        {
+          "nr": 1017,
+          "bezeichnung": "60-1200-1:18.5 fb",
+          "profil": "60E2A1",
+          "klasse": "regel",
+          "schwellen": "beton",
+          "schwellenzahl": 124,
+          "klammer": [
+            0,
+            10,
+            12
+          ],
+          "r_ibw_min": 441.552,
+          "masse": {
+            "a": 32.409,
+            "b": 34.207,
+            "l": 66.615,
+            "lz": 1.798,
+            "s": 1.847,
+            "c": 1.846,
+            "lds": 8.1
+          }
+        },
+        {
+          "nr": 1039,
+          "bezeichnung": "60-1200-1:18.5 fb",
+          "profil": "60E2A1",
+          "klasse": "regel",
+          "schwellen": "holz",
+          "schwellenzahl": 124,
+          "klammer": [
+            0,
+            10,
+            12
+          ],
+          "r_ibw_min": 441.552,
+          "masse": {
+            "a": 32.409,
+            "b": 34.207,
+            "l": 66.615,
+            "lz": 1.798,
+            "s": 1.847,
+            "c": 1.846,
+            "lds": 8.1
+          }
+        }
+      ]
+    },
+    {
+      "label": "6000/3700 – 1:32.5 fb",
+      "lds": 16.5,
+      "art": "weiche",
+      "klasse": "regel",
+      "herzstueck": "fb",
+      "R": 3700,
+      "ratio": 32.5,
+      "speed": 160,
+      "minl": null,
+      "branch": [
+        {
+          "type": "clothoid",
+          "R1": 6000,
+          "R2": 3700,
+          "length": 44.0
+        },
+        {
+          "type": "arc",
+          "R": 3700,
+          "length": 78.243
+        }
+      ],
+      "varianten": [
+        {
+          "nr": 1019,
+          "bezeichnung": "60-6000/3700-1:32.5 fb",
+          "profil": "60E2A1",
+          "klasse": "regel",
+          "schwellenzahl": 232,
+          "klammer": [
+            3,
+            19,
+            21
+          ],
+          "zs_wa": 3.102,
+          "masse": {
+            "t1": 64.569,
+            "t2": 57.684,
+            "l": 122.253,
+            "s": 1.774,
+            "lds": 16.5,
+            "A": "651.7"
+          }
+        }
+      ]
+    },
+    {
+      "label": "7000/6000 – 1:42 fb",
+      "lds": 19.5,
+      "art": "weiche",
+      "klasse": "regel",
+      "herzstueck": "fb",
+      "R": 6000,
+      "ratio": 42,
+      "speed": 200,
+      "minl": null,
+      "branch": [
+        {
+          "type": "arc",
+          "R": 7000,
+          "length": 80.0
+        },
+        {
+          "type": "arc",
+          "R": 6000,
+          "length": 74.259
+        }
+      ],
+      "varianten": [
+        {
+          "nr": 1020,
+          "bezeichnung": "60-7000/6000-1:42 fb",
+          "profil": "60E2A1",
+          "klasse": "regel",
+          "schwellenzahl": 290,
+          "klammer": [
+            3,
+            22,
+            24
+          ],
+          "zs_wa": 4.237,
+          "masse": {
+            "t1": 80.104,
+            "t2": 74.162,
+            "l": 154.266,
+            "s": 1.765,
+            "lds": 19.5,
+            "A": null
+          }
+        }
+      ]
+    },
+    {
+      "label": "Kr 1:7.5",
+      "art": "kreuzung",
+      "klasse": "regel",
+      "kind": "crossing",
+      "ratio": 7.5,
+      "lt": 13.251,
+      "speed": 80,
+      "dLcs": 3.3,
+      "varianten": [
+        {
+          "nr": 1200,
+          "bezeichnung": "Kr 54-1:7.5",
+          "profil": "54E4",
+          "klasse": "regel",
+          "schwellen": "beton",
+          "masse": {
+            "l1": 13.251,
+            "l2": 13.251,
+            "lds": [
+              3.3,
+              3.3
+            ]
+          }
+        },
+        {
+          "nr": 1202,
+          "bezeichnung": "Kr 54-1:7.5",
+          "profil": "54E4",
+          "klasse": "regel",
+          "schwellen": "holz",
+          "masse": {
+            "l1": 13.251,
+            "l2": 13.251,
+            "lds": [
+              3.3,
+              3.3
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "label": "Kr 1:9",
+      "art": "kreuzung",
+      "klasse": "regel",
+      "kind": "crossing",
+      "ratio": 9,
+      "lt": 16.6155,
+      "speed": 100,
+      "dLcs": 3.9,
+      "varianten": [
+        {
+          "nr": 1201,
+          "bezeichnung": "Kr 54-1:9",
+          "profil": "54E4",
+          "klasse": "regel",
+          "schwellen": "beton",
+          "masse": {
+            "l1": 16.616,
+            "l2": 16.616,
+            "lds": [
+              3.9,
+              3.9
+            ]
+          }
+        },
+        {
+          "nr": 1203,
+          "bezeichnung": "Kr 54-1:9",
+          "profil": "54E4",
+          "klasse": "regel",
+          "schwellen": "holz",
+          "masse": {
+            "l1": 16.616,
+            "l2": 16.616,
+            "lds": [
+              3.9,
+              3.9
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "label": "EKW 1:9 – 190",
+      "art": "kreuzung",
+      "klasse": "regel",
+      "kind": "single_slip",
+      "ratio": 9,
+      "R": 190,
+      "routen": [
+        {
+          "id": "durchgehend",
+          "R": null,
+          "speed": 100
+        },
+        {
+          "id": "bogen",
+          "R": 190,
+          "speed": 40
+        }
+      ],
+      "varianten": [
+        {
+          "nr": 1228,
+          "bezeichnung": "EKW 54-190-1:9",
+          "profil": "54E4",
+          "klasse": "regel",
+          "schwellen": "beton",
+          "zungen": "innen",
+          "masse": {
+            "l1": 16.616,
+            "l2": 16.616,
+            "t1": 10.523,
+            "t2": 10.523,
+            "lz": [
+              6.092,
+              6.092
+            ],
+            "lds": [
+              3.9,
+              3.9
+            ]
+          }
+        },
+        {
+          "nr": 1274,
+          "bezeichnung": "EKW 54-190-1:9",
+          "profil": "54E4",
+          "klasse": "regel",
+          "schwellen": "holz",
+          "zungen": "innen",
+          "masse": {
+            "l1": 16.616,
+            "l2": 16.616,
+            "t1": 10.523,
+            "t2": 10.523,
+            "lz": [
+              6.092,
+              6.092
+            ],
+            "lds": [
+              3.9,
+              3.9
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "label": "EKW 1:9 – 500",
+      "art": "kreuzung",
+      "klasse": "regel",
+      "kind": "single_slip",
+      "ratio": 9,
+      "R": 500,
+      "routen": [
+        {
+          "id": "durchgehend",
+          "R": null,
+          "speed": 100
+        },
+        {
+          "id": "bogen",
+          "R": 500,
+          "speed": 60
+        }
+      ],
+      "varianten": [
+        {
+          "nr": 1229,
+          "bezeichnung": "EKW 54-500-1:9",
+          "profil": "54E4",
+          "klasse": "regel",
+          "schwellen": "beton",
+          "zungen": "außen",
+          "masse": {
+            "l1": 16.616,
+            "l2": 16.616,
+            "t1": 16.616,
+            "t2": 16.616,
+            "lz": [
+              0,
+              0
+            ],
+            "lds": [
+              3.4,
+              3.4
+            ]
+          }
+        },
+        {
+          "nr": 1244,
+          "bezeichnung": "EKW 49-500-1:9",
+          "profil": "49E5",
+          "klasse": "regel",
+          "schwellen": "holz",
+          "zungen": "außen",
+          "masse": {
+            "l1": 16.616,
+            "l2": 16.616,
+            "t1": 16.616,
+            "t2": 16.616,
+            "lz": [
+              0,
+              0
+            ],
+            "lds": [
+              3.19,
+              3.19
+            ]
+          }
+        },
+        {
+          "nr": 1275,
+          "bezeichnung": "EKW 54-500-1:9",
+          "profil": "54E4",
+          "klasse": "regel",
+          "schwellen": "holz",
+          "zungen": "außen",
+          "masse": {
+            "l1": 16.616,
+            "l2": 16.616,
+            "t1": 16.616,
+            "t2": 16.616,
+            "lz": [
+              0,
+              0
+            ],
+            "lds": [
+              3.4,
+              3.4
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "label": "DKW 1:9 – 190",
+      "art": "kreuzung",
+      "klasse": "regel",
+      "kind": "double_slip",
+      "ratio": 9,
+      "R": 190,
+      "routen": [
+        {
+          "id": "durchgehend",
+          "R": null,
+          "speed": 100
+        },
+        {
+          "id": "bogen",
+          "R": 190,
+          "speed": 40
+        }
+      ],
+      "varianten": [
+        {
+          "nr": 1219,
+          "bezeichnung": "DKW 49-190-1:9",
+          "profil": "49E5",
+          "klasse": "regel",
+          "schwellen": "beton",
+          "zungen": "innen",
+          "masse": {
+            "l1": 16.616,
+            "l2": 16.616,
+            "t1": 10.523,
+            "t2": 10.523,
+            "lz": [
+              6.092,
+              6.092
+            ],
+            "lds": [
+              4.04,
+              4.04
+            ]
+          }
+        },
+        {
+          "nr": 1240,
+          "bezeichnung": "DKW 54-190-1:9",
+          "profil": "54E4",
+          "klasse": "regel",
+          "schwellen": "beton",
+          "zungen": "innen",
+          "masse": {
+            "l1": 16.616,
+            "l2": 16.616,
+            "t1": 10.523,
+            "t2": 10.523,
+            "lz": [
+              6.092,
+              6.092
+            ],
+            "lds": [
+              3.9,
+              3.9
+            ]
+          }
+        },
+        {
+          "nr": 1262,
+          "bezeichnung": "DKW 49-190-1:9",
+          "profil": "49E5",
+          "klasse": "regel",
+          "schwellen": "holz",
+          "zungen": "innen",
+          "masse": {
+            "l1": 16.616,
+            "l2": 16.616,
+            "t1": 10.523,
+            "t2": 10.523,
+            "lz": [
+              6.092,
+              6.092
+            ],
+            "lds": [
+              4.04,
+              4.04
+            ]
+          }
+        },
+        {
+          "nr": 1286,
+          "bezeichnung": "DKW 54-190-1:9",
+          "profil": "54E4",
+          "klasse": "regel",
+          "schwellen": "holz",
+          "zungen": "innen",
+          "masse": {
+            "l1": 16.616,
+            "l2": 16.616,
+            "t1": 10.523,
+            "t2": 10.523,
+            "lz": [
+              6.092,
+              6.092
+            ],
+            "lds": [
+              3.9,
+              3.9
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "label": "DKW 1:9 – 500",
+      "art": "kreuzung",
+      "klasse": "regel",
+      "kind": "double_slip",
+      "ratio": 9,
+      "R": 500,
+      "routen": [
+        {
+          "id": "durchgehend",
+          "R": null,
+          "speed": 100
+        },
+        {
+          "id": "bogen",
+          "R": 500,
+          "speed": 60
+        }
+      ],
+      "varianten": [
+        {
+          "nr": 1241,
+          "bezeichnung": "DKW 54-500-1:9",
+          "profil": "54E4",
+          "klasse": "regel",
+          "schwellen": "beton",
+          "zungen": "außen",
+          "masse": {
+            "l1": 16.616,
+            "l2": 16.616,
+            "t1": 16.616,
+            "t2": 16.616,
+            "lz": [
+              0,
+              0
+            ],
+            "lds": [
+              -7.88,
+              -7.88
+            ]
+          }
+        },
+        {
+          "nr": 1263,
+          "bezeichnung": "DKW 49-500-1:9",
+          "profil": "49E5",
+          "klasse": "regel",
+          "schwellen": "holz",
+          "zungen": "außen",
+          "masse": {
+            "l1": 16.616,
+            "l2": 16.616,
+            "t1": 16.616,
+            "t2": 16.616,
+            "lz": [
+              0,
+              0
+            ],
+            "lds": [
+              -7.88,
+              -7.88
+            ]
+          }
+        },
+        {
+          "nr": 1287,
+          "bezeichnung": "DKW 54-500-1:9",
+          "profil": "54E4",
+          "klasse": "regel",
+          "schwellen": "holz",
+          "zungen": "außen",
+          "masse": {
+            "l1": 16.616,
+            "l2": 16.616,
+            "t1": 16.616,
+            "t2": 16.616,
+            "lz": [
+              0,
+              0
+            ],
+            "lds": [
+              -7.88,
+              -7.88
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "label": "190 – 1:6.3",
+      "lds": 0,
+      "art": "weiche",
+      "klasse": "sonderbauform",
+      "R": 190,
+      "ratio": 6.3,
+      "speed": 40,
+      "dLcs": 0.3,
+      "minl": 6
+    },
+    {
+      "label": "300 – 1:9.4",
+      "lds": 3.94,
+      "art": "weiche",
+      "klasse": "sonderbauform",
+      "R": 300,
+      "ratio": 9.4,
+      "speed": 50,
+      "dLcs": 3.9,
+      "minl": 5,
+      "branch": [
+        {
+          "type": "arc"
+        },
+        {
+          "type": "straight",
+          "length": 1.406
+        }
+      ],
+      "verbindung": {
+        "stufe": 2,
+        "rang": 1
+      },
+      "varianten": [
+        {
+          "nr": 1041,
+          "bezeichnung": "54-300-1:9.4",
+          "profil": "54E4",
+          "klasse": "sonderbauform",
+          "schwellen": "beton",
+          "r_ibw_min": 175,
+          "masse": {
+            "a": 15.913,
+            "b": 17.319,
+            "l": 33.231,
+            "lz": 1.406,
+            "s": 1.835,
+            "c": 1.832,
+            "lds": 3.9
+          }
+        },
+        {
+          "nr": 1048,
+          "bezeichnung": "60-300-1:9.4",
+          "profil": "60E2A1",
+          "klasse": "sonderbauform",
+          "schwellen": "beton",
+          "schwellenzahl": 62,
+          "klammer": [
+            0,
+            5,
+            6
+          ],
+          "r_ibw_min": 175,
+          "masse": {
+            "a": 15.913,
+            "b": 17.319,
+            "l": 33.231,
+            "lz": 1.406,
+            "s": 1.835,
+            "c": 1.832,
+            "lds": 3.9
+          }
+        },
+        {
+          "nr": 1075,
+          "bezeichnung": "54-300-1:9.4",
+          "profil": "54E4",
+          "klasse": "sonderbauform",
+          "schwellen": "holz",
+          "r_ibw_min": 175,
+          "masse": {
+            "a": 15.913,
+            "b": 17.319,
+            "l": 33.231,
+            "lz": 1.406,
+            "s": 1.835,
+            "c": 1.832,
+            "lds": 3.9
+          }
+        },
+        {
+          "nr": 1083,
+          "bezeichnung": "60-300-1:9.4",
+          "profil": "60E2A1",
+          "klasse": "sonderbauform",
+          "schwellen": "holz",
+          "schwellenzahl": 62,
+          "klammer": [
+            0,
+            5,
+            6
+          ],
+          "r_ibw_min": 175,
+          "masse": {
+            "a": 15.913,
+            "b": 17.319,
+            "l": 33.231,
+            "lz": 1.406,
+            "s": 1.835,
+            "c": 1.832,
+            "lds": 3.9
+          }
+        }
+      ]
+    },
+    {
+      "label": "300 – 1:14",
+      "lds": 5.125,
+      "art": "weiche",
+      "klasse": "sonderbauform",
+      "R": 300,
+      "ratio": 14,
+      "speed": 50,
+      "dLcs": 5.1,
+      "minl": null,
+      "branch": [
+        {
+          "type": "arc"
+        },
+        {
+          "type": "straight",
+          "length": 16.4077
+        }
+      ],
+      "masse": {
+        "lt": 10.7007,
+        "b": 27.1083,
+        "d": 16.4077,
+        "lw": 37.809,
+        "c": 1.9326
+      },
+      "varianten": [
+        {
+          "nr": 1042,
+          "bezeichnung": "54-300-1:14",
+          "profil": "54E4",
+          "klasse": "sonderbauform",
+          "schwellen": "beton",
+          "schwellenzahl": 72,
+          "klammer": [
+            3,
+            7,
+            8
+          ],
+          "r_ibw_min": 175,
+          "masse": {
+            "a": 10.701,
+            "b": 27.108,
+            "l": 37.809,
+            "lz": 16.408,
+            "s": 1.933,
+            "c": 1.931,
+            "lds": 5.1
+          }
+        },
+        {
+          "nr": 1049,
+          "bezeichnung": "60-300-1:14",
+          "profil": "60E2A1",
+          "klasse": "sonderbauform",
+          "schwellen": "beton",
+          "schwellenzahl": 71,
+          "klammer": [
+            3,
+            7,
+            8
+          ],
+          "r_ibw_min": 175,
+          "masse": {
+            "a": 10.701,
+            "b": 27.108,
+            "l": 37.809,
+            "lz": 16.408,
+            "s": 1.933,
+            "c": 1.931,
+            "lds": 5.1
+          }
+        },
+        {
+          "nr": 1077,
+          "bezeichnung": "54-300-1:14",
+          "profil": "54E4",
+          "klasse": "sonderbauform",
+          "schwellen": "holz",
+          "schwellenzahl": 72,
+          "klammer": [
+            3,
+            7,
+            8
+          ],
+          "r_ibw_min": 175,
+          "masse": {
+            "a": 10.701,
+            "b": 27.108,
+            "l": 37.809,
+            "lz": 16.408,
+            "s": 1.933,
+            "c": 1.931,
+            "lds": 5.1
+          }
+        },
+        {
+          "nr": 1084,
+          "bezeichnung": "60-300-1:14",
+          "profil": "60E2A1",
+          "klasse": "sonderbauform",
+          "schwellen": "holz",
+          "schwellenzahl": 71,
+          "klammer": [
+            3,
+            7,
+            8
+          ],
+          "r_ibw_min": 175,
+          "masse": {
+            "a": 10.701,
+            "b": 27.108,
+            "l": 37.809,
+            "lz": 16.408,
+            "s": 1.933,
+            "c": 1.931,
+            "lds": 5.1
+          }
+        }
+      ]
+    },
+    {
+      "label": "500 – 1:14",
+      "lds": 5.125,
+      "art": "weiche",
+      "klasse": "sonderbauform",
+      "R": 500,
+      "ratio": 14,
+      "speed": 60,
+      "dLcs": 6.3,
+      "minl": 6,
+      "branch": [
+        {
+          "type": "arc"
+        },
+        {
+          "type": "straight",
+          "length": 9.274
+        }
+      ],
+      "verbindung": {
+        "stufe": 2,
+        "rang": 2
+      },
+      "varianten": [
+        {
+          "nr": 1043,
+          "bezeichnung": "54-500-1:14",
+          "profil": "54E4",
+          "klasse": "sonderbauform",
+          "schwellen": "beton",
+          "schwellenzahl": 84,
+          "klammer": [
+            3,
+            7,
+            8
+          ],
+          "r_ibw_min": 200,
+          "masse": {
+            "a": 17.834,
+            "b": 27.108,
+            "l": 44.943,
+            "lz": 9.274,
+            "s": 1.933,
+            "c": 1.931,
+            "lds": 5.1
+          }
+        },
+        {
+          "nr": 1050,
+          "bezeichnung": "60-500-1:14",
+          "profil": "60E2A1",
+          "klasse": "sonderbauform",
+          "schwellen": "beton",
+          "schwellenzahl": 84,
+          "klammer": [
+            3,
+            7,
+            8
+          ],
+          "r_ibw_min": 200,
+          "masse": {
+            "a": 17.834,
+            "b": 27.108,
+            "l": 44.943,
+            "lz": 9.274,
+            "s": 1.933,
+            "c": 1.931,
+            "lds": 5.1
+          }
+        },
+        {
+          "nr": 1078,
+          "bezeichnung": "54-500-1:14",
+          "profil": "54E4",
+          "klasse": "sonderbauform",
+          "schwellen": "holz",
+          "schwellenzahl": 84,
+          "klammer": [
+            3,
+            7,
+            8
+          ],
+          "r_ibw_min": 200,
+          "masse": {
+            "a": 17.834,
+            "b": 27.108,
+            "l": 44.943,
+            "lz": 9.274,
+            "s": 1.933,
+            "c": 1.931,
+            "lds": 5.1
+          }
+        },
+        {
+          "nr": 1085,
+          "bezeichnung": "60-500-1:14",
+          "profil": "60E2A1",
+          "klasse": "sonderbauform",
+          "schwellen": "holz",
+          "schwellenzahl": 84,
+          "klammer": [
+            3,
+            7,
+            8
+          ],
+          "r_ibw_min": 200,
+          "masse": {
+            "a": 17.834,
+            "b": 27.108,
+            "l": 44.943,
+            "lz": 9.274,
+            "s": 1.933,
+            "c": 1.931,
+            "lds": 5.1
+          }
+        }
+      ]
+    },
+    {
+      "label": "760 – 1:15",
+      "lds": 5.125,
+      "art": "weiche",
+      "klasse": "sonderbauform",
+      "R": 760,
+      "ratio": 15,
+      "speed": 80,
+      "dLcs": 5.1,
+      "minl": 12,
+      "branch": [
+        {
+          "type": "arc"
+        },
+        {
+          "type": "straight",
+          "length": 3.6062
+        }
+      ],
+      "verbindung": {
+        "stufe": 2,
+        "rang": 3
+      },
+      "varianten": [
+        {
+          "nr": 1045,
+          "bezeichnung": "54-760-1:15",
+          "profil": "54E4",
+          "klasse": "sonderbauform",
+          "schwellen": "beton",
+          "schwellenzahl": 99,
+          "klammer": [
+            3,
+            9,
+            10
+          ],
+          "r_ibw_min": 300,
+          "masse": {
+            "a": 25.305,
+            "b": 28.911,
+            "l": 54.217,
+            "lz": 3.606,
+            "s": 1.924,
+            "c": 1.923,
+            "lds": 5.1
+          }
+        },
+        {
+          "nr": 1051,
+          "bezeichnung": "60-760-1:15",
+          "profil": "60E2A1",
+          "klasse": "sonderbauform",
+          "schwellen": "beton",
+          "schwellenzahl": 99,
+          "klammer": [
+            3,
+            9,
+            10
+          ],
+          "r_ibw_min": 300,
+          "masse": {
+            "a": 25.305,
+            "b": 28.911,
+            "l": 54.217,
+            "lz": 3.606,
+            "s": 1.924,
+            "c": 1.923,
+            "lds": 5.1
+          }
+        },
+        {
+          "nr": 1080,
+          "bezeichnung": "54-760-1:15",
+          "profil": "54E4",
+          "klasse": "sonderbauform",
+          "schwellen": "holz",
+          "schwellenzahl": 99,
+          "klammer": [
+            3,
+            9,
+            10
+          ],
+          "r_ibw_min": 300,
+          "masse": {
+            "a": 25.305,
+            "b": 28.911,
+            "l": 54.217,
+            "lz": 3.606,
+            "s": 1.924,
+            "c": 1.923,
+            "lds": 5.1
+          }
+        },
+        {
+          "nr": 1086,
+          "bezeichnung": "60-760-1:15",
+          "profil": "60E2A1",
+          "klasse": "sonderbauform",
+          "schwellen": "holz",
+          "schwellenzahl": 99,
+          "klammer": [
+            3,
+            9,
+            10
+          ],
+          "r_ibw_min": 300,
+          "masse": {
+            "a": 25.305,
+            "b": 28.911,
+            "l": 54.217,
+            "lz": 3.606,
+            "s": 1.924,
+            "c": 1.923,
+            "lds": 5.1
+          }
+        }
+      ]
+    },
+    {
+      "label": "760 – 1:18.5",
+      "lds": 9.92,
+      "art": "weiche",
+      "klasse": "sonderbauform",
+      "R": 760,
+      "ratio": 18.5,
+      "speed": 80,
+      "dLcs": 9.9,
+      "minl": 12,
+      "branch": [
+        {
+          "type": "arc"
+        },
+        {
+          "type": "straight",
+          "length": 11.883
+        }
+      ],
+      "verbindung": {
+        "stufe": 3,
+        "rang": 1
+      },
+      "varianten": [
+        {
+          "nr": 1046,
+          "bezeichnung": "54-760-1:18.5",
+          "profil": "54E4",
+          "klasse": "sonderbauform",
+          "schwellen": "beton",
+          "schwellenzahl": 105,
+          "klammer": [
+            3,
+            10,
+            12
+          ],
+          "r_ibw_min": 300,
+          "masse": {
+            "a": 20.526,
+            "b": 32.409,
+            "l": 52.934,
+            "lz": 11.883,
+            "s": 1.75,
+            "c": 1.749,
+            "lds": 9.9
+          }
+        },
+        {
+          "nr": 1052,
+          "bezeichnung": "60-760-1:18.5",
+          "profil": "60E2A1",
+          "klasse": "sonderbauform",
+          "schwellen": "beton",
+          "schwellenzahl": 105,
+          "klammer": [
+            3,
+            10,
+            12
+          ],
+          "r_ibw_min": 300,
+          "masse": {
+            "a": 20.526,
+            "b": 32.409,
+            "l": 52.934,
+            "lz": 11.883,
+            "s": 1.75,
+            "c": 1.749,
+            "lds": 9.9
+          }
+        },
+        {
+          "nr": 1081,
+          "bezeichnung": "54-760-1:18.5",
+          "profil": "54E4",
+          "klasse": "sonderbauform",
+          "schwellen": "holz",
+          "schwellenzahl": 105,
+          "klammer": [
+            3,
+            10,
+            12
+          ],
+          "r_ibw_min": 300,
+          "masse": {
+            "a": 20.526,
+            "b": 32.409,
+            "l": 52.934,
+            "lz": 11.883,
+            "s": 1.75,
+            "c": 1.749,
+            "lds": 9.9
+          }
+        },
+        {
+          "nr": 1087,
+          "bezeichnung": "60-760-1:18.5",
+          "profil": "60E2A1",
+          "klasse": "sonderbauform",
+          "schwellen": "holz",
+          "schwellenzahl": 105,
+          "klammer": [
+            3,
+            10,
+            12
+          ],
+          "r_ibw_min": 300,
+          "masse": {
+            "a": 20.526,
+            "b": 32.409,
+            "l": 52.934,
+            "lz": 11.883,
+            "s": 1.75,
+            "c": 1.749,
+            "lds": 9.9
+          }
+        }
+      ]
+    },
+    {
+      "label": "1200 – 1:19.277",
+      "lds": 9.92,
+      "art": "weiche",
+      "klasse": "sonderbauform",
+      "R": 1200,
+      "ratio": 19.277,
+      "speed": 100,
+      "dLcs": 9.96,
+      "minl": 15,
+      "branch": [
+        {
+          "type": "arc"
+        },
+        {
+          "type": "straight",
+          "length": 2.609
+        }
+      ],
+      "verbindung": {
+        "stufe": 2,
+        "rang": 4
+      },
+      "varianten": [
+        {
+          "nr": 1047,
+          "bezeichnung": "54-1200-1:19.277",
+          "profil": "54E4",
+          "klasse": "sonderbauform",
+          "schwellen": "beton",
+          "schwellenzahl": 125,
+          "klammer": [
+            3,
+            12,
+            13
+          ],
+          "r_ibw_min": 441.552,
+          "masse": {
+            "a": 31.104,
+            "b": 33.713,
+            "l": 64.818,
+            "lz": 2.609,
+            "s": 1.747,
+            "c": 1.747,
+            "lds": 9.96
+          }
+        },
+        {
+          "nr": 1053,
+          "bezeichnung": "60-1200-1:19.277",
+          "profil": "60E2A1",
+          "klasse": "sonderbauform",
+          "schwellen": "beton",
+          "schwellenzahl": 124,
+          "klammer": [
+            0,
+            10,
+            12
+          ],
+          "r_ibw_min": 441.552,
+          "masse": {
+            "a": 31.104,
+            "b": 33.713,
+            "l": 64.818,
+            "lz": 2.609,
+            "s": 1.747,
+            "c": 1.747,
+            "lds": 9.96
+          }
+        },
+        {
+          "nr": 1082,
+          "bezeichnung": "54-1200-1:19.277",
+          "profil": "54E4",
+          "klasse": "sonderbauform",
+          "schwellen": "holz",
+          "schwellenzahl": 125,
+          "klammer": [
+            3,
+            12,
+            13
+          ],
+          "r_ibw_min": 441.552,
+          "masse": {
+            "a": 31.104,
+            "b": 33.713,
+            "l": 64.818,
+            "lz": 2.609,
+            "s": 1.747,
+            "c": 1.747,
+            "lds": 9.96
+          }
+        },
+        {
+          "nr": 1088,
+          "bezeichnung": "60-1200-1:19.277",
+          "profil": "60E2A1",
+          "klasse": "sonderbauform",
+          "schwellen": "holz",
+          "schwellenzahl": 124,
+          "klammer": [
+            0,
+            10,
+            12
+          ],
+          "r_ibw_min": 441.552,
+          "masse": {
+            "a": 31.104,
+            "b": 33.713,
+            "l": 64.818,
+            "lz": 2.609,
+            "s": 1.747,
+            "c": 1.747,
+            "lds": 9.96
+          }
+        }
+      ]
+    },
+    {
+      "label": "300 – 1:9 gb",
+      "lds": 3.94,
+      "art": "weiche",
+      "klasse": "sonderbauform",
+      "herzstueck": "gb",
+      "R": 300,
+      "ratio": 9,
+      "speed": 50,
+      "minl": null,
+      "varianten": [
+        {
+          "nr": 1054,
+          "bezeichnung": "60-300-1:9 gb",
+          "profil": "60E2A1",
+          "klasse": "sonderbauform",
+          "schwellen": "beton",
+          "schwellenzahl": 62,
+          "klammer": [
+            3,
+            5,
+            6
+          ],
+          "r_ibw_min": 175,
+          "masse": {
+            "a": 16.616,
+            "b": 16.615,
+            "l": 33.231,
+            "lz": 0,
+            "s": 1.838,
+            "c": 1.835,
+            "lds": 3.9
+          }
+        },
+        {
+          "nr": 1089,
+          "bezeichnung": "60-300-1:9 gb",
+          "profil": "60E2A1",
+          "klasse": "sonderbauform",
+          "schwellen": "holz",
+          "schwellenzahl": 62,
+          "klammer": [
+            3,
+            5,
+            6
+          ],
+          "r_ibw_min": 175,
+          "masse": {
+            "a": 16.616,
+            "b": 16.615,
+            "l": 33.231,
+            "lz": 0,
+            "s": 1.838,
+            "c": 1.835,
+            "lds": 3.9
+          }
+        }
+      ]
+    },
+    {
+      "label": "300 – 1:9.4 gb",
+      "lds": 3.94,
+      "art": "weiche",
+      "klasse": "sonderbauform",
+      "herzstueck": "gb",
+      "R": 300,
+      "ratio": 9.4,
+      "speed": 50,
+      "minl": null,
+      "branch": [
+        {
+          "type": "arc"
+        },
+        {
+          "type": "straight",
+          "length": 1.406
+        }
+      ],
+      "varianten": [
+        {
+          "nr": 1055,
+          "bezeichnung": "60-300-1:9.4 gb",
+          "profil": "60E2A1",
+          "klasse": "sonderbauform",
+          "schwellen": "beton",
+          "schwellenzahl": 62,
+          "klammer": [
+            0,
+            5,
+            6
+          ],
+          "r_ibw_min": 175,
+          "masse": {
+            "a": 15.913,
+            "b": 17.319,
+            "l": 33.231,
+            "lz": 1.406,
+            "s": 1.835,
+            "c": 1.832,
+            "lds": 3.9
+          }
+        },
+        {
+          "nr": 1090,
+          "bezeichnung": "60-300-1:9.4 gb",
+          "profil": "60E2A1",
+          "klasse": "sonderbauform",
+          "schwellen": "holz",
+          "schwellenzahl": 62,
+          "klammer": [
+            0,
+            5,
+            6
+          ],
+          "r_ibw_min": 175,
+          "masse": {
+            "a": 15.913,
+            "b": 17.319,
+            "l": 33.231,
+            "lz": 1.406,
+            "s": 1.835,
+            "c": 1.832,
+            "lds": 3.9
+          }
+        }
+      ]
+    },
+    {
+      "label": "500 – 1:11 fb",
+      "lds": 2.7,
+      "art": "weiche",
+      "klasse": "sonderbauform",
+      "herzstueck": "fb",
+      "R": 500,
+      "ratio": 11,
+      "speed": 60,
+      "minl": null,
+      "varianten": [
+        {
+          "nr": 1056,
+          "bezeichnung": "60-500-1:11 fb",
+          "profil": "60E2A1",
+          "klasse": "sonderbauform",
+          "schwellen": "beton",
+          "schwellenzahl": 80,
+          "klammer": [
+            0,
+            7,
+            8
+          ],
+          "r_ibw_min": 200,
+          "masse": {
+            "a": 22.681,
+            "b": 22.68,
+            "l": 45.361,
+            "lz": 0,
+            "s": 2.056,
+            "c": 2.053,
+            "lds": 2.7
+          }
+        },
+        {
+          "nr": 1091,
+          "bezeichnung": "60-500-1:11 fb",
+          "profil": "60E2A1",
+          "klasse": "sonderbauform",
+          "schwellen": "holz",
+          "schwellenzahl": 80,
+          "klammer": [
+            0,
+            7,
+            8
+          ],
+          "r_ibw_min": 200,
+          "masse": {
+            "a": 22.681,
+            "b": 22.68,
+            "l": 45.361,
+            "lz": 0,
+            "s": 2.056,
+            "c": 2.053,
+            "lds": 2.7
+          }
+        }
+      ]
+    },
+    {
+      "label": "500 – 1:12 gb",
+      "lds": 6.334,
+      "art": "weiche",
+      "klasse": "sonderbauform",
+      "herzstueck": "gb",
+      "R": 500,
+      "ratio": 12,
+      "speed": 60,
+      "minl": null,
+      "varianten": [
+        {
+          "nr": 1057,
+          "bezeichnung": "60-500-1:12 gb",
+          "profil": "60E2A1",
+          "klasse": "sonderbauform",
+          "schwellen": "beton",
+          "r_ibw_min": 200,
+          "masse": {
+            "a": 20.797,
+            "b": 20.797,
+            "l": 41.595,
+            "lz": 0,
+            "s": 1.729,
+            "c": 1.727,
+            "lds": 6.31
+          }
+        },
+        {
+          "nr": 1092,
+          "bezeichnung": "60-500-1:12 gb",
+          "profil": "60E2A1",
+          "klasse": "sonderbauform",
+          "schwellen": "holz",
+          "r_ibw_min": 200,
+          "masse": {
+            "a": 20.797,
+            "b": 20.797,
+            "l": 41.595,
+            "lz": 0,
+            "s": 1.729,
+            "c": 1.727,
+            "lds": 6.31
+          }
+        }
+      ]
+    },
+    {
+      "label": "500 – 1:14 fb",
+      "lds": 5.125,
+      "art": "weiche",
+      "klasse": "sonderbauform",
+      "herzstueck": "fb",
+      "R": 500,
+      "ratio": 14,
+      "speed": 60,
+      "minl": null,
+      "branch": [
+        {
+          "type": "arc"
+        },
+        {
+          "type": "straight",
+          "length": 9.274
+        }
+      ],
+      "varianten": [
+        {
+          "nr": 1058,
+          "bezeichnung": "60-500-1:14 fb",
+          "profil": "60E2A1",
+          "klasse": "sonderbauform",
+          "schwellen": "beton",
+          "schwellenzahl": 84,
+          "klammer": [
+            3,
+            7,
+            8
+          ],
+          "r_ibw_min": 200,
+          "masse": {
+            "a": 17.834,
+            "b": 27.108,
+            "l": 44.943,
+            "lz": 9.274,
+            "s": 1.933,
+            "c": 1.931,
+            "lds": 5.1
+          }
+        },
+        {
+          "nr": 1093,
+          "bezeichnung": "60-500-1:14 fb",
+          "profil": "60E2A1",
+          "klasse": "sonderbauform",
+          "schwellen": "holz",
+          "schwellenzahl": 84,
+          "klammer": [
+            3,
+            7,
+            8
+          ],
+          "r_ibw_min": 200,
+          "masse": {
+            "a": 17.834,
+            "b": 27.108,
+            "l": 44.943,
+            "lz": 9.274,
+            "s": 1.933,
+            "c": 1.931,
+            "lds": 5.1
+          }
+        }
+      ]
+    },
+    {
+      "label": "760 – 1:14 gb",
+      "lds": 5.125,
+      "art": "weiche",
+      "klasse": "sonderbauform",
+      "herzstueck": "gb",
+      "R": 760,
+      "ratio": 14,
+      "speed": 80,
+      "minl": null,
+      "varianten": [
+        {
+          "nr": 1059,
+          "bezeichnung": "60-760-1:14 gb",
+          "profil": "60E2A1",
+          "klasse": "sonderbauform",
+          "schwellen": "beton",
+          "schwellenzahl": 99,
+          "klammer": [
+            3,
+            7,
+            8
+          ],
+          "r_ibw_min": 300,
+          "masse": {
+            "a": 27.108,
+            "b": 27.108,
+            "l": 54.217,
+            "lz": 0,
+            "s": 1.933,
+            "c": 1.931,
+            "lds": 5.1
+          }
+        },
+        {
+          "nr": 1094,
+          "bezeichnung": "60-760-1:14 gb",
+          "profil": "60E2A1",
+          "klasse": "sonderbauform",
+          "schwellen": "holz",
+          "schwellenzahl": 99,
+          "klammer": [
+            3,
+            7,
+            8
+          ],
+          "r_ibw_min": 300,
+          "masse": {
+            "a": 27.108,
+            "b": 27.108,
+            "l": 54.217,
+            "lz": 0,
+            "s": 1.933,
+            "c": 1.931,
+            "lds": 5.1
+          }
+        }
+      ]
+    },
+    {
+      "label": "760 – 1:15 fb",
+      "lds": 5.125,
+      "art": "weiche",
+      "klasse": "sonderbauform",
+      "herzstueck": "fb",
+      "R": 760,
+      "ratio": 15,
+      "speed": 80,
+      "minl": null,
+      "branch": [
+        {
+          "type": "arc"
+        },
+        {
+          "type": "straight",
+          "length": 3.606
+        }
+      ],
+      "varianten": [
+        {
+          "nr": 1060,
+          "bezeichnung": "60-760-1:15 fb",
+          "profil": "60E2A1",
+          "klasse": "sonderbauform",
+          "schwellen": "beton",
+          "schwellenzahl": 99,
+          "klammer": [
+            3,
+            9,
+            10
+          ],
+          "r_ibw_min": 300,
+          "masse": {
+            "a": 25.305,
+            "b": 28.911,
+            "l": 54.217,
+            "lz": 3.606,
+            "s": 1.924,
+            "c": 1.923,
+            "lds": 5.1
+          }
+        },
+        {
+          "nr": 1095,
+          "bezeichnung": "60-760-1:15 fb",
+          "profil": "60E2A1",
+          "klasse": "sonderbauform",
+          "schwellen": "holz",
+          "schwellenzahl": 99,
+          "klammer": [
+            3,
+            9,
+            10
+          ],
+          "r_ibw_min": 300,
+          "masse": {
+            "a": 25.305,
+            "b": 28.911,
+            "l": 54.217,
+            "lz": 3.606,
+            "s": 1.924,
+            "c": 1.923,
+            "lds": 5.1
+          }
+        }
+      ]
+    },
+    {
+      "label": "760 – 1:18.5 fb",
+      "lds": 8.03,
+      "art": "weiche",
+      "klasse": "sonderbauform",
+      "herzstueck": "fb",
+      "R": 760,
+      "ratio": 18.5,
+      "speed": 80,
+      "minl": null,
+      "branch": [
+        {
+          "type": "arc"
+        },
+        {
+          "type": "straight",
+          "length": 13.75
+        }
+      ],
+      "varianten": [
+        {
+          "nr": 1061,
+          "bezeichnung": "60-760-1:18.5 fb",
+          "profil": "60E2A1",
+          "klasse": "sonderbauform",
+          "schwellen": "beton",
+          "schwellenzahl": 106,
+          "klammer": [
+            3,
+            10,
+            12
+          ],
+          "r_ibw_min": 300,
+          "masse": {
+            "a": 20.526,
+            "b": 34.275,
+            "l": 54.801,
+            "lz": 13.75,
+            "s": 1.851,
+            "c": 1.85,
+            "lds": 8.03
+          }
+        },
+        {
+          "nr": 1096,
+          "bezeichnung": "60-760-1:18.5 fb",
+          "profil": "60E2A1",
+          "klasse": "sonderbauform",
+          "schwellen": "holz",
+          "schwellenzahl": 106,
+          "klammer": [
+            3,
+            10,
+            12
+          ],
+          "r_ibw_min": 300,
+          "masse": {
+            "a": 20.526,
+            "b": 34.275,
+            "l": 54.801,
+            "lz": 13.75,
+            "s": 1.851,
+            "c": 1.85,
+            "lds": 8.03
+          }
+        }
+      ]
+    },
+    {
+      "label": "1200 – 1:18 fb",
+      "lds": 8.1,
+      "art": "weiche",
+      "klasse": "sonderbauform",
+      "herzstueck": "fb",
+      "R": 1200,
+      "ratio": 18,
+      "speed": 100,
+      "minl": null,
+      "varianten": [
+        {
+          "nr": 1062,
+          "bezeichnung": "60-1200-1:18 fb",
+          "profil": "60E2A1",
+          "klasse": "sonderbauform",
+          "schwellen": "beton",
+          "schwellenzahl": 124,
+          "klammer": [
+            0,
+            10,
+            12
+          ],
+          "r_ibw_min": 441.552,
+          "masse": {
+            "a": 33.308,
+            "b": 33.308,
+            "l": 66.615,
+            "lz": 0,
+            "s": 1.848,
+            "c": 1.848,
+            "lds": 8.1
+          }
+        },
+        {
+          "nr": 1097,
+          "bezeichnung": "60-1200-1:18 fb",
+          "profil": "60E2A1",
+          "klasse": "sonderbauform",
+          "schwellen": "holz",
+          "schwellenzahl": 124,
+          "klammer": [
+            0,
+            10,
+            12
+          ],
+          "r_ibw_min": 441.552,
+          "masse": {
+            "a": 33.308,
+            "b": 33.308,
+            "l": 66.615,
+            "lz": 0,
+            "s": 1.848,
+            "c": 1.848,
+            "lds": 8.1
+          }
+        }
+      ]
+    },
+    {
+      "label": "1200 – 1:18.5 gb",
+      "lds": 9.92,
+      "art": "weiche",
+      "klasse": "sonderbauform",
+      "herzstueck": "gb",
+      "R": 1200,
+      "ratio": 18.5,
+      "speed": 100,
+      "minl": null,
+      "varianten": [
+        {
+          "nr": 1063,
+          "bezeichnung": "60-1200-1:18.5 gb",
+          "profil": "60E2A1",
+          "klasse": "sonderbauform",
+          "schwellen": "beton",
+          "r_ibw_min": 441.552,
+          "masse": {
+            "a": 32.409,
+            "b": 32.409,
+            "l": 64.818,
+            "lz": 0,
+            "s": 1.75,
+            "c": 1.749,
+            "lds": 9.9
+          }
+        },
+        {
+          "nr": 1098,
+          "bezeichnung": "60-1200-1:18.5 gb",
+          "profil": "60E2A1",
+          "klasse": "sonderbauform",
+          "schwellen": "holz",
+          "r_ibw_min": 441.552,
+          "masse": {
+            "a": 32.409,
+            "b": 32.409,
+            "l": 64.818,
+            "lz": 0,
+            "s": 1.75,
+            "c": 1.749,
+            "lds": 9.9
+          }
+        }
+      ]
+    },
+    {
+      "label": "1200 – 1:19.277 fb",
+      "lds": 8.16,
+      "art": "weiche",
+      "klasse": "sonderbauform",
+      "herzstueck": "fb",
+      "R": 1200,
+      "ratio": 19.277,
+      "speed": 100,
+      "minl": null,
+      "branch": [
+        {
+          "type": "arc"
+        },
+        {
+          "type": "straight",
+          "length": 4.407
+        }
+      ],
+      "varianten": [
+        {
+          "nr": 1064,
+          "bezeichnung": "60-1200-1:19.277 fb",
+          "profil": "60E2A1",
+          "klasse": "sonderbauform",
+          "schwellen": "beton",
+          "schwellenzahl": 124,
+          "klammer": [
+            0,
+            10,
+            12
+          ],
+          "r_ibw_min": 441.552,
+          "masse": {
+            "a": 31.104,
+            "b": 35.511,
+            "l": 66.615,
+            "lz": 4.407,
+            "s": 1.84,
+            "c": 1.84,
+            "lds": 8.16
+          }
+        },
+        {
+          "nr": 1099,
+          "bezeichnung": "60-1200-1:19.277 fb",
+          "profil": "60E2A1",
+          "klasse": "sonderbauform",
+          "schwellen": "holz",
+          "schwellenzahl": 124,
+          "klammer": [
+            0,
+            10,
+            12
+          ],
+          "r_ibw_min": 441.552,
+          "masse": {
+            "a": 31.104,
+            "b": 35.511,
+            "l": 66.615,
+            "lz": 4.407,
+            "s": 1.84,
+            "c": 1.84,
+            "lds": 8.16
+          }
+        }
+      ]
+    },
+    {
+      "label": "2500 – 1:27.85 fb",
+      "lds": 13.5,
+      "art": "weiche",
+      "klasse": "sonderbauform",
+      "herzstueck": "fb",
+      "R": 2500,
+      "ratio": 27.85,
+      "speed": 130,
+      "minl": null,
+      "branch": [
+        {
+          "type": "arc"
+        },
+        {
+          "type": "straight",
+          "length": 4.568
+        }
+      ],
+      "varianten": [
+        {
+          "nr": 1065,
+          "bezeichnung": "60-2500-1:27.85 fb",
+          "profil": "60E2A1",
+          "klasse": "sonderbauform",
+          "schwellen": "beton",
+          "schwellenzahl": 180,
+          "klammer": [
+            3,
+            16,
+            17
+          ],
+          "r_ibw_min": 941,
+          "masse": {
+            "a": 44.869,
+            "b": 49.437,
+            "l": 94.306,
+            "lz": 4.568,
+            "s": 1.774,
+            "c": 1.774,
+            "lds": 13.5
+          }
+        },
+        {
+          "nr": 1100,
+          "bezeichnung": "60-2500-1:27.85 fb",
+          "profil": "60E2A1",
+          "klasse": "sonderbauform",
+          "schwellen": "holz",
+          "schwellenzahl": 180,
+          "klammer": [
+            3,
+            16,
+            17
+          ],
+          "r_ibw_min": 941,
+          "masse": {
+            "a": 44.869,
+            "b": 49.437,
+            "l": 94.306,
+            "lz": 4.568,
+            "s": 1.774,
+            "c": 1.774,
+            "lds": 13.5
+          }
+        }
+      ]
+    },
+    {
+      "label": "3000/1500 – 1:18.132 fb",
+      "lds": 3.3,
+      "art": "weiche",
+      "klasse": "sonderbauform",
+      "herzstueck": "fb",
+      "R": 1500,
+      "ratio": 18.132,
+      "speed": 100,
+      "minl": null,
+      "branch": [
+        {
+          "type": "clothoid",
+          "R1": 3000,
+          "R2": 1500,
+          "length": 27.0
+        },
+        {
+          "type": "arc",
+          "R": 1500,
+          "length": 62.393
+        }
+      ],
+      "varianten": [
+        {
+          "nr": 1066,
+          "bezeichnung": "60-3000/1500-1:18.132 fb",
+          "profil": "60E2A1",
+          "klasse": "sonderbauform",
+          "masse": {
+            "t1": 47.624,
+            "t2": 41.792,
+            "l": 89.416,
+            "s": 2.302,
+            "lds": 3.3,
+            "A": "284.6"
+          }
+        }
+      ]
+    },
+    {
+      "label": "3000/1500/∞ – 1:23.735 fb",
+      "lds": 9.22,
+      "art": "weiche",
+      "klasse": "sonderbauform",
+      "herzstueck": "fb",
+      "R": 1500,
+      "ratio": 23.735,
+      "speed": 100,
+      "minl": null,
+      "branch": [
+        {
+          "type": "clothoid",
+          "R1": 3000,
+          "R2": 1500,
+          "length": 27.0
+        },
+        {
+          "type": "arc",
+          "R": 1500,
+          "length": 26.911
+        },
+        {
+          "type": "clothoid",
+          "R1": 1500,
+          "R2": null,
+          "length": 32.0
+        }
+      ],
+      "varianten": [
+        {
+          "nr": 1067,
+          "bezeichnung": "60-3000/1500/oo 1:23.735 fb",
+          "profil": "60E2A1",
+          "klasse": "sonderbauform",
+          "schwellenzahl": 159,
+          "klammer": [
+            3,
+            5,
+            0
+          ],
+          "zs_wa": 1.352,
+          "masse": {
+            "t1": 38.41,
+            "t2": 51.075,
+            "l": 89.485,
+            "s": 2.15,
+            "lds": 9.22,
+            "A": "284.6, 219.1"
+          }
+        }
+      ],
+      "s_we": 2.15
+    },
+    {
+      "label": "4800/2450 – 1:24.257 fb",
+      "lds": 8.7,
+      "art": "weiche",
+      "klasse": "sonderbauform",
+      "herzstueck": "fb",
+      "R": 2450,
+      "ratio": 24.257,
+      "speed": 130,
+      "minl": null,
+      "branch": [
+        {
+          "type": "clothoid",
+          "R1": 4800,
+          "R2": 2450,
+          "length": 41.075
+        },
+        {
+          "type": "arc",
+          "R": 2450,
+          "length": 69.925
+        }
+      ],
+      "varianten": [
+        {
+          "nr": 1068,
+          "bezeichnung": "60-4800/2450-1:24.257 fb",
+          "profil": "60E2A1",
+          "klasse": "sonderbauform",
+          "masse": {
+            "t1": 59.672,
+            "t2": 51.344,
+            "l": 111.016,
+            "s": 2.115,
+            "lds": 8.7,
+            "A": "453.4"
+          }
+        }
+      ]
+    },
+    {
+      "label": "4800/2450/∞ – 1:30.686 fb",
+      "lds": 16.43,
+      "art": "weiche",
+      "klasse": "sonderbauform",
+      "herzstueck": "fb",
+      "R": 2450,
+      "ratio": 30.685,
+      "speed": 130,
+      "minl": null,
+      "branch": [
+        {
+          "type": "clothoid",
+          "R1": 4800,
+          "R2": 2450,
+          "length": 41.075
+        },
+        {
+          "type": "arc",
+          "R": 2450,
+          "length": 27.446
+        },
+        {
+          "type": "clothoid",
+          "R1": 2450,
+          "R2": null,
+          "length": 42.7
+        }
+      ],
+      "varianten": [
+        {
+          "nr": 1069,
+          "bezeichnung": "60-4800/2450/oo 1:30.686 fb",
+          "profil": "60E2A1",
+          "klasse": "sonderbauform",
+          "schwellenzahl": 202,
+          "klammer": [
+            0,
+            6,
+            0
+          ],
+          "zs_wa": 2.552,
+          "masse": {
+            "t1": 49.824,
+            "t2": 60.806,
+            "l": 110.63,
+            "s": 1.981,
+            "lds": 16.43,
+            "A": "453.4, 323.4"
+          }
+        }
+      ],
+      "s_we": 1.981
+    },
+    {
+      "label": "10000/4000 – 1:32.05 fb",
+      "lds": 14.713,
+      "art": "weiche",
+      "klasse": "sonderbauform",
+      "herzstueck": "fb",
+      "R": 4000,
+      "ratio": 32.05,
+      "speed": 160,
+      "minl": null,
+      "branch": [
+        {
+          "type": "clothoid",
+          "R1": 10000,
+          "R2": 4000,
+          "length": 37.5
+        },
+        {
+          "type": "arc",
+          "R": 4000,
+          "length": 98.515
+        }
+      ],
+      "varianten": [
+        {
+          "nr": 1070,
+          "bezeichnung": "60-10000/4000-1:32.050 fb",
+          "profil": "60E2A1",
+          "klasse": "sonderbauform",
+          "zs_wa": 3.152,
+          "masse": {
+            "t1": 73.018,
+            "t2": 63.008,
+            "l": 136.026,
+            "s": 1.965,
+            "lds": 14.713,
+            "A": "500"
+          }
+        }
+      ]
+    },
+    {
+      "label": "10000/4000/∞ – 1:39.113 fb",
+      "lds": 24.12,
+      "art": "weiche",
+      "klasse": "sonderbauform",
+      "herzstueck": "fb",
+      "R": 4000,
+      "ratio": 39.113,
+      "speed": 160,
+      "minl": null,
+      "branch": [
+        {
+          "type": "clothoid",
+          "R1": 10000,
+          "R2": 4000,
+          "length": 37.5
+        },
+        {
+          "type": "arc",
+          "R": 4000,
+          "length": 48.383
+        },
+        {
+          "type": "clothoid",
+          "R1": 4000,
+          "R2": null,
+          "length": 55.225
+        }
+      ],
+      "varianten": [
+        {
+          "nr": 1071,
+          "bezeichnung": "60-10000/4000/oo 1:39.113 fb",
+          "profil": "60E2A1",
+          "klasse": "sonderbauform",
+          "schwellenzahl": 257,
+          "klammer": [
+            0,
+            7,
+            0
+          ],
+          "zs_wa": 3.152,
+          "masse": {
+            "t1": 62.746,
+            "t2": 74.199,
+            "l": 136.945,
+            "s": 1.894,
+            "lds": 24.12,
+            "A": "500, 470"
+          }
+        }
+      ],
+      "s_we": 1.894
+    },
+    {
+      "label": "16000/6100 – 1:40.154 fb",
+      "lds": 21.3,
+      "art": "weiche",
+      "klasse": "sonderbauform",
+      "herzstueck": "fb",
+      "R": 6100,
+      "ratio": 40.154,
+      "speed": 200,
+      "minl": null,
+      "branch": [
+        {
+          "type": "clothoid",
+          "R1": 16000,
+          "R2": 6100,
+          "length": 56.0
+        },
+        {
+          "type": "arc",
+          "R": 6100,
+          "length": 113.209
+        }
+      ],
+      "varianten": [
+        {
+          "nr": 1072,
+          "bezeichnung": "60-16000/6100-1:40.154 fb",
+          "profil": "60E2A1",
+          "klasse": "sonderbauform",
+          "zs_wa": 0.752,
+          "masse": {
+            "t1": 92.129,
+            "t2": 77.087,
+            "l": 169.216,
+            "s": 1.919,
+            "lds": 21.3,
+            "A": "743"
+          }
+        }
+      ]
+    },
+    {
+      "label": "Kr 1:2.9",
+      "art": "kreuzung",
+      "klasse": "sonderbauform",
+      "kind": "crossing",
+      "ratio": 2.9,
+      "lt": 6.904,
+      "speed": 40,
+      "varianten": [
+        {
+          "nr": 1290,
+          "bezeichnung": "Kr 54-1:2.9",
+          "profil": "54E4",
+          "klasse": "sonderbauform",
+          "schwellen": "beton",
+          "masse": {
+            "l1": 6.904,
+            "l2": 6.904,
+            "lds": [
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "nr": 1301,
+          "bezeichnung": "Kr 54-1:2.9",
+          "profil": "54E4",
+          "klasse": "sonderbauform",
+          "schwellen": "holz",
+          "masse": {
+            "l1": 6.904,
+            "l2": 6.904,
+            "lds": [
+              0,
+              0
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "label": "Kr 1:3.224",
+      "art": "kreuzung",
+      "klasse": "sonderbauform",
+      "kind": "crossing",
+      "ratio": 3.224,
+      "lt": 7.92,
+      "speed": 80,
+      "varianten": [
+        {
+          "nr": 1291,
+          "bezeichnung": "Kr 54-1:3.224",
+          "profil": "54E4",
+          "klasse": "sonderbauform",
+          "schwellen": "beton",
+          "masse": {
+            "l1": 7.92,
+            "l2": 7.92,
+            "lds": [
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "nr": 1302,
+          "bezeichnung": "Kr 54-1:3.224",
+          "profil": "54E4",
+          "klasse": "sonderbauform",
+          "schwellen": "holz",
+          "masse": {
+            "l1": 7.92,
+            "l2": 7.92,
+            "lds": [
+              0,
+              0
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "label": "Kr 1:3.683",
+      "art": "kreuzung",
+      "klasse": "sonderbauform",
+      "kind": "crossing",
+      "ratio": 3.683,
+      "lt": 9.448,
+      "speed": 80,
+      "dLcs": -0.87,
+      "varianten": [
+        {
+          "nr": 1292,
+          "bezeichnung": "Kr 54-1:3.683",
+          "profil": "54E4",
+          "klasse": "sonderbauform",
+          "schwellen": "beton",
+          "masse": {
+            "l1": 9.448,
+            "l2": 9.448,
+            "lds": [
+              -0.87,
+              -0.87
+            ]
+          }
+        },
+        {
+          "nr": 1303,
+          "bezeichnung": "Kr 54-1:3.683",
+          "profil": "54E4",
+          "klasse": "sonderbauform",
+          "schwellen": "holz",
+          "masse": {
+            "l1": 9.448,
+            "l2": 9.448,
+            "lds": [
+              -0.87,
+              -0.87
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "label": "Kr 1:4.444",
+      "art": "kreuzung",
+      "klasse": "sonderbauform",
+      "kind": "crossing",
+      "ratio": 4.444,
+      "lt": 10.9035,
+      "speed": 80,
+      "dLcs": -1.48,
+      "varianten": [
+        {
+          "nr": 1293,
+          "bezeichnung": "Kr 54-1:4.444",
+          "profil": "54E4",
+          "klasse": "sonderbauform",
+          "schwellen": "beton",
+          "masse": {
+            "l1": 10.903,
+            "l2": 10.903,
+            "lds": [
+              -1.48,
+              -1.48
+            ]
+          }
+        },
+        {
+          "nr": 1304,
+          "bezeichnung": "Kr 54-1:4.444",
+          "profil": "54E4",
+          "klasse": "sonderbauform",
+          "schwellen": "holz",
+          "masse": {
+            "l1": 10.903,
+            "l2": 10.903,
+            "lds": [
+              -1.48,
+              -1.48
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "label": "Kr 1:5.5",
+      "art": "kreuzung",
+      "klasse": "sonderbauform",
+      "kind": "crossing",
+      "ratio": 5.5,
+      "lt": 10.7,
+      "speed": 80,
+      "dLcs": 1.5,
+      "varianten": [
+        {
+          "nr": 1294,
+          "bezeichnung": "Kr 54-1:5.5",
+          "profil": "54E4",
+          "klasse": "sonderbauform",
+          "schwellen": "beton",
+          "masse": {
+            "l1": 10.7,
+            "l2": 10.7,
+            "lds": [
+              1.5,
+              1.5
+            ]
+          }
+        },
+        {
+          "nr": 1305,
+          "bezeichnung": "Kr 54-1:5.5",
+          "profil": "54E4",
+          "klasse": "sonderbauform",
+          "schwellen": "holz",
+          "masse": {
+            "l1": 10.7,
+            "l2": 10.7,
+            "lds": [
+              1.5,
+              1.5
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "label": "Kr 1:6.6",
+      "art": "kreuzung",
+      "klasse": "sonderbauform",
+      "kind": "crossing",
+      "ratio": 6.6,
+      "lt": 12.239,
+      "speed": 80,
+      "dLcs": 2.65,
+      "varianten": [
+        {
+          "nr": 1295,
+          "bezeichnung": "Kr 54-1:6.6",
+          "profil": "54E4",
+          "klasse": "sonderbauform",
+          "schwellen": "beton",
+          "masse": {
+            "l1": 12.239,
+            "l2": 12.239,
+            "lds": [
+              2.65,
+              2.65
+            ]
+          }
+        },
+        {
+          "nr": 1306,
+          "bezeichnung": "Kr 54-1:6.6",
+          "profil": "54E4",
+          "klasse": "sonderbauform",
+          "schwellen": "holz",
+          "masse": {
+            "l1": 12.239,
+            "l2": 12.239,
+            "lds": [
+              2.65,
+              2.65
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "label": "Kr 1:6.964",
+      "art": "kreuzung",
+      "klasse": "sonderbauform",
+      "kind": "crossing",
+      "ratio": 6.964,
+      "lt": 12.69,
+      "speed": 80,
+      "dLcs": 3.3,
+      "varianten": [
+        {
+          "nr": 1296,
+          "bezeichnung": "Kr 54-1:6.964",
+          "profil": "54E4",
+          "klasse": "sonderbauform",
+          "schwellen": "beton",
+          "masse": {
+            "l1": 12.69,
+            "l2": 12.69,
+            "lds": [
+              3.3,
+              3.3
+            ]
+          }
+        },
+        {
+          "nr": 1307,
+          "bezeichnung": "Kr 54-1:6.964",
+          "profil": "54E4",
+          "klasse": "sonderbauform",
+          "schwellen": "holz",
+          "masse": {
+            "l1": 12.69,
+            "l2": 12.69,
+            "lds": [
+              3.3,
+              3.3
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "label": "Kr 1:14",
+      "art": "kreuzung",
+      "klasse": "sonderbauform",
+      "kind": "crossing",
+      "ratio": 14,
+      "lt": 27.10835,
+      "speed": 160,
+      "dLcs": 5.1,
+      "masse": {
+        "lt": 27.10835,
+        "lKr": 54.2167,
+        "c": 1.9326
+      },
+      "varianten": [
+        {
+          "nr": 1297,
+          "bezeichnung": "Kr 54-1:14",
+          "profil": "54E4",
+          "klasse": "sonderbauform",
+          "schwellen": "beton",
+          "masse": {
+            "l1": 27.108,
+            "l2": 27.108,
+            "lds": [
+              5.1,
+              5.1
+            ]
+          }
+        },
+        {
+          "nr": 1299,
+          "bezeichnung": "Kr 60-1:14",
+          "profil": "60E2A1",
+          "klasse": "sonderbauform",
+          "schwellen": "beton",
+          "masse": {
+            "l1": 27.108,
+            "l2": 27.108,
+            "lds": [
+              5.1,
+              5.1
+            ]
+          }
+        },
+        {
+          "nr": 1308,
+          "bezeichnung": "Kr 54-1:14",
+          "profil": "54E4",
+          "klasse": "sonderbauform",
+          "schwellen": "holz",
+          "masse": {
+            "l1": 27.108,
+            "l2": 27.108,
+            "lds": [
+              5.1,
+              5.1
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "label": "Kr 1:18.5",
+      "art": "kreuzung",
+      "klasse": "sonderbauform",
+      "kind": "crossing",
+      "ratio": 18.5,
+      "lt": 32.4088,
+      "speed": 160,
+      "dLcs": 9.9,
+      "masse": {
+        "lt": 32.4088,
+        "lKr": 64.8176,
+        "c": 1.7499
+      },
+      "varianten": [
+        {
+          "nr": 1298,
+          "bezeichnung": "Kr 54-1:18.5",
+          "profil": "54E4",
+          "klasse": "sonderbauform",
+          "schwellen": "beton",
+          "masse": {
+            "l1": 32.409,
+            "l2": 32.409,
+            "lds": [
+              9.9,
+              9.9
+            ]
+          }
+        },
+        {
+          "nr": 1300,
+          "bezeichnung": "Kr 60-1:18.5",
+          "profil": "60E2A1",
+          "klasse": "sonderbauform",
+          "schwellen": "beton",
+          "masse": {
+            "l1": 32.409,
+            "l2": 32.409,
+            "lds": [
+              9.9,
+              9.9
+            ]
+          }
+        },
+        {
+          "nr": 1309,
+          "bezeichnung": "Kr 54-1:18.5",
+          "profil": "54E4",
+          "klasse": "sonderbauform",
+          "schwellen": "holz",
+          "masse": {
+            "l1": 32.409,
+            "l2": 32.409,
+            "lds": [
+              9.9,
+              9.9
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "label": "EBKW 1:9 – 500.860",
+      "art": "kreuzung",
+      "klasse": "sonderbauform",
+      "kind": "single_slip",
+      "ratio": 9,
+      "Rk": 500.86,
+      "lb": 27.6584,
+      "routen": [
+        {
+          "id": "verbindung",
+          "R": null,
+          "speed": 100
+        },
+        {
+          "id": "kreuzungsgleis",
+          "R": 500.86,
+          "speed": 60
+        }
+      ],
+      "masse": {
+        "lb": 27.6584,
+        "s": 3.4
+      }
+    },
+    {
+      "label": "DBKW 1:9 – 500.860",
+      "art": "kreuzung",
+      "klasse": "sonderbauform",
+      "kind": "double_slip",
+      "ratio": 9,
+      "Rk": 500.86,
+      "Ri": 249.763,
+      "lb": 27.6584,
+      "routen": [
+        {
+          "id": "verbindung",
+          "R": null,
+          "speed": 100
+        },
+        {
+          "id": "kreuzungsgleis",
+          "R": 500.86,
+          "speed": 60
+        },
+        {
+          "id": "innenbogen",
+          "R": 249.763,
+          "speed": 40
+        }
+      ]
+    }
+  ],
+  "open_points": [
+    {
+      "id": "OP.W.01",
+      "refs": [
+        "formen[*].minl"
+      ],
+      "topic": "Mindestzwischengerade hängt an v, nicht an der Form",
+      "assumption": "Bestätigt am 2026-09-22, die Tabelle steht aus. Bis dahin steht der Wert je Form, wie ihn switchUtils.js führte. Er lässt sich nicht als minl(v) lesen: 190 – 1:9 bei 40 km/h trägt 6 m, 300 – 1:9 bei 50 km/h aber 5 m."
+    },
+    {
+      "id": "OP.W.02",
+      "refs": [
+        "formen"
+      ],
+      "topic": "EBKW und DBKW 500,860 – 1:9: gebaut, zum Teil auf Annahmen",
+      "assumption": "Drei Fahrwege: gerade Weichenverbindung (R unendlich, 100 km/h), zwei gleichsinnig gekrümmte Kreuzungsgleise (R 500,860, 60 km/h) und — nur bei der DBKW — der innenliegende Bogen (R 249,763, 40 km/h). Geliefert sind für die EBKW l_b 27,6584, l_KW 55,414, c 1,9596 und s 3,40. Vom Auftraggeber am 2026-09-22 entschieden: l_KW = 2·l_b = 55,3168 (die gelieferten 55,414 bleiben unverwendet), und c folgt aus der Konstruktion — an den Enden 3,0587 m; die gelieferten 1,9596 sind an einer unbekannten Stelle gemessen. Gebaut in AP 3.4: Kreuzungsgleise als Bögen R 500,860 durch den Kreuzungspunkt im Winkel 1:9, Enden l_b entlang der Bögen, Gerade und Innenbogen auf ihrem Katalogradius von Ende zu Ende. R, 1:9 und l_b zusammen lassen die Verbindungen nicht genau tangential an: die Gerade trifft die Kreuzungsgleise 0,107 mrad, der Innenbogen 0,019 mrad neben der Tangente. Offen: die DBKW-Zeile (angenommen: dieselbe Kreuzung wie die EBKW), die Bedeutung von s, Weichenmarke und Mindestzwischengerade (OP.W.03)."
+    },
+    {
+      "id": "OP.W.03",
+      "refs": [
+        "formen[kind=single_slip]",
+        "formen[kind=double_slip]"
+      ],
+      "topic": "Weichenmarke und Mindestzwischengerade der Kreuzungsweichen",
+      "assumption": "Seit dem 2026-09-18 offen; die Geschwindigkeiten je Fahrweg sind am 2026-09-22 nachgereicht."
+    },
+    {
+      "id": "OP.W.04",
+      "refs": [
+        "switchUtils.switchMarkDistance"
+      ],
+      "topic": "Herkunft der 2,272 m in der Weichenmarkenformel",
+      "assumption": "Die Formel d = 2,272·n − (l_t + g) ist eine Rekonstruktion; nach B.10 bindet ohnehin der Tabellenwert, wo einer vorliegt."
+    },
+    {
+      "id": "OP.W.05",
+      "refs": [
+        "klassen",
+        "rules"
+      ],
+      "topic": "Regelteil der 0120",
+      "assumption": "„Es sollen Regelformen verwendet werden\" ist eine Regel, ihre Stufe (Hinweis, Warnung, Zustimmung) steht aus. Ebenso die Regeln zu Mindestzwischengerade, gebogener Weiche und Krümmungssprung innerhalb der Weiche, den die 0110 ausdrücklich diesem Katalog überlässt."
+    }
+  ]
+}

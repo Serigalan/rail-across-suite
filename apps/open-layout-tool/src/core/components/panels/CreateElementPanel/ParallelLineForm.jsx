@@ -1,0 +1,314 @@
+import { useCallback, useRef, useState } from 'react'
+import { saveTrack, loadTracks } from '../../../storage'
+import {
+  wgs84ToUTM, epsgForLngLat, toWgs, computeStraightValuesUtm, endPointStraightUtm,
+  computeCurvedValuesUtm, arcCoordsFromRadiusUtm, arcCenter, SAGITTA_TRACK,
+} from '../../../utils/geometry'
+import useTrackFields from '../../../hooks/useTrackFields'
+import useTrackName from '../../../hooks/useTrackName'
+import TrackFields from '../TrackFields'
+import useNearbyLines from '../../../hooks/useNearbyLines'
+import HeightDatumField from '../HeightDatumField'
+import UtmCoordFields from '../../UtmCoordFields'
+import RuleFindings from '../RuleFindings'
+import { hasRuleError } from '../../../utils/rules'
+import { elementPath } from '../../../utils/km'
+import { useI18n } from '../../../locales/i18nContext'
+import { useMap } from '../../../map/MapContext'
+import { useProject } from '../../../hooks/useStore'
+import useDrawPreview from '../../../map/useDrawPreview'
+import useMapPick, { useSelectedOnMap } from '../../../map/useMapPick'
+import { buildParallelLineTrack, trackMeta } from '../../../utils/commands'
+import CommitBar from '../../form/CommitBar'
+import FormSection from '../../form/FormSection'
+import ReadOnlyField from '../../form/ReadOnlyField'
+import AdvancedInfo from '../../form/AdvancedInfo'
+import { firstReason } from '../../form/firstReason'
+import MessageList from '../../form/MessageList'
+import FieldRule from '../../form/FieldRule'
+import NumberInput from '../../form/NumberInput'
+import { splitUnit } from '../../../locales/i18n'
+
+// Start/end of an element as UTM points. Uses the stored nodes when present,
+// otherwise falls back to the first/last geometry coordinate.
+function elementEndpointsUtm(el, epsg) {
+  if (el.startNode && el.endNode && epsg) {
+    return {
+      start: { easting: el.startNode[0], northing: el.startNode[1], zone: epsg },
+      end:   { easting: el.endNode[0],   northing: el.endNode[1],   zone: epsg },
+    }
+  }
+  const coords = el.geometry?.coordinates ?? []
+  if (coords.length < 2) return null
+  const s = wgs84ToUTM(coords[0], epsg || epsgForLngLat(coords[0]))
+  const e = wgs84ToUTM(coords[coords.length - 1], s.zone)
+  return {
+    start: { easting: s.easting, northing: s.northing, zone: s.zone },
+    end:   { easting: e.easting, northing: e.northing, zone: e.zone },
+  }
+}
+
+// Offset both endpoints perpendicular to the chord by `dist` metres.
+// Positive shifts to the right (seen along the chord direction).
+function offsetEndpoints(src, dist) {
+  const { bearing } = computeStraightValuesUtm(src.start, src.end)
+  const b = (bearing * Math.PI) / 180
+  const perpE = Math.cos(b), perpN = -Math.sin(b)
+  const shift = (p) => ({
+    easting:  p.easting  + dist * perpE,
+    northing: p.northing + dist * perpN,
+    zone:     p.zone,
+  })
+  return { start: shift(src.start), end: shift(src.end) }
+}
+
+// Concentric offset of a circular arc: same centre, radius shifted by `dist`
+// (positive = right of travel → inward for a right turn, outward for a left turn).
+// Returns the offset endpoints and the new signed radius, or null if invalid.
+function offsetArc(src, dist) {
+  const ac = arcCenter(src.start.easting, src.start.northing, src.end.easting, src.end.northing, src.signedR)
+  if (!ac) return null
+  const { cx, cy, absR } = ac
+  const sign = src.signedR >= 0 ? 1 : -1
+  const newR = absR - sign * dist
+  if (newR < 0.5) return null   // offset reached/crossed the centre
+  const radial = (p) => {
+    const rx = p.easting - cx, ry = p.northing - cy
+    const len = Math.hypot(rx, ry) || 1
+    return { easting: cx + newR * rx / len, northing: cy + newR * ry / len, zone: p.zone }
+  }
+  return { start: radial(src.start), end: radial(src.end), signedR: sign * newR }
+}
+
+export default function ParallelLineForm({ onDone }) {
+  const { t } = useI18n()
+  const map = useMap()
+  const draw = useDrawPreview()
+  const project = useProject()
+  const lineOptions = useNearbyLines(map)
+  const { fields, errors, setErrors, setField, lineNumberError } = useTrackFields()
+  const [nameError, setNameError] = useState(false)
+  const [selecting, setSelecting] = useState(true)
+  const [offset, setOffset]       = useState('4.5')
+  const [speed, setSpeed]         = useState(80)
+  const [length, setLength]       = useState('')
+  const [bearing, setBearing]     = useState('')
+  const [startE, setStartE]       = useState('')
+  const [startN, setStartN]       = useState('')
+  const [endE, setEndE]           = useState('')
+  const [endN, setEndN]           = useState('')
+  const [epsg, setUtmZone]     = useState('')
+  const [endBearing, setEndBearing] = useState('')
+  const [isArc, setIsArc]         = useState(false)
+  const [signedR, setSignedR]     = useState(0)      // signed radius of the parallel arc
+  const [points, setPoints]       = useState([])     // [startUtm, endUtm] of the parallel
+  const sourceRef                 = useRef(null)      // { start, end, signedR } UTM of the picked element
+  const [picked, setPicked]       = useState(null)    // { trackId, elementIndex } on the map
+  // The track as it would be saved: the line it lies on names it.
+  const geometry = points.length === 2 ? elementPath(points[0], points[1], isArc ? signedR : null) : null
+  const { name, setName } = useTrackName(project.id, fields, { geometry, setField })
+
+
+  const applyPoints = useCallback((startUtm, endUtm) => {
+    const v = computeStraightValuesUtm(startUtm, endUtm)
+    setIsArc(false)
+    setPoints([startUtm, endUtm])
+    setUtmZone(v.epsg)
+    setStartE(startUtm.easting.toFixed(2)); setStartN(startUtm.northing.toFixed(2))
+    setEndE(endUtm.easting.toFixed(2));     setEndN(endUtm.northing.toFixed(2))
+    setLength(String(v.length))
+    setBearing(String(v.bearing))
+    draw.line([toWgs(startUtm), toWgs(endUtm)], `L = ${Math.round(v.length * 100) / 100}m`)
+    draw.markers([toWgs(startUtm), toWgs(endUtm)])
+  }, [draw])
+
+  const applyArc = useCallback((startUtm, endUtm, sR) => {
+    const v = computeCurvedValuesUtm(startUtm, endUtm, sR)
+    setIsArc(true)
+    setPoints([startUtm, endUtm])
+    setSignedR(sR)
+    setUtmZone(v.epsg)
+    setStartE(startUtm.easting.toFixed(2)); setStartN(startUtm.northing.toFixed(2))
+    setEndE(endUtm.easting.toFixed(2));     setEndN(endUtm.northing.toFixed(2))
+    setLength(String(v.length))
+    setBearing(String(v.bearing))
+    setEndBearing(String(v.endBearing))
+    const coords = arcCoordsFromRadiusUtm(startUtm, endUtm, sR, SAGITTA_TRACK) || [toWgs(startUtm), toWgs(endUtm)]
+    draw.line(coords, `R = ${Math.abs(sR).toFixed(1)}m`)
+    draw.markers([toWgs(startUtm), toWgs(endUtm)])
+  }, [draw])
+
+  const buildParallel = useCallback((src, dist) => {
+    if (src.signedR != null) {
+      const r = offsetArc(src, dist)
+      if (r) applyArc(r.start, r.end, r.signedR)
+    } else {
+      const { start, end } = offsetEndpoints(src, dist)
+      applyPoints(start, end)
+    }
+  }, [applyArc, applyPoints])
+
+  // Pick an element to offset.
+  useMapPick({
+    active: selecting, noSwitchBranch: true,
+    onPick: ({ trackId, elementIndex }) => {
+      const track = loadTracks().find(tr => tr.id === trackId)
+      const el = track?.elements?.[elementIndex]
+      if (!el) return
+      const src = elementEndpointsUtm(el, track.epsg)
+      if (!src) return
+      src.signedR = el.radius != null ? el.radius : null   // null = straight
+      sourceRef.current = src
+      setSpeed(el.speed ?? 80)
+      setPicked({ trackId, elementIndex })
+      setSelecting(false)
+      buildParallel(src, Number(offset) || 0)
+    },
+  })
+  useSelectedOnMap(picked)
+
+  const handleOffsetChange = (val) => {
+    setOffset(val)
+    const d = Number(val)
+    if (isNaN(d) || !sourceRef.current) return
+    buildParallel(sourceRef.current, d)
+  }
+
+  const handleLengthChange = (val) => {
+    setLength(val)
+    const l = Number(val), b = Number(bearing)
+    if (isNaN(l) || isNaN(b) || l <= 0 || points.length < 2) return
+    const newEndUtm = endPointStraightUtm(points[0], b, l)
+    setPoints([points[0], newEndUtm])
+    setEndE(newEndUtm.easting.toFixed(2)); setEndN(newEndUtm.northing.toFixed(2))
+    draw.line([toWgs(points[0]), toWgs(newEndUtm)], `L = ${Math.round(l * 100) / 100}m`)
+    draw.markers([toWgs(points[0]), toWgs(newEndUtm)])
+  }
+
+  const handleBearingChange = (val) => {
+    setBearing(val)
+    const b = Number(val), l = Number(length)
+    if (isNaN(b) || isNaN(l) || l <= 0 || points.length < 2) return
+    const newEndUtm = endPointStraightUtm(points[0], b, l)
+    setPoints([points[0], newEndUtm])
+    setEndE(newEndUtm.easting.toFixed(2)); setEndN(newEndUtm.northing.toFixed(2))
+    draw.line([toWgs(points[0]), toWgs(newEndUtm)], `L = ${Math.round(l * 100) / 100}m`)
+    draw.markers([toWgs(points[0]), toWgs(newEndUtm)])
+  }
+
+  const handleCoordChange = (which, axis, val) => {
+    if (which === 'start') {
+      const e = axis === 'e' ? val : startE
+      const n = axis === 'n' ? val : startN
+      if (axis === 'e') setStartE(val); else setStartN(val)
+      const eNum = Number(e), nNum = Number(n)
+      if (isNaN(eNum) || isNaN(nNum) || !epsg) return
+      const newStartUtm = { easting: eNum, northing: nNum, zone: epsg }
+      if (points.length === 2) applyPoints(newStartUtm, points[1])
+    } else {
+      const e = axis === 'e' ? val : endE
+      const n = axis === 'n' ? val : endN
+      if (axis === 'e') setEndE(val); else setEndN(val)
+      const eNum = Number(e), nNum = Number(n)
+      if (isNaN(eNum) || isNaN(nNum) || !epsg) return
+      const newEndUtm = { easting: eNum, northing: nNum, zone: epsg }
+      if (points.length === 2) applyPoints(points[0], newEndUtm)
+    }
+  }
+
+  const handleNameChange = (val) => {
+    setName(val)
+    setNameError(false)
+  }
+
+  const handleCommit = () => {
+    setErrors([])
+    if (lineNumberError) return
+    const existingNames = new Set(loadTracks().map(t => t.name).filter(Boolean))
+    if (name && existingNames.has(name)) { setNameError(true); return }
+    setNameError(false)
+
+    saveTrack(buildParallelLineTrack({
+      start: points[0], end: points[1], signedR: isArc ? signedR : null, speed, meta: trackMeta(fields, name),
+    }))
+
+    draw.clear()
+    onDone?.()
+  }
+
+  return (
+    <>
+      <FormSection title={t('section_meta')}>
+        <TrackFields fields={fields} setField={setField} setErrors={setErrors} errors={errors}
+          name={name} onNameChange={handleNameChange} nameError={nameError}
+          lineOptions={lineOptions} />
+      </FormSection>
+
+      {points.length === 2 && (
+        <FormSection title={t('section_geometry')}>
+          <div className="form-field">
+            <label>{splitUnit(t('field_offset')).text}</label>
+            <NumberInput step="0.01" value={offset} onChange={e => handleOffsetChange(e.target.value)} unit="m" />
+          </div>
+          {!isArc && (
+            <>
+              <div className="form-field">
+                <label>{splitUnit(t('field_length')).text}</label>
+                <NumberInput step="0.001" value={length} onChange={e => handleLengthChange(e.target.value)} unit="m" />
+                <FieldRule name="length" />
+              </div>
+              <div className="form-field">
+                <label>{splitUnit(t('bearing')).text}</label>
+                <NumberInput step="0.001" min="0" max="360" value={bearing} onChange={e => handleBearingChange(e.target.value)} unit="°" />
+              </div>
+            </>
+          )}
+          <div className="form-field">
+            <label>{splitUnit(t('field_speed')).text}</label>
+            <NumberInput min="0" value={speed} onChange={e => setSpeed(Number(e.target.value))} unit="km/h" />
+            <FieldRule name="speed" />
+          </div>
+          <HeightDatumField value={fields.heightEpsg} onChange={v => setField('heightEpsg', v)} />
+          {isArc ? (
+            // An arc beside an arc follows from the offset alone: all it is, is stated.
+            <AdvancedInfo>
+              <ReadOnlyField type="number" label={t('field_radius')} value={Math.abs(signedR).toFixed(2)} />
+              <ReadOnlyField type="number" label={t('arc_length')} value={length} />
+              <ReadOnlyField type="number" label={t('bearing')} value={bearing} />
+              <ReadOnlyField type="number" label={t('end_bearing')} value={endBearing} />
+              <UtmCoordFields label="Start" zone={epsg} easting={startE} northing={startN} readOnly />
+              <UtmCoordFields label="End" zone={epsg} easting={endE} northing={endN} readOnly />
+            </AdvancedInfo>
+          ) : (
+            <>
+              <UtmCoordFields label="Start" zone={epsg} easting={startE} northing={startN}
+                onChange={(axis, val) => handleCoordChange('start', axis, val)} />
+              <UtmCoordFields label="End" zone={epsg} easting={endE} northing={endN}
+                onChange={(axis, val) => handleCoordChange('end', axis, val)} />
+            </>
+          )}
+        </FormSection>
+      )}
+
+      {selecting && <p className="selecting-hint">{t('create_selecting_element')}</p>}
+
+      <MessageList items={errors} className="form-error-list" small={false} />
+
+      {points.length === 2 && !selecting && (() => {
+        // A parallel is a straight or an arc, exactly as the element it was
+        // drawn beside is — so it is judged as whichever it turned out.
+        const element = isArc
+          ? { elementType: 1, radius: signedR, cant: 0, speed, length: Number(length) }
+          : { elementType: 0, cant: 0, speed, length: Number(length) }
+        const blocked = hasRuleError([element])
+        return (
+        <>
+          <RuleFindings element={element} />
+          <CommitBar onCommit={handleCommit} onCancel={onDone} reason={firstReason(lineNumberError && t(`line_number_error_${lineNumberError}`), blocked && t('commit_blocked_rules'))}
+            onOverride={blocked && !lineNumberError ? handleCommit : null} className="" />
+        </>
+        )
+      })()}
+    </>
+  )
+}

@@ -1,0 +1,234 @@
+import { useEffect, useMemo, useState } from 'react'
+import { loadTracks, loadSwitches, loadEndMarks, saveEndMark, deleteEndMark } from '../../../storage'
+import {
+  classifyTrackEnds, freeEnds, BUFFER_STOP_TYPES, DEFAULT_BUFFER_STOP_TYPE, BUFFER_STOP_LENGTH,
+  BUFFER_STOP, defaultBrakeLength, bufferStopFits, newBufferStop, bufferStopFeatures, trackLength,
+} from '../../../utils/track'
+import { useI18n } from '../../../locales/i18nContext'
+import CommitBar from '../../form/CommitBar'
+import { useProject } from '../../../hooks/useStore'
+import usePreview from '../../../map/usePreview'
+import useMapEvents from '../../../map/useMapEvents'
+import { PALETTE } from '../../../styles/palette'
+import CancelButton from '../../form/CancelButton'
+import NumberInput from '../../form/NumberInput'
+import { splitUnit } from '../../../locales/i18n'
+import InfoTip from '../../form/InfoTip'
+
+/** How close (px) the cursor has to come to an end for it to be the one meant. */
+const PICK_PX = 14
+
+const ENDS_SOURCE   = 'buffer-stop-ends-source'
+const SHAPE_SOURCE  = 'buffer-stop-preview-source'
+const BRAKE_SOURCE  = 'buffer-stop-preview-brake-source'
+
+const PREVIEW_LAYERS = [
+  {
+    sourceId: BRAKE_SOURCE,
+    layer: {
+      id: 'buffer-stop-preview-brake-layer', type: 'line',
+      paint: { 'line-color': PALETTE.mapSelected, 'line-width': 3, 'line-dasharray': [1.5, 1] },
+    },
+  },
+  {
+    sourceId: SHAPE_SOURCE,
+    layer: {
+      id: 'buffer-stop-preview-layer', type: 'line',
+      paint: { 'line-color': PALETTE.mapSelected, 'line-width': 5 },
+    },
+  },
+  {
+    sourceId: ENDS_SOURCE,
+    layer: {
+      id: 'buffer-stop-ends-layer', type: 'circle',
+      paint: {
+        'circle-radius': ['case', ['get', 'active'], 7, 5],
+        'circle-color': ['case', ['get', 'active'], PALETTE.mapHover, PALETTE.mapCandidate],
+        'circle-stroke-color': PALETTE.white,
+        'circle-stroke-width': 1.5,
+      },
+    },
+  },
+]
+
+const keyOf = (end) => (end ? `${end.trackId}|${end.endpoint}` : null)
+
+/**
+ * Put a buffer stop on a free track end, or — `edit` — change or remove one
+ * that stands. The ends to choose from are drawn on the map as dots, and the
+ * one under the cursor is the one a click takes: an end is a point, and a
+ * point is easier hit from a dot than from a line that runs on either side of
+ * it.
+ *
+ * Type and brake length are the whole of a buffer stop (ROADMAP decisions 76,
+ * 77): the type proposes the brake length until the brake length has been
+ * typed in by hand, and the stop is 2.20 m long in front of it.
+ */
+export default function BufferStopForm({ onCommitted, edit = false }) {
+  const { t, fill } = useI18n()
+  const project = useProject()
+  const [version, setVersion] = useState(0)
+  const { tracks, candidates, marks } = useMemo(() => {
+    const tracks = loadTracks()
+    const marks = loadEndMarks()
+    const ends = classifyTrackEnds(tracks, loadSwitches(), marks)
+    const candidates = edit ? ends.filter(e => e.state === BUFFER_STOP) : freeEnds(ends)
+    return { tracks, candidates, marks }
+    // `version` re-reads the store after a commit in place.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [project.id, edit, version])
+
+  const [hover, setHover]       = useState(null)
+  const [picked, setPicked]     = useState(null)
+  const [type, setType]         = useState(DEFAULT_BUFFER_STOP_TYPE)
+  const [brake, setBrake]       = useState(String(defaultBrakeLength(DEFAULT_BUFFER_STOP_TYPE)))
+  const [brakeTyped, setBrakeTyped] = useState(false)
+
+  const preview = usePreview(PREVIEW_LAYERS, { resetCursor: true })
+
+  const track = picked ? tracks.find(tr => tr.id === picked.trackId) : null
+  const mark  = picked && edit ? marks.find(m => m.id === picked.markId) : null
+  const have  = track ? trackLength(track) : 0
+  const brakeValue = brake.trim() === '' ? NaN : Number(brake.replace(',', '.'))
+  const brakeInvalid = !(Number.isFinite(brakeValue) && brakeValue >= 0)
+  const tooShort = !brakeInvalid && track && !bufferStopFits(have, brakeValue)
+
+  // The dots, the one under the cursor or picked drawn larger.
+  useEffect(() => {
+    const active = new Set([keyOf(hover), keyOf(picked)].filter(Boolean))
+    preview.set(ENDS_SOURCE, {
+      type: 'FeatureCollection',
+      features: candidates.map(e => ({
+        type: 'Feature',
+        properties: { active: active.has(keyOf(e)) },
+        geometry: { type: 'Point', coordinates: e.lngLat },
+      })),
+    })
+  }, [preview, candidates, hover, picked])
+
+  // The stop as it would stand.
+  useEffect(() => {
+    const feats = track && !brakeInvalid
+      ? bufferStopFeatures([track], [newBufferStop(track.id, picked.endpoint, type, brakeValue)])
+      : []
+    preview.set(SHAPE_SOURCE, { type: 'FeatureCollection', features: feats.filter(f => f.properties.part !== 'brake') })
+    preview.set(BRAKE_SOURCE, { type: 'FeatureCollection', features: feats.filter(f => f.properties.part === 'brake') })
+  }, [track, picked, type, brakeValue, brakeInvalid, preview])
+
+  // Picking: the nearest end within PICK_PX of the cursor.
+  const nearest = (m, point) => {
+    let best = null, bestD = PICK_PX
+    for (const end of candidates) {
+      const p = m.project(end.lngLat)
+      const d = Math.hypot(p.x - point.x, p.y - point.y)
+      if (d < bestD) { best = end; bestD = d }
+    }
+    return best
+  }
+  useMapEvents(true, {
+    mousemove: (e, m) => {
+      const end = nearest(m, e.point)
+      m.getCanvas().style.cursor = end ? 'pointer' : ''
+      setHover(prev => (keyOf(prev) === keyOf(end) ? prev : end))
+    },
+    click: (e, m) => {
+      const end = nearest(m, e.point)
+      if (!end) return
+      setPicked(end)
+      if (edit) {
+        const existing = loadEndMarks().find(mk => mk.id === end.markId)
+        if (existing) {
+          setType(existing.type ?? DEFAULT_BUFFER_STOP_TYPE)
+          setBrake(String(existing.brakeLength ?? 0))
+          setBrakeTyped(true)
+        }
+      }
+    },
+  })
+
+  const clearMap = () => preview.clear()
+
+  const handleType = (value) => {
+    const next = Number(value)
+    setType(next)
+    // The type proposes the brake length only until somebody has said otherwise.
+    if (!brakeTyped) setBrake(String(defaultBrakeLength(next)))
+  }
+
+  const finish = () => {
+    setPicked(null)
+    setHover(null)
+    setVersion(v => v + 1)
+    onCommitted?.()
+  }
+
+  const handleCommit = () => {
+    if (!track || brakeInvalid || tooShort) return
+    const record = mark
+      ? { ...mark, type, brakeLength: brakeValue }
+      : newBufferStop(track.id, picked.endpoint, type, brakeValue)
+    saveEndMark(record)
+    clearMap()
+    finish()
+  }
+
+  const handleDelete = () => {
+    if (!mark) return
+    deleteEndMark(mark.id)
+    clearMap()
+    finish()
+  }
+
+  const endName = (end) => fill('buffer_stop_at', {
+    track: tracks.find(tr => tr.id === end.trackId)?.name || end.trackId.slice(0, 8),
+    end: t(end.endpoint === 'BEGIN' ? 'end_begin' : 'end_end'),
+  })
+
+  if (!candidates.length) {
+    return (
+      <>
+        <p className="selecting-hint">{t(edit ? 'buffer_stop_none_existing' : 'buffer_stop_none')}</p>
+        <CancelButton className="panel-btn panel-btn-full mt-2 secondary" onClick={onCommitted} />
+      </>
+    )
+  }
+
+  return (
+    <>
+      {!picked && <p className="selecting-hint">{t(edit ? 'buffer_stop_pick_existing' : 'buffer_stop_pick')}</p>}
+
+      {picked && (
+        <div className="element-form">
+          <p className="m-0"><strong>{endName(picked)}</strong></p>
+          <div className="form-field">
+            <label>{t('buffer_stop_type')}</label>
+            <select value={type} onChange={e => handleType(e.target.value)}>
+              {BUFFER_STOP_TYPES.map(v => <option key={v} value={v}>{v}</option>)}
+            </select>
+          </div>
+          <div className="form-field">
+            <label>{splitUnit(t('buffer_stop_brake')).text}<InfoTip text={t('buffer_stop_hint')} /></label>
+            <NumberInput min="0" step="0.1" value={brake}
+              onChange={e => { setBrake(e.target.value); setBrakeTyped(true) }} unit="m" />
+          </div>
+        </div>
+      )}
+
+      {picked && brakeInvalid && <p className="form-error">{t('buffer_stop_brake_invalid')}</p>}
+      {picked && tooShort && (
+        <p className="form-error">{fill('buffer_stop_too_short', {
+          need: (brakeValue + BUFFER_STOP_LENGTH).toFixed(2), have: have.toFixed(2),
+        })}</p>
+      )}
+
+      {picked && mark && (
+        <button className="panel-btn panel-btn-full danger" onClick={handleDelete}>
+          {t('buffer_stop_delete')}
+        </button>
+      )}
+      {picked
+        ? <CommitBar onCommit={handleCommit} onCancel={onCommitted} disabled={brakeInvalid || tooShort} className={mark ? 'mt-2' : ''} />
+        : <CancelButton className="panel-btn panel-btn-full mt-2 secondary" onClick={onCommitted} />}
+    </>
+  )
+}

@@ -1,0 +1,604 @@
+"""The geometry kernel of the optimizer.
+
+Originally a port of the app's own (src/core/utils/geometry/clothoidUtils.js and the since
+removed optimizeUtils.js); since AP 7.1 this is the only implementation, and
+the reference values in tests/verify.py are what keeps it honest.
+
+Conventions — the app's, so an element chain crosses unchanged:
+  * plane coordinates (easting e, northing n) in the track's native CRS
+  * compass bearings in degrees (0 = grid north, clockwise)
+  * curvature kappa = -1/r; signed radius r > 0 = right-hand curve
+  * transition profiles: 'clothoid' (linear curvature), 'bloss' (cubic)
+
+The physical constant below (v = sqrt(R (u+uf) / 11.8)) is derived, with its
+formula, in src/core/constraints/physics.json; it stays a literal here and
+tests/verify.py checks that it has not drifted from the file. The limits a run
+is held to are not here at all: they are the rules of the catalogue in
+src/core/constraints/, read and applied at run time (grenzen.py). What is left is
+the buildability grid and the search's own numerics — nothing a railway
+administration sets, and nothing with a counterpart in a rulebook.
+"""
+
+import math
+
+DEG2RAD = math.pi / 180.0
+RAD2DEG = 180.0 / math.pi
+
+# v = sqrt(R * (u + uf) / 11.8) — see src/core/constraints/physics.json for the derivation.
+CANT_DEFICIENCY_COEFF = 11.8
+
+# The grid a run hands its numbers out on: radii in whole metres, lengths in
+# ten centimetres (the cants' five millimetres are LP.KB.03's). These are the steps a designer
+# works in and the numbers that go on a drawing; a radius of 703.47 m is not an
+# answer anybody builds. Existing values are never snapped to it — what is
+# already built is a fact to start from, not a proposal to round off.
+R_STEP = 1.0    # radius grid step [m]
+R_MIN = 25.0    # smallest radius a run may propose [m]
+L_STEP = 0.1    # length grid step [m]
+
+# How finely a curve is broken into the polyline the corridor is measured on.
+# The budget is the mid-ordinate of one step against its arc, not an angle: at a
+# fixed angular step the error grows with the radius, which is backwards, since
+# the wide curves are the ones a run moves furthest. Five millimetres is one
+# percent of the corridor the panel offers at its widest.
+SAMPLE_SAGITTA = 0.005     # m
+MAX_SAMPLES = 400          # points per element, whatever the budget asks for
+
+
+def _slack(quotient):
+    """A hair of tolerance, so that a value already on the grid stays where it
+    is instead of being pushed a whole step by the last bit of its binary
+    representation — 60.0 / 0.1 is 600.0000000000001."""
+    return 1e-9 * max(1.0, abs(quotient))
+
+
+def snap_down(value, step):
+    """Largest multiple of `step` that is not above `value`."""
+    q = value / step
+    return round(math.floor(q + _slack(q)) * step, 9)
+
+
+def snap_up(value, step):
+    """Smallest multiple of `step` that is not below `value`."""
+    q = value / step
+    return round(math.ceil(q - _slack(q)) * step, 9)
+
+
+def permissible_speed(radius, u, uf):
+    """Permissible speed [km/h] for radius [m], cant u and cant deficiency uf [mm]."""
+    return math.sqrt(abs(radius) * (u + uf) / CANT_DEFICIENCY_COEFF)
+
+
+def sample_step(radius):
+    """Chord length whose mid-ordinate against `radius` is SAMPLE_SAGITTA."""
+    return math.sqrt(8.0 * SAMPLE_SAGITTA * abs(radius))
+
+
+def radius_for_speed(v, u, uf):
+    """The radius at which a curve with this cant runs at v — the inverse of
+    `permissible_speed`, so a target speed can be turned into the radius that
+    reaches it instead of being searched for."""
+    return CANT_DEFICIENCY_COEFF * v * v / (u + uf) if u + uf > 0 else math.inf
+
+
+def dir_of(bearing_deg):
+    b = bearing_deg * DEG2RAD
+    return (math.sin(b), math.cos(b))
+
+
+def _kappa(r):
+    return -1.0 / r if r not in (None, 0) else 0.0
+
+
+def heading_coeffs(profile, k1, k2, length):
+    """The heading polynomial of a transition as coefficients of
+
+        h(s) = a1 s + a2 s^2 + a3 s^3 + a4 s^4
+
+    so that a sampling loop can evaluate it inline instead of calling a
+    function per node. Three calls per Simpson step over sixteen steps, on
+    every candidate the optimizer tries, is what that costs otherwise.
+    """
+    dk = k2 - k1
+    if profile == "bloss":
+        return k1, 0.0, dk / (length * length), -dk / (2 * length ** 3)
+    return k1, dk / (2 * length), 0.0, 0.0
+
+
+def heading_at(profile, k1, k2, length, s):
+    """Heading change (math angle) at arc position s of a transition."""
+    a1, a2, a3, a4 = heading_coeffs(profile, k1, k2, length)
+    return s * (a1 + s * (a2 + s * (a3 + s * a4)))
+
+
+# Gauss-Legendre nodes and weights on [0, 1] for the integrations below.
+_GL_NODES = (
+    (0.01985507175123191, 0.05061426814518834),
+    (0.10166676129318664, 0.11119051722668717),
+    (0.23723379504183550, 0.15685332293894352),
+    (0.40828267875217511, 0.18134189168918088),
+    (0.59171732124782483, 0.18134189168918088),
+    (0.76276620495816450, 0.15685332293894352),
+    (0.89833323870681336, 0.11119051722668717),
+    (0.98014492824876809, 0.05061426814518834),
+)
+
+
+def transition_shift(length, radius, profile="clothoid"):
+    """Shift parameters (p, t, phi) of a straight-to-arc transition.
+
+    Integrated with the eight Gauss-Legendre nodes `transition_end` uses (it
+    was Simpson with n = 200 like clothoidUtils.transitionShift): the same
+    values to 1e-12 m for railway L/R at a seventy-fifth of the work, which
+    counts where a fit builds a curve on every try (alignment_fit.py, AP 12.5).
+    """
+    if not length > 0:
+        return 0.0, 0.0, 0.0
+    a1, a2, a3, a4 = heading_coeffs(profile, 0.0, 1.0 / radius, length)
+    x = 0.0
+    y = 0.0
+    for u, w in _GL_NODES:
+        s = u * length
+        p = s * (a1 + s * (a2 + s * (a3 + s * a4)))
+        x += w * math.cos(p)
+        y += w * math.sin(p)
+    x *= length
+    y *= length
+    phi = length / (2 * radius)
+    return y + radius * math.cos(phi) - radius, x - radius * math.sin(phi), phi
+
+
+def _transition_steps(length, r1, r2):
+    """Steps that keep a transition inside the sagitta budget at its tight end."""
+    radii = [abs(r) for r in (r1, r2) if r]
+    if not radii or length <= 0:
+        return 1                       # no curvature: the chord is the curve
+    return max(4, min(MAX_SAMPLES, math.ceil(length / sample_step(min(radii)))))
+
+
+def sample_transition(e, n, bearing_deg, length, r1, r2, profile="clothoid", steps=None):
+    """Points along a transition (composite Simpson per step, on-curve vertices)."""
+    if steps is None:
+        steps = _transition_steps(length, r1, r2)
+    a1, a2, a3, a4 = heading_coeffs(profile, _kappa(r1), _kappa(r2), length)
+    phi0 = (90.0 - bearing_deg) * DEG2RAD
+    cos, sin = math.cos, math.sin
+    pts = [(e, n)]
+    x, y = e, n
+    h = length / steps
+    w = h / 6
+    for i in range(steps):
+        sa = i * h
+        sm = sa + h / 2
+        sb = sa + h
+        pa = phi0 + sa * (a1 + sa * (a2 + sa * (a3 + sa * a4)))
+        pm = phi0 + sm * (a1 + sm * (a2 + sm * (a3 + sm * a4)))
+        pb = phi0 + sb * (a1 + sb * (a2 + sb * (a3 + sb * a4)))
+        x += w * (cos(pa) + 4 * cos(pm) + cos(pb))
+        y += w * (sin(pa) + 4 * sin(pm) + sin(pb))
+        pts.append((x, y))
+    return pts
+
+
+def transition_end(e, n, bearing_deg, length, r1, r2, profile="clothoid"):
+    """End point and end bearing of a transition.
+
+    Only the end matters here, so the offset is integrated directly instead of
+    being walked out point by point as `sample_transition` does. The heading of
+    a railway transition turns by a few hundredths of a radian over its whole
+    length, so eight Gauss-Legendre nodes place the end to about 1e-12 m —
+    better than the 129 Simpson evaluations this replaces, and a ninth of the
+    work. That pays: the fit marches through here on every candidate the
+    optimizer tries.
+    """
+    k1 = _kappa(r1)
+    k2 = _kappa(r2)
+    a1, a2, a3, a4 = heading_coeffs(profile, k1, k2, length)
+    phi0 = (90.0 - bearing_deg) * DEG2RAD
+    x = 0.0
+    y = 0.0
+    for u, w in _GL_NODES:
+        s = u * length
+        p = phi0 + s * (a1 + s * (a2 + s * (a3 + s * a4)))
+        x += w * math.cos(p)
+        y += w * math.sin(p)
+    dphi_end = (k1 + k2) * length / 2
+    end_bearing = (bearing_deg - dphi_end * RAD2DEG) % 360.0
+    return e + length * x, n + length * y, end_bearing
+
+
+def arc_center(s_e, s_n, e_e, e_n, signed_r):
+    """Centre of the arc through two points with a signed radius (or None)."""
+    dx = e_e - s_e
+    dy = e_n - s_n
+    chord = math.hypot(dx, dy)
+    abs_r = abs(signed_r)
+    if chord < 1e-6 or abs_r < chord / 2:
+        return None
+    rpx = dy / chord
+    rpy = -dx / chord
+    h = math.sqrt(abs_r * abs_r - (chord / 2) ** 2)
+    sgn = -1.0 if signed_r >= 0 else 1.0
+    return (s_e + e_e) / 2 - sgn * h * rpx, (s_n + e_n) / 2 - sgn * h * rpy
+
+
+def arc_sweep(s_e, s_n, e_e, e_n, cx, cy, signed_r):
+    """Signed sweep angle between the two endpoint angles (app convention)."""
+    two_pi = 2 * math.pi
+    a1 = math.atan2(s_n - cy, s_e - cx)
+    a2 = math.atan2(e_n - cy, e_e - cx)
+    if signed_r >= 0:
+        return -(((a1 % two_pi) - (a2 % two_pi) + two_pi) % two_pi)
+    return ((a2 % two_pi) - (a1 % two_pi) + two_pi) % two_pi
+
+
+def sample_arc(s_e, s_n, e_e, e_n, signed_r, max_step_angle=0.02):
+    ac = arc_center(s_e, s_n, e_e, e_n, signed_r)
+    if ac is None:
+        return [(s_e, s_n), (e_e, e_n)]
+    cx, cy = ac
+    sweep = arc_sweep(s_e, s_n, e_e, e_n, cx, cy, signed_r)
+    abs_r = abs(signed_r)
+    # The sagitta budget sets the step; `max_step_angle` is only a ceiling, so
+    # that a very tight curve still gets a few points to its name.
+    step = min(max_step_angle, sample_step(abs_r) / abs_r)
+    n_seg = max(2, min(MAX_SAMPLES, math.ceil(abs(sweep) / step)))
+    a1 = math.atan2(s_n - cy, s_e - cx)
+    return [
+        (cx + abs_r * math.cos(a1 + i / n_seg * sweep), cy + abs_r * math.sin(a1 + i / n_seg * sweep))
+        for i in range(n_seg + 1)
+    ]
+
+
+def arc_bearing_at(angle, curve_side):
+    """Compass tangent bearing at circle angle `angle` for the given curve side."""
+    if curve_side == "right":
+        return (math.atan2(math.sin(angle), -math.cos(angle)) * RAD2DEG + 360.0) % 360.0
+    return (math.atan2(-math.sin(angle), math.cos(angle)) * RAD2DEG + 360.0) % 360.0
+
+
+def fit_curve_group(p1, d1, p2, d2, radius, l1, l2, type1="clothoid", type2="clothoid"):
+    """Fit transition-arc-transition between two directed tangent lines.
+
+    p1/d1: point on + direction of the entry line (outer end of entry straight),
+    p2/d2: point on + direction of the exit line (outer end of exit straight).
+    Returns None when no valid fit exists.
+    """
+    cross = d1[0] * d2[1] - d1[1] * d2[0]
+    dot = d1[0] * d2[0] + d1[1] * d2[1]
+    turn = math.atan2(cross, dot)
+    if abs(turn) < 1e-9:
+        return None
+    curve_side = "left" if turn > 0 else "right"
+    curve_sign = 1.0 if curve_side == "right" else -1.0
+    signed_r = -radius if curve_side == "left" else radius
+
+    p1_shift, t1, phi1 = transition_shift(l1, radius, type1)
+    p2_shift, t2, phi2 = transition_shift(l2, radius, type2)
+
+    rhs1 = curve_sign * (radius + p1_shift) + p1[0] * d1[1] - p1[1] * d1[0]
+    rhs2 = curve_sign * (radius + p2_shift) + p2[0] * d2[1] - p2[1] * d2[0]
+    det = cross
+    ce = (-rhs1 * d2[0] + rhs2 * d1[0]) / det
+    cn = (d1[1] * rhs2 - d2[1] * rhs1) / det
+
+    proj1 = (ce - p1[0]) * d1[0] + (cn - p1[1]) * d1[1]
+    virt1 = (p1[0] + proj1 * d1[0], p1[1] + proj1 * d1[1])
+    proj2 = (ce - p2[0]) * d2[0] + (cn - p2[1]) * d2[1]
+    virt2 = (p2[0] + proj2 * d2[0], p2[1] + proj2 * d2[1])
+    cl_start = (virt1[0] - t1 * d1[0], virt1[1] - t1 * d1[1])
+    cl_end = (virt2[0] + t2 * d2[0], virt2[1] + t2 * d2[1])
+
+    th1 = math.atan2(virt1[1] - cn, virt1[0] - ce)
+    th2 = math.atan2(virt2[1] - cn, virt2[0] - ce)
+    arc_start_ang = th1 - phi1 * curve_sign
+    arc_end_ang = th2 + phi2 * curve_sign
+    sweep = arc_end_ang - arc_start_ang
+    if curve_side == "left" and sweep < 0:
+        sweep += 2 * math.pi
+    if curve_side == "right" and sweep > 0:
+        sweep -= 2 * math.pi
+    if abs(sweep) < 1e-6 or abs(sweep) > math.pi + 1e-6:
+        return None
+
+    arc_start = (ce + radius * math.cos(arc_start_ang), cn + radius * math.sin(arc_start_ang))
+    arc_end = (ce + radius * math.cos(arc_end_ang), cn + radius * math.sin(arc_end_ang))
+    entry_len = (cl_start[0] - p1[0]) * d1[0] + (cl_start[1] - p1[1]) * d1[1]
+    exit_len = (p2[0] - cl_end[0]) * d2[0] + (p2[1] - cl_end[1]) * d2[1]
+
+    return {
+        "R": radius,
+        "signed_r": signed_r,
+        "curve_side": curve_side,
+        "centre": (ce, cn),
+        "arc_start_ang": arc_start_ang,
+        "sweep": sweep,
+        "cl_start": cl_start,
+        "cl_end": cl_end,
+        "arc_start": arc_start,
+        "arc_end": arc_end,
+        "arc_len": abs(sweep) * radius,
+        "entry_len": entry_len,
+        "exit_len": exit_len,
+        "arc_start_bearing": arc_bearing_at(arc_start_ang, curve_side),
+        "arc_end_bearing": arc_bearing_at(arc_start_ang + sweep, curve_side),
+    }
+
+
+def _arc_forward(e, n, bearing, signed_r, sweep_mag):
+    """March along an arc: end point and end bearing after |sweep| radians."""
+    side = 1.0 if signed_r >= 0 else -1.0        # +1 = right-hand curve
+    d = dir_of(bearing)
+    abs_r = abs(signed_r)
+    cx = e + abs_r * (d[1] if side > 0 else -d[1])
+    cy = n + abs_r * (-d[0] if side > 0 else d[0])
+    ang = -side * sweep_mag                       # right = clockwise in the plane
+    ca, sa = math.cos(ang), math.sin(ang)
+    rx, ry = e - cx, n - cy
+    end = (cx + rx * ca - ry * sa, cy + rx * sa + ry * ca)
+    return end, (bearing + side * sweep_mag * RAD2DEG) % 360.0
+
+
+def fit_compound_group(p1, d1, b1, p2, d2, b2, radii, sweeps_free, trans_l, types):
+    """Fit a (compound) curve of n same-side arcs between two directed tangents.
+
+    radii:       [R_1..R_n] positive; all arcs turn to the same side.
+    sweeps_free: [theta_1..theta_{n-1}] arc sweeps in radians (magnitudes); the
+                 last sweep follows from the corner's total turn.
+    trans_l:     n+1 transition lengths (entry, between arcs, exit; 0 = none).
+    types:       n+1 transition profiles.
+
+    Forward construction from the entry tangent; the start position along the
+    entry line is then solved linearly so the end lands on the exit line
+    (end heading matches by construction). For n = 1 this is equivalent to
+    fit_curve_group. Returns None when no valid fit exists.
+    """
+    cross = d1[0] * d2[1] - d1[1] * d2[0]
+    dot = d1[0] * d2[0] + d1[1] * d2[1]
+    turn = math.atan2(cross, dot)
+    if abs(turn) < 1e-9:
+        return None
+    side = -1.0 if turn > 0 else 1.0              # +1 = right-hand curves
+    n = len(radii)
+    signed = [side * r for r in radii]
+
+    phi = []
+    for i, length in enumerate(trans_l):
+        if length <= 0:
+            phi.append(0.0)
+            continue
+        k1 = 0.0 if i == 0 else 1.0 / radii[i - 1]
+        k2 = 0.0 if i == n else 1.0 / radii[i]
+        phi.append(length * (k1 + k2) / 2)
+
+    theta_last = abs(turn) - sum(sweeps_free) - sum(phi)
+    thetas = list(sweeps_free) + [theta_last]
+    if any(t <= 1e-6 for t in thetas) or sum(thetas) + sum(phi) > math.pi:
+        return None
+
+    # March in local coordinates (anchor at the entry tangent point).
+    segments = []
+    pos, brg = (0.0, 0.0), b1
+
+    def add_transition(i):
+        nonlocal pos, brg
+        length = trans_l[i]
+        if length <= 0:
+            return
+        r1 = None if i == 0 else signed[i - 1]
+        r2 = None if i == n else signed[i]
+        segments.append({"kind": "transition", "start": pos, "bearing": brg,
+                         "L": length, "r1": r1, "r2": r2, "type": types[i]})
+        ee, en, eb = transition_end(pos[0], pos[1], brg, length, r1, r2, types[i])
+        pos, brg = (ee, en), eb
+
+    for i in range(n):
+        add_transition(i)
+        start, sb = pos, brg
+        pos, brg = _arc_forward(pos[0], pos[1], brg, signed[i], thetas[i])
+        segments.append({"kind": "arc", "start": start, "end": pos, "signed_r": signed[i],
+                         "sweep": thetas[i], "bearing": sb, "end_bearing": brg})
+    add_transition(n)
+
+    # Solve the start position s along the entry line: end must lie on the exit line.
+    n2 = (-d2[1], d2[0])
+    denom = d1[0] * n2[0] + d1[1] * n2[1]
+    if abs(denom) < 1e-12:
+        return None
+    s = ((p2[0] - p1[0] - pos[0]) * n2[0] + (p2[1] - p1[1] - pos[1]) * n2[1]) / denom
+    ax, ay = p1[0] + s * d1[0], p1[1] + s * d1[1]
+
+    def shift(pt):
+        return (pt[0] + ax, pt[1] + ay)
+
+    for seg in segments:
+        seg["start"] = shift(seg["start"])
+        if "end" in seg:
+            seg["end"] = shift(seg["end"])
+    end_pt = shift(pos)
+    return {
+        "segments": segments,
+        "cl_start": (ax, ay),
+        "cl_end": end_pt,
+        "entry_len": s,
+        "exit_len": (p2[0] - end_pt[0]) * d2[0] + (p2[1] - end_pt[1]) * d2[1],
+        "thetas": thetas,
+        "signed": signed,
+        "curve_side": "right" if side > 0 else "left",
+    }
+
+
+def _march(p1, d1, b1, s_entry, signed, thetas, trans_l, types):
+    """Walk transition-arc-…-transition from `s_entry` along the entry line.
+
+    Returns (segments, end point, end bearing). Unlike `fit_compound_group`'s
+    inner march the arcs carry their own sign, so they may turn either way.
+    """
+    n = len(signed)
+    pos = (p1[0] + s_entry * d1[0], p1[1] + s_entry * d1[1])
+    brg = b1
+    segments = []
+    for i in range(n + 1):
+        length = trans_l[i]
+        if length > 0:
+            r1 = None if i == 0 else signed[i - 1]
+            r2 = None if i == n else signed[i]
+            segments.append({"kind": "transition", "start": pos, "bearing": brg,
+                             "L": length, "r1": r1, "r2": r2, "type": types[i]})
+            ee, en, eb = transition_end(pos[0], pos[1], brg, length, r1, r2, types[i])
+            pos, brg = (ee, en), eb
+        if i == n:
+            break
+        start, start_brg = pos, brg
+        pos, brg = _arc_forward(pos[0], pos[1], brg, signed[i], thetas[i])
+        segments.append({"kind": "arc", "start": start, "end": pos, "signed_r": signed[i],
+                         "sweep": thetas[i], "bearing": start_brg, "end_bearing": brg})
+    return segments, pos, brg
+
+
+S_BRACKET_STEPS = 64        # ladder rungs searched for a sign change in theta_1
+S_BISECT_STEPS = 60
+S_THETA_MIN = 1e-6          # below any sweep a real curve has
+S_THETA_MAX = 1.2           # rad; beyond this an S between two straights is none
+
+
+def fit_s_group(p1, d1, b1, p2, d2, b2, signed, trans_l, types, s_entry):
+    """Fit an S-curve — arcs that turn opposite ways — between two tangents.
+
+    The same-side solver cannot do this. It closes the heading by handing the
+    last arc whatever sweep is left of the corner's total turn, then slides the
+    whole shape along the entry line until it meets the exit line. Between two
+    near-parallel straights — which is what an S-curve is usually for, moving a
+    track sideways — sliding along the entry line barely changes the distance to
+    the exit line, so that last step is worthless exactly where it is needed.
+
+    Here the shape itself closes the gap. The heading fixes one sweep against
+    the other (their turns are opposed, so their difference is what the corner
+    asks for), which leaves a single unknown: how far the first arc sweeps. The
+    sideways distance to the exit line grows with it, from nothing at all to
+    more than any corridor allows, so it is bracketed and bisected. `s_entry` —
+    where along the entry line the curve begins — stays as it is: an S-curve
+    slid along its own line lands the same way, so there is nothing to solve
+    there, and leaving it fixed keeps the curve where the track has it.
+    """
+    n = len(signed)
+    side = [1.0 if r >= 0 else -1.0 for r in signed]
+    if n != 2 or side[0] == side[1]:
+        return None
+
+    # The turn the arcs have to contribute between them, once the transitions
+    # have had their say — measured by marching with no sweep at all.
+    _, _, flat = _march(p1, d1, b1, s_entry, signed, [0.0] * n, trans_l, types)
+    delta = ((((b2 - flat) + 540.0) % 360.0) - 180.0) * DEG2RAD
+
+    def thetas_for(theta1):
+        theta2 = (delta - side[0] * theta1) / side[1]
+        return [theta1, theta2]
+
+    n2 = (-d2[1], d2[0])
+
+    def lateral(theta1):
+        thetas = thetas_for(theta1)
+        if min(thetas) <= 1e-7 or sum(thetas) > math.pi:
+            return None
+        _, end, _ = _march(p1, d1, b1, s_entry, signed, thetas, trans_l, types)
+        return (end[0] - p2[0]) * n2[0] + (end[1] - p2[1]) * n2[1]
+
+    # Bracket theta_1 on a ladder, then bisect. A ladder rather than a Newton
+    # step because the sideways distance goes with the square of the sweep near
+    # zero, where its slope vanishes and a Newton step walks straight out of the
+    # useful range. The ladder is geometric and starts at practically nothing:
+    # a railway S sweeps a few hundredths of a radian, so a linear ladder over
+    # the whole range would step straight over the answer — and the first rung
+    # has to sit below every reachable root, or a root beneath it is missed.
+    lo = hi = None
+    prev_t = prev_f = None
+    for k in range(S_BRACKET_STEPS + 1):
+        theta = S_THETA_MIN * (S_THETA_MAX / S_THETA_MIN) ** (k / S_BRACKET_STEPS)
+        value = lateral(theta)
+        if value is None:
+            break
+        if prev_f is not None and (value < 0.0) != (prev_f < 0.0):
+            lo, hi = prev_t, theta
+            break
+        prev_t, prev_f = theta, value
+    if lo is None:
+        return None
+
+    f_lo = lateral(lo)
+    for _ in range(S_BISECT_STEPS):
+        mid = 0.5 * (lo + hi)
+        f_mid = lateral(mid)
+        if f_mid is None:
+            hi = mid
+            continue
+        if (f_mid < 0.0) == (f_lo < 0.0):
+            lo, f_lo = mid, f_mid
+        else:
+            hi = mid
+    thetas = thetas_for(lo)
+    segments, end, brg = _march(p1, d1, b1, s_entry, signed, thetas, trans_l, types)
+    if abs(lateral(lo)) > 1e-6:
+        return None
+    return {
+        "segments": segments,
+        "cl_start": segments[0]["start"],
+        "cl_end": end,
+        "entry_len": s_entry,
+        "exit_len": (p2[0] - end[0]) * d2[0] + (p2[1] - end[1]) * d2[1],
+        "thetas": thetas,
+        "signed": list(signed),
+        "curve_side": "s",
+    }
+
+
+# ── Distances (numpy-accelerated when available) ─────────────────────────────
+
+try:
+    import numpy as _np
+except ImportError:                                   # pragma: no cover
+    _np = None
+
+
+def as_points(points):
+    """Points in the shape `max_dist_to_polyline` wants them.
+
+    A polyline that is measured against thousands of candidates is converted
+    once this way instead of once per measurement — turning a fifty-point list
+    of tuples into an array costs a sixth of what the measurement itself does.
+    """
+    return _np.asarray(points, dtype=float) if _np is not None else points
+
+
+def max_dist_to_polyline(points, poly):
+    """Max over `points` of the distance to the polyline `poly`."""
+    if len(points) == 0 or len(poly) < 2:
+        return 0.0
+    if _np is not None:
+        # Per coordinate rather than per point: the (n, m-1, 2) blocks the
+        # paired form builds are the cost here, not the arithmetic, and the
+        # square root is worth taking once at the end instead of n*m times.
+        pts = _np.asarray(points)                     # (n, 2)
+        seg = _np.asarray(poly)                       # (m, 2)
+        a = seg[:-1]
+        ab = seg[1:] - a                              # (m-1, 2)
+        den = (ab * ab).sum(axis=1)
+        den[den == 0] = 1.0
+        apx = pts[:, 0, None] - a[None, :, 0]         # (n, m-1)
+        apy = pts[:, 1, None] - a[None, :, 1]
+        t = (apx * ab[None, :, 0] + apy * ab[None, :, 1]) / den[None, :]
+        _np.clip(t, 0.0, 1.0, out=t)
+        dx = apx - t * ab[None, :, 0]
+        dy = apy - t * ab[None, :, 1]
+        return math.sqrt(float((dx * dx + dy * dy).min(axis=1).max()))
+    best_max = 0.0
+    for px, py in points:
+        best = math.inf
+        for (ax, ay), (bx, by) in zip(poly[:-1], poly[1:]):
+            dx, dy = bx - ax, by - ay
+            den = dx * dx + dy * dy
+            t = max(0.0, min(1.0, ((px - ax) * dx + (py - ay) * dy) / den)) if den > 0 else 0.0
+            d = math.hypot(px - (ax + t * dx), py - (ay + t * dy))
+            best = min(best, d)
+        best_max = max(best_max, best)
+    return best_max

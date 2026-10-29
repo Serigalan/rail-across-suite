@@ -1,0 +1,1156 @@
+/* The panel pane and what the panels are made of: headings, buttons, fields, lists, the basemap grid, settings. */
+
+/* Secondary panel */
+.sidebar-secondary {
+  width: 320px;
+  flex-shrink: 0;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 24px 20px;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+  border-right: 2px solid var(--color-border);
+  overflow-y: auto;
+  z-index: 9;
+  box-sizing: border-box;
+}
+
+.sidebar-secondary h2 {
+  font-family: var(--font-ui);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0;
+}
+
+/* An ⓘ beside a heading, a section title or a field label (decision 329). */
+.sidebar-secondary h2 .info-tip,
+.create-element-section .info-tip,
+.form-field label .info-tip { margin-left: 5px; }
+.create-element-section .info-tip-btn svg { width: 14px; height: 14px; }
+
+.sidebar-secondary p {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-text-soft);
+  margin: 0;
+}
+
+.panel-btn {
+  align-self: flex-start;
+  padding: 8px 16px;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  /* Stated rather than left to the browser: a button takes the platform's own
+     form font, an anchor styled as one takes the page's, and the two do not
+     match. */
+  font-family: var(--font-ui);
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.panel-btn:hover {
+  background: #2428a0;
+}
+
+.panel-btn-danger {
+  background: var(--color-error);
+}
+
+.panel-btn-danger:hover {
+  background: var(--color-danger);
+}
+
+.panel-btn-full {
+  align-self: stretch;
+  width: 100%;
+  text-align: center;
+}
+
+.preview-tooltip .maplibregl-popup-content {
+  background: rgba(30, 30, 40, 0.85);
+  color: #fff;
+  font-family: var(--font-ui);
+  font-size: var(--fs-s);
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 4px;
+  box-shadow: none;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.preview-tooltip .maplibregl-popup-tip {
+  border-top-color: rgba(30, 30, 40, 0.85);
+}
+
+/* Kilometrage readout of the DB overlay — in the overlay's own colour, so it
+   is never read as belonging to the project's geometry. */
+.km-tooltip .maplibregl-popup-content {
+  background: rgba(15, 118, 110, 0.92);
+  color: #fff;
+  font-family: var(--font-ui);
+  font-size: var(--fs-s);
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 4px;
+  box-shadow: none;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.km-tooltip .maplibregl-popup-tip {
+  border-top-color: rgba(15, 118, 110, 0.92);
+}
+
+/* A bordered row around a checkbox, in the track lists' tick-off mode. */
+.overlay-item {
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 6px 10px;
+}
+
+/* The kilometrage lines around the view, offered where a track's line number
+   is asked for. */
+.line-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.line-suggestion {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  background: none;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 3px 7px;
+  font-family: var(--font-ui);
+  font-size: var(--fs-s);
+  color: #333;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.line-suggestion:hover { background: #f0f0f4; }
+
+.line-suggestion.active {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.line-suggestion-distance {
+  font-size: 10px;
+  color: var(--color-muted);
+}
+
+.line-suggestion.active .line-suggestion-distance { color: var(--color-primary); }
+
+.overlay-error {
+  font-family: var(--font-ui);
+  font-size: var(--fs-xs);
+  line-height: 1.4;
+  margin: 6px 0 0;
+  color: var(--color-map-selected);
+}
+
+.track-label-svg {
+  fill: var(--color-primary);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  stroke: #fff;
+  stroke-width: 3px;
+  paint-order: stroke fill;
+}
+
+.selecting-hint {
+  font-family: var(--font-ui);
+  font-size: var(--fs-s);
+  color: #6c5ce7;
+  margin: 0;
+  font-style: italic;
+}
+
+.form-error {
+  font-family: var(--font-ui);
+  font-size: var(--fs-s);
+  color: var(--color-danger);
+  margin: 0;
+}
+
+/* What a dialog says it is about to do, item by item (switch deletion). */
+.form-list {
+  font-family: var(--font-ui);
+  font-size: var(--fs-s);
+  color: #333;
+  margin: 4px 0 8px;
+  padding-left: 18px;
+}
+
+.form-list li {
+  margin: 2px 0;
+}
+
+.input-error {
+  border-color: var(--color-danger) !important;
+  outline-color: var(--color-danger) !important;
+}
+
+.form-error-required {
+  font-weight: 600;
+  color: var(--color-danger);
+}
+
+/* Layers panel: every layer a row with a small preview (LayersPanel). A row
+   is a button for a basemap and a label around a checkbox for an overlay; the
+   one in use takes the primary colour, as the chosen tile did before. */
+.layer-group + .layer-group {
+  border-top: 1px solid var(--color-border);
+  margin-top: var(--space-4);
+}
+
+.layer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.layer-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 4px 8px 4px 4px;
+  background: none;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-family: var(--font-ui);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.1s;
+}
+
+.layer-row:hover { background: #f0f0f4; }
+
+.layer-row.active {
+  border-color: var(--color-primary);
+  box-shadow: inset 0 0 0 1px var(--color-primary);
+}
+
+.layer-thumbnail {
+  width: 60px;
+  height: 45px;
+  flex-shrink: 0;
+  display: block;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+.layer-label {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--fs-s);
+  line-height: 1.3;
+  color: #333;
+}
+
+.layer-row.active .layer-label {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+/* Under the Landesvermessung row: the state in use, or the ask to pick one. */
+.layer-sublabel {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: var(--fs-xs);
+  font-weight: 400;
+  color: var(--color-muted);
+}
+
+.layer-row.active .layer-sublabel { color: var(--color-primary); }
+
+.layer-caret {
+  flex-shrink: 0;
+  color: var(--color-muted);
+  transition: transform 0.15s;
+}
+
+.layer-caret.open { transform: rotate(90deg); }
+
+/* The options under a row that opens (the states, the kilometrage): small
+   tiles with a checkbox, one below the other. */
+.layer-option-list {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin: 0 0 4px 12px;
+}
+
+.layer-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 4px 8px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-family: var(--font-ui);
+  font-size: var(--fs-s);
+  line-height: 1.25;
+  color: #333;
+  cursor: pointer;
+  user-select: none;
+  transition: border-color 0.15s, background 0.1s;
+}
+
+.layer-option:hover { background: #f0f0f4; }
+
+/* Not bold: the name would widen and break anew on every tick. */
+.layer-option.active {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.layer-option.disabled {
+  color: #bbb;
+  cursor: default;
+}
+
+.layer-option input {
+  flex-shrink: 0;
+  margin: 0;
+  cursor: inherit;
+}
+
+/* A name wider than the tile breaks at its hyphen, inside a word by the
+   language's hyphenation (the list carries `lang`). */
+.layer-option span {
+  min-width: 0;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+/* Back button */
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  font-family: var(--font-ui);
+  font-size: var(--fs-m);
+  color: var(--color-primary);
+  cursor: pointer;
+  padding: 0 0 4px;
+  margin-bottom: 4px;
+}
+
+.back-btn:hover {
+  text-decoration: underline;
+}
+
+/* Create Element */
+.create-element-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.create-element-section {
+  font-family: var(--font-ui);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-muted);
+  margin-top: 8px;
+  margin-bottom: -2px;
+}
+
+.create-element-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-family: var(--font-ui);
+  font-size: var(--fs-m);
+  color: var(--color-text);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.create-element-btn:hover {
+  background: #eeeef8;
+  border-color: var(--color-primary);
+}
+
+/* Physics/Regelwerk in the edit panel: pinned to the bottom of the screen
+   rather than the last two entries in a list that might scroll.
+   `.sidebar-secondary` is itself a flex column reaching the full height of
+   the viewport, so `margin-top: auto` on this direct child pushes it all the
+   way down, with a rule above it to keep it visibly apart from the menu. */
+.create-element-btn.active {
+  background: #eeeef8;
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* A project's tracks under the line or station they belong to. */
+.track-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.track-group-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.track-group-toggle {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 2px;
+  background: none;
+  border: none;
+  font-family: var(--font-ui);
+  font-size: var(--fs-s);
+  font-weight: 600;
+  color: var(--color-text);
+  cursor: pointer;
+  text-align: left;
+}
+
+.track-group-toggle:hover .track-group-title {
+  color: var(--color-primary);
+}
+
+.track-group-caret {
+  display: inline-block;
+  width: 10px;
+  color: var(--color-muted);
+  transition: transform 0.15s;
+}
+
+.track-group-caret.open {
+  transform: rotate(90deg);
+}
+
+.track-group-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.track-group-count {
+  font-weight: 400;
+  font-size: var(--fs-xs);
+  color: var(--color-muted);
+}
+
+.track-group-all {
+  padding: 2px 6px;
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font-family: var(--font-ui);
+  font-size: var(--fs-xs);
+  color: var(--color-text-soft);
+  cursor: pointer;
+}
+
+.track-group-all:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.track-group-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-left: 16px;
+}
+
+/* The names tracks take when they are assigned: old → new, one per row. */
+.rename-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-family: var(--font-ui);
+  font-size: var(--fs-s);
+}
+
+.rename-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.rename-row input.rename-number {
+  width: 44px;
+  flex-shrink: 0;
+  padding: 3px 5px;
+}
+
+.rename-old {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--color-muted);
+}
+
+.rename-arrow {
+  color: var(--color-muted);
+}
+
+.rename-new {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.rename-new.fallback {
+  font-style: italic;
+}
+
+.rename-new.clash {
+  color: var(--color-error);
+}
+
+.rename-note {
+  font-size: var(--fs-xs);
+  font-style: italic;
+  color: var(--color-muted);
+}
+
+/* Show all / hide all above the track list of Gleise ein-/ausblenden. */
+/* What the project's own kilometrage lines shown come to, below their tile. */
+.layer-option-note { margin: 2px 0 0; }
+
+.track-visibility-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.create-element-btn.track-group-item {
+  padding: 6px 10px;
+}
+
+.element-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  background: #f9f9f9;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.form-field label {
+  font-family: var(--font-ui);
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  color: var(--color-text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.form-field select,
+.form-field input {
+  padding: 5px 8px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: var(--fs-m);
+  font-family: var(--font-ui);
+  color: var(--color-text);
+  background: white;
+}
+
+.form-field input[readonly] {
+  background: var(--color-surface-alt);
+  color: var(--color-muted);
+}
+
+/* A proposed value the user has overridden: says so, and offers it back. */
+.field-override {
+  font-family: var(--font-ui);
+  font-size: var(--fs-xs);
+  color: #6c5ce7;
+  background: none;
+  border: none;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+}
+
+.uic-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #d0d0d0;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  list-style: none;
+  margin: 2px 0 0;
+  padding: 0;
+  z-index: 100;
+  max-height: 220px;
+  overflow-y: auto;
+  font-family: var(--font-ui);
+}
+
+.uic-suggestions li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 7px 10px;
+  cursor: pointer;
+  font-size: var(--fs-s);
+  gap: 8px;
+}
+
+.uic-suggestions li:hover {
+  background: #eeeef8;
+}
+
+.uic-suggestion-name {
+  color: var(--color-text);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.uic-suggestion-uic {
+  color: var(--color-muted);
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.form-field select:focus,
+.form-field input:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+.toggle-switch-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+}
+
+.toggle-switch-wrap span {
+  font-family: var(--font-ui);
+  font-size: var(--fs-m);
+  transition: color 0.2s, font-weight 0.2s;
+  user-select: none;
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background: #ccc;
+  border-radius: 24px;
+  transition: background 0.25s;
+}
+
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.25s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+}
+
+.toggle-switch input:checked + .toggle-slider {
+  background: var(--color-primary);
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+  transform: translateX(20px);
+}
+
+.coord-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.coord-prefix {
+  font-family: var(--font-ui);
+  font-size: var(--fs-s);
+  font-weight: 600;
+  color: var(--color-text-soft);
+  min-width: 16px;
+}
+
+.coord-row input {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Settings */
+.settings-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.settings-label {
+  font-family: var(--font-ui);
+  font-size: var(--fs-m);
+  font-weight: 500;
+  color: #333;
+}
+
+.settings-select {
+  padding: 6px 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: var(--font-ui);
+  color: var(--color-text);
+  background: #f9f9f9;
+  cursor: pointer;
+}
+
+.settings-select:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+.settings-color-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.settings-color-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.1s, border-color 0.1s;
+}
+
+.settings-color-swatch:hover {
+  transform: scale(1.15);
+}
+
+.settings-color-swatch.active {
+  border-color: #fff;
+  outline: 2px solid #333;
+}
+
+/* The two words of a direction toggle (facing/trailing): the chosen one in
+   the project colour. */
+.toggle-label { color: var(--color-faint); font-weight: 400; }
+.toggle-label.active { color: var(--color-primary); font-weight: 600; }
+
+/* Small pieces several panels share. */
+.link-btn { background: none; border: none; padding: 0; text-decoration: underline; cursor: pointer; }
+.list-row { font-size: var(--fs-s); padding: var(--space-2) 0; border-bottom: 1px solid var(--color-border-soft); }
+.divider { border: none; border-top: 1px solid var(--color-border); margin: var(--space-3) 0; }
+.stack-tight { display: flex; flex-direction: column; gap: 3px; }
+.full-width { width: 100%; }
+.panel-btn.active { background: var(--color-primary); }
+.chip {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 3px var(--space-4); border-radius: 4px; background: #e8e8f4;
+  font-size: var(--fs-s); color: var(--color-primary);
+}
+.chip-remove { margin-left: var(--space-3); font-weight: 700; color: var(--color-muted); cursor: pointer; background: none; border: 0; padding: 0; font: inherit; }
+.file-slot-name { font-size: var(--fs-s); }
+/* Verm.ESN batch: per track what its gradient is stationed along — the name keeps the room it needs. */
+.vermesn-ref-row { font-size: var(--fs-s); }
+.vermesn-ref-row .settings-select { flex: 0 0 auto; width: auto; max-width: 55%; padding: 3px 6px; font-size: var(--fs-s); }
+.station-name-input { position: relative; width: 100%; }
+.station-name-input input { width: 100%; box-sizing: border-box; }
+.plan-date-input { width: 45%; min-width: 0; }
+.plan-logo-thumb { max-height: 28px; max-width: 80px; background: var(--color-surface); }
+.plan-sketch-thumb { max-height: 40px; max-width: 120px; background: var(--color-surface); }
+
+.external-link {
+  display: inline-flex; align-items: center; gap: 5px;
+  color: var(--color-primary); font-size: var(--fs-m); font-weight: 500; text-decoration: none;
+}
+.link-as-btn { display: flex; align-items: center; justify-content: center; gap: 5px; text-decoration: none; box-sizing: border-box; }
+
+/* A field whose value the dialog refuses. */
+input.input-error, select.input-error, textarea.input-error { border-color: var(--color-error); }
+
+.divider-wide { margin: 10px 0; }
+/* Stated with the panel, or `.sidebar-secondary p` would win over it. */
+.sidebar-secondary .layers-group-label {
+  font-size: var(--fs-xs); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--color-muted); margin: var(--space-3) 0;
+}
+.icon-glyph { color: currentcolor; }
+.icon-glyph-physics { vertical-align: -.025ex; }
+.icon-glyph-paragraph { vertical-align: -.452ex; }
+
+/* Commit and Cancel at a dialog's foot (components/form/CommitBar). */
+.commit-bar { display: flex; flex-direction: column; gap: var(--space-1); }
+/* Side by side in equal parts; a label on one line, so CommitBar can tell
+   whether it fits — if not, the bar turns to icons (.commit-bar-compact). */
+.commit-bar-row { display: flex; gap: 8px; }
+.commit-bar-btn {
+  flex: 1 1 0; min-width: 0; align-self: stretch;
+  display: flex; align-items: center; justify-content: center;
+}
+.commit-bar-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.commit-bar-icon { display: none; line-height: 0; }
+.commit-bar-compact .commit-bar-icon { display: inline-flex; }
+.commit-bar-compact .commit-bar-label {
+  position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%);
+}
+.commit-bar-compact .commit-bar-btn { position: relative; }
+
+/* The read-only values of a dialog, folded away (components/form/AdvancedInfo). */
+.advanced-info { margin: var(--space-2) 0; }
+.advanced-info > summary {
+  cursor: pointer; font-size: var(--fs-xs); font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.05em; color: var(--color-muted);
+}
+.advanced-info-body { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+.form-error-list { margin: var(--space-4) 0; }
+.form-error-list p { margin: 0 0 var(--space-2); }
+.commit-reason { margin: 0; }
+/* Under Commit, on its side of the bar (Entscheidung 361). */
+.commit-override { align-self: flex-end; font-size: var(--fs-s); color: var(--color-danger); }
+
+/* A field a rule finds fault with (R10.4): framed in the colour of the step, the finding under it. */
+.field-rule { display: block; font-size: var(--fs-xs); margin-top: var(--space-1); }
+.form-field:has(.field-rule.rule-sev-error) input { border-color: var(--color-error, #c0392b); outline: 1px solid var(--color-error, #c0392b); }
+.form-field:has(.field-rule.rule-sev-warning) input,
+.form-field:has(.field-rule.rule-sev-approval) input,
+.form-field:has(.field-rule.rule-sev-special_case) input { border-color: var(--color-warn, #d68910); }
+
+/* The search above a track or switch list (R10.6). */
+.track-search { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-bottom: var(--space-4); }
+.track-search input[type="search"] { flex: 1 1 140px; min-width: 0; }
+.track-search select { flex: 0 1 auto; }
+.track-search-count { flex-basis: 100%; font-size: var(--fs-xs); color: var(--color-text-soft); }
+.track-search-hits { flex-basis: 100%; }
+
+/* A panel's heading with its search beside it (decision 330): a small field
+   with a magnifier that grows over the rest of the row once clicked. */
+.panel-heading { flex-shrink: 0; display: flex; flex-direction: column; gap: var(--space-3); }
+.panel-heading-row { display: flex; align-items: center; gap: var(--space-4); min-height: 30px; }
+.panel-heading h2 { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.panel-search {
+  position: relative; margin-left: auto; flex: 0 0 32px; height: 30px;
+  transition: flex-basis 0.18s ease; cursor: text;
+}
+.panel-heading.searching .panel-search { flex: 1 0 150px; }
+.panel-search svg { position: absolute; left: 8px; top: 50%; transform: translateY(-50%); color: var(--color-muted); pointer-events: none; }
+.panel-search input[type="search"] {
+  box-sizing: border-box; width: 100%; height: 100%; padding: 4px 6px 4px 28px;
+  border: 1px solid var(--color-border); border-radius: 6px; background: #fff;
+  font: inherit; font-size: var(--fs-s); cursor: pointer;
+}
+.panel-heading.searching .panel-search input[type="search"] { cursor: text; }
+.panel-search input[type="search"]:focus { outline: none; border-color: var(--color-primary); }
+.panel-heading:not(.searching) .panel-search input::-webkit-search-cancel-button { display: none; }
+
+/* A number field with its unit behind it (R10.8). */
+.number-field { display: flex; align-items: center; gap: var(--space-3); }
+.number-field input { flex: 1; min-width: 0; }
+.number-unit { flex: 0 0 auto; color: var(--color-text-soft); font-size: var(--fs-s); min-width: 2.2em; }
+
+/* The panel's width (R10.9): the handle on its right edge. */
+.sidebar-secondary { position: relative; overflow: visible; }
+/* The panel scrolls inside, so the handle can stand over its edge. */
+.panel-content {
+  display: flex; flex-direction: column; gap: 12px;
+  flex: 1; min-height: 0; overflow-y: auto;
+  margin: -24px -20px; padding: 24px 20px;
+}
+.panel-resize {
+  position: absolute; top: 0; right: -4px; width: 8px; height: 100%;
+  cursor: ew-resize; z-index: 2;
+}
+.panel-resize:hover { background: rgba(0, 0, 0, 0.06); }
+
+/* Smaller screens (R10.9): from 1280 px on everything stays usable — a
+   narrower panel and lower overlays leave the map its room. */
+@media (max-width: 1440px) {
+  .sidebar-secondary { width: 280px; padding: 18px 14px; }
+  .panel-content { margin: -18px -14px; padding: 18px 14px; }
+}
+.run-status { display: flex; gap: var(--space-5); align-items: center; font-size: var(--fs-s); color: var(--color-text-soft); margin-top: var(--space-3); }
+
+/* A checkbox with its text, one line (a switch's heights locked). */
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+/* The track a splice keeps its distance to, and the button that picks it. */
+.splice-clearance-pick {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.splice-clearance-pick .panel-btn {
+  flex: none;
+  width: auto;
+  padding: 4px 10px;
+}
+
+/* Stepping through the solutions of a splice (Entscheidung 180). */
+.splice-solutions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.splice-solutions span {
+  flex: 1;
+  font-size: 12px;
+}
+
+.splice-solutions .panel-btn {
+  flex: none;
+  width: auto;
+  padding: 4px 10px;
+}
+
+/* Zwei Gleise zusammenfügen: the ways out of a curvature jump the rules
+   reject, one line each — what it changes, what stays — with its button. */
+.splice-remedies-ask {
+  margin-top: 6px;
+}
+
+.splice-remedies {
+  margin: 8px 0;
+  font-size: var(--fs-s);
+}
+
+.splice-remedies-title {
+  margin: 0 0 4px;
+  font-weight: 600;
+}
+
+.splice-remedies ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.splice-remedies li {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 6px 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.splice-remedy-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.splice-remedy-after {
+  color: var(--color-muted);
+}
+
+.splice-remedy-after.error {
+  color: var(--color-error);
+}
+
+.splice-remedies .panel-btn {
+  width: auto;
+  padding: 3px 10px;
+}
+
+/* Bearbeiten › Routen (Paket RT): a route in the list, name over its summary; its tracks in order. */
+.route-item {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  width: 100%;
+}
+.route-item-name { font-weight: 600; }
+.route-parts {
+  margin: 0;
+  padding-left: 22px;
+  font-size: var(--fs-s);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.route-dir { color: var(--color-primary); margin-right: 6px; font-size: var(--fs-xs); }
+.route-gap { color: var(--color-warn); list-style: none; margin-left: -22px; font-size: var(--fs-xs); }
+.route-list { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+
+/* Switch connection: the elements between the branches (Entscheidung 305). */
+.mid-chain-row + .mid-chain-row { border-top: 1px solid var(--color-border); padding-top: 6px; margin-top: 4px; }
+.mid-chain-type { display: flex; gap: 6px; align-items: center; }
+.mid-chain-type select { flex: 1; }
+.mid-chain-remove {
+  border: 1px solid var(--color-border); background: none; border-radius: 4px;
+  width: 28px; height: 28px; cursor: pointer; color: var(--color-muted); font-size: 16px; line-height: 1;
+}
+.mid-chain-remove:hover { color: var(--color-text); }
+.mid-chain-solved { margin: 2px 0 4px; }
+.mid-chain-add { margin: 6px 0 2px; }
+
+/* Switch connection: the Python solver's answers (Entscheidung 357). */
+.crossover-solver { margin: 8px 0; }
+.crossover-solutions { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.crossover-solution {
+  display: flex; gap: 8px; align-items: center; justify-content: space-between;
+  border: 1px solid var(--color-border); border-radius: 4px; padding: 6px 8px;
+}
+.crossover-solution-text { display: flex; flex-direction: column; gap: 2px; font-size: var(--fs-xs); min-width: 0; }
+.crossover-solution-text strong { font-weight: 600; overflow-wrap: anywhere; }
+
+/* Position slider of the switch dialogs (Entscheidungen 309–311). */
+.station-slider-track { position: relative; margin-top: 6px; padding: 0 8px; }
+.station-slider-track input[type=range] { width: 100%; box-sizing: border-box; margin: 0; display: block; }
+/* The snap points under the slider, inset by the thumb's half width so a mark
+   stands under the thumb that sits on it. */
+.station-slider-ticks { position: relative; height: 12px; margin: 0 8px; }
+/* Each mark a button wider than it looks, so it is easy to hit. */
+.station-slider-tick {
+  position: absolute; top: 0; width: 12px; height: 12px; margin-left: -6px; padding: 0;
+  border: 0; background: none; cursor: pointer;
+}
+.station-slider-tick::before {
+  content: ''; position: absolute; left: 5px; top: 1px; width: 2px; height: 7px;
+  background: var(--color-primary); opacity: 0.55; border-radius: 1px;
+}
+.station-slider-tick:hover::before, .station-slider-tick:focus-visible::before { opacity: 1; width: 4px; left: 4px; }
+.station-slider-hint { font-size: var(--fs-s); color: var(--color-muted); margin-top: 2px; }
+
+/* Direction and side of a turnout as four tiles (Entscheidung 312). */
+.switch-orientation {
+  display: grid; grid-template-columns: auto 1fr 1fr; gap: 6px; align-items: center; padding: 6px 0 10px;
+}
+.switch-orientation-head { text-align: center; font-size: var(--fs-s); color: var(--color-muted); }
+.switch-orientation-row { font-size: var(--fs-s); color: var(--color-muted); max-width: 88px; line-height: 1.2; }
+.switch-orientation-tile {
+  display: flex; align-items: center; justify-content: center; height: 44px;
+  border: 1px solid var(--color-border); border-radius: 8px; background: var(--color-surface);
+  color: var(--color-faint); cursor: pointer; transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.switch-orientation-tile:hover { color: var(--color-primary); border-color: var(--color-primary); }
+.switch-orientation-tile.active {
+  color: var(--color-primary); border-color: var(--color-primary); border-width: 2px; background: color-mix(in srgb, var(--color-primary) 8%, #fff);
+}
+
+/* Project settings (decision 317): the project's fields, and every track with
+   the two settings it may keep apart from the project's. */
+.project-settings-hint { display: block; font-family: var(--font-ui); font-size: var(--fs-xs); color: var(--color-text-soft); margin: 0; }
+.project-settings-description {
+  padding: 5px 8px; border: 1px solid #ddd; border-radius: 5px; resize: vertical;
+  font-size: var(--fs-m); font-family: var(--font-ui); color: var(--color-text); background: white;
+}
+.project-settings-only-own { display: flex; align-items: center; gap: 4px; font-size: var(--fs-s); color: var(--color-text-soft); }
+.project-settings-track-name {
+  align-self: flex-start; padding: 0; background: none; border: none; cursor: pointer;
+  font-family: var(--font-ui); font-size: var(--fs-s); font-weight: 600; color: var(--color-text); text-align: left;
+}
+.project-settings-track-name:hover { color: var(--color-primary); }
+
+/* The design mode for turnouts under the Höhenplan's heading (decision 384):
+   a switch, and while on the turnouts that do not fit yet. */
+.switch-design { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; margin: 4px 0 10px; }
+.switch-design-toggle {
+  display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
+  font-family: var(--font-ui); font-size: var(--fs-m); font-weight: 600;
+}
+.switch-design-toggle.disabled { cursor: not-allowed; }
+.switch-design-toggle input {
+  appearance: none; position: relative; width: 34px; height: 18px; margin: 0; flex: none;
+  border-radius: 9px; background: var(--color-faint); cursor: inherit; transition: background 0.15s;
+}
+.switch-design-toggle input::after {
+  content: ''; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px;
+  border-radius: 50%; background: var(--color-surface); transition: left 0.15s;
+}
+.switch-design-toggle input:checked { background: var(--color-primary); }
+.switch-design-toggle input:checked::after { left: 18px; }
+.switch-design-toggle input:disabled { opacity: 0.6; }
+.switch-design-open, .switch-design > .rule-findings-ok { flex-basis: 100%; }
+.switch-design-open ul { margin: 2px 0 0; padding-left: 18px; font-size: var(--fs-s); }
+.switch-design-open li { margin: 2px 0; }
+
+/* A section heading that folds its block away (FormSection `folded`). */
+.form-section-fold {
+  padding: 0; border: none; background: none; cursor: pointer;
+  font: inherit; color: inherit; text-align: left;
+}

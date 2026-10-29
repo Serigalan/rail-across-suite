@@ -1,0 +1,1283 @@
+import {
+  hydrateProjects, dehydrateProjects, projectsPayload, moveTracksToPlane, withImportSystem,
+} from './utils/project'
+import {
+  elementBelongsToSwitch, portsOf, unmarkSwitchElement, portTrack, portEnd, sliceHeights,
+  flipSwitchEndpoints, makeTrack, nextTrackName, portTracks, referencesTrack, remapSwitches,
+  reverseTrack, generateId, remapEndMarks, flipEndMarks, pruneEndMarks, endKey, repairRoutes,
+} from './utils/track'
+import { coupleSwitchCants, rebuildSwitchSymbol } from './utils/switch'
+import {
+  addDependentAt, lengthGovernedRadii, lockBreach, releaseDependency, restoreDependency, setDependencyMode, switchMisfits,
+  withAllLdsPoints, withSwitchHeights, setToeLead, withToesJoined, withTurnoutTwin,
+} from './utils/elevation'
+
+export const REPORT_KEY_PREFIX = 'olt_reports_'
+
+// The project store: the one project that is open, held in memory as the
+// single source of truth for every synchronous caller, and written behind to
+// where its opener keeps it (see persist/flush) — the working copy of a
+// variant in the main build (server/workingCopies.js), a project of the list
+// in the local build (core/home/localProjects.js). Opened without a place to
+// keep it, it lives in memory only.
+//
+// The record is immutable (R1.3): every write makes a new project object, new
+// arrays for what it changes and shares everything else. That is what makes a
+// snapshot for undo a reference, and what lets React subscribe to it.
+let _project = null
+// Where the open project is kept (Paket L): { key, meta, save } — `meta` what
+// its opener keeps beside the record (the server's working copy: variant,
+// base revision and its record), `save(record)` writes { ...meta, project,
+// idLog, updatedAt }, `key` names the entries kept per record outside it
+// (the import reports). Null for a project opened in memory only.
+let _slot = null
+const MAX_UNDO = 20
+let _undoStack = []
+// What undo took back, newest last, for redo (R10.1); any new step empties it.
+let _redoStack = []
+// The last step taken, undone or redone (R10.3): { serial, kind: 'do' | 'undo'
+// | 'redo', before, after } — what the step notice says and highlights.
+let _lastStep = null
+let _stepSerial = 0
+const recordStep = (kind, before, after, extra) => { _lastStep = { serial: ++_stepSerial, kind, before, after, ...extra } }
+
+/** The last step taken, undone or redone, or null since the project was opened. */
+export const lastStep = () => _lastStep
+let _undoDepth = 0
+// The id log (decision 93): what splitting and joining made of which track ids
+// since the working copy's base — [{ from, to: [ids] }]. A merge reads it to
+// carry the other side's references onto the new tracks.
+let _idLog = []
+
+// The design mode for turnouts (decision 384). On: a turnout's tracks do not
+// meet at WA and ldS on their own, a height is taken over by hand. Kept per
+// opened project in this session, not in it — whoever opens one that does
+// not fit is in the mode.
+let _switchDesign = false
+
+// Write-behind state
+let _dirty = false
+let _flushTimer = null
+let _flushChain = Promise.resolve()
+
+// In development and in the tests the record is frozen as it is written, so a
+// caller that changes a track in place — which would change every undo
+// snapshot sharing it — fails at once instead of corrupting history quietly.
+const FREEZE = import.meta.env?.DEV || import.meta.env?.MODE === 'test'
+function deepFreeze(value) {
+  if (!FREEZE || value === null || typeof value !== 'object' || Object.isFrozen(value)) return value
+  Object.freeze(value)
+  for (const key of Object.keys(value)) deepFreeze(value[key])
+  return value
+}
+
+/**
+ * Ready the store — once before rendering the app. Nothing is read here: a
+ * project is loaded when it is opened; leaving the page writes what is still
+ * waiting.
+ */
+export async function initStorage() {
+  registerLifecycleFlush()
+}
+
+/** The open project (hydrated), or null. */
+export function currentProject() {
+  return _project
+}
+
+/**
+ * Apply one change to the open project: `fn` gets the project and returns the
+ * new one (or the same to change nothing). A step for undo unless `undo` is
+ * false; nothing at all — not even an undo step — when no project is open.
+ * Returns whether a project was there to change.
+ */
+function mutate(fn, { undo = true, unlock = false } = {}) {
+  if (!_project) return false
+  const before = _project, logBefore = _idLog
+  const next = fn(_project)
+  if (!next || next === before) { _idLog = logBefore; return true }
+  // A route over a track the write took away runs over what lies there now (decision 249).
+  // A turnout's two routes carry one cant (decision 376); its WA and ldS lie
+  // on their lines and, unless in the design mode, its tracks meet there
+  // (decision 384). A curve whose length counts takes the radius its
+  // gradients ask for now (decision 266).
+  const after = withLengthRadii(before, withSwitchHeights(before,
+    withCoupledCants(before, withPrunedMarks(repairRoutes(before, next))), { design: _switchDesign }))
+  // What a lock holds stays (Entscheidung 382): a write that would change it
+  // is refused as a whole — and said so, where every step is.
+  const parted = new Set(_idLog.slice(logBefore.length).map(e => e.from))
+  const breach = lockBreach(before, after, { unlock, parted })
+  if (breach) {
+    _idLog = logBefore
+    recordStep('refused', before, before, { breach })
+    notify()
+    return false
+  }
+  if (undo) { pushUndo(before, logBefore); _redoStack = [] }
+  if (undo && _undoDepth === 0) recordStep('do', before, after)
+  setProject(after)
+  return true
+}
+
+function setProject(project) {
+  _project = deepFreeze(project)
+  // Coupled, every turnout fits (decision 384): where one does not — opened
+  // so, or a write the coupling could not follow — the design mode is on.
+  if (!_switchDesign && switchMisfits(_project).length) _switchDesign = true
+  persist()
+  notify()
+}
+
+// ── The design mode for turnouts (Entwurfsmodus Weichen, decision 384) ─────
+
+/** Is the design mode for turnouts on? */
+export const switchDesignMode = () => _switchDesign
+
+/**
+ * Turn the design mode on or off. Off only where every turnout fits —
+ * else { misfits } (switchMisfits) and it stays on; { ok } where it is as
+ * asked now.
+ */
+export function setSwitchDesignMode(on) {
+  if (!on && _project) {
+    const misfits = switchMisfits(_project)
+    if (misfits.length) return { misfits }
+  }
+  if (_switchDesign !== !!on) {
+    _switchDesign = !!on
+    notify()
+  }
+  return { ok: true }
+}
+
+/** A change of dependencies written as one undo step: { ok }, { same }, { refused } (a lock), or the { error } it came with. */
+function writeLinks(r) {
+  if (r.error) return r
+  if (r.project === _project) return { same: true }
+  return mutate(() => r.project) ? { ok: true } : { refused: true }
+}
+
+/**
+ * Give the point `src` ({ trackId, index }) a point depending on it the way
+ * `mode` says, picked on the map (elevation addDependentAt): `target` a
+ * height point { trackId, index } or a place on a track { trackId, station }.
+ * One undo step: { ok }, { same }, { refused } (a lock), or { error }.
+ */
+export function addDependentPoint(src, target, mode) {
+  if (!_project) return { error: 'no_project' }
+  return writeLinks(addDependentAt(_project, src, target, { mode, design: _switchDesign }))
+}
+
+/** Change how the point `ref` follows its own source (elevation setDependencyMode), as one undo step. */
+export function setDependencyModeAt(ref, mode) {
+  if (!_project) return { error: 'no_project' }
+  return writeLinks({ project: setDependencyMode(_project, ref, mode) })
+}
+
+/** Let the point `ref` go of one dependency (elevation releaseDependency), as one undo step. */
+export function releaseDependentPoint(ref) {
+  if (!_project) return { error: 'no_project' }
+  return writeLinks({ project: releaseDependency(_project, ref, { design: _switchDesign }) })
+}
+
+/**
+ * Set which toe of turnout `switchId` its height comes from, 'main' or
+ * 'branch' (elevation setToeLead, decision 393), as one undo step.
+ */
+export function setToeLeadAt(switchId, lead) {
+  if (!_project) return { error: 'no_project' }
+  return writeLinks({ project: setToeLead(_project, switchId, lead) })
+}
+
+/**
+ * Write a track's heights with a point added at `index` (a double click in
+ * the profile), and — where it lies inside a turnout — its twin on the other
+ * track, depending on it as an ldS does (elevation withTurnoutTwin, decision
+ * 393). One undo step: { ok, twin }, or { refused } (a lock).
+ */
+export function addHeightPoint(trackId, heights, index) {
+  if (!_project) return { error: 'no_project' }
+  let twin = null
+  const done = mutate(p => {
+    const added = { ...p, tracks: p.tracks.map(t => (t.id === trackId ? { ...t, heights } : t)) }
+    const r = withTurnoutTwin(added, { trackId, index }, { design: _switchDesign })
+    twin = r.twin ?? null
+    return r.project ?? added
+  })
+  return done ? { ok: true, twin } : { refused: true }
+}
+
+/** Put a WA or ldS let go back under its rule (elevation restoreDependency), as one undo step. */
+export function restoreDependentPoint(ref) {
+  if (!_project) return { error: 'no_project' }
+  return writeLinks({ project: restoreDependency(_project, ref) })
+}
+
+// ── subscribers (R1.4) ──────────────────────────────────────────────────────
+
+const _listeners = new Set()
+
+/**
+ * Be told after every change of the open project or of the undo stack — a
+ * write, an undo, a project opened or closed. Returns the unsubscribe. What
+ * React's useSyncExternalStore takes (see hooks/useStore.js).
+ */
+export function subscribe(listener) {
+  _listeners.add(listener)
+  return () => _listeners.delete(listener)
+}
+
+function notify() {
+  for (const listener of [..._listeners]) listener()
+}
+
+// ── the open project and where it is kept (Paket L) ─────────────────────────
+
+/**
+ * Make `project` (dehydrated) the open project, kept through `save` (see
+ * _slot) — or in memory only without. `idLog` the splits and joins since its
+ * base. Undo starts empty.
+ */
+export function openStoredProject({ project, meta = {}, key = project.id, save = null, idLog = [] }) {
+  _slot = { key, meta, save }
+  _switchDesign = false
+  _idLog = [...idLog]
+  _undoStack = []
+  _redoStack = []
+  _lastStep = null
+  // Every turnout's WA and ldS a point to pick (decision 390) — on the gradient, nothing moves —,
+  // and its toe one height (decision 393).
+  setProject(withToesJoined(withAllLdsPoints(withPrunedMarks(hydrateProjects([structuredClone(project)])[0]))))
+  return _project
+}
+
+/**
+ * Open a project that is kept nowhere — in memory only, with an empty undo
+ * stack. What the tests and a throwaway preview use.
+ */
+export function openProject(project) {
+  _slot = null
+  _switchDesign = false
+  _idLog = []
+  _undoStack = []
+  _redoStack = []
+  _lastStep = null
+  setProject(withToesJoined(withAllLdsPoints(withPrunedMarks(project))))
+  return _project
+}
+
+/** What the opener keeps beside the open project (its meta), or null. */
+export const currentStoredMeta = () => (_slot && _project ? _slot.meta : null)
+
+/** The open project as it is kept: { ...meta, project (dehydrated), idLog }, or null for one in memory only. */
+export function currentStoredProject() {
+  if (!_slot || !_project) return null
+  return { ..._slot.meta, project: dehydrateProjects([structuredClone(_project)])[0], idLog: loadIdLog() }
+}
+
+/**
+ * Put another record in place of the open project, kept where it was, with
+ * `meta` now. Undo is emptied: a step back must not take back what came in.
+ */
+export function replaceStoredProject({ project, meta, idLog }) {
+  if (!_slot) return null
+  return openStoredProject({ ..._slot, project, meta: meta ?? _slot.meta, idLog: idLog ?? loadIdLog() })
+}
+
+/** Keep `meta` beside the open project from now on; `clearIdLog` when its splits are spent (checked in). */
+export function setStoredMeta(meta, { clearIdLog = false } = {}) {
+  if (!_slot) return
+  _slot = { ..._slot, meta }
+  if (clearIdLog) setIdLog([])
+  persist()
+}
+
+/** Close the open project — what is still waiting is written first. */
+export async function closeStoredProject() {
+  await flushPendingWrites()
+  _project = null
+  _slot = null
+  _idLog = []
+  _undoStack = []
+  _redoStack = []
+  _lastStep = null
+  notify()
+}
+
+/** Empty the undo stack. */
+export function clearUndo() {
+  _undoStack = []
+  _redoStack = []
+  _lastStep = null
+  notify()
+}
+
+/**
+ * Keep the state before a change for undo. The record is immutable (R1.3), so
+ * a snapshot is the reference itself — no copy, whatever the project's size.
+ * The plan header is not restored by an undo (see savePlanHeader); undo puts
+ * the current one onto whatever it brings back.
+ */
+function pushUndo(project = _project, idLog = _idLog) {
+  if (_undoDepth > 0 || !project) return
+  _undoStack.push({ project, idLog })
+  if (_undoStack.length > MAX_UNDO) _undoStack.shift()
+}
+
+/** The id log of the open project: [{ from, to: [ids] }], oldest first. */
+export function loadIdLog() {
+  return _idLog
+}
+
+/** Replace the id log — empty once its changes are checked in. */
+function setIdLog(log) {
+  _idLog = [...(log ?? [])]
+}
+
+/**
+ * Append the id changes of one remap (the entries remapSwitches takes) to the
+ * log. Only ids that changed and pieces the project now has are logged: a
+ * rename onto itself (a flip) is no id change, and a split that left no piece
+ * on one side names a track that never came to be.
+ */
+function logRemap(project, remap) {
+  if (!project || !remap?.length) return
+  const present = new Set((project.tracks ?? []).map(t => t.id))
+  const entries = []
+  for (const { oldId, newId } of remap) {
+    const to = (Array.isArray(newId) ? newId : [newId]).filter(id => id && present.has(id))
+    if (!oldId || !to.length || (to.length === 1 && to[0] === oldId)) continue
+    entries.push({ from: oldId, to })
+  }
+  if (entries.length) _idLog = [..._idLog, ...entries]
+}
+
+/**
+ * Run several storage mutations as one undo step: the snapshot is taken once,
+ * before the first mutation, and the mutations' own pushUndo calls pass while
+ * the batch runs. A form that commits a switch piece by piece (appended leg,
+ * branch tracks, the record) becomes one Ctrl+Z, the way the commitSwitch*
+ * functions already are.
+ */
+export function withUndo(fn) {
+  const before = _project, logBefore = _idLog
+  _undoDepth++
+  try {
+    return fn()
+  } finally {
+    _undoDepth--
+    if (_undoDepth === 0 && _project !== before) {
+      pushUndo(before, logBefore)
+      _redoStack = []
+      recordStep('do', before, _project)
+      notify()
+    }
+  }
+}
+
+// A track end mark lives only as long as its end is free (trackEndMarks): any
+// write that takes the track away or connects a switch to that end drops it.
+// Done here rather than in each writer, because every writer comes by here.
+/**
+ * The project with the cant of every turnout's two routes coupled again where
+ * the write changed it along one of them (switch coupleSwitchCants).
+ */
+function withCoupledCants(before, project) {
+  const tracks = coupleSwitchCants(before.tracks, project.tracks, project.switches)
+  return tracks === project.tracks ? project : { ...project, tracks }
+}
+
+/**
+ * The project with the radius of every vertical curve whose length counts
+ * (`la` on its point, decision 266) worked out again where a write changed
+ * the gradients either side of it, or the speed under it.
+ */
+function withLengthRadii(before, project) {
+  const tracks = lengthGovernedRadii(before.tracks, project.tracks)
+  return tracks === project.tracks ? project : { ...project, tracks }
+}
+
+function withPrunedMarks(project) {
+  if (!project?.endMarks?.length) return project
+  const kept = pruneEndMarks(project.endMarks, project.tracks, project.switches)
+  return kept === project.endMarks ? project : { ...project, endMarks: kept }
+}
+
+// Mark the open project dirty and schedule the async flush. A project kept
+// nowhere (openProject) lives in memory only.
+function persist() {
+  if (!_slot?.save) return
+  _dirty = true
+  scheduleFlush()
+}
+
+// Writing behind dehydrates the whole project, so a burst of writes is
+// written once, when it has come to rest. Leaving the page flushes at once
+// (registerLifecycleFlush), as does closing the project.
+const FLUSH_DELAY = 300   // ms
+const FLUSH_MAX_WAIT = 2000   // …but a burst that never rests is written this often
+let _flushPendingSince = 0
+
+function scheduleFlush() {
+  const now = Date.now()
+  if (_flushTimer) clearTimeout(_flushTimer)
+  else _flushPendingSince = now
+  const wait = now - _flushPendingSince >= FLUSH_MAX_WAIT ? 0 : FLUSH_DELAY
+  _flushTimer = setTimeout(() => flushPendingWrites(), wait)
+}
+
+/** Start writing the open project where it is kept; resolves when done. */
+export function flushPendingWrites() {
+  if (_flushTimer) { clearTimeout(_flushTimer); _flushTimer = null }
+  if (!_dirty || !_slot?.save) return _flushChain
+  _dirty = false
+  const stored = currentStoredProject()
+  if (!stored) return _flushChain
+  const record = { ...stored, updatedAt: new Date().toISOString() }
+  const { save } = _slot
+  _flushChain = _flushChain
+    .then(() => save(record))
+    .catch(err => {
+      console.error('Persisting the project failed – retrying on next change', err)
+      _dirty = true
+    })
+  return _flushChain
+}
+
+let _lifecycleRegistered = false
+function registerLifecycleFlush() {
+  if (_lifecycleRegistered || typeof window === 'undefined') return
+  _lifecycleRegistered = true
+  window.addEventListener('pagehide', () => { flushPendingWrites() })
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') flushPendingWrites()
+  })
+}
+
+export function canUndo() {
+  return _undoStack.length > 0
+}
+
+export function undo() {
+  if (_undoStack.length === 0) return false
+  const before = _project
+  _redoStack.push({ project: _project, idLog: _idLog })
+  const entry = _undoStack.pop()
+  recordStep('undo', before, entry.project)
+  restore(entry)
+  return true
+}
+
+export function canRedo() {
+  return _redoStack.length > 0
+}
+
+/** Take the last undo back again (R10.1). */
+export function redo() {
+  if (_redoStack.length === 0) return false
+  const before = _project
+  _undoStack.push({ project: _project, idLog: _idLog })
+  const entry = _redoStack.pop()
+  recordStep('redo', before, entry.project)
+  restore(entry)
+  return true
+}
+
+/**
+ * The step an undo would take back and the one a redo would bring again, as
+ * { before, after } — the two project states, for describing them (stepLabel).
+ * Null where there is none. The same objects while nothing changes, so a
+ * subscriber can hold on to them.
+ */
+export function undoStep() {
+  const top = _undoStack[_undoStack.length - 1]
+  if (!top) return null
+  if (_undoStepCache?.top !== top || _undoStepCache.after !== _project) _undoStepCache = { top, after: _project, step: { before: top.project, after: _project } }
+  return _undoStepCache.step
+}
+export function redoStep() {
+  const top = _redoStack[_redoStack.length - 1]
+  if (!top) return null
+  if (_redoStepCache?.top !== top || _redoStepCache.before !== _project) _redoStepCache = { top, before: _project, step: { before: _project, after: top.project } }
+  return _redoStepCache.step
+}
+let _undoStepCache = null
+let _redoStepCache = null
+
+/**
+ * The steps that can be undone and redone (decision 326), for the history:
+ * `past` oldest first — the last of them is the one undo takes back —, and
+ * `future` in the order redo brings them, each { before, after } as undoStep
+ * gives them. Worked out anew on every call; read it on a change of the store.
+ */
+export function historySteps() {
+  const states = [..._undoStack.map(e => e.project), _project]
+  const past = _undoStack.map((e, i) => ({ before: e.project, after: states[i + 1] }))
+  const ahead = [..._redoStack].reverse().map(e => e.project)
+  const future = ahead.map((after, i) => ({ before: i === 0 ? _project : ahead[i - 1], after }))
+  return { past, future }
+}
+
+/**
+ * Go `n` steps through the history at once: back for n < 0 (as many undos),
+ * forward for n > 0 (as many redos) — one step for the notice, from where it
+ * was to where it lands. Returns whether it moved.
+ */
+export function travelHistory(n) {
+  const from = n < 0 ? _undoStack : _redoStack
+  const to = n < 0 ? _redoStack : _undoStack
+  const k = Math.min(Math.abs(n), from.length)
+  if (!k || !_project) return false
+  const before = _project
+  let current = { project: _project, idLog: _idLog }
+  for (let i = 0; i < k; i++) {
+    to.push(current)
+    current = from.pop()
+  }
+  recordStep(n < 0 ? 'undo' : 'redo', before, current.project)
+  restore(current)
+  return true
+}
+
+// A snapshot back into place. The header is not part of the snapshots, so it
+// is kept as it is now.
+function restore({ project, idLog }) {
+  const header = _project?.planHeader
+  _idLog = idLog
+  setProject(project.planHeader === header ? project : { ...project, planHeader: header })
+}
+
+/** Merge fields into the project record (used for the OSRD infra passthrough). */
+export function updateProject(patch) {
+  return mutate(p => ({ ...p, ...patch }))
+}
+
+/**
+ * Carry the tracks `trackIds` into plane `epsg`, in one undo step
+ * (projectSettings.moveTracksToPlane). Returns its report, or null where there
+ * was no project; nothing is written where the report refuses the move.
+ */
+export function setTracksPlane(trackIds, epsg) {
+  let report = null
+  mutate(p => {
+    const res = moveTracksToPlane(p, trackIds, epsg)
+    report = res.report
+    return res.project ?? p
+  })
+  return report
+}
+
+/**
+ * What an import had to say, kept so it can be read again — per variant
+ * where a working copy is open (the variants of a project share its id).
+ *
+ * An import of a whole database writes thousands of lines — what it could not
+ * place, what it had to infer from the alignment because the file does not
+ * state it, where the file disagrees with itself — and until now they were gone
+ * with the next click. They are kept per project, newest first, and outside the
+ * project record: a report is about an import, not about the alignment, so it
+ * has no business riding through every undo snapshot or into the exchange file.
+ *
+ * localStorage is the right place for exactly that reason, and it is also a
+ * small one: a report is cut to REPORT_LINES and only REPORTS_KEPT of them are
+ * held. A store too full to take one must not make the import fail, so a
+ * refused write falls back to keeping the newest report alone.
+ */
+const REPORTS_KEPT = 8
+const REPORT_LINES = 4000
+
+// Per record as its opener names it — per variant for a working copy (the
+// variants of a project share its id) — else per project.
+const reportKey = () => REPORT_KEY_PREFIX + (_slot?.key ?? _project?.id ?? 'none')
+
+export function loadImportReports() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(reportKey()) ?? '[]')
+    return Array.isArray(raw) ? raw : []
+  } catch { return [] }
+}
+
+export function saveImportReport(report) {
+  const entry = {
+    ...report,
+    at: report.at ?? Date.now(),
+    lines: (report.lines ?? []).slice(0, REPORT_LINES),
+    cut: Math.max(0, (report.lines ?? []).length - REPORT_LINES),
+  }
+  const all = [entry, ...loadImportReports()].slice(0, REPORTS_KEPT)
+  const write = (list) => localStorage.setItem(reportKey(), JSON.stringify(list))
+  try {
+    write(all)
+    return all
+  } catch {
+    try {
+      write([{ ...entry, lines: entry.lines.slice(0, 200), cut: entry.lines.length - 200 }])
+    } catch { /* nothing to be done; the import itself stands */ }
+    return loadImportReports()
+  }
+}
+
+export function clearImportReports() {
+  try { localStorage.removeItem(reportKey()) } catch { /* already gone */ }
+}
+
+// ── tracks hidden on the map ────────────────────────────────────────────────
+
+/**
+ * The tracks hidden from the map (Bearbeiten → Gleise ein-/ausblenden): a way
+ * of looking at the project, not part of it — kept on this device per project
+ * like the import reports, outside the record, so it rides through no undo
+ * step, no check-in and no exchange file. The variants of a project share it,
+ * as they share their track ids. An id whose track is gone is never asked
+ * about again; a track is shown unless it is named here.
+ *
+ * The set is the same object until it changes, as useSyncExternalStore wants.
+ * The project's kilometrage lines are hidden the same way, by line number, in
+ * an entry of their own (decision 354).
+ */
+export const HIDDEN_KEY_PREFIX = 'olt_hidden_tracks_'
+export const HIDDEN_KM_KEY_PREFIX = 'olt_hidden_kmlines_'
+
+/** A set of ids kept on this device for the open project, under `prefix` + its id. */
+function deviceIdSet(prefix) {
+  let held = { key: null, ids: new Set() }
+  const keyOf = () => prefix + (_project?.id ?? 'none')
+  return {
+    forget() { held = { key: null, ids: new Set() } },
+    get() {
+      const key = keyOf()
+      if (held.key !== key) {
+        let ids = []
+        try { ids = JSON.parse(localStorage.getItem(key) ?? '[]') } catch { /* none kept, or no storage */ }
+        held = { key, ids: new Set(Array.isArray(ids) ? ids : []) }
+      }
+      return held.ids
+    },
+    set(ids, on) {
+      const next = new Set(this.get())
+      for (const id of ids) {
+        if (on) next.add(id)
+        else next.delete(id)
+      }
+      const key = keyOf()
+      held = { key, ids: next }
+      try {
+        if (next.size) localStorage.setItem(key, JSON.stringify([...next]))
+        else localStorage.removeItem(key)
+      } catch { /* kept for this session only */ }
+      notify()
+    },
+  }
+}
+
+const _hiddenTracks = deviceIdSet(HIDDEN_KEY_PREFIX)
+const _hiddenKmLines = deviceIdSet(HIDDEN_KM_KEY_PREFIX)
+
+/** Read the hidden tracks and lines afresh next time — their entry was deleted from outside. */
+export function forgetHiddenTracks() {
+  _hiddenTracks.forget()
+  _hiddenKmLines.forget()
+}
+
+export const hiddenTracks = () => _hiddenTracks.get()
+
+/** Hide (`hidden` true) or show the tracks `trackIds` on the map. */
+export const setTracksHidden = (trackIds, hidden) => _hiddenTracks.set(trackIds, hidden)
+
+/** The line numbers (strings) of the project's kilometrage lines hidden on the map. */
+export const hiddenKmLines = () => _hiddenKmLines.get()
+
+/** Hide (`hidden` true) or show the project's kilometrage lines `lineNumbers` on the map. */
+export const setKmLinesHidden = (lineNumbers, hidden) => _hiddenKmLines.set(lineNumbers.map(String), hidden)
+
+/**
+ * The open project as a file ({ version, projects }), dehydrated. Its image
+ * goes by the hash the server keeps it under (`imageHash`).
+ */
+export function exportProjectsPayload() {
+  const projects = _project ? [structuredClone(_project)] : []
+  return projectsPayload(dehydrateProjects(projects))
+}
+
+// ── plan header ─────────────────────────────────────────────────────────────
+
+/**
+ * The title block of a plan — parties with logo and address, who drew and
+ * checked it — as the project's metadata, `project.planHeader`. It is part of
+ * the variant's record and versioned with it (decision 101).
+ */
+export function loadPlanHeader() {
+  return _project?.planHeader ?? null
+}
+
+/**
+ * Store the header on the project. Not an undo step: it is what the plans
+ * are signed with, not the alignment, and its logos would ride through every
+ * snapshot (see pushUndo). False when there is no project.
+ */
+export function savePlanHeader(header) {
+  return mutate(p => ({ ...p, planHeader: header }), { undo: false })
+}
+
+// ── tracks ──────────────────────────────────────────────────────────────────
+
+export function loadTracks() {
+  return _project?.tracks ?? []
+}
+
+/** Switches that reference `trackId` on any of their three ports. */
+export function switchesOnTrack(trackId) {
+  return loadSwitches().filter(sw => referencesTrack(sw, trackId))
+}
+
+/** The project without `trackId` — see deleteTrack. */
+function withoutTrack(project, trackId) {
+  const doomed = (project.switches ?? []).filter(sw => referencesTrack(sw, trackId))
+  const next = withoutSwitches(project, doomed, [trackId])
+  return {
+    ...next,
+    tracks: next.tracks.filter(t => t.id !== trackId),
+    ...(next.platforms?.length ? { platforms: next.platforms.filter(p => p.trackId !== trackId) } : {}),
+  }
+}
+
+/**
+ * The project without the switches `doomed`, and without the tracks that were
+ * nothing but one of their own geometry — a track whose elements all belong
+ * to that switch's branch. Asking whose geometry it is — and not merely
+ * whether it is some switch's — keeps a track two turnouts share, as a
+ * crossover's connection is, out of one of them. `alsoGone` are tracks the
+ * caller removes anyway. The tracks that stay keep their geometry, but no
+ * longer a gone switch's marks: an element naming a switch that is gone would
+ * point at nothing.
+ */
+function withoutSwitches(project, doomed, alsoGone = []) {
+  if (!doomed.length) return project
+  const tracks = project.tracks ?? []
+  const isBranchTrack = (id, sw) => {
+    const tr = tracks.find(t => t.id === id)
+    const els = tr?.elements ?? []
+    return els.length > 0 && els.every(el => el.switchBranch && elementBelongsToSwitch(el, sw))
+  }
+  const removed = new Set(alsoGone)
+  const branchGone = new Set()
+  doomed.forEach(sw => portTracks(sw).forEach(id => { if (isBranchTrack(id, sw)) { removed.add(id); branchGone.add(id) } }))
+  const goneIds = new Set(doomed.map(sw => sw.switchId).filter(Boolean))
+  const doomedSet = new Set(doomed)
+  return {
+    ...project,
+    tracks: tracks.filter(t => !branchGone.has(t.id)).map(t => (
+      (t.elements ?? []).some(el => el.switchId && goneIds.has(el.switchId))
+        ? { ...t, elements: t.elements.map(el => (el.switchId && goneIds.has(el.switchId) ? unmarkSwitchElement(el) : el)) }
+        : t)),
+    switches: (project.switches ?? []).filter(sw => !doomedSet.has(sw)),
+    ...(project.platforms?.length ? { platforms: project.platforms.filter(p => !branchGone.has(p.trackId)) } : {}),
+  }
+}
+
+/**
+ * Delete a track. A switch that references it loses its reason to exist and goes
+ * with it — together with the branch track carrying that switch's own geometry
+ * (a track whose elements are all switchBranch). The ordinary tracks on the
+ * switch's other ports stay, their elements without that switch's marks; only
+ * the switch itself disappears. A platform is stationed along its track and
+ * cannot outlive it either.
+ */
+export function deleteTrack(trackId) {
+  return mutate(p => withoutTrack(p, trackId))
+}
+
+/**
+ * Delete several tracks at once — a whole network from the topology diagram —
+ * as one undo step, each the way deleteTrack takes one: its switches and
+ * their own branch tracks with it.
+ */
+export function deleteTracks(trackIds) {
+  return mutate(p => trackIds.reduce(withoutTrack, p))
+}
+
+export function saveTrack(track) {
+  return mutate(p => ({ ...p, tracks: [...(p.tracks ?? []), track] }))
+}
+
+export function updateTrack(track) {
+  return mutate(p => ({ ...p, tracks: (p.tracks ?? []).map(t => (t.id === track.id ? track : t)) }))
+}
+
+/**
+ * Repoint switch ports and end marks after tracks were renamed, split or
+ * joined. `consumed` names the ends that stopped being ends in the change — a
+ * splice joins two — whose marks have to go rather than follow the remap.
+ */
+export function remapSwitchTrackIds(remap, { consumed = [] } = {}) {
+  return mutate(p => {
+    const next = {
+      ...p,
+      switches: remapSwitches(p.switches, remap),
+      endMarks: remapEndMarks(p.endMarks, remap, consumed),
+    }
+    logRemap(next, remap)
+    return next
+  })
+}
+
+export function deleteElement(trackId, elementIndex) {
+  return deleteElements([{ trackId, elementIndex: Number(elementIndex) }])
+}
+
+/**
+ * Delete elements — any number, on any tracks — as one undo step. What is
+ * left of a track falls apart into its runs of elements still next to each
+ * other, each a track of its own: the first keeps the track's name, the
+ * others take the next free one. A track with nothing left goes the way
+ * deleteTrack takes one.
+ *
+ * The vertical alignment is the track's, stationed along it: each run keeps
+ * its stretch of it, and where the gradient runs over a cut it gets a height
+ * point there at the height the gradient has (sliceHeights).
+ *
+ * A switch standing at an end that is deleted has lost that end and goes with
+ * its own branch, as with deleteTrack; the others stay on the run that holds
+ * their end. End marks on a deleted end go, the others follow their end.
+ * A platform stays where its run holds it whole, re-stationed, and goes where
+ * the cut runs through it.
+ *
+ * `picks` is [{ trackId, elementIndex }].
+ */
+export function deleteElements(picks) {
+  return mutate(p => withoutElements(p, picks))
+}
+
+function withoutElements(project, picks) {
+  const byTrack = new Map()
+  for (const { trackId, elementIndex } of picks ?? []) {
+    if (!byTrack.has(trackId)) byTrack.set(trackId, new Set())
+    byTrack.get(trackId).add(Number(elementIndex))
+  }
+  const names = new Set((project.tracks ?? []).map(t => t.name).filter(Boolean))
+  const replaced = new Map()   // old track id → its runs
+  const remap = [], logged = [], deadEnds = [], emptied = []
+  let platforms = project.platforms
+  for (const [trackId, gone] of byTrack) {
+    const track = (project.tracks ?? []).find(t => t.id === trackId)
+    const els = track?.elements ?? []
+    if (!els.some((_, i) => gone.has(i))) continue
+    if (els.every((_, i) => gone.has(i))) { emptied.push(trackId); continue }
+
+    // The runs of elements left, with the stretch of the track each covers.
+    const runs = []
+    let station = 0
+    els.forEach((el, i) => {
+      const len = el.length ?? 0
+      if (!gone.has(i)) {
+        const last = runs[runs.length - 1]
+        if (last && last.to === i - 1) { last.to = i; last.s1 = station + len }
+        else runs.push({ from: i, to: i, s0: station, s1: station + len })
+      }
+      station += len
+    })
+    const prefix = (track.name?.split('.')[0]) || 'track'
+    const pieces = runs.map((run, k) => {
+      const piece = makeTrack(track, els.slice(run.from, run.to + 1), generateId(), sliceHeights(track.heights, run.s0, run.s1))
+      if (k > 0 && track.name) {
+        piece.name = nextTrackName(prefix, names)
+        names.add(piece.name)
+      }
+      return { ...run, track: piece }
+    })
+    replaced.set(trackId, pieces.map(r => r.track))
+
+    const keepsBegin = !gone.has(0), keepsEnd = !gone.has(els.length - 1)
+    if (!keepsBegin) deadEnds.push({ trackId, endpoint: 'BEGIN' })
+    if (!keepsEnd) deadEnds.push({ trackId, endpoint: 'END' })
+    remap.push({ oldId: trackId, newId: [keepsBegin ? pieces[0].track.id : null, keepsEnd ? pieces[pieces.length - 1].track.id : null] })
+    logged.push({ oldId: trackId, newId: pieces.map(r => r.track.id) })
+
+    platforms = platforms?.flatMap(pl => {
+      if (pl.trackId !== trackId) return [pl]
+      const lo = Math.min(pl.startStation ?? 0, pl.endStation ?? 0), hi = Math.max(pl.startStation ?? 0, pl.endStation ?? 0)
+      const run = pieces.find(r => lo >= r.s0 - 1e-6 && hi <= r.s1 + 1e-6)
+      return run ? [{ ...pl, trackId: run.track.id,
+        startStation: (pl.startStation ?? 0) - run.s0, endStation: (pl.endStation ?? 0) - run.s0 }] : []
+    })
+  }
+
+  if (!replaced.size && !emptied.length) return project
+
+  // The switches standing at a deleted end go, as deleteTrack lets them.
+  const dead = new Set(deadEnds.map(e => `${e.trackId}|${e.endpoint}`))
+  const doomed = (project.switches ?? []).filter(sw => portsOf(sw).some(pt => dead.has(`${portTrack(sw, pt.port)}|${portEnd(sw, pt.port)}`)))
+  let next = {
+    ...project,
+    tracks: (project.tracks ?? []).flatMap(t => replaced.get(t.id) ?? [t]),
+    ...(platforms ? { platforms } : {}),
+  }
+  next = withoutSwitches(next, doomed)
+  next = {
+    ...next,
+    switches: remapSwitches(next.switches ?? [], remap),
+    endMarks: remapEndMarks(next.endMarks, remap, deadEnds),
+  }
+  logRemap(next, logged)
+  return emptied.reduce(withoutTrack, next)
+}
+
+/**
+ * Append elements to a track's end, as one undo step — what a connect dialog
+ * commits (a transition and the element after it are one change).
+ */
+export function addElementsToTrack(trackId, elements) {
+  return mutate(p => {
+    const track = (p.tracks ?? []).find(t => t.id === trackId)
+    if (!track || !elements?.length) return p
+    const updated = withAppended(track, elements)
+    return { ...p, tracks: p.tracks.map(t => (t.id === trackId ? updated : t)) }
+  })
+}
+
+/** `track` with `elements` appended at its end, its polyline carried on. */
+function withAppended(track, elements) {
+  let els = track.elements ?? []
+  let coords = track.coordinates ?? []
+  for (const element of elements) {
+    els = [...els, element]
+    // The same polyline rebuildCoords and the reload take, which is the coarse one
+    // wherever the element carries it: appending the fine one instead left the
+    // track drawn at one density until a reload replaced it with the other.
+    const c = element.renderCoords ?? element.geometry?.coordinates
+    if (c?.length) coords = [...coords, ...c.slice(1)]
+  }
+  return { ...track, elements: els, coordinates: coords }
+}
+
+export function addElementToTrack(trackId, element) {
+  return addElementsToTrack(trackId, [element])
+}
+
+/**
+ * Reverse a track's direction. The element order and every element flip, so the
+ * track's BEGIN/END swap — switch ports referencing it are flipped with it, all
+ * under a single undo step. Stations follow from the new element order; the height
+ * points are stationed along the track, so they mirror about its length.
+ */
+export function reverseTrackDirection(trackId) {
+  return mutate(p => {
+    const track = (p.tracks ?? []).find(t => t.id === trackId)
+    if (!track) return p
+    const reversed = reverseTrack(track)
+    return {
+      ...p,
+      tracks:   p.tracks.map(t => (t.id === trackId ? reversed : t)),
+      switches: flipSwitchEndpoints(p.switches, trackId),
+      endMarks: flipEndMarks(p.endMarks, trackId),
+    }
+  })
+}
+
+/**
+ * Write a track's vertical alignment — its height points along the track. The
+ * automatic terrain fill passes undo: false, an automatic step must not
+ * swallow the user's Ctrl+Z.
+ */
+export function setTrackHeights(trackId, heights, opts = {}) {
+  return setHeightsForTracks(new Map([[trackId, heights]]), opts)
+}
+
+/**
+ * The same for several tracks at once (`byTrack`: trackId → heights), as one
+ * undo step — the height where tracks meet belongs to all of them. False
+ * when none of the tracks is there, or where a lock refuses it; `unlock`
+ * lets the write take locks away (Entscheidung 382).
+ */
+export function setHeightsForTracks(byTrack, { undo = true, unlock = false } = {}) {
+  let written = false
+  const done = mutate(p => {
+    const tracks = (p.tracks ?? []).map(t => {
+      if (!byTrack.has(t.id)) return t
+      written = true
+      const heights = byTrack.get(t.id)
+      if (heights?.length) return { ...t, heights }
+      const { heights: _h, ...rest } = t
+      return rest
+    })
+    return written ? { ...p, tracks } : p
+  }, { undo, unlock })
+  return written && done
+}
+
+/**
+ * Write back a track whose stretch was reconnected (Paket N), as one undo
+ * step: the track as commands/reconnect built it, and the platforms along it
+ * re-stationed by `map` (old station → new station). Its id and ends stay, so
+ * switches and end marks on it stay as they are.
+ */
+export function commitReconnect(track, map) {
+  return mutate(p => ({
+    ...p,
+    tracks: (p.tracks ?? []).map(t => (t.id === track.id ? track : t)),
+    ...(p.platforms ? {
+      platforms: p.platforms.map(pl => (pl.trackId !== track.id ? pl : {
+        ...pl, startStation: map(pl.startStation ?? 0), endStation: map(pl.endStation ?? 0),
+      })),
+    } : {}),
+  }))
+}
+
+export function replaceAllTracks(tracks) {
+  return mutate(p => ({ ...p, tracks }))
+}
+
+/**
+ * Write back an edited track set and rebuild the symbols of the switches the
+ * edit reached (AP 5.1) — in one undo step, because they are one change.
+ *
+ * A switch symbol is derived from the tracks its routes lie on
+ * (rebuildSwitchSymbol), and until now only a reload rebuilt it. An edit that
+ * re-shaped a turnout's own elements therefore left the symbol standing on the
+ * geometry it used to have, which is precisely the case the editor's reach
+ * limit exists for: what still gets through has to be drawn as it now is.
+ */
+export function commitTrackEdit(tracks, switchIds = []) {
+  return mutate(p => {
+    const rebuild = new Set(switchIds)
+    let switches = p.switches
+    if (rebuild.size && switches?.length) {
+      const byId = Object.fromEntries(tracks.map(t => [t.id, t]))
+      switches = switches.map(sw => (rebuild.has(sw.switchId) ? rebuildSwitchSymbol(sw, byId) : sw))
+    }
+    return { ...p, tracks, ...(switches ? { switches } : {}) }
+  })
+}
+
+// ── platforms ───────────────────────────────────────────────────────────────
+
+export function loadPlatforms() {
+  return _project?.platforms ?? []
+}
+
+export function savePlatform(platform) {
+  return mutate(p => ({ ...p, platforms: [...(p.platforms ?? []), platform] }))
+}
+
+export function updatePlatform(platform) {
+  return mutate(p => ({ ...p, platforms: (p.platforms ?? []).map(q => (q.id === platform.id ? platform : q)) }))
+}
+
+export function deletePlatform(platformId) {
+  return mutate(p => ({ ...p, platforms: (p.platforms ?? []).filter(q => q.id !== platformId) }))
+}
+
+/** Add or replace the line with this number. */
+export function saveKmLine(kmLine) {
+  const same = (l) => String(l.lineNumber) === String(kmLine.lineNumber)
+  return mutate(p => ({ ...p, kmLines: [...(p.kmLines ?? []).filter(l => !same(l)), kmLine] }), { undo: false })
+}
+
+/** Drop a line number — what a line no track names any more. */
+export function deleteKmLine(lineNumber) {
+  return mutate(p => ({
+    ...p, kmLines: (p.kmLines ?? []).filter(l => String(l.lineNumber) !== String(lineNumber)),
+  }), { undo: false })
+}
+
+// ── end marks ───────────────────────────────────────────────────────────────
+
+/** The marks on free track ends — buffer stops and boundaries (trackEndMarks). */
+export function loadEndMarks() {
+  return _project?.endMarks ?? []
+}
+
+/** Put a mark on its end, replacing whatever mark stood there. One undo step. */
+export function saveEndMark(mark) {
+  const key = endKey(mark.trackId, mark.endpoint)
+  return mutate(p => ({
+    ...p,
+    endMarks: [
+      ...(p.endMarks ?? []).filter(m => m.id !== mark.id && endKey(m.trackId, m.endpoint) !== key),
+      mark,
+    ],
+  }))
+}
+
+export function deleteEndMark(markId) {
+  return mutate(p => ({ ...p, endMarks: (p.endMarks ?? []).filter(m => m.id !== markId) }))
+}
+
+// ── measured axes ───────────────────────────────────────────────────────────
+
+// (read through useAxisSurveys, hooks/useStore)
+
+/** Add a measured axis, or replace the one with its id. One undo step. */
+export function saveAxisSurvey(survey) {
+  return mutate(p => ({ ...p, axisSurveys: [...(p.axisSurveys ?? []).filter(s => s.id !== survey.id), survey] }))
+}
+
+export function deleteAxisSurvey(surveyId) {
+  return mutate(p => ({ ...p, axisSurveys: (p.axisSurveys ?? []).filter(s => s.id !== surveyId) }))
+}
+
+// ── reference axes (Bestandsachsen, Paket V) ───────────────────────────────
+
+// (read through useReferenceAxes, hooks/useStore)
+
+/** Add a reference axis, or replace the one with its id. One undo step. */
+export function saveReferenceAxis(axis) {
+  return mutate(p => ({ ...p, referenceAxes: [...(p.referenceAxes ?? []).filter(a => a.id !== axis.id), axis] }))
+}
+
+export function deleteReferenceAxis(axisId) {
+  return mutate(p => ({ ...p, referenceAxes: (p.referenceAxes ?? []).filter(a => a.id !== axisId) }))
+}
+
+// ── routes (Paket RT) ───────────────────────────────────────────────────────
+
+// (read through useRoutes, hooks/useStore; resolved through utils/track/routes)
+
+/** Add a route, or replace the one with its id. One undo step. */
+export function saveRoute(route) {
+  return mutate(p => {
+    const routes = p.routes ?? []
+    const i = routes.findIndex(r => r.id === route.id)
+    return { ...p, routes: i < 0 ? [...routes, route] : routes.map(r => (r.id === route.id ? route : r)) }
+  })
+}
+
+export function deleteRoute(routeId) {
+  return mutate(p => ({ ...p, routes: (p.routes ?? []).filter(r => r.id !== routeId) }))
+}
+
+// ── switches ────────────────────────────────────────────────────────────────
+
+export function loadSwitches() {
+  return _project?.switches ?? []
+}
+
+export function saveSwitch(sw) {
+  return mutate(p => ({ ...p, switches: [...(p.switches ?? []), sw] }))
+}
+
+/** Merge fields into one switch record, as one undo step. */
+export function updateSwitch(switchId, patch) {
+  return mutate(p => ({
+    ...p, switches: (p.switches ?? []).map(sw => (sw.switchId === switchId ? { ...sw, ...patch } : sw)),
+  }))
+}
+
+/**
+ * Atomically replace the two selected line tracks of a switch connection with the
+ * resulting tracks (four split halves + the connection) and add the two junction
+ * switches — all under a single undo step. Pre-existing switches that referenced
+ * an original line track are repointed via `remap` (a split repoints at the
+ * second half; switches carry no per-port geometry to distinguish them).
+ *
+ * @param {object}   ops
+ * @param {string[]} ops.removeTrackIds  ids of the two original line tracks
+ * @param {object[]} ops.addTracks       new track objects (with ids)
+ * @param {object[]} ops.addSwitches     new switch records
+ * @param {object[]} ops.remap           remapSwitches entries for existing switches
+ * @param {object[]} [ops.addEndMarks]   buffer stops / boundaries on the new tracks' ends
+ * @param {object[]} [ops.append]        [{ trackId, elements }] appended to standing tracks
+ *                                       (a trailing turnout's through route)
+ * @param {object[]} [ops.restation]     [{ trackId, shift }] tracks that grew at their start:
+ *                                       their platforms move by `shift` [m]
+ */
+export function commitSwitchConnection({ removeTrackIds = [], addTracks, addSwitches, remap, addEndMarks, append = [], consumed = [], restation = [] }) {
+  return mutate(p => {
+    const removeSet = new Set(removeTrackIds)
+    const appendTo = new Map(append.map(a => [a.trackId, a.elements]))
+    let next = {
+      ...p,
+      tracks: (p.tracks ?? [])
+        .filter(t => !removeSet.has(t.id))
+        .map(t => (appendTo.has(t.id) ? withAppended(t, appendTo.get(t.id)) : t))
+        .concat(addTracks ?? []),
+    }
+    if (remap?.length) {
+      next = { ...next, switches: remapSwitches(next.switches ?? [], remap), endMarks: remapEndMarks(next.endMarks, remap, consumed) }
+      logRemap(next, remap)
+    }
+    next = { ...next, switches: [...(next.switches ?? []), ...(addSwitches ?? [])] }
+    if (addEndMarks?.length) next = { ...next, endMarks: [...(next.endMarks ?? []), ...addEndMarks] }
+    // A track that grew at its start moves everything stationed along it.
+    const shiftOf = new Map(restation.map(r => [r.trackId, r.shift]))
+    if (shiftOf.size && next.platforms?.length) {
+      next = { ...next, platforms: next.platforms.map(pl => (!shiftOf.has(pl.trackId) ? pl : {
+        ...pl, startStation: (pl.startStation ?? 0) + shiftOf.get(pl.trackId), endStation: (pl.endStation ?? 0) + shiftOf.get(pl.trackId),
+      })) }
+    }
+    return next
+  })
+}
+
+/**
+ * Commit an edited switch connection (commands/crossoverEdit, Entscheidung
+ * 364) as one undo step: both turnouts deleted in order — each line joined
+ * back into its track —, then the connection laid again, which takes the old
+ * connecting track's place.
+ */
+export function commitSwitchConnectionEdit({ deletions, connection }) {
+  return withUndo(() => {
+    for (const plan of deletions) commitSwitchDeletion(plan)
+    return commitSwitchConnection(connection)
+  })
+}
+
+/**
+ * Add what an import brought — tracks, switches, end marks, kilometrage lines,
+ * reference axes, and fields of the project record such as the RailJSON passthrough — as one undo step. A
+ * project that names no coordinate system yet names the one most of its
+ * tracks lie in afterwards (decision 322).
+ */
+export function commitImport({
+  addTracks = [], addSwitches = [], addEndMarks = [], addKmLines = [], addReferenceAxes = [], patch = null,
+}) {
+  // A kilometrage line from the import replaces the project's line of that number.
+  const replaced = new Set(addKmLines.map(l => String(l.lineNumber)))
+  return mutate(p => withImportSystem({
+    ...p,
+    ...(patch ?? {}),
+    tracks: [...(p.tracks ?? []), ...addTracks],
+    switches: [...(p.switches ?? []), ...addSwitches],
+    endMarks: [...(p.endMarks ?? []), ...addEndMarks],
+    ...(addReferenceAxes.length ? { referenceAxes: [...(p.referenceAxes ?? []), ...addReferenceAxes] } : {}),
+    ...(addKmLines.length
+      ? { kmLines: [...(p.kmLines ?? []).filter(l => !replaced.has(String(l.lineNumber))), ...addKmLines] }
+      : {}),
+  }))
+}
+
+/**
+ * Carry out a switch deletion (switchDelete.planSwitchDeletion): the record
+ * goes, the tracks that were nothing but its geometry go with it, the tracks it
+ * rewrote take their new elements, and every other switch that named a track
+ * the join has swallowed is repointed — all under a single undo step, the way
+ * commitSwitchConnection commits one.
+ *
+ * A platform is stationed along its track and cannot outlive it, exactly as in
+ * deleteTrack.
+ *
+ * @param {object}   plan
+ * @param {string}   plan.switchId       the record to remove
+ * @param {string[]} plan.removeTrackIds tracks that go entirely
+ * @param {object[]} plan.updateTracks   tracks to replace in place (same ids)
+ * @param {object[]} plan.remap          remapSwitches entries for the others
+ */
+export function commitSwitchDeletion({ switchId, removeTrackIds, updateTracks, remap }) {
+  return mutate(p => {
+    const removeSet = new Set(removeTrackIds ?? [])
+    const updated   = new Map((updateTracks ?? []).map(t => [t.id, t]))
+    // The record first, then the remap: the switch that is going has no ports
+    // left to repoint, and leaving it in would point them at the joined track.
+    let next = {
+      ...p,
+      tracks: (p.tracks ?? []).filter(t => !removeSet.has(t.id)).map(t => updated.get(t.id) ?? t),
+      switches: (p.switches ?? []).filter(sw => sw.switchId !== switchId),
+    }
+    if (remap?.length) {
+      next = { ...next, switches: remapSwitches(next.switches, remap), endMarks: remapEndMarks(next.endMarks, remap) }
+      logRemap(next, remap)
+    }
+    if (next.platforms?.length) next = { ...next, platforms: next.platforms.filter(q => !removeSet.has(q.trackId)) }
+    return next
+  })
+}

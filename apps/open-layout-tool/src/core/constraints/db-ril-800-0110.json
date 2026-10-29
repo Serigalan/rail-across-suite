@@ -1,0 +1,1005 @@
+{
+  "catalog": {
+    "id": "db-ril-800-0110",
+    "title": "DB Ril 800.0110 | Linienführung",
+    "katalog_version": "0.6.0",
+    "status": "draft",
+    "date": "2026-10-09",
+    "language": "de",
+    "scope": {
+      "included": [
+        "Gerade",
+        "Kreisbogen und Überhöhung",
+        "Übergangsbogen (Klothoide, Blossbogen) mit Überhöhungsrampe",
+        "Krümmungssprünge",
+        "Längsneigung (Höhenplan, Kap. 10)",
+        "Ausrundung von Neigungswechseln (Höhenplan)"
+      ],
+      "excluded": [
+        "Weichen einschließlich weicheninterner Krümmungssprünge (eigener Katalog)",
+        "Physik und Geometrieberechnung (eigenes Dokument, Schnittstelle siehe derived_inputs)",
+        "Weitere Regeln des Höhenplans (folgen)"
+      ]
+    },
+    "id_scheme": "LP.<Gruppe>.<Nr>. LP = Lageplan, HP = Höhenplan. Gruppen: ALL allgemein, EL Elementlänge, KB Kreisbogen, UB Übergangsbogen und Überhöhungsrampe, KS Krümmungssprung; im Höhenplan LN Längsneigung, AR Ausrundung."
+  },
+
+  "changelog": [
+    {
+      "version": "0.6.0",
+      "date": "2026-10-09",
+      "changes": [
+        "Kontext justified neu: ein Neigungswechsel, an dessen Höhenpunkt eine Begründung steht (Entscheidung 261)",
+        "HP.AR.06: mit Begründung eingehalten, ohne sie eine Warnung",
+        "HP.AR.07 neu: Ausrundung im Weichenbereich mindestens mit dem Regelwert, sonst ein Fehler, den keine Begründung aufhebt (Entscheidung 262)"
+      ]
+    },
+    {
+      "version": "0.5.1",
+      "date": "2026-10-06",
+      "changes": [
+        "OP.14 erledigt: der Weichenkatalog führt die ldS jetzt für alle Weichenformen (db-ril-800-0120 0.3.1); ohne ldS reicht der Weichenbereich nur noch bei Kreuzungen und Kreuzungsweichen bis zu deren Enden"
+      ]
+    },
+    {
+      "version": "0.5.0",
+      "date": "2026-10-06",
+      "changes": [
+        "HP.AR.06: Neigungswechsel und Ausrundungen zwischen Weichenanfang und letzter durchgehender Schwelle sind eine Warnung (Festlegung des Auftraggebers); HP.AR.05 gilt nur noch für Überhöhungsrampen",
+        "Kontext switch_body: Weichenbereich im Höhenplan von WA bis ldS, ohne ldS im Weichenkatalog bis WE; OP.14 neu"
+      ]
+    },
+    {
+      "version": "0.4.0",
+      "date": "2026-10-06",
+      "changes": [
+        "Höhenplan begonnen: Längsneigung nach Kap. 10 (S. 23 ff.) als HP.LN.01–03 im neuen Geltungsbereich gradient, dem Neigungsabschnitt zwischen zwei Höhenpunkten",
+        "HP.LN.01: freie Strecke höchstens 12,5 ‰ auf Hauptbahnen, 40,0 ‰ auf Nebenbahnen und S-Bahnen",
+        "HP.LN.02: Bahnhofsgleise, in denen Züge halten oder Fahrzeuge abgestellt werden können, höchstens 2,5 ‰ bei Neubauten",
+        "HP.LN.03: Tunnel mindestens 2 ‰ bis 1000 m Länge, 4 ‰ darüber",
+        "Ausrundung als HP.AR.01–05 im Geltungsbereich vertical_curve, dem Neigungswechsel an einem inneren Höhenpunkt: Neigungswechsel ausgerundet, Länge l_a ≥ 20 m (in Gleisverbindungen 10 m), Halbmesser r_a nach Regelwert, Ermessensgrenze und Zustimmungswert für Kuppen und Wannen, Höchstwert 25000 m; Ausrundungen überschneiden sich nicht",
+        "HP.AR.01 ohne Ausrundung bis Δs ≤ 1 ‰, bei Nebengleisen und in Weichenverbindungen bis ≤ 4,5 ‰; HP.AR.05 Neigungswechsel in Überhöhungsrampen und Weichen vermeiden, sonst r_a mindestens Regelwert",
+        "Die „soll“-Werte der Längsneigung sind Regelwerte: eine Überschreitung ist eine Warnung",
+        "Kontexte für Gleisart (freie Strecke, Bahnhofsgleis), Streckenart (Hauptbahn, Nebenbahn, S-Bahn), Gleisnutzung (Haupt-, Nebengleis), Tunnel, Gleisverbindung und Überhöhungsrampe; OP.11 bis OP.13 neu"
+      ]
+    },
+    {
+      "version": "0.3.0",
+      "date": "2026-09-22",
+      "changes": [
+        "Mindestelementlängen und die 7,2 m Zwischengerade aus der Ril bestätigt (S. 7, Abs. 6 (2)); OP.07 erledigt",
+        "Vergleichsradius bestätigt: wo die Tabelle einen Wert führt, gilt immer der Tabellenwert; OP.01 erledigt",
+        "LP.KB.02: Regelwert ist immer u_f = 130 mm, die 150 mm über 150 km/h sind eine Ermessensgrenze; OP.11 erledigt",
+        "LP.KB.04: Regelüberhöhung als Regelwert bestätigt (S. 10, Abs. 7 (4))",
+        "Leitfaden als Herkunftsangabe entfernt — Quelle ist die Ril selbst",
+        "Fassung und Gültigkeitsdatum der Ril entfallen: versioniert wird diese maschinenlesbare Fassung, nicht die Richtlinie",
+        "LP.KB.03 führt das 5-mm-Raster als benannten Schwellenwert step, damit App und Optimierer es lesen statt es zu kennen"
+      ]
+    },
+    {
+      "version": "0.2.0",
+      "date": "2026-09-22",
+      "changes": [
+        "Grenzwerte für u und u_f auf DB Ril 800.0110 umgestellt; Verkehrsart und Bahnsteigbereich als Kontexte entfernt",
+        "Neue Regeln LP.KB.05 und LP.KB.06 für den Weichenbereich",
+        "Kontextkombination durch getrennte Regeln und Aggregation ersetzt",
+        "Vergleichsradius: Ermessensgrenze bis 100 km/h zwischen den Tabellenwerten per Formel",
+        "Stufe approval, Rampenneigungen, 5-km/h-Raster und Mindestlängen aus Δu_f bestätigt"
+      ]
+    },
+    { "version": "0.1.0", "date": "2026-09-22", "changes": ["Erster Entwurf"] }
+  ],
+
+  "sources": [
+    {
+      "id": "RIL_800_0110",
+      "title": "DB Ril 800.0110 Linienführung"
+    }
+  ],
+
+  "severity_levels": [
+    { "id": "ok", "rank": 0, "title": "eingehalten" },
+    { "id": "hint", "rank": 1, "title": "Hinweis", "meaning": "Empfehlung nicht befolgt" },
+    {
+      "id": "warning",
+      "rank": 2,
+      "title": "Warnung",
+      "meaning": "Regelwert unterschritten, Ermessensgrenze eingehalten",
+      "requires_justification": true
+    },
+    {
+      "id": "approval",
+      "rank": 3,
+      "title": "Zustimmung erforderlich",
+      "meaning": "Ermessensgrenze unterschritten, Zustimmungswert eingehalten",
+      "requires_justification": true,
+      "requires_approval": true
+    },
+    {
+      "id": "special_case",
+      "rank": 4,
+      "title": "Sonderfall",
+      "meaning": "Nicht durch den Leitfaden abgedeckt; Planung nur durch erfahrene Trassiererinnen und Trassierer"
+    },
+    { "id": "error", "rank": 5, "title": "Fehler", "meaning": "Grenzwert verletzt oder unzulässig" }
+  ],
+
+  "aggregation": "Jede Regel liefert genau eine Stufe. Das Gesamtergebnis eines Objekts ist die angewendete Stufe mit dem höchsten rank. Gelten für ein Objekt mehrere Grenzwerte (etwa allgemein und im Weichenbereich), sind sie als getrennte Regeln formuliert; so setzt sich automatisch der strengste durch.",
+
+  "evaluation_semantics": {
+    "order": "Die Einträge in evaluation werden der Reihe nach geprüft; der erste zutreffende bestimmt die Stufe. Ein Eintrag mit else trifft immer zu.",
+    "condition": "Ist condition false, wird die Regel nicht angewendet (Ergebnis not_applicable).",
+    "out_of_range": "Liefert ein lookup keinen Wert, ergibt die Regel die Stufe aus out_of_range der Tabelle.",
+    "neighbours": "prev und next bezeichnen das Nachbarelement vor bzw. hinter dem Objekt in Stationierungsrichtung.",
+    "speed": "v ist die design speed des Elements. An Elementgrenzen und bei Regeln über mehrere Elemente gilt der größte Wert der beteiligten Elemente."
+  },
+
+  "expression_language": {
+    "units": "Alle Ausdrücke sind Zahlenwertgleichungen. Die Einheit jedes Eingangs und Schwellenwerts steht am jeweiligen Eintrag.",
+    "operators": ["+", "-", "*", "/", "^", "%", "==", "!=", "<", "<=", ">", ">=", "and", "or", "not"],
+    "functions": {
+      "min(a, b, ...)": "kleinster Wert",
+      "max(a, b, ...)": "größter Wert",
+      "abs(x)": "Betrag",
+      "if(c, a, b)": "a, wenn c zutrifft, sonst b",
+      "round_to(x, step)": "rundet x auf das nächstgelegene Vielfache von step; bei genau halber Stufe wird aufgerundet",
+      "lookup(table, key)": "Wert einer Stufentabelle (type piecewise)",
+      "lookup(table, key, column)": "Spaltenwert einer Geschwindigkeitstabelle; Zwischenwerte laut key_mode der Tabelle",
+      "in_context(id)": "true, wenn sich das Objekt mit dem Kontext id überschneidet"
+    }
+  },
+
+  "symbols": {
+    "note": "Symbole nach DB Ril 800.0110 mit Entsprechung in EN 13803. Gemeinsames Vokabular mit dem Physikdokument.",
+    "items": [
+      { "key": "m", "display": "1:m", "unit": "-", "title": "Neigung einer geraden Überhöhungsrampe (mittlere Neigung)", "en13803": "1:n" },
+      { "key": "m_M", "display": "1:mM", "unit": "-", "title": "Neigung einer geschwungenen Überhöhungsrampe (mittlere Neigung)", "en13803": "1:n" },
+      { "key": "delta", "display": "δ", "unit": "gon", "title": "Winkeldifferenz des Richtungsknicks", "en13803": null },
+      { "key": "delta_u", "display": "Δu", "unit": "mm", "title": "Differenz von Überhöhungen", "en13803": "ΔD" },
+      { "key": "delta_u_f", "display": "Δuf", "unit": "mm", "title": "Differenz von Überhöhungsfehlbeträgen", "en13803": "ΔI" },
+      { "key": "l_a", "display": "la", "unit": "m", "title": "Länge eines Ausrundungsbogens", "en13803": null },
+      { "key": "l_b", "display": "lb", "unit": "m", "title": "Länge eines Bogens", "en13803": "Li" },
+      { "key": "l_g", "display": "lg", "unit": "m", "title": "Länge einer Geraden", "en13803": "Li" },
+      { "key": "l_R", "display": "lR", "unit": "m", "title": "Länge einer geraden Überhöhungsrampe", "en13803": "LD" },
+      { "key": "l_RB", "display": "lRB", "unit": "m", "title": "Länge einer geschwungenen Überhöhungsrampe", "en13803": "LD" },
+      { "key": "l_U", "display": "lU", "unit": "m", "title": "Länge des Übergangsbogens (Klothoide)", "en13803": "LK" },
+      { "key": "l_UB", "display": "lUB", "unit": "m", "title": "Länge des Übergangsbogens (Blossbogen)", "en13803": "LK" },
+      { "key": "r", "display": "r", "unit": "m", "title": "Kreisbogenradius im Grundriss", "en13803": "R" },
+      { "key": "r_1", "display": "r1", "unit": "m", "title": "Kreisbogenradius eines Trassierungselements im Grundriss", "en13803": "R" },
+      { "key": "r_2", "display": "r2", "unit": "m", "title": "Kreisbogenradius eines Trassierungselements im Grundriss", "en13803": "R" },
+      { "key": "r_a", "display": "ra", "unit": "m", "title": "Radius einer Ausrundung im Aufriss", "en13803": "RV" },
+      { "key": "r_S", "display": "rS", "unit": "m", "title": "Radius des Stammgleises einer Weiche", "en13803": null },
+      { "key": "r_Z", "display": "rZ", "unit": "m", "title": "Radius des Zweiggleises einer Weiche", "en13803": null },
+      { "key": "r_w", "display": "rw", "unit": "m", "title": "Vergleichsradius", "en13803": "R_id" },
+      { "key": "s", "display": "s", "unit": "‰", "title": "Längsneigung", "en13803": null },
+      { "key": "delta_s", "display": "Δs", "unit": "‰", "title": "Neigungsdifferenz am Neigungswechsel", "en13803": null },
+      { "key": "l_a", "display": "la", "unit": "m", "title": "Länge des Ausrundungsbogens", "en13803": null },
+      { "key": "u", "display": "u", "unit": "mm", "title": "Überhöhung", "en13803": "D" },
+      { "key": "u_f", "display": "uf", "unit": "mm", "title": "Überhöhungsfehlbetrag", "en13803": "I" },
+      { "key": "u_f_N", "display": "ufN", "unit": "mm", "title": "Überhöhungsfehlbetrag", "en13803": "I" },
+      { "key": "u_0", "display": "u0", "unit": "mm", "title": "ausgleichende Überhöhung", "en13803": "D_EQ" },
+      { "key": "v", "display": "v", "unit": "km/h", "title": "Geschwindigkeit", "en13803": "V" },
+      { "key": "v_N", "display": "vN", "unit": "km/h", "title": "Geschwindigkeit", "en13803": "V" },
+      { "key": "v_e", "display": "ve", "unit": "km/h", "title": "Entwurfsgeschwindigkeit (konventionell), im Open Layout Tool: design speed", "en13803": null }
+    ],
+    "indices": [
+      { "key": "min", "title": "Mindestwert" },
+      { "key": "max", "title": "Maximalwert" },
+      { "key": "reg", "title": "Regelwert" }
+    ]
+  },
+
+  "derived_inputs": [
+    { "key": "u0_factor", "provider": "physics", "unit": "mm·m/(km/h)²", "definition": "Faktor der ausgleichenden Überhöhung (11,8 bei Normalspur)" },
+    { "key": "u_0", "provider": "physics", "unit": "mm", "definition": "ausgleichende Überhöhung aus v und r" },
+    { "key": "u_f", "provider": "physics", "unit": "mm", "definition": "u_0 − u" },
+    { "key": "delta_u", "provider": "physics", "unit": "mm", "definition": "|u am Ende − u am Anfang| des Übergangsbogens" },
+    { "key": "delta_u_f", "provider": "physics", "unit": "mm", "definition": "|u_f am Ende − u_f am Anfang| des Übergangsbogens, gerechnet mit dem v des Übergangsbogens" },
+    { "key": "ramp_slope", "provider": "physics", "unit": "-", "definition": "Nenner der mittleren Rampenneigung: m bzw. m_M = 1000 · l / Δu (l in m, Δu in mm)" },
+    {
+      "key": "r_w",
+      "provider": "physics",
+      "unit": "m",
+      "definition": "Vergleichsradius an einem Krümmungssprung: 1/r_w = |κ_1 − κ_2| mit vorzeichenbehafteter Krümmung κ = ±1/r. Gerade an Bogen: r_w = r; gleichgerichtete Bögen: r_1·r_2/|r_1 − r_2|; Gegenbögen: r_1·r_2/(r_1 + r_2)."
+    },
+    { "key": "curvature_jump", "provider": "physics", "unit": "bool", "definition": "Krümmung ist an der Elementgrenze unstetig" },
+    { "key": "reverse_curve_straight", "provider": "model", "unit": "bool", "definition": "Gerade, deren beide Nachbarelemente gekrümmt sind und entgegengesetzte Krümmungsrichtung haben" },
+    { "key": "ramp_on_transition", "provider": "model", "unit": "bool", "definition": "Die Überhöhungsrampe beginnt und endet genau mit einem Übergangsbogen" },
+    { "key": "ramp_form_matches", "provider": "model", "unit": "bool", "definition": "Rampenform passt zur Übergangsbogenform: gerade Rampe zu Klothoide, geschwungene Rampe zu Blossbogen" },
+    { "key": "gradient", "provider": "physics", "unit": "‰", "definition": "Betrag der Längsneigung eines Neigungsabschnitts: 1000 · |z_2 − z_1| / (s_2 − s_1) zwischen zwei aufeinanderfolgenden Höhenpunkten der Gradiente (Tangentenpolygon), auf 0,01 ‰ gerundet" },
+    { "key": "tunnel_length", "provider": "model", "unit": "m", "definition": "Länge des Tunnels, in dem der Neigungsabschnitt liegt" },
+    { "key": "gradient_change", "provider": "physics", "unit": "‰", "definition": "Neigungsdifferenz Δs = |s_2 − s_1| der beiden vorzeichenbehafteten Neigungen an einem Höhenpunkt, auf 0,01 ‰ gerundet" },
+    { "key": "vertical_curve_length", "provider": "physics", "unit": "m", "definition": "Länge des Ausrundungsbogens l_a = r_a · Δs / 1000 (zweimal die Tangentenlänge), auf 0,01 m gerundet; 0 ohne Ausrundung" },
+    { "key": "crest", "provider": "model", "unit": "bool", "definition": "Der Neigungswechsel ist eine Kuppe (die Neigung nimmt in Stationierungsrichtung ab); sonst eine Wanne" },
+    { "key": "vertical_curve_fits", "provider": "model", "unit": "bool", "definition": "Die Ausrundung liegt ganz zwischen den beiden Nachbarpunkten und überschneidet sich mit keiner anderen" }
+  ],
+
+  "contexts": {
+    "items": [
+      { "id": "switch_area", "group": "area", "title": "Weichenbereich", "extent": "Weichenanfang (WA) bis Weichenende (WE)" },
+      { "id": "tunnel", "group": "area", "title": "Tunnel", "extent": "Tunnelanfang bis Tunnelende" },
+      { "id": "open_line", "group": "track_kind", "title": "Freie Strecke", "extent": "Streckengleis" },
+      { "id": "station_track", "group": "track_kind", "title": "Bahnhofsgleis, in dem Züge zum Halten kommen oder Schienenfahrzeuge abgestellt werden können", "extent": "das ganze Bahnhofsgleis" },
+      { "id": "main_line", "group": "line_category", "title": "Hauptbahn" },
+      { "id": "secondary_line", "group": "line_category", "title": "Nebenbahn" },
+      { "id": "s_bahn", "group": "line_category", "title": "S-Bahn" },
+      { "id": "track_connection", "group": "area", "title": "Gleis- bzw. Weichenverbindung", "extent": "Gleis, das an beiden Enden in eine Weiche läuft und zwischen den beiden Weichen nicht länger als 20 m ist" },
+      { "id": "cant_ramp", "group": "area", "title": "Überhöhungsrampe", "extent": "Übergangsbogen, über den sich die Überhöhung ändert" },
+      { "id": "switch_body", "group": "area", "title": "Weichenbereich im Höhenplan", "extent": "zwischen Weichenanfang (WA) und letzter durchgehender Schwelle (ldS), auf Stamm- und Zweiggleis; ohne ldS im Weichenkatalog bis Weichenende (WE). Ein Neigungswechsel liegt darin, wenn sein Punkt zwischen WA und ldS liegt oder seine Ausrundung den Bereich auf einer Länge > 0 überdeckt" },
+      { "id": "main_track", "group": "track_use", "title": "Hauptgleis" },
+      { "id": "siding", "group": "track_use", "title": "Nebengleis" },
+      { "id": "justified", "group": "state", "title": "Begründet", "extent": "Neigungswechsel, an dessen Höhenpunkt eine Begründung steht (Feld reason, Entscheidung 261); im Weichenbereich steht sie auf beiden Punkten eines Paars" }
+    ],
+    "rules": {
+      "area": "Ein Objekt liegt in einem Bereich, sobald es sich mit ihm auf einer Länge > 0 überschneidet; eine Elementgrenze, sobald sie im Bereich liegt.",
+      "track_kind": "Jedes Gleis ist genau eines von beiden; ein Neigungsabschnitt gehört zur Gleisart seines Gleises.",
+      "line_category": "Jedes Streckengleis gehört genau einer Streckenart an.",
+      "track_use": "Jedes Gleis ist Haupt- oder Nebengleis.",
+      "state": "Ein Neigungswechsel ist begründet, sobald an seinem Höhenpunkt ein Begründungstext steht."
+    }
+  },
+
+  "element_types": [
+    { "id": "straight", "title": "Gerade" },
+    { "id": "circular_arc", "title": "Kreisbogen" },
+    {
+      "id": "transition_curve",
+      "title": "Übergangsbogen",
+      "forms": [
+        { "id": "clothoid", "title": "Klothoide", "ramp_form": "straight_ramp" },
+        { "id": "bloss", "title": "Blossbogen", "ramp_form": "curved_ramp" }
+      ]
+    }
+  ],
+
+  "ramp_forms": [
+    { "id": "straight_ramp", "title": "gerade Überhöhungsrampe" },
+    { "id": "curved_ramp", "title": "geschwungene Überhöhungsrampe (nach Bloss)" }
+  ],
+
+  "tables": {
+    "min_element_length": {
+      "title": "Mindestelementlänge",
+      "type": "piecewise",
+      "key": "v",
+      "key_unit": "km/h",
+      "unit": "m",
+      "pieces": [
+        { "key_min": 40, "key_max": 70, "expr": "0.1 * v" },
+        { "key_min_exclusive": 70, "key_max": 100, "expr": "0.15 * v" },
+        { "key_min_exclusive": 100, "key_max": 300, "expr": "0.2 * v" }
+      ],
+      "out_of_range": "error",
+      "source": { "ref": "RIL_800_0110", "section": "S. 7, Abs. 6 (2)" }
+    },
+    "comparison_radius": {
+      "title": "Mindest-Vergleichsradius bei Krümmungssprüngen",
+      "type": "speed_table",
+      "key": "v",
+      "key_unit": "km/h",
+      "unit": "m",
+      "columns": {
+        "reg": "Regelwert",
+        "discretion": "Ermessensgrenze"
+      },
+      "key_mode": {
+        "note": "Tabellierte Geschwindigkeiten verwenden immer den Tabellenwert. key_mode gilt nur für Geschwindigkeiten zwischen zwei Tabellenzeilen.",
+        "reg": { "mode": "next_higher" },
+        "discretion": {
+          "mode": "formula",
+          "key_max": 100,
+          "expr": "u0_factor * v^2 / 106.5",
+          "inputs": { "u0_factor": { "from": "physics.u0_factor" } },
+          "rounding": null,
+          "above_key_max": "next_higher"
+        }
+      },
+      "out_of_range": "error",
+      "source": { "ref": "RIL_800_0110", "section": null },
+      "rows": [
+        { "v": 40, "reg": 220, "discretion": 178 },
+        { "v": 50, "reg": 340, "discretion": 278 },
+        { "v": 60, "reg": 490, "discretion": 400 },
+        { "v": 70, "reg": 670, "discretion": 545 },
+        { "v": 80, "reg": 875, "discretion": 710 },
+        { "v": 90, "reg": 1110, "discretion": 900 },
+        { "v": 100, "reg": 1370, "discretion": 1110 },
+        { "v": 110, "reg": 1735, "discretion": 1410 },
+        { "v": 120, "reg": 2170, "discretion": 1745 },
+        { "v": 130, "reg": 2680, "discretion": 2130 },
+        { "v": 140, "reg": 3275, "discretion": 2575 },
+        { "v": 150, "reg": 3990, "discretion": 3085 },
+        { "v": 160, "reg": 4825, "discretion": 3675 },
+        { "v": 170, "reg": 5810, "discretion": 4350 },
+        { "v": 180, "reg": 6975, "discretion": 5125 },
+        { "v": 190, "reg": 8365, "discretion": 6000 },
+        { "v": 200, "reg": 10000, "discretion": 7000 }
+      ]
+    }
+  },
+
+  "rules": [
+    {
+      "id": "LP.ALL.01",
+      "title": "Geschwindigkeitsbereich der design speed",
+      "applies_to": { "scope": "element", "element_types": ["straight", "circular_arc", "transition_curve"] },
+      "inputs": {
+        "v": { "from": "element.design_speed", "unit": "km/h" }
+      },
+      "evaluation": [
+        { "if": "v >= 40 and v <= 300", "severity": "ok" },
+        { "else": "error" }
+      ],
+      "source": { "ref": "RIL_800_0110", "section": null },
+      "status": "confirmed"
+    },
+    {
+      "id": "LP.ALL.02",
+      "title": "5-km/h-Raster der design speed",
+      "applies_to": { "scope": "element", "element_types": ["straight", "circular_arc", "transition_curve"] },
+      "inputs": {
+        "v": { "from": "element.design_speed", "unit": "km/h" }
+      },
+      "evaluation": [
+        { "if": "v % 5 == 0", "severity": "ok" },
+        { "else": "error" }
+      ],
+      "source": { "ref": "RIL_800_0110", "section": null },
+      "status": "confirmed"
+    },
+    {
+      "id": "LP.EL.01",
+      "title": "Mindestelementlänge",
+      "applies_to": { "scope": "element", "element_types": ["straight", "circular_arc", "transition_curve"] },
+      "inputs": {
+        "v": { "from": "element.design_speed", "unit": "km/h" },
+        "l": {
+          "from": "element.length",
+          "unit": "m",
+          "symbol_by_type": { "straight": "l_g", "circular_arc": "l_b", "transition_curve": "l_U bzw. l_UB" }
+        }
+      },
+      "thresholds": {
+        "l_min": { "expr": "lookup('min_element_length', v)", "unit": "m" }
+      },
+      "evaluation": [
+        { "if": "l >= l_min", "severity": "ok" },
+        { "else": "error" }
+      ],
+      "source": { "ref": "RIL_800_0110", "section": "S. 7, Abs. 6 (2)" },
+      "status": "confirmed"
+    },
+    {
+      "id": "LP.EL.02",
+      "title": "Zwischengerade zwischen Gegenbögen bei 40 km/h",
+      "applies_to": { "scope": "element", "element_types": ["straight"] },
+      "inputs": {
+        "v": { "expr": "max(prev.design_speed, element.design_speed, next.design_speed)", "unit": "km/h" },
+        "l_g": { "from": "element.length", "unit": "m" },
+        "reverse": { "from": "model.reverse_curve_straight", "unit": "bool" }
+      },
+      "condition": "reverse and v == 40",
+      "thresholds": {
+        "l_min": { "expr": "7.2", "unit": "m" }
+      },
+      "evaluation": [
+        { "if": "l_g >= l_min", "severity": "ok" },
+        { "else": "error" }
+      ],
+      "notes": ["Gilt nur bei genau 40 km/h. Für gleichgerichtete Bögen gilt LP.EL.01 (4 m)."],
+      "source": { "ref": "RIL_800_0110", "section": "S. 7, Abs. 6 (2)" },
+      "status": "confirmed"
+    },
+    {
+      "id": "LP.KB.01",
+      "title": "Zulässige Überhöhung",
+      "applies_to": { "scope": "element", "element_types": ["circular_arc"] },
+      "inputs": {
+        "u": { "from": "element.cant", "unit": "mm" }
+      },
+      "thresholds": {
+        "max": { "expr": "160", "unit": "mm" }
+      },
+      "evaluation": [
+        { "if": "u <= max", "severity": "ok" },
+        { "else": "error" }
+      ],
+      "source": { "ref": "RIL_800_0110", "section": null },
+      "status": "confirmed"
+    },
+    {
+      "id": "LP.KB.02",
+      "title": "Zulässiger Überhöhungsfehlbetrag",
+      "applies_to": { "scope": "element", "element_types": ["circular_arc"] },
+      "inputs": {
+        "v": { "from": "element.design_speed", "unit": "km/h" },
+        "u_f": { "from": "physics.u_f", "unit": "mm" }
+      },
+      "thresholds": {
+        "reg": { "expr": "130", "unit": "mm" },
+        "discretion": { "expr": "if(v > 150, 150, 130)", "unit": "mm" }
+      },
+      "evaluation": [
+        { "if": "u_f <= reg", "severity": "ok" },
+        { "if": "u_f <= discretion", "severity": "warning" },
+        { "else": "error" }
+      ],
+      "notes": [
+        "Ersetzt die bisherige Mindestradius-Tabelle; R_min ist daraus ableitbar.",
+        "Der Regelwert ist bei jeder Geschwindigkeit 130 mm. Über 150 km/h dürfen im Ermessen bis zu 150 mm ausgeschöpft werden; bis 150 km/h fallen Regelwert und Ermessensgrenze zusammen, die Warnstufe bleibt dort also leer."
+      ],
+      "source": { "ref": "RIL_800_0110", "section": null },
+      "status": "confirmed"
+    },
+    {
+      "id": "LP.KB.03",
+      "title": "Überhöhung in 5-mm-Stufen",
+      "applies_to": { "scope": "element", "element_types": ["circular_arc"] },
+      "inputs": {
+        "u": { "from": "element.cant", "unit": "mm" }
+      },
+      "thresholds": {
+        "step": { "expr": "5", "unit": "mm" }
+      },
+      "evaluation": [
+        { "if": "u >= 0 and u % step == 0", "severity": "ok" },
+        { "else": "error" }
+      ],
+      "notes": ["u >= 0: negative Überhöhung wird nicht behandelt."],
+      "source": { "ref": "RIL_800_0110", "section": null },
+      "status": "confirmed"
+    },
+    {
+      "id": "LP.KB.04",
+      "title": "Abweichung von der Regelüberhöhung",
+      "applies_to": { "scope": "element", "element_types": ["circular_arc"] },
+      "inputs": {
+        "v": { "from": "element.design_speed", "unit": "km/h" },
+        "r": { "from": "element.radius", "unit": "m" },
+        "u": { "from": "element.cant", "unit": "mm" }
+      },
+      "thresholds": {
+        "u_reg": { "expr": "min(round_to(6.5 * v^2 / r, 5), if(in_context('switch_area'), 100, 160))", "unit": "mm" }
+      },
+      "evaluation": [
+        { "if": "u == u_reg", "severity": "ok" },
+        { "else": "hint" }
+      ],
+      "notes": ["u ist frei wählbar; die Regel meldet nur die Abweichung von u_reg. u_reg wird auf den jeweiligen Regelwert der Überhöhung begrenzt."],
+      "source": { "ref": "RIL_800_0110", "section": "S. 10, Abs. 7 (4)" },
+      "status": "confirmed"
+    },
+    {
+      "id": "LP.KB.05",
+      "title": "Überhöhung im Weichenbereich",
+      "applies_to": { "scope": "element", "element_types": ["circular_arc"] },
+      "inputs": {
+        "u": { "from": "element.cant", "unit": "mm" }
+      },
+      "condition": "in_context('switch_area')",
+      "thresholds": {
+        "reg": { "expr": "100", "unit": "mm" },
+        "discretion": { "expr": "120", "unit": "mm" }
+      },
+      "evaluation": [
+        { "if": "u <= reg", "severity": "ok" },
+        { "if": "u <= discretion", "severity": "warning" },
+        { "else": "error" }
+      ],
+      "source": { "ref": "RIL_800_0110", "section": null },
+      "status": "confirmed"
+    },
+    {
+      "id": "LP.KB.06",
+      "title": "Überhöhungsfehlbetrag im Weichenbereich",
+      "applies_to": { "scope": "element", "element_types": ["circular_arc"] },
+      "inputs": {
+        "u_f": { "from": "physics.u_f", "unit": "mm" }
+      },
+      "condition": "in_context('switch_area')",
+      "thresholds": {
+        "max": { "expr": "110", "unit": "mm" }
+      },
+      "evaluation": [
+        { "if": "u_f <= max", "severity": "ok" },
+        { "else": "error" }
+      ],
+      "source": { "ref": "RIL_800_0110", "section": null },
+      "status": "confirmed"
+    },
+    {
+      "id": "LP.UB.01",
+      "title": "Stetiger Überhöhungsverlauf",
+      "applies_to": { "scope": "boundary" },
+      "inputs": {
+        "u_prev": { "from": "prev.cant_end", "unit": "mm" },
+        "u_next": { "from": "next.cant_start", "unit": "mm" }
+      },
+      "evaluation": [
+        { "if": "u_prev == u_next", "severity": "ok" },
+        { "else": "error" }
+      ],
+      "source": { "ref": "RIL_800_0110", "section": null },
+      "status": "confirmed"
+    },
+    {
+      "id": "LP.UB.02",
+      "title": "Überhöhungsrampe deckungsgleich mit Übergangsbogen",
+      "applies_to": { "scope": "cant_ramp" },
+      "inputs": {
+        "on_transition": { "from": "model.ramp_on_transition", "unit": "bool" },
+        "form_ok": { "from": "model.ramp_form_matches", "unit": "bool" }
+      },
+      "evaluation": [
+        { "if": "on_transition and form_ok", "severity": "ok" },
+        { "else": "special_case" }
+      ],
+      "notes": ["Jede Überhöhungsänderung außerhalb eines Übergangsbogens oder mit abweichender Länge oder Form ist ein Sonderfall."],
+      "source": { "ref": "RIL_800_0110", "section": null },
+      "status": "confirmed"
+    },
+    {
+      "id": "LP.UB.03",
+      "title": "Mindestlänge gerade Überhöhungsrampe (Klothoide)",
+      "applies_to": { "scope": "element", "element_types": ["transition_curve"], "forms": ["clothoid"] },
+      "inputs": {
+        "v": { "from": "element.design_speed", "unit": "km/h" },
+        "delta_u": { "from": "physics.delta_u", "unit": "mm" },
+        "l_R": { "from": "element.length", "unit": "m" }
+      },
+      "condition": "delta_u > 0",
+      "thresholds": {
+        "reg": { "expr": "10 * v * delta_u / 1000", "unit": "m" },
+        "discretion": { "expr": "8 * v * delta_u / 1000", "unit": "m" },
+        "approval": { "expr": "6 * v * delta_u / 1000", "unit": "m" }
+      },
+      "evaluation": [
+        { "if": "l_R >= reg", "severity": "ok" },
+        { "if": "l_R >= discretion", "severity": "warning" },
+        { "if": "l_R >= approval", "severity": "approval" },
+        { "else": "error" }
+      ],
+      "notes": ["Entspricht einer mittleren Neigung 1:m mit m = 10·v (Regelwert), 8·v (Ermessensgrenze), 6·v (Zustimmungswert)."],
+      "source": { "ref": "RIL_800_0110", "section": null },
+      "status": "confirmed"
+    },
+    {
+      "id": "LP.UB.04",
+      "title": "Mindestlänge geschwungene Überhöhungsrampe (Blossbogen)",
+      "applies_to": { "scope": "element", "element_types": ["transition_curve"], "forms": ["bloss"] },
+      "inputs": {
+        "v": { "from": "element.design_speed", "unit": "km/h" },
+        "delta_u": { "from": "physics.delta_u", "unit": "mm" },
+        "l_RB": { "from": "element.length", "unit": "m" }
+      },
+      "condition": "delta_u > 0",
+      "thresholds": {
+        "reg": { "expr": "8 * v * delta_u / 1000", "unit": "m" },
+        "discretion": { "expr": "6 * v * delta_u / 1000", "unit": "m" },
+        "approval": { "expr": "5.5 * v * delta_u / 1000", "unit": "m" }
+      },
+      "evaluation": [
+        { "if": "l_RB >= reg", "severity": "ok" },
+        { "if": "l_RB >= discretion", "severity": "warning" },
+        { "if": "l_RB >= approval", "severity": "approval" },
+        { "else": "error" }
+      ],
+      "notes": ["Entspricht einer mittleren Neigung 1:m_M mit m_M = 8·v (Regelwert), 6·v (Ermessensgrenze), 5,5·v (Zustimmungswert)."],
+      "source": { "ref": "RIL_800_0110", "section": null },
+      "status": "confirmed"
+    },
+    {
+      "id": "LP.UB.05",
+      "title": "Mindestlänge Klothoide aus Änderung des Überhöhungsfehlbetrags",
+      "applies_to": { "scope": "element", "element_types": ["transition_curve"], "forms": ["clothoid"] },
+      "inputs": {
+        "v": { "from": "element.design_speed", "unit": "km/h" },
+        "delta_u_f": { "from": "physics.delta_u_f", "unit": "mm" },
+        "l_U": { "from": "element.length", "unit": "m" }
+      },
+      "condition": "delta_u_f > 0",
+      "thresholds": {
+        "reg": { "expr": "4 * v * delta_u_f / 1000", "unit": "m" }
+      },
+      "evaluation": [
+        { "if": "l_U >= reg", "severity": "ok" },
+        { "else": "error" }
+      ],
+      "source": { "ref": "RIL_800_0110", "section": null },
+      "status": "confirmed"
+    },
+    {
+      "id": "LP.UB.06",
+      "title": "Mindestlänge Blossbogen aus Änderung des Überhöhungsfehlbetrags",
+      "applies_to": { "scope": "element", "element_types": ["transition_curve"], "forms": ["bloss"] },
+      "inputs": {
+        "v": { "from": "element.design_speed", "unit": "km/h" },
+        "delta_u_f": { "from": "physics.delta_u_f", "unit": "mm" },
+        "l_UB": { "from": "element.length", "unit": "m" }
+      },
+      "condition": "delta_u_f > 0",
+      "thresholds": {
+        "reg": { "expr": "4.5 * v * delta_u_f / 1000", "unit": "m" }
+      },
+      "evaluation": [
+        { "if": "l_UB >= reg", "severity": "ok" },
+        { "else": "error" }
+      ],
+      "source": { "ref": "RIL_800_0110", "section": null },
+      "status": "confirmed"
+    },
+    {
+      "id": "LP.UB.07",
+      "title": "Steilste mittlere Rampenneigung",
+      "applies_to": { "scope": "element", "element_types": ["transition_curve"], "forms": ["clothoid", "bloss"] },
+      "inputs": {
+        "delta_u": { "from": "physics.delta_u", "unit": "mm" },
+        "m": { "from": "physics.ramp_slope", "unit": "-", "symbol_by_form": { "clothoid": "m", "bloss": "m_M" } },
+        "form": { "from": "element.transition_form", "unit": "enum" }
+      },
+      "condition": "delta_u > 0",
+      "thresholds": {
+        "reg": { "expr": "600 * if(form == 'bloss', 3 / 2, 1)", "unit": "-" },
+        "discretion": { "expr": "400 * if(form == 'bloss', 3 / 2, 1)", "unit": "-" }
+      },
+      "evaluation": [
+        { "if": "m >= reg", "severity": "ok" },
+        { "if": "m >= discretion", "severity": "warning" },
+        { "else": "error" }
+      ],
+      "notes": [
+        "Maßgebend ist die mittlere Neigung.",
+        "Beim Blossbogen ist die Rampe in der Mitte steiler als im Mittel: gegen 1:600 bzw. 1:400 wird 2/3 · m_M gehalten, d. h. m_M ≥ 900 (Regelwert) bzw. m_M ≥ 600 (Ermessensgrenze)."
+      ],
+      "source": { "ref": "RIL_800_0110", "section": null },
+      "status": "confirmed"
+    },
+    {
+      "id": "LP.UB.08",
+      "title": "Flachste mittlere Rampenneigung",
+      "applies_to": { "scope": "element", "element_types": ["transition_curve"], "forms": ["clothoid", "bloss"] },
+      "inputs": {
+        "delta_u": { "from": "physics.delta_u", "unit": "mm" },
+        "m": { "from": "physics.ramp_slope", "unit": "-", "symbol_by_form": { "clothoid": "m", "bloss": "m_M" } }
+      },
+      "condition": "delta_u > 0",
+      "thresholds": {
+        "max": { "expr": "3000", "unit": "-" }
+      },
+      "evaluation": [
+        { "if": "m <= max", "severity": "ok" },
+        { "else": "error" }
+      ],
+      "source": { "ref": "RIL_800_0110", "section": null },
+      "status": "confirmed"
+    },
+    {
+      "id": "LP.UB.09",
+      "title": "Klothoide als Standardform",
+      "applies_to": { "scope": "element", "element_types": ["transition_curve"] },
+      "inputs": {
+        "form": { "from": "element.transition_form", "unit": "enum" }
+      },
+      "evaluation": [
+        { "if": "form == 'clothoid'", "severity": "ok" },
+        { "else": "hint" }
+      ],
+      "source": { "ref": "RIL_800_0110", "section": null },
+      "status": "confirmed"
+    },
+    {
+      "id": "LP.KS.01",
+      "title": "Vergleichsradius bei Krümmungssprung",
+      "applies_to": { "scope": "boundary", "excludes": ["switch_internal"] },
+      "inputs": {
+        "jump": { "from": "physics.curvature_jump", "unit": "bool" },
+        "v": { "expr": "max(prev.design_speed, next.design_speed)", "unit": "km/h" },
+        "r_w": { "from": "physics.r_w", "unit": "m" }
+      },
+      "condition": "jump",
+      "thresholds": {
+        "reg": { "expr": "lookup('comparison_radius', v, 'reg')", "unit": "m" },
+        "discretion": { "expr": "lookup('comparison_radius', v, 'discretion')", "unit": "m" }
+      },
+      "evaluation": [
+        { "if": "r_w >= reg", "severity": "ok" },
+        { "if": "r_w >= discretion", "severity": "warning" },
+        { "else": "error" }
+      ],
+      "notes": ["Über 200 km/h liefert die Tabelle keinen Wert; ein Krümmungssprung ist dann ein Fehler."],
+      "source": { "ref": "RIL_800_0110", "section": null },
+      "status": "confirmed"
+    },
+    {
+      "id": "LP.KS.02",
+      "title": "Krümmungssprung außerhalb des Weichenbereichs",
+      "applies_to": { "scope": "boundary", "excludes": ["switch_internal"] },
+      "inputs": {
+        "jump": { "from": "physics.curvature_jump", "unit": "bool" }
+      },
+      "condition": "jump and not in_context('switch_area')",
+      "evaluation": [
+        { "else": "hint" }
+      ],
+      "notes": ["Außerhalb von Weichenbereichen sollen Übergangsbögen verwendet werden. LP.KS.01 wird unabhängig davon geprüft."],
+      "source": { "ref": "RIL_800_0110", "section": null },
+      "status": "confirmed"
+    },
+    {
+      "id": "HP.LN.01",
+      "title": "Größte Längsneigung der freien Strecke",
+      "applies_to": { "scope": "gradient" },
+      "inputs": {
+        "s": { "from": "physics.gradient", "unit": "‰" }
+      },
+      "condition": "in_context('open_line')",
+      "thresholds": {
+        "max": { "expr": "if(in_context('main_line'), 12.5, 40)", "unit": "‰" }
+      },
+      "evaluation": [
+        { "if": "s <= max", "severity": "ok" },
+        { "else": "warning" }
+      ],
+      "notes": [
+        "Hauptbahnen 12,5 ‰, Nebenbahnen und S-Bahnen 40,0 ‰.",
+        "„soll nicht überschreiten“: der Wert ist ein Regelwert, eine Überschreitung ist zu begründen."
+      ],
+      "source": { "ref": "RIL_800_0110", "section": "Kap. 10, S. 23" },
+      "status": "confirmed"
+    },
+    {
+      "id": "HP.LN.02",
+      "title": "Größte Längsneigung in Bahnhofsgleisen mit Halt oder Abstellung",
+      "applies_to": { "scope": "gradient" },
+      "inputs": {
+        "s": { "from": "physics.gradient", "unit": "‰" }
+      },
+      "condition": "in_context('station_track')",
+      "thresholds": {
+        "max": { "expr": "2.5", "unit": "‰" }
+      },
+      "evaluation": [
+        { "if": "s <= max", "severity": "ok" },
+        { "else": "warning" }
+      ],
+      "notes": [
+        "Gilt für Abschnitte von Bahnhofsgleisen, in denen Züge zum Halten kommen oder Schienenfahrzeuge abgestellt werden können, bei Neubauten. Siehe auch Ril 813.0201.",
+        "„soll nicht überschreiten“: der Wert ist ein Regelwert, eine Überschreitung ist zu begründen."
+      ],
+      "source": { "ref": "RIL_800_0110", "section": "Kap. 10, S. 23" },
+      "open_point": "OP.11",
+      "status": "confirmed"
+    },
+    {
+      "id": "HP.LN.03",
+      "title": "Kleinste Längsneigung im Tunnel",
+      "applies_to": { "scope": "gradient" },
+      "inputs": {
+        "s": { "from": "physics.gradient", "unit": "‰" },
+        "l_t": { "from": "model.tunnel_length", "unit": "m" }
+      },
+      "condition": "in_context('tunnel')",
+      "thresholds": {
+        "min": { "expr": "if(l_t <= 1000, 2, 4)", "unit": "‰" }
+      },
+      "evaluation": [
+        { "if": "s >= min", "severity": "ok" },
+        { "else": "warning" }
+      ],
+      "notes": [
+        "Tunnellänge bis 1000 m mindestens 2 ‰, über 1000 m mindestens 4 ‰ (Fußnoten 38 und 39 der Ril).",
+        "„soll betragen“: der Wert ist ein Regelwert, eine Unterschreitung ist zu begründen."
+      ],
+      "source": { "ref": "RIL_800_0110", "section": "Kap. 10, S. 23" },
+      "open_point": "OP.12",
+      "status": "confirmed"
+    },
+    {
+      "id": "HP.AR.01",
+      "title": "Ausrundung nach Neigungsdifferenz",
+      "applies_to": { "scope": "vertical_curve" },
+      "inputs": {
+        "ds": { "from": "physics.gradient_change", "unit": "‰" },
+        "ra": { "from": "point.vertical_radius", "unit": "m" },
+        "ds_free": { "expr": "if(in_context('siding') or in_context('track_connection'), 4.5, 1)", "unit": "‰" }
+      },
+      "condition": "ds > 0",
+      "evaluation": [
+        { "if": "ds > ds_free and ra > 0", "severity": "ok" },
+        { "if": "ds <= ds_free and ra == 0", "severity": "ok" },
+        { "if": "ds > ds_free", "severity": "error" },
+        { "else": "hint" }
+      ],
+      "notes": [
+        "Neigungswechsel sind auszurunden. Bei Neigungsdifferenzen ≤ 1 ‰ ist ohne Ausrundung auszubilden, bei Nebengleisen und in Weichenverbindungen bei ≤ 4,5 ‰.",
+        "Fehlt die nötige Ausrundung, hat die Gradiente einen Knick (Fehler); eine Ausrundung, wo keine sein soll, ist ein Hinweis."
+      ],
+      "source": { "ref": "RIL_800_0110", "section": "Kap. 10" },
+      "status": "confirmed"
+    },
+    {
+      "id": "HP.AR.02",
+      "title": "Länge des Ausrundungsbogens",
+      "applies_to": { "scope": "vertical_curve" },
+      "inputs": {
+        "v": { "from": "point.design_speed", "unit": "km/h" },
+        "ds": { "from": "physics.gradient_change", "unit": "‰" },
+        "ra": { "from": "point.vertical_radius", "unit": "m" },
+        "la": { "from": "physics.vertical_curve_length", "unit": "m" }
+      },
+      "condition": "ds > 0 and ra > 0",
+      "thresholds": {
+        "reg": { "expr": "20", "unit": "m" },
+        "min_connection": { "expr": "10", "unit": "m" },
+        "v_connection": { "expr": "80", "unit": "km/h" },
+        "ds_connection": { "expr": "4.5", "unit": "‰" },
+        "ra_connection": { "expr": "2000", "unit": "m" }
+      },
+      "evaluation": [
+        { "if": "la >= reg", "severity": "ok" },
+        { "if": "in_context('track_connection') and v <= v_connection and ds <= ds_connection and la >= min_connection and ra >= ra_connection", "severity": "ok" },
+        { "else": "warning" }
+      ],
+      "notes": [
+        "l_a soll mindestens 20 m betragen.",
+        "Ist das in Gleisverbindungen nicht möglich, darf bis v ≤ 80 km/h und einer Neigungsdifferenz ≤ 4,5 ‰ mit l_a ≥ 10 m und r_a ≥ 2000 m trassiert werden."
+      ],
+      "source": { "ref": "RIL_800_0110", "section": "Kap. 10" },
+      "open_point": "OP.13",
+      "status": "confirmed"
+    },
+    {
+      "id": "HP.AR.03",
+      "title": "Halbmesser des Ausrundungsbogens",
+      "applies_to": { "scope": "vertical_curve" },
+      "inputs": {
+        "v": { "from": "point.design_speed", "unit": "km/h" },
+        "ds": { "from": "physics.gradient_change", "unit": "‰" },
+        "ra": { "from": "point.vertical_radius", "unit": "m" },
+        "crest": { "from": "model.crest", "unit": "bool" }
+      },
+      "condition": "ds > 0 and ra > 0",
+      "thresholds": {
+        "max": { "expr": "25000", "unit": "m" },
+        "reg": { "expr": "if(v <= 230, max(0.4 * v^2, 2000), 22500)", "unit": "m" },
+        "discretion": { "expr": "if(v <= 230, max(0.25 * v^2, 2000), if(crest, 16000, 14000))", "unit": "m" },
+        "approval": { "expr": "if(crest, 0.16, 0.13) * v^2", "unit": "m" }
+      },
+      "evaluation": [
+        { "if": "ra > max", "severity": "error" },
+        { "if": "ra >= reg", "severity": "ok" },
+        { "if": "ra >= discretion", "severity": "warning" },
+        { "if": "ra >= approval", "severity": "approval" },
+        { "else": "error" }
+      ],
+      "notes": [
+        "v ≤ 230 km/h: Regelwert 0,4 · v², Ermessensgrenze 0,25 · v² und mindestens 2000 m, Zustimmungswert 0,16 · v² bei Kuppen und 0,13 · v² bei Wannen; unter 2000 m nur mit Zustimmung.",
+        "v > 230 km/h: Regelwert 22500 m, Ermessensgrenze 16000 m bei Kuppen und 14000 m bei Wannen, Zustimmungswert wie oben.",
+        "Höchstwert in beiden Bereichen 25000 m."
+      ],
+      "source": { "ref": "RIL_800_0110", "section": "Kap. 10, Tabelle 12" },
+      "open_point": "OP.13",
+      "status": "confirmed"
+    },
+    {
+      "id": "HP.AR.04",
+      "title": "Ausrundungen überschneiden sich nicht",
+      "applies_to": { "scope": "vertical_curve" },
+      "inputs": {
+        "ds": { "from": "physics.gradient_change", "unit": "‰" },
+        "ra": { "from": "point.vertical_radius", "unit": "m" },
+        "fits": { "from": "model.vertical_curve_fits", "unit": "bool" }
+      },
+      "condition": "ds > 0 and ra > 0",
+      "evaluation": [
+        { "if": "fits", "severity": "ok" },
+        { "else": "error" }
+      ],
+      "notes": ["Eine Ausrundung, die über einen Nachbarpunkt hinausreicht oder in die nächste hineinläuft, lässt sich nicht bauen."],
+      "source": { "ref": "RIL_800_0110", "section": "Kap. 10" },
+      "status": "confirmed"
+    },
+    {
+      "id": "HP.AR.05",
+      "title": "Neigungswechsel in Überhöhungsrampe",
+      "applies_to": { "scope": "vertical_curve" },
+      "inputs": {
+        "v": { "from": "point.design_speed", "unit": "km/h" },
+        "ds": { "from": "physics.gradient_change", "unit": "‰" },
+        "ra": { "from": "point.vertical_radius", "unit": "m" },
+        "ds_free": { "expr": "if(in_context('siding') or in_context('track_connection'), 4.5, 1)", "unit": "‰" }
+      },
+      "condition": "ds > 0 and in_context('cant_ramp')",
+      "thresholds": {
+        "reg": { "expr": "if(v <= 230, max(0.4 * v^2, 2000), 22500)", "unit": "m" }
+      },
+      "evaluation": [
+        { "if": "ra >= reg or (ra == 0 and ds <= ds_free)", "severity": "hint" },
+        { "else": "warning" }
+      ],
+      "notes": [
+        "Neigungswechsel, auch deren Ausrundungen, sollen in Überhöhungsrampen und in Weichen vermieden werden.",
+        "Ist dies nicht möglich, soll r_a nicht kleiner als der Regelwert nach Tabelle 12 sein (wie HP.AR.03).",
+        "In Weichen gilt statt dessen HP.AR.06."
+      ],
+      "source": { "ref": "RIL_800_0110", "section": "Kap. 10" },
+      "status": "confirmed"
+    },
+    {
+      "id": "HP.AR.06",
+      "title": "Neigungswechsel im Weichenbereich (WA bis ldS)",
+      "applies_to": { "scope": "vertical_curve" },
+      "inputs": {
+        "ds": { "from": "physics.gradient_change", "unit": "‰" }
+      },
+      "condition": "ds > 0 and in_context('switch_body')",
+      "evaluation": [
+        { "if": "in_context('justified')", "severity": "ok" },
+        { "else": "warning" }
+      ],
+      "notes": [
+        "Neigungswechsel, auch deren Ausrundungen, sollen nicht zwischen Weichenanfang und letzter durchgehender Schwelle liegen; die Ril lässt sie in Weichen mit r_a mindestens Regelwert zu (HP.AR.07), das Werkzeug verlangt für jeden eine Begründung.",
+        "Mit einer Begründung am Höhenpunkt ist die Regel eingehalten (Entscheidung 261).",
+        "Bis zur ldS liegen Stamm- und Zweiggleis auf einer Ebene; jeder Höhenpunkt dazwischen hat auf derselben Schwelle einen Partner im anderen Gleis (db-ril-800-0120, lds; Entscheidungen 256–259)."
+      ],
+      "source": { "ref": "RIL_800_0110", "section": "Kap. 10; Festlegung des Auftraggebers vom 2026-10-06 und 2026-10-09" },
+      "status": "confirmed"
+    },
+    {
+      "id": "HP.AR.07",
+      "title": "Ausrundung im Weichenbereich mindestens Regelwert",
+      "applies_to": { "scope": "vertical_curve" },
+      "inputs": {
+        "v": { "from": "point.design_speed", "unit": "km/h" },
+        "ds": { "from": "physics.gradient_change", "unit": "‰" },
+        "ra": { "from": "point.vertical_radius", "unit": "m" }
+      },
+      "condition": "ds > 0 and ra > 0 and in_context('switch_body')",
+      "thresholds": {
+        "reg": { "expr": "if(v <= 230, max(0.4 * v^2, 2000), 22500)", "unit": "m" }
+      },
+      "evaluation": [
+        { "if": "ra >= reg", "severity": "ok" },
+        { "else": "error" }
+      ],
+      "notes": [
+        "Die Ril lässt Ausrundungen in Weichen nur mit r_a mindestens Regelwert (Tabelle 12, wie HP.AR.03) zu; darunter ist es ein Fehler, den keine Begründung aufhebt (Entscheidung 262)."
+      ],
+      "source": { "ref": "RIL_800_0110", "section": "Kap. 10; Festlegung des Auftraggebers vom 2026-10-09" },
+      "status": "confirmed"
+    }
+  ],
+
+  "open_points": [
+    {
+      "id": "OP.09",
+      "refs": ["rules[*].source.section", "tables.comparison_radius"],
+      "topic": "Abschnittsnummern der Ril 800.0110",
+      "assumption": "Geliefert: LP.EL.01 und LP.EL.02 samt Tabelle min_element_length (S. 7, Abs. 6 (2)), LP.KB.04 (S. 10, Abs. 7 (4)). Die übrigen achtzehn Regeln und die Tabelle comparison_radius werden nachgereicht."
+    },
+    {
+      "id": "OP.10",
+      "refs": ["contexts"],
+      "topic": "Verkehrsart und Bahnsteigbereich",
+      "assumption": "Entfallen, da die Ril 800.0110 dafür keine eigenen Werte vorsieht (bisher Personenverkehr u 180 / u_f 150 mm, Bahnsteig u 110 mm)."
+    },
+    {
+      "id": "OP.11",
+      "refs": ["rules[HP.LN.02]", "contexts.station_track"],
+      "topic": "Halte- und Abstellabschnitte, Neubau",
+      "assumption": "Ein Bahnhofsgleis gilt in seiner ganzen Länge als Abschnitt, in dem Züge halten oder Fahrzeuge abgestellt werden können, und jede Planung als Neubau."
+    },
+    {
+      "id": "OP.12",
+      "refs": ["rules[HP.LN.03]", "contexts.tunnel"],
+      "topic": "Tunnel",
+      "assumption": "Tunnel werden im Modell noch nicht geführt; HP.LN.03 steht im Katalog und wird angewendet, sobald ein Tunnel angegeben werden kann."
+    },
+    {
+      "id": "OP.13",
+      "refs": ["rules[HP.AR.02]", "rules[HP.AR.03]", "contexts.track_connection"],
+      "topic": "Lesart der Ausrundungstabelle",
+      "assumption": "Der Regelwert 0,4 · v² gilt wie die Ermessensgrenze mit mindestens 2000 m; unter dem Zustimmungswert 0,16 · v² bzw. 0,13 · v² ist r_a ein Fehler, zwischen ihm und der Ermessensgrenze (also auch unter 2000 m) zustimmungspflichtig. Maßgebend ist die größte design speed der Elemente unter der Ausrundung. Als Gleis- bzw. Weichenverbindung gilt ein Gleis, das an beiden Enden in eine Weiche läuft und dazwischen nicht länger als 20 m ist; eine Weiche in einem durchgehenden Gleis macht dieses nicht zur Verbindung. Eine Ausrundung, die in einer Weichenverbindung bei Δs ≤ 4,5 ‰ nach HP.AR.02 zulässig ist, meldet HP.AR.01 trotzdem als Hinweis, weil dort ohne Ausrundung auszubilden ist."
+    }
+  ]
+}

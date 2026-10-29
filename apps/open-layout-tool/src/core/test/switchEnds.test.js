@@ -1,0 +1,166 @@
+import { describe, it, expect } from 'vitest'
+import { rebuildCoords } from '../utils/track/trackModel'
+import { computeStraightValuesUtm, endPointStraightUtm, resolveEndBearing, nodeUtm } from '../utils/geometry/elementUtils'
+import { utmToWgs84 } from '../utils/geometry/coordinateUtils'
+import { SWITCH_TYPES } from '../utils/switch/catalogue'
+import { switchEndAnchorRefusal } from '../utils/switch/switchPlacement'
+import { carveSwitchRoute } from '../utils/track/trackSplitUtils'
+import { planSwitchDeletion } from '../utils/switch/switchDelete'
+import {
+  expectValidTrack, expectSwitchRoutesCarved, expectNodesJoin,
+} from './chainInvariants'
+import { buildSwitchAtTrackEnd } from '../utils/commands/switches'
+
+/**
+ * AP 1.3 — the element boundary at a switch end, across all four dialogs.
+ *
+ * A turnout's two routes have to be elements of their own: the branch and the
+ * through route, each beginning at its port's node. Where that does not happen
+ * the record carries a port with nothing behind it — the symbol falls back on
+ * the stem radii and the delete rules (AP 1.2) find a route that is not there.
+ *
+ * `SwitchOnTrackForm` and `SCurveForm` carve the through route out of the track
+ * (carveSwitchRoute); the two "at a track end" dialogs build it as new geometry,
+ * which only works where the anchor really is a track end.
+ */
+
+const EPSG  = 25832
+const START = { easting: 500000, northing: 5600000, zone: EPSG }
+// An ordinary form with a straight through route, found by name: by position
+// this was 300 – 1:9 until AP R.9 put the symmetrical turnout in front of it,
+// whose through route is an arc the straight element built below is not.
+const FORM  = SWITCH_TYPES.find(form => form.label === '300 – 1:9')
+const toWgs = (u) => utmToWgs84(u.easting, u.northing, u.zone)
+
+function straightElement(startUtm, bearing, length) {
+  const endUtm = endPointStraightUtm(startUtm, bearing, length)
+  const v = computeStraightValuesUtm(startUtm, endUtm)
+  return {
+    elementType: 0,
+    startNode: v.startNode, endNode: v.endNode,
+    bearing: v.bearing, length: v.length, speed: 100,
+    geometry: { type: 'LineString', coordinates: [toWgs(startUtm), toWgs(endUtm)] },
+  }
+}
+
+const trackOf = (id, name, elements) => {
+  const els = elements
+  return { id, name, epsg: EPSG, elements: els, coordinates: rebuildCoords(els) }
+}
+
+/** A line track of `n` straights, the shape the dialogs are picked on. */
+function lineTrack(n = 2, bearing = 20, each = 200) {
+  const els = []
+  let at = START
+  for (let i = 0; i < n; i++) {
+    const el = straightElement(at, bearing, each)
+    els.push(el)
+    at = { easting: el.endNode[0], northing: el.endNode[1], zone: EPSG }
+  }
+  return trackOf('t-line', 'line.001', els)
+}
+
+/**
+ * What ConnectStraightSwitchForm / ConnectSwitchConnectionForm commit —
+ * buildSwitchAtTrackEnd, the function their commits call (R4.2) — applied to
+ * the track: appended to it (trailing) or as a track of its own (facing).
+ */
+function connectSwitchAt(track, elIdx, { trailing = false } = {}) {
+  const el      = track.elements[elIdx]
+  const endWgs  = el.geometry.coordinates[el.geometry.coordinates.length - 1]
+  const commit = buildSwitchAtTrackEnd({
+    start: nodeUtm(el.endNode, endWgs, track.epsg), bearing: resolveEndBearing(el, track.epsg), startWgs: endWgs,
+    sourceTrackId: track.id, sw: FORM, side: 'left', trailing, cant: 0, cantReason: '', speed: 100,
+    switchName: 'W 1', switchNumber: 1, name: 'branch.001', fields: { owner: 'DB', type: 'station_track' },
+    mainName: 'main.001', mainFields: { owner: 'DB', type: 'station_track' },
+  })
+  const appended = commit.append.find(a => a.trackId === track.id)
+  const host = appended ? trackOf(track.id, track.name, [...track.elements, ...appended.elements]) : track
+  return { tracks: [host, ...commit.addTracks], record: commit.addSwitches[0] }
+}
+
+// ── the anchor ──────────────────────────────────────────────────────────────
+
+describe('where a turnout may be attached to a track end', () => {
+  it('takes the last element of a track', () => {
+    const track = lineTrack(3)
+    expect(switchEndAnchorRefusal(track, 2)).toBeNull()
+  })
+
+  it('refuses an element end inside the track — that is the other dialog’s', () => {
+    const track = lineTrack(3)
+    expect(switchEndAnchorRefusal(track, 0)).toBe('switch_anchor_not_track_end')
+    expect(switchEndAnchorRefusal(track, 1)).toBe('switch_anchor_not_track_end')
+  })
+
+  it('refuses an index that names no element', () => {
+    expect(switchEndAnchorRefusal(lineTrack(1), 5)).toBe('switch_anchor_no_element')
+    expect(switchEndAnchorRefusal({ elements: [] }, 0)).toBe('switch_anchor_no_element')
+  })
+
+  it('is what keeps the trailing commit from breaking the chain', () => {
+    // Anchored inside the track, the appended through route lands behind
+    // elements it does not touch — the very gap the refusal prevents.
+    const track = lineTrack(3)
+    const { tracks } = connectSwitchAt(track, 0, { trailing: true })
+    const host = tracks[0]
+    expect(() => expectNodesJoin(host.elements)).toThrow()
+    expect(switchEndAnchorRefusal(track, 0)).not.toBeNull()
+  })
+})
+
+// ── both switch ends are element boundaries ─────────────────────────────────
+
+describe('a turnout attached at a track end', () => {
+  it('facing: both routes are elements of their own', () => {
+    const { tracks, record } = connectSwitchAt(lineTrack(2), 1)
+    expectSwitchRoutesCarved(record, tracks)
+    tracks.forEach(expectValidTrack)
+  })
+
+  it('trailing: the through route joins the track it extends', () => {
+    const { tracks, record } = connectSwitchAt(lineTrack(2), 1, { trailing: true })
+    expectSwitchRoutesCarved(record, tracks)
+    tracks.forEach(expectValidTrack)
+  })
+
+  it('and the delete rules find both of its routes again', () => {
+    for (const trailing of [false, true]) {
+      const { tracks, record } = connectSwitchAt(lineTrack(2), 1, { trailing })
+      const plan = planSwitchDeletion(record, tracks)
+      // Nothing runs on past either switch end yet, so the turnout is all there
+      // is of itself: it goes with both of its routes.
+      expect(plan.reason).toBe('all')
+      expect(plan.removedElements).toBeGreaterThanOrEqual(2)
+    }
+  })
+})
+
+// ── what SCurveForm now refuses instead of committing ───────────────────────
+
+describe('the through route a junction switch needs beside it', () => {
+  const mark = { switchBranch: true, switchRoute: 'main', switchId: 'x' }
+  const isPlainStraight = (el) => el.elementType !== 2 && el.radius == null
+
+  it('carves where there is straight enough ahead', () => {
+    const track = lineTrack(1, 20, 200)
+    const cut   = endPointStraightUtm(START, 20, 50)
+    const carved = carveSwitchRoute(track, 'BEGIN', cut, mark, 50, { accepts: isPlainStraight })
+    expect(carved).not.toBeNull()
+    expect(carved.elements[0].switchId).toBe('x')
+  })
+
+  it('refuses where the track ends first — the case that used to commit a switch with no through route', () => {
+    const track = lineTrack(1, 20, 30)
+    const cut   = endPointStraightUtm(START, 20, 50)
+    expect(carveSwitchRoute(track, 'BEGIN', cut, mark, 50, { accepts: isPlainStraight })).toBeNull()
+  })
+
+  it('refuses where a curve lies where the route would', () => {
+    const track = lineTrack(1, 20, 200)
+    const curved = trackOf(track.id, track.name,
+      track.elements.map(el => ({ ...el, elementType: 1, radius: 900 })))
+    const cut = endPointStraightUtm(START, 20, 50)
+    expect(carveSwitchRoute(curved, 'BEGIN', cut, mark, 50, { accepts: isPlainStraight })).toBeNull()
+  })
+})

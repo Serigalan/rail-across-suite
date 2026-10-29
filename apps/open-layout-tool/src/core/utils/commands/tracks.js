@@ -1,0 +1,101 @@
+import { generateId, buildTypeFields, rebuildCoords } from '../track'
+import { arcElement, arcFrom, straightElement, straightFrom, transitionElement } from '../geometry'
+import { cantSign } from '../rules'
+
+// What the create and connect dialogs commit (R4.2), as pure functions: the
+// dialog gathers its inputs, calls one of these and writes the result — a
+// track for saveTrack, or elements for addElementsToTrack. The tests call the
+// same functions, so what they check is what the dialogs write.
+
+/** A track's own fields from the dialog's TrackFields and its name. */
+export function trackMeta(fields, name) {
+  return { name, owner: fields.owner, ...buildTypeFields(fields) }
+}
+
+/** A track of `elements` in plane `epsg`, stations and polyline derived. */
+export function trackOf(elements, epsg, meta = {}, id = generateId()) {
+  const els = elements
+  return { id, ...meta, coordinates: rebuildCoords(els), epsg, elements: els }
+}
+
+/** LineForm: one straight between two picked points. */
+export function buildLineTrack({ start, end, speed, meta, id }) {
+  return trackOf([straightElement(start, end, { speed })], start.zone, meta, id)
+}
+
+/**
+ * The cant an arc of `signedR` stores: the dialogs take it towards the curve,
+ * the store keeps it signed with the curve (rules/cant `cantSign`) — unsigned, a
+ * left-hand curve's cant would count against it. Negative only where a cant
+ * taken over from the element before leans against the curve.
+ */
+export const curveCant = (signedR, cant) => cantSign(signedR) * (Number(cant) || 0)
+
+/** CurvedLineForm: one arc between two points with a (fitted) radius. */
+export function buildCurvedLineTrack({ start, end, signedR, speed, cant, meta, id }) {
+  return trackOf([arcElement(start, end, signedR, { speed, cant: curveCant(signedR, cant) })], start.zone, meta, id)
+}
+
+/** ParallelLineForm: one element offset from a picked one — an arc where it has a radius. */
+export function buildParallelLineTrack({ start, end, signedR = null, speed, meta, id }) {
+  const el = signedR != null ? arcElement(start, end, signedR, { speed }) : straightElement(start, end, { speed })
+  return trackOf([el], start.zone, meta, id)
+}
+
+/** ParallelTrackForm: a whole track's elements offset (parallelUtils.offsetTrackElements). */
+export function buildParallelTrack({ elements, epsg, meta, id }) {
+  return trackOf(elements, epsg, meta, id)
+}
+
+/**
+ * The transition a connect dialog puts in front of what it appends, from the
+ * track's end at `start`/`bearing`, its curvature running from the last
+ * element's radius to `toRadius` (null = into a straight). Null where there is
+ * none to put.
+ */
+function leadingTransition(start, bearing, transition, toRadius, speed) {
+  if (!transition || !(transition.length > 0)) return null
+  return transitionElement(start, bearing, transition.length, transition.fromRadius ?? null, toRadius, {
+    transitionType: transition.type ?? 'clothoid', speed,
+  })
+}
+
+/**
+ * ConnectStraightForm: a straight of `length` appended at a track's end
+ * (`start`, `bearing`), optionally after a transition out of the last
+ * element's curve — `transition` { length, type, fromRadius }.
+ * Returns the elements to append, in order.
+ */
+export function buildConnectStraight({ start, bearing, length, speed, transition = null }) {
+  const lead = transition?.fromRadius != null ? leadingTransition(start, bearing, transition, null, speed) : null
+  const from = lead ? lead.endUtm : start
+  const b    = lead ? lead.endBearing : bearing
+  return [...(lead ? [lead.element] : []), straightFrom(from, b, length, { speed })]
+}
+
+/**
+ * The cant an arc appended at a track's end without a transition is proposed
+ * with (Entscheidung 315): the one the track ends with, signed by the raised
+ * rail — it stays as the elements it joins, only a transition ramps it to
+ * another. Null where the track ends in a transition that states none at its
+ * end: that one ramps into whatever follows.
+ */
+export function cantAtTrackEnd(lastEl) {
+  if (!lastEl) return 0
+  if (lastEl.elementType === 2) return lastEl.cantEnd ?? null
+  return lastEl.cant ?? 0
+}
+
+/**
+ * ConnectCurvedForm: an arc of `arcLength` and radius `signedR` appended at a
+ * track's end, optionally after a transition from the last element's radius
+ * into the new one. Returns the elements to append, in order.
+ */
+export function buildConnectCurved({ start, bearing, arcLength, signedR, speed, cant, transition = null }) {
+  const lead = leadingTransition(start, bearing, transition, signedR, speed)
+  const from = lead ? lead.endUtm : start
+  const b    = lead ? lead.endBearing : bearing
+  // The arc keeps the bearing and length it was asked for; the factory derives the rest.
+  const arc  = arcFrom(from, b, arcLength, signedR, { speed, cant: curveCant(signedR, cant) })
+  return [...(lead ? [lead.element] : []), { ...arc, bearing: b, length: arcLength }]
+}

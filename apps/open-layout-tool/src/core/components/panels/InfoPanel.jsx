@@ -1,0 +1,76 @@
+import {
+  ProjectSettingsIcon, LayerIcon, TopologyIcon, PlaceIcon, ConnectSwitchIcon, SpliceElementIcon,
+  EditElementIcon, ElevationIcon, CrossSectionIcon, DataExchangeIcon,
+  PlanExportIcon, ExternalLinkIcon, CheckIcon,
+} from '../icons'
+import { OSRD_URL } from '../../utils/exchange'
+import { useI18n } from '../../locales/i18nContext'
+import { useProject } from '../../hooks/useStore'
+import FirstSteps from './FirstSteps'
+
+// Turn every literal "OSRD" in a translated string into a link to the OSRD demo.
+function withOsrdLink(text) {
+  const parts = text.split('OSRD')
+  if (parts.length === 1) return text
+  return parts.flatMap((part, i) =>
+    i === 0 ? [part] : [
+      <a key={i} className="info-panel-link" href={OSRD_URL} target="_blank" rel="noreferrer">
+        OSRD<ExternalLinkIcon color="currentColor" size={11} />
+      </a>,
+      part,
+    ]
+  )
+}
+
+// One entry per sidebar button, in sidebar order. A merged panel keeps one
+// entry — its icon and label — with the descriptions of both of its groups,
+// one paragraph each: `desc` is a key, or several keys for those panels.
+const PANELS = [
+  { Icon: ProjectSettingsIcon, title: 'project_settings', desc: 'info_project' },
+  { Icon: LayerIcon,          title: 'tooltip_layers', desc: 'info_layers' },
+  { Icon: TopologyIcon,       title: 'topology_title', desc: 'info_topology' },
+  { Icon: PlaceIcon,          title: 'create_element', desc: ['info_places', 'info_platform'] },
+  { Icon: SpliceElementIcon,  title: 'splice_element', desc: ['info_splice', 'info_reconnect', 'info_connect'] },
+  { Icon: ConnectSwitchIcon,  title: 'connect_switch', desc: 'info_connect_switch' },
+  { Icon: EditElementIcon,    title: 'edit', desc: 'info_edit' },
+  { Icon: ElevationIcon,      title: 'tooltip_elevation', desc: 'info_elevation' },
+  { Icon: CrossSectionIcon,        title: 'platform_cross_section', desc: 'info_cross_section' },
+  { Icon: CheckIcon,          title: 'check_title', desc: 'info_check' },
+  { Icon: DataExchangeIcon,   title: 'data_exchange', desc: 'info_data' },
+  { Icon: PlanExportIcon,     title: 'plan_title', desc: 'info_plan' },
+]
+
+/**
+ * What the tool is and what each panel does — headed, for a project without a
+ * track yet, by its first steps (R10.13). `onDraw` and `onImport` open the
+ * panels those steps lead to.
+ */
+export default function InfoPanel({ onDraw, onImport }) {
+  const { t } = useI18n()
+  const project = useProject()
+  return (
+    <>
+      {!(project?.tracks ?? []).length && (
+        <>
+          <FirstSteps onDraw={onDraw} onImport={onImport} />
+          <hr className="divider divider-wide" />
+        </>
+      )}
+      <h2>{t('info')}</h2>
+      <p>{withOsrdLink(t('info_description'))}</p>
+      <div className="info-panel-list">
+        {PANELS.map((panel) => (
+          <div className="info-panel-item" key={panel.title}>
+            <div className="info-panel-icon"><panel.Icon /></div>
+            <div className="info-panel-text">
+              <h3 className="create-element-section">{t(panel.title)}</h3>
+              {[].concat(panel.desc).map((key) => (
+                <p key={key}>{withOsrdLink(t(key))}</p>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </>
+  )
+}

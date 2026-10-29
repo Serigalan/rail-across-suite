@@ -1,0 +1,25 @@
+# Rendered by deploy/setup.sh from deploy/templates/olt-server.service — edit the template, not this file.
+[Unit]
+Description=Open Layout Tool@OLT_LABEL@ — project server (users, variants, revisions)
+After=network.target
+
+[Service]
+User=@OLT_USER@
+WorkingDirectory=@OLT_REPO@/tools/server
+ExecStart=@OLT_NODE@ @OLT_REPO@/tools/server/bin/olt-server.mjs serve
+Environment=OLT_SERVER_DB=@OLT_DB@
+# Point clouds (phase 13): tiles and uploads, outside the daily backup.
+Environment=OLT_SERVER_CLOUDS=@OLT_CLOUDS@
+# Only Caddy reaches it, never the public interface.
+Environment=OLT_SERVER_HOST=@OLT_BIND@
+Environment=OLT_SERVER_PORT=@OLT_SERVER_PORT@
+# Whose X-Forwarded-For is believed — Caddy's address only.
+Environment=OLT_SERVER_TRUST_PROXY=@OLT_TRUST_PROXY@
+Environment=OLT_SERVER_LOG=@OLT_SERVER_LOG@
+MemoryMax=@OLT_SERVER_MEMORY@
+Restart=on-failure
+RestartSec=2
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,107 @@
+/* The map pane and what sits on the map: the elevation legend. */
+
+/* Map: the pane beside the panels, the map filling it, overlays above it */
+.map-pane {
+  flex: 1;
+  position: relative;
+}
+
+/* Two classes: MapLibre's own .maplibregl-map sets position: relative. */
+.map-pane > .map-container {
+  position: absolute;
+  inset: 0;
+}
+
+/* Elevation legend — top left of the map, clear of the navigation control and
+   of the track table that covers the lower half. */
+.elevation-legend {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 5;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  font-family: var(--font-ui);
+  font-size: var(--fs-xs);
+  color: var(--color-text);
+  pointer-events: none;
+}
+
+.elevation-legend-title {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 6px;
+  white-space: nowrap;
+}
+
+.elevation-legend-body {
+  display: flex;
+  gap: 6px;
+}
+
+.elevation-legend-bar {
+  width: 14px;
+  height: 120px;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  border-radius: 2px;
+}
+
+.elevation-legend-ticks {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 122px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+/* The notice after a step (R10.3): over the map, bottom centre. */
+.step-notice {
+  position: absolute; left: 50%; bottom: 24px; transform: translateX(-50%);
+  z-index: 30; display: flex; align-items: center; gap: var(--space-5);
+  padding: var(--space-4) var(--space-5); max-width: min(640px, calc(100% - 32px));
+  background: var(--color-surface); color: var(--color-text);
+  border: 1px solid var(--color-border); border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18); font-size: var(--fs-m);
+}
+.step-notice-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.step-notice .link-btn { white-space: nowrap; color: var(--color-primary); }
+.step-notice-close { background: none; border: 0; cursor: pointer; color: var(--color-text-soft); padding: 0 2px; font-size: 14px; }
+/* A write a lock refused (Entscheidung 382): it says why, in full. */
+.step-notice-refused { border-color: var(--color-warn); }
+.step-notice-refused .step-notice-text { white-space: normal; }
+
+/* The legend while a preview is on the map (R10.10), top left. */
+.map-legend {
+  position: absolute; top: 12px; left: 12px; z-index: 20;
+  background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 6px;
+  padding: var(--space-4) var(--space-5); font-size: var(--fs-s); color: var(--color-text);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+.map-legend-row { display: flex; align-items: center; gap: var(--space-4); line-height: 1.6; }
+
+/* Whether the services are there (R10.12): three dots at the foot of the sidebar. */
+.service-status {
+  display: flex; gap: 5px; padding: 5px 6px; cursor: pointer;
+  background: transparent; border: 1px solid rgba(255, 255, 255, 0.35); border-radius: 10px;
+}
+.service-status:hover { border-color: rgba(255, 255, 255, 0.75); }
+/* A light ring keeps the dots apart from the sidebar's colour. */
+.service-dot { width: 8px; height: 8px; border-radius: 50%; background: #bbb; box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.85); }
+.service-dot.ok { background: #2e7d32; }
+.service-dot.down { background: var(--color-error); }
+
+/* The first steps of an empty project (R10.13), at the head of the info panel. */
+.first-steps h2 { margin: 0 0 6px; }
+.first-steps-actions { display: flex; flex-direction: column; gap: var(--space-4); margin-top: 12px; }
+
+/* The 3D toggle below the compass (TiltToggle): a button of MapLibre's
+   control group, its label in the grey of the group's icons, and in the
+   app's colour on a light tint while tilting is allowed. */
+.maplibregl-ctrl-group button.map-tilt-toggle {
+  font: 700 11px/1 var(--font-ui); letter-spacing: 0.02em; color: #333; user-select: none;
+}
+.maplibregl-ctrl-group button.map-tilt-toggle.active { color: var(--color-primary); background: rgba(48, 51, 131, 0.12); }
+.maplibregl-ctrl-group button.map-tilt-toggle.active:hover { background: rgba(48, 51, 131, 0.2); }

@@ -1,0 +1,252 @@
+import { useEffect, useMemo, useState } from 'react'
+import { loadTracks, commitSwitchConnection } from '../../../storage'
+import { wgs84ToUTM } from '../../../utils/geometry'
+import {
+  CROSSING_TYPES, crossingAngle, crossingEndDistance, crossingLegRadius, clickStation,
+  settleStation,
+} from '../../../utils/switch'
+import { elementPath } from '../../../utils/km'
+import useTrackFields from '../../../hooks/useTrackFields'
+import useTrackName from '../../../hooks/useTrackName'
+import useSwitchNumber from '../../../hooks/useSwitchNumber'
+import TrackFields from '../TrackFields'
+import SwitchNumberField from '../SwitchNumberField'
+import StationSlider from '../../form/StationSlider'
+import { DEFAULT_HEIGHT_EPSG, heightDatumLabel } from '../../../utils/track'
+import { SWITCH_LINES_SOURCE, SWITCH_FILL_SOURCE, SWITCH_PREVIEW_LAYERS, buildCrossingPreview } from '../../../map/switchPreview'
+import { useI18n } from '../../../locales/i18nContext'
+import { useMap } from '../../../map/MapContext'
+import { useProject } from '../../../hooks/useStore'
+import { TRACKS_HOVER_LAYER } from '../../../map/layerIds'
+import usePreview from '../../../map/usePreview'
+import useMapPick from '../../../map/useMapPick'
+import { buildCrossingOnTrack, crossingOnTrackPlacement, crossingOnTrackSlider } from '../../../utils/commands'
+import CommitBar from '../../form/CommitBar'
+import ReadOnlyField from '../../form/ReadOnlyField'
+import AdvancedInfo from '../../form/AdvancedInfo'
+import FormSection from '../../form/FormSection'
+import useFormPhase from '../../form/useFormPhase'
+import CancelButton from '../../form/CancelButton'
+import { firstReason } from '../../form/firstReason'
+import MessageList from '../../form/MessageList'
+
+/**
+ * A crossing or crossing switch laid INTO an existing track (AP 3.3) — the
+ * crossing kinds' counterpart of SwitchOnTrackForm. The crossing point is where
+ * the track was clicked; the main route (A→C) runs through the track, so it is
+ * the track itself: parted at the crossing point, its halves carry the legs out
+ * to ports A and C as their own carved, marked elements — no new track on the
+ * picked line, exactly as a turnout's through route stays in its host. The cross
+ * route (B→D) is new: two tracks of their own through the crossing point, at
+ * the form's crossing angle on the side the field says. The connecting routes
+ * of a crossing switch are committed as tracks of their own, one element each,
+ * marked 'slip1'/'slip2' — the same shape the end-anchored CrossingForm
+ * commits (crossingElements), so everything that reads a crossing back (the
+ * symbol, the deletion, the OSRD codec) reads this one the same way.
+ *
+ * The track under the body has to be the form's main leg, the end distance to
+ * each side of the point: straight for the 3.2 forms, and for a
+ * Bogenkreuzungsweiche (AP 3.4) an arc on its leg radius, curved away from the
+ * cross route's side. The placement refuses anything else. placeSwitchOnTrack
+ * does the walking — both halves of the main route are its through route, one
+ * call each, with the branching left out that a turnout adds.
+ */
+export default function CrossingOnTrackForm({ onCommitted, initialKind = 'crossing' }) {
+  const { t, fill } = useI18n()
+  const map = useMap()
+  const project = useProject()
+  const { fields, errors, setErrors, setField, lineNumberError } = useTrackFields()
+  const [nameError, setNameError] = useState(false)
+  const { phase, pick, begin, reset: resetPhase } = useFormPhase()   // pick: { trackId }
+  const [station, setStation]     = useState('')     // crossing point along the track [m]
+  const [crossSide, setCrossSide] = useState('right') // which side the cross route leaves on
+  const [formIdx, setFormIdx]     = useState(() =>
+    Math.max(0, CROSSING_TYPES.findIndex(f => f.kind === initialKind)))
+
+  const forms = CROSSING_TYPES
+  const form  = forms[formIdx]
+  // The two classes the Ril keeps its forms in, as the two groups of the
+  // picker: Regelformen (800.0120A01) first, Sonderbauformen (A02) after.
+  const formOptionen = (klasse) => forms
+    .map((f, i) => ({ f, i }))
+    .filter(entry => entry.f.klasse === klasse)
+    .map(({ f, i }) => <option key={i} value={i}>{f.label}</option>)
+
+  const alpha = crossingAngle(form) * 180 / Math.PI
+  const crossAngle = (crossSide === 'right' ? alpha : -alpha)
+  const endDist = crossingEndDistance(form)
+
+  // The designation names a crossing, not a switch — it follows the form's kind.
+  const switchNo = useSwitchNumber(project.id, form.kind)
+
+  const preview = usePreview(SWITCH_PREVIEW_LAYERS, { resetFilters: [TRACKS_HOVER_LAYER], resetCursor: true })
+
+  // ── Pick a track and place the crossing point where it was clicked ────────
+  useMapPick({
+    active: phase === 'select', hover: 'element', noSwitchBranch: true,
+    onPick: ({ trackId, elementIndex }, e) => {
+      const elIdx = elementIndex
+      const track = loadTracks().find(tr => tr.id === trackId)
+      if (!track?.elements?.[elIdx]) return
+      setErrors([])
+      // The click is projected onto the element in the track's own plane and
+      // stated as a station along the whole track — the crossing point.
+      // It snaps as the slider does (Entscheidung 309); the cross route lies
+      // at the height datum of the track it crosses (Entscheidung 311).
+      const clickUtm = wgs84ToUTM([e.lngLat.lng, e.lngLat.lat], track.epsg)
+      const clicked = Math.round(clickStation(track, elIdx, clickUtm) * 1000) / 1000
+      const at = settleStation(clicked, { ...crossingOnTrackSlider({ track, endDist, form, crossAngle }, clicked), tol: 1 })
+      begin({ trackId, clicked })
+      setField('heightEpsg', String(track.heightEpsg ?? DEFAULT_HEIGHT_EPSG))
+      setStation(String(at == null ? clicked : Math.round(at * 1e4) / 1e4))
+    },
+  })
+
+  // ── Derived geometry for the current settings ─────────────────────────────
+  const track = pick ? loadTracks().find(tr => tr.id === pick.trackId) : null
+  const pointStation = Number(station)
+  // Where the crossing point may lie, and where A or C fall on an element change.
+  const slider = useMemo(() => (track ? crossingOnTrackSlider({ track, endDist, form, crossAngle }, pick.clicked)
+    : { intervals: [], snaps: [] }), [track, pick, endDist, form, crossAngle])
+
+  // Where the crossing lies and the geometry it produces — derived, so the
+  // preview and the commit always agree. Both halves of the main route are a
+  // turnout's through route walked from the toe: one call ahead of the point,
+  // one behind it, each the end distance long. Everything is read in the
+  // track's own plane from the elements' stored nodes.
+  const placement = useMemo(() => {
+    const p = crossingOnTrackPlacement({ track, pointStation, endDist, form, crossAngle })
+    if (!p.error) return p
+    const { key, params } = p.error
+    return { error: key === 'crossing_on_track_no_room' ? fill(key, { m: endDist.toFixed(1) }) : fill(key, params ?? {}) }
+  }, [track, pointStation, endDist, form, crossAngle, fill])
+
+  const placeError = placement.error
+  const ahead      = placement.ahead ?? null
+  const back       = placement.back ?? null
+  const g          = placement.geom ?? null
+
+  // The cross route is the only new line — its forward half carries the name.
+  const crossGeometry = g ? elementPath(g.portB_utm, g.portD_utm) : null
+  const { name, setName, reset: resetName } = useTrackName(project.id, fields, { geometry: crossGeometry, setField })
+
+  const handleNameChange = (val) => { setName(val); setNameError(false) }
+
+  // ── Preview while editing ──────────────────────────────────────────────────
+  useEffect(() => {
+    const m = map?.current
+    if (!m || phase !== 'editing') return
+    if (!g) {
+      preview.set(SWITCH_LINES_SOURCE, null)
+      preview.set(SWITCH_FILL_SOURCE, null)
+      return
+    }
+    const pv = buildCrossingPreview(g)
+    preview.set(SWITCH_LINES_SOURCE, pv.lines)
+    preview.set(SWITCH_FILL_SOURCE, pv.fill)
+  }, [phase, g, map, preview])
+
+  // What the crossing covers, element by element — both halves of the main route.
+  const elementsText = ahead && back && track
+    ? [...back.spans, ...ahead.spans].sort((a, b) => a.elIdx - b.elIdx).map(sp => {
+      const el = track.elements[sp.elIdx]
+      const kind = el.elementType === 2 ? 'table_type_transition' : el.radius ? 'table_type_arc' : 'table_type_straight'
+      return `${t(kind)} ${sp.length.toFixed(2)} m`
+    }).join(' · ')
+    : '–'
+
+
+  const handleCancel = () => { preview.clear(); resetPhase(); onCommitted?.() }
+
+  const handleCommit = () => {
+    setErrors([])
+    if (lineNumberError || !g || !ahead || !track || placeError) return
+    const tracks = loadTracks()
+    const existingNames = new Set(tracks.map(tr => tr.name).filter(Boolean))
+    if (name && existingNames.has(name)) { setNameError(true); return }
+    setNameError(false)
+    if (!switchNo.claim()) return
+
+    const commit = buildCrossingOnTrack({
+      g, ahead, track, tracks, form, endDist, switchName: switchNo.name, switchNumber: switchNo.number, name, fields,
+    })
+    if (commit.noRoom) {
+      setErrors([fill('crossing_on_track_no_room', { m: commit.noRoom.toFixed(1) })])
+      return
+    }
+    commitSwitchConnection(commit)
+
+    resetName()
+    switchNo.reset()
+    setNameError(false)
+    preview.clear()
+    onCommitted?.()
+  }
+
+  if (phase === 'select') {
+    return (
+      <>
+        <p>{t('crossing_on_track_hint')}</p>
+        <MessageList items={errors} className="form-error-list" small={false} />
+        <CancelButton className="panel-btn panel-btn-full mt-8 secondary" onClick={handleCancel} />
+      </>
+    )
+  }
+
+  return (
+    <>
+      <FormSection title={t('section_geometry')}>
+        <StationSlider label={t('crossing_on_track_station')} value={station} onChange={setStation}
+          intervals={slider.intervals} snaps={slider.snaps} />
+        <div className="form-field">
+          <label>{t('crossing_form')}</label>
+          <select value={formIdx} onChange={e => setFormIdx(Number(e.target.value))}>
+            <optgroup label={t('switch_form_regel')}>{formOptionen('regel')}</optgroup>
+            <optgroup label={t('switch_form_sonder')}>{formOptionen('sonderbauform')}</optgroup>
+          </select>
+        </div>
+        <div className="form-field">
+          <label>{t('crossing_side')}</label>
+          <select value={crossSide} onChange={e => setCrossSide(e.target.value)}>
+            <option value="right">{t('switch_side_right')}</option>
+            <option value="left">{t('switch_side_left')}</option>
+          </select>
+        </div>
+        <AdvancedInfo>
+          <ReadOnlyField label={t('height_datum')} value={heightDatumLabel(Number(fields.heightEpsg) || DEFAULT_HEIGHT_EPSG)} />
+          <ReadOnlyField label={t('crossing_on_track_elements')} value={elementsText} />
+          {ahead && (
+            <ReadOnlyField label={t('bearing')} value={ahead.bearing.toFixed(3)} />
+          )}
+          <ReadOnlyField label={t('crossing_angle')} value={`1:${form.ratio} (${alpha.toFixed(2)}°)`} />
+          <ReadOnlyField label={t('crossing_end_distance')} value={`${endDist.toFixed(2)} m`} />
+          {form.R != null && (
+            <ReadOnlyField label={t('field_radius')} value={`${form.R} m`} />
+          )}
+          {crossingLegRadius(form) != null && (
+            <ReadOnlyField label={t('crossing_leg_radius')} value={`${crossingLegRadius(form)} m`} />
+          )}
+          {form.Ri != null && (
+            <ReadOnlyField label={t('crossing_inner_radius')} value={`${form.Ri} m`} />
+          )}
+        </AdvancedInfo>
+      </FormSection>
+
+      <FormSection title={t('switch_meta_data')}>
+        <SwitchNumberField number={switchNo.number} onChange={switchNo.setNumber}
+          name={switchNo.name} taken={switchNo.taken} />
+      </FormSection>
+
+      <FormSection title={t('section_meta_cross')}>
+        <TrackFields fields={fields} setField={setField} setErrors={setErrors} errors={errors}
+          name={name} onNameChange={handleNameChange} nameError={nameError} />
+      </FormSection>
+
+      <MessageList items={errors} className="form-error-list" small={false} />
+      {nameError && <p className="form-error">{t('track_name_exists')}</p>}
+      {placeError && <p className="form-error">{placeError}</p>}
+
+      <CommitBar onCommit={handleCommit} onCancel={handleCancel} reason={firstReason(lineNumberError && t(`line_number_error_${lineNumberError}`), placeError)} className="" />
+    </>
+  )
+}

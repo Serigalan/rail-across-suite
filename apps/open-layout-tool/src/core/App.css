@@ -1,0 +1,17 @@
+/* The app's styles, one file per area, in the order the cascade relies on.
+   Colours, sizes and spacing come from the tokens. */
+@import './styles/tokens.css';
+@import './styles/layout.css';
+@import './styles/panels.css';
+@import './styles/modal.css';
+@import './styles/map.css';
+@import './styles/track-table.css';
+@import './styles/constraints.css';
+@import './styles/import.css';
+@import './styles/profile.css';
+@import './styles/plan-preview.css';
+@import './styles/topology.css';
+@import './styles/pointcloud.css';
+@import './styles/axis-fit.css';
+@import './styles/modal-dialog.css';
+@import './styles/switch-detail.css';

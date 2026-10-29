@@ -1,0 +1,185 @@
+import { useEffect, useRef, useState } from 'react'
+import { GIVEN_MODES, pointGrades, solveHeightPoint, tangentLength } from '../utils/track'
+import { useI18n } from '../locales/i18nContext'
+import NumberInput from './form/NumberInput'
+
+/**
+ * Which values of point `i` the table lets one type, each with the value that
+ * stays while it changes: the two of `mode` — at an end without the gradient
+ * a mode names, the station or the height in its place; on a joint (a track
+ * end other tracks meet) the station stays whatever is typed. Nothing on a
+ * turnout's WA or ldS, which follow from the points either side, nor on a
+ * locked point (`role`, switchChain.heightRoles) — a WA or ldS let go is,
+ * and the toe that sets the toe's height (`leads`, decision 393).
+ */
+function editableAt(i, n, mode, { joint, role, leads }) {
+  // A WA or ldS let go of its rule (decision 387) is typed like any point.
+  if (role && !role.free && !leads) return new Map()
+  const available = ['s', 'z', i > 0 && 'gb', i < n - 1 && 'ga'].filter(Boolean)
+  if (joint) return new Map(available.filter(k => k !== 's').map(k => [k, 's']))
+  const pair = [...GIVEN_MODES[mode]]
+  for (let k = 0; k < 2; k++) {
+    if (!available.includes(pair[k])) pair[k] = pair.includes('s') ? 'z' : 's'
+  }
+  return new Map([[pair[0], pair[1]], [pair[1], pair[0]]])
+}
+
+/**
+ * One value of the table: as text where it follows from the others, as a
+ * field where it is given — typed, it is applied on Enter or on leaving the
+ * field, Escape drops it.
+ */
+function ValueCell({ value, digits, step, editable, onCommit, className, title }) {
+  const { num } = useI18n()
+  const [draft, setDraft] = useState(null)
+  const done = useRef(false)
+  const shown = value == null ? '' : value.toFixed(digits)
+  if (!editable) {
+    return <td className={className} title={title}>{value == null ? '–' : num(value, { digits })}</td>
+  }
+  const commit = () => {
+    if (done.current) { done.current = false; return }
+    if (draft != null && draft.trim() !== '' && Number.isFinite(Number(draft)) && Number(draft) !== Number(shown)) onCommit(Number(draft))
+    setDraft(null)
+  }
+  return (
+    <td className={className} title={title}>
+      <NumberInput className="track-table-input" step={step} digits={digits} value={draft ?? shown}
+        onChange={e => setDraft(e.target.value)} onBlur={commit}
+        onKeyDown={e => {
+          if (e.key === 'Enter') { commit(); done.current = true; e.currentTarget.blur() }
+          if (e.key === 'Escape') { e.preventDefault(); setDraft(null); done.current = true; e.currentTarget.blur() }
+        }} />
+    </td>
+  )
+}
+
+/**
+ * The gradient of one track or route as a table (the Höhenplan's second view): every
+ * point with its station, height, the gradients before and after it in ‰,
+ * the radius of its vertical curve, its length and the tangent length. Two of
+ * station, height and the two gradients are given (`mode`, GIVEN_MODES) and
+ * can be typed; the other two follow, the points either side stay. A
+ * gradient a rule flags and a curve with a finding are coloured as in the
+ * section. A row is picked as a point is in the section (`onPick(index, e)`:
+ * Ctrl/Shift adds to the selection); the selected rows are marked, and so are
+ * — by `linkState` (index → 'source' | 'dependent') — what the one selected
+ * point depends on and what depends on it, in the colours of the section and
+ * the map. A point selected elsewhere is scrolled into view.
+ *
+ * A radius typed is what counts for the curve; a length typed is noted on the
+ * point instead (`la`, decision 266) and the store works the radius out from
+ * it — again whenever a gradient beside the point changes.
+ *
+ * `points` are the profile's (routeProfile): solved along the route, a point
+ * is written back by `onWrite(point, { station, z }, { rv?, la? })` to the track it
+ * belongs to. A point at the end of its track — where tracks meet, also
+ * between two tracks of a route — keeps its station; `roles` (route index →
+ * role) are what the coupling at the ldS holds, and a lock (Entscheidung 382):
+ * the first column locks or unlocks a point (`onLock(index)`).
+ */
+export default function ElevationTable({
+  points, length, mode, roles, noteAt, onLock,
+  stretchAt, curveAt, stretchNote, curveNote, selection, linkState, onPick, onWrite, leads = () => false,
+}) {
+  const { t, fill, num } = useI18n()
+  const [error, setError] = useState(null)       // { index, code } of the last value that could not be taken
+  const n = points.length
+  const bodyRef = useRef(null)
+  // The first selected row in view — it may have been picked in the section or on the map.
+  const first = selection.length ? Math.min(...selection) : null
+  useEffect(() => {
+    if (first != null) bodyRef.current?.querySelector(`tr[data-index="${first}"]`)?.scrollIntoView({ block: 'nearest' })
+  }, [first])
+
+  const apply = (i, key, value, partner) => {
+    const p = points[i]
+    const g = pointGrades(points, i)
+    const now = { s: p.station, z: p.z, gb: g.before, ga: g.after }
+    const r = solveHeightPoint(points, i, { [key]: value, [partner]: now[partner] }, { length })
+    if (r.error) { setError({ index: i, code: r.error }); return }
+    setError(null)
+    onWrite(p, r)
+  }
+  const applyRadius = (i, rv) => {
+    setError(null)
+    onWrite(points[i], { station: points[i].station, z: points[i].z }, { rv: rv > 0 ? rv : null, la: null })
+  }
+  const applyLength = (i, la) => {
+    setError(null)
+    onWrite(points[i], { station: points[i].station, z: points[i].z }, { la: la > 0 ? la : null })
+  }
+
+  const sev = (entry) => (entry?.severity && entry.severity !== 'ok' ? `rule-sev-${entry.severity}` : undefined)
+
+  return (
+    <div className="track-table-scroll profile-table">
+      {error && (
+        <p className="form-error profile-table-error">
+          {fill(`elevation_table_error_${error.code}`, { n: error.index + 1 })}
+        </p>
+      )}
+      <table className="track-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th title={t('elevation_lock_hint')}>🔒</th>
+            <th>{t('elevation_station')} [m]</th>
+            <th>{t('elevation_height')} [m]</th>
+            <th>{t('elevation_grade_before')} [‰]</th>
+            <th>{t('elevation_grade_after')} [‰]</th>
+            <th title={t('elevation_vcurve_hint')}>{t('elevation_vcurve')} [m]</th>
+            <th title={t('elevation_vcurve_length_hint')}>{t('elevation_vcurve_length')} [m]</th>
+            <th>T [m]</th>
+          </tr>
+        </thead>
+        <tbody ref={bodyRef}>
+          {points.map((p, i) => {
+            const role = roles.get(i)
+            const joint = points[i].trackEnd != null || points[i].joint
+            const edit = editableAt(i, n, mode, { joint, role, leads: leads(i) })
+            const g = pointGrades(points, i)
+            const cell = (key) => ({
+              editable: edit.has(key),
+              onCommit: (v) => apply(i, key, key === 'gb' || key === 'ga' ? v / 1000 : v, edit.get(key)),
+            })
+            const before = stretchAt.get(i), after = stretchAt.get(i + 1), curve = curveAt.get(i)
+            const tl = tangentLength(points, i)
+            // Toe and ldS carry no curve of their own — locked or not.
+            const kind = role?.kind === 'locked' ? role.was?.kind : role?.kind
+            const inner = !['wa', 'lds'].includes(kind) && i > 0 && i < n - 1
+            const isLocked = role?.kind === 'locked'
+            const governs = p.la != null ? fill('elevation_vcurve_length_governs', { la: num(p.la, { digits: 2 }) }) : null
+            const linked = linkState?.get(i)
+            return (
+              <tr key={i} data-index={i}
+                className={selection.includes(i) ? 'track-table-row-active' : linked ? `profile-row-${linked}` : undefined}
+                title={noteAt(i) ?? (joint ? t('elevation_table_joint') : undefined)}
+                onClick={(e) => onPick(i, e)}>
+                <td>{i + 1}{kind === 'wa' && <span className="profile-toe-tag" title={noteAt(i) ?? undefined}>WA</span>}</td>
+                <td className="profile-lock-cell">
+                  <button type="button" className={`profile-lock-btn${isLocked ? ' on' : ''}`} aria-pressed={isLocked}
+                    title={t(isLocked ? 'elevation_unlock' : 'elevation_lock')}
+                    onClick={e => { e.stopPropagation(); onLock?.(i) }}>{isLocked ? '🔒' : '🔓'}</button>
+                </td>
+                <ValueCell value={p.station} digits={3} step={0.1} {...cell('s')} />
+                <ValueCell value={p.z} digits={4} step={0.001} {...cell('z')} />
+                <ValueCell value={g.before == null ? null : g.before * 1000} digits={2} step={0.1} {...cell('gb')}
+                  className={sev(before)} title={before ? stretchNote(before) : undefined} />
+                <ValueCell value={g.after == null ? null : g.after * 1000} digits={2} step={0.1} {...cell('ga')}
+                  className={sev(after)} title={after ? stretchNote(after) : undefined} />
+                <ValueCell value={p.rv ?? null} digits={0} step={100}
+                  editable={inner} onCommit={(v) => applyRadius(i, v)}
+                  className={sev(curve)} title={curve ? curveNote(curve) : undefined} />
+                <ValueCell value={tl == null ? (p.la ?? null) : 2 * tl} digits={2} step={1}
+                  editable={inner && !joint} onCommit={(v) => applyLength(i, v)}
+                  className={governs ? 'profile-governing' : undefined} title={governs ?? t('elevation_vcurve_length_hint')} />
+                <td>{tl == null ? '–' : num(tl, { digits: 2 })}</td>
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
+    </div>
+  )
+}

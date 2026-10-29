@@ -1,0 +1,99 @@
+import { useState } from 'react'
+import ShiftValuesPage from './shift/ShiftValuesPage'
+import GroupedTrackList from './GroupedTrackList'
+import {
+  PhysicsIcon, RegelwerkIcon, BandsIcon, ShiftValuesIcon,
+} from '../icons'
+import { useTracks } from '../../hooks/useStore'
+import { useI18n } from '../../locales/i18nContext'
+import useMapPick from '../../map/useMapPick'
+import BackButton from './BackButton'
+import PanelToolButtons from './PanelTools'
+import { extensionsOf } from '../../extensions'
+import InfoTip from '../form/InfoTip'
+
+/**
+ * The bands of a track: pick one from the list or on the map, and its
+ * curvature, cant, height plan and speed stand under each other in the
+ * overlay. A click on another track swaps the overlay over to it.
+ */
+function BandsPage({ trackId, onShow, onExit }) {
+  const { t } = useI18n()
+  const tracks = useTracks()
+  useMapPick({ active: true, hover: 'track', onPick: ({ trackId: id }) => onShow?.(id) })
+  return (
+    <>
+      <BackButton onBack={onExit} />
+      <h2>{t('check_bands')}<InfoTip text={t('bands_hint')} /></h2>
+      <p className="selecting-hint">{t('bands_pick')}</p>
+      {tracks.length === 0 && <p className="form-error">{t('plan_no_tracks')}</p>}
+      <GroupedTrackList tracks={tracks}
+        isActive={(track) => track.id === trackId}
+        onPick={(track) => onShow?.(track.id)} />
+    </>
+  )
+}
+
+/**
+ * Checking the design (R10.7): the physics and the rulebook it is held to —
+ * each a popup over the map, as wide as their tables — and the optimizer that
+ * holds a track or an element to them, the one place it is offered; beside it
+ * the alignment fit from a measured axis (AP 12.5). Last the bands of a track,
+ * to read its alignment along it at one glance, and the shift values of a
+ * track against a reference axis (Paket V). The optimizer and the alignment
+ * fit run on the optimizer service: the server puts them in (`panelTools` of
+ * 'check', Paket L).
+ */
+export default function CheckPanel({ onShowPhysics, onShowRegelwerk, bandsTrackId, onShowBands }) {
+  const { t } = useI18n()
+  const [page, setPage] = useState('menu')
+  const [shiftTrackId, setShiftTrackId] = useState(null)
+
+  if (page === 'bands') {
+    // Leaving the page takes the bands with it: they belong to it.
+    return (
+      <BandsPage trackId={bandsTrackId} onShow={onShowBands}
+        onExit={() => { onShowBands?.(null); setPage('menu') }} />
+    )
+  }
+  if (page === 'shift') {
+    return (
+      <>
+        <BackButton onBack={() => setPage('menu')} />
+        <ShiftValuesPage trackId={shiftTrackId} onPick={setShiftTrackId} />
+      </>
+    )
+  }
+  const tools = extensionsOf('panelTools').filter(x => x.panel === 'check')
+  const tool = tools.find(x => x.id === page)
+  if (tool) {
+    const Tool = tool.Component
+    return <Tool onExit={() => setPage('menu')} onShowRegelwerk={onShowRegelwerk} />
+  }
+  return (
+    <>
+      <h2>{t('check_title')}<InfoTip text={t('check_hint')} /></h2>
+      <div className="create-element-options">
+        <button className="create-element-btn" onClick={() => onShowPhysics?.()}>
+          <PhysicsIcon />
+          {t('constraints_physics')}
+        </button>
+        <button className="create-element-btn" onClick={() => onShowRegelwerk?.()}>
+          <RegelwerkIcon />
+          {t('constraints_regelwerk')}
+        </button>
+        <PanelToolButtons panel="check" onPick={setPage} />
+        <span className="create-element-section">{t('check_bands')}</span>
+        <button className="create-element-btn" onClick={() => setPage('bands')}>
+          <BandsIcon />
+          {t('check_bands_show')}
+        </button>
+        <span className="create-element-section">{t('shift_title')}</span>
+        <button className="create-element-btn" onClick={() => setPage('shift')}>
+          <ShiftValuesIcon />
+          {t('shift_check')}
+        </button>
+      </div>
+    </>
+  )
+}

@@ -1,0 +1,53 @@
+# Dependencies
+node_modules/
+.venv/
+
+# Build output
+dist/
+dist-local/
+build/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor
+.vscode/
+.idea/
+
+# Vite cache
+.vite/
+
+# Test output
+coverage/
+
+# Scratch dirs for verification harnesses
+.tmp-*/
+
+# Everything reachable from the internet (the Python service, its runtime
+# environment, config) — deployed on this server, not part of this repo
+WEBSITE/
+
+# Roadmap — planning document, not part of the published tool
+ROADMAP.md
+ROADMAP.archiv-*.md
+
+# Backups and archived versions of the roadmap — kept locally, not published
+archiv/
+
+# Test-MDB — 33 MB Bestandsauszug, Zuarbeit von außen, nicht ins Repo
+Testdaten.MDB
+*.MDB
+*.mdb
+
+# Rework-Roadmap — Planung, wie ROADMAP.md
+Roadmap_rework.md
+open-layout-tool-local-*.zip

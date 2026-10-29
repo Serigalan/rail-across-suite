@@ -1,0 +1,80 @@
+/* The alignment fit from measured axis points (AP 12.5): the curvature diagram and its tools. */
+
+.curvature-chart {
+  position: relative;
+  width: 100%;
+  user-select: none;
+  touch-action: none;
+  cursor: grab;
+}
+
+.curvature-chart.dragging { cursor: grabbing; }
+.curvature-chart.inserting { cursor: crosshair; }
+
+.curvature-chart svg { display: block; }
+
+.curvature-chart .chart-label {
+  font-family: var(--font-ui);
+  font-size: var(--fs-xs);
+  fill: var(--color-muted);
+}
+
+.curvature-chart .straight-band {
+  fill: var(--color-primary);
+  fill-opacity: 0.08;
+  cursor: pointer;
+}
+
+.curvature-chart .straight-band.selected { fill-opacity: 0.22; }
+.curvature-chart.inserting .straight-band { cursor: crosshair; }
+
+.curvature-chart .straight-edge {
+  stroke: var(--color-primary);
+  stroke-width: 6;
+  stroke-opacity: 0.25;
+  cursor: ew-resize;
+}
+
+.curvature-chart .straight-edge:hover { stroke-opacity: 0.6; }
+
+.chart-readout {
+  font-family: var(--font-ui);
+  font-size: var(--fs-xs);
+  color: var(--color-text-soft);
+  min-height: 1.4em;
+}
+
+.axis-fit-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 6px 0 2px;
+}
+
+.axis-fit-tools .panel-btn.active {
+  background: var(--color-primary);
+  color: var(--color-surface);
+}
+
+/* Reconnecting existing elements (Paket N): the deviation over the station. */
+.deviation-band { width: 100%; margin: 6px 0; }
+.deviation-band svg { display: block; }
+.deviation-band .chart-label {
+  font-family: var(--font-ui);
+  font-size: var(--fs-xs);
+  fill: var(--color-muted);
+}
+.deviation-band .chart-readout-label {
+  font-family: var(--font-ui);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Shift values against a reference axis (Paket V). */
+.shift-values { margin: 10px 0; }
+.shift-values > summary { cursor: pointer; font-weight: 600; font-size: var(--fs-s); }
+.shift-table { width: 100%; border-collapse: collapse; font-size: var(--fs-xs); font-variant-numeric: tabular-nums; }
+.shift-table th, .shift-table td { text-align: right; padding: 1px 6px; border-bottom: 1px solid var(--color-border-soft); }
+.shift-table th { color: var(--color-muted); font-weight: 600; }
+.shift-table tbody tr.hovered td { background: rgba(255, 140, 0, 0.14); }

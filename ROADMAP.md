@@ -31,7 +31,7 @@ Done:
 
 Open:
 
-- **Move the Open-Layout-Tool** into `apps/layout-tool/` with its history; its server to `server/`, its Python
+- **Move the Open-Layout-Tool** into `apps/open-layout-tool/` with its history; its server to `server/`, its Python
   service to `services/optimizer/`; CI and deployment scripts on the new paths. The toolkit gets a new server of
   its own; the running server of the Open-Layout-Tool is not migrated.
 - Large binary data (NTv2 grids, kilometrage tiles, map images) out of the history: Git LFS, release assets or a

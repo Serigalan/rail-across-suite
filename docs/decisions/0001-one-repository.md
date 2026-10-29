@@ -1,6 +1,6 @@
 # 0001 — One repository for the core, all modules and the services
 
-Status: **accepted**
+Status: **accepted** · amended 2026-10-29: the app directories carry the apps' names
 
 ## Decision
 
@@ -9,17 +9,22 @@ Python services live in it, each in a directory of its own:
 
 ```
 open-rail-designer/
-  packages/core/        the core in JavaScript: geometry, tracks, switches, location types, remap, merge, validation
-  packages/core-py/     the same core for Python (optimizer, simulations)
-  schemas/              JSON Schema per domain, shared test vectors
-  apps/layout-tool/     the Open-Layout-Tool
-  apps/…                further modules (catenary, signalling, timetable, …)
-  server/               one project server for all modules
-  services/optimizer/   the Python service
+  packages/core/              the core in JavaScript: geometry, tracks, switches, locations, remap, merge, validation
+  packages/core-py/           the same core for Python (optimizer, simulations)
+  schemas/                    JSON Schema per domain, shared test vectors
+  apps/open-layout-tool/      the Open-Layout-Tool
+  apps/open-signalling-tool/  the first new module; the others follow alike
+  server/                     one project server for all modules
+  services/optimizer/         the Python service
   docs/
 ```
 
-The Open-Layout-Tool moves into `apps/layout-tool/` with its history in a later step (see the roadmap, phase 0).
+Each app's directory carries the app's name, which is also its package name: `open-layout-tool`,
+`open-signalling-tool`, `open-catenary-tool`, `open-timetable-tool`, `open-capacity-sim`, `open-construction-sim`
+— the names of the architecture diagram.
+
+The Open-Layout-Tool moves into `apps/open-layout-tool/` with its history in a later step (see the roadmap,
+phase 0).
 
 ## Why
 

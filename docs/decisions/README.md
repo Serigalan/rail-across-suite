@@ -11,3 +11,4 @@ it costs. A record is not rewritten when a decision changes; a new one replaces 
 | [0004](0004-ids-on-tracks.md) | Ids on tracks, not on their elements | accepted |
 | [0005](0005-sketch-mode.md) | A sketch mode in every module | accepted |
 | [0006](0006-capacity-on-osrd.md) | Open-Capacity-Sim builds on OSRD | accepted |
+| [0007](0007-project-name.md) | The project's name: Rail-Across-Suite | accepted |

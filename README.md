@@ -1,7 +1,9 @@
-# Open-Rail-Designer
-Modular open-source toolkit for railway infrastructure planning, built around a shared data core.
+# Rail-Across-Suite
 
-![Open-Rail-Designer architecture](architecture.svg)
+*Railway planning across disciplines* — a modular open-source toolkit for railway infrastructure planning, built
+around a shared data core. Short form: Rail-Across. Projects are exchanged as `.railacross` files.
+
+![Rail-Across-Suite architecture](architecture.svg)
 
 ## Repository
 
@@ -20,6 +22,8 @@ One repository holds the core, every module and the services
 
 How to contribute: [CONTRIBUTING.md](CONTRIBUTING.md).
 
+The project was called Open-Rail-Designer until it was renamed ([decision 0007](docs/decisions/0007-project-name.md)).
+
 ## Roadmap
 
 The [roadmap](ROADMAP.md) starts with the Rail-Data-Core; how its data is structured and stored is proposed in
@@ -27,7 +31,7 @@ The [roadmap](ROADMAP.md) starts with the Rail-Data-Core; how its data is struct
 
 ## Licence
 
-Copyright 2026 Serigalan and the Open-Rail-Designer contributors.
+Copyright 2026 Serigalan and the Rail-Across-Suite contributors.
 
 - **Code** — everything that is not documentation, including the schemas — under the
   [Apache License 2.0](LICENSE) (`Apache-2.0`).

@@ -3,7 +3,7 @@
 Status: **proposal, under review** — hardened against concrete cases (section 2). It is the design input for
 phases 1 and 2 of the [roadmap](../ROADMAP.md).
 
-Every module of Open-Rail-Designer reads and writes one shared description of the railway. This page proposes
+Every module of Rail-Across-Suite reads and writes one shared description of the railway. This page proposes
 how that description is structured and stored. It starts from what already works, the project format of the
 Open-Layout-Tool, **oltjson-1.1** (`open-layout-tool/docs/data-format.md`), and generalises it where the
 planned modules need more than a track layout.
@@ -282,7 +282,7 @@ blobs: canonical JSON of each collection · bulk point arrays · schemas · imag
 | S-R6 | **Derived results are caches keyed by input hashes** (coordination findings, simulation results, reverse index), never in a revision; a simulation result also by its construction stage. An **approval** pins a domain hash plus the hashes of its dependencies; whether a later change affects it is decided by the diff, restricted to the approved stages and area. | S3, S7 |
 | S-R7 | **Partial loading is for reading.** Editing the core loads every domain that references it — except in a sketch, which holds no other domains (S-R11). | S4, F12 |
 | S-R8 | **Project level, outside revisions**: variants and sketches, approvals, comments. They refer into revisions; revisions never refer to them. | S3, F12 |
-| S-R9 | **Exchange**: a zip container with the manifest, the canonical collection files, schemas and blobs. A single-file JSON for small projects holds the same canonical documents and gives the same hashes. The file extension is still open: `.ord`, the working name, already stands for Bentley's OpenRoads and OpenRail Designer in civil design. | — |
+| S-R9 | **Exchange**: a zip container with the extension `.railacross`, holding the manifest, the canonical collection files, schemas and blobs. Its first entry is an uncompressed file `mimetype` with `application/vnd.rail-across+zip`, so programs recognise it by its content, as OpenDocument and EPUB do. A single-file JSON for small projects (`.railacross.json`) holds the same canonical documents and gives the same hashes ([decision 0007](decisions/0007-project-name.md)). | — |
 | S-R10 | **Versions**: each domain has its own version; the one door runs an explicit, tested migration chain per domain. Behind the door only the current version exists. | F10 |
 | S-R11 | **Sketches** are variants marked as sketch, with their scope domain and the revision they start from; their revisions hold the core and the scope domain only, so with hashes per collection the copied core costs nothing. The server refuses to merge a sketch into a regular variant; a takeover is checked in on the target like any change. A sketch is visible to its author until shared with the project's members. | F12 |
 

@@ -43,11 +43,11 @@ describe('checkBoundaries', () => {
   it('reports imports across the boundaries, by path and by package name', () => {
     const root = repo({
       'apps/open-layout-tool/package.json': JSON.stringify({ name: 'open-layout-tool' }),
-      'apps/open-layout-tool/src/a.js': "import { core } from '@open-rail-designer/core'\nimport b from './b.js'\n",
+      'apps/open-layout-tool/src/a.js': "import { core } from '@rail-across/core'\nimport b from './b.js'\n",
       'apps/open-signalling-tool/src/m.js': "import x from '../../open-layout-tool/src/a.js'\nimport y from 'open-layout-tool/src/a.js'\n",
-      'packages/core/package.json': JSON.stringify({ name: '@open-rail-designer/core' }),
+      'packages/core/package.json': JSON.stringify({ name: '@rail-across/core' }),
       'packages/core/index.js': "import z from '../../apps/open-layout-tool/src/a.js'\nimport { readFileSync } from 'node:fs'\n",
-      'server/api.js': "import { core } from '@open-rail-designer/core'\n",
+      'server/api.js': "import { core } from '@rail-across/core'\n",
     })
     try {
       const found = checkBoundaries(root).map(f => `${f.file}:${f.line} ${f.rule}`).sort()

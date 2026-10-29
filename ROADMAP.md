@@ -1,6 +1,6 @@
 # Roadmap
 
-Open-Rail-Designer is built around one shared data foundation, the **Rail-Data-Core**. Every module reads and
+Rail-Across-Suite is built around one shared data foundation, the **Rail-Data-Core**. Every module reads and
 writes it; none keeps a private model of the railway. The roadmap therefore starts with the core and adds
 modules only on top of it. The Open-Layout-Tool is the existing module and the source of the core's first
 version: its project format oltjson-1.1 already holds the track network.
@@ -85,7 +85,7 @@ Goal: the core can carry what the planned modules need, before they are written.
 - Domains with ownership: `core` (net, platforms, end marks, structures, operational point register, designed
   kilometrage) and discipline domains that store references only into the core.
 - Storage as a hash tree: revision → manifest → domain → collection; bulk point arrays as blobs; canonical JSON
-  after RFC 8785, the same bytes from JavaScript and Python; the exchange container.
+  after RFC 8785, the same bytes from JavaScript and Python; the exchange container (`.railacross`).
 - Server: rights per domain; a domain the author may not write may only change by carrying or by orphans
   moved to their plane position.
 - **Sketches** ([decision 0005](docs/decisions/0005-sketch-mode.md)): variants with a scope domain that hold only

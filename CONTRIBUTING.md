@@ -1,6 +1,6 @@
 # Contributing
 
-Thank you for helping build Open-Rail-Designer. This page says how a change gets in.
+Thank you for helping build Rail-Across-Suite. This page says how a change gets in.
 
 ## Before you start
 

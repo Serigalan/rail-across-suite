@@ -5,8 +5,8 @@ After=network.target
 
 [Service]
 User=@OLT_USER@
-WorkingDirectory=@OLT_REPO@/tools/server
-ExecStart=@OLT_NODE@ @OLT_REPO@/tools/server/bin/olt-cloudjobs.mjs serve
+WorkingDirectory=@OLT_REPO@/server
+ExecStart=@OLT_NODE@ @OLT_REPO@/server/bin/olt-cloudjobs.mjs serve
 Environment=OLT_SERVER_DB=@OLT_DB@
 Environment=OLT_SERVER_CLOUDS=@OLT_CLOUDS@
 Environment=OLT_CLOUDJOBS_PARALLEL=@OLT_CLOUDJOBS_PARALLEL@

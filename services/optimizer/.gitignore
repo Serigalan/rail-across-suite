@@ -1,5 +1,5 @@
 
-# Python (tools/optimizer)
+# Python (services/optimizer)
 __pycache__/
 *.egg-info/
 .venv/

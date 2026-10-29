@@ -20,10 +20,10 @@ describe('regelwerkDefaults, against the files it reads', () => {
   })
 
   it('has no copy of the catalogue beside the optimizer any more — it reads this one', () => {
-    // tools/optimizer/olt_optimizer/constraints is a symlink to src/core/constraints.
-    const linked = fs.realpathSync(path.join(repoRoot, 'tools/optimizer/olt_optimizer/constraints'))
+    // services/optimizer/olt_optimizer/constraints is a symlink to src/core/constraints.
+    const linked = fs.realpathSync(path.join(repoRoot, '../../services/optimizer/olt_optimizer/constraints'))
     expect(linked).toBe(fs.realpathSync(path.join(repoRoot, 'src/core/constraints')))
-    expect(fs.existsSync(path.join(repoRoot, 'tools/optimizer/olt_optimizer/regelwerke'))).toBe(false)
+    expect(fs.existsSync(path.join(repoRoot, '../../services/optimizer/olt_optimizer/regelwerke'))).toBe(false)
   })
 
   it('matches src/core/constraints/physics.json', () => {

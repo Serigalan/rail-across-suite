@@ -180,7 +180,7 @@ describe('what rulebook it is', () => {
   // serve, may not collide with the id of one it does.
   it('is not the id the service serves', () => {
     const served = JSON.parse(fs.readFileSync(
-      path.join(repoRoot, 'tools/optimizer/olt_optimizer/constraints/db-ril-800-0110.json'), 'utf-8'))
+      path.join(repoRoot, '../../services/optimizer/olt_optimizer/constraints/db-ril-800-0110.json'), 'utf-8'))
     expect(served.catalog.id).not.toBe(WEICHEN_REGELWERK_ID)
   })
 })

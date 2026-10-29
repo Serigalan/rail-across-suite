@@ -17,7 +17,7 @@
 
 - **`src/core`** — everything that computes and stores in the browser alone. The local build ships only this.
 - **`src/server`** — what needs the project server or the Python service. The main build ships both.
-- **`tools/server`**, **`tools/optimizer`** — the two services ([server](server.md)); **`deploy/`** — operation.
+- **`server`**, **`services/optimizer`** — the two services ([server](server.md)); **`deploy/`** — operation.
 
 Two builds from one codebase: `vite build` (entry `src/main.jsx`, core + server → `dist/`) and
 `vite build --mode standalone` (entry `src/main.local.jsx`, core alone → `dist-local/`, served by
@@ -125,7 +125,7 @@ own module, and a worker only the server build needs lives in `src/server` (the 
   where present (tests skip without it).
 - **Architecture tests** for layers, modules, colours in components and accessible buttons.
 - The project server's API tests run against an in-memory database with `fastify.inject`.
-- The optimizer's acceptance tests (`tools/optimizer/tests/`) run in CI.
+- The optimizer's acceptance tests (`services/optimizer/tests/`) run in CI.
 
 ## Adding something
 

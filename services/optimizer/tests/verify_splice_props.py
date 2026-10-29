@@ -26,7 +26,7 @@ direction. The invariants:
 An invariant that belongs to a work package not built yet is reported, not
 enforced: the bench was written first (AP S.1) and each AP turns its own on.
 
-    WEBSITE/.venv/bin/python tools/optimizer/tests/verify_splice_props.py [--n 40] [--seed 1]
+    WEBSITE/.venv/bin/python services/optimizer/tests/verify_splice_props.py [--n 40] [--seed 1]
 """
 
 import argparse

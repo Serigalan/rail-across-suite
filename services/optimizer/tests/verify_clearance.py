@@ -11,7 +11,7 @@ with the inner one at R 304.5 and keeps its 4.5 m; a larger one moves its
 middle towards the inner arc by (R − 304.5)(√2 − 1). Without cant, 4.0 m are
 kept up to R ≈ 305.7.
 
-    /var/lib/open-layout-tool/venv/bin/python tools/optimizer/tests/verify_clearance.py
+    /var/lib/open-layout-tool/venv/bin/python services/optimizer/tests/verify_clearance.py
 """
 
 import json
@@ -42,7 +42,7 @@ def ok(label, cond):
         FAILED.append(label)
 
 
-with open(os.path.join(HERE, "..", "..", "..", "src", "core", "constraints", "db-ril-800-0130.json"), encoding="utf-8") as f:
+with open(os.path.join(HERE, "..", "..", "..", "apps", "open-layout-tool", "src", "core", "constraints", "db-ril-800-0130.json"), encoding="utf-8") as f:
     PROFILE = next(p for p in json.load(f)["lichtraum"]["profile"] if p["id"] == "hauptgleis")["umriss"]
 MODEL = {"coeff": 6.5, "defCoeff": 11.8, "defMin": 60, "max": 160, "step": 5}
 E0, N0 = 500000.0, 5600000.0

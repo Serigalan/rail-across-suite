@@ -22,6 +22,7 @@ export {
   deleteCloud, estimateCloudBytes, INDEX_FILE, listClouds, opfsAvailable, persistStorage,
   storageEstimate, storagePersisted,
 } from './cloudStore'
+/** @public — the project server prepares uploaded clouds with it (server/src/clouds/prepare.js). */
 export { importLevels } from './importPipeline'
 export { fileSource } from './lasReader'
 export { formatName, pointsAsText, PREVIEW_POINTS } from './lasText'

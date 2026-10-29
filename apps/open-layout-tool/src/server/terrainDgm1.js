@@ -15,7 +15,7 @@ import { demTilesUrl, terrainOnServer } from './optimizerService'
  * The Länder the service has a DGM1 for, as a WGS84 box around each — a coarse
  * test so a point far away is not sent at all. The service answers null for a
  * point inside a box but outside the Land. Kept in step with SOURCES in
- * tools/optimizer/olt_optimizer/terrain.py.
+ * services/optimizer/olt_optimizer/terrain.py.
  */
 const DGM1_LAENDER = {
   th: { name: 'Thüringen',           box: [9.85, 50.17, 12.68, 51.68] },
@@ -65,7 +65,7 @@ export const dgm1Source = { id: 'dgm1', sample: sampleDgm1, label: dgm1Label }
 /**
  * The Länder's DGM1 as a basemap (extension point `basemaps`): DGM5 coloured
  * and shaded as everywhere, and over it the service's 1 m relief tiles of zoom
- * 16 and 17 (tools/optimizer/olt_optimizer/dem_tiles.py), drawn from map zoom
+ * 16 and 17 (services/optimizer/olt_optimizer/dem_tiles.py), drawn from map zoom
  * 15 (~1.5 m a pixel) on — heights to the centimetre, packed as
  * `h = (R · 65536 + G · 256 + B) · 0.01 − 10000`. Zoomed out, outside these
  * Länder and until a tile has come, DGM5 shows.

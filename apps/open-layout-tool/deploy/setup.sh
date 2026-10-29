@@ -92,12 +92,13 @@ for d in "${dirs[@]}"; do   # from / inwards: an inner one may be closed only by
     echo "ACL: $OLT_USER may pass through $d"
   fi
 done
-if ! as_user test -r "$OLT_REPO/tools/server/bin/olt-server.mjs"; then
+if ! as_user test -r "$OLT_REPO/server/bin/olt-server.mjs"; then
   die "$OLT_USER cannot read $OLT_REPO — make the checkout readable (chmod -R a+rX)"
 fi
 
 step "NTv2 grids for PROJ"
-for g in grids/*.tif; do
+(cd apps/open-layout-tool && node tools/data.mjs)
+for g in apps/open-layout-tool/grids/*.tif; do
   install -m 0644 "$g" "$OLT_DATA/share/proj/$(basename "$g")"
 done
 
@@ -107,14 +108,14 @@ if [ ! -x "$OLT_VENV/bin/python" ]; then
 fi
 
 step "First build and install"
-"$OLT_REPO/deploy/deploy.sh" --config "$OLT_CONFIG" --no-restart
+"$OLT_APP/deploy/deploy.sh" --config "$OLT_CONFIG" --no-restart
 
 step "systemd units"
 for t in "${UNIT_TEMPLATES[@]}"; do
   unit=$(unit_name "$t")
   # A unit linked in from elsewhere (an older hand-made setup) is replaced.
   [ -L "/etc/systemd/system/$unit" ] && rm "/etc/systemd/system/$unit"
-  render "deploy/templates/$t" "/etc/systemd/system/$unit"
+  render "apps/open-layout-tool/deploy/templates/$t" "/etc/systemd/system/$unit"
 done
 systemctl daemon-reload
 mapfile -t services < <(service_units)
@@ -124,7 +125,7 @@ systemctl restart "${services[@]}"
 step "Caddy site"
 install -d "$OLT_CADDY_DIR"
 if [ "$OLT_CADDY" = system ]; then
-  render deploy/templates/Caddyfile "$OLT_CADDY_SITE"
+  render apps/open-layout-tool/deploy/templates/Caddyfile "$OLT_CADDY_SITE"
   # The package's own Caddyfile serves a placeholder on :80; replace it with
   # one that imports the sites. A Caddyfile somebody has written is kept and
   # only gains the import.
@@ -137,7 +138,7 @@ if [ "$OLT_CADDY" = system ]; then
   systemctl enable caddy
   systemctl reload-or-restart caddy
 else
-  render deploy/templates/Caddyfile "$OLT_CADDY_SITE"
+  render apps/open-layout-tool/deploy/templates/Caddyfile "$OLT_CADDY_SITE"
   chmod 0644 "$OLT_CADDY_SITE"
   if [ -n "$OLT_CADDY_RELOAD" ]; then
     echo "site block in $OLT_CADDY_SITE; reloading: $OLT_CADDY_RELOAD"
@@ -149,11 +150,11 @@ else
 fi
 
 step "First admin"
-count=$(cd tools/server && OLT_SERVER_DB="$OLT_DB" as_user "$OLT_NODE" bin/olt-server.mjs user-count)
+count=$(cd server && OLT_SERVER_DB="$OLT_DB" as_user "$OLT_NODE" bin/olt-server.mjs user-count)
 if [ "$count" = 0 ]; then
   pwfile="$OLT_DATA/admin-start-password.txt"
   pw=$(python3 -c 'import secrets; print(secrets.token_urlsafe(15))')
-  (cd tools/server && OLT_SERVER_DB="$OLT_DB" OLT_ADMIN_PASSWORD="$pw" as_user "$OLT_NODE" bin/olt-server.mjs create-admin "$OLT_ADMIN_LOGIN")
+  (cd server && OLT_SERVER_DB="$OLT_DB" OLT_ADMIN_PASSWORD="$pw" as_user "$OLT_NODE" bin/olt-server.mjs create-admin "$OLT_ADMIN_LOGIN")
   umask 077
   printf 'login: %s\nstart password: %s\n(to be changed at the first sign-in; delete this file afterwards)\n' \
     "$OLT_ADMIN_LOGIN" "$pw" > "$pwfile"
@@ -163,6 +164,6 @@ else
   echo "$count user(s) exist — no admin created"
 fi
 
-"$OLT_REPO/deploy/deploy.sh" --config "$OLT_CONFIG" --check-only
+"$OLT_APP/deploy/deploy.sh" --config "$OLT_CONFIG" --check-only
 echo
 echo "Done: https://$OLT_DOMAIN/"

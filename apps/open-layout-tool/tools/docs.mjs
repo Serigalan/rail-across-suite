@@ -10,23 +10,29 @@ import { readdirSync, readFileSync, statSync, existsSync } from 'node:fs'
 import { join, dirname, relative, resolve, basename } from 'node:path'
 
 const ROOT = resolve(dirname(new URL(import.meta.url).pathname), '..')
+// The repository the app lives in: the docs also name the server and the services.
+const REPO = resolve(ROOT, '../..')
 const DOCS = join(ROOT, 'docs')
 
 const SKIP = new Set(['node_modules', '.git', 'dist', 'dist-local', '__pycache__', 'archiv'])
 const files = (dir) => readdirSync(dir).flatMap(name => {
   if (SKIP.has(name) || name.endsWith('.egg-info')) return []
   const path = join(dir, name)
+  // A link to data that is not fetched (public/data → grids/, tiles/) leads nowhere.
+  if (!existsSync(path)) return []
   return statSync(path).isDirectory() ? files(path) : [path]
 })
 
 // A backticked word names a file when it ends in one of these.
 const FILE = /^[\w./-]+\.(js|jsx|mjs|json|py|md|sql|sh|css|html)$/
+// Data kept out of the history (data.json): named, but fetched or put there by hand.
+const DATA = /^(grids|tiles)\//
 
 /** The breaches, as lines of text. */
 export function checkDocs() {
-  const repo = files(ROOT)
+  const repo = files(REPO)
   const names = new Set(repo.map(p => basename(p)))
-  const paths = new Set(repo.map(p => relative(ROOT, p)))
+  const paths = new Set(repo.flatMap(p => [relative(ROOT, p), relative(REPO, p)]))
   const breaches = []
   for (const page of files(DOCS).filter(p => p.endsWith('.md'))) {
     const text = readFileSync(page, 'utf8')
@@ -39,7 +45,7 @@ export function checkDocs() {
     // Code blocks hold examples, not file names.
     const prose = text.replace(/```[\s\S]*?```/g, '')
     for (const [, word] of prose.matchAll(/`([^`\n]+)`/g)) {
-      if (!FILE.test(word)) continue
+      if (!FILE.test(word) || DATA.test(word)) continue
       const found = word.includes('/')
         ? [...paths].some(p => p === word || p.endsWith(`/${word}`))
         : names.has(word)

@@ -19,7 +19,7 @@ parse_common() {
 
 load_config() {
   OLT_CONFIG=${OLT_CONFIG:-/etc/open-layout-tool/olt.env}
-  [ -f "$OLT_CONFIG" ] || die "no configuration at $OLT_CONFIG (copy deploy/olt.env.example there)"
+  [ -f "$OLT_CONFIG" ] || die "no configuration at $OLT_CONFIG (copy apps/open-layout-tool/deploy/olt.env.example there)"
   OLT_CONFIG=$(cd "$(dirname "$OLT_CONFIG")" && pwd)/$(basename "$OLT_CONFIG")
   set -a
   # shellcheck disable=SC1090
@@ -27,7 +27,8 @@ load_config() {
   set +a
 
   local here sfx
-  here=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+  # The scripts live in apps/open-layout-tool/deploy; the checkout is three up.
+  here=$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)
   : "${OLT_DOMAIN:?OLT_DOMAIN must be set in $OLT_CONFIG}"
   # Several instances on one machine (test and production): an instance name
   # puts its own prefix on the units, user and data directory. Empty is the
@@ -38,6 +39,7 @@ load_config() {
   OLT_UNIT_PREFIX=olt$sfx-
   OLT_LABEL=${OLT_INSTANCE:+ [$OLT_INSTANCE]}
   OLT_REPO=${OLT_REPO:-$here}
+  OLT_APP=$OLT_REPO/apps/open-layout-tool
   OLT_USER=${OLT_USER:-olt$sfx}
   OLT_DATA=${OLT_DATA:-/var/lib/open-layout-tool$sfx}
   OLT_DB=${OLT_DB:-$OLT_DATA/olt.sqlite}
@@ -52,7 +54,7 @@ load_config() {
   OLT_SERVER_LOG=${OLT_SERVER_LOG:-info}
   OLT_CADDY=${OLT_CADDY:-system}
   OLT_UPSTREAM=${OLT_UPSTREAM:-$OLT_BIND}
-  OLT_SITE_ROOT=${OLT_SITE_ROOT:-$OLT_REPO/dist}
+  OLT_SITE_ROOT=${OLT_SITE_ROOT:-$OLT_APP/dist}
   OLT_TRUST_PROXY=${OLT_TRUST_PROXY:-127.0.0.1,::1}
   if [ "$OLT_CADDY" = system ]; then OLT_CADDY_DIR=${OLT_CADDY_DIR:-/etc/caddy/conf.d}
   else OLT_CADDY_DIR=${OLT_CADDY_DIR:-$OLT_DATA}; fi
@@ -72,10 +74,10 @@ load_config() {
   # What deploy.sh may put on this instance: "main" (git pull, the test
   # server) or "tags" (only prod-* tags with a green CI, production).
   OLT_TRACK=${OLT_TRACK:-main}
-  OLT_GITHUB_REPO=${OLT_GITHUB_REPO:-Serigalan/open-layout-tool}
+  OLT_GITHUB_REPO=${OLT_GITHUB_REPO:-Serigalan/rail-across-suite}
   OLT_NODE=${OLT_NODE:-$(command -v node || echo /usr/bin/node)}
   OLT_STATE=$OLT_DATA/.deploy-state
-  export OLT_DOMAIN OLT_INSTANCE OLT_UNIT_PREFIX OLT_LABEL OLT_REPO OLT_USER OLT_DATA OLT_DB \
+  export OLT_DOMAIN OLT_INSTANCE OLT_UNIT_PREFIX OLT_LABEL OLT_REPO OLT_APP OLT_USER OLT_DATA OLT_DB \
     OLT_BACKUPS OLT_BACKUP_DAYS OLT_VENV OLT_TERRAIN_CACHE OLT_CLOUDS OLT_BIND OLT_SERVER_PORT \
     OLT_OPTIMIZER_PORT OLT_SERVER_LOG OLT_CADDY OLT_UPSTREAM OLT_SITE_ROOT OLT_TRUST_PROXY \
     OLT_CADDY_DIR OLT_CADDY_SITE OLT_CADDY_RELOAD OLT_ADMIN_LOGIN OLT_OPTIMIZER_TIMEOUT \

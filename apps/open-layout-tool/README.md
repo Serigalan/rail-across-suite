@@ -1,7 +1,8 @@
-# <img src=".github/logo.svg" alt="" height="44" align="top"> Open Layout Tool
+# <img src="docs/logo.svg" alt="" height="44" align="top"> Open Layout Tool
 
 An interactive web application for designing railway track layouts on a map — running at
-[open-layout-tool.org](https://open-layout-tool.org/).
+[open-layout-tool.org](https://open-layout-tool.org/). It is the first module of
+[Rail-Across-Suite](../../README.md) and lives in its repository under `apps/open-layout-tool/`.
 
 ## Features
 
@@ -32,12 +33,17 @@ the app — what it does, how it computes and why it is built that way.
 
 ```bash
 npm install
+npm run data        # the NTv2 grids, by version and SHA-256 (data.json)
 npm run dev
 ```
 
+The NTv2 grids and the kilometrage lines are not in the repository (`data.json`). `npm run data` fetches the
+grids; the kilometrage lines are not published — whoever has them puts them into `tiles/`, and `npm run data`
+links them into the app.
+
 The dev server runs over HTTPS (with a self-signed certificate, which the browser will warn about once).
-It forwards `/api` to the project server (`tools/server`) and `/optimizer` to the optimizer service
-(`tools/optimizer`); see `deploy/README.md` for running both locally.
+It forwards `/api` to the project server ([`server/`](../../server/README.md)) and `/optimizer` to the
+optimizer service ([`services/optimizer/`](../../services/optimizer/README.md)); see `deploy/README.md` for running both locally.
 
 ## Local version
 
@@ -59,9 +65,10 @@ What it can and cannot do: [`tools/local/README.md`](tools/local/README.md) — 
 Caddy with TLS and a daily database backup — from one configuration file:
 
 ```bash
-cp deploy/olt.env.example /etc/open-layout-tool/olt.env   # set OLT_DOMAIN
-deploy/setup.sh                                           # once
-deploy/deploy.sh --pull                                   # after every update
+cd /opt/rail-across-suite                                                     # the checkout
+cp apps/open-layout-tool/deploy/olt.env.example /etc/open-layout-tool/olt.env # set OLT_DOMAIN
+apps/open-layout-tool/deploy/setup.sh                                         # once
+apps/open-layout-tool/deploy/deploy.sh --pull                                 # after every update
 ```
 
 Details in [`deploy/README.md`](deploy/README.md).

@@ -1,5 +1,5 @@
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
-import { setup, signIn } from '../../tools/server/test/helpers.js'
+import { setup, signIn } from '../../../../server/test/helpers.js'
 import { commitVariantMerge, prepareVariantMerge } from './variantMerge'
 
 beforeAll(() => {

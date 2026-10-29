@@ -1,5 +1,5 @@
 {
- "about": "Shortest transition lengths by the rules (Entscheidung 176): the app (src/core/utils/rules/transitionLength.js, transitionLength.vectors.test.js) and the optimizer service (olt_optimizer/grenzen.py transition_lengths, tools/optimizer/tests/vectors.py) answer each case alike. regularBy/minimumBy: [rule id, bound in m, binding], the longest first.",
+ "about": "Shortest transition lengths by the rules (Entscheidung 176): the app (src/core/utils/rules/transitionLength.js, transitionLength.vectors.test.js) and the optimizer service (olt_optimizer/grenzen.py transition_lengths, services/optimizer/tests/vectors.py) answer each case alike. regularBy/minimumBy: [rule id, bound in m, binding], the longest first.",
  "catalogue": "db-ril-800-0110",
  "cases": [
   {

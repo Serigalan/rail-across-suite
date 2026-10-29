@@ -2,17 +2,18 @@
 # Everything CI runs (.github/workflows/ci.yml), locally: lint, dead code (knip), the boundary
 # between core and server, the modules of src/core/utils, the docs, the unit and server tests,
 # both builds — the main one and the local one, checked for server parts (Paket L) — and, where
-# a Python environment with the optimizer is found (OLT_PYTHON, else .venv/), the shared vectors
-# and the optimizer's acceptance tests.
+# a Python environment with the optimizer is found (OLT_PYTHON, else .venv/ here or in
+# services/optimizer), the shared vectors and the optimizer's acceptance tests.
 #
 #   npm run check            all of it
-#   npm run check -- --quick without tools/optimizer/tests/verify.py (≈ 1 min)
+#   npm run check -- --quick without services/optimizer/tests/verify.py (≈ 1 min)
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
 quick=0
 [ "${1:-}" = --quick ] && quick=1
 
+echo "== data (NTv2 grids)"; node tools/data.mjs
 echo "== lint";  npm run -s lint
 echo "== dead code"; npm run -s knip
 echo "== unused translations"; npm run -s i18n:unused
@@ -27,11 +28,12 @@ node tools/check-local-bundle.mjs "$local_dist"
 
 py=${OLT_PYTHON:-}
 if [ -z "$py" ] && [ -x .venv/bin/python ]; then py=$PWD/.venv/bin/python; fi
+if [ -z "$py" ] && [ -x ../../services/optimizer/.venv/bin/python ]; then py=$(cd ../../services/optimizer && pwd)/.venv/bin/python; fi
 if [ -z "$py" ] || ! "$py" -c 'import olt_optimizer' 2>/dev/null; then
   echo "== optimizer: skipped (no Python environment with olt_optimizer; set OLT_PYTHON)"
   exit 0
 fi
-cd tools/optimizer
+cd ../../services/optimizer
 echo "== optimizer: shared vectors"; "$py" tests/vectors.py
 echo "== optimizer: service";        "$py" tests/verify_service.py | tail -1
 echo "== optimizer: splice";         "$py" tests/verify_splice.py | tail -1

@@ -1,4 +1,4 @@
-// Client for the server service (tools/optimizer, olt_optimizer/service.py) —
+// Client for the server service (services/optimizer, olt_optimizer/service.py) —
 // the optimizer and, on endpoints of their own, the Access-file conversion for
 // the MDB import and the Länder's DGM1 terrain.
 //

@@ -9,7 +9,7 @@ import { expectValidTrack } from '../core/test/chainInvariants'
 import korbbogen from '../core/test/fixtures/optimizer_service_korbbogen.json'
 
 // What the service promises over the wire is checked against a running one in
-// tools/optimizer/tests/verify_service.py. What is checked here is the half the
+// services/optimizer/tests/verify_service.py. What is checked here is the half the
 // panel depends on: that a result arrives unwrapped, and that every way a run
 // can fail arrives as something the panel can put into words.
 
@@ -158,7 +158,7 @@ describe('asking for one regelwerk in full', () => {
 // A compound curve is what AP 4.2 is about, and this is the seam it has to
 // cross: an answer the service really gave (recorded from a running one) has to
 // come back as a track this app will take. The optimization itself is checked
-// in tools/optimizer/tests/verify.py.
+// in services/optimizer/tests/verify.py.
 describe('an optimized compound curve coming back from the service', () => {
   const { track } = korbbogen.request
   const optimized = korbbogen.response

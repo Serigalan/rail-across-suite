@@ -1,5 +1,5 @@
 import { closeSync, existsSync, openSync, readFileSync, readSync } from 'node:fs'
-import { scanClearance, traceTrack, trackGuide, lineGuide } from '../../../../src/core/utils/pointCloud'
+import { scanClearance, traceTrack, trackGuide, lineGuide } from '../../../apps/open-layout-tool/src/core/utils/pointCloud'
 
 /** The level long runs read: the 2-cm voxel, as in the browser (AP 13.6). */
 const RUN_LEVEL = 1

@@ -1,7 +1,7 @@
 # src/server — server components
 
-What needs the project server (`/api`, tools/server) or the Python service
-(`/optimizer`, tools/optimizer): sign-in, projects with variants and revisions,
+What needs the project server (`/api`, server) or the Python service
+(`/optimizer`, services/optimizer): sign-in, projects with variants and revisions,
 the working copy, optimizing, splicing, reconnecting, the alignment fit, the
 MDB import, DGM1 heights, point clouds on the server and their 3D view.
 
@@ -9,5 +9,5 @@ MDB import, DGM1 heights, point clouds on the server and their 3D view.
 the app through the extension points of `core` — see `register.js`. The main
 build (`npm run build`) ships `core` and `server`, the local build only `core`.
 
-Described in `docs/server.md`, with the project server (`tools/server`) and
-the Python service (`tools/optimizer`).
+Described in `docs/server.md`, with the project server (`server`) and
+the Python service (`services/optimizer`).

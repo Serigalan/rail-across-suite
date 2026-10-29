@@ -52,7 +52,7 @@ describe('the catalogue file', () => {
   // no second copy that could say something else.
   it('is the very file the optimizer applies', () => {
     const applied = JSON.parse(fs.readFileSync(path.join(here,
-      '../../../../tools/optimizer/olt_optimizer/constraints/db-ril-800-0110.json'), 'utf-8'))
+      '../../../../../../services/optimizer/olt_optimizer/constraints/db-ril-800-0110.json'), 'utf-8'))
     expect(applied).toEqual(KATALOG)
     expect(applied.catalog.id).toBe(CATALOG_ID)
   })

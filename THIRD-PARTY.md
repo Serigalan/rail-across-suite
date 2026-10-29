@@ -3,13 +3,15 @@
 Material in this repository that is not the project's own work keeps its own licence. This list names each such
 item, where it comes from and under which terms it is redistributed. Add an entry with every new item.
 
-The entries below arrive with the move of the Open-Layout-Tool (roadmap, phase 0).
+The entries below arrived with the move of the Open-Layout-Tool (roadmap, phase 0).
 
 ## NTv2 transformation grids
 
 The grids transform historic German datums to ETRS89. They are the GeoTIFF conversions of the
-[PROJ-data](https://github.com/OSGeo/PROJ-data) package, identical to its files (SHA-256 checked for BeTA2007 and
-HeTA2010). Licence and source as PROJ-data states them:
+[PROJ-data](https://github.com/OSGeo/PROJ-data) package, identical to its files (SHA-256 checked for all four
+against cdn.proj.org). They are not in the repository's history: `apps/open-layout-tool/tools/data.mjs` fetches them
+by the hashes in `apps/open-layout-tool/data.json`, from this repository's release `data-1` or from cdn.proj.org.
+Licence and source as PROJ-data states them:
 
 | File | Area | Source | Licence |
 |---|---|---|---|
@@ -23,8 +25,10 @@ Attribution: "NTv2 grids © AdV, HVBG Hessen (dl-de/by-2-0), LVGL Saarland (CC B
 
 ## Kilometrage data
 
-The kilometrage lines shipped with the Open-Layout-Tool (`public/data/km`, `km_linie.pmtiles`) are **for tests
-only**. They are not published with the apps; they stay in test fixtures, and their source is named there.
+The kilometrage lines the Open-Layout-Tool shows (`tiles/km/`, `tiles/km_linie.pmtiles`) are **for tests
+only**. They are neither in this repository nor in its history, and no build ships them: whoever has them puts them
+into `apps/open-layout-tool/tiles/`, from where `tools/data.mjs` links them into the app. A test fixture taken from
+them names its source where it lies.
 
 ## Used, not included
 

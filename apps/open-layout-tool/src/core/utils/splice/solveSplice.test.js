@@ -12,7 +12,7 @@ import coreAnswers from '../../test/fixtures/splice_answers.json'
 // optimizer service's splice.py. It is held against what the service answers
 // for the very same requests — random geometries asked in every way a user
 // can ask them, with and without transitions, at the Regellänge — written by
-// tools/optimizer/tests/splice_answers_fixture.py; the merged track it leads
+// services/optimizer/tests/splice_answers_fixture.py; the merged track it leads
 // to is checked like any other.
 
 const NODE_TOL = 1e-6   // m

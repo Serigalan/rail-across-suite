@@ -16,7 +16,7 @@ describe('the bundled physics file', () => {
   // the repo, not a transcription of it. A copy pasted into src/ would still
   // render — and would be stale the first time the file changes — so the
   // identity is worth stating.
-  it('is tools/optimizer/physics.json itself, not a copy of it', () => {
+  it('is services/optimizer/physics.json itself, not a copy of it', () => {
     expect(PHYSICS).toEqual(physics)
   })
 })
@@ -191,7 +191,7 @@ describe('the MathML physics.json states', () => {
 
 describe('optimizerLimitRows', () => {
   // What GET /regelwerke/db-ril-800-0110 answers from a service built from
-  // this commit (tools/optimizer, grenzen.py: Grenzen.describe) — JSON floats,
+  // this commit (services/optimizer, grenzen.py: Grenzen.describe) — JSON floats,
   // as Python sends them.
   const served = {
     id: 'db-ril-800-0110', name: katalog.catalog.title, version: katalog.catalog.katalog_version,

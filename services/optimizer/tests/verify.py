@@ -1,4 +1,4 @@
-"""Verification harness (run: python tests/verify.py from tools/optimizer).
+"""Verification harness (run: python tests/verify.py from services/optimizer).
 
 1. Geometry kernel against the reference values it was built to reproduce
    (generated with the app's JS kernel before AP 7.1 removed the JS optimizer).
@@ -7,7 +7,7 @@
    joint optimization; continuity, fixed end points, corridor, ramp rules,
    joint never below baseline.
 4. Switch elements in a group: the tighter cant and deficiency limits (AP 1.1).
-5. The rule catalogue a run is held to (src/core/constraints/db-ril-800-0110.json):
+5. The rule catalogue a run is held to (apps/open-layout-tool/src/core/constraints/db-ril-800-0110.json):
    its expression language, the limits it gives at Regelwert and
    Ermessensgrenze, and every proposal judged afterwards by a port of the
    app's own check (olt_optimizer/pruefung.py) — independent of the bounds the run
@@ -45,13 +45,13 @@ from olt_optimizer.ruleexpr import ExprError, comparison, eval_expr           # 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 from olt_optimizer.pruefung import check_track, new_indices                            # noqa: E402
 
-# The constraint files live in the repo's own src/core/constraints/, not in the
+# The constraint files live in the repo's own apps/open-layout-tool/src/core/constraints/, not in the
 # package: physics.json is the readable derivation this harness checks the
 # kernel's literals against, and it ships with no install. Reaching for it
 # across the repo root is deliberate — it is the one source, and a copy beside
 # the kernel would be the drift this section exists to catch.
 TOOLS_ROOT = pathlib.Path(__file__).resolve().parents[1]
-REPO_ROOT = pathlib.Path(__file__).resolve().parents[3]
+REPO_ROOT = pathlib.Path(__file__).resolve().parents[3] / "apps" / "open-layout-tool"
 
 FAILED = 0
 
@@ -910,8 +910,8 @@ for _name, _profil in physics["uebergangsbogenprofile"].items():
 
 # ── 14) Der Regelkatalog, den ein Lauf anwendet ─────────────────────────────
 # Kein Wert mehr im Code und keine Kopie im Paket: ein Lauf liest
-# src/core/constraints/db-ril-800-0110.json, dieselbe Datei, die die App bündelt.
-ok("Katalog: olt_optimizer/constraints ist das src/core/constraints/ des Repos, keine Kopie",
+# apps/open-layout-tool/src/core/constraints/db-ril-800-0110.json, dieselbe Datei, die die App bündelt.
+ok("Katalog: olt_optimizer/constraints ist das apps/open-layout-tool/src/core/constraints/ des Repos, keine Kopie",
    CONSTRAINTS_DIR.resolve() == (REPO_ROOT / "src" / "core" / "constraints").resolve())
 rw_list = list_regelwerke()
 katalog_file = json.loads((REPO_ROOT / "src" / "core" / "constraints" / "db-ril-800-0110.json")

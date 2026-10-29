@@ -13,7 +13,7 @@ gegen die damals erzeugten Referenzwerte.
 
 ```bash
 python3 -m venv .venv          # im Wurzelverzeichnis des Repos
-.venv/bin/pip install -c tools/optimizer/requirements.lock -e 'tools/optimizer[terrain]'
+.venv/bin/pip install -c services/optimizer/requirements.lock -e 'services/optimizer[terrain]'
 ```
 
 `requirements.lock` hält die Versionen fest, mit denen die Server rechnen.
@@ -35,7 +35,7 @@ python3 -m venv .venv          # im Wurzelverzeichnis des Repos
 |---|---|
 | `--corridor-cm` | max. Abrückung zur Bestandsachse in cm (Default 50) |
 | `--grenzwert {reg,discretion}` | gegen welche Grenze des Regelwerks gerechnet wird: `reg` = Regelwert (Default, kein Vorschlag schlechter als ein Hinweis), `discretion` = Ermessensgrenze (höchstens Warnungen, jede begründungspflichtig) |
-| `--regelwerk` | Id des Regelkatalogs aus `src/core/constraints/` (Default `db-ril-800-0110`) |
+| `--regelwerk` | Id des Regelkatalogs aus `apps/open-layout-tool/src/core/constraints/` (Default `db-ril-800-0110`) |
 | `--per-curve` | nur Baseline: Geraden bleiben fix (Verhalten des App-Panels) |
 | `--uebergang {bestand,bloss,auto}` | Übergangsbogen-Profil: wie vorhanden lassen, alle Rampen auf Bloss, oder automatisch die zulässige Variante mit höherer Engpass-v (Default: auto). Bloss nur an der Ermessensgrenze: LP.UB.02 nennt einen Blossbogen auf der (in dieser App immer geraden) Rampe einen Sonderfall, am Regelwert rechnet `auto` deshalb nur den Bestand |
 | `--maxiter`, `--seed` | Differential-Evolution-Steuerung |
@@ -49,7 +49,7 @@ python3 -m venv .venv          # im Wurzelverzeichnis des Repos
 * Nebenbedingungen: Abrückung ≤ Korridor (beidseitig gesampelt), Track-Endpunkte
   und Richtungen fix — und **jede Regel des Regelkatalogs** auf der gewählten
   Stufe. Kein Grenzwert steht im Code: ein Lauf liest
-  `src/core/constraints/db-ril-800-0110.json` (im Paket über den Symlink
+  `apps/open-layout-tool/src/core/constraints/db-ril-800-0110.json` (im Paket über den Symlink
   `olt_optimizer/constraints`) und wertet ihn mit derselben Ausdruckssprache aus
   wie die App (`ruleexpr.py`, `katalog.py`). `grenzen.py` macht daraus die
   Schranken eines Laufs: Entwurfsgeschwindigkeit (40…300 km/h im 5-km/h-Raster),
@@ -75,7 +75,7 @@ python3 -m venv .venv          # im Wurzelverzeichnis des Repos
 .venv/bin/python tests/vectors.py          # gemeinsame Testvektoren mit der App
 ```
 
-`tests/vectors.py` liest `src/core/constraints/tests/` — Ausdrücke der Regelsprache,
+`tests/vectors.py` liest `apps/open-layout-tool/src/core/constraints/tests/` — Ausdrücke der Regelsprache,
 Elementketten mit den erwarteten Befunden des Regelkatalogs (`olt_optimizer/pruefung.py`)
 und die kürzesten Übergangsbogenlängen (Regel- und Mindestlänge,
 `grenzen.transition_lengths`). Die App liest dieselben Dateien
@@ -116,7 +116,7 @@ verlangen (Entscheidung 185; beim Bogen neben einem Bogen in der Hand, die er
 ohne Übergangsbögen hätte, sonst als Gegenbogen). Zwei Bögen werden immer auch auf die andere Art verbunden (direkt über
 einen Übergangsbogen bzw. über eine Zwischengerade); passt nur diese, sagt
 `requested`, warum die gewünschte nicht passt. Prüfung:
-`.venv/bin/python tools/optimizer/tests/verify_splice.py`; die
+`.venv/bin/python services/optimizer/tests/verify_splice.py`; die
 Antworten, gegen die die App testet, schreibt `tests/splice_fixture.py`.
 Dazu der Prüfstand `tests/verify_splice_props.py` (Paket S): zufällige
 Geometrien in allen Fällen, jede in beiden Klickreihenfolgen und beiden
@@ -132,7 +132,7 @@ gesucht, der den Abstand hält (Gerade–Gerade und Bogen–Gerade; zwei Bögen 
 keinen freien Radius und werden nur geprüft) — jeder versuchte Radius mit der
 Überhöhung, die die App für ihn vorschlägt, und den Übergangsbögen in ihrem
 Modus bei diesem Radius und dieser Überhöhung (AP S.6). Prüfung:
-`/var/lib/open-layout-tool/venv/bin/python tools/optimizer/tests/verify_clearance.py`.
+`/var/lib/open-layout-tool/venv/bin/python services/optimizer/tests/verify_clearance.py`.
 
 ## Trassieren aus Achspunkten (`POST /align`)
 
@@ -177,5 +177,5 @@ beginnt oder endet mit der Überhöhung, die die Punkte dort haben
 
 Läuft wie ein Optimiererlauf in einem eigenen Prozess unter der Frist und den
 Plätzen; rund 2 s je km mit fünf Bögen. Prüfung:
-`.venv/bin/python tools/optimizer/tests/verify_align.py`; die Antwort,
+`.venv/bin/python services/optimizer/tests/verify_align.py`; die Antwort,
 gegen die die App testet, schreibt `tests/align_fixture.py`.

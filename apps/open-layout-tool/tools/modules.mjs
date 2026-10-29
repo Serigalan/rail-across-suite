@@ -42,7 +42,7 @@ export const moduleOf = (path) => (path.startsWith(UTILS + '/') ? path.slice(UTI
 
 /** Every source file that may import a module: the app and the project server. */
 function sources() {
-  return [...files(join(ROOT, 'src')), ...files(join(ROOT, 'tools/server/src')), ...files(join(ROOT, 'tools/server/bin'))]
+  return [...files(join(ROOT, 'src')), ...files(join(ROOT, '../../server/src')), ...files(join(ROOT, '../../server/bin'))]
     .filter(p => /\.(js|jsx|mjs)$/.test(p))
 }
 

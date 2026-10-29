@@ -7,7 +7,7 @@
  * `catalogLimit` evaluates the very rule a dialog is held to. The drift the
  * AP R.3 note was about — two independently maintained copies with no test
  * between them — is gone by construction. The optimizer has no copy either:
- * it applies the same file (tools/optimizer/olt_optimizer/constraints is a
+ * it applies the same file (services/optimizer/olt_optimizer/constraints is a
  * symlink to src/core/constraints), so the two halves of the one Ril cannot part
  * company at all — short of a service deployed from another commit, which the
  * regelwerk popup shows.

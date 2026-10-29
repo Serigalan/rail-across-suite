@@ -1,6 +1,7 @@
 # olt-server
 
-The project server of the Open Layout Tool (roadmap phase 10): users and
+The project server of the Open-Layout-Tool (its roadmap phase 10), from which
+the one project server of Rail-Across-Suite grows: users and
 sessions, projects with variants and revisions, images. Editing and
 calculating stay in the browser; the server stores, versions, checks and
 manages users. It never merges — it takes a revision only on top of the
@@ -16,7 +17,7 @@ Node 22. `npm install` here, then
     node bin/olt-server.mjs backup <file>                 # consistent copy (SQLite backup API)
 
 `bin/olt-server.mjs` registers a module hook (`src/esmHook.mjs`) before
-anything else, which lets plain Node load the browser modules under `../../src`
+anything else, which lets plain Node load the browser modules under `apps/open-layout-tool/src`
 (they import without file extensions and import JSON without attributes).
 
 | Variable | Default | |
@@ -33,8 +34,8 @@ order on start.
 
 ## Tests
 
-From the repository root, with the rest: `npm test` (vitest runs
-`tools/server/test/**` through `fastify.inject` against a database in memory).
+From `apps/open-layout-tool/`, with the app's: `npm test` (vitest runs
+`server/test/**` through `fastify.inject` against a database in memory).
 
 ## Behind Caddy
 
@@ -46,5 +47,5 @@ service itself stays as it is (decision 102). `GET /api/health` answers without
 a session, for the deploy script's check.
 
 The Caddy site, the systemd units (service and daily backup timer) and the
-scripts that install them are in `deploy/` at the repository root
-(`deploy/README.md`).
+scripts that install them are in the app's `deploy/`
+([`apps/open-layout-tool/deploy/README.md`](../apps/open-layout-tool/deploy/README.md)).

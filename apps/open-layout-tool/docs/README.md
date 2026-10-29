@@ -42,7 +42,7 @@ whoever maintains or reviews the tool. User guidance is in the app (*Leitfaden*,
 
 - [`README.md`](../README.md) — features, getting started, the local version
 - [`deploy/README.md`](../deploy/README.md) — operating a server
-- [`tools/server/README.md`](../tools/server/README.md) — the project server
-- [`tools/optimizer/README.md`](../tools/optimizer/README.md) — the optimizer (German)
+- [`server/README.md`](../../../server/README.md) — the project server
+- [`services/optimizer/README.md`](../../../services/optimizer/README.md) — the optimizer (German)
 - [`tools/local/README.md`](../tools/local/README.md) — the local version as handed out
 - `src/core/constraints/*.json` — the rulebooks themselves (DB Ril 800.0110, 800.0120, 800.0130, physics)

@@ -7,7 +7,7 @@ what was between them. Every chain that comes back is checked to hold together
 The cases are the ones the app's former spliceUtils.test.js and
 commands/splice.test.js held.
 
-    WEBSITE/.venv/bin/python tools/optimizer/tests/verify_splice.py
+    WEBSITE/.venv/bin/python services/optimizer/tests/verify_splice.py
 """
 
 import math

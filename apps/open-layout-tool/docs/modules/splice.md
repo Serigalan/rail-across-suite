@@ -75,7 +75,7 @@ Python service (`clearance.py`): with a spacing the server build asks the servic
 local build has none. "Reconnect" and the alignment fit also stay in Python and use `splice.py` there.
 
 Two implementations of one construction drift apart unless something holds them together:
-`tools/optimizer/tests/splice_answers_fixture.py` writes the service's answers to `serviceAnswers.json`, and
+`services/optimizer/tests/splice_answers_fixture.py` writes the service's answers to `serviceAnswers.json`, and
 `solveSplice.test.js` requires the port to give the same answers; in CI `--check` fails when `splice.py`
 changed without the fixture being rewritten. **Whoever changes `splice.py` rewrites the fixture and follows
 the change in `solveSplice.js`.**

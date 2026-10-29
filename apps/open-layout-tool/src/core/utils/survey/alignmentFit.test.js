@@ -12,7 +12,7 @@ import fixture from '../../test/fixtures/align_answer.json'
 // The fit is the service's (olt_optimizer/alignment_fit.py); what is tested
 // here is the app's half — the point file it reads, the request it sends, and
 // the track, the diagram and the report it makes of the answer. The answer is
-// a real one, written by tools/optimizer/tests/align_fixture.py.
+// a real one, written by services/optimizer/tests/align_fixture.py.
 
 const { answer, epsg } = fixture
 

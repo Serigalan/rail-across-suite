@@ -10,7 +10,7 @@ import answers from '../../test/fixtures/splice_answers.json'
 // The construction is the service's (olt_optimizer/splice.py); what is tested
 // here is the app's half — the request it sends and the track it builds from
 // the answer. The answers are real ones, written by
-// tools/optimizer/tests/splice_fixture.py for the very same picks.
+// services/optimizer/tests/splice_fixture.py for the very same picks.
 
 const EPSG = 25832
 const P = (x, y, zone = EPSG) => ({ easting: 500000 + x, northing: 5700000 + y, zone })

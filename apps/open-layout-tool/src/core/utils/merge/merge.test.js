@@ -219,7 +219,7 @@ describe('the merge module under plain Node', () => {
       const p = { id: 'p', title: 'a', tracks: [], switches: [] }
       const r = mergeProject({ base: p, mine: { ...p, title: 'b' }, theirs: p })
       console.log(JSON.stringify([typeof window, r.merged.title, r.conflicts.length]))`
-    const out = spawnSync(process.execPath, ['--import', './tools/server/src/register.mjs', '--input-type=module', '-e', script],
+    const out = spawnSync(process.execPath, ['--import', '../../server/src/register.mjs', '--input-type=module', '-e', script],
       { cwd: root, encoding: 'utf8' })
     expect(out.stderr).toBe('')
     expect(JSON.parse(out.stdout.trim())).toEqual(['undefined', 'b', 0])

@@ -6,7 +6,7 @@ along +y, track 2 to its left, parallel or at an angle. The search has to find
 connections that close on the second branch, keep every limit it was given,
 and come back best first — or say that none fits where the branches overlap.
 
-    .venv/bin/python tools/optimizer/tests/verify_crossover.py
+    .venv/bin/python services/optimizer/tests/verify_crossover.py
 """
 
 import math

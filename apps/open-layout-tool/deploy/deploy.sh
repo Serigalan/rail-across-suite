@@ -75,26 +75,29 @@ if [ "$build" = 1 ]; then
     fi
   fi
 
-  if changed npm package-lock.json || [ ! -d node_modules ]; then
+  if changed npm apps/open-layout-tool/package-lock.json || [ ! -d apps/open-layout-tool/node_modules ]; then
     step "npm ci (app)"
-    npm ci --no-audit --no-fund
-    mark_done npm package-lock.json
+    (cd apps/open-layout-tool && npm ci --no-audit --no-fund)
+    mark_done npm apps/open-layout-tool/package-lock.json
   fi
-  if changed npm-server tools/server/package-lock.json || [ ! -d tools/server/node_modules ]; then
+  if changed npm-server server/package-lock.json || [ ! -d server/node_modules ]; then
     step "npm ci (project server)"
-    (cd tools/server && npm ci --omit=dev --no-audit --no-fund)
-    mark_done npm-server tools/server/package-lock.json
+    (cd server && npm ci --omit=dev --no-audit --no-fund)
+    mark_done npm-server server/package-lock.json
   fi
-  if changed pip tools/optimizer/pyproject.toml tools/optimizer/requirements.lock || [ ! -x "$OLT_VENV/bin/olt-optimizer-serve" ]; then
+  if changed pip services/optimizer/pyproject.toml services/optimizer/requirements.lock || [ ! -x "$OLT_VENV/bin/olt-optimizer-serve" ]; then
     step "pip install (optimizer, editable)"
-    # Editable: the service reads src/core/constraints through the symlink
+    # Editable: the service reads the app's src/core/constraints through the symlink
     # olt_optimizer/constraints, so app and service always read the same
     # catalogue files (the app compares their hash, R0.1). The versions come
     # from requirements.lock, the same on every server and in CI.
     "$OLT_VENV/bin/pip" install -q --upgrade pip
-    "$OLT_VENV/bin/pip" install -q -c tools/optimizer/requirements.lock -e 'tools/optimizer[terrain]'
-    mark_done pip tools/optimizer/pyproject.toml tools/optimizer/requirements.lock
+    "$OLT_VENV/bin/pip" install -q -c services/optimizer/requirements.lock -e 'services/optimizer[terrain]'
+    mark_done pip services/optimizer/pyproject.toml services/optimizer/requirements.lock
   fi
+
+  step "Data (NTv2 grids, by version and SHA-256)"
+  (cd apps/open-layout-tool && node tools/data.mjs)
 
   step "Build"
   # Built beside dist/ and then synced into it: the directory itself stays
@@ -102,10 +105,10 @@ if [ "$build" = 1 ]; then
   # half empty while vite writes.
   out=$(mktemp -d "$OLT_REPO/.tmp-build-XXXX")
   trap 'rm -rf "$out"' EXIT
-  npx vite build --outDir "$out" --emptyOutDir
-  mkdir -p dist
-  rsync -a --delete "$out/" dist/
-  chmod -R a+rX dist
+  (cd apps/open-layout-tool && npx vite build --outDir "$out" --emptyOutDir)
+  mkdir -p "$OLT_APP/dist"
+  rsync -a --delete "$out/" "$OLT_APP/dist/"
+  chmod -R a+rX "$OLT_APP/dist"
   mkdir -p "$OLT_STATE"
   git rev-parse HEAD > "$OLT_STATE/commit"
   echo "${ref:-$(git rev-parse --abbrev-ref HEAD)}" > "$OLT_STATE/ref"
@@ -119,14 +122,14 @@ if [ "$restart" = 1 ]; then
   if [ -f "$OLT_DB" ]; then
     step "Database copy"
     copy="$OLT_BACKUPS/olt-$(date +%F)-predeploy-$(date +%H%M%S).sqlite"
-    (cd tools/server && OLT_SERVER_DB="$OLT_DB" as_user "$OLT_NODE" bin/olt-server.mjs backup "$copy")
+    (cd server && OLT_SERVER_DB="$OLT_DB" as_user "$OLT_NODE" bin/olt-server.mjs backup "$copy")
   fi
   step "Restart"
   for u in "${services[@]}"; do
     if [ -f "/etc/systemd/system/$u" ]; then
       systemctl restart "$u"
     else
-      echo "$u is not installed — run deploy/setup.sh once"
+      echo "$u is not installed — run apps/open-layout-tool/deploy/setup.sh once"
     fi
   done
 fi

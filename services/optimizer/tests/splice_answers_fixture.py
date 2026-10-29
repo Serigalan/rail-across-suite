@@ -1,5 +1,5 @@
-"""Writes src/core/utils/splice/serviceAnswers.json: what the service answers
-to splices, for the app's splice (src/core/utils/splice/solveSplice.js,
+"""Writes apps/open-layout-tool/src/core/utils/splice/serviceAnswers.json: what the service answers
+to splices, for the app's splice (apps/open-layout-tool/src/core/utils/splice/solveSplice.js,
 decision 294) to be held against (solveSplice.test.js). The geometries
 are those of the property bench (verify_splice_props.py) — two straights, an
 arc and a straight, two arcs over a straight, two arcs over one transition —
@@ -9,7 +9,7 @@ built with, at the Regellänge with a design speed, two arcs joined the other
 way too, and with a radius far too large. The spacing to a neighbour is the
 service's alone (decision 295) and is not asked here. Run again after changing splice.py:
 
-    .venv/bin/python tools/optimizer/tests/splice_answers_fixture.py [--n 6] [--seed 7]
+    .venv/bin/python services/optimizer/tests/splice_answers_fixture.py [--n 6] [--seed 7]
 
 With --check it writes nothing and fails where the service now answers other
 than the file says — splice.py changed in a way the app's splice has not
@@ -36,7 +36,7 @@ FAMILIES = [case_straights, case_arc_straight, case_arcs_straight, case_arcs_tra
 # A design speed and the cant of a picked arc, where the rules set the lengths [km/h, mm].
 SPEED, CANT = 80.0, 60.0
 
-ROOT = pathlib.Path(__file__).resolve().parents[3]
+ROOT = pathlib.Path(__file__).resolve().parents[3] / "apps" / "open-layout-tool"
 
 
 def trimmed(answer):
@@ -144,8 +144,8 @@ def main():
         if len(stored) != len(cases):
             problems.append(f"{len(stored)} cases stored, {len(cases)} made")
         if problems:
-            print("The service answers other than src/core/utils/splice/serviceAnswers.json — splice.py changed;"
-                  " follow it in src/core/utils/splice/solveSplice.js and write the file again:")
+            print("The service answers other than apps/open-layout-tool/src/core/utils/splice/serviceAnswers.json — splice.py changed;"
+                  " follow it in apps/open-layout-tool/src/core/utils/splice/solveSplice.js and write the file again:")
             print("\n".join(f"  {p}" for p in problems[:10]))
             sys.exit(1)
         print(f"splice answers: {len(cases)} cases as stored")

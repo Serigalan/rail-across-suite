@@ -6,7 +6,7 @@ handed over as the stretch to replace — and the search has to find a chain
 that lies within the tolerance of the old one, holds together and keeps the
 rules where it can.
 
-    WEBSITE/.venv/bin/python tools/optimizer/tests/verify_reconnect.py
+    WEBSITE/.venv/bin/python services/optimizer/tests/verify_reconnect.py
 """
 
 import json

@@ -1,0 +1,51 @@
+{
+  "about": "Data the app needs that is kept out of the repository's history (roadmap, phase 0). tools/data.mjs fetches each file to its path, from the first address that answers, and accepts it only with this SHA-256. The NTv2 grids are the release assets of data-1 and identical to PROJ-data's files on cdn.proj.org (THIRD-PARTY.md). The kilometrage lines (tiles/km/, tiles/km_linie.pmtiles) are not published: whoever has them puts them into tiles/ for tests and their own server, and tools/data.mjs links them into public/data/ (links) only where they are, so that no build ships them otherwise.",
+  "files": [
+    {
+      "path": "grids/de_adv_BETA2007.tif",
+      "size": 24379,
+      "sha256": "46e681fcc7d022dde1db1f9d0a3426a9bfb1d4a151af69a81b3c30104c9388e2",
+      "urls": [
+        "https://github.com/Serigalan/rail-across-suite/releases/download/data-1/de_adv_BETA2007.tif",
+        "https://cdn.proj.org/de_adv_BETA2007.tif"
+      ]
+    },
+    {
+      "path": "grids/de_hvbg_hessen_HeTA2010.tif",
+      "size": 1283407,
+      "sha256": "0e1fcc1cc7ca8251c56433c8822e21cca2f1de5b6359ca828b70d477e12fb4ed",
+      "urls": [
+        "https://github.com/Serigalan/rail-across-suite/releases/download/data-1/de_hvbg_hessen_HeTA2010.tif",
+        "https://cdn.proj.org/de_hvbg_hessen_HeTA2010.tif"
+      ]
+    },
+    {
+      "path": "grids/de_lgvl_saarland_SeTa2016.tif",
+      "size": 547937,
+      "sha256": "529acdef6f5634669087de3dfc7923ab0100a9a7d94fa5e5b4aadb7ec4226c6c",
+      "urls": [
+        "https://github.com/Serigalan/rail-across-suite/releases/download/data-1/de_lgvl_saarland_SeTa2016.tif",
+        "https://cdn.proj.org/de_lgvl_saarland_SeTa2016.tif"
+      ]
+    },
+    {
+      "path": "grids/de_tlbg_thueringen_NTv2gridTH.tif",
+      "size": 71953,
+      "sha256": "32249e46cdaa97cbd2cea723a413d73a04a8420b11ed81ebe48be18034fa6354",
+      "urls": [
+        "https://github.com/Serigalan/rail-across-suite/releases/download/data-1/de_tlbg_thueringen_NTv2gridTH.tif",
+        "https://cdn.proj.org/de_tlbg_thueringen_NTv2gridTH.tif"
+      ]
+    }
+  ],
+  "links": [
+    {
+      "path": "public/data/km",
+      "target": "../../tiles/km"
+    },
+    {
+      "path": "public/data/km_linie.pmtiles",
+      "target": "../../tiles/km_linie.pmtiles"
+    }
+  ]
+}

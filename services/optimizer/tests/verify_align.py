@@ -5,7 +5,7 @@ the axis points of a trace, given a millimetre or two of scatter, and the fit
 has to find the chain again — its straights, radii and transitions — and hand
 back a chain that holds together.
 
-    WEBSITE/.venv/bin/python tools/optimizer/tests/verify_align.py
+    WEBSITE/.venv/bin/python services/optimizer/tests/verify_align.py
 """
 
 import math

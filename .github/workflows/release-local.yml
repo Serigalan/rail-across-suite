@@ -1,6 +1,6 @@
 name: Release local version
 
-# The local version as a GitHub release (Paket L, decision 291): pushing a tag
+# The local version of the Open-Layout-Tool as a GitHub release (Paket L, decision 291): pushing a tag
 # local-YYYY-MM-DD[.n] builds the local build — core alone, checked for server
 # parts — packs it with its small server, start scripts and README
 # (tools/local/pack.mjs) and attaches the zip to a release of that tag.
@@ -15,13 +15,18 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: apps/open-layout-tool
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
+          cache-dependency-path: apps/open-layout-tool/package-lock.json
       - run: npm ci --no-audit --no-fund
+      - run: node tools/data.mjs
       - run: npm run build:local
       - name: Pack
         run: |

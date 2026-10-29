@@ -22,6 +22,7 @@
     "boundary": "node tools/boundary.mjs",
     "modules": "node tools/modules.mjs",
     "docs": "node tools/docs.mjs",
+    "data": "node tools/data.mjs",
     "i18n:unused": "node tools/i18n-unused.mjs"
   },
   "dependencies": {

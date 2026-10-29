@@ -5,6 +5,11 @@ Konfigurationsdatei, zwei Skripte und die Vorlagen für systemd und Caddy.
 Dienste: `olt-server`, `olt-optimizer`, `olt-cloudjobs` und die tägliche Sicherung —
 je Instanz, siehe *Mehrere Instanzen*.
 
+Die Abschnitte *Auf dieser Maschine* beschreiben den laufenden Server des Open
+Layout Tool, wie er seit 2026-10-09 aus dem Repository `open-layout-tool` läuft.
+Er wird nicht umgezogen (Roadmap, Phase 0); Rail-Across-Suite bekommt einen
+eigenen Server.
+
 | Datei | |
 |---|---|
 | `olt.env.example` | Konfiguration, kommt nach `/etc/open-layout-tool/olt.env` |
@@ -37,16 +42,25 @@ Voraussetzungen: Debian 12 oder Ubuntu 22.04/24.04, root, ein DNS-Eintrag für d
 Hostnamen auf diesen Server, Ports 80 und 443 frei.
 
 ```bash
-git clone https://github.com/Serigalan/open-layout-tool.git /opt/open-layout-tool
+git clone https://github.com/Serigalan/rail-across-suite.git /opt/rail-across-suite
 mkdir -p /etc/open-layout-tool
-cp /opt/open-layout-tool/deploy/olt.env.example /etc/open-layout-tool/olt.env
+cp /opt/rail-across-suite/apps/open-layout-tool/deploy/olt.env.example /etc/open-layout-tool/olt.env
 $EDITOR /etc/open-layout-tool/olt.env          # mindestens OLT_DOMAIN
-/opt/open-layout-tool/deploy/setup.sh
+/opt/rail-across-suite/apps/open-layout-tool/deploy/setup.sh
 ```
+
+Die Skripte liegen in `apps/open-layout-tool/deploy/` des Repositorys
+rail-across-suite; `OLT_REPO` ist dessen Checkout, die App liegt darin unter
+`apps/open-layout-tool/`, der Projektserver unter `server/`, der Optimierer
+unter `services/optimizer/`. Die NTv2-Gitter sind nicht im Repository: `setup.sh`
+und `deploy.sh` holen sie mit `node tools/data.mjs` (Version und SHA-256 in
+`data.json`). Die Km-Linien (`tiles/`) gibt es nur für Tests und den eigenen
+Betrieb; wer sie hat, legt sie nach `apps/open-layout-tool/tiles/`
+(siehe [`data.json`](../data.json)).
 
 `setup.sh` installiert Node 22 (NodeSource), Python-venv, `mdbtools` und Caddy,
 legt den Dienstnutzer `olt` und `/var/lib/open-layout-tool` an, kopiert die
-NTv2-Gitter aus `grids/` dorthin, wo PROJ sie findet, baut die App, installiert
+NTv2-Gitter (von `tools/data.mjs` nach `grids/` geholt) dorthin, wo PROJ sie findet, baut die App, installiert
 den Optimierer (editierbar, liest `src/core/constraints` direkt), richtet die
 systemd-Units und die Caddy-Site ein und legt den ersten Admin an. Dessen
 Startpasswort steht danach in `/var/lib/open-layout-tool/admin-start-password.txt`;
@@ -57,15 +71,15 @@ Weitere Nutzer legt ein Admin in der App an (Nutzerverwaltung).
 ## Update
 
 ```bash
-cd /opt/open-layout-tool && deploy/deploy.sh --pull
+cd /opt/rail-across-suite && apps/open-layout-tool/deploy/deploy.sh --pull
 ```
 
 Installiert npm- und pip-Abhängigkeiten nur, wenn sich ihre Lock-/Projektdatei
-geändert hat (Python-Versionen aus `tools/optimizer/requirements.lock`), baut die
-App neben `dist/` und gleicht sie dann hinein ab (die Seite ist während des Builds
+geändert hat (Python-Versionen aus `services/optimizer/requirements.lock`), baut die
+App neben `apps/open-layout-tool/dist/` und gleicht sie dann hinein ab (die Seite ist während des Builds
 nie leer), kopiert die Datenbank (`backups/olt-JJJJ-MM-TT-predeploy-HHMMSS.sqlite`),
 startet die Dienste neu und prüft `/api/health` und `/health`. Nur prüfen:
-`deploy/deploy.sh --check-only`. Welcher Stand läuft: `$OLT_DATA/.deploy-state/ref`
+`apps/open-layout-tool/deploy/deploy.sh --check-only`. Welcher Stand läuft: `$OLT_DATA/.deploy-state/ref`
 und `commit`.
 
 Nach einer Änderung an der Konfiguration oder an `templates/`: `setup.sh` erneut
@@ -82,8 +96,8 @@ einfachen Namen (`olt-server` …). Beide Skripte nehmen die Konfiguration mit
 `--config <datei>`:
 
 ```bash
-deploy/setup.sh  --config /root/open-layout-tool-prod/olt.env
-deploy/deploy.sh --config /root/open-layout-tool-prod/olt.env --ref prod-2026-10-09
+apps/open-layout-tool/deploy/setup.sh  --config /root/open-layout-tool-prod/olt.env
+apps/open-layout-tool/deploy/deploy.sh --config /root/open-layout-tool-prod/olt.env --ref prod-2026-10-09
 ```
 
 `setup.sh` bricht ab, wenn eine Unit des gewünschten Namens zu einem anderen
@@ -96,7 +110,7 @@ Modus 0700), gibt `setup.sh` dem Dienstnutzer per ACL nur das Durchgangsrecht
 Stand von `main`. Eine mit `OLT_TRACK=tags` (Produktion) nimmt nur Tags `prod-…`:
 
 1. Arbeit auf `main`, `deploy.sh --pull` auf dem Test, dort abnehmen.
-2. `deploy/release.sh` (oder `release.sh <commit>`) — legt den nächsten freien Tag
+2. `apps/open-layout-tool/deploy/release.sh` (oder `release.sh <commit>`) — legt den nächsten freien Tag
    `prod-JJJJ-MM-TT` (dann `.2`, `.3`) an und pusht ihn, nur wenn die CI auf GitHub
    für den Commit grün ist.
 3. Auf der Produktion `deploy.sh --config … --ref prod-JJJJ-MM-TT`. Das Skript prüft
@@ -140,13 +154,13 @@ Wiederherstellen (bei einer Instanz mit Namen: `olt-<name>-…` und deren `OLT_D
 
 ## Überwachung, Firewall, Logs
 
-`deploy/monitor.sh <olt.env> …` prüft je Instanz: laufen die Dienste und der
+`apps/open-layout-tool/deploy/monitor.sh <olt.env> …` prüft je Instanz: laufen die Dienste und der
 Sicherungs-Timer, antworten Projektserver und Optimierer, antwortet
 `https://<domain>/api/health` von außen durch Caddy, ist das Zertifikat noch
 mindestens 14 Tage gültig, sind mindestens 20 GB frei. Einmal eingerichtet mit
 
 ```bash
-deploy/monitor.sh --install /etc/open-layout-tool/olt.env /root/open-layout-tool-prod/olt.env
+apps/open-layout-tool/deploy/monitor.sh --install /etc/open-layout-tool/olt.env /root/open-layout-tool-prod/olt.env
 ```
 
 läuft es alle 5 Minuten (`olt-monitor.timer`, Skript nach
@@ -209,7 +223,7 @@ Wer Wolken sichern will, kopiert `clouds/` (oder nur die aufbewahrten
 `raw.part`) gesondert, z. B. `rsync -a /var/lib/open-layout-tool/clouds/ <Ziel>/`.
 
 Admin von Hand anlegen:
-`cd tools/server && OLT_SERVER_DB=/var/lib/open-layout-tool/olt.sqlite runuser -u olt -- node bin/olt-server.mjs create-admin <login> [Name]`
+`cd server && OLT_SERVER_DB=/var/lib/open-layout-tool/olt.sqlite runuser -u olt -- node bin/olt-server.mjs create-admin <login> [Name]`
 
 ## Caddy in einem Container (`OLT_CADDY=external`)
 
@@ -246,6 +260,6 @@ und `/optimizer` an `OLT_OPTIMIZER_TARGET` (Standard `http://127.0.0.1:8099`)
 weiter, wie Caddy im Betrieb. Dienste lokal:
 
 ```bash
-cd tools/server && npm ci && OLT_SERVER_INSECURE_COOKIE=1 OLT_SERVER_DB=/tmp/olt.sqlite node bin/olt-server.mjs serve
-python3 -m venv .venv && .venv/bin/pip install -c tools/optimizer/requirements.lock -e 'tools/optimizer[terrain]' && .venv/bin/olt-optimizer-serve
+cd server && npm ci && OLT_SERVER_INSECURE_COOKIE=1 OLT_SERVER_DB=/tmp/olt.sqlite node bin/olt-server.mjs serve
+python3 -m venv .venv && .venv/bin/pip install -c services/optimizer/requirements.lock -e 'services/optimizer[terrain]' && .venv/bin/olt-optimizer-serve
 ```

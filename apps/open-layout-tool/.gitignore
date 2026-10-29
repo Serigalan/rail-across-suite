@@ -2,6 +2,13 @@
 node_modules/
 .venv/
 
+# Data kept out of the history (data.json, tools/data.mjs): the NTv2 grids,
+# fetched; the kilometrage lines, put there by hand where they may be used
+grids/
+tiles/
+public/data/km
+public/data/km_linie.pmtiles
+
 # Build output
 dist/
 dist-local/

@@ -8,9 +8,9 @@
 #   deploy/release.sh <commit>    that commit
 set -euo pipefail
 die() { echo "error: $*" >&2; exit 1; }
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/../../.."
 
-OLT_GITHUB_REPO=${OLT_GITHUB_REPO:-Serigalan/open-layout-tool}
+OLT_GITHUB_REPO=${OLT_GITHUB_REPO:-Serigalan/rail-across-suite}
 git fetch -q --tags origin
 sha=$(git rev-parse --verify "${1:-origin/main}^{commit}") || die "no commit ${1:-origin/main}"
 

@@ -7,8 +7,8 @@ Three places hold it:
 | Where | What | Runs |
 |---|---|---|
 | `src/server/` | the browser parts that talk to a server | in the browser, main build only |
-| `tools/server/` | the project server `olt-server` and the job runner `olt-cloudjobs` | Node 22, SQLite |
-| `tools/optimizer/` | the Python service `olt-optimizer` | Python 3.10+ |
+| `server/` | the project server `olt-server` and the job runner `olt-cloudjobs` | Node 22, SQLite |
+| `services/optimizer/` | the Python service `olt-optimizer` | Python 3.10+ |
 
 Operation (setup, deploy, backups, several instances, production releases) is described in
 [`deploy/README.md`](../deploy/README.md).
@@ -81,7 +81,7 @@ the main window over a `BroadcastChannel`, including unsaved changes; without a 
 head. A walk along a track (eye 2.5 m over top of rail, W/S/A/D/R/F) can be shared as a link. Re-referencing
 (see [pointCloud](modules/pointCloud.md)) is done here.
 
-## `tools/server` — the project server
+## `server` — the project server
 
 Fastify on Node 22, SQLite in WAL mode behind a thin access layer (Postgres only if ever several instances or
 spatial queries on the server are needed). It imports the browser modules from `src/` unchanged through a module
@@ -123,7 +123,7 @@ and runs the long clearance scans and traces in a queue of their own (two at a t
 served by `olt-server` with range requests and collective requests of up to 64 ranges, membership checked per
 request — not by Caddy's file server, whose forward-auth only checks the sign-in, not the project.
 
-## `tools/optimizer` — the Python service
+## `services/optimizer` — the Python service
 
 A small HTTP service (`service.py`) around the package `olt_optimizer`, behind the sign-in under `/optimizer/`:
 

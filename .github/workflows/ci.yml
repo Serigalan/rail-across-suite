@@ -5,6 +5,7 @@ on:
   pull_request:
 
 jobs:
+  # The repository's own rules: the import boundaries between apps and packages.
   check:
     runs-on: ubuntu-24.04
     steps:
@@ -13,3 +14,71 @@ jobs:
         with:
           node-version: 22
       - run: npm run check
+
+  # The Open-Layout-Tool with the project server, whose tests its vitest runs.
+  open-layout-tool:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: apps/open-layout-tool
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            apps/open-layout-tool/package-lock.json
+            server/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: npm ci --no-audit --no-fund
+        working-directory: server
+      - run: node tools/data.mjs
+      - run: npm run lint
+      - run: npm run knip
+      - run: npm run i18n:unused
+      - run: node tools/boundary.mjs --core
+      - run: node tools/modules.mjs
+      - run: node tools/docs.mjs
+      - run: npm test
+      - run: npx vite build --outDir /tmp/olt-dist
+      - run: npx vite build --mode standalone --outDir /tmp/olt-dist-local
+      - run: node tools/check-local-bundle.mjs /tmp/olt-dist-local
+
+  optimizer:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: services/optimizer
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          # The servers' Python (Ubuntu 22.04), with the versions they run.
+          python-version: '3.10'
+          cache: pip
+          cache-dependency-path: |
+            services/optimizer/pyproject.toml
+            services/optimizer/requirements.lock
+      - run: pip install -c requirements.lock -e '.[terrain]'
+      - run: python tests/vectors.py
+      - run: python tests/verify_service.py
+      - run: python tests/verify_splice.py
+      - run: python tests/verify_align.py
+      - run: python tests/verify_reconnect.py
+      - run: python tests/verify_crossover.py
+      - run: python tests/verify_clearance.py
+      - run: python tests/verify_splice_props.py
+      # The app's splice (apps/open-layout-tool/src/core/utils/splice) is held against these answers (decision 294).
+      - run: python tests/splice_answers_fixture.py --check
+      - run: python tests/verify.py
+
+  deploy-scripts:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: apps/open-layout-tool
+    steps:
+      - uses: actions/checkout@v5
+      - run: bash -n deploy/setup.sh && bash -n deploy/deploy.sh && bash -n deploy/lib.sh && bash -n deploy/release.sh && bash -n deploy/monitor.sh
+      - run: shellcheck -x deploy/setup.sh deploy/deploy.sh deploy/lib.sh deploy/release.sh deploy/monitor.sh tools/check.sh

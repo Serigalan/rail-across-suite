@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { transitionLengths } from './transitionLength'
 import vectors from '../../constraints/tests/transition_lengths.json'
 
-// The same cases tools/optimizer/tests/vectors.py asks the service's
+// The same cases services/optimizer/tests/vectors.py asks the service's
 // transition_lengths (olt_optimizer/grenzen.py): the splice finds its lengths
 // there, "Gerade/Bogen verbinden" here, and the two have to agree.
 const rows = (by) => by.map(b => [b.id, b.length, b.binding])

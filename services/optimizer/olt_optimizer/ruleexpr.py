@@ -1,6 +1,6 @@
 """The little expression language the rule catalogues are written in
-(`expression_language` in src/core/constraints/*.json) — the Python half of the
-app's src/core/utils/rules/ruleExpr.js, and meant to read like it.
+(`expression_language` in apps/open-layout-tool/src/core/constraints/*.json) — the Python half of the
+app's apps/open-layout-tool/src/core/utils/rules/ruleExpr.js, and meant to read like it.
 
 Same reasons for parsing it rather than handing it to eval(): `^` is
 exponentiation here and not in Python's sense of the character, `and`/`or`/

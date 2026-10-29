@@ -1,12 +1,12 @@
-"""The shared test vectors (src/core/constraints/tests/) against the Python side.
+"""The shared test vectors (apps/open-layout-tool/src/core/constraints/tests/) against the Python side.
 
 The app (ruleExpr.js, trassierungCheck.js, rules/transitionLength.js) and this
 package (ruleexpr.py, olt_optimizer/pruefung.py, grenzen.transition_lengths)
 implement the same expression language, the same catalogue check and the same
 shortest transition lengths twice. The vectors are one set of cases both have
-to answer alike; the app's half is src/core/utils/rules/ruleExpr.vectors.test.js,
-src/core/utils/rules/trassierungCheck.vectors.test.js and
-src/core/utils/rules/transitionLength.vectors.test.js.
+to answer alike; the app's half is apps/open-layout-tool/src/core/utils/rules/ruleExpr.vectors.test.js,
+apps/open-layout-tool/src/core/utils/rules/trassierungCheck.vectors.test.js and
+apps/open-layout-tool/src/core/utils/rules/transitionLength.vectors.test.js.
 
     python tests/vectors.py        (exit code 1 on the first difference)
 """

@@ -11,7 +11,7 @@ import fixture from '../../test/fixtures/reconnect_answers.json'
 // The search is the service's (olt_optimizer/reconnect.py); what is tested
 // here is the app's half — the stretch, the old axis, the request and the
 // track written back. Track and answers come from
-// tools/optimizer/tests/reconnect_fixture.py: straight 50, straight 200, a
+// services/optimizer/tests/reconnect_fixture.py: straight 50, straight 200, a
 // curve R 800 with 60 m transitions, straight 200, straight 50.
 
 const EPSG = 25832

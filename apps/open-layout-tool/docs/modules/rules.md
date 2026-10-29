@@ -51,10 +51,10 @@ deficiency for clothoid and Bloss, steepest and flattest mean ramp, clothoid as 
 (comparison radius at a curvature jump, jumps outside turnouts), HP.LN.01–03 (gradients), HP.AR.01–07
 (vertical curves).
 
-The same file is read by the optimizer service (`tools/optimizer`, through a symlink), which evaluates it
+The same file is read by the optimizer service (`services/optimizer`, through a symlink), which evaluates it
 with its own port of the expression language. Shared test vectors in `src/core/constraints/tests/` hold the
 two implementations to the same answers (`ruleExpr.vectors.test.js`, `trassierungCheck.vectors.test.js`,
-`transitionLength.vectors.test.js` against `tools/optimizer/tests/vectors.py`).
+`transitionLength.vectors.test.js` against `services/optimizer/tests/vectors.py`).
 
 ## The expression language
 

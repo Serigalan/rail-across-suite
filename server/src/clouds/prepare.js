@@ -1,7 +1,7 @@
 import { closeSync, existsSync, fsyncSync, openSync, renameSync, rmSync, writeFileSync, writeSync } from 'node:fs'
 import { open } from 'node:fs/promises'
 import { createLazPerf } from 'laz-perf'
-import { readCloudHeader, importLevels, LEVELS } from '../../../../src/core/utils/pointCloud'
+import { readCloudHeader, importLevels, LEVELS } from '../../../apps/open-layout-tool/src/core/utils/pointCloud'
 
 /** Progress reaches the database at most this often [ms]. */
 const PROGRESS_EVERY = 2000

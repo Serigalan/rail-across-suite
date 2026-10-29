@@ -3,11 +3,11 @@ import { transitionLengths, checkTrack, severityRank, worstSeverity } from '../r
 
 // Splicing two tracks into one — the construction of "Zwei Gleise
 // zusammenfügen", in the browser for both builds (decision 294). Ported from
-// the optimizer service (tools/optimizer/olt_optimizer/splice.py), which keeps
+// the optimizer service (services/optimizer/olt_optimizer/splice.py), which keeps
 // its own for reconnecting (Paket N) and the alignment fit (phase 12); the two
 // are held alike by the service's answers to the same requests
 // (serviceAnswers.json, written and checked by
-// tools/optimizer/tests/splice_answers_fixture.py).
+// services/optimizer/tests/splice_answers_fixture.py).
 //
 // The two picked elements come in the plane of their track: each with its two
 // ends, the bearing at its end and its signed radius. Which ends meet is

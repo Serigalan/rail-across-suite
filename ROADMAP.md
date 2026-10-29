@@ -18,20 +18,27 @@ Phase 0  Foundation ─▶ Phase 1  Core from OLT ─▶ Phase 2  Generalised co
 
 Goal: agree on how decisions are made and bring the code into one repository before it is shared.
 
-- One repository for core, modules and services — decided
-  ([decision 0001](docs/decisions/0001-one-repository.md)); directory layout in place.
-- `CODEOWNERS` in place (`.github/CODEOWNERS`); its review becomes required for `main` once a second maintainer
-  is named.
-- Licences in place: code under Apache-2.0, documentation under CC BY 4.0 (see the README).
-- Contribution guide (sign-off after the DCO), decision records (`docs/decisions/`), glossary German ↔ English (Gleis/track, Weiche/turnout, Betriebsstelle/operational
-  point, Bauzustand/construction stage …).
-- Conventions taken over from OLT: units, signs, coordinates, stations, precision.
+Done:
+
+- One repository for core, modules and services ([decision 0001](docs/decisions/0001-one-repository.md));
+  directory layout in place.
+- `CODEOWNERS` (`.github/CODEOWNERS`); its review becomes required for `main` once a second maintainer is named.
+- Licences: code under Apache-2.0, documentation under CC BY 4.0 ([decision 0002](docs/decisions/0002-licences.md)).
+- [Contribution guide](CONTRIBUTING.md) with sign-off after the DCO; decision records (`docs/decisions/`).
+- [Glossary](docs/glossary.md) German ↔ English and [conventions](docs/conventions.md) (units, signs,
+  coordinates, stations, precision), taken over from OLT.
+- A check that apps import packages and never each other (`npm run check`, run by CI).
+
+Open:
+
 - **Move the Open-Layout-Tool** into `apps/layout-tool/` with its history; its server to `server/`, its Python
   service to `services/optimizer/`; CI and deployment scripts on the new paths. A step of its own, prepared with
   whoever runs the deployment.
 - Large binary data (NTv2 grids, kilometrage tiles, map images) out of the history: Git LFS, release assets or a
   data repository, referenced by version.
-- A check that apps import packages and never each other.
+- Third-party material of the Open-Layout-Tool checked for its licence before it moves (guideline PDF, values
+  from the DB guidelines, NTv2 grids, kilometrage data).
+- Review of the data model and answers to its [open questions](docs/data-model.md#7-open-questions) 2–5.
 
 **Exit:** the data model proposal is reviewed and its open questions are answered; the Open-Layout-Tool builds,
 tests and deploys from this repository.

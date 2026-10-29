@@ -15,7 +15,10 @@ One repository holds the core, every module and the services
 | `apps/` | the modules, starting with the Open-Layout-Tool |
 | `server/` | the project server for all modules |
 | `services/` | the Python services |
-| `docs/` | roadmap material, data model, decisions |
+| `docs/` | data model, decisions, glossary, conventions |
+| `tools/` | repository checks (`npm run check`) |
+
+How to contribute: [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Roadmap
 

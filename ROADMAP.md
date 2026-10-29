@@ -57,15 +57,28 @@ Open-Layout-Tool builds, tests and deploys from this repository.
 
 Goal: the core exists as a package of its own and OLT runs on it **without any change in behaviour**.
 
-- Move the model parts of OLT into the core: geometry (planes, elements, transitions, integrator), track and
-  switch records, ports and remaps, heights, topology, project load/hydrate/dehydrate/validate, diff and merge.
+Done:
+
+- The JavaScript parts are one npm workspace; the core is the package `@rail-across/core` in `packages/core`.
+- The model parts of OLT moved into the core with their history and tests: geometry, rules and their
+  catalogues, track and switch records, ports and remaps, heights, cross sections, topology, commands, measured
+  axes, the project record (load/hydrate/dehydrate/validate), diff and merge
+  ([packages/core](packages/core/README.md)). The app imports them as `@rail-across/core/<module>`; the project
+  server checks records with the core. The same 2649 tests pass, and the main build is the same.
+- The three remap defects the data model cases found, fixed
+  ([data model §6](docs/data-model.md#6-consequences-for-the-open-layout-tool)): the merge carries all three
+  states before it compares, and a platform's location is one value (F2); a reversed or spliced track carries
+  its platforms (F3). Both cases are tests and pass.
+
+Open:
+
 - JSON Schema for the `core` domain; schema-derived types; the one door (`parse` → `validate`).
 - Python package reading the same schema (for optimizer and simulations), held to shared test vectors.
 - Conversion oltjson-1.1 → core 1.0 at the door (the first entry of the migration chain). Ids stay on tracks,
   not on their elements ([decision 0004](docs/decisions/0004-ids-on-tracks.md)).
-- The three remap defects the data model cases found, fixed on the way
-  ([data model §6](docs/data-model.md#6-consequences-for-the-open-layout-tool)): the merge carries all three
-  states before it compares, and a reversed or spliced track carries its platforms.
+- The point clouds into a package of their own, so the project server no longer imports the app (allowed for
+  now by `TRANSITIONAL` in `tools/boundaries.mjs`).
+- The core loadable by plain Node without the server's module hook (file extensions in its imports).
 
 **Exit:** OLT imports its model only from the core; all OLT tests and the PEK data set pass; an oltjson-1.1
 file opens and saves losslessly; the cases F2 and F3 (reversal and splice) of the data model are tests and

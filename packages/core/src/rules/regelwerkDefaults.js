@@ -20,7 +20,7 @@
  * the app draws on without one.
  */
 
-import { catalogLimit, IN_SWITCH_AREA } from './regelkatalog'
+import { catalogLimit, IN_SWITCH_AREA } from './regelkatalog.js'
 
 /** The regelwerk a run uses unless it is told otherwise — DB Ril 800.0110. */
 export const REGELWERK_ID = 'db-ril-800-0110'

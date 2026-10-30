@@ -1,5 +1,5 @@
-import { PLATFORM_FRONT_OFFSET, PLATFORM_WIDTH, PLATFORM_HEIGHTS, DEFAULT_PLATFORM_HEIGHT } from './platformUtils'
-import { trackLength } from './heightUtils'
+import { PLATFORM_FRONT_OFFSET, PLATFORM_WIDTH, PLATFORM_HEIGHTS, DEFAULT_PLATFORM_HEIGHT } from './platformUtils.js'
+import { trackLength } from './heightUtils.js'
 
 // The platform dialog's fields, apart from the dialog (R5.5): what a new one
 // starts with, what an existing record fills in, and the record they make.

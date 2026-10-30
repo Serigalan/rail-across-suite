@@ -1,7 +1,7 @@
-import { elementStations, portEnd, portTrack, remapSwitches, stationOnTrack } from '../track'
-import { DEFAULT_MIDS, midUnknowns, planSwitchDeletion, switchParts, SWITCH_PICK_TYPES } from '../switch'
-import { adoptCrossover } from './crossover'
-import { connectionPick, settleConnection } from './sCurve'
+import { elementStations, portEnd, portTrack, remapSwitches, stationOnTrack } from '../track/index.js'
+import { DEFAULT_MIDS, midUnknowns, planSwitchDeletion, switchParts, SWITCH_PICK_TYPES } from '../switch/index.js'
+import { adoptCrossover } from './crossover.js'
+import { connectionPick, settleConnection } from './sCurve.js'
 
 // Editing a switch connection (Entscheidung 364): a track that begins and
 // ends at a turnout's route, with no more than three elements of its own

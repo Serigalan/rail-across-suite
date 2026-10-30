@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest'
-import { adoptCrossover, crossoverRequest } from './crossover'
-import { computeShiftBounds, solveConnection } from './sCurve'
-import { minElementLength } from '../rules/elementLength'
-import { checkTrack } from '../rules/trassierungCheck'
-import { buildConnectionElements } from '../switch/switchConnectionUtils'
+import { adoptCrossover, crossoverRequest } from './crossover.js'
+import { computeShiftBounds, solveConnection } from './sCurve.js'
+import { minElementLength } from '../rules/elementLength.js'
+import { checkTrack } from '../rules/trassierungCheck.js'
+import { buildConnectionElements } from '../switch/switchConnectionUtils.js'
 
 const EPSG = 25832
 const P = (e, n) => ({ easting: e, northing: n, zone: EPSG })

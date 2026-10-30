@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest'
-import { editCommit, editStart, switchConnectionOf, takeApart } from './crossoverEdit'
-import { buildSCurve, connectionPick, settleConnection, solveConnection } from './sCurve'
-import { buildLineTrack } from './tracks'
-import { planSwitchDeletion, SWITCH_TYPES } from '../switch'
-import { remapSwitches } from '../track'
-import { expectNodesJoin, expectSwitchRoutesCarved } from '../../test/chainInvariants'
+import { editCommit, editStart, switchConnectionOf, takeApart } from './crossoverEdit.js'
+import { buildSCurve, connectionPick, settleConnection, solveConnection } from './sCurve.js'
+import { buildLineTrack } from './tracks.js'
+import { planSwitchDeletion, SWITCH_TYPES } from '../switch/index.js'
+import { remapSwitches } from '../track/index.js'
+import { expectNodesJoin, expectSwitchRoutesCarved } from '../../test/chainInvariants.js'
 
 const EPSG = 25832
 const P = (e, n) => ({ easting: e, northing: n, zone: EPSG })

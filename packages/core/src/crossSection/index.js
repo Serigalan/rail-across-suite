@@ -10,8 +10,8 @@ export {
   PLANUM_EDGE, platformSection, RAILS, rotatePoint, RUNNING_CIRCLE_DISTANCE, sectionAtStation,
   sectionLevels, sectionLinePoints, sectionNeighbours, sectionOrigin, SLEEPERS, superstructureAt,
   TRACK_GAUGE,
-} from './crossSectionUtils'
+} from './crossSectionUtils.js'
 export {
   DEFAULT_GAUGE_PROFILE, GAUGE_PROFILES, gaugeProfile, gaugeProfileAreas, gaugeProfileLabelKey,
   gaugeProfileRing, LICHTRAUM_SOURCE, QUERSCHNITT_KATALOG,
-} from './gaugeProfiles'
+} from './gaugeProfiles.js'

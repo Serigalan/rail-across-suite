@@ -1,4 +1,4 @@
-import { resolveEndBearing } from './elementUtils'
+import { resolveEndBearing } from './elementUtils.js'
 
 /**
  * The invariants an element chain has to hold, as plain checks: each returns

@@ -1,9 +1,9 @@
 import {
   EPSG_OPTIONS, crsCentre, crsDatum, crsName, crsSystem, epsgForLngLat, isCrsSystem, systemCodeAt,
   systemZones, transformTrackToPlane, loadGridsFor,
-} from '../geometry'
-import { portTracks, rebuildCoords, referencesTrack, isLinkSwitch, trackLength, LINE_CATEGORIES } from '../track'
-import { rebuildSwitchSymbol } from '../switch'
+} from '../geometry/index.js'
+import { portTracks, rebuildCoords, referencesTrack, isLinkSwitch, trackLength, LINE_CATEGORIES } from '../track/index.js'
+import { rebuildSwitchSymbol } from '../switch/index.js'
 
 /**
  * The project settings (Paket PE): the project's coordinate system and line

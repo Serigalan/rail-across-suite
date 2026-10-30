@@ -1,10 +1,10 @@
 import {
   utmToWgs84, bearingAfterUtm, computeStraightValuesUtm, computeCurvedValuesUtm, arcElement,
   straightElement,
-} from '../geometry'
-import { switchElementMark } from '../track'
-import { STRAIGHT_CURVATURE } from './catalogue'
-import { negR, routeCoords, utmEndRoute } from './route'
+} from '../geometry/index.js'
+import { switchElementMark } from '../track/index.js'
+import { STRAIGHT_CURVATURE } from './catalogue.js'
+import { negR, routeCoords, utmEndRoute } from './route.js'
 
 // Crossings and crossing switches: their angle, legs and geometry.
 

@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
-import { surveyFromTrace, surveyPoints, surveyStats, surveyDefect, withoutPoints } from './axisSurvey'
-import { validateProject } from '../project/validateProject'
-import { mergeProject } from '../merge'
-import { describeStep } from '../project/stepLabel'
+import { surveyFromTrace, surveyPoints, surveyStats, surveyDefect, withoutPoints } from './axisSurvey.js'
+import { validateProject } from '../project/validateProject.js'
+import { mergeProject } from '../merge/index.js'
+import { describeStep } from '../project/stepLabel.js'
 
 const trace = {
   epsg: 5684,

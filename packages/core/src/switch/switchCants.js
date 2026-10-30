@@ -1,6 +1,6 @@
-import { cantEnds, withCantAtEnd, withCantsOver } from '../geometry'
-import { portEnd, portTrack } from '../track'
-import { switchAbreast } from './route'
+import { cantEnds, withCantAtEnd, withCantsOver } from '../geometry/index.js'
+import { portEnd, portTrack } from '../track/index.js'
+import { switchAbreast } from './route.js'
 
 // A turnout lies on one set of sleepers, so its two routes carry one cant
 // side by side (Entscheidung 367). Laying it reads the branch off the track

@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest'
-import { trackOf } from './tracks'
+import { trackOf } from './tracks.js'
 import {
   switchOnTrackPlacement, switchOnTrackRemnant, switchOnTrackRouteEnd, switchOnTrackSlider, switchOnTrackToeValid,
-} from './switches'
-import { arcFrom, straightFrom } from '../geometry/elementFactory'
-import { SWITCH_TYPES, switchStraightLength } from '../switch/catalogue'
+} from './switches.js'
+import { arcFrom, straightFrom } from '../geometry/elementFactory.js'
+import { SWITCH_TYPES, switchStraightLength } from '../switch/catalogue.js'
 
 const EPSG = 25832
 const START = { easting: 500000, northing: 5600000, zone: EPSG }

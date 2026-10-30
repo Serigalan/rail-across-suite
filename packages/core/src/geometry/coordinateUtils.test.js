@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { projectCrsOptions } from './coordinateUtils'
+import { projectCrsOptions } from './coordinateUtils.js'
 
 describe('projectCrsOptions', () => {
   it('lists the planes of the project, most used first, named', () => {

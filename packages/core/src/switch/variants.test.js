@@ -3,7 +3,7 @@ import {
   ALL_SWITCH_TYPES, CROSSING_TYPES, SWITCH_CONNECTION_STAGES, SWITCH_PICK_TYPES, hasCompoundBranch, switchBranchSections,
   switchMark, switchMarkDistance, switchStraightLength, switchTangents, switchTypeByLabel, switchVariantFor,
   switchVariants,
-} from './catalogue'
+} from './catalogue.js'
 
 // The variants are the rows of the DB switch table (800.0120, 05/2024); the
 // geometry stays the form's. These tests hold the two against each other.

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { EMPTY_PLATFORM_FORM, platformDraft, platformForm, platformFormValid } from './platformForm'
-import { PLATFORM_FRONT_OFFSET, PLATFORM_WIDTH, DEFAULT_PLATFORM_HEIGHT } from './platformUtils'
-import { straightFrom } from '../geometry/elementFactory'
+import { EMPTY_PLATFORM_FORM, platformDraft, platformForm, platformFormValid } from './platformForm.js'
+import { PLATFORM_FRONT_OFFSET, PLATFORM_WIDTH, DEFAULT_PLATFORM_HEIGHT } from './platformUtils.js'
+import { straightFrom } from '../geometry/elementFactory.js'
 
 const track = { id: 't', epsg: 25832, elements: [straightFrom({ easting: 500000, northing: 5700000, zone: 25832 }, 90, 300)] }
 const form = (over) => ({ ...EMPTY_PLATFORM_FORM, trackId: 't', start: '20', end: '140', ...over })

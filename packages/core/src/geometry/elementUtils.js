@@ -1,6 +1,6 @@
-import { wgs84ToUTM, utmToWgs84 } from './coordinateUtils'
-import { SAGITTA_DISPLAY, STRAIGHT_VERTEX_SPACING, SWITCH_ROUTE_STEP } from './geometryPrecision'
-import { transitionBearingAtUtm, transitionPlanePoints } from './clothoidUtils'
+import { wgs84ToUTM, utmToWgs84 } from './coordinateUtils.js'
+import { SAGITTA_DISPLAY, STRAIGHT_VERTEX_SPACING, SWITCH_ROUTE_STEP } from './geometryPrecision.js'
+import { transitionBearingAtUtm, transitionPlanePoints } from './clothoidUtils.js'
 
 // Every function here works in the track's own projected plane on
 // { easting, northing, zone } points (zone = the track's epsg). WGS84 is only

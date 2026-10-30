@@ -12,19 +12,19 @@ export {
   computeCantDefSigned, computeSwitchCant, limitCantDef, MAX_CANT, MAX_SWITCH_CANT,
   MAX_SWITCH_CANT_DEF, MAX_SWITCH_CANT_EXCEPTION, regelCant,
   switchCantError, worstCantOf,
-} from './cant'
-export { bundledCatalogHash } from './catalogHash'
-export { BUNDLED_KATALOG_VERSION, flattenPhysics, GRENZWERTE, optimizerLimitRows, PHYSICS } from './constraintsView'
-export { comparisonRadiusLimits, minElementLength } from './elementLength'
+} from './cant.js'
+export { catalogFiles, hashCatalogFiles } from './catalogHash.js'
+export { BUNDLED_KATALOG_VERSION, flattenPhysics, GRENZWERTE, optimizerLimitRows, PHYSICS } from './constraintsView.js'
+export { comparisonRadiusLimits, minElementLength } from './elementLength.js'
 export {
   CATALOG_ID, catalogLimit, evaluateRules, KATALOG, ruleById, rulesForScope,
   severityLabelKey, severityRank, worstSeverity,
-} from './regelkatalog'
-export { CANT_DEFICIENCY_COEFF } from './regelwerkDefaults'
-export { fieldFindings } from './ruleFields'
-export { governing, maxSpeeds, ruleMaxSpeedsOf, SPEED_STEP } from './speed'
+} from './regelkatalog.js'
+export { CANT_DEFICIENCY_COEFF } from './regelwerkDefaults.js'
+export { fieldFindings } from './ruleFields.js'
+export { governing, maxSpeeds, ruleMaxSpeedsOf, SPEED_STEP } from './speed.js'
 export {
   connectTransitionLengths, lengthRuleFormula, transitionChain, transitionHasError,
   transitionLengths,
-} from './transitionLength'
-export { boundaryScope, checkTrack, endRun, hasRuleError, runBeside } from './trassierungCheck'
+} from './transitionLength.js'
+export { boundaryScope, checkTrack, endRun, hasRuleError, runBeside } from './trassierungCheck.js'

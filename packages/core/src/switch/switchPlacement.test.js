@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { clickStation, placeSwitchOnTrack, switchEndAnchorRefusal } from './switchPlacement'
-import { arcFrom, straightFrom, transitionElement } from '../geometry/elementFactory'
+import { clickStation, placeSwitchOnTrack, switchEndAnchorRefusal } from './switchPlacement.js'
+import { arcFrom, straightFrom, transitionElement } from '../geometry/elementFactory.js'
 
 
 const EPSG = 25832

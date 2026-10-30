@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest'
-import { tracksOnFrom } from './topology'
-import { endPointStraightUtm } from '../geometry/elementUtils'
-import { utmToWgs84 } from '../geometry/coordinateUtils'
-import { newSwitchFields, LINK_KIND } from './switchModel'
-import { hasPek, loadPekBestand } from '../../test/pekFixture'
+import { tracksOnFrom } from './topology.js'
+import { endPointStraightUtm } from '../geometry/elementUtils.js'
+import { utmToWgs84 } from '../geometry/coordinateUtils.js'
+import { newSwitchFields, LINK_KIND } from './switchModel.js'
+import { hasPek, loadPekBestand } from '../../test/pekFixture.js'
 
 /**
  * Where the cross section walks on at a track's end (tracksOnFrom): the tracks

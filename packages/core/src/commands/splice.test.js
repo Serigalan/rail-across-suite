@@ -1,13 +1,13 @@
 import { describe, it, expect } from 'vitest'
 import {
   buildSplice, clearanceRequest, neighbourAxis, secondPickRefusal, settleLengths, spliceFromAnswer, spliceKeptCant, splicePick, spliceRequest,
-} from './splice'
-import { straightElement, arcElement, transitionElement } from '../geometry/elementFactory'
-import { rebuildCoords } from '../track/trackModel'
-import { expectValidTrack } from '../../test/chainInvariants'
-import { edgeAt } from '../../test/platformEdge'
-import { carryPlatforms } from '../track'
-import answers from '../../test/fixtures/splice_answers.json'
+} from './splice.js'
+import { straightElement, arcElement, transitionElement } from '../geometry/elementFactory.js'
+import { rebuildCoords } from '../track/trackModel.js'
+import { expectValidTrack } from '../../test/chainInvariants.js'
+import { edgeAt } from '../../test/platformEdge.js'
+import { carryPlatforms } from '../track/index.js'
+import answers from '../../test/fixtures/splice_answers.json' with { type: 'json' }
 
 // The construction is the service's (olt_optimizer/splice.py); what is tested
 // here is the app's half — the request it sends and the track it builds from

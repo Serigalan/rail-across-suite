@@ -1,5 +1,5 @@
-import { elementPoints } from '../commands'
-import { gradientAt, generateId } from '../track'
+import { elementPoints } from '../commands/index.js'
+import { gradientAt, generateId } from '../track/index.js'
 
 // A reference axis (Bestandsachse, Paket V): the axis of a surveyed track as
 // points every centimetre, nothing else — its elements are not kept

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { describeStep } from './stepLabel'
+import { describeStep } from './stepLabel.js'
 
 const track = (id, name) => ({ id, name, elements: [] })
 const base = { tracks: [track('a', 'A'), track('b', 'B')], switches: [{ switchId: 's1', name: 'W1' }], platforms: [], endMarks: [] }
@@ -41,7 +41,7 @@ describe('describing a step', () => {
 })
 
 describe('the tracks of a step', async () => {
-  const { stepTrackIds } = await import('./stepLabel')
+  const { stepTrackIds } = await import('./stepLabel.js')
   it('are the ones it brought or changed', () => {
     const after = { ...base, tracks: [{ ...base.tracks[0] }, track('c', 'C')] }
     expect(stepTrackIds(base, after)).toEqual(['c', 'a'])

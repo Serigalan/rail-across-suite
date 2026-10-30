@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import {
   DEFAULT_SWITCH_KIND, SWITCH_FORM_VERSION, SWITCH_KINDS, SWITCH_ROUTES, SWITCH_PORTS, elementBelongsToSwitch, isModelledSwitch, newSwitchFields, switchElementMark, switchPorts, portsOf, switchRoutes, switchRoutePorts, switchKindLabelKey, switchRouteLabelKey, LINK_KIND, isLinkSwitch, portTrack, portEnd, withPort,
-} from './switchModel'
+} from './switchModel.js'
 
 describe('the model’s vocabulary', () => {
   it('names the kinds a record can discriminate on, the turnout first', () => {

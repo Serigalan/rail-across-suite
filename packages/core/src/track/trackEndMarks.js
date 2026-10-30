@@ -1,4 +1,4 @@
-import { portsOf, portTrack, portEnd } from './switchModel'
+import { portsOf, portTrack, portEnd } from './switchModel.js'
 
 /**
  * What a track end says about itself when nothing is connected to it: a

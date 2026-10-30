@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest'
-import { trackOf } from '../commands/tracks'
-import { arcFrom, straightFrom, transitionElement } from '../geometry/elementFactory'
-import { switchRouteBearingAt, switchRoutePointUtm } from './route'
-import { trackLength } from '../track/heightUtils'
+import { trackOf } from '../commands/tracks.js'
+import { arcFrom, straightFrom, transitionElement } from '../geometry/elementFactory.js'
+import { switchRouteBearingAt, switchRoutePointUtm } from './route.js'
+import { trackLength } from '../track/heightUtils.js'
 import {
   connectionAnchor, connectionRoots, fitConnectingElement, joinRouteIntoTrack, refitTrackEnd,
-} from './connectToTrack'
-import { expectValidTrack } from '../../test/chainInvariants'
+} from './connectToTrack.js'
+import { expectValidTrack } from '../../test/chainInvariants.js'
 
 const EPSG = 25832
 const START = { easting: 500000, northing: 5600000, zone: EPSG }

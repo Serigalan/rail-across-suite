@@ -1,7 +1,7 @@
-import { pointAtStation, offsetEdgeCoords } from './platformUtils'
-import { utmToWgs84 } from '../geometry'
-import { trackLength } from './heightUtils'
-import { BUFFER_STOP, bufferStopStations } from './trackEndMarks'
+import { pointAtStation, offsetEdgeCoords } from './platformUtils.js'
+import { utmToWgs84 } from '../geometry/index.js'
+import { trackLength } from './heightUtils.js'
+import { BUFFER_STOP, bufferStopStations } from './trackEndMarks.js'
 
 /**
  * Half the width of the bar drawn across the track at the buffer face [m]: a

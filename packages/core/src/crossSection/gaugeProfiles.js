@@ -17,7 +17,7 @@
  * further entry in the catalogue and nothing else.
  */
 
-import QUERSCHNITT_KATALOG from '../../constraints/db-ril-800-0130.json'
+import QUERSCHNITT_KATALOG from '../../constraints/db-ril-800-0130.json' with { type: 'json' }
 
 export { QUERSCHNITT_KATALOG }
 

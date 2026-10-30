@@ -1,7 +1,7 @@
-import { dehydrateProjects } from '../project'
+import { dehydrateProjects } from '../project/index.js'
 import {
   COLLECTION_NAMES, fieldsOf, indexCollection, objectLabel, projectFields, sameValue,
-} from './collections'
+} from './collections.js'
 
 /**
  * A project record as merged: dehydrated, so the derived geometry (WGS84

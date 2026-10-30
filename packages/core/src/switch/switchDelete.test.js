@@ -1,24 +1,24 @@
 import { describe, it, expect } from 'vitest'
-import { rebuildCoords, joinTracks, reverseTrack, remapSwitches } from '../track/trackModel'
+import { rebuildCoords, joinTracks, reverseTrack, remapSwitches } from '../track/trackModel.js'
 import {
   computeCurvedValuesUtm, computeStraightValuesUtm, arcCoordsFromRadiusUtm,
   endPointCurvedUtm, endPointStraightUtm, bearingAfterUtm,
-} from '../geometry/elementUtils'
-import { computeClothoidUtm, transitionPointAtUtm } from '../geometry/clothoidUtils'
-import { utmToWgs84 } from '../geometry/coordinateUtils'
-import { SAGITTA_ELEMENT, SAGITTA_TRACK } from '../geometry/geometryPrecision'
-import { newSwitchFields, switchElementMark } from '../track/switchModel'
-import { splitElementAt, carveSwitchRoute } from '../track/trackSplitUtils'
-import { dehydrateProjects, hydrateProjects, parseProjectsPayload, projectsPayload } from '../project/persistenceUtils'
-import { joinHeights, splitHeights } from '../track/heightUtils'
-import { mergeableRun, mergeChain } from '../track/mergeElements'
+} from '../geometry/elementUtils.js'
+import { computeClothoidUtm, transitionPointAtUtm } from '../geometry/clothoidUtils.js'
+import { utmToWgs84 } from '../geometry/coordinateUtils.js'
+import { SAGITTA_ELEMENT, SAGITTA_TRACK } from '../geometry/geometryPrecision.js'
+import { newSwitchFields, switchElementMark } from '../track/switchModel.js'
+import { splitElementAt, carveSwitchRoute } from '../track/trackSplitUtils.js'
+import { dehydrateProjects, hydrateProjects, parseProjectsPayload, projectsPayload } from '../project/persistenceUtils.js'
+import { joinHeights, splitHeights } from '../track/heightUtils.js'
+import { mergeableRun, mergeChain } from '../track/mergeElements.js'
 import {
   switchParts, planSwitchDeletion, keptRoutes,
-} from './switchDelete'
+} from './switchDelete.js'
 import {
   expectValidTrack, expectNodesJoin, expectLengthsTrue,
   expectSwitchRoutesCarved,
-} from '../../test/chainInvariants'
+} from '../../test/chainInvariants.js'
 
 /**
  * AP 1.2 — the delete rules. The fixtures are built the way the dialogs build

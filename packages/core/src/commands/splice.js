@@ -1,10 +1,10 @@
 import {
   generateId, rebuildCoords, trackLabel, reverseHeights, splitHeights, trackLength,
   elementStations, pointOnElement,
-} from '../track'
-import { resolveEndBearing, reverseElement, nodeUtm, reconstructElements, transformPlanePoint } from '../geometry'
-import { cantSign, AUTO_CANT_MODEL, lengthRuleFormula, minElementLength, runBeside } from '../rules'
-import { sectionAtStation } from '../crossSection'
+} from '../track/index.js'
+import { resolveEndBearing, reverseElement, nodeUtm, reconstructElements, transformPlanePoint } from '../geometry/index.js'
+import { cantSign, AUTO_CANT_MODEL, lengthRuleFormula, minElementLength, runBeside } from '../rules/index.js'
+import { sectionAtStation } from '../crossSection/index.js'
 
 // Splicing two tracks into one (R5.5, AP 12.4): what a picked element offers
 // the splice, the request the construction is built from, and the commit that

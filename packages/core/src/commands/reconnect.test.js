@@ -2,11 +2,11 @@ import { describe, it, expect } from 'vitest'
 import {
   AXIS_SPACING, axisPoints, buildReconnect, reconnectFromAnswer, reconnectPick, reconnectRange, reconnectRequest,
   replacedSpan, stationMap, stretchDefaults,
-} from './reconnect'
-import { reconstructElements } from '../geometry/elementReconstruct'
-import { rebuildCoords } from '../track/trackModel'
-import { expectValidTrack } from '../../test/chainInvariants'
-import fixture from '../../test/fixtures/reconnect_answers.json'
+} from './reconnect.js'
+import { reconstructElements } from '../geometry/elementReconstruct.js'
+import { rebuildCoords } from '../track/trackModel.js'
+import { expectValidTrack } from '../../test/chainInvariants.js'
+import fixture from '../../test/fixtures/reconnect_answers.json' with { type: 'json' }
 
 // The search is the service's (olt_optimizer/reconnect.py); what is tested
 // here is the app's half — the stretch, the old axis, the request and the

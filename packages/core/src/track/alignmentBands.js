@@ -1,5 +1,5 @@
-import { cantEnds, transitionCantEnds, withCantEdit } from '../geometry'
-import { worstSeverity, cantLimit, cantSign, clampCant } from '../rules'
+import { cantEnds, transitionCantEnds, withCantEdit } from '../geometry/index.js'
+import { worstSeverity, cantLimit, cantSign, clampCant } from '../rules/index.js'
 
 // The bands of a track drawn under each other over its station: curvature,
 // cant and speed, each a polyline of { s, v } — a value of null breaks it.

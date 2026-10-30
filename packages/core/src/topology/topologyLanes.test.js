@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { buildTopologyGraph, topologyClusters } from './topologyGraph'
-import { layoutClusterLanes } from './topologyLanes'
-import { newSwitchFields } from '../track/switchModel'
-import { endPointStraightUtm } from '../geometry/elementUtils'
-import { utmToWgs84 } from '../geometry/coordinateUtils'
-import { hydrateProjects } from '../project/persistenceUtils'
-import { hasPekBestand, loadPekBestand } from '../../test/pekFixture'
+import { buildTopologyGraph, topologyClusters } from './topologyGraph.js'
+import { layoutClusterLanes } from './topologyLanes.js'
+import { newSwitchFields } from '../track/switchModel.js'
+import { endPointStraightUtm } from '../geometry/elementUtils.js'
+import { utmToWgs84 } from '../geometry/coordinateUtils.js'
+import { hydrateProjects } from '../project/persistenceUtils.js'
+import { hasPekBestand, loadPekBestand } from '../../test/pekFixture.js'
 
 /**
  * The topology diagram by lines (AP 9.8): every line through the network on a

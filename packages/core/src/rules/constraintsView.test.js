@@ -4,7 +4,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
   BUNDLED_KATALOG_VERSION, evalFormel, flattenPhysics, GRENZWERTE, optimizerLimitRows, PHYSICS,
-} from './constraintsView'
+} from './constraintsView.js'
 
 const pkgRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const readJson = (rel) => JSON.parse(fs.readFileSync(path.join(pkgRoot, rel), 'utf-8'))

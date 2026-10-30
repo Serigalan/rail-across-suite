@@ -1,16 +1,16 @@
 import {
   utmToWgs84, arcCoordsFromRadiusUtm, projectOnArcUtm, SAGITTA_ELEMENT, SAGITTA_TRACK,
   computeClothoidUtm, arcElement, straightElement, transitionElement, withCantRamp,
-} from '../geometry'
-import { MAX_SWITCH_CANT, MAX_SWITCH_CANT_DEF, comparisonRadiusLimits, computeCantDefSigned, minElementLength } from '../rules'
+} from '../geometry/index.js'
+import { MAX_SWITCH_CANT, MAX_SWITCH_CANT_DEF, comparisonRadiusLimits, computeCantDefSigned, minElementLength } from '../rules/index.js'
 import {
   SWITCH_TYPES, SWITCH_CONNECTION_STAGES, STRAIGHT_CURVATURE, switchStraightLength, switchBranchLength, switchBranchSections,
-} from './catalogue'
+} from './catalogue.js'
 import {
   switchBranchChain, switchRouteVaries, switchRoutePointUtm, switchRouteBearingAt, switchRouteRadiusAt, switchRouteSlice, switchChainPointUtm, switchChainBearingAt, switchChainSegmentsUtm,
   switchAbreast, switchChainJoints,
-} from './route'
-import { MID_OPEN, endCurvature, isDefaultMids, midUnknowns, solveMidChain } from './midChain'
+} from './route.js'
+import { MID_OPEN, endCurvature, isDefaultMids, midUnknowns, solveMidChain } from './midChain.js'
 
 const DEG2RAD = Math.PI / 180
 const RAD2DEG = 180 / Math.PI

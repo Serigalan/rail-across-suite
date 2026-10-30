@@ -5,6 +5,6 @@
 // imports from here and nowhere else (tools/modules.mjs). What is not listed is
 // the module's own business. See docs/modules/topology.md.
 
-export { labelBox, placeLabels } from './labelPlacement'
-export { buildTopologyGraph, selectionHighlight, topologyClusters } from './topologyGraph'
-export { layoutClusterLanes } from './topologyLanes'
+export { labelBox, placeLabels } from './labelPlacement.js'
+export { buildTopologyGraph, selectionHighlight, topologyClusters } from './topologyGraph.js'
+export { layoutClusterLanes } from './topologyLanes.js'

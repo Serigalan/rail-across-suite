@@ -8,12 +8,12 @@
 export {
   ALIGN_DEFAULTS, alignRequest, deleteStraight, elementReport, fittedCurvature, gradientReport,
   insertStraight, moveStraightEnd, parseAxisPointFile, straightRanges, surveyAxis, trackFromFit,
-} from './alignmentFit'
-export { surveyDefect, surveyFromTrace, surveyPoints, surveyStats, withoutPoints } from './axisSurvey'
+} from './alignmentFit.js'
+export { surveyDefect, surveyFromTrace, surveyPoints, surveyStats, withoutPoints } from './axisSurvey.js'
 export {
   axisOutline, axisRange, buildReferenceAxis, REFERENCE_MAX_LENGTH, referenceAxisDefect, referenceStretches,
-} from './referenceAxis'
+} from './referenceAxis.js'
 export {
   comparedLine, deviationAt, heightsComparable, nearestAxis, referenceProfile, shiftSummary,
   shiftValues, shiftValuesCsv,
-} from './shiftValues'
+} from './shiftValues.js'

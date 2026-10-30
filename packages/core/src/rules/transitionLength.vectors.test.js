@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { transitionLengths } from './transitionLength'
-import vectors from '../../constraints/tests/transition_lengths.json'
+import { transitionLengths } from './transitionLength.js'
+import vectors from '../../constraints/tests/transition_lengths.json' with { type: 'json' }
 
 // The same cases services/optimizer/tests/vectors.py asks the service's
 // transition_lengths (olt_optimizer/grenzen.py): the splice finds its lengths

@@ -1,7 +1,7 @@
 import {
   computeCurvedValuesUtm, computeStraightValuesUtm, resolveEndBearing, curvatureOf,
   reconstructElements,
-} from '../geometry'
+} from '../geometry/index.js'
 
 // Runs of elements that are one element: what a turnout carved into a track
 // and its deletion joins again (switchDelete), and what the element table

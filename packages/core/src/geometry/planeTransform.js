@@ -1,5 +1,5 @@
-import { transformPlanePoint } from './coordinateUtils'
-import { reconstructElements } from './elementReconstruct'
+import { transformPlanePoint } from './coordinateUtils.js'
+import { reconstructElements } from './elementReconstruct.js'
 
 
 /**

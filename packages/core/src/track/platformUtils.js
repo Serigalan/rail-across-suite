@@ -1,9 +1,9 @@
 import {
   utmToWgs84, nodeUtm, endPointStraightUtm, endPointCurvedUtm, bearingAfterUtm, projectOnArcUtm,
   transitionPointAtUtm, transitionBearingAtUtm, SAGITTA_ELEMENT, STRAIGHT_VERTEX_SPACING,
-} from '../geometry'
-import { heightAt } from './heightUtils'
-import { clamp } from '../geometry'
+} from '../geometry/index.js'
+import { heightAt } from './heightUtils.js'
+import { clamp } from '../geometry/index.js'
 
 /**
  * A platform is anchored to one track: the two picked points are stations along

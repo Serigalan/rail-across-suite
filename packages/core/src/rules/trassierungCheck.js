@@ -15,10 +15,10 @@
 
 import {
   evaluateRules, rulesForElement, rulesForScope, severityRank, worstSeverity,
-} from './regelkatalog'
-import { cantEnds } from '../geometry'
-import { computeCantDefSigned } from './cant'
-import { CANT_DEFICIENCY_COEFF } from './regelwerkDefaults'
+} from './regelkatalog.js'
+import { cantEnds } from '../geometry/index.js'
+import { computeCantDefSigned } from './cant.js'
+import { CANT_DEFICIENCY_COEFF } from './regelwerkDefaults.js'
 
 const PHYSICS = { u0_factor: CANT_DEFICIENCY_COEFF }
 

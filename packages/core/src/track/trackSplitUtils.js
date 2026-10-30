@@ -1,11 +1,11 @@
-import { generateId } from './identifierUtils'
-import { nextTrackName, rebuildCoords } from './trackModel'
+import { generateId } from './identifierUtils.js'
+import { nextTrackName, rebuildCoords } from './trackModel.js'
 import {
   computeStraightValuesUtm, computeCurvedValuesUtm, arcCoordsFromRadiusUtm, nodeUtm, utmToWgs84,
   SAGITTA_ELEMENT, SAGITTA_TRACK, computeClothoidUtm, transitionBearingAtUtm, clothoidRadiusAt,
   transitionCantEnds, withCantRamp,
-} from '../geometry'
-import { splitHeights } from './heightUtils'
+} from '../geometry/index.js'
+import { splitHeights } from './heightUtils.js'
 
 const DEG2RAD = Math.PI / 180
 

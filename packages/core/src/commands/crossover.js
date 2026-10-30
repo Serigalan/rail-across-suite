@@ -1,8 +1,8 @@
-import { connectionBranchEnds, midUnknowns } from '../switch'
+import { connectionBranchEnds, midUnknowns } from '../switch/index.js'
 import {
   CANT_DEFICIENCY_COEFF, comparisonRadiusLimits, MAX_SWITCH_CANT_DEF, minElementLength,
-} from '../rules'
-import { connectionRemnants, settleConnection, stems } from './sCurve'
+} from '../rules/index.js'
+import { connectionRemnants, settleConnection, stems } from './sCurve.js'
 
 // The Python solver of a switch connection (Entscheidungen 357–358): where no
 // shift of the slider gives a connection, the optimizer service searches the

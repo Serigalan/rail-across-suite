@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import {
   comparedLine, deviationAt, heightsComparable, nearestAxis, referenceProfile, shiftSummary, shiftValues, shiftValuesCsv,
-} from './shiftValues'
-import { buildReferenceAxis } from './referenceAxis'
-import { straightElement, arcFrom } from '../geometry/elementFactory'
+} from './shiftValues.js'
+import { buildReferenceAxis } from './referenceAxis.js'
+import { straightElement, arcFrom } from '../geometry/elementFactory.js'
 
 
 const EPSG = 25832

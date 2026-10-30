@@ -1,6 +1,6 @@
-import { nodeUtm, endPointStraightUtm, endPointCurvedUtm, transitionPointAtUtm, utmToWgs84 } from '../geometry'
-import { portsOf, portTrack, portEnd } from './switchModel'
-import { HEIGHT_POINT_SPACING, HEIGHT_SPLIT_MIN } from './heightDatums'
+import { nodeUtm, endPointStraightUtm, endPointCurvedUtm, transitionPointAtUtm, utmToWgs84 } from '../geometry/index.js'
+import { portsOf, portTrack, portEnd } from './switchModel.js'
+import { HEIGHT_POINT_SPACING, HEIGHT_SPLIT_MIN } from './heightDatums.js'
 
 // The vertical alignment of a track is its own thing, independent of the
 // horizontal elements it runs over: `track.heights` is [{ station, z, rv?,

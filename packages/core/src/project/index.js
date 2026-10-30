@@ -8,11 +8,11 @@
 export {
   dehydrateProjects, FORMAT_NAME, hydrateProjects, parseProjectsPayload, parseTracksPayload,
   PayloadError, projectsPayload,
-} from './persistenceUtils'
+} from './persistenceUtils.js'
 export {
   crsChoices, dominantSystem, moveTracksToPlane, newTrackEpsg, ownLineCategory, planeGroup,
   planeInSystem, previewTracksToPlane, projectSystem, projectSystemSetting, systemChoices,
   systemDeviates, withImportSystem, withLineCategory, zoneChoices,
-} from './projectSettings'
-export { describeStep, stepTrackIds } from './stepLabel'
-export { newFindings, validateProject } from './validateProject'
+} from './projectSettings.js'
+export { describeStep, stepTrackIds } from './stepLabel.js'
+export { newFindings, validateProject } from './validateProject.js'

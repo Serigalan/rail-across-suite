@@ -1,11 +1,11 @@
 import {
   COLLECTION_NAMES, WHOLE, fieldsOf, indexCollection, keyOf, objectFromFields, objectLabel,
   projectFields, sameValue,
-} from './collections'
-import { primary } from './diff'
-import { carryReferences, remapKind } from './remap'
-import { newFindings, validateProject } from '../project'
-import { portsOf, portTrack } from '../track'
+} from './collections.js'
+import { primary } from './diff.js'
+import { carryReferences, remapKind } from './remap.js'
+import { newFindings, validateProject } from '../project/index.js'
+import { portsOf, portTrack } from '../track/index.js'
 
 /**
  * Three-way merge of two states of a project against the state both came from

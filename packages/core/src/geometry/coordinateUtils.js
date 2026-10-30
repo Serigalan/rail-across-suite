@@ -1,5 +1,5 @@
 import proj4 from 'proj4'
-import { nadgridsList } from './ntv2Grid'
+import { nadgridsList } from './ntv2Grid.js'
 
 // One projected plane per track (`track.epsg`): every calculation in the app
 // runs in that plane on { easting, northing, zone } points. WGS84 is derived

@@ -11,8 +11,8 @@
  * that window and drawn as their rails.
  */
 
-import { elementStations, isLinkSwitch, pointOnElement, portEnd, portsOf, portTrack, turnoutDivergingPort } from '../track'
-import { RAIL_OFFSET, switchDetail } from './detail'
+import { elementStations, isLinkSwitch, pointOnElement, portEnd, portsOf, portTrack, turnoutDivergingPort } from '../track/index.js'
+import { RAIL_OFFSET, switchDetail } from './detail.js'
 
 /** How far around the turnout and its partners the scene reaches [m]. */
 const MARGIN = 15

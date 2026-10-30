@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { evalExpr, ExprError } from './ruleExpr'
-import vectors from '../../constraints/tests/expressions.json'
+import { evalExpr, ExprError } from './ruleExpr.js'
+import vectors from '../../constraints/tests/expressions.json' with { type: 'json' }
 
 // The same cases services/optimizer/tests/vectors.py runs against ruleexpr.py.
 const fns = {

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { cantEnds } from '../geometry/clothoidUtils'
-import { curvatureBand, cantBand, speedBand, bandValueAt, bandRuns, bandRange, withBandValue, withCantEnds, bandFindings } from './alignmentBands'
+import { cantEnds } from '../geometry/clothoidUtils.js'
+import { curvatureBand, cantBand, speedBand, bandValueAt, bandRuns, bandRange, withBandValue, withCantEnds, bandFindings } from './alignmentBands.js'
 
 // Straight 100 m, clothoid 50 m into a right arc R 500 of 200 m with 80 mm
 // cant, a Bloss transition 40 m out of it, and a straight of 60 m.

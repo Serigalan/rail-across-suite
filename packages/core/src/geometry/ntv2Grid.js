@@ -65,7 +65,8 @@ import proj4 from 'proj4'
 export const GRID_KEY = 'BETA2007'
 
 const gridUrl = (file) => `data/${file}`
-const BETA_URL = import.meta.env.VITE_OLT_NTV2_GRID ?? gridUrl('de_adv_BETA2007.tif')
+// Vite fills import.meta.env at build time; under plain Node it is not there.
+const BETA_URL = import.meta.env?.VITE_OLT_NTV2_GRID ?? gridUrl('de_adv_BETA2007.tif')
 
 /**
  * One per datum, covering all of it, loaded at startup. `bbox` is

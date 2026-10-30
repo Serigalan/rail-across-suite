@@ -1,7 +1,7 @@
-import { resolveEndBearing, reverseElement } from '../geometry'
-import { portsOf, portTrack, portEnd, withPort } from './switchModel'
-import { joinHeights, reverseHeights, trackLength } from './heightUtils'
-import { generateId } from './identifierUtils'
+import { resolveEndBearing, reverseElement } from '../geometry/index.js'
+import { portsOf, portTrack, portEnd, withPort } from './switchModel.js'
+import { joinHeights, reverseHeights, trackLength } from './heightUtils.js'
+import { generateId } from './identifierUtils.js'
 
 // The track model: pure functions on tracks and switch records. Nothing here
 // reads or writes the project store (storage.js) — that is what lets the

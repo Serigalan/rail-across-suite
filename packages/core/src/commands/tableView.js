@@ -1,6 +1,6 @@
-import { resolveRoute, reverseTrack, flipSwitchEndpoints } from '../track'
-import { reverseElement } from '../geometry'
-import { elementRoles } from './elementRoles'
+import { resolveRoute, reverseTrack, flipSwitchEndpoints } from '../track/index.js'
+import { reverseElement } from '../geometry/index.js'
+import { elementRoles } from './elementRoles.js'
 
 // What the element table shows (Entscheidung 381): one track, or a route —
 // its tracks in the order it runs them, each turned into the route's

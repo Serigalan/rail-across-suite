@@ -2,16 +2,16 @@ import { describe, it, expect } from 'vitest'
 import {
   SWITCH_TYPES, CONNECTION_SPEEDS, solveSwitchConnection, computeSwitchConnections,
   buildConnectionElements, checkMidRun,
-} from './switchConnectionUtils'
+} from './switchConnectionUtils.js'
 import {
   switchArcLength, switchStraightLength, switchBranchLength, branchRadius, SWITCH_CONNECTION_STAGES,
-} from './catalogue'
-import { arcCoordsFromRadiusUtm, computeCurvedValuesUtm, endPointCurvedUtm } from '../geometry/elementUtils'
-import { SAGITTA_ELEMENT, SAGITTA_TRACK } from '../geometry/geometryPrecision'
-import { planSwitchDeletion } from './switchDelete'
+} from './catalogue.js'
+import { arcCoordsFromRadiusUtm, computeCurvedValuesUtm, endPointCurvedUtm } from '../geometry/elementUtils.js'
+import { SAGITTA_ELEMENT, SAGITTA_TRACK } from '../geometry/geometryPrecision.js'
+import { planSwitchDeletion } from './switchDelete.js'
 
-import { expectValidTrack, expectSwitchRoutesCarved } from '../../test/chainInvariants'
-import { buildSCurve } from '../commands/sCurve'
+import { expectValidTrack, expectSwitchRoutesCarved } from '../../test/chainInvariants.js'
+import { buildSCurve } from '../commands/sCurve.js'
 
 /**
  * AP 2.1 — the switch connection in a curve.

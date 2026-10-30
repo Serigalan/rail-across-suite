@@ -5,7 +5,7 @@ import {
   transitionShift,
   curvatureOf,
   radiusOfCurvature,
-} from './clothoidUtils'
+} from './clothoidUtils.js'
 
 const START = { easting: 500000, northing: 5600000, zone: 25832 }
 

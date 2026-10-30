@@ -3,11 +3,11 @@ import {
   crsChoices, dominantSystem, moveTracksToPlane, newTrackEpsg, ownLineCategory, planeGroup, planeInSystem,
   previewTracksToPlane, projectSystem, projectSystemSetting, systemChoices, systemDeviates, withImportSystem,
   withLineCategory, zoneChoices,
-} from './projectSettings'
-import { trackOf } from '../commands/tracks'
-import { straightFrom } from '../geometry/elementFactory'
-import { crsCentre, crsSystem, crsZone, systemCodeAt, systemZones, transformPlanePoint } from '../geometry/coordinateUtils'
-import { trackLength } from '../track/heightUtils'
+} from './projectSettings.js'
+import { trackOf } from '../commands/tracks.js'
+import { straightFrom } from '../geometry/elementFactory.js'
+import { crsCentre, crsSystem, crsZone, systemCodeAt, systemZones, transformPlanePoint } from '../geometry/coordinateUtils.js'
+import { trackLength } from '../track/heightUtils.js'
 
 const UTM32 = 25832, UTM33 = 25833, GK3 = 5683, GK4 = 5684
 

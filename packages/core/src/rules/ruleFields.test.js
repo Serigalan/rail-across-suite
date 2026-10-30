@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { fieldFindings, ruleFields } from './ruleFields'
-import { ruleById } from './regelkatalog'
-import { checkTrack } from './trassierungCheck'
+import { fieldFindings, ruleFields } from './ruleFields.js'
+import { ruleById } from './regelkatalog.js'
+import { checkTrack } from './trassierungCheck.js'
 
 describe('findings at their fields', () => {
   it('reads the fields off a rule\'s inputs', () => {

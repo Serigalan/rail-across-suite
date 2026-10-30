@@ -1,4 +1,4 @@
-import { rebuildCoords, truncateHeights } from '../track'
+import { rebuildCoords, truncateHeights } from '../track/index.js'
 
 // What the optimize dialog sends and keeps (R5.5): the request for a run, and
 // the track a result makes — apart from the dialog that collects the settings.

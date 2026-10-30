@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { nearestValid, settleStation, uniqueStations, validIntervals } from './stationSlider'
+import { nearestValid, settleStation, uniqueStations, validIntervals } from './stationSlider.js'
 
 describe('the position slider', () => {
   const valid = (s) => (s >= 10.25 && s <= 40.5) || (s >= 60 && s <= 70)

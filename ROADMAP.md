@@ -69,6 +69,9 @@ Done:
   ([data model §6](docs/data-model.md#6-consequences-for-the-open-layout-tool)): the merge carries all three
   states before it compares, and a platform's location is one value (F2); a reversed or spliced track carries
   its platforms (F3). Both cases are tests and pass.
+- Plain Node loads the core without a bundler or a module hook: its imports name their files, JSON comes in by
+  attribute, and the catalogue files a bundle carries are read by the app (`tools/modules.mjs` in the core holds it
+  to that).
 
 Open:
 
@@ -78,7 +81,6 @@ Open:
   not on their elements ([decision 0004](docs/decisions/0004-ids-on-tracks.md)).
 - The point clouds into a package of their own, so the project server no longer imports the app (allowed for
   now by `TRANSITIONAL` in `tools/boundaries.mjs`).
-- The core loadable by plain Node without the server's module hook (file extensions in its imports).
 
 **Exit:** OLT imports its model only from the core; all OLT tests and the PEK data set pass; an oltjson-1.1
 file opens and saves losslessly; the cases F2 and F3 (reversal and splice) of the data model are tests and

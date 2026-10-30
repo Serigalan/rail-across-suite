@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest'
-import { straightFrom, arcFrom } from '../geometry/elementFactory'
-import { trackOf } from './tracks'
-import { inRun, rowOf, tableParts, tableRoles, tableRows, trackEdit, writeRows } from './tableView'
-import { planElementChange } from './editGeometry'
-import { expectValidTrack } from '../../test/chainInvariants'
+import { straightFrom, arcFrom } from '../geometry/elementFactory.js'
+import { trackOf } from './tracks.js'
+import { inRun, rowOf, tableParts, tableRoles, tableRows, trackEdit, writeRows } from './tableView.js'
+import { planElementChange } from './editGeometry.js'
+import { expectValidTrack } from '../../test/chainInvariants.js'
 
 const EPSG = 25832
 const O = { easting: 500000, northing: 5600000, zone: EPSG }

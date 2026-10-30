@@ -15,10 +15,10 @@
  * crosses, and the terrain along it, are found where the section is drawn.
  */
 
-import { cantEnds, transitionCantEnds, transformPlanePoint, utmToWgs84 } from '../geometry'
-import { edgeOffsets, elementStations, pointOnElement, DEFAULT_PLATFORM_HEIGHT } from '../track'
-import { QUERSCHNITT_KATALOG } from './gaugeProfiles'
-import { clamp } from '../geometry'
+import { cantEnds, transitionCantEnds, transformPlanePoint, utmToWgs84 } from '../geometry/index.js'
+import { edgeOffsets, elementStations, pointOnElement, DEFAULT_PLATFORM_HEIGHT } from '../track/index.js'
+import { QUERSCHNITT_KATALOG } from './gaugeProfiles.js'
+import { clamp } from '../geometry/index.js'
 
 /** Distance between the two running circles, and between the rail inner faces [mm]. */
 export const RUNNING_CIRCLE_DISTANCE = 1500

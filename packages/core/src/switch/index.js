@@ -10,37 +10,37 @@ export {
   ALL_SWITCH_TYPES, asRadius, bauform, CROSSING_TYPES, DEFAULT_SWITCH_TYPE_IDX, SWITCH_PICK_TYPES,
   switchBranchLength, switchBranchPointAt, switchBranchSections, switchFormChain, switchStraightLength,
   switchMark, switchTypeByLabel,
-} from './catalogue'
+} from './catalogue.js'
 export {
   connectionAnchor, connectionRoots, END_CHAIN_OPEN, endChainDefault, endChainOpen, fitConnectingElement,
   joinRouteIntoTrack, refitCount, refitTrackEnd, solveEndChain,
-} from './connectToTrack'
+} from './connectToTrack.js'
 export {
   computeCrossingGeometryUtm, crossingAngle, crossingElements, crossingEndDistance,
   crossingLegFitsTrack, crossingLegRadius, crossingLegSignedRadius, piecesOnRadius,
-} from './crossing'
-export { coupleSwitchCants } from './switchCants'
-export { formDetail } from './detail'
-export { switchDetailScene } from './detailScene'
-export { DEFAULT_MIDS, MID_OPEN, midUnknowns } from './midChain'
+} from './crossing.js'
+export { coupleSwitchCants } from './switchCants.js'
+export { formDetail } from './detail.js'
+export { switchDetailScene } from './detailScene.js'
+export { DEFAULT_MIDS, MID_OPEN, midUnknowns } from './midChain.js'
 export {
   negR, switchAbreast, switchBranchChain, switchChainBauform, switchChainJoints, switchChainBearingAt, switchChainPointUtm,
   switchChainTo, switchElementRoute, switchRouteBearingAt, switchRoutePointUtm, switchRouteVaries,
   utmEndRoute,
-} from './route'
-export { nearestValid, settleStation, uniqueStations, validIntervals } from './stationSlider'
+} from './route.js'
+export { nearestValid, settleStation, uniqueStations, validIntervals } from './stationSlider.js'
 export {
   buildConnectionElements, computeSwitchConnections, connectionBranchEnds, CONNECTION_SPEEDS,
   orientStemToward, solveSwitchConnection, SWITCH_TYPES,
-} from './switchConnectionUtils'
-export { planSwitchDeletion, switchParts } from './switchDelete'
+} from './switchConnectionUtils.js'
+export { planSwitchDeletion, switchParts } from './switchDelete.js'
 export {
   mainRouteLength, routeFrom, sleeperOffsets, sleeperThrough, switchLds, turnoutSleepers,
-} from './sleepers'
-export { clickStation, placeSwitchOnTrack, turnoutRunsOn } from './switchPlacement'
+} from './sleepers.js'
+export { clickStation, placeSwitchOnTrack, turnoutRunsOn } from './switchPlacement.js'
 export {
   computeSwitchGeometryUtm, crossingBodyUtm, crossingRoutesFromTracks, lcsLine, lcsLineUtm,
   rebuildSwitchSymbol, switchFillRing, switchLabelGeometry, switchRoutePointsUtm,
   switchRoutesFromTracks,
-} from './symbol'
-export { WEICHEN_REGELWERK, weichenGruppen } from './weichenRegelwerk'
+} from './symbol.js'
+export { WEICHEN_REGELWERK, weichenGruppen } from './weichenRegelwerk.js'

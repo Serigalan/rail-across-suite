@@ -1,6 +1,6 @@
-import { tracksOnFrom } from './topology'
-import { trackLength } from './heightUtils'
-import { pointAtStation, stationOnTrack } from './platformUtils'
+import { tracksOnFrom } from './topology.js'
+import { trackLength } from './heightUtils.js'
+import { pointAtStation, stationOnTrack } from './platformUtils.js'
 
 /**
  * Routes (Paket RT): a named run of connected tracks — over joints, links and

@@ -1,7 +1,7 @@
-import { utmToWgs84, crsName } from '../geometry'
-import { portsOf, isLinkSwitch, switchRoutePorts, portTrack, portEnd } from './switchModel'
-import { trackEndAt } from './trackLinkUtils'
-import { endKey, BUFFER_STOP, BOUNDARY } from './trackEndMarks'
+import { utmToWgs84, crsName } from '../geometry/index.js'
+import { portsOf, isLinkSwitch, switchRoutePorts, portTrack, portEnd } from './switchModel.js'
+import { trackEndAt } from './trackLinkUtils.js'
+import { endKey, BUFFER_STOP, BOUNDARY } from './trackEndMarks.js'
 
 /**
  * The topology of a project: which track ends are connected to what, and which

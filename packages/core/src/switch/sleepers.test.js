@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { FIRST_SLEEPER, SLEEPER_SPACING, sleeperGrid, sleeperNear, sleeperOffsets, sleeperThrough, turnoutSleepers } from './sleepers'
-import { reverseTrack } from '../track/trackModel'
-import { branchTrack, formOf, mainTrack, sleeperAtX as exact, turnout, xAtArc, xAtMain } from '../../test/turnoutFixture'
+import { FIRST_SLEEPER, SLEEPER_SPACING, sleeperGrid, sleeperNear, sleeperOffsets, sleeperThrough, turnoutSleepers } from './sleepers.js'
+import { reverseTrack } from '../track/trackModel.js'
+import { branchTrack, formOf, mainTrack, sleeperAtX as exact, turnout, xAtArc, xAtMain } from '../../test/turnoutFixture.js'
 
 describe('the sleeper grid (decision 349)', () => {
   it('spaces WA–WE evenly with both joints 0.3 m from a sleeper, and every 0.6 m behind WE', () => {

@@ -1,6 +1,6 @@
-import { portsOf, portTrack, portEnd, pointOnElement, endKey, trackLabel, resolveRoute } from '../track'
-import { sampleTransitionUtm, epsgMismatches, nodeGaps, untrueLengths } from '../geometry'
-import { surveyDefect, referenceAxisDefect } from '../survey'
+import { portsOf, portTrack, portEnd, pointOnElement, endKey, trackLabel, resolveRoute } from '../track/index.js'
+import { sampleTransitionUtm, epsgMismatches, nodeGaps, untrueLengths } from '../geometry/index.js'
+import { surveyDefect, referenceAxisDefect } from '../survey/index.js'
 
 /**
  * Whether a project record holds together — the check every merge result and

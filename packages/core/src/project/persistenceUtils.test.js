@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest'
 import {
   FORMAT_NAME, dehydrateProjects, hydrateProjects, parseProjectsPayload, parseTracksPayload, PayloadError, projectsPayload,
-} from './persistenceUtils'
-import { SWITCH_TYPES, switchArcLength, switchStraightLength } from '../switch/catalogue'
-import { computeSwitchGeometryUtm } from '../switch/symbol'
-import { DEFAULT_SWITCH_KIND, SWITCH_FORM_VERSION } from '../track/switchModel'
-import goldenElements from '../../test/fixtures/track_optimized.json'
-import { derivedEndBearing } from '../geometry/elementUtils'
+} from './persistenceUtils.js'
+import { SWITCH_TYPES, switchArcLength, switchStraightLength } from '../switch/catalogue.js'
+import { computeSwitchGeometryUtm } from '../switch/symbol.js'
+import { DEFAULT_SWITCH_KIND, SWITCH_FORM_VERSION } from '../track/switchModel.js'
+import goldenElements from '../../test/fixtures/track_optimized.json' with { type: 'json' }
+import { derivedEndBearing } from '../geometry/elementUtils.js'
 
 const EPSG = goldenElements[0].epsg
 

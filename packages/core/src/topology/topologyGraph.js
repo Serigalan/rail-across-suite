@@ -1,7 +1,7 @@
 import {
   classifyTrackEnds, portsOf, isLinkSwitch, DEFAULT_SWITCH_KIND, turnoutLinePort, portTrack,
   portEnd, endKey,
-} from '../track'
+} from '../track/index.js'
 
 /**
  * The topology of a project as a graph, for the diagram that shows nothing

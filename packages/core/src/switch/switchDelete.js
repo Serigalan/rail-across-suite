@@ -2,7 +2,7 @@ import {
   joinTracks, rebuildCoords, reverseTrack, portsOf, switchRoutePorts, elementBelongsToSwitch,
   elementOnSwitchRoute, unmarkSwitchElement, isLinkSwitch, portTrack, portEnd, splitHeights,
   trackLength, mergeChain,
-} from '../track'
+} from '../track/index.js'
 
 /**
  * The routes that stay as ordinary track when the switch goes: a route both of

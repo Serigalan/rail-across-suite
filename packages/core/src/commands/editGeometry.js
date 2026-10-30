@@ -1,8 +1,8 @@
 // Geometry of an element edit: plan, apply and merge length/bearing/radius changes.
-import { rebuildCoords, truncateHeights } from '../track'
-import { intermediateSpan } from './elementRoles'
-import { nodeUtm, arcFrom, straightFrom, transitionElement } from '../geometry'
-import { switchParts } from '../switch'
+import { rebuildCoords, truncateHeights } from '../track/index.js'
+import { intermediateSpan } from './elementRoles.js'
+import { nodeUtm, arcFrom, straightFrom, transitionElement } from '../geometry/index.js'
+import { switchParts } from '../switch/index.js'
 
 /**
  * How far a single change in the track editor may reach before it is refused

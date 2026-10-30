@@ -14,7 +14,7 @@
 // is: this one is bundled, so it is there whether or not the optimizer service
 // answers.
 
-import { SWITCH_TYPES, SWITCH_TYPES_SPECIAL, CROSSING_TYPES, WEICHEN_KATALOG, switchMark, switchVariants } from './catalogue'
+import { SWITCH_TYPES, SWITCH_TYPES_SPECIAL, CROSSING_TYPES, WEICHEN_KATALOG, switchMark, switchVariants } from './catalogue.js'
 
 /**
  * What this rulebook is, as the catalogue states it about itself. The Ril's

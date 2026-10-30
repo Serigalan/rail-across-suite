@@ -9,10 +9,10 @@
 // off disk. Not a copy — the import below is that file, which is why there is
 // nothing here that could drift from it.
 
-import physics from '../../constraints/physics.json'
+import physics from '../../constraints/physics.json' with { type: 'json' }
 import {
   catalogLimit, catalogSpeedRange, evaluateRule, IN_SWITCH_AREA, KATALOG, ruleById, severityRank,
-} from './regelkatalog'
+} from './regelkatalog.js'
 
 export const PHYSICS = physics
 

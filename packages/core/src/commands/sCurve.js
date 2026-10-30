@@ -1,13 +1,13 @@
 import {
   generateId, switchDesignation, nextSwitchNumber, nextTrackName, rebuildCoords, trackLabel,
   newSwitchFields, switchElementMark, splitElementAt, splitTrackAtJoint, carveSwitchRoute,
-} from '../track'
-import { cantEnds, nodeUtm, wgs84ToUTM, utmToWgs84, transformGridBearing } from '../geometry'
+} from '../track/index.js'
+import { cantEnds, nodeUtm, wgs84ToUTM, utmToWgs84, transformGridBearing } from '../geometry/index.js'
 import {
   switchElementRoute, switchRouteVaries, computeSwitchGeometryUtm, solveSwitchConnection,
   buildConnectionElements, orientStemToward, uniqueStations, turnoutRunsOn,
-} from '../switch'
-import { minElementLength, runBeside } from '../rules'
+} from '../switch/index.js'
+import { minElementLength, runBeside } from '../rules/index.js'
 
 // The S-curve between two line tracks (SCurveForm): solving the connection
 // for a shift, the range of shifts it stands over, and the commit.

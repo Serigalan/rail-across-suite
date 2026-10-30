@@ -1,10 +1,10 @@
 import {
   cantEnds, nodeUtm, reverseElement, resolveEndBearing, projectOnArcUtm,
   projectOnTransitionUtm,
-} from '../geometry'
-import { elementAtStation, pointAtStationUtm } from '../track'
-import { switchElementRoute, switchRouteSlice, switchRouteBearingAt } from './route'
-import { asRadius } from './catalogue'
+} from '../geometry/index.js'
+import { elementAtStation, pointAtStationUtm } from '../track/index.js'
+import { switchElementRoute, switchRouteSlice, switchRouteBearingAt } from './route.js'
+import { asRadius } from './catalogue.js'
 
 /**
  * A toe this close to an element's end sits on the joint, and a route that ends

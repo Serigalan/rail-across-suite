@@ -1,4 +1,4 @@
-import { pointAtStation, stationOnTrack, portsOf, portTrack, portEnd, withPort, repairRoute } from '../track'
+import { pointAtStation, stationOnTrack, portsOf, portTrack, portEnd, withPort, repairRoute } from '../track/index.js'
 
 /**
  * Carrying a reference across a change of track ids (decision 93, merge rule 5).

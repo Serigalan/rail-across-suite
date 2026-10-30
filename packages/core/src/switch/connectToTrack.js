@@ -1,14 +1,14 @@
 import {
   classifyTrackEnds, isOpenState, elementBelongsToSwitch, joinTracks, rebuildCoords, reverseTrack,
   trackLength,
-} from '../track'
+} from '../track/index.js'
 import {
   resolveEndBearing, reverseElement, curvatureOf, radiusOfCurvature, arcElement, straightElement,
   transitionElement,
-} from '../geometry'
-import { switchChainBearingAt, switchChainPointUtm, switchRouteBearingAt, switchRoutePointUtm } from './route'
-import { STRAIGHT_CURVATURE } from './catalogue'
-import { chainNewton, midSignSets, midUnknowns } from './midChain'
+} from '../geometry/index.js'
+import { switchChainBearingAt, switchChainPointUtm, switchRouteBearingAt, switchRoutePointUtm } from './route.js'
+import { STRAIGHT_CURVATURE } from './catalogue.js'
+import { chainNewton, midSignSets, midUnknowns } from './midChain.js'
 
 // Connecting a turnout's branch, or a crossing's cross leg, to an open track
 // end (Entscheidungen 302–304, 307–308).

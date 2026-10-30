@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { carryReferences, remapKind } from './remap'
-import { straightElement } from '../geometry/elementFactory'
+import { carryReferences, remapKind } from './remap.js'
+import { straightElement } from '../geometry/elementFactory.js'
 
 const EPSG = 25832
 const P = (x) => ({ easting: 500000 + x, northing: 5700000, zone: EPSG })

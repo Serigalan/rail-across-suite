@@ -2,14 +2,16 @@ import { describe, it, expect } from 'vitest'
 import { createHash } from 'node:crypto'
 import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
-import { bundledCatalogHash, catalogFiles, hashCatalogFiles } from './catalogHash'
+import { catalogFiles, hashCatalogFiles } from './catalogHash.js'
 
 const DIR = join(import.meta.dirname, '..', '..', 'constraints')
+const onDisk = () => Object.fromEntries(readdirSync(DIR).filter(n => n.endsWith('.json'))
+  .map(n => [`../../constraints/${n}`, readFileSync(join(DIR, n), 'utf8')]))
 
 describe('catalogue hash (R0.1)', () => {
-  it('covers every catalogue file, in name order', () => {
-    const names = catalogFiles().map(f => f.name)
-    expect(names).toEqual(readdirSync(DIR).filter(n => n.endsWith('.json')).sort())
+  it('takes the files in name order, by their names alone', () => {
+    const names = catalogFiles({ 'x/b.json': '', 'y/a.json': '' }).map(f => f.name)
+    expect(names).toEqual(['a.json', 'b.json'])
   })
 
   it('equals the hash the optimizer service computes over the raw file bytes', async () => {
@@ -20,7 +22,7 @@ describe('catalogue hash (R0.1)', () => {
       h.update(Buffer.from(name + '\0', 'utf-8'))
       h.update(Buffer.concat([readFileSync(join(DIR, name)), Buffer.from([0])]))
     }
-    expect(await bundledCatalogHash()).toBe(h.digest('hex'))
+    expect(await hashCatalogFiles(catalogFiles(onDisk()))).toBe(h.digest('hex'))
   })
 
   it('changes with any byte of any file', async () => {

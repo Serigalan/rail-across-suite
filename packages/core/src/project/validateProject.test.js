@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { hasPek, loadPek } from '../../test/pekFixture'
-import { newFindings, overlappingTracks, validateProject } from './validateProject'
+import { hasPek, loadPek } from '../../test/pekFixture.js'
+import { newFindings, overlappingTracks, validateProject } from './validateProject.js'
 
 // A straight along +x in a metric plane: n elements of `len` metres each.
 function straightTrack(id, { x = 0, y = 0, n = 2, len = 50, epsg = 25832 } = {}) {

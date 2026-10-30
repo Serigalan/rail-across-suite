@@ -1,5 +1,5 @@
-import { planeCoordsToWgs84 } from './coordinateUtils'
-import { SAGITTA_ELEMENT } from './geometryPrecision'
+import { planeCoordsToWgs84 } from './coordinateUtils.js'
+import { SAGITTA_ELEMENT } from './geometryPrecision.js'
 
 // Heading change Δφ(s) of a transition of length L between curvatures κ1 → κ2.
 //   clothoid: κ linear in s      → Δφ(s) = κ1·s + (κ2−κ1)·s²/(2L)

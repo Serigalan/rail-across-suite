@@ -1,6 +1,6 @@
-import { curvatureOf, radiusOfCurvature } from '../geometry'
-import { switchChainBearingAt, switchChainPointUtm } from './route'
-import { STRAIGHT_CURVATURE } from './catalogue'
+import { curvatureOf, radiusOfCurvature } from '../geometry/index.js'
+import { switchChainBearingAt, switchChainPointUtm } from './route.js'
+import { STRAIGHT_CURVATURE } from './catalogue.js'
 
 // The elements between the two branches of a switch connection (Entscheidung
 // 305): one, two or three of them, each a straight, an arc or a transition.

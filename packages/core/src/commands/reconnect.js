@@ -1,7 +1,7 @@
-import { rebuildCoords, trackLabel, heightAt } from '../track'
-import { resolveEndBearing, nodeUtm, endPointCurvedUtm, endPointStraightUtm, sampleTransitionUtm } from '../geometry'
-import { cantSign, AUTO_CANT_MODEL, minElementLength } from '../rules'
-import { pickRuns, picksAtSpeed, spliceFromAnswer } from './splice'
+import { rebuildCoords, trackLabel, heightAt } from '../track/index.js'
+import { resolveEndBearing, nodeUtm, endPointCurvedUtm, endPointStraightUtm, sampleTransitionUtm } from '../geometry/index.js'
+import { cantSign, AUTO_CANT_MODEL, minElementLength } from '../rules/index.js'
+import { pickRuns, picksAtSpeed, spliceFromAnswer } from './splice.js'
 
 // Reconnecting existing elements (Paket N): a stretch of one track is taken
 // out and its two neighbours joined again by the splice construction, the

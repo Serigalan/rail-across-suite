@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { REGELWERK_ID, MAX_SWITCH_CANT, MAX_SWITCH_CANT_DEF, CANT_DEFICIENCY_COEFF } from './regelwerkDefaults'
+import { REGELWERK_ID, MAX_SWITCH_CANT, MAX_SWITCH_CANT_DEF, CANT_DEFICIENCY_COEFF } from './regelwerkDefaults.js'
 
 // Keeps regelwerkDefaults.js honest against the files it reads from — straight
 // off disk, not through a build step, so there is nothing between a changed

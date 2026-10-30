@@ -5,5 +5,5 @@
 // imports from here and nowhere else (tools/modules.mjs). What is not listed is
 // the module's own business. See docs/modules/merge.md.
 
-export { diffProject, diffEntries, diffSize, primary } from './diff'
-export { mergeProject, resolve, validationConflicts } from './merge'
+export { diffProject, diffEntries, diffSize, primary } from './diff.js'
+export { mergeProject, resolve, validationConflicts } from './merge.js'

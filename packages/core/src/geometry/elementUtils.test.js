@@ -7,10 +7,10 @@ import {
   reverseElement,
   arcCenter,
   displayCoords,
-} from './elementUtils'
-import { arcElement, transitionElement } from './elementFactory'
-import { wgs84ToUTM } from './coordinateUtils'
-import { transitionPointAtUtm } from './clothoidUtils'
+} from './elementUtils.js'
+import { arcElement, transitionElement } from './elementFactory.js'
+import { wgs84ToUTM } from './coordinateUtils.js'
+import { transitionPointAtUtm } from './clothoidUtils.js'
 
 const EPSG = 25832
 const START = { easting: 500000, northing: 5600000, zone: EPSG }

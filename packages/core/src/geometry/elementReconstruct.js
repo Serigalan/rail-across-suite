@@ -1,7 +1,7 @@
-import { utmToWgs84 } from './coordinateUtils'
-import { arcCoordsFromRadiusUtm } from './elementUtils'
-import { computeClothoidUtm } from './clothoidUtils'
-import { SAGITTA_ELEMENT, SAGITTA_TRACK } from './geometryPrecision'
+import { utmToWgs84 } from './coordinateUtils.js'
+import { arcCoordsFromRadiusUtm } from './elementUtils.js'
+import { computeClothoidUtm } from './clothoidUtils.js'
+import { SAGITTA_ELEMENT, SAGITTA_TRACK } from './geometryPrecision.js'
 
 /**
  * Derive the display geometry of elements from their plane data — startNode /

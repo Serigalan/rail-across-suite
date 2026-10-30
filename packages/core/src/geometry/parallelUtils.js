@@ -1,5 +1,5 @@
-import { wgs84ToUTM } from './coordinateUtils'
-import { arcElement, straightElement, transitionElement } from './elementFactory'
+import { wgs84ToUTM } from './coordinateUtils.js'
+import { arcElement, straightElement, transitionElement } from './elementFactory.js'
 
 const DEG = Math.PI / 180
 const kappa  = (r) => (r != null && r !== 0) ? -1 / r : 0

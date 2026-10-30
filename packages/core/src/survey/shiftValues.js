@@ -1,6 +1,6 @@
-import { elementPoints } from '../commands'
-import { gradientAt, DEFAULT_HEIGHT_EPSG } from '../track'
-import { referencePoints, axisRange } from './referenceAxis'
+import { elementPoints } from '../commands/index.js'
+import { gradientAt, DEFAULT_HEIGHT_EPSG } from '../track/index.js'
+import { referencePoints, axisRange } from './referenceAxis.js'
 
 // Shift values (Verschiebewerte, Paket V): how far an axis lies from a
 // reference axis, across and in height, at round stations of the reference

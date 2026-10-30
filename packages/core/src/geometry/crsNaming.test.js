@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { crsLabel, crsName, projStringFor, EPSG_OPTIONS, gkZone } from './coordinateUtils'
+import { crsLabel, crsName, projStringFor, EPSG_OPTIONS, gkZone } from './coordinateUtils.js'
 
 /**
  * Every EPSG code this tool has a plane for is also named — the picker offers a

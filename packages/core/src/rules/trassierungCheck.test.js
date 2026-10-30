@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import {
   boundaryScope, checkTrack, elementScope, endRun, formOf, hasRuleError, isCheckable, rampScope, runBeside,
-} from './trassierungCheck'
-import { computeCantDefSigned } from './cant'
+} from './trassierungCheck.js'
+import { computeCantDefSigned } from './cant.js'
 
 // A chain that keeps every rule of the catalogue: 100 km/h throughout, the
 // Regelüberhöhung for R = 1000 (65 mm), a clothoid long enough for both the

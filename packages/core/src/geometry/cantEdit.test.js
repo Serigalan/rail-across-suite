@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { cantEnds, hasCantEnds, loadedTrackCants, storedTrackCants, withCantEdit } from './clothoidUtils'
+import { cantEnds, hasCantEnds, loadedTrackCants, storedTrackCants, withCantEdit } from './clothoidUtils.js'
 
 // The cant typed in the element table and carried over the joints (Entscheidung 373).
 const straight = (more = {}) => ({ elementType: 0, length: 100, ...more })

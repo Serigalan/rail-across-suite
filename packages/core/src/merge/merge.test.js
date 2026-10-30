@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
-import { hasPek, loadPek } from '../../test/pekFixture'
-import { splitTrackAtJoint } from '../track/trackSplitUtils'
-import { joinTracks } from '../track/trackModel'
-import { diffProject, diffSize, mergeProject, resolve } from './index'
-import { primary } from './diff'
-import { portTrack, portEnd, withPort } from '../track/switchModel'
-import { straightElement } from '../geometry/elementFactory'
-import { rebuildCoords } from '../track/trackModel'
+import { hasPek, loadPek } from '../../test/pekFixture.js'
+import { splitTrackAtJoint } from '../track/trackSplitUtils.js'
+import { joinTracks } from '../track/trackModel.js'
+import { diffProject, diffSize, mergeProject, resolve } from './index.js'
+import { primary } from './diff.js'
+import { portTrack, portEnd, withPort } from '../track/switchModel.js'
+import { straightElement } from '../geometry/elementFactory.js'
+import { rebuildCoords } from '../track/trackModel.js'
 
 const SWITCH_1 = '00000000-0000-4000-8000-000000000001'
 const A = 'a9f56232-878c-4eef-ab79-09131c7c1212'     // 6050.001, switch.001's toe at its END
@@ -268,14 +268,14 @@ describe('a platform moved on a track the other side split (data model, case F2)
 })
 
 describe('the merge module under plain Node', () => {
-  it('loads and merges without a DOM or the bundler', () => {
+  it('loads and merges without a DOM, the bundler or a module hook', () => {
     const root = fileURLToPath(new URL('../..', import.meta.url))
     const script = `
       const { mergeProject } = await import('./src/merge/index.js')
       const p = { id: 'p', title: 'a', tracks: [], switches: [] }
       const r = mergeProject({ base: p, mine: { ...p, title: 'b' }, theirs: p })
       console.log(JSON.stringify([typeof window, r.merged.title, r.conflicts.length]))`
-    const out = spawnSync(process.execPath, ['--import', '../../server/src/register.mjs', '--input-type=module', '-e', script],
+    const out = spawnSync(process.execPath, ['--input-type=module', '-e', script],
       { cwd: root, encoding: 'utf8' })
     expect(out.stderr).toBe('')
     expect(JSON.parse(out.stdout.trim())).toEqual(['undefined', 'b', 0])

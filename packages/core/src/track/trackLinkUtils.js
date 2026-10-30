@@ -1,5 +1,5 @@
-import { transformPlanePoint, transformGridBearing, utmToWgs84, crsName, resolveEndBearing } from '../geometry'
-import { portsOf, newSwitchFields, isLinkSwitch, LINK_KIND, portTrack, portEnd } from './switchModel'
+import { transformPlanePoint, transformGridBearing, utmToWgs84, crsName, resolveEndBearing } from '../geometry/index.js'
+import { portsOf, newSwitchFields, isLinkSwitch, LINK_KIND, portTrack, portEnd } from './switchModel.js'
 
 /**
  * Links — the node where one track ends and the next begins.

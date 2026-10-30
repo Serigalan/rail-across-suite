@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { connectionPartners, switchDetailScene } from './detailScene'
-import { hydrateProjects } from '../project/persistenceUtils'
-import { hasPekBestand, loadPekBestand } from '../../test/pekFixture'
+import { connectionPartners, switchDetailScene } from './detailScene.js'
+import { hydrateProjects } from '../project/persistenceUtils.js'
+import { hasPekBestand, loadPekBestand } from '../../test/pekFixture.js'
 
 // Tracks only as long as the search needs them: an id and a length.
 const track = (id, length) => ({ id, elements: [{ length }] })

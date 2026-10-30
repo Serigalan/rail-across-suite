@@ -1,4 +1,4 @@
-import { checkTrack, severityRank, transitionLengths, SPEED_STEP } from '../rules'
+import { checkTrack, severityRank, transitionLengths, SPEED_STEP } from '../rules/index.js'
 
 // What "an Gleis anschließen" can change where the rules reject the refitted
 // element or its joint (Entscheidung 314) — the splice's suggestions

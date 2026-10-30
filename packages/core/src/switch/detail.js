@@ -27,12 +27,12 @@
 
 import {
   endPointCurvedUtm, endPointStraightUtm, bearingAfterUtm, transitionBearingAtUtm, transitionPointAtUtm,
-} from '../geometry'
-import { elementBelongsToSwitch } from '../track'
-import { switchFormChain, switchStraightLength, switchTangents, switchTypeByLabel } from './catalogue'
+} from '../geometry/index.js'
+import { elementBelongsToSwitch } from '../track/index.js'
+import { switchFormChain, switchStraightLength, switchTangents, switchTypeByLabel } from './catalogue.js'
 import {
   FIRST_SLEEPER, SLEEPER_SPACING, routeCut, routePose, sleepersWeToLds, tableLds, turnoutSleepers,
-} from './sleepers'
+} from './sleepers.js'
 
 /** From a track's axis to the middle of its rail [m] (decision 341). */
 export const RAIL_OFFSET = 0.75

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { heightAt, gradientAt, verticalCurve, verticalCurveOverlaps, splitHeights, joinHeights, endOfIndex, insertHeightPoint,
-  pointGrades, solveHeightPoint, jointHeightUpdates } from './heightUtils'
+  pointGrades, solveHeightPoint, jointHeightUpdates } from './heightUtils.js'
 
 describe('gradientAt — the height a track is built at', () => {
   // +10 ‰ up to a crest at 100 m, −10 ‰ down from it, rounded with R 2000:

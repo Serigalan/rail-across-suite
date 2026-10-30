@@ -6,33 +6,33 @@
 // imports from here and nowhere else (tools/modules.mjs). What is not listed is
 // the module's own business. See docs/modules/commands.md.
 
-export { buildCrossingConnect, crossingConnectOutcome, crossingConnectSolutions } from './connectCrossing'
-export { connectRemedies } from './connectRemedies'
-export { adoptCrossover, crossoverRequest } from './crossover'
-export { editCommit, editStart, switchConnectionOf, takeApart } from './crossoverEdit'
-export { buildSwitchConnect, switchConnectChainSolutions, switchConnectOutcome, switchConnectSolutions } from './connectSwitch'
-export { rolesFor, withRole } from './elementRoles'
-export { inRun, rowOf, tableParts, tableRoles, tableRows, trackEdit, writeRows } from './tableView'
-export { mergeElementEdits, planElementChange, planIntermediateChange } from './editGeometry'
-export { optimizedTrack, optimizeErrorText, optimizeRequest } from './optimizeApply'
+export { buildCrossingConnect, crossingConnectOutcome, crossingConnectSolutions } from './connectCrossing.js'
+export { connectRemedies } from './connectRemedies.js'
+export { adoptCrossover, crossoverRequest } from './crossover.js'
+export { editCommit, editStart, switchConnectionOf, takeApart } from './crossoverEdit.js'
+export { buildSwitchConnect, switchConnectChainSolutions, switchConnectOutcome, switchConnectSolutions } from './connectSwitch.js'
+export { rolesFor, withRole } from './elementRoles.js'
+export { inRun, rowOf, tableParts, tableRoles, tableRows, trackEdit, writeRows } from './tableView.js'
+export { mergeElementEdits, planElementChange, planIntermediateChange } from './editGeometry.js'
+export { optimizedTrack, optimizeErrorText, optimizeRequest } from './optimizeApply.js'
 export {
   axisPoints, buildReconnect, elementPoints, reconnectFromAnswer, reconnectPick, reconnectRange,
   reconnectRequest, replacedSpan, stretchDefaults,
-} from './reconnect'
+} from './reconnect.js'
 export {
   buildSCurve, computeShiftBounds, connectionPick, isUsableStem, preferredShift, REASON_MSG,
   settleConnection, shiftSnaps, stems, waOffset,
-} from './sCurve'
+} from './sCurve.js'
 export {
   buildSplice, clearanceRequest, neighbourAxis, neighbourAxisNear, secondPickRefusal,
   picksAtSpeed, settleLengths, spliceFromAnswer, spliceKeptCant, splicePick, spliceRequest,
-} from './splice'
+} from './splice.js'
 export {
   buildCrossingOnTrack, buildSwitchOnTrack, crossingOnTrackPlacement, crossingOnTrackSlider,
   SLIDER_REACH, switchOnTrackPlacement, switchOnTrackRemnant, switchOnTrackSlider,
   switchOnTrackToeValid,
-} from './switches'
+} from './switches.js'
 export {
   buildConnectCurved, buildConnectStraight, buildCurvedLineTrack, buildLineTrack,
   buildParallelLineTrack, buildParallelTrack, cantAtTrackEnd, curveCant, trackMeta,
-} from './tracks'
+} from './tracks.js'

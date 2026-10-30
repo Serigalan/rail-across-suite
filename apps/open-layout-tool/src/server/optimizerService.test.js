@@ -2,7 +2,7 @@ import { describe, it, expect, vi, afterEach } from 'vitest'
 import {
   optimizeOnServer, optimizerReachable, fetchRegelwerke, fetchRegelwerk, OptimizerError, alignOnServer,
 } from './optimizerService'
-import { bundledCatalogHash } from '@rail-across/core/src/rules/catalogHash.js'
+import { bundledCatalogHash } from './catalogHash'
 import { reconstructElements } from '@rail-across/core/src/geometry/elementReconstruct.js'
 
 import { expectValidTrack } from '@rail-across/core/test/chainInvariants.js'

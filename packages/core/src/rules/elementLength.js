@@ -1,5 +1,5 @@
-import { catalogLimit } from './regelkatalog'
-import { CANT_DEFICIENCY_COEFF } from './regelwerkDefaults'
+import { catalogLimit } from './regelkatalog.js'
+import { CANT_DEFICIENCY_COEFF } from './regelwerkDefaults.js'
 
 /**
  * l_min of LP.EL.01 for an element of design speed `v` [m] — or null where the

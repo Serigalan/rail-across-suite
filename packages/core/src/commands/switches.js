@@ -1,20 +1,20 @@
 import {
   generateId, buildTypeFields, splitElementAt, splitTrackAtJoint, carveSwitchRoute,
   elementBelongsToSwitch, newSwitchFields, switchElementMark, elementAtStation, trackLength,
-} from '../track'
+} from '../track/index.js'
 
 import {
   bearingAfterUtm, computeCurvedValuesUtm, computeStraightValuesUtm, utmToWgs84, arcElement,
   straightElement, withCantRamp, curvatureOf,
-} from '../geometry'
+} from '../geometry/index.js'
 import {
   computeCrossingGeometryUtm, crossingElements, crossingLegFitsTrack, crossingLegRadius,
   crossingLegSignedRadius, piecesOnRadius, computeSwitchGeometryUtm, switchBranchLength,
   switchFormChain, switchBranchChain, switchChainBearingAt, switchChainPointUtm, switchChainTo,
   switchRouteVaries, utmEndRoute, negR, placeSwitchOnTrack, uniqueStations, validIntervals,
   switchAbreast, switchChainJoints,
-} from '../switch'
-import { cantExceptionFields, worstCantOf, minElementLength, runBeside } from '../rules'
+} from '../switch/index.js'
+import { cantExceptionFields, worstCantOf, minElementLength, runBeside } from '../rules/index.js'
 
 // What the switch dialogs commit (R4.2), as pure functions of their inputs —
 // each the argument for commitSwitchConnection, one undo step. The dialog

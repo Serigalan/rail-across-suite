@@ -23,7 +23,7 @@ The vertical (Höhenplan) half of the catalogue is applied in `elevation/gradien
 | `regelwerkDefaults.js` | The few values the dialogs need synchronously, read from the catalogue |
 | `ruleFields.js` | Which form field a finding belongs to |
 | `constraintsView.js` | The physics file and the optimizer's limits as table rows for the viewers |
-| `catalogHash.js` | SHA-256 over the bundled catalogue files, compared with the optimizer service's |
+| `catalogHash.js` | The recipe of the catalogue hash the optimizer service is compared with: SHA-256 over the catalogue files in name order (which files a bundle carries, the app reads with its bundler) |
 
 ## The catalogue
 
@@ -171,4 +171,4 @@ check.
 
 `ruleExpr.test.js`, `regelkatalog.test.js`, `trassierungCheck.test.js`, `cant.test.js`, `speed.test.js`,
 `transitionLength.test.js`, the three `*.vectors.test.js`, `regelwerkDefaults.test.js` (no copy of the
-catalogue beside the optimizer), `catalogHash.test.js` (same hash as the service computes).
+catalogue beside the optimizer), `catalogHash.test.js` (same hash as the service computes over the files on disk).

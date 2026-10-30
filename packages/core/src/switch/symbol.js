@@ -1,13 +1,13 @@
-import { utmToWgs84, reverseElement, projectOnArcUtm, projectOnTransitionUtm } from '../geometry'
-import { elementBelongsToSwitch, isLinkSwitch, portTrack, portEnd, linkSymbol } from '../track'
+import { utmToWgs84, reverseElement, projectOnArcUtm, projectOnTransitionUtm } from '../geometry/index.js'
+import { elementBelongsToSwitch, isLinkSwitch, portTrack, portEnd, linkSymbol } from '../track/index.js'
 import {
   SWITCH_CHAIN_TOL, chainGeometry, clothoidRoutePoints, negR, switchBranchChain,
   switchChainBauform, switchChainBearingAt, switchChainPointUtm, switchChainSegmentsUtm,
   switchChainTo, switchElementRoute, switchRouteBearingAt, switchRouteSegments, switchRouteVaries,
   switchStemRoute, toChain, toRoute, utmEndRoute,
-} from './route'
-import { switchBranchLength, switchFormChain, switchMark, switchStraightLength, switchTypeByLabel } from './catalogue'
-import { crossingEndDistance, crossingWedgeRing } from './crossing'
+} from './route.js'
+import { switchBranchLength, switchFormChain, switchMark, switchStraightLength, switchTypeByLabel } from './catalogue.js'
+import { crossingEndDistance, crossingWedgeRing } from './crossing.js'
 
 // The drawn switch: route coordinates, the body ring, the LCS line, the label, and the symbol rebuilt from its tracks.
 

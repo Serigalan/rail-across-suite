@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
-import { carryPlatforms, flipPlatforms } from './platformUtils'
-import { reverseTrack, rebuildCoords } from './trackModel'
-import { straightElement } from '../geometry/elementFactory'
-import { edgeAt } from '../../test/platformEdge'
+import { carryPlatforms, flipPlatforms } from './platformUtils.js'
+import { reverseTrack, rebuildCoords } from './trackModel.js'
+import { straightElement } from '../geometry/elementFactory.js'
+import { edgeAt } from '../../test/platformEdge.js'
 
 const EPSG = 25832
 const P = (x, y) => ({ easting: 500000 + x, northing: 5700000 + y, zone: EPSG })

@@ -1,6 +1,6 @@
-import { transitionCantEnds } from '../geometry'
-import { catalogSpeedRange, severityRank } from './regelkatalog'
-import { elementVerdict } from './trassierungCheck'
+import { transitionCantEnds } from '../geometry/index.js'
+import { catalogSpeedRange, severityRank } from './regelkatalog.js'
+import { elementVerdict } from './trassierungCheck.js'
 
 // Speed is designed in 5 km/h steps, like cant is in 5 mm ones.
 export const SPEED_STEP = 5

@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest'
-import { transformElement, transformTrackToPlane } from './planeTransform'
-import { transformPlanePoint } from './coordinateUtils'
+import { transformElement, transformTrackToPlane } from './planeTransform.js'
+import { transformPlanePoint } from './coordinateUtils.js'
 import {
   endPointStraightUtm, endPointCurvedUtm, computeCurvedValuesUtm,
-} from './elementUtils'
-import { computeClothoidUtm } from './clothoidUtils'
+} from './elementUtils.js'
+import { computeClothoidUtm } from './clothoidUtils.js'
 
 /**
  * Carrying an alignment into another plane. The one thing that must hold is

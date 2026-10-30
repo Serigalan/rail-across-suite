@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest'
-import { trackOf } from './tracks'
-import { straightFrom, arcFrom } from '../geometry/elementFactory'
-import { SWITCH_TYPES } from '../switch/catalogue'
-import { trackLength } from '../track/heightUtils'
-import { connectionAnchor, endChainDefault, endChainOpen } from '../switch/connectToTrack'
-import { buildSwitchConnect, switchConnectChainSolutions, switchConnectOutcome, switchConnectSolutions } from './connectSwitch'
-import { expectValidTrack, expectSwitchRoutesCarved, expectNodesJoin } from '../../test/chainInvariants'
-import { resolveEndBearing, reverseElement } from '../geometry/elementUtils'
+import { trackOf } from './tracks.js'
+import { straightFrom, arcFrom } from '../geometry/elementFactory.js'
+import { SWITCH_TYPES } from '../switch/catalogue.js'
+import { trackLength } from '../track/heightUtils.js'
+import { connectionAnchor, endChainDefault, endChainOpen } from '../switch/connectToTrack.js'
+import { buildSwitchConnect, switchConnectChainSolutions, switchConnectOutcome, switchConnectSolutions } from './connectSwitch.js'
+import { expectValidTrack, expectSwitchRoutesCarved, expectNodesJoin } from '../../test/chainInvariants.js'
+import { resolveEndBearing, reverseElement } from '../geometry/elementUtils.js'
 
 const EPSG = 25832
 const O = { easting: 500000, northing: 5600000, zone: EPSG }

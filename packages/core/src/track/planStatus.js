@@ -1,4 +1,4 @@
-import { DEFAULT_SWITCH_KIND, portsOf, portTrack } from './switchModel'
+import { DEFAULT_SWITCH_KIND, portsOf, portTrack } from './switchModel.js'
 
 /**
  * What a planning drawing says about each object: it stays (Bestand), it is

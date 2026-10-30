@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { connectTransitionLengths, lengthRuleFormula, transitionChain, transitionCheck, transitionHasError, transitionLengths } from './transitionLength'
+import { connectTransitionLengths, lengthRuleFormula, transitionChain, transitionCheck, transitionHasError, transitionLengths } from './transitionLength.js'
 
 const straight = { elementType: 0, cant: 0, speed: 120 }
 const arc = (radius, cant, speed = 120) => ({ elementType: 1, radius, cant, speed })

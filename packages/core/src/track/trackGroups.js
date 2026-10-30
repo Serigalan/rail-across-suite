@@ -1,5 +1,5 @@
-import { TYPE_CODES } from './identifierUtils'
-import { nextTrackName } from './trackModel'
+import { TYPE_CODES } from './identifierUtils.js'
+import { nextTrackName } from './trackModel.js'
 
 /** Digits the kilometrage of a name is written with: km 29,12 is `02912`. */
 const KM_NAME_DIGITS = 5

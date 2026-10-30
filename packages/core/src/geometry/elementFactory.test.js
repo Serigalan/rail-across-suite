@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { arcElement, arcFrom, straightElement, straightFrom, transitionElement } from './elementFactory'
-import { reconstructElements } from './elementReconstruct'
-import { expectValidTrack } from '../../test/chainInvariants'
+import { arcElement, arcFrom, straightElement, straightFrom, transitionElement } from './elementFactory.js'
+import { reconstructElements } from './elementReconstruct.js'
+import { expectValidTrack } from '../../test/chainInvariants.js'
 
 
 const EPSG = 25832

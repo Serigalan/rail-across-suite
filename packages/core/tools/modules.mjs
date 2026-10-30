@@ -9,6 +9,9 @@
 //   3. The core imports nothing outside the package but its dependencies
 //      (package.json) and Node's own modules; tests may use vitest.
 //   4. Every module has its page in docs/.
+//   5. A relative import names its file ('.js', '/index.js'), and JSON comes in
+//      with `with { type: 'json' }` — so plain Node loads the core as it is,
+//      without a bundler or a module hook.
 //
 //   node tools/modules.mjs           check, exit 1 on a breach
 //   node tools/modules.mjs --order   the modules in dependency order, with what each needs
@@ -51,7 +54,7 @@ const manifest = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8'))
 const DEPENDENCIES = new Set(Object.keys(manifest.dependencies ?? {}))
 const packageOf = (spec) => spec.split('/').slice(0, spec.startsWith('@') ? 2 : 1).join('/')
 
-/** The breaches of rules 1–4, as lines of text, and the module graph. */
+/** The breaches of rules 1–5, as lines of text, and the module graph. */
 export function checkModules() {
   const breaches = []
   const needs = new Map(MODULES.map(m => [m, new Set()]))
@@ -60,7 +63,11 @@ export function checkModules() {
   for (const path of sources) {
     const from = moduleOf(path)
     const where = relative(ROOT, path)
-    for (const spec of specifiersOf(readFileSync(path, 'utf8'))) {
+    const source = readFileSync(path, 'utf8')
+    for (const [, spec] of source.matchAll(/\bfrom\s+'([^']+\.json)'(?!\s*with\s*\{\s*type:\s*'json'\s*\})/g)) {
+      breaches.push(`${where} imports '${spec}' — JSON with { type: 'json' }`)
+    }
+    for (const spec of specifiersOf(source)) {
       if (!spec.startsWith('.')) {
         // Rule 3: dependencies by name.
         if (spec.startsWith('node:') || DEPENDENCIES.has(packageOf(spec))) continue
@@ -69,6 +76,9 @@ export function checkModules() {
         continue
       }
       const dep = resolveRelative(path, spec)
+      // Rule 5: the file by its name (a directory named by URL is not an import).
+      const isDir = existsSync(dep) && statSync(dep).isDirectory()
+      if (!isDir && !/\.(js|mjs|json)$/.test(spec)) breaches.push(`${where} imports '${spec}' — name the file`)
       // Rule 3: nothing outside the package.
       if (relative(ROOT, dep).startsWith('..')) {
         breaches.push(`${where} imports ${relative(ROOT, dep)} — outside the core`)

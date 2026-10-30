@@ -1,4 +1,4 @@
-import { ruleById, severityRank, worstSeverity } from './regelkatalog'
+import { ruleById, severityRank, worstSeverity } from './regelkatalog.js'
 
 // Which form field a rule's finding belongs to (R10.4): the value it reads, as
 // the dialog asks for it. A deficiency is the speed's — that is the field to

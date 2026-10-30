@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { optimizeRequest, reshapedHeights, optimizedTrack, optimizeErrorText } from './optimizeApply'
-import { straightFrom, arcFrom } from '../geometry/elementFactory'
+import { optimizeRequest, reshapedHeights, optimizedTrack, optimizeErrorText } from './optimizeApply.js'
+import { straightFrom, arcFrom } from '../geometry/elementFactory.js'
 
 const EPSG = 25832
 const O = { easting: 500000, northing: 5700000, zone: EPSG }

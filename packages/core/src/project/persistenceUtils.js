@@ -1,6 +1,6 @@
-import { reconstructElements, derivedEndBearing, loadedTrackCants, storedTrackCants } from '../geometry'
-import { rebuildSwitchSymbol } from '../switch'
-import { rebuildPlatformSymbol, isModelledSwitch, rebuildCoords } from '../track'
+import { reconstructElements, derivedEndBearing, loadedTrackCants, storedTrackCants } from '../geometry/index.js'
+import { rebuildSwitchSymbol } from '../switch/index.js'
+import { rebuildPlatformSymbol, isModelledSwitch, rebuildCoords } from '../track/index.js'
 
 /**
  * oltjson-1.1 — the one format of a project (decision 333, version 1.1 since

@@ -1,6 +1,6 @@
-import { generateId, rebuildCoords } from '../track'
-import { reconstructElements, crsName } from '../geometry'
-import { surveyPoints } from './axisSurvey'
+import { generateId, rebuildCoords } from '../track/index.js'
+import { reconstructElements, crsName } from '../geometry/index.js'
+import { surveyPoints } from './axisSurvey.js'
 
 // An alignment from measured axis points (AP 12.5, Entscheidungen 133, 134,
 // 138): what the panel sends the service, what it makes of the point file the

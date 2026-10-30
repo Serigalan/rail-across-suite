@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
-import { arcElement, straightElement, endPointCurvedUtm, endPointStraightUtm } from '../geometry'
-import { mergeChain } from './mergeElements'
-import { rebuildCoords } from './trackModel'
-import { expectValidTrack } from '../../test/chainInvariants'
+import { arcElement, straightElement, endPointCurvedUtm, endPointStraightUtm } from '../geometry/index.js'
+import { mergeChain } from './mergeElements.js'
+import { rebuildCoords } from './trackModel.js'
+import { expectValidTrack } from '../../test/chainInvariants.js'
 
 const EPSG = 25832
 const START = { easting: 500000, northing: 5600000, zone: EPSG }

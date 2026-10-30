@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { switchMatches, trackMatches } from './search'
+import { switchMatches, trackMatches } from './search.js'
 
 const line = { id: 'a', name: '6340.12393', lineNumber: '6340', lineName: 'Halle – Bebra', trackType: 'line_track' }
 const station = { id: 'b', name: 'Gl. 3', stationName: 'Könnern', trackNumber: '3', trackType: 'station_track' }

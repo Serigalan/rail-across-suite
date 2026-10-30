@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { labelBox, placeLabels, segmentHitsBox } from './labelPlacement'
+import { labelBox, placeLabels, segmentHitsBox } from './labelPlacement.js'
 
 const box = { x0: 0, x1: 10, y0: 0, y1: 10 }
 

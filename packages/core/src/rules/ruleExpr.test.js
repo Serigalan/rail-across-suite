@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { evalExpr, parseExpr, ExprError } from './ruleExpr'
+import { evalExpr, parseExpr, ExprError } from './ruleExpr.js'
 
 const fns = {
   min: (...xs) => Math.min(...xs),

@@ -32,12 +32,13 @@ A module is imported through its index, `@rail-across/core/<module>`, never a fi
 (`@rail-across/core/src/<module>/<file>.js`). The core imports nothing of an app (`npm run check` at the root)
 and nothing outside its dependencies.
 
-The sources import each other without file extensions, as the bundler resolves them. Under plain Node, the
-project server loads them through its module hook (`server/src/esmHook.mjs`).
+Plain Node loads the core as it is, without a bundler or a module hook: a relative import names its file
+(`./cant.js`, `../geometry/index.js`), and JSON comes in `with { type: 'json' }`. `tools/modules.mjs` holds the
+sources to that.
 
 ## Check
 
 ```bash
-node tools/modules.mjs     # index only, no cycle, nothing outside the package, a page per module
+node tools/modules.mjs     # index only, no cycle, nothing outside the package, a page per module, files named
 npm test                   # the core's tests (vitest)
 ```

@@ -7,7 +7,7 @@
 // the panel has to say out loud, which is what `code` is for: the service names
 // what went wrong, the UI translates the name.
 
-import { bundledCatalogHash } from '@rail-across/core/rules'
+import { bundledCatalogHash } from './catalogHash'
 
 // The service sits on the app's own origin under /optimizer/ (behind the
 // sign-in, see deploy/Caddyfile.template); `npm run dev` proxies the same path.

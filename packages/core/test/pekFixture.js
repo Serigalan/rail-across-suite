@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
-import { storedTrackCants } from '../src/geometry/clothoidUtils'
+import { storedTrackCants } from '../src/geometry/clothoidUtils.js'
 
 /**
  * The PEK data set Halle–Könnern (22 tracks, 13 switches, 9 platforms) — real

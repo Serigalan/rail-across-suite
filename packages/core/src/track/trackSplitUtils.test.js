@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
-import { carveSwitchRoute, splitElementAt, splitTrackAtJoint } from './trackSplitUtils'
-import { arcFrom, straightFrom, transitionElement } from '../geometry/elementFactory'
-import { rebuildCoords } from './trackModel'
-import { expectValidTrack } from '../../test/chainInvariants'
+import { carveSwitchRoute, splitElementAt, splitTrackAtJoint } from './trackSplitUtils.js'
+import { arcFrom, straightFrom, transitionElement } from '../geometry/elementFactory.js'
+import { rebuildCoords } from './trackModel.js'
+import { expectValidTrack } from '../../test/chainInvariants.js'
 
 const EPSG = 25832
 const O = { easting: 500000, northing: 5700000, zone: EPSG }

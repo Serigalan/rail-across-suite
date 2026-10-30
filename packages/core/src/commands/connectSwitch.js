@@ -1,11 +1,11 @@
-import { buildSwitchOnTrack, switchOnTrackPlacement, switchOnTrackRemnant, switchOnTrackRouteEnd } from './switches'
+import { buildSwitchOnTrack, switchOnTrackPlacement, switchOnTrackRemnant, switchOnTrackRouteEnd } from './switches.js'
 import {
   connectionRoots, fitConnectingElement, joinRouteIntoTrack, refitCount, refitTrackEnd, solveEndChain,
   switchStraightLength, switchBranchLength, switchRoutePointUtm,
-} from '../switch'
-import { elementAtStation, trackLength, portTrack, withPort } from '../track'
-import { curvatureOf, reverseElement } from '../geometry'
-import { checkTrack, severityRank } from '../rules'
+} from '../switch/index.js'
+import { elementAtStation, trackLength, portTrack, withPort } from '../track/index.js'
+import { curvatureOf, reverseElement } from '../geometry/index.js'
+import { checkTrack, severityRank } from '../rules/index.js'
 
 // "Weiche an Gleis anschließen" (Entscheidungen 302–304): a turnout laid into
 // the host track whose new route ends on an open end of another track. The

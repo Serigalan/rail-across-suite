@@ -36,13 +36,13 @@
  * answered from those steps.
  */
 
-import { superstructureAt } from '../crossSection'
-import { switchTypeByLabel, switchVariantFor } from './catalogue'
+import { superstructureAt } from '../crossSection/index.js'
+import { switchTypeByLabel, switchVariantFor } from './catalogue.js'
 import {
   elementAtStation, pointAtStationUtm, trackLength, elementStations, pointOnElement,
   elementBelongsToSwitch, turnoutDivergingPort, turnoutLinePort, turnoutLineRoute, portTrack,
   portEnd,
-} from '../track'
+} from '../track/index.js'
 
 /** Where the first sleeper lies behind WA, and how far apart they are [m]. */
 export const FIRST_SLEEPER = 0.3

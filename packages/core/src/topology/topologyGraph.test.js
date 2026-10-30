@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest'
 import {
   buildTopologyGraph, topologyClusters, selectionHighlight, switchTrackIds, TOPOLOGY_TRACK_COLORS,
-} from './topologyGraph'
-import { newBufferStop } from '../track/trackEndMarks'
-import { newSwitchFields } from '../track/switchModel'
-import { endPointStraightUtm } from '../geometry/elementUtils'
-import { utmToWgs84 } from '../geometry/coordinateUtils'
+} from './topologyGraph.js'
+import { newBufferStop } from '../track/trackEndMarks.js'
+import { newSwitchFields } from '../track/switchModel.js'
+import { endPointStraightUtm } from '../geometry/elementUtils.js'
+import { utmToWgs84 } from '../geometry/coordinateUtils.js'
 
 /**
  * The diagram of the topological connections (AP 9.6): the graph the tracks

@@ -1,4 +1,4 @@
-import KATALOG from '../../constraints/db-ril-800-0120.json'
+import KATALOG from '../../constraints/db-ril-800-0120.json' with { type: 'json' }
 
 // The switch and crossing forms of DB Ril 800.0120 and what the geometry reads of them.
 

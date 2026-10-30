@@ -20,8 +20,8 @@
  * trassierungCheck.js is what fills that scope from the app's own elements.
  */
 
-import KATALOG from '../../constraints/db-ril-800-0110.json'
-import { evalExpr } from './ruleExpr'
+import KATALOG from '../../constraints/db-ril-800-0110.json' with { type: 'json' }
+import { evalExpr } from './ruleExpr.js'
 
 export { KATALOG }
 

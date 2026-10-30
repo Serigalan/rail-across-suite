@@ -1,0 +1,26 @@
+{
+  "name": "@rail-across/ui",
+  "private": true,
+  "version": "0.1.0",
+  "description": "The look of Rail-Across-Suite as a library: colours, buttons, fields, dialogs, lists and the shell of a tool, for every module",
+  "license": "Apache-2.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "exports": {
+    ".": "./src/index.js",
+    "./ui.css": "./src/ui.css"
+  },
+  "scripts": {
+    "test": "vitest run"
+  },
+  "peerDependencies": {
+    "react": "^19.2.4"
+  },
+  "devDependencies": {
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "vitest": "^3.2.7"
+  }
+}

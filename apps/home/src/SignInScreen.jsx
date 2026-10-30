@@ -24,10 +24,10 @@ function SignInScreen({ onLanguage }) {
   const { t, language } = useTexts()
   const [user, setUser] = useState(null)
   return (
-    <div className="collab-page ra-gate">
+    <div className="ui-page ra-gate">
       <div className="ra-gate-language">
         {LANGUAGES.map(l => (
-          <button key={l} type="button" className={`collab-link${l === language ? ' ra-current' : ''}`}
+          <button key={l} type="button" className={`ui-link${l === language ? ' ra-current' : ''}`}
             onClick={() => onLanguage(l)}>
             {l.toUpperCase()}
           </button>

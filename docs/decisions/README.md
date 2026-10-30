@@ -16,3 +16,4 @@ it costs. A record is not rewritten when a decision changes; a new one replaces 
 | [0009](0009-core-1-0-in-the-data-model.md) | core 1.0 has the data model's shape from the start | accepted |
 | [0010](0010-one-suite-modules-by-task.md) | One suite on one server, signing in first; modules named by their task | accepted |
 | [0011](0011-signalling-domain.md) | The signalling domain follows PlanPro, its content is a catalogue | accepted |
+| [0012](0012-ui-library.md) | One look for every module, as a library (`@rail-across/ui`) | accepted |

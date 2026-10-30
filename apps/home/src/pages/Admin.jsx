@@ -44,19 +44,19 @@ export default function Admin({ me }) {
 
   return (
     <main className="home-main">
-      <a className="collab-link ra-back" href="#/">← {t('back')}</a>
+      <a className="ui-link ra-back" href="#/">← {t('back')}</a>
       <div className="home-section-head">
         <h2 className="ra-page-title">{t('admin_title')}</h2>
         <div className="home-section-actions">
-          <button type="button" className="collab-btn collab-btn-primary" onClick={() => { setNotice(null); setForm({}) }}>{t('admin_create')}</button>
+          <button type="button" className="ui-btn ui-btn-primary" onClick={() => { setNotice(null); setForm({}) }}>{t('admin_create')}</button>
         </div>
       </div>
-      <p className="collab-muted ra-admin-intro">{t('admin_intro')}</p>
-      {error && <p className="collab-error" role="alert">{t(error)}</p>}
+      <p className="ui-muted ra-admin-intro">{t('admin_intro')}</p>
+      {error && <p className="ui-error" role="alert">{t(error)}</p>}
       {notice && (
-        <div className="collab-ok ra-admin-notice" role="status">
+        <div className="ui-ok ra-admin-notice" role="status">
           {notice.text}
-          {notice.password && <> <code className="ra-password">{notice.password}</code> <span className="collab-muted">{t('admin_password_hint')}</span></>}
+          {notice.password && <> <code className="ra-password">{notice.password}</code> <span className="ui-muted">{t('admin_password_hint')}</span></>}
         </div>
       )}
       {form && (
@@ -72,25 +72,25 @@ export default function Admin({ me }) {
             await reload()
           }} />
       )}
-      {users === null && !error && <p className="collab-muted">{t('projects_loading')}</p>}
+      {users === null && !error && <p className="ui-muted">{t('projects_loading')}</p>}
       <ul className="ra-users">
         {(users ?? []).map(u => (
           <li key={u.id} className={`home-project ra-user${u.active ? '' : ' ra-user-off'}`}>
             <div className="ra-user-who">
               <strong>{u.name}</strong>
-              <span className="collab-muted">{u.login}{u.id === me.id ? ` · ${t('admin_you')}` : ''}</span>
+              <span className="ui-muted">{u.login}{u.id === me.id ? ` · ${t('admin_you')}` : ''}</span>
             </div>
             <div className="ra-user-facts">
-              <span className={`ra-badge${u.role === 'admin' ? ' ra-badge-primary' : ''}`}>{t(`admin_role_${u.role}`)}</span>
-              <span className={`ra-badge${u.active ? ' ra-badge-ok' : ' ra-badge-off'}`}>{t(u.active ? 'admin_active' : 'admin_inactive')}</span>
-              {u.canEditClouds && u.role !== 'admin' && <span className="ra-badge" title={t('admin_clouds')}>{t('admin_badge_clouds')}</span>}
-              {u.mustChangePassword && <span className="ra-badge ra-badge-warn">{t('admin_start_password')}</span>}
-              <span className="collab-muted">{u.lastLoginAt ? fill('admin_last_login', { date: when(u.lastLoginAt) }) : t('admin_never')}</span>
+              <span className={`ui-badge${u.role === 'admin' ? ' ui-badge-primary' : ''}`}>{t(`admin_role_${u.role}`)}</span>
+              <span className={`ui-badge${u.active ? ' ui-badge-ok' : ' ui-badge-danger'}`}>{t(u.active ? 'admin_active' : 'admin_inactive')}</span>
+              {u.canEditClouds && u.role !== 'admin' && <span className="ui-badge" title={t('admin_clouds')}>{t('admin_badge_clouds')}</span>}
+              {u.mustChangePassword && <span className="ui-badge ui-badge-warn">{t('admin_start_password')}</span>}
+              <span className="ui-muted">{u.lastLoginAt ? fill('admin_last_login', { date: when(u.lastLoginAt) }) : t('admin_never')}</span>
             </div>
             <div className="ra-user-actions">
-              <button type="button" className="collab-btn collab-btn-small" onClick={() => { setNotice(null); setForm({ user: u }) }}>{t('admin_edit')}</button>
-              <button type="button" className="collab-btn collab-btn-small" onClick={() => resetPassword(u)}>{t('admin_reset')}</button>
-              <button type="button" className={`collab-btn collab-btn-small${u.active ? ' collab-btn-danger' : ''}`}
+              <button type="button" className="ui-btn ui-btn-small" onClick={() => { setNotice(null); setForm({ user: u }) }}>{t('admin_edit')}</button>
+              <button type="button" className="ui-btn ui-btn-small" onClick={() => resetPassword(u)}>{t('admin_reset')}</button>
+              <button type="button" className={`ui-btn ui-btn-small${u.active ? ' ui-btn-danger' : ''}`}
                 onClick={() => patch(u, { active: !u.active }, { text: fill(u.active ? 'admin_deactivated' : 'admin_activated', { login: u.login }) })}>
                 {t(u.active ? 'admin_deactivate' : 'admin_activate')}
               </button>
@@ -130,43 +130,43 @@ function UserForm({ user = null, onCancel, onSubmit }) {
     <form className="home-project ra-user-form" onSubmit={submit}>
       <h3>{t(user ? 'admin_edit_title' : 'admin_create')}</h3>
       {!user && (
-        <label className="collab-field">
+        <label className="ui-field">
           <span>{t('login')} *</span>
           <input value={login} onChange={e => setLogin(e.target.value)} autoFocus required autoComplete="off" />
         </label>
       )}
-      <label className="collab-field">
+      <label className="ui-field">
         <span>{t('admin_name')}</span>
         <input value={name} onChange={e => setName(e.target.value)} autoFocus={Boolean(user)} />
       </label>
-      <label className="collab-field">
+      <label className="ui-field">
         <span>{t('admin_role')}</span>
         <select value={role} onChange={e => setRole(e.target.value)}>
           <option value="user">{t('admin_role_user')}</option>
           <option value="admin">{t('admin_role_admin')}</option>
         </select>
       </label>
-      <fieldset className="ra-rights">
+      <fieldset className="ui-fieldset">
         <legend>{t('admin_rights')}</legend>
-        <label className="ra-check">
+        <label className="ui-check">
           <input type="checkbox" checked={role === 'admin' || clouds} disabled={role === 'admin'} onChange={e => setClouds(e.target.checked)} />
           <span><strong>{t('tool_layout')}:</strong> {t('admin_clouds')}</span>
         </label>
-        <p className="collab-muted">{t('admin_clouds_hint')}</p>
+        <p className="ui-muted">{t('admin_clouds_hint')}</p>
       </fieldset>
       {!user && (
-        <label className="collab-field">
+        <label className="ui-field">
           <span>{t('admin_start_password')}</span>
           <span className="ra-password-row">
             <input value={password} onChange={e => setPassword(e.target.value)} minLength={12} required autoComplete="off" />
-            <button type="button" className="collab-btn collab-btn-small" onClick={() => setPassword(startPassword())}>{t('admin_generate')}</button>
+            <button type="button" className="ui-btn ui-btn-small" onClick={() => setPassword(startPassword())}>{t('admin_generate')}</button>
           </span>
         </label>
       )}
-      {error && <p className="collab-error" role="alert">{t(error)}</p>}
-      <div className="ra-actions">
-        <button type="button" className="collab-btn" onClick={onCancel} disabled={busy}>{t('cancel')}</button>
-        <button type="submit" className="collab-btn collab-btn-primary" disabled={busy}>{t(user ? 'admin_save' : 'admin_create_submit')}</button>
+      {error && <p className="ui-error" role="alert">{t(error)}</p>}
+      <div className="ui-actions">
+        <button type="button" className="ui-btn" onClick={onCancel} disabled={busy}>{t('cancel')}</button>
+        <button type="submit" className="ui-btn ui-btn-primary" disabled={busy}>{t(user ? 'admin_save' : 'admin_create_submit')}</button>
       </div>
     </form>
   )
@@ -188,18 +188,18 @@ function CloudDisk() {
   return (
     <section className="ra-disk">
       <h3>{t('admin_disk_title')}</h3>
-      <p className={info.disk.warn ? 'collab-error' : 'collab-muted'}>
+      <p className={info.disk.warn ? 'ui-error' : 'ui-muted'}>
         {fill('admin_disk_free', { free: sizeText(info.disk.free), total: sizeText(info.disk.total) })}
         {info.disk.warn && ` ${fill('admin_disk_warn', { limit: sizeText(info.disk.warnBelow) })}`}
       </p>
       {info.projects.length === 0
-        ? <p className="collab-muted">{t('admin_disk_none')}</p>
+        ? <p className="ui-muted">{t('admin_disk_none')}</p>
         : (
           <ul className="ra-disk-list">
             {info.projects.map(p => (
               <li key={p.project_id}>
                 <strong>{p.title}</strong>{' '}
-                <span className="collab-muted">{fill('admin_disk_project', { n: p.clouds, size: sizeText(p.bytes + p.raw), quota: sizeText(info.quota) })}</span>
+                <span className="ui-muted">{fill('admin_disk_project', { n: p.clouds, size: sizeText(p.bytes + p.raw), quota: sizeText(info.quota) })}</span>
               </li>
             ))}
           </ul>

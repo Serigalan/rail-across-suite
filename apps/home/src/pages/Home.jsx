@@ -11,7 +11,7 @@ function ModuleTile({ module }) {
         <span className="ra-tile-icon"><ModuleIcon id={module.id} /></span>
         <span className="ra-tile-name">{t(`module_${module.id}`)}</span>
         <span className="ra-tile-desc">{t(`module_${module.id}_desc`)}</span>
-        <span className={`ra-badge${module.available ? ' ra-badge-ok' : ''}`}
+        <span className={`ui-badge${module.available ? ' ui-badge-ok' : ''}`}
           title={module.available ? undefined : fill('phase', { n: module.phase })}>
           {t(module.available ? 'available' : 'planned')}
         </span>

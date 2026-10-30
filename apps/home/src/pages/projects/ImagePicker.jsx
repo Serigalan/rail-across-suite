@@ -45,7 +45,7 @@ export default function ImagePicker({ value, onChange, disabled = false }) {
       </div>
       {preset && <p className="image-picker-caption">{t(preset.labelKey)}</p>}
       {value.kind === 'file' && (
-        <label className="collab-field">
+        <label className="ui-field">
           <span>{t('project_image_own')}</span>
           <input type="file" accept="image/*" onChange={pickFile} />
         </label>

@@ -29,7 +29,7 @@ function ToolTabs({ current }) {
             <span className="ra-tile-icon"><ModuleIcon id={tool.id} /></span>
             <span className="ra-tile-name">{t(`tool_${tool.id}`)}</span>
             <span className="ra-tile-desc">{t(`tool_${tool.id}_desc`)}</span>
-            {!tool.available && <span className="ra-badge">{fill('tool_soon', { n: tool.phase })}</span>}
+            {!tool.available && <span className="ui-badge">{fill('tool_soon', { n: tool.phase })}</span>}
           </a>
         )
       })}
@@ -103,7 +103,7 @@ export default function Infrastructure({ toolId, user, projects, onReload = asyn
 
   return (
     <main className="home-main">
-      <a className="collab-link ra-back" href="#/">← {t('back')}</a>
+      <a className="ui-link ra-back" href="#/">← {t('back')}</a>
       <h2 className="ra-page-title">{t('module_infrastructure')}</h2>
       <ToolTabs current={tool.id} />
       <hr className="ra-rule" />
@@ -112,26 +112,26 @@ export default function Infrastructure({ toolId, user, projects, onReload = asyn
         <h2>{t('projects')}</h2>
         <div className="home-section-actions">
           <input ref={importRef} type="file" accept=".json,application/json" hidden onChange={handleImport} />
-          <button type="button" className="collab-btn collab-btn-primary" onClick={() => { say(null); setDialog({ kind: 'new' }) }}>{t('project_new')}</button>
-          <button type="button" className="collab-btn" onClick={() => importRef.current?.click()}>{t('project_import')}</button>
+          <button type="button" className="ui-btn ui-btn-primary" onClick={() => { say(null); setDialog({ kind: 'new' }) }}>{t('project_new')}</button>
+          <button type="button" className="ui-btn" onClick={() => importRef.current?.click()}>{t('project_import')}</button>
         </div>
       </div>
       <div className={`ra-mode${tool.available ? '' : ' ra-mode-off'}`}>
         <span className="ra-mode-icon"><ModuleIcon id={tool.id} /></span>
         <span className="ra-mode-text">{fill(tool.available ? 'opens_in' : 'opens_not_yet', { tool: toolName })}</span>
-        {storage && <a className="collab-link" href={storage}>{fill('tool_storage', { tool: toolName })}</a>}
+        {storage && <a className="ui-link" href={storage}>{fill('tool_storage', { tool: toolName })}</a>}
       </div>
 
-      {error && <p className="collab-error ra-line" role="alert">{error}</p>}
-      {notice && <p className="collab-ok" role="status">{notice}</p>}
-      {projects.error && <p className="collab-error" role="alert">{t('projects_error')}</p>}
-      {!projects.list && !projects.error && <p className="collab-muted">{t('projects_loading')}</p>}
-      {projects.list && regular.length === 0 && <p className="collab-muted">{t('projects_empty')}</p>}
+      {error && <p className="ui-error ra-line" role="alert">{error}</p>}
+      {notice && <p className="ui-ok" role="status">{notice}</p>}
+      {projects.error && <p className="ui-error" role="alert">{t('projects_error')}</p>}
+      {!projects.list && !projects.error && <p className="ui-muted">{t('projects_loading')}</p>}
+      {projects.list && regular.length === 0 && <p className="ui-muted">{t('projects_empty')}</p>}
       <ul className="home-projects">
         {regular.map(card)}
       </ul>
       {projects.list?.some(p => p.variants?.some(v => v.archived)) && (
-        <label className="ra-check ra-archived-toggle">
+        <label className="ui-check ra-archived-toggle">
           <input type="checkbox" checked={showArchived} onChange={e => setShowArchived(e.target.checked)} />
           {t('show_archived')}
         </label>
@@ -142,11 +142,11 @@ export default function Infrastructure({ toolId, user, projects, onReload = asyn
           <h2>{t('templates')}</h2>
           {isAdmin && (
             <div className="home-section-actions">
-              <button type="button" className="collab-btn collab-btn-primary" onClick={() => { say(null); setDialog({ kind: 'new', template: true }) }}>{t('project_new')}</button>
+              <button type="button" className="ui-btn ui-btn-primary" onClick={() => { say(null); setDialog({ kind: 'new', template: true }) }}>{t('project_new')}</button>
             </div>
           )}
         </div>
-        {projects.list && templates.length === 0 && <p className="collab-muted">{t('templates_empty')}</p>}
+        {projects.list && templates.length === 0 && <p className="ui-muted">{t('templates_empty')}</p>}
         <ul className="home-projects">
           {templates.map(card)}
         </ul>

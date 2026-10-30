@@ -8,6 +8,7 @@ import Infrastructure from './pages/Infrastructure'
 import Planned from './pages/Planned'
 import Admin from './pages/Admin'
 import { PasswordPage } from './pages/Account'
+import '@rail-across/ui/ui.css'
 import './home.css'
 
 /** The page the address names, following it as it changes (back and forward included). */
@@ -82,10 +83,10 @@ export default function App() {
 
   return (
     <I18n.Provider value={texts}>
-      <div className="collab-page home">
+      <div className="ui-page home">
         <Header user={user} onLanguage={chooseLanguage} onSignOut={signOut} />
-        {notice && <p className="collab-ok ra-notice" role="status">{notice.text ?? texts.t(notice.key)}</p>}
-        {user === null && <p className="collab-error ra-notice" role="alert">{texts.t('server_unreachable')}</p>}
+        {notice && <p className="ui-ok ra-notice" role="status">{notice.text ?? texts.t(notice.key)}</p>}
+        {user === null && <p className="ui-error ra-notice" role="alert">{texts.t('server_unreachable')}</p>}
         {user && page === '' && <Home />}
         {user && page === 'infrastructure' && <Infrastructure toolId={route.tool} user={user} projects={projects} onReload={loadProjects} />}
         {user && page === 'password' && (

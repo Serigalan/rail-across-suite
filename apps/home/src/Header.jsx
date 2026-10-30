@@ -24,18 +24,18 @@ export default function Header({ user, onLanguage, onSignOut }) {
 
   return (
     <header className="home-top">
-      <a className="collab-brand" href="#/">
+      <a className="ra-brand" href="#/">
         <Logo className="ra-logo" />
-        <h1 className="ra-visually-hidden">{t('suite')}</h1>
+        <h1 className="ui-visually-hidden">{t('suite')}</h1>
       </a>
       <div className="home-user" ref={root}>
-        <div className="home-menu">
-          <button type="button" className="collab-btn" aria-haspopup="menu" aria-expanded={menu === 'language'}
+        <div className="ui-menu">
+          <button type="button" className="ui-btn" aria-haspopup="menu" aria-expanded={menu === 'language'}
             aria-label={t('language')} onClick={() => toggle('language')}>
             {language.toUpperCase()}
           </button>
           {menu === 'language' && (
-            <div className="home-menu-list home-language-list" role="menu">
+            <div className="ui-menu-list home-language-list" role="menu">
               {LANGUAGES.map(l => (
                 <button key={l} type="button" role="menuitem" className={l === language ? 'current' : ''}
                   onClick={() => { setMenu(null); onLanguage(l) }}>
@@ -47,15 +47,15 @@ export default function Header({ user, onLanguage, onSignOut }) {
           )}
         </div>
         {user && (
-          <div className="home-menu">
+          <div className="ui-menu">
             {/* The user's menu behind their symbol; the name is its label. */}
-            <button type="button" className="collab-btn collab-icon-btn" aria-haspopup="menu" aria-expanded={menu === 'user'}
+            <button type="button" className="ui-btn ui-btn-icon" aria-haspopup="menu" aria-expanded={menu === 'user'}
               aria-label={user.name} title={user.name} onClick={() => toggle('user')}>
               <UserIcon />
             </button>
             {menu === 'user' && (
-              <div className="home-menu-list" role="menu">
-                <p className="home-menu-user">{user.name}</p>
+              <div className="ui-menu-list" role="menu">
+                <p className="ui-menu-user">{user.name}</p>
                 <a role="menuitem" href="#/password" onClick={() => setMenu(null)}>{t('change_password')}</a>
                 {user.role === 'admin' && <a role="menuitem" href="#/admin" onClick={() => setMenu(null)}>{t('admin_title')}</a>}
                 <button type="button" role="menuitem" onClick={() => { setMenu(null); onSignOut() }}>{t('sign_out')}</button>

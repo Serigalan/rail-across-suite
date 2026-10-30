@@ -63,16 +63,16 @@ export default function ProjectCard({ project, user, tool, showArchived, onDialo
         {picture ? <img className="ra-project-image" src={picture} alt="" /> : <span className="ra-project-image" />}
         <div className="ra-project-body">
           <h3>{project.title}</h3>
-          {project.description && <p className="collab-muted">{project.description}</p>}
+          {project.description && <p className="ui-muted">{project.description}</p>}
           {project.members?.length > 0 && (
-            <p className="collab-muted">{fill('members_line', { names: project.members.map(m => m.name).join(', ') })}</p>
+            <p className="ui-muted">{fill('members_line', { names: project.members.map(m => m.name).join(', ') })}</p>
           )}
         </div>
-        <div className="home-menu" ref={menuRootRef}>
-          <button type="button" className="collab-btn collab-btn-small" aria-label={t('project_menu')} title={t('project_menu')}
+        <div className="ui-menu" ref={menuRootRef}>
+          <button type="button" className="ui-btn ui-btn-small" aria-label={t('project_menu')} title={t('project_menu')}
             aria-haspopup="menu" aria-expanded={menuOpen} onClick={toggleMenu}>⋯</button>
           {menuOpen && (
-            <div className="home-menu-list" role="menu">
+            <div className="ui-menu-list" role="menu">
               {rights.canEdit && item(t('project_rename'), 'rename')}
               {item(t('project_export'), 'export')}
               {!project.template && item(t('members'), 'members')}
@@ -96,16 +96,16 @@ export default function ProjectCard({ project, user, tool, showArchived, onDialo
                   </span>
                 )}
                 <span className="ra-variant-buttons">
-                  <ToolLink className="collab-btn collab-btn-small" href={at({ variant: v.id, action: 'history' })}
+                  <ToolLink className="ui-btn ui-btn-small" href={at({ variant: v.id, action: 'history' })}
                     title={fill('in_tool', { action: t('history'), tool: toolName })}>{t('history')}</ToolLink>
                   {!readOnly && (
-                    <button type="button" className="collab-btn collab-btn-small" title={t('variant_edit')} aria-label={t('variant_edit')}
+                    <button type="button" className="ui-btn ui-btn-small" title={t('variant_edit')} aria-label={t('variant_edit')}
                       onClick={() => onDialog({ kind: 'variant', project, variant: v })}>✎</button>
                   )}
                   {readOnly
-                    ? <ToolLink className="collab-btn collab-btn-primary" href={at({ variant: v.id, action: 'view' })}
+                    ? <ToolLink className="ui-btn ui-btn-primary" href={at({ variant: v.id, action: 'view' })}
                         title={fill('in_tool', { action: t('view'), tool: toolName })}>{t('view')}</ToolLink>
-                    : <ToolLink className="collab-btn collab-btn-primary" href={at({ variant: v.id })}
+                    : <ToolLink className="ui-btn ui-btn-primary" href={at({ variant: v.id })}
                         title={fill('in_tool', { action: t('open'), tool: toolName })}>{t('open')}</ToolLink>}
                 </span>
               </div>
@@ -118,10 +118,10 @@ export default function ProjectCard({ project, user, tool, showArchived, onDialo
       </ul>
 
       <div className="ra-project-actions">
-        <button type="button" className="collab-btn" onClick={() => onDialog({ kind: 'branch', project })}>{t('branch')}</button>
-        <button type="button" className="collab-btn" disabled={!many || !tool.available}
+        <button type="button" className="ui-btn" onClick={() => onDialog({ kind: 'branch', project })}>{t('branch')}</button>
+        <button type="button" className="ui-btn" disabled={!many || !tool.available}
           onClick={() => onDialog({ kind: 'compare', project })}>{t('compare')}</button>
-        <button type="button" className="collab-btn" disabled={!many || !tool.available}
+        <button type="button" className="ui-btn" disabled={!many || !tool.available}
           onClick={() => onDialog({ kind: 'merge', project })}>{t('merge')}</button>
       </div>
     </li>

@@ -24,17 +24,17 @@ export default function SignIn({ onSignedIn }) {
   }
   return (
     <form className="ra-sign-in" onSubmit={submit}>
-      <p className="collab-muted">{t('sign_in_hint')}</p>
-      <label className="collab-field">
+      <p className="ui-muted">{t('sign_in_hint')}</p>
+      <label className="ui-field">
         <span>{t('login')}</span>
         <input autoFocus autoComplete="username" value={login} onChange={e => setLogin(e.target.value)} required />
       </label>
-      <label className="collab-field">
+      <label className="ui-field">
         <span>{t('password')}</span>
         <input type="password" autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} required />
       </label>
-      {error && <p className="collab-error" role="alert">{t(error)}</p>}
-      <button type="submit" className="collab-btn collab-btn-primary collab-btn-block" disabled={busy}>
+      {error && <p className="ui-error" role="alert">{t(error)}</p>}
+      <button type="submit" className="ui-btn ui-btn-primary ui-btn-block" disabled={busy}>
         {t(busy ? 'signing_in' : 'sign_in')}
       </button>
     </form>

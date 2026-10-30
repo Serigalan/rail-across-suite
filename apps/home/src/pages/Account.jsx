@@ -54,24 +54,24 @@ export function PasswordPage({ forced, onDone, onCancel }) {
     <main className="home-main ra-account">
       <form className="ra-card ra-sign-in" onSubmit={submit}>
         <h2>{t('change_password')}</h2>
-        {forced && <p className="collab-muted">{t('must_change_password')}</p>}
-        <label className="collab-field">
+        {forced && <p className="ui-muted">{t('must_change_password')}</p>}
+        <label className="ui-field">
           <span>{t('password_current')}</span>
           <input type="password" autoComplete="current-password" value={current} onChange={e => setCurrent(e.target.value)} required autoFocus />
         </label>
-        <label className="collab-field">
+        <label className="ui-field">
           <span>{t('password_new')}</span>
           <input type="password" autoComplete="new-password" minLength={MIN} value={next} onChange={e => setNext(e.target.value)} required />
         </label>
-        <label className="collab-field">
+        <label className="ui-field">
           <span>{t('password_repeat')}</span>
           <input type="password" autoComplete="new-password" value={repeat} onChange={e => setRepeat(e.target.value)} required />
         </label>
-        <p className="collab-muted">{t('password_rule')}</p>
-        {error && <p className="collab-error" role="alert">{t(error)}</p>}
-        <div className="ra-actions">
-          {!forced && <button type="button" className="collab-btn" onClick={onCancel} disabled={busy}>{t('cancel')}</button>}
-          <button type="submit" className="collab-btn collab-btn-primary" disabled={busy}>{t('password_submit')}</button>
+        <p className="ui-muted">{t('password_rule')}</p>
+        {error && <p className="ui-error" role="alert">{t(error)}</p>}
+        <div className="ui-actions">
+          {!forced && <button type="button" className="ui-btn" onClick={onCancel} disabled={busy}>{t('cancel')}</button>}
+          <button type="submit" className="ui-btn ui-btn-primary" disabled={busy}>{t('password_submit')}</button>
         </div>
       </form>
     </main>

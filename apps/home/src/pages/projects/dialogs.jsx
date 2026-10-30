@@ -16,7 +16,7 @@ const liveVariants = (project) => project.variants.filter(v => !v.archived)
 
 function VariantSelect({ label, variants, value, onChange }) {
   return (
-    <label className="collab-field">
+    <label className="ui-field">
       <span>{label}</span>
       <select value={value} onChange={e => onChange(e.target.value)}>
         {variants.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
@@ -48,11 +48,11 @@ export function NewProjectDialog({ template = false, onCancel, onDone }) {
   return (
     <FormDialog title={t(template ? 'project_new_template_title' : 'project_new_title')} submitLabel={t('project_create')}
       busy={busy} canSubmit={Boolean(title.trim())} error={error} onCancel={onCancel} onSubmit={submit}>
-      <label className="collab-field">
+      <label className="ui-field">
         <span>{t('project_field_title')} *</span>
         <input value={title} onChange={e => setTitle(e.target.value)} placeholder={t('project_field_title_placeholder')} required />
       </label>
-      <label className="collab-field">
+      <label className="ui-field">
         <span>{t('project_field_description')}</span>
         <textarea rows={3} value={description} onChange={e => setDescription(e.target.value)} placeholder={t('project_field_description_placeholder')} />
       </label>
@@ -70,11 +70,11 @@ export function RenameProjectDialog({ project, onCancel, onDone }) {
   return (
     <FormDialog title={t('project_rename')} submitLabel={t('save')} busy={busy} canSubmit={Boolean(title.trim())} error={error} onCancel={onCancel}
       onSubmit={() => run(async () => { await api.patchProject(project.id, { title: title.trim(), description: description.trim() }); await onDone() })}>
-      <label className="collab-field">
+      <label className="ui-field">
         <span>{t('project_field_title')} *</span>
         <input value={title} onChange={e => setTitle(e.target.value)} required />
       </label>
-      <label className="collab-field">
+      <label className="ui-field">
         <span>{t('project_field_description')}</span>
         <textarea rows={3} value={description} onChange={e => setDescription(e.target.value)} />
       </label>
@@ -130,7 +130,7 @@ export function BranchDialog({ project, onCancel, onDone }) {
   return (
     <FormDialog title={t('branch_title')} submitLabel={t('branch_submit')} busy={busy} canSubmit={Boolean(name.trim())} error={error} onCancel={onCancel}
       onSubmit={() => run(async () => { await api.branch(project.id, { name: name.trim(), fromVariant: from }); await onDone() })}>
-      <label className="collab-field">
+      <label className="ui-field">
         <span>{t('branch_name')} *</span>
         <input value={name} onChange={e => setName(e.target.value)} placeholder="2030" required />
       </label>
@@ -148,11 +148,11 @@ export function VariantDialog({ variant, onCancel, onDone }) {
   return (
     <FormDialog title={t('variant_edit')} submitLabel={t('save')} busy={busy} canSubmit={Boolean(name.trim())} error={error} onCancel={onCancel}
       onSubmit={() => run(async () => { await api.patchVariant(variant.id, { name: name.trim(), archived }); await onDone() })}>
-      <label className="collab-field">
+      <label className="ui-field">
         <span>{t('variant_name')}</span>
         <input value={name} onChange={e => setName(e.target.value)} required />
       </label>
-      <label className="ra-check">
+      <label className="ui-check">
         <input type="checkbox" checked={archived} onChange={e => setArchived(e.target.checked)} />
         {t('variant_archived')}
       </label>
@@ -186,7 +186,7 @@ export function PairDialog({ kind, project, toolName, onCancel, onChoose }) {
   return (
     <FormDialog title={t(merge ? 'merge_title' : 'compare_title')} submitLabel={fill('in_tool', { action: t(merge ? 'merge' : 'compare'), tool: toolName })}
       busy={false} canSubmit={Boolean(from && to && from !== to)} onCancel={onCancel} onSubmit={() => onChoose(from, to)}>
-      {merge && <p className="collab-muted">{t('merge_desc')}</p>}
+      {merge && <p className="ui-muted">{t('merge_desc')}</p>}
       <VariantSelect label={t(merge ? 'merge_source' : 'compare_before')} variants={variants} value={from} onChange={setFrom} />
       <VariantSelect label={t(merge ? 'merge_target' : 'compare_after')} variants={variants} value={to} onChange={setTo} />
     </FormDialog>

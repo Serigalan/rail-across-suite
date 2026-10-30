@@ -29,14 +29,14 @@ function PointsTextModal({ preview, onClose }) {
   return (
     <Modal className="pointcloud-text-modal" title={fill('pointcloud_text_title', { n: PREVIEW_POINTS })} onClose={onClose}
       actions={<>
-        <button type="button" className="modal-btn modal-btn-cancel" onClick={copy}>
+        <button type="button" className="ui-btn" onClick={copy}>
           {copied ? t('pointcloud_text_copied') : t('pointcloud_text_copy')}
         </button>
-        <button type="button" className="modal-btn modal-btn-cancel"
+        <button type="button" className="ui-btn"
           onClick={() => downloadText(preview.text, `${baseName(preview.name)}_${PREVIEW_POINTS}.txt`)}>
           {t('pointcloud_text_save')}
         </button>
-        <button type="button" className="modal-btn modal-btn-primary" onClick={onClose}>{t('pointcloud_text_close')}</button>
+        <button type="button" className="ui-btn ui-btn-primary" onClick={onClose}>{t('pointcloud_text_close')}</button>
       </>}>
       <pre className="pointcloud-text">{preview.text}</pre>
     </Modal>
@@ -62,7 +62,7 @@ function ImportProgress({ run }) {
           {`${t('pointcloud_elapsed')} ${duration(p.elapsed)} · ${t('pointcloud_remaining')} ${duration(p.remaining)}`}
         </span>
       )}
-      <button className="panel-btn panel-btn-danger panel-btn-full" onClick={() => run.abort()}>{t('pointcloud_abort')}</button>
+      <button className="ui-btn ui-btn-danger ui-btn-block" onClick={() => run.abort()}>{t('pointcloud_abort')}</button>
     </div>
   )
 }
@@ -169,12 +169,12 @@ export default function CloudImportForm({ storage, onMessage, onChanged, onRunni
     return (
       <div className="pointcloud-actions">
         {onUpload && (
-          <FilePickButton accept=".laz,.las,.e57" onFile={choose('upload')} className="panel-btn" title={t('pointcloud_upload_hint')}>
+          <FilePickButton accept=".laz,.las,.e57" onFile={choose('upload')} className="ui-btn ui-btn-primary" title={t('pointcloud_upload_hint')}>
             {t('pointcloud_upload')}
           </FilePickButton>
         )}
         {localAvailable && (
-          <FilePickButton accept=".laz,.las,.e57" onFile={choose('local')} className={onUpload ? 'modal-btn modal-btn-cancel' : 'panel-btn'}
+          <FilePickButton accept=".laz,.las,.e57" onFile={choose('local')} className={onUpload ? 'ui-btn' : 'ui-btn ui-btn-primary'}
             title={t('pointcloud_local_hint')}>
             {t('pointcloud_import')}
           </FilePickButton>
@@ -201,7 +201,7 @@ export default function CloudImportForm({ storage, onMessage, onChanged, onRunni
       {pick.header.coordinateMetadata && (
         <span className="pointcloud-meta">{fill('pointcloud_file_crs', { crs: crsHint(pick.header.coordinateMetadata) })}</span>
       )}
-      <button className="modal-btn modal-btn-cancel pointcloud-text-btn" disabled={preview?.busy} onClick={showPreview}>
+      <button className="ui-btn pointcloud-text-btn" disabled={preview?.busy} onClick={showPreview}>
         {preview?.busy ? t('pointcloud_text_reading') : fill('pointcloud_text_show', { n: PREVIEW_POINTS })}
       </button>
       {!upload && storage && needed > storage.free && (

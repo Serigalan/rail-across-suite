@@ -28,7 +28,7 @@ export default function CrossSectionsPanel({ crossSectionAt, onShowCrossSection 
       <hr className="divider divider-wide" />
       <h2>{t('pointcloud_title')}</h2>
       <div className="create-element-options">
-        <button className="create-element-btn" onClick={() => { onShowCrossSection?.(null); setClouds(true) }}>
+        <button className="ui-btn ui-btn-option" onClick={() => { onShowCrossSection?.(null); setClouds(true) }}>
           <PointCloudIcon />
           {t('pointcloud_menu')}
         </button>

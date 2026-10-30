@@ -3,7 +3,7 @@ import { baliseKindOf, protectionSystemOf, titleIn } from '@rail-across/core/sig
 import { baliseSettings, labelOf, newBalise } from '../model/domain.js'
 import { baliseKindOptions, baliseWord, effectOptions, protectionSystemOptions } from '../labels.js'
 import { EditorHead, LocationFields, ObjectFindings } from './common.jsx'
-import { locationFrom, trackName } from '../model/places.js'
+import { OFFSET, locationFrom, placing, trackName } from '../model/places.js'
 
 /**
  * The balises and magnets of train protection: PZB track magnets and speed
@@ -34,7 +34,7 @@ export default function BalisesPanel({ domain, net, findings, selection, select,
     <Panel title={t('section_balises')} intro={t('section_balises_intro')}
       actions={!readOnly && (
         <Button size="small" variant="primary" icon={<PlusIcon size={14} />} disabled={!net.tracks.length}
-          onClick={() => setMode({ kind: 'place', apply: (hit) => ops.add('balises', newBalise({ at: locationFrom(hit), system: chosen?.system })) })}>
+          onClick={() => setMode(placing('balises', (hit) => newBalise({ at: locationFrom(hit, { offset: OFFSET.balises }), system: chosen?.system }), (b) => ops.add('balises', b)))}>
           {t('new_balise')}
         </Button>
       )}>
@@ -56,7 +56,7 @@ export default function BalisesPanel({ domain, net, findings, selection, select,
             onChange={(settings) => set({ settings: Object.keys(settings).length ? settings : undefined })} />
           <Section title={t('location')}>
             <LocationFields loc={chosen.at} net={net} t={t} readOnly={readOnly} onChange={(at) => set({ at })}
-              onPlace={() => setMode({ kind: 'place', apply: (hit) => ops.update('balises', { ...chosen, at: locationFrom(hit, { direction: chosen.at?.direction ?? 'up' }) }) })} />
+              onPlace={() => setMode(placing('balises', (hit) => ({ ...chosen, at: locationFrom(hit, { offset: chosen.at?.offset ?? OFFSET.balises }) }), (b) => ops.update('balises', b)))} />
           </Section>
         </div>
       )}

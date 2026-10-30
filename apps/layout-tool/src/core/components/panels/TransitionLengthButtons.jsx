@@ -15,7 +15,7 @@ export default function TransitionLengthButtons({ lengths, onPick }) {
   if (!lengths) return null
   const row = (key, mode, value, by) => (
     <div className="transition-length-row">
-      <button type="button" className="panel-btn panel-btn-small" disabled={value == null}
+      <button type="button" className="ui-btn ui-btn-primary ui-btn-small" disabled={value == null}
         title={t(`${key}_hint`)} onClick={() => value != null && onPick(value, mode)}>
         {fill(key, { l: value != null ? num(value, { digits: 1 }) : '–' })}
       </button>

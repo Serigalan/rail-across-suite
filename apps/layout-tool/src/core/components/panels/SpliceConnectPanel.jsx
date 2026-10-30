@@ -61,7 +61,7 @@ export default function SpliceConnectPanel() {
     <>
       <h2>{t('splice_element')}</h2>
       <div className="create-element-options">
-        <button className="create-element-btn" onClick={() => setPage('splice')}>
+        <button className="ui-btn ui-btn-option" onClick={() => setPage('splice')}>
           <SpliceJoinIcon />
           {t('splice_start')}
         </button>
@@ -70,11 +70,11 @@ export default function SpliceConnectPanel() {
       <hr className="divider divider-wide" />
       <h2>{t('connect_element')}</h2>
       <div className="create-element-options">
-        <button className="create-element-btn" onClick={() => setPage('connect_straight')}>
+        <button className="ui-btn ui-btn-option" onClick={() => setPage('connect_straight')}>
           <ConnectStraightIcon />
           {t('connect_straight')}
         </button>
-        <button className="create-element-btn" onClick={() => setPage('connect_curved')}>
+        <button className="ui-btn ui-btn-option" onClick={() => setPage('connect_curved')}>
           <ConnectCurvedIcon />
           {t('connect_curved')}
         </button>

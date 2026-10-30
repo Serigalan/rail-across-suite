@@ -120,6 +120,7 @@ the Layout-Tool's documentation does.
 | Isolierstoß | insulated rail joint | — | |
 | Zugbeeinflussung; Balise, Gleismagnet | train protection; balise, track magnet | `balises` | a track element of a train protection system acting at a point: a PZB magnet or speed check, an ETCS Eurobalise; the system, kind and settings are the catalogue's |
 | Fahrstraße | route | — | reserved for this meaning |
+| Geschwindigkeitsprofil, Geschwindigkeitsabschnitt | speed profile, speed section | `speedSections` | where which speed holds, as OSRD's SpeedSection |
 | Durchrutschweg | overlap | — | |
 | Flankenschutz | flank protection | — | |
 | Blockabschnitt | block section | — | |

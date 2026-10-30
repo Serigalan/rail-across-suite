@@ -15,7 +15,7 @@ export default function SolutionSwitch({ solutions, solution, picks, onChoose, o
   return (
     <div className="splice-solutions">
       {several && (
-        <button type="button" className="panel-btn" aria-label={t('splice_solution_prev')}
+        <button type="button" className="ui-btn ui-btn-small ui-btn-primary" aria-label={t('splice_solution_prev')}
           onClick={() => onChoose(solutions[(i + solutions.length - 1) % solutions.length])}>◀</button>
       )}
       <span>
@@ -24,11 +24,11 @@ export default function SolutionSwitch({ solutions, solution, picks, onChoose, o
         {' · '}{fill('splice_rebuilt', { l: num(rebuilt, { digits: 0, unit: 'm' }) })}
       </span>
       {several && (
-        <button type="button" className="panel-btn" aria-label={t('splice_solution_next')}
+        <button type="button" className="ui-btn ui-btn-small ui-btn-primary" aria-label={t('splice_solution_next')}
           onClick={() => onChoose(solutions[(i + 1) % solutions.length])}>▶</button>
       )}
       {alternative && arcJoin && (
-        <button type="button" className="panel-btn secondary" onClick={() => onAdopt(solution)}>{t('splice_adopt')}</button>
+        <button type="button" className="ui-btn ui-btn-small" onClick={() => onAdopt(solution)}>{t('splice_adopt')}</button>
       )}
     </div>
   )

@@ -2,7 +2,7 @@ import { createContext, useContext } from 'react'
 import { translations } from './i18n'
 import { fill as fillText, formatNum } from './i18n'
 
-export const DEFAULT_LANGUAGE = 'en'
+const DEFAULT_LANGUAGE = 'en'
 
 /** The translate function for a language: the key itself where it has no text. */
 function makeT(language) {

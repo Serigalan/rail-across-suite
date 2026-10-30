@@ -15,9 +15,9 @@ export default function FirstSteps({ onDraw, onImport }) {
       <h2>{t('first_steps_title')}</h2>
       <p className="selecting-hint">{t('first_steps_hint')}</p>
       <div className="first-steps-actions">
-        <button type="button" className="panel-btn panel-btn-full" onClick={onDraw}>{t('first_steps_draw')}</button>
-        <button type="button" className="panel-btn panel-btn-full secondary" onClick={onImport}>{t('first_steps_import')}</button>
-        <button type="button" className="panel-btn panel-btn-full secondary" onClick={() => setGuide(true)}>{t('first_steps_guide')}</button>
+        <button type="button" className="ui-btn ui-btn-primary ui-btn-block" onClick={onDraw}>{t('first_steps_draw')}</button>
+        <button type="button" className="ui-btn ui-btn-block" onClick={onImport}>{t('first_steps_import')}</button>
+        <button type="button" className="ui-btn ui-btn-block" onClick={() => setGuide(true)}>{t('first_steps_guide')}</button>
       </div>
       {guide && <GuideDialog onClose={() => setGuide(false)} />}
     </section>

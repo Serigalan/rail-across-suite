@@ -45,15 +45,15 @@ export default function OsrdSection() {
           place of its own two buttons: that is the only thing there is to do
           with the file that just landed. */}
       {exported ? (
-        <a href={OSRD_URL} target="_blank" rel="noreferrer" className="panel-btn panel-btn-full link-as-btn">
+        <a href={OSRD_URL} target="_blank" rel="noreferrer" className="ui-btn ui-btn-primary ui-btn-block link-as-btn">
           {t('data_exchange_osrd_continue')}
           <ExternalLinkIcon color="currentColor" />
         </a>
       ) : (
         <>
-          <button className="panel-btn panel-btn-full" onClick={exportIt}>{t('data_exchange_export')}</button>
+          <button className="ui-btn ui-btn-primary ui-btn-block" onClick={exportIt}>{t('data_exchange_export')}</button>
           <FilePickButton accept=".json,application/json" disabled={!project} onFile={railJson.importFile}
-            className="panel-btn panel-btn-full mt-2">
+            className="ui-btn ui-btn-primary ui-btn-block mt-2">
             {t('data_exchange_import')}
           </FilePickButton>
         </>

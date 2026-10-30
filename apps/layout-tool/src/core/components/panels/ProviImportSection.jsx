@@ -131,7 +131,7 @@ export default function ProviImportSection({ onReport }) {
     <>
       <input hidden ref={inputRef} type="file" accept=".zip,application/zip"
          onChange={handleFile} />
-      <button className="panel-btn panel-btn-full" disabled={!project || busy != null}
+      <button className="ui-btn ui-btn-primary ui-btn-block" disabled={!project || busy != null}
         onClick={() => inputRef.current?.click()}>
         {busy === 'reading' ? t('data_exchange_provi_reading') : t('data_exchange_provi_choose')}
       </button>
@@ -163,7 +163,7 @@ export default function ProviImportSection({ onReport }) {
               </label>
             ))}
           </div>
-          <button className="panel-btn panel-btn-full mt-4"
+          <button className="ui-btn ui-btn-primary ui-btn-block mt-4"
             disabled={!project || !chosen.size || busy != null} onClick={runImport}>
             {busy === 'importing'
               ? t('data_exchange_provi_importing')

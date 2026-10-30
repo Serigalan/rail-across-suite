@@ -97,7 +97,7 @@ export default function EditPropertiesForm({ onCommitted }) {
           <CommitBar onCommit={handleCommit} onCancel={onCommitted} reason={firstReason(lineNumberError && t(`line_number_error_${lineNumberError}`))} />
         </>
       ) : (
-        <CancelButton className="panel-btn panel-btn-full mt-8 secondary" onClick={onCommitted} />
+        <CancelButton className="ui-btn ui-btn-block mt-8" onClick={onCommitted} />
       )}
     </>
   )

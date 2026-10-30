@@ -29,7 +29,7 @@ function FileSlot({ label, accept, onFile, file, pickLabel, removeLabel, disable
             <div className="file-slot-name text-ellipsis" title={file.name}>{file.name}</div>
             <div className="msg-hint msg-small">{file.detail}</div>
           </div>
-          <button className="panel-btn" onClick={onRemove} title={removeLabel} aria-label={removeLabel}>✕</button>
+          <button className="ui-btn ui-btn-primary" onClick={onRemove} title={removeLabel} aria-label={removeLabel}>✕</button>
         </div>
       ) : (
         <FilePickButton accept={accept} disabled={disabled} onFile={onFile}>{pickLabel}</FilePickButton>
@@ -261,7 +261,7 @@ export default function VermEsnSection() {
           {rangeError && <p className="msg-error msg-small">{fill(rangeError, { max: num(REFERENCE_MAX_LENGTH, { digits: 0 }) })}</p>}
         </>
       )}
-      <button className="panel-btn panel-btn-full" disabled={!ready} onClick={importIt}>
+      <button className="ui-btn ui-btn-primary ui-btn-block" disabled={!ready} onClick={importIt}>
         {t(asReference ? 'data_exchange_reference_import' : 'data_exchange_import')}
       </button>
       {done && <p className="msg-ok msg-small">{done}</p>}

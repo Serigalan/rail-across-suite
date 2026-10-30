@@ -133,6 +133,7 @@ describe('the door', () => {
   it('reads signalling 1.0 as it was first written, before logical signals and balises, as of now', () => {
     const signalling = ksStation()
     signalling.collections.balises = signalling.collections.balises.filter(b => b.system === 'pzb')
+    signalling.collections.speedSections = []
     const now = toDocument(record({ signalling }))
     const first = structuredClone(now)
     const old = first.domains.signalling
@@ -142,7 +143,18 @@ describe('the door', () => {
       ...b, frequency, ...(ina ? { ina } : {}), ...(Object.keys(speedCheck).length ? { speedCheck } : {}),
     }))
     delete old.collections.balises
+    delete old.collections.speedSections
     expect(checkDocument(first)).toEqual(now)
+  })
+
+  it('reads signalling 1.0 as it was written before speed sections, as of now', () => {
+    const signalling = ksStation()
+    signalling.collections.speedSections = []
+    const now = toDocument(record({ signalling }))
+    const second = structuredClone(now)
+    second.domains.signalling.schema = 'sha256:72fccdfdcac3f5ce42d7f49d10fb9134e1c4ed792f7365ec9f01d997f0049724'
+    delete second.domains.signalling.collections.speedSections
+    expect(checkDocument(second)).toEqual(now)
   })
 
   it('refuses a signalling domain its schema does not take', () => {

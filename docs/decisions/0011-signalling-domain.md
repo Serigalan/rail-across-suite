@@ -9,17 +9,18 @@ Status: **accepted** · domain `signalling` 1.0, catalogue `db-ril-301` 0.3.0 ·
    location is a core `TrackLocation`, every object has a `lifespan`, references go into the core or into the
    domain itself (R2, R9).
 
-   | Collection | PlanPro 1.10 |
-   |---|---|
-   | `signals` — real or virtual, each real one with its logical signals (one per signalling system, see 3) and its frames and their aspects; a clearance marker on both branches also `alsoAt` | `Signal` (`Signal_Real`, `Signal_Fiktiv`), `Signalsystem` and `Signal_Art` of the screen, `Signal_Rahmen`, `Signal_Signalbegriff` |
-   | `detectionPoints` | `FMA_Komponente` |
-   | `trackSections` — name, kind, bounding detection points | `FMA_Anlage` |
-   | `switchElements` — the interlocking's switch, referring to the core's, or a derailer at its place; its clearance marker, twofold flank protection | `W_Kr_Gsp_Element`, `Fla_Zwieschutz` |
-   | `routes` — train, shunting and middle-switch, start and target signal, a `TrackPath`, rank, overlaps, what they show | `Fstr_Zug_Rangier`, `Fstr_Fahrweg`, `Fstr_Signalisierung` |
-   | `overlaps` — run, danger point, design length, gradient, speed, clear sections, locked switches | `Fstr_DWeg`, `Fstr_DWeg_W_Kr` |
-   | `flankProtection` — per switch element and position: by a signal, by a switch element in a position, or waived; passed on | `Fla_Schutz`, `Fla_Freimelde_Zuordnung` |
-   | `balises` — the balises and magnets of train protection: of a system and kind, with their settings (a PZB magnet of 500, 1000, 2000 Hz or a speed check, an ETCS Eurobalise), their signal and routes | `PZB_Element`, `PZB_Element_Zuordnung`; `Balise` (ETCS) |
-   | `stationBoundaries` — what marks the boundary of an operational point | (EBO §4; the roadmap's station boundaries) |
+   | Collection | PlanPro 1.10 | OSRD (RailJSON) |
+   |---|---|---|
+   | `signals` — real or virtual, each real one with its logical signals (one per signalling system, see 3) and its frames and their aspects; a clearance marker on both branches also `alsoAt` | `Signal` (`Signal_Real`, `Signal_Fiktiv`), `Signalsystem` and `Signal_Art` of the screen, `Signal_Rahmen`, `Signal_Signalbegriff` | `Signal`: `track`, `position`, `direction`, `sight_distance`, `logical_signals` (system, `next_signaling_systems`, settings, default and per-route parameters); `extensions.sncf.side` is our `side` |
+   | `detectionPoints` | `FMA_Komponente` | `Detector` |
+   | `trackSections` — name, kind, bounding detection points | `FMA_Anlage` | — (derived from detectors, as here) |
+   | `switchElements` — the interlocking's switch, referring to the core's, or a derailer at its place; its clearance marker, twofold flank protection | `W_Kr_Gsp_Element`, `Fla_Zwieschutz` | `Switch` (the core's) |
+   | `routes` — train, shunting and middle-switch, start and target signal, a `TrackPath`, rank, overlaps, what they show | `Fstr_Zug_Rangier`, `Fstr_Fahrweg`, `Fstr_Signalisierung` | `Route`: from waypoint to waypoint (detectors, buffer stops), its switch directions — derived by the adapter from the run |
+   | `overlaps` — run, danger point, design length, gradient, speed, clear sections, locked switches | `Fstr_DWeg`, `Fstr_DWeg_W_Kr` | — |
+   | `flankProtection` — per switch element and position: by a signal, by a switch element in a position, or waived; passed on | `Fla_Schutz`, `Fla_Freimelde_Zuordnung` | — |
+   | `balises` — the balises and magnets of train protection: of a system and kind, with their settings (a PZB magnet of 500, 1000, 2000 Hz or a speed check, an ETCS Eurobalise), their signal and routes | `PZB_Element`, `PZB_Element_Zuordnung`; `Balise` (ETCS) | — (OSRD has no balises yet) |
+   | `speedSections` — the speed profile: a stretch from a start over a run to an end, in a direction or both, its speed and per tag of train, the routes it holds on | `Geschwindigkeitsprofil` | `SpeedSection`: `track_ranges` (derived from start, run and end), `speed_limit`, `speed_limit_by_tag`, `on_routes` |
+   | `stationBoundaries` — what marks the boundary of an operational point: an entry signal or board, an entry switch, a halt's platform | (EBO §4; the roadmap's station boundaries) | `OperationalPoint` parts |
 
 2. **Boards are signals.** Ne 1, Ne 2, Lf 6, Lf 7 and the like are signals whose frame is a plate, as in PlanPro.
    There is no collection of signs.
@@ -29,7 +30,9 @@ Status: **accepted** · domain `signalling` 1.0, catalogue `db-ril-301` 0.3.0 ·
    shunting signal as well has one of `ks` and one of `sh`, and its screen shows what both ask. A **balise**
    names its train protection system, its kind and its settings: a PZB magnet its frequency, an ETCS Eurobalise
    its place in its group. The schema holds the system, kind and settings as keys and plain values; which there
-   are is the catalogue's.
+   are is the catalogue's. Speed sections hold their stretch as an overlap does — a start, a run and an end —
+   so the core carries them through every track edit with what it carries already; OSRD's track ranges follow
+   from them. OSRD's units are converted at the adapter: speeds are km/h here (conventions), m/s there.
 
 4. **What there is lies not in the schema but in a catalogue**,
    [`packages/core/constraints/db-ril-301.json`](../../packages/core/constraints/db-ril-301.json): the aspects by
@@ -133,9 +136,12 @@ collection of its own when a tool plans it.
   author without the right to write it (S-R5).
 - **Values are missing.** Distances (distant signal spacing, overlap length, where balises and magnets lie) are not
   checked until the values of Ril 819 and Ril 483 are in the catalogue (`open_points`).
-- **1.0 was changed in place.** Its first schema (`type` and `system` on the signal, `pzbElements`) went into
-  documents before logical signals and balises came; the door brings a domain of that schema to the current one
-  as it reads it. The Python core does not: it reads only the current 1.0.
+- **1.0 was changed in place, twice.** Its first schema (`type` and `system` on the signal, `pzbElements`) and
+  its second (without speed sections) went into documents; the door brings a domain of either to the current
+  one as it reads it, step by step. The Python core does not: it reads only the current 1.0.
+- **Where a signal is drawn is derived.** A location is its track, station, side and offset; the point in the
+  plane follows (a signal is set two metres off by default, a balise or magnet at the rail) and is never stored,
+  as OSRD derives its map layers from track and position.
 - **PlanPro's XSD is not in the repository.** It is licensed under RailPL V1.1, whose fit with Apache-2.0 and
   CC BY 4.0 has not been checked; the domain names the version it follows (1.10.0.3.3) and copies none of its
   files. The catalogue takes the names, titles and symbol lists of its 192 aspects (`THIRD-PARTY.md`).

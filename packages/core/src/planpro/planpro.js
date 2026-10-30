@@ -633,7 +633,7 @@ function convert(model, projectId) {
     fields: { catalogue: { ...CATALOGUE_REF } },
     collections: {
       signals, detectionPoints, trackSections, switchElements, routes, overlaps, flankProtection, balises,
-      stationBoundaries: [],
+      speedSections: [], stationBoundaries: [],
     },
   }
   return { tracks, switches, endMarks, signalling, report }

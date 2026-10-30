@@ -39,7 +39,7 @@ export default function RuleCell({ index, entry, el, onReason, onCantException }
       {open && (
         <Modal title={fill(open === 'errors' ? 'table_rules_errors_title' : 'table_rules_hints_title', { n: String(index + 1) })}
           className="rule-dialog" onClose={() => setOpen(null)}
-          actions={<button type="button" className="modal-btn modal-btn-primary" onClick={() => setOpen(null)}>{t('btn_close')}</button>}>
+          actions={<button type="button" className="ui-btn ui-btn-primary" onClick={() => setOpen(null)}>{t('btn_close')}</button>}>
           {open === 'errors'
             ? <ErrorList errors={errors} />
             : <HintList hints={hints} el={el} onReason={onReason} onCantException={onCantException} />}

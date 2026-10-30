@@ -7,8 +7,8 @@ export default function FormDialog({ title, submitLabel, busy, error, onCancel, 
   return (
     <Modal className="collab-modal" title={title} onClose={onCancel} busy={busy} onSubmit={() => { onSubmit() }}
       actions={<>
-        <button type="button" className="modal-btn modal-btn-cancel" onClick={onCancel} disabled={busy}>{t('btn_cancel')}</button>
-        <button type="submit" className={`modal-btn ${danger ? 'modal-btn-confirm' : 'collab-btn-primary'}`} disabled={busy || !canSubmit}>{submitLabel}</button>
+        <button type="button" className="ui-btn" onClick={onCancel} disabled={busy}>{t('btn_cancel')}</button>
+        <button type="submit" className={`ui-btn ${danger ? 'ui-btn-danger' : 'ui-btn-primary'}`} disabled={busy || !canSubmit}>{submitLabel}</button>
       </>}>
       {children}
       {error && <p className="collab-error" role="alert">{error}</p>}

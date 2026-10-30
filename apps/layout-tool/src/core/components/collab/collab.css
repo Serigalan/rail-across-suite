@@ -214,9 +214,6 @@
 .collab-status.open { color: var(--collab-warn); }
 .collab-status.done { color: var(--collab-ok); }
 
-.collab-btn-primary { background: var(--color-primary); color: #fff; }
-.collab-btn-primary:hover:not(:disabled) { filter: brightness(1.1); }
-.modal-btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
 /* ── pages: the start page and the others of the server build ─────────── */
 
@@ -282,26 +279,6 @@
 .collab-field input[type="file"] { padding: 6px; }
 .collab-check { display: flex; align-items: center; gap: 8px; font-size: 13px; }
 
-.collab-btn {
-  font: inherit;
-  font-size: 13px;
-  font-weight: 500;
-  padding: 7px 14px;
-  border-radius: 6px;
-  border: 1px solid var(--collab-border);
-  background: var(--collab-bg);
-  color: var(--collab-fg);
-  cursor: pointer;
-  white-space: nowrap;
-}
-.collab-btn:hover:not(:disabled) { background: var(--collab-hover); }
-.collab-btn:disabled { opacity: 0.45; cursor: not-allowed; }
-.collab-btn.collab-btn-primary { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
-.collab-btn.collab-btn-danger { color: var(--collab-danger); border-color: var(--collab-danger); }
-/* The plain hover would swap the primary's colour for the light one under its white text. */
-.collab-btn.collab-btn-primary:hover:not(:disabled) { background: var(--color-primary); filter: brightness(1.15); }
-.collab-btn-block { width: 100%; padding: 10px 14px; font-size: 14px; }
-.collab-btn-small { padding: 4px 10px; font-size: 12px; }
 
 .collab-link {
   font: inherit;
@@ -337,7 +314,6 @@
 .collab-modal-title { margin: 0; font-size: 17px; }
 .collab-modal-list { display: flex; flex-direction: column; gap: 6px; max-height: 240px; overflow-y: auto; }
 .collab-modal-list .collab-list { padding: 0; }
-.collab-modal .modal-btn-cancel { background: var(--collab-hover); color: var(--collab-fg); }
 
 /* ── the start page ─────────────────────────────────────────────────────── */
 
@@ -431,8 +407,7 @@
   display: flex; align-items: flex-end; justify-content: center;
   background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 40%, rgba(255, 255, 255, 0.95) 85%);
 }
-.home-guide-open:hover .collab-btn { filter: brightness(1.1); }
-a.collab-btn { display: inline-block; text-decoration: none; }
+.home-guide-open:hover .ui-btn { filter: brightness(1.1); }
 
 .collab-icon-btn { display: inline-flex; align-items: center; justify-content: center; padding: 6px 9px; }
 .home-language-list { min-width: 150px; }

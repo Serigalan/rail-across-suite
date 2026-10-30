@@ -171,15 +171,15 @@ export default function OptimizeTrackPanel({ initialPage = 'menu', onExit, onSho
       <>
         <h2>{t('optimize_track')}</h2>
         <div className="create-element-options">
-          <button className="create-element-btn" onClick={() => setPage('track')}>
+          <button className="ui-btn ui-btn-option" onClick={() => setPage('track')}>
             <OptimizeTrackModeIcon />
             {t('optimize_mode_track')}
           </button>
-          <button className="create-element-btn" onClick={() => setPage('element')}>
+          <button className="ui-btn ui-btn-option" onClick={() => setPage('element')}>
             <OptimizeElementModeIcon />
             {t('optimize_mode_element')}
           </button>
-          <button className="create-element-btn" onClick={() => setPage('axis')}>
+          <button className="ui-btn ui-btn-option" onClick={() => setPage('axis')}>
             <AxisFitModeIcon />
             {t('optimize_mode_axis')}
           </button>
@@ -219,11 +219,11 @@ export default function OptimizeTrackPanel({ initialPage = 'menu', onExit, onSho
             panel says so rather than offering a button that cannot work. */}
         {reachable === false
           ? <p className="msg-error">{t('optimize_err_unavailable')}</p>
-          : <button className="panel-btn panel-btn-full" onClick={handleRun} disabled={running || !trackId}>{t('optimize_run')}</button>}
+          : <button className="ui-btn ui-btn-primary ui-btn-block" onClick={handleRun} disabled={running || !trackId}>{t('optimize_run')}</button>}
         {running && (
           <div className="run-status">
             <span>{t('optimize_running')} {fill('run_elapsed', { s: elapsed })}</span>
-            <button type="button" className="link-btn" onClick={() => abortRef.current?.abort()}>{t('btn_abort')}</button>
+            <button type="button" className="ui-link" onClick={() => abortRef.current?.abort()}>{t('btn_abort')}</button>
           </div>
         )}
         {runError && <p className="msg-error">{runError}</p>}

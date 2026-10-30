@@ -9,7 +9,7 @@ import { CATALOGUE_REF, baliseKindOf, protectionSystemOf, screenOf } from '@rail
 
 export const COLLECTIONS = [
   'signals', 'detectionPoints', 'trackSections', 'switchElements', 'routes', 'overlaps', 'flankProtection', 'balises',
-  'stationBoundaries',
+  'speedSections', 'stationBoundaries',
 ]
 
 /** An empty domain, planned against the catalogue this build has. */
@@ -40,7 +40,8 @@ export const replaced = (domain, collection, obj) =>
  * What a deletion takes with it, within the domain: { collection: [ids] } —
  * routes from or to a deleted signal, overlaps at it, flank protection given
  * by it or asked by a deleted switch element; objects that only name it lose
- * the name (a balise its signal, a section the point).
+ * the name (a balise its signal, a section the point, a speed section or a
+ * signal's parameters a route).
  */
 export function cascadeOf(domain, collection, id) {
   const c = domain.collections
@@ -69,6 +70,11 @@ export function deleted(domain, collection, id) {
     return overlaps?.length !== r.overlaps?.length || aspects?.length !== r.aspects?.length ? { ...r, overlaps, aspects } : r
   })
   c.balises = c.balises.map(b => (is('signals', b.signalId) ? { ...b, signalId: undefined } : b))
+  const routeGone = (id) => is('routes', id)
+  c.speedSections = c.speedSections.map(v => (v.onRoutes?.some(routeGone) ? { ...v, onRoutes: v.onRoutes.filter(r => !routeGone(r)) } : v))
+  c.signals = c.signals.map(s => (s.logicalSignals?.some(l => l.conditionalParameters?.some(p => routeGone(p.routeId)))
+    ? { ...s, logicalSignals: s.logicalSignals.map(l => ({ ...l, conditionalParameters: l.conditionalParameters?.filter(p => !routeGone(p.routeId)) })) }
+    : s))
   c.switchElements = c.switchElements.map(e => (is('signals', e.clearanceMarkerId) ? { ...e, clearanceMarkerId: undefined } : e))
   c.stationBoundaries = c.stationBoundaries
     .map(b => ({ ...b, marks: b.marks.filter(m => !is('signals', m.signalId)) }))

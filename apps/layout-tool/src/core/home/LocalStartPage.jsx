@@ -37,10 +37,10 @@ function LocalProjectCard({ project, opening, onOpen, onDialog, onExport }) {
             })}
           </p>
         </div>
-        <button type="button" className="collab-btn collab-btn-primary home-project-open" disabled={opening === project.id}
+        <button type="button" className="ui-btn ui-btn-primary home-project-open" disabled={opening === project.id}
           onClick={() => onOpen(project)}>{t('home_open')}</button>
         <div className="home-menu" ref={rootRef}>
-          <button ref={buttonRef} type="button" className="collab-btn collab-btn-small" aria-label={t('home_project_menu')}
+          <button ref={buttonRef} type="button" className="ui-btn ui-btn-small" aria-label={t('home_project_menu')}
             title={t('home_project_menu')} {...buttonProps}>⋯</button>
           {open && (
             <div className="home-menu-list" role="menu">
@@ -122,7 +122,7 @@ export default function LocalStartPage({ onOpen }) {
         </div>
         <div className="home-user">
           <LanguageMenu onChange={setLanguage} />
-          <button type="button" className="collab-btn" onClick={() => setDialog({ kind: 'local' })}>{t('local_store_menu')}</button>
+          <button type="button" className="ui-btn" onClick={() => setDialog({ kind: 'local' })}>{t('local_store_menu')}</button>
         </div>
       </header>
 
@@ -133,8 +133,8 @@ export default function LocalStartPage({ onOpen }) {
           <h2>{t('start_projects')}</h2>
           <div className="home-section-actions">
             <input ref={importRef} type="file" accept=".json,application/json" hidden onChange={handleImport} />
-            <button type="button" className="collab-btn collab-btn-primary" onClick={() => setDialog({ kind: 'new' })}>{t('home_new')}</button>
-            <button type="button" className="collab-btn" onClick={() => importRef.current?.click()}>{t('start_import')}</button>
+            <button type="button" className="ui-btn ui-btn-primary" onClick={() => setDialog({ kind: 'new' })}>{t('home_new')}</button>
+            <button type="button" className="ui-btn" onClick={() => importRef.current?.click()}>{t('start_import')}</button>
           </div>
         </div>
         {error && <p className="collab-error" role="alert">{error}</p>}
@@ -151,7 +151,7 @@ export default function LocalStartPage({ onOpen }) {
           <div className="home-section-head">
             <h2>{t('start_guideline')}</h2>
             <div className="home-section-actions">
-              <a href="./Leitfaden_Trassierung.pdf" download="Leitfaden_Trassierung.pdf" className="collab-btn">{t('start_guideline_download')}</a>
+              <a href="./Leitfaden_Trassierung.pdf" download="Leitfaden_Trassierung.pdf" className="ui-btn">{t('start_guideline_download')}</a>
             </div>
           </div>
           <GuidePreview onOpen={() => setDialog({ kind: 'guide' })} />

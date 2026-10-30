@@ -20,10 +20,12 @@ export const RouteIcon = () => <Svg><path d="M4 18c5 0 5-12 11-12h5" /><path d="
 export const FlankIcon = () => <Svg><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z" /><path d="M9 12l2 2 4-4" /></Svg>
 /** A balise or track magnet between the rails, sending upwards. */
 export const BaliseIcon = () => <Svg><path d="M3 17h18" /><rect x="8" y="11" width="8" height="4" rx="1" /><path d="M10 8l2-2 2 2M10 5l2-2 2 2" /></Svg>
-/** Map layers: three sheets. */
-export const LayersIcon = () => <Svg><path d="M12 3l9 5-9 5-9-5z" /><path d="M3 12.5l9 5 9-5" /><path d="M3 17l9 5 9-5" /></Svg>
-/** The language: a globe. */
-export const LanguageIcon = () => <Svg><circle cx="12" cy="12" r="9" /><path d="M3 12h18" /><path d="M12 3c2.5 2.5 3.8 5.5 3.8 9s-1.3 6.5-3.8 9c-2.5-2.5-3.8-5.5-3.8-9s1.3-6.5 3.8-9z" /></Svg>
+/** A speed section: a speed board, as Lf 7 shows its number. */
+export const SpeedIcon = () => <Svg><rect x="6" y="3" width="12" height="13" rx="1.5" /><path d="M12 16v6M9 22h6" /><path d="M9.5 7.5h3a1.5 1.5 0 0 1 0 3h-3V13h5" /></Svg>
+/** Map layers: a folded map, as the Layout-Tool draws it. */
+export const LayersIcon = () => <Svg><path d="M3 6 L9 3.5 L15 6 L21 3.5 V18 L15 20.5 L9 18 L3 20.5 Z" /><path d="M9 3.5 V18 M15 6 V20.5" /></Svg>
+/** The settings: three sliders, as the Layout-Tool draws them. */
+export const SettingsIcon = () => <Svg><path d="M3 6 H7 M11 6 H21 M3 12 H14 M18 12 H21 M3 18 H5 M9 18 H21" /><circle cx="9" cy="6" r="2" /><circle cx="16" cy="12" r="2" /><circle cx="7" cy="18" r="2" /></Svg>
 /** The check. */
 export const CheckIcon = () => <Svg><path d="M4 12l5 5L20 6" /></Svg>
 /** A file coming in. */

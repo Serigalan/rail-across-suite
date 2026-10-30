@@ -81,7 +81,7 @@ export default function ElevationPointDetails({
     <ul className={`profile-point-links ${kind}`}>
       {refs.map(r => (
         <li key={`${r.trackId}|${r.index}`}>
-          <button type="button" className="link-btn" onClick={() => onPick(r)}>{nameOf(r)}</button>
+          <button type="button" className="ui-link" onClick={() => onPick(r)}>{nameOf(r)}</button>
           {kind === 'to' && howOf(r)}
           {design && (
             <button type="button" className="profile-point-x" title={t('elevation_release_hint')} aria-label={t('elevation_release')}

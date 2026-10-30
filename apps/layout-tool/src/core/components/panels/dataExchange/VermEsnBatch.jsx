@@ -136,7 +136,7 @@ export default function VermEsnBatch({ epsg }) {
                 </div>
               )}
             </div>
-            <button className="panel-btn" onClick={() => setBatch(null)}
+            <button className="ui-btn ui-btn-primary" onClick={() => setBatch(null)}
               title={t('data_exchange_vermesn_batch_remove')} aria-label={t('data_exchange_vermesn_batch_remove')}>✕</button>
           </div>
         </div>
@@ -180,7 +180,7 @@ export default function VermEsnBatch({ epsg }) {
         <span>{t('data_exchange_vermesn_batch_reference')}</span>
         <InfoTip text={t('data_exchange_vermesn_batch_reference_hint')} />
       </label>
-      <button className="panel-btn panel-btn-full mt-6" disabled={!ready} onClick={importIt}>
+      <button className="ui-btn ui-btn-primary ui-btn-block mt-6" disabled={!ready} onClick={importIt}>
         {batch ? fill('data_exchange_vermesn_batch_import_n', { n: batch.pairs.length }) : t('data_exchange_import')}
       </button>
       {done && <p className="msg-ok msg-small">{done}</p>}

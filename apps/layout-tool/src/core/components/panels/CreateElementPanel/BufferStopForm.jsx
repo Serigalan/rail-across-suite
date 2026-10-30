@@ -188,7 +188,7 @@ export default function BufferStopForm({ onCommitted, edit = false }) {
     return (
       <>
         <p className="selecting-hint">{t(edit ? 'buffer_stop_none_existing' : 'buffer_stop_none')}</p>
-        <CancelButton className="panel-btn panel-btn-full mt-2 secondary" onClick={onCommitted} />
+        <CancelButton className="ui-btn ui-btn-block mt-2" onClick={onCommitted} />
       </>
     )
   }
@@ -222,13 +222,13 @@ export default function BufferStopForm({ onCommitted, edit = false }) {
       )}
 
       {picked && mark && (
-        <button className="panel-btn panel-btn-full danger" onClick={handleDelete}>
+        <button className="ui-btn ui-btn-danger ui-btn-block" onClick={handleDelete}>
           {t('buffer_stop_delete')}
         </button>
       )}
       {picked
         ? <CommitBar onCommit={handleCommit} onCancel={onCommitted} disabled={brakeInvalid || tooShort} className={mark ? 'mt-2' : ''} />
-        : <CancelButton className="panel-btn panel-btn-full mt-2 secondary" onClick={onCommitted} />}
+        : <CancelButton className="ui-btn ui-btn-block mt-2" onClick={onCommitted} />}
     </>
   )
 }

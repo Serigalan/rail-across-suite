@@ -6367,7 +6367,7 @@
     },
     "signalling": {
      "version": "1.0",
-     "schema": "sha256:72fccdfdcac3f5ce42d7f49d10fb9134e1c4ed792f7365ec9f01d997f0049724",
+     "schema": "sha256:0194c1e7fe2a63741270025beb48929d106d74a80bf5b33ed4305965a5303487",
      "dependsOn": [
       "core"
      ],
@@ -6786,6 +6786,32 @@
         "effect": "switchedBySignal"
        }
       ],
+      "speedSections": [
+       {
+        "id": "v-w1",
+        "name": "W1",
+        "start": {
+         "anchor": "station",
+         "trackId": "t1",
+         "station": 200
+        },
+        "path": {
+         "trackIds": [
+          "t1",
+          "t2"
+         ]
+        },
+        "end": {
+         "anchor": "station",
+         "trackId": "t2",
+         "station": 60
+        },
+        "speed": 60,
+        "speedByTag": {
+         "freight": 40
+        }
+       }
+      ],
       "stationBoundaries": [
        {
         "id": "bd-1",
@@ -6885,7 +6911,7 @@
     },
     "signalling": {
      "version": "1.0",
-     "schema": "sha256:72fccdfdcac3f5ce42d7f49d10fb9134e1c4ed792f7365ec9f01d997f0049724",
+     "schema": "sha256:0194c1e7fe2a63741270025beb48929d106d74a80bf5b33ed4305965a5303487",
      "dependsOn": [
       "core"
      ],
@@ -6897,6 +6923,7 @@
       "overlaps": "sha256:3dc90110fb0c0f878b841fd5d497829f036e5627d4099479d1726c8905b62e3e",
       "routes": "sha256:a02939e2f09de570b3f466510e02627b133e46848950a47cbbd0ef01e284ca9c",
       "signals": "sha256:d2804a5a7172543bcb1bd6d87b3de36a265d5b0ee4e764a1f4355465013b9fb4",
+      "speedSections": "sha256:defe546e84fc6d69cf5e6d5d2fdc18f40d3d6302640bb6feced901ff6ad24df2",
       "stationBoundaries": "sha256:54556f1e20a2e22fd145c8d0f66b92640b25f50b66da610ebd8ae7126412d496",
       "switchElements": "sha256:fe471ee1c255021503a7e8f6862566e6d5aeb76a76cad3782b7ce37c87adb591",
       "trackSections": "sha256:dd2ee2e1d729211c5aaac5bf7c209b78c81c887bff24f6413ae439d92f4b8496"
@@ -6904,7 +6931,7 @@
     }
    }
   },
-  "hash": "sha256:dc826a17222d3f3ece5ed8a9fb167fa34abf04f1432f6c30228ffaa8afd43101"
+  "hash": "sha256:3552a0515b35a87cba87f854be85b9a7273b2ca5283e1a6511f0851f366cb05c"
  },
  {
   "name": "the sample with its signalling, carrying its schemas",
@@ -7178,7 +7205,7 @@
     },
     "signalling": {
      "version": "1.0",
-     "schema": "sha256:72fccdfdcac3f5ce42d7f49d10fb9134e1c4ed792f7365ec9f01d997f0049724",
+     "schema": "sha256:0194c1e7fe2a63741270025beb48929d106d74a80bf5b33ed4305965a5303487",
      "dependsOn": [
       "core"
      ],
@@ -7595,6 +7622,32 @@
         },
         "signalId": "sig-n1",
         "effect": "switchedBySignal"
+       }
+      ],
+      "speedSections": [
+       {
+        "id": "v-w1",
+        "name": "W1",
+        "start": {
+         "anchor": "station",
+         "trackId": "t1",
+         "station": 200
+        },
+        "path": {
+         "trackIds": [
+          "t1",
+          "t2"
+         ]
+        },
+        "end": {
+         "anchor": "station",
+         "trackId": "t2",
+         "station": 60
+        },
+        "speed": 60,
+        "speedByTag": {
+         "freight": 40
+        }
        }
       ],
       "stationBoundaries": [
@@ -8719,11 +8772,11 @@
       }
      }
     },
-    "sha256:72fccdfdcac3f5ce42d7f49d10fb9134e1c4ed792f7365ec9f01d997f0049724": {
+    "sha256:0194c1e7fe2a63741270025beb48929d106d74a80bf5b33ed4305965a5303487": {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
      "$id": "signalling",
      "title": "Rail-Data-Core, domain signalling 1.0",
-     "description": "The signalling of a project, as the signalling tool plans it: signals and boards, train detection, the switch elements of the interlocking, train and shunting routes with their overlaps, flank protection, the balises and magnets of train protection and the station boundaries. Depends on core; its references go into the core or into itself (R2, R9). Its objects follow PlanPro 1.10, and like OSRD it keeps every signalling and train protection system out of the schema (decision 0011): a signal carries a logical signal per system, a balise names its system; which systems, kinds, aspects and settings there are is not in this schema but in the catalogue (packages/core/constraints/db-ril-301.json), which the content check reads.",
+     "description": "The signalling of a project, as the signalling tool plans it: signals and boards, train detection, the switch elements of the interlocking, train and shunting routes with their overlaps, flank protection, the balises and magnets of train protection, the speed sections and the station boundaries. Depends on core; its references go into the core or into itself (R2, R9). Its objects follow PlanPro 1.10, and like OSRD it keeps every signalling and train protection system out of the schema (decision 0011): a signal carries a logical signal per system, a balise names its system; which systems, kinds, aspects and settings there are is not in this schema but in the catalogue (packages/core/constraints/db-ril-301.json), which the content check reads.",
      "type": "object",
      "required": [
       "fields",
@@ -8745,6 +8798,7 @@
         "overlaps",
         "flankProtection",
         "balises",
+        "speedSections",
         "stationBoundaries"
        ],
        "additionalProperties": false,
@@ -8795,6 +8849,12 @@
          "type": "array",
          "items": {
           "$ref": "#/$defs/Balise"
+         }
+        },
+        "speedSections": {
+         "type": "array",
+         "items": {
+          "$ref": "#/$defs/SpeedSection"
          }
         },
         "stationBoundaries": {
@@ -8989,7 +9049,7 @@
        }
       },
       "LogicalSignal": {
-       "description": "A signal in one signalling system (OSRD: LogicalSignal): the system, a key of the catalogue's `systeme`; the kind of signal it is there, a key of that system's `signalarten` or `other`; and its settings, as the catalogue declares them for the system.",
+       "description": "A signal in one signalling system (OSRD: LogicalSignal): the system, a key of the catalogue's `systeme`; the kind of signal it is there, a key of that system's `signalarten` or `other`; its settings, as the catalogue declares them for the system; the systems the signals it announces may be of (OSRD next_signaling_systems); and the parameters it shows with, by default and per route (OSRD default_parameters, conditional_parameters), as the system declares them.",
        "type": "object",
        "required": [
         "system"
@@ -9006,6 +9066,36 @@
         },
         "settings": {
          "$ref": "#/$defs/Settings"
+        },
+        "nextSystems": {
+         "type": "array",
+         "items": {
+          "type": "string",
+          "minLength": 1
+         }
+        },
+        "defaultParameters": {
+         "$ref": "#/$defs/Settings"
+        },
+        "conditionalParameters": {
+         "type": "array",
+         "items": {
+          "type": "object",
+          "required": [
+           "routeId",
+           "parameters"
+          ],
+          "additionalProperties": false,
+          "properties": {
+           "routeId": {
+            "$ref": "core#/$defs/Ref",
+            "x-target": "signalling.routes"
+           },
+           "parameters": {
+            "$ref": "#/$defs/Settings"
+           }
+          }
+         }
         }
        }
       },
@@ -9684,8 +9774,60 @@
         }
        }
       },
+      "SpeedSection": {
+       "description": "A stretch where a speed holds (OSRD: SpeedSection; the speed profile of the roadmap): from `start` along a run of tracks to `end`, both on the run's first and last track — as an overlap runs, so the core carries it as it carries every location and run. In the direction `start` states, or both where it states none. The speed [km/h], per tag of train where it differs (OSRD speed_limit_by_tag), and the routes it holds on only, where it holds on some.",
+       "type": "object",
+       "required": [
+        "id",
+        "start",
+        "path",
+        "end"
+       ],
+       "additionalProperties": false,
+       "properties": {
+        "id": {
+         "$ref": "core#/$defs/Id"
+        },
+        "name": {
+         "$ref": "core#/$defs/Text"
+        },
+        "start": {
+         "$ref": "core#/$defs/TrackLocation"
+        },
+        "path": {
+         "$ref": "core#/$defs/TrackPath"
+        },
+        "end": {
+         "$ref": "core#/$defs/TrackLocation"
+        },
+        "speed": {
+         "description": "[km/h]",
+         "type": "number",
+         "minimum": 0
+        },
+        "speedByTag": {
+         "description": "Per tag of train, the speed it may run at here [km/h] (OSRD speed_limit_by_tag).",
+         "type": "object",
+         "additionalProperties": {
+          "type": "number",
+          "minimum": 0
+         }
+        },
+        "onRoutes": {
+         "description": "The routes it holds on; on all where it names none (OSRD on_routes).",
+         "type": "array",
+         "items": {
+          "$ref": "core#/$defs/Ref",
+          "x-target": "signalling.routes"
+         }
+        },
+        "lifespan": {
+         "$ref": "core#/$defs/Lifespan"
+        }
+       }
+      },
       "StationBoundary": {
-       "description": "The boundary of a station of the core's register, where trains enter it: what marks it — an entry signal or a board (Ne 1), or an entry switch where there is neither (EBO §4). Where it is not where the rules put it, a finding says so.",
+       "description": "The boundary of a station of the core's register, where trains enter it: what marks it — an entry signal or a board (Ne 1), an entry switch where there is neither (EBO §4), or for a halt its platform. Where it is not where the rules put it, a finding says so.",
        "type": "object",
        "required": [
         "id",
@@ -9729,6 +9871,19 @@
              "switchId": {
               "$ref": "core#/$defs/Ref",
               "x-target": "core.switches"
+             }
+            }
+           },
+           {
+            "type": "object",
+            "required": [
+             "platformId"
+            ],
+            "additionalProperties": false,
+            "properties": {
+             "platformId": {
+              "$ref": "core#/$defs/Ref",
+              "x-target": "core.platforms"
              }
             }
            }
@@ -9775,7 +9930,7 @@
     },
     "signalling": {
      "version": "1.0",
-     "schema": "sha256:72fccdfdcac3f5ce42d7f49d10fb9134e1c4ed792f7365ec9f01d997f0049724",
+     "schema": "sha256:0194c1e7fe2a63741270025beb48929d106d74a80bf5b33ed4305965a5303487",
      "dependsOn": [
       "core"
      ],
@@ -9787,6 +9942,7 @@
       "overlaps": "sha256:3dc90110fb0c0f878b841fd5d497829f036e5627d4099479d1726c8905b62e3e",
       "routes": "sha256:a02939e2f09de570b3f466510e02627b133e46848950a47cbbd0ef01e284ca9c",
       "signals": "sha256:d2804a5a7172543bcb1bd6d87b3de36a265d5b0ee4e764a1f4355465013b9fb4",
+      "speedSections": "sha256:defe546e84fc6d69cf5e6d5d2fdc18f40d3d6302640bb6feced901ff6ad24df2",
       "stationBoundaries": "sha256:54556f1e20a2e22fd145c8d0f66b92640b25f50b66da610ebd8ae7126412d496",
       "switchElements": "sha256:fe471ee1c255021503a7e8f6862566e6d5aeb76a76cad3782b7ce37c87adb591",
       "trackSections": "sha256:dd2ee2e1d729211c5aaac5bf7c209b78c81c887bff24f6413ae439d92f4b8496"
@@ -9794,7 +9950,7 @@
     }
    }
   },
-  "hash": "sha256:dc826a17222d3f3ece5ed8a9fb167fa34abf04f1432f6c30228ffaa8afd43101"
+  "hash": "sha256:3552a0515b35a87cba87f854be85b9a7273b2ca5283e1a6511f0851f366cb05c"
  },
  {
   "name": "signalling depending on nothing",
@@ -10068,7 +10224,7 @@
     },
     "signalling": {
      "version": "1.0",
-     "schema": "sha256:72fccdfdcac3f5ce42d7f49d10fb9134e1c4ed792f7365ec9f01d997f0049724",
+     "schema": "sha256:0194c1e7fe2a63741270025beb48929d106d74a80bf5b33ed4305965a5303487",
      "fields": {
       "catalogue": {
        "id": "db-ril-301",
@@ -10484,6 +10640,32 @@
         "effect": "switchedBySignal"
        }
       ],
+      "speedSections": [
+       {
+        "id": "v-w1",
+        "name": "W1",
+        "start": {
+         "anchor": "station",
+         "trackId": "t1",
+         "station": 200
+        },
+        "path": {
+         "trackIds": [
+          "t1",
+          "t2"
+         ]
+        },
+        "end": {
+         "anchor": "station",
+         "trackId": "t2",
+         "station": 60
+        },
+        "speed": 60,
+        "speedByTag": {
+         "freight": 40
+        }
+       }
+      ],
       "stationBoundaries": [
        {
         "id": "bd-1",
@@ -10827,7 +11009,7 @@
     },
     "signalling": {
      "version": "1.0",
-     "schema": "sha256:72fccdfdcac3f5ce42d7f49d10fb9134e1c4ed792f7365ec9f01d997f0049724",
+     "schema": "sha256:0194c1e7fe2a63741270025beb48929d106d74a80bf5b33ed4305965a5303487",
      "dependsOn": [
       "core"
      ],
@@ -11245,6 +11427,32 @@
         "effect": "switchedBySignal"
        }
       ],
+      "speedSections": [
+       {
+        "id": "v-w1",
+        "name": "W1",
+        "start": {
+         "anchor": "station",
+         "trackId": "t1",
+         "station": 200
+        },
+        "path": {
+         "trackIds": [
+          "t1",
+          "t2"
+         ]
+        },
+        "end": {
+         "anchor": "station",
+         "trackId": "t2",
+         "station": 60
+        },
+        "speed": 60,
+        "speedByTag": {
+         "freight": 40
+        }
+       }
+      ],
       "stationBoundaries": [
        {
         "id": "bd-1",
@@ -11588,7 +11796,7 @@
     },
     "signalling": {
      "version": "1.0",
-     "schema": "sha256:72fccdfdcac3f5ce42d7f49d10fb9134e1c4ed792f7365ec9f01d997f0049724",
+     "schema": "sha256:0194c1e7fe2a63741270025beb48929d106d74a80bf5b33ed4305965a5303487",
      "dependsOn": [
       "core"
      ],
@@ -11997,6 +12205,32 @@
         "effect": "switchedBySignal"
        }
       ],
+      "speedSections": [
+       {
+        "id": "v-w1",
+        "name": "W1",
+        "start": {
+         "anchor": "station",
+         "trackId": "t1",
+         "station": 200
+        },
+        "path": {
+         "trackIds": [
+          "t1",
+          "t2"
+         ]
+        },
+        "end": {
+         "anchor": "station",
+         "trackId": "t2",
+         "station": 60
+        },
+        "speed": 60,
+        "speedByTag": {
+         "freight": 40
+        }
+       }
+      ],
       "stationBoundaries": [
        {
         "id": "bd-1",
@@ -12096,7 +12330,7 @@
     },
     "signalling": {
      "version": "1.0",
-     "schema": "sha256:72fccdfdcac3f5ce42d7f49d10fb9134e1c4ed792f7365ec9f01d997f0049724",
+     "schema": "sha256:0194c1e7fe2a63741270025beb48929d106d74a80bf5b33ed4305965a5303487",
      "dependsOn": [
       "core"
      ],
@@ -12108,6 +12342,7 @@
       "overlaps": "sha256:3dc90110fb0c0f878b841fd5d497829f036e5627d4099479d1726c8905b62e3e",
       "routes": "sha256:a02939e2f09de570b3f466510e02627b133e46848950a47cbbd0ef01e284ca9c",
       "signals": "sha256:c9e269b55dba9f2431a2d7f1fdc8163182d23ee9e24e61c09bb87230c32aed76",
+      "speedSections": "sha256:defe546e84fc6d69cf5e6d5d2fdc18f40d3d6302640bb6feced901ff6ad24df2",
       "stationBoundaries": "sha256:54556f1e20a2e22fd145c8d0f66b92640b25f50b66da610ebd8ae7126412d496",
       "switchElements": "sha256:fe471ee1c255021503a7e8f6862566e6d5aeb76a76cad3782b7ce37c87adb591",
       "trackSections": "sha256:dd2ee2e1d729211c5aaac5bf7c209b78c81c887bff24f6413ae439d92f4b8496"
@@ -12115,7 +12350,7 @@
     }
    }
   },
-  "hash": "sha256:1a45a2a47720c44a489076bd4e93219e00fdf9bae96d594c87bee1c219389760"
+  "hash": "sha256:dbdc80fc22637fdf8c47700de3a02c3e2ddbd5ad610839cacc636f27eb512d94"
  },
  {
   "name": "signalling without its overlaps",
@@ -12389,7 +12624,7 @@
     },
     "signalling": {
      "version": "1.0",
-     "schema": "sha256:72fccdfdcac3f5ce42d7f49d10fb9134e1c4ed792f7365ec9f01d997f0049724",
+     "schema": "sha256:0194c1e7fe2a63741270025beb48929d106d74a80bf5b33ed4305965a5303487",
      "dependsOn": [
       "core"
      ],
@@ -12776,6 +13011,32 @@
         },
         "signalId": "sig-n1",
         "effect": "switchedBySignal"
+       }
+      ],
+      "speedSections": [
+       {
+        "id": "v-w1",
+        "name": "W1",
+        "start": {
+         "anchor": "station",
+         "trackId": "t1",
+         "station": 200
+        },
+        "path": {
+         "trackIds": [
+          "t1",
+          "t2"
+         ]
+        },
+        "end": {
+         "anchor": "station",
+         "trackId": "t2",
+         "station": 60
+        },
+        "speed": 60,
+        "speedByTag": {
+         "freight": 40
+        }
        }
       ],
       "stationBoundaries": [

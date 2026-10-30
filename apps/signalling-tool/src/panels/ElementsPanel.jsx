@@ -2,7 +2,7 @@ import { Badge, Button, Checkbox, Panel, PlusIcon, Section, SelectField, SelectL
 import { newId, labelOf } from '../model/domain.js'
 import { OPERATION, optionsOf, word } from '../labels.js'
 import { EditorHead, LocationFields, ObjectFindings } from './common.jsx'
-import { locationFrom } from '../model/places.js'
+import { locationFrom, placing } from '../model/places.js'
 
 /**
  * The switch elements: the switches of the net as the interlocking knows
@@ -34,7 +34,7 @@ export default function ElementsPanel({ domain, net, findings, selection, select
     <Panel title={t('section_elements')} intro={t('section_elements_intro')}
       actions={!readOnly && (
         <Button size="small" icon={<PlusIcon size={14} />} disabled={!net.tracks.length}
-          onClick={() => setMode({ kind: 'place', apply: (hit) => ops.add('switchElements', { id: newId(), operation: 'electricRemote', derailer: { at: locationFrom(hit), preferredPosition: 'applied' } }) })}>
+          onClick={() => setMode(placing('switchElements', (hit) => ({ id: newId(), operation: 'electricRemote', derailer: { at: locationFrom(hit), preferredPosition: 'applied' } }), (e) => ops.add('switchElements', e)))}>
           {t('derailer')}
         </Button>
       )}>
@@ -72,7 +72,7 @@ export default function ElementsPanel({ domain, net, findings, selection, select
             <Section title={t('location')}>
               <LocationFields loc={chosen.derailer.at} net={net} t={t} readOnly={readOnly}
                 onChange={(at) => set({ derailer: { ...chosen.derailer, at } })}
-                onPlace={() => setMode({ kind: 'place', apply: (hit) => ops.update('switchElements', { ...chosen, derailer: { ...chosen.derailer, at: locationFrom(hit) } }) })} />
+                onPlace={() => setMode(placing('switchElements', (hit) => ({ ...chosen, derailer: { ...chosen.derailer, at: locationFrom(hit, { offset: chosen.derailer.at?.offset }) } }), (e) => ops.update('switchElements', e)))} />
             </Section>
           )}
         </div>

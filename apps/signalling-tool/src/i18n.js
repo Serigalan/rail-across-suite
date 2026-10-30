@@ -1,8 +1,7 @@
 import { createContext, useContext } from 'react'
 
-// The Signalling-Tool's texts, German and English — the language set last,
-// in this tool or on the suite's start page (they keep it under one key), else
-// the browser's.
+// The Signalling-Tool's texts, German and English. Which one is the suite's
+// choice, the same for the start page and every module (@rail-across/ui).
 
 const de = {
   tool: 'Signalling-Tool',
@@ -39,6 +38,7 @@ const de = {
   object_overlaps: 'Durchrutschweg',
   object_flankProtection: 'Flankenschutz',
   object_balises: 'Balise/Magnet',
+  object_speedSections: 'Geschwindigkeitsabschnitt',
   object_stationBoundaries: 'Bahnhofsgrenze',
   fit: 'Ganzes Netz zeigen',
   check_in: 'Einchecken',
@@ -61,7 +61,7 @@ const de = {
   yes: 'ja',
   no: 'nein',
   place_on_map: 'Auf dem Plan setzen',
-  placing: 'Klicken Sie auf ein Gleis im Plan. Esc bricht ab.',
+  placing: 'Die Maus fängt das nächste Gleis; ein Klick setzt, was dort gezeigt wird. Esc bricht ab.',
   picking_points: 'Klicken Sie im Plan auf die Freimeldepunkte des Abschnitts. Esc beendet.',
   nothing_selected: 'Wählen Sie ein Objekt in der Liste oder im Plan.',
   empty_list: 'Noch keine.',
@@ -119,6 +119,7 @@ const de = {
   station: 'Station [m]',
   side: 'Seite',
   offset: 'Abstand [m]',
+  plane_point: 'Lage im Plan: E {e} · N {n} (EPSG {epsg}) — aus Gleis, Station, Seite und Abstand',
   direction: 'Wirkrichtung',
   both_directions: 'Wirkt in beide Richtungen',
   up: 'in Stationierung',
@@ -133,6 +134,7 @@ const de = {
   logical_signals: 'Logische Signale',
   logical_signals_hint: 'Was das Signal in jedem Signalsystem ist, das es zeigt, wie OSRD es führt. Sein Schirm zeigt, was alle zusammen verlangen.',
   add_logical_signal: 'Signalsystem hinzufügen',
+  next_systems: 'Kündigt Signale an von',
   frames: 'Rahmen und Signalbegriffe',
   frame_screen: 'Schirm',
   frame_indicator: 'Zusatzanzeiger',
@@ -224,7 +226,21 @@ const de = {
   settings: 'Einstellungen',
   new_balise: 'Neue Balise/Neuer Magnet',
 
-  other_language: 'English',
+  section_speeds: 'Geschwindigkeiten',
+  section_speeds_intro: 'Das Geschwindigkeitsprofil: wo welche Geschwindigkeit gilt, für alle Züge und je Zuggattung, in einer Richtung oder in beiden — wie OSRD es als SpeedSection führt.',
+  new_speed: 'Neuer Abschnitt',
+  place_speed: 'Anfang und Ende neu setzen',
+  holds_in: 'Gilt in Richtung',
+  both_ways: 'beide Richtungen',
+  speed_by_tag: 'Je Zuggattung',
+  tag: 'Gattung (z. B. Güterzug)',
+  add_tag: 'Gattung',
+  on_routes: 'Nur auf Fahrstraßen',
+  on_routes_hint: 'Ohne Auswahl gilt der Abschnitt auf allen Fahrten.',
+
+  section_settings: 'Einstellungen',
+  section_settings_intro: 'Die Sprache gilt für die ganze Suite: Startseite, Layout-Tool und Signalling-Tool.',
+  language: 'Sprache',
 
   errors: 'Fehler',
   warnings: 'Warnungen',
@@ -252,6 +268,7 @@ const de = {
   collection_overlaps: 'Durchrutschwege',
   collection_flankProtection: 'Flankenschutz',
   collection_balises: 'Balisen/Magnete',
+  collection_speedSections: 'Geschwindigkeitsabschnitte',
   collection_stationBoundaries: 'Bahnhofsgrenzen',
 }
 
@@ -296,9 +313,15 @@ const findingsDe = {
   flank_by_itself: 'eine Weiche schützt sich nicht selbst',
   flank_position_missing: 'die Lage der schützenden Weiche fehlt',
   balise_switched_without_signal: 'was vom Signal geschaltet wird, nennt sein Signal',
+  parameter_missing: 'der Parameter {parameter} fehlt',
+  parameter_unknown: '{parameter} ist kein Parameter von {system}',
+  parameter_invalid: 'der Parameter {parameter} hat keinen gültigen Wert',
+  speed_start_off_path: 'der Anfang liegt nicht auf dem ersten Gleis des Fahrwegs',
+  speed_end_off_path: 'das Ende liegt nicht auf dem letzten Gleis des Fahrwegs',
+  speed_missing: 'nennt keine Geschwindigkeit',
   detection_point_unused: 'begrenzt keinen Abschnitt',
   section_extent_differs: 'die Freimeldepunkte schließen keinen Teil des Netzes ein',
-  boundary_mark_special: 'Bahnhofsgrenze an etwas anderem als Einfahrsignal, Ne 1 oder Weiche (Sonderfall EBO §4)',
+  boundary_mark_special: 'Bahnhofsgrenze an etwas anderem als Einfahrsignal, Ne 1, Weiche oder Bahnsteig (Sonderfall EBO §4)',
 }
 
 const en = {
@@ -336,6 +359,7 @@ const en = {
   object_overlaps: 'Overlap',
   object_flankProtection: 'Flank protection',
   object_balises: 'Balise/magnet',
+  object_speedSections: 'Speed section',
   object_stationBoundaries: 'Station boundary',
   fit: 'Show the whole net',
   check_in: 'Check in',
@@ -358,7 +382,7 @@ const en = {
   yes: 'yes',
   no: 'no',
   place_on_map: 'Place on the plan',
-  placing: 'Click a track on the plan. Esc cancels.',
+  placing: 'The mouse snaps to the nearest track; a click sets what is shown there. Esc cancels.',
   picking_points: 'Click the section\'s detection points on the plan. Esc ends.',
   nothing_selected: 'Choose an object in the list or on the plan.',
   empty_list: 'None yet.',
@@ -416,6 +440,7 @@ const en = {
   station: 'Station [m]',
   side: 'Side',
   offset: 'Offset [m]',
+  plane_point: 'In the plane: E {e} · N {n} (EPSG {epsg}) — from track, station, side and offset',
   direction: 'Acts',
   both_directions: 'Acts both ways',
   up: 'with the stationing',
@@ -430,6 +455,7 @@ const en = {
   logical_signals: 'Logical signals',
   logical_signals_hint: 'What the signal is in each signalling system it shows, as OSRD has it. Its screen shows what they ask together.',
   add_logical_signal: 'Add a signalling system',
+  next_systems: 'Announces signals of',
   frames: 'Frames and aspects',
   frame_screen: 'Screen',
   frame_indicator: 'Indicator',
@@ -521,7 +547,21 @@ const en = {
   settings: 'Settings',
   new_balise: 'New balise/magnet',
 
-  other_language: 'Deutsch',
+  section_speeds: 'Speeds',
+  section_speeds_intro: 'The speed profile: where which speed holds, for all trains and per kind of train, in one direction or both — as OSRD has it as SpeedSection.',
+  new_speed: 'New section',
+  place_speed: 'Set start and end anew',
+  holds_in: 'Holds in direction',
+  both_ways: 'both directions',
+  speed_by_tag: 'Per kind of train',
+  tag: 'Kind (e.g. freight)',
+  add_tag: 'Kind',
+  on_routes: 'Only on routes',
+  on_routes_hint: 'With none chosen it holds on every run.',
+
+  section_settings: 'Settings',
+  section_settings_intro: 'The language holds for the whole suite: the start page, the Layout-Tool and the Signalling-Tool.',
+  language: 'Language',
 
   errors: 'Errors',
   warnings: 'Warnings',
@@ -549,6 +589,7 @@ const en = {
   collection_overlaps: 'overlaps',
   collection_flankProtection: 'flank protection',
   collection_balises: 'balises/magnets',
+  collection_speedSections: 'speed sections',
   collection_stationBoundaries: 'station boundaries',
 }
 
@@ -592,32 +633,21 @@ const findingsEn = {
   flank_by_itself: 'a switch does not protect itself',
   flank_position_missing: 'the protecting switch\'s position is missing',
   balise_switched_without_signal: 'what its signal switches names the signal',
+  parameter_missing: 'the parameter {parameter} is missing',
+  parameter_unknown: '{parameter} is no parameter of {system}',
+  parameter_invalid: 'the parameter {parameter} has no valid value',
+  speed_start_off_path: 'the start is not on the first track of the run',
+  speed_end_off_path: 'the end is not on the last track of the run',
+  speed_missing: 'states no speed',
   detection_point_unused: 'bounds no section',
   section_extent_differs: 'the points enclose no part of the net',
-  boundary_mark_special: 'station boundary at something else than an entry signal, Ne 1 or a switch (special case, EBO §4)',
+  boundary_mark_special: 'station boundary at something else than an entry signal, Ne 1, a switch or a platform (special case, EBO §4)',
 }
 
-export const LANGUAGES = ['de', 'en']
 const TEXTS = { de: { ...de, ...prefixed(findingsDe) }, en: { ...en, ...prefixed(findingsEn) } }
-const KEY = 'rail-across-language'
 
 function prefixed(findings) {
   return Object.fromEntries(Object.entries(findings).map(([k, v]) => [`finding_${k}`, v]))
-}
-
-/** The language kept by the suite, else the browser's, else German. */
-export function initialLanguage() {
-  try {
-    const kept = localStorage.getItem(KEY)
-    if (LANGUAGES.includes(kept)) return kept
-  } catch { /* no storage: the browser's */ }
-  const asked = globalThis.navigator?.language ?? 'de'
-  return asked.toLowerCase().startsWith('de') ? 'de' : 'en'
-}
-
-/** Keep the language for this tool and the rest of the suite. */
-export function keepLanguage(language) {
-  try { localStorage.setItem(KEY, language) } catch { /* not kept: chosen again next time */ }
 }
 
 /** { t, language }: t(key, params) the text, with {name} filled from params; the key itself where there is none. */

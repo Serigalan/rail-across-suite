@@ -160,9 +160,10 @@ Goal: prove the core with a second real module.
   switches, platforms), with a special-case finding where they differ from EBO §4; export towards PlanPro /
   EULYNX.
   *Done:* the domain `signalling` 1.0 after PlanPro 1.10 with overlaps and flank protection, checked against the
-  PlanPro plan P-Hausen; the catalogue of all Ril 301 aspects with the Ks and shunting signal kinds as logical signals after OSRD, and the balises and magnets of PZB and ETCS, in German and English; its content check
+  PlanPro plan P-Hausen; the catalogue of all Ril 301 aspects with the Ks and shunting signal kinds as logical signals after OSRD, and the balises and magnets of PZB and ETCS, in German and English; speed sections and platforms as station boundaries, the domain checked against OSRD's RailJSON; its content check
   with track sections derived over the net; the core carrying its locations on every track edit and merge (R4,
-  R7); reading PlanPro plans; the server checking the domain at check-in; the Signalling-Tool's first version
+  R7); reading PlanPro plans; the server checking the domain at check-in; the Signalling-Tool's first version,
+  setting objects as OSRD's editor does (snapped to a track, shown before the click) and drawing them beside their track
   ([decision 0011](docs/decisions/0011-signalling-domain.md)) on the suite's look as a library, `@rail-across/ui`
   ([decision 0012](docs/decisions/0012-ui-library.md)). *Next:* the values of Ril 819 and Ril 483, level
   crossings, block and the other parts of a station plan, writing PlanPro.

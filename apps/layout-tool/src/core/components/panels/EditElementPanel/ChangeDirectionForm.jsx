@@ -33,7 +33,7 @@ export default function ChangeDirectionForm({ onCommitted }) {
           <CommitBar onCommit={handleCommit} onCancel={onCommitted} />
         </>
       ) : (
-        <CancelButton className="panel-btn panel-btn-full mt-8 secondary" onClick={onCommitted} />
+        <CancelButton className="ui-btn ui-btn-block mt-8" onClick={onCommitted} />
       )}
     </>
   )

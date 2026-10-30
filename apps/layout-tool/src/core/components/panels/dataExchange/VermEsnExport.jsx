@@ -77,11 +77,11 @@ export default function VermEsnExport() {
       <hr className="divider" />
       <span className="create-element-section">{t('data_exchange_export')}<InfoTip text={t('data_exchange_vermesn_export_desc')} /></span>
       <div className="row">
-        <button className={`panel-btn panel-btn-full grow ${selecting ? 'active' : ''}`} disabled={!project}
+        <button className={`ui-btn ui-btn-block grow${selecting ? ' ui-btn-active' : ' ui-btn-primary'}`} aria-pressed={selecting} disabled={!project}
           onClick={() => setSelecting(s => !s)}>
           {t('data_exchange_select')}
         </button>
-        <button className="panel-btn panel-btn-full grow" disabled={!project || !tracks.length} onClick={exportIt}>
+        <button className="ui-btn ui-btn-primary ui-btn-block grow" disabled={!project || !tracks.length} onClick={exportIt}>
           {label}
         </button>
       </div>

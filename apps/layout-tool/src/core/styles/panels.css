@@ -38,39 +38,9 @@
   margin: 0;
 }
 
-.panel-btn {
-  align-self: flex-start;
-  padding: 8px 16px;
-  background: var(--color-primary);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  /* Stated rather than left to the browser: a button takes the platform's own
-     form font, an anchor styled as one takes the page's, and the two do not
-     match. */
-  font-family: var(--font-ui);
-  font-size: 14px;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-.panel-btn:hover {
-  background: #2428a0;
-}
-
-.panel-btn-danger {
-  background: var(--color-error);
-}
-
-.panel-btn-danger:hover {
-  background: var(--color-danger);
-}
-
-.panel-btn-full {
-  align-self: stretch;
-  width: 100%;
-  text-align: center;
-}
+/* Buttons are the suite's (@rail-across/ui); a panel's own column keeps a
+   button as wide as its words, as the Layout-Tool's buttons always were. */
+.panel-content > .ui-btn:not(.ui-btn-block) { align-self: flex-start; }
 
 .preview-tooltip .maplibregl-popup-content {
   background: rgba(30, 30, 40, 0.85);
@@ -382,38 +352,11 @@
   margin-bottom: -2px;
 }
 
-.create-element-btn {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  background: var(--color-surface-alt);
-  border: 1px solid var(--color-border);
-  border-radius: 6px;
-  font-family: var(--font-ui);
-  font-size: var(--fs-m);
-  color: var(--color-text);
-  cursor: pointer;
-  text-align: left;
-  transition: background 0.15s, border-color 0.15s;
-}
-
-.create-element-btn:hover {
-  background: #eeeef8;
-  border-color: var(--color-primary);
-}
-
 /* Physics/Regelwerk in the edit panel: pinned to the bottom of the screen
    rather than the last two entries in a list that might scroll.
    `.sidebar-secondary` is itself a flex column reaching the full height of
    the viewport, so `margin-top: auto` on this direct child pushes it all the
    way down, with a rule above it to keep it visibly apart from the menu. */
-.create-element-btn.active {
-  background: #eeeef8;
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-}
-
 /* A project's tracks under the line or station they belong to. */
 .track-groups {
   display: flex;
@@ -564,10 +507,6 @@
   flex-wrap: wrap;
   gap: 6px;
   margin-bottom: 8px;
-}
-
-.create-element-btn.track-group-item {
-  padding: 6px 10px;
 }
 
 .element-form {
@@ -813,12 +752,10 @@
 .toggle-label.active { color: var(--color-primary); font-weight: 600; }
 
 /* Small pieces several panels share. */
-.link-btn { background: none; border: none; padding: 0; text-decoration: underline; cursor: pointer; }
 .list-row { font-size: var(--fs-s); padding: var(--space-2) 0; border-bottom: 1px solid var(--color-border-soft); }
 .divider { border: none; border-top: 1px solid var(--color-border); margin: var(--space-3) 0; }
 .stack-tight { display: flex; flex-direction: column; gap: 3px; }
 .full-width { width: 100%; }
-.panel-btn.active { background: var(--color-primary); }
 .chip {
   display: flex; align-items: center; justify-content: space-between;
   padding: 3px var(--space-4); border-radius: 4px; background: #e8e8f4;
@@ -961,12 +898,6 @@ input.input-error, select.input-error, textarea.input-error { border-color: var(
   gap: 8px;
 }
 
-.splice-clearance-pick .panel-btn {
-  flex: none;
-  width: auto;
-  padding: 4px 10px;
-}
-
 /* Stepping through the solutions of a splice (Entscheidung 180). */
 .splice-solutions {
   display: flex;
@@ -978,12 +909,6 @@ input.input-error, select.input-error, textarea.input-error { border-color: var(
 .splice-solutions span {
   flex: 1;
   font-size: 12px;
-}
-
-.splice-solutions .panel-btn {
-  flex: none;
-  width: auto;
-  padding: 4px 10px;
 }
 
 /* Zwei Gleise zusammenfügen: the ways out of a curvature jump the rules
@@ -1029,11 +954,6 @@ input.input-error, select.input-error, textarea.input-error { border-color: var(
 
 .splice-remedy-after.error {
   color: var(--color-error);
-}
-
-.splice-remedies .panel-btn {
-  width: auto;
-  padding: 3px 10px;
 }
 
 /* Bearbeiten › Routen (Paket RT): a route in the list, name over its summary; its tracks in order. */

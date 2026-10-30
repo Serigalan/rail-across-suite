@@ -86,11 +86,11 @@ export default function PlanExportPanel({ onShowPlanPreview }) {
           onError={msg => setStatus({ msg, error: true })} />
       </FormSection>
       {status && <p className={status.error ? 'msg-error' : 'msg-info'}>{status.msg}</p>}
-      <button className="panel-btn panel-btn-full mt-8" disabled={busy}
+      <button className="ui-btn ui-btn-primary ui-btn-block mt-8" disabled={busy}
         onClick={() => run((plan, filenameBase) => onShowPlanPreview?.({ plan, filenameBase }))}>
         {busy ? t('plan_busy') : t('plan_preview_btn')}
       </button>
-      <button className="panel-btn panel-btn-full mt-2" disabled={busy}
+      <button className="ui-btn ui-btn-primary ui-btn-block mt-2" disabled={busy}
         onClick={() => run((plan, filenameBase) => downloadBlob(renderPdf(plan).output('blob'), `${filenameBase}.pdf`))}>
         {t('plan_export_btn')}
       </button>

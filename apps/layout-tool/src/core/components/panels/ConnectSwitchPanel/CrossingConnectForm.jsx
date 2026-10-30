@@ -174,7 +174,7 @@ export default function CrossingConnectForm({ onCommitted }) {
         <p>{t(phase === 'stem' ? 'crossing_connect_hint_stem' : 'switch_connect_hint_end')}</p>
         {track && <p className="msg-info">{t('switch_connect_stem')}: {trackLabel(track)}</p>}
         {pickError && <p className="form-error">{t(pickError)}</p>}
-        <CancelButton className="panel-btn panel-btn-full mt-8 secondary" onClick={handleCancel} />
+        <CancelButton className="ui-btn ui-btn-block mt-8" onClick={handleCancel} />
       </>
     )
   }
@@ -222,7 +222,7 @@ export default function CrossingConnectForm({ onCommitted }) {
             adjust.lead > 0 && fill('connect_adjusted_lead', { l: adjust.lead.toFixed(1) }),
             adjust.speedLimit && fill('connect_adjusted_speed', { v: String(adjust.speedLimit) }),
           ].filter(Boolean).join(', ') })}{' '}
-          <button type="button" className="link-btn" onClick={() => setAdjusted(null)}>{t('connect_adjusted_reset')}</button>
+          <button type="button" className="ui-link" onClick={() => setAdjusted(null)}>{t('connect_adjusted_reset')}</button>
         </p>
       )}
       {outcome?.ruleError && outcomeFor && (

@@ -152,51 +152,51 @@ export default function EditElementPanel({ trackTableId, trackTableRouteId, onSh
       <h2>{t('edit')}</h2>
       <div className="create-element-options">
         <span className="create-element-section">{t('edit_element')}</span>
-        <button className="create-element-btn" onClick={() => goto('edit_length')}>
+        <button className="ui-btn ui-btn-option" onClick={() => goto('edit_length')}>
           <EditLengthIcon />
           {t('edit_element_edit_length')}
         </button>
-        <button className="create-element-btn" onClick={() => goto('delete')}>
+        <button className="ui-btn ui-btn-option" onClick={() => goto('delete')}>
           <DeleteElementIcon />
           {t('edit_element_delete')}
         </button>
         <span className="create-element-section">{t('edit_track')}</span>
-        <button className="create-element-btn" onClick={() => goto('edit_tracks')}>
+        <button className="ui-btn ui-btn-option" onClick={() => goto('edit_tracks')}>
           <EditTracksIcon />
           {t('edit_element_edit_tracks')}
         </button>
-        <button className="create-element-btn" onClick={() => goto('edit_properties')}>
+        <button className="ui-btn ui-btn-option" onClick={() => goto('edit_properties')}>
           <EditPropertiesIcon />
           {t('edit_track_properties')}
         </button>
-        <button className="create-element-btn" onClick={() => goto('change_direction')}>
+        <button className="ui-btn ui-btn-option" onClick={() => goto('change_direction')}>
           <ChangeDirectionIcon />
           {t('edit_change_direction')}
         </button>
-        <button className="create-element-btn" onClick={() => goto('delete_track')}>
+        <button className="ui-btn ui-btn-option" onClick={() => goto('delete_track')}>
           <DeleteTrackIcon />
           {t('edit_track_delete')}
         </button>
         <span className="create-element-section">{t('edit_route')}</span>
-        <button className="create-element-btn" onClick={() => goto('routes')}>
+        <button className="ui-btn ui-btn-option" onClick={() => goto('routes')}>
           <RouteIcon />
           {t('routes')}
         </button>
         <span className="create-element-section">{t('edit_switch')}</span>
-        <button className="create-element-btn" onClick={() => goto('switch_connection')}>
+        <button className="ui-btn ui-btn-option" onClick={() => goto('switch_connection')}>
           <SwitchConnectionIcon />
           {t('crossover_edit_title')}
         </button>
-        <button className="create-element-btn" onClick={() => goto('switch_status')}>
+        <button className="ui-btn ui-btn-option" onClick={() => goto('switch_status')}>
           <EditPropertiesIcon />
           {t('switch_status')}
         </button>
-        <button className="create-element-btn" onClick={() => goto('delete_switch')}>
+        <button className="ui-btn ui-btn-option" onClick={() => goto('delete_switch')}>
           <DeleteSwitchIcon />
           {t('switch_delete')}
         </button>
         <span className="create-element-section">{t('edit_track_end')}</span>
-        <button className="create-element-btn" onClick={() => goto('buffer_stop')}>
+        <button className="ui-btn ui-btn-option" onClick={() => goto('buffer_stop')}>
           <BufferStopIcon />
           {t('buffer_stop_edit')}
         </button>

@@ -122,6 +122,7 @@ export function findingText(f, t, language) {
   if (p.aspect) p.aspect = aspectName(p.aspect)
   if (Array.isArray(p.aspects)) p.aspects = p.aspects.map(aspectName).join(', ')
   if (p.setting) p.setting = titleIn(settingOf(p.system, p.setting), language) ?? p.setting
+  if (p.parameter) p.parameter = titleIn(SIGNAL_CATALOGUE.systeme[p.system]?.parameter?.[p.parameter], language) ?? p.parameter
   if (p.type) p.type = titleIn(SIGNAL_CATALOGUE.systeme[f.params.system]?.signalarten[p.type], language) ?? p.type
   if (p.kind) p.kind = titleIn(protectionSystemOf(f.params.system)?.arten[p.kind], language) ?? p.kind
   if (p.system) p.system = titleIn(SIGNAL_CATALOGUE.systeme[p.system] ?? protectionSystemOf(p.system), language) ?? p.system

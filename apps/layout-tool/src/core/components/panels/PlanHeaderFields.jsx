@@ -83,13 +83,13 @@ export default function PlanHeaderFields({ header, onChange, onError, simple = f
               {party.logo && (
                 <img src={party.logo.dataUrl} alt="" className="plan-logo-thumb" />
               )}
-              <label className="panel-btn clickable">
+              <label className="ui-btn ui-btn-primary clickable">
                 {party.logo ? t('plan_logo_change') : t('plan_logo_add')}
                 <input hidden type="file" accept="image/*"
                   onChange={e => { pickLogo(key, e.target.files?.[0]); e.target.value = '' }} />
               </label>
               {party.logo && (
-                <button className="panel-btn" onClick={() => setParty(key, { logo: null })}>
+                <button className="ui-btn ui-btn-primary" onClick={() => setParty(key, { logo: null })}>
                   {t('plan_logo_remove')}
                 </button>
               )}
@@ -110,13 +110,13 @@ export default function PlanHeaderFields({ header, onChange, onError, simple = f
           {header.sketch && (
             <img src={header.sketch.dataUrl} alt="" className="plan-sketch-thumb" />
           )}
-          <label className="panel-btn clickable">
+          <label className="ui-btn ui-btn-primary clickable">
             {t('plan_sketch_add')}
             <input hidden type="file" accept="image/*"
               onChange={e => { pickSketch(e.target.files?.[0]); e.target.value = '' }} />
           </label>
           {header.sketch && (
-            <button className="panel-btn" onClick={() => onChange({ ...header, sketch: null })}>
+            <button className="ui-btn ui-btn-primary" onClick={() => onChange({ ...header, sketch: null })}>
               {t('plan_sketch_remove')}
             </button>
           )}

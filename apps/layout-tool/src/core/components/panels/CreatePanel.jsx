@@ -73,19 +73,19 @@ export default function CreatePanel() {
     <>
       <h2>{t('create_element')}</h2>
       <div className="create-element-options">
-        <button className="create-element-btn" onClick={() => setPage('straight')}>
+        <button className="ui-btn ui-btn-option" onClick={() => setPage('straight')}>
           <CreateLineIcon />
           {t('create_straight_line')}
         </button>
-        <button className="create-element-btn" onClick={() => setPage('curved')}>
+        <button className="ui-btn ui-btn-option" onClick={() => setPage('curved')}>
           <CreateArcIcon />
           {t('create_curved_line')}
         </button>
-        <button className="create-element-btn" onClick={() => setPage('parallel')}>
+        <button className="ui-btn ui-btn-option" onClick={() => setPage('parallel')}>
           <CreateParallelIcon />
           {t('create_parallel')}
         </button>
-        <button className="create-element-btn" onClick={() => setPage('parallel_track')}>
+        <button className="ui-btn ui-btn-option" onClick={() => setPage('parallel_track')}>
           <CreateParallelTrackIcon />
           {t('create_parallel_track')}
         </button>
@@ -93,7 +93,7 @@ export default function CreatePanel() {
       <hr className="divider divider-wide" />
       <h2>{t('buffer_stop_section')}</h2>
       <div className="create-element-options">
-        <button className="create-element-btn" onClick={() => setPage('buffer_stop')}>
+        <button className="ui-btn ui-btn-option" onClick={() => setPage('buffer_stop')}>
           <BufferStopIcon />
           {t('buffer_stop_create')}
         </button>
@@ -101,7 +101,7 @@ export default function CreatePanel() {
       <hr className="divider divider-wide" />
       <h2>{t('platform_title')}</h2>
       <div className="create-element-options">
-        <button className="create-element-btn" onClick={() => setPage('platform')}>
+        <button className="ui-btn ui-btn-option" onClick={() => setPage('platform')}>
           <NewPlatformIcon />
           {t('platform_new')}
         </button>

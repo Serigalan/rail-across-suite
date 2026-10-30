@@ -23,7 +23,7 @@ function UploadProgress({ upload }) {
         {fill('pointcloud_uploading', { share: Math.floor(share * 100), sent: mb(p.sent), total: mb(p.total) })
           + (p.rate ? ` · ${mb(p.rate)}/s · ${t('pointcloud_remaining')} ${duration(p.remaining)}` : '')}
       </span>
-      <button className="modal-btn modal-btn-cancel" onClick={upload.abort}>{t('pointcloud_upload_abort')}</button>
+      <button className="ui-btn" onClick={upload.abort}>{t('pointcloud_upload_abort')}</button>
     </div>
   )
 }
@@ -38,7 +38,7 @@ function ServerStatus({ cloud, upload, mayEdit, onResume, onRetry }) {
       <>
         <span className="pointcloud-meta">{fill('pointcloud_upload_stopped', { share, file: cloud.file.name })}</span>
         {mayEdit && (
-          <FilePickButton accept=".laz,.las,.e57" className="modal-btn modal-btn-cancel" onFile={(file) => onResume(cloud, file)}>
+          <FilePickButton accept=".laz,.las,.e57" className="ui-btn" onFile={(file) => onResume(cloud, file)}>
             {t('pointcloud_upload_resume')}
           </FilePickButton>
         )}
@@ -58,7 +58,7 @@ function ServerStatus({ cloud, upload, mayEdit, onResume, onRetry }) {
     return (
       <>
         <span className="form-error">{fill('pointcloud_status_failed', { reason: cloud.error ?? '' })}</span>
-        {mayEdit && <button className="modal-btn modal-btn-cancel" onClick={() => onRetry(cloud)}>{t('pointcloud_retry')}</button>}
+        {mayEdit && <button className="ui-btn" onClick={() => onRetry(cloud)}>{t('pointcloud_retry')}</button>}
       </>
     )
   }
@@ -114,17 +114,17 @@ export default function CloudList({ local, server, uploads, mayEdit, busy, onDel
           <ServerStatus cloud={c} upload={uploads.find(u => u.cloudId === c.id)} mayEdit={mayEdit} onResume={onResume} onRetry={onRetry} />
           <div className="pointcloud-actions">
             {c.status === 'ready' && c.crs != null && c.bounds && (
-              <button className="modal-btn modal-btn-cancel" onClick={() => map?.current && fitPlaneBox(map.current, c.bounds, c.crs)}>
+              <button className="ui-btn ui-btn-small" onClick={() => map?.current && fitPlaneBox(map.current, c.bounds, c.crs)}>
                 {t('pointcloud_show')}
               </button>
             )}
             {c.status === 'ready' && c.crs != null && onOpen3d && (
-              <button className="modal-btn modal-btn-cancel" title={t('pointcloud_open_3d_hint')} onClick={() => onOpen3d(c)}>
+              <button className="ui-btn ui-btn-small" title={t('pointcloud_open_3d_hint')} onClick={() => onOpen3d(c)}>
                 {t('pointcloud_open_3d')}
               </button>
             )}
             {mayEdit && !uploads.some(u => u.cloudId === c.id) && (
-              <button className="modal-btn modal-btn-confirm" onClick={() => setAsking({ cloud: c, server: true })}>{t('modal_delete')}</button>
+              <button className="ui-btn ui-btn-small ui-btn-danger" onClick={() => setAsking({ cloud: c, server: true })}>{t('modal_delete')}</button>
             )}
           </div>
         </div>
@@ -151,9 +151,9 @@ export default function CloudList({ local, server, uploads, mayEdit, busy, onDel
             </span>
             <span className="pointcloud-meta">{`${c.file?.name ?? ''} · ${formatDate(c.createdAt, language, { time: true })}`}</span>
             <div className="pointcloud-actions">
-              <button className="modal-btn modal-btn-cancel" onClick={() => showLocal(c)}>{t('pointcloud_show')}</button>
+              <button className="ui-btn ui-btn-small" onClick={() => showLocal(c)}>{t('pointcloud_show')}</button>
               {mayEdit && (
-                <button className="modal-btn modal-btn-confirm" disabled={busy} onClick={() => setAsking({ cloud: c, server: false })}>
+                <button className="ui-btn ui-btn-small ui-btn-danger" disabled={busy} onClick={() => setAsking({ cloud: c, server: false })}>
                   {t('modal_delete')}
                 </button>
               )}

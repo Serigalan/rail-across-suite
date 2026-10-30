@@ -120,7 +120,7 @@ export default function PlatformPanel() {
           <div className="create-element-options">
             <span className="create-element-section">{t('platform_existing')}</span>
             {platforms.map((p) => (
-              <button key={p.id} className="create-element-btn"
+              <button key={p.id} className="ui-btn ui-btn-option"
                 onClick={() => { setF(platformForm(p)); setEditing({ id: p.id }); setPicking(null) }}>
                 {[p.code, p.stationName].filter(Boolean).join(' · ') || t('platform_unnamed')}
                 {` — ${platformLength(p).toFixed(1)} m`}
@@ -151,11 +151,11 @@ export default function PlatformPanel() {
         </div>
       </FormSection>
       {!valid && <p className="form-error">{t('platform_error_range')}</p>}
-      <button className="panel-btn panel-btn-full mt-8" onClick={() => { set('start', ''); set('end', ''); setPicking('start') }}>
+      <button className="ui-btn ui-btn-primary ui-btn-block mt-8" onClick={() => { set('start', ''); set('end', ''); setPicking('start') }}>
         {t('platform_repick')}
       </button>
       {editing.id && (
-        <button className="panel-btn panel-btn-full panel-btn-danger mt-2" onClick={() => { deletePlatform(editing.id); reset() }}>
+        <button className="ui-btn ui-btn-danger ui-btn-block mt-2" onClick={() => { deletePlatform(editing.id); reset() }}>
           {t('platform_delete')}
         </button>
       )}

@@ -74,22 +74,22 @@ export default function CheckPanel({ onShowPhysics, onShowRegelwerk, bandsTrackI
     <>
       <h2>{t('check_title')}<InfoTip text={t('check_hint')} /></h2>
       <div className="create-element-options">
-        <button className="create-element-btn" onClick={() => onShowPhysics?.()}>
+        <button className="ui-btn ui-btn-option" onClick={() => onShowPhysics?.()}>
           <PhysicsIcon />
           {t('constraints_physics')}
         </button>
-        <button className="create-element-btn" onClick={() => onShowRegelwerk?.()}>
+        <button className="ui-btn ui-btn-option" onClick={() => onShowRegelwerk?.()}>
           <RegelwerkIcon />
           {t('constraints_regelwerk')}
         </button>
         <PanelToolButtons panel="check" onPick={setPage} />
         <span className="create-element-section">{t('check_bands')}</span>
-        <button className="create-element-btn" onClick={() => setPage('bands')}>
+        <button className="ui-btn ui-btn-option" onClick={() => setPage('bands')}>
           <BandsIcon />
           {t('check_bands_show')}
         </button>
         <span className="create-element-section">{t('shift_title')}</span>
-        <button className="create-element-btn" onClick={() => setPage('shift')}>
+        <button className="ui-btn ui-btn-option" onClick={() => setPage('shift')}>
           <ShiftValuesIcon />
           {t('shift_check')}
         </button>

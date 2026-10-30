@@ -252,7 +252,7 @@ export default function AxisFitPanel({ backButton }) {
           </select>
           {!surveys.length && <span className="msg-hint msg-small">{t('align_no_surveys')}</span>}
           {survey && (
-            <button type="button" className={`panel-btn${erasing ? ' active' : ''}`} onClick={() => setErasing(v => !v)}>
+            <button type="button" className={`ui-btn${erasing ? ' ui-btn-active' : ''}`} aria-pressed={erasing} onClick={() => setErasing(v => !v)}>
               {t(erasing ? 'axis_survey_erase_done' : 'axis_survey_erase')}
             </button>
           )}
@@ -287,14 +287,14 @@ export default function AxisFitPanel({ backButton }) {
                 onChange={e => setSettings(prev => ({ ...prev, [key]: e.target.value }))} />
             </div>
           ))}
-          <button type="button" className="link-btn msg-small" onClick={() => setSettings(ALIGN_DEFAULTS)}>
+          <button type="button" className="ui-link msg-small" onClick={() => setSettings(ALIGN_DEFAULTS)}>
             {t('align_settings_reset')}
           </button>
         </details>
         {reachable === false
           ? <p className="msg-error">{t('align_err_unavailable')}</p>
           : !started && (
-            <button className="panel-btn panel-btn-full" disabled={!source} onClick={() => { setDone(null); setStarted(true) }}>
+            <button className="ui-btn ui-btn-primary ui-btn-block" disabled={!source} onClick={() => { setDone(null); setStarted(true) }}>
               {t('align_run')}
             </button>
           )}
@@ -310,14 +310,14 @@ export default function AxisFitPanel({ backButton }) {
             onChange={editStraights} inserting={inserting}
             onInsert={(next) => { editStraights(next); setInserting(false) }} onHover={setHover} />
           <div className="axis-fit-tools">
-            <button type="button" className={`panel-btn${inserting ? ' active' : ''}`} onClick={() => setInserting(v => !v)}>
+            <button type="button" className={`ui-btn${inserting ? ' ui-btn-active' : ''}`} aria-pressed={inserting} onClick={() => setInserting(v => !v)}>
               {t('align_insert')}
             </button>
-            <button type="button" className="panel-btn" disabled={selected == null}
+            <button type="button" className="ui-btn ui-btn-primary" disabled={selected == null}
               onClick={() => editStraights(deleteStraight(shownStraights, selected))}>
               {t('align_delete')}
             </button>
-            <button type="button" className="panel-btn" disabled={straights == null} onClick={() => editStraights(null)}>
+            <button type="button" className="ui-btn ui-btn-primary" disabled={straights == null} onClick={() => editStraights(null)}>
               {t('align_auto')}
             </button>
           </div>

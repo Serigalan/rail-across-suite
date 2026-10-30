@@ -15,7 +15,7 @@ export default function LanguageMenu({ onChange }) {
   const label = `${t('home_language')}: ${languageLabels[language] ?? language}`
   return (
     <div className="home-menu" ref={menuRootRef}>
-      <button ref={menuButtonRef} type="button" className="collab-btn collab-icon-btn" aria-label={label} title={label}
+      <button ref={menuButtonRef} type="button" className="ui-btn collab-icon-btn" aria-label={label} title={label}
         {...menuButtonProps}>
         <LanguageIcon />
       </button>

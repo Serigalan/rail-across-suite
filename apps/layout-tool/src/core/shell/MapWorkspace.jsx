@@ -68,6 +68,16 @@ export default function MapWorkspace({ onHome, beforeHome, homeKey, resetKey = 0
   const hidden = useHiddenTracks()
   const projectRef = useRef(project)
   useEffect(() => { projectRef.current = project }, [project])
+  // The map view is light: its panels, plans and tables are drawn for paper.
+  // The suite's look follows the system's dark mode elsewhere; here it is kept
+  // light while the view is open (data-theme, which @rail-across/ui and the
+  // dialogs of the project pages heed).
+  useEffect(() => {
+    const root = document.documentElement
+    const before = root.dataset.theme
+    root.dataset.theme = 'light'
+    return () => { if (before === undefined) delete root.dataset.theme; else root.dataset.theme = before }
+  }, [])
 
   // The topology view (AP 9.3) is on while its panel is open (AP 9.5): a way of
   // looking, not a setting of the project. The ref is what the map callbacks

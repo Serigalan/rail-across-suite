@@ -14,8 +14,9 @@ import { Button, Panel, Rail, RailButton, Shell, Workspace } from '@rail-across/
 
 | Part | Components | Classes |
 |---|---|---|
-| Colours, sizes | — | `--color-primary`, `--ui-bg`, `--ui-surface`, `--ui-fg`, `--ui-muted`, `--ui-border`, `--ui-danger` … on `:root`; dark where the system asks or `data-theme="dark"` says so |
-| Buttons | `Button` (primary, danger, ghost; small; block; active; as a link with `href`), `IconButton` | `ui-btn`, `ui-btn-primary` … |
+| Colours, sizes | — | `--color-primary`, `--ui-bg`, `--ui-surface`, `--ui-fg`, `--ui-muted`, `--ui-border`, `--ui-danger` … on `:root`; dark where the system asks or `data-theme="dark"` says so, light where `data-theme="light"` keeps it |
+| Language | `keptLanguage`, `keepLanguage`, `LANGUAGES`, `LANGUAGE_NAMES` | the suite's one language for the start page and every module, kept in the browser |
+| Buttons | `Button` (primary, danger, ghost, option — one choice among several on a whole line; small; block; active; as a link with `href`), `IconButton` | `ui-btn`, `ui-btn-primary`, `ui-btn-option` … |
 | Fields | `Field`, `TextField`, `NumberField` (a number or null, never NaN), `SelectField` (null for no choice), `Checkbox` | `ui-field`, `ui-field-compact`, `ui-fields`, `ui-check` |
 | Feedback | `Badge`, `Message` (errors announced) | `ui-badge`, `ui-message`, `ui-muted`, `ui-error` |
 | Dialogs | `Dialog` (focus kept inside, Escape and a click beside close it), `FormDialog`, `ConfirmDialog` | `ui-overlay`, `ui-dialog`, `ui-actions` |
@@ -33,7 +34,7 @@ language of its own.
 |---|---|
 | the suite's start page (`apps/home`) | its buttons, fields, dialogs, badges, menus and colours |
 | the Signalling-Tool (`apps/signalling-tool`) | all of it, the shell first |
-| the Layout-Tool (`apps/layout-tool`) | not yet: its look is the library's model; its pages move to the components one by one |
+| the Layout-Tool (`apps/layout-tool`) | its buttons (the library's classes) and the suite's language; its look is the library's model, its other parts move to the components one by one |
 
 ## Rules
 

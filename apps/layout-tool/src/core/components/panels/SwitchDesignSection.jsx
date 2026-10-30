@@ -42,7 +42,7 @@ export default function SwitchDesignSection({ onShowProfile }) {
           <ul>
             {misfits.map((m, i) => (
               <li key={`${m.sw.switchId}|${m.at}|${i}`}>
-                <button type="button" className="link-btn" onClick={() => onShowProfile?.(trackOf(m))}>{swName(m.sw)}</button>
+                <button type="button" className="ui-link" onClick={() => onShowProfile?.(trackOf(m))}>{swName(m.sw)}</button>
                 {' · '}{what(m)}
               </li>
             ))}

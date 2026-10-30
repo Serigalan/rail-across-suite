@@ -55,7 +55,7 @@ export default function SettingsPanel({ color, onColorChange, page = 'main', onP
       </div>
       <hr className="divider" />
       <div className="create-element-options">
-        <button type="button" className="create-element-btn" onClick={() => onPage?.('info')}>
+        <button type="button" className="ui-btn ui-btn-option" onClick={() => onPage?.('info')}>
           <AboutIcon />
           {t('info')}
         </button>

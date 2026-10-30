@@ -85,7 +85,7 @@ export default function MidChainFields({ mids, onChange, solved, title = null, l
         </div>
       ))}
       {!labels && mids.length < MAX_MIDS && (
-        <button type="button" className="panel-btn secondary mid-chain-add"
+        <button type="button" className="ui-btn mid-chain-add"
           onClick={() => onChange([...mids, { type: 'straight', length: null, radius: null }])}>
           + {t('scurve_mid_add')}
         </button>

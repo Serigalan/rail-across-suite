@@ -64,13 +64,13 @@ export default function CrossoverSolver({ picks, speed, form = null, stationOf, 
     <div className="crossover-solver">
       {!run && (<>
         <p className="msg-hint">{t('scurve_solver_hint')}</p>
-        <button type="button" className="panel-btn panel-btn-full secondary" onClick={start}>
+        <button type="button" className="ui-btn ui-btn-block" onClick={start}>
           {t('scurve_solver_button')}
         </button>
       </>)}
       {run?.running && (<>
         <p className="msg-info">{t('scurve_solver_running')}</p>
-        <button type="button" className="panel-btn panel-btn-full secondary" onClick={cancel}>{t('btn_cancel')}</button>
+        <button type="button" className="ui-btn ui-btn-block" onClick={cancel}>{t('btn_cancel')}</button>
       </>)}
       {run?.none && <p className="msg-error">{t('scurve_solver_none')}</p>}
       {run?.error && <p className="msg-error">{run.error}</p>}
@@ -90,7 +90,7 @@ export default function CrossoverSolver({ picks, speed, form = null, stationOf, 
                 )}
                 {run.failed === i && <span className="msg-error">{t('scurve_solver_adopt_failed')}</span>}
               </div>
-              <button type="button" className="panel-btn secondary" onClick={() => adopt(sol, i)}>
+              <button type="button" className="ui-btn" onClick={() => adopt(sol, i)}>
                 {t('scurve_solver_adopt')}
               </button>
             </li>

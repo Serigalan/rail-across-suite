@@ -64,15 +64,15 @@ export default function ProjectSettingsPanel({ tracksOpen, onShowTracks, kmLocal
             category: tracks.filter(tr => ownLineCategory(tr) != null).length,
           })}
         </span>
-        <button type="button" className="panel-btn panel-btn-full" onClick={() => onShowTracks?.(!tracksOpen)}>
+        <button type="button" className="ui-btn ui-btn-primary ui-btn-block" onClick={() => onShowTracks?.(!tracksOpen)}>
           {t(tracksOpen ? 'project_settings_tracks_hide' : 'project_settings_tracks_show')}
         </button>
         <div className="create-element-options">
-          <button type="button" className="create-element-btn" onClick={() => setPage('assign_tracks')}>
+          <button type="button" className="ui-btn ui-btn-option" onClick={() => setPage('assign_tracks')}>
             <AssignTracksIcon />
             {t('edit_assign_tracks')}
           </button>
-          <button type="button" className="create-element-btn" onClick={() => setPage('track_visibility')}>
+          <button type="button" className="ui-btn ui-btn-option" onClick={() => setPage('track_visibility')}>
             <TrackVisibilityIcon />
             {t('track_visibility')}
           </button>

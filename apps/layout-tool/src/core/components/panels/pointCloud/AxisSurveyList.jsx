@@ -95,18 +95,18 @@ export default function AxisSurveyList({ erasingId = null, onErasing, onRetrace,
                 + (s.createdAt ? ` · ${formatDate(s.createdAt, language, { time: true })}` : '')}
             </span>
             <div className="pointcloud-actions">
-              <button className="modal-btn modal-btn-cancel" onClick={() => showOnMap(s)}>{t('pointcloud_show')}</button>
-              <button className="modal-btn modal-btn-cancel"
+              <button className="ui-btn ui-btn-small" onClick={() => showOnMap(s)}>{t('pointcloud_show')}</button>
+              <button className="ui-btn ui-btn-small"
                 onClick={() => exportAxisPoints(surveyPoints(s), { name: s.name, epsg: s.epsg, soReference })}>
                 {t('axis_survey_export')}
               </button>
               {mayEdit && (
                 <>
-                  <button className={`modal-btn modal-btn-cancel${erasingId === s.id ? ' active' : ''}`}
+                  <button className={`ui-btn ui-btn-small${erasingId === s.id ? ' ui-btn-active' : ''}`}
                     onClick={() => onErasing?.(erasingId === s.id ? null : s.id)}>
                     {t(erasingId === s.id ? 'axis_survey_erase_done' : 'axis_survey_erase')}
                   </button>
-                  <button className="modal-btn modal-btn-confirm" onClick={() => setAsking(s)}>{t('modal_delete')}</button>
+                  <button className="ui-btn ui-btn-small ui-btn-danger" onClick={() => setAsking(s)}>{t('modal_delete')}</button>
                 </>
               )}
             </div>
@@ -117,12 +117,12 @@ export default function AxisSurveyList({ erasingId = null, onErasing, onRetrace,
                 {mayEdit && (
                   <div className="pointcloud-actions">
                     {shiftable && (
-                      <button className="modal-btn modal-btn-cancel" onClick={() => saveAxisSurvey(shiftSurvey(s, changes[0]))}>
+                      <button className="ui-btn" onClick={() => saveAxisSurvey(shiftSurvey(s, changes[0]))}>
                         {t('axis_survey_shift')}
                       </button>
                     )}
                     {onRetrace && (
-                      <button className="modal-btn modal-btn-cancel" onClick={() => onRetrace(s)}>{t('axis_survey_retrace')}</button>
+                      <button className="ui-btn" onClick={() => onRetrace(s)}>{t('axis_survey_retrace')}</button>
                     )}
                   </div>
                 )}

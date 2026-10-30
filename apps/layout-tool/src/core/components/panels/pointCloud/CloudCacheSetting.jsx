@@ -37,7 +37,7 @@ export default function CloudCacheSetting() {
           value={Math.round(limit / GB * 100) / 100} onChange={e => change(Number(e.target.value))} />
         GB
       </label>
-      <button className="modal-btn modal-btn-cancel" onClick={async () => { await clearCache(); setUsed(0) }}>
+      <button className="ui-btn" onClick={async () => { await clearCache(); setUsed(0) }}>
         {t('pointcloud_cache_clear')}
       </button>
     </div>

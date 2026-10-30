@@ -61,11 +61,11 @@ export default function TrackVisibilityForm({ kmLocalOn = false, onKmLocalChange
   return (
     <>
       <div className="track-visibility-actions">
-        <button type="button" className="panel-btn" disabled={!hiddenCount}
+        <button type="button" className="ui-btn ui-btn-primary" disabled={!hiddenCount}
           onClick={() => setTracksHidden(ids(tracks), false)}>
           {t('track_visibility_show_all')}
         </button>
-        <button type="button" className="panel-btn" disabled={hiddenCount === tracks.length}
+        <button type="button" className="ui-btn ui-btn-primary" disabled={hiddenCount === tracks.length}
           onClick={() => setTracksHidden(ids(tracks), true)}>
           {t('track_visibility_hide_all')}
         </button>
@@ -84,10 +84,10 @@ export default function TrackVisibilityForm({ kmLocalOn = false, onKmLocalChange
         ) : (
           <>
             <div className="track-visibility-actions">
-              <button type="button" className="panel-btn" disabled={numbers.every(kmShown)} onClick={showAllKm}>
+              <button type="button" className="ui-btn ui-btn-primary" disabled={numbers.every(kmShown)} onClick={showAllKm}>
                 {t('track_visibility_show_all')}
               </button>
-              <button type="button" className="panel-btn" disabled={!numbers.some(kmShown)}
+              <button type="button" className="ui-btn ui-btn-primary" disabled={!numbers.some(kmShown)}
                 onClick={() => onKmLocalChange?.(false)}>
                 {t('track_visibility_hide_all')}
               </button>

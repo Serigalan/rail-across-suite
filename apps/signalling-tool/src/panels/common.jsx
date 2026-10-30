@@ -1,5 +1,5 @@
 import { Button, Checkbox, NumberField, SelectField, TrashIcon } from '@rail-across/ui'
-import { trackName } from '../model/places.js'
+import { planePoint, trackName } from '../model/places.js'
 import { findingText } from '../labels.js'
 import { useTexts } from '../i18n.js'
 
@@ -10,7 +10,8 @@ import { useTexts } from '../i18n.js'
 
 /**
  * A location's fields: track, station, side, offset, direction (where
- * `directed`); an orphan says so, and offers to be put on a track again.
+ * `directed`), and the point in the plane they give — where the plan draws
+ * it; an orphan says so, and offers to be put on a track again.
  */
 export function LocationFields({ loc, onChange, net, t, directed = true, readOnly, onPlace, withSide = true }) {
   if (!loc) return null
@@ -37,9 +38,17 @@ export function LocationFields({ loc, onChange, net, t, directed = true, readOnl
         <SelectField compact label={t('direction')} value={loc.direction ?? 'up'} disabled={readOnly}
           options={[{ value: 'up', label: t('up') }, { value: 'down', label: t('down') }]} onChange={(v) => set({ direction: v })} />
       )}
+      <PlaneLine point={planePoint(net, loc)} t={t} />
       {!readOnly && onPlace && <div className="ui-wide ui-row"><Button size="small" onClick={onPlace}>{t('place_on_map')}</Button></div>}
     </div>
   )
+}
+
+/** The point in the plane a location gives, to the centimetre: easting, northing and the system. */
+function PlaneLine({ point, t }) {
+  if (!point) return null
+  const m = (v) => v.toFixed(2)
+  return <p className="ui-wide ui-muted tool-plane">{t('plane_point', { e: m(point.easting), n: m(point.northing), epsg: point.epsg })}</p>
 }
 
 /** The head of an editor: its title, and the button that deletes the object. */

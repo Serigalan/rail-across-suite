@@ -147,8 +147,8 @@ export default function ConflictDialog({ mapVersion = 0, result, title, mineLabe
         <span className={`collab-status ${open ? 'open' : 'done'}`}>
           {open ? fill('merge_conflicts_open', { n: open }) : t('merge_all_resolved')}
         </span>
-        <button type="button" className="modal-btn modal-btn-cancel" onClick={onCancel} disabled={busy}>{t('btn_cancel')}</button>
-        <button type="button" className="modal-btn collab-btn-primary" disabled={open > 0 || busy}
+        <button type="button" className="ui-btn" onClick={onCancel} disabled={busy}>{t('btn_cancel')}</button>
+        <button type="button" className="ui-btn ui-btn-primary" disabled={open > 0 || busy}
           title={open ? t('merge_apply_blocked') : undefined} onClick={() => onApply(live.record)}>
           {t('merge_apply')}
         </button>

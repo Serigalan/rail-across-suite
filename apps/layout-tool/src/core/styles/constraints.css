@@ -199,12 +199,6 @@
   gap: 2px 8px;
 }
 
-.transition-length-row .panel-btn-small {
-  padding: 3px 8px;
-  font-size: 12px;
-  border-radius: 4px;
-}
-
 .transition-length-rule {
   font-size: 0.8em;
   line-height: 1.3;

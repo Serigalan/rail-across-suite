@@ -219,8 +219,28 @@ describe('flank protection, balises and magnets, station boundaries', () => {
     expect(codes(errors)).toEqual(['kind_not_in_system', 'system_unknown'])
   })
 
-  it('takes an entry signal, a board Ne 1 or a switch as a boundary, and warns of anything else', () => {
-    const ok = check((c) => { byId(c.stationBoundaries, 'bd-1').marks = [{ signalId: 'sig-ne1' }, { switchId: 'w1' }] })
+  it('runs a speed section from its start to its end, and wants a speed', () => {
+    const { errors } = check((c) => {
+      const v = byId(c.speedSections, 'v-w1')
+      v.end = { anchor: 'station', trackId: 't1', station: 240 }
+      delete v.speed
+      v.speedByTag = {}
+      v.onRoutes = ['rt-gone']
+    })
+    expect(codes(errors)).toEqual(['reference_missing', 'speed_end_off_path', 'speed_missing'])
+  })
+
+  it('holds a logical signal to the systems it announces and the parameters its system declares', () => {
+    const { errors } = check((c) => {
+      Object.assign(byId(c.signals, 'sig-a').logicalSignals[0], {
+        nextSystems: ['ks', 'bal'], defaultParameters: { jaune_cli: 'false' }, conditionalParameters: [{ routeId: 'rt-a-n1', parameters: {} }],
+      })
+    })
+    expect(errors.map(e => [e.code, e.params.parameter ?? e.params.system])).toEqual([['system_unknown', 'bal'], ['parameter_unknown', 'jaune_cli']])
+  })
+
+  it('takes an entry signal, a board Ne 1, a switch or a platform as a boundary, and warns of anything else', () => {
+    const ok = check((c) => { byId(c.stationBoundaries, 'bd-1').marks = [{ signalId: 'sig-ne1' }, { switchId: 'w1' }, { platformId: 'pl1' }] })
     expect(ok).toEqual({ errors: [], warnings: [] })
     const { warnings } = check((c) => { byId(c.stationBoundaries, 'bd-1').marks = [{ signalId: 'sig-n1' }] })
     expect(codes(warnings)).toEqual(['boundary_mark_special'])

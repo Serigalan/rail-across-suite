@@ -55,8 +55,8 @@ export default function PlanPreviewOverlay({ plan, filenameBase, onClose }) {
             <option value={4}>400 %</option>
             <option value={8}>800 %</option>
           </select>
-          <button className="panel-btn" onClick={savePdf}>{t('plan_export_btn')}</button>
-          <button className="panel-btn" onClick={saveSvg}>{t('plan_export_svg')}</button>
+          <button className="ui-btn ui-btn-primary" onClick={savePdf}>{t('plan_export_btn')}</button>
+          <button className="ui-btn ui-btn-primary" onClick={saveSvg}>{t('plan_export_svg')}</button>
           <button className="plan-preview-close" onClick={onClose} aria-label={t('btn_cancel')}>×</button>
         </div>
       </div>

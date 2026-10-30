@@ -4,6 +4,8 @@
 // projects of this browser in its storage dialog.
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+// The suite's look first (its buttons), then the app's own styles over it.
+import '@rail-across/ui/ui.css'
 import './core/index.css'
 import LocalApp from './core/home/LocalApp.jsx'
 import { initStorage } from './core/storage'

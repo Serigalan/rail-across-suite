@@ -219,7 +219,7 @@ export default function ReconnectPanel() {
         <h2>{t('reconnect_title')}</h2>
         <p>{first ? t('reconnect_hint_last') : t('reconnect_hint_first')}</p>
         {pickError && <p className="msg-error">{pickError}</p>}
-        {first && <CancelButton className="panel-btn panel-btn-full mt-8 secondary" onClick={reset} />}
+        {first && <CancelButton className="ui-btn ui-btn-block mt-8" onClick={reset} />}
       </>
     )
   }
@@ -294,10 +294,10 @@ export default function ReconnectPanel() {
         <>
           {solutions.length > 1 && (
             <div className="splice-solutions">
-              <button type="button" className="panel-btn" aria-label={t('splice_solution_prev')}
+              <button type="button" className="ui-btn ui-btn-small ui-btn-primary" aria-label={t('splice_solution_prev')}
                 onClick={() => setChosen((chosen + solutions.length - 1) % solutions.length)}>◀</button>
               <span>{fill('splice_solution', { i: String(chosen + 1), n: String(solutions.length) })}: {variantText(t, info.variant)}</span>
-              <button type="button" className="panel-btn" aria-label={t('splice_solution_next')}
+              <button type="button" className="ui-btn ui-btn-small ui-btn-primary" aria-label={t('splice_solution_next')}
                 onClick={() => setChosen((chosen + 1) % solutions.length)}>▶</button>
             </div>
           )}

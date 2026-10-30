@@ -19,7 +19,7 @@ export default function PanelToolButtons({ panel, onPick }) {
         {tool.section && tool.section !== tools[i - 1]?.section && (
           <span className="create-element-section">{t(tool.section)}</span>
         )}
-        <button className="create-element-btn" onClick={() => onPick(tool.id)}>
+        <button className="ui-btn ui-btn-option" onClick={() => onPick(tool.id)}>
           <Icon />
           {t(tool.titleKey)}
         </button>

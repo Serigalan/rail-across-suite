@@ -24,37 +24,48 @@ const DOMAIN_SCHEMAS = { core: CORE, layout: LAYOUT, signalling: SIGNALLING }
 export const SCHEMA_HASHES = Object.fromEntries(Object.entries(DOMAIN_SCHEMAS).map(([d, s]) => [d, contentHash(s)]))
 
 /**
- * Signalling 1.0 as it was first written, before it took the logical signals
- * and balises it has now: the hash its schema went by, and the step that
- * brings a domain of it here — a signal's `system` and `type` become its one
- * logical signal (a shunting signal of no system one of `sh`), a PZB element
- * a balise of the system `pzb` with its values as settings. Documents of it
- * are in the suite's stores; the door reads them as of now (S-R10).
+ * Signalling 1.0 as it was written before, by the hash its schema went by, and
+ * the step that brings a domain of it one schema on — the steps run until the
+ * domain is of this build's (S-R10). Documents of them are in the suite's
+ * stores; the door reads them as of now.
+ *
+ * - First: a signal's `system` and `type` become its one logical signal (a
+ *   shunting signal of no system one of `sh`), a PZB element a balise of the
+ *   system `pzb` with its values as settings.
+ * - Second: the speed sections come, none yet.
  */
 const SIGNALLING_FIRST = 'sha256:8e4fdf8b8d487f61be93b473521515fe2e5510ef3cdc21d994cd8a405aeb74a0'
+const SIGNALLING_SECOND = 'sha256:72fccdfdcac3f5ce42d7f49d10fb9134e1c4ed792f7365ec9f01d997f0049724'
 
-function signallingFromFirst(domain) {
-  const { signals = [], pzbElements = [], ...rest } = domain.collections ?? {}
-  const logicalOf = ({ system, type }) => (system ? [type ? { system, type } : { system }] : type === 'shunting' ? [{ system: 'sh', type }] : undefined)
-  const defined = (o) => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined))
-  return {
-    ...domain,
-    schema: SCHEMA_HASHES.signalling,
-    collections: {
-      ...rest,
-      signals: signals.map(({ system, type, ...s }) => defined({ ...s, logicalSignals: logicalOf({ system, type }) })),
-      balises: pzbElements.map(({ frequency, ina, speedCheck, ...p }) => defined({
-        ...p, system: 'pzb', settings: defined({ frequency, ina, ...speedCheck }),
-      })),
-    },
-  }
+const defined = (o) => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined))
+
+const SIGNALLING_STEPS = {
+  [SIGNALLING_FIRST]: (domain) => {
+    const { signals = [], pzbElements = [], ...rest } = domain.collections ?? {}
+    const logicalOf = ({ system, type }) => (system ? [type ? { system, type } : { system }] : type === 'shunting' ? [{ system: 'sh', type }] : undefined)
+    return {
+      ...domain,
+      schema: SIGNALLING_SECOND,
+      collections: {
+        ...rest,
+        signals: signals.map(({ system, type, ...s }) => defined({ ...s, logicalSignals: logicalOf({ system, type }) })),
+        balises: pzbElements.map(({ frequency, ina, speedCheck, ...p }) => defined({
+          ...p, system: 'pzb', settings: defined({ frequency, ina, ...speedCheck }),
+        })),
+      },
+    }
+  },
+  [SIGNALLING_SECOND]: (domain) => ({
+    ...domain, schema: SCHEMA_HASHES.signalling, collections: { ...domain.collections, speedSections: [] },
+  }),
 }
 
 /** The document with every domain of an earlier schema of its version brought to this build's. */
 function migrated(doc) {
-  const signalling = doc.domains.signalling
-  if (signalling?.version !== '1.0' || signalling.schema !== SIGNALLING_FIRST) return doc
-  return { ...doc, domains: { ...doc.domains, signalling: signallingFromFirst(signalling) } }
+  let signalling = doc.domains.signalling
+  if (signalling?.version !== '1.0' || !SIGNALLING_STEPS[signalling.schema]) return doc
+  while (SIGNALLING_STEPS[signalling.schema]) signalling = SIGNALLING_STEPS[signalling.schema](signalling)
+  return { ...doc, domains: { ...doc.domains, signalling } }
 }
 
 /** The breaches of a schema as "path: what" lines, the path prefixed with where the value lies. */

@@ -14,18 +14,25 @@ deletes a track (R4, R7).
 
 | Section | What it holds | How a new one is made |
 |---|---|---|
+| Kartenebenen | the map under the plan, first in the rail as in the Layout-Tool: the suite's basemaps as the Layout-Tool offers them ([`@rail-across/basemaps`](../../packages/basemaps/README.md)) — OpenStreetMap, satellite, relief, basemap.de, DGM5, the states' orthophotos — or the plan alone; the choice is kept in the browser | — |
 | Signale | signals and boards; function, mounting, sight; its logical signals, one per signalling system (Ks, shunting signal) with its kind there, as OSRD has them; frames with their aspects from the catalogue of Ril 301 — a screen offers what its kinds may show and marks what they must | *Neues Signal* or *Neue Tafel*, then a click on a track: the side is the side clicked |
 | Gleisfreimeldung | detection points; sections bounded by them, their extent derived over the net and drawn | a point by a click; a section, then its points clicked on the plan |
 | Weichenelemente | an element per switch of the core (a switch without one is offered); derailers at their place | from the list of switches without one; a derailer by a click |
 | Fahrstraßen | train, shunting and middle-switch routes: the run found over the net from start to target signal the way they act, what they show, the overlaps at the target; overlaps run their length ahead, straight on at every switch | *Neue Fahrstraße*, *Neuer Durchrutschweg* |
 | Flankenschutz | per switch element and the way it is run over: a signal, a switch or derailer in a position, or waived | *Neuer Flankenschutz* |
+| Geschwindigkeiten | the speed profile after OSRD's SpeedSection: a stretch from a start over the run to an end, its speed, per kind of train, the direction and the routes it holds on | *Neuer Abschnitt*, then its start and its end on the plan; only where a run leads from the start |
 | Balisen/Magnete | the track elements of train protection: of a system (PZB, ETCS) and a kind (track magnet, speed check; fixed or controlled Eurobalise), with the settings the catalogue declares for them — frequency, test speed, place in the group …; the signal they belong to, how they act | a click on a track |
 | Prüfung | the core's `checkSignalling` on every edit; a finding leads to its object | — |
 | PlanPro | a plan's signalling (`.planpro`, `.ppxml`) laid on the project's net: on the plan's own edges where the project was made from it, else carried to the tracks lying there, what nothing lies under orphaned | a file |
-| Kartenebenen | the map under the plan: the suite's basemaps as the Layout-Tool offers them ([`@rail-across/basemaps`](../../packages/basemaps/README.md)) — OpenStreetMap, satellite, relief, basemap.de, DGM5, the states' orthophotos — or the plan alone; the choice is kept in the browser | — |
+| Einstellungen | at the foot of the rail, as in the Layout-Tool: the language — the suite's, which the start page and the Layout-Tool share (`@rail-across/ui`) | — |
 
-Every text is German or English, the catalogue's titles too: the globe at the foot of the rail switches, and
-the start page of the suite follows, as the tool follows it (one key in the browser).
+Setting an object works as in OSRD's editor: the mouse snaps to the nearest track within reach, and what would
+be set is drawn there before the click — a signal two metres off the track on the side the mouse is, acting so
+that it stands on the right; a balise or magnet at the rail. Every object is drawn where it stands in the plane:
+a dot on its track, a stroke out to its symbol at its offset, turned the way it acts; its editor states the
+point (easting, northing), derived from track, station, side and offset and never stored.
+
+Every text is German or English, the catalogue's titles too, in the language of the suite (*Einstellungen*).
 
 Every edit is a step (Ctrl+Z, Ctrl+Y); Delete asks before it deletes, and names what goes with it. Checking in
 sends the record with its signalling; where someone checked in first, their state is merged in (the signalling

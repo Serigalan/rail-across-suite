@@ -103,11 +103,11 @@ export default function ElevationPanel({ profileTrackId, profileRouteId = null, 
         <label>{t('terrain_source')}</label>
         <TerrainSourceSelect value={terrainSource} onChange={setTerrainSource} />
       </div>
-      <button className="panel-btn panel-btn-full mt-4"
+      <button className="ui-btn ui-btn-primary ui-btn-block mt-4"
         disabled={busy || !shownTrackIds.length} onClick={() => run({ force: true }, shownTrackIds)}>
         {t('elevation_reload_track')}
       </button>
-      <button className="panel-btn panel-btn-full mt-2 secondary"
+      <button className="ui-btn ui-btn-block mt-2"
         disabled={busy} onClick={() => run({})}>
         {t('elevation_load_missing')}
       </button>

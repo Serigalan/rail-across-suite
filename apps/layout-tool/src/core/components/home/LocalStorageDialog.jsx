@@ -76,11 +76,11 @@ export default function LocalStorageDialog({ projects, onClose, introKey = 'loca
       {asking === key ? (
         <span className="local-store-ask">
           <span>{ask ?? t('local_store_delete_ask')}</span>
-          <button type="button" className="collab-btn collab-btn-small collab-btn-danger" disabled={busy} onClick={() => run(onDelete)}>{t('local_store_yes')}</button>
-          <button type="button" className="collab-btn collab-btn-small" disabled={busy} onClick={() => setAsking(null)}>{t('btn_cancel')}</button>
+          <button type="button" className="ui-btn ui-btn-small ui-btn-danger" disabled={busy} onClick={() => run(onDelete)}>{t('local_store_yes')}</button>
+          <button type="button" className="ui-btn ui-btn-small" disabled={busy} onClick={() => setAsking(null)}>{t('btn_cancel')}</button>
         </span>
       ) : (
-        <button type="button" className="collab-btn collab-btn-small" disabled={busy || asking === 'all'} onClick={() => setAsking(key)}>{t('modal_delete')}</button>
+        <button type="button" className="ui-btn ui-btn-small" disabled={busy || asking === 'all'} onClick={() => setAsking(key)}>{t('modal_delete')}</button>
       )}
     </li>
   )
@@ -112,9 +112,9 @@ export default function LocalStorageDialog({ projects, onClose, introKey = 'loca
     <Modal className="collab-modal local-store" title={t('local_store_title')} onClose={() => onClose(changed)} busy={busy}
       actions={<>
         {!empty && store && asking !== 'all' && (
-          <button type="button" className="modal-btn modal-btn-confirm local-store-all" disabled={busy} onClick={() => setAsking('all')}>{t('local_store_delete_all')}</button>
+          <button type="button" className="ui-btn ui-btn-danger local-store-all" disabled={busy} onClick={() => setAsking('all')}>{t('local_store_delete_all')}</button>
         )}
-        <button type="button" className="modal-btn collab-btn-primary" disabled={busy} onClick={() => onClose(changed)}>{t('btn_close')}</button>
+        <button type="button" className="ui-btn ui-btn-primary" disabled={busy} onClick={() => onClose(changed)}>{t('btn_close')}</button>
       </>}>
       <p className="collab-muted">{t(introKey)}</p>
       {store?.estimate && (
@@ -133,8 +133,8 @@ export default function LocalStorageDialog({ projects, onClose, introKey = 'loca
           <p>{t(deleteAllKey)}</p>
           {unsaved > 0 && <p className="local-store-warn">{fill('local_store_delete_all_unsaved', { n: unsaved })}</p>}
           <div className="collab-actions">
-            <button type="button" className="collab-btn" disabled={busy} onClick={() => setAsking(null)}>{t('btn_cancel')}</button>
-            <button type="button" className="collab-btn collab-btn-danger" disabled={busy}
+            <button type="button" className="ui-btn" disabled={busy} onClick={() => setAsking(null)}>{t('btn_cancel')}</button>
+            <button type="button" className="ui-btn ui-btn-danger" disabled={busy}
               onClick={() => run(deleteAllLocal, t('local_store_deleted_all'))}>{t('local_store_delete_all')}</button>
           </div>
         </div>

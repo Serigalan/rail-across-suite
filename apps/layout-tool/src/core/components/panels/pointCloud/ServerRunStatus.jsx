@@ -14,7 +14,7 @@ export default function ServerRunStatus({ run, mayCancel, onCancel }) {
         : <progress className="full-width" max={1} value={run.progress ?? 0} />}
       <span className="range-use">{t(queued ? 'server_run_queued' : 'server_run_running')}</span>
       {mayCancel && (
-        <button className="panel-btn panel-btn-danger panel-btn-full" onClick={onCancel}>{t('btn_cancel')}</button>
+        <button className="ui-btn ui-btn-danger ui-btn-block" onClick={onCancel}>{t('btn_cancel')}</button>
       )}
     </>
   )

@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import { straightElement } from '@rail-across/core/geometry'
 import { netDrawing, placeOf, locate, stretchLine } from './net.js'
-import { findRun, runAhead, switchesOnRun } from './runs.js'
+import { findRun, runAhead, runBetween, runStretches, switchesOnRun } from './runs.js'
 import { added, cascadeOf, deleted, domainOf, emptyDomain, newBalise, baliseSettings, newSignal, withLogicalSignals } from './domain.js'
+import { OFFSET, locationFrom, planePoint } from './places.js'
 import { redo, startHistory, step, stepOf, stepsOf, travel, undo } from './history.js'
 
 const EPSG = 25832
@@ -34,6 +35,38 @@ describe('the net as the plan draws it', () => {
     expect(hit.station).toBeCloseTo(120, 1)
     expect(locate(drawing, [p.xy[0], p.xy[1] + 500], 10)).toBeNull()
     expect(stretchLine(drawing, 't1', 20, 80)).toHaveLength(2)
+  })
+})
+
+describe('setting objects beside the track', () => {
+  it('stands a signal on the right of the track it acts for, two metres off', () => {
+    expect(locationFrom({ trackId: 't1', station: 50, side: 'right' }, { offset: OFFSET.signals }))
+      .toEqual({ anchor: 'station', trackId: 't1', station: 50, side: 'right', offset: 2, direction: 'up' })
+    expect(locationFrom({ trackId: 't1', station: 50, side: 'left' }, { offset: OFFSET.signals }).direction).toBe('down')
+    expect(locationFrom({ trackId: 't1', station: 50, side: 'left' }, { direction: 'up' }).direction).toBe('up')
+    expect(locationFrom({ trackId: 't1', station: 50, side: 'left' }, { directed: false })).not.toHaveProperty('direction')
+  })
+
+  it('gives the point in the plane its location stands at, square to the track', () => {
+    // t1 runs east from (0, 0): right of it is south.
+    const p = planePoint(net, { anchor: 'station', trackId: 't1', station: 50, side: 'right', offset: 2 })
+    expect(p.easting).toBeCloseTo(500050, 6)
+    expect(p.northing).toBeCloseTo(5699998, 6)
+    expect(p.epsg).toBe(EPSG)
+    expect(planePoint(net, { anchor: 'station', trackId: 't1', station: 50, side: 'left', offset: 2 }).northing).toBeCloseTo(5700002, 6)
+    expect(planePoint(net, { anchor: 'station', trackId: 'gone', station: 1 })).toBeNull()
+  })
+})
+
+describe('a speed section over the net', () => {
+  it('finds the run between its ends either way, and the stretches it covers', () => {
+    const start = { anchor: 'station', trackId: 't1', station: 150 }
+    const end = { anchor: 'station', trackId: 't2', station: 50 }
+    expect(runBetween(net, start, end)).toEqual(['t1', 't2'])
+    expect(runBetween(net, end, start)).toEqual(['t2', 't1'])
+    expect(runStretches(net, start, ['t1', 't2'], end)).toEqual([{ trackId: 't1', from: 150, to: 200 }, { trackId: 't2', from: 0, to: 50 }])
+    expect(runStretches(net, end, ['t2', 't1'], start)).toEqual([{ trackId: 't2', from: 50, to: 0 }, { trackId: 't1', from: 200, to: 150 }])
+    expect(runStretches(net, start, ['t1'], { ...start, station: 20 })).toEqual([{ trackId: 't1', from: 150, to: 20 }])
   })
 })
 

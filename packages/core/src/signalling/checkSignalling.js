@@ -11,7 +11,8 @@ import { tracksOnFrom } from '../track/index.js'
  * - every reference finds its target, in the domain or in the core;
  * - every location lies on its track, within the track's length;
  * - every logical signal of a signal is of a system and kind the catalogue
- *   knows, each system once, its settings as the system declares them;
+ *   knows, each system once, its settings and parameters as the system
+ *   declares them, the systems it announces known;
  * - every signal shows what the catalogue lets its kinds show: known aspects,
  *   on the frames they belong on, with the symbol they ask for; a screen with
  *   the aspects its kinds must have and none they may not; indicators its
@@ -27,8 +28,10 @@ import { tracksOnFrom } from '../track/index.js'
  * - a balise or magnet is of a train protection system and kind the
  *   catalogue knows, has the settings its kind asks for and no others, each
  *   fitting; one switched by its signal names it;
- * - a station boundary is marked by an entry signal, a board Ne 1 or a
- *   switch — anything else is a special case worth a warning (EBO §4).
+ * - a speed section runs from the track of its start to that of its end and
+ *   states a speed, for all trains or per tag;
+ * - a station boundary is marked by an entry signal, a board Ne 1, a switch
+ *   or a platform — anything else is a special case worth a warning (EBO §4).
  *
  * `core` and `signalling` are the two domains of a core 1.0 document
  * ({ fields, collections }). Pure, like validateProject. Returns
@@ -52,6 +55,7 @@ export function checkSignalling({ core, signalling }) {
   const tracks = new Map((core?.collections?.tracks ?? []).map(t => [t.id, t]))
   const switches = new Set((core?.collections?.switches ?? []).map(s => s.id))
   const points = new Set((core?.collections?.operationalPoints ?? []).map(p => p.id))
+  const platforms = new Set((core?.collections?.platforms ?? []).map(p => p.id))
   const stages = new Set((core?.fields?.stages ?? []).map(s => s.id))
   const ids = (name) => new Set((c[name] ?? []).map(o => o.id))
   const signals = new Map((c.signals ?? []).map(s => [s.id, s]))
@@ -67,6 +71,7 @@ export function checkSignalling({ core, signalling }) {
     const there = target === 'core.tracks' ? tracks.has(value)
       : target === 'core.switches' ? switches.has(value)
         : target === 'core.operationalPoints' ? points.has(value)
+          : target === 'core.platforms' ? platforms.has(value)
           : target === 'signalling.signals' ? signals.has(value)
             : known[target.slice('signalling.'.length)].has(value)
     if (!there) error('reference_missing', collection, id, { field, target, ref: value }, `${field}:${value}`)
@@ -122,9 +127,20 @@ export function checkSignalling({ core, signalling }) {
       seen.add(l.system)
       if (!knownSystem(l.system)) { error('system_unknown', 'signals', s.id, { system: l.system }, where); continue }
       if (l.type && l.type !== 'other' && !signalKindOf(l.system, l.type)) error('type_not_in_system', 'signals', s.id, { type: l.type, system: l.system }, where)
-      for (const p of settingsProblems(l.settings, SIGNAL_CATALOGUE.systeme[l.system].einstellungen)) {
+      const system = SIGNAL_CATALOGUE.systeme[l.system]
+      for (const p of settingsProblems(l.settings, system.einstellungen)) {
         error(`setting_${p.problem}`, 'signals', s.id, { setting: p.setting, system: l.system }, `${where}:${p.setting}`)
       }
+      for (const next of l.nextSystems ?? []) {
+        if (!knownSystem(next)) error('system_unknown', 'signals', s.id, { system: next }, `${where}:next:${next}`)
+      }
+      const parameterSets = [l.defaultParameters, ...(l.conditionalParameters ?? []).map(c => c.parameters)]
+      for (const [k, parameters] of parameterSets.entries()) {
+        for (const p of settingsProblems(parameters, system.parameter)) {
+          error(`parameter_${p.problem}`, 'signals', s.id, { parameter: p.setting, system: l.system }, `${where}:${k}:${p.setting}`)
+        }
+      }
+      for (const c of l.conditionalParameters ?? []) ref('signals', s.id, 'signalling.routes', c.routeId, `${where}.conditionalParameters`)
     }
     const screens = frames.filter(f => f.kind === 'screen')
     if (screens.length > 1) error('screens_many', 'signals', s.id, { n: screens.length })
@@ -258,11 +274,25 @@ export function checkSignalling({ core, signalling }) {
     }
   }
 
+  // ── speed sections ──
+  for (const v of c.speedSections ?? []) {
+    path('speedSections', v, v.path)
+    at('speedSections', v, v.start, 'start')
+    at('speedSections', v, v.end, 'end')
+    lifespan('speedSections', v)
+    const run = v.path?.trackIds ?? []
+    if (run.length && v.start?.anchor === 'station' && run[0] !== v.start.trackId) error('speed_start_off_path', 'speedSections', v.id)
+    if (run.length && v.end?.anchor === 'station' && run[run.length - 1] !== v.end.trackId) error('speed_end_off_path', 'speedSections', v.id)
+    if (!(v.speed > 0) && !Object.values(v.speedByTag ?? {}).some(x => x > 0)) error('speed_missing', 'speedSections', v.id)
+    for (const r of v.onRoutes ?? []) ref('speedSections', v.id, 'signalling.routes', r, 'onRoutes')
+  }
+
   // ── station boundaries ──
   for (const b of c.stationBoundaries ?? []) {
     ref('stationBoundaries', b.id, 'core.operationalPoints', b.operationalPointId, 'operationalPointId')
     for (const m of b.marks) {
       if (m.switchId) { ref('stationBoundaries', b.id, 'core.switches', m.switchId, 'marks'); continue }
+      if (m.platformId) { ref('stationBoundaries', b.id, 'core.platforms', m.platformId, 'marks'); continue }
       ref('stationBoundaries', b.id, 'signalling.signals', m.signalId, 'marks')
       const s = signals.get(m.signalId)
       const entry = ['entry', 'entryExit', 'entryBlock'].includes(s?.function)

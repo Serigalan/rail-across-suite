@@ -106,6 +106,16 @@
 .ui-btn.ui-btn-ghost:hover:not(:disabled) { background: var(--ui-hover); }
 .ui-btn.ui-btn-active { background: var(--ui-selected); border-color: var(--color-primary); }
 .ui-btn-block { width: 100%; padding: 10px 14px; font-size: 14px; }
+/* One option among several on a whole line — a symbol and its words, as the
+   Layout-Tool's panels offer what to draw or where to go next. */
+.ui-btn.ui-btn-option {
+  display: flex; width: 100%; justify-content: flex-start; gap: 10px; padding: 10px 12px;
+  background: var(--ui-surface); font-weight: 400; text-align: left; white-space: normal;
+}
+.ui-btn.ui-btn-option:hover:not(:disabled) { background: var(--ui-selected); border-color: var(--color-primary); }
+.ui-btn.ui-btn-option.ui-btn-active { color: var(--color-primary); }
+/* A list of options, one per line, dense: the option's own font, less padding. */
+.ui-btn.ui-btn-option.ui-btn-small { padding: 6px 10px; font-size: var(--ui-fs-m); }
 .ui-btn-small { padding: 4px 10px; font-size: var(--ui-fs-s); }
 .ui-btn-icon { padding: 6px 9px; }
 .ui-btn svg { flex-shrink: 0; }

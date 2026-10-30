@@ -89,14 +89,14 @@ export default function ClearanceScanSection({ track, onShowCrossSection }) {
         <>
           <progress className="full-width" max={1} value={run.share} />
           <span className="range-use">{t('pointcloud_runs_in_browser')}</span>
-          <button className="panel-btn panel-btn-danger panel-btn-full" onClick={() => abortRef.current?.abort()}>
+          <button className="ui-btn ui-btn-danger ui-btn-block" onClick={() => abortRef.current?.abort()}>
             {t('btn_cancel')}
           </button>
         </>
       ) : serverBusy ? (
         <ServerRunStatus run={server.run} mayCancel={mayEdit} onCancel={server.cancel} />
       ) : (
-        <button className="panel-btn panel-btn-full" onClick={onServer ? startOnServer : start}>{t('clearance_scan_start')}</button>
+        <button className="ui-btn ui-btn-primary ui-btn-block" onClick={onServer ? startOnServer : start}>{t('clearance_scan_start')}</button>
       )}
       {server.error && <p className="form-error">{tOr(t, `pointcloud_err_${server.error.code}`, server.error.message)}</p>}
       {server.run?.status === 'failed' && !run && <p className="form-error">{fill('server_run_failed', { reason: server.run.error ?? '' })}</p>}
@@ -110,7 +110,7 @@ export default function ClearanceScanSection({ track, onShowCrossSection }) {
             <div className="clearance-stretches">
               <p className="form-error">{fill('clearance_scan_found', { n: shown.stretches.length })}</p>
               {shown.stretches.map(s => (
-                <button key={s.from} className="create-element-btn clearance-stretch"
+                <button key={s.from} className="ui-btn ui-btn-option clearance-stretch"
                   onClick={() => onShowCrossSection?.({ trackId: track.id, station: s.deepestAt })}>
                   {`${s.from.toFixed(1)} – ${s.to.toFixed(1)} m · `
                     + fill('clearance_scan_row', { n: s.inside.toLocaleString(), mm: Math.round(s.depth) })}

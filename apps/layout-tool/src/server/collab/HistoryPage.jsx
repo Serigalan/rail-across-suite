@@ -100,7 +100,7 @@ export default function HistoryPage({ project, variant, onBack, onView, onCompar
           <span className="collab-muted history-where">{project.title} › {variant.name}</span>
         </div>
         <div className="home-user">
-          <button type="button" className="collab-btn" onClick={onBack}>{t('viewer_back')}</button>
+          <button type="button" className="ui-btn" onClick={onBack}>{t('viewer_back')}</button>
         </div>
       </header>
       <main className="home-main">
@@ -109,7 +109,7 @@ export default function HistoryPage({ project, variant, onBack, onView, onCompar
         {local > 0 && (
           <p className="history-local">
             <span>● {fill('home_local_changes', { n: local })}</span>
-            <button type="button" className="collab-btn collab-btn-small" disabled={busy} onClick={() => setAskDiscard(true)}>{t('wc_discard')}</button>
+            <button type="button" className="ui-btn ui-btn-small" disabled={busy} onClick={() => setAskDiscard(true)}>{t('wc_discard')}</button>
           </p>
         )}
         {revisions === null && !error && <p className="collab-muted">{t('home_loading')}</p>}
@@ -128,9 +128,9 @@ export default function HistoryPage({ project, variant, onBack, onView, onCompar
                 </div>
                 <div className="history-rev-message">{rev.message || <span className="collab-muted">{t('history_no_message')}</span>}</div>
                 <div className="history-rev-actions">
-                  <button type="button" className="collab-btn collab-btn-small" onClick={() => onView(rev)}>{t('history_view')}</button>
-                  {!isHead && <button type="button" className="collab-btn collab-btn-small" onClick={() => onCompareWithHead(rev, head)}>{t('history_compare')}</button>}
-                  {!isHead && <button type="button" className="collab-btn collab-btn-small" disabled={busy} onClick={() => setConfirm(rev)}>{t('history_restore')}</button>}
+                  <button type="button" className="ui-btn ui-btn-small" onClick={() => onView(rev)}>{t('history_view')}</button>
+                  {!isHead && <button type="button" className="ui-btn ui-btn-small" onClick={() => onCompareWithHead(rev, head)}>{t('history_compare')}</button>}
+                  {!isHead && <button type="button" className="ui-btn ui-btn-small" disabled={busy} onClick={() => setConfirm(rev)}>{t('history_restore')}</button>}
                 </div>
               </li>
             )
@@ -140,8 +140,8 @@ export default function HistoryPage({ project, variant, onBack, onView, onCompar
       {confirm && (
         <Modal className="collab-modal" title={fill('history_restore_confirm', { n: confirm.number })} onClose={() => setConfirm(null)} busy={busy}
           actions={<>
-            <button type="button" className="modal-btn modal-btn-cancel" disabled={busy} onClick={() => setConfirm(null)}>{t('btn_cancel')}</button>
-            <button type="button" className="modal-btn collab-btn-primary" disabled={busy} onClick={() => restore(confirm)}>{t('history_restore')}</button>
+            <button type="button" className="ui-btn" disabled={busy} onClick={() => setConfirm(null)}>{t('btn_cancel')}</button>
+            <button type="button" className="ui-btn ui-btn-primary" disabled={busy} onClick={() => restore(confirm)}>{t('history_restore')}</button>
           </>}>
           <p className="collab-muted">{t('history_restore_desc')}</p>
         </Modal>

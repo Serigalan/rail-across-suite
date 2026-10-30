@@ -47,8 +47,9 @@ settings: a new signalling system (H/V, Sv) is a new entry under `systeme`, a ne
 | `screen_lacks`, `screen_not_allowed`, `screens_many` | error | a screen without an aspect its kind must show, with one it may not, more than one screen |
 | `screen_no_proceed` | warning | a screen showing none of a kind's proceed aspects (an exit signal of P-Hausen shows Hp 0 and Sh 1 only) |
 | `indicator_not_allowed`, `board_not_allowed` | error | an indicator the kind does not carry; a board on its own that is none |
-| `system_unknown`, `system_twice`, `type_missing`, `type_not_in_system` | error | each logical signal's system and kind, each system once; a screen whose logical signals name no kind. A screen of no logical signal (a level crossing's monitoring signal, a lone Zs 6) is checked for known aspects only |
+| `system_unknown`, `system_twice`, `type_missing`, `type_not_in_system` | error | each logical signal's system and kind, each system once, the systems it announces (`nextSystems`) known; a screen whose logical signals name no kind. A screen of no logical signal (a level crossing's monitoring signal, a lone Zs 6) is checked for known aspects only |
 | `setting_missing`, `setting_unknown`, `setting_invalid` | error | the settings of a logical signal or a balise: what its kind asks for, nothing its system and kind do not declare, each value as declared |
+| `parameter_missing`, `parameter_unknown`, `parameter_invalid` | error | a logical signal's parameters, by default and per route, as its system declares them (`parameter`; none yet) |
 | `virtual_with_frames`, `virtual_without_function` | error, warning | a virtual signal shows nothing and says what it stands for |
 | `route_start_off_path`, `route_target_off_path`, `route_to_itself`, `path_empty` | error | a route's run of tracks and its two signals |
 | `route_without_overlap`, `shunting_with_overlap`, `overlap_preferred_many`, `overlap_not_at_target` | warning, error, error, error | a train route to a real signal ends in an overlap behind it, one preferred at most; a shunting route has none |
@@ -56,9 +57,10 @@ settings: a new signalling system (H/V, Sv) is a new entry under `systeme`, a ne
 | `overlap_start_off_path`, `overlap_end_off_path` | error | an overlap runs from its signal's track; its end, the danger point, lies on its run or beside its end (the clearance marker of a switch there) |
 | `flank_asked_twice`, `flank_by_itself`, `flank_position_missing` | error | one flank protection per switch element and position, never given by the element itself; a switch giving it states its position (a derailer gives it applied) |
 | `system_unknown`, `kind_not_in_system`, `balise_switched_without_signal` | error | a balise of a train protection system and kind the catalogue knows; one its signal switches names it |
+| `speed_start_off_path`, `speed_end_off_path`, `speed_missing` | error | a speed section runs from the track of its start to that of its end, and states a speed for all trains or per tag |
 | `detection_point_unused` | warning | a detection point that bounds no track section |
 | `section_extent_differs` | warning | a section's points enclose no part of the net together (see below) |
-| `boundary_mark_special` | warning | a station boundary marked by neither an entry signal nor a board Ne 1 nor a switch — a special case of EBO §4 |
+| `boundary_mark_special` | warning | a station boundary marked by neither an entry signal nor a board Ne 1 nor a switch nor a platform — a special case of EBO §4 |
 
 ## Track sections over the net
 

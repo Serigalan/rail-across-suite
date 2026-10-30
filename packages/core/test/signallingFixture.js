@@ -4,7 +4,8 @@
 // an overlap over switch w1 onto track t2 (150 m), where a route ends at a
 // virtual signal (target on the line). Train detection over t1, flank
 // protection for the switch, the PZB magnets of A and N1, an ETCS balise
-// group of one at N1, and the station's boundary at A. The tests of the check and the shared vectors start from it.
+// group of one at N1, a speed section of 60 km/h over the switch, 40 for
+// freight, and the station's boundary at A. The tests of the check and the shared vectors start from it.
 //
 // `operationalPoint` names the station of the core's register it bounds.
 
@@ -80,6 +81,12 @@ export function ksStation({ operationalPoint = 'op1' } = {}) {
         },
         { id: 'etcs-n1', name: 'N1', at: on('t1', 226), system: 'etcs', kind: 'fixed', settings: { group: 'N1', position: 1 }, signalId: 'sig-n1', effect: 'permanent' },
       ],
+      speedSections: [
+        {
+          id: 'v-w1', name: 'W1', start: { anchor: 'station', trackId: 't1', station: 200 }, path: { trackIds: ['t1', 't2'] },
+          end: { anchor: 'station', trackId: 't2', station: 60 }, speed: 60, speedByTag: { freight: 40 },
+        },
+      ],
       stationBoundaries: [{ id: 'bd-1', operationalPointId: operationalPoint, marks: [{ signalId: 'sig-a' }] }],
     },
   }
@@ -94,6 +101,7 @@ export function ksStationCore() {
       tracks: [track('t1', 250), track('t2', 150)],
       switches: [{ id: 'w1', kind: 'turnout', formVersion: 1, ports: {} }],
       operationalPoints: [{ id: 'op1', name: 'Halle-Trotha' }],
+      platforms: [{ id: 'pl1' }],
     },
   }
 }

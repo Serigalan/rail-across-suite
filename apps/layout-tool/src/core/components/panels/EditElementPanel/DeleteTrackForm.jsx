@@ -47,7 +47,7 @@ export default function DeleteTrackForm({ onCommitted }) {
           <CommitBar onCommit={handleDelete} onCancel={onCommitted} commitLabel={t('edit_track_delete')} danger className="" />
         </>
       )}
-      {!selected && <CancelButton className="panel-btn panel-btn-full mt-2 secondary" onClick={onCommitted} />}
+      {!selected && <CancelButton className="ui-btn ui-btn-block mt-2" onClick={onCommitted} />}
     </>
   )
 }

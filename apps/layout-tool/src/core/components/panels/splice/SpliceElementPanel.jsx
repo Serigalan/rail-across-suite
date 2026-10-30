@@ -356,7 +356,7 @@ export default function SpliceElementPanel() {
       {picks.length > 0 && <p className="msg-info">{t('splice_first_selected')}: {picks[0].label}</p>}
       {pickStatus && <p className={pickStatus.error ? 'msg-error' : 'msg-hint'}>{pickStatus.msg}</p>}
       {picks.length === 1 && (
-        <CancelButton className="panel-btn panel-btn-full mt-8 secondary" onClick={reset} />
+        <CancelButton className="ui-btn ui-btn-block mt-8" onClick={reset} />
       )}
     </>
   )

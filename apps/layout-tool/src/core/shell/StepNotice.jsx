@@ -63,9 +63,9 @@ export default function StepNotice() {
     <div className="step-notice" role="status">
       <span className="step-notice-text">{text}</span>
       {step.kind === 'undo'
-        ? <button type="button" className="link-btn" onClick={() => redo()}>{t('tooltip_redo')}</button>
-        : <button type="button" className="link-btn" onClick={() => undo()}>{t('notice_undo')}</button>}
-      {shownIds.length > 0 && <button type="button" className="link-btn" onClick={show}>{t('notice_show')}</button>}
+        ? <button type="button" className="ui-link" onClick={() => redo()}>{t('tooltip_redo')}</button>
+        : <button type="button" className="ui-link" onClick={() => undo()}>{t('notice_undo')}</button>}
+      {shownIds.length > 0 && <button type="button" className="ui-link" onClick={show}>{t('notice_show')}</button>}
       <CloseButton className="step-notice-close" onClick={() => setClosed(step.serial)} />
     </div>
   )

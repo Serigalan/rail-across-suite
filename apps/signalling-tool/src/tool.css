@@ -120,3 +120,14 @@ html, body { margin: 0; background: var(--ui-surface); }
 .step-history-now::before { content: '●'; position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--color-primary); font-size: 9px; }
 .step-history-start { color: var(--ui-muted); border-top: 1px solid var(--ui-border); margin-top: 4px; padding-top: 8px; }
 .tool-logical { padding-bottom: 6px; border-bottom: 1px solid var(--ui-border); margin-bottom: 6px; }
+/* An object beside its track: a dot on the track, a stroke out to its symbol (as OSRD's map). */
+.plan-stem { stroke: var(--plan-track); stroke-width: 1; opacity: 0.6; fill: none; }
+.plan-foot { fill: var(--plan-track); }
+/* Placing: the place snapped to on the track, and what would be set there. */
+.plan-snap { fill: none; stroke: var(--color-primary); stroke-width: 2; }
+.plan-preview { opacity: 0.75; pointer-events: none; }
+.tool-plane { margin: 0; font-size: var(--ui-fs-s); font-variant-numeric: tabular-nums; }
+/* A speed section's board at its start: black on white, its number in tens. */
+.plan-speed { fill: #fff; stroke: #222; stroke-width: 1.2; }
+.plan-speed-text { font: 700 9px system-ui, sans-serif; text-anchor: middle; fill: #222; }
+.plan-mark.is-selected .plan-speed { stroke: var(--color-primary); stroke-width: 2.5; }

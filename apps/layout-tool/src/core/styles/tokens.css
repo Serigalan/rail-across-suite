@@ -65,14 +65,7 @@ body {
 .msg-hint  { color: var(--color-muted); }
 .msg-small { font-size: var(--fs-xs); }
 
-/* ── Buttons: the panel button and its variants ─────────────────────────── */
-.panel-btn.secondary { background: var(--color-muted); }
-.panel-btn.secondary:hover { background: var(--color-text-soft); }
-/* Cancel: a lighter grey than the other secondary buttons, so Commit stands out. */
-.panel-btn.panel-btn-cancel { background: var(--color-border); color: var(--color-text); }
-.panel-btn.panel-btn-cancel:hover { background: #cfcfcf; }
-.panel-btn.danger { background: var(--color-danger); }
-.panel-btn:disabled { opacity: 0.5; cursor: default; }
+/* Buttons are the suite's (@rail-across/ui: ui-btn and its variants). */
 
 /* ── Small layout helpers, for the few places that need no class of their own ── */
 .mt-2 { margin-top: var(--space-1); }

@@ -3,7 +3,7 @@ import { Badge, Button, Checkbox, Panel, PlusIcon, Section, SelectField, SelectL
 import { newId, labelOf } from '../model/domain.js'
 import { POINT_KIND, SECTION_KIND, optionsOf, word } from '../labels.js'
 import { CheckList, EditorHead, LocationFields, ObjectFindings } from './common.jsx'
-import { locationFrom, trackName } from '../model/places.js'
+import { locationFrom, placing, trackName } from '../model/places.js'
 
 /**
  * Train detection: the points that bound sections — axle counters, joints —
@@ -44,7 +44,7 @@ export default function DetectionPanel({ domain, net, findings, extents, selecti
     <Panel title={t('section_detection')} intro={t('section_detection_intro')}
       actions={!readOnly && <>
         <Button size="small" variant="primary" icon={<PlusIcon size={14} />} disabled={!net.tracks.length}
-          onClick={() => setMode({ kind: 'place', apply: (hit) => ops.add('detectionPoints', { id: newId(), kind: 'axleCounter', at: locationFrom(hit, { direction: null }) }) })}>
+          onClick={() => setMode(placing('detectionPoints', (hit) => ({ id: newId(), kind: 'axleCounter', at: locationFrom(hit, { directed: false }) }), (p) => ops.add('detectionPoints', p)))}>
           {t('new_point')}
         </Button>
         <Button size="small" icon={<PlusIcon size={14} />} disabled={!points.length}
@@ -96,7 +96,7 @@ export default function DetectionPanel({ domain, net, findings, extents, selecti
           <Section title={t('location')}>
             <LocationFields loc={chosenPoint.at} net={net} t={t} directed={false} readOnly={readOnly}
               onChange={(at) => ops.update('detectionPoints', { ...chosenPoint, at })}
-              onPlace={() => setMode({ kind: 'place', apply: (hit) => ops.update('detectionPoints', { ...chosenPoint, at: locationFrom(hit, { direction: null }) }) })} />
+              onPlace={() => setMode(placing('detectionPoints', (hit) => ({ ...chosenPoint, at: locationFrom(hit, { directed: false, offset: chosenPoint.at?.offset }) }), (p) => ops.update('detectionPoints', p)))} />
           </Section>
           <p className="ui-muted">{t('track_sections')}: {sections.filter(s => s.boundedBy.includes(chosenPoint.id)).map(s => labelOf('trackSections', s, t)).join(', ') || t('none')}</p>
         </div>

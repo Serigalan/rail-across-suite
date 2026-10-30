@@ -4,6 +4,8 @@ import { straightElement } from '@rail-across/core/geometry'
 import { I18n, textsFor } from './i18n.js'
 import Editor from './Editor.jsx'
 import BalisesPanel from './panels/BalisesPanel.jsx'
+import SettingsPanel from './panels/SettingsPanel.jsx'
+import SpeedPanel from './panels/SpeedPanel.jsx'
 import { linkedRequest } from './suite.js'
 
 const EPSG = 25832
@@ -25,7 +27,7 @@ const record = {
         { id: 's-n', name: 'N1', kind: 'real', logicalSignals: [{ system: 'ks', type: 'mainShunting' }], at: on('t2', 80),
           frames: [{ kind: 'screen', aspects: [{ aspect: 'Hp_0' }, { aspect: 'Ks_1' }] }] },
       ],
-      detectionPoints: [], trackSections: [], switchElements: [], routes: [], overlaps: [], flankProtection: [], balises: [], stationBoundaries: [],
+      detectionPoints: [], trackSections: [], switchElements: [], routes: [], overlaps: [], flankProtection: [], balises: [], speedSections: [], stationBoundaries: [],
     },
   },
 }
@@ -72,9 +74,17 @@ describe('the Signalling-Tool', () => {
     expect(html).toContain('<span class="ui-rail-label">Signals</span>')
     expect(html).toContain('<span class="ui-rail-label">Balises/magnets</span>')
     expect(html).toContain('Ks multi-section signal')
-    expect(html).toContain('aria-label="Deutsch"')
+    expect(html).toContain('aria-label="Settings"')
     expect(html).not.toContain('Mehrabschnittssignal')
-    expect(render()).toContain('aria-label="English"')
+  })
+
+  it('orders its rail as the Layout-Tool does: the map layers first, the settings at the foot', () => {
+    const html = render()
+    expect(html.indexOf('aria-label="Kartenebenen"')).toBeLessThan(html.indexOf('aria-label="Signale"'))
+    expect(html.indexOf('aria-label="Infrastruktur-Editor"')).toBeLessThan(html.indexOf('aria-label="Einstellungen"'))
+    const settings = renderToStaticMarkup(<SettingsPanel {...textsFor('en')} setLanguage={() => {}} />)
+    expect(settings).toContain('<option value="de">Deutsch</option>')
+    expect(settings).toContain('<option value="en" selected="">English</option>')
   })
 
   it('edits a balise or magnet by the settings its system declares, in the language set', () => {
@@ -92,6 +102,21 @@ describe('the Signalling-Tool', () => {
     expect(en).toContain('Measuring length [m]')
     expect(en).toContain('INA (platform)')
     expect(panel('de')).toContain('Geschwindigkeitsprüfung · 2000 Hz')
+  })
+
+  it('edits a speed section: its speed, per kind of train, the direction it holds in', () => {
+    const v = { id: 'v1', start: on('t1', 150), path: { trackIds: ['t1', 't2'] }, end: on('t2', 50), speed: 80, speedByTag: { freight: 60 } }
+    const domain = { ...record.signalling, collections: { ...record.signalling.collections, speedSections: [v] } }
+    const html = renderToStaticMarkup(
+      <I18n.Provider value={textsFor('de')}>
+        <SpeedPanel domain={domain} net={{ tracks: record.tracks, switches: [] }} findings={{ errors: [], warnings: [] }}
+          selection={{ collection: 'speedSections', id: 'v1' }} select={() => {}} ops={{}} setMode={() => {}} readOnly={false} {...textsFor('de')} />
+      </I18n.Provider>,
+    )
+    expect(html).toContain('<span class="ui-list-title">80 km/h</span>')
+    expect(html).toContain('freight')
+    expect(html).toContain('beide Richtungen')
+    expect(html).toContain('2 Gleise')
   })
 
   it('reads what the suite asks of it from its address', () => {

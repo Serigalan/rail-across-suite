@@ -7,11 +7,6 @@
   font-family: var(--font-ui);
   font-size: 17px;
 }
-.modal-btn-primary {
-  background: var(--color-primary);
-  color: #fff;
-}
-.modal-btn:disabled { opacity: 0.5; cursor: default; }
 
 /* The whole guideline (components/GuideDialog): as large as the screen allows. */
 .modal.modal-guide { width: min(1000px, calc(100vw - 32px)); height: calc(100vh - 48px); padding: 20px 24px; gap: 14px; }

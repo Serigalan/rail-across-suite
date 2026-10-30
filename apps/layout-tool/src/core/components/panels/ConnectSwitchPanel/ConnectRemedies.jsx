@@ -22,7 +22,7 @@ export default function ConnectRemedies({ anchor, current, outcome, outcomeFor, 
   }
   if (!state) {
     return (
-      <button type="button" className="panel-btn secondary splice-remedies-ask" onClick={ask}>
+      <button type="button" className="ui-btn splice-remedies-ask" onClick={ask}>
         {t('splice_remedies_show')}
       </button>
     )
@@ -52,7 +52,7 @@ export default function ConnectRemedies({ anchor, current, outcome, outcomeFor, 
               {what(r)}
               <span className="splice-remedy-after">{after(r)}</span>
             </span>
-            <button type="button" className="panel-btn secondary" onClick={() => onAdopt(r)}>{t('splice_remedy_adopt')}</button>
+            <button type="button" className="ui-btn ui-btn-small" onClick={() => onAdopt(r)}>{t('splice_remedy_adopt')}</button>
           </li>
         ))}
       </ul>

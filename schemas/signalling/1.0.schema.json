@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "signalling",
   "title": "Rail-Data-Core, domain signalling 1.0",
-  "description": "The signalling of a project, as the signalling tool plans it: signals and boards, train detection, the switch elements of the interlocking, train and shunting routes with their overlaps, flank protection, the balises and magnets of train protection and the station boundaries. Depends on core; its references go into the core or into itself (R2, R9). Its objects follow PlanPro 1.10, and like OSRD it keeps every signalling and train protection system out of the schema (decision 0011): a signal carries a logical signal per system, a balise names its system; which systems, kinds, aspects and settings there are is not in this schema but in the catalogue (packages/core/constraints/db-ril-301.json), which the content check reads.",
+  "description": "The signalling of a project, as the signalling tool plans it: signals and boards, train detection, the switch elements of the interlocking, train and shunting routes with their overlaps, flank protection, the balises and magnets of train protection, the speed sections and the station boundaries. Depends on core; its references go into the core or into itself (R2, R9). Its objects follow PlanPro 1.10, and like OSRD it keeps every signalling and train protection system out of the schema (decision 0011): a signal carries a logical signal per system, a balise names its system; which systems, kinds, aspects and settings there are is not in this schema but in the catalogue (packages/core/constraints/db-ril-301.json), which the content check reads.",
   "type": "object",
   "required": ["fields", "collections"],
   "additionalProperties": false,
@@ -10,7 +10,7 @@
     "fields": { "$ref": "#/$defs/Fields" },
     "collections": {
       "type": "object",
-      "required": ["signals", "detectionPoints", "trackSections", "switchElements", "routes", "overlaps", "flankProtection", "balises", "stationBoundaries"],
+      "required": ["signals", "detectionPoints", "trackSections", "switchElements", "routes", "overlaps", "flankProtection", "balises", "speedSections", "stationBoundaries"],
       "additionalProperties": false,
       "properties": {
         "signals": { "type": "array", "items": { "$ref": "#/$defs/Signal" } },
@@ -21,6 +21,7 @@
         "overlaps": { "type": "array", "items": { "$ref": "#/$defs/Overlap" } },
         "flankProtection": { "type": "array", "items": { "$ref": "#/$defs/FlankProtection" } },
         "balises": { "type": "array", "items": { "$ref": "#/$defs/Balise" } },
+        "speedSections": { "type": "array", "items": { "$ref": "#/$defs/SpeedSection" } },
         "stationBoundaries": { "type": "array", "items": { "$ref": "#/$defs/StationBoundary" } }
       }
     }
@@ -110,14 +111,28 @@
       }
     },
     "LogicalSignal": {
-      "description": "A signal in one signalling system (OSRD: LogicalSignal): the system, a key of the catalogue's `systeme`; the kind of signal it is there, a key of that system's `signalarten` or `other`; and its settings, as the catalogue declares them for the system.",
+      "description": "A signal in one signalling system (OSRD: LogicalSignal): the system, a key of the catalogue's `systeme`; the kind of signal it is there, a key of that system's `signalarten` or `other`; its settings, as the catalogue declares them for the system; the systems the signals it announces may be of (OSRD next_signaling_systems); and the parameters it shows with, by default and per route (OSRD default_parameters, conditional_parameters), as the system declares them.",
       "type": "object",
       "required": ["system"],
       "additionalProperties": false,
       "properties": {
         "system": { "type": "string", "minLength": 1 },
         "type": { "type": "string", "minLength": 1 },
-        "settings": { "$ref": "#/$defs/Settings" }
+        "settings": { "$ref": "#/$defs/Settings" },
+        "nextSystems": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "defaultParameters": { "$ref": "#/$defs/Settings" },
+        "conditionalParameters": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["routeId", "parameters"],
+            "additionalProperties": false,
+            "properties": {
+              "routeId": { "$ref": "core#/$defs/Ref", "x-target": "signalling.routes" },
+              "parameters": { "$ref": "#/$defs/Settings" }
+            }
+          }
+        }
       }
     },
     "Settings": {
@@ -403,8 +418,33 @@
         "lifespan": { "$ref": "core#/$defs/Lifespan" }
       }
     },
+    "SpeedSection": {
+      "description": "A stretch where a speed holds (OSRD: SpeedSection; the speed profile of the roadmap): from `start` along a run of tracks to `end`, both on the run's first and last track — as an overlap runs, so the core carries it as it carries every location and run. In the direction `start` states, or both where it states none. The speed [km/h], per tag of train where it differs (OSRD speed_limit_by_tag), and the routes it holds on only, where it holds on some.",
+      "type": "object",
+      "required": ["id", "start", "path", "end"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "core#/$defs/Id" },
+        "name": { "$ref": "core#/$defs/Text" },
+        "start": { "$ref": "core#/$defs/TrackLocation" },
+        "path": { "$ref": "core#/$defs/TrackPath" },
+        "end": { "$ref": "core#/$defs/TrackLocation" },
+        "speed": { "description": "[km/h]", "type": "number", "minimum": 0 },
+        "speedByTag": {
+          "description": "Per tag of train, the speed it may run at here [km/h] (OSRD speed_limit_by_tag).",
+          "type": "object",
+          "additionalProperties": { "type": "number", "minimum": 0 }
+        },
+        "onRoutes": {
+          "description": "The routes it holds on; on all where it names none (OSRD on_routes).",
+          "type": "array",
+          "items": { "$ref": "core#/$defs/Ref", "x-target": "signalling.routes" }
+        },
+        "lifespan": { "$ref": "core#/$defs/Lifespan" }
+      }
+    },
     "StationBoundary": {
-      "description": "The boundary of a station of the core's register, where trains enter it: what marks it — an entry signal or a board (Ne 1), or an entry switch where there is neither (EBO §4). Where it is not where the rules put it, a finding says so.",
+      "description": "The boundary of a station of the core's register, where trains enter it: what marks it — an entry signal or a board (Ne 1), an entry switch where there is neither (EBO §4), or for a halt its platform. Where it is not where the rules put it, a finding says so.",
       "type": "object",
       "required": ["id", "operationalPointId", "marks"],
       "additionalProperties": false,
@@ -427,6 +467,12 @@
                 "required": ["switchId"],
                 "additionalProperties": false,
                 "properties": { "switchId": { "$ref": "core#/$defs/Ref", "x-target": "core.switches" } }
+              },
+              {
+                "type": "object",
+                "required": ["platformId"],
+                "additionalProperties": false,
+                "properties": { "platformId": { "$ref": "core#/$defs/Ref", "x-target": "core.platforms" } }
               }
             ]
           }

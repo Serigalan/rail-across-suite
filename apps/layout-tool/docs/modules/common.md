@@ -9,7 +9,7 @@ Helpers without a railway in them, shared by modules and interface alike.
 | `format.js` | `clamp`, number formatting (decimals, decimal comma, trimmed zeros) |
 | `fileUtils.js` | Downloading a blob/text/JSON, reading a chosen file as text or bytes |
 | `keyboard.js` | Which shortcuts belong to the app: Ctrl/Cmd+Z undoes the project step only outside a typing field (inside, the field keeps its own undo); Ctrl+Y / Ctrl+Shift+Z redo; where Escape belongs to a field |
-| `settings.js` | The user's own settings (language, colour, layers, terrain source, …) — per browser in `localStorage` (`olt_settings`), **never part of a project** |
+| `settings.js` | The user's own settings (colour, layers, terrain source, …) — per browser in `localStorage` (`olt_settings`), **never part of a project**; the language is the suite's (`@rail-across/ui`), the one kept here before standing in until one is chosen there |
 | `chartAxes.js` | Axis steps and ticks of the drawing overlays (bands, profiles) that keep labels apart |
 | `svgPath.js` | SVG path data reduced to absolute `M L C Z` for the plan backends (arcs and quadratics become cubics) |
 | `logoMark.js`, `logoImage.js` | The app's mark (one track writing O, L and T) and converting an image file into a bounded PNG data URL for title blocks |

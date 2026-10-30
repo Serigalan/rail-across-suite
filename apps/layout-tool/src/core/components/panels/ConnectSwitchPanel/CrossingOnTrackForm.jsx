@@ -188,7 +188,7 @@ export default function CrossingOnTrackForm({ onCommitted, initialKind = 'crossi
       <>
         <p>{t('crossing_on_track_hint')}</p>
         <MessageList items={errors} className="form-error-list" small={false} />
-        <CancelButton className="panel-btn panel-btn-full mt-8 secondary" onClick={handleCancel} />
+        <CancelButton className="ui-btn ui-btn-block mt-8" onClick={handleCancel} />
       </>
     )
   }

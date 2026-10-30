@@ -16,8 +16,8 @@ export default function CheckInDialog({ changes, errors = [], busy, onSubmit, on
   return (
     <Modal className="collab-modal" title={t('checkin_title')} onClose={onCancel} busy={busy} onSubmit={() => { onSubmit(message.trim()) }}
       actions={<>
-        <button type="button" className="modal-btn modal-btn-cancel" onClick={onCancel} disabled={busy}>{t('btn_cancel')}</button>
-        <button type="submit" className="modal-btn collab-btn-primary" disabled={busy || !changes.length}>{t('checkin_submit')}</button>
+        <button type="button" className="ui-btn" onClick={onCancel} disabled={busy}>{t('btn_cancel')}</button>
+        <button type="submit" className="ui-btn ui-btn-primary" disabled={busy || !changes.length}>{t('checkin_submit')}</button>
       </>}>
       <label className="collab-field">
         <span>{t('checkin_message')}</span>

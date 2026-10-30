@@ -19,17 +19,6 @@
 }
 
 /* A measured axis whose points are being taken out on the map. */
-.pointcloud-actions .modal-btn.active {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
-  color: #fff;
-}
-
-.panel-btn:disabled {
-  opacity: 0.5;
-  cursor: default;
-}
-
 .pointcloud-meta {
   font-family: var(--font-ui);
   font-size: var(--fs-xs);
@@ -54,11 +43,6 @@
 
 .pointcloud-item .pointcloud-actions {
   margin-top: 4px;
-}
-
-.pointcloud-item .modal-btn {
-  padding: 4px 10px;
-  font-size: var(--fs-s);
 }
 
 .pointcloud-storage {

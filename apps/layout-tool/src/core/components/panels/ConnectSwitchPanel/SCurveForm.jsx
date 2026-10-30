@@ -443,7 +443,7 @@ export default function SCurveForm({ onCommitted, edit = null }) {
         </p>
       )}
       {phase === 'select_second' && (
-        <CancelButton className="panel-btn panel-btn-full mt-8 secondary" onClick={handleCancel} />
+        <CancelButton className="ui-btn ui-btn-block mt-8" onClick={handleCancel} />
       )}
     </>
   )

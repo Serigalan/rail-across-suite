@@ -86,34 +86,34 @@ export default function ConnectSwitchPanel({ detailTarget = null, onShowDetail }
         search={{ value: switchQuery, onChange: setSwitchQuery, placeholder: t('search_switches') }} />
       <SwitchSearch query={switchQuery} />
       <div className="create-element-options">
-        <button className="create-element-btn" onClick={() => setPage('ontrack')}>
+        <button className="ui-btn ui-btn-option" onClick={() => setPage('ontrack')}>
           <SwitchOnTrackIcon />
           {t('switch_on_track')}
         </button>
-        <button className="create-element-btn" onClick={() => setPage('connect')}>
+        <button className="ui-btn ui-btn-option" onClick={() => setPage('connect')}>
           <SwitchConnectTrackIcon />
           {t('switch_connect_track')}
         </button>
-        <button className="create-element-btn" onClick={() => setPage('scurve')}>
+        <button className="ui-btn ui-btn-option" onClick={() => setPage('scurve')}>
           <SwitchConnectionIcon />
           {t('scurve_title')}
         </button>
         <hr className="divider divider-wide" />
-        <button className="create-element-btn" onClick={() => setPage('crossing_ontrack')}>
+        <button className="ui-btn ui-btn-option" onClick={() => setPage('crossing_ontrack')}>
           <CrossingOnTrackIcon />
           {t('crossing_on_track')}
         </button>
-        <button className="create-element-btn" onClick={() => setPage('crossing_connect')}>
+        <button className="ui-btn ui-btn-option" onClick={() => setPage('crossing_connect')}>
           <CrossingConnectTrackIcon />
           {t('crossing_connect_track')}
         </button>
         <hr className="divider divider-wide" />
-        <button className="create-element-btn" onClick={() => setPage('link')}>
+        <button className="ui-btn ui-btn-option" onClick={() => setPage('link')}>
           <SwitchLinkIcon />
           {t('switch_link')}
         </button>
         <hr className="divider divider-wide" />
-        <button className="create-element-btn" onClick={() => setPage('detail')}>
+        <button className="ui-btn ui-btn-option" onClick={() => setPage('detail')}>
           <SwitchDetailIcon />
           {t('switch_detail')}
         </button>

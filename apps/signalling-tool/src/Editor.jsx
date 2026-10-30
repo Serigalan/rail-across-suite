@@ -11,10 +11,11 @@ import { api } from './api.js'
 import { projectsUrl } from './suite.js'
 import { netDrawing } from './model/net.js'
 import { added, cascadeOf, deleted, domainOf, labelOf, replaced } from './model/domain.js'
+import { runStretches } from './model/runs.js'
 import { redo, startHistory, step, stepOf, stepText, travel, undo } from './model/history.js'
 import PlanView from './plan/PlanView.jsx'
 import {
-  BaliseIcon, CheckIcon, DetectionIcon, FlankIcon, HistoryIcon, HomeIcon, ImportIcon, LanguageIcon, LayersIcon, LogoIcon, RouteIcon, SignalIcon, SwitchIcon,
+  BaliseIcon, CheckIcon, DetectionIcon, FlankIcon, HistoryIcon, HomeIcon, ImportIcon, LayersIcon, LogoIcon, RouteIcon, SettingsIcon, SignalIcon, SpeedIcon, SwitchIcon,
 } from './icons.jsx'
 import SignalsPanel from './panels/SignalsPanel.jsx'
 import DetectionPanel from './panels/DetectionPanel.jsx'
@@ -22,10 +23,12 @@ import ElementsPanel from './panels/ElementsPanel.jsx'
 import RoutesPanel from './panels/RoutesPanel.jsx'
 import FlankPanel from './panels/FlankPanel.jsx'
 import BalisesPanel from './panels/BalisesPanel.jsx'
+import SpeedPanel from './panels/SpeedPanel.jsx'
 import CheckPanel from './panels/CheckPanel.jsx'
 import ImportPanel from './panels/ImportPanel.jsx'
 import LayersPanel, { DEFAULT_PLAN_BASEMAP } from './panels/LayersPanel.jsx'
 import HistoryPanel from './panels/HistoryPanel.jsx'
+import SettingsPanel from './panels/SettingsPanel.jsx'
 
 const SECTIONS = [
   { id: 'signals', icon: <SignalIcon />, Panel: SignalsPanel },
@@ -34,21 +37,21 @@ const SECTIONS = [
   { id: 'routes', icon: <RouteIcon />, Panel: RoutesPanel },
   { id: 'flank', icon: <FlankIcon />, Panel: FlankPanel },
   { id: 'balises', icon: <BaliseIcon />, Panel: BalisesPanel },
+  { id: 'speeds', icon: <SpeedIcon />, Panel: SpeedPanel },
 ]
 
 /** The section a collection's objects are edited in. */
 const SECTION_OF = {
   signals: 'signals', detectionPoints: 'detection', trackSections: 'detection', switchElements: 'elements', switches: 'elements',
-  routes: 'routes', overlaps: 'routes', flankProtection: 'flank', balises: 'balises', stationBoundaries: 'signals',
+  routes: 'routes', overlaps: 'routes', flankProtection: 'flank', balises: 'balises', speedSections: 'speeds', stationBoundaries: 'signals',
 }
 
 /**
- * Working on the signalling of a variant: the rail of sections on the left —
- * signals, train detection, switch elements, routes, flank protection, balises
- * and magnets,
- * the check and the PlanPro import; at its foot undo, the history and redo,
- * the way back to the infrastructure editor, the map layers and the other
- * language —, the panel
+ * Working on the signalling of a variant: the rail of sections on the left,
+ * as the Layout-Tool orders its own — the map layers first, then signals,
+ * train detection, switch elements, routes, flank protection, balises and
+ * magnets, speed sections, the check and the PlanPro import; at its foot undo, the history
+ * and redo, the way back to the infrastructure editor and the settings —, the panel
  * of the one chosen, the plan of the net with what the domain holds. Every
  * edit is a step (undo, redo, the history);
  * the core's check runs on every one; checking in sends the record with its
@@ -126,7 +129,7 @@ export default function Editor({ project, variant, head, readOnly }) {
     return () => window.removeEventListener('beforeunload', warn)
   }, [dirty])
 
-  const highlight = useMemo(() => highlightOf(domain, selection, extents), [domain, selection, extents])
+  const highlight = useMemo(() => highlightOf(domain, selection, extents, net), [domain, selection, extents, net])
 
   // ── checking in ──
   const checkIn = async (message) => {
@@ -194,6 +197,8 @@ export default function Editor({ project, variant, head, readOnly }) {
       <Rail label={t('tool')}
         brand={<RailBrand href={projectsUrl()} label={t('infrastructure')} name={t('tool')}><LogoIcon /></RailBrand>}
         top={<>
+          <RailButton icon={<LayersIcon />} label={t('section_layers')} pressed={section === 'layers'} onClick={() => setSection('layers')} />
+          <RailDivider />
           {SECTIONS.map(s => (
             <RailButton key={s.id} icon={s.icon} label={t(`section_${s.id}`)} pressed={section === s.id} onClick={() => setSection(s.id)} />
           ))}
@@ -212,13 +217,13 @@ export default function Editor({ project, variant, head, readOnly }) {
             <RailDivider />
           </>}
           <RailButton icon={<HomeIcon />} label={t('infrastructure')} onClick={() => location.assign(projectsUrl())} />
-          <RailButton icon={<LayersIcon />} label={t('section_layers')} pressed={section === 'layers'} onClick={() => setSection('layers')} />
-          {setLanguage && <RailButton icon={<LanguageIcon />} label={t('other_language')} onClick={() => setLanguage(language === 'de' ? 'en' : 'de')} />}
+          <RailButton icon={<SettingsIcon />} label={t('section_settings')} pressed={section === 'settings'} onClick={() => setSection('settings')} />
         </>}
       />
       {section === 'history' ? <HistoryPanel history={history} travel={(n) => setHistory(h => travel(h, n))} t={t} />
         : section === 'check' ? <CheckPanel {...panelProps} /> : section === 'import' ? <ImportPanel {...panelProps} />
-        : section === 'layers' ? <LayersPanel {...panelProps} /> : <active.Panel {...panelProps} />}
+        : section === 'layers' ? <LayersPanel {...panelProps} />
+        : section === 'settings' ? <SettingsPanel t={t} language={language} setLanguage={setLanguage} /> : <active.Panel {...panelProps} />}
       <Workspace bar={<>
         <span className="ui-topbar-title">{project.title}</span>
         <span className="ui-muted">{variant.name}</span>
@@ -243,7 +248,7 @@ export default function Editor({ project, variant, head, readOnly }) {
         )}
         <PlanView drawing={drawing} net={net} domain={domain} selection={selection} highlight={highlight} mode={mode} fitKey={fitKey} focus={focus} basemap={basemap} t={t}
           onPick={select}
-          onPlace={(hit) => { const m = mode; setMode(null); m?.apply?.(hit) }}
+          onPlace={(hit) => { const m = mode; setMode(null); m?.apply?.(m.make(hit)) }}
           onPickPoint={(id) => mode?.toggle?.(id)} />
       </Workspace>
 
@@ -280,6 +285,7 @@ function placeToShow(domain, sel) {
   const signalAt = (id) => c.signals.find(s => s.id === id)?.at
   switch (sel.collection) {
     case 'signals': case 'detectionPoints': case 'balises': return obj?.at
+    case 'speedSections': return obj?.start
     case 'switchElements': return obj?.derailer?.at ?? null
     case 'routes': return obj && signalAt(obj.startSignalId)
     case 'overlaps': return obj && signalAt(obj.signalId)
@@ -290,7 +296,7 @@ function placeToShow(domain, sel) {
 }
 
 /** What the plan marks for what is chosen: its run, its section's extent, the signals it names. */
-function highlightOf(domain, selection, extents) {
+function highlightOf(domain, selection, extents, net) {
   if (!selection) return null
   const c = domain.collections
   const find = (name) => c[name].find(o => o.id === selection.id)
@@ -318,6 +324,10 @@ function highlightOf(domain, selection, extents) {
     case 'balises': {
       const b = find('balises')
       return b ? { ids: [b.signalId].filter(Boolean) } : null
+    }
+    case 'speedSections': {
+      const v = find('speedSections')
+      return v ? { stretches: runStretches(net, v.start, v.path.trackIds, v.end), ids: [v.id] } : null
     }
     default: return null
   }

@@ -48,7 +48,7 @@ export default function OptimizeSettings({ label, what, s, set, regelwerke, onSh
       {/* The same popup the edit panel opens, on the regelwerk this run
           would use — one viewer, not a second copy of the table. */}
       {regelwerke.length > 0 && (
-        <button className="link-btn msg-info msg-small" type="button" onClick={() => onShowRegelwerk?.(regelwerkId)}>
+        <button className="ui-link msg-info msg-small" type="button" onClick={() => onShowRegelwerk?.(regelwerkId)}>
           {t('optimize_regelwerk_show')}
         </button>
       )}

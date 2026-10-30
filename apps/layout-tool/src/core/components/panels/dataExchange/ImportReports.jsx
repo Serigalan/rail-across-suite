@@ -15,7 +15,7 @@ export default function ImportReports({ reports, onClear }) {
       {reports.length === 0 && <p className="selecting-hint">{t('data_exchange_reports_none')}</p>}
       {reports.map(r => (
         <div key={r.at}>
-          <button className="panel-btn panel-btn-full mt-2" aria-expanded={open === r.at}
+          <button className="ui-btn ui-btn-primary ui-btn-block mt-2" aria-expanded={open === r.at}
             onClick={() => setOpen(open === r.at ? null : r.at)}>
             {fill('data_exchange_reports_entry', { when: formatDate(r.at, language, { time: true }), source: r.source ?? '', n: r.lines?.length ?? 0 })}
           </button>
@@ -28,7 +28,7 @@ export default function ImportReports({ reports, onClear }) {
                 {(r.lines ?? []).map((line, j) => <p className="msg-error msg-small" key={j}>{line}</p>)}
                 {r.cut > 0 && <p className="selecting-hint">{fill('data_exchange_reports_cut', { n: r.cut })}</p>}
               </div>
-              <button className="panel-btn panel-btn-full mt-2"
+              <button className="ui-btn ui-btn-primary ui-btn-block mt-2"
                 onClick={() => downloadText([r.source, new Date(r.at).toISOString(), '', ...(r.lines ?? [])].join('\n'), reportFileName(r.at))}>
                 {t('data_exchange_reports_save')}
               </button>
@@ -37,7 +37,7 @@ export default function ImportReports({ reports, onClear }) {
         </div>
       ))}
       {reports.length > 0 && (
-        <button className="panel-btn panel-btn-full mt-6" onClick={() => { onClear(); setOpen(null) }}>
+        <button className="ui-btn ui-btn-primary ui-btn-block mt-6" onClick={() => { onClear(); setOpen(null) }}>
           {t('data_exchange_reports_clear')}
         </button>
       )}

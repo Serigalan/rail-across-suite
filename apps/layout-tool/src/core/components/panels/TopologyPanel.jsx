@@ -75,7 +75,7 @@ export default function TopologyPanel({ selection, onSelect, graphOpen, onShowGr
     <>
       <h2>{t('topology_title')}<InfoTip text={t('topology_hint')} /></h2>
 
-      <button className="panel-btn panel-btn-full" onClick={() => onShowGraph?.(!graphOpen)}>
+      <button className="ui-btn ui-btn-primary ui-btn-block" onClick={() => onShowGraph?.(!graphOpen)}>
         {t(graphOpen ? 'topology_graph_hide' : 'topology_graph_show')}
       </button>
 

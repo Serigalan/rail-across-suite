@@ -13,7 +13,7 @@ export default function SpliceRemedies({ state, picks, names, onAsk, onAdopt }) 
   const { t, fill } = useI18n()
   if (!state) {
     return (
-      <button type="button" className="panel-btn secondary splice-remedies-ask" onClick={onAsk}>
+      <button type="button" className="ui-btn splice-remedies-ask" onClick={onAsk}>
         {t('splice_remedies_show')}
       </button>
     )
@@ -50,7 +50,7 @@ export default function SpliceRemedies({ state, picks, names, onAsk, onAdopt }) 
               {what(r)}
               <span className={`splice-remedy-after${r.worst === 'error' ? ' error' : ''}`}>{after(r)}</span>
             </span>
-            <button type="button" className="panel-btn secondary" onClick={() => onAdopt(r)}>{t('splice_remedy_adopt')}</button>
+            <button type="button" className="ui-btn ui-btn-small" onClick={() => onAdopt(r)}>{t('splice_remedy_adopt')}</button>
           </li>
         ))}
       </ul>

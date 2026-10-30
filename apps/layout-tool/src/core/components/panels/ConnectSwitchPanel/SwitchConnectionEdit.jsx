@@ -56,7 +56,7 @@ export default function SwitchConnectionEdit({ onCommitted }) {
     <>
       <p>{t('crossover_edit_hint')}</p>
       {status && <p className="msg-error">{t(status)}</p>}
-      <CancelButton className="panel-btn panel-btn-full mt-8 secondary" onClick={() => onCommitted?.()} />
+      <CancelButton className="ui-btn ui-btn-block mt-8" onClick={() => onCommitted?.()} />
     </>
   )
 }

@@ -223,7 +223,7 @@ export default function SwitchDetailOverlay({ switchId = null, formLabel = null,
               {t('switch_detail_surroundings')}
             </label>
           )}
-          <button type="button" className="panel-btn" onClick={() => setView(null)} disabled={!view}>{t('switch_detail_fit')}</button>
+          <button type="button" className="ui-btn ui-btn-primary" onClick={() => setView(null)} disabled={!view}>{t('switch_detail_fit')}</button>
           <InfoTip text={t('switch_detail_overlay_hint')} />
           <CloseButton onClick={onClose} />
         </span>

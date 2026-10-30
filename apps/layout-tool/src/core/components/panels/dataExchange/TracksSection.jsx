@@ -78,11 +78,11 @@ export default function TracksSection() {
       {error && <p className="msg-error">{error}</p>}
       <hr className="divider" />
       <div className="row">
-        <button className={`panel-btn panel-btn-full grow ${selecting ? 'active' : ''}`}
+        <button className={`ui-btn ui-btn-block grow${selecting ? ' ui-btn-active' : ' ui-btn-primary'}`} aria-pressed={selecting}
           onClick={() => setSelecting(s => !s)}>
           {t('data_exchange_select')}
         </button>
-        <button className="panel-btn panel-btn-full grow" disabled={!selected.length}
+        <button className="ui-btn ui-btn-primary ui-btn-block grow" disabled={!selected.length}
           onClick={() => downloadJSON(selected.map(forFile), project ? `${project.title}_tracks.json` : 'tracks.json')}>
           {t('data_exchange_export')}
         </button>

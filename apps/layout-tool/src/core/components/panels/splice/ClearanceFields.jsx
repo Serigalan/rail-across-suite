@@ -27,7 +27,7 @@ export default function ClearanceFields({ on, onToggle, refName, picking, onPick
             <label>{t('splice_clearance_track')}</label>
             <div className="splice-clearance-pick">
               <span>{refName || '–'}</span>
-              <button type="button" className={`panel-btn${picking ? ' active' : ''}`} onClick={onPick}>
+              <button type="button" className={`ui-btn ui-btn-small${picking ? ' ui-btn-active' : ''}`} aria-pressed={picking} onClick={onPick}>
                 {t(picking ? 'splice_clearance_picking' : 'splice_clearance_pick')}
               </button>
             </div>

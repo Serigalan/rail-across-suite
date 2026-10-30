@@ -143,24 +143,24 @@ export default function RoutesForm() {
         ) : <p className="msg-hint">{t('route_parts_empty')}</p>}
         <MessageList items={notes} kind="warn" className="mt-2" />
         <div className="row mt-4">
-          <button type="button" className="panel-btn grow" disabled={!draft.trackIds.length} onClick={removeLast}>
+          <button type="button" className="ui-btn ui-btn-primary grow" disabled={!draft.trackIds.length} onClick={removeLast}>
             {t('route_remove_last')}
           </button>
-          <button type="button" className="panel-btn grow" disabled={draft.trackIds.length < 2} onClick={reverseDraft}
+          <button type="button" className="ui-btn ui-btn-primary grow" disabled={draft.trackIds.length < 2} onClick={reverseDraft}
             title={t('route_reverse_hint')}>
             {t('route_reverse')}
           </button>
         </div>
         {gaps > 0 && (
-          <button type="button" className="panel-btn panel-btn-full mt-2" onClick={closeDraftGaps}>
+          <button type="button" className="ui-btn ui-btn-primary ui-btn-block mt-2" onClick={closeDraftGaps}>
             {fill('route_close_gaps', { n: gaps })}
           </button>
         )}
         <div className="row mt-4">
-          <button type="button" className="panel-btn panel-btn-full grow" disabled={!draftResolved.parts.length} onClick={save}>
+          <button type="button" className="ui-btn ui-btn-primary ui-btn-block grow" disabled={!draftResolved.parts.length} onClick={save}>
             {t('route_save')}
           </button>
-          <button type="button" className="panel-btn panel-btn-full grow secondary" onClick={() => { setDraft(null); setNotes([]) }}>
+          <button type="button" className="ui-btn ui-btn-block grow" onClick={() => { setDraft(null); setNotes([]) }}>
             {t('btn_cancel')}
           </button>
         </div>
@@ -172,7 +172,7 @@ export default function RoutesForm() {
   const selectedResolved = selected ? resolvedById.get(selected.id) : null
   return (
     <>
-      <button type="button" className="panel-btn panel-btn-full" disabled={!tracks.length} onClick={startNew}>
+      <button type="button" className="ui-btn ui-btn-primary ui-btn-block" disabled={!tracks.length} onClick={startNew}>
         {t('route_new')}
       </button>
       {!routes.length && <p className="msg-hint mt-4">{t('route_none')}</p>}
@@ -181,7 +181,7 @@ export default function RoutesForm() {
           const res = resolvedById.get(r.id)
           const on = r.id === selectedId
           return (
-            <button key={r.id} type="button" className={`create-element-btn track-group-item route-item${on ? ' active' : ''}`}
+            <button key={r.id} type="button" className={`ui-btn ui-btn-option ui-btn-small track-group-item route-item${on ? ' ui-btn-active' : ''}`}
               aria-pressed={on} onClick={() => { setSelectedId(on ? null : r.id); if (!on) zoomTo(res) }}>
               <span className="route-item-name">{r.name}</span>
               <span className="msg-hint msg-small">
@@ -196,13 +196,13 @@ export default function RoutesForm() {
         <div className="mt-4">
           {partList(selectedResolved)}
           <div className="row mt-4">
-            <button type="button" className="panel-btn grow" onClick={() => startEdit(selected)}>{t('route_edit')}</button>
-            <button type="button" className="panel-btn grow" disabled={selected.trackIds.length < 2}
+            <button type="button" className="ui-btn ui-btn-primary grow" onClick={() => startEdit(selected)}>{t('route_edit')}</button>
+            <button type="button" className="ui-btn ui-btn-primary grow" disabled={selected.trackIds.length < 2}
               title={t('route_reverse_hint')}
               onClick={() => saveRoute({ ...selected, trackIds: [...selected.trackIds].reverse() })}>
               {t('route_reverse')}
             </button>
-            <button type="button" className="panel-btn grow danger"
+            <button type="button" className="ui-btn ui-btn-danger grow"
               onClick={() => { deleteRoute(selected.id); setSelectedId(null) }}>
               {t('route_delete')}
             </button>

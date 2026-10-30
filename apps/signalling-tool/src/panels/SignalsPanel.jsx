@@ -8,8 +8,8 @@ import {
   FUNCTION, MOUNTING, VIRTUAL_FUNCTION, logicalSignalWord, optionsOf, signalSystemOptions, signalTypeOptions, word,
 } from '../labels.js'
 import { signalTone, TONE_FILL } from '../plan/symbols.js'
-import { EditorHead, LocationFields, ObjectFindings } from './common.jsx'
-import { locationFrom, trackName } from '../model/places.js'
+import { CheckList, EditorHead, LocationFields, ObjectFindings } from './common.jsx'
+import { OFFSET, locationFrom, placing, trackName } from '../model/places.js'
 
 const FILTERS = ['all', 'main', 'distant', 'shunting', 'board', 'virtual']
 
@@ -38,15 +38,15 @@ export default function SignalsPanel({ domain, net, findings, selection, select,
     }))
     .sort((a, b) => String(a.title).localeCompare(String(b.title), 'de', { numeric: true }))
 
-  const place = (make) => setMode({ kind: 'place', apply: (hit) => ops.add('signals', make(hit)) })
+  const place = (make) => setMode(placing('signals', make, (s) => ops.add('signals', s)))
 
   return (
     <Panel title={t('section_signals')} intro={t('section_signals_intro')}
       actions={!readOnly && <>
         <Button size="small" variant="primary" icon={<PlusIcon size={14} />} disabled={!net.tracks.length}
-          onClick={() => place(hit => newSignal({ at: locationFrom(hit) }))}>{t('new_signal')}</Button>
+          onClick={() => place(hit => newSignal({ at: locationFrom(hit, { offset: OFFSET.signals }) }))}>{t('new_signal')}</Button>
         <Button size="small" icon={<PlusIcon size={14} />} disabled={!net.tracks.length}
-          onClick={() => place(hit => ({ id: newId(), kind: 'real', function: 'other', mounting: 'mast', at: locationFrom(hit), frames: [{ kind: 'plate', aspects: [{ aspect: 'Ne_1' }] }] }))}>
+          onClick={() => place(hit => ({ id: newId(), kind: 'real', function: 'other', mounting: 'mast', at: locationFrom(hit, { offset: OFFSET.signals }), frames: [{ kind: 'plate', aspects: [{ aspect: 'Ne_1' }] }] }))}>
           {t('new_board')}
         </Button>
       </>}>
@@ -56,7 +56,7 @@ export default function SignalsPanel({ domain, net, findings, selection, select,
       {chosen && (
         <SignalEditor key={chosen.id} signal={chosen} net={net} findings={findings} readOnly={readOnly} t={t} language={language}
           onChange={(s) => ops.update('signals', s)} onDelete={() => ops.remove('signals', chosen.id)}
-          onPlace={() => setMode({ kind: 'place', apply: (hit) => ops.update('signals', { ...chosen, at: locationFrom(hit, { direction: chosen.at?.direction ?? 'up' }) }) })} />
+          onPlace={() => setMode(placing('signals', (hit) => ({ ...chosen, at: locationFrom(hit, { offset: chosen.at?.offset ?? OFFSET.signals }) }), (s) => ops.update('signals', s)))} />
       )}
     </Panel>
   )
@@ -119,7 +119,8 @@ function SignalEditor({ signal, net, findings, onChange, onDelete, onPlace, read
 /**
  * What a signal is in each signalling system it shows: one row per logical
  * signal, its system and its kind there; a system it is not yet part of can
- * be added. Each system once, as the check asks.
+ * be added. Each system once, as the check asks; per system, the systems the
+ * signals it announces may be of (OSRD's next signalling systems).
  */
 function LogicalSignalsEditor({ signal, onChange, readOnly, t, language }) {
   const logical = signal.logicalSignals ?? []
@@ -137,6 +138,11 @@ function LogicalSignalsEditor({ signal, onChange, readOnly, t, language }) {
             onChange={(v) => setAt(i, { system: v, type: firstType(v) })} />
           <SelectField compact wide label={t('type')} value={l.type ?? null} empty={t('none')} disabled={readOnly}
             options={signalTypeOptions(l.system, language, t)} onChange={(v) => setAt(i, { ...l, type: v ?? undefined })} />
+          <div className="ui-wide">
+            <span className="ui-muted">{t('next_systems')}</span>
+            <CheckList options={systems} value={l.nextSystems} readOnly={readOnly}
+              onChange={(next) => setAt(i, { ...l, nextSystems: next.length ? next : undefined })} />
+          </div>
           {!readOnly && <div className="ui-wide ui-row"><button type="button" className="ui-link" onClick={() => onChange(logical.filter((_, j) => j !== i))}>{t('remove')}</button></div>}
         </div>
       ))}

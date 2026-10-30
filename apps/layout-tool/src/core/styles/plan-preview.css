@@ -52,12 +52,6 @@
   background: #fff;
 }
 
-.plan-preview-tools .panel-btn {
-  align-self: auto;
-  padding: 6px 12px;
-  font-size: var(--fs-m);
-}
-
 .plan-preview-step,
 .plan-preview-close {
   width: 28px;

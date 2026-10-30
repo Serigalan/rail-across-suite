@@ -67,7 +67,6 @@
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18); font-size: var(--fs-m);
 }
 .step-notice-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.step-notice .link-btn { white-space: nowrap; color: var(--color-primary); }
 .step-notice-close { background: none; border: 0; cursor: pointer; color: var(--color-text-soft); padding: 0 2px; font-size: 14px; }
 /* A write a lock refused (Entscheidung 382): it says why, in full. */
 .step-notice-refused { border-color: var(--color-warn); }

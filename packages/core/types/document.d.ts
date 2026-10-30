@@ -319,7 +319,7 @@ export namespace Layout {
 
 /** Rail-Data-Core, domain signalling 1.0 */
 export namespace Signalling {
-  /** The signalling of a project, as the signalling tool plans it: signals and boards, train detection, the switch elements of the interlocking, train and shunting routes with their overlaps, flank protection, the balises and magnets of train protection and the station boundaries. Depends on core; its references go into the core or into itself (R2, R9). Its objects follow PlanPro 1.10, and like OSRD it keeps every signalling and train protection system out of the schema (decision 0011): a signal carries a logical signal per system, a balise names its system; which systems, kinds, aspects and settings there are is not in this schema but in the catalogue (packages/core/constraints/db-ril-301.json), which the content check reads. */
+  /** The signalling of a project, as the signalling tool plans it: signals and boards, train detection, the switch elements of the interlocking, train and shunting routes with their overlaps, flank protection, the balises and magnets of train protection, the speed sections and the station boundaries. Depends on core; its references go into the core or into itself (R2, R9). Its objects follow PlanPro 1.10, and like OSRD it keeps every signalling and train protection system out of the schema (decision 0011): a signal carries a logical signal per system, a balise names its system; which systems, kinds, aspects and settings there are is not in this schema but in the catalogue (packages/core/constraints/db-ril-301.json), which the content check reads. */
   export type Root = {
     fields: Fields
     collections: {
@@ -331,6 +331,7 @@ export namespace Signalling {
       overlaps: Array<Overlap>
       flankProtection: Array<FlankProtection>
       balises: Array<Balise>
+      speedSections: Array<SpeedSection>
       stationBoundaries: Array<StationBoundary>
     }
   }
@@ -373,11 +374,17 @@ export namespace Signalling {
     frames?: Array<Frame>
     lifespan?: Core.Lifespan
   }
-  /** A signal in one signalling system (OSRD: LogicalSignal): the system, a key of the catalogue's `systeme`; the kind of signal it is there, a key of that system's `signalarten` or `other`; and its settings, as the catalogue declares them for the system. */
+  /** A signal in one signalling system (OSRD: LogicalSignal): the system, a key of the catalogue's `systeme`; the kind of signal it is there, a key of that system's `signalarten` or `other`; its settings, as the catalogue declares them for the system; the systems the signals it announces may be of (OSRD next_signaling_systems); and the parameters it shows with, by default and per route (OSRD default_parameters, conditional_parameters), as the system declares them. */
   export type LogicalSignal = {
     system: string
     type?: string
     settings?: Settings
+    nextSystems?: Array<string>
+    defaultParameters?: Settings
+    conditionalParameters?: Array<{
+      routeId: Core.Ref
+      parameters: Settings
+    }>
   }
   /** Values a system's driver reads (OSRD: settings), by the names the catalogue declares for that system and kind: a choice, a number, a flag or a text. The content check holds them to the catalogue. */
   export type Settings = {
@@ -523,7 +530,24 @@ export namespace Signalling {
     }>
     lifespan?: Core.Lifespan
   }
-  /** The boundary of a station of the core's register, where trains enter it: what marks it — an entry signal or a board (Ne 1), or an entry switch where there is neither (EBO §4). Where it is not where the rules put it, a finding says so. */
+  /** A stretch where a speed holds (OSRD: SpeedSection; the speed profile of the roadmap): from `start` along a run of tracks to `end`, both on the run's first and last track — as an overlap runs, so the core carries it as it carries every location and run. In the direction `start` states, or both where it states none. The speed [km/h], per tag of train where it differs (OSRD speed_limit_by_tag), and the routes it holds on only, where it holds on some. */
+  export type SpeedSection = {
+    id: Core.Id
+    name?: Core.Text
+    start: Core.TrackLocation
+    path: Core.TrackPath
+    end: Core.TrackLocation
+    /** [km/h] */
+    speed?: number
+    /** Per tag of train, the speed it may run at here [km/h] (OSRD speed_limit_by_tag). */
+    speedByTag?: {
+      [name: string]: number
+    }
+    /** The routes it holds on; on all where it names none (OSRD on_routes). */
+    onRoutes?: Array<Core.Ref>
+    lifespan?: Core.Lifespan
+  }
+  /** The boundary of a station of the core's register, where trains enter it: what marks it — an entry signal or a board (Ne 1), an entry switch where there is neither (EBO §4), or for a halt its platform. Where it is not where the rules put it, a finding says so. */
   export type StationBoundary = {
     id: Core.Id
     operationalPointId: Core.Ref
@@ -531,6 +555,8 @@ export namespace Signalling {
       signalId: Core.Ref
     } | {
       switchId: Core.Ref
+    } | {
+      platformId: Core.Ref
     }>
     lifespan?: Core.Lifespan
   }

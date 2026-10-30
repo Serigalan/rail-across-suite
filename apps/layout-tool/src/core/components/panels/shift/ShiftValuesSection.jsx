@@ -225,7 +225,7 @@ export default function ShiftValuesSection({ id, line, epsg, heightEpsg = null, 
               </tbody>
             </table>
           </details>
-          <button type="button" className="panel-btn panel-btn-full secondary mt-4"
+          <button type="button" className="ui-btn ui-btn-block mt-4"
             onClick={() => downloadText(shiftValuesCsv(rows, { axisName: axis.name, lineName: name }),
               `Verschiebewerte_${(name || 'Achse').replace(/[^\w.-]+/g, '_')}.csv`, 'text/csv')}>
             {t('shift_csv')}

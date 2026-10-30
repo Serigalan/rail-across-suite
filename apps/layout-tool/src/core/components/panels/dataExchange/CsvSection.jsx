@@ -94,7 +94,7 @@ export default function CsvSection() {
       </FilePickButton>
       {strecken.length > 0 && (
         <>
-          <FilePickButton accept=".csv,text/csv" disabled={busy} onFile={readCant} className="panel-btn panel-btn-full mt-2">
+          <FilePickButton accept=".csv,text/csv" disabled={busy} onFile={readCant} className="ui-btn ui-btn-primary ui-btn-block mt-2">
             {cantCount ? fill('data_exchange_csv_cant_loaded', { n: cantCount }) : t('data_exchange_csv_cant')}
           </FilePickButton>
           <div className="mt-6">
@@ -107,7 +107,7 @@ export default function CsvSection() {
               {strecken.map(s => <option key={s.strecke} value={s.strecke}>{s.strecke} ({s.count})</option>)}
             </select>
           </div>
-          <button className="panel-btn panel-btn-full mt-2" disabled={!strecke} onClick={importIt}>
+          <button className="ui-btn ui-btn-primary ui-btn-block mt-2" disabled={!strecke} onClick={importIt}>
             {t('data_exchange_import')}
           </button>
         </>

@@ -20,7 +20,7 @@ export function GuidePreview({ onOpen }) {
     <div className="home-guide-preview">
       <iframe src={guidePage(language)} title={t('start_guideline')} tabIndex={-1} aria-hidden="true" />
       <button type="button" className="home-guide-open" onClick={onOpen}>
-        <span className="collab-btn collab-btn-primary">{t('guide_read_all')}</span>
+        <span className="ui-btn ui-btn-primary">{t('guide_read_all')}</span>
       </button>
     </div>
   )
@@ -37,10 +37,10 @@ export default function GuideDialog({ onClose }) {
     <Modal title={t('start_guideline')} onClose={onClose} className="modal-guide"
       actions={(
         <>
-          <a href="./Leitfaden_Trassierung.pdf" download="Leitfaden_Trassierung.pdf" className="modal-btn modal-btn-cancel link-as-btn">
+          <a href="./Leitfaden_Trassierung.pdf" download="Leitfaden_Trassierung.pdf" className="ui-btn link-as-btn">
             {t('start_guideline_download')}
           </a>
-          <button type="button" className="modal-btn modal-btn-primary" onClick={onClose}>{t('btn_close')}</button>
+          <button type="button" className="ui-btn ui-btn-primary" onClick={onClose}>{t('btn_close')}</button>
         </>
       )}>
       <iframe className="guide-frame" src={guidePage(language)} title={t('start_guideline')} />

@@ -3,6 +3,8 @@
 import './server/register'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+// The suite's look first (its buttons), then the app's own styles over it.
+import '@rail-across/ui/ui.css'
 import './core/index.css'
 import App from './server/App.jsx'
 import { initStorage } from './core/storage'

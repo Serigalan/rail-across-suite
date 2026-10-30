@@ -69,7 +69,7 @@ export default function MdbSection({ dbref = false, onReport }) {
       {mdb.busy && (
         <div className="run-status">
           <span>{fill('run_elapsed', { s: elapsed })}</span>
-          <button type="button" className="link-btn" onClick={mdb.stop}>{t('btn_abort')}</button>
+          <button type="button" className="ui-link" onClick={mdb.stop}>{t('btn_abort')}</button>
         </div>
       )}
       {mdb.counts && <p className="selecting-hint">{fill('data_exchange_mdb_counts', mdb.counts)}</p>}
@@ -94,7 +94,7 @@ export default function MdbSection({ dbref = false, onReport }) {
             <input type="checkbox" checked={withSwitches} onChange={e => setWithSwitches(e.target.checked)} />
             <span>{t('data_exchange_mdb_switches')}</span>
           </label>
-          <button className="panel-btn panel-btn-full mt-2" disabled={!mdb.strecke || mdb.busy} onClick={importIt}>
+          <button className="ui-btn ui-btn-primary ui-btn-block mt-2" disabled={!mdb.strecke || mdb.busy} onClick={importIt}>
             {t('data_exchange_import')}
           </button>
         </>

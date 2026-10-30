@@ -927,7 +927,7 @@ export default function ElevationOverlay({ trackId, routeId = null, section = nu
   const emptyState = (
     <div className="profile-empty">
       <span>{t('elevation_no_heights')}</span>
-      <button className="panel-btn" disabled={readState === 'busy'} onClick={readFromTerrain}>
+      <button className="ui-btn ui-btn-primary" disabled={readState === 'busy'} onClick={readFromTerrain}>
         {t('elevation_compute')}
       </button>
       {readState === 'busy' && <span>{t('elevation_loading')}</span>}

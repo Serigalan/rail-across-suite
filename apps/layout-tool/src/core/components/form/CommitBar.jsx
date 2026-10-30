@@ -72,13 +72,13 @@ export default function CommitBar({
     <div className={`commit-bar${compact ? ' commit-bar-compact' : ''} ${className}`.trim()}>
       <div className="commit-bar-row" ref={ref}>
         {onCancel && (
-          <button type="button" className="panel-btn commit-bar-btn panel-btn-cancel" onClick={onCancel}
+          <button type="button" className="ui-btn commit-bar-btn" onClick={onCancel}
             title={compact ? cancelText : undefined}>
             <span className="commit-bar-icon"><CancelIcon /></span>
             <span className="commit-bar-label">{cancelText}</span>
           </button>
         )}
-        <button type="button" className={`panel-btn commit-bar-btn${danger ? ' danger' : ''}`}
+        <button type="button" className={`ui-btn commit-bar-btn ${danger ? 'ui-btn-danger' : 'ui-btn-primary'}`}
           onClick={() => onCommit()} disabled={disabled}
           title={disabled && reason ? reason : compact ? commitText : undefined}>
           <span className="commit-bar-icon"><ConfirmIcon /></span>
@@ -86,7 +86,7 @@ export default function CommitBar({
         </button>
       </div>
       {disabled && onOverride && (
-        <button type="button" className="link-btn commit-override" onClick={() => onOverride()}
+        <button type="button" className="ui-link commit-override" onClick={() => onOverride()}
           title={t('commit_override_hint')}>
           {t('commit_override')}
         </button>

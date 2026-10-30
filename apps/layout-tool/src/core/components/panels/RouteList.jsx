@@ -26,7 +26,7 @@ export default function RouteList({ activeId, activeIds, onPick }) {
         const on = activeIds ? activeIds.has(route.id) : route.id === activeId
         return (
           <button key={route.id} type="button" disabled={!res.parts.length}
-            className={`create-element-btn track-group-item route-item${on ? ' active' : ''}`}
+            className={`ui-btn ui-btn-option ui-btn-small track-group-item route-item${on ? ' ui-btn-active' : ''}`}
             aria-pressed={on} onClick={() => onPick(route, res)}>
             <span className="route-item-name">{route.name}</span>
             <span className="msg-hint msg-small">

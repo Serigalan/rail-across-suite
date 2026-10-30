@@ -205,7 +205,7 @@ core, and derived results above them:
 |---|---|---|---|
 | derived | — | — | stage views, coordination checks, simulation results, reverse index — caches keyed by input hashes, never in a revision |
 | discipline | `layout` | layout-tool | surveys, reference axes, named track paths, plan header |
-| discipline | `signalling` | signalling-tool | signals and boards, detection points, track sections, switch elements, train and shunting routes, overlaps, flank protection, balises and magnets (PZB, ETCS) elements, station boundaries ([decision 0011](decisions/0011-signalling-domain.md)); speed profile to follow |
+| discipline | `signalling` | signalling-tool | signals and boards, detection points, track sections, switch elements, train and shunting routes, overlaps, flank protection, balises and magnets (PZB, ETCS), speed sections (the speed profile), station boundaries ([decision 0011](decisions/0011-signalling-domain.md)) |
 | discipline | `catenary` | open-catenary-tool | masts, cantilevers, wires, sections, El signals |
 | discipline | `operations` | open-timetable-tool | train runs, timetable, rolling stock |
 | discipline | `construction` | open-construction-sim | closures, temporary speed restrictions, tracks in operation per stage |

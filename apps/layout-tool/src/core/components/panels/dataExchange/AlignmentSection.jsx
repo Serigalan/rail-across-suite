@@ -19,12 +19,12 @@ export default function AlignmentSection() {
   return (
     <ExchangeSection title={t('data_exchange_alignment')}
       description={fill('data_exchange_alignment_desc', { version: FORMAT_VERSION })}>
-      <button className="panel-btn panel-btn-full" disabled={!project}
+      <button className="ui-btn ui-btn-primary ui-btn-block" disabled={!project}
         onClick={() => downloadJSON(exportExchange(currentProject()), `${project.title}_trassierung.json`)}>
         {t('data_exchange_export')}
       </button>
       <FilePickButton accept=".json,application/json" disabled={!project} onFile={railJson.importFile}
-        className="panel-btn panel-btn-full mt-2">
+        className="ui-btn ui-btn-primary ui-btn-block mt-2">
         {t('data_exchange_import')}
       </FilePickButton>
       <MessageList items={railJson.errors} small={false} />

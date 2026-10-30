@@ -11,10 +11,14 @@ Status: **accepted**
    the panel of the chosen section beside it and the workspace filling the rest; its buttons, fields and
    dialogs as its collaboration pages have them. Nothing is redesigned on the way into the library.
 3. **The start page and every new module use it** from now on; the Signalling-Tool is built on it. The
-   Layout-Tool moves to it page by page, as its pages are touched — not in one sweep over 1600 tests.
-4. **Classes begin with `ui-`**; a module styles what is its own (a plan, a map) with its own classes and
+   Layout-Tool moves to it page by page, as its pages are touched — not in one sweep over 1600 tests; its
+   buttons have moved (`ui-btn` and its variants, the option tiles as `ui-btn-option`), and its map view keeps
+   the light look (`data-theme="light"`) while the project pages follow the system.
+4. **One language for the suite**, kept by the library (`keptLanguage`, `keepLanguage`): the start page, the
+   Layout-Tool and the Signalling-Tool set and read the same choice, each in its own settings.
+5. **Classes begin with `ui-`**; a module styles what is its own (a plan, a map) with its own classes and
    never overrides a `ui-` class. `--color-primary` is the one colour a module may set.
-5. **No texts in the library**: a component takes its words as props, so every module keeps its own
+6. **No texts in the library**: a component takes its words as props, so every module keeps its own
    translations.
 
 ## Why

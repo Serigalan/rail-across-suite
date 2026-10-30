@@ -29,6 +29,7 @@
     "@rail-across/basemaps": "*",
     "@rail-across/core": "*",
     "@rail-across/pointcloud": "*",
+    "@rail-across/ui": "*",
     "fflate": "^0.8.3",
     "jspdf": "^4.2.1",
     "laz-perf": "^0.0.7",

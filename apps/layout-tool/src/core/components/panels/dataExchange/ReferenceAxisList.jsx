@@ -49,8 +49,8 @@ export default function ReferenceAxisList() {
                 + (a.source?.importedAt ? ` · ${formatDate(a.source.importedAt, language, { time: true })}` : '')}
             </span>
             <div className="pointcloud-actions">
-              <button className="modal-btn modal-btn-cancel" onClick={() => showOnMap(a)}>{t('pointcloud_show')}</button>
-              <button className="modal-btn modal-btn-confirm" onClick={() => setAsking(a)}>{t('modal_delete')}</button>
+              <button className="ui-btn ui-btn-small" onClick={() => showOnMap(a)}>{t('pointcloud_show')}</button>
+              <button className="ui-btn ui-btn-small ui-btn-danger" onClick={() => setAsking(a)}>{t('modal_delete')}</button>
             </div>
           </div>
         )

@@ -64,7 +64,7 @@ export default function GroupedTrackList({ tracks: all, isActive, onPick, onPick
   ) : (
     <button
       key={track.id}
-      className={`create-element-btn track-group-item${isActive?.(track) ? ' active' : ''}`}
+      className={`ui-btn ui-btn-option ui-btn-small track-group-item${isActive?.(track) ? ' ui-btn-active' : ''}`}
       onClick={() => onPick?.(track)}
     >
       {trackListLabel(track)}

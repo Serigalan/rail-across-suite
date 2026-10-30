@@ -135,7 +135,7 @@ export default function TrackLinkForm({ onCommitted }) {
       {joints.length > 0
         ? <CommitBar onCommit={handleCreate} onCancel={onCommitted} disabled={open.length === 0}
           commitLabel={fill('switch_link_create', { n: open.length })} className="" />
-        : <CancelButton className="panel-btn panel-btn-full mt-2 secondary" onClick={onCommitted} />}
+        : <CancelButton className="ui-btn ui-btn-block mt-2" onClick={onCommitted} />}
     </>
   )
 }

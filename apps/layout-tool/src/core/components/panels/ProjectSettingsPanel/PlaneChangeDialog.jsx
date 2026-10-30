@@ -28,11 +28,11 @@ export default function PlaneChangeDialog({ change, busy, onConfirm, onCancel })
   return (
     <Modal title={t('project_settings_move_title')} onClose={onCancel} busy={busy}
       actions={<>
-        <button type="button" className="modal-btn modal-btn-cancel" onClick={onCancel} disabled={busy}>
+        <button type="button" className="ui-btn" onClick={onCancel} disabled={busy}>
           {t(refused ? 'btn_close' : 'btn_cancel')}
         </button>
         {!refused && (
-          <button type="button" className="modal-btn modal-btn-primary" onClick={onConfirm} disabled={busy}>
+          <button type="button" className="ui-btn ui-btn-primary" onClick={onConfirm} disabled={busy}>
             {t('project_settings_move_confirm')}
           </button>
         )}

@@ -42,7 +42,7 @@ export default function SwitchSearch({ query }) {
       {hits.length > 0 && (
         <div className="create-element-options track-search-hits">
           {hits.slice(0, MAX_HITS).map(sw => (
-            <button key={sw.switchId} type="button" className={`create-element-btn track-group-item${shown === sw.switchId ? ' active' : ''}`}
+            <button key={sw.switchId} type="button" className={`ui-btn ui-btn-option ui-btn-small track-group-item${shown === sw.switchId ? ' ui-btn-active' : ''}`}
               onClick={() => show(sw)}>
               {[sw.name, sw.label].filter(Boolean).join(' · ') || sw.switchId.slice(0, 8)}
             </button>

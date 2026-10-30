@@ -58,7 +58,7 @@ export default function DeleteSwitchForm({ onCommitted }) {
           <CommitBar onCommit={handleDelete} onCancel={onCommitted} commitLabel={t('switch_delete')} danger className="" />
         </>
       )}
-      {!selected && <CancelButton className="panel-btn panel-btn-full mt-2 secondary" onClick={onCommitted} />}
+      {!selected && <CancelButton className="ui-btn ui-btn-block mt-2" onClick={onCommitted} />}
     </>
   )
 }

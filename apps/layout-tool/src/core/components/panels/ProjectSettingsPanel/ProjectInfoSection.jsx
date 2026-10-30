@@ -51,7 +51,7 @@ export default function ProjectInfoSection({ project }) {
           onChange={e => setDescription(e.target.value)} />
       </div>
       {error && <p className="form-error">{error}</p>}
-      <button type="button" className="panel-btn panel-btn-full" onClick={save}
+      <button type="button" className="ui-btn ui-btn-primary ui-btn-block" onClick={save}
         disabled={busy || !dirty || !title.trim()}>
         {t('btn_save')}
       </button>

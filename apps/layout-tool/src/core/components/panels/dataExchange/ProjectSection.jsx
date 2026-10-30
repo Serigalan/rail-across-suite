@@ -12,7 +12,7 @@ export default function ProjectSection() {
   return (
     <ExchangeSection title={t('data_exchange_project')}
       description={fill('data_exchange_project_desc', { tracks: tracks.length })}>
-      <button className="panel-btn panel-btn-full"
+      <button className="ui-btn ui-btn-primary ui-btn-block"
         disabled={!project}
         onClick={() => downloadJSON(exportProjectDocument(), `${project.title || 'project'}.railacross.json`)}>
         {t('data_exchange_export')}

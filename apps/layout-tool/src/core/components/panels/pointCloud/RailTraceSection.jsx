@@ -243,11 +243,11 @@ export default function RailTraceSection({ clouds, paused = false, retrace = nul
           {drawing && <p className="selecting-hint">{fill('railtrace_drawing', { n: line.length })}</p>}
           <div className="pointcloud-actions">
             {drawing ? (
-              <button className="modal-btn modal-btn-primary" disabled={line.length < 2} onClick={() => setDrawing(false)}>
+              <button className="ui-btn ui-btn-primary" disabled={line.length < 2} onClick={() => setDrawing(false)}>
                 {t('railtrace_line_done')}
               </button>
             ) : (
-              <button className="modal-btn modal-btn-cancel" disabled={!!run}
+              <button className="ui-btn" disabled={!!run}
                 onClick={() => { setLine([]); setDrawing(true) }}>
                 {line.length ? t('railtrace_line_redraw') : t('railtrace_line_draw')}
               </button>
@@ -265,14 +265,14 @@ export default function RailTraceSection({ clouds, paused = false, retrace = nul
         <>
           <progress className="full-width" max={1} value={run.share} />
           <span className="range-use">{t('pointcloud_runs_in_browser')}</span>
-          <button className="panel-btn panel-btn-danger panel-btn-full" onClick={() => abortRef.current?.abort()}>
+          <button className="ui-btn ui-btn-danger ui-btn-block" onClick={() => abortRef.current?.abort()}>
             {t('btn_cancel')}
           </button>
         </>
       ) : serverBusy ? (
         <ServerRunStatus run={server.run} mayCancel={mayEdit} onCancel={server.cancel} />
       ) : (
-        <button className="panel-btn panel-btn-full" disabled={!guide} onClick={onServer ? startOnServer : start}>
+        <button className="ui-btn ui-btn-primary ui-btn-block" disabled={!guide} onClick={onServer ? startOnServer : start}>
           {t('railtrace_start')}
         </button>
       )}
@@ -305,14 +305,14 @@ export default function RailTraceSection({ clouds, paused = false, retrace = nul
                   {SO_REFERENCES.map(r => <option key={r} value={r}>{t(`railtrace_so_${r}`)}</option>)}
                 </select>
               </div>
-              <button className="panel-btn panel-btn-full" onClick={exportCsv}>{t('railtrace_export')}</button>
+              <button className="ui-btn ui-btn-primary ui-btn-block" onClick={exportCsv}>{t('railtrace_export')}</button>
               {mayEdit ? (
                 <>
                   <div className="form-field">
                     <label>{t('axis_survey_name')}<InfoTip text={t('axis_survey_save_hint')} /></label>
                     <input type="text" value={surveyName} onChange={e => setSurveyName(e.target.value)} />
                   </div>
-                  <button className="panel-btn panel-btn-full" onClick={keep}>{t('axis_survey_save')}</button>
+                  <button className="ui-btn ui-btn-primary ui-btn-block" onClick={keep}>{t('axis_survey_save')}</button>
                 </>
               ) : <span className="range-use">{t('pointcloud_view_only')}</span>}
             </>

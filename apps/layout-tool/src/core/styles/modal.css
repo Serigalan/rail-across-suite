@@ -43,32 +43,3 @@
   justify-content: flex-end;
   gap: 8px;
 }
-
-.modal-btn {
-  padding: 8px 18px;
-  border-radius: 6px;
-  border: none;
-  font-family: var(--font-ui);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-.modal-btn-cancel {
-  background: #f0f0f0;
-  color: #333;
-}
-
-.modal-btn-cancel:hover {
-  background: var(--color-border);
-}
-
-.modal-btn-confirm {
-  background: var(--color-error);
-  color: white;
-}
-
-.modal-btn-confirm:hover {
-  background: var(--color-danger);
-}

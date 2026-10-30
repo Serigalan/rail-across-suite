@@ -5,7 +5,7 @@ import { useRef } from 'react'
  * its own. `onFile` gets the chosen file; the input is cleared afterwards, so
  * choosing the same file again reads it again.
  */
-export default function FilePickButton({ accept, onFile, disabled, className = 'panel-btn panel-btn-full', title, children }) {
+export default function FilePickButton({ accept, onFile, disabled, className = 'ui-btn ui-btn-primary ui-btn-block', title, children }) {
   const inputRef = useRef(null)
   return (
     <>

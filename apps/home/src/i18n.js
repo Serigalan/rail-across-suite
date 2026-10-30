@@ -418,22 +418,8 @@ const en = {
 }
 
 export const TEXTS = { de, en }
-export const LANGUAGES = ['de', 'en']
-const KEY = 'rail-across-language'
-
-/** The language chosen before, else the browser's (German where it asks for German). */
-export function initialLanguage() {
-  try {
-    const kept = localStorage.getItem(KEY)
-    if (LANGUAGES.includes(kept)) return kept
-  } catch { /* no storage: the browser's language */ }
-  const asked = globalThis.navigator?.language ?? 'de'
-  return asked.toLowerCase().startsWith('de') ? 'de' : 'en'
-}
-
-export function keepLanguage(language) {
-  try { localStorage.setItem(KEY, language) } catch { /* not kept: chosen again next time */ }
-}
+// The language is the suite's, kept in one place for every module (@rail-across/ui).
+export { LANGUAGES, keepLanguage, keptLanguage as initialLanguage } from '@rail-across/ui'
 
 /** t(key) and fill(key, { name: value }) for a language. */
 export function textsFor(language) {

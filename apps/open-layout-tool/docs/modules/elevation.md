@@ -12,7 +12,6 @@ one in the design mode —, the profile along a route, and ground heights from t
 | File | What it does |
 |---|---|
 | `gradientCheck.js` | HP.LN (gradients) and HP.AR (vertical curves) applied to a track; the Regelwert radius; radii governed by a curve length |
-| `switchGradient.js` | The turnout plane: the branch's height from the main route's height, gradient and cant (`ldsLift` on the ldS sleeper, `trackHeightAt` between WA and ldS) |
 | `switchChain.js` | Which heights follow which: lines through WA and ldS, the standard coupling, dependencies of one's own and how (`withSwitchHeights`, run by the store); `switchMisfits`, `addDependentAt`, `setDependencyMode`, `releaseDependency`, `restoreDependency` for the design mode; `heightRoles`, `heightLinks` for the profile |
 | `heightLocks.js` | Locked height points: `lockBreach`, what a write would change that a lock holds — the store refuses it |
 | `routeProfile.js` | The profile of a route — its tracks' points over route stations — and a track as a route of one part |
@@ -207,6 +206,9 @@ resolve against a gradient.
 
 ## Tests
 
-`gradientCheck.test.js`, `switchGradient.test.js`, `switchChain.test.js`,
+`gradientCheck.test.js`, `switchChain.test.js`,
 `heightLocks.test.js`, `routeProfile.test.js`, `elevationSource.test.js`, `elevationFill.test.js` next to
-the files; a crossover in cant in `src/core/test/swappedTurnout.test.js`.
+the files; a crossover in cant in `src/core/test/swappedTurnout.test.js`. The turnout plane they build on —
+the branch's height from the main route's (`ldsLift`, `trackHeightAt`) — is the core's
+(`packages/core/src/switch/switchGradient.js`); its tests, which run it with the couplings here, are in
+`src/core/test/core/switch/switchGradient.test.js`.

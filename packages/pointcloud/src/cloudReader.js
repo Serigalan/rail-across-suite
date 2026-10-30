@@ -1,5 +1,5 @@
-import { readLasHeader, readLasPoints } from './lasReader'
-import { isE57, readE57Header, readE57Points } from './e57Reader'
+import { readLasHeader, readLasPoints } from './lasReader.js'
+import { isE57, readE57Header, readE57Points } from './e57Reader.js'
 
 /**
  * One way into every point cloud format the import reads — LAS, LAZ and E57,

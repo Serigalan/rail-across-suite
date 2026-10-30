@@ -11,9 +11,9 @@ import { solveConnection, computeShiftBounds, buildSCurve } from '@rail-across/c
 import { switchElementRoute } from '@rail-across/core/src/switch/route.js'
 import { planSwitchDeletion } from '@rail-across/core/src/switch/switchDelete.js'
 import { switchMisfits, withSwitchHeights } from '../utils/elevation/switchChain'
-import { couplingOf } from '../utils/elevation/switchGradient'
+import { couplingOf } from '@rail-across/core/switch'
 import { trackLength } from '@rail-across/core/src/track/heightUtils.js'
-import { ldsFromToe } from '../utils/elevation/switchGradient'
+import { ldsFromToe } from '@rail-across/core/src/switch/switchGradient.js'
 
 import { expectValidTrack } from '@rail-across/core/test/chainInvariants.js'
 

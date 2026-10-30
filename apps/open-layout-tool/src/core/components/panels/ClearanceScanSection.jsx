@@ -3,7 +3,7 @@ import {
   readableClouds, scanClearance, runIsActive, runsOnServer, serverRunHook, registrationHook,
 } from '../../utils/pointCloud'
 import { gaugeProfile, gaugeProfileRing, gaugeProfileAreas, DEFAULT_GAUGE_PROFILE } from '@rail-across/core/crossSection'
-import { heightContext } from '../../utils/elevation'
+import { heightContext } from '@rail-across/core/switch'
 import { currentProject } from '../../storage'
 import { useI18n } from '../../locales/i18nContext'
 import { tOr, formatDate } from '../../locales/i18n'

@@ -1,5 +1,5 @@
-import { parseLasHeader, HEADER_PROBE_BYTES, VARIABLE_CHUNK_SIZE } from './lasHeader'
-import { decodeChunkTable } from './lazChunkTable'
+import { parseLasHeader, HEADER_PROBE_BYTES, VARIABLE_CHUNK_SIZE } from './lasHeader.js'
+import { decodeChunkTable } from './lazChunkTable.js'
 
 /**
  * Reading the points of a LAS or LAZ file in pieces, never the whole file at

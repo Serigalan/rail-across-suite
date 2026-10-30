@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest'
-import { sliceFrame, tilesInSlice, sliceSegment, SlicePoints } from './cloudSlice'
-import { importPointCloud } from './importPipeline'
-import { readLasHeader, readLasPoints } from './lasReader'
-import { decodeCloudSegment, decodeSegment, encodeSegment, segmentPlacement } from './tiles'
-import { hasLaz, LAZ_PATH, nodeFileSource, nodeLazPerf } from '../../test/pointCloudFixture'
+import { sliceFrame, tilesInSlice, sliceSegment, SlicePoints } from './cloudSlice.js'
+import { importPointCloud } from './importPipeline.js'
+import { readLasHeader, readLasPoints } from './lasReader.js'
+import { decodeCloudSegment, decodeSegment, encodeSegment, segmentPlacement } from './tiles.js'
+import { hasLaz, LAZ_PATH, nodeFileSource, nodeLazPerf } from '../test/pointCloudFixture.js'
 
 const slice = (index, bytes, frame, toPlane = null) => {
   const out = new SlicePoints()

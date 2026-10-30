@@ -7,9 +7,7 @@
 //   olt-cloudjobs exec <run>   one long run (what serve starts per run)
 //
 // Same database and cloud directory as olt-server (OLT_SERVER_DB,
-// OLT_SERVER_CLOUDS). The module hook first: the jobs run the browser's own
-// point cloud code from src/.
-import '../src/register.mjs'
-
+// OLT_SERVER_CLOUDS). The jobs run the browser's own point cloud code, the
+// package @rail-across/pointcloud.
 const { main } = await import('../src/clouds/cli.js')
 await main(process.argv.slice(2))

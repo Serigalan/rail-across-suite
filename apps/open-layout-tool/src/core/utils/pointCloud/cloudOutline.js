@@ -1,5 +1,5 @@
 import { planeCoordsToWgs84 } from '@rail-across/core/geometry'
-import { cloudPlane, cloudToPlane } from './cloudCrs'
+import { cloudPlane, cloudToPlane } from '@rail-across/pointcloud'
 
 /**
  * Where a point cloud lies, for the map: the outline of the cells of

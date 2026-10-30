@@ -1,12 +1,13 @@
-import { sourceOf, forgetSource, forgetSources } from './cloudSource'
-import { decodeCloudSegment, segmentPlacement } from './tiles'
-import { sliceFrame, tilesInSlice, sliceSegment, SlicePoints } from './cloudSlice'
-import { cloudToPlane, planeToCloud } from './cloudCrs'
+import { decodeCloudSegment, segmentPlacement } from './tiles.js'
+import { sliceFrame, tilesInSlice, sliceSegment, SlicePoints } from './cloudSlice.js'
+import { cloudToPlane, planeToCloud } from './cloudCrs.js'
 import { transformPlanePoint, transformGridBearing } from '@rail-across/core/geometry'
 
 /**
  * The points of the project's clouds in a cross section, read through each
- * cloud's source — the local tile store or the server (cloudSource). Walking
+ * cloud's `source` — `read(offset, length)` and `readMany(ranges)` over its tile
+ * file, wherever that lies: the browser's tile store, the server, a file on
+ * the server's disk. The caller gives it; this module does not care. Walking
  * the slider moves the plane a little at a time, so the tiles it needs are
  * mostly the ones it just had: decoded segments are kept in a small cache,
  * and a station change costs only the filtering and the few tiles that come
@@ -47,7 +48,7 @@ let decodeMs = 0
 /** A cloud's key in the cache: a server cloud's levels are clouds of their own. */
 const keyOf = (cloud) => (cloud.server ? `${cloud.id}@L${cloud.server.level}` : cloud.id)
 
-async function segments(projectId, cloud, wanted) {
+async function segments(cloud, wanted) {
   const cloudKey = keyOf(cloud)
   decodeMs = 0
   const got = new Map()
@@ -64,7 +65,8 @@ async function segments(projectId, cloud, wanted) {
     }
   }
   if (!missing.length) return got
-  const bytes = await sourceOf(projectId, cloud).readMany(missing.map(s => [s[0], s[1]]))
+  if (!cloud.source) throw new Error(`cloud ${cloud.id} has no source to read from`)
+  const bytes = await cloud.source.readMany(missing.map(s => [s[0], s[1]]))
   const t0 = performance.now()
   missing.forEach(([offset, , count], k) => {
     const seg = decodeCloudSegment(cloud, bytes[k], count)
@@ -78,13 +80,11 @@ async function segments(projectId, cloud, wanted) {
 /** Forget what was read of a cloud — after it was deleted. */
 export function forgetCloud(cloudId) {
   for (const key of [...cache.keys()]) if (key.startsWith(`${cloudId}|`) || key.startsWith(`${cloudId}@`)) forget(key)
-  forgetSource(cloudId)
 }
 
 /** Forget what was read of every cloud — after all of them were deleted. */
 export function forgetAllClouds() {
   for (const key of [...cache.keys()]) forget(key)
-  forgetSources()
 }
 
 /**
@@ -93,7 +93,7 @@ export function forgetAllClouds() {
  * z, i }` — y [m] across, z [m] absolute in the cloud's height system,
  * i the intensity byte.
  */
-export async function cloudSectionPoints(projectId, cloud, { origin, bearing, crs, halfWidth, thickness }) {
+export async function cloudSectionPoints(cloud, { origin, bearing, crs, halfWidth, thickness }) {
   const out = new SlicePoints(!!cloud.rgb)
   const frame = sliceFrame({ easting: origin.easting, northing: origin.northing, bearing, halfWidth, thickness })
   const toPlane = cloudToPlane(cloud, crs)
@@ -126,7 +126,7 @@ export async function cloudSectionPoints(projectId, cloud, { origin, bearing, cr
       easting: e, northing: n, bearing: b, halfWidth: halfWidth * 1.01 + slack, thickness: thickness + 2 * slack,
     }))
   }
-  const decoded = await segments(projectId, cloud, tiles.flatMap(([, , segs]) => segs))
+  const decoded = await segments(cloud, tiles.flatMap(([, , segs]) => segs))
   const t0 = performance.now()
   for (const [tx, ty, segs] of tiles) {
     for (const s of segs) {

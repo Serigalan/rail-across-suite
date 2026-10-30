@@ -1,8 +1,8 @@
-import { cloudSectionPoints } from './cloudSection'
-import { checkClearance } from './clearanceCheck'
+import { cloudSectionPoints } from './cloudSection.js'
+import { checkClearance } from './clearanceCheck.js'
 import { sectionOrigin, sectionAtStation } from '@rail-across/core/crossSection'
 import { trackLength } from '@rail-across/core/track'
-import { trackHeightAt } from '../elevation'
+import { trackHeightAt } from '@rail-across/core/switch'
 
 /**
  * The clearance check along a whole track (AP 11.5, the optional part): the
@@ -40,7 +40,7 @@ export function stretchesOf(hits, step = SCAN_STEP) {
  * every step. A track without a gradient cannot be checked (`noGradient`).
  */
 export async function scanClearance({
-  projectId, clouds, track, ring, areas, from = 0, to = null, step = SCAN_STEP, onProgress, signal,
+  clouds, track, ring, areas, from = 0, to = null, step = SCAN_STEP, onProgress, signal,
   tracks = [track], switches = [],
 }) {
   if (!track?.heights?.length) return { noGradient: true, stretches: [], checked: 0 }
@@ -56,7 +56,7 @@ export async function scanClearance({
       const cant = sectionAtStation(track, s)?.cant ?? 0
       let inside = 0, depth = 0
       for (const cloud of clouds) {
-        const points = await cloudSectionPoints(projectId, cloud, {
+        const points = await cloudSectionPoints(cloud, {
           origin: origin.utm, bearing: origin.bearing, crs: track.epsg, halfWidth, thickness: step,
         })
         const r = checkClearance(points, { zTrack, cant, ring, areas })

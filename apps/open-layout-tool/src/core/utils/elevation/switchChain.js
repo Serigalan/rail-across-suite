@@ -49,7 +49,7 @@ import {
   endOfIndex, heightAt, jointGroup, pointAtStation, roundHeight, stationOnTrack, trackLength, turnoutDivergingPort, turnoutLinePort,
   portTrack, portEnd,
 } from '@rail-across/core/track'
-import { ldsLift, planeFrom, roundMm, STATION_TOL, switchCouplings, Z_TOL } from './switchGradient'
+import { ldsLift, planeFrom, roundMm, STATION_TOL, switchCouplings, Z_TOL } from '@rail-across/core/switch'
 
 const MAX_STEPS = 400
 /** Two heights fit to this — both are kept to 0.1 mm [m]. */

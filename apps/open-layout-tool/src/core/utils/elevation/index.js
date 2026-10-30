@@ -18,4 +18,3 @@ export {
   setToeLead, switchMisfits, withAllLdsPoints, withSwitchHeights, withToesJoined, withTurnoutTwin,
 } from './switchChain'
 export { lockBreach } from './heightLocks'
-export { heightContext, trackHeightAt } from './switchGradient'

@@ -1,37 +1,34 @@
-// pointCloud — point clouds: LAS/LAZ and E57 read as streams, tiled into OPFS,
-// cut into sections, rails detected and traced, registration, clearance scans.
+// pointCloud — point clouds in the browser: imported into OPFS by a worker, kept
+// and cached there or read from the server, painted, registered against
+// tracks. The computation — readers, tiles, sections, rail detection and
+// tracing, registration, clearance scans — is @rail-across/pointcloud's; what
+// of it the app uses is re-exported here, the reading functions by project
+// (cloudReading).
 //
 // This file is the module's public face: code outside src/core/utils/pointCloud/
 // imports from here and nowhere else (tools/modules.mjs). What is not listed is
 // the module's own business. See docs/modules/pointCloud.md.
 
-export { BOTTOM_BAND, checkClearance } from './clearanceCheck'
-export { scanClearance } from './clearanceScan'
+export {
+  applyMatrix, BOTTOM_BAND, checkClearance, cloudPlane, cloudToPlane, decodeCloudSegment, fileSource, IDENTITY,
+  invertMatrix, LEVELS, originalGrid, planeMapper, readCloudHeader, segmentPlacement, solveRegistration,
+  axisPointsCsv, cantMm, lineGuide, soHeight, TRACE_STEP, trackGuide,
+} from '@rail-across/pointcloud'
 export { cacheGet, cacheLimit, cachePut, cacheUsage, clearCache, forgetCache, setCacheLimit } from './cloudCache'
-export { cloudPlane, cloudToPlane, planeMapper } from './cloudCrs'
 export { CLOUD_CRS, count, crsHint, duration, mb, sizeText, stepText } from './cloudFormat'
+export { cloudSectionPoints, detectInClouds, forgetAllClouds, forgetCloud, scanClearance, traceTrack } from './cloudReading'
 export { cloudSize, outlineFeature } from './cloudOutline'
 export { coloringsFor, INTRUSION_COLOR, paintCloudCanvas } from './cloudPaint'
 export { probeExtent, projectPlane } from './cloudProbe'
-export { readCloudHeader } from './cloudReader'
 export { registrationHook } from './cloudRegistration'
-export { cloudSectionPoints, forgetAllClouds, forgetCloud } from './cloudSection'
 export { cloudServerHook } from './cloudServer'
 export { sourceOf } from './cloudSource'
 export {
   deleteCloud, estimateCloudBytes, INDEX_FILE, listClouds, opfsAvailable, persistStorage,
   storageEstimate, storagePersisted,
 } from './cloudStore'
-/** @public — the project server prepares uploaded clouds with it (server/src/clouds/prepare.js). */
-export { importLevels } from './importPipeline'
-export { fileSource } from './lasReader'
 export { formatName, pointsAsText, PREVIEW_POINTS } from './lasText'
 export { previewPoints, startImport } from './pointCloudImport'
 export { readableClouds } from './projectClouds'
-export {
-  axisPointsCsv, cantMm, detectInClouds, lineGuide, soHeight, TRACE_STEP, traceTrack, trackGuide,
-} from './railTrace'
-export { applyMatrix, IDENTITY, invertMatrix, solveRegistration } from './registration'
 export { runIsActive, runsOnServer, serverRunHook } from './serverRuns'
 export { cloudRefsOf, shiftSurvey, surveyChanges } from './surveyShift'
-export { decodeCloudSegment, LEVELS, originalGrid, segmentPlacement } from './tiles'

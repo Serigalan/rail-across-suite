@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest'
 import {
   encodeSegment, decodeSegment, encodeGridSegment, decodeGridSegment, splitIntoBands, TileBuilder,
   intensityShift, tileOf, originalGrid, segmentPlacement,
-} from './tiles'
-import { planeMapper } from './cloudCrs'
+} from './tiles.js'
+import { planeMapper } from './cloudCrs.js'
 import { transformPlanePoint } from '@rail-across/core/src/geometry/coordinateUtils.js'
 
 const columns = (pts) => ({

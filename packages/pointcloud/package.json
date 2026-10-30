@@ -1,0 +1,27 @@
+{
+  "name": "@rail-across/pointcloud",
+  "private": true,
+  "version": "1.0.0-alpha.0",
+  "description": "Point clouds of Rail-Across-Suite: LAS/LAZ and E57 readers, tiles, sections, rail detection and tracing, registration, clearance scans",
+  "license": "Apache-2.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "exports": {
+    ".": "./src/index.js",
+    "./src/*": "./src/*",
+    "./test/*": "./test/*"
+  },
+  "scripts": {
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@rail-across/core": "*",
+    "fflate": "^0.8.3"
+  },
+  "devDependencies": {
+    "laz-perf": "^0.0.7",
+    "vitest": "^3.2.7"
+  }
+}

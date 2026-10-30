@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import {
   solveRegistration, transformMatrix, applyMatrix, invertMatrix, chainMatrices, symmetricEigen, mainBearing, IDENTITY,
-} from './registration'
+} from './registration.js'
 
 /** A small deterministic noise source. */
 function noise(seed = 3) {

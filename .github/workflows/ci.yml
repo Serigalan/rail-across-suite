@@ -32,6 +32,22 @@ jobs:
       - run: node tools/modules.mjs
       - run: npm test
 
+  # Point clouds, shared by the Open-Layout-Tool and the project server.
+  pointcloud:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: packages/pointcloud
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+        working-directory: .
+      - run: npm test
+
   # The Open-Layout-Tool with the project server, whose tests its vitest runs.
   open-layout-tool:
     runs-on: ubuntu-24.04

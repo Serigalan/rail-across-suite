@@ -39,6 +39,10 @@ export {
 } from './sleepers.js'
 export { clickStation, placeSwitchOnTrack, turnoutRunsOn } from './switchPlacement.js'
 export {
+  couplingOf, heightContext, ldsLift, planeFrom, roundMm, STATION_TOL, switchBodySpans, switchCouplings,
+  trackHeightAt, Z_TOL,
+} from './switchGradient.js'
+export {
   computeSwitchGeometryUtm, crossingBodyUtm, crossingRoutesFromTracks, lcsLine, lcsLineUtm,
   rebuildSwitchSymbol, switchFillRing, switchLabelGeometry, switchRoutePointsUtm,
   switchRoutesFromTracks,

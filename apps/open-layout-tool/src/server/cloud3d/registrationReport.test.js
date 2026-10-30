@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { protocolCsv, parameterRows, pairRows } from './registrationReport'
-import { solveRegistration, transformMatrix, applyMatrix, invertMatrix } from '../../core/utils/pointCloud/registration'
+import { solveRegistration, transformMatrix, applyMatrix, invertMatrix } from '@rail-across/pointcloud/src/registration.js'
 
 const T = transformMatrix({ tE: 0.3, tN: -0.1, tH: 0.05, kappa: 0.0008 }, [1000, 2000, 100])
 const pairs = [[1000, 2000, 100], [1100, 2050, 101], [1180, 1960, 99], [1050, 1900, 102.5]].map((ref, k) => ({

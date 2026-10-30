@@ -35,8 +35,7 @@ Done:
 
 - The Open-Layout-Tool moved into `apps/open-layout-tool/` with its history; its server to `server/`, its Python
   service to `services/optimizer/`; CI and deployment scripts on the new paths. The toolkit gets a new server of
-  its own; the running server of the Open-Layout-Tool is not migrated. Until phase 1 the server still imports
-  the app's modules — allowed for now by `npm run check` (`TRANSITIONAL` in `tools/boundaries.mjs`).
+  its own; the running server of the Open-Layout-Tool is not migrated.
 - Large binary data out of the history, fetched by version and SHA-256
   ([decision 0008](docs/decisions/0008-data-outside-history.md)): the NTv2 grids as release assets; the
   kilometrage tiles not published at all.
@@ -72,6 +71,9 @@ Done:
 - Plain Node loads the core without a bundler or a module hook: its imports name their files, JSON comes in by
   attribute, and the catalogue files a bundle carries are read by the app (`tools/modules.mjs` in the core holds it
   to that).
+- The point clouds' computation is the package `@rail-across/pointcloud` (readers, tiles, sections, rail
+  detection and trace, registration, clearance), and the turnout plane the clearance scan needs is the core's: the
+  project server imports no app and runs on plain Node without a module hook.
 
 Open:
 
@@ -79,8 +81,6 @@ Open:
 - Python package reading the same schema (for optimizer and simulations), held to shared test vectors.
 - Conversion oltjson-1.1 → core 1.0 at the door (the first entry of the migration chain). Ids stay on tracks,
   not on their elements ([decision 0004](docs/decisions/0004-ids-on-tracks.md)).
-- The point clouds into a package of their own, so the project server no longer imports the app (allowed for
-  now by `TRANSITIONAL` in `tools/boundaries.mjs`).
 
 **Exit:** OLT imports its model only from the core; all OLT tests and the PEK data set pass; an oltjson-1.1
 file opens and saves losslessly; the cases F2 and F3 (reversal and splice) of the data model are tests and

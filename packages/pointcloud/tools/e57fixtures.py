@@ -1,4 +1,4 @@
-"""Writes the E57 test files of src/core/test/fixtures/e57 with libE57Format (pye57),
+"""Writes the E57 test files of test/fixtures/e57 with libE57Format (pye57),
 the reference implementation, and what a reader has to get out of them.
 
     python tools/e57fixtures.py            # the small fixtures, kept in the repository
@@ -18,7 +18,7 @@ import numpy as np
 from pye57 import libe57
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-OUT = os.path.join(HERE, '..', 'src', 'test', 'fixtures', 'e57')
+OUT = os.path.join(HERE, '..', 'test', 'fixtures', 'e57')
 
 
 def quat_matrix(w, x, y, z):

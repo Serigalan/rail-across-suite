@@ -2,7 +2,7 @@ import { elementStations, pointOnElement } from '@rail-across/core/track'
 import {
   sectionAtStation, crossSection, superstructureAt, RUNNING_CIRCLE_DISTANCE,
 } from '@rail-across/core/crossSection'
-import { trackHeightAt } from '../../core/utils/elevation'
+import { trackHeightAt } from '@rail-across/core/switch'
 
 /**
  * The planned tracks in the 3D view (AP 13.10): each a run of samples along

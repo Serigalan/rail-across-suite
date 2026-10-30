@@ -6,7 +6,8 @@ import {
   bandRuns, bandRange, elementSpans, bandFindings, withBandValue, withCantEnds, pointAtStation,
 } from '@rail-across/core/track'
 import { checkTrack, ruleById, severityLabelKey, worstSeverity, maxSpeeds } from '@rail-across/core/rules'
-import { checkVertical, trackHeightAt } from '../utils/elevation'
+import { trackHeightAt } from '@rail-across/core/switch'
+import { checkVertical } from '../utils/elevation'
 import { filterForElements, FILTER_NONE, mapIsLive } from '../map/pick'
 import { useMap } from '../map/MapContext'
 import { TRACKS_SELECTED_LAYER } from '../map/layerIds'

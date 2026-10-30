@@ -1,6 +1,6 @@
 # switch — turnouts, crossings, switch connections
 
-`packages/core/src/switch/` · needs `geometry`, `track`, `rules`
+`packages/core/src/switch/` · needs `geometry`, `track`, `rules`, `crossSection`
 
 The geometry of switches: the forms of DB Ril 800.0120, how a turnout lies on a track (straight, arc or
 clothoid), the routes it adds, the drawn symbol, crossings and crossing switches, the switch connection
@@ -17,6 +17,7 @@ ports, element marks — is in the `track` module; what the dialogs commit is in
 | `symbol.js` | The drawn switch: routes as polylines, the filled body between them, the LCS line, the label; `rebuildSwitchSymbol` derives all of it from the tracks on load |
 | `crossing.js` | Crossings and crossing switches (incl. Bogenkreuzungsweiche): angle, legs, end distances, connecting curves, geometry |
 | `sleepers.js` | Where a turnout's sleepers lie (along its bisector, 0.30 + 0.60·k m from WA), the ldS, the sleeper through a point of either track — the grid the heights lie on |
+| `switchGradient.js` | The turnout plane: the branch's height from the main route's height, gradient and cant (`ldsLift` on the ldS sleeper, `trackHeightAt` between WA and ldS, `heightContext`); which heights follow which is the app's (elevation) |
 | `detail.js` | A turnout in detail: sleepers (with the bracket sleepers of its variant) and rails in the turnout's own frame, for a laid turnout or a catalogue form on helper tracks |
 | `detailScene.js` | A laid turnout in detail with its surroundings: the partners of a switch connection, the turnouts close by and the tracks there, in the turnout's frame |
 | `switchPlacement.js` | Where a turnout lies on a track: the toe at a station, the through route over as many elements as it covers; why it cannot lie somewhere |

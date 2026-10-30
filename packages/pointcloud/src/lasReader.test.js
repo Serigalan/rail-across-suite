@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { readLasHeader, readLasPoints } from './lasReader'
-import { hasLaz, LAZ_PATH, nodeFileSource, nodeLazPerf, bytesSource, makeLas } from '../../test/pointCloudFixture'
+import { readLasHeader, readLasPoints } from './lasReader.js'
+import { hasLaz, LAZ_PATH, nodeFileSource, nodeLazPerf, bytesSource, makeLas } from '../test/pointCloudFixture.js'
 
 describe('readLasPoints — plain LAS', () => {
   it('reads every point with scale and offset applied', async () => {

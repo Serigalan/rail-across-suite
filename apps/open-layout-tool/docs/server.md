@@ -84,9 +84,9 @@ head. A walk along a track (eye 2.5 m over top of rail, W/S/A/D/R/F) can be shar
 ## `server` — the project server
 
 Fastify on Node 22, SQLite in WAL mode behind a thin access layer (Postgres only if ever several instances or
-spatial queries on the server are needed). It imports the browser modules from `src/` unchanged through a module
-hook (`src/esmHook.mjs`: extensionless imports, JSON imports, `import.meta.env` and `import.meta.glob` stubbed) — no
-build step, no second implementation.
+spatial queries on the server are needed). It runs the browser's own code on plain Node, the packages
+`@rail-across/core` (records, checks, merge) and `@rail-across/pointcloud` (clouds) — no build step, no module
+hook, no second implementation.
 
 **Data** (`migrations/`, applied in order on start):
 

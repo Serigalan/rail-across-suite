@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { parseXml, child } from './e57Xml'
+import { parseXml, child } from './e57Xml.js'
 
 describe('parseXml', () => {
   it('reads elements, attributes, CDATA and entities', () => {

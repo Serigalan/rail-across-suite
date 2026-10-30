@@ -142,7 +142,7 @@ describe('the tracks in 3D (AP 13.10, 13.11)', () => {
 
 describe('measuring (AP 13.11)', async () => {
   const { between, measurementsCsv, originalPoint } = await import('./measure')
-  const { encodeGridSegment } = await import('../../core/utils/pointCloud/tiles')
+  const { encodeGridSegment } = await import('@rail-across/pointcloud/src/tiles.js')
 
   it('takes the original point nearest to the one picked, within 10 cm', async () => {
     // One tile of the original on a millimetre grid: three points.

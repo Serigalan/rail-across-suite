@@ -1,8 +1,10 @@
 import { describe, it, expect } from 'vitest'
-import { readLasHeader } from './lasReader'
-import { readFirstPoints } from './cloudReader'
+import { readFileSync } from 'node:fs'
+import { readCloudHeader, readFirstPoints, readLasHeader } from '@rail-across/pointcloud'
 import { pointsAsText, decimalsOf } from './lasText'
-import { hasLaz, LAZ_PATH, nodeFileSource, nodeLazPerf, bytesSource, makeLas } from '../../test/pointCloudFixture'
+import {
+  E57_FIXTURES, hasLaz, LAZ_PATH, nodeFileSource, nodeLazPerf, bytesSource, makeLas,
+} from '@rail-across/pointcloud/test/pointCloudFixture.js'
 
 describe('decimalsOf — what the scale resolves', () => {
   it('counts the decimals of a power of ten', () => {
@@ -61,5 +63,23 @@ describe.skipIf(!hasLaz)('readFirstPoints — the LAZ sample', () => {
     } finally {
       await source.close()
     }
+  })
+})
+
+describe('pointsAsText of an E57 file', () => {
+  // What libE57Format wrote and numpy computed from it (tools/e57fixtures.py).
+  const EXPECTED = JSON.parse(readFileSync(`${E57_FIXTURES}expected.json`, 'utf8'))
+  const fixture = (name) => bytesSource(new Uint8Array(readFileSync(E57_FIXTURES + name)))
+
+  it('gives the first points for the text view', async () => {
+    const source = fixture('scaled_pose.e57')
+    const header = await readCloudHeader(source)
+    const pts = await readFirstPoints(source, header, 5)
+    expect(pts).toHaveLength(5)
+    expect(pts[0].x).toBeCloseTo(EXPECTED['scaled_pose.e57'].sample[0][1], 6)
+    const text = pointsAsText(header, pts, { name: 'scaled_pose.e57' }).split('\n')
+    expect(text.slice(1, 3)).toEqual(['# E57 1.0, scans: 1, 30000 points', '# coordinate system: EPSG:5678'])
+    // Four decimals, the step of the file's integers.
+    expect(text.at(-1).split('\t')[2]).toMatch(/^\d+\.\d{4}$/)
   })
 })

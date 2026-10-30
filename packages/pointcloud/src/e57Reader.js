@@ -1,4 +1,4 @@
-import { parseXml, child } from './e57Xml'
+import { parseXml, child } from './e57Xml.js'
 
 /**
  * Reading the points of an E57 file (ASTM E2807) in pieces, the way lasReader

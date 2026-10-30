@@ -33,11 +33,9 @@
  * there (decision 383).
  */
 
-import { gradientAt, pointAtStation, turnoutLinePort, portTrack } from '@rail-across/core/track'
-import { RUNNING_CIRCLE_DISTANCE, sectionAtStation } from '@rail-across/core/crossSection'
-import { mainRouteLength, routeFrom, sleeperOffsets, sleeperThrough, switchLds, turnoutSleepers } from '@rail-across/core/switch'
-
-export { switchLds }
+import { gradientAt, pointAtStation, turnoutLinePort, portTrack } from '../track/index.js'
+import { RUNNING_CIRCLE_DISTANCE, sectionAtStation } from '../crossSection/index.js'
+import { mainRouteLength, routeFrom, sleeperOffsets, sleeperThrough, switchLds, turnoutSleepers } from './sleepers.js'
 
 export const STATION_TOL = 0.01    // m — a height point this close to the ldS is the ldS point
 export const Z_TOL = 0.00005       // m — heights that agree to this already agree (they are kept to 0.1 mm)

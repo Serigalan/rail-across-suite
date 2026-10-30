@@ -3,7 +3,7 @@ import {
   ALIGN_DEFAULTS, alignRequest, deleteStraight, elementReport, fittedCurvature, gradientReport, insertStraight,
   moveStraightEnd, parseAxisPointFile, straightRanges, surveyAxis, trackFromFit,
 } from '@rail-across/core/src/survey/alignmentFit.js'
-import { axisPointsCsv } from '../../../utils/pointCloud/railTrace'
+import { axisPointsCsv } from '@rail-across/pointcloud/src/railTrace.js'
 import { surveyFromTrace } from '@rail-across/core/src/survey/axisSurvey.js'
 import { expectValidTrack } from '@rail-across/core/test/chainInvariants.js'
 import { trackLength } from '@rail-across/core/src/track/heightUtils.js'

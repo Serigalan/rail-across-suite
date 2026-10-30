@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { detectTrack, topSurface, edgeCandidates } from './railDetect'
-import { soHeight, cantMm } from './railTrace'
-import { sliceFrame, tilesInSlice, sliceSegment, SlicePoints } from './cloudSlice'
-import { importPointCloud } from './importPipeline'
-import { readLasHeader } from './lasReader'
-import { decodeCloudSegment, segmentPlacement } from './tiles'
-import { hasLaz, LAZ_PATH, nodeFileSource, nodeLazPerf } from '../../test/pointCloudFixture'
+import { detectTrack, topSurface, edgeCandidates } from './railDetect.js'
+import { soHeight, cantMm } from './railTrace.js'
+import { sliceFrame, tilesInSlice, sliceSegment, SlicePoints } from './cloudSlice.js'
+import { importPointCloud } from './importPipeline.js'
+import { readLasHeader } from './lasReader.js'
+import { decodeCloudSegment, segmentPlacement } from './tiles.js'
+import { hasLaz, LAZ_PATH, nodeFileSource, nodeLazPerf } from '../test/pointCloudFixture.js'
 
 /** A small deterministic noise source, so a test sees the same slice every run. */
 function noise(seed = 1) {

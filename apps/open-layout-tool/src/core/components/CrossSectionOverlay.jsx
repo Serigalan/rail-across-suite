@@ -4,7 +4,8 @@ import {
   trackLength, tracksOnFrom, resolveRoute, routeAt, routeStationOf, pointAtStation,
   DEFAULT_HEIGHT_EPSG, HEIGHT_DATUMS,
 } from '@rail-across/core/track'
-import { trackHeightAt, sampleHeightsWithSource, terrainSourceLabel, chosenTerrainSource } from '../utils/elevation'
+import { trackHeightAt } from '@rail-across/core/switch'
+import { sampleHeightsWithSource, terrainSourceLabel, chosenTerrainSource } from '../utils/elevation'
 import { utmToWgs84, transformGridBearing } from '@rail-across/core/geometry'
 import { PLATFORM_FILL_COLOR, PLATFORM_OUTLINE_COLOR } from '../map/mapRenderUtils'
 import TerrainSourceSelect from './TerrainSourceSelect'

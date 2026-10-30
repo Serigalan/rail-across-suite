@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
-import { importLevels, importPointCloud } from './importPipeline'
-import { readLasHeader } from './lasReader'
-import { readE57Header } from './e57Reader'
+import { importLevels, importPointCloud } from './importPipeline.js'
+import { readLasHeader } from './lasReader.js'
+import { readE57Header } from './e57Reader.js'
 import {
   LEVELS, decodeCloudSegment, decodeSegment, decodeGridSegment, encodeGridSegment, encodeSegment, segmentPlacement,
-} from './tiles'
-import { E57_FIXTURES, bytesSource, makeLas } from '../../test/pointCloudFixture'
+} from './tiles.js'
+import { E57_FIXTURES, bytesSource, makeLas } from '../test/pointCloudFixture.js'
 
 // The levels of detail and colour (AP 13.4, decisions 206, 215).
 

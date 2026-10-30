@@ -1,5 +1,5 @@
 import { closeSync, existsSync, openSync, readFileSync, readSync } from 'node:fs'
-import { scanClearance, traceTrack, trackGuide, lineGuide } from '../../../apps/open-layout-tool/src/core/utils/pointCloud'
+import { scanClearance, traceTrack, trackGuide, lineGuide } from '@rail-across/pointcloud'
 
 /** The level long runs read: the 2-cm voxel, as in the browser (AP 13.6). */
 const RUN_LEVEL = 1
@@ -82,13 +82,13 @@ export async function executeRun({ runId, runs, clouds, storage, log = () => {} 
     let result
     if (run.kind === 'clearance') {
       result = await scanClearance({
-        projectId: run.project_id, clouds: list, track: params.track, tracks: params.tracks, switches: params.switches,
+        clouds: list, track: params.track, tracks: params.tracks, switches: params.switches,
         ring: params.ring, areas: params.areas, from: params.from ?? 0, to: params.to ?? null,
         signal: ctl, onProgress,
       })
     } else if (run.kind === 'trace') {
       result = await traceTrack({
-        projectId: run.project_id, clouds: list, guide: guideOf(params.guide), rail: params.rail,
+        clouds: list, guide: guideOf(params.guide), rail: params.rail,
         signal: ctl, onProgress,
       })
     } else {

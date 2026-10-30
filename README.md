@@ -12,7 +12,7 @@ One repository holds the core, every module and the services
 
 | Directory | Content |
 |---|---|
-| `packages/` | the Rail-Data-Core (JavaScript and Python) |
+| `packages/` | the Rail-Data-Core (JavaScript and Python) and the libraries the apps and the server share (point clouds) |
 | `schemas/` | JSON Schema per domain, shared test vectors |
 | `apps/` | the modules, starting with the Open-Layout-Tool |
 | `server/` | the project server for all modules |

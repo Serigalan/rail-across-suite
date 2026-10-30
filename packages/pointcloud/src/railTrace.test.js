@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { traceTrack, lineGuide, foresee, gapsOf, axisPointsCsv, AXIS_CSV_HEADER } from './railTrace'
-import { detectTrack } from './railDetect'
-import { sliceFrame, tilesInSlice, sliceSegment, SlicePoints } from './cloudSlice'
-import { importPointCloud } from './importPipeline'
-import { readLasHeader } from './lasReader'
-import { decodeCloudSegment, segmentPlacement } from './tiles'
-import { hasLaz, LAZ_PATH, nodeFileSource, nodeLazPerf } from '../../test/pointCloudFixture'
+import { traceTrack, lineGuide, foresee, gapsOf, axisPointsCsv, AXIS_CSV_HEADER } from './railTrace.js'
+import { detectTrack } from './railDetect.js'
+import { sliceFrame, tilesInSlice, sliceSegment, SlicePoints } from './cloudSlice.js'
+import { importPointCloud } from './importPipeline.js'
+import { readLasHeader } from './lasReader.js'
+import { decodeCloudSegment, segmentPlacement } from './tiles.js'
+import { hasLaz, LAZ_PATH, nodeFileSource, nodeLazPerf } from '../test/pointCloudFixture.js'
 
 const DEG = Math.PI / 180
 
@@ -17,7 +17,7 @@ const DEG = Math.PI / 180
  */
 function straightTrack({ bearing = 30, missing = () => false } = {}) {
   const dir = [Math.sin(bearing * DEG), Math.cos(bearing * DEG)]
-  return async (_project, _clouds, { origin, bearing: b, around, window }) => {
+  return async (_clouds, { origin, bearing: b, around, window }) => {
     const r = b * DEG
     const along = [Math.sin(r), Math.cos(r)], right = [Math.cos(r), -Math.sin(r)]
     // where the slice line (origin + q·right) meets the track (t·dir)
@@ -115,7 +115,7 @@ describe.skipIf(!hasLaz)('traceTrack on the LAZ sample', () => {
     } finally {
       await source.close()
     }
-    const detect = async (_p, _c, { origin, bearing, around, window, rail }) => {
+    const detect = async (_c, { origin, bearing, around, window, rail }) => {
       const frame = sliceFrame({ easting: origin.easting, northing: origin.northing, bearing, halfWidth: Math.abs(around) + window + 1.2, thickness: 0.5 })
       const out = new SlicePoints()
       for (const [tx, ty, segs] of tilesInSlice(index, frame)) {

@@ -1,5 +1,5 @@
 import { transformPlanePoint } from '@rail-across/core/geometry'
-import { invertMatrix } from './registration'
+import { invertMatrix } from './registration.js'
 
 /**
  * Coordinate systems around a point cloud.

@@ -21,7 +21,7 @@
 import { catalogLimit, evaluateRules, rulesForScope, severityRank, worstSeverity } from '@rail-across/core/rules'
 import { tangentLength, trackKind, portsOf, portTrack, portEnd, LINE_CATEGORIES } from '@rail-across/core/track'
 import { cantEnds } from '@rail-across/core/geometry'
-import { switchBodySpans } from './switchGradient'
+import { switchBodySpans } from '@rail-across/core/switch'
 
 const DEFAULT_LINE_CATEGORY = 'main'
 

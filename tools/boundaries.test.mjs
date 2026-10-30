@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
-import { breach, checkBoundaries, importsOf, TRANSITIONAL } from './boundaries.mjs'
+import { breach, checkBoundaries, importsOf } from './boundaries.mjs'
 
 /** A repository in a temporary directory: { 'apps/a/x.js': '…' }. */
 function repo(files) {
@@ -67,11 +67,5 @@ describe('checkBoundaries', () => {
     } finally {
       rmSync(root, { recursive: true, force: true })
     }
-  })
-})
-
-describe('TRANSITIONAL', () => {
-  it('allows only the project server into the Open-Layout-Tool, until phase 1', () => {
-    assert.deepEqual([...TRANSITIONAL], ['server → app:open-layout-tool'])
   })
 })

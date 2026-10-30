@@ -1,5 +1,5 @@
-import { cloudSectionPoints } from './cloudSection'
-import { detectTrack } from './railDetect'
+import { cloudSectionPoints } from './cloudSection.js'
+import { detectTrack } from './railDetect.js'
 import { sectionOrigin } from '@rail-across/core/crossSection'
 import { trackLength } from '@rail-across/core/track'
 
@@ -38,8 +38,8 @@ const SEARCH_TURNS = [0, 3, -3, 6, -6]
  * The points of all `clouds` in one slice, as one set `{ count, y, z }` —
  * where clouds overlap, a head is seen by both.
  */
-async function slicePoints(projectId, clouds, frame) {
-  const parts = await Promise.all(clouds.map(cloud => cloudSectionPoints(projectId, cloud, frame)))
+async function slicePoints(clouds, frame) {
+  const parts = await Promise.all(clouds.map(cloud => cloudSectionPoints(cloud, frame)))
   if (parts.length === 1) return parts[0]
   const count = parts.reduce((n, p) => n + p.count, 0)
   const y = new Float32Array(count), z = new Float64Array(count)
@@ -57,9 +57,9 @@ async function slicePoints(projectId, clouds, frame) {
  * `bearing` through `origin` (in plane `crs`), searched `window` either side
  * of `around` [m across]. What detectTrack returns.
  */
-export async function detectInClouds(projectId, clouds, { origin, bearing, crs, around = 0, window = GUIDE_WINDOW, rail }) {
+export async function detectInClouds(clouds, { origin, bearing, crs, around = 0, window = GUIDE_WINDOW, rail }) {
   const halfWidth = Math.abs(around) + window + 1.2
-  const points = await slicePoints(projectId, clouds, {
+  const points = await slicePoints(clouds, {
     origin, bearing, crs, halfWidth, thickness: DETECT_THICKNESS,
   })
   return detectTrack(points, { around, window, rail })
@@ -153,7 +153,7 @@ export function gapsOf(stations, step = TRACE_STEP) {
  * tops, `cant` (left over right), `gauge` [m], `quality`.
  */
 export async function traceTrack({
-  projectId, clouds, guide, rail, step = TRACE_STEP, onProgress, signal, detect = detectInClouds,
+  clouds, guide, rail, step = TRACE_STEP, onProgress, signal, detect = detectInClouds,
 }) {
   const points = [], missed = []
   const steps = Math.max(1, Math.floor(guide.length / step + 1e-9))
@@ -163,7 +163,7 @@ export async function traceTrack({
     const g = guide.at(s)
     if (!g) continue
     const ahead = foresee(points, s)
-    const look = (turn, around, window) => detect(projectId, clouds, {
+    const look = (turn, around, window) => detect(clouds, {
       origin: { easting: g.easting, northing: g.northing }, bearing: g.bearing + turn, crs: guide.epsg, rail, around, window,
     })
     // Close to where the last points lead first, then their whole window,

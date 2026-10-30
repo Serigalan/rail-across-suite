@@ -1,8 +1,8 @@
-import { readCloudPoints } from './cloudReader'
+import { readCloudPoints } from './cloudReader.js'
 import {
   TileBuilder, encodeSegment, encodeGridSegment, splitIntoBands, intensityShift, colorShift, originalGrid,
   LEVELS,
-} from './tiles'
+} from './tiles.js'
 
 /**
  * The import of one LAS/LAZ/E57 file into tiles: read chunk by chunk, convert

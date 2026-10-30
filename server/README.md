@@ -16,9 +16,9 @@ Node 22. `npm install` at the repository root (one npm workspace with the apps a
     node bin/olt-server.mjs serve
     node bin/olt-server.mjs backup <file>                 # consistent copy (SQLite backup API)
 
-`bin/olt-server.mjs` registers a module hook (`src/esmHook.mjs`) before
-anything else, which lets plain Node load the browser modules under `apps/open-layout-tool/src`
-(they import without file extensions and import JSON without attributes).
+The server runs on plain Node, without a build step or a module hook: it checks records with the core
+(`@rail-across/core`) and prepares point clouds and runs its long checks with `@rail-across/pointcloud` — the
+same code the browser runs. It imports no app.
 
 | Variable | Default | |
 |---|---|---|

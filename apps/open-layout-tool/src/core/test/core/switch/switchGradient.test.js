@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest'
 import {
-  switchCoupling, couplingOf, branchPlaneHeight, trackHeightAt, switchBodySpans, switchLds, heightContext,
-} from './switchGradient'
-import { withSwitchHeights } from './switchChain'
+  switchCoupling, couplingOf, branchPlaneHeight, trackHeightAt, switchBodySpans, heightContext,
+} from '@rail-across/core/src/switch/switchGradient.js'
+import { switchLds } from '@rail-across/core/switch'
+import { withSwitchHeights, checkVertical } from '../../../utils/elevation'
 import { reverseTrack } from '@rail-across/core/src/track/trackModel.js'
-import { checkVertical } from './gradientCheck'
 import { LDS, R, branchTrack as branchOf, formOf, mainTrack as mainOf, sleeperAtX, turnout, xAtMain } from '@rail-across/core/test/turnoutFixture.js'
 
 const mainTrack = (cant = 0, heights = [{ station: 0, z: 105.2 }, { station: 60, z: 106.025 }]) => mainOf(cant, heights)

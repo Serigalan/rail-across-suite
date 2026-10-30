@@ -3,7 +3,7 @@ import {
   addDependentAt, dependOn, heightLinks, heightRoles, releaseDependency, restoreDependency, setDependencyMode, setToeLead,
   switchMisfits, withAllLdsPoints, withSwitchHeights, withToesJoined, withTurnoutTwin,
 } from './switchChain'
-import { couplingOf, ldsLift } from './switchGradient'
+import { couplingOf, ldsLift } from '@rail-across/core/switch'
 import { pointAtStation, stationOnTrack } from '@rail-across/core/track'
 import { endPointCurvedUtm, endPointStraightUtm } from '@rail-across/core/src/geometry/elementUtils.js'
 import { formOf } from '@rail-across/core/test/turnoutFixture.js'

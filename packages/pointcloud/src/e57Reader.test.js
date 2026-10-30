@@ -1,13 +1,12 @@
 import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
-import { readE57Header, readE57Points, isE57 } from './e57Reader'
-import { readCloudHeader, readCloudPoints, readFirstPoints } from './cloudReader'
-import { importPointCloud } from './importPipeline'
-import { readLasHeader } from './lasReader'
-import { pointsAsText } from './lasText'
+import { readE57Header, readE57Points, isE57 } from './e57Reader.js'
+import { readCloudHeader, readCloudPoints } from './cloudReader.js'
+import { importPointCloud } from './importPipeline.js'
+import { readLasHeader } from './lasReader.js'
 import {
   E57_FIXTURES, E57_SAMPLE_PATH, LAZ_PATH, bytesSource, makeLas, nodeFileSource, nodeLazPerf,
-} from '../../test/pointCloudFixture'
+} from '../test/pointCloudFixture.js'
 
 // What libE57Format wrote and numpy computed from it (tools/e57fixtures.py).
 const EXPECTED = JSON.parse(readFileSync(`${E57_FIXTURES}expected.json`, 'utf8'))
@@ -76,18 +75,6 @@ describe('readE57Points — files written by libE57Format', () => {
     for await (const b of readE57Points(source, header, { onProgress: (p) => { last = p } })) expect(b.count).toBeGreaterThan(0)
     expect(last).toMatchObject({ points: 30000, totalPoints: 30000 })
     expect(last.bytes).toBe(last.totalBytes)
-  })
-
-  it('gives the first points for the text view', async () => {
-    const source = fixture('scaled_pose.e57')
-    const header = await readCloudHeader(source)
-    const pts = await readFirstPoints(source, header, 5)
-    expect(pts).toHaveLength(5)
-    expect(pts[0].x).toBeCloseTo(EXPECTED['scaled_pose.e57'].sample[0][1], 6)
-    const text = pointsAsText(header, pts, { name: 'scaled_pose.e57' }).split('\n')
-    expect(text.slice(1, 3)).toEqual(['# E57 1.0, scans: 1, 30000 points', '# coordinate system: EPSG:5678'])
-    // Four decimals, the step of the file's integers.
-    expect(text.at(-1).split('\t')[2]).toMatch(/^\d+\.\d{4}$/)
   })
 
   it('stops at the next window once aborted', async () => {

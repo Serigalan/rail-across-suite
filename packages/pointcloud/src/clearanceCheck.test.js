@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { checkClearance, INSIDE, ALLOWED } from './clearanceCheck'
+import { checkClearance, INSIDE, ALLOWED } from './clearanceCheck.js'
 import { gaugeProfile, gaugeProfileRing, gaugeProfileAreas } from '@rail-across/core/src/crossSection/gaugeProfiles.js'
 import { crossSection } from '@rail-across/core/src/crossSection/crossSectionUtils.js'
 
@@ -58,7 +58,7 @@ describe('checkClearance', () => {
 
 describe('stretchesOf', () => {
   it('joins neighbouring steps with intrusions into one stretch', async () => {
-    const { stretchesOf } = await import('./clearanceScan')
+    const { stretchesOf } = await import('./clearanceScan.js')
     const hits = [
       { station: 10.25, inside: 3, depth: 40 },
       { station: 10.75, inside: 5, depth: 120 },

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { importLevels, importPointCloud } from '../core/utils/pointCloud/importPipeline'
-import { readLasHeader } from '../core/utils/pointCloud/lasReader'
-import { bytesSource, makeLas } from '../core/test/pointCloudFixture'
+import { importLevels, importPointCloud } from '@rail-across/pointcloud/src/importPipeline.js'
+import { readLasHeader } from '@rail-across/pointcloud/src/lasReader.js'
+import { bytesSource, makeLas } from '@rail-across/pointcloud/test/pointCloudFixture.js'
 import { extend } from '../core/extensions'
 
 // The server's tile files, as the mocked API serves them: "cloudId|level" → bytes.
@@ -21,8 +21,8 @@ vi.mock('./api/client', () => ({
 }))
 
 const { sourceOf } = await import('../core/utils/pointCloud/cloudSource')
-const { transformMatrix, applyMatrix, invertMatrix } = await import('../core/utils/pointCloud/registration')
-const { cloudSectionPoints } = await import('../core/utils/pointCloud/cloudSection')
+const { transformMatrix, applyMatrix, invertMatrix } = await import('@rail-across/pointcloud/src/registration.js')
+const { cloudSectionPoints } = await import('../core/utils/pointCloud')
 const { serverClouds } = await import('./cloudsOnServer')
 extend('cloudProviders', serverClouds)
 

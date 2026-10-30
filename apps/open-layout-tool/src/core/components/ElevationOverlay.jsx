@@ -5,11 +5,12 @@ import {
 } from '../storage'
 import { useHiddenTracks, useProject, useReferenceAxes, useRoutes, useSwitchDesign, useSwitches, useTracks } from '../hooks/useStore'
 import {
-  checkVertical, regularVerticalRadius, verticalFindings, trackHeightAt,
+  checkVertical, regularVerticalRadius, verticalFindings,
   heightLinks, heightRoles, routeElements, routeFindings, routeProfile, routeStationOfPart, trackAsRoute, DEPENDENCY_MODES,
   fillHeights, chosenTerrainSource,
 } from '../utils/elevation'
 import { ruleById, severityLabelKey } from '@rail-across/core/rules'
+import { trackHeightAt } from '@rail-across/core/switch'
 import {
   adjacentTracks, neighbourStub, jointHeightUpdates, verticalCurves, verticalCurveOverlaps,
   elementAtStation, solveHeightPoint, pointGrades, GIVEN_MODES, partStation,

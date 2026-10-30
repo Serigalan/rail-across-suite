@@ -11,10 +11,7 @@
 // and one only a worker may hold. An import that does not finish removes its
 // directory again: an aborted import leaves nothing.
 import { loadLazPerf } from './lazPerfBrowser'
-import { fileSource } from './lasReader'
-import { readCloudHeader, readFirstPoints } from './cloudReader'
-import { importPointCloud } from './importPipeline'
-import { planeMapper } from './cloudCrs'
+import { fileSource, importPointCloud, planeMapper, readCloudHeader, readFirstPoints } from '@rail-across/pointcloud'
 import { projectDir, INDEX_FILE, TILES_FILE } from './cloudStore'
 import { loadNtv2Grid, loadGridsFor, crsDatum, utmToWgs84 } from '@rail-across/core/geometry'
 

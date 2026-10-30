@@ -10,9 +10,6 @@
  * package.json of each app and package. Comments are skipped; a specifier in
  * a string that is no import can still be reported — rare, and visible.
  *
- * While the Open-Layout-Tool is taken apart, a breach listed in TRANSITIONAL is
- * reported but allowed.
- *
  * Usage: node tools/boundaries.mjs [root]   — exits 1 and lists every breach.
  */
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
@@ -97,14 +94,6 @@ export function breach(from, to) {
   return from.startsWith('app:') ? 'an app imports another app' : `${from.split(':')[0]} imports an app`
 }
 
-/**
- * Breaches allowed for now, as `from → to`. The project server checks records
- * with the core (@rail-across/core) but still prepares point clouds with the
- * Open-Layout-Tool's pointCloud module, until that moves into a package of its
- * own; remove an entry with its last import.
- */
-export const TRANSITIONAL = new Set(['server → app:open-layout-tool'])
-
 /** Every breach below `root`: [{ file, line, spec, rule, from, to }]. */
 export function checkBoundaries(root) {
   const names = packageNames(root)
@@ -124,12 +113,7 @@ export function checkBoundaries(root) {
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const root = resolve(process.argv[2] ?? join(dirname(fileURLToPath(import.meta.url)), '..'))
-  const all = checkBoundaries(root)
-  const allowed = all.filter(f => TRANSITIONAL.has(`${f.from} → ${f.to}`))
-  const found = all.filter(f => !allowed.includes(f))
-  if (allowed.length) {
-    console.log(`boundaries: ${allowed.length} import(s) allowed for now (${[...TRANSITIONAL].join(', ')})`)
-  }
+  const found = checkBoundaries(root)
   for (const f of found) console.error(`${f.file}:${f.line}: ${f.rule} ('${f.spec}')`)
   if (found.length) {
     console.error(`\n${found.length} import(s) across a boundary. Apps import packages, never each other; ` +

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { cloudPlacement, modelMatrix, invertAffine, multiply } from './placement'
-import { transformMatrix, applyMatrix, IDENTITY } from '../../core/utils/pointCloud/registration'
-import { cloudToPlane } from '../../core/utils/pointCloud/cloudCrs'
+import { transformMatrix, applyMatrix, IDENTITY } from '@rail-across/pointcloud/src/registration.js'
+import { cloudToPlane } from '@rail-across/pointcloud/src/cloudCrs.js'
 
 const bounds = { minE: 4467500, maxE: 4467700, minN: 5333650, maxN: 5333750, minZ: 500, maxZ: 515 }
 const T = { id: 7, matrix: transformMatrix({ tE: 0.3, tN: -0.1, tH: 0.05, kappa: 0.0008 }, [4467600, 5333700, 507]), crs: 5678 }

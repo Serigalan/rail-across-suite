@@ -56,7 +56,13 @@ describe('opening a project', () => {
   })
 
   it('opens nothing in a tool that is not there yet', () => {
-    expect(openUrl(toolOf('signalling'), 'p1', 'v1')).toBeNull()
+    expect(openUrl(toolOf('catenary'), 'p1', 'v1')).toBeNull()
+  })
+
+  it('opens a variant in the Signalling-Tool, which keeps nothing in the browser', () => {
+    expect(openUrl(toolOf('signalling'), 'p1', 'v1')).toBe('signalling/?project=p1&variant=v1')
+    expect(toolUrl(toolOf('signalling'), { action: 'storage' })).toBeNull()
+    expect(toolUrl(toolOf('layout'), { action: 'storage' })).toBe('layout/?action=storage')
   })
 })
 

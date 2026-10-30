@@ -1,0 +1,91 @@
+/* The Signalling-Tool's own: the plan and the parts of its editors. What
+   every module has — colours, buttons, fields, the shell — is the suite's
+   library (@rail-across/ui, ui.css), loaded before this. */
+
+html, body { margin: 0; background: var(--ui-surface); }
+#root { width: 100%; height: 100vh; }
+
+.tool-center { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 24px; text-align: center; }
+
+/* ── the plan ────────────────────────────────────────────────────────── */
+
+.plan {
+  position: relative; flex: 1; min-height: 0; overflow: hidden; cursor: grab; touch-action: none; user-select: none;
+  background:
+    linear-gradient(var(--ui-surface), var(--ui-surface)) padding-box;
+  --plan-track: #2a2d3a;
+  --plan-run: var(--color-primary);
+  --plan-mark: #1a1a2e;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .plan { --plan-track: #c8cbd6; --plan-mark: #e8e9f0; }
+}
+.plan:active { cursor: grabbing; }
+.plan-placing, .plan-placing:active { cursor: crosshair; }
+.plan svg { display: block; }
+.plan-track { fill: none; stroke: var(--plan-track); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.plan-run { fill: none; stroke: var(--plan-run); stroke-width: 6; stroke-opacity: 0.45; stroke-linecap: round; stroke-linejoin: round; }
+.plan-stretch { fill: none; stroke: #1f9e3a; stroke-width: 7; stroke-opacity: 0.5; stroke-linecap: butt; }
+.plan-stretch-warn { stroke: #d68910; }
+.plan-switch { fill: var(--ui-bg); stroke: var(--plan-track); stroke-width: 1.5; }
+.plan-switch.is-selected { fill: var(--color-primary); stroke: var(--color-primary); }
+
+.plan-mark { cursor: pointer; }
+.plan-mast { stroke: var(--plan-mark); stroke-width: 1.6; }
+.plan-head { stroke: var(--plan-mark); stroke-width: 1.2; }
+.plan-board { stroke: var(--plan-mark); stroke-width: 1.2; }
+.plan-virtual { fill: none; stroke: var(--plan-mark); stroke-width: 1.2; stroke-dasharray: 2 2; }
+.plan-dp { stroke: #1f6fb5; stroke-width: 2; }
+.plan-dp-dot { fill: #1f6fb5; }
+.plan-pzb { fill: #7b3fbf; stroke: none; }
+.plan-pzb-500 { fill: #d0308f; }
+.plan-pzb-2000 { fill: #0f9fb5; }
+.plan-pzb-1000-2000 { fill: #0f9fb5; stroke: #7b3fbf; stroke-width: 1.5; }
+.plan-derailer { stroke: #c0392b; stroke-width: 2; }
+.plan-mark.is-selected .plan-head, .plan-mark.is-selected .plan-board, .plan-mark.is-selected .plan-pzb { stroke: var(--color-primary); stroke-width: 3; }
+.plan-mark.is-selected .plan-dp, .plan-mark.is-selected .plan-mast { stroke: var(--color-primary); stroke-width: 3; }
+.plan-mark.is-orphan { opacity: 0.6; }
+.plan-label {
+  font: 600 11px var(--ui-font); fill: var(--plan-mark); paint-order: stroke; stroke: var(--ui-surface); stroke-width: 3px;
+  pointer-events: none;
+}
+.plan-scale {
+  position: absolute; left: 12px; bottom: 10px; padding: 2px 8px; border-radius: 4px; font-size: var(--ui-fs-s);
+  background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-muted); pointer-events: none;
+}
+
+.tool-mode {
+  position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); z-index: 5; display: flex; gap: 10px; align-items: center;
+  padding: 8px 10px 8px 14px; border-radius: 10px; background: var(--color-primary); color: #fff; font-size: var(--ui-fs-m); font-weight: 600;
+  box-shadow: var(--ui-shadow);
+}
+.tool-notice { position: absolute; top: 56px; left: 50%; transform: translateX(-50%); z-index: 5; display: flex; gap: 6px; align-items: center; max-width: min(640px, 90%); }
+.tool-notice .ui-message { background: var(--ui-bg); box-shadow: var(--ui-shadow); }
+
+/* ── the editors ─────────────────────────────────────────────────────── */
+
+.tool-editor { display: flex; flex-direction: column; gap: 12px; border-top: 2px solid var(--ui-border); padding-top: 12px; }
+.tool-editor-head { display: flex; align-items: center; gap: 8px; }
+.tool-editor-title { margin: 0; font-size: 16px; flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.tool-fields-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.ui-check-cell { display: flex; align-items: flex-end; padding-bottom: 6px; }
+.tool-checklist { display: flex; flex-direction: column; gap: 4px; max-height: 240px; overflow-y: auto; }
+.tool-must { color: var(--color-primary); font-weight: 600; }
+.tool-aspect-title { font-size: var(--ui-fs-s); }
+.tool-frame { border: 1px solid var(--ui-border); border-radius: 8px; padding: 8px 10px; display: flex; flex-direction: column; gap: 6px; }
+.tool-frame-head { display: flex; align-items: center; gap: 8px; font-size: var(--ui-fs-s); font-weight: 600; color: var(--ui-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.tool-aspect-row { display: flex; align-items: center; gap: 8px; font-size: var(--ui-fs-m); flex-wrap: wrap; }
+.tool-symbol { width: auto; min-width: 70px; max-width: 150px; padding: 3px 6px; font-size: var(--ui-fs-m); }
+.tool-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.tool-findings { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; }
+.tool-finding { font-size: var(--ui-fs-m); padding: 5px 8px; border-radius: 6px; border-left: 3px solid; background: var(--ui-surface); }
+.tool-finding-error { border-color: var(--ui-danger); }
+.tool-finding-warn { border-color: var(--ui-warn); }
+.tool-finding-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.tool-finding-row {
+  display: flex; gap: 8px; align-items: flex-start; width: 100%; text-align: left; font: inherit; font-size: var(--ui-fs-m);
+  background: none; border: none; border-top: 1px solid var(--ui-border); padding: 7px 4px; cursor: pointer; color: var(--ui-fg);
+}
+.tool-finding-row:hover { background: var(--ui-hover); }
+.tool-finding-text { flex: 1; min-width: 0; line-height: 1.4; }

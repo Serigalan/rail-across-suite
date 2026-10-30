@@ -30,6 +30,15 @@ only**. They are neither in this repository nor in its history, and no build shi
 into `apps/layout-tool/tiles/`, from where `tools/data.mjs` links them into the app. A test fixture taken from
 them names its source where it lies.
 
+## Signal aspects of PlanPro
+
+The catalogue of signal aspects (`packages/core/constraints/db-ril-301.json`, `begriffe`) lists the 192 aspects
+of PlanPro 1.10.0.3.3's `Signalbegriffe_Ril_301.xsd` by their names there, with their short names, their titles
+(the XSD's Langbezeichnung, else the first clause of its Beschreibung) and the symbols its enumerations allow
+([decision 0011](docs/decisions/0011-signalling-domain.md)). No file of PlanPro is in the repository. PlanPro is
+published by DB InfraGO under the RailPL V1.1 licence; whether that licence covers these facts taken into a
+catalogue under Apache-2.0 has not been checked yet.
+
 ## Used, not included
 
 | Software | Used for | Licence |

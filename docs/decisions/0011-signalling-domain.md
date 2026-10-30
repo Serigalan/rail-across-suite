@@ -123,4 +123,4 @@ collection of its own when a tool plans it.
   checked until the values of Ril 819 and Ril 483 are in the catalogue (`open_points`).
 - **PlanPro's XSD is not in the repository.** It is licensed under RailPL V1.1, whose fit with Apache-2.0 and
   CC BY 4.0 has not been checked; the domain names the version it follows (1.10.0.3.3) and copies none of its
-  files.
+  files. The catalogue takes the names, titles and symbol lists of its 192 aspects (`THIRD-PARTY.md`).

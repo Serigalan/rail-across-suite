@@ -24,11 +24,12 @@ export const MODULES = [...EDITORS, ...SIMULATIONS]
 
 /**
  * The tools of the infrastructure editor — the mode a project opens in.
- * `path` is where an available tool's app lies beside the start page.
+ * `path` is where an available tool's app lies beside the start page;
+ * `storage` whether it keeps anything in the browser to show.
  */
 export const INFRASTRUCTURE_TOOLS = [
-  { id: 'layout', available: true, path: 'layout/' },
-  { id: 'signalling', available: false, phase: 3 },
+  { id: 'layout', available: true, path: 'layout/', storage: true },
+  { id: 'signalling', available: true, path: 'signalling/' },
   { id: 'catenary', available: false, phase: 3 },
 ]
 
@@ -57,6 +58,7 @@ const TOOL_ACTIONS = ['view', 'history', 'compare', 'merge', 'storage']
 export function toolUrl(tool, { project, variant, action, from, to } = {}) {
   if (!tool.available) return null
   if (action && !TOOL_ACTIONS.includes(action)) throw new Error(`unknown tool action: ${action}`)
+  if (action === 'storage' && !tool.storage) return null
   const q = new URLSearchParams()
   if (project) q.set('project', project)
   if (variant) q.set('variant', variant)

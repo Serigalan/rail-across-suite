@@ -3,7 +3,7 @@ import { straightElement } from '@rail-across/core/geometry'
 import { netDrawing, placeOf, locate, stretchLine } from './net.js'
 import { findRun, runAhead, switchesOnRun } from './runs.js'
 import { added, cascadeOf, deleted, domainOf, emptyDomain, newSignal, withKind } from './domain.js'
-import { redo, startHistory, step, undo } from './history.js'
+import { redo, startHistory, step, stepOf, stepsOf, travel, undo } from './history.js'
 
 const EPSG = 25832
 const P = (x, y = 0) => ({ easting: 500000 + x, northing: 5700000 + y, zone: EPSG })
@@ -80,5 +80,26 @@ describe('editing the domain', () => {
     h = undo(h)
     expect(h.now).toBe(a)
     expect(redo(h).now).toBe(b)
+  })
+
+  it('says what each step did and goes several at once', () => {
+    let d = emptyDomain()
+    d = added(d, 'signals', { id: 'a', kind: 'real', name: 'A', at: on('t1', 20) })
+    d = added(d, 'signals', { id: 'n', kind: 'real', name: 'N1', at: on('t2', 80) })
+    d = added(d, 'routes', { id: 'r', kind: 'train', startSignalId: 'a', targetSignalId: 'n', path: { trackIds: ['t1', 't2'] } })
+    const states = [emptyDomain(), d, deleted(d, 'signals', 'n')]
+    let h = states.slice(1).reduce(step, startHistory(states[0]))
+    expect(stepOf(states[0], d)).toEqual({ kind: 'many', n: 3 })
+    expect(stepOf(d, states[2])).toMatchObject({ kind: 'removed', collection: 'signals', obj: { id: 'n' }, more: 1 })
+    const renamed = { ...d, collections: { ...d.collections, signals: [{ ...d.collections.signals[0], name: 'B' }, d.collections.signals[1]] } }
+    expect(stepOf(d, renamed)).toMatchObject({ kind: 'changed', collection: 'signals', obj: { name: 'B' } })
+    expect(stepOf(d, d)).toEqual({ kind: 'fields', n: 0 })
+
+    h = travel(h, -2)
+    expect(h.now).toBe(states[0])
+    expect(stepsOf(h)).toMatchObject({ past: [], future: [{ kind: 'many' }, { kind: 'removed' }] })
+    h = travel(h, 1)
+    expect(h.now).toBe(d)
+    expect(travel(h, 5).now).toBe(states[2])
   })
 })

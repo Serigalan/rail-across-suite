@@ -48,6 +48,17 @@ describe('the Signalling-Tool', () => {
     expect(html).toContain('Einchecken')
   })
 
+  it('names its rail as the Layout-Tool does: the signal and the tool, the history, the way to the infrastructure editor', () => {
+    const html = render()
+    expect(html).toContain('<span class="ui-rail-brand-name">Signalling-Tool</span>')
+    expect(html).toContain('<span class="ui-rail-label">Signale</span>')
+    expect(html).toContain('aria-label="Rückgängig"')
+    expect(html).toContain('aria-label="Verlauf"')
+    expect(html).toContain('aria-label="Wiederholen"')
+    expect(html).toContain('<span class="ui-rail-label">Infrastruktur-Editor</span>')
+    expect(html).not.toContain('Startseite')
+  })
+
   it('offers no editing where it only looks', () => {
     const html = render({ readOnly: true })
     expect(html).toContain('Nur ansehen')

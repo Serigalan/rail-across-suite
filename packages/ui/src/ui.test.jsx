@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import {
-  Badge, Button, Checkbox, IconButton, Message, NumberField, Panel, Rail, RailButton, SelectField, SelectList, Tabs,
+  Badge, Button, Checkbox, IconButton, Message, NumberField, Panel, Rail, RailBrand, RailButton, SelectField, SelectList, Tabs,
 } from './index.js'
 import { PlusIcon } from './icons.jsx'
 
@@ -34,7 +34,10 @@ describe('the suite\'s components', () => {
   it('build the shell of a tool: rail buttons with their counts, the panel', () => {
     const rail = html(<Rail label="Werkzeuge" top={<RailButton label="Prüfung" count={120} pressed />} />)
     expect(rail).toContain('aria-pressed="true"')
-    expect(rail).toContain('<span class="ui-rail-count" aria-hidden="true">99+</span>')
+    expect(rail).toContain('<span class="ui-rail-label">Prüfung</span><span class="ui-rail-count" aria-hidden="true">99+</span>')
+    expect(html(<RailButton label="Verlauf" bare />)).not.toContain('ui-rail-label')
+    expect(html(<RailBrand href="../" label="Zur Suite" name="Signalling-Tool"><svg /></RailBrand>))
+      .toBe('<a class="ui-rail-brand" href="../" title="Zur Suite" aria-label="Zur Suite"><svg></svg><span class="ui-rail-brand-name">Signalling-Tool</span></a>')
     expect(html(<Panel title="Signale" intro="Alle Signale">x</Panel>)).toContain('<aside class="ui-panel" aria-label="Signale">')
     expect(html(<Badge tone="danger" solid>3</Badge>)).toBe('<span class="ui-badge ui-badge-danger ui-badge-solid">3</span>')
     expect(html(<Message tone="error">Nein</Message>)).toBe('<p class="ui-message ui-message-error" role="alert">Nein</p>')

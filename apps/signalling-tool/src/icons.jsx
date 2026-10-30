@@ -26,3 +26,17 @@ export const LayersIcon = () => <Svg><path d="M12 3l9 5-9 5-9-5z" /><path d="M3 
 export const CheckIcon = () => <Svg><path d="M4 12l5 5L20 6" /></Svg>
 /** A file coming in. */
 export const ImportIcon = () => <Svg><path d="M12 3v12M7 10l5 5 5-5" /><path d="M5 21h14" /></Svg>
+/** The history: a clock with an arrow running back. */
+export const HistoryIcon = () => <Svg><path d="M4 12A8 8 0 1 0 6.3 6.3" /><path d="M2.8 6.6h3.8V2.8" /><path d="M12 7.5V12l3 2" /></Svg>
+/** The infrastructure editor of the suite: a house. */
+export const HomeIcon = () => <Svg><path d="M2 11.5L12 3l10 8.5" /><path d="M16 6.4V3.5h2.5v5" /><path d="M5 9v10.5A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V9" /></Svg>
+
+/** The tool's mark: a signal — its screen in the current colour with two lights, the mast on its foot. */
+export const LogoIcon = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <rect x="7" y="1" width="10" height="14" rx="3" fill="currentColor" />
+    <circle cx="12" cy="5.2" r="2" fill="#fff" />
+    <circle cx="12" cy="10.8" r="2" fill="#fff" fillOpacity="0.55" />
+    <path d="M12 15v7M8 22h8" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+  </svg>
+)

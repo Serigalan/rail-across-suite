@@ -16,9 +16,11 @@ import { extensionsOf } from '../extensions'
  * are two arrows without words, the history between them (decision 326) —
  * side by side while the names show, one above the other in the narrow bar,
  * and a line under them. The history opens a panel of its own, which has no
- * entry of its own in the sidebar (decision 328).
+ * entry of its own in the sidebar (decision 328). The way home is named by
+ * `homeKey`: the start page of the local build, the suite's infrastructure
+ * editor on the server.
  */
-export default function Sidebar({ active, onSelect, onUndo, onRedo, onHome }) {
+export default function Sidebar({ active, onSelect, onUndo, onRedo, onHome, homeKey = 'tooltip_home' }) {
   const { t, fill } = useI18n()
   // Their names show unless they were folded away on this device.
   const [labels, setLabels] = useState(() => loadSettings().sidebarLabels !== false)
@@ -54,9 +56,9 @@ export default function Sidebar({ active, onSelect, onUndo, onRedo, onHome }) {
     <aside className={`sidebar-primary${labels ? ' with-labels' : ''}`}>
       <div className="sidebar-top">
         {/* The app's mark on white, its name beside it while the names show —
-            a way back to the start page. */}
+            a way back home. */}
         <button type="button" className="sidebar-brand" onClick={onHome}
-          title={t('tooltip_home')} aria-label={t('tooltip_home')}>
+          title={t(homeKey)} aria-label={t(homeKey)}>
           <LogoIcon className="sidebar-brand-logo" />
           {labels && <span className="sidebar-brand-name">Layout-Tool</span>}
         </button>
@@ -72,7 +74,7 @@ export default function Sidebar({ active, onSelect, onUndo, onRedo, onHome }) {
           {iconButton({ key: 'redo', icon: RedoIcon, title: redoTitle, onClick: onRedo, disabled: !redoStep, bare: true })}
         </div>
         <hr className="sidebar-divider" />
-        {iconButton({ key: 'home', icon: HomeIcon, title: t('tooltip_home'), onClick: onHome })}
+        {iconButton({ key: 'home', icon: HomeIcon, title: t(homeKey), onClick: onHome })}
         {PANELS.filter(p => p.place === 'bottom').map(panelButton)}
         <div className="sidebar-foot">
           {extensionsOf('sidebarFoot').map((Foot, i) => <Foot key={i} />)}

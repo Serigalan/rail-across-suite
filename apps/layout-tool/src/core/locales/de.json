@@ -1,5 +1,6 @@
 {
   "tooltip_home": "Startseite",
+  "tooltip_infrastructure": "Infrastruktur-Editor",
   "tooltip_undo": "Rückgängig (Strg+Z)",
   "tooltip_redo": "Wiederholen",
   "tooltip_undo_step": "Rückgängig: {step} (Strg+Z)",

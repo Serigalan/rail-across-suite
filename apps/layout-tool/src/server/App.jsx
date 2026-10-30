@@ -156,7 +156,7 @@ function Shell() {
   }
   if (page === 'map' && project) {
     return (
-      <MapWorkspace onHome={() => toProjects()} beforeHome={wc.close} resetKey={wc.replaced}
+      <MapWorkspace onHome={() => toProjects()} beforeHome={wc.close} homeKey="tooltip_infrastructure" resetKey={wc.replaced}
         renderExtras={(map) => <WorkingCopyLayer wc={wc} {...map} />} />
     )
   }

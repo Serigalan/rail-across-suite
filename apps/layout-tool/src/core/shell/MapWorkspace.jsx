@@ -57,10 +57,11 @@ const DEFAULT_COLOR = PALETTE.primaryDefault
  *                 element table's edits were made on the old one and go with it
  *   beforeHome()  awaited on the way back to the start page (closing the
  *                 project); `onHome` is called after it
+ *   homeKey       the name of that way back (the sidebar's), the start page's by default
  * and every `workspaceAddons` entry is rendered with the project and the
  * cross section shown (the 3D window's channel).
  */
-export default function MapWorkspace({ onHome, beforeHome, resetKey = 0, renderExtras }) {
+export default function MapWorkspace({ onHome, beforeHome, homeKey, resetKey = 0, renderExtras }) {
   const { t, language } = useI18n()
   const project = useProject()
   // The tracks hidden on the map — a redraw when that changes, like a write.
@@ -333,7 +334,7 @@ export default function MapWorkspace({ onHome, beforeHome, resetKey = 0, renderE
   return (
     <MapContext.Provider value={mapCtx}>
       <div className="layout">
-        <Sidebar active={activePanel} onSelect={selectPanel} onUndo={undo} onRedo={redo} onHome={goHome} />
+        <Sidebar active={activePanel} onSelect={selectPanel} onUndo={undo} onRedo={redo} onHome={goHome} homeKey={homeKey} />
 
         {PanelComponent && (
           <aside className="sidebar-secondary" style={panelSize.width ? { width: panelSize.width } : undefined}>

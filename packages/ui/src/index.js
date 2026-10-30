@@ -7,7 +7,7 @@ export { ConfirmDialog, Dialog, FormDialog } from './Dialog.jsx'
 export { Checkbox, Field, NumberField, SelectField, TextField } from './Field.jsx'
 export { Badge, Message } from './Feedback.jsx'
 export { SelectList } from './List.jsx'
-export { Panel, Rail, RailBrand, RailButton, RailDivider, Section, Shell, Workspace } from './Shell.jsx'
+export { Panel, Rail, RailBrand, RailButton, RailDivider, RailRow, Section, Shell, Workspace } from './Shell.jsx'
 export { Tabs } from './Tabs.jsx'
 export {
   BackIcon, CheckIcon, CloseIcon, DownloadIcon, FitIcon, HelpIcon, PlusIcon, RedoIcon, SaveIcon, SearchIcon,

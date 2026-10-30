@@ -21,7 +21,7 @@ import { Button, Panel, Rail, RailButton, Shell, Workspace } from '@rail-across/
 | Dialogs | `Dialog` (focus kept inside, Escape and a click beside close it), `FormDialog`, `ConfirmDialog` | `ui-overlay`, `ui-dialog`, `ui-actions` |
 | Choosing | `Tabs` (arrow keys), `SelectList` (rows with a mark, title, line below, badges; scrolling within `maxHeight`) | `ui-tabs`, `ui-list` |
 | Menus | — | `ui-menu`, `ui-menu-list` |
-| The shell of a tool | `Shell`, `Rail`, `RailBrand`, `RailButton` (with a count), `RailDivider`, `Panel`, `Section`, `Workspace` | `ui-shell`, `ui-rail`, `ui-panel`, `ui-workspace`, `ui-topbar` |
+| The shell of a tool | `Shell`, `Rail`, `RailBrand`, `RailButton` (named beside its symbol, with a count), `RailRow`, `RailDivider`, `Panel`, `Section`, `Workspace` | `ui-shell`, `ui-rail`, `ui-panel`, `ui-workspace`, `ui-topbar` |
 | Symbols | `PlusIcon`, `TrashIcon`, `CloseIcon`, `CheckIcon`, `BackIcon`, `UndoIcon`, `RedoIcon`, `UploadIcon`, `DownloadIcon`, `SaveIcon`, `WarningIcon`, `SearchIcon`, `FitIcon`, `HelpIcon` | — |
 
 Texts are the app's: a component takes its words as props (`cancelLabel`, `label`), so the library has no

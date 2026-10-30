@@ -105,3 +105,16 @@ html, body { margin: 0; background: var(--ui-surface); }
 .layer-caret { color: var(--ui-muted); transition: transform 0.15s; }
 .layer-caret.open { transform: rotate(90deg); }
 .layer-states { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 10px; padding: 4px 6px 6px; }
+
+/* ── the history panel ───────────────────────────────────────────────── */
+
+.step-history-list { display: flex; flex-direction: column; border: 1px solid var(--ui-border); border-radius: 8px; padding: 4px 0; }
+.step-history-item {
+  position: relative; text-align: left; padding: 6px 12px 6px 26px; border: none; background: none; cursor: pointer;
+  font: inherit; font-size: var(--ui-fs-m); color: var(--ui-fg);
+}
+.step-history-item:hover, .step-history-item:focus-visible { background: var(--ui-hover); outline: none; }
+.step-history-ahead { color: var(--ui-muted); font-style: italic; }
+.step-history-now { font-weight: 600; }
+.step-history-now::before { content: '●'; position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--color-primary); font-size: 9px; }
+.step-history-start { color: var(--ui-muted); border-top: 1px solid var(--ui-border); margin-top: 4px; padding-top: 8px; }

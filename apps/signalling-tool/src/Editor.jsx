@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
-  Badge, Button, ConfirmDialog, FitIcon, FormDialog, IconButton, Message, Rail, RailBrand, RailButton, RailDivider,
+  Badge, Button, ConfirmDialog, FitIcon, FormDialog, IconButton, Message, Rail, RailBrand, RailButton, RailDivider, RailRow,
   RedoIcon, SaveIcon, Shell, TextField, UndoIcon, Workspace,
 } from '@rail-across/ui'
 import { checkSignalling, trackSectionExtents } from '@rail-across/core/signalling'
@@ -11,9 +11,11 @@ import { api } from './api.js'
 import { projectsUrl } from './suite.js'
 import { netDrawing } from './model/net.js'
 import { added, cascadeOf, deleted, domainOf, labelOf, replaced } from './model/domain.js'
-import { redo, startHistory, step, undo } from './model/history.js'
+import { redo, startHistory, step, stepOf, stepText, travel, undo } from './model/history.js'
 import PlanView from './plan/PlanView.jsx'
-import { CheckIcon, DetectionIcon, FlankIcon, ImportIcon, LayersIcon, PzbIcon, RouteIcon, SignalIcon, SwitchIcon } from './icons.jsx'
+import {
+  CheckIcon, DetectionIcon, FlankIcon, HistoryIcon, HomeIcon, ImportIcon, LayersIcon, LogoIcon, PzbIcon, RouteIcon, SignalIcon, SwitchIcon,
+} from './icons.jsx'
 import SignalsPanel from './panels/SignalsPanel.jsx'
 import DetectionPanel from './panels/DetectionPanel.jsx'
 import ElementsPanel from './panels/ElementsPanel.jsx'
@@ -23,6 +25,7 @@ import PzbPanel from './panels/PzbPanel.jsx'
 import CheckPanel from './panels/CheckPanel.jsx'
 import ImportPanel from './panels/ImportPanel.jsx'
 import LayersPanel, { DEFAULT_PLAN_BASEMAP } from './panels/LayersPanel.jsx'
+import HistoryPanel from './panels/HistoryPanel.jsx'
 
 const SECTIONS = [
   { id: 'signals', icon: <SignalIcon />, Panel: SignalsPanel },
@@ -42,8 +45,10 @@ const SECTION_OF = {
 /**
  * Working on the signalling of a variant: the rail of sections on the left —
  * signals, train detection, switch elements, routes, flank protection, PZB,
- * the check and the PlanPro import —, the panel of the one chosen, the plan
- * of the net with what the domain holds. Every edit is a step (undo, redo);
+ * the check and the PlanPro import; at its foot undo, the history and redo,
+ * the way back to the infrastructure editor and the map layers —, the panel
+ * of the one chosen, the plan of the net with what the domain holds. Every
+ * edit is a step (undo, redo, the history);
  * the core's check runs on every one; checking in sends the record with its
  * signalling to the project server, merging what others checked in meanwhile.
  * The core is the Layout-Tool's: this tool reads it and never changes it (R1).
@@ -171,6 +176,10 @@ export default function Editor({ project, variant, head, readOnly }) {
     setDialog(null)
   }
 
+  // What the two arrows would do, said on them.
+  const undoTitle = history.past.length ? t('undo_step', { step: stepText(stepOf(history.past.at(-1), history.now), t) }) : t('undo')
+  const redoTitle = history.future.length ? t('redo_step', { step: stepText(stepOf(history.now, history.future[0]), t) }) : t('redo')
+
   const counts = { errors: findings.errors.length, warnings: findings.warnings.length }
   const active = SECTIONS.find(s => s.id === section)
   const panelProps = {
@@ -181,7 +190,7 @@ export default function Editor({ project, variant, head, readOnly }) {
   return (
     <Shell>
       <Rail label={t('tool')}
-        brand={<RailBrand href={projectsUrl()} label={`${t('to_projects')} — ${t('suite')}`} src="../logo.svg" />}
+        brand={<RailBrand href={projectsUrl()} label={t('infrastructure')} name={t('tool')}><LogoIcon /></RailBrand>}
         top={<>
           {SECTIONS.map(s => (
             <RailButton key={s.id} icon={s.icon} label={t(`section_${s.id}`)} pressed={section === s.id} onClick={() => setSection(s.id)} />
@@ -191,9 +200,21 @@ export default function Editor({ project, variant, head, readOnly }) {
             count={counts.errors || counts.warnings} countTone={counts.errors ? undefined : 'warn'} />
           {!readOnly && <RailButton icon={<ImportIcon />} label={t('section_import')} pressed={section === 'import'} onClick={() => setSection('import')} />}
         </>}
-        bottom={<RailButton icon={<LayersIcon />} label={t('section_layers')} pressed={section === 'layers'} onClick={() => setSection('layers')} />}
+        bottom={<>
+          {!readOnly && <>
+            <RailRow>
+              <RailButton bare icon={<UndoIcon />} label={undoTitle} disabled={!history.past.length} onClick={() => setHistory(undo)} />
+              <RailButton bare icon={<HistoryIcon />} label={t('step_history_title')} pressed={section === 'history'} onClick={() => setSection('history')} />
+              <RailButton bare icon={<RedoIcon />} label={redoTitle} disabled={!history.future.length} onClick={() => setHistory(redo)} />
+            </RailRow>
+            <RailDivider />
+          </>}
+          <RailButton icon={<HomeIcon />} label={t('infrastructure')} onClick={() => location.assign(projectsUrl())} />
+          <RailButton icon={<LayersIcon />} label={t('section_layers')} pressed={section === 'layers'} onClick={() => setSection('layers')} />
+        </>}
       />
-      {section === 'check' ? <CheckPanel {...panelProps} /> : section === 'import' ? <ImportPanel {...panelProps} />
+      {section === 'history' ? <HistoryPanel history={history} travel={(n) => setHistory(h => travel(h, n))} t={t} />
+        : section === 'check' ? <CheckPanel {...panelProps} /> : section === 'import' ? <ImportPanel {...panelProps} />
         : section === 'layers' ? <LayersPanel {...panelProps} /> : <active.Panel {...panelProps} />}
       <Workspace bar={<>
         <span className="ui-topbar-title">{project.title}</span>
@@ -201,11 +222,7 @@ export default function Editor({ project, variant, head, readOnly }) {
         {readOnly ? <Badge tone="primary">{t('read_only')}</Badge> : <Badge tone={dirty ? 'warn' : 'ok'}>{dirty ? t('unsaved') : t('saved')}</Badge>}
         <span className="ui-grow" />
         <IconButton label={t('fit')} icon={<FitIcon />} variant="ghost" onClick={() => setFitKey(k => k + 1)} />
-        {!readOnly && <>
-          <IconButton label={t('undo')} icon={<UndoIcon />} variant="ghost" disabled={!history.past.length} onClick={() => setHistory(undo)} />
-          <IconButton label={t('redo')} icon={<RedoIcon />} variant="ghost" disabled={!history.future.length} onClick={() => setHistory(redo)} />
-          <Button variant="primary" icon={<SaveIcon />} disabled={!dirty} onClick={() => setDialog({ kind: 'checkin' })}>{t('check_in')}</Button>
-        </>}
+        {!readOnly && <Button variant="primary" icon={<SaveIcon />} disabled={!dirty} onClick={() => setDialog({ kind: 'checkin' })}>{t('check_in')}</Button>}
         <a className="ui-link" href={projectsUrl()}>{t('to_projects')}</a>
       </>}>
         {notice && (

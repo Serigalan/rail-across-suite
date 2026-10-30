@@ -1,5 +1,6 @@
 {
   "tooltip_home": "Home",
+  "tooltip_infrastructure": "Infrastructure editor",
   "tooltip_undo": "Undo (Ctrl+Z)",
   "tooltip_redo": "Redo",
   "tooltip_undo_step": "Undo: {step} (Ctrl+Z)",

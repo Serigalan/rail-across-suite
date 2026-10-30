@@ -14,7 +14,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const OUT = join(ROOT, 'types', 'document.d.ts')
 
 /** The namespace a schema's types go into, by its $id. */
-const NAMESPACES = { 'rail-across': 'Document', core: 'Core', layout: 'Layout' }
+const NAMESPACES = { 'rail-across': 'Document', core: 'Core', layout: 'Layout', signalling: 'Signalling' }
 
 const comment = (text, pad) => (text ? `${pad}/** ${text.replace(/\*\//g, '*\\/')} */\n` : '')
 const literal = (v) => JSON.stringify(v)
@@ -76,7 +76,7 @@ function render() {
     '// The types of the core 1.0 document, derived from the schemas in schemas/ by',
     '// packages/core/tools/types.mjs. Do not edit: change the schema and run the tool.',
     '',
-    ...['rail-across', 'core', 'layout'].map(id => `${namespaceOf(schemaOf(id))}\n`),
+    ...['rail-across', 'core', 'layout', 'signalling'].map(id => `${namespaceOf(schemaOf(id))}\n`),
   ].join('\n')
 }
 

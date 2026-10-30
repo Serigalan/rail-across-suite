@@ -12,6 +12,7 @@ import { fileURLToPath } from 'node:url'
 import {
   canonicalJson, checkDocument, contentHash, documentHash, manifestOf, PayloadError, SchemaSet, schemaOf, toDocument,
 } from '../src/document/index.js'
+import { ksStation } from '../test/signallingFixture.js'
 
 const OUT = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'schemas', 'vectors')
 
@@ -38,7 +39,9 @@ const canonicalVectors = () => CANONICAL_INPUTS.map(json => {
 
 // ── The schema check ────────────────────────────────────────────────────────
 
-const SCHEMAS = new SchemaSet(['rail-across', 'core', 'layout'].map(schemaOf))
+const SCHEMAS = new SchemaSet(['rail-across', 'core', 'layout', 'signalling'].map(schemaOf))
+const STATION = ksStation().collections
+const SIGNAL = STATION.signals[0]
 const TRACK = {
   id: 't1', epsg: 25832,
   elements: [{ elementType: 0, startNode: [500000, 5700000], endNode: [500100, 5700000], bearing: 90, length: 100 }],
@@ -76,6 +79,23 @@ const SCHEMA_CASES = [
   ['layout#/$defs/NamedTrackPath', { id: 'r', name: 'Route 1', path: { trackIds: ['t1'] } }],
   ['layout#/$defs/AxisSurvey', { id: 'a', epsg: 25832, points: 'sha256:abc' }],
   ['layout#/$defs/Fields', { planHeader: {}, osrd: { version: '4.0.0' }, imageHash: 'f00' }],
+  ['signalling#/$defs/Signal', SIGNAL],
+  ['signalling#/$defs/Signal', { ...SIGNAL, at: { anchor: 'station', trackId: 't1', station: 20 } }],
+  ['signalling#/$defs/Signal', { ...SIGNAL, at: { anchor: 'plane', easting: 500000, northing: 5700000, epsg: 25832, bearing: 90 } }],
+  ['signalling#/$defs/Signal', { ...SIGNAL, frames: [{ kind: 'screen', aspects: [] }] }],
+  ['signalling#/$defs/Signal', { ...SIGNAL, kind: 'fictive', function: 'gate' }],
+  ['signalling#/$defs/Route', STATION.routes[0]],
+  ['signalling#/$defs/Route', { ...STATION.routes[0], overlaps: [{ preferred: true }] }],
+  ['signalling#/$defs/Overlap', STATION.overlaps[0]],
+  ['signalling#/$defs/FlankProtection', STATION.flankProtection[0]],
+  ['signalling#/$defs/FlankProtection', STATION.flankProtection[1]],
+  ['signalling#/$defs/FlankProtection', { ...STATION.flankProtection[0], protection: { signalId: 'sig-n1', switchElementId: 'we-1', position: 'left' } }],
+  ['signalling#/$defs/FlankProtection', { ...STATION.flankProtection[0], protection: { waived: false } }],
+  ['signalling#/$defs/PzbElement', STATION.pzbElements[3]],
+  ['signalling#/$defs/PzbElement', { ...STATION.pzbElements[0], frequency: '1500' }],
+  ['signalling#/$defs/StationBoundary', STATION.stationBoundaries[0]],
+  ['signalling#/$defs/StationBoundary', { ...STATION.stationBoundaries[0], marks: [{ signalId: 'sig-a', switchId: 'w1' }] }],
+  ['signalling#/$defs/TrackSection', { id: 'ts', kind: 'axleCounting', boundedBy: [] }],
 ]
 
 const schemaVectors = () => SCHEMA_CASES.map(([ref, value]) => {
@@ -85,8 +105,8 @@ const schemaVectors = () => SCHEMA_CASES.map(([ref, value]) => {
 
 // ── Documents ───────────────────────────────────────────────────────────────
 
-/** A record with one of everything the format holds. */
-function sampleRecord() {
+/** A record with one of everything the format holds — with the signalling of a small station where asked. */
+function sampleRecord({ signalling = false } = {}) {
   const el = (x0, x1, extra = {}) => ({ elementType: 0, startNode: [500000 + x0, 5700000], endNode: [500000 + x1, 5700000], bearing: 90, length: x1 - x0, ...extra })
   return {
     id: 'b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69', title: 'Halle-Trotha', description: 'vectors', creator: 'core',
@@ -112,6 +132,7 @@ function sampleRecord() {
       points: { e0: 500000, n0: 5700000, z0: 108, st: [0, 500], de: [0, 500], dn: [0, 0], zl: [550, 560], zr: [550, 561], ga: [1435, 1436], q: [1, 1] } }],
     referenceAxes: [{ id: 'x1', name: 'Bestand', epsg: 25832, heightEpsg: null, source: { tra: 'a.TRA', gra: null },
       points: { s0: 0, step: 0.01, count: 3, e0: 500000, n0: 5700000, de: [0, 10, 10], dn: [0, 0, 0], z: null } }],
+    ...(signalling ? { signalling: ksStation({ operationalPoint: 'Halle-Trotha' }) } : {}),
   }
 }
 
@@ -121,7 +142,7 @@ const DOCUMENT_CASES = [
   ['the sample, carrying its schemas', (d, carry) => carry()],
   ['another format', (d) => { d.format = 'oltjson' }],
   ['a domain version this build does not read', (d) => { d.domains.core.version = '2.0' }],
-  ['a domain this build does not read', (d) => { d.domains.signalling = { ...d.domains.layout, version: '0.3' } }],
+  ['a domain this build does not read', (d) => { d.domains.catenary = { ...d.domains.layout, version: '0.3' } }],
   ['a schema hash that is not the version\'s', (d) => { d.domains.layout.schema = `sha256:${'0'.repeat(64)}` }],
   ['a carried schema under another hash', (d, carry) => { carry(); d.schemas[d.domains.core.schema] = { $id: 'core' } }],
   ['a blob that is not what its hash says', (d) => { const [h] = Object.keys(d.blobs); d.blobs[h] = { e0: 1 } }],
@@ -132,6 +153,12 @@ const DOCUMENT_CASES = [
   ['a platform with its stations loose', (d) => { const p = d.domains.core.collections.platforms[0]; p.startStation = p.at.startStation }],
   ['a collection missing', (d) => { delete d.domains.core.collections.kmLines }],
   ['no core', (d) => { delete d.domains.core }],
+  ['the sample with its signalling', () => {}, { signalling: true }],
+  ['the sample with its signalling, carrying its schemas', (d, carry) => carry(), { signalling: true }],
+  ['signalling depending on nothing', (d) => { delete d.domains.signalling.dependsOn }, { signalling: true }],
+  ['a signal acting in no direction', (d) => { delete d.domains.signalling.collections.signals[0].at.direction }, { signalling: true }],
+  ['a frame that shows nothing', (d) => { d.domains.signalling.collections.signals[0].frames[0].aspects = [] }, { signalling: true }],
+  ['signalling without its overlaps', (d) => { delete d.domains.signalling.collections.overlaps }, { signalling: true }],
 ]
 
 function verdict(doc) {
@@ -144,9 +171,9 @@ function verdict(doc) {
   }
 }
 
-const documentVectors = () => DOCUMENT_CASES.map(([name, change]) => {
-  const doc = structuredClone(toDocument(sampleRecord()))
-  const carry = () => { doc.schemas = structuredClone(toDocument(sampleRecord(), { carrySchemas: true }).schemas) }
+const documentVectors = () => DOCUMENT_CASES.map(([name, change, options = {}]) => {
+  const doc = structuredClone(toDocument(sampleRecord(options)))
+  const carry = () => { doc.schemas = structuredClone(toDocument(sampleRecord(options), { carrySchemas: true }).schemas) }
   change(doc, carry)
   return { name, document: doc, ...verdict(doc) }
 })

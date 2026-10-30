@@ -66,6 +66,7 @@ the one door: everything behind it may take the model for granted.
 | `planHeader` | the editable title block of the plan export |
 | `imageHash` / `image` | the project picture: SHA-256 of a blob on the server, or a data URL in files and local projects |
 | `osrd` | passthrough of RailJSON objects the app does not model, handed back on export |
+| `signalling` | the signalling domain `{ fields, collections }` of another tool, carried as it came and never edited here ([decision 0011](../../../docs/decisions/0011-signalling-domain.md)) |
 
 Collections, each keyed by its own id (which is also how the merge compares them):
 

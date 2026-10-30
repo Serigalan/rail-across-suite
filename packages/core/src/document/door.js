@@ -1,6 +1,7 @@
 import ENVELOPE from '../../schemas/rail-across.schema.json' with { type: 'json' }
 import CORE from '../../schemas/core/1.0.schema.json' with { type: 'json' }
 import LAYOUT from '../../schemas/layout/1.0.schema.json' with { type: 'json' }
+import SIGNALLING from '../../schemas/signalling/1.0.schema.json' with { type: 'json' }
 import { contentHash } from './canonical.js'
 import { DOMAIN_VERSIONS, documentToRecord, recordToDocument } from './coreFormat.js'
 import { PayloadError } from './payloadError.js'
@@ -16,8 +17,8 @@ import { SchemaSet } from './schemaCheck.js'
 export const FORMAT = 'rail-across'
 
 /** The schemas of this build: the envelope's, and each domain's by name. */
-const SCHEMAS = new SchemaSet([ENVELOPE, CORE, LAYOUT])
-const DOMAIN_SCHEMAS = { core: CORE, layout: LAYOUT }
+const SCHEMAS = new SchemaSet([ENVELOPE, CORE, LAYOUT, SIGNALLING])
+const DOMAIN_SCHEMAS = { core: CORE, layout: LAYOUT, signalling: SIGNALLING }
 
 /** The hash each domain's schema goes by — what a document names it with. */
 export const SCHEMA_HASHES = Object.fromEntries(Object.entries(DOMAIN_SCHEMAS).map(([d, s]) => [d, contentHash(s)]))
@@ -73,12 +74,12 @@ export function checkDocument(doc) {
  */
 export function toDocument(record, { carrySchemas = false } = {}) {
   const doc = recordToDocument(record, SCHEMA_HASHES)
-  if (carrySchemas) doc.schemas = Object.fromEntries(Object.entries(DOMAIN_SCHEMAS).map(([d, s]) => [SCHEMA_HASHES[d], s]))
+  if (carrySchemas) doc.schemas = Object.fromEntries(Object.keys(doc.domains).map(d => [SCHEMA_HASHES[d], DOMAIN_SCHEMAS[d]]))
   return checkDocument(doc)
 }
 
 /** The record a core 1.0 document holds, once the door has checked it. */
 export const fromDocument = (doc) => documentToRecord(checkDocument(doc))
 
-/** The schema of a domain this build reads, by name ("core", "layout"), and the envelope's ("rail-across"). */
+/** The schema of a domain this build reads, by name ("core", "layout", "signalling"), and the envelope's ("rail-across"). */
 export const schemaOf = (name) => (name === 'rail-across' ? ENVELOPE : DOMAIN_SCHEMAS[name])

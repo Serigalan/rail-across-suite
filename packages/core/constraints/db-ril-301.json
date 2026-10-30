@@ -1,0 +1,489 @@
+{
+  "katalog": {
+    "id": "db-ril-301",
+    "title": "DB Ril 301 | Signalbuch — Signalbegriffe des Ks-Systems mit Zusatzsignalen und Tafeln, PZB-Gleiselemente",
+    "katalog_version": "0.1.0",
+    "status": "draft",
+    "date": "2026-10-30",
+    "language": "de",
+    "scope": {
+      "included": [
+        "Signalbegriffe des Ks-Systems (Hp 0, Ks 1, Ks 2, Kennlicht, Zusatzlicht oben und unten) und welche Signalart welche zeigt",
+        "Zusatzsignale am Signal (Zs 1, Zs 2, Zs 2v, Zs 3, Zs 3v, Zs 6, Zs 7, Zs 8, Zs 13) und welche Signalart sie trägt",
+        "Sperrsignale und Sperrbegriffe (Sh 0, Sh 1) am Hauptsperrsignal und für sich",
+        "Tafeln als Signale ohne Licht (Ne 1, Ne 2, Ne 4, Ne 5, Lf 6, Lf 7, Ra 10)",
+        "Symbole: Geschwindigkeit in Zehnern km/h (Zs 3, Zs 3v, Lf 6, Lf 7), Buchstabe (Zs 2, Zs 2v)",
+        "PZB: die Frequenzen der Gleiselemente und wie sie wirken (PlanPro PZB_Art, Wirksamkeit)"
+      ],
+      "excluded": [
+        "H/V, Sv, Hl — weitere Systeme folgen als eigene Einträge unter systeme, ohne Änderung am Schema",
+        "Abstände: Vorsignalabstand, Durchrutschweglänge, Lage der PZB-Magnete zum Signal — siehe open_points",
+        "ETCS und Ne 14 — folgen mit ETCS"
+      ]
+    },
+    "label_note": "Die Schlüssel der Begriffe sind die Namen der Signalbegriffe in PlanPro 1.10 (Signalbegriffe_Ril_301.xsd): Hp_0, Ks_1, Zs_3 … So bildet der Export jeden Begriff ohne Tabelle ab. Ein Schlüssel wird nicht umbenannt — ein gespeichertes Projekt schlägt seine Begriffe darüber nach."
+  },
+  "changelog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-10-30",
+      "changes": [
+        "Erste Fassung: Ks mit Zusatzsignalen, Sperrsignalen und Tafeln; PZB-Arten (Entscheidung 0011)."
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "id": "ril-301",
+      "title": "DB Ril 301 Signalbuch"
+    },
+    {
+      "id": "planpro-1.10",
+      "title": "PlanPro 1.10.0.3.3 — Signalbegriffe_Ril_301.xsd, Signale.xsd, PZB.xsd (RailPL V1.1)"
+    }
+  ],
+  "symbole": {
+    "speed": {
+      "beschreibung": "Geschwindigkeit in Zehnern km/h, 1 bis 16",
+      "pattern": "^([1-9]|1[0-6])$"
+    },
+    "letter": {
+      "beschreibung": "ein Großbuchstabe (Richtung)",
+      "pattern": "^[A-Z]$"
+    }
+  },
+  "begriffe": [
+    {
+      "id": "Hp_0",
+      "name": "Hp 0",
+      "title": "Halt",
+      "rahmen": [
+        "screen"
+      ]
+    },
+    {
+      "id": "Ks_1",
+      "name": "Ks 1",
+      "title": "Fahrt",
+      "rahmen": [
+        "screen"
+      ]
+    },
+    {
+      "id": "Ks_2",
+      "name": "Ks 2",
+      "title": "Halt erwarten",
+      "rahmen": [
+        "screen"
+      ]
+    },
+    {
+      "id": "Kl",
+      "name": "Kl",
+      "title": "Kennlicht",
+      "rahmen": [
+        "screen"
+      ]
+    },
+    {
+      "id": "Zl_o",
+      "name": "Zl o",
+      "title": "Zusatzlicht oben — verkürzter Bremswegabstand",
+      "rahmen": [
+        "screen"
+      ]
+    },
+    {
+      "id": "Zl_u",
+      "name": "Zl u",
+      "title": "Zusatzlicht unten — Vorsignalwiederholer",
+      "rahmen": [
+        "screen"
+      ]
+    },
+    {
+      "id": "Sh_0",
+      "name": "Sh 0",
+      "title": "Halt! Fahrverbot",
+      "rahmen": [
+        "screen"
+      ]
+    },
+    {
+      "id": "Sh_1",
+      "name": "Sh 1",
+      "title": "Rangierfahrtsignal",
+      "rahmen": [
+        "screen"
+      ]
+    },
+    {
+      "id": "Zs_1",
+      "name": "Zs 1",
+      "title": "Ersatzsignal",
+      "rahmen": [
+        "indicator"
+      ]
+    },
+    {
+      "id": "Zs_2",
+      "name": "Zs 2",
+      "title": "Richtungsanzeiger",
+      "rahmen": [
+        "indicator"
+      ],
+      "symbol": "letter"
+    },
+    {
+      "id": "Zs_2v",
+      "name": "Zs 2v",
+      "title": "Richtungsvoranzeiger",
+      "rahmen": [
+        "indicator"
+      ],
+      "symbol": "letter"
+    },
+    {
+      "id": "Zs_3",
+      "name": "Zs 3",
+      "title": "Geschwindigkeitsanzeiger",
+      "rahmen": [
+        "indicator",
+        "plate"
+      ],
+      "symbol": "speed"
+    },
+    {
+      "id": "Zs_3v",
+      "name": "Zs 3v",
+      "title": "Geschwindigkeitsvoranzeiger",
+      "rahmen": [
+        "indicator",
+        "plate"
+      ],
+      "symbol": "speed"
+    },
+    {
+      "id": "Zs_6",
+      "name": "Zs 6",
+      "title": "Gegengleisanzeiger",
+      "rahmen": [
+        "indicator"
+      ]
+    },
+    {
+      "id": "Zs_7",
+      "name": "Zs 7",
+      "title": "Vorsichtssignal",
+      "rahmen": [
+        "indicator"
+      ]
+    },
+    {
+      "id": "Zs_8",
+      "name": "Zs 8",
+      "title": "Gegengleisfahrt-Ersatzsignal",
+      "rahmen": [
+        "indicator"
+      ]
+    },
+    {
+      "id": "Zs_13",
+      "name": "Zs 13",
+      "title": "Stumpfgleis- und Frühhaltanzeiger",
+      "rahmen": [
+        "indicator"
+      ]
+    },
+    {
+      "id": "Ne_1",
+      "name": "Ne 1",
+      "title": "Trapeztafel",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "Ne_2",
+      "name": "Ne 2",
+      "title": "Vorsignaltafel",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "Ne_4",
+      "name": "Ne 4",
+      "title": "Schachbretttafel",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "Ne_5",
+      "name": "Ne 5",
+      "title": "Haltetafel",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "Lf_6",
+      "name": "Lf 6",
+      "title": "Geschwindigkeits-Ankündesignal",
+      "rahmen": [
+        "plate"
+      ],
+      "symbol": "speed"
+    },
+    {
+      "id": "Lf_7",
+      "name": "Lf 7",
+      "title": "Geschwindigkeitssignal",
+      "rahmen": [
+        "plate"
+      ],
+      "symbol": "speed"
+    },
+    {
+      "id": "Ra_10",
+      "name": "Ra 10",
+      "title": "Rangierhalttafel",
+      "rahmen": [
+        "plate"
+      ]
+    }
+  ],
+  "systeme": {
+    "ks": {
+      "title": "Ks-Signalsystem",
+      "signalarten": {
+        "main": {
+          "title": "Ks-Hauptsignal",
+          "schirm": {
+            "pflicht": [
+              "Hp_0",
+              "Ks_1"
+            ],
+            "erlaubt": [
+              "Hp_0",
+              "Ks_1"
+            ]
+          },
+          "zusatz": [
+            "Zs_1",
+            "Zs_2",
+            "Zs_3",
+            "Zs_6",
+            "Zs_7",
+            "Zs_8",
+            "Zs_13"
+          ]
+        },
+        "mainShunting": {
+          "title": "Ks-Hauptsperrsignal",
+          "schirm": {
+            "pflicht": [
+              "Hp_0",
+              "Ks_1",
+              "Sh_1"
+            ],
+            "erlaubt": [
+              "Hp_0",
+              "Ks_1",
+              "Sh_1"
+            ]
+          },
+          "zusatz": [
+            "Zs_1",
+            "Zs_2",
+            "Zs_3",
+            "Zs_6",
+            "Zs_7",
+            "Zs_8",
+            "Zs_13"
+          ]
+        },
+        "multiSection": {
+          "title": "Ks-Mehrabschnittssignal",
+          "schirm": {
+            "pflicht": [
+              "Hp_0",
+              "Ks_1",
+              "Ks_2"
+            ],
+            "erlaubt": [
+              "Hp_0",
+              "Ks_1",
+              "Ks_2",
+              "Kl",
+              "Zl_o"
+            ]
+          },
+          "zusatz": [
+            "Zs_1",
+            "Zs_2",
+            "Zs_2v",
+            "Zs_3",
+            "Zs_3v",
+            "Zs_6",
+            "Zs_7",
+            "Zs_8",
+            "Zs_13"
+          ]
+        },
+        "multiSectionShunting": {
+          "title": "Ks-Mehrabschnittssperrsignal",
+          "schirm": {
+            "pflicht": [
+              "Hp_0",
+              "Ks_1",
+              "Ks_2",
+              "Sh_1"
+            ],
+            "erlaubt": [
+              "Hp_0",
+              "Ks_1",
+              "Ks_2",
+              "Kl",
+              "Sh_1",
+              "Zl_o"
+            ]
+          },
+          "zusatz": [
+            "Zs_1",
+            "Zs_2",
+            "Zs_2v",
+            "Zs_3",
+            "Zs_3v",
+            "Zs_6",
+            "Zs_7",
+            "Zs_8",
+            "Zs_13"
+          ]
+        },
+        "distant": {
+          "title": "Ks-Vorsignal",
+          "schirm": {
+            "pflicht": [
+              "Ks_1",
+              "Ks_2"
+            ],
+            "erlaubt": [
+              "Ks_1",
+              "Ks_2",
+              "Zl_o"
+            ]
+          },
+          "zusatz": [
+            "Zs_2v",
+            "Zs_3v"
+          ]
+        },
+        "distantRepeater": {
+          "title": "Ks-Vorsignalwiederholer",
+          "schirm": {
+            "pflicht": [
+              "Ks_1",
+              "Ks_2",
+              "Zl_u"
+            ],
+            "erlaubt": [
+              "Ks_1",
+              "Ks_2",
+              "Zl_u"
+            ]
+          },
+          "zusatz": [
+            "Zs_2v",
+            "Zs_3v"
+          ]
+        }
+      }
+    }
+  },
+  "ohne_system": {
+    "beschreibung": "Signale, deren Schirm keinem Fahrtsignalsystem angehört, und Tafeln.",
+    "signalarten": {
+      "shunting": {
+        "title": "Sperrsignal",
+        "schirm": {
+          "pflicht": [
+            "Sh_0",
+            "Sh_1"
+          ],
+          "erlaubt": [
+            "Sh_0",
+            "Sh_1"
+          ]
+        },
+        "zusatz": []
+      }
+    },
+    "tafeln": [
+      "Ne_1",
+      "Ne_2",
+      "Ne_4",
+      "Ne_5",
+      "Lf_6",
+      "Lf_7",
+      "Ra_10",
+      "Zs_3",
+      "Zs_3v"
+    ]
+  },
+  "pzb": {
+    "frequenzen": {
+      "500": {
+        "title": "500-Hz-Gleismagnet",
+        "planpro": "500_Hz"
+      },
+      "1000": {
+        "title": "1000-Hz-Gleismagnet",
+        "planpro": "1000_Hz"
+      },
+      "2000": {
+        "title": "2000-Hz-Gleismagnet",
+        "planpro": "2000_Hz"
+      },
+      "1000+2000": {
+        "title": "1000/2000-Hz-Gleismagnet",
+        "planpro": "1000_2000_Hz"
+      }
+    },
+    "wirksamkeit": {
+      "permanent": "staendig_wirksam",
+      "switchedBySignal": "schaltbar_von_Signal",
+      "other": "sonstige"
+    },
+    "geschwindigkeitspruefung": {
+      "beschreibung": "Eine Geschwindigkeitsprüfeinrichtung (GÜ) besteht aus zwei Magneten; sie wird als ein Element der Art speedCheck geführt, mit Prüfgeschwindigkeit und Messlänge."
+    }
+  },
+  "open_points": [
+    {
+      "id": "OP.S.01",
+      "refs": [
+        "systeme.ks"
+      ],
+      "topic": "Vorsignalabstand",
+      "assumption": "Noch nicht im Katalog. Die Werte nach Ril 819 (Regelabstand, verkürzter Abstand, Abhängigkeit von Geschwindigkeit und Neigung) fehlen; bis sie vorliegen, prüft der Core den Abstand nicht."
+    },
+    {
+      "id": "OP.S.02",
+      "refs": [
+        "Overlap.length"
+      ],
+      "topic": "Länge des Durchrutschwegs",
+      "assumption": "Die Solllänge steht am Durchrutschweg (Laenge_Soll), der Core rechnet sie nicht nach. Die Tabelle nach Ril 819 (Geschwindigkeit, maßgebende Neigung) fehlt."
+    },
+    {
+      "id": "OP.S.03",
+      "refs": [
+        "pzb"
+      ],
+      "topic": "Lage der PZB-Gleismagnete zum Signal",
+      "assumption": "Wo ein 1000-, 500- und 2000-Hz-Magnet zum Vor- und Hauptsignal liegt und wann eine GÜ nötig ist, prüft der Core noch nicht; die Werte nach Ril 483 und Ril 819 fehlen."
+    }
+  ]
+}

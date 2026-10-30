@@ -19,7 +19,7 @@ SCHEMAS_DIR = Path(__file__).resolve().parent.parent / 'schemas'
 FORMAT = 'rail-across'
 
 #: The domains this build reads, with their versions.
-DOMAIN_VERSIONS = {'core': '1.0', 'layout': '1.0'}
+DOMAIN_VERSIONS = {'core': '1.0', 'layout': '1.0', 'signalling': '1.0'}
 
 
 def _load(rel):
@@ -28,7 +28,11 @@ def _load(rel):
 
 
 ENVELOPE = _load('rail-across.schema.json')
-DOMAIN_SCHEMAS = {'core': _load('core/1.0.schema.json'), 'layout': _load('layout/1.0.schema.json')}
+DOMAIN_SCHEMAS = {
+    'core': _load('core/1.0.schema.json'),
+    'layout': _load('layout/1.0.schema.json'),
+    'signalling': _load('signalling/1.0.schema.json'),
+}
 #: The hash each domain's schema goes by — what a document names it with.
 SCHEMA_HASHES = {name: content_hash(s) for name, s in DOMAIN_SCHEMAS.items()}
 _SCHEMAS = SchemaSet([ENVELOPE, *DOMAIN_SCHEMAS.values()])

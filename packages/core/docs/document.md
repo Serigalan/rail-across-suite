@@ -3,7 +3,7 @@
 `packages/core/src/document/` · needs nothing
 
 A project as the Rail-Data-Core keeps it and hands it on: the **core 1.0 document**, in the shape of the
-[data model](../../../docs/data-model.md) — two domains, `core` and `layout`, each with its version, its JSON
+[data model](../../../docs/data-model.md) — the domains `core` and `layout`, and `signalling` where a project has it, each with its version, its JSON
 Schema, its fields and its collections; locations as one value each; the planning status as a lifespan over
 the construction stages; station names and codes as an operational point register; named runs of tracks as
 `TrackPath`s; bulk point arrays as blobs named by their hash. The schemas are in [`schemas/`](../../../schemas/README.md)
@@ -43,7 +43,8 @@ writes canonical JSON and content hashes. The `project` module opens the door fo
 }
 ```
 
-What each object holds, the schemas say (`schemas/core/1.0.schema.json`, `schemas/layout/1.0.schema.json`); how
+What each object holds, the schemas say (`schemas/core/1.0.schema.json`, `schemas/layout/1.0.schema.json`,
+`schemas/signalling/1.0.schema.json`); how
 it differs from oltjson-1.1:
 
 | oltjson-1.1 (the record) | core 1.0 (the document) |
@@ -55,6 +56,7 @@ it differs from oltjson-1.1:
 | an end mark's `trackId`, `endpoint` | `at`: a `TrackEnd` `{ trackId, endpoint }` |
 | a switch's `switchId` | `id`, like every object of every collection |
 | `routes` `{ id, name, trackIds }` | `layout.trackPaths` `{ id, name, path: { trackIds } }` |
+| `signalling` `{ fields, collections }`, carried as it came | the domain `signalling`, `dependsOn: ["core"]` ([signalling](signalling.md)) |
 | a survey's or reference axis' `points` inline | `points: "sha256:…"`, the array a blob |
 | collections in the order they were written | sorted by id, so the same state is the same bytes |
 

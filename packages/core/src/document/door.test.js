@@ -6,6 +6,7 @@ import { defaultStages } from './coreFormat.js'
 import { checkDocument, fromDocument, SCHEMA_HASHES, toDocument } from './door.js'
 import { documentHash, manifestOf } from './manifest.js'
 import { hasPek, loadPek } from '../../test/pekFixture.js'
+import { ksStation } from '../../test/signallingFixture.js'
 
 const el = (x0, x1, extra = {}) => ({
   elementType: 0, startNode: [500000 + x0, 5700000], endNode: [500000 + x1, 5700000], bearing: 90, length: x1 - x0, ...extra,
@@ -114,7 +115,25 @@ describe('the door', () => {
   it('refuses a version or a domain it does not read', () => {
     const doc = toDocument(record())
     expect(() => checkDocument({ ...doc, domains: { ...doc.domains, core: { ...doc.domains.core, version: '1.1' } } })).toThrow('unsupported_version')
-    expect(() => checkDocument({ ...doc, domains: { ...doc.domains, signalling: doc.domains.layout } })).toThrow('unsupported_version')
+    expect(() => checkDocument({ ...doc, domains: { ...doc.domains, catenary: doc.domains.layout } })).toThrow('unsupported_version')
+  })
+
+  it('carries the signalling domain through the record untouched, and carries its schema only where it is', () => {
+    const signalling = ksStation()
+    const doc = toDocument(record({ signalling }), { carrySchemas: true })
+    expect(doc.domains.signalling).toMatchObject({ version: '1.0', schema: SCHEMA_HASHES.signalling, dependsOn: ['core'] })
+    expect(Object.keys(doc.schemas)).toContain(SCHEMA_HASHES.signalling)
+    expect(roundTrip(record({ signalling }))).toEqual(record({ signalling: {
+      fields: signalling.fields,
+      collections: Object.fromEntries(Object.entries(signalling.collections).map(([k, v]) => [k, [...v].sort((a, b) => (a.id < b.id ? -1 : 1))])),
+    } }))
+    expect(Object.keys(toDocument(record(), { carrySchemas: true }).schemas)).not.toContain(SCHEMA_HASHES.signalling)
+  })
+
+  it('refuses a signalling domain its schema does not take', () => {
+    const signalling = ksStation()
+    delete signalling.collections.signals[0].at.direction
+    expect(() => toDocument(record({ signalling }))).toThrow('invalid_payload')
   })
 
   it('refuses stages of a project\'s own, which this build cannot hold yet', () => {

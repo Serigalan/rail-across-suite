@@ -6,7 +6,7 @@ import { PayloadError } from './payloadError.js'
 //
 // The record is oltjson-1.1 (apps/layout-tool/docs/data-format.md): one
 // object with the project's fields and its collections. The document holds
-// the same in the shape of the data model (docs/data-model.md): two domains,
+// the same in the shape of the data model (docs/data-model.md): the domains
 // `core` and `layout`, each with its fields and its collections; locations as
 // one value each (`at`, R5); the planning status as a lifespan over the
 // construction stages (R12); station names and codes as an operational point
@@ -20,17 +20,24 @@ import { PayloadError } from './payloadError.js'
 // platforms name, its id drawn from the name. Which is why a document with
 // other stages is refused here (`stages_unsupported`).
 //
+// The domains of the other tools the record carries as they are, untouched:
+// `signalling` ({ fields, collections }, decision 0011) — the Layout-Tool does
+// not edit it, but must not lose it when it writes the project back (data
+// model, F1). In a merge it is one field of the project.
+//
 // Where the two forms say the same thing in two ways, the document says it in
 // one: an explicit status `existing` is no lifespan, an empty station text no
 // station, `null` in a field of a track, switch, platform or end mark an
 // absent field (in an element, `null` keeps its meaning: a straight end).
 
 /** The domains this build reads and writes, with their versions. */
-export const DOMAIN_VERSIONS = { core: '1.0', layout: '1.0' }
+export const DOMAIN_VERSIONS = { core: '1.0', layout: '1.0', signalling: '1.0' }
 
 /** The fields of the record and the domain each goes to. */
 const CORE_FIELDS = ['id', 'title', 'description', 'creator', 'createdAt', 'crsSystem', 'lineCategory', 'gaugeProfile']
 const LAYOUT_FIELDS = ['planHeader', 'image', 'imageHash', 'osrd']
+/** The domains a record carries whole, each as { fields, collections }. */
+const CARRIED = ['signalling']
 const COLLECTIONS = ['tracks', 'switches', 'platforms', 'endMarks', 'routes', 'kmLines', 'axisSurveys', 'referenceAxes']
 /** Collections a record always has, empty or not; the others only where they hold something. */
 const ALWAYS = new Set(['tracks', 'switches', 'platforms'])
@@ -120,7 +127,7 @@ function operationalRegister(projectId, tracks, platforms) {
  * have — a record is turned into a document whole or not at all.
  */
 export function recordToDocument(record, schemaHashes) {
-  const known = new Set([...CORE_FIELDS, ...LAYOUT_FIELDS, ...COLLECTIONS])
+  const known = new Set([...CORE_FIELDS, ...LAYOUT_FIELDS, ...COLLECTIONS, ...CARRIED])
   const unknown = Object.keys(record ?? {}).filter(k => !known.has(k) && record[k] !== undefined)
   if (!record || typeof record !== 'object' || record.id == null) throw new PayloadError('invalid_payload', ['/: lacks id'])
   if (unknown.length) throw new PayloadError('invalid_payload', unknown.map(k => `/${k}: is not a field of the record`))
@@ -180,10 +187,17 @@ export function recordToDocument(record, schemaHashes) {
       referenceAxes: (record.referenceAxes ?? []).map(a => ({ ...a, points: blob(a.points) })),
     },
   }
-  for (const domain of [core, layout]) {
+  const carried = Object.fromEntries(CARRIED.filter(name => record[name] != null).map(name => [name, {
+    version: DOMAIN_VERSIONS[name],
+    schema: schemaHashes[name],
+    dependsOn: ['core'],
+    fields: { ...(record[name].fields ?? {}) },
+    collections: { ...(record[name].collections ?? {}) },
+  }]))
+  for (const domain of [core, layout, ...Object.values(carried)]) {
     for (const name of Object.keys(domain.collections)) domain.collections[name] = [...domain.collections[name]].sort(byId)
   }
-  return { format: 'rail-across', domains: { core, layout }, blobs }
+  return { format: 'rail-across', domains: { core, layout, ...carried }, blobs }
 }
 
 // ── Document → record ───────────────────────────────────────────────────────
@@ -241,6 +255,10 @@ export function documentToRecord(doc) {
   const record = { ...coreFields, ...(layout.fields ?? {}) }
   for (const name of COLLECTIONS) {
     if (ALWAYS.has(name) || collections[name].length) record[name] = collections[name]
+  }
+  for (const name of CARRIED) {
+    const domain = doc.domains[name]
+    if (domain) record[name] = { fields: domain.fields, collections: domain.collections }
   }
   return record
 }

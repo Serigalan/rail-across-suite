@@ -1,0 +1,386 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "signalling",
+  "title": "Rail-Data-Core, domain signalling 1.0",
+  "description": "The signalling of a project, as the signalling tool plans it: signals and boards, train detection, the switch elements of the interlocking, train and shunting routes with their overlaps, flank protection, the PZB track elements and the station boundaries. Depends on core; its references go into the core or into itself (R2, R9). Its structure follows PlanPro 1.10 (decision 0011); what a signal can show is not in this schema but in the catalogue of signal aspects (packages/core/constraints/db-ril-301.json), which the content check reads.",
+  "type": "object",
+  "required": ["fields", "collections"],
+  "additionalProperties": false,
+  "properties": {
+    "fields": { "$ref": "#/$defs/Fields" },
+    "collections": {
+      "type": "object",
+      "required": ["signals", "detectionPoints", "trackSections", "switchElements", "routes", "overlaps", "flankProtection", "pzbElements", "stationBoundaries"],
+      "additionalProperties": false,
+      "properties": {
+        "signals": { "type": "array", "items": { "$ref": "#/$defs/Signal" } },
+        "detectionPoints": { "type": "array", "items": { "$ref": "#/$defs/DetectionPoint" } },
+        "trackSections": { "type": "array", "items": { "$ref": "#/$defs/TrackSection" } },
+        "switchElements": { "type": "array", "items": { "$ref": "#/$defs/SwitchElement" } },
+        "routes": { "type": "array", "items": { "$ref": "#/$defs/Route" } },
+        "overlaps": { "type": "array", "items": { "$ref": "#/$defs/Overlap" } },
+        "flankProtection": { "type": "array", "items": { "$ref": "#/$defs/FlankProtection" } },
+        "pzbElements": { "type": "array", "items": { "$ref": "#/$defs/PzbElement" } },
+        "stationBoundaries": { "type": "array", "items": { "$ref": "#/$defs/StationBoundary" } }
+      }
+    }
+  },
+  "$defs": {
+    "Fields": {
+      "description": "The domain's own fields: the catalogue of signal aspects its signals were planned against.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "catalogue": {
+          "type": "object",
+          "required": ["id", "version"],
+          "additionalProperties": false,
+          "properties": {
+            "id": { "type": "string", "minLength": 1 },
+            "version": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    },
+    "Directed": {
+      "description": "A location that states the direction it acts in: `direction` on a track, `bearing` in the plane (an orphan, R7).",
+      "allOf": [
+        { "$ref": "core#/$defs/TrackLocation" },
+        { "anyOf": [{ "required": ["direction"] }, { "required": ["bearing"] }] }
+      ]
+    },
+    "SwitchPosition": {
+      "description": "Where a switch element lies, seen from its tip, as the interlocking names it (PlanPro: L, R).",
+      "enum": ["left", "right"]
+    },
+    "Signal": {
+      "description": "A signal or a board at the track (PlanPro: Signal), real or virtual. A real one stands at `at` and acts in its direction — or in both (`bothDirections`); what it can show are its frames, each with its aspects, keyed by the catalogue. A virtual one (PlanPro: Signal_Fiktiv) has no frames: it marks where a route starts or ends without a signal there.",
+      "type": "object",
+      "required": ["id", "kind", "at"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "core#/$defs/Id" },
+        "name": { "$ref": "core#/$defs/Label" },
+        "kind": { "enum": ["real", "virtual"] },
+        "at": { "$ref": "#/$defs/Directed" },
+        "bothDirections": { "type": "boolean" },
+        "function": {
+          "description": "PlanPro Signal_Funktion.",
+          "enum": [
+            "entry", "exit", "entryExit", "intermediate", "exitIntermediate", "entryBlock", "block",
+            "groupExit", "groupIntermediate", "groupExitIntermediate", "followUp", "cover", "trainCover",
+            "trainTarget", "levelCrossing", "distant", "standaloneIndicator", "other"
+          ]
+        },
+        "virtualFunction": {
+          "description": "PlanPro Fiktives_Signal_Funktion, for a virtual signal.",
+          "enum": [
+            "trainStartWithoutSignal", "trainTargetWithoutSignal", "trainTargetLine", "trainStartSiding", "trainTargetSiding",
+            "trainStartMiddleSwitch", "trainStartTargetBlock", "trainStartTargetBlockZs1", "trainStartTargetBlockZs7",
+            "shuntingStartTargetWithoutSignal", "virtualDistant", "other"
+          ]
+        },
+        "type": {
+          "description": "PlanPro Signal_Art, for a real signal with a screen.",
+          "enum": ["main", "mainShunting", "multiSection", "multiSectionShunting", "shunting", "distant", "distantRepeater", "trainCover", "other"]
+        },
+        "system": {
+          "description": "The signalling system of its screen, a key of the catalogue (PlanPro Signalsystem: `ks`).",
+          "type": "string",
+          "minLength": 1
+        },
+        "mounting": {
+          "description": "PlanPro Signal_Befestigungsart.",
+          "enum": ["mast", "bracket", "gantry", "foundation", "special", "other"]
+        },
+        "sight": {
+          "description": "The distances from which the signal must, at least, and can be seen [m] (PlanPro Signalsicht_Soll, _Mindest, _Erreichbar).",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "required": { "type": "number", "minimum": 0 },
+            "minimum": { "type": "number", "minimum": 0 },
+            "achievable": { "type": "number", "minimum": 0 }
+          }
+        },
+        "frames": { "type": "array", "items": { "$ref": "#/$defs/Frame" } },
+        "lifespan": { "$ref": "core#/$defs/Lifespan" }
+      }
+    },
+    "Frame": {
+      "description": "A part of a signal that shows aspects (PlanPro Signal_Rahmen): its screen, an indicator, a plate.",
+      "type": "object",
+      "required": ["kind", "aspects"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "enum": ["screen", "indicator", "plate", "other"] },
+        "aspects": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/Aspect" } }
+      }
+    },
+    "Aspect": {
+      "description": "One aspect a frame can show (PlanPro Signal_Signalbegriff): its key in the catalogue, and where the catalogue asks for one, its symbol — the speed a Zs 3 shows in tens of km/h, the letter of a Zs 2.",
+      "type": "object",
+      "required": ["aspect"],
+      "additionalProperties": false,
+      "properties": {
+        "aspect": { "type": "string", "minLength": 1 },
+        "symbol": { "type": "string", "minLength": 1 },
+        "lit": { "type": "boolean" },
+        "switched": { "type": "boolean" }
+      }
+    },
+    "DetectionPoint": {
+      "description": "A point that bounds track sections (PlanPro FMA_Komponente): an axle counting point or a joint.",
+      "type": "object",
+      "required": ["id", "kind", "at"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "core#/$defs/Id" },
+        "name": { "$ref": "core#/$defs/Label" },
+        "kind": { "enum": ["axleCounter", "insulatedJointOneRail", "insulatedJointTwoRail", "electricalJoint"] },
+        "at": { "$ref": "core#/$defs/TrackLocation" },
+        "lifespan": { "$ref": "core#/$defs/Lifespan" }
+      }
+    },
+    "TrackSection": {
+      "description": "A track detection section (PlanPro FMA_Anlage): its name and kind, and the detection points it is bounded by. Its extent is not stored: it is the part of the net between those points (and track ends), derived; where the derived and the stored boundaries differ, that is a finding.",
+      "type": "object",
+      "required": ["id", "kind", "boundedBy"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "core#/$defs/Id" },
+        "name": { "$ref": "core#/$defs/Label" },
+        "kind": { "enum": ["axleCounting", "audioFrequencyCircuit", "lowFrequencyCircuit", "ftgs", "other"] },
+        "boundedBy": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "core#/$defs/Ref", "x-target": "signalling.detectionPoints" }
+        },
+        "auxiliaryClearing": { "type": "boolean", "description": "PlanPro FMA_Hilffreimeldung." },
+        "lifespan": { "$ref": "core#/$defs/Lifespan" }
+      }
+    },
+    "SwitchElement": {
+      "description": "A switch of the core as the interlocking knows it (PlanPro W_Kr_Gsp_Element): its name, how it is worked, the position it rests in. A slip has two, one per pair of points.",
+      "type": "object",
+      "required": ["id", "switchId", "operation"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "core#/$defs/Id" },
+        "name": { "$ref": "core#/$defs/Label" },
+        "switchId": { "$ref": "core#/$defs/Ref", "x-target": "core.switches" },
+        "part": { "description": "Which pair of points of a slip.", "enum": ["a", "b"] },
+        "operation": {
+          "description": "PlanPro W_Kr_Gsp_Stellart.",
+          "enum": ["electricRemote", "electricLocal", "mechanicalRemote", "mechanicalLocal", "notWorked", "springBack", "disabledLeft", "disabledRight", "other"]
+        },
+        "preferredPosition": { "$ref": "#/$defs/SwitchPosition" },
+        "trailable": { "type": "boolean", "description": "PlanPro Auffahrortung." },
+        "lifespan": { "$ref": "core#/$defs/Lifespan" }
+      }
+    },
+    "Route": {
+      "description": "A train or shunting route (PlanPro Fstr_Zug_Rangier with its Fstr_Fahrweg): from a start signal to a target signal along a run of tracks. Which way each switch element lies follows from the run and is not stored (as in PlanPro). A train route names the overlaps it may end in; flank protection follows from the switch elements it runs over.",
+      "type": "object",
+      "required": ["id", "kind", "startSignalId", "targetSignalId", "path"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "core#/$defs/Id" },
+        "name": { "$ref": "core#/$defs/Text" },
+        "kind": { "enum": ["train", "shunting"] },
+        "trainType": { "description": "PlanPro Fstr_Zug_Art, for a train route.", "enum": ["B", "ZH", "ZR", "ZT", "ZTU", "ZU", "ZUH", "ZZ"] },
+        "shuntingType": { "description": "PlanPro Fstr_Rangier_Art, for a shunting route.", "enum": ["RR", "RT", "RTU", "RU"] },
+        "startSignalId": { "$ref": "core#/$defs/Ref", "x-target": "signalling.signals" },
+        "targetSignalId": { "$ref": "core#/$defs/Ref", "x-target": "signalling.signals" },
+        "path": { "$ref": "core#/$defs/TrackPath" },
+        "speed": { "description": "The speed the route permits [km/h] (PlanPro Fstr_V).", "type": "number", "minimum": 0 },
+        "overlaps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["overlapId"],
+            "additionalProperties": false,
+            "properties": {
+              "overlapId": { "$ref": "core#/$defs/Ref", "x-target": "signalling.overlaps" },
+              "preferred": { "type": "boolean" }
+            }
+          }
+        },
+        "aspects": {
+          "description": "What the route shows (PlanPro Fstr_Signalisierung): at which signal which aspect, and its symbol.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["signalId", "aspect"],
+            "additionalProperties": false,
+            "properties": {
+              "signalId": { "$ref": "core#/$defs/Ref", "x-target": "signalling.signals" },
+              "aspect": { "type": "string", "minLength": 1 },
+              "symbol": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        "lifespan": { "$ref": "core#/$defs/Lifespan" }
+      }
+    },
+    "Overlap": {
+      "description": "An overlap beyond a route's target signal (PlanPro Fstr_DWeg): from the signal along a run of tracks to its end, its design length and the gradient that sets it, the speed it allows, the sections that must be clear, and for each switch element on it whether it is locked.",
+      "type": "object",
+      "required": ["id", "signalId", "path", "end", "length"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "core#/$defs/Id" },
+        "name": { "$ref": "core#/$defs/Text" },
+        "signalId": { "$ref": "core#/$defs/Ref", "x-target": "signalling.signals" },
+        "path": { "$ref": "core#/$defs/TrackPath" },
+        "end": { "$ref": "core#/$defs/TrackLocation" },
+        "length": { "description": "Its design length [m] (PlanPro Laenge_Soll).", "type": "number", "minimum": 0 },
+        "gradient": { "description": "The gradient that sets its length [‰], negative downhill (PlanPro Massgebende_Neigung).", "type": "number" },
+        "speed": { "description": "The speed it allows [km/h] (PlanPro DWeg_V).", "type": "number", "minimum": 0 },
+        "releaseDelay": { "description": "How long it stays set after the train stopped [s] (PlanPro Aufloesung_Verzoegerung).", "type": "number", "minimum": 0 },
+        "clearSections": { "type": "array", "items": { "$ref": "core#/$defs/Ref", "x-target": "signalling.trackSections" } },
+        "switches": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["switchElementId", "locked"],
+            "additionalProperties": false,
+            "properties": {
+              "switchElementId": { "$ref": "core#/$defs/Ref", "x-target": "signalling.switchElements" },
+              "locked": { "type": "boolean" }
+            }
+          }
+        },
+        "lifespan": { "$ref": "core#/$defs/Lifespan" }
+      }
+    },
+    "FlankProtection": {
+      "description": "The flank protection a switch element asks for when run over in one position (PlanPro Fla_Schutz): given by a signal kept at stop or by a switch element held in a position, passed on to the next where the protecting one asks for its own, or waived; with the sections that must be clear for it.",
+      "type": "object",
+      "required": ["id", "requester", "protection"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "core#/$defs/Id" },
+        "requester": {
+          "type": "object",
+          "required": ["switchElementId", "via"],
+          "additionalProperties": false,
+          "properties": {
+            "switchElementId": { "$ref": "core#/$defs/Ref", "x-target": "signalling.switchElements" },
+            "via": { "$ref": "#/$defs/SwitchPosition" }
+          }
+        },
+        "protection": {
+          "oneOf": [
+            {
+              "type": "object",
+              "required": ["signalId"],
+              "additionalProperties": false,
+              "properties": {
+                "signalId": { "$ref": "core#/$defs/Ref", "x-target": "signalling.signals" },
+                "targetLock": { "type": "boolean", "description": "PlanPro Fla_Signal_Zielsperrung." }
+              }
+            },
+            {
+              "type": "object",
+              "required": ["switchElementId", "position"],
+              "additionalProperties": false,
+              "properties": {
+                "switchElementId": { "$ref": "core#/$defs/Ref", "x-target": "signalling.switchElements" },
+                "position": { "$ref": "#/$defs/SwitchPosition" }
+              }
+            },
+            {
+              "type": "object",
+              "required": ["waived"],
+              "additionalProperties": false,
+              "properties": { "waived": { "const": true } }
+            }
+          ]
+        },
+        "passOn": {
+          "description": "The flank protection the protecting switch element asks for in turn, per its position (PlanPro Fla_Schutz_Weitergabe).",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "left": { "$ref": "core#/$defs/Ref", "x-target": "signalling.flankProtection" },
+            "right": { "$ref": "core#/$defs/Ref", "x-target": "signalling.flankProtection" }
+          }
+        },
+        "clearSections": { "type": "array", "items": { "$ref": "core#/$defs/Ref", "x-target": "signalling.trackSections" } },
+        "lifespan": { "$ref": "core#/$defs/Lifespan" }
+      }
+    },
+    "PzbElement": {
+      "description": "A PZB track element (PlanPro PZB_Element): a track magnet of 500, 1000 or 2000 Hz (or both 1000 and 2000), or a speed check of two magnets; where it acts, what it belongs to (a signal), and whether it acts always, when its signal shows stop, or with routes.",
+      "type": "object",
+      "required": ["id", "at", "frequency", "kind", "effect"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "core#/$defs/Id" },
+        "at": { "$ref": "#/$defs/Directed" },
+        "frequency": { "enum": ["500", "1000", "2000", "1000+2000"] },
+        "kind": { "enum": ["magnet", "speedCheck"] },
+        "signalId": { "description": "The signal it belongs to (PlanPro PZB_Element_Bezugspunkt).", "$ref": "core#/$defs/Ref", "x-target": "signalling.signals" },
+        "effect": { "description": "PlanPro Wirksamkeit.", "enum": ["permanent", "switchedBySignal", "other"] },
+        "routes": {
+          "description": "Routes that switch it (PlanPro PZB_Element_Zuordnung_Fstr).",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["routeId", "effect"],
+            "additionalProperties": false,
+            "properties": {
+              "routeId": { "$ref": "core#/$defs/Ref", "x-target": "signalling.routes" },
+              "effect": { "enum": ["activeWhenSet", "inactiveWhenSet", "other"] }
+            }
+          }
+        },
+        "ina": { "type": "boolean", "description": "A magnet that is cut out where a train stops at a platform (PlanPro PZB_INA)." },
+        "speedCheck": {
+          "description": "For a speed check (PlanPro PZB_Element_GUE): the speed it tests [km/h], the length it measures over [m], and which magnet comes first.",
+          "type": "object",
+          "required": ["testSpeed", "measuringLength"],
+          "additionalProperties": false,
+          "properties": {
+            "testSpeed": { "type": "number", "minimum": 0 },
+            "measuringLength": { "type": "number", "minimum": 0 },
+            "arrangement": { "enum": ["startFirst", "endFirst"] }
+          }
+        },
+        "lifespan": { "$ref": "core#/$defs/Lifespan" }
+      }
+    },
+    "StationBoundary": {
+      "description": "The boundary of a station of the core's register, where trains enter it: what marks it — an entry signal or a board (Ne 1), or an entry switch where there is neither (EBO §4). Where it is not where the rules put it, a finding says so.",
+      "type": "object",
+      "required": ["id", "operationalPointId", "marks"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "core#/$defs/Id" },
+        "operationalPointId": { "$ref": "core#/$defs/Ref", "x-target": "core.operationalPoints" },
+        "marks": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": ["signalId"],
+                "additionalProperties": false,
+                "properties": { "signalId": { "$ref": "core#/$defs/Ref", "x-target": "signalling.signals" } }
+              },
+              {
+                "type": "object",
+                "required": ["switchId"],
+                "additionalProperties": false,
+                "properties": { "switchId": { "$ref": "core#/$defs/Ref", "x-target": "core.switches" } }
+              }
+            ]
+          }
+        },
+        "lifespan": { "$ref": "core#/$defs/Lifespan" }
+      }
+    }
+  }
+}

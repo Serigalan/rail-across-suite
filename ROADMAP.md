@@ -159,6 +159,10 @@ Goal: prove the core with a second real module.
   profiles; station boundaries stored as references to what marks them (entry signals, trapezoid boards, entry
   switches, platforms), with a special-case finding where they differ from EBO §4; export towards PlanPro /
   EULYNX.
+  *Done:* the domain `signalling` 1.0 after PlanPro 1.10 with overlaps and flank protection, the catalogue of
+  signal aspects for Ks with PZB, its content check, and the Layout-Tool carrying the domain
+  ([decision 0011](docs/decisions/0011-signalling-domain.md)). *Next:* the core carrying its references on track
+  edits (R4), the values of Ril 819 and Ril 483, the tool itself.
 
 **Signalling goes first**: it needs locations, ranges, functional objects and topology, and so tests the
 generalised core most. Catenary follows.

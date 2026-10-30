@@ -64,7 +64,7 @@ export function createCloudStore(db, { now = () => Date.now() } = {}) {
     /** Move the received mark from `from` to `to` — only if it still is at `from`. */
     received: (id, from, to) => q.received.run(to, id, from).changes === 1,
 
-    /** The cloud is complete (or failed and is tried again): queued, with a job for olt-cloudjobs. */
+    /** The cloud is complete (or failed and is tried again): queued, with a job for rail-across-cloudjobs. */
     enqueue(id, userId, sha256 = null) {
       db.transaction(() => {
         q.queued.run(sha256, id)

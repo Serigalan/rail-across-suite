@@ -1,17 +1,18 @@
 # Server parts
 
-The main build adds to the browser app everything that needs a server: sign-in, projects with variants and
-revisions, the working copy, the Python service's computations, point clouds on the server and their 3D view.
-Three places hold it:
+The main build adds to the browser app everything that needs a server: projects with variants and revisions,
+the working copy, the Python service's computations, point clouds on the server and their 3D view. The server
+is the suite's — one for every module — and so is the account: without a session, or with a password to change,
+the app sends one to the suite's start page and is sent back (`src/server/suite.js`). Three places hold it:
 
 | Where | What | Runs |
 |---|---|---|
 | `src/server/` | the browser parts that talk to a server | in the browser, main build only |
-| `server/` | the project server `olt-server` and the job runner `olt-cloudjobs` | Node 22, SQLite |
+| `server/` | the suite's project server `rail-across-server` and the job runner `rail-across-cloudjobs` | Node 22, SQLite |
 | `services/optimizer/` | the Python service `olt-optimizer` | Python 3.10+ |
 
 Operation (setup, deploy, backups, several instances, production releases) is described in
-[`deploy/README.md`](../deploy/README.md).
+[`deploy/README.md`](../../../deploy/README.md).
 
 ## Architecture rule
 
@@ -50,7 +51,7 @@ anything renders:
 
 Main pieces:
 
-- `App.jsx`, `home/` — sign-in, start page with projects and their variant trees (status, last revision, local
+- `App.jsx`, `home/` — sending one to the suite to sign in (`suite.js`), the start page with projects and their variant trees (status, last revision, local
   changes), new project, branch variant, compare, merge, export, members, templates; `collab/` — check-in and
   conflict dialogs, history page, user administration.
 - `workingCopies.js`, `workingCopyDb.js` — the working copy of a variant in IndexedDB (`olt` › `workingCopies`):
@@ -117,10 +118,10 @@ foreign project is not revealed. Requests must be JSON (CSRF protection); raw cl
 need a custom header no foreign page can send without a preflight. Membership for tile requests is cached 60 s.
 
 **Point clouds.** Uploads come in 8 MB chunks, each with its SHA-256 checked before it is written; the whole file is
-hashed at the end. `olt-cloudjobs` prepares a cloud into its five levels in one pass (one process per job, 768 MB
+hashed at the end. `rail-across-cloudjobs` prepares a cloud into its five levels in one pass (one process per job, 768 MB
 heap; a job interrupted by a restart is queued again, not failed), deletes the raw file unless asked to keep it,
 and runs the long clearance scans and traces in a queue of their own (two at a time, 320 MB heap each). Tiles are
-served by `olt-server` with range requests and collective requests of up to 64 ranges, membership checked per
+served by `rail-across-server` with range requests and collective requests of up to 64 ranges, membership checked per
 request — not by Caddy's file server, whose forward-auth only checks the sign-in, not the project.
 
 ## `services/optimizer` — the Python service

@@ -102,7 +102,7 @@ export default function Infrastructure({ toolId, user, projects, onSignedIn }) {
       {user === null && <SignIn onSignedIn={onSignedIn} />}
       {user?.mustChangePassword && (
         <p className="collab-muted">
-          {t('must_change_password')} <a className="collab-btn collab-btn-small" href="layout/">{t('change_password')}</a>
+          {t('must_change_password')} <a className="collab-btn collab-btn-small" href="#/password">{t('change_password')}</a>
         </p>
       )}
       {user && !user.mustChangePassword && (

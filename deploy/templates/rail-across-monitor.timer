@@ -1,6 +1,6 @@
-# Rendered by deploy/monitor.sh --install from deploy/templates/olt-monitor.timer — edit the template, not this file.
+# Rendered by deploy/monitor.sh --install from deploy/templates/rail-across-monitor.timer — edit the template, not this file.
 [Unit]
-Description=Open Layout Tool — watch every instance on this machine, every 5 minutes
+Description=Rail-Across-Suite — watch every instance on this machine, every 5 minutes
 
 [Timer]
 OnBootSec=2min

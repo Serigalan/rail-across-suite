@@ -243,6 +243,10 @@
 
 .collab-brand { display: flex; align-items: center; gap: 10px; }
 .collab-brand h1 { margin: 0; font-size: 20px; font-weight: 700; color: var(--collab-fg); }
+/* The tool is a module of Rail-Across-Suite: the way back to its start page, before the tool's name. */
+.home-suite-link { font-size: 14px; font-weight: 600; color: var(--collab-muted); text-decoration: none; }
+.home-suite-link:hover { color: var(--color-primary); text-decoration: underline; }
+.home-suite-sep { color: var(--collab-muted); margin: 0 2px; }
 .collab-logo { width: 49px; height: 34px; color: var(--color-primary); flex-shrink: 0; }
 
 .collab-muted { margin: 0; color: var(--collab-muted); font-size: 13px; line-height: 1.45; }

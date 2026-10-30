@@ -63,7 +63,7 @@ async function start() {
   return { max, ada, project, maxId }
 }
 
-/** Upload the track's cloud and prepare it, as olt-cloudjobs would. */
+/** Upload the track's cloud and prepare it, as rail-across-cloudjobs would. */
 async function readyCloud(ada, project) {
   const bytes = trackCloud()
   const { cloud } = (await ada('POST', `/api/projects/${project.id}/clouds`, {
@@ -75,7 +75,7 @@ async function readyCloud(ada, project) {
   for (let at = 0; at < bytes.length; at += step) {
     const part = bytes.subarray(at, at + step)
     const res = await ctx.app.inject({
-      method: 'PUT', url: `${url}/raw?offset=${at}`, cookies: { olt_session: ada.token },
+      method: 'PUT', url: `${url}/raw?offset=${at}`, cookies: { ra_session: ada.token },
       headers: {
         'content-type': 'application/octet-stream', 'x-olt-upload': '1',
         'x-olt-sha256': createHash('sha256').update(part).digest('hex'),
@@ -96,7 +96,7 @@ async function readyCloud(ada, project) {
   return cloud
 }
 
-/** The run queue of olt-cloudjobs, each run called here instead of in a process of its own. */
+/** The run queue of rail-across-cloudjobs, each run called here instead of in a process of its own. */
 function runQueue() {
   const runs = createRunStore(ctx.db)
   const clouds = createCloudStore(ctx.db)

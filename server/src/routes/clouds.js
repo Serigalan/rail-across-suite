@@ -30,7 +30,7 @@ const text = (v, max = 200) => String(v ?? '').trim().slice(0, max)
  * An upload comes in pieces of 8 MB, each with its SHA-256, at the offset the
  * server has received up to: after a broken connection or a reloaded page it
  * goes on where it stopped. Once complete the cloud is queued for
- * olt-cloudjobs, which makes the levels of detail.
+ * rail-across-cloudjobs, which makes the levels of detail.
  *
  * The tiles are served from here, not by Caddy (decision 208): Caddy's
  * forward_auth asks only whether someone is signed in, not whether they may
@@ -52,7 +52,7 @@ export default async function cloudRoutes(api) {
 
   const projectOr404 = (req) => {
     available()
-    const key = `${req.cookies?.olt_session ?? ''}|${req.user.id}|${req.params.id}`
+    const key = `${req.cookies?.ra_session ?? ''}|${req.user.id}|${req.params.id}`
     const until = seen.get(key)
     const t = api.now()
     if (until && until > t) return { id: req.params.id }

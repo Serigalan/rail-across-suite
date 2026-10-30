@@ -136,12 +136,12 @@ jobs:
       - run: python tests/splice_answers_fixture.py --check
       - run: python tests/verify.py
 
+  # The suite's deployment (deploy/) and the Layout-Tool's check script.
   deploy-scripts:
     runs-on: ubuntu-24.04
-    defaults:
-      run:
-        working-directory: apps/open-layout-tool
     steps:
       - uses: actions/checkout@v5
       - run: bash -n deploy/setup.sh && bash -n deploy/deploy.sh && bash -n deploy/lib.sh && bash -n deploy/release.sh && bash -n deploy/monitor.sh
-      - run: shellcheck -x deploy/setup.sh deploy/deploy.sh deploy/lib.sh deploy/release.sh deploy/monitor.sh tools/check.sh
+      - run: shellcheck -x deploy/setup.sh deploy/deploy.sh deploy/lib.sh deploy/release.sh deploy/monitor.sh
+      - run: shellcheck -x tools/check.sh
+        working-directory: apps/open-layout-tool

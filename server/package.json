@@ -1,17 +1,17 @@
 {
-  "name": "olt-server",
+  "name": "rail-across-server",
   "private": true,
   "version": "0.1.0",
-  "description": "Open Layout Tool — users, projects, variants and revisions (phase 10)",
+  "description": "The project server of Rail-Across-Suite — users, projects, variants and revisions, point clouds",
   "type": "module",
   "bin": {
-    "olt-server": "./bin/olt-server.mjs"
+    "rail-across-server": "./bin/rail-across-server.mjs"
   },
   "engines": {
     "node": ">=22"
   },
   "scripts": {
-    "start": "node ./bin/olt-server.mjs serve"
+    "start": "node ./bin/rail-across-server.mjs serve"
   },
   "dependencies": {
     "@fastify/cookie": "^11.1.2",

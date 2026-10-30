@@ -1,9 +1,10 @@
 // The suite's project server, same origin as the page: the session is an
 // HttpOnly cookie the browser sends by itself, and every writing request says
-// it carries JSON (the server refuses it otherwise). The start page only signs
-// in and out and lists the projects; everything else is the tools'.
+// it carries JSON (the server refuses it otherwise). The start page holds the
+// account for the whole suite — signing in and out, the password — and lists
+// the projects; everything else is the modules'.
 
-const BASE = import.meta.env?.VITE_OLT_API ?? '/api'
+const BASE = import.meta.env?.VITE_RA_API ?? '/api'
 
 export class ApiError extends Error {
   constructor(status, code) {
@@ -31,6 +32,7 @@ export const api = {
   me: () => request('GET', '/me').then(r => r.user, err => { if (err.status === 401) return null; throw err }),
   login: (login, password) => request('POST', '/login', { login, password }).then(r => r.user),
   logout: () => request('POST', '/logout', {}),
+  changePassword: (current, next) => request('POST', '/me/password', { current, next }),
   projects: () => request('GET', '/projects').then(r => r.projects ?? []),
 }
 

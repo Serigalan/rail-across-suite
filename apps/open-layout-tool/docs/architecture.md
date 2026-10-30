@@ -5,7 +5,7 @@
 ```
                      ┌──────────────────────────── browser ────────────────────────────┐
                      │                                                                 │
-  main build ──────▶ │  src/server   sign-in, variants, working copy, service clients, │──▶ olt-server (Node, SQLite)
+  main build ──────▶ │  src/server   session, variants, working copy, service clients, │──▶ rail-across-server (Node, SQLite)
   (npm run build)    │      │        3D window, server panels                          │      /api
                      │      ▼ imports, never the other way round                      │
   local build ─────▶ │  src/core     store · shell · panels · overlays · map · hooks   │──▶ olt-optimizer (Python)
@@ -17,7 +17,8 @@
 
 - **`src/core`** — everything that computes and stores in the browser alone. The local build ships only this.
 - **`src/server`** — what needs the project server or the Python service. The main build ships both.
-- **`server`**, **`services/optimizer`** — the two services ([server](server.md)); **`deploy/`** — operation.
+- **`server`**, **`services/optimizer`** — the two services at the root of the repository ([server](server.md)):
+  the suite's project server and the Layout-Tool's Python service; the suite's **`deploy/`** — operation.
 
 Two builds from one codebase: `vite build` (entry `src/main.jsx`, core + server → `dist/`) and
 `vite build --mode standalone` (entry `src/main.local.jsx`, core alone → `dist-local/`, served by

@@ -41,7 +41,7 @@ const meta = (extra = {}) => ({
 
 /** One piece of the upload, as the browser sends it. */
 const piece = (user, url, offset, bytes, sum = createHash('sha256').update(bytes).digest('hex')) => ctx.app.inject({
-  method: 'PUT', url: `${url}/raw?offset=${offset}`, cookies: { olt_session: user.token },
+  method: 'PUT', url: `${url}/raw?offset=${offset}`, cookies: { ra_session: user.token },
   headers: { 'content-type': 'application/octet-stream', 'x-olt-upload': '1', 'x-olt-sha256': sum },
   payload: Buffer.from(bytes),
 })
@@ -85,7 +85,7 @@ describe('uploading a point cloud (AP 13.2)', () => {
     const { ada, project } = await start()
     const { cloud } = (await ada('POST', `/api/projects/${project.id}/clouds`, meta())).json()
     const res = await ctx.app.inject({
-      method: 'PUT', url: `/api/projects/${project.id}/clouds/${cloud.id}/raw?offset=0`, cookies: { olt_session: ada.token },
+      method: 'PUT', url: `/api/projects/${project.id}/clouds/${cloud.id}/raw?offset=0`, cookies: { ra_session: ada.token },
       headers: { 'content-type': 'application/octet-stream' }, payload: Buffer.from(LAS.subarray(0, 10)),
     })
     expect(res.statusCode).toBe(415)
@@ -139,7 +139,7 @@ describe('preparing a cloud (AP 13.3) and serving it (AP 13.5)', () => {
     const segs = index.tiles.flatMap(t => t[2]).slice(0, 5)
 
     const ranged = await ctx.app.inject({
-      method: 'GET', url: `${url}/L1/tiles`, cookies: { olt_session: ada.token },
+      method: 'GET', url: `${url}/L1/tiles`, cookies: { ra_session: ada.token },
       headers: { range: `bytes=${segs[1][0]}-${segs[1][0] + segs[1][1] - 1}` },
     })
     expect(ranged.statusCode).toBe(206)

@@ -29,7 +29,7 @@ const isUpload = (req) => req.method === 'PUT' && UPLOAD.test(req.url)
  * Whose X-Forwarded-For is believed: only the reverse proxy's (Caddy on the
  * same host). Believing anybody's would let a client that reaches the port
  * directly name its own address, and with it step around the login brake.
- * A Caddy elsewhere (a container) is named in OLT_SERVER_TRUST_PROXY.
+ * A Caddy elsewhere (a container) is named in RA_SERVER_TRUST_PROXY.
  */
 const TRUSTED_PROXIES = ['127.0.0.1', '::1']
 

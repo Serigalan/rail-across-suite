@@ -43,7 +43,9 @@ links them into the app.
 
 The dev server runs over HTTPS (with a self-signed certificate, which the browser will warn about once).
 It forwards `/api` to the project server ([`server/`](../../server/README.md)) and `/optimizer` to the
-optimizer service ([`services/optimizer/`](../../services/optimizer/README.md)); see `deploy/README.md` for running both locally.
+optimizer service ([`services/optimizer/`](../../services/optimizer/README.md)); see the suite's
+[`deploy/README.md`](../../deploy/README.md) for running both locally. Signing in is the suite's: run the start
+page (`apps/home`) beside it, or the tool says where to sign in.
 
 ## Local version
 
@@ -61,17 +63,9 @@ What it can and cannot do: [`tools/local/README.md`](tools/local/README.md) — 
 
 ## Running a server
 
-`deploy/` sets up a complete server from scratch — the app, the project server, the optimizer service,
-Caddy with TLS and a daily database backup — from one configuration file:
-
-```bash
-cd /opt/rail-across-suite                                                     # the checkout
-cp apps/open-layout-tool/deploy/olt.env.example /etc/open-layout-tool/olt.env # set OLT_DOMAIN
-apps/open-layout-tool/deploy/setup.sh                                         # once
-apps/open-layout-tool/deploy/deploy.sh --pull                                 # after every update
-```
-
-Details in [`deploy/README.md`](deploy/README.md).
+The Open-Layout-Tool is a module of Rail-Across-Suite and runs on the suite's server: the start page at the
+root, this app under `/layout/`, the project server with the one sign-in behind both. The suite's
+[`deploy/`](../../deploy/README.md) sets it all up from one configuration file.
 
 ## Credits
 

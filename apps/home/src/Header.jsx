@@ -5,7 +5,8 @@ import { LANGUAGES, useTexts } from './i18n'
 /**
  * The bar across the top, as the Open-Layout-Tool's start page has it: the
  * mark and the name on the left, the language and the user's menu on the
- * right. Signed out, the menu is the way to sign in.
+ * right. Signed out, the menu is the way to sign in. The account is the
+ * suite's: signed in here, signed in in every module.
  */
 export default function Header({ user, onLanguage, onSignIn, onSignOut }) {
   const { t, language } = useTexts()
@@ -24,8 +25,8 @@ export default function Header({ user, onLanguage, onSignIn, onSignOut }) {
   return (
     <header className="home-top">
       <a className="collab-brand" href="#/">
-        <Logo className="collab-logo" />
-        <h1>{t('suite')}</h1>
+        <Logo className="ra-logo" />
+        <h1 className="ra-visually-hidden">{t('suite')}</h1>
       </a>
       <div className="home-user" ref={root}>
         <div className="home-menu">
@@ -55,6 +56,7 @@ export default function Header({ user, onLanguage, onSignIn, onSignOut }) {
             {menu === 'user' && (
               <div className="home-menu-list" role="menu">
                 <p className="home-menu-user">{user.name}</p>
+                <a role="menuitem" href="#/password" onClick={() => setMenu(null)}>{t('change_password')}</a>
                 <button type="button" role="menuitem" onClick={() => { setMenu(null); onSignOut() }}>{t('sign_out')}</button>
               </div>
             )}

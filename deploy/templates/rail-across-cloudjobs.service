@@ -1,23 +1,23 @@
-# Rendered by deploy/setup.sh from deploy/templates/olt-cloudjobs.service — edit the template, not this file.
+# Rendered by deploy/setup.sh from deploy/templates/rail-across-cloudjobs.service — edit the template, not this file.
 [Unit]
-Description=Open Layout Tool@OLT_LABEL@ — point cloud jobs (levels of detail from an upload)
+Description=Rail-Across-Suite@RA_LABEL@ — point cloud jobs (levels of detail from an upload)
 After=network.target
 
 [Service]
-User=@OLT_USER@
-WorkingDirectory=@OLT_REPO@/server
-ExecStart=@OLT_NODE@ @OLT_REPO@/server/bin/olt-cloudjobs.mjs serve
-Environment=OLT_SERVER_DB=@OLT_DB@
-Environment=OLT_SERVER_CLOUDS=@OLT_CLOUDS@
-Environment=OLT_CLOUDJOBS_PARALLEL=@OLT_CLOUDJOBS_PARALLEL@
-Environment=OLT_CLOUDRUNS_PARALLEL=@OLT_CLOUDRUNS_PARALLEL@
+User=@RA_USER@
+WorkingDirectory=@RA_REPO@/server
+ExecStart=@RA_NODE@ @RA_REPO@/server/bin/rail-across-cloudjobs.mjs serve
+Environment=RA_SERVER_DB=@RA_DB@
+Environment=RA_SERVER_CLOUDS=@RA_CLOUDS@
+Environment=RA_CLOUDJOBS_PARALLEL=@RA_CLOUDJOBS_PARALLEL@
+Environment=RA_CLOUDRUNS_PARALLEL=@RA_CLOUDRUNS_PARALLEL@
 # The server is shared (with OSRD and a second instance on the live one): at
 # most three cores, behind everything else. Each preparation has a heap of
 # 768 MB, each long run 320 MB; the memory limit has to hold all of them at
-# once plus this process (OLT_CLOUDJOBS_MEMORY, 3G for two of each).
+# once plus this process (RA_CLOUDJOBS_MEMORY, 3G for two of each).
 CPUQuota=300%
 Nice=10
-MemoryMax=@OLT_CLOUDJOBS_MEMORY@
+MemoryMax=@RA_CLOUDJOBS_MEMORY@
 # A job stopped by a restart is queued again when the service comes back.
 TimeoutStopSec=20
 Restart=on-failure

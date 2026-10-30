@@ -48,19 +48,39 @@ export function openUrl(tool, projectId, variantId) {
   return `${tool.path}?${q}`
 }
 
+/** The suite's own pages for the account: signing in, the password. Every module sends its users here. */
+export const ACCOUNT_PAGES = ['sign-in', 'password']
+
 /**
- * The page a location hash names: { page, tool } — `#/` the start, `#/infrastructure/signalling`
- * the infrastructure editor in that mode, `#/capacity-sim` a module's own page.
+ * Where to go after signing in or changing the password, from `next`: a path
+ * on this site (a module, `/layout/?project=…`), never another site.
+ */
+export function safeNext(next) {
+  if (typeof next !== 'string' || !next) return null
+  return next.startsWith('/') && !next.startsWith('//') && !next.includes('\\') ? next : null
+}
+
+/**
+ * The page a location hash names: { page, tool, next } — `#/` the start,
+ * `#/infrastructure/signalling` the infrastructure editor in that mode,
+ * `#/capacity-sim` a module's own page, `#/sign-in?next=/layout/` signing in
+ * and back to where one came from.
  */
 export function routeOf(hash) {
-  const [page = '', tool] = String(hash ?? '').replace(/^#\/?/, '').split('/')
+  const [path, query = ''] = String(hash ?? '').replace(/^#\/?/, '').split('?')
+  const [page = '', tool] = path.split('/')
   if (page === 'infrastructure') return { page, tool: toolOf(tool).id }
+  if (ACCOUNT_PAGES.includes(page)) return { page, next: safeNext(new URLSearchParams(query).get('next')) }
   const module = MODULES.find(m => m.route === page)
   return module ? { page: module.route } : { page: '' }
 }
 
-/** The hash of a page (and, for the infrastructure editor, its tool). */
-export const hashOf = ({ page, tool }) => `#/${page ?? ''}${page === 'infrastructure' && tool ? `/${tool}` : ''}`
+/** The hash of a page (for the infrastructure editor with its tool, for an account page with where it goes back to). */
+export function hashOf({ page, tool, next }) {
+  if (page === 'infrastructure' && tool) return `#/${page}/${tool}`
+  if (ACCOUNT_PAGES.includes(page) && next) return `#/${page}?${new URLSearchParams({ next })}`
+  return `#/${page ?? ''}`
+}
 
 /**
  * The projects as the infrastructure editor lists them: those that are not

@@ -8,8 +8,8 @@ import { createRunStore } from './runStore.js'
 import { executeRun } from './runs.js'
 
 const env = process.env
-const DB = env.OLT_SERVER_DB ?? 'olt.sqlite'
-const CLOUDS = env.OLT_SERVER_CLOUDS ?? join(dirname(resolve(DB)), 'clouds')
+const DB = env.RA_SERVER_DB ?? 'rail-across.sqlite'
+const CLOUDS = env.RA_SERVER_CLOUDS ?? join(dirname(resolve(DB)), 'clouds')
 const stamp = () => new Date().toISOString()
 
 export async function main([command, ...args]) {
@@ -18,12 +18,12 @@ export async function main([command, ...args]) {
   const storage = cloudStorage(CLOUDS)
   if (command === 'serve') {
     const queue = createQueue({
-      clouds, parallel: Number(env.OLT_CLOUDJOBS_PARALLEL ?? 2),
+      clouds, parallel: Number(env.RA_CLOUDJOBS_PARALLEL ?? 2),
       log: (m) => console.log(`${stamp()} ${m}`),
     })
     // The long runs (AP 13.7) in a queue of their own, beside the preparations.
     const runQueue = createQueue({
-      clouds, jobs: runQueueJobs(createRunStore(db)), parallel: Number(env.OLT_CLOUDRUNS_PARALLEL ?? 2),
+      clouds, jobs: runQueueJobs(createRunStore(db)), parallel: Number(env.RA_CLOUDRUNS_PARALLEL ?? 2),
       log: (m) => console.log(`${stamp()} ${m}`),
     })
     queue.begin()
@@ -31,7 +31,7 @@ export async function main([command, ...args]) {
     const close = async () => { await Promise.all([queue.stop(), runQueue.stop()]); db.close(); process.exit(0) }
     process.on('SIGTERM', close)
     process.on('SIGINT', close)
-    console.log(`${stamp()} olt-cloudjobs: queue in ${DB}, clouds in ${CLOUDS}`)
+    console.log(`${stamp()} rail-across-cloudjobs: queue in ${DB}, clouds in ${CLOUDS}`)
     return
   }
   if (command === 'run') {
@@ -59,6 +59,6 @@ export async function main([command, ...args]) {
     db.close()
     return
   }
-  console.error('usage: olt-cloudjobs serve | run <job> | exec <run>')
+  console.error('usage: rail-across-cloudjobs serve | run <job> | exec <run>')
   process.exit(2)
 }

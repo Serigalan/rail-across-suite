@@ -1,23 +1,23 @@
-# Rendered by deploy/setup.sh from deploy/templates/olt-optimizer.service — edit the template, not this file.
+# Rendered by deploy/setup.sh from deploy/templates/rail-across-optimizer.service — edit the template, not this file.
 [Unit]
-Description=Open Layout Tool@OLT_LABEL@ — optimizer, MDB conversion and terrain service
+Description=Rail-Across-Suite@RA_LABEL@ — optimizer, MDB conversion and terrain service of the Layout-Tool
 After=network.target
 
 [Service]
-User=@OLT_USER@
-WorkingDirectory=@OLT_REPO@/services/optimizer
-ExecStart=@OLT_VENV@/bin/olt-optimizer-serve
-Environment=OLT_OPTIMIZER_HOST=@OLT_BIND@
-Environment=OLT_OPTIMIZER_PORT=@OLT_OPTIMIZER_PORT@
-Environment=OLT_OPTIMIZER_ORIGINS=https://@OLT_DOMAIN@
-Environment=OLT_OPTIMIZER_TIMEOUT=@OLT_OPTIMIZER_TIMEOUT@
-Environment=OLT_OPTIMIZER_WORKERS=@OLT_OPTIMIZER_WORKERS@
-Environment=OLT_TERRAIN_CACHE=@OLT_TERRAIN_CACHE@
+User=@RA_USER@
+WorkingDirectory=@RA_REPO@/services/optimizer
+ExecStart=@RA_VENV@/bin/olt-optimizer-serve
+Environment=OLT_OPTIMIZER_HOST=@RA_BIND@
+Environment=OLT_OPTIMIZER_PORT=@RA_OPTIMIZER_PORT@
+Environment=OLT_OPTIMIZER_ORIGINS=https://@RA_DOMAIN@
+Environment=OLT_OPTIMIZER_TIMEOUT=@RA_OPTIMIZER_TIMEOUT@
+Environment=OLT_OPTIMIZER_WORKERS=@RA_OPTIMIZER_WORKERS@
+Environment=OLT_TERRAIN_CACHE=@RA_TERRAIN_CACHE@
 # PROJ finds the NTv2 grids (DHDN ↔ DB_REF ↔ ETRS89) in $XDG_DATA_HOME/proj,
 # where setup.sh copies them from the app's grids/; no downloads at run time.
-Environment=XDG_DATA_HOME=@OLT_DATA@/share
+Environment=XDG_DATA_HOME=@RA_DATA@/share
 Environment=PROJ_NETWORK=OFF
-MemoryMax=@OLT_OPTIMIZER_MEMORY@
+MemoryMax=@RA_OPTIMIZER_MEMORY@
 Restart=always
 RestartSec=2
 NoNewPrivileges=true

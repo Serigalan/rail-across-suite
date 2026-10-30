@@ -1,4 +1,4 @@
-# Open Layout Tool — rendered by deploy/setup.sh from deploy/templates/Caddyfile.
+# Rail-Across-Suite — rendered by deploy/setup.sh from deploy/templates/Caddyfile.
 #
 # The app is usable only after signing in (phase 10): /api/* is the project
 # server. The optimizer and terrain service (/optimizer/*) and the km line data
@@ -7,32 +7,32 @@
 # files themselves and the NTv2 grids under /data/*.tif stay open: the sign-in
 # page is part of the app, and the app loads the grid before anyone signs in.
 #
-# The site directory holds the app — at its root, or under a path (OLT_PATH)
-# with the suite's start page at the root.
-@OLT_DOMAIN@ {
+# The site directory holds the suite's start page at its root and each
+# module's app under its path — the Layout-Tool under /layout/.
+@RA_DOMAIN@ {
 	handle /api/* {
-		reverse_proxy @OLT_UPSTREAM@:@OLT_SERVER_PORT@
+		reverse_proxy @RA_UPSTREAM@:@RA_SERVER_PORT@
 	}
 
 	# /optimizer/optimize → the service sees /optimize (prefix cut off).
 	handle_path /optimizer/* {
-		forward_auth @OLT_UPSTREAM@:@OLT_SERVER_PORT@ {
+		forward_auth @RA_UPSTREAM@:@RA_SERVER_PORT@ {
 			uri /api/me
 		}
-		reverse_proxy @OLT_UPSTREAM@:@OLT_OPTIMIZER_PORT@
+		reverse_proxy @RA_UPSTREAM@:@RA_OPTIMIZER_PORT@
 	}
 
-	@kmdata path @OLT_KM_PATHS@
+	@kmdata path /layout/data/km/* /layout/data/km_linie.pmtiles
 	handle @kmdata {
-		forward_auth @OLT_UPSTREAM@:@OLT_SERVER_PORT@ {
+		forward_auth @RA_UPSTREAM@:@RA_SERVER_PORT@ {
 			uri /api/me
 		}
-		root * @OLT_SITE_ROOT@
+		root * @RA_SITE_ROOT@
 		file_server
 	}
 
 	handle {
-		root * @OLT_SITE_ROOT@
+		root * @RA_SITE_ROOT@
 		file_server
 	}
 

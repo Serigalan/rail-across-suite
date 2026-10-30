@@ -27,7 +27,7 @@ beforeEach(async () => {
   globalThis.fetch = async (url, init = {}) => {
     const res = await ctx.app.inject({
       method: init.method ?? 'GET', url, headers: init.headers, payload: init.body,
-      cookies: { olt_session: user.token },
+      cookies: { ra_session: user.token },
     })
     return { status: res.statusCode, ok: res.statusCode < 400, json: async () => res.json() }
   }

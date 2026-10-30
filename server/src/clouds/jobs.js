@@ -10,10 +10,10 @@ const JOB_HEAP_MB = 768
 /** Heap a long run's process may take [MB] (AP 13.7): it holds a slice and 64 MB of segments. */
 const RUN_HEAP_MB = 320
 
-const BIN = fileURLToPath(new URL('../../bin/olt-cloudjobs.mjs', import.meta.url))
+const BIN = fileURLToPath(new URL('../../bin/rail-across-cloudjobs.mjs', import.meta.url))
 
 /**
- * The queue of olt-cloudjobs (AP 13.3): jobs in SQLite, each run in a process
+ * The queue of rail-across-cloudjobs (AP 13.3): jobs in SQLite, each run in a process
  * of its own — a job that runs out of memory or crashes takes only itself
  * down, and the cloud says why it failed. What was running when the service
  * stopped is left as it was and queued again at the next start — a deploy

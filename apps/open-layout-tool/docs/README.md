@@ -41,7 +41,7 @@ whoever maintains or reviews the tool. User guidance is in the app (*Leitfaden*,
 ## Elsewhere
 
 - [`README.md`](../README.md) — features, getting started, the local version
-- [`deploy/README.md`](../deploy/README.md) — operating a server
+- [`deploy/README.md`](../../../deploy/README.md) — operating the suite's server
 - [`server/README.md`](../../../server/README.md) — the project server
 - [`services/optimizer/README.md`](../../../services/optimizer/README.md) — the optimizer (German)
 - [`tools/local/README.md`](../tools/local/README.md) — the local version as handed out

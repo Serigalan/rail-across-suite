@@ -3,13 +3,12 @@ import { api, splitDataUrl } from '../api/client'
 import { parseProjectsPayload, PayloadError, withImportSystem } from '@rail-across/core/project'
 import { loadHome } from '../collab/homeModel'
 import { LogoIcon, UserIcon } from '../../core/components/icons'
-import PasswordForm from '../collab/PasswordForm'
+import { suiteUrl, toSuite } from '../suite'
 import LanguageMenu from '../../core/components/collab/LanguageMenu'
 import MembersDialog from '../collab/MembersDialog'
 import { useI18n } from '../../core/locales/i18nContext'
 import { errorText } from '../collab/errorText'
 import '../../core/components/collab/collab.css'
-import Modal from '../../core/components/Modal'
 import GuideDialog, { GuidePreview } from '../../core/components/GuideDialog'
 import useMenu from '../../core/components/form/useMenu'
 import BranchDialog from './BranchDialog'
@@ -127,6 +126,9 @@ export default function StartPage({ user, onOpenVariant, onViewVariant, onSignOu
     <div className="collab-page home">
       <header className="home-top">
         <div className="collab-brand">
+          {/* A module of the suite: the way back to its start page, before the tool's own name. */}
+          <a className="home-suite-link" href={suiteUrl()}>Rail-Across-Suite</a>
+          <span className="home-suite-sep" aria-hidden="true">/</span>
           <LogoIcon className="collab-logo" />
           <h1>Open Layout Tool</h1>
         </div>
@@ -142,7 +144,7 @@ export default function StartPage({ user, onOpenVariant, onViewVariant, onSignOu
             {userMenuOpen && (
               <div className="home-menu-list" role="menu">
                 <p className="home-menu-user">{user.name}</p>
-                <button type="button" role="menuitem" onClick={() => { closeUserMenu(); setDialog({ kind: 'password' }) }}>{t('password_title')}</button>
+                <button type="button" role="menuitem" onClick={() => { closeUserMenu(); toSuite('password') }}>{t('password_title')}</button>
                 <button type="button" role="menuitem" onClick={() => { closeUserMenu(); setDialog({ kind: 'local' }) }}>{t('local_store_menu')}</button>
                 <button type="button" role="menuitem" onClick={onSignOut}>{t('user_sign_out')}</button>
               </div>
@@ -236,11 +238,6 @@ export default function StartPage({ user, onOpenVariant, onViewVariant, onSignOu
       {dialog?.kind === 'local' && (
         <LocalStorageDialog projects={projects}
           onClose={async (changed) => { setDialog(null); if (changed) await reload() }} />
-      )}
-      {dialog?.kind === 'password' && (
-        <Modal className="modal-bare" ariaLabel={t('password_title')} onClose={() => setDialog(null)}>
-          <PasswordForm onCancel={() => setDialog(null)} onDone={() => { setDialog(null); setNotice(t('password_done')) }} />
-        </Modal>
       )}
     </div>
   )

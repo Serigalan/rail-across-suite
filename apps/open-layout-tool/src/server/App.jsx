@@ -1,18 +1,17 @@
-import { Suspense, lazy, useEffect, useState } from 'react'
+import { Suspense, lazy, useEffect, useRef, useState } from 'react'
 import '../core/App.css'
 import I18nProvider from '../core/locales/I18nProvider'
 import { useI18n } from '../core/locales/i18nContext'
 import { useProject } from '../core/hooks/useStore'
 import { loadSettings } from '../core/utils/common'
 import StartPage from './home/StartPage'
-import LoginPage from './collab/LoginPage'
-import PasswordForm from './collab/PasswordForm'
 import useSession from './useSession'
 import useWorkingCopy from './useWorkingCopy'
 import useViewer from './useViewer'
 import { PALETTE } from '../core/styles/palette'
 import { api } from './api/client'
 import { errorText } from './collab/errorText'
+import { suiteBeside, suiteUrl, toSuite } from './suite'
 
 // What the sign-in and the start page do not need is loaded when it is first
 // opened (R9.1) — the map above all, with MapLibre and every panel behind it.
@@ -42,10 +41,12 @@ export default function App() {
 }
 
 /**
- * Which page is up (R2.5): sign-in, the start page with the projects, the
- * user administration, a variant's history, a record looked at read-only, or
- * the open working copy on the map. The pages and their state live in
- * shell/; this only routes between them.
+ * Which page is up (R2.5): the start page with the projects, the user
+ * administration, a variant's history, a record looked at read-only, or the
+ * open working copy on the map. The pages and their state live in shell/;
+ * this only routes between them. Signing in and the password are the
+ * suite's: without a session, or with a password to change, the tool sends
+ * one to the suite's start page, which sends one back.
  */
 function Shell() {
   const { t, fill } = useI18n()
@@ -72,6 +73,11 @@ function Shell() {
   // variant on the map — the main one where the link names the project only.
   // The address loses the query, so a reload lands on the start page.
   const ready = session.status === 'user' && !session.user.mustChangePassword
+  const leaving = useRef(false)
+  const account = session.status === 'anon' ? 'sign-in' : session.user?.mustChangePassword ? 'password' : null
+  useEffect(() => {
+    if (account && !leaving.current && suiteBeside()) toSuite(account)
+  }, [account])
   useEffect(() => {
     if (!ready || !linked) return
     setLinked(null)
@@ -90,13 +96,10 @@ function Shell() {
   if (session.status === 'loading') {
     return <div className="collab-page collab-center"><p className="collab-muted">{t('home_loading')}</p></div>
   }
-  if (session.status === 'anon') {
-    return <LoginPage onSignedIn={(user) => { session.signedIn(user); setPage('start') }} />
-  }
-  if (session.user.mustChangePassword) {
+  if (account) {
     return (
       <div className="collab-page collab-center">
-        <PasswordForm forced onDone={session.signedIn} />
+        <p className="collab-muted">{suiteBeside() ? t('home_loading') : t('suite_sign_in_elsewhere')}</p>
       </div>
     )
   }
@@ -122,6 +125,10 @@ function Shell() {
       onOpenVariant={openVariant} onViewVariant={viewer.viewVariant}
       onCompare={viewer.showComparison} onMerge={viewer.startMerge} onHistory={viewer.showHistory}
       onAdmin={() => { setHomeNote(null); setPage('admin') }}
-      onSignOut={async () => { await session.signOut(); setPage('start') }} />
+      onSignOut={async () => {
+        leaving.current = true
+        await session.signOut()
+        location.assign(suiteUrl())
+      }} />
   )
 }

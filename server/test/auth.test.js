@@ -12,7 +12,7 @@ describe('signing in', () => {
     expect(res.statusCode).toBe(200)
     expect(res.json().user).toMatchObject({ login: 'max', name: 'Max Muster', role: 'user' })
     expect(res.json().user.password_hash).toBeUndefined()
-    const cookie = res.cookies.find(c => c.name === 'olt_session')
+    const cookie = res.cookies.find(c => c.name === 'ra_session')
     expect(cookie).toMatchObject({ httpOnly: true, sameSite: 'Strict', path: '/' })
     const me = await as(ctx.app, cookie.value)('GET', '/api/me')
     expect(me.statusCode).toBe(200)

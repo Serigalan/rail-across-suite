@@ -3,7 +3,7 @@ const RUN_KEEP = 7 * 24 * 3600 * 1000
 
 /**
  * The long runs over a project's clouds on the database (AP 13.7): the
- * clearance check along a track and the rail trace, queued for olt-cloudjobs
+ * clearance check along a track and the rail trace, queued for rail-across-cloudjobs
  * like a preparation, each with what the browser sent and what it found.
  */
 export function createRunStore(db, { now = () => Date.now() } = {}) {

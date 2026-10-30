@@ -24,14 +24,14 @@ export async function setup({ routes, cloudRoot = null } = {}) {
 export async function signIn(app, login, password = PW) {
   const res = await app.inject({ method: 'POST', url: '/api/login', payload: { login, password } })
   if (res.statusCode !== 200) throw new Error(`sign-in failed: ${res.statusCode} ${res.body}`)
-  const cookie = res.cookies.find(c => c.name === 'olt_session')
+  const cookie = res.cookies.find(c => c.name === 'ra_session')
   return as(app, cookie.value)
 }
 
 export function as(app, token) {
   const call = (method, url, payload) => app.inject({
     method, url,
-    cookies: token ? { olt_session: token } : {},
+    cookies: token ? { ra_session: token } : {},
     ...(payload !== undefined ? { payload } : method === 'GET' ? {} : { payload: {} }),
   })
   call.token = token

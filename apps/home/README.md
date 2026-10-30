@@ -30,5 +30,5 @@ npm test         # vitest: routes, the projects listed, the pages rendered
 npm run build
 ```
 
-Deployed with the Open-Layout-Tool's scripts: an instance whose `OLT_PATH` is not `/` builds this page into
-the root of its site directory and the tool beside it (`apps/open-layout-tool/deploy/README.md`).
+Deployed by the suite's scripts ([`deploy/`](../../deploy/README.md)), which build this page into
+the root of the site and each module's app under its path.

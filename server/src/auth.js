@@ -12,7 +12,7 @@ export const BRAKE_ATTEMPTS = 5
 /** … holds for this long [ms]. */
 const BRAKE_MS = 60 * 1000
 
-export const COOKIE = 'olt_session'
+export const COOKIE = 'ra_session'
 
 // argon2id with the library's defaults (19 MiB, 2 passes) — what OWASP names.
 const hashPassword = (password) => hash(password)

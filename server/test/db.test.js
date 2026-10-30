@@ -14,7 +14,7 @@ afterEach(() => { if (dir) rmSync(dir, { recursive: true, force: true }) })
 describe('the database', () => {
   it('is brought up to date once and opened again without applying anything twice', () => {
     dir = mkdtempSync(join(tmpdir(), 'olt-db-'))
-    const file = join(dir, 'olt.sqlite')
+    const file = join(dir, 'rail-across.sqlite')
     const a = openDatabase(file)
     const v = schemaVersion(a)
     expect(v).toBeGreaterThanOrEqual(1)
@@ -28,7 +28,7 @@ describe('the database', () => {
 
   it('writes a consistent backup', async () => {
     dir = mkdtempSync(join(tmpdir(), 'olt-db-'))
-    const db = openDatabase(join(dir, 'olt.sqlite'))
+    const db = openDatabase(join(dir, 'rail-across.sqlite'))
     await db.backup(join(dir, 'copy.sqlite'))
     db.close()
     expect(existsSync(join(dir, 'copy.sqlite'))).toBe(true)
@@ -39,7 +39,7 @@ describe('the database', () => {
 
   it('keeps whoever already worked on a project on it when members come in (migration 005)', () => {
     dir = mkdtempSync(join(tmpdir(), 'olt-db-'))
-    const file = join(dir, 'olt.sqlite')
+    const file = join(dir, 'rail-across.sqlite')
     // The database as it was before 005, with a project of Ada's that Max
     // checked into and Eva branched off, and one Max has not touched.
     const old = new Database(file)

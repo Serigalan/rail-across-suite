@@ -41,7 +41,7 @@ async function start(n = 2) {
       name: `W${i}`, fileName: 'w.las', fileSize: LAS.length, format: 'las', crs: 5678, heightEpsg: 7837, pointCount: 2000,
     })).json()
     await ctx.app.inject({
-      method: 'PUT', url: `/api/projects/${project.id}/clouds/${cloud.id}/raw?offset=0`, cookies: { olt_session: max.token },
+      method: 'PUT', url: `/api/projects/${project.id}/clouds/${cloud.id}/raw?offset=0`, cookies: { ra_session: max.token },
       headers: { 'content-type': 'application/octet-stream', 'x-olt-upload': '1', 'x-olt-sha256': createHash('sha256').update(LAS).digest('hex') },
       payload: Buffer.from(LAS),
     })

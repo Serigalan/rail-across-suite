@@ -16,6 +16,7 @@
   },
   "allowScripts": {
     "esbuild": true,
-    "core-js": false
+    "core-js": false,
+    "better-sqlite3": false
   }
 }

@@ -33,7 +33,7 @@ function checkParams(kind, p) {
 /**
  * Long runs over a project's clouds on the server (AP 13.7): the clearance
  * check along a whole track and the trace of a track's rail heads, as jobs of
- * olt-cloudjobs over the project's ready clouds (decision 209). The browser
+ * rail-across-cloudjobs over the project's ready clouds (decision 209). The browser
  * sends what it needs of its working copy — the track, the guide; the clouds
  * are those on the server. Seeing runs and their results is every member's,
  * starting and cancelling them the admins' and the users' with the right

@@ -42,7 +42,7 @@ describe('the infrastructure editor', () => {
 
   it('asks to sign in before it lists anything', () => {
     const html = de(<Infrastructure toolId="layout" user={null} projects={{ list: null, error: false }} />)
-    expect(html).toContain('Melde dich an')
+    expect(html).toContain('Eine Anmeldung für die ganze Suite')
     expect(html).not.toContain('PEK')
   })
 })

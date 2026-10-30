@@ -148,6 +148,7 @@ eine Adresse, eine Anmeldung.
 | Ports (an 172.18.0.1) | 8789, 8101 |
 | Daten | `/var/lib/open-layout-tool-suite` |
 | Site im Caddy | `/opt/rail-across-suite/dist` → `/srv/railacross` |
+| Node | `/usr/local/bin/node` (`OLT_NODE` in der Konfiguration: das Node in roots nvm darf der Dienstnutzer nicht lesen) |
 
 Update: `cd /opt/rail-across-suite && apps/open-layout-tool/deploy/deploy.sh --config /etc/open-layout-tool/suite.env --pull`.
 

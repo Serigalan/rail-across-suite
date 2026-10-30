@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { api, blobUrl } from '../api/client'
-import { projectsPayload } from '@rail-across/core/project'
+import { projectDocument } from '@rail-across/core/project'
 import { downloadJSON } from '../../core/utils/common'
 import { useI18n } from '../../core/locales/i18nContext'
 import FormDialog from '../../core/components/home/FormDialog'
@@ -29,7 +29,7 @@ export default function ExportDialog({ project, onCancel, onDone }) {
     const { imageHash, ...record } = payload
     const image = imageHash ? await imageAsDataUrl(imageHash) : null
     const exported = { ...record, title: project.title, ...(image ? { image } : {}) }
-    downloadJSON(projectsPayload([exported]), `${project.title} – ${variant.name}.json`)
+    downloadJSON(projectDocument(exported, { carrySchemas: true }), `${project.title} – ${variant.name}.railacross.json`)
     onDone()
   })
   return (

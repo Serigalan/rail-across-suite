@@ -1,0 +1,6098 @@
+[
+ {
+  "name": "the sample",
+  "document": {
+   "format": "rail-across",
+   "domains": {
+    "core": {
+     "version": "1.0",
+     "schema": "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6",
+     "fields": {
+      "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
+      "title": "Halle-Trotha",
+      "description": "vectors",
+      "creator": "core",
+      "createdAt": "2026-10-29T13:21:07.630Z",
+      "crsSystem": "ETRS89_UTM",
+      "lineCategory": "secondary",
+      "gaugeProfile": "hauptgleis",
+      "stages": [
+       {
+        "id": "b2a40cac-c53f-8ee2-b693-61aab009da16"
+       },
+       {
+        "id": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+       }
+      ]
+     },
+     "collections": {
+      "tracks": [
+       {
+        "id": "t1",
+        "name": "6050.001",
+        "trackType": 1,
+        "lineNumber": 6050,
+        "side": 1,
+        "epsg": 25832,
+        "heightEpsg": 7837,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500000,
+           5700000
+          ],
+          "endNode": [
+           500100,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 100,
+          "speed": 80
+         },
+         {
+          "elementType": 0,
+          "startNode": [
+           500100,
+           5700000
+          ],
+          "endNode": [
+           500250,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 150,
+          "cant": 0,
+          "role": "follow"
+         }
+        ],
+        "heights": [
+         {
+          "station": 0,
+          "z": 108.55
+         },
+         {
+          "station": 250,
+          "z": 109.1,
+          "rv": 15000
+         }
+        ]
+       },
+       {
+        "id": "t2",
+        "name": "1",
+        "trackType": 2,
+        "trackNumber": "1",
+        "epsg": 25832,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500250,
+           5700000
+          ],
+          "endNode": [
+           500400,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 150
+         }
+        ],
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "lifespan": {
+         "from": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+        }
+       },
+       {
+        "id": "t3",
+        "name": "alt",
+        "epsg": 25832,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500400,
+           5700000
+          ],
+          "endNode": [
+           500450,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 50
+         }
+        ],
+        "lifespan": {
+         "to": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+        }
+       }
+      ],
+      "switches": [
+       {
+        "id": "w1",
+        "kind": "link",
+        "formVersion": 1,
+        "name": "link.001",
+        "ports": {
+         "A": {
+          "trackId": "t1",
+          "endpoint": "END"
+         },
+         "B": {
+          "trackId": "t2",
+          "endpoint": "BEGIN"
+         }
+        }
+       }
+      ],
+      "platforms": [
+       {
+        "at": {
+         "anchor": "station",
+         "trackId": "t2",
+         "startStation": 10,
+         "endStation": 140,
+         "side": "left"
+        },
+        "id": "p1",
+        "frontOffset": 1.67,
+        "height": 550,
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+       }
+      ],
+      "endMarks": [
+       {
+        "id": "e1",
+        "kind": "buffer_stop",
+        "type": 4,
+        "brakeLength": 4,
+        "at": {
+         "trackId": "t3",
+         "endpoint": "END"
+        }
+       }
+      ],
+      "kmLines": [
+       {
+        "id": "km-6050",
+        "lineNumber": 6050,
+        "crs": "EPSG:4326",
+        "clip": [
+         11.9,
+         51.5,
+         12,
+         51.6
+        ],
+        "runs": [
+         [
+          [
+           11.95,
+           51.55,
+           1200.5
+          ],
+          [
+           11.96,
+           51.56,
+           1300
+          ]
+         ]
+        ]
+       }
+      ],
+      "operationalPoints": [
+       {
+        "id": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "name": "Halle-Trotha",
+        "rl100": "LHT",
+        "uic": "8023111"
+       }
+      ]
+     }
+    },
+    "layout": {
+     "version": "1.0",
+     "schema": "sha256:b2280dcf6cfe779e148b6c402ac46eb4ff1e8d96b55e6e3abcb370ef48ff1f1b",
+     "dependsOn": [
+      "core"
+     ],
+     "fields": {
+      "planHeader": {
+       "subtitle": "Lageplan"
+      },
+      "imageHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+     },
+     "collections": {
+      "trackPaths": [
+       {
+        "id": "r1",
+        "name": "Gleis 1 durch",
+        "path": {
+         "trackIds": [
+          "t1",
+          "t2"
+         ]
+        }
+       }
+      ],
+      "axisSurveys": [
+       {
+        "id": "a1",
+        "name": "Trace",
+        "epsg": 25832,
+        "rail": "54E4",
+        "guide": {
+         "kind": "track",
+         "trackId": "t1"
+        },
+        "cloudNames": [
+         "W0"
+        ],
+        "createdAt": "2026-10-29T13:21:07.630Z",
+        "step": 0.5,
+        "gaps": [],
+        "points": "sha256:b4aa72abe9415d526401fd1bf2a5b35429b0f47eb23781632212aa9e77710d48"
+       }
+      ],
+      "referenceAxes": [
+       {
+        "id": "x1",
+        "name": "Bestand",
+        "epsg": 25832,
+        "heightEpsg": null,
+        "source": {
+         "tra": "a.TRA",
+         "gra": null
+        },
+        "points": "sha256:55dda32d20595141bb76c28a3769eb9345e54af5adea57d111f73a0b63b52acf"
+       }
+      ]
+     }
+    }
+   },
+   "blobs": {
+    "sha256:b4aa72abe9415d526401fd1bf2a5b35429b0f47eb23781632212aa9e77710d48": {
+     "e0": 500000,
+     "n0": 5700000,
+     "z0": 108,
+     "st": [
+      0,
+      500
+     ],
+     "de": [
+      0,
+      500
+     ],
+     "dn": [
+      0,
+      0
+     ],
+     "zl": [
+      550,
+      560
+     ],
+     "zr": [
+      550,
+      561
+     ],
+     "ga": [
+      1435,
+      1436
+     ],
+     "q": [
+      1,
+      1
+     ]
+    },
+    "sha256:55dda32d20595141bb76c28a3769eb9345e54af5adea57d111f73a0b63b52acf": {
+     "s0": 0,
+     "step": 0.01,
+     "count": 3,
+     "e0": 500000,
+     "n0": 5700000,
+     "de": [
+      0,
+      10,
+      10
+     ],
+     "dn": [
+      0,
+      0,
+      0
+     ],
+     "z": null
+    }
+   }
+  },
+  "valid": true,
+  "manifest": {
+   "domains": {
+    "core": {
+     "version": "1.0",
+     "schema": "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6",
+     "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
+     "collections": {
+      "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
+      "kmLines": "sha256:7a0eb47d89ffa24b1917d39c8eab8707f820c9b6bceb81edf5dddcf52ead6457",
+      "operationalPoints": "sha256:6a6eb5b21cdb3c39939da851281a7a8b9c968d36cea93d44d383d292b33beb34",
+      "platforms": "sha256:1ab2e26c887a12abb8b4fdfaf22b1e56ec9406f85b66f80155a57a0c1aa07910",
+      "switches": "sha256:2b44461e52775cdabdc9c02e42115f9441b311b4240d09dca153d5683a4a4da5",
+      "tracks": "sha256:31b7b45b2668805ff32a84d8ebc4586e230ae9152364edac5bc643ef097a075a"
+     }
+    },
+    "layout": {
+     "version": "1.0",
+     "schema": "sha256:b2280dcf6cfe779e148b6c402ac46eb4ff1e8d96b55e6e3abcb370ef48ff1f1b",
+     "dependsOn": [
+      "core"
+     ],
+     "fields": "sha256:8d9ae941998100a45679076ed67feb55eaf5c06dc028c5ff9396bbe93de06ffb",
+     "collections": {
+      "axisSurveys": "sha256:d7c72a86fce12420e2a646aa0087a31572d6db6bedd895b31181daeacff533cc",
+      "referenceAxes": "sha256:04906ea395d28e3d03af2cc45d7057c92d832faaeb875b5fb0ba3c9c40047a3e",
+      "trackPaths": "sha256:b6c705b568655eb210b5794b4ce86a95e2f3da8b51f5c298057698fb02b5db8f"
+     }
+    }
+   }
+  },
+  "hash": "sha256:96171c3fe7794d2f789c98c7ccdada83bd39ab8af186cd1258e13740a4ee1d3a"
+ },
+ {
+  "name": "the sample, carrying its schemas",
+  "document": {
+   "format": "rail-across",
+   "domains": {
+    "core": {
+     "version": "1.0",
+     "schema": "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6",
+     "fields": {
+      "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
+      "title": "Halle-Trotha",
+      "description": "vectors",
+      "creator": "core",
+      "createdAt": "2026-10-29T13:21:07.630Z",
+      "crsSystem": "ETRS89_UTM",
+      "lineCategory": "secondary",
+      "gaugeProfile": "hauptgleis",
+      "stages": [
+       {
+        "id": "b2a40cac-c53f-8ee2-b693-61aab009da16"
+       },
+       {
+        "id": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+       }
+      ]
+     },
+     "collections": {
+      "tracks": [
+       {
+        "id": "t1",
+        "name": "6050.001",
+        "trackType": 1,
+        "lineNumber": 6050,
+        "side": 1,
+        "epsg": 25832,
+        "heightEpsg": 7837,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500000,
+           5700000
+          ],
+          "endNode": [
+           500100,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 100,
+          "speed": 80
+         },
+         {
+          "elementType": 0,
+          "startNode": [
+           500100,
+           5700000
+          ],
+          "endNode": [
+           500250,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 150,
+          "cant": 0,
+          "role": "follow"
+         }
+        ],
+        "heights": [
+         {
+          "station": 0,
+          "z": 108.55
+         },
+         {
+          "station": 250,
+          "z": 109.1,
+          "rv": 15000
+         }
+        ]
+       },
+       {
+        "id": "t2",
+        "name": "1",
+        "trackType": 2,
+        "trackNumber": "1",
+        "epsg": 25832,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500250,
+           5700000
+          ],
+          "endNode": [
+           500400,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 150
+         }
+        ],
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "lifespan": {
+         "from": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+        }
+       },
+       {
+        "id": "t3",
+        "name": "alt",
+        "epsg": 25832,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500400,
+           5700000
+          ],
+          "endNode": [
+           500450,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 50
+         }
+        ],
+        "lifespan": {
+         "to": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+        }
+       }
+      ],
+      "switches": [
+       {
+        "id": "w1",
+        "kind": "link",
+        "formVersion": 1,
+        "name": "link.001",
+        "ports": {
+         "A": {
+          "trackId": "t1",
+          "endpoint": "END"
+         },
+         "B": {
+          "trackId": "t2",
+          "endpoint": "BEGIN"
+         }
+        }
+       }
+      ],
+      "platforms": [
+       {
+        "at": {
+         "anchor": "station",
+         "trackId": "t2",
+         "startStation": 10,
+         "endStation": 140,
+         "side": "left"
+        },
+        "id": "p1",
+        "frontOffset": 1.67,
+        "height": 550,
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+       }
+      ],
+      "endMarks": [
+       {
+        "id": "e1",
+        "kind": "buffer_stop",
+        "type": 4,
+        "brakeLength": 4,
+        "at": {
+         "trackId": "t3",
+         "endpoint": "END"
+        }
+       }
+      ],
+      "kmLines": [
+       {
+        "id": "km-6050",
+        "lineNumber": 6050,
+        "crs": "EPSG:4326",
+        "clip": [
+         11.9,
+         51.5,
+         12,
+         51.6
+        ],
+        "runs": [
+         [
+          [
+           11.95,
+           51.55,
+           1200.5
+          ],
+          [
+           11.96,
+           51.56,
+           1300
+          ]
+         ]
+        ]
+       }
+      ],
+      "operationalPoints": [
+       {
+        "id": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "name": "Halle-Trotha",
+        "rl100": "LHT",
+        "uic": "8023111"
+       }
+      ]
+     }
+    },
+    "layout": {
+     "version": "1.0",
+     "schema": "sha256:b2280dcf6cfe779e148b6c402ac46eb4ff1e8d96b55e6e3abcb370ef48ff1f1b",
+     "dependsOn": [
+      "core"
+     ],
+     "fields": {
+      "planHeader": {
+       "subtitle": "Lageplan"
+      },
+      "imageHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+     },
+     "collections": {
+      "trackPaths": [
+       {
+        "id": "r1",
+        "name": "Gleis 1 durch",
+        "path": {
+         "trackIds": [
+          "t1",
+          "t2"
+         ]
+        }
+       }
+      ],
+      "axisSurveys": [
+       {
+        "id": "a1",
+        "name": "Trace",
+        "epsg": 25832,
+        "rail": "54E4",
+        "guide": {
+         "kind": "track",
+         "trackId": "t1"
+        },
+        "cloudNames": [
+         "W0"
+        ],
+        "createdAt": "2026-10-29T13:21:07.630Z",
+        "step": 0.5,
+        "gaps": [],
+        "points": "sha256:b4aa72abe9415d526401fd1bf2a5b35429b0f47eb23781632212aa9e77710d48"
+       }
+      ],
+      "referenceAxes": [
+       {
+        "id": "x1",
+        "name": "Bestand",
+        "epsg": 25832,
+        "heightEpsg": null,
+        "source": {
+         "tra": "a.TRA",
+         "gra": null
+        },
+        "points": "sha256:55dda32d20595141bb76c28a3769eb9345e54af5adea57d111f73a0b63b52acf"
+       }
+      ]
+     }
+    }
+   },
+   "blobs": {
+    "sha256:b4aa72abe9415d526401fd1bf2a5b35429b0f47eb23781632212aa9e77710d48": {
+     "e0": 500000,
+     "n0": 5700000,
+     "z0": 108,
+     "st": [
+      0,
+      500
+     ],
+     "de": [
+      0,
+      500
+     ],
+     "dn": [
+      0,
+      0
+     ],
+     "zl": [
+      550,
+      560
+     ],
+     "zr": [
+      550,
+      561
+     ],
+     "ga": [
+      1435,
+      1436
+     ],
+     "q": [
+      1,
+      1
+     ]
+    },
+    "sha256:55dda32d20595141bb76c28a3769eb9345e54af5adea57d111f73a0b63b52acf": {
+     "s0": 0,
+     "step": 0.01,
+     "count": 3,
+     "e0": 500000,
+     "n0": 5700000,
+     "de": [
+      0,
+      10,
+      10
+     ],
+     "dn": [
+      0,
+      0,
+      0
+     ],
+     "z": null
+    }
+   },
+   "schemas": {
+    "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6": {
+     "$schema": "https://json-schema.org/draft/2020-12/schema",
+     "$id": "core",
+     "title": "Rail-Data-Core, domain core 1.0",
+     "description": "The base every module depends on: the net (tracks, switches and connectors), what stands on it for every discipline (platforms, end marks), the reference data (km lines, the operational point register) and the construction stages. Written by the layout tool, carried by the core library. See docs/data-model.md.",
+     "type": "object",
+     "required": [
+      "fields",
+      "collections"
+     ],
+     "additionalProperties": false,
+     "properties": {
+      "fields": {
+       "$ref": "#/$defs/Fields"
+      },
+      "collections": {
+       "type": "object",
+       "required": [
+        "tracks",
+        "switches",
+        "platforms",
+        "endMarks",
+        "kmLines",
+        "operationalPoints"
+       ],
+       "additionalProperties": false,
+       "properties": {
+        "tracks": {
+         "type": "array",
+         "items": {
+          "$ref": "#/$defs/Track"
+         }
+        },
+        "switches": {
+         "type": "array",
+         "items": {
+          "$ref": "#/$defs/Switch"
+         }
+        },
+        "platforms": {
+         "type": "array",
+         "items": {
+          "$ref": "#/$defs/Platform"
+         }
+        },
+        "endMarks": {
+         "type": "array",
+         "items": {
+          "$ref": "#/$defs/EndMark"
+         }
+        },
+        "kmLines": {
+         "type": "array",
+         "items": {
+          "$ref": "#/$defs/KmLine"
+         }
+        },
+        "operationalPoints": {
+         "type": "array",
+         "items": {
+          "$ref": "#/$defs/OperationalPoint"
+         }
+        }
+       }
+      }
+     },
+     "$defs": {
+      "Id": {
+       "description": "The id of an object, unique in its collection; a UUID in lower case by convention.",
+       "type": "string",
+       "minLength": 1
+      },
+      "Ref": {
+       "description": "A reference to an object by its bare id. Where a property is a Ref, its `x-target` names the collection it points into.",
+       "type": "string",
+       "minLength": 1
+      },
+      "Text": {
+       "type": "string"
+      },
+      "Label": {
+       "description": "A number as people write it: a line or track number, sometimes with letters.",
+       "type": [
+        "string",
+        "number"
+       ]
+      },
+      "Epsg": {
+       "type": "integer",
+       "minimum": 1
+      },
+      "Point": {
+       "description": "[easting, northing] in m, in the plane of the object that states it.",
+       "type": "array",
+       "items": {
+        "type": "number"
+       },
+       "minItems": 2,
+       "maxItems": 3
+      },
+      "Side": {
+       "enum": [
+        "left",
+        "right"
+       ]
+      },
+      "Endpoint": {
+       "enum": [
+        "BEGIN",
+        "END"
+       ]
+      },
+      "LineCategory": {
+       "enum": [
+        "main",
+        "secondary",
+        "s_bahn"
+       ]
+      },
+      "TrackEnd": {
+       "description": "One end of a track: what a switch port, a connector or an end mark holds.",
+       "type": "object",
+       "required": [
+        "trackId",
+        "endpoint"
+       ],
+       "additionalProperties": false,
+       "properties": {
+        "trackId": {
+         "$ref": "#/$defs/Ref",
+         "x-target": "core.tracks"
+        },
+        "endpoint": {
+         "$ref": "#/$defs/Endpoint"
+        }
+       }
+      },
+      "TrackLocation": {
+       "description": "Where an object stands, as one value (R5), stating its anchor (R11): `station` follows the track, `plane` keeps its place. Side and offset are seen in the direction of stationing; `direction` up = towards END.",
+       "oneOf": [
+        {
+         "type": "object",
+         "required": [
+          "anchor",
+          "trackId",
+          "station"
+         ],
+         "additionalProperties": false,
+         "properties": {
+          "anchor": {
+           "const": "station"
+          },
+          "trackId": {
+           "$ref": "#/$defs/Ref",
+           "x-target": "core.tracks"
+          },
+          "station": {
+           "type": "number"
+          },
+          "side": {
+           "$ref": "#/$defs/Side"
+          },
+          "offset": {
+           "type": "number",
+           "minimum": 0
+          },
+          "direction": {
+           "enum": [
+            "up",
+            "down"
+           ]
+          }
+         }
+        },
+        {
+         "type": "object",
+         "required": [
+          "anchor",
+          "easting",
+          "northing",
+          "epsg"
+         ],
+         "additionalProperties": false,
+         "properties": {
+          "anchor": {
+           "const": "plane"
+          },
+          "easting": {
+           "type": "number"
+          },
+          "northing": {
+           "type": "number"
+          },
+          "epsg": {
+           "$ref": "#/$defs/Epsg"
+          },
+          "bearing": {
+           "type": "number"
+          }
+         }
+        }
+       ]
+      },
+      "TrackRange": {
+       "description": "A stretch of one track, as one value (R5): from startStation to endStation, on a side.",
+       "type": "object",
+       "required": [
+        "anchor",
+        "trackId",
+        "startStation",
+        "endStation"
+       ],
+       "additionalProperties": false,
+       "properties": {
+        "anchor": {
+         "const": "station"
+        },
+        "trackId": {
+         "$ref": "#/$defs/Ref",
+         "x-target": "core.tracks"
+        },
+        "startStation": {
+         "type": "number"
+        },
+        "endStation": {
+         "type": "number"
+        },
+        "side": {
+         "$ref": "#/$defs/Side"
+        }
+       }
+      },
+      "TrackPath": {
+       "description": "A run of tracks in running order; the direction each one is run is derived from where they meet.",
+       "type": "object",
+       "required": [
+        "trackIds"
+       ],
+       "additionalProperties": false,
+       "properties": {
+        "trackIds": {
+         "type": "array",
+         "items": {
+          "$ref": "#/$defs/Ref",
+          "x-target": "core.tracks"
+         }
+        }
+       }
+      },
+      "Lifespan": {
+       "description": "The first construction stage an object exists in and the first it no longer exists in; an absent end is open, no lifespan at all means existing and staying (decision 0003).",
+       "type": "object",
+       "minProperties": 1,
+       "additionalProperties": false,
+       "properties": {
+        "from": {
+         "$ref": "#/$defs/Ref",
+         "x-target": "core.fields.stages"
+        },
+        "to": {
+         "$ref": "#/$defs/Ref",
+         "x-target": "core.fields.stages"
+        }
+       }
+      },
+      "Stage": {
+       "type": "object",
+       "required": [
+        "id"
+       ],
+       "additionalProperties": false,
+       "properties": {
+        "id": {
+         "$ref": "#/$defs/Id"
+        },
+        "name": {
+         "$ref": "#/$defs/Text"
+        }
+       }
+      },
+      "Fields": {
+       "description": "The project's own fields. `stages` is the ordered list of construction stages: the first is the existing state, the last the final state.",
+       "type": "object",
+       "required": [
+        "id",
+        "stages"
+       ],
+       "additionalProperties": false,
+       "properties": {
+        "id": {
+         "$ref": "#/$defs/Id"
+        },
+        "title": {
+         "$ref": "#/$defs/Text"
+        },
+        "description": {
+         "$ref": "#/$defs/Text"
+        },
+        "creator": {
+         "$ref": "#/$defs/Text"
+        },
+        "createdAt": {
+         "$ref": "#/$defs/Text"
+        },
+        "crsSystem": {
+         "$ref": "#/$defs/Text"
+        },
+        "lineCategory": {
+         "$ref": "#/$defs/LineCategory"
+        },
+        "gaugeProfile": {
+         "$ref": "#/$defs/Text"
+        },
+        "stages": {
+         "type": "array",
+         "items": {
+          "$ref": "#/$defs/Stage"
+         },
+         "minItems": 2
+        }
+       }
+      },
+      "Element": {
+       "description": "One design element of a track: straight (0), arc (1) or transition (2). No station, no polyline: stations are the running sum of the lengths, drawn geometry is derived.",
+       "type": "object",
+       "required": [
+        "elementType",
+        "startNode",
+        "endNode",
+        "length"
+       ],
+       "additionalProperties": false,
+       "properties": {
+        "elementType": {
+         "enum": [
+          0,
+          1,
+          2
+         ]
+        },
+        "epsg": {
+         "$ref": "#/$defs/Epsg",
+         "description": "The plane the element is stated in, where it says so: its track's (a finding of the chain checks where not)."
+        },
+        "startNode": {
+         "$ref": "#/$defs/Point"
+        },
+        "endNode": {
+         "$ref": "#/$defs/Point"
+        },
+        "bearing": {
+         "type": "number"
+        },
+        "endBearing": {
+         "type": "number"
+        },
+        "length": {
+         "type": "number",
+         "minimum": 0
+        },
+        "radius": {
+         "type": [
+          "number",
+          "null"
+         ]
+        },
+        "r1": {
+         "type": [
+          "number",
+          "null"
+         ]
+        },
+        "r2": {
+         "type": [
+          "number",
+          "null"
+         ]
+        },
+        "transitionType": {
+         "enum": [
+          "clothoid",
+          "bloss"
+         ]
+        },
+        "cant": {
+         "type": "number"
+        },
+        "cantStart": {
+         "type": "number"
+        },
+        "cantEnd": {
+         "type": "number"
+        },
+        "cantException": {
+         "$ref": "#/$defs/Text"
+        },
+        "role": {
+         "enum": [
+          "follow",
+          "intermediate"
+         ]
+        },
+        "reasons": {
+         "type": "object",
+         "additionalProperties": {
+          "type": "string"
+         }
+        },
+        "speed": {
+         "type": [
+          "number",
+          "null"
+         ],
+         "minimum": 0
+        },
+        "switchBranch": {
+         "type": "boolean"
+        },
+        "switchRoute": {
+         "enum": [
+          "main",
+          "branch",
+          "cross",
+          "slip1",
+          "slip2"
+         ]
+        },
+        "switchId": {
+         "$ref": "#/$defs/Ref",
+         "x-target": "core.switches"
+        },
+        "switchHint": {
+         "$ref": "#/$defs/Text",
+         "description": "Why an import could not build the switch this element belongs to: form, number, reason."
+        }
+       }
+      },
+      "HeightPoint": {
+       "description": "A point of a track's vertical tangent polygon: station [m], height of the rail that is not raised [m], vertical curve radius and what governs it, and how it depends on another point.",
+       "type": "object",
+       "required": [
+        "station",
+        "z"
+       ],
+       "additionalProperties": false,
+       "properties": {
+        "station": {
+         "type": "number"
+        },
+        "z": {
+         "type": "number"
+        },
+        "rv": {
+         "type": [
+          "number",
+          "null"
+         ]
+        },
+        "la": {
+         "type": [
+          "number",
+          "null"
+         ]
+        },
+        "reason": {
+         "$ref": "#/$defs/Text"
+        },
+        "locked": {
+         "type": "boolean"
+        },
+        "id": {
+         "$ref": "#/$defs/Id"
+        },
+        "dep": {
+         "$ref": "#/$defs/Ref",
+         "x-target": "the id of another height point"
+        },
+        "depMode": {
+         "enum": [
+          "lds",
+          "continueBefore",
+          "continueAfter",
+          "wa",
+          "continue"
+         ]
+        },
+        "free": {
+         "type": "boolean"
+        }
+       }
+      },
+      "Superstructure": {
+       "type": "object",
+       "required": [
+        "type",
+        "from",
+        "to"
+       ],
+       "additionalProperties": false,
+       "properties": {
+        "type": {
+         "$ref": "#/$defs/Text"
+        },
+        "from": {
+         "type": "number"
+        },
+        "to": {
+         "type": "number"
+        }
+       }
+      },
+      "Track": {
+       "type": "object",
+       "required": [
+        "id",
+        "epsg",
+        "elements"
+       ],
+       "additionalProperties": false,
+       "properties": {
+        "id": {
+         "$ref": "#/$defs/Id"
+        },
+        "name": {
+         "$ref": "#/$defs/Text"
+        },
+        "trackType": {
+         "enum": [
+          1,
+          2
+         ]
+        },
+        "lineNumber": {
+         "$ref": "#/$defs/Label"
+        },
+        "lineName": {
+         "$ref": "#/$defs/Text"
+        },
+        "side": {
+         "type": "integer"
+        },
+        "trackNumber": {
+         "$ref": "#/$defs/Label"
+        },
+        "operationalPoint": {
+         "$ref": "#/$defs/Ref",
+         "x-target": "core.operationalPoints"
+        },
+        "owner": {
+         "$ref": "#/$defs/Text"
+        },
+        "trackUse": {
+         "const": "siding"
+        },
+        "lineCategory": {
+         "$ref": "#/$defs/LineCategory"
+        },
+        "lifespan": {
+         "$ref": "#/$defs/Lifespan"
+        },
+        "epsg": {
+         "$ref": "#/$defs/Epsg"
+        },
+        "heightEpsg": {
+         "$ref": "#/$defs/Epsg"
+        },
+        "elements": {
+         "type": "array",
+         "items": {
+          "$ref": "#/$defs/Element"
+         },
+         "minItems": 1
+        },
+        "heights": {
+         "type": "array",
+         "items": {
+          "$ref": "#/$defs/HeightPoint"
+         }
+        },
+        "rails": {
+         "type": "array",
+         "items": {
+          "$ref": "#/$defs/Superstructure"
+         }
+        },
+        "sleepers": {
+         "type": "array",
+         "items": {
+          "$ref": "#/$defs/Superstructure"
+         }
+        },
+        "lagesystem": {
+         "$ref": "#/$defs/Text",
+         "description": "The DB Lagesystem an MDB import took the track from (EA0, DB0, …)."
+        },
+        "proviAxis": {
+         "$ref": "#/$defs/Text",
+         "description": "The ProVI axis an import took the track from."
+        },
+        "osrd": {
+         "type": "object",
+         "description": "What a RailJSON import brought along for the track section that the model does not hold, handed back on export."
+        }
+       }
+      },
+      "Switch": {
+       "description": "A turnout, crossing, slip or two-end connector (`link`) at a node; its ports hold track ends. A link joins two track ends where the plane changes or where a rebuilt part of a track ties in.",
+       "type": "object",
+       "required": [
+        "id",
+        "kind",
+        "formVersion",
+        "ports"
+       ],
+       "additionalProperties": false,
+       "properties": {
+        "id": {
+         "$ref": "#/$defs/Id"
+        },
+        "kind": {
+         "enum": [
+          "turnout",
+          "crossing",
+          "single_slip",
+          "double_slip",
+          "link"
+         ]
+        },
+        "formVersion": {
+         "type": "integer"
+        },
+        "name": {
+         "$ref": "#/$defs/Text"
+        },
+        "number": {
+         "type": "number"
+        },
+        "label": {
+         "$ref": "#/$defs/Text"
+        },
+        "speed": {
+         "type": "number"
+        },
+        "trailing": {
+         "type": "boolean"
+        },
+        "swapped": {
+         "type": "boolean"
+        },
+        "toeLead": {
+         "const": "branch"
+        },
+        "lifespan": {
+         "$ref": "#/$defs/Lifespan"
+        },
+        "mainRadius": {
+         "type": [
+          "number",
+          "null"
+         ]
+        },
+        "mainRadiusEnd": {
+         "type": [
+          "number",
+          "null"
+         ]
+        },
+        "pad": {},
+        "ports": {
+         "type": "object",
+         "additionalProperties": false,
+         "patternProperties": {
+          "^(A|B|B1|B2|C|D)$": {
+           "oneOf": [
+            {
+             "$ref": "#/$defs/TrackEnd"
+            },
+            {
+             "type": "null"
+            }
+           ]
+          }
+         }
+        }
+       }
+      },
+      "Platform": {
+       "type": "object",
+       "required": [
+        "id",
+        "at"
+       ],
+       "additionalProperties": false,
+       "properties": {
+        "id": {
+         "$ref": "#/$defs/Id"
+        },
+        "at": {
+         "$ref": "#/$defs/TrackRange"
+        },
+        "frontOffset": {
+         "type": "number"
+        },
+        "backOffset": {
+         "type": "number"
+        },
+        "height": {
+         "type": "number"
+        },
+        "operationalPoint": {
+         "$ref": "#/$defs/Ref",
+         "x-target": "core.operationalPoints"
+        },
+        "lifespan": {
+         "$ref": "#/$defs/Lifespan"
+        }
+       }
+      },
+      "EndMark": {
+       "description": "A buffer stop or the boundary of the planning area at a free track end.",
+       "type": "object",
+       "required": [
+        "id",
+        "kind",
+        "at"
+       ],
+       "additionalProperties": false,
+       "properties": {
+        "id": {
+         "$ref": "#/$defs/Id"
+        },
+        "kind": {
+         "enum": [
+          "buffer_stop",
+          "boundary"
+         ]
+        },
+        "at": {
+         "$ref": "#/$defs/TrackEnd"
+        },
+        "type": {
+         "type": [
+          "integer",
+          "string"
+         ]
+        },
+        "brakeLength": {
+         "type": "number"
+        },
+        "lifespan": {
+         "$ref": "#/$defs/Lifespan"
+        }
+       }
+      },
+      "KmLine": {
+       "description": "Foreign reference data: the stretch of a DB line around the project, in WGS84, the third value of each point its kilometrage [m].",
+       "type": "object",
+       "required": [
+        "id",
+        "lineNumber",
+        "runs"
+       ],
+       "additionalProperties": false,
+       "properties": {
+        "id": {
+         "$ref": "#/$defs/Id"
+        },
+        "lineNumber": {
+         "$ref": "#/$defs/Label"
+        },
+        "crs": {
+         "const": "EPSG:4326"
+        },
+        "clip": {
+         "type": "array",
+         "items": {
+          "type": "number"
+         },
+         "minItems": 4,
+         "maxItems": 4
+        },
+        "runs": {
+         "type": "array",
+         "items": {
+          "type": "array",
+          "items": {
+           "type": "array",
+           "items": {
+            "type": "number"
+           },
+           "minItems": 3,
+           "maxItems": 3
+          }
+         }
+        },
+        "source": {
+         "$ref": "#/$defs/Text",
+         "description": "The import a line was taken from (mdb, vermesn), kept instead of the shipped one."
+        }
+       }
+      },
+      "OperationalPoint": {
+       "description": "A station, halt or other operational point of the register: its identity. Codes are attributes, stated once they exist; boundaries belong to signalling (R10).",
+       "type": "object",
+       "required": [
+        "id"
+       ],
+       "anyOf": [
+        {
+         "required": [
+          "name"
+         ]
+        },
+        {
+         "required": [
+          "rl100"
+         ]
+        },
+        {
+         "required": [
+          "uic"
+         ]
+        }
+       ],
+       "additionalProperties": false,
+       "properties": {
+        "id": {
+         "$ref": "#/$defs/Id"
+        },
+        "name": {
+         "$ref": "#/$defs/Text"
+        },
+        "rl100": {
+         "$ref": "#/$defs/Text"
+        },
+        "uic": {
+         "$ref": "#/$defs/Label"
+        }
+       }
+      }
+     }
+    },
+    "sha256:b2280dcf6cfe779e148b6c402ac46eb4ff1e8d96b55e6e3abcb370ef48ff1f1b": {
+     "$schema": "https://json-schema.org/draft/2020-12/schema",
+     "$id": "layout",
+     "title": "Rail-Data-Core, domain layout 1.0",
+     "description": "What only the layout tool needs: named runs of tracks, measured axes traced in point clouds, reference axes from surveys, the plan header and the project picture. Depends on core; its references go into the core only. Bulk point arrays are blobs, named by their hash (S-R2).",
+     "type": "object",
+     "required": [
+      "fields",
+      "collections"
+     ],
+     "additionalProperties": false,
+     "properties": {
+      "fields": {
+       "$ref": "#/$defs/Fields"
+      },
+      "collections": {
+       "type": "object",
+       "required": [
+        "trackPaths",
+        "axisSurveys",
+        "referenceAxes"
+       ],
+       "additionalProperties": false,
+       "properties": {
+        "trackPaths": {
+         "type": "array",
+         "items": {
+          "$ref": "#/$defs/NamedTrackPath"
+         }
+        },
+        "axisSurveys": {
+         "type": "array",
+         "items": {
+          "$ref": "#/$defs/AxisSurvey"
+         }
+        },
+        "referenceAxes": {
+         "type": "array",
+         "items": {
+          "$ref": "#/$defs/ReferenceAxis"
+         }
+        }
+       }
+      }
+     },
+     "$defs": {
+      "BlobRef": {
+       "description": "A bulk array kept as a blob of its own: the SHA-256 of its canonical JSON.",
+       "type": "string",
+       "pattern": "^sha256:[0-9a-f]{64}$"
+      },
+      "Fields": {
+       "type": "object",
+       "additionalProperties": false,
+       "properties": {
+        "planHeader": {
+         "type": "object",
+         "description": "The editable title block of the plan export."
+        },
+        "image": {
+         "type": "string",
+         "description": "The project picture as a data URL, where a file or a device keeps it."
+        },
+        "imageHash": {
+         "type": "string",
+         "description": "The project picture as a blob on the server, by its SHA-256."
+        },
+        "osrd": {
+         "type": "object",
+         "description": "RailJSON objects the layout tool does not model, handed back on export."
+        }
+       }
+      },
+      "NamedTrackPath": {
+       "description": "A named run of tracks (a `route` in the Open-Layout-Tool; the bare word is reserved for the signalling route).",
+       "type": "object",
+       "required": [
+        "id",
+        "path"
+       ],
+       "additionalProperties": false,
+       "properties": {
+        "id": {
+         "$ref": "core#/$defs/Id"
+        },
+        "name": {
+         "$ref": "core#/$defs/Text"
+        },
+        "path": {
+         "$ref": "core#/$defs/TrackPath"
+        }
+       }
+      },
+      "AxisSurvey": {
+       "description": "A measured track axis traced in point clouds, in a plane of its own; its points are whole millimetres in parallel arrays, a blob.",
+       "type": "object",
+       "required": [
+        "id",
+        "epsg",
+        "points"
+       ],
+       "additionalProperties": false,
+       "properties": {
+        "id": {
+         "$ref": "core#/$defs/Id"
+        },
+        "name": {
+         "$ref": "core#/$defs/Text"
+        },
+        "epsg": {
+         "$ref": "core#/$defs/Epsg"
+        },
+        "rail": {
+         "type": "string"
+        },
+        "guide": {
+         "type": "object",
+         "required": [
+          "kind"
+         ],
+         "additionalProperties": false,
+         "properties": {
+          "kind": {
+           "enum": [
+            "track",
+            "line"
+           ]
+          },
+          "trackId": {
+           "$ref": "core#/$defs/Ref",
+           "x-target": "core.tracks"
+          }
+         }
+        },
+        "cloudNames": {
+         "type": "array",
+         "items": {
+          "type": "string"
+         }
+        },
+        "cloudRefs": {
+         "type": "array"
+        },
+        "createdAt": {
+         "$ref": "core#/$defs/Text"
+        },
+        "step": {
+         "type": "number"
+        },
+        "gaps": {
+         "type": "array",
+         "items": {
+          "type": "object",
+          "required": [
+           "from",
+           "to"
+          ],
+          "additionalProperties": false,
+          "properties": {
+           "from": {
+            "type": "number"
+           },
+           "to": {
+            "type": "number"
+           }
+          }
+         }
+        },
+        "points": {
+         "$ref": "#/$defs/BlobRef"
+        }
+       }
+      },
+      "ReferenceAxis": {
+       "description": "The axis of a surveyed track as points every centimetre (Bestandsachse); its points are a blob.",
+       "type": "object",
+       "required": [
+        "id",
+        "epsg",
+        "points"
+       ],
+       "additionalProperties": false,
+       "properties": {
+        "id": {
+         "$ref": "core#/$defs/Id"
+        },
+        "name": {
+         "$ref": "core#/$defs/Text"
+        },
+        "epsg": {
+         "$ref": "core#/$defs/Epsg"
+        },
+        "heightEpsg": {
+         "oneOf": [
+          {
+           "$ref": "core#/$defs/Epsg"
+          },
+          {
+           "type": "null"
+          }
+         ]
+        },
+        "source": {
+         "type": "object"
+        },
+        "points": {
+         "$ref": "#/$defs/BlobRef"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "valid": true,
+  "manifest": {
+   "domains": {
+    "core": {
+     "version": "1.0",
+     "schema": "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6",
+     "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
+     "collections": {
+      "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
+      "kmLines": "sha256:7a0eb47d89ffa24b1917d39c8eab8707f820c9b6bceb81edf5dddcf52ead6457",
+      "operationalPoints": "sha256:6a6eb5b21cdb3c39939da851281a7a8b9c968d36cea93d44d383d292b33beb34",
+      "platforms": "sha256:1ab2e26c887a12abb8b4fdfaf22b1e56ec9406f85b66f80155a57a0c1aa07910",
+      "switches": "sha256:2b44461e52775cdabdc9c02e42115f9441b311b4240d09dca153d5683a4a4da5",
+      "tracks": "sha256:31b7b45b2668805ff32a84d8ebc4586e230ae9152364edac5bc643ef097a075a"
+     }
+    },
+    "layout": {
+     "version": "1.0",
+     "schema": "sha256:b2280dcf6cfe779e148b6c402ac46eb4ff1e8d96b55e6e3abcb370ef48ff1f1b",
+     "dependsOn": [
+      "core"
+     ],
+     "fields": "sha256:8d9ae941998100a45679076ed67feb55eaf5c06dc028c5ff9396bbe93de06ffb",
+     "collections": {
+      "axisSurveys": "sha256:d7c72a86fce12420e2a646aa0087a31572d6db6bedd895b31181daeacff533cc",
+      "referenceAxes": "sha256:04906ea395d28e3d03af2cc45d7057c92d832faaeb875b5fb0ba3c9c40047a3e",
+      "trackPaths": "sha256:b6c705b568655eb210b5794b4ce86a95e2f3da8b51f5c298057698fb02b5db8f"
+     }
+    }
+   }
+  },
+  "hash": "sha256:96171c3fe7794d2f789c98c7ccdada83bd39ab8af186cd1258e13740a4ee1d3a"
+ },
+ {
+  "name": "another format",
+  "document": {
+   "format": "oltjson",
+   "domains": {
+    "core": {
+     "version": "1.0",
+     "schema": "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6",
+     "fields": {
+      "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
+      "title": "Halle-Trotha",
+      "description": "vectors",
+      "creator": "core",
+      "createdAt": "2026-10-29T13:21:07.630Z",
+      "crsSystem": "ETRS89_UTM",
+      "lineCategory": "secondary",
+      "gaugeProfile": "hauptgleis",
+      "stages": [
+       {
+        "id": "b2a40cac-c53f-8ee2-b693-61aab009da16"
+       },
+       {
+        "id": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+       }
+      ]
+     },
+     "collections": {
+      "tracks": [
+       {
+        "id": "t1",
+        "name": "6050.001",
+        "trackType": 1,
+        "lineNumber": 6050,
+        "side": 1,
+        "epsg": 25832,
+        "heightEpsg": 7837,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500000,
+           5700000
+          ],
+          "endNode": [
+           500100,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 100,
+          "speed": 80
+         },
+         {
+          "elementType": 0,
+          "startNode": [
+           500100,
+           5700000
+          ],
+          "endNode": [
+           500250,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 150,
+          "cant": 0,
+          "role": "follow"
+         }
+        ],
+        "heights": [
+         {
+          "station": 0,
+          "z": 108.55
+         },
+         {
+          "station": 250,
+          "z": 109.1,
+          "rv": 15000
+         }
+        ]
+       },
+       {
+        "id": "t2",
+        "name": "1",
+        "trackType": 2,
+        "trackNumber": "1",
+        "epsg": 25832,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500250,
+           5700000
+          ],
+          "endNode": [
+           500400,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 150
+         }
+        ],
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "lifespan": {
+         "from": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+        }
+       },
+       {
+        "id": "t3",
+        "name": "alt",
+        "epsg": 25832,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500400,
+           5700000
+          ],
+          "endNode": [
+           500450,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 50
+         }
+        ],
+        "lifespan": {
+         "to": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+        }
+       }
+      ],
+      "switches": [
+       {
+        "id": "w1",
+        "kind": "link",
+        "formVersion": 1,
+        "name": "link.001",
+        "ports": {
+         "A": {
+          "trackId": "t1",
+          "endpoint": "END"
+         },
+         "B": {
+          "trackId": "t2",
+          "endpoint": "BEGIN"
+         }
+        }
+       }
+      ],
+      "platforms": [
+       {
+        "at": {
+         "anchor": "station",
+         "trackId": "t2",
+         "startStation": 10,
+         "endStation": 140,
+         "side": "left"
+        },
+        "id": "p1",
+        "frontOffset": 1.67,
+        "height": 550,
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+       }
+      ],
+      "endMarks": [
+       {
+        "id": "e1",
+        "kind": "buffer_stop",
+        "type": 4,
+        "brakeLength": 4,
+        "at": {
+         "trackId": "t3",
+         "endpoint": "END"
+        }
+       }
+      ],
+      "kmLines": [
+       {
+        "id": "km-6050",
+        "lineNumber": 6050,
+        "crs": "EPSG:4326",
+        "clip": [
+         11.9,
+         51.5,
+         12,
+         51.6
+        ],
+        "runs": [
+         [
+          [
+           11.95,
+           51.55,
+           1200.5
+          ],
+          [
+           11.96,
+           51.56,
+           1300
+          ]
+         ]
+        ]
+       }
+      ],
+      "operationalPoints": [
+       {
+        "id": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "name": "Halle-Trotha",
+        "rl100": "LHT",
+        "uic": "8023111"
+       }
+      ]
+     }
+    },
+    "layout": {
+     "version": "1.0",
+     "schema": "sha256:b2280dcf6cfe779e148b6c402ac46eb4ff1e8d96b55e6e3abcb370ef48ff1f1b",
+     "dependsOn": [
+      "core"
+     ],
+     "fields": {
+      "planHeader": {
+       "subtitle": "Lageplan"
+      },
+      "imageHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+     },
+     "collections": {
+      "trackPaths": [
+       {
+        "id": "r1",
+        "name": "Gleis 1 durch",
+        "path": {
+         "trackIds": [
+          "t1",
+          "t2"
+         ]
+        }
+       }
+      ],
+      "axisSurveys": [
+       {
+        "id": "a1",
+        "name": "Trace",
+        "epsg": 25832,
+        "rail": "54E4",
+        "guide": {
+         "kind": "track",
+         "trackId": "t1"
+        },
+        "cloudNames": [
+         "W0"
+        ],
+        "createdAt": "2026-10-29T13:21:07.630Z",
+        "step": 0.5,
+        "gaps": [],
+        "points": "sha256:b4aa72abe9415d526401fd1bf2a5b35429b0f47eb23781632212aa9e77710d48"
+       }
+      ],
+      "referenceAxes": [
+       {
+        "id": "x1",
+        "name": "Bestand",
+        "epsg": 25832,
+        "heightEpsg": null,
+        "source": {
+         "tra": "a.TRA",
+         "gra": null
+        },
+        "points": "sha256:55dda32d20595141bb76c28a3769eb9345e54af5adea57d111f73a0b63b52acf"
+       }
+      ]
+     }
+    }
+   },
+   "blobs": {
+    "sha256:b4aa72abe9415d526401fd1bf2a5b35429b0f47eb23781632212aa9e77710d48": {
+     "e0": 500000,
+     "n0": 5700000,
+     "z0": 108,
+     "st": [
+      0,
+      500
+     ],
+     "de": [
+      0,
+      500
+     ],
+     "dn": [
+      0,
+      0
+     ],
+     "zl": [
+      550,
+      560
+     ],
+     "zr": [
+      550,
+      561
+     ],
+     "ga": [
+      1435,
+      1436
+     ],
+     "q": [
+      1,
+      1
+     ]
+    },
+    "sha256:55dda32d20595141bb76c28a3769eb9345e54af5adea57d111f73a0b63b52acf": {
+     "s0": 0,
+     "step": 0.01,
+     "count": 3,
+     "e0": 500000,
+     "n0": 5700000,
+     "de": [
+      0,
+      10,
+      10
+     ],
+     "dn": [
+      0,
+      0,
+      0
+     ],
+     "z": null
+    }
+   }
+  },
+  "valid": false,
+  "code": "invalid_payload"
+ },
+ {
+  "name": "a domain version this build does not read",
+  "document": {
+   "format": "rail-across",
+   "domains": {
+    "core": {
+     "version": "2.0",
+     "schema": "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6",
+     "fields": {
+      "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
+      "title": "Halle-Trotha",
+      "description": "vectors",
+      "creator": "core",
+      "createdAt": "2026-10-29T13:21:07.630Z",
+      "crsSystem": "ETRS89_UTM",
+      "lineCategory": "secondary",
+      "gaugeProfile": "hauptgleis",
+      "stages": [
+       {
+        "id": "b2a40cac-c53f-8ee2-b693-61aab009da16"
+       },
+       {
+        "id": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+       }
+      ]
+     },
+     "collections": {
+      "tracks": [
+       {
+        "id": "t1",
+        "name": "6050.001",
+        "trackType": 1,
+        "lineNumber": 6050,
+        "side": 1,
+        "epsg": 25832,
+        "heightEpsg": 7837,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500000,
+           5700000
+          ],
+          "endNode": [
+           500100,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 100,
+          "speed": 80
+         },
+         {
+          "elementType": 0,
+          "startNode": [
+           500100,
+           5700000
+          ],
+          "endNode": [
+           500250,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 150,
+          "cant": 0,
+          "role": "follow"
+         }
+        ],
+        "heights": [
+         {
+          "station": 0,
+          "z": 108.55
+         },
+         {
+          "station": 250,
+          "z": 109.1,
+          "rv": 15000
+         }
+        ]
+       },
+       {
+        "id": "t2",
+        "name": "1",
+        "trackType": 2,
+        "trackNumber": "1",
+        "epsg": 25832,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500250,
+           5700000
+          ],
+          "endNode": [
+           500400,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 150
+         }
+        ],
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "lifespan": {
+         "from": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+        }
+       },
+       {
+        "id": "t3",
+        "name": "alt",
+        "epsg": 25832,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500400,
+           5700000
+          ],
+          "endNode": [
+           500450,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 50
+         }
+        ],
+        "lifespan": {
+         "to": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+        }
+       }
+      ],
+      "switches": [
+       {
+        "id": "w1",
+        "kind": "link",
+        "formVersion": 1,
+        "name": "link.001",
+        "ports": {
+         "A": {
+          "trackId": "t1",
+          "endpoint": "END"
+         },
+         "B": {
+          "trackId": "t2",
+          "endpoint": "BEGIN"
+         }
+        }
+       }
+      ],
+      "platforms": [
+       {
+        "at": {
+         "anchor": "station",
+         "trackId": "t2",
+         "startStation": 10,
+         "endStation": 140,
+         "side": "left"
+        },
+        "id": "p1",
+        "frontOffset": 1.67,
+        "height": 550,
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+       }
+      ],
+      "endMarks": [
+       {
+        "id": "e1",
+        "kind": "buffer_stop",
+        "type": 4,
+        "brakeLength": 4,
+        "at": {
+         "trackId": "t3",
+         "endpoint": "END"
+        }
+       }
+      ],
+      "kmLines": [
+       {
+        "id": "km-6050",
+        "lineNumber": 6050,
+        "crs": "EPSG:4326",
+        "clip": [
+         11.9,
+         51.5,
+         12,
+         51.6
+        ],
+        "runs": [
+         [
+          [
+           11.95,
+           51.55,
+           1200.5
+          ],
+          [
+           11.96,
+           51.56,
+           1300
+          ]
+         ]
+        ]
+       }
+      ],
+      "operationalPoints": [
+       {
+        "id": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "name": "Halle-Trotha",
+        "rl100": "LHT",
+        "uic": "8023111"
+       }
+      ]
+     }
+    },
+    "layout": {
+     "version": "1.0",
+     "schema": "sha256:b2280dcf6cfe779e148b6c402ac46eb4ff1e8d96b55e6e3abcb370ef48ff1f1b",
+     "dependsOn": [
+      "core"
+     ],
+     "fields": {
+      "planHeader": {
+       "subtitle": "Lageplan"
+      },
+      "imageHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+     },
+     "collections": {
+      "trackPaths": [
+       {
+        "id": "r1",
+        "name": "Gleis 1 durch",
+        "path": {
+         "trackIds": [
+          "t1",
+          "t2"
+         ]
+        }
+       }
+      ],
+      "axisSurveys": [
+       {
+        "id": "a1",
+        "name": "Trace",
+        "epsg": 25832,
+        "rail": "54E4",
+        "guide": {
+         "kind": "track",
+         "trackId": "t1"
+        },
+        "cloudNames": [
+         "W0"
+        ],
+        "createdAt": "2026-10-29T13:21:07.630Z",
+        "step": 0.5,
+        "gaps": [],
+        "points": "sha256:b4aa72abe9415d526401fd1bf2a5b35429b0f47eb23781632212aa9e77710d48"
+       }
+      ],
+      "referenceAxes": [
+       {
+        "id": "x1",
+        "name": "Bestand",
+        "epsg": 25832,
+        "heightEpsg": null,
+        "source": {
+         "tra": "a.TRA",
+         "gra": null
+        },
+        "points": "sha256:55dda32d20595141bb76c28a3769eb9345e54af5adea57d111f73a0b63b52acf"
+       }
+      ]
+     }
+    }
+   },
+   "blobs": {
+    "sha256:b4aa72abe9415d526401fd1bf2a5b35429b0f47eb23781632212aa9e77710d48": {
+     "e0": 500000,
+     "n0": 5700000,
+     "z0": 108,
+     "st": [
+      0,
+      500
+     ],
+     "de": [
+      0,
+      500
+     ],
+     "dn": [
+      0,
+      0
+     ],
+     "zl": [
+      550,
+      560
+     ],
+     "zr": [
+      550,
+      561
+     ],
+     "ga": [
+      1435,
+      1436
+     ],
+     "q": [
+      1,
+      1
+     ]
+    },
+    "sha256:55dda32d20595141bb76c28a3769eb9345e54af5adea57d111f73a0b63b52acf": {
+     "s0": 0,
+     "step": 0.01,
+     "count": 3,
+     "e0": 500000,
+     "n0": 5700000,
+     "de": [
+      0,
+      10,
+      10
+     ],
+     "dn": [
+      0,
+      0,
+      0
+     ],
+     "z": null
+    }
+   }
+  },
+  "valid": false,
+  "code": "unsupported_version"
+ },
+ {
+  "name": "a domain this build does not read",
+  "document": {
+   "format": "rail-across",
+   "domains": {
+    "core": {
+     "version": "1.0",
+     "schema": "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6",
+     "fields": {
+      "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
+      "title": "Halle-Trotha",
+      "description": "vectors",
+      "creator": "core",
+      "createdAt": "2026-10-29T13:21:07.630Z",
+      "crsSystem": "ETRS89_UTM",
+      "lineCategory": "secondary",
+      "gaugeProfile": "hauptgleis",
+      "stages": [
+       {
+        "id": "b2a40cac-c53f-8ee2-b693-61aab009da16"
+       },
+       {
+        "id": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+       }
+      ]
+     },
+     "collections": {
+      "tracks": [
+       {
+        "id": "t1",
+        "name": "6050.001",
+        "trackType": 1,
+        "lineNumber": 6050,
+        "side": 1,
+        "epsg": 25832,
+        "heightEpsg": 7837,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500000,
+           5700000
+          ],
+          "endNode": [
+           500100,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 100,
+          "speed": 80
+         },
+         {
+          "elementType": 0,
+          "startNode": [
+           500100,
+           5700000
+          ],
+          "endNode": [
+           500250,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 150,
+          "cant": 0,
+          "role": "follow"
+         }
+        ],
+        "heights": [
+         {
+          "station": 0,
+          "z": 108.55
+         },
+         {
+          "station": 250,
+          "z": 109.1,
+          "rv": 15000
+         }
+        ]
+       },
+       {
+        "id": "t2",
+        "name": "1",
+        "trackType": 2,
+        "trackNumber": "1",
+        "epsg": 25832,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500250,
+           5700000
+          ],
+          "endNode": [
+           500400,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 150
+         }
+        ],
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "lifespan": {
+         "from": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+        }
+       },
+       {
+        "id": "t3",
+        "name": "alt",
+        "epsg": 25832,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500400,
+           5700000
+          ],
+          "endNode": [
+           500450,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 50
+         }
+        ],
+        "lifespan": {
+         "to": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+        }
+       }
+      ],
+      "switches": [
+       {
+        "id": "w1",
+        "kind": "link",
+        "formVersion": 1,
+        "name": "link.001",
+        "ports": {
+         "A": {
+          "trackId": "t1",
+          "endpoint": "END"
+         },
+         "B": {
+          "trackId": "t2",
+          "endpoint": "BEGIN"
+         }
+        }
+       }
+      ],
+      "platforms": [
+       {
+        "at": {
+         "anchor": "station",
+         "trackId": "t2",
+         "startStation": 10,
+         "endStation": 140,
+         "side": "left"
+        },
+        "id": "p1",
+        "frontOffset": 1.67,
+        "height": 550,
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+       }
+      ],
+      "endMarks": [
+       {
+        "id": "e1",
+        "kind": "buffer_stop",
+        "type": 4,
+        "brakeLength": 4,
+        "at": {
+         "trackId": "t3",
+         "endpoint": "END"
+        }
+       }
+      ],
+      "kmLines": [
+       {
+        "id": "km-6050",
+        "lineNumber": 6050,
+        "crs": "EPSG:4326",
+        "clip": [
+         11.9,
+         51.5,
+         12,
+         51.6
+        ],
+        "runs": [
+         [
+          [
+           11.95,
+           51.55,
+           1200.5
+          ],
+          [
+           11.96,
+           51.56,
+           1300
+          ]
+         ]
+        ]
+       }
+      ],
+      "operationalPoints": [
+       {
+        "id": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "name": "Halle-Trotha",
+        "rl100": "LHT",
+        "uic": "8023111"
+       }
+      ]
+     }
+    },
+    "layout": {
+     "version": "1.0",
+     "schema": "sha256:b2280dcf6cfe779e148b6c402ac46eb4ff1e8d96b55e6e3abcb370ef48ff1f1b",
+     "dependsOn": [
+      "core"
+     ],
+     "fields": {
+      "planHeader": {
+       "subtitle": "Lageplan"
+      },
+      "imageHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+     },
+     "collections": {
+      "trackPaths": [
+       {
+        "id": "r1",
+        "name": "Gleis 1 durch",
+        "path": {
+         "trackIds": [
+          "t1",
+          "t2"
+         ]
+        }
+       }
+      ],
+      "axisSurveys": [
+       {
+        "id": "a1",
+        "name": "Trace",
+        "epsg": 25832,
+        "rail": "54E4",
+        "guide": {
+         "kind": "track",
+         "trackId": "t1"
+        },
+        "cloudNames": [
+         "W0"
+        ],
+        "createdAt": "2026-10-29T13:21:07.630Z",
+        "step": 0.5,
+        "gaps": [],
+        "points": "sha256:b4aa72abe9415d526401fd1bf2a5b35429b0f47eb23781632212aa9e77710d48"
+       }
+      ],
+      "referenceAxes": [
+       {
+        "id": "x1",
+        "name": "Bestand",
+        "epsg": 25832,
+        "heightEpsg": null,
+        "source": {
+         "tra": "a.TRA",
+         "gra": null
+        },
+        "points": "sha256:55dda32d20595141bb76c28a3769eb9345e54af5adea57d111f73a0b63b52acf"
+       }
+      ]
+     }
+    },
+    "signalling": {
+     "version": "0.3",
+     "schema": "sha256:b2280dcf6cfe779e148b6c402ac46eb4ff1e8d96b55e6e3abcb370ef48ff1f1b",
+     "dependsOn": [
+      "core"
+     ],
+     "fields": {
+      "planHeader": {
+       "subtitle": "Lageplan"
+      },
+      "imageHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+     },
+     "collections": {
+      "trackPaths": [
+       {
+        "id": "r1",
+        "name": "Gleis 1 durch",
+        "path": {
+         "trackIds": [
+          "t1",
+          "t2"
+         ]
+        }
+       }
+      ],
+      "axisSurveys": [
+       {
+        "id": "a1",
+        "name": "Trace",
+        "epsg": 25832,
+        "rail": "54E4",
+        "guide": {
+         "kind": "track",
+         "trackId": "t1"
+        },
+        "cloudNames": [
+         "W0"
+        ],
+        "createdAt": "2026-10-29T13:21:07.630Z",
+        "step": 0.5,
+        "gaps": [],
+        "points": "sha256:b4aa72abe9415d526401fd1bf2a5b35429b0f47eb23781632212aa9e77710d48"
+       }
+      ],
+      "referenceAxes": [
+       {
+        "id": "x1",
+        "name": "Bestand",
+        "epsg": 25832,
+        "heightEpsg": null,
+        "source": {
+         "tra": "a.TRA",
+         "gra": null
+        },
+        "points": "sha256:55dda32d20595141bb76c28a3769eb9345e54af5adea57d111f73a0b63b52acf"
+       }
+      ]
+     }
+    }
+   },
+   "blobs": {
+    "sha256:b4aa72abe9415d526401fd1bf2a5b35429b0f47eb23781632212aa9e77710d48": {
+     "e0": 500000,
+     "n0": 5700000,
+     "z0": 108,
+     "st": [
+      0,
+      500
+     ],
+     "de": [
+      0,
+      500
+     ],
+     "dn": [
+      0,
+      0
+     ],
+     "zl": [
+      550,
+      560
+     ],
+     "zr": [
+      550,
+      561
+     ],
+     "ga": [
+      1435,
+      1436
+     ],
+     "q": [
+      1,
+      1
+     ]
+    },
+    "sha256:55dda32d20595141bb76c28a3769eb9345e54af5adea57d111f73a0b63b52acf": {
+     "s0": 0,
+     "step": 0.01,
+     "count": 3,
+     "e0": 500000,
+     "n0": 5700000,
+     "de": [
+      0,
+      10,
+      10
+     ],
+     "dn": [
+      0,
+      0,
+      0
+     ],
+     "z": null
+    }
+   }
+  },
+  "valid": false,
+  "code": "unsupported_version"
+ },
+ {
+  "name": "a schema hash that is not the version's",
+  "document": {
+   "format": "rail-across",
+   "domains": {
+    "core": {
+     "version": "1.0",
+     "schema": "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6",
+     "fields": {
+      "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
+      "title": "Halle-Trotha",
+      "description": "vectors",
+      "creator": "core",
+      "createdAt": "2026-10-29T13:21:07.630Z",
+      "crsSystem": "ETRS89_UTM",
+      "lineCategory": "secondary",
+      "gaugeProfile": "hauptgleis",
+      "stages": [
+       {
+        "id": "b2a40cac-c53f-8ee2-b693-61aab009da16"
+       },
+       {
+        "id": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+       }
+      ]
+     },
+     "collections": {
+      "tracks": [
+       {
+        "id": "t1",
+        "name": "6050.001",
+        "trackType": 1,
+        "lineNumber": 6050,
+        "side": 1,
+        "epsg": 25832,
+        "heightEpsg": 7837,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500000,
+           5700000
+          ],
+          "endNode": [
+           500100,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 100,
+          "speed": 80
+         },
+         {
+          "elementType": 0,
+          "startNode": [
+           500100,
+           5700000
+          ],
+          "endNode": [
+           500250,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 150,
+          "cant": 0,
+          "role": "follow"
+         }
+        ],
+        "heights": [
+         {
+          "station": 0,
+          "z": 108.55
+         },
+         {
+          "station": 250,
+          "z": 109.1,
+          "rv": 15000
+         }
+        ]
+       },
+       {
+        "id": "t2",
+        "name": "1",
+        "trackType": 2,
+        "trackNumber": "1",
+        "epsg": 25832,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500250,
+           5700000
+          ],
+          "endNode": [
+           500400,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 150
+         }
+        ],
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "lifespan": {
+         "from": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+        }
+       },
+       {
+        "id": "t3",
+        "name": "alt",
+        "epsg": 25832,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500400,
+           5700000
+          ],
+          "endNode": [
+           500450,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 50
+         }
+        ],
+        "lifespan": {
+         "to": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+        }
+       }
+      ],
+      "switches": [
+       {
+        "id": "w1",
+        "kind": "link",
+        "formVersion": 1,
+        "name": "link.001",
+        "ports": {
+         "A": {
+          "trackId": "t1",
+          "endpoint": "END"
+         },
+         "B": {
+          "trackId": "t2",
+          "endpoint": "BEGIN"
+         }
+        }
+       }
+      ],
+      "platforms": [
+       {
+        "at": {
+         "anchor": "station",
+         "trackId": "t2",
+         "startStation": 10,
+         "endStation": 140,
+         "side": "left"
+        },
+        "id": "p1",
+        "frontOffset": 1.67,
+        "height": 550,
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+       }
+      ],
+      "endMarks": [
+       {
+        "id": "e1",
+        "kind": "buffer_stop",
+        "type": 4,
+        "brakeLength": 4,
+        "at": {
+         "trackId": "t3",
+         "endpoint": "END"
+        }
+       }
+      ],
+      "kmLines": [
+       {
+        "id": "km-6050",
+        "lineNumber": 6050,
+        "crs": "EPSG:4326",
+        "clip": [
+         11.9,
+         51.5,
+         12,
+         51.6
+        ],
+        "runs": [
+         [
+          [
+           11.95,
+           51.55,
+           1200.5
+          ],
+          [
+           11.96,
+           51.56,
+           1300
+          ]
+         ]
+        ]
+       }
+      ],
+      "operationalPoints": [
+       {
+        "id": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "name": "Halle-Trotha",
+        "rl100": "LHT",
+        "uic": "8023111"
+       }
+      ]
+     }
+    },
+    "layout": {
+     "version": "1.0",
+     "schema": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+     "dependsOn": [
+      "core"
+     ],
+     "fields": {
+      "planHeader": {
+       "subtitle": "Lageplan"
+      },
+      "imageHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+     },
+     "collections": {
+      "trackPaths": [
+       {
+        "id": "r1",
+        "name": "Gleis 1 durch",
+        "path": {
+         "trackIds": [
+          "t1",
+          "t2"
+         ]
+        }
+       }
+      ],
+      "axisSurveys": [
+       {
+        "id": "a1",
+        "name": "Trace",
+        "epsg": 25832,
+        "rail": "54E4",
+        "guide": {
+         "kind": "track",
+         "trackId": "t1"
+        },
+        "cloudNames": [
+         "W0"
+        ],
+        "createdAt": "2026-10-29T13:21:07.630Z",
+        "step": 0.5,
+        "gaps": [],
+        "points": "sha256:b4aa72abe9415d526401fd1bf2a5b35429b0f47eb23781632212aa9e77710d48"
+       }
+      ],
+      "referenceAxes": [
+       {
+        "id": "x1",
+        "name": "Bestand",
+        "epsg": 25832,
+        "heightEpsg": null,
+        "source": {
+         "tra": "a.TRA",
+         "gra": null
+        },
+        "points": "sha256:55dda32d20595141bb76c28a3769eb9345e54af5adea57d111f73a0b63b52acf"
+       }
+      ]
+     }
+    }
+   },
+   "blobs": {
+    "sha256:b4aa72abe9415d526401fd1bf2a5b35429b0f47eb23781632212aa9e77710d48": {
+     "e0": 500000,
+     "n0": 5700000,
+     "z0": 108,
+     "st": [
+      0,
+      500
+     ],
+     "de": [
+      0,
+      500
+     ],
+     "dn": [
+      0,
+      0
+     ],
+     "zl": [
+      550,
+      560
+     ],
+     "zr": [
+      550,
+      561
+     ],
+     "ga": [
+      1435,
+      1436
+     ],
+     "q": [
+      1,
+      1
+     ]
+    },
+    "sha256:55dda32d20595141bb76c28a3769eb9345e54af5adea57d111f73a0b63b52acf": {
+     "s0": 0,
+     "step": 0.01,
+     "count": 3,
+     "e0": 500000,
+     "n0": 5700000,
+     "de": [
+      0,
+      10,
+      10
+     ],
+     "dn": [
+      0,
+      0,
+      0
+     ],
+     "z": null
+    }
+   }
+  },
+  "valid": false,
+  "code": "invalid_payload"
+ },
+ {
+  "name": "a carried schema under another hash",
+  "document": {
+   "format": "rail-across",
+   "domains": {
+    "core": {
+     "version": "1.0",
+     "schema": "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6",
+     "fields": {
+      "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
+      "title": "Halle-Trotha",
+      "description": "vectors",
+      "creator": "core",
+      "createdAt": "2026-10-29T13:21:07.630Z",
+      "crsSystem": "ETRS89_UTM",
+      "lineCategory": "secondary",
+      "gaugeProfile": "hauptgleis",
+      "stages": [
+       {
+        "id": "b2a40cac-c53f-8ee2-b693-61aab009da16"
+       },
+       {
+        "id": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+       }
+      ]
+     },
+     "collections": {
+      "tracks": [
+       {
+        "id": "t1",
+        "name": "6050.001",
+        "trackType": 1,
+        "lineNumber": 6050,
+        "side": 1,
+        "epsg": 25832,
+        "heightEpsg": 7837,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500000,
+           5700000
+          ],
+          "endNode": [
+           500100,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 100,
+          "speed": 80
+         },
+         {
+          "elementType": 0,
+          "startNode": [
+           500100,
+           5700000
+          ],
+          "endNode": [
+           500250,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 150,
+          "cant": 0,
+          "role": "follow"
+         }
+        ],
+        "heights": [
+         {
+          "station": 0,
+          "z": 108.55
+         },
+         {
+          "station": 250,
+          "z": 109.1,
+          "rv": 15000
+         }
+        ]
+       },
+       {
+        "id": "t2",
+        "name": "1",
+        "trackType": 2,
+        "trackNumber": "1",
+        "epsg": 25832,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500250,
+           5700000
+          ],
+          "endNode": [
+           500400,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 150
+         }
+        ],
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "lifespan": {
+         "from": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+        }
+       },
+       {
+        "id": "t3",
+        "name": "alt",
+        "epsg": 25832,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500400,
+           5700000
+          ],
+          "endNode": [
+           500450,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 50
+         }
+        ],
+        "lifespan": {
+         "to": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+        }
+       }
+      ],
+      "switches": [
+       {
+        "id": "w1",
+        "kind": "link",
+        "formVersion": 1,
+        "name": "link.001",
+        "ports": {
+         "A": {
+          "trackId": "t1",
+          "endpoint": "END"
+         },
+         "B": {
+          "trackId": "t2",
+          "endpoint": "BEGIN"
+         }
+        }
+       }
+      ],
+      "platforms": [
+       {
+        "at": {
+         "anchor": "station",
+         "trackId": "t2",
+         "startStation": 10,
+         "endStation": 140,
+         "side": "left"
+        },
+        "id": "p1",
+        "frontOffset": 1.67,
+        "height": 550,
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+       }
+      ],
+      "endMarks": [
+       {
+        "id": "e1",
+        "kind": "buffer_stop",
+        "type": 4,
+        "brakeLength": 4,
+        "at": {
+         "trackId": "t3",
+         "endpoint": "END"
+        }
+       }
+      ],
+      "kmLines": [
+       {
+        "id": "km-6050",
+        "lineNumber": 6050,
+        "crs": "EPSG:4326",
+        "clip": [
+         11.9,
+         51.5,
+         12,
+         51.6
+        ],
+        "runs": [
+         [
+          [
+           11.95,
+           51.55,
+           1200.5
+          ],
+          [
+           11.96,
+           51.56,
+           1300
+          ]
+         ]
+        ]
+       }
+      ],
+      "operationalPoints": [
+       {
+        "id": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "name": "Halle-Trotha",
+        "rl100": "LHT",
+        "uic": "8023111"
+       }
+      ]
+     }
+    },
+    "layout": {
+     "version": "1.0",
+     "schema": "sha256:b2280dcf6cfe779e148b6c402ac46eb4ff1e8d96b55e6e3abcb370ef48ff1f1b",
+     "dependsOn": [
+      "core"
+     ],
+     "fields": {
+      "planHeader": {
+       "subtitle": "Lageplan"
+      },
+      "imageHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+     },
+     "collections": {
+      "trackPaths": [
+       {
+        "id": "r1",
+        "name": "Gleis 1 durch",
+        "path": {
+         "trackIds": [
+          "t1",
+          "t2"
+         ]
+        }
+       }
+      ],
+      "axisSurveys": [
+       {
+        "id": "a1",
+        "name": "Trace",
+        "epsg": 25832,
+        "rail": "54E4",
+        "guide": {
+         "kind": "track",
+         "trackId": "t1"
+        },
+        "cloudNames": [
+         "W0"
+        ],
+        "createdAt": "2026-10-29T13:21:07.630Z",
+        "step": 0.5,
+        "gaps": [],
+        "points": "sha256:b4aa72abe9415d526401fd1bf2a5b35429b0f47eb23781632212aa9e77710d48"
+       }
+      ],
+      "referenceAxes": [
+       {
+        "id": "x1",
+        "name": "Bestand",
+        "epsg": 25832,
+        "heightEpsg": null,
+        "source": {
+         "tra": "a.TRA",
+         "gra": null
+        },
+        "points": "sha256:55dda32d20595141bb76c28a3769eb9345e54af5adea57d111f73a0b63b52acf"
+       }
+      ]
+     }
+    }
+   },
+   "blobs": {
+    "sha256:b4aa72abe9415d526401fd1bf2a5b35429b0f47eb23781632212aa9e77710d48": {
+     "e0": 500000,
+     "n0": 5700000,
+     "z0": 108,
+     "st": [
+      0,
+      500
+     ],
+     "de": [
+      0,
+      500
+     ],
+     "dn": [
+      0,
+      0
+     ],
+     "zl": [
+      550,
+      560
+     ],
+     "zr": [
+      550,
+      561
+     ],
+     "ga": [
+      1435,
+      1436
+     ],
+     "q": [
+      1,
+      1
+     ]
+    },
+    "sha256:55dda32d20595141bb76c28a3769eb9345e54af5adea57d111f73a0b63b52acf": {
+     "s0": 0,
+     "step": 0.01,
+     "count": 3,
+     "e0": 500000,
+     "n0": 5700000,
+     "de": [
+      0,
+      10,
+      10
+     ],
+     "dn": [
+      0,
+      0,
+      0
+     ],
+     "z": null
+    }
+   },
+   "schemas": {
+    "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6": {
+     "$id": "core"
+    },
+    "sha256:b2280dcf6cfe779e148b6c402ac46eb4ff1e8d96b55e6e3abcb370ef48ff1f1b": {
+     "$schema": "https://json-schema.org/draft/2020-12/schema",
+     "$id": "layout",
+     "title": "Rail-Data-Core, domain layout 1.0",
+     "description": "What only the layout tool needs: named runs of tracks, measured axes traced in point clouds, reference axes from surveys, the plan header and the project picture. Depends on core; its references go into the core only. Bulk point arrays are blobs, named by their hash (S-R2).",
+     "type": "object",
+     "required": [
+      "fields",
+      "collections"
+     ],
+     "additionalProperties": false,
+     "properties": {
+      "fields": {
+       "$ref": "#/$defs/Fields"
+      },
+      "collections": {
+       "type": "object",
+       "required": [
+        "trackPaths",
+        "axisSurveys",
+        "referenceAxes"
+       ],
+       "additionalProperties": false,
+       "properties": {
+        "trackPaths": {
+         "type": "array",
+         "items": {
+          "$ref": "#/$defs/NamedTrackPath"
+         }
+        },
+        "axisSurveys": {
+         "type": "array",
+         "items": {
+          "$ref": "#/$defs/AxisSurvey"
+         }
+        },
+        "referenceAxes": {
+         "type": "array",
+         "items": {
+          "$ref": "#/$defs/ReferenceAxis"
+         }
+        }
+       }
+      }
+     },
+     "$defs": {
+      "BlobRef": {
+       "description": "A bulk array kept as a blob of its own: the SHA-256 of its canonical JSON.",
+       "type": "string",
+       "pattern": "^sha256:[0-9a-f]{64}$"
+      },
+      "Fields": {
+       "type": "object",
+       "additionalProperties": false,
+       "properties": {
+        "planHeader": {
+         "type": "object",
+         "description": "The editable title block of the plan export."
+        },
+        "image": {
+         "type": "string",
+         "description": "The project picture as a data URL, where a file or a device keeps it."
+        },
+        "imageHash": {
+         "type": "string",
+         "description": "The project picture as a blob on the server, by its SHA-256."
+        },
+        "osrd": {
+         "type": "object",
+         "description": "RailJSON objects the layout tool does not model, handed back on export."
+        }
+       }
+      },
+      "NamedTrackPath": {
+       "description": "A named run of tracks (a `route` in the Open-Layout-Tool; the bare word is reserved for the signalling route).",
+       "type": "object",
+       "required": [
+        "id",
+        "path"
+       ],
+       "additionalProperties": false,
+       "properties": {
+        "id": {
+         "$ref": "core#/$defs/Id"
+        },
+        "name": {
+         "$ref": "core#/$defs/Text"
+        },
+        "path": {
+         "$ref": "core#/$defs/TrackPath"
+        }
+       }
+      },
+      "AxisSurvey": {
+       "description": "A measured track axis traced in point clouds, in a plane of its own; its points are whole millimetres in parallel arrays, a blob.",
+       "type": "object",
+       "required": [
+        "id",
+        "epsg",
+        "points"
+       ],
+       "additionalProperties": false,
+       "properties": {
+        "id": {
+         "$ref": "core#/$defs/Id"
+        },
+        "name": {
+         "$ref": "core#/$defs/Text"
+        },
+        "epsg": {
+         "$ref": "core#/$defs/Epsg"
+        },
+        "rail": {
+         "type": "string"
+        },
+        "guide": {
+         "type": "object",
+         "required": [
+          "kind"
+         ],
+         "additionalProperties": false,
+         "properties": {
+          "kind": {
+           "enum": [
+            "track",
+            "line"
+           ]
+          },
+          "trackId": {
+           "$ref": "core#/$defs/Ref",
+           "x-target": "core.tracks"
+          }
+         }
+        },
+        "cloudNames": {
+         "type": "array",
+         "items": {
+          "type": "string"
+         }
+        },
+        "cloudRefs": {
+         "type": "array"
+        },
+        "createdAt": {
+         "$ref": "core#/$defs/Text"
+        },
+        "step": {
+         "type": "number"
+        },
+        "gaps": {
+         "type": "array",
+         "items": {
+          "type": "object",
+          "required": [
+           "from",
+           "to"
+          ],
+          "additionalProperties": false,
+          "properties": {
+           "from": {
+            "type": "number"
+           },
+           "to": {
+            "type": "number"
+           }
+          }
+         }
+        },
+        "points": {
+         "$ref": "#/$defs/BlobRef"
+        }
+       }
+      },
+      "ReferenceAxis": {
+       "description": "The axis of a surveyed track as points every centimetre (Bestandsachse); its points are a blob.",
+       "type": "object",
+       "required": [
+        "id",
+        "epsg",
+        "points"
+       ],
+       "additionalProperties": false,
+       "properties": {
+        "id": {
+         "$ref": "core#/$defs/Id"
+        },
+        "name": {
+         "$ref": "core#/$defs/Text"
+        },
+        "epsg": {
+         "$ref": "core#/$defs/Epsg"
+        },
+        "heightEpsg": {
+         "oneOf": [
+          {
+           "$ref": "core#/$defs/Epsg"
+          },
+          {
+           "type": "null"
+          }
+         ]
+        },
+        "source": {
+         "type": "object"
+        },
+        "points": {
+         "$ref": "#/$defs/BlobRef"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "valid": false,
+  "code": "invalid_payload"
+ },
+ {
+  "name": "a blob that is not what its hash says",
+  "document": {
+   "format": "rail-across",
+   "domains": {
+    "core": {
+     "version": "1.0",
+     "schema": "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6",
+     "fields": {
+      "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
+      "title": "Halle-Trotha",
+      "description": "vectors",
+      "creator": "core",
+      "createdAt": "2026-10-29T13:21:07.630Z",
+      "crsSystem": "ETRS89_UTM",
+      "lineCategory": "secondary",
+      "gaugeProfile": "hauptgleis",
+      "stages": [
+       {
+        "id": "b2a40cac-c53f-8ee2-b693-61aab009da16"
+       },
+       {
+        "id": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+       }
+      ]
+     },
+     "collections": {
+      "tracks": [
+       {
+        "id": "t1",
+        "name": "6050.001",
+        "trackType": 1,
+        "lineNumber": 6050,
+        "side": 1,
+        "epsg": 25832,
+        "heightEpsg": 7837,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500000,
+           5700000
+          ],
+          "endNode": [
+           500100,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 100,
+          "speed": 80
+         },
+         {
+          "elementType": 0,
+          "startNode": [
+           500100,
+           5700000
+          ],
+          "endNode": [
+           500250,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 150,
+          "cant": 0,
+          "role": "follow"
+         }
+        ],
+        "heights": [
+         {
+          "station": 0,
+          "z": 108.55
+         },
+         {
+          "station": 250,
+          "z": 109.1,
+          "rv": 15000
+         }
+        ]
+       },
+       {
+        "id": "t2",
+        "name": "1",
+        "trackType": 2,
+        "trackNumber": "1",
+        "epsg": 25832,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500250,
+           5700000
+          ],
+          "endNode": [
+           500400,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 150
+         }
+        ],
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "lifespan": {
+         "from": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+        }
+       },
+       {
+        "id": "t3",
+        "name": "alt",
+        "epsg": 25832,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500400,
+           5700000
+          ],
+          "endNode": [
+           500450,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 50
+         }
+        ],
+        "lifespan": {
+         "to": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+        }
+       }
+      ],
+      "switches": [
+       {
+        "id": "w1",
+        "kind": "link",
+        "formVersion": 1,
+        "name": "link.001",
+        "ports": {
+         "A": {
+          "trackId": "t1",
+          "endpoint": "END"
+         },
+         "B": {
+          "trackId": "t2",
+          "endpoint": "BEGIN"
+         }
+        }
+       }
+      ],
+      "platforms": [
+       {
+        "at": {
+         "anchor": "station",
+         "trackId": "t2",
+         "startStation": 10,
+         "endStation": 140,
+         "side": "left"
+        },
+        "id": "p1",
+        "frontOffset": 1.67,
+        "height": 550,
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+       }
+      ],
+      "endMarks": [
+       {
+        "id": "e1",
+        "kind": "buffer_stop",
+        "type": 4,
+        "brakeLength": 4,
+        "at": {
+         "trackId": "t3",
+         "endpoint": "END"
+        }
+       }
+      ],
+      "kmLines": [
+       {
+        "id": "km-6050",
+        "lineNumber": 6050,
+        "crs": "EPSG:4326",
+        "clip": [
+         11.9,
+         51.5,
+         12,
+         51.6
+        ],
+        "runs": [
+         [
+          [
+           11.95,
+           51.55,
+           1200.5
+          ],
+          [
+           11.96,
+           51.56,
+           1300
+          ]
+         ]
+        ]
+       }
+      ],
+      "operationalPoints": [
+       {
+        "id": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "name": "Halle-Trotha",
+        "rl100": "LHT",
+        "uic": "8023111"
+       }
+      ]
+     }
+    },
+    "layout": {
+     "version": "1.0",
+     "schema": "sha256:b2280dcf6cfe779e148b6c402ac46eb4ff1e8d96b55e6e3abcb370ef48ff1f1b",
+     "dependsOn": [
+      "core"
+     ],
+     "fields": {
+      "planHeader": {
+       "subtitle": "Lageplan"
+      },
+      "imageHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+     },
+     "collections": {
+      "trackPaths": [
+       {
+        "id": "r1",
+        "name": "Gleis 1 durch",
+        "path": {
+         "trackIds": [
+          "t1",
+          "t2"
+         ]
+        }
+       }
+      ],
+      "axisSurveys": [
+       {
+        "id": "a1",
+        "name": "Trace",
+        "epsg": 25832,
+        "rail": "54E4",
+        "guide": {
+         "kind": "track",
+         "trackId": "t1"
+        },
+        "cloudNames": [
+         "W0"
+        ],
+        "createdAt": "2026-10-29T13:21:07.630Z",
+        "step": 0.5,
+        "gaps": [],
+        "points": "sha256:b4aa72abe9415d526401fd1bf2a5b35429b0f47eb23781632212aa9e77710d48"
+       }
+      ],
+      "referenceAxes": [
+       {
+        "id": "x1",
+        "name": "Bestand",
+        "epsg": 25832,
+        "heightEpsg": null,
+        "source": {
+         "tra": "a.TRA",
+         "gra": null
+        },
+        "points": "sha256:55dda32d20595141bb76c28a3769eb9345e54af5adea57d111f73a0b63b52acf"
+       }
+      ]
+     }
+    }
+   },
+   "blobs": {
+    "sha256:b4aa72abe9415d526401fd1bf2a5b35429b0f47eb23781632212aa9e77710d48": {
+     "e0": 1
+    },
+    "sha256:55dda32d20595141bb76c28a3769eb9345e54af5adea57d111f73a0b63b52acf": {
+     "s0": 0,
+     "step": 0.01,
+     "count": 3,
+     "e0": 500000,
+     "n0": 5700000,
+     "de": [
+      0,
+      10,
+      10
+     ],
+     "dn": [
+      0,
+      0,
+      0
+     ],
+     "z": null
+    }
+   }
+  },
+  "valid": false,
+  "code": "invalid_payload"
+ },
+ {
+  "name": "layout depending on nothing",
+  "document": {
+   "format": "rail-across",
+   "domains": {
+    "core": {
+     "version": "1.0",
+     "schema": "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6",
+     "fields": {
+      "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
+      "title": "Halle-Trotha",
+      "description": "vectors",
+      "creator": "core",
+      "createdAt": "2026-10-29T13:21:07.630Z",
+      "crsSystem": "ETRS89_UTM",
+      "lineCategory": "secondary",
+      "gaugeProfile": "hauptgleis",
+      "stages": [
+       {
+        "id": "b2a40cac-c53f-8ee2-b693-61aab009da16"
+       },
+       {
+        "id": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+       }
+      ]
+     },
+     "collections": {
+      "tracks": [
+       {
+        "id": "t1",
+        "name": "6050.001",
+        "trackType": 1,
+        "lineNumber": 6050,
+        "side": 1,
+        "epsg": 25832,
+        "heightEpsg": 7837,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500000,
+           5700000
+          ],
+          "endNode": [
+           500100,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 100,
+          "speed": 80
+         },
+         {
+          "elementType": 0,
+          "startNode": [
+           500100,
+           5700000
+          ],
+          "endNode": [
+           500250,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 150,
+          "cant": 0,
+          "role": "follow"
+         }
+        ],
+        "heights": [
+         {
+          "station": 0,
+          "z": 108.55
+         },
+         {
+          "station": 250,
+          "z": 109.1,
+          "rv": 15000
+         }
+        ]
+       },
+       {
+        "id": "t2",
+        "name": "1",
+        "trackType": 2,
+        "trackNumber": "1",
+        "epsg": 25832,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500250,
+           5700000
+          ],
+          "endNode": [
+           500400,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 150
+         }
+        ],
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "lifespan": {
+         "from": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+        }
+       },
+       {
+        "id": "t3",
+        "name": "alt",
+        "epsg": 25832,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500400,
+           5700000
+          ],
+          "endNode": [
+           500450,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 50
+         }
+        ],
+        "lifespan": {
+         "to": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+        }
+       }
+      ],
+      "switches": [
+       {
+        "id": "w1",
+        "kind": "link",
+        "formVersion": 1,
+        "name": "link.001",
+        "ports": {
+         "A": {
+          "trackId": "t1",
+          "endpoint": "END"
+         },
+         "B": {
+          "trackId": "t2",
+          "endpoint": "BEGIN"
+         }
+        }
+       }
+      ],
+      "platforms": [
+       {
+        "at": {
+         "anchor": "station",
+         "trackId": "t2",
+         "startStation": 10,
+         "endStation": 140,
+         "side": "left"
+        },
+        "id": "p1",
+        "frontOffset": 1.67,
+        "height": 550,
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+       }
+      ],
+      "endMarks": [
+       {
+        "id": "e1",
+        "kind": "buffer_stop",
+        "type": 4,
+        "brakeLength": 4,
+        "at": {
+         "trackId": "t3",
+         "endpoint": "END"
+        }
+       }
+      ],
+      "kmLines": [
+       {
+        "id": "km-6050",
+        "lineNumber": 6050,
+        "crs": "EPSG:4326",
+        "clip": [
+         11.9,
+         51.5,
+         12,
+         51.6
+        ],
+        "runs": [
+         [
+          [
+           11.95,
+           51.55,
+           1200.5
+          ],
+          [
+           11.96,
+           51.56,
+           1300
+          ]
+         ]
+        ]
+       }
+      ],
+      "operationalPoints": [
+       {
+        "id": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "name": "Halle-Trotha",
+        "rl100": "LHT",
+        "uic": "8023111"
+       }
+      ]
+     }
+    },
+    "layout": {
+     "version": "1.0",
+     "schema": "sha256:b2280dcf6cfe779e148b6c402ac46eb4ff1e8d96b55e6e3abcb370ef48ff1f1b",
+     "fields": {
+      "planHeader": {
+       "subtitle": "Lageplan"
+      },
+      "imageHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+     },
+     "collections": {
+      "trackPaths": [
+       {
+        "id": "r1",
+        "name": "Gleis 1 durch",
+        "path": {
+         "trackIds": [
+          "t1",
+          "t2"
+         ]
+        }
+       }
+      ],
+      "axisSurveys": [
+       {
+        "id": "a1",
+        "name": "Trace",
+        "epsg": 25832,
+        "rail": "54E4",
+        "guide": {
+         "kind": "track",
+         "trackId": "t1"
+        },
+        "cloudNames": [
+         "W0"
+        ],
+        "createdAt": "2026-10-29T13:21:07.630Z",
+        "step": 0.5,
+        "gaps": [],
+        "points": "sha256:b4aa72abe9415d526401fd1bf2a5b35429b0f47eb23781632212aa9e77710d48"
+       }
+      ],
+      "referenceAxes": [
+       {
+        "id": "x1",
+        "name": "Bestand",
+        "epsg": 25832,
+        "heightEpsg": null,
+        "source": {
+         "tra": "a.TRA",
+         "gra": null
+        },
+        "points": "sha256:55dda32d20595141bb76c28a3769eb9345e54af5adea57d111f73a0b63b52acf"
+       }
+      ]
+     }
+    }
+   },
+   "blobs": {
+    "sha256:b4aa72abe9415d526401fd1bf2a5b35429b0f47eb23781632212aa9e77710d48": {
+     "e0": 500000,
+     "n0": 5700000,
+     "z0": 108,
+     "st": [
+      0,
+      500
+     ],
+     "de": [
+      0,
+      500
+     ],
+     "dn": [
+      0,
+      0
+     ],
+     "zl": [
+      550,
+      560
+     ],
+     "zr": [
+      550,
+      561
+     ],
+     "ga": [
+      1435,
+      1436
+     ],
+     "q": [
+      1,
+      1
+     ]
+    },
+    "sha256:55dda32d20595141bb76c28a3769eb9345e54af5adea57d111f73a0b63b52acf": {
+     "s0": 0,
+     "step": 0.01,
+     "count": 3,
+     "e0": 500000,
+     "n0": 5700000,
+     "de": [
+      0,
+      10,
+      10
+     ],
+     "dn": [
+      0,
+      0,
+      0
+     ],
+     "z": null
+    }
+   }
+  },
+  "valid": false,
+  "code": "invalid_payload"
+ },
+ {
+  "name": "a track twice",
+  "document": {
+   "format": "rail-across",
+   "domains": {
+    "core": {
+     "version": "1.0",
+     "schema": "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6",
+     "fields": {
+      "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
+      "title": "Halle-Trotha",
+      "description": "vectors",
+      "creator": "core",
+      "createdAt": "2026-10-29T13:21:07.630Z",
+      "crsSystem": "ETRS89_UTM",
+      "lineCategory": "secondary",
+      "gaugeProfile": "hauptgleis",
+      "stages": [
+       {
+        "id": "b2a40cac-c53f-8ee2-b693-61aab009da16"
+       },
+       {
+        "id": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+       }
+      ]
+     },
+     "collections": {
+      "tracks": [
+       {
+        "id": "t1",
+        "name": "6050.001",
+        "trackType": 1,
+        "lineNumber": 6050,
+        "side": 1,
+        "epsg": 25832,
+        "heightEpsg": 7837,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500000,
+           5700000
+          ],
+          "endNode": [
+           500100,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 100,
+          "speed": 80
+         },
+         {
+          "elementType": 0,
+          "startNode": [
+           500100,
+           5700000
+          ],
+          "endNode": [
+           500250,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 150,
+          "cant": 0,
+          "role": "follow"
+         }
+        ],
+        "heights": [
+         {
+          "station": 0,
+          "z": 108.55
+         },
+         {
+          "station": 250,
+          "z": 109.1,
+          "rv": 15000
+         }
+        ]
+       },
+       {
+        "id": "t2",
+        "name": "1",
+        "trackType": 2,
+        "trackNumber": "1",
+        "epsg": 25832,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500250,
+           5700000
+          ],
+          "endNode": [
+           500400,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 150
+         }
+        ],
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "lifespan": {
+         "from": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+        }
+       },
+       {
+        "id": "t3",
+        "name": "alt",
+        "epsg": 25832,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500400,
+           5700000
+          ],
+          "endNode": [
+           500450,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 50
+         }
+        ],
+        "lifespan": {
+         "to": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+        }
+       },
+       {
+        "id": "t1",
+        "name": "6050.001",
+        "trackType": 1,
+        "lineNumber": 6050,
+        "side": 1,
+        "epsg": 25832,
+        "heightEpsg": 7837,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500000,
+           5700000
+          ],
+          "endNode": [
+           500100,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 100,
+          "speed": 80
+         },
+         {
+          "elementType": 0,
+          "startNode": [
+           500100,
+           5700000
+          ],
+          "endNode": [
+           500250,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 150,
+          "cant": 0,
+          "role": "follow"
+         }
+        ],
+        "heights": [
+         {
+          "station": 0,
+          "z": 108.55
+         },
+         {
+          "station": 250,
+          "z": 109.1,
+          "rv": 15000
+         }
+        ]
+       }
+      ],
+      "switches": [
+       {
+        "id": "w1",
+        "kind": "link",
+        "formVersion": 1,
+        "name": "link.001",
+        "ports": {
+         "A": {
+          "trackId": "t1",
+          "endpoint": "END"
+         },
+         "B": {
+          "trackId": "t2",
+          "endpoint": "BEGIN"
+         }
+        }
+       }
+      ],
+      "platforms": [
+       {
+        "at": {
+         "anchor": "station",
+         "trackId": "t2",
+         "startStation": 10,
+         "endStation": 140,
+         "side": "left"
+        },
+        "id": "p1",
+        "frontOffset": 1.67,
+        "height": 550,
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+       }
+      ],
+      "endMarks": [
+       {
+        "id": "e1",
+        "kind": "buffer_stop",
+        "type": 4,
+        "brakeLength": 4,
+        "at": {
+         "trackId": "t3",
+         "endpoint": "END"
+        }
+       }
+      ],
+      "kmLines": [
+       {
+        "id": "km-6050",
+        "lineNumber": 6050,
+        "crs": "EPSG:4326",
+        "clip": [
+         11.9,
+         51.5,
+         12,
+         51.6
+        ],
+        "runs": [
+         [
+          [
+           11.95,
+           51.55,
+           1200.5
+          ],
+          [
+           11.96,
+           51.56,
+           1300
+          ]
+         ]
+        ]
+       }
+      ],
+      "operationalPoints": [
+       {
+        "id": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "name": "Halle-Trotha",
+        "rl100": "LHT",
+        "uic": "8023111"
+       }
+      ]
+     }
+    },
+    "layout": {
+     "version": "1.0",
+     "schema": "sha256:b2280dcf6cfe779e148b6c402ac46eb4ff1e8d96b55e6e3abcb370ef48ff1f1b",
+     "dependsOn": [
+      "core"
+     ],
+     "fields": {
+      "planHeader": {
+       "subtitle": "Lageplan"
+      },
+      "imageHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+     },
+     "collections": {
+      "trackPaths": [
+       {
+        "id": "r1",
+        "name": "Gleis 1 durch",
+        "path": {
+         "trackIds": [
+          "t1",
+          "t2"
+         ]
+        }
+       }
+      ],
+      "axisSurveys": [
+       {
+        "id": "a1",
+        "name": "Trace",
+        "epsg": 25832,
+        "rail": "54E4",
+        "guide": {
+         "kind": "track",
+         "trackId": "t1"
+        },
+        "cloudNames": [
+         "W0"
+        ],
+        "createdAt": "2026-10-29T13:21:07.630Z",
+        "step": 0.5,
+        "gaps": [],
+        "points": "sha256:b4aa72abe9415d526401fd1bf2a5b35429b0f47eb23781632212aa9e77710d48"
+       }
+      ],
+      "referenceAxes": [
+       {
+        "id": "x1",
+        "name": "Bestand",
+        "epsg": 25832,
+        "heightEpsg": null,
+        "source": {
+         "tra": "a.TRA",
+         "gra": null
+        },
+        "points": "sha256:55dda32d20595141bb76c28a3769eb9345e54af5adea57d111f73a0b63b52acf"
+       }
+      ]
+     }
+    }
+   },
+   "blobs": {
+    "sha256:b4aa72abe9415d526401fd1bf2a5b35429b0f47eb23781632212aa9e77710d48": {
+     "e0": 500000,
+     "n0": 5700000,
+     "z0": 108,
+     "st": [
+      0,
+      500
+     ],
+     "de": [
+      0,
+      500
+     ],
+     "dn": [
+      0,
+      0
+     ],
+     "zl": [
+      550,
+      560
+     ],
+     "zr": [
+      550,
+      561
+     ],
+     "ga": [
+      1435,
+      1436
+     ],
+     "q": [
+      1,
+      1
+     ]
+    },
+    "sha256:55dda32d20595141bb76c28a3769eb9345e54af5adea57d111f73a0b63b52acf": {
+     "s0": 0,
+     "step": 0.01,
+     "count": 3,
+     "e0": 500000,
+     "n0": 5700000,
+     "de": [
+      0,
+      10,
+      10
+     ],
+     "dn": [
+      0,
+      0,
+      0
+     ],
+     "z": null
+    }
+   }
+  },
+  "valid": false,
+  "code": "invalid_payload"
+ },
+ {
+  "name": "an element with derived geometry",
+  "document": {
+   "format": "rail-across",
+   "domains": {
+    "core": {
+     "version": "1.0",
+     "schema": "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6",
+     "fields": {
+      "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
+      "title": "Halle-Trotha",
+      "description": "vectors",
+      "creator": "core",
+      "createdAt": "2026-10-29T13:21:07.630Z",
+      "crsSystem": "ETRS89_UTM",
+      "lineCategory": "secondary",
+      "gaugeProfile": "hauptgleis",
+      "stages": [
+       {
+        "id": "b2a40cac-c53f-8ee2-b693-61aab009da16"
+       },
+       {
+        "id": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+       }
+      ]
+     },
+     "collections": {
+      "tracks": [
+       {
+        "id": "t1",
+        "name": "6050.001",
+        "trackType": 1,
+        "lineNumber": 6050,
+        "side": 1,
+        "epsg": 25832,
+        "heightEpsg": 7837,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500000,
+           5700000
+          ],
+          "endNode": [
+           500100,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 100,
+          "speed": 80,
+          "renderCoords": []
+         },
+         {
+          "elementType": 0,
+          "startNode": [
+           500100,
+           5700000
+          ],
+          "endNode": [
+           500250,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 150,
+          "cant": 0,
+          "role": "follow"
+         }
+        ],
+        "heights": [
+         {
+          "station": 0,
+          "z": 108.55
+         },
+         {
+          "station": 250,
+          "z": 109.1,
+          "rv": 15000
+         }
+        ]
+       },
+       {
+        "id": "t2",
+        "name": "1",
+        "trackType": 2,
+        "trackNumber": "1",
+        "epsg": 25832,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500250,
+           5700000
+          ],
+          "endNode": [
+           500400,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 150
+         }
+        ],
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "lifespan": {
+         "from": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+        }
+       },
+       {
+        "id": "t3",
+        "name": "alt",
+        "epsg": 25832,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500400,
+           5700000
+          ],
+          "endNode": [
+           500450,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 50
+         }
+        ],
+        "lifespan": {
+         "to": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+        }
+       }
+      ],
+      "switches": [
+       {
+        "id": "w1",
+        "kind": "link",
+        "formVersion": 1,
+        "name": "link.001",
+        "ports": {
+         "A": {
+          "trackId": "t1",
+          "endpoint": "END"
+         },
+         "B": {
+          "trackId": "t2",
+          "endpoint": "BEGIN"
+         }
+        }
+       }
+      ],
+      "platforms": [
+       {
+        "at": {
+         "anchor": "station",
+         "trackId": "t2",
+         "startStation": 10,
+         "endStation": 140,
+         "side": "left"
+        },
+        "id": "p1",
+        "frontOffset": 1.67,
+        "height": 550,
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+       }
+      ],
+      "endMarks": [
+       {
+        "id": "e1",
+        "kind": "buffer_stop",
+        "type": 4,
+        "brakeLength": 4,
+        "at": {
+         "trackId": "t3",
+         "endpoint": "END"
+        }
+       }
+      ],
+      "kmLines": [
+       {
+        "id": "km-6050",
+        "lineNumber": 6050,
+        "crs": "EPSG:4326",
+        "clip": [
+         11.9,
+         51.5,
+         12,
+         51.6
+        ],
+        "runs": [
+         [
+          [
+           11.95,
+           51.55,
+           1200.5
+          ],
+          [
+           11.96,
+           51.56,
+           1300
+          ]
+         ]
+        ]
+       }
+      ],
+      "operationalPoints": [
+       {
+        "id": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "name": "Halle-Trotha",
+        "rl100": "LHT",
+        "uic": "8023111"
+       }
+      ]
+     }
+    },
+    "layout": {
+     "version": "1.0",
+     "schema": "sha256:b2280dcf6cfe779e148b6c402ac46eb4ff1e8d96b55e6e3abcb370ef48ff1f1b",
+     "dependsOn": [
+      "core"
+     ],
+     "fields": {
+      "planHeader": {
+       "subtitle": "Lageplan"
+      },
+      "imageHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+     },
+     "collections": {
+      "trackPaths": [
+       {
+        "id": "r1",
+        "name": "Gleis 1 durch",
+        "path": {
+         "trackIds": [
+          "t1",
+          "t2"
+         ]
+        }
+       }
+      ],
+      "axisSurveys": [
+       {
+        "id": "a1",
+        "name": "Trace",
+        "epsg": 25832,
+        "rail": "54E4",
+        "guide": {
+         "kind": "track",
+         "trackId": "t1"
+        },
+        "cloudNames": [
+         "W0"
+        ],
+        "createdAt": "2026-10-29T13:21:07.630Z",
+        "step": 0.5,
+        "gaps": [],
+        "points": "sha256:b4aa72abe9415d526401fd1bf2a5b35429b0f47eb23781632212aa9e77710d48"
+       }
+      ],
+      "referenceAxes": [
+       {
+        "id": "x1",
+        "name": "Bestand",
+        "epsg": 25832,
+        "heightEpsg": null,
+        "source": {
+         "tra": "a.TRA",
+         "gra": null
+        },
+        "points": "sha256:55dda32d20595141bb76c28a3769eb9345e54af5adea57d111f73a0b63b52acf"
+       }
+      ]
+     }
+    }
+   },
+   "blobs": {
+    "sha256:b4aa72abe9415d526401fd1bf2a5b35429b0f47eb23781632212aa9e77710d48": {
+     "e0": 500000,
+     "n0": 5700000,
+     "z0": 108,
+     "st": [
+      0,
+      500
+     ],
+     "de": [
+      0,
+      500
+     ],
+     "dn": [
+      0,
+      0
+     ],
+     "zl": [
+      550,
+      560
+     ],
+     "zr": [
+      550,
+      561
+     ],
+     "ga": [
+      1435,
+      1436
+     ],
+     "q": [
+      1,
+      1
+     ]
+    },
+    "sha256:55dda32d20595141bb76c28a3769eb9345e54af5adea57d111f73a0b63b52acf": {
+     "s0": 0,
+     "step": 0.01,
+     "count": 3,
+     "e0": 500000,
+     "n0": 5700000,
+     "de": [
+      0,
+      10,
+      10
+     ],
+     "dn": [
+      0,
+      0,
+      0
+     ],
+     "z": null
+    }
+   }
+  },
+  "valid": false,
+  "code": "invalid_payload"
+ },
+ {
+  "name": "one stage only",
+  "document": {
+   "format": "rail-across",
+   "domains": {
+    "core": {
+     "version": "1.0",
+     "schema": "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6",
+     "fields": {
+      "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
+      "title": "Halle-Trotha",
+      "description": "vectors",
+      "creator": "core",
+      "createdAt": "2026-10-29T13:21:07.630Z",
+      "crsSystem": "ETRS89_UTM",
+      "lineCategory": "secondary",
+      "gaugeProfile": "hauptgleis",
+      "stages": [
+       {
+        "id": "b2a40cac-c53f-8ee2-b693-61aab009da16"
+       }
+      ]
+     },
+     "collections": {
+      "tracks": [
+       {
+        "id": "t1",
+        "name": "6050.001",
+        "trackType": 1,
+        "lineNumber": 6050,
+        "side": 1,
+        "epsg": 25832,
+        "heightEpsg": 7837,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500000,
+           5700000
+          ],
+          "endNode": [
+           500100,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 100,
+          "speed": 80
+         },
+         {
+          "elementType": 0,
+          "startNode": [
+           500100,
+           5700000
+          ],
+          "endNode": [
+           500250,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 150,
+          "cant": 0,
+          "role": "follow"
+         }
+        ],
+        "heights": [
+         {
+          "station": 0,
+          "z": 108.55
+         },
+         {
+          "station": 250,
+          "z": 109.1,
+          "rv": 15000
+         }
+        ]
+       },
+       {
+        "id": "t2",
+        "name": "1",
+        "trackType": 2,
+        "trackNumber": "1",
+        "epsg": 25832,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500250,
+           5700000
+          ],
+          "endNode": [
+           500400,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 150
+         }
+        ],
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "lifespan": {
+         "from": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+        }
+       },
+       {
+        "id": "t3",
+        "name": "alt",
+        "epsg": 25832,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500400,
+           5700000
+          ],
+          "endNode": [
+           500450,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 50
+         }
+        ],
+        "lifespan": {
+         "to": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+        }
+       }
+      ],
+      "switches": [
+       {
+        "id": "w1",
+        "kind": "link",
+        "formVersion": 1,
+        "name": "link.001",
+        "ports": {
+         "A": {
+          "trackId": "t1",
+          "endpoint": "END"
+         },
+         "B": {
+          "trackId": "t2",
+          "endpoint": "BEGIN"
+         }
+        }
+       }
+      ],
+      "platforms": [
+       {
+        "at": {
+         "anchor": "station",
+         "trackId": "t2",
+         "startStation": 10,
+         "endStation": 140,
+         "side": "left"
+        },
+        "id": "p1",
+        "frontOffset": 1.67,
+        "height": 550,
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+       }
+      ],
+      "endMarks": [
+       {
+        "id": "e1",
+        "kind": "buffer_stop",
+        "type": 4,
+        "brakeLength": 4,
+        "at": {
+         "trackId": "t3",
+         "endpoint": "END"
+        }
+       }
+      ],
+      "kmLines": [
+       {
+        "id": "km-6050",
+        "lineNumber": 6050,
+        "crs": "EPSG:4326",
+        "clip": [
+         11.9,
+         51.5,
+         12,
+         51.6
+        ],
+        "runs": [
+         [
+          [
+           11.95,
+           51.55,
+           1200.5
+          ],
+          [
+           11.96,
+           51.56,
+           1300
+          ]
+         ]
+        ]
+       }
+      ],
+      "operationalPoints": [
+       {
+        "id": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "name": "Halle-Trotha",
+        "rl100": "LHT",
+        "uic": "8023111"
+       }
+      ]
+     }
+    },
+    "layout": {
+     "version": "1.0",
+     "schema": "sha256:b2280dcf6cfe779e148b6c402ac46eb4ff1e8d96b55e6e3abcb370ef48ff1f1b",
+     "dependsOn": [
+      "core"
+     ],
+     "fields": {
+      "planHeader": {
+       "subtitle": "Lageplan"
+      },
+      "imageHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+     },
+     "collections": {
+      "trackPaths": [
+       {
+        "id": "r1",
+        "name": "Gleis 1 durch",
+        "path": {
+         "trackIds": [
+          "t1",
+          "t2"
+         ]
+        }
+       }
+      ],
+      "axisSurveys": [
+       {
+        "id": "a1",
+        "name": "Trace",
+        "epsg": 25832,
+        "rail": "54E4",
+        "guide": {
+         "kind": "track",
+         "trackId": "t1"
+        },
+        "cloudNames": [
+         "W0"
+        ],
+        "createdAt": "2026-10-29T13:21:07.630Z",
+        "step": 0.5,
+        "gaps": [],
+        "points": "sha256:b4aa72abe9415d526401fd1bf2a5b35429b0f47eb23781632212aa9e77710d48"
+       }
+      ],
+      "referenceAxes": [
+       {
+        "id": "x1",
+        "name": "Bestand",
+        "epsg": 25832,
+        "heightEpsg": null,
+        "source": {
+         "tra": "a.TRA",
+         "gra": null
+        },
+        "points": "sha256:55dda32d20595141bb76c28a3769eb9345e54af5adea57d111f73a0b63b52acf"
+       }
+      ]
+     }
+    }
+   },
+   "blobs": {
+    "sha256:b4aa72abe9415d526401fd1bf2a5b35429b0f47eb23781632212aa9e77710d48": {
+     "e0": 500000,
+     "n0": 5700000,
+     "z0": 108,
+     "st": [
+      0,
+      500
+     ],
+     "de": [
+      0,
+      500
+     ],
+     "dn": [
+      0,
+      0
+     ],
+     "zl": [
+      550,
+      560
+     ],
+     "zr": [
+      550,
+      561
+     ],
+     "ga": [
+      1435,
+      1436
+     ],
+     "q": [
+      1,
+      1
+     ]
+    },
+    "sha256:55dda32d20595141bb76c28a3769eb9345e54af5adea57d111f73a0b63b52acf": {
+     "s0": 0,
+     "step": 0.01,
+     "count": 3,
+     "e0": 500000,
+     "n0": 5700000,
+     "de": [
+      0,
+      10,
+      10
+     ],
+     "dn": [
+      0,
+      0,
+      0
+     ],
+     "z": null
+    }
+   }
+  },
+  "valid": false,
+  "code": "invalid_payload"
+ },
+ {
+  "name": "a platform with its stations loose",
+  "document": {
+   "format": "rail-across",
+   "domains": {
+    "core": {
+     "version": "1.0",
+     "schema": "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6",
+     "fields": {
+      "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
+      "title": "Halle-Trotha",
+      "description": "vectors",
+      "creator": "core",
+      "createdAt": "2026-10-29T13:21:07.630Z",
+      "crsSystem": "ETRS89_UTM",
+      "lineCategory": "secondary",
+      "gaugeProfile": "hauptgleis",
+      "stages": [
+       {
+        "id": "b2a40cac-c53f-8ee2-b693-61aab009da16"
+       },
+       {
+        "id": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+       }
+      ]
+     },
+     "collections": {
+      "tracks": [
+       {
+        "id": "t1",
+        "name": "6050.001",
+        "trackType": 1,
+        "lineNumber": 6050,
+        "side": 1,
+        "epsg": 25832,
+        "heightEpsg": 7837,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500000,
+           5700000
+          ],
+          "endNode": [
+           500100,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 100,
+          "speed": 80
+         },
+         {
+          "elementType": 0,
+          "startNode": [
+           500100,
+           5700000
+          ],
+          "endNode": [
+           500250,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 150,
+          "cant": 0,
+          "role": "follow"
+         }
+        ],
+        "heights": [
+         {
+          "station": 0,
+          "z": 108.55
+         },
+         {
+          "station": 250,
+          "z": 109.1,
+          "rv": 15000
+         }
+        ]
+       },
+       {
+        "id": "t2",
+        "name": "1",
+        "trackType": 2,
+        "trackNumber": "1",
+        "epsg": 25832,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500250,
+           5700000
+          ],
+          "endNode": [
+           500400,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 150
+         }
+        ],
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "lifespan": {
+         "from": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+        }
+       },
+       {
+        "id": "t3",
+        "name": "alt",
+        "epsg": 25832,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500400,
+           5700000
+          ],
+          "endNode": [
+           500450,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 50
+         }
+        ],
+        "lifespan": {
+         "to": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+        }
+       }
+      ],
+      "switches": [
+       {
+        "id": "w1",
+        "kind": "link",
+        "formVersion": 1,
+        "name": "link.001",
+        "ports": {
+         "A": {
+          "trackId": "t1",
+          "endpoint": "END"
+         },
+         "B": {
+          "trackId": "t2",
+          "endpoint": "BEGIN"
+         }
+        }
+       }
+      ],
+      "platforms": [
+       {
+        "at": {
+         "anchor": "station",
+         "trackId": "t2",
+         "startStation": 10,
+         "endStation": 140,
+         "side": "left"
+        },
+        "id": "p1",
+        "frontOffset": 1.67,
+        "height": 550,
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "startStation": 10
+       }
+      ],
+      "endMarks": [
+       {
+        "id": "e1",
+        "kind": "buffer_stop",
+        "type": 4,
+        "brakeLength": 4,
+        "at": {
+         "trackId": "t3",
+         "endpoint": "END"
+        }
+       }
+      ],
+      "kmLines": [
+       {
+        "id": "km-6050",
+        "lineNumber": 6050,
+        "crs": "EPSG:4326",
+        "clip": [
+         11.9,
+         51.5,
+         12,
+         51.6
+        ],
+        "runs": [
+         [
+          [
+           11.95,
+           51.55,
+           1200.5
+          ],
+          [
+           11.96,
+           51.56,
+           1300
+          ]
+         ]
+        ]
+       }
+      ],
+      "operationalPoints": [
+       {
+        "id": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "name": "Halle-Trotha",
+        "rl100": "LHT",
+        "uic": "8023111"
+       }
+      ]
+     }
+    },
+    "layout": {
+     "version": "1.0",
+     "schema": "sha256:b2280dcf6cfe779e148b6c402ac46eb4ff1e8d96b55e6e3abcb370ef48ff1f1b",
+     "dependsOn": [
+      "core"
+     ],
+     "fields": {
+      "planHeader": {
+       "subtitle": "Lageplan"
+      },
+      "imageHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+     },
+     "collections": {
+      "trackPaths": [
+       {
+        "id": "r1",
+        "name": "Gleis 1 durch",
+        "path": {
+         "trackIds": [
+          "t1",
+          "t2"
+         ]
+        }
+       }
+      ],
+      "axisSurveys": [
+       {
+        "id": "a1",
+        "name": "Trace",
+        "epsg": 25832,
+        "rail": "54E4",
+        "guide": {
+         "kind": "track",
+         "trackId": "t1"
+        },
+        "cloudNames": [
+         "W0"
+        ],
+        "createdAt": "2026-10-29T13:21:07.630Z",
+        "step": 0.5,
+        "gaps": [],
+        "points": "sha256:b4aa72abe9415d526401fd1bf2a5b35429b0f47eb23781632212aa9e77710d48"
+       }
+      ],
+      "referenceAxes": [
+       {
+        "id": "x1",
+        "name": "Bestand",
+        "epsg": 25832,
+        "heightEpsg": null,
+        "source": {
+         "tra": "a.TRA",
+         "gra": null
+        },
+        "points": "sha256:55dda32d20595141bb76c28a3769eb9345e54af5adea57d111f73a0b63b52acf"
+       }
+      ]
+     }
+    }
+   },
+   "blobs": {
+    "sha256:b4aa72abe9415d526401fd1bf2a5b35429b0f47eb23781632212aa9e77710d48": {
+     "e0": 500000,
+     "n0": 5700000,
+     "z0": 108,
+     "st": [
+      0,
+      500
+     ],
+     "de": [
+      0,
+      500
+     ],
+     "dn": [
+      0,
+      0
+     ],
+     "zl": [
+      550,
+      560
+     ],
+     "zr": [
+      550,
+      561
+     ],
+     "ga": [
+      1435,
+      1436
+     ],
+     "q": [
+      1,
+      1
+     ]
+    },
+    "sha256:55dda32d20595141bb76c28a3769eb9345e54af5adea57d111f73a0b63b52acf": {
+     "s0": 0,
+     "step": 0.01,
+     "count": 3,
+     "e0": 500000,
+     "n0": 5700000,
+     "de": [
+      0,
+      10,
+      10
+     ],
+     "dn": [
+      0,
+      0,
+      0
+     ],
+     "z": null
+    }
+   }
+  },
+  "valid": false,
+  "code": "invalid_payload"
+ },
+ {
+  "name": "a collection missing",
+  "document": {
+   "format": "rail-across",
+   "domains": {
+    "core": {
+     "version": "1.0",
+     "schema": "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6",
+     "fields": {
+      "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
+      "title": "Halle-Trotha",
+      "description": "vectors",
+      "creator": "core",
+      "createdAt": "2026-10-29T13:21:07.630Z",
+      "crsSystem": "ETRS89_UTM",
+      "lineCategory": "secondary",
+      "gaugeProfile": "hauptgleis",
+      "stages": [
+       {
+        "id": "b2a40cac-c53f-8ee2-b693-61aab009da16"
+       },
+       {
+        "id": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+       }
+      ]
+     },
+     "collections": {
+      "tracks": [
+       {
+        "id": "t1",
+        "name": "6050.001",
+        "trackType": 1,
+        "lineNumber": 6050,
+        "side": 1,
+        "epsg": 25832,
+        "heightEpsg": 7837,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500000,
+           5700000
+          ],
+          "endNode": [
+           500100,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 100,
+          "speed": 80
+         },
+         {
+          "elementType": 0,
+          "startNode": [
+           500100,
+           5700000
+          ],
+          "endNode": [
+           500250,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 150,
+          "cant": 0,
+          "role": "follow"
+         }
+        ],
+        "heights": [
+         {
+          "station": 0,
+          "z": 108.55
+         },
+         {
+          "station": 250,
+          "z": 109.1,
+          "rv": 15000
+         }
+        ]
+       },
+       {
+        "id": "t2",
+        "name": "1",
+        "trackType": 2,
+        "trackNumber": "1",
+        "epsg": 25832,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500250,
+           5700000
+          ],
+          "endNode": [
+           500400,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 150
+         }
+        ],
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "lifespan": {
+         "from": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+        }
+       },
+       {
+        "id": "t3",
+        "name": "alt",
+        "epsg": 25832,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500400,
+           5700000
+          ],
+          "endNode": [
+           500450,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 50
+         }
+        ],
+        "lifespan": {
+         "to": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+        }
+       }
+      ],
+      "switches": [
+       {
+        "id": "w1",
+        "kind": "link",
+        "formVersion": 1,
+        "name": "link.001",
+        "ports": {
+         "A": {
+          "trackId": "t1",
+          "endpoint": "END"
+         },
+         "B": {
+          "trackId": "t2",
+          "endpoint": "BEGIN"
+         }
+        }
+       }
+      ],
+      "platforms": [
+       {
+        "at": {
+         "anchor": "station",
+         "trackId": "t2",
+         "startStation": 10,
+         "endStation": 140,
+         "side": "left"
+        },
+        "id": "p1",
+        "frontOffset": 1.67,
+        "height": 550,
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+       }
+      ],
+      "endMarks": [
+       {
+        "id": "e1",
+        "kind": "buffer_stop",
+        "type": 4,
+        "brakeLength": 4,
+        "at": {
+         "trackId": "t3",
+         "endpoint": "END"
+        }
+       }
+      ],
+      "operationalPoints": [
+       {
+        "id": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "name": "Halle-Trotha",
+        "rl100": "LHT",
+        "uic": "8023111"
+       }
+      ]
+     }
+    },
+    "layout": {
+     "version": "1.0",
+     "schema": "sha256:b2280dcf6cfe779e148b6c402ac46eb4ff1e8d96b55e6e3abcb370ef48ff1f1b",
+     "dependsOn": [
+      "core"
+     ],
+     "fields": {
+      "planHeader": {
+       "subtitle": "Lageplan"
+      },
+      "imageHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+     },
+     "collections": {
+      "trackPaths": [
+       {
+        "id": "r1",
+        "name": "Gleis 1 durch",
+        "path": {
+         "trackIds": [
+          "t1",
+          "t2"
+         ]
+        }
+       }
+      ],
+      "axisSurveys": [
+       {
+        "id": "a1",
+        "name": "Trace",
+        "epsg": 25832,
+        "rail": "54E4",
+        "guide": {
+         "kind": "track",
+         "trackId": "t1"
+        },
+        "cloudNames": [
+         "W0"
+        ],
+        "createdAt": "2026-10-29T13:21:07.630Z",
+        "step": 0.5,
+        "gaps": [],
+        "points": "sha256:b4aa72abe9415d526401fd1bf2a5b35429b0f47eb23781632212aa9e77710d48"
+       }
+      ],
+      "referenceAxes": [
+       {
+        "id": "x1",
+        "name": "Bestand",
+        "epsg": 25832,
+        "heightEpsg": null,
+        "source": {
+         "tra": "a.TRA",
+         "gra": null
+        },
+        "points": "sha256:55dda32d20595141bb76c28a3769eb9345e54af5adea57d111f73a0b63b52acf"
+       }
+      ]
+     }
+    }
+   },
+   "blobs": {
+    "sha256:b4aa72abe9415d526401fd1bf2a5b35429b0f47eb23781632212aa9e77710d48": {
+     "e0": 500000,
+     "n0": 5700000,
+     "z0": 108,
+     "st": [
+      0,
+      500
+     ],
+     "de": [
+      0,
+      500
+     ],
+     "dn": [
+      0,
+      0
+     ],
+     "zl": [
+      550,
+      560
+     ],
+     "zr": [
+      550,
+      561
+     ],
+     "ga": [
+      1435,
+      1436
+     ],
+     "q": [
+      1,
+      1
+     ]
+    },
+    "sha256:55dda32d20595141bb76c28a3769eb9345e54af5adea57d111f73a0b63b52acf": {
+     "s0": 0,
+     "step": 0.01,
+     "count": 3,
+     "e0": 500000,
+     "n0": 5700000,
+     "de": [
+      0,
+      10,
+      10
+     ],
+     "dn": [
+      0,
+      0,
+      0
+     ],
+     "z": null
+    }
+   }
+  },
+  "valid": false,
+  "code": "invalid_payload"
+ },
+ {
+  "name": "no core",
+  "document": {
+   "format": "rail-across",
+   "domains": {
+    "layout": {
+     "version": "1.0",
+     "schema": "sha256:b2280dcf6cfe779e148b6c402ac46eb4ff1e8d96b55e6e3abcb370ef48ff1f1b",
+     "dependsOn": [
+      "core"
+     ],
+     "fields": {
+      "planHeader": {
+       "subtitle": "Lageplan"
+      },
+      "imageHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+     },
+     "collections": {
+      "trackPaths": [
+       {
+        "id": "r1",
+        "name": "Gleis 1 durch",
+        "path": {
+         "trackIds": [
+          "t1",
+          "t2"
+         ]
+        }
+       }
+      ],
+      "axisSurveys": [
+       {
+        "id": "a1",
+        "name": "Trace",
+        "epsg": 25832,
+        "rail": "54E4",
+        "guide": {
+         "kind": "track",
+         "trackId": "t1"
+        },
+        "cloudNames": [
+         "W0"
+        ],
+        "createdAt": "2026-10-29T13:21:07.630Z",
+        "step": 0.5,
+        "gaps": [],
+        "points": "sha256:b4aa72abe9415d526401fd1bf2a5b35429b0f47eb23781632212aa9e77710d48"
+       }
+      ],
+      "referenceAxes": [
+       {
+        "id": "x1",
+        "name": "Bestand",
+        "epsg": 25832,
+        "heightEpsg": null,
+        "source": {
+         "tra": "a.TRA",
+         "gra": null
+        },
+        "points": "sha256:55dda32d20595141bb76c28a3769eb9345e54af5adea57d111f73a0b63b52acf"
+       }
+      ]
+     }
+    }
+   },
+   "blobs": {
+    "sha256:b4aa72abe9415d526401fd1bf2a5b35429b0f47eb23781632212aa9e77710d48": {
+     "e0": 500000,
+     "n0": 5700000,
+     "z0": 108,
+     "st": [
+      0,
+      500
+     ],
+     "de": [
+      0,
+      500
+     ],
+     "dn": [
+      0,
+      0
+     ],
+     "zl": [
+      550,
+      560
+     ],
+     "zr": [
+      550,
+      561
+     ],
+     "ga": [
+      1435,
+      1436
+     ],
+     "q": [
+      1,
+      1
+     ]
+    },
+    "sha256:55dda32d20595141bb76c28a3769eb9345e54af5adea57d111f73a0b63b52acf": {
+     "s0": 0,
+     "step": 0.01,
+     "count": 3,
+     "e0": 500000,
+     "n0": 5700000,
+     "de": [
+      0,
+      10,
+      10
+     ],
+     "dn": [
+      0,
+      0,
+      0
+     ],
+     "z": null
+    }
+   }
+  },
+  "valid": false,
+  "code": "invalid_payload"
+ }
+]

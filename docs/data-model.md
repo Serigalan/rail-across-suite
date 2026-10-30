@@ -306,8 +306,9 @@ Point clouds stay in the browser's private file system (OPFS) or on the server, 
 
 In the core, all three become one remap for every location (R4).
 
-**Model changes** the Open-Layout-Tool goes through in phase 2, each brought to existing data by a step of the
-migration chain at the one door (S-R10):
+**Model changes** the Open-Layout-Tool goes through, each brought to existing data by a step of the migration
+chain at the one door (S-R10). The format has them since core 1.0, the first step of the chain
+([decision 0009](decisions/0009-core-1-0-in-the-data-model.md)); the app's own model follows in phase 2:
 
 | oltjson-1.1 | Core after phase 2 |
 |---|---|

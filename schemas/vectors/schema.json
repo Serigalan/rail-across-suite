@@ -1,0 +1,415 @@
+[
+ {
+  "ref": "core#/$defs/TrackEnd",
+  "value": {
+   "trackId": "t1",
+   "endpoint": "END"
+  },
+  "valid": true,
+  "paths": []
+ },
+ {
+  "ref": "core#/$defs/TrackEnd",
+  "value": {
+   "trackId": "t1",
+   "endpoint": "MIDDLE"
+  },
+  "valid": false,
+  "paths": [
+   "/endpoint"
+  ]
+ },
+ {
+  "ref": "core#/$defs/TrackEnd",
+  "value": {
+   "trackId": "t1"
+  },
+  "valid": false,
+  "paths": [
+   "/"
+  ]
+ },
+ {
+  "ref": "core#/$defs/TrackEnd",
+  "value": {
+   "trackId": "",
+   "endpoint": "BEGIN",
+   "extra": 1
+  },
+  "valid": false,
+  "paths": [
+   "/",
+   "/trackId"
+  ]
+ },
+ {
+  "ref": "core#/$defs/TrackRange",
+  "value": {
+   "anchor": "station",
+   "trackId": "t1",
+   "startStation": 120,
+   "endStation": 260,
+   "side": "left"
+  },
+  "valid": true,
+  "paths": []
+ },
+ {
+  "ref": "core#/$defs/TrackRange",
+  "value": {
+   "anchor": "plane",
+   "trackId": "t1",
+   "startStation": 120,
+   "endStation": 260
+  },
+  "valid": false,
+  "paths": [
+   "/anchor"
+  ]
+ },
+ {
+  "ref": "core#/$defs/TrackLocation",
+  "value": {
+   "anchor": "station",
+   "trackId": "t1",
+   "station": 812.4,
+   "side": "right",
+   "offset": 2.9,
+   "direction": "down"
+  },
+  "valid": true,
+  "paths": []
+ },
+ {
+  "ref": "core#/$defs/TrackLocation",
+  "value": {
+   "anchor": "plane",
+   "easting": 500000,
+   "northing": 5700000,
+   "epsg": 25832,
+   "bearing": 12
+  },
+  "valid": true,
+  "paths": []
+ },
+ {
+  "ref": "core#/$defs/TrackLocation",
+  "value": {
+   "anchor": "station",
+   "trackId": "t1",
+   "station": "km 3"
+  },
+  "valid": false,
+  "paths": [
+   "/"
+  ]
+ },
+ {
+  "ref": "core#/$defs/TrackLocation",
+  "value": {
+   "anchor": "plane",
+   "easting": 500000,
+   "northing": 5700000
+  },
+  "valid": false,
+  "paths": [
+   "/"
+  ]
+ },
+ {
+  "ref": "core#/$defs/TrackLocation",
+  "value": "nowhere",
+  "valid": false,
+  "paths": [
+   "/"
+  ]
+ },
+ {
+  "ref": "core#/$defs/Lifespan",
+  "value": {
+   "from": "s1"
+  },
+  "valid": true,
+  "paths": []
+ },
+ {
+  "ref": "core#/$defs/Lifespan",
+  "value": {},
+  "valid": false,
+  "paths": [
+   "/"
+  ]
+ },
+ {
+  "ref": "core#/$defs/Lifespan",
+  "value": {
+   "from": "s1",
+   "until": "s2"
+  },
+  "valid": false,
+  "paths": [
+   "/"
+  ]
+ },
+ {
+  "ref": "core#/$defs/TrackPath",
+  "value": {
+   "trackIds": [
+    "a",
+    "b"
+   ]
+  },
+  "valid": true,
+  "paths": []
+ },
+ {
+  "ref": "core#/$defs/TrackPath",
+  "value": {
+   "trackIds": "a"
+  },
+  "valid": false,
+  "paths": [
+   "/trackIds"
+  ]
+ },
+ {
+  "ref": "core#/$defs/Track",
+  "value": {
+   "id": "t1",
+   "epsg": 25832,
+   "elements": [
+    {
+     "elementType": 0,
+     "startNode": [
+      500000,
+      5700000
+     ],
+     "endNode": [
+      500100,
+      5700000
+     ],
+     "bearing": 90,
+     "length": 100
+    }
+   ]
+  },
+  "valid": true,
+  "paths": []
+ },
+ {
+  "ref": "core#/$defs/Track",
+  "value": {
+   "id": "t1",
+   "epsg": 25832,
+   "elements": []
+  },
+  "valid": false,
+  "paths": [
+   "/elements"
+  ]
+ },
+ {
+  "ref": "core#/$defs/Track",
+  "value": {
+   "id": "t1",
+   "epsg": 25832.5,
+   "elements": [
+    {
+     "elementType": 0,
+     "startNode": [
+      500000,
+      5700000
+     ],
+     "endNode": [
+      500100,
+      5700000
+     ],
+     "bearing": 90,
+     "length": 100
+    }
+   ],
+   "trackType": 3
+  },
+  "valid": false,
+  "paths": [
+   "/epsg",
+   "/trackType"
+  ]
+ },
+ {
+  "ref": "core#/$defs/Track",
+  "value": {
+   "id": "t1",
+   "epsg": 25832,
+   "elements": [
+    {
+     "elementType": 0,
+     "startNode": [
+      500000,
+      5700000
+     ],
+     "endNode": [
+      500100,
+      5700000
+     ],
+     "bearing": 90,
+     "length": 100,
+     "radius": null,
+     "r1": "x",
+     "geometry": {}
+    }
+   ]
+  },
+  "valid": false,
+  "paths": [
+   "/elements/0",
+   "/elements/0/r1"
+  ]
+ },
+ {
+  "ref": "core#/$defs/Switch",
+  "value": {
+   "id": "s",
+   "kind": "turnout",
+   "formVersion": 1,
+   "ports": {
+    "A": {
+     "trackId": "t1",
+     "endpoint": "END"
+    },
+    "B1": null
+   }
+  },
+  "valid": true,
+  "paths": []
+ },
+ {
+  "ref": "core#/$defs/Switch",
+  "value": {
+   "id": "s",
+   "kind": "turnout",
+   "formVersion": 1,
+   "ports": {
+    "E": {
+     "trackId": "t1",
+     "endpoint": "END"
+    }
+   }
+  },
+  "valid": false,
+  "paths": [
+   "/ports"
+  ]
+ },
+ {
+  "ref": "core#/$defs/Switch",
+  "value": {
+   "id": "s",
+   "kind": "turnout",
+   "formVersion": 1,
+   "ports": {
+    "A": {
+     "trackId": "t1"
+    }
+   }
+  },
+  "valid": false,
+  "paths": [
+   "/ports/A"
+  ]
+ },
+ {
+  "ref": "core#/$defs/OperationalPoint",
+  "value": {
+   "id": "o",
+   "rl100": "LHT"
+  },
+  "valid": true,
+  "paths": []
+ },
+ {
+  "ref": "core#/$defs/OperationalPoint",
+  "value": {
+   "id": "o"
+  },
+  "valid": false,
+  "paths": [
+   "/"
+  ]
+ },
+ {
+  "ref": "core#/$defs/KmLine",
+  "value": {
+   "id": "km-6050",
+   "lineNumber": 6050,
+   "runs": [
+    [
+     [
+      11.9,
+      51.5,
+      1200.5
+     ]
+    ]
+   ]
+  },
+  "valid": true,
+  "paths": []
+ },
+ {
+  "ref": "core#/$defs/KmLine",
+  "value": {
+   "id": "km-6050",
+   "lineNumber": 6050,
+   "runs": [
+    [
+     [
+      11.9,
+      51.5
+     ]
+    ]
+   ]
+  },
+  "valid": false,
+  "paths": [
+   "/runs/0/0"
+  ]
+ },
+ {
+  "ref": "layout#/$defs/NamedTrackPath",
+  "value": {
+   "id": "r",
+   "name": "Route 1",
+   "path": {
+    "trackIds": [
+     "t1"
+    ]
+   }
+  },
+  "valid": true,
+  "paths": []
+ },
+ {
+  "ref": "layout#/$defs/AxisSurvey",
+  "value": {
+   "id": "a",
+   "epsg": 25832,
+   "points": "sha256:abc"
+  },
+  "valid": false,
+  "paths": [
+   "/points"
+  ]
+ },
+ {
+  "ref": "layout#/$defs/Fields",
+  "value": {
+   "planHeader": {},
+   "osrd": {
+    "version": "4.0.0"
+   },
+   "imageHash": "f00"
+  },
+  "valid": true,
+  "paths": []
+ }
+]

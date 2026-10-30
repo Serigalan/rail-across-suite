@@ -4,8 +4,9 @@
 
 Reading and writing the file formats other programs use: OSRD's RailJSON and the tool's own alignment
 exchange file, Verm.ESN binary axes (TRA/GRA), ProVI interface archives, the Gleislage CSV export and the
-DB ASCII interface delivered as an Access database (MDB). The project's own format, oltjson-1.1, is in the
-`project` module and described in [data format](../data-format.md). The panels for all of this are in
+DB ASCII interface delivered as an Access database (MDB). The project's own format — the record, oltjson-1.1,
+and its file, the core 1.0 document — is in the core's `project` and `document` modules and described in
+[data format](../data-format.md). The panels for all of this are in
 `components/panels/dataExchange/` and `components/panels/ProviImportSection.jsx`; the MDB section and worker
 are server parts (`src/server/panels/MdbSection.jsx`, `src/server/mdb/`), because the Access file is
 converted on the server.

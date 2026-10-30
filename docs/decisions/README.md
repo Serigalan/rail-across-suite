@@ -13,3 +13,4 @@ it costs. A record is not rewritten when a decision changes; a new one replaces 
 | [0006](0006-capacity-on-osrd.md) | Open-Capacity-Sim builds on OSRD | accepted |
 | [0007](0007-project-name.md) | The project's name: Rail-Across-Suite | accepted |
 | [0008](0008-data-outside-history.md) | Large data outside the history, fetched by version and hash | accepted |
+| [0009](0009-core-1-0-in-the-data-model.md) | core 1.0 has the data model's shape from the start | accepted |

@@ -21,7 +21,10 @@ const LAS = makeLas(Array.from({ length: 2000 }, (_, k) => ({
   x: 4470000 + (k % 200) * 0.1, y: 5332000 + Math.floor(k / 200) * 0.8, z: 530 + (k % 7) * 0.3, intensity: k * 31,
 })), { offset: [4470000, 5332000, 500] })
 
-const track = { id: 't1', name: 't1', epsg: 25832, elements: [] }
+const track = {
+  id: 't1', name: 't1', epsg: 25832,
+  elements: [{ elementType: 0, bearing: 90, length: 100, startNode: [500000, 5700000], endNode: [500100, 5700000] }],
+}
 
 /** A project of max's with one variant, and `n` ready clouds in it. */
 async function start(n = 2) {
@@ -68,7 +71,7 @@ describe('read-only share links to the 3D view', () => {
     const open = (await anon('GET', base)).json()
     expect(open.share).toMatchObject({ projectTitle: 'Strecke', variantName: 'Bestand', label: 'Bauherr' })
     expect(open.clouds.map(c => c.id)).toEqual([ids[0]])            // only the cloud named
-    expect((await anon('GET', `${base}/head`)).json().payload.tracks[0].id).toBe('t1')
+    expect((await anon('GET', `${base}/head`)).json().payload.domains.core.collections.tracks[0].id).toBe('t1')
     const index = (await anon('GET', `${base}/clouds/${ids[0]}/L1/index`)).json()
     expect(index.level).toBe(1)
     const seg = index.tiles[0][2][0]

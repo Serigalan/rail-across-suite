@@ -510,7 +510,7 @@ describe('a switch further along the same track', () => {
     const plan   = planSwitchDeletion(rec1, tracks)
     const after  = apply(tracks, plan)
     const project = {
-      id: 'p1', name: 'p',
+      id: 'p1', title: 'p',
       tracks: after,
       switches: remapSwitches([rec2], plan.remap),
     }

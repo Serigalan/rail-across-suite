@@ -1,3 +1,4 @@
+import { FORMAT as DOCUMENT_FORMAT, fromDocument, PayloadError, toDocument } from '../document/index.js'
 import { reconstructElements, derivedEndBearing, loadedTrackCants, storedTrackCants } from '../geometry/index.js'
 import { rebuildSwitchSymbol } from '../switch/index.js'
 import { rebuildPlatformSymbol, isModelledSwitch, rebuildCoords } from '../track/index.js'
@@ -54,25 +55,20 @@ import { rebuildPlatformSymbol, isModelledSwitch, rebuildCoords } from '../track
  *     one exception to the plane rule (see kmLineUtils).
  *   – project images live outside the records; an export embeds them.
  *
- * A payload of another format or version is refused, not converted:
- * parseProjectsPayload is the door, and nothing behind it has to ask again
- * whether a record is complete.
+ * The record is what the app works on. What crosses a boundary — a file, the
+ * project server — is the core 1.0 document (document module), the record
+ * turned into the shape of the data model and checked against its schemas.
+ * parseProjectsPayload is the door for both: a core 1.0 document, or an
+ * oltjson-1.1 file migrated into one (the first step of the migration chain)
+ * and checked as such. Anything else is refused, and nothing behind the door
+ * has to ask again whether a record is complete.
  */
 const FORMAT = 'oltjson'
 const FORMAT_VERSION = '1.1'
 /** The format's name as it is spoken of: oltjson-1.1. */
 export const FORMAT_NAME = `${FORMAT}-${FORMAT_VERSION}`
 
-/**
- * A payload this tool will not take, `code` being the key the UI translates.
- */
-export class PayloadError extends Error {
-  constructor(code) {
-    super(code)
-    this.name = 'PayloadError'
-    this.code = code
-  }
-}
+export { PayloadError }
 
 /** A file of `records` (already dehydrated): { format, version, projects }. */
 export const projectsPayload = (records) => ({ format: FORMAT, version: FORMAT_VERSION, projects: records })
@@ -88,18 +84,23 @@ const keptRoleAndReasons = (el) => (el.role == null || ELEMENT_ROLES.includes(el
     && Object.values(el.reasons).every(r => typeof r === 'string')))
 
 /**
- * Unwrap an imported payload ({ format, version, projects }) — and refuse it
- * where it is not one of this tool's own.
+ * The records of a payload — a core 1.0 document (one project), or an
+ * oltjson-1.1 file ({ format, version, projects }) — and refuse it where it is
+ * not one of these.
  *
  * This is the one place that decides. Everything downstream — hydrateProjects,
  * the switch symbols, the delete rules — may then take the model for granted
- * instead of each guarding for a field that might be missing.
+ * instead of each guarding for a field that might be missing. An oltjson-1.1
+ * record is migrated into a core 1.0 document and taken through the same
+ * checks a document is, so both come out alike.
  *
  * Refused with `unsupported_version` where the file is another format or
- * another version of this one, and with `invalid_payload` where it states the
- * right one but does not hold it.
+ * another version, with `stages_unsupported` where a document has
+ * construction stages of its own, and with `invalid_payload` (its `details`
+ * saying what) where it states a format it does not hold.
  */
 export function parseProjectsPayload(data) {
+  if (data?.format === DOCUMENT_FORMAT) return { projects: [fromDocument(data)] }
   if (!data || typeof data !== 'object' || !Array.isArray(data.projects)) {
     throw new PayloadError('invalid_payload')
   }
@@ -119,8 +120,16 @@ export function parseProjectsPayload(data) {
       }
     }
   }
-  return { projects: data.projects }
+  return { projects: data.projects.map(p => fromDocument(toDocument(dehydrateProjects([p])[0]))) }
 }
+
+/**
+ * The core 1.0 document of a project record — what a file and the project
+ * server hold. Derived data is stripped first; `carrySchemas` puts the
+ * domains' schemas in, as a file that travels carries them.
+ */
+export const projectDocument = (record, { carrySchemas = false } = {}) =>
+  toDocument(dehydrateProjects([record])[0], { carrySchemas })
 
 const isPoint = (p) => Array.isArray(p) && p.length >= 2 && p.every(Number.isFinite)
 

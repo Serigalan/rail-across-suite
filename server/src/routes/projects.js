@@ -60,7 +60,8 @@ export default async function projectRoutes(api) {
     const template = Boolean(req.body?.template)
     if (template && req.user.role !== 'admin') throw new ApiError(403, 'template_admin')
     const given = req.body?.payload
-    const { record, errors, warnings } = checkRecord(given ?? { tracks: [], switches: [], platforms: [] })
+    // The store gives the project its id; until then the door checks the record under a stand-in.
+    const { record, errors, warnings } = checkRecord(given ?? { tracks: [], switches: [], platforms: [] }, { id: 'new' })
     const ids = store.createProject({
       title, description, payload: record, authorId: req.user.id, errorKeys: errors.map(e => e.key),
       variantName: text(req.body?.variantName, 100) || (template ? 'Vorlage' : 'Bestand'), template,

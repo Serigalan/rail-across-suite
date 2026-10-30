@@ -104,7 +104,7 @@ export default function StartPage({ user, onOpenVariant, onViewVariant, onSignOu
         const { image, id: _id, ...record } = withImportSystem(p)
         const picture = splitDataUrl(image)
         if (picture) record.imageHash = (await api.uploadImage(picture.mime, picture.data)).hash
-        await api.createProject({ title: p.title || file.name.replace(/\.json$/i, ''), description: p.description ?? '', payload: record })
+        await api.createProject({ title: p.title || file.name.replace(/(\.railacross)?\.json$/i, ''), description: p.description ?? '', payload: record })
       }
       setNotice(fill('home_imported', { n: incoming.length }))
       await reload()

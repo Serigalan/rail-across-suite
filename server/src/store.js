@@ -1,14 +1,19 @@
 import { randomUUID } from 'node:crypto'
 import { gunzipSync, gzipSync } from 'node:zlib'
+import { projectDocument } from '@rail-across/core/project'
+import { normalizedRecord } from './checks.js'
 import { ApiError } from './errors.js'
 
 /**
- * What `revision.schema_version` says of a record: 2 is oltjson-1.1
- * (Entscheidung 371), 1 was oltjson-1.0 (decision 333). Rows of a layout
- * before it are not read — they are not converted (decisions 333 and 371),
- * and opening one says so instead of failing somewhere in the browser.
+ * What `revision.schema_version` says of a payload: 3 is a core 1.0 document,
+ * what revisions are written as; 2 an oltjson-1.1 record, migrated into a
+ * document when it is read — the first step of the migration chain (data
+ * model, S-R10); 1 was oltjson-1.0 (decision 333), not read: it is not
+ * converted, and opening one says so instead of failing somewhere in the
+ * browser.
  */
-const STORED_FORMAT = 2
+const STORED_FORMAT = 3
+const MIGRATED = { 2: (record) => projectDocument(normalizedRecord(record)) }
 
 
 const pack = (payload) => gzipSync(Buffer.from(JSON.stringify(payload)))
@@ -19,7 +24,7 @@ const unpack = (buf) => JSON.parse(gunzipSync(buf).toString('utf8'))
  *
  * A variant is a name and a head: branching one off another writes a variant
  * whose head is the revision the other is at, and copies nothing. A revision
- * holds the whole dehydrated record (decision 98). The graph of revisions —
+ * holds the whole project as its core 1.0 document (decision 98). The graph of revisions —
  * each with its parent and, for a merge, a second parent — is small enough to
  * be walked in memory for the common base and the logs between two of them.
  */
@@ -96,7 +101,7 @@ export function createStore(db, { now = () => Date.now() } = {}) {
     const { lastInsertRowid } = q.insertRevision.run({
       project_id: projectId, number: q.nextNumber.get(projectId), variant_id: variantId,
       parent_id: parentId, merge_parent_id: mergeParentId, author_id: authorId, created_at: iso(),
-      message: String(message ?? ''), schema_version: STORED_FORMAT, payload: pack(payload),
+      message: String(message ?? ''), schema_version: STORED_FORMAT, payload: pack(projectDocument(payload)),
       remaps: JSON.stringify(remaps ?? []), error_keys: JSON.stringify(errorKeys),
       image_hash: typeof payload?.imageHash === 'string' ? payload.imageHash : null,
     })
@@ -140,12 +145,20 @@ export function createStore(db, { now = () => Date.now() } = {}) {
     project: (id) => q.project.get(id),
     variant: (id) => q.variant.get(id),
 
-    /** A revision with its record, or null. */
+    /** A revision with its document, or null. */
     revision(id) {
       const r = q.revisionFull.get(id)
       if (!r) return null
-      if (r.schema_version !== STORED_FORMAT) throw new ApiError(409, 'format_outdated')
-      return { meta: revisionMeta(id), payload: unpack(r.payload), remaps: JSON.parse(r.remaps), errorKeys: JSON.parse(r.error_keys) }
+      let payload
+      if (r.schema_version === STORED_FORMAT) payload = unpack(r.payload)
+      else if (MIGRATED[r.schema_version]) {
+        try {
+          payload = MIGRATED[r.schema_version](unpack(r.payload))
+        } catch {
+          throw new ApiError(409, 'format_outdated')
+        }
+      } else throw new ApiError(409, 'format_outdated')
+      return { meta: revisionMeta(id), payload, remaps: JSON.parse(r.remaps), errorKeys: JSON.parse(r.error_keys) }
     },
 
     /**

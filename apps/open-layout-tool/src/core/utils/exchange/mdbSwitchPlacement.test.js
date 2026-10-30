@@ -335,13 +335,13 @@ describe('an imported switch is stored like a built one', () => {
   })
 
   it('passes the payload gate a saved project has to pass', () => {
-    const projects = [{ id: 'p1', name: 'MDB', tracks: placed.tracks, switches: placed.switches }]
+    const projects = [{ id: 'p1', title: 'MDB', tracks: placed.tracks, switches: placed.switches }]
     const payloadOut = projectsPayload(dehydrateProjects(projects))
     expect(() => parseProjectsPayload(JSON.parse(JSON.stringify(payloadOut)))).not.toThrow()
   })
 
   it('comes back drawable after the store has written and read it', () => {
-    const projects = [{ id: 'p1', name: 'MDB', tracks: placed.tracks, switches: placed.switches }]
+    const projects = [{ id: 'p1', title: 'MDB', tracks: placed.tracks, switches: placed.switches }]
     const round = JSON.parse(JSON.stringify(dehydrateProjects(projects)))
     hydrateProjects(round)
     const back = round[0].switches.find(x => x.switchId === sw.switchId)

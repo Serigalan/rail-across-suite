@@ -1,9 +1,10 @@
 # project — the record as a whole
 
-`packages/core/src/project/` · needs `geometry`, `track`, `switch`, `survey`
+`packages/core/src/project/` · needs `document`, `geometry`, `track`, `switch`, `survey`
 
-The project record as one thing: its format oltjson-1.1 (the door every payload passes, hydration on load,
-dehydration on save), the project settings (coordinate system, line category), the validation every merge
+The project record as one thing: the record the app works on, oltjson-1.1 (hydration on load, dehydration on
+save), the door every payload passes into it — a core 1.0 document, or an oltjson-1.1 file migrated into one
+([document](document.md)) —, the project settings (coordinate system, line category), the validation every merge
 result and every server revision must pass, and the short description of what one undo step did. The format
 itself — every field, and why it is shaped as it is — is described in [the data format](../../../apps/open-layout-tool/docs/data-format.md).
 
@@ -11,18 +12,23 @@ itself — every field, and why it is shaped as it is — is described in [the d
 
 | File | What it does |
 |---|---|
-| `persistenceUtils.js` | oltjson-1.1: `projectsPayload`, `parseProjectsPayload` (the door), `hydrateProjects` (derive on load), `dehydrateProjects` (strip and round on save), `parseTracksPayload` (track files) |
+| `persistenceUtils.js` | The record: `parseProjectsPayload` (the door), `projectDocument` (a record as its core 1.0 document), `projectsPayload` (the oltjson-1.1 envelope of files from before), `hydrateProjects` (derive on load), `dehydrateProjects` (strip and round on save), `parseTracksPayload` (track files) |
 | `projectSettings.js` | The project's coordinate system and line category; moving tracks into another plane with everything a switch joins to them |
 | `validateProject.js` | Whether a record holds together: errors and warnings, stably keyed; `newFindings` |
 | `stepLabel.js` | What one step did, in a few words, worked out from the two states |
 
 ## Load, save, refuse
 
-`parseProjectsPayload` is **the one place that decides** whether a payload is taken: it must say
-`format: 'oltjson'`, `version: '1.1'`, hold `projects`, every switch must be a modelled record (`switchId`,
-`kind`, `formVersion`, `ports` an object of port objects) and every switch-marked element must carry its
-switch's id. Anything else is refused with `unsupported_version` or `invalid_payload` — **never converted**.
-Everything behind the door may take the model for granted instead of guarding each field.
+`parseProjectsPayload` is **the one place that decides** whether a payload is taken. A core 1.0 document goes
+through the document module's door and comes out as the record. An oltjson-1.1 file (`format: 'oltjson'`,
+`version: '1.1'`, `projects`; every switch a modelled record — `switchId`, `kind`, `formVersion`, `ports` an
+object of port objects —, every switch-marked element with its switch's id) is **migrated**: each record into a
+core 1.0 document, checked as one, and back — so both come out alike. Anything else is refused with
+`unsupported_version`, `stages_unsupported` or `invalid_payload` (with what was found). Everything behind the door
+may take the model for granted instead of guarding each field.
+
+`projectDocument` is the other way: the record, dehydrated, as its checked core 1.0 document — what a file and
+the project server hold; `carrySchemas` puts the schemas in for a file that travels.
 
 `hydrateProjects` rebuilds what is derived, in place: element polylines and render coordinates, the end bearing
 of arcs and transitions where the record leaves it to them, track coordinates, switch symbols and platform

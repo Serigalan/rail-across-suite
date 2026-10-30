@@ -3,7 +3,7 @@ import { sleeperAtX, xAtMain } from '@rail-across/core/test/turnoutFixture.js'
 import {
   withUndo, openProject, saveTrack, saveSwitch, loadTracks, loadSwitches,
   undo, canUndo, loadImportReports, saveImportReport, clearImportReports,
-  loadPlanHeader, savePlanHeader, exportProjectsPayload,
+  loadPlanHeader, savePlanHeader, exportProjectDocument,
   saveEndMark, loadEndMarks, deleteEndMark, deleteElement, deleteElements, reverseTrackDirection, deleteTrack,
   commitSwitchConnection, deleteTracks, remapSwitchTrackIds, loadIdLog,
   openStoredProject, currentStoredProject, currentStoredMeta, closeStoredProject, flushPendingWrites, currentProject,
@@ -164,8 +164,8 @@ describe('the title block of a project\'s plans', () => {
 
     expect(savePlanHeader({ subtitle: 'Streckenband' })).toBe(true)
     expect(loadPlanHeader().subtitle).toBe('Streckenband')
-    const exported = exportProjectsPayload().projects[0]
-    expect(exported.planHeader.subtitle).toBe('Streckenband')
+    const exported = exportProjectDocument()
+    expect(exported.domains.layout.fields.planHeader.subtitle).toBe('Streckenband')
 
     saveTrack({ id: 'th', elements: [] })
     savePlanHeader({ subtitle: 'neu' })

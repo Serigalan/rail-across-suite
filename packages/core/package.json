@@ -12,6 +12,8 @@
     "./src/*": "./src/*",
     "./constraints/*": "./constraints/*",
     "./test/*": "./test/*",
+    "./schemas/*": "./schemas/*",
+    "./types/*": "./types/*",
     "./*": "./src/*/index.js"
   },
   "scripts": {

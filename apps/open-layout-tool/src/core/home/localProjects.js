@@ -1,4 +1,4 @@
-import { FORMAT_NAME, PayloadError, parseProjectsPayload, projectsPayload, withImportSystem } from '@rail-across/core/project'
+import { FORMAT_NAME, PayloadError, parseProjectsPayload, projectDocument, withImportSystem } from '@rail-across/core/project'
 import { generateId } from '@rail-across/core/track'
 import { closeStoredProject, currentStoredMeta, openStoredProject } from '../storage'
 import { storedBytes } from '../localStore'
@@ -8,6 +8,9 @@ import { formatDate } from '../locales/i18n'
  * The projects of the local build (Paket L, decision 279): a list in this
  * browser's IndexedDB — create, open, rename, delete — and files to export
  * and import. No variants, no revisions: the browser holds the only copy.
+ *
+ * The browser keeps each project as the record the app works on (oltjson-1.1,
+ * marked with the format); a file is its core 1.0 document.
  *
  * DB `olt-local`, version 1, two stores keyed by the project's id:
  *   projects   { id, project (dehydrated), idLog, createdAt, updatedAt }
@@ -102,8 +105,8 @@ export async function createLocalProject({ title, description = '', image = null
 }
 
 /**
- * The projects of a file (oltjson-1.1, as exported here or from a
- * server variant) as projects of their own — each a new id, so a file read
+ * The projects of a file (a core 1.0 document as exported here or from a
+ * server variant, or an oltjson-1.1 file from before) as projects of their own — each a new id, so a file read
  * in twice is two projects, each naming the coordinate system most of its
  * tracks lie in where it names none (decision 322). Throws the PayloadError of
  * parseProjectsPayload.
@@ -120,11 +123,11 @@ export async function importLocalProjects(data, fallbackTitle = '') {
   return projects.length
 }
 
-/** The file of one project (oltjson-1.1), its picture embedded. */
+/** The file of one project: its core 1.0 document, its picture embedded, the schemas carried. */
 export async function exportLocalProject(id) {
   const record = await get(id)
   if (!record) return null
-  return projectsPayload([record.project])
+  return projectDocument(record.project, { carrySchemas: true })
 }
 
 /** Change a project's title, description or picture (`image` a data URL, null to take it away). */

@@ -1,5 +1,5 @@
 import {
-  hydrateProjects, dehydrateProjects, projectsPayload, moveTracksToPlane, withImportSystem,
+  hydrateProjects, dehydrateProjects, projectDocument, moveTracksToPlane, withImportSystem,
 } from '@rail-across/core/project'
 import {
   elementBelongsToSwitch, portsOf, unmarkSwitchElement, portTrack, portEnd, sliceHeights,
@@ -692,12 +692,12 @@ export const hiddenKmLines = () => _hiddenKmLines.get()
 export const setKmLinesHidden = (lineNumbers, hidden) => _hiddenKmLines.set(lineNumbers.map(String), hidden)
 
 /**
- * The open project as a file ({ version, projects }), dehydrated. Its image
- * goes by the hash the server keeps it under (`imageHash`).
+ * The open project as a file: its core 1.0 document, carrying the schemas of
+ * its domains; null without one. Its image goes by the hash the server keeps
+ * it under (`imageHash`).
  */
-export function exportProjectsPayload() {
-  const projects = _project ? [structuredClone(_project)] : []
-  return projectsPayload(dehydrateProjects(projects))
+export function exportProjectDocument() {
+  return _project ? projectDocument(structuredClone(_project), { carrySchemas: true }) : null
 }
 
 // ── plan header ─────────────────────────────────────────────────────────────

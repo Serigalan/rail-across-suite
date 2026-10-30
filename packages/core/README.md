@@ -14,9 +14,13 @@ The shared model of Rail-Across-Suite in JavaScript: every module reads and writ
 | `switch` | switch forms, routes, symbols, crossings, switch connections, deletion | [switch](docs/switch.md) |
 | `commands` | what an edit commits: new tracks and switches, connecting, splicing, reconnecting | [commands](docs/commands.md) |
 | `survey` | measured axes, reference axes, shift values, alignment fit | [survey](docs/survey.md) |
-| `project` | the project record: format oltjson-1.1, settings, validation | [project](docs/project.md) |
+| `document` | the core 1.0 document: domains, schemas, the door, conversion from and to the record, canonical JSON, hashes | [document](docs/document.md) |
+| `project` | the project record the app works on (oltjson-1.1), the door to it, settings, validation | [project](docs/project.md) |
 | `merge` | diff, three-way merge, carrying ids | [merge](docs/merge.md) |
 
+`schemas/` links the JSON Schemas of the domains at the root of the repository ([schemas](../../schemas/README.md)),
+and `types/document.d.ts` holds the types derived from them (`node tools/types.mjs`); the Python core
+(`packages/core-py`) reads the same schemas and is held to the same vectors (`node tools/vectors.mjs`).
 `constraints/` holds the rule and form catalogues as data, shared with the Python optimizer
 (`services/optimizer/olt_optimizer/constraints` links here); `test/` holds helpers and fixtures the tests of the
 core and of the apps share.
@@ -40,5 +44,7 @@ sources to that.
 
 ```bash
 node tools/modules.mjs     # index only, no cycle, nothing outside the package, a page per module, files named
+node tools/vectors.mjs     # the shared vectors in schemas/vectors (--check: are they current)
+node tools/types.mjs       # types/document.d.ts from the schemas (--check: is it current)
 npm test                   # the core's tests (vitest)
 ```

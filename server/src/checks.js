@@ -5,18 +5,30 @@ import {
 import { ApiError } from './errors.js'
 
 /**
- * A record coming in, taken through the browser's own door (decision 91):
- * parseProjectsPayload refuses what is not this tool's, dehydrateProjects
- * strips whatever derived geometry rode along, validateProject says what holds.
- * The server trusts the browser in none of it.
+ * What a payload is as the door takes it: a core 1.0 document as it is, a
+ * bare record — oltjson-1.1 without its envelope, what clients sent before
+ * core 1.0 — in its envelope, so the door migrates it. `id` stands in for a
+ * record's missing id (a new project's, which the store gives it).
+ */
+function asPayload(payload, id) {
+  if (payload?.format) return payload
+  return projectsPayload([{ ...payload, ...(payload.id == null && id != null ? { id } : {}) }])
+}
+
+/**
+ * A payload coming in, taken through the browser's own door (decision 91):
+ * parseProjectsPayload refuses what is not a core 1.0 document (or an
+ * oltjson-1.1 record it can migrate into one), dehydrateProjects strips
+ * whatever derived geometry rode along, validateProject says what holds. The
+ * server trusts the browser in none of it.
  *
  * Returns { record, errors, warnings }.
  */
-export function checkRecord(payload) {
+export function checkRecord(payload, { id } = {}) {
   if (!payload || typeof payload !== 'object' || Array.isArray(payload)) throw new ApiError(422, 'invalid_payload')
   let parsed
   try {
-    parsed = parseProjectsPayload(projectsPayload([payload]))
+    parsed = parseProjectsPayload(asPayload(payload, id))
   } catch (err) {
     throw new ApiError(422, err instanceof PayloadError ? err.code : 'invalid_payload')
   }
@@ -26,13 +38,13 @@ export function checkRecord(payload) {
 }
 
 /**
- * A stored record as checkRecord would hand it on today — parsed and
- * dehydrated, not validated — so a part of it compares with a record coming
- * in even where the parsing has since filled in more.
+ * The record a stored payload holds — a core 1.0 document, or a record of the
+ * old layout — as checkRecord would hand it on, not validated: so a part of it
+ * compares with a record coming in.
  */
 export function normalizedRecord(payload) {
   try {
-    return dehydrateProjects(parseProjectsPayload(projectsPayload([payload])).projects)[0]
+    return dehydrateProjects(parseProjectsPayload(asPayload(payload)).projects)[0]
   } catch {
     return payload
   }

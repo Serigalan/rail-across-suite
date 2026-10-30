@@ -2,6 +2,11 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { loadIdLog, saveTrack, undo } from '../core/storage'
 import { closeWorkingCopy, currentWorkingCopy, openWorkingCopy } from './workingCopies'
 import { checkIn, localChanges, prepareUpdate, revertToHead } from './workingCopySync'
+import { parseProjectsPayload, projectDocument } from '@rail-across/core/project'
+
+/** What the server holds and sends of a record: its core 1.0 document — and the record it holds again. */
+const doc = (record) => projectDocument(record)
+const recordOf = (payload) => parseProjectsPayload(payload).projects[0]
 
 beforeAll(() => {
   const store = new Map()
@@ -39,8 +44,9 @@ describe('checking the working copy in', () => {
     const sent = serve({ 'POST /api/variants/v/revisions': [201, { revision: { id: 2, number: 2 } }] })
     const res = await checkIn('neu')
     expect(res.revision.id).toBe(2)
-    expect(sent[0].body).toMatchObject({ base: 1, message: 'neu', remaps: [], payload: { id: 'p' } })
-    expect(sent[0].body.payload.tracks.map(t => t.id)).toEqual(['t1', 't2'])
+    expect(sent[0].body).toMatchObject({ base: 1, message: 'neu', remaps: [], payload: { format: 'rail-across' } })
+    expect(recordOf(sent[0].body.payload)).toMatchObject({ id: 'p' })
+    expect(recordOf(sent[0].body.payload).tracks.map(t => t.id)).toEqual(['t1', 't2'])
     expect(currentWorkingCopy().base.id).toBe(2)
     expect(localChanges()).toEqual([])
   })
@@ -52,7 +58,7 @@ describe('checking the working copy in', () => {
     serve({
       'POST /api/variants/v/revisions': [409, { error: 'stale_base', head: { id: 3 } }],
       'GET /api/variants/v': [200, { variant: { head: { id: 3, number: 3 } } }],
-      'GET /api/revisions/3': [200, { revision: { id: 3, number: 3, author: { name: 'Schulz' } }, payload: theirs }],
+      'GET /api/revisions/3': [200, { revision: { id: 3, number: 3, author: { name: 'Schulz' } }, payload: doc(theirs) }],
       'GET /api/revisions/3/remaps?base=1': [200, { remaps: [] }],
     })
     expect(await checkIn('x')).toEqual({ stale: true })
@@ -69,7 +75,7 @@ describe('throwing the local changes away', () => {
       idLog: [{ from: 't1', to: ['t1a', 't1b'] }] })
     saveTrack(straight('mine', 50))
     const theirs = { ...base, tracks: [...base.tracks, straight('theirs', 100)] }
-    serve({ 'GET /api/variants/v/head': [200, { revision: { id: 3, number: 3 }, payload: theirs }] })
+    serve({ 'GET /api/variants/v/head': [200, { revision: { id: 3, number: 3 }, payload: doc(theirs) }] })
     const revision = await revertToHead()
     expect(revision.id).toBe(3)
     expect(currentWorkingCopy().base.id).toBe(3)

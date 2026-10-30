@@ -5,7 +5,13 @@
  *
  * A 401 anywhere but on signing in means the session is gone: the handler set
  * with setUnauthorizedHandler takes the app back to the sign-in page.
+ *
+ * Revisions travel as core 1.0 documents. The record the app works on goes
+ * out as one and comes back through the door (parseProjectsPayload), here and
+ * nowhere else: the callers send and get records.
  */
+import { parseProjectsPayload, projectDocument } from '@rail-across/core/project'
+
 const BASE = import.meta.env?.VITE_OLT_API ?? '/api'
 
 export class ApiError extends Error {
@@ -55,6 +61,18 @@ const cloudsPath = (projectId) => (shareToken ? `/share/${enc(shareToken)}/cloud
 /** The URL an image of the server is shown from. */
 export const blobUrl = (hash) => (hash ? `${BASE}/blobs/${enc(hash)}` : null)
 
+/** An answer with its `payload`, the document, as the record it holds. */
+const withRecord = (res) => (res?.payload ? { ...res, payload: parseProjectsPayload(res.payload).projects[0] } : res)
+
+/**
+ * A request with its `payload`, a record, as its document. A new project's
+ * record may have no id yet — the server gives it one; until then it goes
+ * under a stand-in.
+ */
+const withDocument = (body) => (body?.payload
+  ? { ...body, payload: projectDocument({ id: 'new', ...body.payload }) }
+  : body)
+
 export const api = {
   me:             () => request('GET', '/me'),
   login:          (login, password) => request('POST', '/login', { login, password }),
@@ -62,7 +80,7 @@ export const api = {
   changePassword: (current, next) => request('POST', '/me/password', { current, next }),
 
   projects:       () => request('GET', '/projects'),
-  createProject:  (body) => request('POST', '/projects', body),
+  createProject:  (body) => request('POST', '/projects', withDocument(body)),
   patchProject:   (id, body) => request('PATCH', `/projects/${enc(id)}`, body),
   deleteProject:  (id) => request('DELETE', `/projects/${enc(id)}`),
   branch:         (projectId, body) => request('POST', `/projects/${enc(projectId)}/variants`, body),
@@ -73,9 +91,9 @@ export const api = {
 
   variant:        (id) => request('GET', `/variants/${enc(id)}`),
   patchVariant:   (id, body) => request('PATCH', `/variants/${enc(id)}`, body),
-  head:           (id) => request('GET', shareToken ? `/share/${enc(shareToken)}/head` : `/variants/${enc(id)}/head`),
+  head:           async (id) => withRecord(await request('GET', shareToken ? `/share/${enc(shareToken)}/head` : `/variants/${enc(id)}/head`)),
   history:        (id) => request('GET', `/variants/${enc(id)}/revisions`),
-  revision:       (id) => request('GET', `/revisions/${enc(id)}`),
+  revision:       async (id) => withRecord(await request('GET', `/revisions/${enc(id)}`)),
   commonBase:     (a, b) => request('GET', `/revisions/${enc(a)}/base/${enc(b)}`),
   remaps:         (head, base) => request('GET', `/revisions/${enc(head)}/remaps${base != null ? `?base=${enc(base)}` : ''}`),
 
@@ -86,7 +104,7 @@ export const api = {
    */
   async checkIn(variantId, body) {
     try {
-      return await request('POST', `/variants/${enc(variantId)}/revisions`, body)
+      return await request('POST', `/variants/${enc(variantId)}/revisions`, withDocument(body))
     } catch (err) {
       if (err.status === 409 && err.code === 'stale_base') return { stale: err.body.head }
       throw err

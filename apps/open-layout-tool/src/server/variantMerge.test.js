@@ -1,6 +1,10 @@
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { setup, signIn } from '../../../../server/test/helpers.js'
 import { commitVariantMerge, prepareVariantMerge } from './variantMerge'
+import { parseProjectsPayload } from '@rail-across/core/project'
+
+/** The record a payload of the server (a core 1.0 document) holds. */
+const recordOf = (payload) => parseProjectsPayload(payload).projects[0]
 
 beforeAll(() => {
   const store = new Map()
@@ -32,7 +36,7 @@ afterEach(async () => { await ctx.app.close(); ctx.db.close() })
 
 async function checkIn(variantId, change, message = '') {
   const head = (await user('GET', `/api/variants/${variantId}/head`)).json()
-  const payload = change(structuredClone(head.payload))
+  const payload = change(recordOf(head.payload))
   const res = await user('POST', `/api/variants/${variantId}/revisions`, { base: head.revision.id, payload, remaps: [], message })
   expect(res.statusCode).toBe(201)
   return res.json().revision
@@ -62,7 +66,7 @@ describe('merging one variant into another (AP 10.8)', () => {
 
     expect((await prepareVariantMerge(bestand, v2030)).upToDate).toBe(true)
     const head = (await user('GET', `/api/variants/${v2030}/head`)).json()
-    expect(head.payload.tracks.map(t => t.id).sort()).toEqual(['b1', 'b2', 'n1', 't1'])
+    expect(recordOf(head.payload).tracks.map(t => t.id).sort()).toEqual(['b1', 'b2', 'n1', 't1'])
   })
 
   it('shows a conflict where both changed the same thing', async () => {

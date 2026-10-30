@@ -30,6 +30,8 @@ jobs:
       - run: npm ci --no-audit --no-fund
         working-directory: .
       - run: node tools/modules.mjs
+      - run: node tools/vectors.mjs --check
+      - run: node tools/types.mjs --check
       - run: npm test
 
   # Point clouds, shared by the Open-Layout-Tool and the project server.

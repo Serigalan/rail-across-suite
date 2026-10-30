@@ -103,8 +103,7 @@ function switchProject(identity = { switchId: 'sw-1', kind: DEFAULT_SWITCH_KIND,
   const toe = { easting: 500000, northing: 5600000, zone: SWITCH_EPSG }
   const g = computeSwitchGeometryUtm(toe, 30, FORM, 'right', false)
   const mark = (route) => ({
-    switchBranch: true, switchRoute: route,
-    switchId: identity.switchId, switchName: 'switch.001', switchLabel: FORM.label,
+    switchBranch: true, switchRoute: route, switchId: identity.switchId,
   })
   return [{
     id: 'p1',
@@ -112,7 +111,7 @@ function switchProject(identity = { switchId: 'sw-1', kind: DEFAULT_SWITCH_KIND,
       { id: 'through', epsg: SWITCH_EPSG, elements: [{
         elementType: 0, ...mark('main'),
         startNode: g.portA, endNode: g.portB2,
-        bearing: 30, length: switchStraightLength(FORM.R, FORM.ratio),
+        bearing: 30, length: switchStraightLength(FORM),
       }] },
       { id: 'branch', epsg: SWITCH_EPSG, elements: [{
         elementType: 1, ...mark('branch'),
@@ -124,7 +123,6 @@ function switchProject(identity = { switchId: 'sw-1', kind: DEFAULT_SWITCH_KIND,
     switches: [{
       ...identity, name: 'switch.001', label: FORM.label, trailing: false,
       ports: {
-        A: { trackId: null, endpoint: null },
         B1: { trackId: 'branch', endpoint: 'BEGIN' },
         B2: { trackId: 'through', endpoint: 'BEGIN' },
       },

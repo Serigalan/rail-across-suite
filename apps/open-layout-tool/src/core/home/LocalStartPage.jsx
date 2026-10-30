@@ -97,7 +97,7 @@ export default function LocalStartPage({ onOpen }) {
     setError(null)
     setNotice(null)
     try {
-      const n = await importLocalProjects(JSON.parse(await file.text()), file.name.replace(/\.json$/i, ''))
+      const n = await importLocalProjects(JSON.parse(await file.text()), file.name.replace(/(\.railacross)?\.json$/i, ''))
       setNotice(fill('home_imported', { n }))
       await reload()
     } catch (err) {
@@ -107,7 +107,7 @@ export default function LocalStartPage({ onOpen }) {
 
   const exportProject = async (project) => {
     const data = await exportLocalProject(project.id)
-    if (data) downloadJSON(data, `${project.title || 'project'}.json`)
+    if (data) downloadJSON(data, `${project.title || 'project'}.railacross.json`)
   }
 
   const done = async () => { setDialog(null); await reload() }

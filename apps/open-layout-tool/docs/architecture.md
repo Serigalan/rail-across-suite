@@ -87,14 +87,15 @@ own module, and a worker only the server build needs lives in `src/server` (the 
 ## Data flow
 
 1. **Start.** The NTv2 base grids are loaded first (hydration converts historic datums), then the store.
-2. **Open.** A project record (oltjson-1.1, see [data format](data-format.md)) passes `parseProjectsPayload`, is
+2. **Open.** A project — a core 1.0 document, or an oltjson-1.1 file (see [data format](data-format.md)) — passes `parseProjectsPayload` and comes out as the record, is
    hydrated (display geometry derived) and becomes the store's open project.
 3. **Edit.** A panel gathers input, calls a command (`utils/commands`), checks the result against the rules and
    hands it to a store function. The store applies it immutably, applies consequences (turnout height coupling,
    route repair, end-mark pruning, length-governed curves) in the same undo step, notifies subscribers and writes
    the dehydrated record behind to where the project is kept.
-4. **Save / share.** Local build: IndexedDB and file export. Main build: the working copy in IndexedDB, checked in
-   as a revision; the server validates it with the same code and stores it gzip-compressed.
+4. **Save / share.** Local build: IndexedDB and file export (the core 1.0 document). Main build: the working copy
+   in IndexedDB, checked in as a revision — its core 1.0 document; the server validates it with the same code and
+   stores it gzip-compressed.
 
 ## Off the main thread
 

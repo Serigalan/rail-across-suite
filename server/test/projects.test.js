@@ -1,13 +1,15 @@
+import { gzipSync } from 'node:zlib'
 import { afterEach, describe, expect, it } from 'vitest'
 import { PW, setup, signIn } from './helpers.js'
 import { hasPek, loadPek } from '@rail-across/core/test/pekFixture.js'
+import { parseProjectsPayload } from '@rail-across/core/project'
 
 let ctx
 afterEach(async () => { await ctx?.app.close(); ctx?.db.close() })
 
 const straight = (id, y = 0) => ({
   id, name: id, epsg: 25832,
-  elements: [{ elementType: 0, bearing: 90, length: 100, absLength: 100, startNode: [500000, 5700000 + y], endNode: [500100, 5700000 + y] }],
+  elements: [{ elementType: 0, bearing: 90, length: 100, startNode: [500000, 5700000 + y], endNode: [500100, 5700000 + y] }],
 })
 
 async function start() {
@@ -23,8 +25,13 @@ async function newProject(user, payload) {
   return res.json()
 }
 
+/** The record a payload of the API (a core 1.0 document) holds. */
+const recordOf = (payload) => parseProjectsPayload(payload).projects[0]
+
+/** A variant's head, its document read as the record it holds. */
 async function head(user, variantId) {
-  return (await user('GET', `/api/variants/${variantId}/head`)).json()
+  const h = (await user('GET', `/api/variants/${variantId}/head`)).json()
+  return h.payload ? { ...h, document: h.payload, payload: recordOf(h.payload) } : h
 }
 
 describe('projects', () => {
@@ -34,6 +41,28 @@ describe('projects', () => {
     expect(project.variants).toEqual([expect.objectContaining({ name: 'Bestand', parentVariantId: null, head: expect.objectContaining({ number: 1 }) })])
     const h = await head(max, variantId)
     expect(h.payload).toMatchObject({ id: project.id, title: 'Halle–Könnern', tracks: [] })
+  })
+
+  it('keeps a revision as a core 1.0 document and hands it out as one', async () => {
+    const { max } = await start()
+    const { variantId } = await newProject(max, { tracks: [straight('t1')] })
+    const { document } = await head(max, variantId)
+    expect(document).toMatchObject({ format: 'rail-across', domains: { core: { version: '1.0' }, layout: { version: '1.0' } } })
+    expect(document.domains.core.collections.tracks.map(t => t.id)).toEqual(['t1'])
+    expect(ctx.db.prepare('SELECT schema_version FROM revision').pluck().all()).toEqual([3])
+  })
+
+  it('reads a revision kept as an oltjson-1.1 record as the document it migrates into', async () => {
+    const { max } = await start()
+    const { project, variantId, revisionId } = await newProject(max)
+    const old = { id: project.id, title: 'Halle–Könnern', tracks: [{ ...straight('t1'), status: 'new' }], switches: [], platforms: [] }
+    ctx.db.prepare('UPDATE revision SET schema_version = 2, payload = ? WHERE id = ?').run(gzipSync(JSON.stringify(old)), revisionId)
+    const { document, payload } = await head(max, variantId)
+    const stages = document.domains.core.fields.stages
+    expect(document.domains.core.collections.tracks[0].lifespan).toEqual({ from: stages[1].id })
+    expect(payload.tracks[0]).toMatchObject({ id: 't1', status: 'new' })
+    ctx.db.prepare('UPDATE revision SET schema_version = 1 WHERE id = ?').run(revisionId)
+    expect((await max('GET', `/api/variants/${variantId}/head`)).statusCode).toBe(409)
   })
 
   it.skipIf(!hasPek)('a new project with a record (an import) keeps it, under the project id', async () => {

@@ -97,15 +97,21 @@ if [ "$build" = 1 ]; then
   (cd apps/open-layout-tool && node tools/data.mjs)
 
   step "Build"
-  # Built beside dist/ and then synced into it: the directory itself stays
-  # (a Caddy in a container may have it bind-mounted), and the site is never
-  # half empty while vite writes.
+  # Built beside the site directory and then synced into it: the directory
+  # itself stays (a Caddy in a container may have it bind-mounted), and the
+  # site is never half empty while vite writes.
   out=$(mktemp -d "$OLT_REPO/.tmp-build-XXXX")
   trap 'rm -rf "$out"' EXIT
-  (cd apps/open-layout-tool && npx vite build --outDir "$out" --emptyOutDir)
-  mkdir -p "$OLT_APP/dist"
-  rsync -a --delete "$out/" "$OLT_APP/dist/"
-  chmod -R a+rX "$OLT_APP/dist"
+  (cd apps/open-layout-tool && npx vite build --outDir "$out/app" --emptyOutDir)
+  mkdir -p "$OLT_APP_DIST"
+  rsync -a --delete "$out/app/" "$OLT_APP_DIST/"
+  if [ "$OLT_HOME" = 1 ]; then
+    # The suite's start page at the root, the tool's directory left to it.
+    step "Build of the start page (apps/home)"
+    (cd apps/home && npx vite build --outDir "$out/home" --emptyOutDir)
+    rsync -a --delete --exclude "/${OLT_PATH#/}" "$out/home/" "$OLT_SITE_DIR/"
+  fi
+  chmod -R a+rX "$OLT_SITE_DIR"
   mkdir -p "$OLT_STATE"
   git rev-parse HEAD > "$OLT_STATE/commit"
   echo "${ref:-$(git rev-parse --abbrev-ref HEAD)}" > "$OLT_STATE/ref"

@@ -4,5 +4,7 @@ node_modules/
 __pycache__/
 *.egg-info/
 
-# The start page's build
+# Builds: the start page, and the suite's site (deploy, OLT_PATH other than /)
+/dist/
 apps/home/dist/
+/.tmp-build-*/

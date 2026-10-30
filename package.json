@@ -13,5 +13,9 @@
   },
   "scripts": {
     "check": "node tools/boundaries.mjs && node --test 'tools/*.test.mjs'"
+  },
+  "allowScripts": {
+    "esbuild": true,
+    "core-js": false
   }
 }

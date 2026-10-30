@@ -133,6 +133,24 @@ die Sicherung von vor dem Deploy zurückspielen (siehe unten).
 | Daten | `/var/lib/open-layout-tool` | `/var/lib/open-layout-tool-prod` |
 | Frontend im Caddy | `/srv/olt/test` | `/srv/olt/prod` |
 
+**Rail-Across-Suite auf dieser Maschine** (seit 2026-10-30): eine dritte Instanz
+aus diesem Repository, mit eigenem Projektserver und eigenen Nutzern. Unter
+`https://railacross.open-layout-tool.org/` liegt die Startseite der Suite
+(`apps/home`), daneben unter `/layout/` das Layout-Tool (`OLT_PATH=/layout/`) —
+eine Adresse, eine Anmeldung.
+
+| | Suite |
+|---|---|
+| Adresse | railacross.open-layout-tool.org (Startseite), …/layout/ (Layout-Tool) |
+| Konfiguration | `/etc/open-layout-tool/suite.env` |
+| Checkout | `/opt/rail-across-suite` (folgt `dev`) |
+| Units, Nutzer | `olt-suite-*`, `olt-suite` |
+| Ports (an 172.18.0.1) | 8789, 8101 |
+| Daten | `/var/lib/open-layout-tool-suite` |
+| Site im Caddy | `/opt/rail-across-suite/dist` → `/srv/railacross` |
+
+Update: `cd /opt/rail-across-suite && apps/open-layout-tool/deploy/deploy.sh --config /etc/open-layout-tool/suite.env --pull`.
+
 ## Daten und Sicherung
 
 | Was | Wo (Standard) |
@@ -245,11 +263,15 @@ Build also.
 | `/etc/open-layout-tool/caddy/` (Site-Blöcke beider Instanzen) | `/etc/caddy/olt/` |
 | `/opt/open-layout-tool/dist` | `/srv/olt/test` |
 | `/root/open-layout-tool-prod/app/dist` | `/srv/olt/prod` |
+| `/opt/rail-across-suite/dist` (Startseite und `layout/`) | `/srv/railacross` |
 
 Das OSRD-Caddyfile enthält nur `import /etc/caddy/olt/*.caddy`. Weil das ein
 eingehängtes **Verzeichnis** ist, sieht Caddy neue oder geänderte Site-Dateien
 nach `caddy reload` sofort (anders als das einzeln eingehängte Caddyfile, nach
-dessen Änderung der Container neu erzeugt werden muss). **Achtung:** OSRDs eigenes
+dessen Änderung der Container neu erzeugt werden muss). Ein neues eingehängtes
+Verzeichnis (wie das der Suite) braucht dagegen einen neu erzeugten Container:
+Zeile in `docker-compose.deploy.yml` ergänzen, dann
+`/root/osrd/deploy/osrd-deploy up -d caddy` (wenige Sekunden ohne Caddy). **Achtung:** OSRDs eigenes
 `setup.sh` schreibt das Caddyfile neu und verliert dabei die `import`-Zeile — danach
 wieder anfügen und `docker restart osrd-caddy`.
 

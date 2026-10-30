@@ -40,6 +40,15 @@ load_config() {
   OLT_LABEL=${OLT_INSTANCE:+ [$OLT_INSTANCE]}
   OLT_REPO=${OLT_REPO:-$here}
   OLT_APP=$OLT_REPO/apps/open-layout-tool
+  # Where the Open-Layout-Tool is served: at the root of OLT_DOMAIN (/), or
+  # under a path (/layout/) — then the root is the start page of the suite
+  # (apps/home), built beside it into one site directory, OLT_SITE_DIR.
+  OLT_PATH=${OLT_PATH:-/}
+  case "$OLT_PATH" in /) OLT_HOME=0 ;; /*/) OLT_HOME=1 ;; *) die "OLT_PATH must start and end with / (/ or /layout/)" ;; esac
+  if [ "$OLT_HOME" = 1 ]; then OLT_SITE_DIR=${OLT_SITE_DIR:-$OLT_REPO/dist}; else OLT_SITE_DIR=${OLT_SITE_DIR:-$OLT_APP/dist}; fi
+  OLT_APP_DIST=$OLT_SITE_DIR${OLT_PATH%/}
+  # The km line data Caddy hands out only with a session, under the app's path.
+  OLT_KM_PATHS="${OLT_PATH}data/km/* ${OLT_PATH}data/km_linie.pmtiles"
   OLT_USER=${OLT_USER:-olt$sfx}
   OLT_DATA=${OLT_DATA:-/var/lib/open-layout-tool$sfx}
   OLT_DB=${OLT_DB:-$OLT_DATA/olt.sqlite}
@@ -54,7 +63,7 @@ load_config() {
   OLT_SERVER_LOG=${OLT_SERVER_LOG:-info}
   OLT_CADDY=${OLT_CADDY:-system}
   OLT_UPSTREAM=${OLT_UPSTREAM:-$OLT_BIND}
-  OLT_SITE_ROOT=${OLT_SITE_ROOT:-$OLT_APP/dist}
+  OLT_SITE_ROOT=${OLT_SITE_ROOT:-$OLT_SITE_DIR}
   OLT_TRUST_PROXY=${OLT_TRUST_PROXY:-127.0.0.1,::1}
   if [ "$OLT_CADDY" = system ]; then OLT_CADDY_DIR=${OLT_CADDY_DIR:-/etc/caddy/conf.d}
   else OLT_CADDY_DIR=${OLT_CADDY_DIR:-$OLT_DATA}; fi
@@ -77,7 +86,8 @@ load_config() {
   OLT_GITHUB_REPO=${OLT_GITHUB_REPO:-Serigalan/rail-across-suite}
   OLT_NODE=${OLT_NODE:-$(command -v node || echo /usr/bin/node)}
   OLT_STATE=$OLT_DATA/.deploy-state
-  export OLT_DOMAIN OLT_INSTANCE OLT_UNIT_PREFIX OLT_LABEL OLT_REPO OLT_APP OLT_USER OLT_DATA OLT_DB \
+  export OLT_DOMAIN OLT_INSTANCE OLT_UNIT_PREFIX OLT_LABEL OLT_REPO OLT_APP OLT_PATH OLT_HOME OLT_SITE_DIR \
+    OLT_APP_DIST OLT_KM_PATHS OLT_USER OLT_DATA OLT_DB \
     OLT_BACKUPS OLT_BACKUP_DAYS OLT_VENV OLT_TERRAIN_CACHE OLT_CLOUDS OLT_BIND OLT_SERVER_PORT \
     OLT_OPTIMIZER_PORT OLT_SERVER_LOG OLT_CADDY OLT_UPSTREAM OLT_SITE_ROOT OLT_TRUST_PROXY \
     OLT_CADDY_DIR OLT_CADDY_SITE OLT_CADDY_RELOAD OLT_ADMIN_LOGIN OLT_OPTIMIZER_TIMEOUT \

@@ -14,7 +14,7 @@ For the Open-Layout-Tool this holds:
 
 - **NTv2 grids** (about 2 MB): release `data-1`, and cdn.proj.org, whose files are byte for byte the same.
 - **Kilometrage lines** (about 190 MB): not published at all — their source does not allow it. Whoever has them
-  puts them into `apps/open-layout-tool/tiles/`; the script links them into the app only where they are, so no
+  puts them into `apps/layout-tool/tiles/`; the script links them into the app only where they are, so no
   build ships them otherwise.
 - **Small pictures** (basemap previews, project pictures; a few kB each) stay in the repository.
 

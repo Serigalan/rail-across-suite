@@ -18,19 +18,23 @@ paar Skripte und die Vorlagen für systemd und Caddy. Dienste: `rail-across-serv
 
 ```
 Internet ─▶ Caddy (TLS, Let's Encrypt)
-             ├─ /            die Startseite der Suite (apps/home)           ┐ statisch, aus dist/
-             ├─ /layout/     das Layout-Tool (apps/open-layout-tool)        ┘ (RA_SITE_DIR)
+             ├─ /sign-in/    die Anmeldeseite (apps/home)           ┐ statisch, aus dist/ (RA_SITE_DIR);
+             ├─ /            die Startseite der Suite (apps/home)   │ ohne Sitzung antwortet an jeder
+             ├─ /layout/     das Layout-Tool (apps/layout-tool)     ┘ Adresse die Anmeldeseite
              ├─ /api/*       rail-across-server     Node: Anmeldung, Nutzer, Projekte, Varianten,
              │                                       Revisionen (core 1.0), Punktwolken; SQLite
-             ├─ /optimizer/* rail-across-optimizer  Python: Optimierung, MDB, Gelände   ┐ nur mit
-             └─ /layout/data/km*   Km-Linien aus dist/                                  ┘ Sitzung
+             └─ /optimizer/* rail-across-optimizer  Python: Optimierung, MDB, Gelände (nur mit Sitzung)
 
 rail-across-cloudjobs (ohne Port): bereitet hochgeladene Punktwolken auf und rechnet lange Läufe darauf
 ```
 
-**Eine Anmeldung.** Startseite und Module liegen unter einer Adresse und sprechen mit einem Projektserver: die
-Sitzung (Cookie `ra_session`) gilt überall. Angemeldet, das Passwort geändert und abgemeldet wird auf der
-Startseite (`#/sign-in`, `#/password`); ein Modul ohne Sitzung schickt dorthin und bekommt den Nutzer zurück.
+**Anmeldung vor der Suite.** Ohne Sitzung öffnet nichts: Caddy fragt für jede Seite den Projektserver
+(`forward_auth` gegen `/api/me`), und ohne Sitzung antwortet an derselben Adresse die Anmeldeseite der Suite
+(`sign-in/` aus `apps/home`); nach dem Anmelden lädt sie die Seite neu, die nun kommt. Eine Datenabfrage ohne
+Sitzung bekommt 401. Offen sind nur die Anmeldeseite, die gehashten Build-Dateien (`/assets/*`,
+`/layout/assets/*`), das Logo, die NTv2-Gitter und `layout/share.html`, der Einstieg der Freigabelinks der
+3D-Ansicht für Leute ohne Konto. Die Sitzung (Cookie `ra_session`) gilt für alle Module. Passwort, Abmelden und
+die Nutzerverwaltung mit den Rechten der Module liegen auf der Startseite (`#/password`, `#/admin`).
 
 Beide Dienste hören nur auf `RA_BIND` (Standard `127.0.0.1`), nie öffentlich. Caddy fragt für `/optimizer/*` und
 die Km-Linien per `forward_auth` beim Projektserver (`/api/me`), ob die Anfrage eine gültige Sitzung trägt.
@@ -49,15 +53,15 @@ $EDITOR /etc/rail-across/rail-across.env       # mindestens RA_DOMAIN
 ```
 
 Die NTv2-Gitter sind nicht im Repository: `setup.sh` und `deploy.sh` holen sie mit `node tools/data.mjs` des
-Layout-Tools (Version und SHA-256 in `apps/open-layout-tool/data.json`). Die Km-Linien gibt es nur für Tests und
-den eigenen Betrieb; wer sie hat, legt sie nach `apps/open-layout-tool/tiles/`.
+Layout-Tools (Version und SHA-256 in `apps/layout-tool/data.json`). Die Km-Linien gibt es nur für Tests und
+den eigenen Betrieb; wer sie hat, legt sie nach `apps/layout-tool/tiles/`.
 
 `setup.sh` installiert Node 22 (NodeSource), Python-venv, `mdbtools` und Caddy, legt den Dienstnutzer
 `rail-across` und `/var/lib/rail-across` an, kopiert die NTv2-Gitter dorthin, wo PROJ sie findet, baut die Site,
 installiert den Optimierer (editierbar, liest `packages/core/constraints` direkt), richtet die systemd-Units und
 die Caddy-Site ein und legt den ersten Admin an. Dessen Startpasswort steht danach in
 `/var/lib/rail-across/admin-start-password.txt`; es wird bei der ersten Anmeldung auf der Startseite geändert,
-die Datei danach löschen. Weitere Nutzer legt ein Admin an (vorerst in der Verwaltung des Layout-Tools).
+die Datei danach löschen. Weitere Nutzer legt ein Admin in der Nutzerverwaltung der Startseite an.
 
 ## Update
 
@@ -107,7 +111,7 @@ Seit 2026-10-30, unter `https://railacross.open-layout-tool.org/`:
 | Site im Caddy | `/opt/rail-across-suite/dist` → `/srv/railacross` |
 | Node | `/usr/local/bin/node` (`RA_NODE`: das Node in roots nvm darf der Dienstnutzer nicht lesen) |
 
-Daneben laufen die beiden Instanzen des früheren Open-Layout-Tools aus dem Repository `open-layout-tool`
+Daneben laufen die beiden Instanzen des früheren Layout-Tools aus dem Repository `open-layout-tool`
 (online.open-layout-tool.org, db-ec.open-layout-tool.org; Units `olt-*`, `olt-prod-*`, Ports 8787/8099 und
 8788/8100). Sie werden nicht umgezogen; ihre Skripte und ihre Überwachung (`olt-monitor`) liegen dort.
 
@@ -156,11 +160,11 @@ wird in Stücken von 8 MB über `rail-across-server`, aufbereitet von `rail-acro
 Schienenverfolgung), höchstens `RA_CLOUDRUNS_PARALLEL`. Je Projekt höchstens 25 GB; vor jedem Hochladen prüft
 der Server diese Quote und den freien Platz. Die tägliche Kopie enthält nur die Datenbank; wer Wolken sichern
 will, kopiert `clouds/` gesondert. Was die Detailstufen sind:
-[pointCloud](../apps/open-layout-tool/docs/modules/pointCloud.md).
+[pointCloud](../apps/layout-tool/docs/modules/pointCloud.md).
 
 ## Lokale Entwicklung
 
-Die Startseite (`apps/home`) und das Layout-Tool (`apps/open-layout-tool`) leiten mit `npm run dev` `/api` an
+Die Startseite (`apps/home`) und das Layout-Tool (`apps/layout-tool`) leiten mit `npm run dev` `/api` an
 `OLT_API_TARGET` (Standard `http://127.0.0.1:8787`) weiter, das Layout-Tool `/optimizer` an
 `OLT_OPTIMIZER_TARGET` (Standard `http://127.0.0.1:8099`), wie Caddy im Betrieb. Dienste lokal:
 
@@ -169,5 +173,5 @@ npm ci && cd server && RA_SERVER_INSECURE_COOKIE=1 RA_SERVER_DB=/tmp/rail-across
 python3 -m venv .venv && .venv/bin/pip install -c services/optimizer/requirements.lock -e 'services/optimizer[terrain]' && .venv/bin/olt-optimizer-serve
 ```
 
-Angemeldet wird auf der Startseite; das Layout-Tool allein (`npm run dev` dort) sagt, dass die Anmeldung dort
-liegt, denn es steht dann selbst an der Stelle der Startseite.
+Ohne Caddy davor gibt es keine Sperre: angemeldet wird lokal mit der Anmeldeseite der Startseite
+(`apps/home`, `npm run dev`, dann `/sign-in/`); das Layout-Tool allein sagt, dass die Anmeldung dort liegt.

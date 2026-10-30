@@ -95,7 +95,7 @@ if [ "$build" = 1 ]; then
   fi
 
   step "Data (NTv2 grids, by version and SHA-256)"
-  (cd apps/open-layout-tool && node tools/data.mjs)
+  (cd apps/layout-tool && node tools/data.mjs)
 
   step "Build"
   # Built beside the site directory and then synced into it: the directory

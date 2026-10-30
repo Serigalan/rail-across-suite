@@ -14,7 +14,7 @@ One repository holds the core, every module and the services
 |---|---|
 | `packages/` | the Rail-Data-Core (JavaScript and Python) and the libraries the apps and the server share (point clouds) |
 | `schemas/` | JSON Schema per domain, shared test vectors |
-| `apps/` | the modules, starting with the Open-Layout-Tool |
+| `apps/` | the modules, starting with the Layout-Tool |
 | `server/` | the project server for all modules |
 | `services/` | the Python services |
 | `docs/` | data model, decisions, glossary, conventions |
@@ -22,8 +22,8 @@ One repository holds the core, every module and the services
 
 The JavaScript parts — apps, packages and the server — are one npm workspace: `npm install` at the root installs
 them all, `npm run check` checks the repository's rules. Data kept out of the history is fetched per app
-([decision 0008](docs/decisions/0008-data-outside-history.md)), for the Open-Layout-Tool with `npm run data` in
-`apps/open-layout-tool/`.
+([decision 0008](docs/decisions/0008-data-outside-history.md)), for the Layout-Tool with `npm run data` in
+`apps/layout-tool/`.
 
 How to contribute: [CONTRIBUTING.md](CONTRIBUTING.md).
 

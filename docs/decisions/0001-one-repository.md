@@ -12,7 +12,7 @@ open-rail-designer/
   packages/core/              the core in JavaScript: geometry, tracks, switches, locations, remap, merge, validation
   packages/core-py/           the same core for Python (optimizer, simulations)
   schemas/                    JSON Schema per domain, shared test vectors
-  apps/open-layout-tool/      the Open-Layout-Tool
+  apps/layout-tool/      the Open-Layout-Tool
   apps/open-signalling-tool/  the first new module; the others follow alike
   server/                     one project server for all modules
   services/optimizer/         the Python service
@@ -23,7 +23,7 @@ Each app's directory carries the app's name, which is also its package name: `op
 `open-signalling-tool`, `open-catenary-tool`, `open-timetable-tool`, `open-capacity-sim`, `open-construction-sim`
 — the names of the architecture diagram.
 
-The Open-Layout-Tool moves into `apps/open-layout-tool/` with its history in a later step (see the roadmap,
+The Open-Layout-Tool moves into `apps/layout-tool/` with its history in a later step (see the roadmap,
 phase 0).
 
 ## Why

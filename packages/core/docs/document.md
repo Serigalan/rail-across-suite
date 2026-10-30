@@ -10,7 +10,7 @@ the construction stages; station names and codes as an operational point registe
 at the root of the repository (linked into the package), with the test vectors that hold the Python core to the
 same results.
 
-The module checks documents (the door), turns the record the Open-Layout-Tool works on into one and back, and
+The module checks documents (the door), turns the record the Layout-Tool works on into one and back, and
 writes canonical JSON and content hashes. The `project` module opens the door for the app and the server
 (`parseProjectsPayload`, `projectDocument`).
 

@@ -1,10 +1,10 @@
 import { contentHash, derivedId } from './canonical.js'
 import { PayloadError } from './payloadError.js'
 
-// The record the Open-Layout-Tool works on, and the core 1.0 document it is
+// The record the Layout-Tool works on, and the core 1.0 document it is
 // kept as — both ways, nothing lost.
 //
-// The record is oltjson-1.1 (apps/open-layout-tool/docs/data-format.md): one
+// The record is oltjson-1.1 (apps/layout-tool/docs/data-format.md): one
 // object with the project's fields and its collections. The document holds
 // the same in the shape of the data model (docs/data-model.md): two domains,
 // `core` and `layout`, each with its fields and its collections; locations as

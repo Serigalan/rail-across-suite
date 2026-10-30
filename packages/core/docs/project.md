@@ -6,7 +6,7 @@ The project record as one thing: the record the app works on, oltjson-1.1 (hydra
 save), the door every payload passes into it — a core 1.0 document, or an oltjson-1.1 file migrated into one
 ([document](document.md)) —, the project settings (coordinate system, line category), the validation every merge
 result and every server revision must pass, and the short description of what one undo step did. The format
-itself — every field, and why it is shaped as it is — is described in [the data format](../../../apps/open-layout-tool/docs/data-format.md).
+itself — every field, and why it is shaped as it is — is described in [the data format](../../../apps/layout-tool/docs/data-format.md).
 
 ## Files
 

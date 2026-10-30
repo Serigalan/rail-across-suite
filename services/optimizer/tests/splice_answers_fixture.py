@@ -1,5 +1,5 @@
-"""Writes apps/open-layout-tool/src/core/utils/splice/serviceAnswers.json: what the service answers
-to splices, for the app's splice (apps/open-layout-tool/src/core/utils/splice/solveSplice.js,
+"""Writes apps/layout-tool/src/core/utils/splice/serviceAnswers.json: what the service answers
+to splices, for the app's splice (apps/layout-tool/src/core/utils/splice/solveSplice.js,
 decision 294) to be held against (solveSplice.test.js). The geometries
 are those of the property bench (verify_splice_props.py) — two straights, an
 arc and a straight, two arcs over a straight, two arcs over one transition —
@@ -36,7 +36,7 @@ FAMILIES = [case_straights, case_arc_straight, case_arcs_straight, case_arcs_tra
 # A design speed and the cant of a picked arc, where the rules set the lengths [km/h, mm].
 SPEED, CANT = 80.0, 60.0
 
-ROOT = pathlib.Path(__file__).resolve().parents[3] / "apps" / "open-layout-tool"
+ROOT = pathlib.Path(__file__).resolve().parents[3] / "apps" / "layout-tool"
 
 
 def trimmed(answer):
@@ -144,8 +144,8 @@ def main():
         if len(stored) != len(cases):
             problems.append(f"{len(stored)} cases stored, {len(cases)} made")
         if problems:
-            print("The service answers other than apps/open-layout-tool/src/core/utils/splice/serviceAnswers.json — splice.py changed;"
-                  " follow it in apps/open-layout-tool/src/core/utils/splice/solveSplice.js and write the file again:")
+            print("The service answers other than apps/layout-tool/src/core/utils/splice/serviceAnswers.json — splice.py changed;"
+                  " follow it in apps/layout-tool/src/core/utils/splice/solveSplice.js and write the file again:")
             print("\n".join(f"  {p}" for p in problems[:10]))
             sys.exit(1)
         print(f"splice answers: {len(cases)} cases as stored")

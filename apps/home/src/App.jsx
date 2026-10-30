@@ -1,12 +1,13 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { api } from './api'
 import { I18n, initialLanguage, keepLanguage, textsFor } from './i18n'
-import { hashOf, routeOf } from './modules'
+import { routeOf } from './modules'
 import Header from './Header'
 import Home from './pages/Home'
 import Infrastructure from './pages/Infrastructure'
 import Planned from './pages/Planned'
-import { PasswordPage, SignInPage } from './pages/Account'
+import Admin from './pages/Admin'
+import { PasswordPage } from './pages/Account'
 import './home.css'
 
 /** The page the address names, following it as it changes (back and forward included). */
@@ -20,19 +21,20 @@ function useRoute() {
   return route
 }
 
-/** On to a module's address after signing in (`next`), or to the overview. */
+/** On to a module's address after changing the password (`next`), or to the overview. */
 function goOn(next) {
   if (next) location.assign(next)
   else location.hash = '#/'
 }
 
 /**
- * The start page of the suite. Pages by the address' hash: the overview, the
- * infrastructure editor with its tools and the projects, a page for every
- * module still to come, and the account — signing in and the password, for
- * every module: they send whoever is not signed in here and get them back.
- * Who is signed in is asked once (`undefined` while it is asked, `null`
- * signed out); the projects are loaded once somebody is.
+ * The start page of the suite. Nothing of it opens without a session: the
+ * server shows the sign-in page (sign-in/) in its place until one is signed
+ * in, so here somebody always is — and where the session ends meanwhile, the
+ * page is loaded again and the server asks for the sign-in. Pages by the
+ * address' hash: the overview, the infrastructure editor with its tools and
+ * the projects, a page for every module still to come, the password, and for
+ * admins the users of the whole suite.
  */
 export default function App() {
   const [language, setLanguage] = useState(initialLanguage)
@@ -44,7 +46,7 @@ export default function App() {
 
   useEffect(() => { document.documentElement.lang = language }, [language])
   useEffect(() => {
-    api.me().then(setUser, () => setUser(null))
+    api.me().then(u => (u ? setUser(u) : location.reload()), () => setUser(null))
   }, [])
   useEffect(() => {
     if (!user || user.mustChangePassword) return undefined
@@ -56,46 +58,33 @@ export default function App() {
     return () => { alive = false }
   }, [user])
 
-  // Signed in already, the sign-in page has nothing to do but send one on.
-  useEffect(() => {
-    if (user && !user.mustChangePassword && route.page === 'sign-in') goOn(route.next)
-  }, [user, route])
-
   const chooseLanguage = (l) => { keepLanguage(l); setLanguage(l) }
-  const signedIn = (u) => {
-    setUser(u)
-    if (u.mustChangePassword) location.hash = hashOf({ page: 'password', next: route.next })
-    else if (route.page === 'sign-in') goOn(route.next)
-  }
   const passwordChanged = (u) => {
     setUser(u)
     setNotice('password_done')
     goOn(route.next)
   }
-  const signOut = useCallback(async () => {
+  // Signed out, the start page is the sign-in page again.
+  const signOut = async () => {
     await api.logout().catch(() => {})
-    setUser(null)
-    setProjects({ list: null, error: false })
-  }, [])
-  const signIn = () => { location.hash = hashOf({ page: 'sign-in' }) }
+    location.assign('/')
+  }
   const forced = Boolean(user?.mustChangePassword)
   const page = forced ? 'password' : route.page
 
   return (
     <I18n.Provider value={texts}>
       <div className="collab-page home">
-        <Header user={user} onLanguage={chooseLanguage} onSignIn={signIn} onSignOut={signOut} />
+        <Header user={user} onLanguage={chooseLanguage} onSignOut={signOut} />
         {notice && <p className="collab-ok ra-notice" role="status">{texts.t(notice)}</p>}
-        {page === '' && <Home />}
-        {page === 'infrastructure' && (
-          <Infrastructure toolId={route.tool} user={user} projects={projects} onSignedIn={signedIn} />
-        )}
-        {page === 'sign-in' && user === null && <SignInPage onSignedIn={signedIn} />}
-        {page === 'password' && user === null && <SignInPage onSignedIn={signedIn} />}
-        {page === 'password' && user && (
+        {user === null && <p className="collab-error ra-notice" role="alert">{texts.t('server_unreachable')}</p>}
+        {user && page === '' && <Home />}
+        {user && page === 'infrastructure' && <Infrastructure toolId={route.tool} projects={projects} />}
+        {user && page === 'password' && (
           <PasswordPage forced={forced} onDone={passwordChanged} onCancel={() => goOn(route.next)} />
         )}
-        {!['', 'infrastructure', 'sign-in', 'password'].includes(page) && <Planned route={page} />}
+        {user && page === 'admin' && (user.role === 'admin' ? <Admin me={user} /> : <Home />)}
+        {user && !['', 'infrastructure', 'password', 'admin'].includes(page) && <Planned route={page} />}
       </div>
     </I18n.Provider>
   )

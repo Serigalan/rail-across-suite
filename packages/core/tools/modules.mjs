@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // The modules of the core (packages/core/src) and the rules between them —
-// those the Open-Layout-Tool held its computing modules to, now for the core:
+// those the Layout-Tool held its computing modules to, now for the core:
 //
 //   1. Code outside a module imports from its index.js and nowhere else.
 //      Tests may reach inside (they test the parts), and a module's own files

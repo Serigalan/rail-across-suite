@@ -3,12 +3,12 @@ import { Logo } from './icons'
 import { LANGUAGES, useTexts } from './i18n'
 
 /**
- * The bar across the top, as the Open-Layout-Tool's start page has it: the
- * mark and the name on the left, the language and the user's menu on the
- * right. Signed out, the menu is the way to sign in. The account is the
- * suite's: signed in here, signed in in every module.
+ * The bar across the top: the suite's mark on the left, the language and the
+ * user's menu on the right — the password, for admins the users of the suite,
+ * signing out. The account is the suite's: signed in here, signed in in every
+ * module.
  */
-export default function Header({ user, onLanguage, onSignIn, onSignOut }) {
+export default function Header({ user, onLanguage, onSignOut }) {
   const { t, language } = useTexts()
   const [menu, setMenu] = useState(null)   // 'language' | 'user' | null
   const root = useRef(null)
@@ -46,7 +46,7 @@ export default function Header({ user, onLanguage, onSignIn, onSignOut }) {
             </div>
           )}
         </div>
-        {user ? (
+        {user && (
           <div className="home-menu">
             {/* The user's menu behind their symbol; the name is its label. */}
             <button type="button" className="collab-btn collab-icon-btn" aria-haspopup="menu" aria-expanded={menu === 'user'}
@@ -57,12 +57,11 @@ export default function Header({ user, onLanguage, onSignIn, onSignOut }) {
               <div className="home-menu-list" role="menu">
                 <p className="home-menu-user">{user.name}</p>
                 <a role="menuitem" href="#/password" onClick={() => setMenu(null)}>{t('change_password')}</a>
+                {user.role === 'admin' && <a role="menuitem" href="#/admin" onClick={() => setMenu(null)}>{t('admin_title')}</a>}
                 <button type="button" role="menuitem" onClick={() => { setMenu(null); onSignOut() }}>{t('sign_out')}</button>
               </div>
             )}
           </div>
-        ) : (
-          user === null && <button type="button" className="collab-btn collab-btn-primary" onClick={onSignIn}>{t('sign_in')}</button>
         )}
       </div>
     </header>

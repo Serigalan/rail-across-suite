@@ -4,13 +4,14 @@ import { I18n, textsFor } from './i18n'
 import Home from './pages/Home'
 import Infrastructure from './pages/Infrastructure'
 import Planned from './pages/Planned'
+import Admin from './pages/Admin'
+import { sizeText, startPassword } from './users'
 
 const de = (node) => renderToStaticMarkup(<I18n.Provider value={textsFor('de')}>{node}</I18n.Provider>)
 const projects = {
   list: [{ id: 'p1', title: 'PEK Halle–Könnern', variants: [{ id: 'v1', name: 'Bestand', head: { number: 3, author: { name: 'Max' }, createdAt: '2026-10-29T10:00:00Z' } }] }],
   error: false,
 }
-const user = { id: 1, name: 'Max', role: 'user' }
 
 describe('the start page', () => {
   it('shows the six modules, the editors and the simulations apart', () => {
@@ -26,7 +27,7 @@ describe('the start page', () => {
 
 describe('the infrastructure editor', () => {
   it('shows its three tools as tabs, the chosen one selected, and the projects opening in it', () => {
-    const html = de(<Infrastructure toolId="layout" user={user} projects={projects} />)
+    const html = de(<Infrastructure toolId="layout" projects={projects} />)
     expect(html.match(/role="tab"/g)).toHaveLength(3)
     expect(html).toMatch(/aria-selected="true"[^>]*href="#\/infrastructure\/layout"/)
     expect(html).toContain('Projekte öffnen im Layout-Tool')
@@ -34,17 +35,12 @@ describe('the infrastructure editor', () => {
   })
 
   it('in a tool that is not there yet lists the projects without a way to open them', () => {
-    const html = de(<Infrastructure toolId="catenary" user={user} projects={projects} />)
+    const html = de(<Infrastructure toolId="catenary" projects={projects} />)
     expect(html).toContain('Das Catenary-Tool gibt es noch nicht')
     expect(html).not.toContain('layout/?project=')
     expect(html).toContain('aria-disabled="true"')
   })
 
-  it('asks to sign in before it lists anything', () => {
-    const html = de(<Infrastructure toolId="layout" user={null} projects={{ list: null, error: false }} />)
-    expect(html).toContain('Eine Anmeldung für die ganze Suite')
-    expect(html).not.toContain('PEK')
-  })
 })
 
 describe('a module still to come', () => {
@@ -52,5 +48,22 @@ describe('a module still to come', () => {
     const html = de(<Planned route="construction-sim" />)
     expect(html).toContain('Baubetriebs-Sim')
     expect(html).toContain('Roadmap, Phase 5')
+  })
+})
+
+describe('the users of the suite', () => {
+  it('opens for an admin with the way to add a user and the rights of the modules', () => {
+    const html = de(<Admin me={{ id: 1, role: 'admin' }} />)
+    expect(html).toContain('Nutzerverwaltung')
+    expect(html).toContain('Nutzer anlegen')
+    expect(html).toContain('Ein Konto für die ganze Suite')
+  })
+
+  it('makes start passwords of 16 characters a person can read out', () => {
+    for (let i = 0; i < 20; i++) expect(startPassword()).toMatch(/^[a-km-zA-HJ-NP-Z2-9]{16}$/)
+  })
+
+  it('says sizes as people read them', () => {
+    expect([0, 999, 1500, 25e9].map(sizeText)).toEqual(['0 B', '999 B', '1.5 kB', '25.0 GB'])
   })
 })

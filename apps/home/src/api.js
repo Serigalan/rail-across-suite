@@ -1,8 +1,8 @@
 // The suite's project server, same origin as the page: the session is an
 // HttpOnly cookie the browser sends by itself, and every writing request says
-// it carries JSON (the server refuses it otherwise). The start page holds the
-// account for the whole suite — signing in and out, the password — and lists
-// the projects; everything else is the modules'.
+// it carries JSON (the server refuses it otherwise). The start page holds what
+// is the suite's — signing in and out, the password, the users and their
+// rights — and lists the projects; everything else is the modules'.
 
 const BASE = import.meta.env?.VITE_RA_API ?? '/api'
 
@@ -34,6 +34,12 @@ export const api = {
   logout: () => request('POST', '/logout', {}),
   changePassword: (current, next) => request('POST', '/me/password', { current, next }),
   projects: () => request('GET', '/projects').then(r => r.projects ?? []),
+
+  // The user administration (admins only).
+  users: () => request('GET', '/admin/users').then(r => r.users ?? []),
+  createUser: (body) => request('POST', '/admin/users', body),
+  patchUser: (id, body) => request('PATCH', `/admin/users/${encodeURIComponent(id)}`, body),
+  cloudAdmin: () => request('GET', '/admin/clouds'),
 }
 
 /** A picture the server keeps, by its hash. */

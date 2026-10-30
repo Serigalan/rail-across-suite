@@ -1,7 +1,7 @@
 // document — a project as the Rail-Data-Core keeps it: the core 1.0 document
 // with its domains `core` and `layout`, their JSON Schemas (schemas/), the one
 // door that checks them, the conversion from and to the record the
-// Open-Layout-Tool works on (the first step of the migration chain, from
+// Layout-Tool works on (the first step of the migration chain, from
 // oltjson-1.1), canonical JSON and content hashes.
 //
 // This file is the module's public face: code outside packages/core/src/document/

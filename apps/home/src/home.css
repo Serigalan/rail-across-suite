@@ -1,5 +1,5 @@
 /* The start page of Rail-Across-Suite. The bar, the buttons, the menus and the
-   colours are those of the Open-Layout-Tool's start page (its collab.css),
+   colours are those of the Layout-Tool's start page (its collab.css),
    so the suite and its first tool look alike; the tiles and the tool tabs
    are the start page's own. Light by default, dark where the system asks. */
 
@@ -36,7 +36,7 @@
 
 html, body { margin: 0; background: var(--collab-surface); }
 
-/* ── as the Open-Layout-Tool's start page ─────────────────────────────── */
+/* ── as the Layout-Tool's start page ─────────────────────────────── */
 
 .collab-page {
   min-height: 100vh;
@@ -73,11 +73,11 @@ html, body { margin: 0; background: var(--collab-surface); }
 .collab-error { margin: 0; color: var(--collab-danger); font-size: 13px; }
 .collab-field { display: flex; flex-direction: column; gap: 5px; font-size: 13px; }
 .collab-field > span { color: var(--collab-muted); font-weight: 500; }
-.collab-field input {
+.collab-field input, .collab-field select {
   font: inherit; font-size: 14px; padding: 8px 10px; border: 1px solid var(--collab-border); border-radius: 6px;
   background: var(--collab-input-bg); color: var(--collab-fg); box-sizing: border-box; width: 100%; min-width: 0;
 }
-.collab-field input:focus { outline: 2px solid var(--color-primary); outline-offset: -1px; }
+.collab-field input:focus, .collab-field select:focus { outline: 2px solid var(--color-primary); outline-offset: -1px; }
 
 .collab-btn {
   font: inherit; font-size: 13px; font-weight: 500; padding: 7px 14px; border-radius: 6px;
@@ -86,6 +86,7 @@ html, body { margin: 0; background: var(--collab-surface); }
 .collab-btn:hover:not(:disabled) { background: var(--collab-hover); }
 .collab-btn:disabled { opacity: 0.45; cursor: not-allowed; }
 .collab-btn.collab-btn-primary { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
+.collab-btn.collab-btn-danger { color: var(--collab-danger); border-color: var(--collab-danger); }
 .collab-btn.collab-btn-primary:hover:not(:disabled) { background: var(--color-primary); filter: brightness(1.15); }
 .collab-btn-block { width: 100%; padding: 10px 14px; font-size: 14px; }
 .collab-btn-small { padding: 4px 10px; font-size: 12px; }
@@ -212,3 +213,38 @@ a.ra-variant:hover .ra-variant-meta { color: rgba(255, 255, 255, 0.8); }
   .home-main { padding: 16px 16px 32px; }
   .ra-project-image { width: 56px; height: 42px; }
 }
+
+/* ── the sign-in page, before anything of the suite ──────────────────── */
+
+.ra-gate { display: flex; flex-direction: column; align-items: center; padding: 48px 16px; position: relative; }
+.ra-gate-logo { height: 132px; width: auto; aspect-ratio: 320 / 220; color: var(--collab-fg); margin-bottom: 8px; }
+.ra-gate-language { position: absolute; top: 16px; right: 20px; display: flex; gap: 10px; }
+.ra-gate-language button { background: none; border: none; cursor: pointer; font: inherit; font-size: 13px; padding: 2px; }
+.ra-gate-language .ra-current { color: var(--collab-fg); font-weight: 700; }
+.ra-gate .ra-account { padding-top: 12px; width: 100%; }
+.ra-gate-title { margin: 0 0 12px; font-size: 20px; }
+
+/* ── the users of the suite ──────────────────────────────────────────── */
+
+.ra-admin-intro { margin: -6px 0 16px; }
+.ra-admin-notice { margin: 0 0 14px; line-height: 1.6; }
+.ra-password { font-size: 14px; padding: 2px 6px; border-radius: 4px; background: var(--collab-hover); color: var(--collab-fg); user-select: all; }
+.ra-users { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.ra-user { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; }
+.ra-user-off { opacity: 0.6; }
+.ra-user-who { display: flex; flex-direction: column; min-width: 180px; flex: 1; }
+.ra-user-facts { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 12px; flex: 2; }
+.ra-user-facts .ra-badge { align-self: center; }
+.ra-user-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.ra-badge-primary { border-color: var(--color-primary); color: var(--color-primary); }
+.ra-badge-warn { border-color: #b26a00; color: #b26a00; }
+.ra-badge-off { border-color: var(--collab-danger); color: var(--collab-danger); }
+.ra-user-form { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; max-width: 520px; }
+.ra-user-form h3 { margin: 0; font-size: 16px; }
+.ra-rights { border: 1px solid var(--collab-border); border-radius: 8px; padding: 8px 12px 10px; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.ra-rights legend { font-size: 13px; color: var(--collab-muted); font-weight: 500; padding: 0 4px; }
+.ra-check { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.ra-password-row { display: flex; gap: 8px; align-items: center; }
+.ra-disk { margin-top: 28px; }
+.ra-disk h3 { margin: 0 0 8px; font-size: 16px; }
+.ra-disk-list { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; font-size: 13px; }

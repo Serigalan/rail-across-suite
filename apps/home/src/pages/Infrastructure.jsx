@@ -2,7 +2,6 @@ import { INFRASTRUCTURE_TOOLS, hashOf, listedProjects, openUrl, toolOf } from '.
 import { ModuleIcon } from '../icons'
 import { blobUrl } from '../api'
 import { useTexts } from '../i18n'
-import SignIn from '../SignIn'
 
 /**
  * The tools as tabs: large, each with its icon. The chosen one stands out and
@@ -72,9 +71,10 @@ function ProjectRow({ project, tool }) {
 
 /**
  * The infrastructure editor: its three tools, a line, and the projects of the
- * suite's server — opened in the tool chosen above.
+ * suite's server — opened in the tool chosen above. Signed in one always is
+ * here: the server shows the sign-in page before the suite.
  */
-export default function Infrastructure({ toolId, user, projects, onSignedIn }) {
+export default function Infrastructure({ toolId, projects }) {
   const { t, fill } = useTexts()
   const tool = toolOf(toolId)
   const toolName = t(`tool_${tool.id}`)
@@ -88,7 +88,7 @@ export default function Infrastructure({ toolId, user, projects, onSignedIn }) {
 
       <div className="home-section-head">
         <h2>{t('projects')}</h2>
-        {user && tool.available && (
+        {tool.available && (
           <div className="home-section-actions">
             <a className="collab-btn" href={tool.path}>{t('projects_manage')}</a>
           </div>
@@ -99,22 +99,12 @@ export default function Infrastructure({ toolId, user, projects, onSignedIn }) {
         {fill(tool.available ? 'opens_in' : 'opens_not_yet', { tool: toolName })}
       </p>
 
-      {user === null && <SignIn onSignedIn={onSignedIn} />}
-      {user?.mustChangePassword && (
-        <p className="collab-muted">
-          {t('must_change_password')} <a className="collab-btn collab-btn-small" href="#/password">{t('change_password')}</a>
-        </p>
-      )}
-      {user && !user.mustChangePassword && (
-        <>
-          {projects.error && <p className="collab-error" role="alert">{t('projects_error')}</p>}
-          {!listed && !projects.error && <p className="collab-muted">{t('projects_loading')}</p>}
-          {listed?.length === 0 && <p className="collab-muted">{t('projects_empty')}</p>}
-          <ul className={`home-projects${tool.available ? '' : ' ra-projects-off'}`}>
-            {(listed ?? []).map(p => <ProjectRow key={p.id} project={p} tool={tool} />)}
-          </ul>
-        </>
-      )}
+      {projects.error && <p className="collab-error" role="alert">{t('projects_error')}</p>}
+      {!listed && !projects.error && <p className="collab-muted">{t('projects_loading')}</p>}
+      {listed?.length === 0 && <p className="collab-muted">{t('projects_empty')}</p>}
+      <ul className={`home-projects${tool.available ? '' : ' ra-projects-off'}`}>
+        {(listed ?? []).map(p => <ProjectRow key={p.id} project={p} tool={tool} />)}
+      </ul>
     </main>
   )
 }

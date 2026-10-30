@@ -123,7 +123,7 @@ Every element has `startNode` and `endNode` (`[E, N]` in the track's plane). Con
   `coupleSwitchCants`, decision 376).
 - **End bearing** is not stored where the design values give it (arc: `bearing + length/R`, transition:
   the integrated heading). It is kept only where it differs — a kinked straight, an imported tangent
-  (`derivedEndBearing`, see [data format](../../../apps/open-layout-tool/docs/data-format.md)).
+  (`derivedEndBearing`, see [data format](../../../apps/layout-tool/docs/data-format.md)).
 
 All elements are made by `elementFactory.js` from plane points and design values, and carry two derived
 polylines in WGS84: `geometry` (fine, sagitta 5 cm) and, for arcs and transitions, `renderCoords` (coarse,

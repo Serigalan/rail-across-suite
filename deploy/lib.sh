@@ -94,7 +94,7 @@ load_config() {
 
 # The modules' apps, each built into its path of the site: "<app directory under apps/>:<path>".
 # shellcheck disable=SC2034  # used by deploy.sh
-MODULE_APPS=(open-layout-tool:layout)
+MODULE_APPS=(layout-tool:layout)
 
 # The units of this instance, as installed (template rail-across-<x> → $RA_UNIT_PREFIX<x>).
 # shellcheck disable=SC2034  # used by setup.sh

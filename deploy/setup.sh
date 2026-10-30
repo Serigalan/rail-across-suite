@@ -98,8 +98,8 @@ if ! as_user test -r "$RA_REPO/server/bin/rail-across-server.mjs"; then
 fi
 
 step "NTv2 grids for PROJ"
-(cd apps/open-layout-tool && node tools/data.mjs)
-for g in apps/open-layout-tool/grids/*.tif; do
+(cd apps/layout-tool && node tools/data.mjs)
+for g in apps/layout-tool/grids/*.tif; do
   install -m 0644 "$g" "$RA_DATA/share/proj/$(basename "$g")"
 done
 

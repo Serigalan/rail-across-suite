@@ -48,11 +48,16 @@ export function openUrl(tool, projectId, variantId) {
   return `${tool.path}?${q}`
 }
 
-/** The suite's own pages for the account: signing in, the password. Every module sends its users here. */
-export const ACCOUNT_PAGES = ['sign-in', 'password']
+/**
+ * The suite's own pages: the password (every module sends its users here to
+ * change it, and back), and the user administration. Signing in is the
+ * sign-in page's (sign-in/), which the server shows before anything else.
+ */
+export const ACCOUNT_PAGES = ['password']
+export const SUITE_PAGES = [...ACCOUNT_PAGES, 'admin']
 
 /**
- * Where to go after signing in or changing the password, from `next`: a path
+ * Where to go after changing the password, from `next`: a path
  * on this site (a module, `/layout/?project=…`), never another site.
  */
 export function safeNext(next) {
@@ -63,14 +68,15 @@ export function safeNext(next) {
 /**
  * The page a location hash names: { page, tool, next } — `#/` the start,
  * `#/infrastructure/signalling` the infrastructure editor in that mode,
- * `#/capacity-sim` a module's own page, `#/sign-in?next=/layout/` signing in
- * and back to where one came from.
+ * `#/capacity-sim` a module's own page, `#/password?next=/layout/` changing
+ * the password and back to where one came from, `#/admin` the users.
  */
 export function routeOf(hash) {
   const [path, query = ''] = String(hash ?? '').replace(/^#\/?/, '').split('?')
   const [page = '', tool] = path.split('/')
   if (page === 'infrastructure') return { page, tool: toolOf(tool).id }
   if (ACCOUNT_PAGES.includes(page)) return { page, next: safeNext(new URLSearchParams(query).get('next')) }
+  if (page === 'admin') return { page }
   const module = MODULES.find(m => m.route === page)
   return module ? { page: module.route } : { page: '' }
 }

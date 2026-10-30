@@ -5,7 +5,7 @@ from measured axis points (phase 12) build their arcs with these functions;
 `POST /splice` answers with them — what the app's dialog "Zwei Gleise
 zusammenfügen" asks here only for a splice held to a spacing to another track
 (decision 295). Without one the dialog computes the same construction in the
-browser since decision 294 (apps/open-layout-tool/src/core/utils/splice/solveSplice.js, ported from
+browser since decision 294 (apps/layout-tool/src/core/utils/splice/solveSplice.js, ported from
 here); tests/splice_answers_fixture.py --check holds the two alike — a change
 here is followed there.
 

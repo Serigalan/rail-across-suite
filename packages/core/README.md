@@ -1,7 +1,7 @@
 # @rail-across/core — the Rail-Data-Core
 
 The shared model of Rail-Across-Suite in JavaScript: every module reads and writes the railway through it
-([data model](../../docs/data-model.md)). It was taken out of the Open-Layout-Tool in phase 1 of the
+([data model](../../docs/data-model.md)). It was taken out of the Layout-Tool in phase 1 of the
 [roadmap](../../ROADMAP.md), without a change in behaviour; the app now imports it like any other package.
 
 | Module | Subject | Page |

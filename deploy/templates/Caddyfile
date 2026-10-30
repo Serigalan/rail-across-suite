@@ -1,19 +1,20 @@
 # Rail-Across-Suite — rendered by deploy/setup.sh from deploy/templates/Caddyfile.
 #
-# The app is usable only after signing in (phase 10): /api/* is the project
-# server. The optimizer and terrain service (/optimizer/*) and the km line data
-# (/data/km*) answer only with a valid session — Caddy asks the project server
-# (forward_auth against /api/me, which sees the request's own cookie). The app
-# files themselves and the NTv2 grids under /data/*.tif stay open: the sign-in
-# page is part of the app, and the app loads the grid before anyone signs in.
-#
-# The site directory holds the suite's start page at its root and each
-# module's app under its path — the Layout-Tool under /layout/.
+# One address for the suite: its start page at the root, each module's app
+# under its path (the Layout-Tool under /layout/), the project server under
+# /api. Nothing of the suite opens without a session: every page is asked of
+# the project server first (forward_auth against /api/me, which sees the
+# request's own cookie), and without a session the suite's sign-in page
+# answers in its place, at the same address — so signing in, which loads the
+# page again, leads to what was asked for. A request for data rather than a
+# page gets 401 instead.
 @RA_DOMAIN@ {
+	# The project server checks the session itself — and answers signing in.
 	handle /api/* {
 		reverse_proxy @RA_UPSTREAM@:@RA_SERVER_PORT@
 	}
 
+	# The Layout-Tool's optimizer and terrain service, only with a session.
 	# /optimizer/optimize → the service sees /optimize (prefix cut off).
 	handle_path /optimizer/* {
 		forward_auth @RA_UPSTREAM@:@RA_SERVER_PORT@ {
@@ -22,16 +23,34 @@
 		reverse_proxy @RA_UPSTREAM@:@RA_OPTIMIZER_PORT@
 	}
 
-	@kmdata path /layout/data/km/* /layout/data/km_linie.pmtiles
-	handle @kmdata {
-		forward_auth @RA_UPSTREAM@:@RA_SERVER_PORT@ {
-			uri /api/me
-		}
+	# Open without a session: the sign-in page and the built, hashed files it
+	# and the apps load (the same for everybody, nothing of a project), the
+	# suite's mark, the NTv2 grids, and the entry of the Layout-Tool's
+	# read-only share links, whose holders have no account.
+	@open path /sign-in /sign-in/* /assets/* /logo.svg /layout/assets/* /layout/share.html /layout/favicon.svg /layout/data/*.tif
+	handle @open {
 		root * @RA_SITE_ROOT@
 		file_server
 	}
 
+	# Everything else only with a session.
 	handle {
+		forward_auth @RA_UPSTREAM@:@RA_SERVER_PORT@ {
+			uri /api/me
+			@signed_out status 401
+			handle_response @signed_out {
+				@page header Accept *text/html*
+				handle @page {
+					root * @RA_SITE_ROOT@
+					rewrite * /sign-in/index.html
+					header Cache-Control no-store
+					file_server
+				}
+				handle {
+					respond 401
+				}
+			}
+		}
 		root * @RA_SITE_ROOT@
 		file_server
 	}

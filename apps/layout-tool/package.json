@@ -1,0 +1,55 @@
+{
+  "name": "layout-tool",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "build:local": "vite build --mode standalone && node tools/check-local-bundle.mjs dist-local",
+    "dev:local": "vite --mode standalone",
+    "local": "npm run build:local && node tools/local/serve.mjs",
+    "local:zip": "npm run build:local && node tools/local/pack.mjs",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check": "tools/check.sh",
+    "knip": "knip --no-progress",
+    "boundary": "node tools/boundary.mjs",
+    "modules": "node tools/modules.mjs",
+    "docs": "node tools/docs.mjs",
+    "data": "node tools/data.mjs",
+    "i18n:unused": "node tools/i18n-unused.mjs"
+  },
+  "dependencies": {
+    "@rail-across/core": "*",
+    "@rail-across/pointcloud": "*",
+    "fflate": "^0.8.3",
+    "jspdf": "^4.2.1",
+    "laz-perf": "^0.0.7",
+    "maplibre-gl": "^5.21.0",
+    "pmtiles": "^4.5.0",
+    "proj4": "^2.20.4",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "three": "^0.186.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-basic-ssl": "^2.3.0",
+    "@vitejs/plugin-react": "^6.0.1",
+    "eslint": "^9.39.4",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "globals": "^17.4.0",
+    "knip": "^6.39.0",
+    "vite": "^8.0.1",
+    "vitest": "^3.2.7"
+  }
+}

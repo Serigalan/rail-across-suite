@@ -5,7 +5,7 @@ for phases 1 and 2 of the [roadmap](../ROADMAP.md).
 
 Every module of Rail-Across-Suite reads and writes one shared description of the railway. This page proposes
 how that description is structured and stored. It starts from what already works, the project format of the
-Open-Layout-Tool, **oltjson-1.1** (`open-layout-tool/docs/data-format.md`), and generalises it where the
+Open-Layout-Tool (now the suite's Layout-Tool), **oltjson-1.1** (`apps/layout-tool/docs/data-format.md`), and generalises it where the
 planned modules need more than a track layout.
 
 Section 2 tests the model against concrete cases; sections 3 to 5 give the rules that follow from them.
@@ -204,12 +204,12 @@ core, and derived results above them:
 | Level | Domain | Written by | Content |
 |---|---|---|---|
 | derived | — | — | stage views, coordination checks, simulation results, reverse index — caches keyed by input hashes, never in a revision |
-| discipline | `layout` | open-layout-tool | surveys, reference axes, named track paths, plan header |
+| discipline | `layout` | layout-tool | surveys, reference axes, named track paths, plan header |
 | discipline | `signalling` | open-signalling-tool | signals, detection points, track sections, signalling routes, LST switch elements, station boundaries, speed profile |
 | discipline | `catenary` | open-catenary-tool | masts, cantilevers, wires, sections, El signals |
 | discipline | `operations` | open-timetable-tool | train runs, timetable, rolling stock |
 | discipline | `construction` | open-construction-sim | closures, temporary speed restrictions, tracks in operation per stage |
-| base | `core` | open-layout-tool | **reference**: coordinate systems, km lines and designed kilometrage, operational point register, catalogue versions (rules, switch forms, profiles) · **net**: tracks (elements, heights, cant, superstructure), switches and connectors · **context**: platforms, end marks, structures (bridges, tunnels, level crossings) · **stages**: the ordered construction stages · **types**: `TrackLocation`, `TrackRange`, `TrackEnd`, `TrackPath`, `Lifespan`, `Ref` |
+| base | `core` | layout-tool | **reference**: coordinate systems, km lines and designed kilometrage, operational point register, catalogue versions (rules, switch forms, profiles) · **net**: tracks (elements, heights, cant, superstructure), switches and connectors · **context**: platforms, end marks, structures (bridges, tunnels, level crossings) · **stages**: the ordered construction stages · **types**: `TrackLocation`, `TrackRange`, `TrackEnd`, `TrackPath`, `Lifespan`, `Ref` |
 | project | — | server | variants and sketches, approvals, comments — they refer into revisions, never back |
 
 Discipline domains store references only into the core (R2, R9). Open-Capacity-Sim writes no domain: it builds on

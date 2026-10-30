@@ -3,7 +3,7 @@
 The project server of Rail-Across-Suite — one for the suite and every module
 in it: the one sign-in (users and sessions, cookie `ra_session`), projects
 with variants and revisions (core 1.0 documents), images, point clouds. It
-began as the Open-Layout-Tool's (its roadmap phase 10). Editing and
+began as the Layout-Tool's (its roadmap phase 10). Editing and
 calculating stay in the browser; the server stores, versions, checks and
 manages users. It never merges — it takes a revision only on top of the
 current head of a variant (decision 97) and checks it with the browser's own
@@ -35,7 +35,7 @@ order on start.
 
 ## Tests
 
-From `apps/open-layout-tool/`, with the app's: `npm test` (vitest runs
+From `apps/layout-tool/`, with the app's: `npm test` (vitest runs
 `server/test/**` through `fastify.inject` against a database in memory).
 
 ## Behind Caddy

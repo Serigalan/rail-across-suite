@@ -3,7 +3,7 @@
 `packages/core/src/merge/` · needs `project`, `track`
 
 Three-way merge of two states of a project against the state both came from, the diff behind it, carrying
-references across splits and joins of tracks. Drawing a comparison on the map is the app's (the Open-Layout-Tool's
+references across splits and joins of tracks. Drawing a comparison on the map is the app's (the Layout-Tool's
 `compare` module). Pure, without a DOM: the
 browser merges when checking in over a stale base or merging variants; the module also loads and runs under
 plain Node (a test holds it to that), as everything the project server might share has to.

@@ -82,11 +82,11 @@ jobs:
       - run: npm run build
 
   # The Open-Layout-Tool with the project server, whose tests its vitest runs.
-  open-layout-tool:
+  layout-tool:
     runs-on: ubuntu-24.04
     defaults:
       run:
-        working-directory: apps/open-layout-tool
+        working-directory: apps/layout-tool
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -132,7 +132,7 @@ jobs:
       - run: python tests/verify_crossover.py
       - run: python tests/verify_clearance.py
       - run: python tests/verify_splice_props.py
-      # The app's splice (apps/open-layout-tool/src/core/utils/splice) is held against these answers (decision 294).
+      # The app's splice (apps/layout-tool/src/core/utils/splice) is held against these answers (decision 294).
       - run: python tests/splice_answers_fixture.py --check
       - run: python tests/verify.py
 
@@ -144,4 +144,4 @@ jobs:
       - run: bash -n deploy/setup.sh && bash -n deploy/deploy.sh && bash -n deploy/lib.sh && bash -n deploy/release.sh && bash -n deploy/monitor.sh
       - run: shellcheck -x deploy/setup.sh deploy/deploy.sh deploy/lib.sh deploy/release.sh deploy/monitor.sh
       - run: shellcheck -x tools/check.sh
-        working-directory: apps/open-layout-tool
+        working-directory: apps/layout-tool

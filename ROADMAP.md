@@ -33,7 +33,7 @@ Done:
 - [Data model](docs/data-model.md) reviewed by its code owner and accepted; the questions left open name the phase
   that decides them.
 
-- The Open-Layout-Tool moved into `apps/open-layout-tool/` with its history; its server to `server/`, its Python
+- The Open-Layout-Tool moved into `apps/layout-tool/` with its history; its server to `server/`, its Python
   service to `services/optimizer/`; CI and deployment scripts on the new paths. The toolkit gets a new server of
   its own; the running server of the Open-Layout-Tool is not migrated.
 - Large binary data out of the history, fetched by version and SHA-256

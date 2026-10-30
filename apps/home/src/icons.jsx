@@ -2,7 +2,7 @@ import { LOGO_WORDS } from './logoWords'
 
 // The marks of the suite: its logo, and one icon per module and tool — line
 // drawings in currentColor on a 48 × 48 grid, in the manner of the
-// Open-Layout-Tool's sidebar icons.
+// Layout-Tool's sidebar icons.
 
 // The logo: half a rail's profile drawn as one line between two points, the
 // rail's axis dashed beside it, and the name. The profile is in the primary

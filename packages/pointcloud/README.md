@@ -2,7 +2,7 @@
 
 Point clouds as plain computation: LAS, LAZ and E57 files read as streams, tiled at several voxel levels, cut
 into thin sections, searched for rail heads to trace a track's measured axis, registered onto each other and
-checked against the clearance contour. The Open-Layout-Tool runs it in the browser and in a Web Worker, the
+checked against the clearance contour. The Layout-Tool runs it in the browser and in a Web Worker, the
 project server in its jobs — the same code, which is why it is a package of its own: the server no longer
 imports the app.
 
@@ -29,8 +29,8 @@ it is.
 | Planes | `cloudCrs.js` (affine map per 250 m cell instead of proj4 per point), `registration.js` (spatial Helmert from point pairs) |
 | Use | `cloudSection.js` (points in a cross section, decoded segments cached), `cloudSlice.js`, `clearanceCheck.js`, `clearanceScan.js`, `railDetect.js`, `railTrace.js` |
 
-What the formats are and why: the Open-Layout-Tool's
-[pointCloud](../../apps/open-layout-tool/docs/modules/pointCloud.md).
+What the formats are and why: the Layout-Tool's
+[pointCloud](../../apps/layout-tool/docs/modules/pointCloud.md).
 
 ## Check
 

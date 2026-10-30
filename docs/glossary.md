@@ -5,7 +5,7 @@ German rules. This list fixes one English word for each German term, so that cod
 thing. Where the data model has an identifier for a term, it is given; `—` means there is none yet.
 
 A German term of art without a good English equivalent stays German, in italics (*Höhenplan*, *Festelement*), as
-the Open-Layout-Tool's documentation does.
+the Layout-Tool's documentation does.
 
 ## Network and alignment
 

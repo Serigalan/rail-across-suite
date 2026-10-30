@@ -5,7 +5,7 @@ import { createAuth, passwordAcceptable, randomPassword } from './auth.js'
 
 /**
  * rail-across-server — the project server of Rail-Across-Suite: one for the suite
- * and every module in it (phase 10 of the Open-Layout-Tool, where it began).
+ * and every module in it (phase 10 of the Layout-Tool, where it began).
  *
  *   rail-across-server serve                        run the API (RA_SERVER_HOST, RA_SERVER_PORT)
  *   rail-across-server create-admin <login> [name]  create an admin; the start password comes

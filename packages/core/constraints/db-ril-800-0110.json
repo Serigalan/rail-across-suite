@@ -180,7 +180,7 @@
       { "key": "u_0", "display": "u0", "unit": "mm", "title": "ausgleichende Überhöhung", "en13803": "D_EQ" },
       { "key": "v", "display": "v", "unit": "km/h", "title": "Geschwindigkeit", "en13803": "V" },
       { "key": "v_N", "display": "vN", "unit": "km/h", "title": "Geschwindigkeit", "en13803": "V" },
-      { "key": "v_e", "display": "ve", "unit": "km/h", "title": "Entwurfsgeschwindigkeit (konventionell), im Open Layout Tool: design speed", "en13803": null }
+      { "key": "v_e", "display": "ve", "unit": "km/h", "title": "Entwurfsgeschwindigkeit (konventionell), im Layout-Tool: design speed", "en13803": null }
     ],
     "indices": [
       { "key": "min", "title": "Mindestwert" },

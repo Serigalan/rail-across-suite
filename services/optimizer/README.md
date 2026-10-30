@@ -1,6 +1,6 @@
 # olt-optimizer
 
-Python-CLI zur Trassenoptimierung von Open-Layout-Tool-Tracks: maximiert die
+Python-CLI zur Trassenoptimierung von Layout-Tool-Tracks: maximiert die
 Engpass-Geschwindigkeit `v = √(R·(u + u_f)/11,8)` über Radius, Überhöhung und
 seitliche Verschiebung der Zwischengeraden — innerhalb eines Abrückungs-Korridors
 zur Bestandsachse.

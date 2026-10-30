@@ -16,14 +16,15 @@ describe('the pages by the address', () => {
   it('writes the hash every page is read back from', () => {
     for (const route of [
       { page: '' }, { page: 'infrastructure', tool: 'signalling' }, { page: 'timetable' },
-      { page: 'sign-in', next: '/layout/?project=p1&variant=v1' }, { page: 'password', next: null },
+      { page: 'password', next: '/layout/?project=p1&variant=v1' }, { page: 'password', next: null }, { page: 'admin' },
     ]) {
       expect(routeOf(hashOf(route))).toEqual(route)
     }
   })
 
-  it('signs in for a module and sends one back to it — on this site only', () => {
-    expect(routeOf('#/sign-in?next=%2Flayout%2F%3Fproject%3Dp1')).toEqual({ page: 'sign-in', next: '/layout/?project=p1' })
+  it('changes the password for a module and sends one back to it — on this site only', () => {
+    expect(routeOf('#/password?next=%2Flayout%2F%3Fproject%3Dp1')).toEqual({ page: 'password', next: '/layout/?project=p1' })
+    expect(routeOf('#/sign-in')).toEqual({ page: '' })
     for (const elsewhere of ['https://evil.example/', '//evil.example/', '/\\evil.example', 'layout/', '', null]) {
       expect(safeNext(elsewhere), String(elsewhere)).toBeNull()
     }

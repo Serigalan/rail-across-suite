@@ -1,23 +1,23 @@
+import { LOGO_WORDS } from './logoWords'
+
 // The marks of the suite: its logo, and one icon per module and tool — line
 // drawings in currentColor on a 48 × 48 grid, in the manner of the
 // Open-Layout-Tool's sidebar icons.
 
-// The logo: R and A written as tracks that branch off one track running
-// across, drawn as a pair of rails, as the Open-Layout-Tool writes O, L and T.
-const RAILS = 'M14 123 H214'
-const LETTERS = 'M50 123 V60.5 A18.5 18.5 0 0 1 68.5 42 H82 A20.5 20.5 0 0 1 82 83 H50 '
-  + 'M76 83 C92 83 102 100 102 123 '
-  + 'M128 123 V60.5 A18.5 18.5 0 0 1 146.5 42 H156.5 A18.5 18.5 0 0 1 175 60.5 V123 M128 90 H175'
-const GROUND = 'M24 0 H204 A24 24 0 0 1 228 24 V134 A24 24 0 0 1 204 158 H24 A24 24 0 0 1 0 134 V24 A24 24 0 0 1 24 0 Z'
+// The logo: half a rail's profile drawn as one line between two points, the
+// rail's axis dashed beside it, and the name. The profile is in the primary
+// colour, the name in the text colour (so it reads in the dark as well).
+const PROFILE = 'M250 50h-26.6q-16.9 0-16.9 16.9v39.4l24.5 6.5q8.6 2.2 8.6 10.2v75q0 11-10.6 14.5'
+  + 'l-56.7 21.2q-3.5 1.3-3.5 4.9v7.7q0 3.7 3.9 3.7H250'
 
 export const Logo = ({ className }) => (
-  <svg viewBox="0 0 228 158" className={className} aria-hidden="true">
-    <path d={GROUND} fill="currentColor" />
-    <g fill="none">
-      <path d={RAILS} stroke="#ffffff" strokeOpacity="0.45" strokeWidth="14" />
-      <path d={LETTERS} stroke="#ffffff" strokeWidth="14" />
-      <path d={`${RAILS} ${LETTERS}`} stroke="currentColor" strokeWidth="3.6" />
-    </g>
+  <svg viewBox="160 40 320 220" className={className} role="img" aria-label="Rail-Across-Suite">
+    <path d="M250 50v200" stroke="#888780" strokeDasharray="3 4" opacity=".6" fill="none" vectorEffect="non-scaling-stroke" />
+    <path d={PROFILE} fill="none" stroke="var(--color-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+      vectorEffect="non-scaling-stroke" />
+    <circle cx="250" cy="50" r="5" fill="var(--color-primary)" />
+    <circle cx="250" cy="250" r="5" fill="var(--color-primary)" />
+    <path d={LOGO_WORDS} fill="currentColor" />
   </svg>
 )
 

@@ -1,0 +1,203 @@
+/* The start page of Rail-Across-Suite. The bar, the buttons, the menus and the
+   colours are those of the Open-Layout-Tool's start page (its collab.css),
+   so the suite and its first tool look alike; the tiles and the tool tabs
+   are the start page's own. Light by default, dark where the system asks. */
+
+:root {
+  --color-primary: #303383;
+  --collab-bg: #ffffff;
+  --collab-surface: #f6f7fb;
+  --collab-fg: #1a1a2e;
+  --collab-muted: #5f6475;
+  --collab-border: #dfe2ea;
+  --collab-hover: #eef0f6;
+  --collab-selected: #e3e7f6;
+  --collab-input-bg: #ffffff;
+  --collab-danger: #c0392b;
+  --collab-ok: #2e7d32;
+  --collab-shadow: 0 8px 32px rgba(0, 0, 0, 0.16);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --collab-bg: #1b1c23;
+    --collab-surface: #23252e;
+    --collab-fg: #e8e9f0;
+    --collab-muted: #a3a7b7;
+    --collab-border: #363948;
+    --collab-hover: #2b2e3a;
+    --collab-selected: #313654;
+    --collab-input-bg: #15161c;
+    --collab-danger: #ff7b6b;
+    --collab-ok: #7bd389;
+    --collab-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  }
+}
+
+html, body { margin: 0; background: var(--collab-surface); }
+
+/* ── as the Open-Layout-Tool's start page ─────────────────────────────── */
+
+.collab-page {
+  min-height: 100vh;
+  box-sizing: border-box;
+  background: var(--collab-surface);
+  color: var(--collab-fg);
+  font-family: system-ui, sans-serif;
+}
+
+.home-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  padding: 14px 24px;
+  background: var(--collab-bg);
+  border-bottom: 1px solid var(--collab-border);
+}
+.collab-brand { display: flex; align-items: center; gap: 10px; color: inherit; text-decoration: none; }
+.collab-brand h1 { margin: 0; font-size: 20px; font-weight: 700; color: var(--collab-fg); }
+.collab-logo { width: 49px; height: 34px; color: var(--color-primary); flex-shrink: 0; }
+.home-user { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; position: relative; }
+
+.home-main { max-width: 980px; margin: 0 auto; padding: 20px 24px 40px; box-sizing: border-box; }
+.home-section-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin: 8px 0 14px; }
+.home-section-head h2 { margin: 0; font-size: 18px; }
+.home-section-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.home-projects { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+.home-project { background: var(--collab-bg); border: 1px solid var(--collab-border); border-radius: 12px; padding: 14px 16px; }
+
+.collab-muted { margin: 0; color: var(--collab-muted); font-size: 13px; line-height: 1.45; }
+.collab-error { margin: 0; color: var(--collab-danger); font-size: 13px; }
+.collab-field { display: flex; flex-direction: column; gap: 5px; font-size: 13px; }
+.collab-field > span { color: var(--collab-muted); font-weight: 500; }
+.collab-field input {
+  font: inherit; font-size: 14px; padding: 8px 10px; border: 1px solid var(--collab-border); border-radius: 6px;
+  background: var(--collab-input-bg); color: var(--collab-fg); box-sizing: border-box; width: 100%; min-width: 0;
+}
+.collab-field input:focus { outline: 2px solid var(--color-primary); outline-offset: -1px; }
+
+.collab-btn {
+  font: inherit; font-size: 13px; font-weight: 500; padding: 7px 14px; border-radius: 6px;
+  border: 1px solid var(--collab-border); background: var(--collab-bg); color: var(--collab-fg); cursor: pointer;
+}
+.collab-btn:hover:not(:disabled) { background: var(--collab-hover); }
+.collab-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.collab-btn.collab-btn-primary { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
+.collab-btn.collab-btn-primary:hover:not(:disabled) { background: var(--color-primary); filter: brightness(1.15); }
+.collab-btn-block { width: 100%; padding: 10px 14px; font-size: 14px; }
+.collab-btn-small { padding: 4px 10px; font-size: 12px; }
+a.collab-btn { display: inline-block; text-decoration: none; }
+.collab-icon-btn { display: inline-flex; align-items: center; justify-content: center; padding: 6px 9px; }
+.collab-link { font-size: 13px; color: var(--collab-muted); text-decoration: none; }
+.collab-link:hover { color: var(--collab-fg); text-decoration: underline; }
+
+.home-menu { position: relative; }
+.home-menu-list {
+  position: absolute; right: 0; top: calc(100% + 4px); z-index: 20; min-width: 190px;
+  background: var(--collab-bg); border: 1px solid var(--collab-border); border-radius: 8px;
+  box-shadow: var(--collab-shadow); padding: 4px; display: flex; flex-direction: column;
+}
+.home-menu-list button {
+  font: inherit; font-size: 13px; text-align: left; border: none; background: none; color: var(--collab-fg);
+  padding: 8px 10px; border-radius: 6px; cursor: pointer;
+}
+.home-menu-list button:hover { background: var(--collab-hover); }
+.home-menu-user { margin: 0 0 4px; padding: 6px 10px 8px; font-weight: 600; font-size: 13px; border-bottom: 1px solid var(--collab-border); }
+.home-language-list { min-width: 150px; }
+.home-language-list button { display: flex; align-items: center; gap: 6px; }
+.home-language-list button.current { font-weight: 600; }
+.home-language-check { width: 1em; color: var(--color-primary); }
+
+/* ── the start page's own: tiles, tabs, the projects ─────────────────── */
+
+.ra-icon { width: 100%; height: 100%; }
+.ra-tagline { margin: 4px 0 18px; font-size: 15px; color: var(--collab-muted); }
+.ra-group { margin: 6px 0 12px; font-size: 13px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--collab-muted); }
+.ra-page-title { margin: 6px 0 16px; font-size: 22px; }
+.ra-back { display: inline-block; margin-bottom: 10px; }
+.ra-rule { border: none; border-top: 2px solid var(--collab-border); margin: 26px 0 18px; }
+
+.ra-tiles { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.ra-tile, .ra-tab {
+  position: relative; box-sizing: border-box; height: 100%;
+  display: flex; flex-direction: column; gap: 6px; padding: 18px 18px 16px;
+  background: var(--collab-bg); color: var(--collab-fg); text-decoration: none;
+  border: 1px solid var(--collab-border); border-radius: 14px;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s, opacity 0.15s, filter 0.15s;
+}
+.ra-tile:hover { border-color: var(--color-primary); box-shadow: 0 6px 20px rgba(48, 51, 131, 0.14); transform: translateY(-2px); }
+.ra-tile:focus-visible, .ra-tab:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+.ra-tile-icon { width: 46px; height: 46px; color: var(--color-primary); }
+.ra-tile-name { font-size: 17px; font-weight: 700; }
+.ra-tile-desc { font-size: 13px; line-height: 1.45; color: var(--collab-muted); flex: 1; }
+.ra-tile-planned .ra-tile-icon { color: var(--collab-muted); }
+
+.ra-badge {
+  align-self: flex-start; font-size: 11px; font-weight: 600; letter-spacing: 0.02em;
+  border: 1px solid var(--collab-border); color: var(--collab-muted); border-radius: 999px; padding: 2px 9px;
+}
+.ra-badge-ok { border-color: var(--collab-ok); color: var(--collab-ok); }
+
+/* The tools as tabs: the chosen one in the primary colour, sitting on the line
+   below like a tab on its sheet; the others greyed until chosen. */
+.ra-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: stretch; }
+.ra-tab { padding: 20px 20px 18px; border-width: 2px; }
+.ra-tab .ra-tile-icon { width: 56px; height: 56px; }
+.ra-tab:not(.ra-tab-chosen) { opacity: 0.5; filter: grayscale(1); }
+.ra-tab:not(.ra-tab-chosen):hover { opacity: 0.8; }
+.ra-tab-chosen { border-color: var(--color-primary); background: var(--collab-selected); box-shadow: 0 6px 20px rgba(48, 51, 131, 0.16); }
+.ra-tab-chosen::after {
+  content: ''; position: absolute; left: 50%; bottom: -12px; width: 20px; height: 20px; transform: translateX(-50%) rotate(45deg);
+  background: var(--collab-selected); border-right: 2px solid var(--color-primary); border-bottom: 2px solid var(--color-primary);
+}
+.ra-tabs + .ra-rule { margin-top: 30px; }
+
+/* Which tool the projects below open in. */
+.ra-mode {
+  display: flex; align-items: center; gap: 10px; margin: 0 0 16px; padding: 10px 14px;
+  border-radius: 10px; background: var(--collab-selected); font-size: 14px; font-weight: 500;
+}
+.ra-mode-icon { width: 26px; height: 26px; color: var(--color-primary); flex-shrink: 0; }
+.ra-mode-off { background: var(--collab-hover); color: var(--collab-muted); }
+.ra-mode-off .ra-mode-icon { color: var(--collab-muted); }
+
+.ra-project { display: flex; gap: 14px; align-items: flex-start; }
+.ra-project-image {
+  width: 72px; height: 54px; box-sizing: border-box; border: 1px solid var(--collab-border); object-fit: cover;
+  border-radius: 8px; flex-shrink: 0; background: var(--collab-hover);
+}
+.ra-project-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.ra-project-body h3 { margin: 2px 0 0; font-size: 16px; overflow-wrap: anywhere; }
+.ra-variants { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.ra-variant {
+  display: inline-flex; flex-direction: column; gap: 1px; padding: 7px 12px; border-radius: 8px;
+  border: 1px solid var(--color-primary); color: var(--collab-fg); background: var(--collab-bg); text-decoration: none;
+}
+a.ra-variant:hover { background: var(--color-primary); color: #fff; }
+a.ra-variant:hover .ra-variant-meta { color: rgba(255, 255, 255, 0.8); }
+.ra-variant-name { font-size: 14px; font-weight: 600; }
+.ra-variant-meta { font-size: 11px; color: var(--collab-muted); }
+.ra-variant-off { border-color: var(--collab-border); color: var(--collab-muted); cursor: not-allowed; }
+.ra-projects-off .ra-project { opacity: 0.6; }
+
+.ra-sign-in { max-width: 360px; display: flex; flex-direction: column; gap: 12px; }
+
+.ra-planned {
+  display: flex; gap: 20px; align-items: flex-start; padding: 24px; margin-top: 8px;
+  background: var(--collab-bg); border: 1px solid var(--collab-border); border-radius: 14px;
+}
+.ra-planned .ra-tile-icon { width: 64px; height: 64px; flex-shrink: 0; color: var(--collab-muted); }
+.ra-planned h2 { margin: 0 0 8px; font-size: 20px; }
+.ra-planned p { margin: 0 0 10px; line-height: 1.5; }
+
+@media (max-width: 760px) {
+  .ra-tiles, .ra-tabs { grid-template-columns: minmax(0, 1fr); }
+  .ra-tab-chosen::after { display: none; }
+}
+@media (max-width: 560px) {
+  .home-top { padding: 12px 16px; }
+  .home-main { padding: 16px 16px 32px; }
+  .ra-project-image { width: 56px; height: 42px; }
+}

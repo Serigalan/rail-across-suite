@@ -63,6 +63,24 @@ jobs:
         working-directory: .
       - run: npm test
 
+  # The start page of the suite.
+  home:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: apps/home
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+        working-directory: .
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+
   # The Open-Layout-Tool with the project server, whose tests its vitest runs.
   open-layout-tool:
     runs-on: ubuntu-24.04

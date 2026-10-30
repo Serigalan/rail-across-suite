@@ -1,7 +1,8 @@
-/* The start page of Rail-Across-Suite. The bar, the buttons, the menus and the
-   colours are those of the Layout-Tool's start page (its collab.css),
-   so the suite and its first tool look alike; the tiles and the tool tabs
-   are the start page's own. Light by default, dark where the system asks. */
+/* The start page of Rail-Across-Suite. The bar, the buttons, the menus, the
+   dialogs and the colours are those the Layout-Tool's pages have (its
+   collab.css), so the suite and its first tool look alike; the tiles, the
+   tool tabs and the projects are the start page's own. Light by default,
+   dark where the system asks. */
 
 :root {
   --color-primary: #303383;
@@ -36,7 +37,7 @@
 
 html, body { margin: 0; background: var(--collab-surface); }
 
-/* ── as the Layout-Tool's start page ─────────────────────────────── */
+/* ── as the Layout-Tool's pages ─────────────────────────────────── */
 
 .collab-page {
   min-height: 100vh;
@@ -73,11 +74,11 @@ html, body { margin: 0; background: var(--collab-surface); }
 .collab-error { margin: 0; color: var(--collab-danger); font-size: 13px; }
 .collab-field { display: flex; flex-direction: column; gap: 5px; font-size: 13px; }
 .collab-field > span { color: var(--collab-muted); font-weight: 500; }
-.collab-field input, .collab-field select {
+.collab-field input, .collab-field select, .collab-field textarea {
   font: inherit; font-size: 14px; padding: 8px 10px; border: 1px solid var(--collab-border); border-radius: 6px;
   background: var(--collab-input-bg); color: var(--collab-fg); box-sizing: border-box; width: 100%; min-width: 0;
 }
-.collab-field input:focus, .collab-field select:focus { outline: 2px solid var(--color-primary); outline-offset: -1px; }
+.collab-field input:focus, .collab-field select:focus, .collab-field textarea:focus { outline: 2px solid var(--color-primary); outline-offset: -1px; }
 
 .collab-btn {
   font: inherit; font-size: 13px; font-weight: 500; padding: 7px 14px; border-radius: 6px;
@@ -106,6 +107,7 @@ a.collab-btn { display: inline-block; text-decoration: none; }
   padding: 8px 10px; border-radius: 6px; cursor: pointer;
 }
 .home-menu-list button:hover, .home-menu-list a:hover { background: var(--collab-hover); }
+.home-menu-list button.danger { color: var(--collab-danger); }
 .home-menu-list a { font-size: 13px; color: var(--collab-fg); text-decoration: none; padding: 8px 10px; border-radius: 6px; }
 .home-menu-user { margin: 0 0 4px; padding: 6px 10px 8px; font-weight: 600; font-size: 13px; border-bottom: 1px solid var(--collab-border); }
 .home-language-list { min-width: 150px; }
@@ -166,24 +168,74 @@ a.collab-btn { display: inline-block; text-decoration: none; }
 .ra-mode-off { background: var(--collab-hover); color: var(--collab-muted); }
 .ra-mode-off .ra-mode-icon { color: var(--collab-muted); }
 
+.ra-mode-text { flex: 1; }
+.ra-mode .collab-link { font-size: 12.5px; font-weight: 400; }
+
+/* The projects: each with its picture, its menu, and its variants as a tree
+   — indented under the variant each was branched off. */
 .ra-project { display: flex; gap: 14px; align-items: flex-start; }
 .ra-project-image {
   width: 72px; height: 54px; box-sizing: border-box; border: 1px solid var(--collab-border); object-fit: cover;
   border-radius: 8px; flex-shrink: 0; background: var(--collab-hover);
 }
-.ra-project-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.ra-project-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
 .ra-project-body h3 { margin: 2px 0 0; font-size: 16px; overflow-wrap: anywhere; }
-.ra-variants { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
-.ra-variant {
-  display: inline-flex; flex-direction: column; gap: 1px; padding: 7px 12px; border-radius: 8px;
-  border: 1px solid var(--color-primary); color: var(--collab-fg); background: var(--collab-bg); text-decoration: none;
+.ra-variant-tree { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; }
+.ra-variant-row { padding: 6px 0 6px calc(var(--depth) * 22px); border-top: 1px solid var(--collab-border); }
+.ra-variant-archived { opacity: 0.6; }
+.ra-variant-main { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 12px; }
+.ra-variant-name { font-weight: 600; font-size: 14px; min-width: 110px; overflow-wrap: anywhere; }
+.ra-branch { color: var(--collab-muted); margin-right: 6px; font-weight: 400; }
+.ra-variant-meta { flex: 1; font-size: 12.5px; color: var(--collab-muted); min-width: 160px; }
+.ra-variant-buttons { display: flex; gap: 6px; align-items: center; margin-left: auto; }
+.ra-variant-ahead { font-size: 12px; color: var(--collab-muted); }
+.ra-project-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.ra-archived-toggle { margin-top: 12px; color: var(--collab-muted); }
+.ra-section { margin-top: 32px; }
+.ra-line { margin-bottom: 14px; }
+
+/* Dialogs over the page. */
+.ra-overlay {
+  position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center;
+  background: rgba(0, 0, 0, 0.4); padding: 16px; box-sizing: border-box;
 }
-a.ra-variant:hover { background: var(--color-primary); color: #fff; }
-a.ra-variant:hover .ra-variant-meta { color: rgba(255, 255, 255, 0.8); }
-.ra-variant-name { font-size: 14px; font-weight: 600; }
-.ra-variant-meta { font-size: 11px; color: var(--collab-muted); }
-.ra-variant-off { border-color: var(--collab-border); color: var(--collab-muted); cursor: not-allowed; }
-.ra-projects-off .ra-project { opacity: 0.6; }
+.ra-dialog {
+  width: min(520px, 100%); max-height: calc(100vh - 48px); overflow-y: auto; box-sizing: border-box;
+  display: flex; flex-direction: column; gap: 14px; padding: 24px;
+  background: var(--collab-bg); color: var(--collab-fg); border-radius: 12px; box-shadow: var(--collab-shadow);
+}
+.ra-dialog:focus { outline: none; }
+.ra-dialog-title { margin: 0; font-size: 17px; }
+.collab-field textarea { resize: vertical; }
+.collab-field input[type="file"] { padding: 6px; }
+
+.image-picker { border: none; margin: 0; padding: 0; min-width: 0; display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
+.image-picker legend { padding: 0; margin-bottom: 5px; color: var(--collab-muted); font-weight: 500; }
+.image-picker-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(56px, 1fr)); gap: 6px; }
+.image-option { position: relative; display: block; cursor: pointer; }
+.image-option input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.image-option-tile {
+  display: flex; align-items: center; justify-content: center;
+  aspect-ratio: 4 / 3; border-radius: 6px; overflow: hidden;
+  border: 1px solid var(--collab-border); background: var(--collab-surface);
+}
+.image-option-tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.image-option-text { font-size: 10.5px; line-height: 1.15; text-align: center; color: var(--collab-muted); padding: 2px; overflow-wrap: anywhere; }
+.image-option:hover .image-option-tile { border-color: var(--collab-muted); }
+.image-option input:checked + .image-option-tile { outline: 2px solid var(--color-primary); outline-offset: 1px; border-color: transparent; }
+.image-option input:focus-visible + .image-option-tile { outline: 2px solid var(--color-primary); outline-offset: 3px; }
+.image-picker:disabled .image-option { cursor: default; opacity: 0.6; }
+.image-picker-caption { margin: 0; color: var(--collab-fg); font-weight: 500; }
+.image-picker-credit { margin: 0; font-size: 11px; color: var(--collab-muted); }
+
+.members-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.members-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-top: 1px solid var(--collab-border); font-size: 13.5px; }
+.members-row:first-child { border-top: none; }
+.members-row .ra-badge { align-self: center; }
+.members-who { flex: 1; min-width: 0; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; overflow-wrap: anywhere; }
+.members-who .collab-muted { font-size: 12.5px; }
+.members-add { display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--collab-border); padding-top: 12px; }
+.members-hits { max-height: 220px; overflow-y: auto; }
 
 .ra-sign-in { max-width: 360px; display: flex; flex-direction: column; gap: 12px; }
 .ra-account { display: flex; justify-content: center; padding-top: 48px; }
@@ -212,6 +264,8 @@ a.ra-variant:hover .ra-variant-meta { color: rgba(255, 255, 255, 0.8); }
   .home-top { padding: 12px 16px; }
   .home-main { padding: 16px 16px 32px; }
   .ra-project-image { width: 56px; height: 42px; }
+  .ra-variant-row { padding-left: calc(var(--depth) * 12px); }
+  .ra-dialog { padding: 18px 16px; }
 }
 
 /* ── the sign-in page, before anything of the suite ──────────────────── */

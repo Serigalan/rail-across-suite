@@ -72,12 +72,6 @@ export async function loadWorkingCopy(variantId) {
   try { return await idb.getWorkingCopy(variantId) } catch { return null }
 }
 
-/** Every stored working copy (for the start page's status). */
-export async function listWorkingCopies() {
-  if (!_db) return []
-  try { return await idb.getAllWorkingCopies() } catch { return [] }
-}
-
 /** Throw a variant's working copy away. */
 export async function discardWorkingCopy(variantId) {
   if (currentVariantId() === variantId) await closeWorkingCopy()

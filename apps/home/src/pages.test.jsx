@@ -27,18 +27,21 @@ describe('the start page', () => {
 
 describe('the infrastructure editor', () => {
   it('shows its three tools as tabs, the chosen one selected, and the projects opening in it', () => {
-    const html = de(<Infrastructure toolId="layout" projects={projects} />)
+    const html = de(<Infrastructure toolId="layout" user={{ id: 1, role: 'user' }} projects={projects} />)
     expect(html.match(/role="tab"/g)).toHaveLength(3)
     expect(html).toMatch(/aria-selected="true"[^>]*href="#\/infrastructure\/layout"/)
     expect(html).toContain('Projekte öffnen im Layout-Tool')
     expect(html).toContain('href="layout/?project=p1&amp;variant=v1"')
+    expect(html).toContain('href="layout/?project=p1&amp;variant=v1&amp;action=history"')
+    expect(html).toContain('+ Neu')
   })
 
   it('in a tool that is not there yet lists the projects without a way to open them', () => {
-    const html = de(<Infrastructure toolId="catenary" projects={projects} />)
+    const html = de(<Infrastructure toolId="catenary" user={{ id: 1, role: 'user' }} projects={projects} />)
     expect(html).toContain('Das Catenary-Tool gibt es noch nicht')
     expect(html).not.toContain('layout/?project=')
-    expect(html).toContain('aria-disabled="true"')
+    expect(html).toContain('disabled=""')
+    expect(html).toContain('+ Variante abzweigen')
   })
 
 })

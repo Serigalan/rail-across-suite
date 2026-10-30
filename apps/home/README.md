@@ -11,9 +11,12 @@ opens. One sign-in for every module.
 modules — the three editors, a line, the three simulations. Each module that is not there yet has a page saying
 when it comes (ROADMAP.md). The **infrastructure editor** shows its three tools as tabs — Layout-Tool,
 Signalling-Tool, Catenary-Tool —, the chosen one standing out, the others greyed, and below a line the projects
-of the suite's project server: each variant opens in the chosen tool. Only the Layout-Tool exists so far; it lies
-beside the start page under `/layout/` and opens a variant named in the address
-(`layout/?project=<id>&variant=<id>`).
+of the suite's project server, **managed here for every tool**: new projects and templates (with a picture),
+importing backup files and exporting a variant's head as one, title and description, editors, deleting;
+branching, renaming and archiving variants. Working on a variant, looking at it, its history, comparing and
+merging two open in the chosen tool by its address ([apps/README.md](../README.md)). Only the Layout-Tool
+exists so far; it lies beside the start page under `/layout/`. For a tool still to come the projects are
+managed all the same; only what would open in it cannot be pressed.
 
 **The account and the users**: changing one's password (`#/password`, also where a module sends one, and back),
 signing out, and for admins the users of the whole suite (`#/admin`) — accounts with a start password, roles,
@@ -24,9 +27,13 @@ clouds take.
 |---|---|
 | `sign-in/index.html`, `src/signIn.jsx`, `src/SignInScreen.jsx`, `src/SignIn.jsx` | The sign-in page |
 | `src/App.jsx` | The start page's pages by the address' hash (`#/`, `#/infrastructure/<tool>`, `#/<module>`, `#/password`, `#/admin`) |
-| `src/modules.js` | The modules and tools, where a variant opens, which projects are listed, the routes |
+| `src/modules.js` | The modules and tools, what the suite asks a tool by its address (`toolUrl`), the routes, a tool's note |
+| `src/projects.js` | The projects and templates, the variant trees, who may change what, backup files in and out |
+| `src/pages/projects/` | A project with its variants, its dialogs, its editors, the picture of a new one |
+| `src/Dialog.jsx`, `src/useAction.js` | A dialog over the page, a form in one, the server's errors in words |
+| `src/projectImages.js`, `public/project-images/` | The default pictures of a project, an own one fitted to the slot |
 | `src/Header.jsx` | The bar: mark, language, the user's menu |
-| `src/pages/` | The overview, the infrastructure editor, a module still to come, the password, the users |
+| `src/pages/` | The overview, the infrastructure editor with the projects, a module still to come, the password, the users |
 | `src/users.js` | Start passwords, sizes as people read them |
 | `src/icons.jsx`, `src/logoWords.js` | The suite's mark (its name in Open Sans, as outlines) and the icons of modules and tools |
 | `src/i18n.js` | The texts, German and English |

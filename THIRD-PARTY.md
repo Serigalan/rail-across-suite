@@ -38,7 +38,8 @@ them names its source where it lies.
 
 ## Project pictures
 
-The default project pictures use country outlines from [Natural Earth](https://www.naturalearthdata.com) 1:50m
+The default project pictures (`apps/home/public/project-images/`, and for the Layout-Tool's local build
+`apps/layout-tool/public/project-images/`) use country outlines from [Natural Earth](https://www.naturalearthdata.com) 1:50m
 (public domain) and pictograms from [Font Awesome Free](https://fontawesome.com) 7.3.1
 ([CC BY 4.0](https://fontawesome.com/license/free)).
 

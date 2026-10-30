@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { EDITORS, SIMULATIONS, hashOf, listedProjects, openUrl, routeOf, safeNext, toolOf } from './modules'
+import { EDITORS, SIMULATIONS, hashOf, openUrl, routeOf, safeNext, toolOf, toolUrl } from './modules'
+import { pairDefaults, splitProjects, variantTree } from './projects'
 import { TEXTS } from './i18n'
 
 describe('the pages by the address', () => {
@@ -59,15 +60,29 @@ describe('opening a project', () => {
   })
 })
 
+describe('asking a tool', () => {
+  it('names the action and its variants in the address', () => {
+    const layout = toolOf('layout')
+    expect(toolUrl(layout, { project: 'p1', variant: 'v1', action: 'history' })).toBe('layout/?project=p1&variant=v1&action=history')
+    expect(toolUrl(layout, { project: 'p1', action: 'merge', from: 'a', to: 'b' })).toBe('layout/?project=p1&action=merge&from=a&to=b')
+    expect(toolUrl(layout, { action: 'storage' })).toBe('layout/?action=storage')
+    expect(toolUrl(toolOf('catenary'), { project: 'p1', action: 'view' })).toBeNull()
+  })
+})
+
 describe('the projects listed', () => {
   const v = (id, extra = {}) => ({ id, name: id, parentVariantId: null, archived: false, ...extra })
-  it('leaves out templates, archived variants and projects with none left; the main variant first; by title', () => {
-    const listed = listedProjects([
-      { id: 'b', title: 'Zeitz', variants: [v('2030', { parentVariantId: 'x' }), v('x')] },
-      { id: 't', title: 'Vorlage', template: true, variants: [v('y')] },
-      { id: 'a', title: 'Ammendorf', variants: [v('z'), v('old', { archived: true })] },
-      { id: 'c', title: 'Gone', variants: [v('w', { archived: true })] },
+  it('keeps the templates apart, each by title', () => {
+    const { regular, templates } = splitProjects([
+      { id: 'b', title: 'Zeitz' }, { id: 't', title: 'Vorlage', template: true }, { id: 'a', title: 'Ammendorf' },
     ])
-    expect(listed.map(p => [p.id, p.variants.map(x => x.id)])).toEqual([['a', ['z']], ['b', ['x', '2030']]])
+    expect(regular.map(p => p.id)).toEqual(['a', 'b'])
+    expect(templates.map(p => p.id)).toEqual(['t'])
+  })
+
+  it('shows the variants as a tree, and pairs a variant with its parent', () => {
+    const variants = [v('2030', { parentVariantId: 'x' }), v('x'), v('2035', { parentVariantId: '2030' })]
+    expect(variantTree(variants).map(r => [r.variant.id, r.depth])).toEqual([['x', 0], ['2030', 1], ['2035', 2]])
+    expect(pairDefaults(variants)).toEqual({ from: 'x', to: '2030' })
   })
 })

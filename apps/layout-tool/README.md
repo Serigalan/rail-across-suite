@@ -65,12 +65,14 @@ What it can and cannot do: [`tools/local/README.md`](tools/local/README.md) — 
 ## Running a server
 
 The Layout-Tool is a module of Rail-Across-Suite and runs on the suite's server: the start page at the
-root, this app under `/layout/`, the project server with the one sign-in behind both. The suite's
+root, this app under `/layout/`, the project server with the one sign-in behind both. The projects are managed
+on the suite's start page under Infrastructure, which opens them here; the main build has no start page of its
+own (the local build keeps its own, for the projects of the browser). The suite's
 [`deploy/`](../../deploy/README.md) sets it all up from one configuration file.
 
 ## Credits
 
-The default project pictures in `public/project-images/` use country outlines from
+The default project pictures in `public/project-images/` (and the suite's copy in `apps/home/public/`) use country outlines from
 [Natural Earth](https://www.naturalearthdata.com) 1:50m (public domain) and pictograms from
 [Font Awesome Free](https://fontawesome.com) 7.3.1 ([CC BY 4.0](https://fontawesome.com/license/free)).
 

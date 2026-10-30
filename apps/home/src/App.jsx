@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { api } from './api'
 import { I18n, initialLanguage, keepLanguage, textsFor } from './i18n'
-import { routeOf } from './modules'
+import { routeOf, takeNotice } from './modules'
 import Header from './Header'
 import Home from './pages/Home'
 import Infrastructure from './pages/Infrastructure'
@@ -21,6 +21,10 @@ function useRoute() {
   return route
 }
 
+// What a tool said when it sent one back here (a merge done, a link to a
+// project that is not there) — taken once, when the page loads.
+const LEFT_BY_TOOL = takeNotice()
+
 /** On to a module's address after changing the password (`next`), or to the overview. */
 function goOn(next) {
   if (next) location.assign(next)
@@ -33,7 +37,7 @@ function goOn(next) {
  * in, so here somebody always is — and where the session ends meanwhile, the
  * page is loaded again and the server asks for the sign-in. Pages by the
  * address' hash: the overview, the infrastructure editor with its tools and
- * the projects, a page for every module still to come, the password, and for
+ * the projects — managed here for every tool —, a page for every module still to come, the password, and for
  * admins the users of the whole suite.
  */
 export default function App() {
@@ -42,12 +46,16 @@ export default function App() {
   const route = useRoute()
   const [user, setUser] = useState(undefined)
   const [projects, setProjects] = useState({ list: null, error: false })
-  const [notice, setNotice] = useState(null)
+  const [notice, setNotice] = useState(LEFT_BY_TOOL ? { text: LEFT_BY_TOOL } : null)
 
   useEffect(() => { document.documentElement.lang = language }, [language])
   useEffect(() => {
     api.me().then(u => (u ? setUser(u) : location.reload()), () => setUser(null))
   }, [])
+  const loadProjects = useCallback(() => api.projects().then(
+    list => setProjects({ list, error: false }),
+    () => setProjects(p => ({ list: p.list, error: true })),
+  ), [])
   useEffect(() => {
     if (!user || user.mustChangePassword) return undefined
     let alive = true
@@ -61,7 +69,7 @@ export default function App() {
   const chooseLanguage = (l) => { keepLanguage(l); setLanguage(l) }
   const passwordChanged = (u) => {
     setUser(u)
-    setNotice('password_done')
+    setNotice({ key: 'password_done' })
     goOn(route.next)
   }
   // Signed out, the start page is the sign-in page again.
@@ -76,10 +84,10 @@ export default function App() {
     <I18n.Provider value={texts}>
       <div className="collab-page home">
         <Header user={user} onLanguage={chooseLanguage} onSignOut={signOut} />
-        {notice && <p className="collab-ok ra-notice" role="status">{texts.t(notice)}</p>}
+        {notice && <p className="collab-ok ra-notice" role="status">{notice.text ?? texts.t(notice.key)}</p>}
         {user === null && <p className="collab-error ra-notice" role="alert">{texts.t('server_unreachable')}</p>}
         {user && page === '' && <Home />}
-        {user && page === 'infrastructure' && <Infrastructure toolId={route.tool} projects={projects} />}
+        {user && page === 'infrastructure' && <Infrastructure toolId={route.tool} user={user} projects={projects} onReload={loadProjects} />}
         {user && page === 'password' && (
           <PasswordPage forced={forced} onDone={passwordChanged} onCancel={() => goOn(route.next)} />
         )}

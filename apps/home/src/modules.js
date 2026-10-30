@@ -37,15 +37,54 @@ export const DEFAULT_TOOL = 'layout'
 /** The tool of that id, or the default one. */
 export const toolOf = (id) => INFRASTRUCTURE_TOOLS.find(t => t.id === id) ?? INFRASTRUCTURE_TOOLS.find(t => t.id === DEFAULT_TOOL)
 
+const TOOL_ACTIONS = ['view', 'history', 'compare', 'merge', 'storage']
+
 /**
- * Where a variant of a project opens in a tool: the tool's app with the
- * project and the variant named, so it opens that variant at once. Null for a
- * tool that is not there yet.
+ * What the suite asks a tool to do with a project, by the tool's address —
+ * the same for every tool of the infrastructure (apps/README.md):
+ *
+ *   ?project=<id>&variant=<id>                  work on the variant (the main one without `variant`)
+ *   ?project=<id>&variant=<id>&action=view      look at its head, read-only
+ *   ?project=<id>&variant=<id>&action=history   its revisions
+ *   ?project=<id>&action=compare&from=<a>&to=<b>  two variants compared
+ *   ?project=<id>&action=merge&from=<a>&to=<b>    a's changes merged into b
+ *   ?action=storage                             what the tool keeps in this browser
+ *
+ * The projects themselves — creating, importing, exporting, who works on
+ * them, branching, renaming and archiving variants — are the suite's. Null
+ * for a tool that is not there yet.
  */
-export function openUrl(tool, projectId, variantId) {
+export function toolUrl(tool, { project, variant, action, from, to } = {}) {
   if (!tool.available) return null
-  const q = new URLSearchParams({ project: projectId, ...(variantId ? { variant: variantId } : {}) })
-  return `${tool.path}?${q}`
+  if (action && !TOOL_ACTIONS.includes(action)) throw new Error(`unknown tool action: ${action}`)
+  const q = new URLSearchParams()
+  if (project) q.set('project', project)
+  if (variant) q.set('variant', variant)
+  if (action) q.set('action', action)
+  if (from) q.set('from', from)
+  if (to) q.set('to', to)
+  const query = String(q)
+  return query ? `${tool.path}?${query}` : tool.path
+}
+
+/** Where a variant of a project opens in a tool to be worked on. */
+export const openUrl = (tool, projectId, variantId) => toolUrl(tool, { project: projectId, variant: variantId })
+
+/**
+ * A note a tool leaves for the start page when it sends one back — that a
+ * merge is done, that a link named a project that is not there: kept for
+ * this tab (sessionStorage, the same site) and shown once.
+ */
+const NOTICE = 'rail-across-notice'
+
+export function takeNotice() {
+  try {
+    const text = sessionStorage.getItem(NOTICE)
+    sessionStorage.removeItem(NOTICE)
+    return text || null
+  } catch {
+    return null
+  }
 }
 
 /**
@@ -86,21 +125,4 @@ export function hashOf({ page, tool, next }) {
   if (page === 'infrastructure' && tool) return `#/${page}/${tool}`
   if (ACCOUNT_PAGES.includes(page) && next) return `#/${page}?${new URLSearchParams({ next })}`
   return `#/${page ?? ''}`
-}
-
-/**
- * The projects as the infrastructure editor lists them: those that are not
- * templates, each with its variants that are not archived, root variants
- * first (the main one — "Bestand" — before those branched off it).
- */
-export function listedProjects(projects) {
-  return (projects ?? [])
-    .filter(p => !p.template)
-    .map(p => ({
-      ...p,
-      variants: (p.variants ?? []).filter(v => !v.archived)
-        .sort((a, b) => Number(Boolean(a.parentVariantId)) - Number(Boolean(b.parentVariantId))),
-    }))
-    .filter(p => p.variants.length)
-    .sort((a, b) => String(a.title).localeCompare(String(b.title), 'de', { sensitivity: 'base' }))
 }

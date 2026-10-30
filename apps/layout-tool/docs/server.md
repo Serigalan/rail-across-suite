@@ -5,7 +5,10 @@ the working copy, the Python service's computations, point clouds on the server 
 is the suite's — one for every module — and so is the account: the server lets nobody in without a session (the
 suite's sign-in page answers in place of every page), a session that ends meanwhile loads the page again for the
 sign-in, and a password to change, the users and signing out are on the suite's start page, which sends one back
-(`src/server/suite.js`). Read-only share links open through `share.html`, which needs no session. Three places hold it:
+(`src/server/suite.js`). So are the projects: the tool has no start page of its own. The suite's infrastructure
+editor makes, imports, exports and manages them for every tool and asks this one by its address what to do with a
+variant — work on it, look at it, show its history, compare or merge two, show what the tool keeps in this browser
+([apps/README.md](../../README.md)); every way back leads to the projects there. Read-only share links open through `share.html`, which needs no session. Three places hold it:
 
 | Where | What | Runs |
 |---|---|---|
@@ -53,9 +56,9 @@ anything renders:
 
 Main pieces:
 
-- `App.jsx`, `home/` — the session and the way to the suite's pages (`suite.js`), the start page with projects and their variant trees (status, last revision, local
-  changes), new project, branch variant, compare, merge, export, members, templates; `collab/` — check-in and
-  conflict dialogs, history page. The user administration is the suite's (`apps/home`, `#/admin`).
+- `App.jsx` — the session, what the address asks for (`?project=…&variant=…&action=…`) and the way back to the
+  suite's pages (`suite.js`); `collab/` — check-in and conflict dialogs, history page. The projects, their
+  members and variants, and the users are the suite's (`apps/home`, `#/infrastructure`, `#/admin`).
 - `workingCopies.js`, `workingCopyDb.js` — the working copy of a variant in IndexedDB (`olt` › `workingCopies`):
   the record being edited, the revision it rests on and that revision's record.
 - `workingCopySync.js`, `useWorkingCopy.js` — opening a variant, local changes (diff against the base), check-in,

@@ -2,7 +2,7 @@
   "name": "rail-across-home",
   "private": true,
   "version": "0.0.0",
-  "description": "The start page of Rail-Across-Suite: the editors and simulations, and the projects of the suite's server",
+  "description": "The start page of Rail-Across-Suite: the editors and simulations, and the projects of the infrastructure, managed for every tool",
   "license": "Apache-2.0",
   "type": "module",
   "engines": {
@@ -16,6 +16,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@rail-across/core": "*",
     "react": "^19.2.4",
     "react-dom": "^19.2.4"
   },

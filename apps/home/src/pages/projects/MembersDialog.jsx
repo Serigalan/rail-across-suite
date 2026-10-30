@@ -1,24 +1,22 @@
 import { useEffect, useState } from 'react'
-import { api } from '../api/client'
-import '../../core/components/collab/collab.css'
-import { useI18n } from '../../core/locales/i18nContext'
-import { errorText } from './errorText'
-import Modal from '../../core/components/Modal'
+import { api } from '../../api'
+import { Dialog } from '../../Dialog'
+import { errorText } from '../../useAction'
+import { useTexts } from '../../i18n'
 
 /** How long the search field has to hold still before it asks the server [ms]. */
 const SEARCH_DELAY = 250
 const MIN_QUERY = 2
 
-
 /**
- * Who works on a project (decision 127): its creator, the members listed
- * here, and every admin. The creator and the admins add members — found by
- * name or login — and take them off again; everyone else sees the list.
- * `onClose(changed)` says whether the list changed, so the start page can
- * read the projects again.
+ * Who works on a project (decision 127) — in every tool: its creator, the
+ * members listed here, and every admin. The creator and the admins add
+ * members — found by name or login — and take them off again; everyone else
+ * sees the list. `onClose(changed)` says whether the list changed, so the
+ * projects are read again.
  */
 export default function MembersDialog({ project, onClose }) {
-  const { t, fill } = useI18n()
+  const { t, fill } = useTexts()
   const [members, setMembers] = useState(project.members ?? [])
   const [canManage, setCanManage] = useState(false)
   const [query, setQuery] = useState('')
@@ -65,22 +63,20 @@ export default function MembersDialog({ project, onClose }) {
   const close = () => onClose(changed)
 
   return (
-    <Modal className="collab-modal" title={fill('members_title', { title: project.title })} onClose={close} busy={busy}
-      actions={<>
-        <button type="button" className="modal-btn collab-btn-primary" onClick={close} disabled={busy}>{t('members_done')}</button>
-      </>}>
-      <p className="collab-muted members-intro">{t('members_intro')}</p>
+    <Dialog title={fill('members_title', { title: project.title })} onClose={close} busy={busy}
+      actions={<button type="button" className="collab-btn collab-btn-primary" onClick={close} disabled={busy}>{t('members_done')}</button>}>
+      <p className="collab-muted">{t('members_intro')}</p>
 
       <ul className="members-list">
         <li className="members-row">
           <span className="members-who"><strong>{project.createdBy?.name}</strong>
             {project.createdBy?.login && <span className="collab-muted">{project.createdBy.login}</span>}</span>
-          <span className="admin-badge">{t('members_creator')}</span>
+          <span className="ra-badge">{t('members_creator')}</span>
         </li>
         {members.map(m => (
           <li key={m.id} className="members-row">
             <span className="members-who"><strong>{m.name}</strong><span className="collab-muted">{m.login}</span></span>
-            {!m.active && <span className="admin-badge off">{t('admin_inactive')}</span>}
+            {!m.active && <span className="ra-badge ra-badge-off">{t('admin_inactive')}</span>}
             {canManage && (
               <button type="button" className="collab-btn collab-btn-small" disabled={busy}
                 onClick={() => change(() => api.removeMember(project.id, m.id))}>{t('members_remove')}</button>
@@ -94,7 +90,7 @@ export default function MembersDialog({ project, onClose }) {
         <div className="members-add">
           <label className="collab-field">
             <span>{t('members_search')}</span>
-            <input type="search" value={query} onChange={e => setQuery(e.target.value)} autoFocus
+            <input type="search" value={query} onChange={e => setQuery(e.target.value)}
               placeholder={t('members_search_placeholder')} autoComplete="off" />
           </label>
           {results && results.length === 0 && <p className="collab-muted">{t('members_no_hits')}</p>}
@@ -117,6 +113,6 @@ export default function MembersDialog({ project, onClose }) {
       )}
 
       {error && <p className="collab-error" role="alert">{error}</p>}
-    </Modal>
+    </Dialog>
   )
 }

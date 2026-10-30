@@ -58,9 +58,6 @@ let shareToken = null
 export const setShareLink = (token) => { shareToken = token || null }
 const cloudsPath = (projectId) => (shareToken ? `/share/${enc(shareToken)}/clouds` : `/projects/${enc(projectId)}/clouds`)
 
-/** The URL an image of the server is shown from. */
-export const blobUrl = (hash) => (hash ? `${BASE}/blobs/${enc(hash)}` : null)
-
 /** An answer with its `payload`, the document, as the record it holds. */
 const withRecord = (res) => (res?.payload ? { ...res, payload: parseProjectsPayload(res.payload).projects[0] } : res)
 
@@ -80,17 +77,9 @@ export const api = {
   changePassword: (current, next) => request('POST', '/me/password', { current, next }),
 
   projects:       () => request('GET', '/projects'),
-  createProject:  (body) => request('POST', '/projects', withDocument(body)),
   patchProject:   (id, body) => request('PATCH', `/projects/${enc(id)}`, body),
-  deleteProject:  (id) => request('DELETE', `/projects/${enc(id)}`),
-  branch:         (projectId, body) => request('POST', `/projects/${enc(projectId)}/variants`, body),
-  members:        (projectId) => request('GET', `/projects/${enc(projectId)}/members`),
-  addMember:      (projectId, userId) => request('POST', `/projects/${enc(projectId)}/members`, { userId }),
-  removeMember:   (projectId, userId) => request('DELETE', `/projects/${enc(projectId)}/members/${enc(userId)}`),
-  searchUsers:    (q) => request('GET', `/users?q=${enc(q)}`),
 
   variant:        (id) => request('GET', `/variants/${enc(id)}`),
-  patchVariant:   (id, body) => request('PATCH', `/variants/${enc(id)}`, body),
   head:           async (id) => withRecord(await request('GET', shareToken ? `/share/${enc(shareToken)}/head` : `/variants/${enc(id)}/head`)),
   history:        (id) => request('GET', `/variants/${enc(id)}/revisions`),
   revision:       async (id) => withRecord(await request('GET', `/revisions/${enc(id)}`)),
@@ -182,10 +171,4 @@ export const api = {
   users:          () => request('GET', '/admin/users'),
   createUser:     (body) => request('POST', '/admin/users', body),
   patchUser:      (id, body) => request('PATCH', `/admin/users/${enc(id)}`, body),
-}
-
-/** A data URL (from a file input) as { mime, data } for uploadImage. */
-export function splitDataUrl(dataUrl) {
-  const m = /^data:([^;,]+);base64,(.*)$/.exec(dataUrl ?? '')
-  return m ? { mime: m[1], data: m[2] } : null
 }

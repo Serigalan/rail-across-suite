@@ -3,13 +3,35 @@
 // the suite's sign-in page in its place (deploy/templates/Caddyfile) — and the
 // password, the users and signing out are the suite's start page's, which lies
 // beside this app (it at /, the tool at /layout/) and sends one back here.
+// So are the projects: the suite's infrastructure editor makes, imports and
+// manages them for every tool, and asks this one by its address to work on a
+// variant, look at it, show its history, compare or merge two (apps/README.md).
 
 const SUITE = import.meta.env?.VITE_RA_SUITE ?? '../'
 
 /** The address of a page of the suite's start page (`sign-in`, `password`, or the overview), with where to come back to. */
-export function suiteUrl(page = '', next = null) {
+function suiteUrl(page = '', next = null) {
   const q = next ? `?${new URLSearchParams({ next })}` : ''
   return `${SUITE}#/${page}${q}`
+}
+
+/** The projects of the infrastructure on the suite's start page, with this tool chosen. */
+export const projectsUrl = () => suiteUrl('infrastructure/layout')
+
+const NOTICE = 'rail-across-notice'
+
+/**
+ * Back to the projects on the suite's start page — with `note`, a line it
+ * shows once (a merge done, a link to a project that is not there), kept for
+ * this tab on the same site.
+ */
+export function toProjects(note = null, { replace = false } = {}) {
+  try {
+    if (note) sessionStorage.setItem(NOTICE, note)
+    else sessionStorage.removeItem(NOTICE)
+  } catch { /* not kept: the suite shows nothing */ }
+  if (replace) location.replace(projectsUrl())
+  else location.assign(projectsUrl())
 }
 
 /** This page's address on this site — where the suite sends one back to. */

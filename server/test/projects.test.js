@@ -164,10 +164,10 @@ describe('variants and revisions', () => {
     const h = await head(max, variantId)
     const signal = (at) => ({ id: 's1', kind: 'virtual', virtualFunction: 'trainTargetLine', at })
     const signalling = (at) => ({
-      fields: { catalogue: { id: 'db-ril-301', version: '0.2.0' } },
+      fields: { catalogue: { id: 'db-ril-301', version: '0.3.0' } },
       collections: {
         signals: [signal(at)], detectionPoints: [], trackSections: [], switchElements: [], routes: [], overlaps: [],
-        flankProtection: [], pzbElements: [], stationBoundaries: [],
+        flankProtection: [], balises: [], stationBoundaries: [],
       },
     })
     const bad = { ...h.payload, signalling: signalling({ anchor: 'station', trackId: 't1', station: 180, direction: 'up' }) }

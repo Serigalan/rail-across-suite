@@ -1,6 +1,6 @@
-# 0011 — The signalling domain follows PlanPro, its content is a catalogue
+# 0011 — The signalling domain follows PlanPro and OSRD, its content is a catalogue
 
-Status: **accepted** · domain `signalling` 1.0, catalogue `db-ril-301` 0.2.0 · checked against the PlanPro plan P-Hausen
+Status: **accepted** · domain `signalling` 1.0, catalogue `db-ril-301` 0.3.0 · checked against the PlanPro plan P-Hausen
 
 ## Decision
 
@@ -11,46 +11,55 @@ Status: **accepted** · domain `signalling` 1.0, catalogue `db-ril-301` 0.2.0 ·
 
    | Collection | PlanPro 1.10 |
    |---|---|
-   | `signals` — real or virtual, each real one with its frames and their aspects; a clearance marker on both branches also `alsoAt` | `Signal` (`Signal_Real`, `Signal_Fiktiv`), `Signal_Rahmen`, `Signal_Signalbegriff` |
+   | `signals` — real or virtual, each real one with its logical signals (one per signalling system, see 3) and its frames and their aspects; a clearance marker on both branches also `alsoAt` | `Signal` (`Signal_Real`, `Signal_Fiktiv`), `Signalsystem` and `Signal_Art` of the screen, `Signal_Rahmen`, `Signal_Signalbegriff` |
    | `detectionPoints` | `FMA_Komponente` |
    | `trackSections` — name, kind, bounding detection points | `FMA_Anlage` |
    | `switchElements` — the interlocking's switch, referring to the core's, or a derailer at its place; its clearance marker, twofold flank protection | `W_Kr_Gsp_Element`, `Fla_Zwieschutz` |
    | `routes` — train, shunting and middle-switch, start and target signal, a `TrackPath`, rank, overlaps, what they show | `Fstr_Zug_Rangier`, `Fstr_Fahrweg`, `Fstr_Signalisierung` |
    | `overlaps` — run, danger point, design length, gradient, speed, clear sections, locked switches | `Fstr_DWeg`, `Fstr_DWeg_W_Kr` |
    | `flankProtection` — per switch element and position: by a signal, by a switch element in a position, or waived; passed on | `Fla_Schutz`, `Fla_Freimelde_Zuordnung` |
-   | `pzbElements` — magnets of 500, 1000, 2000 Hz and speed checks, their signal and routes | `PZB_Element`, `PZB_Element_Zuordnung` |
+   | `balises` — the balises and magnets of train protection: of a system and kind, with their settings (a PZB magnet of 500, 1000, 2000 Hz or a speed check, an ETCS Eurobalise), their signal and routes | `PZB_Element`, `PZB_Element_Zuordnung`; `Balise` (ETCS) |
    | `stationBoundaries` — what marks the boundary of an operational point | (EBO §4; the roadmap's station boundaries) |
 
 2. **Boards are signals.** Ne 1, Ne 2, Lf 6, Lf 7 and the like are signals whose frame is a plate, as in PlanPro.
    There is no collection of signs.
 
-3. **What a signal can show is not in the schema but in a catalogue**,
+3. **Systems are data, as in OSRD.** A signal at the track carries a **logical signal** per signalling system it
+   shows (`logicalSignals`: the system, its kind there, the system's settings); a Ks main signal that is a
+   shunting signal as well has one of `ks` and one of `sh`, and its screen shows what both ask. A **balise**
+   names its train protection system, its kind and its settings: a PZB magnet its frequency, an ETCS Eurobalise
+   its place in its group. The schema holds the system, kind and settings as keys and plain values; which there
+   are is the catalogue's.
+
+4. **What there is lies not in the schema but in a catalogue**,
    [`packages/core/constraints/db-ril-301.json`](../../packages/core/constraints/db-ril-301.json): the aspects by
-   PlanPro's names (`Hp_0`, `Ks_1`, `Zs_3` …), the frames each may stand on, the symbol it asks for, and per
-   system and kind of signal what its screen must and may show and which indicators it carries. Version 0.2.0
-   holds **all 192 aspects of PlanPro's Ril 301 list** with their symbols, and the kinds of **Ks** signal, the
-   shunting signal, the boards and the PZB elements. H/V, Sv and Hl come as
+   PlanPro's names (`Hp_0`, `Ks_1`, `Zs_3` …), the frames each may stand on, the symbol it asks for; per
+   signalling system and kind of signal what its screen must and may show and which indicators it carries; per
+   train protection system its kinds of balise and magnet and the settings each must and may have. Version 0.3.0
+   holds **all 192 aspects of PlanPro's Ril 301 list** with their symbols, the kinds of **Ks** signal and the
+   **shunting signal** as systems, the boards, and **PZB** and **ETCS** as train protection systems — every entry
+   titled in German and in English, so a tool shows it in the language set. H/V, Sv and Hl, ZUB or LZB come as
    entries of the catalogue, without a new schema. The core checks a domain against it
    (`checkSignalling`, [module page](../../packages/core/docs/signalling.md)).
 
-4. **Derived, not stored**:
+5. **Derived, not stored**:
    - the switch positions of a route and of an overlap follow from its run of tracks, as in PlanPro;
    - flank protection follows from the switch elements a route runs over;
    - the extent of a track section follows from its own detection points over the net. Its name and kind are
      stored, so a section keeps its identity when a point moves; where its points enclose nothing together,
      that is a finding. Sections overlap where they meet: each is cut by its own points only.
 
-5. **Overlaps and flank protection are in 1.0**, which a simulation model leaves out and DB planning needs.
+6. **Overlaps and flank protection are in 1.0**, which a simulation model leaves out and DB planning needs.
 
-6. **The Layout-Tool carries the domain** in its record as `signalling: { fields, collections }`, so writing a
+7. **The Layout-Tool carries the domain** in its record as `signalling: { fields, collections }`, so writing a
    project back never loses it (F1). It does not edit it; the core carries its locations with every write of the
    net and in every merge (R4), and orphans what stood on a deleted track in the plane (R7).
 
-7. **A PlanPro plan reads in** ([planpro](../../packages/core/docs/planpro.md)): its edges as tracks along their
+8. **A PlanPro plan reads in** ([planpro](../../packages/core/docs/planpro.md)): its edges as tracks along their
    geometry, its switch nodes as turnouts, its signalling as the domain, its start and target state as the two
    construction stages. Its signalling can be placed on a project's own net by the same remap.
 
-8. **The server checks the domain** at every check-in, on its core; only errors a check-in brings in refuse
+9. **The server checks the domain** at every check-in, on its core; only errors a check-in brings in refuse
    it, as with the record's own.
 
 ## Why
@@ -68,21 +77,24 @@ has no stages, no overlaps, no flank protection, no indicators as objects — an
 
 We take from both what holds for planning:
 - the split between a signal and what it shows;
+- from OSRD, the physical signal with a logical signal per system, and train protection the same way: a balise
+  of a system, not a PZB element — so the German terms stay general and a second system needs no new object;
 - the system's knowledge outside the generic schema;
 - train detection sections derived from points;
 - stored routes.
 
 We differ where our model asks it:
-- **a catalogue as versioned data, not code**, so the schema stays generic and still every value is checked,
-  a form can be built from it, and a merge works field by field;
+- **a catalogue as versioned data, not code**, so the schema stays generic and still every value is checked
+  (OSRD's settings are checked only by its driver at load time), a form can be built from it in either
+  language, and a merge works field by field;
 - **locations as core `TrackLocation`s with lifespans**, so the core carries them through splits and stages
   (R4, R12);
 - **references only into the core and into the domain** (R2, R9).
 
 Taking PlanPro's objects, attributes and enumerations nearly one to one keeps a PlanPro export a translation
-field by field, and the catalogue's keys need no table. For OSRD the adapter (decision 0006) will derive the logical
-signals: one for the system of each screen, `Nf` from the signal's kind; Ks needs a driver of its own there,
-which is one of the adaptations to agree upstream.
+field by field, and the catalogue's keys need no table. For OSRD the adapter (decision 0006) maps the logical
+signals one to one, settings such as `Nf` from the kind; Ks and the shunting signal need drivers of their own
+there, which is one of the adaptations to agree upstream.
 
 ## Checked against a real plan
 
@@ -119,8 +131,11 @@ collection of its own when a tool plans it.
   reshaping.
 - **No per-domain rights yet.** The server checks the domain, but does not yet refuse a change of it by an
   author without the right to write it (S-R5).
-- **Values are missing.** Distances (distant signal spacing, overlap length, where the PZB magnets lie) are not
+- **Values are missing.** Distances (distant signal spacing, overlap length, where balises and magnets lie) are not
   checked until the values of Ril 819 and Ril 483 are in the catalogue (`open_points`).
+- **1.0 was changed in place.** Its first schema (`type` and `system` on the signal, `pzbElements`) went into
+  documents before logical signals and balises came; the door brings a domain of that schema to the current one
+  as it reads it. The Python core does not: it reads only the current 1.0.
 - **PlanPro's XSD is not in the repository.** It is licensed under RailPL V1.1, whose fit with Apache-2.0 and
   CC BY 4.0 has not been checked; the domain names the version it follows (1.10.0.3.3) and copies none of its
   files. The catalogue takes the names, titles and symbol lists of its 192 aspects (`THIRD-PARTY.md`).

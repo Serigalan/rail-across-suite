@@ -14,14 +14,14 @@ import { added, cascadeOf, deleted, domainOf, labelOf, replaced } from './model/
 import { redo, startHistory, step, stepOf, stepText, travel, undo } from './model/history.js'
 import PlanView from './plan/PlanView.jsx'
 import {
-  CheckIcon, DetectionIcon, FlankIcon, HistoryIcon, HomeIcon, ImportIcon, LayersIcon, LogoIcon, PzbIcon, RouteIcon, SignalIcon, SwitchIcon,
+  BaliseIcon, CheckIcon, DetectionIcon, FlankIcon, HistoryIcon, HomeIcon, ImportIcon, LanguageIcon, LayersIcon, LogoIcon, RouteIcon, SignalIcon, SwitchIcon,
 } from './icons.jsx'
 import SignalsPanel from './panels/SignalsPanel.jsx'
 import DetectionPanel from './panels/DetectionPanel.jsx'
 import ElementsPanel from './panels/ElementsPanel.jsx'
 import RoutesPanel from './panels/RoutesPanel.jsx'
 import FlankPanel from './panels/FlankPanel.jsx'
-import PzbPanel from './panels/PzbPanel.jsx'
+import BalisesPanel from './panels/BalisesPanel.jsx'
 import CheckPanel from './panels/CheckPanel.jsx'
 import ImportPanel from './panels/ImportPanel.jsx'
 import LayersPanel, { DEFAULT_PLAN_BASEMAP } from './panels/LayersPanel.jsx'
@@ -33,20 +33,22 @@ const SECTIONS = [
   { id: 'elements', icon: <SwitchIcon />, Panel: ElementsPanel },
   { id: 'routes', icon: <RouteIcon />, Panel: RoutesPanel },
   { id: 'flank', icon: <FlankIcon />, Panel: FlankPanel },
-  { id: 'pzb', icon: <PzbIcon />, Panel: PzbPanel },
+  { id: 'balises', icon: <BaliseIcon />, Panel: BalisesPanel },
 ]
 
 /** The section a collection's objects are edited in. */
 const SECTION_OF = {
   signals: 'signals', detectionPoints: 'detection', trackSections: 'detection', switchElements: 'elements', switches: 'elements',
-  routes: 'routes', overlaps: 'routes', flankProtection: 'flank', pzbElements: 'pzb', stationBoundaries: 'signals',
+  routes: 'routes', overlaps: 'routes', flankProtection: 'flank', balises: 'balises', stationBoundaries: 'signals',
 }
 
 /**
  * Working on the signalling of a variant: the rail of sections on the left —
- * signals, train detection, switch elements, routes, flank protection, PZB,
+ * signals, train detection, switch elements, routes, flank protection, balises
+ * and magnets,
  * the check and the PlanPro import; at its foot undo, the history and redo,
- * the way back to the infrastructure editor and the map layers —, the panel
+ * the way back to the infrastructure editor, the map layers and the other
+ * language —, the panel
  * of the one chosen, the plan of the net with what the domain holds. Every
  * edit is a step (undo, redo, the history);
  * the core's check runs on every one; checking in sends the record with its
@@ -54,7 +56,7 @@ const SECTION_OF = {
  * The core is the Layout-Tool's: this tool reads it and never changes it (R1).
  */
 export default function Editor({ project, variant, head, readOnly }) {
-  const { t, language } = useTexts()
+  const { t, language, setLanguage } = useTexts()
   const [current, setCurrent] = useState({ revision: head.revision, record: head.record })
   const [history, setHistory] = useState(() => startHistory(domainOf(head.record)))
   const [savedDomain, setSavedDomain] = useState(history.now)
@@ -211,6 +213,7 @@ export default function Editor({ project, variant, head, readOnly }) {
           </>}
           <RailButton icon={<HomeIcon />} label={t('infrastructure')} onClick={() => location.assign(projectsUrl())} />
           <RailButton icon={<LayersIcon />} label={t('section_layers')} pressed={section === 'layers'} onClick={() => setSection('layers')} />
+          {setLanguage && <RailButton icon={<LanguageIcon />} label={t('other_language')} onClick={() => setLanguage(language === 'de' ? 'en' : 'de')} />}
         </>}
       />
       {section === 'history' ? <HistoryPanel history={history} travel={(n) => setHistory(h => travel(h, n))} t={t} />
@@ -276,7 +279,7 @@ function placeToShow(domain, sel) {
   const obj = c[sel.collection]?.find(o => o.id === sel.id)
   const signalAt = (id) => c.signals.find(s => s.id === id)?.at
   switch (sel.collection) {
-    case 'signals': case 'detectionPoints': case 'pzbElements': return obj?.at
+    case 'signals': case 'detectionPoints': case 'balises': return obj?.at
     case 'switchElements': return obj?.derailer?.at ?? null
     case 'routes': return obj && signalAt(obj.startSignalId)
     case 'overlaps': return obj && signalAt(obj.signalId)
@@ -312,9 +315,9 @@ function highlightOf(domain, selection, extents) {
       const f = find('flankProtection')
       return f ? { ids: [f.protection.signalId, f.protection.switchElementId].filter(Boolean) } : null
     }
-    case 'pzbElements': {
-      const p = find('pzbElements')
-      return p ? { ids: [p.signalId].filter(Boolean) } : null
+    case 'balises': {
+      const b = find('balises')
+      return b ? { ids: [b.signalId].filter(Boolean) } : null
     }
     default: return null
   }

@@ -1,12 +1,13 @@
 import { Badge, Message, Panel, Section } from '@rail-across/ui'
 import { labelOf } from '../model/domain.js'
+import { findingText } from '../labels.js'
 
 /**
  * What the core's check says (checkSignalling): the errors, then the
  * warnings, each with the object it is about; a click shows that object in
  * its panel and on the plan.
  */
-export default function CheckPanel({ domain, findings, select, t }) {
+export default function CheckPanel({ domain, findings, select, t, language }) {
   const signalName = (id) => labelOf('signals', domain.collections.signals.find(s => s.id === id), t)
   const name = (f) => {
     const obj = domain.collections[f.collection]?.find(o => o.id === f.id)
@@ -18,7 +19,7 @@ export default function CheckPanel({ domain, findings, select, t }) {
     <li key={f.key}>
       <button type="button" className="tool-finding-row" onClick={() => select({ collection: f.collection, id: f.id })}>
         <Badge tone={tone === 'error' ? 'danger' : 'warn'}>{t(`collection_${f.collection}`)}</Badge>
-        <span className="tool-finding-text"><strong>{name(f)}</strong> — {t(`finding_${f.code}`, f.params)}</span>
+        <span className="tool-finding-text"><strong>{name(f)}</strong> — {findingText(f, t, language)}</span>
       </button>
     </li>
   )

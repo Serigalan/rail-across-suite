@@ -1,5 +1,7 @@
 import { Button, Checkbox, NumberField, SelectField, TrashIcon } from '@rail-across/ui'
 import { trackName } from '../model/places.js'
+import { findingText } from '../labels.js'
+import { useTexts } from '../i18n.js'
 
 /**
  * What every editor of an object of the domain has: the fields of its
@@ -66,12 +68,13 @@ export function CheckList({ options, value, onChange, readOnly }) {
 
 /** The findings of the check on one object, under its editor. */
 export function ObjectFindings({ findings, collection, id, t }) {
+  const { language } = useTexts()
   const mine = [...findings.errors.map(f => ({ ...f, tone: 'error' })), ...findings.warnings.map(f => ({ ...f, tone: 'warn' }))]
     .filter(f => f.collection === collection && f.id === id)
   if (!mine.length) return null
   return (
     <ul className="tool-findings">
-      {mine.map(f => <li key={f.key} className={`tool-finding tool-finding-${f.tone}`}>{t(`finding_${f.code}`, f.params)}</li>)}
+      {mine.map(f => <li key={f.key} className={`tool-finding tool-finding-${f.tone}`}>{findingText(f, t, language)}</li>)}
     </ul>
   )
 }

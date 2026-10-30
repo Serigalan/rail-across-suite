@@ -113,7 +113,7 @@ describe('a PlanPro plan as a record', () => {
   it('reads its signals with their frames, places and states', () => {
     const { signals } = read().record.signalling.collections
     expect(byId(signals, 'sig-a')).toMatchObject({
-      name: 'A', areaNumber: '60', kind: 'real', function: 'entry', type: 'multiSection', system: 'ks', mounting: 'mast',
+      name: 'A', areaNumber: '60', kind: 'real', function: 'entry', logicalSignals: [{ system: 'ks', type: 'multiSection' }], mounting: 'mast',
       at: { anchor: 'station', trackId: 'e1', station: 20, side: 'right', offset: 3.1, direction: 'up' }, sight: { required: 400 },
       frames: [
         { kind: 'screen', aspects: [{ aspect: 'Hp_0' }, { aspect: 'Ks_1' }, { aspect: 'Ks_2' }, { aspect: 'Zs_7' }] },
@@ -126,7 +126,7 @@ describe('a PlanPro plan as a record', () => {
     expect(byId(signals, 'sig-x')).toMatchObject({ kind: 'virtual', virtualFunction: 'trainTargetLine', lifespan: { to: expect.any(String) } })
   })
 
-  it('reads train detection, the switch element, the route with its overlap, flank protection and PZB', () => {
+  it('reads train detection, the switch element, the route with its overlap, flank protection and PZB as balises', () => {
     const c = read().record.signalling.collections
     expect(c.trackSections).toEqual([{ id: 'fma-w1', name: 'W1', areaNumber: '60', kind: 'axleCounting', boundedBy: ['dp-1', 'dp-2', 'dp-3'] }])
     expect(c.switchElements).toEqual([expect.objectContaining({ id: 'we-1', switchId: 'k1', operation: 'electricRemote', preferredPosition: 'right', clearanceMarkerId: 'sig-gz' })])
@@ -139,7 +139,7 @@ describe('a PlanPro plan as a record', () => {
       name: 'D1', signalId: 'sig-n1', path: { trackIds: ['e2'] }, end: { anchor: 'station', trackId: 'e2', station: 95 }, length: 15, gradient: -1.5, clearSections: ['fma-w1'],
     })])
     expect(c.flankProtection).toEqual([expect.objectContaining({ requester: { switchElementId: 'we-1', via: 'left' }, protection: { signalId: 'sig-n1' } })])
-    expect(c.pzbElements).toEqual([expect.objectContaining({ frequency: '1000', kind: 'magnet', signalId: 'sig-a', effect: 'switchedBySignal' })])
+    expect(c.balises).toEqual([expect.objectContaining({ system: 'pzb', kind: 'magnet', settings: { frequency: '1000' }, signalId: 'sig-a', effect: 'switchedBySignal' })])
   })
 
   it('holds together as the check sees it, and reports what it left out', () => {

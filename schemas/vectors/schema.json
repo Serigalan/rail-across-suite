@@ -419,9 +419,13 @@
    "name": "A",
    "kind": "real",
    "function": "entry",
-   "type": "multiSection",
-   "system": "ks",
    "mounting": "mast",
+   "logicalSignals": [
+    {
+     "system": "ks",
+     "type": "multiSection"
+    }
+   ],
    "at": {
     "anchor": "station",
     "trackId": "t1",
@@ -487,9 +491,13 @@
    "name": "A",
    "kind": "real",
    "function": "entry",
-   "type": "multiSection",
-   "system": "ks",
    "mounting": "mast",
+   "logicalSignals": [
+    {
+     "system": "ks",
+     "type": "multiSection"
+    }
+   ],
    "at": {
     "anchor": "station",
     "trackId": "t1",
@@ -554,9 +562,13 @@
    "name": "A",
    "kind": "real",
    "function": "entry",
-   "type": "multiSection",
-   "system": "ks",
    "mounting": "mast",
+   "logicalSignals": [
+    {
+     "system": "ks",
+     "type": "multiSection"
+    }
+   ],
    "at": {
     "anchor": "plane",
     "easting": 500000,
@@ -621,9 +633,13 @@
    "name": "A",
    "kind": "real",
    "function": "entry",
-   "type": "multiSection",
-   "system": "ks",
    "mounting": "mast",
+   "logicalSignals": [
+    {
+     "system": "ks",
+     "type": "multiSection"
+    }
+   ],
    "at": {
     "anchor": "station",
     "trackId": "t1",
@@ -653,9 +669,13 @@
    "name": "A",
    "kind": "fictive",
    "function": "gate",
-   "type": "multiSection",
-   "system": "ks",
    "mounting": "mast",
+   "logicalSignals": [
+    {
+     "system": "ks",
+     "type": "multiSection"
+    }
+   ],
    "at": {
     "anchor": "station",
     "trackId": "t1",
@@ -890,7 +910,7 @@
   ]
  },
  {
-  "ref": "signalling#/$defs/PzbElement",
+  "ref": "signalling#/$defs/Balise",
   "value": {
    "id": "pzb-gue",
    "at": {
@@ -901,11 +921,12 @@
     "offset": 3.1,
     "direction": "up"
    },
-   "frequency": "2000",
+   "system": "pzb",
    "kind": "speedCheck",
    "signalId": "sig-n1",
    "effect": "switchedBySignal",
-   "speedCheck": {
+   "settings": {
+    "frequency": "2000",
     "testSpeed": 50,
     "measuringLength": 21.4,
     "arrangement": "startFirst"
@@ -921,7 +942,32 @@
   "paths": []
  },
  {
-  "ref": "signalling#/$defs/PzbElement",
+  "ref": "signalling#/$defs/Balise",
+  "value": {
+   "id": "etcs-n1",
+   "name": "N1",
+   "at": {
+    "anchor": "station",
+    "trackId": "t1",
+    "station": 226,
+    "side": "right",
+    "offset": 3.1,
+    "direction": "up"
+   },
+   "system": "etcs",
+   "kind": "fixed",
+   "settings": {
+    "group": "N1",
+    "position": 1
+   },
+   "signalId": "sig-n1",
+   "effect": "permanent"
+  },
+  "valid": true,
+  "paths": []
+ },
+ {
+  "ref": "signalling#/$defs/Balise",
   "value": {
    "id": "pzb-a-1000",
    "at": {
@@ -932,14 +978,67 @@
     "offset": 3.1,
     "direction": "up"
    },
-   "frequency": "1500",
+   "system": "pzb",
    "kind": "magnet",
+   "settings": {
+    "frequency": [
+     "1000"
+    ]
+   },
    "signalId": "sig-a",
    "effect": "switchedBySignal"
   },
   "valid": false,
   "paths": [
-   "/frequency"
+   "/settings/frequency"
+  ]
+ },
+ {
+  "ref": "signalling#/$defs/Balise",
+  "value": {
+   "id": "pzb-a-1000",
+   "at": {
+    "anchor": "station",
+    "trackId": "t1",
+    "station": 20,
+    "side": "right",
+    "offset": 3.1,
+    "direction": "up"
+   },
+   "system": "pzb",
+   "kind": "magnet",
+   "settings": {
+    "frequency": "1000"
+   },
+   "signalId": "sig-a",
+   "effect": "switchedBySignal",
+   "frequency": "1000"
+  },
+  "valid": false,
+  "paths": [
+   "/"
+  ]
+ },
+ {
+  "ref": "signalling#/$defs/LogicalSignal",
+  "value": {
+   "system": "ks",
+   "type": "main",
+   "settings": {
+    "Nf": true
+   }
+  },
+  "valid": true,
+  "paths": []
+ },
+ {
+  "ref": "signalling#/$defs/LogicalSignal",
+  "value": {
+   "type": "main"
+  },
+  "valid": false,
+  "paths": [
+   "/"
   ]
  },
  {

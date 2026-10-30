@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { straightElement } from '@rail-across/core/geometry'
 import { I18n, textsFor } from './i18n.js'
 import Editor from './Editor.jsx'
+import BalisesPanel from './panels/BalisesPanel.jsx'
 import { linkedRequest } from './suite.js'
 
 const EPSG = 25832
@@ -15,22 +16,22 @@ const record = {
   tracks: [track('t1', [0, 0], [200, 0]), track('t2', [200, 0], [400, 0])],
   switches: [], platforms: [],
   signalling: {
-    fields: { catalogue: { id: 'db-ril-301', version: '0.2.0' } },
+    fields: { catalogue: { id: 'db-ril-301', version: '0.3.0' } },
     collections: {
       signals: [
-        { id: 's-a', name: 'A', kind: 'real', function: 'entry', type: 'multiSection', system: 'ks', at: on('t1', 20),
+        { id: 's-a', name: 'A', kind: 'real', function: 'entry', logicalSignals: [{ system: 'ks', type: 'multiSection' }], at: on('t1', 20),
           frames: [{ kind: 'screen', aspects: [{ aspect: 'Hp_0' }, { aspect: 'Ks_1' }, { aspect: 'Ks_2' }] }] },
         // A main shunting signal without Sh 1: an error of the check.
-        { id: 's-n', name: 'N1', kind: 'real', type: 'mainShunting', system: 'ks', at: on('t2', 80),
+        { id: 's-n', name: 'N1', kind: 'real', logicalSignals: [{ system: 'ks', type: 'mainShunting' }], at: on('t2', 80),
           frames: [{ kind: 'screen', aspects: [{ aspect: 'Hp_0' }, { aspect: 'Ks_1' }] }] },
       ],
-      detectionPoints: [], trackSections: [], switchElements: [], routes: [], overlaps: [], flankProtection: [], pzbElements: [], stationBoundaries: [],
+      detectionPoints: [], trackSections: [], switchElements: [], routes: [], overlaps: [], flankProtection: [], balises: [], stationBoundaries: [],
     },
   },
 }
 
-const render = (props = {}) => renderToStaticMarkup(
-  <I18n.Provider value={textsFor('de')}>
+const render = (props = {}, language = 'de') => renderToStaticMarkup(
+  <I18n.Provider value={{ ...textsFor(language), setLanguage: () => {} }}>
     <Editor project={{ id: record.id, title: record.title }} variant={{ id: 'v1', name: 'Bestand' }}
       head={{ revision: { id: 1, number: 1 }, record }} readOnly={false} {...props} />
   </I18n.Provider>,
@@ -64,6 +65,33 @@ describe('the Signalling-Tool', () => {
     expect(html).toContain('Nur ansehen')
     expect(html).not.toContain('Neues Signal')
     expect(html).not.toContain('Einchecken')
+  })
+
+  it('says everything in the language set, the catalogue\'s titles too, and offers the other one', () => {
+    const html = render({}, 'en')
+    expect(html).toContain('<span class="ui-rail-label">Signals</span>')
+    expect(html).toContain('<span class="ui-rail-label">Balises/magnets</span>')
+    expect(html).toContain('Ks multi-section signal')
+    expect(html).toContain('aria-label="Deutsch"')
+    expect(html).not.toContain('Mehrabschnittssignal')
+    expect(render()).toContain('aria-label="English"')
+  })
+
+  it('edits a balise or magnet by the settings its system declares, in the language set', () => {
+    const balise = { id: 'b1', at: on('t1', 20), system: 'pzb', kind: 'speedCheck', settings: { frequency: '2000', testSpeed: 50, measuringLength: 21 }, effect: 'switchedBySignal', signalId: 's-a' }
+    const domain = { ...record.signalling, collections: { ...record.signalling.collections, balises: [balise] } }
+    const panel = (language) => renderToStaticMarkup(
+      <I18n.Provider value={textsFor(language)}>
+        <BalisesPanel domain={domain} net={{ tracks: record.tracks, switches: [] }} findings={{ errors: [], warnings: [] }}
+          selection={{ collection: 'balises', id: 'b1' }} select={() => {}} ops={{}} setMode={() => {}} readOnly={false} {...textsFor(language)} />
+      </I18n.Provider>,
+    )
+    const en = panel('en')
+    expect(en).toContain('Speed check · 2000 Hz')
+    expect(en).toContain('Test speed [km/h]')
+    expect(en).toContain('Measuring length [m]')
+    expect(en).toContain('INA (platform)')
+    expect(panel('de')).toContain('Geschwindigkeitsprüfung · 2000 Hz')
   })
 
   it('reads what the suite asks of it from its address', () => {

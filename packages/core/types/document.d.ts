@@ -319,7 +319,7 @@ export namespace Layout {
 
 /** Rail-Data-Core, domain signalling 1.0 */
 export namespace Signalling {
-  /** The signalling of a project, as the signalling tool plans it: signals and boards, train detection, the switch elements of the interlocking, train and shunting routes with their overlaps, flank protection, the PZB track elements and the station boundaries. Depends on core; its references go into the core or into itself (R2, R9). Its structure follows PlanPro 1.10 (decision 0011); what a signal can show is not in this schema but in the catalogue of signal aspects (packages/core/constraints/db-ril-301.json), which the content check reads. */
+  /** The signalling of a project, as the signalling tool plans it: signals and boards, train detection, the switch elements of the interlocking, train and shunting routes with their overlaps, flank protection, the balises and magnets of train protection and the station boundaries. Depends on core; its references go into the core or into itself (R2, R9). Its objects follow PlanPro 1.10, and like OSRD it keeps every signalling and train protection system out of the schema (decision 0011): a signal carries a logical signal per system, a balise names its system; which systems, kinds, aspects and settings there are is not in this schema but in the catalogue (packages/core/constraints/db-ril-301.json), which the content check reads. */
   export type Root = {
     fields: Fields
     collections: {
@@ -330,7 +330,7 @@ export namespace Signalling {
       routes: Array<Route>
       overlaps: Array<Overlap>
       flankProtection: Array<FlankProtection>
-      pzbElements: Array<PzbElement>
+      balises: Array<Balise>
       stationBoundaries: Array<StationBoundary>
     }
   }
@@ -360,10 +360,8 @@ export namespace Signalling {
     function?: "entry" | "exit" | "entryExit" | "intermediate" | "exitIntermediate" | "entryBlock" | "block" | "groupExit" | "groupIntermediate" | "groupExitIntermediate" | "followUp" | "cover" | "trainCover" | "trainTarget" | "levelCrossing" | "distant" | "standaloneIndicator" | "other"
     /** PlanPro Fiktives_Signal_Funktion, for a virtual signal. */
     virtualFunction?: "trainStartWithoutSignal" | "trainTargetWithoutSignal" | "trainTargetLine" | "trainStartSiding" | "trainTargetSiding" | "trainStartMiddleSwitch" | "trainStartTargetBlock" | "trainStartTargetBlockZs1" | "trainStartTargetBlockZs7" | "shuntingStartTargetWithoutSignal" | "virtualDistant" | "other"
-    /** PlanPro Signal_Art, for a real signal with a screen. */
-    type?: "main" | "mainShunting" | "multiSection" | "multiSectionShunting" | "shunting" | "distant" | "distantRepeater" | "trainCover" | "other"
-    /** The signalling system of its screen, a key of the catalogue (PlanPro Signalsystem: `ks`). */
-    system?: string
+    /** What it is in each signalling system it shows (OSRD: logical signals; PlanPro Signalsystem and Signal_Art of its screen): a Ks main signal, a shunting signal … A real signal with a screen has at least one. */
+    logicalSignals?: Array<LogicalSignal>
     /** PlanPro Signal_Befestigungsart. */
     mounting?: "mast" | "bracket" | "gantry" | "foundation" | "special" | "other"
     /** The distances from which the signal must, at least, and can be seen [m] (PlanPro Signalsicht_Soll, _Mindest, _Erreichbar). */
@@ -374,6 +372,16 @@ export namespace Signalling {
     }
     frames?: Array<Frame>
     lifespan?: Core.Lifespan
+  }
+  /** A signal in one signalling system (OSRD: LogicalSignal): the system, a key of the catalogue's `systeme`; the kind of signal it is there, a key of that system's `signalarten` or `other`; and its settings, as the catalogue declares them for the system. */
+  export type LogicalSignal = {
+    system: string
+    type?: string
+    settings?: Settings
+  }
+  /** Values a system's driver reads (OSRD: settings), by the names the catalogue declares for that system and kind: a choice, a number, a flag or a text. The content check holds them to the catalogue. */
+  export type Settings = {
+    [name: string]: string | number | boolean
   }
   /** A part of a signal that shows aspects (PlanPro Signal_Rahmen): its screen with every light it shows, an indicator, a plate, the ceramic body of a clearance marker, the name plate. Only a name plate shows no aspect. */
   export type Frame = {
@@ -496,12 +504,14 @@ export namespace Signalling {
     clearSections?: Array<Core.Ref>
     lifespan?: Core.Lifespan
   }
-  /** A PZB track element (PlanPro PZB_Element): a track magnet of 500, 1000 or 2000 Hz (or both 1000 and 2000), or a speed check of two magnets; where it acts, what it belongs to (a signal), and whether it acts always, when its signal shows stop, or with routes. */
-  export type PzbElement = {
+  /** A track element of a train protection system that acts at a point — a PZB track magnet or speed check, an ETCS Eurobalise (PlanPro PZB_Element, Balise): its system and kind, keys of the catalogue's `zugbeeinflussung`, with the settings the catalogue declares for them (a PZB magnet's frequency, an ETCS balise's place in its group); where it acts, the signal it belongs to, and whether it acts always, with its signal or with routes. */
+  export type Balise = {
     id: Core.Id
+    name?: Core.Label
     at: Directed
-    frequency: "500" | "1000" | "2000" | "1000+2000"
-    kind: "magnet" | "speedCheck"
+    system: string
+    kind: string
+    settings?: Settings
     /** The signal it belongs to (PlanPro PZB_Element_Bezugspunkt). */
     signalId?: Core.Ref
     /** PlanPro Wirksamkeit. */
@@ -511,14 +521,6 @@ export namespace Signalling {
       routeId: Core.Ref
       effect: "activeWhenSet" | "inactiveWhenSet" | "other"
     }>
-    /** A magnet that is cut out where a train stops at a platform (PlanPro PZB_INA). */
-    ina?: boolean
-    /** For a speed check (PlanPro PZB_Element_GUE): the speed it tests [km/h], the length it measures over [m], and which magnet comes first. */
-    speedCheck?: {
-      testSpeed: number
-      measuringLength: number
-      arrangement?: "startFirst" | "endFirst"
-    }
     lifespan?: Core.Lifespan
   }
   /** The boundary of a station of the core's register, where trains enter it: what marks it — an entry signal or a board (Ne 1), or an entry switch where there is neither (EBO §4). Where it is not where the rules put it, a finding says so. */

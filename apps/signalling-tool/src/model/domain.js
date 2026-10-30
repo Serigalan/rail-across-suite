@@ -1,4 +1,4 @@
-import { CATALOGUE_REF, signalKindOf } from '@rail-across/core/signalling'
+import { CATALOGUE_REF, baliseKindOf, protectionSystemOf, screenOf } from '@rail-across/core/signalling'
 
 /**
  * The signalling domain as the tool edits it: pure functions from one state
@@ -8,7 +8,7 @@ import { CATALOGUE_REF, signalKindOf } from '@rail-across/core/signalling'
  */
 
 export const COLLECTIONS = [
-  'signals', 'detectionPoints', 'trackSections', 'switchElements', 'routes', 'overlaps', 'flankProtection', 'pzbElements',
+  'signals', 'detectionPoints', 'trackSections', 'switchElements', 'routes', 'overlaps', 'flankProtection', 'balises',
   'stationBoundaries',
 ]
 
@@ -40,7 +40,7 @@ export const replaced = (domain, collection, obj) =>
  * What a deletion takes with it, within the domain: { collection: [ids] } —
  * routes from or to a deleted signal, overlaps at it, flank protection given
  * by it or asked by a deleted switch element; objects that only name it lose
- * the name (a PZB element its signal, a section the point).
+ * the name (a balise its signal, a section the point).
  */
 export function cascadeOf(domain, collection, id) {
   const c = domain.collections
@@ -68,7 +68,7 @@ export function deleted(domain, collection, id) {
     const aspects = r.aspects?.filter(a => !is('signals', a.signalId))
     return overlaps?.length !== r.overlaps?.length || aspects?.length !== r.aspects?.length ? { ...r, overlaps, aspects } : r
   })
-  c.pzbElements = c.pzbElements.map(p => (is('signals', p.signalId) ? { ...p, signalId: undefined } : p))
+  c.balises = c.balises.map(b => (is('signals', b.signalId) ? { ...b, signalId: undefined } : b))
   c.switchElements = c.switchElements.map(e => (is('signals', e.clearanceMarkerId) ? { ...e, clearanceMarkerId: undefined } : e))
   c.stationBoundaries = c.stationBoundaries
     .map(b => ({ ...b, marks: b.marks.filter(m => !is('signals', m.signalId)) }))
@@ -77,31 +77,62 @@ export function deleted(domain, collection, id) {
 }
 
 /**
- * A new real signal at a location: of a kind of a system, its screen showing
- * what the kind must show — the catalogue's `pflicht` and the first of its
- * proceed aspects.
+ * A new real signal at a location: one logical signal of a kind of a system,
+ * its screen showing what the kind must show — the catalogue's `pflicht` and
+ * its proceed aspects.
  */
 export function newSignal({ at, system = 'ks', type = 'multiSection', fn = 'entry', name }) {
-  const kind = signalKindOf(system, type)
-  const shows = [...(kind?.schirm.pflicht ?? [])]
-  for (const a of kind?.schirm.fahrt ?? []) if (!shows.includes(a)) shows.push(a)
+  const logicalSignals = [{ system, type }]
+  const kind = screenOf(logicalSignals)
+  const shows = [...(kind?.pflicht ?? [])]
+  for (const a of kind?.fahrt.flat() ?? []) if (!shows.includes(a)) shows.push(a)
   return {
-    id: newId(), name, kind: 'real', function: fn, type, system, mounting: 'mast', at,
+    id: newId(), name, kind: 'real', function: fn, logicalSignals, mounting: 'mast', at,
     frames: shows.length ? [{ kind: 'screen', aspects: shows.map(aspect => ({ aspect })) }] : [],
   }
 }
 
-/** A signal of another kind: its screen keeps what the new kind may show and gains what it must. */
-export function withKind(signal, system, type) {
-  const kind = signalKindOf(system, type)
-  if (!kind) return { ...signal, system, type }
+/**
+ * A signal with other logical signals: its screen keeps what they may show
+ * together and gains what they must; with none of a known kind it stays.
+ */
+export function withLogicalSignals(signal, logicalSignals) {
+  const next = { ...signal, logicalSignals: logicalSignals.length ? logicalSignals : undefined }
+  const kind = screenOf(logicalSignals)
+  if (!kind) return next
   const frames = signal.frames ?? []
   const screen = frames.find(f => f.kind === 'screen')
-  const kept = (screen?.aspects ?? []).filter(a => kind.schirm.erlaubt.includes(a.aspect))
-  for (const must of kind.schirm.pflicht) if (!kept.some(a => a.aspect === must)) kept.push({ aspect: must })
-  const nextScreen = { kind: 'screen', aspects: kept }
-  const rest = frames.filter(f => f !== screen)
-  return { ...signal, system, type, frames: [nextScreen, ...rest] }
+  const kept = (screen?.aspects ?? []).filter(a => kind.erlaubt.includes(a.aspect))
+  for (const must of kind.pflicht) if (!kept.some(a => a.aspect === must)) kept.push({ aspect: must })
+  return { ...next, frames: [{ kind: 'screen', aspects: kept }, ...frames.filter(f => f !== screen)] }
+}
+
+/**
+ * The settings a balise of that system and kind starts with, or keeps when
+ * it becomes one: what it had that the kind allows, and for what the kind
+ * asks the catalogue's `vorgabe`, else the first choice of a setting that is one.
+ */
+export function baliseSettings(system, kind, settings = {}) {
+  const declared = protectionSystemOf(system)?.einstellungen ?? {}
+  const art = baliseKindOf(system, kind)
+  if (!art) return settings
+  const out = Object.fromEntries(Object.entries(settings).filter(([name]) => art.erlaubt.includes(name) && declared[name]))
+  for (const name of art.pflicht) {
+    const setting = declared[name]
+    if (out[name] === undefined && setting) out[name] = setting.vorgabe ?? (setting.typ === 'auswahl' ? Object.keys(setting.werte)[0] : undefined)
+    if (out[name] === undefined) delete out[name]
+  }
+  return out
+}
+
+/** A new balise or magnet at a location: of a system and its first kind. */
+export function newBalise({ at, system = 'pzb' }) {
+  const kind = Object.keys(protectionSystemOf(system).arten)[0]
+  const settings = baliseSettings(system, kind)
+  return {
+    id: newId(), at, system, kind, effect: system === 'pzb' ? 'switchedBySignal' : 'permanent',
+    ...(Object.keys(settings).length ? { settings } : {}),
+  }
 }
 
 /** A short label of an object for lists and findings. */

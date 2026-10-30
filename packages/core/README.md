@@ -14,7 +14,7 @@ The shared model of Rail-Across-Suite in JavaScript: every module reads and writ
 | `switch` | switch forms, routes, symbols, crossings, switch connections, deletion | [switch](docs/switch.md) |
 | `commands` | what an edit commits: new tracks and switches, connecting, splicing, reconnecting | [commands](docs/commands.md) |
 | `survey` | measured axes, reference axes, shift values, alignment fit | [survey](docs/survey.md) |
-| `signalling` | the catalogue of signal aspects (DB Ril 301 after PlanPro 1.10, Ks with PZB), the content check of the signalling domain, track sections derived over the net | [signalling](docs/signalling.md) |
+| `signalling` | the catalogue of signal aspects, signalling and train protection systems (DB Ril 301 after PlanPro 1.10: Ks and shunting signals, PZB and ETCS balises), the content check of the signalling domain, track sections derived over the net | [signalling](docs/signalling.md) |
 | `planpro` | reading a PlanPro 1.10 plan: its net as tracks and switches, its signalling as the domain; placing it on another net | [planpro](docs/planpro.md) |
 | `document` | the core 1.0 document: domains, schemas, the door, conversion from and to the record, canonical JSON, hashes | [document](docs/document.md) |
 | `project` | the project record the app works on (oltjson-1.1), the door to it, settings, validation | [project](docs/project.md) |

@@ -364,8 +364,7 @@ function convert(model, projectId) {
       bothDirections: places[0].wirk === 'beide' || undefined,
       function: real ? SIGNAL_FUNCTION[fn] : undefined,
       virtualFunction: fictive ? VIRTUAL_FUNCTION[value(fictive, 'Fiktives_Signal_Funktion')] ?? 'other' : undefined,
-      type: screen ? SIGNAL_TYPE[value(screen, 'Signal_Art')] : undefined,
-      system: screen ? SIGNAL_SYSTEM[system] : undefined,
+      logicalSignals: screen ? logicalSignalsOf(SIGNAL_SYSTEM[system], SIGNAL_TYPE[value(screen, 'Signal_Art')]) : undefined,
       mounting: real ? MOUNTING[value(real, 'Signal_Befestigungsart')] : undefined,
       sight: real ? nonEmpty(withoutUndefined({
         required: num(value(real, 'Signalsicht_Soll')), minimum: num(value(real, 'Signalsicht_Mindest')),
@@ -588,7 +587,7 @@ function convert(model, projectId) {
     if (!Object.keys(f.passOn).length) delete f.passOn
   }
 
-  // PZB.
+  // PZB, as balises of the system pzb.
   const pzbAssignments = new Map()
   for (const o of of('PZB_Element_Zuordnung')) {
     const bp = child(o.el, 'PZB_Element_Zuordnung_BP')
@@ -600,22 +599,24 @@ function convert(model, projectId) {
       })).filter(r => routeIds.has(r.routeId)),
     })
   }
-  const pzbElements = []
+  const balises = []
   for (const o of of('PZB_Element')) {
     const id = idOf(o.el)
     const at = loc(placesOf(o.el)[0], { directed: true })
-    if (!at) { missed('pzbElements', id, 'no_track'); continue }
+    if (!at) { missed('balises', id, 'no_track'); continue }
     const z = pzbAssignments.get(lower(value(o.el, 'ID_PZB_Element_Zuordnung'))) ?? {}
     const gue = child(o.el, 'PZB_Element_GUE')
-    pzbElements.push(withoutUndefined({
-      id, at, frequency: PZB_FREQUENCY[value(o.el, 'PZB_Art')] ?? '1000', kind: gue ? 'speedCheck' : 'magnet',
+    balises.push(withoutUndefined({
+      id, at, system: 'pzb', kind: gue ? 'speedCheck' : 'magnet',
+      settings: withoutUndefined({
+        frequency: PZB_FREQUENCY[value(o.el, 'PZB_Art')] ?? '1000',
+        ina: bool(value(o.el, 'PZB_Element_GM/PZB_INA')) || undefined,
+        testSpeed: gue ? num(value(gue, 'Pruefgeschwindigkeit')) ?? 0 : undefined,
+        measuringLength: gue ? num(value(gue, 'GUE_Messstrecke')) ?? 0 : undefined,
+        arrangement: gue ? GUE_ARRANGEMENT[value(gue, 'GUE_Anordnung')] : undefined,
+      }),
       signalId: signalIds.has(z.signalId) ? z.signalId : undefined, effect: z.effect ?? 'other',
       routes: nonEmpty(z.routes),
-      ina: bool(value(o.el, 'PZB_Element_GM/PZB_INA')) || undefined,
-      speedCheck: gue ? withoutUndefined({
-        testSpeed: num(value(gue, 'Pruefgeschwindigkeit')) ?? 0, measuringLength: num(value(gue, 'GUE_Messstrecke')) ?? 0,
-        arrangement: GUE_ARRANGEMENT[value(gue, 'GUE_Anordnung')],
-      }) : undefined,
       lifespan: lifespanOf(o),
     }))
   }
@@ -631,7 +632,7 @@ function convert(model, projectId) {
   const signalling = {
     fields: { catalogue: { ...CATALOGUE_REF } },
     collections: {
-      signals, detectionPoints, trackSections, switchElements, routes, overlaps, flankProtection, pzbElements,
+      signals, detectionPoints, trackSections, switchElements, routes, overlaps, flankProtection, balises,
       stationBoundaries: [],
     },
   }
@@ -709,4 +710,15 @@ export function placeSignalling(signalling, from, onto) {
   }
   const { domain, carried } = carryDomain(signalling, ctx)
   return { signalling: domain, carried }
+}
+
+/**
+ * The logical signals of a screen, by its PlanPro Signalsystem and Signal_Art:
+ * one of that system; a Sperrsignal of no system is one of the shunting
+ * signals' (sh); anything else of no system has none.
+ */
+function logicalSignalsOf(system, type) {
+  if (system) return [withoutUndefined({ system, type })]
+  if (type === 'shunting') return [{ system: 'sh', type }]
+  return undefined
 }

@@ -130,6 +130,21 @@ describe('the door', () => {
     expect(Object.keys(toDocument(record(), { carrySchemas: true }).schemas)).not.toContain(SCHEMA_HASHES.signalling)
   })
 
+  it('reads signalling 1.0 as it was first written, before logical signals and balises, as of now', () => {
+    const signalling = ksStation()
+    signalling.collections.balises = signalling.collections.balises.filter(b => b.system === 'pzb')
+    const now = toDocument(record({ signalling }))
+    const first = structuredClone(now)
+    const old = first.domains.signalling
+    old.schema = 'sha256:8e4fdf8b8d487f61be93b473521515fe2e5510ef3cdc21d994cd8a405aeb74a0'
+    old.collections.signals = old.collections.signals.map(({ logicalSignals, ...s }) => (logicalSignals ? { ...s, ...logicalSignals[0] } : s))
+    old.collections.pzbElements = old.collections.balises.map(({ system, settings: { frequency, ina, ...speedCheck }, ...b }) => ({
+      ...b, frequency, ...(ina ? { ina } : {}), ...(Object.keys(speedCheck).length ? { speedCheck } : {}),
+    }))
+    delete old.collections.balises
+    expect(checkDocument(first)).toEqual(now)
+  })
+
   it('refuses a signalling domain its schema does not take', () => {
     const signalling = ksStation()
     delete signalling.collections.signals[0].at.direction

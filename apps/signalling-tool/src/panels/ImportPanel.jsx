@@ -41,7 +41,7 @@ export default function ImportPanel({ record, domain, ops, setNotice, setSection
       {read && (
         <Section title={t('import_read', { title })}>
           <p className="ui-muted">{[read.header.installation, read.header.tool, read.header.xsdVersion && `XSD ${read.header.xsdVersion}`].filter(Boolean).join(' · ')}</p>
-          <p>{t('import_counts', { signals: c.signals.length, routes: c.routes.length, sections: c.trackSections.length, pzb: c.pzbElements.length })}</p>
+          <p>{t('import_counts', { signals: c.signals.length, routes: c.routes.length, sections: c.trackSections.length, balises: c.balises.length })}</p>
           {read.sameNet ? <Message tone="ok">{t('import_same_net')}</Message>
             : <Message tone={read.counts.orphaned ? 'warn' : 'ok'}>{t('import_placed', read.counts)}</Message>}
           {Object.keys(read.report.skipped).length > 0 && (

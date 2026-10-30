@@ -1,4 +1,6 @@
-import { aspectFitsFrame, aspectOf, boardAspect, knownSystem, signalKindOf, symbolFits } from './catalogue.js'
+import {
+  SIGNAL_CATALOGUE, aspectFitsFrame, aspectOf, baliseKindOf, boardAspect, knownSystem, protectionSystemOf, screenOf, settingsProblems, signalKindOf, symbolFits,
+} from './catalogue.js'
 import { trackSectionExtents } from './trackSections.js'
 import { tracksOnFrom } from '../track/index.js'
 
@@ -8,10 +10,12 @@ import { tracksOnFrom } from '../track/index.js'
  *
  * - every reference finds its target, in the domain or in the core;
  * - every location lies on its track, within the track's length;
- * - every signal shows what the catalogue lets its kind show: known aspects,
+ * - every logical signal of a signal is of a system and kind the catalogue
+ *   knows, each system once, its settings as the system declares them;
+ * - every signal shows what the catalogue lets its kinds show: known aspects,
  *   on the frames they belong on, with the symbol they ask for; a screen with
- *   the aspects its kind must have and none it may not; indicators its kind
- *   carries; a screen shows at least one proceed aspect where its kind has
+ *   the aspects its kinds must have and none they may not; indicators its
+ *   kinds carry; a screen shows a proceed aspect of every kind that has
  *   some; a virtual signal shows nothing;
  * - a track detection section's points bound one part of the net, exactly;
  * - a route runs from the track of its start signal to that of its target, a
@@ -20,8 +24,9 @@ import { tracksOnFrom } from '../track/index.js'
  * - an overlap starts at its signal's track and ends on the last of its path;
  * - flank protection is asked for once per switch element and position, and
  *   never given by the element that asks for it;
- * - a PZB speed check has its test values and a magnet none, an element
- *   switched by its signal names it;
+ * - a balise or magnet is of a train protection system and kind the
+ *   catalogue knows, has the settings its kind asks for and no others, each
+ *   fitting; one switched by its signal names it;
  * - a station boundary is marked by an entry signal, a board Ne 1 or a
  *   switch — anything else is a special case worth a warning (EBO §4).
  *
@@ -31,8 +36,8 @@ import { tracksOnFrom } from '../track/index.js'
  * `key` naming it stably (code and ids) for newFindings.
  *
  * Not yet checked, for want of the values (catalogue open_points): distances
- * — distant signal to main signal, the length an overlap needs, where the PZB
- * magnets lie.
+ * — distant signal to main signal, the length an overlap needs, where the
+ * balises and magnets lie.
  */
 export function checkSignalling({ core, signalling }) {
   const errors = []
@@ -109,14 +114,22 @@ export function checkSignalling({ core, signalling }) {
       if (!s.virtualFunction) warning('virtual_without_function', 'signals', s.id)
       continue
     }
-    if (s.system && !knownSystem(s.system)) error('system_unknown', 'signals', s.id, { system: s.system })
+    const logical = s.logicalSignals ?? []
+    const seen = new Set()
+    for (const [i, l] of logical.entries()) {
+      const where = `logicalSignals.${i}`
+      if (seen.has(l.system)) error('system_twice', 'signals', s.id, { system: l.system }, where)
+      seen.add(l.system)
+      if (!knownSystem(l.system)) { error('system_unknown', 'signals', s.id, { system: l.system }, where); continue }
+      if (l.type && l.type !== 'other' && !signalKindOf(l.system, l.type)) error('type_not_in_system', 'signals', s.id, { type: l.type, system: l.system }, where)
+      for (const p of settingsProblems(l.settings, SIGNAL_CATALOGUE.systeme[l.system].einstellungen)) {
+        error(`setting_${p.problem}`, 'signals', s.id, { setting: p.setting, system: l.system }, `${where}:${p.setting}`)
+      }
+    }
     const screens = frames.filter(f => f.kind === 'screen')
     if (screens.length > 1) error('screens_many', 'signals', s.id, { n: screens.length })
-    const kind = screens.length ? signalKindOf(s.system, s.type) : null
-    if (screens.length && s.type && s.type !== 'other' && !kind && (!s.system || knownSystem(s.system))) {
-      error('type_not_in_system', 'signals', s.id, { type: s.type, system: s.system ?? null })
-    }
-    if (screens.length && s.system && !s.type) error('type_missing', 'signals', s.id)
+    if (screens.length && logical.length && logical.every(l => !l.type)) error('type_missing', 'signals', s.id)
+    const kind = screens.length ? screenOf(logical) : null
     for (const [i, frame] of frames.entries()) {
       if (!frame.aspects.length && frame.kind !== 'nameplate') warning('frame_empty', 'signals', s.id, { frame: frame.kind }, String(i))
       for (const a of frame.aspects) {
@@ -126,7 +139,7 @@ export function checkSignalling({ core, signalling }) {
         if (!aspectFitsFrame(aspect, frame.kind)) { error('aspect_not_on_frame', 'signals', s.id, { aspect: a.aspect, frame: frame.kind }, where); continue }
         if (!symbolFits(aspect, a.symbol)) error('symbol_invalid', 'signals', s.id, { aspect: a.aspect, symbol: a.symbol ?? null }, where)
         if (frame.kind === 'indicator' && kind && !kind.zusatz.includes(a.aspect)) {
-          error('indicator_not_allowed', 'signals', s.id, { aspect: a.aspect, type: s.type }, where)
+          error('indicator_not_allowed', 'signals', s.id, { aspect: a.aspect }, where)
         }
         if (frame.kind === 'plate' && !screens.length && !boardAspect(a.aspect)) {
           error('board_not_allowed', 'signals', s.id, { aspect: a.aspect }, where)
@@ -135,10 +148,11 @@ export function checkSignalling({ core, signalling }) {
     }
     if (kind) {
       const shown = new Set(screens[0].aspects.map(a => a.aspect))
-      for (const must of kind.schirm.pflicht) if (!shown.has(must)) error('screen_lacks', 'signals', s.id, { aspect: must, type: s.type }, must)
-      const proceed = kind.schirm.fahrt ?? []
-      if (proceed.length && !proceed.some(a => shown.has(a))) warning('screen_no_proceed', 'signals', s.id, { aspects: proceed, type: s.type })
-      for (const has of shown) if (!kind.schirm.erlaubt.includes(has)) error('screen_not_allowed', 'signals', s.id, { aspect: has, type: s.type }, has)
+      for (const must of kind.pflicht) if (!shown.has(must)) error('screen_lacks', 'signals', s.id, { aspect: must }, must)
+      for (const proceed of kind.fahrt) {
+        if (!proceed.some(a => shown.has(a))) warning('screen_no_proceed', 'signals', s.id, { aspects: proceed }, proceed.join('+'))
+      }
+      for (const has of shown) if (!kind.erlaubt.includes(has)) error('screen_not_allowed', 'signals', s.id, { aspect: has }, has)
     }
   }
 
@@ -228,15 +242,20 @@ export function checkSignalling({ core, signalling }) {
     lifespan('flankProtection', f)
   }
 
-  // ── PZB ──
-  for (const p of c.pzbElements ?? []) {
-    at('pzbElements', p, p.at)
-    ref('pzbElements', p.id, 'signalling.signals', p.signalId, 'signalId')
-    for (const r of p.routes ?? []) ref('pzbElements', p.id, 'signalling.routes', r.routeId, 'routes')
-    if (p.kind === 'speedCheck' && !p.speedCheck) error('speed_check_values_missing', 'pzbElements', p.id)
-    if (p.kind === 'magnet' && p.speedCheck) error('magnet_with_speed_check', 'pzbElements', p.id)
-    if (p.effect === 'switchedBySignal' && !p.signalId) error('pzb_switched_without_signal', 'pzbElements', p.id)
-    lifespan('pzbElements', p)
+  // ── balises and magnets ──
+  for (const b of c.balises ?? []) {
+    at('balises', b, b.at)
+    ref('balises', b.id, 'signalling.signals', b.signalId, 'signalId')
+    for (const r of b.routes ?? []) ref('balises', b.id, 'signalling.routes', r.routeId, 'routes')
+    if (b.effect === 'switchedBySignal' && !b.signalId) error('balise_switched_without_signal', 'balises', b.id)
+    lifespan('balises', b)
+    const system = protectionSystemOf(b.system)
+    if (!system) { error('system_unknown', 'balises', b.id, { system: b.system }); continue }
+    const kind = baliseKindOf(b.system, b.kind)
+    if (!kind) { error('kind_not_in_system', 'balises', b.id, { kind: b.kind, system: b.system }); continue }
+    for (const p of settingsProblems(b.settings, system.einstellungen, kind)) {
+      error(`setting_${p.problem}`, 'balises', b.id, { setting: p.setting, system: b.system }, p.setting)
+    }
   }
 
   // ── station boundaries ──

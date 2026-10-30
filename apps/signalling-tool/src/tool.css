@@ -38,12 +38,13 @@ html, body { margin: 0; background: var(--ui-surface); }
 .plan-virtual { fill: none; stroke: var(--plan-mark); stroke-width: 1.2; stroke-dasharray: 2 2; }
 .plan-dp { stroke: #1f6fb5; stroke-width: 2; }
 .plan-dp-dot { fill: #1f6fb5; }
-.plan-pzb { fill: #7b3fbf; stroke: none; }
-.plan-pzb-500 { fill: #d0308f; }
-.plan-pzb-2000 { fill: #0f9fb5; }
-.plan-pzb-1000-2000 { fill: #0f9fb5; stroke: #7b3fbf; stroke-width: 1.5; }
+.plan-balise { fill: #7b3fbf; stroke: none; }
+.plan-balise-pzb-500 { fill: #d0308f; }
+.plan-balise-pzb-2000 { fill: #0f9fb5; }
+.plan-balise-pzb-1000-2000 { fill: #0f9fb5; stroke: #7b3fbf; stroke-width: 1.5; }
+.plan-balise-etcs { fill: #f2c200; stroke: #333; stroke-width: 1; }
 .plan-derailer { stroke: #c0392b; stroke-width: 2; }
-.plan-mark.is-selected .plan-head, .plan-mark.is-selected .plan-board, .plan-mark.is-selected .plan-pzb { stroke: var(--color-primary); stroke-width: 3; }
+.plan-mark.is-selected .plan-head, .plan-mark.is-selected .plan-board, .plan-mark.is-selected .plan-balise { stroke: var(--color-primary); stroke-width: 3; }
 .plan-mark.is-selected .plan-dp, .plan-mark.is-selected .plan-mast { stroke: var(--color-primary); stroke-width: 3; }
 .plan-mark.is-orphan { opacity: 0.6; }
 .plan-label {
@@ -118,3 +119,4 @@ html, body { margin: 0; background: var(--ui-surface); }
 .step-history-now { font-weight: 600; }
 .step-history-now::before { content: '●'; position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--color-primary); font-size: 9px; }
 .step-history-start { color: var(--ui-muted); border-top: 1px solid var(--ui-border); margin-top: 4px; padding-top: 8px; }
+.tool-logical { padding-bottom: 6px; border-bottom: 1px solid var(--ui-border); margin-bottom: 6px; }

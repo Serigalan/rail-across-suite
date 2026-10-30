@@ -23,20 +23,56 @@ const DOMAIN_SCHEMAS = { core: CORE, layout: LAYOUT, signalling: SIGNALLING }
 /** The hash each domain's schema goes by — what a document names it with. */
 export const SCHEMA_HASHES = Object.fromEntries(Object.entries(DOMAIN_SCHEMAS).map(([d, s]) => [d, contentHash(s)]))
 
+/**
+ * Signalling 1.0 as it was first written, before it took the logical signals
+ * and balises it has now: the hash its schema went by, and the step that
+ * brings a domain of it here — a signal's `system` and `type` become its one
+ * logical signal (a shunting signal of no system one of `sh`), a PZB element
+ * a balise of the system `pzb` with its values as settings. Documents of it
+ * are in the suite's stores; the door reads them as of now (S-R10).
+ */
+const SIGNALLING_FIRST = 'sha256:8e4fdf8b8d487f61be93b473521515fe2e5510ef3cdc21d994cd8a405aeb74a0'
+
+function signallingFromFirst(domain) {
+  const { signals = [], pzbElements = [], ...rest } = domain.collections ?? {}
+  const logicalOf = ({ system, type }) => (system ? [type ? { system, type } : { system }] : type === 'shunting' ? [{ system: 'sh', type }] : undefined)
+  const defined = (o) => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined))
+  return {
+    ...domain,
+    schema: SCHEMA_HASHES.signalling,
+    collections: {
+      ...rest,
+      signals: signals.map(({ system, type, ...s }) => defined({ ...s, logicalSignals: logicalOf({ system, type }) })),
+      balises: pzbElements.map(({ frequency, ina, speedCheck, ...p }) => defined({
+        ...p, system: 'pzb', settings: defined({ frequency, ina, ...speedCheck }),
+      })),
+    },
+  }
+}
+
+/** The document with every domain of an earlier schema of its version brought to this build's. */
+function migrated(doc) {
+  const signalling = doc.domains.signalling
+  if (signalling?.version !== '1.0' || signalling.schema !== SIGNALLING_FIRST) return doc
+  return { ...doc, domains: { ...doc.domains, signalling: signallingFromFirst(signalling) } }
+}
+
 /** The breaches of a schema as "path: what" lines, the path prefixed with where the value lies. */
 const breaches = (errors, prefix) => errors.map(e => `${prefix}${e.path === '/' ? '' : e.path}: ${e.message}`)
 
 /**
- * Check a core 1.0 document; returns it, or throws a PayloadError —
+ * Check a core 1.0 document; returns it — a domain of an earlier schema of
+ * its version brought to this build's —, or throws a PayloadError —
  * the same verdicts the Python core gives (core-py, held to the shared vectors):
  * `unsupported_version` for a domain or a version this build does not read,
  * `invalid_payload` (with its `details`) for anything else that is not as the
  * schemas say.
  */
-export function checkDocument(doc) {
-  if (doc?.format !== FORMAT) throw new PayloadError('invalid_payload', ['/format: is not rail-across'])
-  const shape = SCHEMAS.check('rail-across', doc)
+export function checkDocument(given) {
+  if (given?.format !== FORMAT) throw new PayloadError('invalid_payload', ['/format: is not rail-across'])
+  const shape = SCHEMAS.check('rail-across', given)
   if (shape.length) throw new PayloadError('invalid_payload', breaches(shape, ''))
+  const doc = migrated(given)
   for (const [hash, schema] of Object.entries(doc.schemas ?? {})) {
     if (contentHash(schema) !== hash) throw new PayloadError('invalid_payload', [`/schemas/${hash}: holds another schema`])
   }

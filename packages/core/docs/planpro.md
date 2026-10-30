@@ -34,13 +34,13 @@ the offset. A double slip is four nodes in PlanPro and four turnouts here (repor
 
 | PlanPro | Domain |
 |---|---|
-| `Signal` with `Signal_Rahmen` and `Signal_Signalbegriff` | `signals` with their frames and aspects; a second `Punkt_Objekt_TOP_Kante` (a clearance marker on both branches) is `alsoAt` |
+| `Signal` with `Signal_Rahmen` and `Signal_Signalbegriff` | `signals` with their frames and aspects, the `Signalsystem` and `Signal_Art` of the screen as its logical signal (a `Sperrsignal` of no system one of `sh`); a second `Punkt_Objekt_TOP_Kante` (a clearance marker on both branches) is `alsoAt` |
 | `FMA_Komponente`, `FMA_Anlage` | `detectionPoints`, `trackSections` — bounded by the points whose `ID_FMAgrenze` names them |
 | `W_Kr_Gsp_Element` (Weiche_Element, Gleissperre_Element), `Fla_Zwieschutz` | `switchElements`, on the turnout of their component's node, or a derailer at its place |
 | `Fstr_Zug_Rangier`, `Fstr_Fahrweg`, `Fstr_Signalisierung` | `routes`: the run's edges in running order from the start signal's edge, what they show |
 | `Fstr_DWeg`, `Fstr_DWeg_W_Kr` | `overlaps`, ending at their danger point (`ID_PZB_Gefahrpunkt`) — of a clearance marker on two edges, the place on or beside the run |
 | `Fla_Schutz`, `Fla_Freimelde_Zuordnung` | `flankProtection` |
-| `PZB_Element`, `PZB_Element_Zuordnung` | `pzbElements` |
+| `PZB_Element`, `PZB_Element_Zuordnung` | `balises` of the system `pzb`: a magnet or, with `PZB_Element_GUE`, a speed check; frequency, INA, test speed, measuring length and arrangement as its settings |
 
 What is in both the start and the target state (`LST_Zustand_Start`, `_Ziel`) is existing; what only the target
 has is new (`lifespan.from` the final stage), what only the start has is removed (`lifespan.to`).

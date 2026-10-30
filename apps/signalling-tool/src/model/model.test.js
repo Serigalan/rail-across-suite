@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { straightElement } from '@rail-across/core/geometry'
 import { netDrawing, placeOf, locate, stretchLine } from './net.js'
 import { findRun, runAhead, switchesOnRun } from './runs.js'
-import { added, cascadeOf, deleted, domainOf, emptyDomain, newSignal, withKind } from './domain.js'
+import { added, cascadeOf, deleted, domainOf, emptyDomain, newBalise, baliseSettings, newSignal, withLogicalSignals } from './domain.js'
 import { redo, startHistory, step, stepOf, stepsOf, travel, undo } from './history.js'
 
 const EPSG = 25832
@@ -56,8 +56,18 @@ describe('editing the domain', () => {
   it('makes a signal of a kind with what its screen must show, and changes its kind', () => {
     const s = newSignal({ at: on('t1', 20), type: 'mainShunting' })
     expect(s.frames[0].aspects.map(a => a.aspect)).toEqual(['Hp_0', 'Sh_1', 'Ks_1'])
-    const d = withKind(s, 'ks', 'distant')
+    const d = withLogicalSignals(s, [{ system: 'ks', type: 'distant' }])
     expect(d.frames[0].aspects.map(a => a.aspect)).toEqual(['Ks_1', 'Ks_2'])
+    // A shunting signal as well: its screen shows what both must.
+    const both = withLogicalSignals(s, [{ system: 'ks', type: 'main' }, { system: 'sh', type: 'shunting' }])
+    expect(both.frames[0].aspects.map(a => a.aspect)).toEqual(['Hp_0', 'Sh_1', 'Ks_1', 'Sh_0'])
+  })
+
+  it('makes a balise with the settings its kind asks for, and keeps what a new kind allows', () => {
+    const m = newBalise({ at: on('t1', 20) })
+    expect(m).toMatchObject({ system: 'pzb', kind: 'magnet', settings: { frequency: '1000' }, effect: 'switchedBySignal' })
+    expect(baliseSettings('pzb', 'magnet', { frequency: '2000', testSpeed: 40, ina: true })).toEqual({ frequency: '2000', ina: true })
+    expect(newBalise({ at: on('t1', 20), system: 'etcs' })).toMatchObject({ system: 'etcs', kind: 'fixed', effect: 'permanent' })
   })
 
   it('cascades a deletion within the domain', () => {
@@ -65,11 +75,11 @@ describe('editing the domain', () => {
     d = added(d, 'signals', { id: 'a', kind: 'real', at: on('t1', 20) })
     d = added(d, 'signals', { id: 'n', kind: 'real', at: on('t2', 80) })
     d = added(d, 'routes', { id: 'r', kind: 'train', startSignalId: 'a', targetSignalId: 'n', path: { trackIds: ['t1', 't2'] }, aspects: [{ signalId: 'a', aspect: 'Ks_1' }] })
-    d = added(d, 'pzbElements', { id: 'p', at: on('t1', 20), frequency: '1000', kind: 'magnet', effect: 'switchedBySignal', signalId: 'n' })
+    d = added(d, 'balises', { id: 'p', at: on('t1', 20), system: 'pzb', kind: 'magnet', settings: { frequency: '1000' }, effect: 'switchedBySignal', signalId: 'n' })
     expect(cascadeOf(d, 'signals', 'n')).toEqual({ signals: ['n'], routes: ['r'] })
     const out = deleted(d, 'signals', 'n')
     expect(out.collections.routes).toEqual([])
-    expect(out.collections.pzbElements[0].signalId).toBeUndefined()
+    expect(out.collections.balises[0].signalId).toBeUndefined()
     expect(domainOf({ signalling: { fields: {}, collections: { signals: [] } } }).collections.routes).toEqual([])
   })
 

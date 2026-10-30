@@ -205,7 +205,7 @@ core, and derived results above them:
 |---|---|---|---|
 | derived | — | — | stage views, coordination checks, simulation results, reverse index — caches keyed by input hashes, never in a revision |
 | discipline | `layout` | layout-tool | surveys, reference axes, named track paths, plan header |
-| discipline | `signalling` | signalling-tool | signals and boards, detection points, track sections, switch elements, train and shunting routes, overlaps, flank protection, PZB elements, station boundaries ([decision 0011](decisions/0011-signalling-domain.md)); speed profile to follow |
+| discipline | `signalling` | signalling-tool | signals and boards, detection points, track sections, switch elements, train and shunting routes, overlaps, flank protection, balises and magnets (PZB, ETCS) elements, station boundaries ([decision 0011](decisions/0011-signalling-domain.md)); speed profile to follow |
 | discipline | `catenary` | open-catenary-tool | masts, cantilevers, wires, sections, El signals |
 | discipline | `operations` | open-timetable-tool | train runs, timetable, rolling stock |
 | discipline | `construction` | open-construction-sim | closures, temporary speed restrictions, tracks in operation per stage |
@@ -332,7 +332,7 @@ chain at the one door (S-R10). The format has them since core 1.0, the first ste
 | How does one try something without the other disciplines? | in a sketch, which returns only through a takeover | [decision 0005](decisions/0005-sketch-mode.md) |
 | What does capacity simulation build on? | OSRD, run as a service; only the adapter is ours | [decision 0006](decisions/0006-capacity-on-osrd.md) |
 | What are the project and its files called? | Rail-Across-Suite; files `.railacross` | [decision 0007](decisions/0007-project-name.md) |
-| How is the signalling domain structured? | after PlanPro 1.10; what a signal shows is a catalogue (Ks with PZB first), overlaps and flank protection from 1.0 | [decision 0011](decisions/0011-signalling-domain.md) |
+| How is the signalling domain structured? | after PlanPro 1.10; like OSRD every signalling and train protection system is in a catalogue, a signal has a logical signal per system (Ks, shunting signals; PZB and ETCS balises first), overlaps and flank protection from 1.0 | [decision 0011](decisions/0011-signalling-domain.md) |
 
 ## 8. Open questions
 

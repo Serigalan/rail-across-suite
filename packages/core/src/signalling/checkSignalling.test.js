@@ -91,11 +91,34 @@ describe('what a signal may show', () => {
 
   it('wants a known system and a kind it has; a virtual signal shows nothing', () => {
     const { errors } = check((c) => {
-      byId(c.signals, 'sig-n1').system = 'hv'
-      byId(c.signals, 'sig-a').type = 'trainCover'
+      byId(c.signals, 'sig-n1').logicalSignals = [{ system: 'hv', type: 'main' }]
+      byId(c.signals, 'sig-a').logicalSignals = [{ system: 'ks', type: 'trainCover' }]
       byId(c.signals, 'sig-v').frames = [{ kind: 'plate', aspects: [{ aspect: 'Ne_1' }] }]
     })
     expect(codes(errors)).toEqual(['system_unknown', 'type_not_in_system', 'virtual_with_frames'])
+  })
+
+  it('holds a screen to all its logical signals at once, each system once', () => {
+    // A Ks signal that is a shunting signal too must show Sh 0 as well, and may show Sh 1.
+    const { errors } = check((c) => {
+      const a = byId(c.signals, 'sig-a')
+      a.logicalSignals.push({ system: 'sh', type: 'shunting' })
+      a.frames[0].aspects.push({ aspect: 'Sh_1' })
+    })
+    expect(errors.map(e => [e.code, e.params.aspect])).toEqual([['screen_lacks', 'Sh_0']])
+    const { errors: twice } = check((c) => { byId(c.signals, 'sig-a').logicalSignals.push({ system: 'ks', type: 'main' }) })
+    expect(codes(twice)).toEqual(['system_twice'])
+  })
+
+  it('wants a kind where a signal has a screen; a screen of no system shows only known aspects', () => {
+    const { errors } = check((c) => { byId(c.signals, 'sig-a').logicalSignals = [{ system: 'ks' }] })
+    expect(codes(errors)).toEqual(['type_missing'])
+    expect(check((c) => { delete byId(c.signals, 'sig-a').logicalSignals })).toEqual({ errors: [], warnings: [] })
+  })
+
+  it('takes no settings a system does not declare', () => {
+    const { errors } = check((c) => { byId(c.signals, 'sig-a').logicalSignals[0].settings = { Nf: true } })
+    expect(errors.map(e => [e.code, e.params.setting])).toEqual([['setting_unknown', 'Nf']])
   })
 
   it('takes a board on its own only where the catalogue has it as one', () => {
@@ -163,7 +186,7 @@ describe('routes and overlaps', () => {
   })
 })
 
-describe('flank protection, PZB, station boundaries', () => {
+describe('flank protection, balises and magnets, station boundaries', () => {
   it('asks once per switch element and position, never of the element itself', () => {
     const { errors } = check((c) => {
       c.flankProtection.push({ id: 'fla-3', requester: { switchElementId: 'we-1', via: 'left' }, protection: { switchElementId: 'we-1', position: 'right' } })
@@ -171,13 +194,29 @@ describe('flank protection, PZB, station boundaries', () => {
     expect(codes(errors)).toEqual(['flank_asked_twice', 'flank_by_itself'])
   })
 
-  it('wants a speed check\'s values, none on a magnet, and the signal that switches an element', () => {
+  it('holds a balise or magnet to its system and kind: the settings it must have, may have, and their values', () => {
     const { errors } = check((c) => {
-      delete byId(c.pzbElements, 'pzb-gue').speedCheck
-      byId(c.pzbElements, 'pzb-a-1000').speedCheck = { testSpeed: 40, measuringLength: 20 }
-      delete byId(c.pzbElements, 'pzb-n1-500').signalId
+      delete byId(c.balises, 'pzb-gue').settings.testSpeed
+      byId(c.balises, 'pzb-a-1000').settings.testSpeed = 40
+      byId(c.balises, 'pzb-n1-2000').settings.frequency = '1500'
+      byId(c.balises, 'etcs-n1').settings.position = 9
+      delete byId(c.balises, 'pzb-n1-500').signalId
     })
-    expect(codes(errors)).toEqual(['magnet_with_speed_check', 'pzb_switched_without_signal', 'speed_check_values_missing'])
+    expect(errors.map(e => [e.code, e.id, e.params.setting])).toEqual([
+      ['setting_unknown', 'pzb-a-1000', 'testSpeed'],
+      ['balise_switched_without_signal', 'pzb-n1-500', undefined],
+      ['setting_invalid', 'pzb-n1-2000', 'frequency'],
+      ['setting_missing', 'pzb-gue', 'testSpeed'],
+      ['setting_invalid', 'etcs-n1', 'position'],
+    ])
+  })
+
+  it('wants a train protection system and a kind of it the catalogue knows', () => {
+    const { errors } = check((c) => {
+      byId(c.balises, 'pzb-a-1000').system = 'lzb'
+      byId(c.balises, 'etcs-n1').kind = 'magnet'
+    })
+    expect(codes(errors)).toEqual(['kind_not_in_system', 'system_unknown'])
   })
 
   it('takes an entry signal, a board Ne 1 or a switch as a boundary, and warns of anything else', () => {

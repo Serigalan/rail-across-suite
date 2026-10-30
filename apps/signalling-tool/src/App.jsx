@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Message } from '@rail-across/ui'
-import { I18n, initialLanguage, textsFor, useTexts } from './i18n.js'
+import { I18n, initialLanguage, keepLanguage, textsFor, useTexts } from './i18n.js'
 import { api } from './api.js'
 import Editor from './Editor.jsx'
 import { SUITE, linkedRequest, projectsUrl, signInAgain, toProjects } from './suite.js'
 
 export default function App() {
-  const [language] = useState(initialLanguage)
-  const texts = useMemo(() => textsFor(language), [language])
+  const [language, setLanguage] = useState(initialLanguage)
+  const texts = useMemo(() => ({ ...textsFor(language), setLanguage: (l) => { keepLanguage(l); setLanguage(l) } }), [language])
   useEffect(() => { document.documentElement.lang = language }, [language])
   return <I18n.Provider value={texts}><Loader /></I18n.Provider>
 }

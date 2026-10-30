@@ -1,5 +1,5 @@
 // How the plan draws what the domain holds — a signal by its kind, a board,
-// a clearance marker, a detection point, a PZB magnet — in screen pixels, so
+// a clearance marker, a detection point, a balise or magnet — in screen pixels, so
 // a symbol stays readable at every zoom.
 
 /** The colour a signal's mast head is drawn in, by what it is. */
@@ -11,8 +11,9 @@ export function signalTone(signal) {
     if (aspects.includes('Ra_12')) return 'marker'
     return 'board'
   }
-  if (signal.type === 'distant' || signal.type === 'distantRepeater') return 'distant'
-  if (signal.type === 'shunting') return 'shunting'
+  const types = (signal.logicalSignals ?? []).map(l => l.type)
+  if (types.some(t => t === 'distant' || t === 'distantRepeater')) return 'distant'
+  if (types.length && types.every(t => t === 'shunting')) return 'shunting'
   return 'main'
 }
 

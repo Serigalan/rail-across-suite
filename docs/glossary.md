@@ -111,13 +111,14 @@ the Layout-Tool's documentation does.
 |---|---|---|---|
 | Leit- und Sicherungstechnik (LST) | control-command and signalling (CCS) | — | the signalling domain |
 | Hauptsignal, Vorsignal | main signal, distant signal | — | |
+| Signalsystem, logisches Signal | signalling system, logical signal | `logicalSignals` | what a signal is in one system it shows (Ks, Sperrsignal), as OSRD has it; the systems are the catalogue's |
 | Einfahrsignal, Trapeztafel | entry signal, trapezoid board | — | mark a station boundary (EBO §4) |
 | Bahnhofsgrenze | station boundary | — | stored in the signalling domain as a reference to what marks it |
 | Haltetafel, Geschwindigkeitstafel | stop board, speed board | — | |
-| Achszähler | axle counter | — | |
-| Gleisfreimeldeabschnitt | track section | — | track vacancy detection |
+| Freimeldepunkt, Achszähler | detection point, axle counter | `detectionPoints` | a point bounding track sections: an axle counter or a joint |
+| Gleisfreimeldeabschnitt | track section | `trackSections` | track vacancy detection |
 | Isolierstoß | insulated rail joint | — | |
-| Balise | balise | — | |
+| Zugbeeinflussung; Balise, Gleismagnet | train protection; balise, track magnet | `balises` | a track element of a train protection system acting at a point: a PZB magnet or speed check, an ETCS Eurobalise; the system, kind and settings are the catalogue's |
 | Fahrstraße | route | — | reserved for this meaning |
 | Durchrutschweg | overlap | — | |
 | Flankenschutz | flank protection | — | |

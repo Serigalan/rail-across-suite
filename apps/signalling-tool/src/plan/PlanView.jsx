@@ -8,7 +8,7 @@ import { labelOf } from '../model/domain.js'
  * The plan: the net in its true position on the basemap chosen in the layers
  * panel (the suite's basemaps, as the Layout-Tool has them), every track a
  * line, every switch a dot, and on it what the domain holds — signals by
- * their kind on the side they stand, boards, detection points, PZB magnets.
+ * their kind on the side they stand, boards, detection points, balises and magnets.
  * What is chosen is drawn in the primary colour, with its run, its section or
  * its overlap. The map moves and zooms (MapLibre, north up); the plan is
  * drawn over it in screen pixels, so a symbol stays readable at every zoom. A
@@ -97,7 +97,7 @@ export default function PlanView({ drawing, net, domain, selection, highlight, m
     }
     for (const s of domain.collections.signals) put('signals', s, s.at)
     for (const d of domain.collections.detectionPoints) put('detectionPoints', d, d.at)
-    for (const z of domain.collections.pzbElements) put('pzbElements', z, z.at)
+    for (const b of domain.collections.balises) put('balises', b, b.at)
     for (const e of domain.collections.switchElements) if (e.derailer) put('switchElements', e, e.derailer.at)
     return out
   }, [domain, drawing])
@@ -211,8 +211,11 @@ function Mark({ collection, obj, angle }) {
   if (collection === 'detectionPoints') {
     return <g transform={rot}><path d="M0,-6 L0,6" className="plan-dp" /><circle r="2.2" className="plan-dp-dot" /></g>
   }
-  if (collection === 'pzbElements') {
-    return <g transform={rot}><rect x="-3" y="-3" width="6" height="6" className={`plan-pzb plan-pzb-${obj.frequency?.replace('+', '-')}`} /></g>
+  if (collection === 'balises') {
+    // A PZB magnet a square in the colour of its frequency, an ETCS balise a diamond.
+    if (obj.system === 'etcs') return <g transform={rot}><path d="M0,-4 L4,0 L0,4 L-4,0 Z" className="plan-balise plan-balise-etcs" /></g>
+    const frequency = obj.system === 'pzb' ? String(obj.settings?.frequency ?? '').replace('+', '-') : 'other'
+    return <g transform={rot}><rect x="-3" y="-3" width="6" height="6" className={`plan-balise plan-balise-pzb-${frequency}`} /></g>
   }
   if (collection === 'switchElements') {
     return <g transform={rot}><path d="M-4,-4 L4,4 M-4,4 L4,-4" className="plan-derailer" /></g>

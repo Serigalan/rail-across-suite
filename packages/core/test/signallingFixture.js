@@ -1,21 +1,22 @@
-// A small station signalled with Ks and PZB, as the signalling domain holds
+// A small station signalled with Ks, PZB and ETCS, as the signalling domain holds
 // it: on track t1 (250 m) an entry signal A — a Ks multi-section signal with
 // Zs 3 and Zs 2 — and an exit signal N1, a Ks main shunting signal; beyond N1
 // an overlap over switch w1 onto track t2 (150 m), where a route ends at a
 // virtual signal (target on the line). Train detection over t1, flank
-// protection for the switch, the PZB magnets of A and N1, and the station's
-// boundary at A. The tests of the check and the shared vectors start from it.
+// protection for the switch, the PZB magnets of A and N1, an ETCS balise
+// group of one at N1, and the station's boundary at A. The tests of the check and the shared vectors start from it.
 //
 // `operationalPoint` names the station of the core's register it bounds.
 
 export function ksStation({ operationalPoint = 'op1' } = {}) {
   const on = (trackId, station, extra = {}) => ({ anchor: 'station', trackId, station, side: 'right', offset: 3.1, direction: 'up', ...extra })
   return {
-    fields: { catalogue: { id: 'db-ril-301', version: '0.1.0' } },
+    fields: { catalogue: { id: 'db-ril-301', version: '0.3.0' } },
     collections: {
       signals: [
         {
-          id: 'sig-a', name: 'A', kind: 'real', function: 'entry', type: 'multiSection', system: 'ks', mounting: 'mast',
+          id: 'sig-a', name: 'A', kind: 'real', function: 'entry', mounting: 'mast',
+          logicalSignals: [{ system: 'ks', type: 'multiSection' }],
           at: on('t1', 20), sight: { required: 300, achievable: 420 },
           frames: [
             { kind: 'screen', aspects: [{ aspect: 'Hp_0' }, { aspect: 'Ks_1' }, { aspect: 'Ks_2' }] },
@@ -25,7 +26,8 @@ export function ksStation({ operationalPoint = 'op1' } = {}) {
           ],
         },
         {
-          id: 'sig-n1', name: 'N1', kind: 'real', function: 'exit', type: 'mainShunting', system: 'ks', mounting: 'mast',
+          id: 'sig-n1', name: 'N1', kind: 'real', function: 'exit', mounting: 'mast',
+          logicalSignals: [{ system: 'ks', type: 'mainShunting' }],
           at: on('t1', 230),
           frames: [
             { kind: 'screen', aspects: [{ aspect: 'Hp_0' }, { aspect: 'Ks_1' }, { aspect: 'Sh_1' }] },
@@ -67,15 +69,16 @@ export function ksStation({ operationalPoint = 'op1' } = {}) {
         { id: 'fla-1', requester: { switchElementId: 'we-1', via: 'left' }, protection: { signalId: 'sig-n1' } },
         { id: 'fla-2', requester: { switchElementId: 'we-1', via: 'right' }, protection: { waived: true } },
       ],
-      pzbElements: [
-        { id: 'pzb-a-1000', at: on('t1', 20), frequency: '1000', kind: 'magnet', signalId: 'sig-a', effect: 'switchedBySignal' },
-        { id: 'pzb-n1-500', at: on('t1', 0), frequency: '500', kind: 'magnet', signalId: 'sig-n1', effect: 'switchedBySignal', ina: true },
-        { id: 'pzb-n1-2000', at: on('t1', 230), frequency: '2000', kind: 'magnet', signalId: 'sig-n1', effect: 'switchedBySignal' },
+      balises: [
+        { id: 'pzb-a-1000', at: on('t1', 20), system: 'pzb', kind: 'magnet', settings: { frequency: '1000' }, signalId: 'sig-a', effect: 'switchedBySignal' },
+        { id: 'pzb-n1-500', at: on('t1', 0), system: 'pzb', kind: 'magnet', settings: { frequency: '500', ina: true }, signalId: 'sig-n1', effect: 'switchedBySignal' },
+        { id: 'pzb-n1-2000', at: on('t1', 230), system: 'pzb', kind: 'magnet', settings: { frequency: '2000' }, signalId: 'sig-n1', effect: 'switchedBySignal' },
         {
-          id: 'pzb-gue', at: on('t1', 200), frequency: '2000', kind: 'speedCheck', signalId: 'sig-n1', effect: 'switchedBySignal',
-          speedCheck: { testSpeed: 50, measuringLength: 21.4, arrangement: 'startFirst' },
+          id: 'pzb-gue', at: on('t1', 200), system: 'pzb', kind: 'speedCheck', signalId: 'sig-n1', effect: 'switchedBySignal',
+          settings: { frequency: '2000', testSpeed: 50, measuringLength: 21.4, arrangement: 'startFirst' },
           routes: [{ routeId: 'rt-n1-v', effect: 'inactiveWhenSet' }],
         },
+        { id: 'etcs-n1', name: 'N1', at: on('t1', 226), system: 'etcs', kind: 'fixed', settings: { group: 'N1', position: 1 }, signalId: 'sig-n1', effect: 'permanent' },
       ],
       stationBoundaries: [{ id: 'bd-1', operationalPointId: operationalPoint, marks: [{ signalId: 'sig-a' }] }],
     },

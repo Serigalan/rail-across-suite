@@ -1,29 +1,39 @@
 {
   "katalog": {
     "id": "db-ril-301",
-    "title": "DB Ril 301 | Signalbuch — Signalbegriffe des Ks-Systems mit Zusatzsignalen und Tafeln, PZB-Gleiselemente",
-    "katalog_version": "0.1.0",
+    "title": "DB Ril 301 | Signalbuch — die Signalbegriffe nach PlanPro 1.10, Signalarten des Ks-Systems, Tafeln, PZB-Gleiselemente",
+    "katalog_version": "0.2.0",
     "status": "draft",
     "date": "2026-10-30",
     "language": "de",
     "scope": {
       "included": [
-        "Signalbegriffe des Ks-Systems (Hp 0, Ks 1, Ks 2, Kennlicht, Zusatzlicht oben und unten) und welche Signalart welche zeigt",
-        "Zusatzsignale am Signal (Zs 1, Zs 2, Zs 2v, Zs 3, Zs 3v, Zs 6, Zs 7, Zs 8, Zs 13) und welche Signalart sie trägt",
-        "Sperrsignale und Sperrbegriffe (Sh 0, Sh 1) am Hauptsperrsignal und für sich",
-        "Tafeln als Signale ohne Licht (Ne 1, Ne 2, Ne 4, Ne 5, Lf 6, Lf 7, Ra 10)",
-        "Symbole: Geschwindigkeit in Zehnern km/h (Zs 3, Zs 3v, Lf 6, Lf 7), Buchstabe (Zs 2, Zs 2v)",
+        "Alle 192 Signalbegriffe der Ril 301, wie PlanPro 1.10 sie führt (Signalbegriffe_Ril_301.xsd): Schlüssel, Kurzbezeichnung, Langbezeichnung, die erlaubten Symbole, ob beleuchtbar und schaltbar",
+        "Auf welchem Rahmen ein Begriff steht (Schirm, Zusatzanzeiger, Blechtafel, Keramikkörper), wie PlanPro-Pläne ihn führen: am Ks-Schirm auch Kennlicht, Zusatzlicht, Zs 1, Zs 7 und Zs 8",
+        "Signalarten des Ks-Systems und was ihr Schirm zeigen muss und darf, welche Zusatzanzeiger sie tragen: Haupt-, Hauptsperr-, Mehrabschnitts-, Mehrabschnittssperr-, Sperr-, Vorsignal, Vorsignalwiederholer",
+        "Sperrsignale ohne System (Sh 0, Sh 1) und die Begriffe, die als Tafel für sich stehen dürfen (Ne, Lf, Ra, El, So, Bü, Orientierungszeichen …)",
+        "Symbole: aus der Aufzählung der XSD; Zs 3, Zs 3v, Lf 6, Lf 7 in Zehnern km/h",
         "PZB: die Frequenzen der Gleiselemente und wie sie wirken (PlanPro PZB_Art, Wirksamkeit)"
       ],
       "excluded": [
-        "H/V, Sv, Hl — weitere Systeme folgen als eigene Einträge unter systeme, ohne Änderung am Schema",
+        "Signalarten von H/V, Sv und Hl — ihre Begriffe sind im Katalog, ihre Signalarten folgen als eigene Einträge unter systeme, ohne Änderung am Schema",
         "Abstände: Vorsignalabstand, Durchrutschweglänge, Lage der PZB-Magnete zum Signal — siehe open_points",
-        "ETCS und Ne 14 — folgen mit ETCS"
+        "ETCS und Ne 14 als Signalart — folgen mit ETCS"
       ]
     },
     "label_note": "Die Schlüssel der Begriffe sind die Namen der Signalbegriffe in PlanPro 1.10 (Signalbegriffe_Ril_301.xsd): Hp_0, Ks_1, Zs_3 … So bildet der Export jeden Begriff ohne Tabelle ab. Ein Schlüssel wird nicht umbenannt — ein gespeichertes Projekt schlägt seine Begriffe darüber nach."
   },
   "changelog": [
+    {
+      "version": "0.2.0",
+      "date": "2026-10-30",
+      "changes": [
+        "Alle 192 Begriffe der Signalbegriffe_Ril_301.xsd, mit den Symbolen ihrer Aufzählung statt eigener Muster (symbole, symbol_frei, symbol_bedeutung).",
+        "Rahmen nach dem Beispielplan P-Hausen (ProSig): Kl, Zl, Zs 1, Zs 7, Zs 8 am Schirm; Ra 12 am Keramikkörper; Mastschilder als Blechtafel. Ein Begriff ohne rahmen darf an jedem Rahmen stehen.",
+        "Ks-Signalarten: pflicht ist der Haltbegriff (und Sh 1 am Sperrsignal), fahrt nennt die Fahrtbegriffe, von denen der Schirm mindestens einen zeigen soll; das Ks-Sperrsignal (Hp 0, Sh 1, Kl); Zp 9 und Zp 10 als Zusatzanzeiger.",
+        "Tafeln: alle Begriffe, die für sich an einer Tafel stehen dürfen."
+      ]
+    },
     {
       "version": "0.1.0",
       "date": "2026-10-30",
@@ -42,40 +52,154 @@
       "title": "PlanPro 1.10.0.3.3 — Signalbegriffe_Ril_301.xsd, Signale.xsd, PZB.xsd (RailPL V1.1)"
     }
   ],
-  "symbole": {
-    "speed": {
-      "beschreibung": "Geschwindigkeit in Zehnern km/h, 1 bis 16",
-      "pattern": "^([1-9]|1[0-6])$"
-    },
-    "letter": {
-      "beschreibung": "ein Großbuchstabe (Richtung)",
-      "pattern": "^[A-Z]$"
-    }
-  },
   "begriffe": [
+    {
+      "id": "So_20",
+      "name": "So 20",
+      "title": "Zuordnungstafel",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "Ms_ws_rt_ws",
+      "name": "Ms ws rt ws",
+      "title": "Mastschild weiß-rot-weiß",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "Ms_rt",
+      "name": "Ms rt",
+      "title": "Mastschild rot",
+      "rahmen": [
+        "plate"
+      ],
+      "nur_dv": true
+    },
+    {
+      "id": "Ms_ws_ge_ws",
+      "name": "Ms ws ge ws",
+      "title": "Mastschild weiß-gelb-weiß-gelb-weiß",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "Ms_ws_sw_ws",
+      "name": "Ms ws sw ws",
+      "title": "Mastschild weiß-schwarz-weiß-schwarz-weiß",
+      "rahmen": [
+        "plate"
+      ],
+      "nur_dv": true
+    },
+    {
+      "id": "Ms_ws_2swP",
+      "name": "Ms ws 2swP",
+      "title": "Mastschild weiß mit zwei schwarzen Punkten",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "Ukr",
+      "name": "Ukr",
+      "title": "Ungültigkeitskreuz (weißes Kreuz mit schwarzem Rand)",
+      "rahmen": [
+        "plate"
+      ]
+    },
     {
       "id": "Hp_0",
       "name": "Hp 0",
       "title": "Halt",
       "rahmen": [
         "screen"
-      ]
+      ],
+      "schaltbar": true
     },
     {
-      "id": "Ks_1",
-      "name": "Ks 1",
+      "id": "Hp_0_2Lp",
+      "name": "Hp 0",
+      "title": "Halt (zwei Lichtpunkte)",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Hp_0_F",
+      "name": "Hp 0",
+      "title": "Halt (Formsignal)",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Hp_1",
+      "name": "Hp 1",
       "title": "Fahrt",
       "rahmen": [
         "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Hp_1_F",
+      "name": "Hp 1",
+      "title": "Fahrt (Formsignal)",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Hp_2",
+      "name": "Hp 2",
+      "title": "Langsamfahrt",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Hp_2_F",
+      "name": "Hp 2",
+      "title": "Langsamfahrt (Formsignal)",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Ms_ge_D",
+      "name": "Ms ge D",
+      "title": "gelbes Dreieck mit Spitze nach unten",
+      "rahmen": [
+        "plate"
       ]
     },
     {
-      "id": "Ks_2",
-      "name": "Ks 2",
-      "title": "Halt erwarten",
+      "id": "Zl_o",
+      "name": "Zl o",
+      "title": "Zusatzlicht",
       "rahmen": [
         "screen"
-      ]
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Zl_u",
+      "name": "Zl u",
+      "title": "Zusatzlicht",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
     },
     {
       "id": "Kl",
@@ -83,47 +207,364 @@
       "title": "Kennlicht",
       "rahmen": [
         "screen"
-      ]
+      ],
+      "schaltbar": true
     },
     {
-      "id": "Zl_o",
-      "name": "Zl o",
-      "title": "Zusatzlicht oben — verkürzter Bremswegabstand",
+      "id": "Ks_1",
+      "name": "Ks 1",
+      "title": "Fahrt",
       "rahmen": [
         "screen"
-      ]
+      ],
+      "schaltbar": true
     },
     {
-      "id": "Zl_u",
-      "name": "Zl u",
-      "title": "Zusatzlicht unten — Vorsignalwiederholer",
+      "id": "Ks_2",
+      "name": "Ks 2",
+      "title": "Halt erwarten",
       "rahmen": [
         "screen"
-      ]
+      ],
+      "schaltbar": true
     },
     {
-      "id": "Sh_0",
-      "name": "Sh 0",
-      "title": "Halt! Fahrverbot",
+      "id": "Hl_1",
+      "name": "Hl 1",
+      "title": "ein grünes Licht",
       "rahmen": [
         "screen"
-      ]
+      ],
+      "schaltbar": true,
+      "nur_dv": true
     },
     {
-      "id": "Sh_1",
-      "name": "Sh 1",
-      "title": "Rangierfahrtsignal",
+      "id": "Hl_2",
+      "name": "Hl 2",
+      "title": "ein gelbes Licht mit einem grünen Lichtstreifen, darüber ein grünes Licht",
       "rahmen": [
         "screen"
-      ]
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Hl_3a",
+      "name": "Hl 3a",
+      "title": "ein gelbes Licht, darüber ein grünes Licht",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Hl_3b",
+      "name": "Hl 3b",
+      "title": "ein gelbes Licht mit einem gelben Lichtstreifen, darüber ein grünes Licht",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Hl_4",
+      "name": "Hl 4",
+      "title": "ein grünes Blinklicht",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Hl_5",
+      "name": "Hl 5",
+      "title": "ein gelbes Licht mit einem grünen Lichtstreifen, darüber ein grünes Blinklicht",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Hl_6a",
+      "name": "Hl 6a",
+      "title": "ein gelbes Licht, darüber ein grünes Blinklicht",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Hl_6b",
+      "name": "Hl 6b",
+      "title": "ein gelbes Licht mit einem gelben Lichtstreifen, darüber ein grünes Blinklicht",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Hl_7",
+      "name": "Hl 7",
+      "title": "ein gelbes Blinklicht",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Hl_8",
+      "name": "Hl 8",
+      "title": "ein gelbes Licht mit einem grünen Lichtstreifen, darüber ein gelbes Blinklicht",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Hl_9a",
+      "name": "Hl 9a",
+      "title": "ein gelbes Licht, darüber ein gelbes Blinklicht",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Hl_9b",
+      "name": "Hl 9b",
+      "title": "ein gelbes Licht mit einem gelben Lichtstreifen, darüber ein gelbes Blinklicht",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Hl_10",
+      "name": "Hl 10",
+      "title": "ein gelbes Licht",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Hl_11",
+      "name": "Hl 11",
+      "title": "ein gelbes Licht mit einem grünen Lichtstreifen, darüber ein gelbes Licht",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Hl_12a",
+      "name": "Hl 12a",
+      "title": "zwei gelbe Lichter übereinander",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Hl_12b",
+      "name": "Hl 12b",
+      "title": "ein gelbes Licht mit einem gelben Lichtstreifen, darüber ein gelbes Licht",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Sv_0",
+      "name": "Sv 0",
+      "title": "Zughalt, Weiterfahren auf Sicht",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Sv_1",
+      "name": "Sv 1",
+      "title": "Fahrt, Fahrt erwarten",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Sv_2",
+      "name": "Sv 2",
+      "title": "Fahrt, Halt erwarten",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Sv_3",
+      "name": "Sv 3",
+      "title": "Fahrt, Langsamfahrt erwarten",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Sv_4",
+      "name": "Sv 4",
+      "title": "Langsamfahrt, Fahrt erwarten",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Sv_5",
+      "name": "Sv 5",
+      "title": "Langsamfahrt, Langsamfahrt erwarten",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Sv_6",
+      "name": "Sv 6",
+      "title": "Langsamfahrt, Halt erwarten",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Sv_wPf",
+      "name": "Sv wPf",
+      "title": "Signal im verkürzten Abstand des Bremsweges, weißleuchtender Pfeil über den …",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Ms_Vw",
+      "name": "Ms Vw",
+      "title": "weiße Tafel mit schwarzem Rand und schwarzem Ring",
+      "rahmen": [
+        "plate"
+      ],
+      "nur_dv": true
+    },
+    {
+      "id": "Wvs",
+      "name": "Wvs",
+      "title": "Wärtervorsignal"
+    },
+    {
+      "id": "Vr_0",
+      "name": "Vr 0",
+      "title": "Halt erwarten",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Vr_0_F",
+      "name": "Vr 0",
+      "title": "Halt erwarten (Formsignal)",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Vr_1",
+      "name": "Vr 1",
+      "title": "Fahrt erwarten",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Vr_1_F",
+      "name": "Vr 1",
+      "title": "Fahrt erwarten (Formsignal)",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Vr_2",
+      "name": "Vr 2",
+      "title": "Langsamfahrt erwarten",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Vr_2_F",
+      "name": "Vr 2",
+      "title": "Langsamfahrt erwarten (Formsignal)",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Vr_1_2_F",
+      "name": "Vr 1/2",
+      "title": "Tageszeichen: Die runde Scheibe liegt waagerecht",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
     },
     {
       "id": "Zs_1",
       "name": "Zs 1",
       "title": "Ersatzsignal",
       "rahmen": [
+        "screen",
         "indicator"
-      ]
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Zs_1_A",
+      "name": "Zs 1",
+      "title": "Ersatzsignal",
+      "rahmen": [
+        "screen",
+        "indicator"
+      ],
+      "schaltbar": true
     },
     {
       "id": "Zs_2",
@@ -132,7 +573,32 @@
       "rahmen": [
         "indicator"
       ],
-      "symbol": "letter"
+      "symbole": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "H",
+        "I",
+        "J",
+        "K",
+        "L",
+        "M",
+        "N",
+        "O",
+        "P",
+        "R",
+        "S",
+        "T",
+        "U",
+        "V",
+        "W",
+        "X",
+        "Z"
+      ],
+      "schaltbar": true
     },
     {
       "id": "Zs_2v",
@@ -141,7 +607,32 @@
       "rahmen": [
         "indicator"
       ],
-      "symbol": "letter"
+      "symbole": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "H",
+        "I",
+        "J",
+        "K",
+        "L",
+        "M",
+        "N",
+        "O",
+        "P",
+        "R",
+        "S",
+        "T",
+        "U",
+        "V",
+        "W",
+        "X",
+        "Z"
+      ],
+      "schaltbar": true
     },
     {
       "id": "Zs_3",
@@ -151,7 +642,27 @@
         "indicator",
         "plate"
       ],
-      "symbol": "speed"
+      "symbole": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15",
+        "16"
+      ],
+      "symbol_bedeutung": "speed",
+      "beleuchtbar": true,
+      "schaltbar": true
     },
     {
       "id": "Zs_3v",
@@ -161,39 +672,647 @@
         "indicator",
         "plate"
       ],
-      "symbol": "speed"
+      "symbole": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15"
+      ],
+      "symbol_bedeutung": "speed",
+      "beleuchtbar": true,
+      "schaltbar": true
     },
     {
       "id": "Zs_6",
       "name": "Zs 6",
       "title": "Gegengleisanzeiger",
       "rahmen": [
+        "screen",
         "indicator"
-      ]
+      ],
+      "schaltbar": true
     },
     {
       "id": "Zs_7",
       "name": "Zs 7",
       "title": "Vorsichtssignal",
       "rahmen": [
+        "screen",
         "indicator"
-      ]
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Zs_8_A",
+      "name": "Zs 8",
+      "title": "Gegengleisfahrt-Ersatzsignal",
+      "rahmen": [
+        "screen",
+        "indicator"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
     },
     {
       "id": "Zs_8",
       "name": "Zs 8",
       "title": "Gegengleisfahrt-Ersatzsignal",
       "rahmen": [
+        "screen",
         "indicator"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Zs_9",
+      "name": "Zs 9",
+      "title": "Bahnübergangstafel",
+      "rahmen": [
+        "indicator"
+      ],
+      "nur_dv": true
+    },
+    {
+      "id": "Zs_10",
+      "name": "Zs 10",
+      "title": "Endesignal",
+      "rahmen": [
+        "indicator",
+        "plate"
       ]
+    },
+    {
+      "id": "Zs_12",
+      "name": "Zs 12",
+      "title": "M-Tafel",
+      "rahmen": [
+        "indicator"
+      ],
+      "nur_dv": true
     },
     {
       "id": "Zs_13",
       "name": "Zs 13",
       "title": "Stumpfgleis- und Frühhaltanzeiger",
       "rahmen": [
+        "screen",
         "indicator"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Zs_103",
+      "name": "Zs 103",
+      "title": "Rautentafel",
+      "rahmen": [
+        "indicator"
+      ],
+      "nur_dv": true
+    },
+    {
+      "id": "Ts_1",
+      "name": "Ts 1",
+      "title": "Nachschieben einstellen, ein um 90° nach rechts umgelegtes weißes T auf …",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Ts_2",
+      "name": "Ts 2",
+      "title": "Halt für zurückkehrende Schiebelokomotiven und Sperrfahrten, quadratische, …",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Ts_3",
+      "name": "Ts 3",
+      "title": "Weiterfahrt für zurückkehrende Schiebelokomotiven und Sperrfahrten, auf …",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Lf_1",
+      "name": "Lf 1",
+      "title": "Langsamfahrscheibe",
+      "rahmen": [
+        "plate"
+      ],
+      "symbole": [
+        "0,5",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15"
+      ],
+      "symbol_bedeutung": "speed",
+      "beleuchtbar": true
+    },
+    {
+      "id": "Lf_1_2",
+      "name": "Lf 1/2",
+      "title": "Langsamfahrbeginnscheibe",
+      "rahmen": [
+        "plate"
+      ],
+      "symbole": [
+        "0,5",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15"
+      ],
+      "symbol_bedeutung": "speed",
+      "beleuchtbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Lf_2",
+      "name": "Lf 2",
+      "title": "Anfangscheibe",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "Lf_3",
+      "name": "Lf 3",
+      "title": "Endscheibe",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "Lf_4_DS",
+      "name": "Lf 4",
+      "title": "Geschwindigkeitstafel",
+      "rahmen": [
+        "plate"
+      ],
+      "symbole": [
+        "0,5",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15"
+      ],
+      "symbol_bedeutung": "speed",
+      "beleuchtbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Lf_4_DV",
+      "name": "Lf 4",
+      "title": "Geschwindigkeitstafel",
+      "rahmen": [
+        "plate"
+      ],
+      "symbole": [
+        "0",
+        "10",
+        "20",
+        "30",
+        "40",
+        "50",
+        "60",
+        "70",
+        "80",
+        "90",
+        "100",
+        "110",
+        "120",
+        "130",
+        "140",
+        "150"
+      ],
+      "symbol_bedeutung": "speed",
+      "beleuchtbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Lf_5_DS",
+      "name": "Lf 5",
+      "title": "Anfangtafel",
+      "rahmen": [
+        "plate"
+      ],
+      "nur_dv": true
+    },
+    {
+      "id": "Lf_5_DV",
+      "name": "Lf 5",
+      "title": "Eckentafel",
+      "rahmen": [
+        "plate"
+      ],
+      "nur_dv": true
+    },
+    {
+      "id": "Lf_6",
+      "name": "Lf 6",
+      "title": "Geschwindigkeits-Ankündesignal",
+      "rahmen": [
+        "plate"
+      ],
+      "symbole": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15"
+      ],
+      "symbol_bedeutung": "speed",
+      "beleuchtbar": true
+    },
+    {
+      "id": "Lf_7",
+      "name": "Lf 7",
+      "title": "Geschwindigkeitssignal",
+      "rahmen": [
+        "indicator",
+        "plate"
+      ],
+      "symbole": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15",
+        "16"
+      ],
+      "symbol_bedeutung": "speed",
+      "beleuchtbar": true
+    },
+    {
+      "id": "Sh_0",
+      "name": "Sh 0",
+      "title": "Halt! Fahrverbot",
+      "rahmen": [
+        "screen",
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "Sh_1",
+      "name": "Sh 1",
+      "title": "Rangierfahrtsignal",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Sh_2",
+      "name": "Sh 2",
+      "title": "Schutzhalt",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "Ra_10",
+      "name": "Ra 10",
+      "title": "Rangierhalttafel",
+      "rahmen": [
+        "plate"
       ]
+    },
+    {
+      "id": "Ra_11",
+      "name": "Ra 11",
+      "title": "Wartezeichen",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "Ra_11b",
+      "name": "Ra 11b",
+      "title": "Wartezeichen",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Ra_12",
+      "name": "Ra 12",
+      "title": "Grenzzeichen",
+      "rahmen": [
+        "body",
+        "plate"
+      ]
+    },
+    {
+      "id": "Ra_13",
+      "name": "Ra 13",
+      "title": "Isolierzeichen",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "Wn_1",
+      "name": "Wn 1",
+      "title": "auf der Schmalseite stehendes weißes Rechteck auf schwarzem Grund bzw",
+      "beleuchtbar": true,
+      "schaltbar": true
+    },
+    {
+      "id": "Wn_2",
+      "name": "Wn 2",
+      "title": "weißer Pfeil oder Streifen auf schwarzem Grund schräg nach links oder rechts …",
+      "beleuchtbar": true,
+      "schaltbar": true
+    },
+    {
+      "id": "Wn_3",
+      "name": "Wn 3",
+      "title": "Pfeile, Streifen oder Lichter bilden eine von links nach rechts steigende Linie",
+      "beleuchtbar": true,
+      "schaltbar": true
+    },
+    {
+      "id": "Wn_4",
+      "name": "Wn 4",
+      "title": "Pfeile, Streifen oder Lichter bilden eine von rechts nach links steigende Linie",
+      "beleuchtbar": true,
+      "schaltbar": true
+    },
+    {
+      "id": "Wn_5",
+      "name": "Wn 5",
+      "title": "Pfeile, Streifen oder Lichter bilden einen nach links geöffneten rechten Winkel",
+      "beleuchtbar": true,
+      "schaltbar": true
+    },
+    {
+      "id": "Wn_6",
+      "name": "Wn 6",
+      "title": "Pfeile, Streifen oder Lichter bilden einen nach rechts geöffneten rechten Winkel",
+      "beleuchtbar": true,
+      "schaltbar": true
+    },
+    {
+      "id": "Wn_7",
+      "name": "Wn 7",
+      "title": "senkrechter, schwarzer Streifen in einer runden, weißen Scheibe auf …",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "Zp_6",
+      "name": "Zp 6",
+      "title": "ein weißes Licht",
+      "schaltbar": true
+    },
+    {
+      "id": "Zp_7",
+      "name": "Zp 7",
+      "title": "zwei weiße Lichter senkrecht übereinander",
+      "schaltbar": true
+    },
+    {
+      "id": "Zp_8",
+      "name": "Zp 8",
+      "title": "drei weiße Lichter senkrecht übereinander",
+      "schaltbar": true
+    },
+    {
+      "id": "Zp_9",
+      "name": "Zp 9",
+      "title": "Abfahrauftrag",
+      "rahmen": [
+        "screen",
+        "indicator"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Zp_9_Ls",
+      "name": "Zp 9",
+      "title": "Abfahrauftrag (Lichtstreifen)",
+      "rahmen": [
+        "screen",
+        "indicator"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Zp_10_Ls",
+      "name": "Zp 10",
+      "title": "Türschliessauftrag",
+      "rahmen": [
+        "screen",
+        "indicator"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Zp_10",
+      "name": "Zp 10",
+      "title": "Türschliessauftrag",
+      "rahmen": [
+        "screen",
+        "indicator"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "El_1v",
+      "name": "El 1v",
+      "title": "zwei weiße Rechtecke waagerecht nebeneinander",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "El_1",
+      "name": "El 1",
+      "title": "Ausschaltsignal",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "El_2",
+      "name": "El 2",
+      "title": "Einschaltsignal",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "El_T_DC",
+      "name": "El T DC",
+      "title": "auf der Spitze stehende weiß- und schwarzumrandete blaue quadratischen …",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "El_T_AC",
+      "name": "El T AC",
+      "title": "auf der Spitze stehende weiß- und schwarzumrandete blaue quadratische Tafel, …",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "El_3",
+      "name": "El 3",
+      "title": "„Bügel ab“-Ankündesignal",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "El_4",
+      "name": "El 4",
+      "title": "„Bügel ab“-Signal",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "El_5",
+      "name": "El 5",
+      "title": "„Bügel an“-Signal",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "El_6",
+      "name": "El 6",
+      "title": "Halt für Fahrzeuge mit gehobenen Stromabnehmern, auf der Spitze stehender …",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "El_Pf_o",
+      "name": "El Pf o",
+      "title": "El-Richtungspfeil, blauer Pfeil auf weißer pfeilförmiger Tafel senkrecht …",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "El_Pf_r",
+      "name": "El Pf r",
+      "title": "El-Richtungspfeil, blauer Pfeil auf weißer pfeilförmiger Tafel waagerecht …",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "El_Pf_l",
+      "name": "El Pf l",
+      "title": "El-Richtungspfeil, blauer Pfeil auf weißer pfeilförmiger Tafel waagerecht …",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "El_Pf_b",
+      "name": "El Pf b",
+      "title": "El-Richtungspfeil, blauer waagerechter Doppelpfeil auf weißer, beidseitig …",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
     },
     {
       "id": "Ne_1",
@@ -201,12 +1320,77 @@
       "title": "Trapeztafel",
       "rahmen": [
         "plate"
-      ]
+      ],
+      "beleuchtbar": true
     },
     {
       "id": "Ne_2",
       "name": "Ne 2",
       "title": "Vorsignaltafel",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "Ne_2_vRVA",
+      "name": "Ne 2 vRVA",
+      "title": "Vorsignaltafel verkürzter Vorsignalabstand, schwarz geränderte, weiße Tafel …",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Ne_3_1str",
+      "name": "Ne 3 1str",
+      "title": "Vorsignalbake",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "Ne_3_2str",
+      "name": "Ne 3 2str",
+      "title": "Vorsignalbake",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "Ne_3_3str",
+      "name": "Ne 3 3str",
+      "title": "Vorsignalbake",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "Ne_3_4str",
+      "name": "Ne 3 4str",
+      "title": "Vorsignalbake",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "Ne_3_5str",
+      "name": "Ne 3 5str",
+      "title": "Vorsignalbake",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "BS_vRVA",
+      "name": "BS vRVA",
+      "title": "verkürzter Regelvorsignalabstand, ein auf der Spitze stehendes weißes …",
       "rahmen": [
         "plate"
       ]
@@ -217,7 +1401,8 @@
       "title": "Schachbretttafel",
       "rahmen": [
         "plate"
-      ]
+      ],
+      "beleuchtbar": true
     },
     {
       "id": "Ne_5",
@@ -225,31 +1410,659 @@
       "title": "Haltetafel",
       "rahmen": [
         "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "Ne_6",
+      "name": "Ne 6",
+      "title": "Haltepunkttafel",
+      "rahmen": [
+        "plate"
       ]
     },
     {
-      "id": "Lf_6",
-      "name": "Lf 6",
-      "title": "Geschwindigkeits-Ankündesignal",
+      "id": "Ne_7a",
+      "name": "Ne 7",
+      "title": "Schneepflugtafel",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "Ne_7b",
+      "name": "Ne 7",
+      "title": "Schneepflugtafel",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "So_1",
+      "name": "So 1",
+      "title": "Endtafel",
       "rahmen": [
         "plate"
       ],
-      "symbol": "speed"
+      "nur_dv": true
     },
     {
-      "id": "Lf_7",
-      "name": "Lf 7",
-      "title": "Geschwindigkeitssignal",
+      "id": "Ne_12",
+      "name": "Ne 12",
+      "title": "Ankündigungsbake",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "Ne_13a",
+      "name": "Ne 13a",
+      "title": "weißes Licht über einem orangefarbenen waagerechten Streifen und einem …",
       "rahmen": [
         "plate"
       ],
-      "symbol": "speed"
+      "schaltbar": true
     },
     {
-      "id": "Ra_10",
-      "name": "Ra 10",
-      "title": "Rangierhalttafel",
+      "id": "Ne_13b",
+      "name": "Ne 13b",
+      "title": "orangefarbener waagerechter Streifen und einem orange-weiß schräg …",
       "rahmen": [
+        "plate"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "So_19_1P",
+      "name": "So 19",
+      "title": "Hauptsignalbake",
+      "rahmen": [
+        "plate"
+      ],
+      "nur_dv": true
+    },
+    {
+      "id": "So_19_2P",
+      "name": "So 19",
+      "title": "Hauptsignalbake",
+      "rahmen": [
+        "plate"
+      ],
+      "nur_dv": true
+    },
+    {
+      "id": "So_19_3P",
+      "name": "So 19",
+      "title": "Hauptsignalbake",
+      "rahmen": [
+        "plate"
+      ],
+      "nur_dv": true
+    },
+    {
+      "id": "So_106",
+      "name": "So 106",
+      "title": "Kreuztafel",
+      "rahmen": [
+        "plate"
+      ],
+      "nur_dv": true
+    },
+    {
+      "id": "Ms_UES_Wdh",
+      "name": "Ms UES Wdh",
+      "title": "Mastschild für Überwachungssignalwiederholer, eine oder zwei weiß umrandete …",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "Bue_0_1S",
+      "name": "Bü 0",
+      "title": "eine runde gelbe Scheibe in einer gelben Umrahmung über einem oder zwei …",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Bue_0_2S",
+      "name": "Bü 0",
+      "title": "zwei waagerecht angeordnete gelbe rückstrahlende Scheiben über einem oder …",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Bue_0_2Lp",
+      "name": "Bü 0",
+      "title": "zwei waagerecht angeordnete gelbe Lichtpunkte über einem oder zwei …",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Bue_0_1Lp",
+      "name": "Bü 0",
+      "title": "ein gelber Lichtpunkt über einem oder zwei schwarz-weiß schräg gestreiften …",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Bue_0_0Lp",
+      "name": "Bü 0",
+      "title": "kein Lichtpunkt über einem oder zwei schwarz-weiß schräg gestreiften …",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Bue_1_1S_bli",
+      "name": "Bü 1",
+      "title": "ein blinkendes weißes Licht über einer runden gelben Scheibe in einer gelben …",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Bue_1_2S_st",
+      "name": "Bü 1",
+      "title": "ein weißes Licht über zwei waagerecht angeordneten gelben Scheiben und einem …",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Bue_1_2Lp_st",
+      "name": "Bü 1",
+      "title": "ein weißes Licht über zwei waagerecht angeordneten gelben Lichtpunkten und …",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Bue_1_1Lp_bli",
+      "name": "Bü 1",
+      "title": "ein blinkendes weißes Licht über einem gelben Lichtpunkt und einem oder zwei …",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Bue_AT",
+      "name": "Bue AT",
+      "title": "Bü-Ankündetafel",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "Bue_KT",
+      "name": "Bue KT",
+      "title": "Bü-Kennzeichentafel",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "Bue_4",
+      "name": "Bü 4",
+      "title": "Pfeiftafel",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "Pf_2",
+      "name": "Pf 2",
+      "title": "Pfeiftafel vor Bahnübergängen",
+      "rahmen": [
+        "plate"
+      ],
+      "nur_dv": true
+    },
+    {
+      "id": "Bue_5",
+      "name": "Bü 5",
+      "title": "Laeutetafel",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "Oz_Zf",
+      "name": "Oz Zf",
+      "title": "Zugfunktafel",
+      "rahmen": [
+        "screen",
+        "indicator",
+        "plate"
+      ]
+    },
+    {
+      "id": "Oz_ICE",
+      "name": "Oz ICE",
+      "title": "„ICE“-Zeichen",
+      "rahmen": [
+        "screen",
+        "indicator",
+        "plate"
+      ]
+    },
+    {
+      "id": "Oz_Auto_HET",
+      "name": "Oz Auto HET",
+      "title": "Schild mit der Aufschrift \"Automatik-HET\"",
+      "rahmen": [
+        "screen",
+        "indicator",
+        "plate"
+      ]
+    },
+    {
+      "id": "Oz_HET",
+      "name": "Oz HET",
+      "title": "Schild mit der Aufschrift \"HET\"",
+      "rahmen": [
+        "screen",
+        "indicator",
+        "plate"
+      ]
+    },
+    {
+      "id": "Oz_Auto_ET",
+      "name": "Oz Auto ET",
+      "title": "Schild mit der Aufschrift \"Automatik-ET\"",
+      "rahmen": [
+        "screen",
+        "indicator",
+        "plate"
+      ]
+    },
+    {
+      "id": "Oz_ET",
+      "name": "Oz ET",
+      "title": "Schild mit der Aufschrift \"ET\"",
+      "rahmen": [
+        "screen",
+        "indicator",
+        "plate"
+      ]
+    },
+    {
+      "id": "Oz_Fa",
+      "name": "Oz Fa",
+      "title": "Fahrtanzeiger",
+      "rahmen": [
+        "screen",
+        "indicator",
+        "plate"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Oz_LZB-Ber",
+      "name": "Oz LZB-Ber",
+      "title": "LZB-Bereichskennzeichen",
+      "rahmen": [
+        "screen",
+        "indicator",
+        "plate"
+      ]
+    },
+    {
+      "id": "Oz_Bk",
+      "name": "Oz Bk",
+      "title": "Blockkennzeichen",
+      "rahmen": [
+        "screen",
+        "indicator",
+        "plate"
+      ]
+    },
+    {
+      "id": "Oz_HM",
+      "name": "HM",
+      "title": "Signalhaltmelder",
+      "rahmen": [
+        "screen",
+        "indicator",
+        "plate"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Ne_14",
+      "name": "Ne 14",
+      "title": "ETCS-Halt-Tafel",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "Oz_OB_Grenze",
+      "name": "Oz OB Grenze",
+      "title": "Beginn Ortsstellbereich",
+      "rahmen": [
+        "screen",
+        "indicator",
+        "plate"
+      ]
+    },
+    {
+      "id": "BS_vA_UES",
+      "name": "BS vA UES",
+      "title": "verkürzter Abstand des Überwachungssignals, ein rückstrahlendes, auf der …",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "BS_Wdh",
+      "name": "BS Wdh",
+      "title": "Wiederholungszeichen",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "BS_Zusatz",
+      "name": "BS Zusatz",
+      "title": "Zusatzinformation (teilw",
+      "rahmen": [
+        "plate"
+      ],
+      "symbol_frei": true
+    },
+    {
+      "id": "Lf_Pf_r",
+      "name": "Lf Pf r",
+      "title": "Richtungspfeil nach rechts, gelber oder weißer Pfeil nach rechts auf einer …",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "Lf_Pf_l",
+      "name": "Lf Pf l",
+      "title": "Richtungspfeil nach links, gelber oder weißer Pfeil nach links auf einer …",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "Oz_PZB_BUE",
+      "name": "Oz PZB BUE",
+      "title": "PZB BÜ",
+      "rahmen": [
+        "screen",
+        "indicator",
+        "plate"
+      ]
+    },
+    {
+      "id": "Ms_Sk_rt",
+      "name": "Ms Sk rt",
+      "title": "Mastschild rot",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "Ms_Sk_ge",
+      "name": "Ms Sk ge",
+      "title": "Mastschild gelb",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "Sk_1",
+      "name": "Sk 1",
+      "title": "Fahrt",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Sk_2",
+      "name": "Sk 2",
+      "title": "Halt erwarten",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Oz_Fak",
+      "name": "Oz Fak",
+      "title": "Fahrtankünder",
+      "rahmen": [
+        "screen",
+        "indicator",
+        "plate"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Oz_Zugl",
+      "name": "Oz Zugl",
+      "title": "Zuglänge",
+      "rahmen": [
+        "screen",
+        "indicator",
+        "plate"
+      ],
+      "symbol_frei": true
+    },
+    {
+      "id": "Bue_AT_Zusatz",
+      "name": "Bue AT Zusatz",
+      "title": "Zusatzschild \"Bü/Bü\"",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "Bue_1_0Lp_bli",
+      "name": "Bü 1",
+      "title": "ein blinkendes weißes Licht über einem oder zwei schwarz-weiß schräg …",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Bue_2",
+      "name": "Bü 2",
+      "title": "Rautentafel",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "Bue_2_3R",
+      "name": "Bü 2",
+      "title": "Rautentafel",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "Bue_2_2R",
+      "name": "Bü 2",
+      "title": "Rautentafel",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "Bue_2_1R",
+      "name": "Bü 2",
+      "title": "Rautentafel",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "So_15",
+      "name": "So 15",
+      "title": "Warntafel",
+      "rahmen": [
+        "plate"
+      ],
+      "nur_dv": true
+    },
+    {
+      "id": "Bue_3",
+      "name": "Bü 3",
+      "title": "Merktafel",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "So_14",
+      "name": "So 14",
+      "title": "Merkpfahl",
+      "rahmen": [
+        "plate"
+      ],
+      "nur_dv": true
+    },
+    {
+      "id": "BS_ZBS-Ber",
+      "name": "BS ZBS-Ber",
+      "title": "ZBS-Bereichskennzeichen",
+      "rahmen": [
+        "plate"
+      ],
+      "nur_dv": true
+    },
+    {
+      "id": "Oz_GSM-R",
+      "name": "Oz GSM-R",
+      "title": "GSM-R-Funknetztafel",
+      "rahmen": [
+        "screen",
+        "indicator",
+        "plate"
+      ]
+    },
+    {
+      "id": "Lf_1_Wdh",
+      "name": "Lf 1 Wdh",
+      "title": "zweites Signal Lf 1 (Wiederholer)",
+      "rahmen": [
+        "plate"
+      ],
+      "symbole": [
+        "0,5",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15"
+      ],
+      "symbol_bedeutung": "speed",
+      "beleuchtbar": true
+    },
+    {
+      "id": "El_3_4_Zusatz",
+      "name": "El 3 4 Zusatz",
+      "title": "Zusatztafel “Richtungsangabe“",
+      "rahmen": [
+        "plate"
+      ],
+      "symbole": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "H",
+        "I",
+        "J",
+        "K",
+        "L",
+        "M",
+        "N",
+        "O",
+        "P",
+        "R",
+        "S",
+        "T",
+        "U",
+        "V",
+        "W",
+        "X",
+        "Z"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "El_3_4_Zusatz_Kombi",
+      "name": "El 3 4 Zusatz Kombi",
+      "title": "Zusatztafel “Richtungsangabe“",
+      "rahmen": [
+        "plate"
+      ],
+      "symbole": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "H",
+        "I",
+        "J",
+        "K",
+        "L",
+        "M",
+        "N",
+        "O",
+        "P",
+        "R",
+        "S",
+        "T",
+        "U",
+        "V",
+        "W",
+        "X",
+        "Z"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "Oz_PZB_2000_Hz",
+      "name": "Oz PZB 2000 Hz",
+      "title": "PZB 2000 Hz",
+      "rahmen": [
+        "screen",
+        "indicator",
         "plate"
       ]
     }
@@ -262,12 +2075,18 @@
           "title": "Ks-Hauptsignal",
           "schirm": {
             "pflicht": [
-              "Hp_0",
+              "Hp_0"
+            ],
+            "fahrt": [
               "Ks_1"
             ],
             "erlaubt": [
               "Hp_0",
-              "Ks_1"
+              "Ks_1",
+              "Kl",
+              "Zs_1",
+              "Zs_7",
+              "Zs_8"
             ]
           },
           "zusatz": [
@@ -277,7 +2096,10 @@
             "Zs_6",
             "Zs_7",
             "Zs_8",
-            "Zs_13"
+            "Zs_13",
+            "Zp_9",
+            "Zp_10",
+            "Oz_Fa"
           ]
         },
         "mainShunting": {
@@ -285,13 +2107,19 @@
           "schirm": {
             "pflicht": [
               "Hp_0",
-              "Ks_1",
               "Sh_1"
+            ],
+            "fahrt": [
+              "Ks_1"
             ],
             "erlaubt": [
               "Hp_0",
               "Ks_1",
-              "Sh_1"
+              "Sh_1",
+              "Kl",
+              "Zs_1",
+              "Zs_7",
+              "Zs_8"
             ]
           },
           "zusatz": [
@@ -301,14 +2129,19 @@
             "Zs_6",
             "Zs_7",
             "Zs_8",
-            "Zs_13"
+            "Zs_13",
+            "Zp_9",
+            "Zp_10",
+            "Oz_Fa"
           ]
         },
         "multiSection": {
           "title": "Ks-Mehrabschnittssignal",
           "schirm": {
             "pflicht": [
-              "Hp_0",
+              "Hp_0"
+            ],
+            "fahrt": [
               "Ks_1",
               "Ks_2"
             ],
@@ -316,8 +2149,11 @@
               "Hp_0",
               "Ks_1",
               "Ks_2",
+              "Zl_o",
               "Kl",
-              "Zl_o"
+              "Zs_1",
+              "Zs_7",
+              "Zs_8"
             ]
           },
           "zusatz": [
@@ -329,7 +2165,10 @@
             "Zs_6",
             "Zs_7",
             "Zs_8",
-            "Zs_13"
+            "Zs_13",
+            "Zp_9",
+            "Zp_10",
+            "Oz_Fa"
           ]
         },
         "multiSectionShunting": {
@@ -337,17 +2176,22 @@
           "schirm": {
             "pflicht": [
               "Hp_0",
-              "Ks_1",
-              "Ks_2",
               "Sh_1"
+            ],
+            "fahrt": [
+              "Ks_1",
+              "Ks_2"
             ],
             "erlaubt": [
               "Hp_0",
               "Ks_1",
               "Ks_2",
-              "Kl",
               "Sh_1",
-              "Zl_o"
+              "Zl_o",
+              "Kl",
+              "Zs_1",
+              "Zs_7",
+              "Zs_8"
             ]
           },
           "zusatz": [
@@ -359,8 +2203,26 @@
             "Zs_6",
             "Zs_7",
             "Zs_8",
-            "Zs_13"
+            "Zs_13",
+            "Zp_9",
+            "Zp_10",
+            "Oz_Fa"
           ]
+        },
+        "shunting": {
+          "title": "Ks-Sperrsignal",
+          "schirm": {
+            "pflicht": [
+              "Hp_0",
+              "Sh_1"
+            ],
+            "erlaubt": [
+              "Hp_0",
+              "Sh_1",
+              "Kl"
+            ]
+          },
+          "zusatz": []
         },
         "distant": {
           "title": "Ks-Vorsignal",
@@ -391,6 +2253,7 @@
             "erlaubt": [
               "Ks_1",
               "Ks_2",
+              "Zl_o",
               "Zl_u"
             ]
           },
@@ -399,11 +2262,12 @@
             "Zs_3v"
           ]
         }
-      }
+      },
+      "beschreibung": "pflicht: was der Schirm zeigen muss; fahrt: von diesen Fahrtbegriffen mindestens einen (ein Mehrabschnittssignal vor kurzem Gleis zeigt nur Ks 2); erlaubt: was er zeigen darf; zusatz: die Zusatzanzeiger der Signalart."
     }
   },
   "ohne_system": {
-    "beschreibung": "Signale, deren Schirm keinem Fahrtsignalsystem angehört, und Tafeln.",
+    "beschreibung": "Signale, deren Schirm keinem Fahrtsignalsystem angehört — das Sperrsignal ohne System; Schirme ohne Signalart (BÜ-Überwachungssignal, alleinstehender Zs 6, Fahrtanzeiger) prüft der Core nur auf bekannte Begriffe —, und die Begriffe, die als Tafel für sich stehen dürfen.",
     "signalarten": {
       "shunting": {
         "title": "Sperrsignal",
@@ -421,15 +2285,105 @@
       }
     },
     "tafeln": [
-      "Ne_1",
-      "Ne_2",
-      "Ne_4",
-      "Ne_5",
+      "So_20",
+      "Ukr",
+      "Zs_3",
+      "Zs_3v",
+      "Zs_10",
+      "Ts_1",
+      "Ts_2",
+      "Ts_3",
+      "Lf_1",
+      "Lf_1_2",
+      "Lf_2",
+      "Lf_3",
+      "Lf_4_DS",
+      "Lf_4_DV",
+      "Lf_5_DS",
+      "Lf_5_DV",
       "Lf_6",
       "Lf_7",
+      "Sh_0",
+      "Sh_2",
       "Ra_10",
-      "Zs_3",
-      "Zs_3v"
+      "Ra_11",
+      "Ra_11b",
+      "Ra_12",
+      "Ra_13",
+      "Wn_7",
+      "El_1v",
+      "El_1",
+      "El_2",
+      "El_T_DC",
+      "El_T_AC",
+      "El_3",
+      "El_4",
+      "El_5",
+      "El_6",
+      "El_Pf_o",
+      "El_Pf_r",
+      "El_Pf_l",
+      "El_Pf_b",
+      "Ne_1",
+      "Ne_2",
+      "Ne_2_vRVA",
+      "Ne_3_1str",
+      "Ne_3_2str",
+      "Ne_3_3str",
+      "Ne_3_4str",
+      "Ne_3_5str",
+      "BS_vRVA",
+      "Ne_4",
+      "Ne_5",
+      "Ne_6",
+      "Ne_7a",
+      "Ne_7b",
+      "So_1",
+      "Ne_12",
+      "Ne_13a",
+      "Ne_13b",
+      "So_19_1P",
+      "So_19_2P",
+      "So_19_3P",
+      "So_106",
+      "Bue_AT",
+      "Bue_KT",
+      "Bue_4",
+      "Pf_2",
+      "Bue_5",
+      "Oz_Zf",
+      "Oz_ICE",
+      "Oz_Auto_HET",
+      "Oz_HET",
+      "Oz_Auto_ET",
+      "Oz_ET",
+      "Oz_LZB-Ber",
+      "Oz_Bk",
+      "Oz_HM",
+      "Ne_14",
+      "Oz_OB_Grenze",
+      "BS_vA_UES",
+      "BS_Wdh",
+      "BS_Zusatz",
+      "Lf_Pf_r",
+      "Lf_Pf_l",
+      "Oz_PZB_BUE",
+      "Oz_Fak",
+      "Oz_Zugl",
+      "Bue_AT_Zusatz",
+      "Bue_2",
+      "Bue_2_3R",
+      "Bue_2_2R",
+      "Bue_2_1R",
+      "So_15",
+      "Bue_3",
+      "So_14",
+      "BS_ZBS-Ber",
+      "Oz_GSM-R",
+      "Lf_1_Wdh",
+      "El_3_4_Zusatz",
+      "El_3_4_Zusatz_Kombi",
+      "Oz_PZB_2000_Hz"
     ]
   },
   "pzb": {

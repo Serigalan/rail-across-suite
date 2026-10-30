@@ -61,8 +61,14 @@
       "properties": {
         "id": { "$ref": "core#/$defs/Id" },
         "name": { "$ref": "core#/$defs/Label" },
+        "areaNumber": { "$ref": "core#/$defs/Label", "description": "The number of the interlocking area it belongs to, which leads its full designation (PlanPro Kennzahl: 60 in 60A)." },
         "kind": { "enum": ["real", "virtual"] },
         "at": { "$ref": "#/$defs/Directed" },
+        "alsoAt": {
+          "description": "Further tracks it stands at, at the same place: a clearance marker (Ra 12) between the two tracks beyond a switch, which PlanPro places on both edges.",
+          "type": "array",
+          "items": { "$ref": "core#/$defs/TrackLocation" }
+        },
         "bothDirections": { "type": "boolean" },
         "function": {
           "description": "PlanPro Signal_Funktion.",
@@ -108,13 +114,16 @@
       }
     },
     "Frame": {
-      "description": "A part of a signal that shows aspects (PlanPro Signal_Rahmen): its screen, an indicator, a plate.",
+      "description": "A part of a signal that shows aspects (PlanPro Signal_Rahmen): its screen with every light it shows, an indicator, a plate, the ceramic body of a clearance marker, the name plate. Only a name plate shows no aspect.",
       "type": "object",
       "required": ["kind", "aspects"],
       "additionalProperties": false,
       "properties": {
-        "kind": { "enum": ["screen", "indicator", "plate", "other"] },
-        "aspects": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/Aspect" } }
+        "kind": {
+          "description": "PlanPro Rahmen_Art: Schirm, Zusatzanzeiger, Blechtafel, Keramikkoerper, Bezeichnungsschild, sonstige.",
+          "enum": ["screen", "indicator", "plate", "body", "nameplate", "other"]
+        },
+        "aspects": { "type": "array", "items": { "$ref": "#/$defs/Aspect" } }
       }
     },
     "Aspect": {
@@ -150,6 +159,7 @@
       "properties": {
         "id": { "$ref": "core#/$defs/Id" },
         "name": { "$ref": "core#/$defs/Label" },
+        "areaNumber": { "$ref": "core#/$defs/Label", "description": "The number of the interlocking area it belongs to, which leads its full designation (PlanPro Kennzahl: 60 in 60A)." },
         "kind": { "enum": ["axleCounting", "audioFrequencyCircuit", "lowFrequencyCircuit", "ftgs", "other"] },
         "boundedBy": {
           "type": "array",
@@ -161,39 +171,76 @@
       }
     },
     "SwitchElement": {
-      "description": "A switch of the core as the interlocking knows it (PlanPro W_Kr_Gsp_Element): its name, how it is worked, the position it rests in. A slip has two, one per pair of points.",
+      "description": "A switch of the core or a derailer as the interlocking knows it (PlanPro W_Kr_Gsp_Element): its name, how it is worked, the position it rests in. A slip has two, one per pair of points. A derailer is no switch of the core: it stands `at` a place of its own and is applied or removed.",
       "type": "object",
-      "required": ["id", "switchId", "operation"],
+      "required": ["id", "operation"],
+      "oneOf": [{ "required": ["switchId"] }, { "required": ["derailer"] }],
       "additionalProperties": false,
       "properties": {
         "id": { "$ref": "core#/$defs/Id" },
         "name": { "$ref": "core#/$defs/Label" },
+        "areaNumber": { "$ref": "core#/$defs/Label", "description": "The number of the interlocking area it belongs to, which leads its full designation (PlanPro Kennzahl: 60 in 60A)." },
         "switchId": { "$ref": "core#/$defs/Ref", "x-target": "core.switches" },
+        "derailer": {
+          "description": "A derailer (PlanPro Gleissperre_Element): where it stands, and the position it rests in.",
+          "type": "object",
+          "required": ["at"],
+          "additionalProperties": false,
+          "properties": {
+            "at": { "$ref": "#/$defs/Directed" },
+            "preferredPosition": { "enum": ["applied", "removed"] }
+          }
+        },
         "part": { "description": "Which pair of points of a slip.", "enum": ["a", "b"] },
         "operation": {
           "description": "PlanPro W_Kr_Gsp_Stellart.",
           "enum": ["electricRemote", "electricLocal", "mechanicalRemote", "mechanicalLocal", "notWorked", "springBack", "disabledLeft", "disabledRight", "other"]
         },
         "preferredPosition": { "$ref": "#/$defs/SwitchPosition" },
+        "preferredAutomatic": { "type": "boolean", "description": "Whether it returns to its preferred position by itself (PlanPro Vorzugslage_Automatik)." },
         "trailable": { "type": "boolean", "description": "PlanPro Auffahrortung." },
+        "clearanceMarkerId": {
+          "description": "The clearance marker (Ra 12) of the switch, a signal of the domain (PlanPro ID_Grenzzeichen).",
+          "$ref": "core#/$defs/Ref", "x-target": "signalling.signals"
+        },
+        "twofoldProtection": {
+          "description": "Where flank protection is asked of it in both positions at once (PlanPro Fla_Zwieschutz): what is done for each position, and whether running on is prevented.",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "description": "PlanPro Zwieschutz_Art.", "enum": ["genuine", "genuineOwn", "own"] },
+            "left": { "enum": ["locking", "substitute"] },
+            "right": { "enum": ["locking", "substitute"] },
+            "preventsRunOn": { "type": "boolean" }
+          }
+        },
         "lifespan": { "$ref": "core#/$defs/Lifespan" }
       }
     },
     "Route": {
-      "description": "A train or shunting route (PlanPro Fstr_Zug_Rangier with its Fstr_Fahrweg): from a start signal to a target signal along a run of tracks. Which way each switch element lies follows from the run and is not stored (as in PlanPro). A train route names the overlaps it may end in; flank protection follows from the switch elements it runs over.",
+      "description": "A train, shunting or middle-switch route (PlanPro Fstr_Zug_Rangier with its Fstr_Fahrweg): from a start signal to a target signal along a run of tracks. Which way each switch element lies follows from the run and is not stored (as in PlanPro). A train route names the overlaps it may end in; flank protection follows from the switch elements it runs over. Where several routes run between the same two signals, `rank` orders them.",
       "type": "object",
       "required": ["id", "kind", "startSignalId", "targetSignalId", "path"],
       "additionalProperties": false,
       "properties": {
         "id": { "$ref": "core#/$defs/Id" },
         "name": { "$ref": "core#/$defs/Text" },
-        "kind": { "enum": ["train", "shunting"] },
+        "kind": { "enum": ["train", "shunting", "middle"] },
         "trainType": { "description": "PlanPro Fstr_Zug_Art, for a train route.", "enum": ["B", "ZH", "ZR", "ZT", "ZTU", "ZU", "ZUH", "ZZ"] },
         "shuntingType": { "description": "PlanPro Fstr_Rangier_Art, for a shunting route.", "enum": ["RR", "RT", "RTU", "RU"] },
+        "middleType": { "description": "PlanPro Fstr_Mittel_Art, for a route from a middle switch.", "enum": ["ZM", "ZUM"] },
+        "rank": { "description": "Its place among the routes between the same two signals, 0 the regular one (PlanPro Fstr_Reihenfolge).", "type": "integer", "minimum": 0 },
         "startSignalId": { "$ref": "core#/$defs/Ref", "x-target": "signalling.signals" },
         "targetSignalId": { "$ref": "core#/$defs/Ref", "x-target": "signalling.signals" },
         "path": { "$ref": "core#/$defs/TrackPath" },
-        "speed": { "description": "The speed the route permits [km/h] (PlanPro Fstr_V).", "type": "number", "minimum": 0 },
+        "speed": { "description": "The speed the route permits [km/h] (PlanPro Fstr_V_Hg).", "type": "number", "minimum": 0 },
+        "autoSetting": { "type": "boolean", "description": "Set by the automatic route setting (PlanPro Automatische_Einstellung)." },
+        "shortDistantSpacing": { "type": "boolean", "description": "Its distant signal stands at a shortened braking distance (PlanPro Fstr_Vsigabstand_Verkuerzt)." },
+        "clearSections": {
+          "description": "For a shunting route, the sections that must be clear (PlanPro ID_FMA_Anlage_Rangier_Frei); a train route's follow from its run.",
+          "type": "array",
+          "items": { "$ref": "core#/$defs/Ref", "x-target": "signalling.trackSections" }
+        },
         "overlaps": {
           "type": "array",
           "items": {
@@ -224,7 +271,7 @@
       }
     },
     "Overlap": {
-      "description": "An overlap beyond a route's target signal (PlanPro Fstr_DWeg): from the signal along a run of tracks to its end, its design length and the gradient that sets it, the speed it allows, the sections that must be clear, and for each switch element on it whether it is locked.",
+      "description": "An overlap beyond a route's target signal (PlanPro Fstr_DWeg): from the signal along a run of tracks to its danger point, its design length and the gradient that sets it, the speed it allows, the sections that must be clear, and for each switch element on it whether it is locked.",
       "type": "object",
       "required": ["id", "signalId", "path", "end", "length"],
       "additionalProperties": false,
@@ -233,7 +280,10 @@
         "name": { "$ref": "core#/$defs/Text" },
         "signalId": { "$ref": "core#/$defs/Ref", "x-target": "signalling.signals" },
         "path": { "$ref": "core#/$defs/TrackPath" },
-        "end": { "$ref": "core#/$defs/TrackLocation" },
+        "end": {
+          "description": "Its danger point (PlanPro ID_PZB_Gefahrpunkt): on its last track, or the clearance marker of a switch at its end, on a track beyond it.",
+          "$ref": "core#/$defs/TrackLocation"
+        },
         "length": { "description": "Its design length [m] (PlanPro Laenge_Soll).", "type": "number", "minimum": 0 },
         "gradient": { "description": "The gradient that sets its length [‰], negative downhill (PlanPro Massgebende_Neigung).", "type": "number" },
         "speed": { "description": "The speed it allows [km/h] (PlanPro DWeg_V).", "type": "number", "minimum": 0 },
@@ -267,7 +317,7 @@
           "additionalProperties": false,
           "properties": {
             "switchElementId": { "$ref": "core#/$defs/Ref", "x-target": "signalling.switchElements" },
-            "via": { "$ref": "#/$defs/SwitchPosition" }
+            "via": { "description": "Run over in which position, or from its tip (PlanPro Fahrt_Ueber).", "enum": ["left", "right", "tip"] }
           }
         },
         "protection": {
@@ -283,11 +333,11 @@
             },
             {
               "type": "object",
-              "required": ["switchElementId", "position"],
+              "required": ["switchElementId"],
               "additionalProperties": false,
               "properties": {
                 "switchElementId": { "$ref": "core#/$defs/Ref", "x-target": "signalling.switchElements" },
-                "position": { "$ref": "#/$defs/SwitchPosition" }
+                "position": { "description": "The position a switch is held in; a derailer gives it applied, and states none.", "$ref": "#/$defs/SwitchPosition" }
               }
             },
             {

@@ -16,6 +16,7 @@ plain Node (a test holds it to that), as everything the project server might sha
 | `diff.js` | `diffProject`, `diffEntries`: what changed between two dehydrated states |
 | `merge.js` | `mergeProject(base, mine, theirs)` → merged record, conflicts, warnings, what was applied; `resolve` |
 | `remap.js` | Carrying a reference across a change of track ids, by geometry |
+| `carryLocations.js` | Carrying the locations of a domain the core does not write (signalling …) across a change of the net: after every write of the Layout-Tool (`carryAfterWrite`) and in a merge (R4, R7) |
 | `index.js` | The module's public interface |
 
 ## The unit of merging
@@ -67,6 +68,27 @@ one of whose ends is where `a`'s end was; a platform goes to the piece on which 
 stations there, with the side swapped if that piece runs the other way); a route's track is replaced by the
 pieces in order along it. That holds over any number of splits and joins, which a table of offsets would have
 to replay one by one.
+
+## Carrying the other domains' locations (R4)
+
+A domain the core does not write says where its objects stand with the core's location types only: a
+`TrackLocation` (`{ anchor: 'station', trackId, station, side, offset, direction }`) and a `TrackPath`
+(`{ trackIds }`). `carryDomain` looks for those shapes and nothing else, so it carries a domain it has never
+heard of. A location on a track that changed is looked for, at the place it stood, on the tracks lying there
+now:
+
+| What the net did | What happens to the location |
+|---|---|
+| split, joined | onto the piece the place lies on, at its station there |
+| turned round | the station from the other end; side and direction swap |
+| a piece put in front, one taken off | the station moves with the track's stationing |
+| reshaped away from the place, same track | the station stays: it follows the track |
+| deleted, nothing lies there | orphaned in the same step: the plane point and bearing it had (R7), id and references kept |
+
+A run of tracks takes, for each track that went, the pieces lying where it lay, in running order (as a
+route does, decision 249). The Layout-Tool calls `carryAfterWrite` in its write pipeline, so every edit
+carries the record's `signalling` before it is stored; the merge carries it through the id logs with the
+platforms (`carryReferences`).
 
 ## Decisions
 

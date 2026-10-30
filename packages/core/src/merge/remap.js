@@ -1,4 +1,5 @@
 import { pointAtStation, stationOnTrack, portsOf, portTrack, portEnd, withPort, repairRoute } from '../track/index.js'
+import { CARRIED_DOMAINS, carryDomain } from './carryLocations.js'
 
 /**
  * Carrying a reference across a change of track ids (decision 93, merge rule 5).
@@ -177,7 +178,21 @@ export function carryReferences(project, logs, oldTracks) {
     return next
   })
 
-  const out = { ...project }
+  // The domains the record carries for others (signalling …): every location
+  // on a track that went, by geometry like the platforms (R4).
+  const domainCtx = {
+    present, changed: (id) => !present.has(id), oldTrack, candidates: candidatesFor, tracks, switches,
+  }
+  const domains = {}
+  for (const name of CARRIED_DOMAINS) {
+    if (!project[name]?.collections) continue
+    const { domain, carried: moved } = carryDomain(project[name], domainCtx)
+    if (domain === project[name]) continue
+    domains[name] = domain
+    for (const m of moved) carried.push({ collection: `${name}.${m.collection}`, id: m.id, from: m.from, to: m.to })
+  }
+
+  const out = { ...project, ...domains }
   if (project.routes)    out.routes    = routes
   if (project.switches)  out.switches  = switches
   if (project.platforms) out.platforms = platforms

@@ -349,8 +349,12 @@ export namespace Signalling {
   export type Signal = {
     id: Core.Id
     name?: Core.Label
+    /** The number of the interlocking area it belongs to, which leads its full designation (PlanPro Kennzahl: 60 in 60A). */
+    areaNumber?: Core.Label
     kind: "real" | "virtual"
     at: Directed
+    /** Further tracks it stands at, at the same place: a clearance marker (Ra 12) between the two tracks beyond a switch, which PlanPro places on both edges. */
+    alsoAt?: Array<Core.TrackLocation>
     bothDirections?: boolean
     /** PlanPro Signal_Funktion. */
     function?: "entry" | "exit" | "entryExit" | "intermediate" | "exitIntermediate" | "entryBlock" | "block" | "groupExit" | "groupIntermediate" | "groupExitIntermediate" | "followUp" | "cover" | "trainCover" | "trainTarget" | "levelCrossing" | "distant" | "standaloneIndicator" | "other"
@@ -371,9 +375,10 @@ export namespace Signalling {
     frames?: Array<Frame>
     lifespan?: Core.Lifespan
   }
-  /** A part of a signal that shows aspects (PlanPro Signal_Rahmen): its screen, an indicator, a plate. */
+  /** A part of a signal that shows aspects (PlanPro Signal_Rahmen): its screen with every light it shows, an indicator, a plate, the ceramic body of a clearance marker, the name plate. Only a name plate shows no aspect. */
   export type Frame = {
-    kind: "screen" | "indicator" | "plate" | "other"
+    /** PlanPro Rahmen_Art: Schirm, Zusatzanzeiger, Blechtafel, Keramikkoerper, Bezeichnungsschild, sonstige. */
+    kind: "screen" | "indicator" | "plate" | "body" | "nameplate" | "other"
     aspects: Array<Aspect>
   }
   /** One aspect a frame can show (PlanPro Signal_Signalbegriff): its key in the catalogue, and where the catalogue asks for one, its symbol — the speed a Zs 3 shows in tens of km/h, the letter of a Zs 2. */
@@ -395,40 +400,40 @@ export namespace Signalling {
   export type TrackSection = {
     id: Core.Id
     name?: Core.Label
+    /** The number of the interlocking area it belongs to, which leads its full designation (PlanPro Kennzahl: 60 in 60A). */
+    areaNumber?: Core.Label
     kind: "axleCounting" | "audioFrequencyCircuit" | "lowFrequencyCircuit" | "ftgs" | "other"
     boundedBy: Array<Core.Ref>
     /** PlanPro FMA_Hilffreimeldung. */
     auxiliaryClearing?: boolean
     lifespan?: Core.Lifespan
   }
-  /** A switch of the core as the interlocking knows it (PlanPro W_Kr_Gsp_Element): its name, how it is worked, the position it rests in. A slip has two, one per pair of points. */
-  export type SwitchElement = {
-    id: Core.Id
-    name?: Core.Label
-    switchId: Core.Ref
-    /** Which pair of points of a slip. */
-    part?: "a" | "b"
-    /** PlanPro W_Kr_Gsp_Stellart. */
-    operation: "electricRemote" | "electricLocal" | "mechanicalRemote" | "mechanicalLocal" | "notWorked" | "springBack" | "disabledLeft" | "disabledRight" | "other"
-    preferredPosition?: SwitchPosition
-    /** PlanPro Auffahrortung. */
-    trailable?: boolean
-    lifespan?: Core.Lifespan
-  }
-  /** A train or shunting route (PlanPro Fstr_Zug_Rangier with its Fstr_Fahrweg): from a start signal to a target signal along a run of tracks. Which way each switch element lies follows from the run and is not stored (as in PlanPro). A train route names the overlaps it may end in; flank protection follows from the switch elements it runs over. */
+  /** A switch of the core or a derailer as the interlocking knows it (PlanPro W_Kr_Gsp_Element): its name, how it is worked, the position it rests in. A slip has two, one per pair of points. A derailer is no switch of the core: it stands `at` a place of its own and is applied or removed. */
+  export type SwitchElement =  | 
+  /** A train, shunting or middle-switch route (PlanPro Fstr_Zug_Rangier with its Fstr_Fahrweg): from a start signal to a target signal along a run of tracks. Which way each switch element lies follows from the run and is not stored (as in PlanPro). A train route names the overlaps it may end in; flank protection follows from the switch elements it runs over. Where several routes run between the same two signals, `rank` orders them. */
   export type Route = {
     id: Core.Id
     name?: Core.Text
-    kind: "train" | "shunting"
+    kind: "train" | "shunting" | "middle"
     /** PlanPro Fstr_Zug_Art, for a train route. */
     trainType?: "B" | "ZH" | "ZR" | "ZT" | "ZTU" | "ZU" | "ZUH" | "ZZ"
     /** PlanPro Fstr_Rangier_Art, for a shunting route. */
     shuntingType?: "RR" | "RT" | "RTU" | "RU"
+    /** PlanPro Fstr_Mittel_Art, for a route from a middle switch. */
+    middleType?: "ZM" | "ZUM"
+    /** Its place among the routes between the same two signals, 0 the regular one (PlanPro Fstr_Reihenfolge). */
+    rank?: number
     startSignalId: Core.Ref
     targetSignalId: Core.Ref
     path: Core.TrackPath
-    /** The speed the route permits [km/h] (PlanPro Fstr_V). */
+    /** The speed the route permits [km/h] (PlanPro Fstr_V_Hg). */
     speed?: number
+    /** Set by the automatic route setting (PlanPro Automatische_Einstellung). */
+    autoSetting?: boolean
+    /** Its distant signal stands at a shortened braking distance (PlanPro Fstr_Vsigabstand_Verkuerzt). */
+    shortDistantSpacing?: boolean
+    /** For a shunting route, the sections that must be clear (PlanPro ID_FMA_Anlage_Rangier_Frei); a train route's follow from its run. */
+    clearSections?: Array<Core.Ref>
     overlaps?: Array<{
       overlapId: Core.Ref
       preferred?: boolean
@@ -441,12 +446,13 @@ export namespace Signalling {
     }>
     lifespan?: Core.Lifespan
   }
-  /** An overlap beyond a route's target signal (PlanPro Fstr_DWeg): from the signal along a run of tracks to its end, its design length and the gradient that sets it, the speed it allows, the sections that must be clear, and for each switch element on it whether it is locked. */
+  /** An overlap beyond a route's target signal (PlanPro Fstr_DWeg): from the signal along a run of tracks to its danger point, its design length and the gradient that sets it, the speed it allows, the sections that must be clear, and for each switch element on it whether it is locked. */
   export type Overlap = {
     id: Core.Id
     name?: Core.Text
     signalId: Core.Ref
     path: Core.TrackPath
+    /** Its danger point (PlanPro ID_PZB_Gefahrpunkt): on its last track, or the clearance marker of a switch at its end, on a track beyond it. */
     end: Core.TrackLocation
     /** Its design length [m] (PlanPro Laenge_Soll). */
     length: number
@@ -468,7 +474,8 @@ export namespace Signalling {
     id: Core.Id
     requester: {
       switchElementId: Core.Ref
-      via: SwitchPosition
+      /** Run over in which position, or from its tip (PlanPro Fahrt_Ueber). */
+      via: "left" | "right" | "tip"
     }
     protection: {
       signalId: Core.Ref
@@ -476,7 +483,8 @@ export namespace Signalling {
       targetLock?: boolean
     } | {
       switchElementId: Core.Ref
-      position: SwitchPosition
+      /** The position a switch is held in; a derailer gives it applied, and states none. */
+      position?: SwitchPosition
     } | {
       waived: true
     }

@@ -6367,7 +6367,7 @@
     },
     "signalling": {
      "version": "1.0",
-     "schema": "sha256:441ecd96e75bdf2114a3d8c669e37b82f1a2d36771394409783a1d80c665a65b",
+     "schema": "sha256:8e4fdf8b8d487f61be93b473521515fe2e5510ef3cdc21d994cd8a405aeb74a0",
      "dependsOn": [
       "core"
      ],
@@ -6847,7 +6847,7 @@
     },
     "signalling": {
      "version": "1.0",
-     "schema": "sha256:441ecd96e75bdf2114a3d8c669e37b82f1a2d36771394409783a1d80c665a65b",
+     "schema": "sha256:8e4fdf8b8d487f61be93b473521515fe2e5510ef3cdc21d994cd8a405aeb74a0",
      "dependsOn": [
       "core"
      ],
@@ -6866,7 +6866,7 @@
     }
    }
   },
-  "hash": "sha256:3f9a9d1df259e781d9dc6346e07dba4fa6ceebb5d42221f5beae6736a6c87800"
+  "hash": "sha256:a5d7c0355f7a71c6e8f8af019d6b2ac0113366cbe6a93a40cd30ab905baf8c31"
  },
  {
   "name": "the sample with its signalling, carrying its schemas",
@@ -7140,7 +7140,7 @@
     },
     "signalling": {
      "version": "1.0",
-     "schema": "sha256:441ecd96e75bdf2114a3d8c669e37b82f1a2d36771394409783a1d80c665a65b",
+     "schema": "sha256:8e4fdf8b8d487f61be93b473521515fe2e5510ef3cdc21d994cd8a405aeb74a0",
      "dependsOn": [
       "core"
      ],
@@ -8643,7 +8643,7 @@
       }
      }
     },
-    "sha256:441ecd96e75bdf2114a3d8c669e37b82f1a2d36771394409783a1d80c665a65b": {
+    "sha256:8e4fdf8b8d487f61be93b473521515fe2e5510ef3cdc21d994cd8a405aeb74a0": {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
      "$id": "signalling",
      "title": "Rail-Data-Core, domain signalling 1.0",
@@ -8801,6 +8801,10 @@
         "name": {
          "$ref": "core#/$defs/Label"
         },
+        "areaNumber": {
+         "$ref": "core#/$defs/Label",
+         "description": "The number of the interlocking area it belongs to, which leads its full designation (PlanPro Kennzahl: 60 in 60A)."
+        },
         "kind": {
          "enum": [
           "real",
@@ -8809,6 +8813,13 @@
         },
         "at": {
          "$ref": "#/$defs/Directed"
+        },
+        "alsoAt": {
+         "description": "Further tracks it stands at, at the same place: a clearance marker (Ra 12) between the two tracks beyond a switch, which PlanPro places on both edges.",
+         "type": "array",
+         "items": {
+          "$ref": "core#/$defs/TrackLocation"
+         }
         },
         "bothDirections": {
          "type": "boolean"
@@ -8914,7 +8925,7 @@
        }
       },
       "Frame": {
-       "description": "A part of a signal that shows aspects (PlanPro Signal_Rahmen): its screen, an indicator, a plate.",
+       "description": "A part of a signal that shows aspects (PlanPro Signal_Rahmen): its screen with every light it shows, an indicator, a plate, the ceramic body of a clearance marker, the name plate. Only a name plate shows no aspect.",
        "type": "object",
        "required": [
         "kind",
@@ -8923,16 +8934,18 @@
        "additionalProperties": false,
        "properties": {
         "kind": {
+         "description": "PlanPro Rahmen_Art: Schirm, Zusatzanzeiger, Blechtafel, Keramikkoerper, Bezeichnungsschild, sonstige.",
          "enum": [
           "screen",
           "indicator",
           "plate",
+          "body",
+          "nameplate",
           "other"
          ]
         },
         "aspects": {
          "type": "array",
-         "minItems": 1,
          "items": {
           "$ref": "#/$defs/Aspect"
          }
@@ -9011,6 +9024,10 @@
         "name": {
          "$ref": "core#/$defs/Label"
         },
+        "areaNumber": {
+         "$ref": "core#/$defs/Label",
+         "description": "The number of the interlocking area it belongs to, which leads its full designation (PlanPro Kennzahl: 60 in 60A)."
+        },
         "kind": {
          "enum": [
           "axleCounting",
@@ -9038,12 +9055,23 @@
        }
       },
       "SwitchElement": {
-       "description": "A switch of the core as the interlocking knows it (PlanPro W_Kr_Gsp_Element): its name, how it is worked, the position it rests in. A slip has two, one per pair of points.",
+       "description": "A switch of the core or a derailer as the interlocking knows it (PlanPro W_Kr_Gsp_Element): its name, how it is worked, the position it rests in. A slip has two, one per pair of points. A derailer is no switch of the core: it stands `at` a place of its own and is applied or removed.",
        "type": "object",
        "required": [
         "id",
-        "switchId",
         "operation"
+       ],
+       "oneOf": [
+        {
+         "required": [
+          "switchId"
+         ]
+        },
+        {
+         "required": [
+          "derailer"
+         ]
+        }
        ],
        "additionalProperties": false,
        "properties": {
@@ -9053,9 +9081,32 @@
         "name": {
          "$ref": "core#/$defs/Label"
         },
+        "areaNumber": {
+         "$ref": "core#/$defs/Label",
+         "description": "The number of the interlocking area it belongs to, which leads its full designation (PlanPro Kennzahl: 60 in 60A)."
+        },
         "switchId": {
          "$ref": "core#/$defs/Ref",
          "x-target": "core.switches"
+        },
+        "derailer": {
+         "description": "A derailer (PlanPro Gleissperre_Element): where it stands, and the position it rests in.",
+         "type": "object",
+         "required": [
+          "at"
+         ],
+         "additionalProperties": false,
+         "properties": {
+          "at": {
+           "$ref": "#/$defs/Directed"
+          },
+          "preferredPosition": {
+           "enum": [
+            "applied",
+            "removed"
+           ]
+          }
+         }
         },
         "part": {
          "description": "Which pair of points of a slip.",
@@ -9081,9 +9132,48 @@
         "preferredPosition": {
          "$ref": "#/$defs/SwitchPosition"
         },
+        "preferredAutomatic": {
+         "type": "boolean",
+         "description": "Whether it returns to its preferred position by itself (PlanPro Vorzugslage_Automatik)."
+        },
         "trailable": {
          "type": "boolean",
          "description": "PlanPro Auffahrortung."
+        },
+        "clearanceMarkerId": {
+         "description": "The clearance marker (Ra 12) of the switch, a signal of the domain (PlanPro ID_Grenzzeichen).",
+         "$ref": "core#/$defs/Ref",
+         "x-target": "signalling.signals"
+        },
+        "twofoldProtection": {
+         "description": "Where flank protection is asked of it in both positions at once (PlanPro Fla_Zwieschutz): what is done for each position, and whether running on is prevented.",
+         "type": "object",
+         "additionalProperties": false,
+         "properties": {
+          "kind": {
+           "description": "PlanPro Zwieschutz_Art.",
+           "enum": [
+            "genuine",
+            "genuineOwn",
+            "own"
+           ]
+          },
+          "left": {
+           "enum": [
+            "locking",
+            "substitute"
+           ]
+          },
+          "right": {
+           "enum": [
+            "locking",
+            "substitute"
+           ]
+          },
+          "preventsRunOn": {
+           "type": "boolean"
+          }
+         }
         },
         "lifespan": {
          "$ref": "core#/$defs/Lifespan"
@@ -9091,7 +9181,7 @@
        }
       },
       "Route": {
-       "description": "A train or shunting route (PlanPro Fstr_Zug_Rangier with its Fstr_Fahrweg): from a start signal to a target signal along a run of tracks. Which way each switch element lies follows from the run and is not stored (as in PlanPro). A train route names the overlaps it may end in; flank protection follows from the switch elements it runs over.",
+       "description": "A train, shunting or middle-switch route (PlanPro Fstr_Zug_Rangier with its Fstr_Fahrweg): from a start signal to a target signal along a run of tracks. Which way each switch element lies follows from the run and is not stored (as in PlanPro). A train route names the overlaps it may end in; flank protection follows from the switch elements it runs over. Where several routes run between the same two signals, `rank` orders them.",
        "type": "object",
        "required": [
         "id",
@@ -9111,7 +9201,8 @@
         "kind": {
          "enum": [
           "train",
-          "shunting"
+          "shunting",
+          "middle"
          ]
         },
         "trainType": {
@@ -9136,6 +9227,18 @@
           "RU"
          ]
         },
+        "middleType": {
+         "description": "PlanPro Fstr_Mittel_Art, for a route from a middle switch.",
+         "enum": [
+          "ZM",
+          "ZUM"
+         ]
+        },
+        "rank": {
+         "description": "Its place among the routes between the same two signals, 0 the regular one (PlanPro Fstr_Reihenfolge).",
+         "type": "integer",
+         "minimum": 0
+        },
         "startSignalId": {
          "$ref": "core#/$defs/Ref",
          "x-target": "signalling.signals"
@@ -9148,9 +9251,25 @@
          "$ref": "core#/$defs/TrackPath"
         },
         "speed": {
-         "description": "The speed the route permits [km/h] (PlanPro Fstr_V).",
+         "description": "The speed the route permits [km/h] (PlanPro Fstr_V_Hg).",
          "type": "number",
          "minimum": 0
+        },
+        "autoSetting": {
+         "type": "boolean",
+         "description": "Set by the automatic route setting (PlanPro Automatische_Einstellung)."
+        },
+        "shortDistantSpacing": {
+         "type": "boolean",
+         "description": "Its distant signal stands at a shortened braking distance (PlanPro Fstr_Vsigabstand_Verkuerzt)."
+        },
+        "clearSections": {
+         "description": "For a shunting route, the sections that must be clear (PlanPro ID_FMA_Anlage_Rangier_Frei); a train route's follow from its run.",
+         "type": "array",
+         "items": {
+          "$ref": "core#/$defs/Ref",
+          "x-target": "signalling.trackSections"
+         }
         },
         "overlaps": {
          "type": "array",
@@ -9203,7 +9322,7 @@
        }
       },
       "Overlap": {
-       "description": "An overlap beyond a route's target signal (PlanPro Fstr_DWeg): from the signal along a run of tracks to its end, its design length and the gradient that sets it, the speed it allows, the sections that must be clear, and for each switch element on it whether it is locked.",
+       "description": "An overlap beyond a route's target signal (PlanPro Fstr_DWeg): from the signal along a run of tracks to its danger point, its design length and the gradient that sets it, the speed it allows, the sections that must be clear, and for each switch element on it whether it is locked.",
        "type": "object",
        "required": [
         "id",
@@ -9228,6 +9347,7 @@
          "$ref": "core#/$defs/TrackPath"
         },
         "end": {
+         "description": "Its danger point (PlanPro ID_PZB_Gefahrpunkt): on its last track, or the clearance marker of a switch at its end, on a track beyond it.",
          "$ref": "core#/$defs/TrackLocation"
         },
         "length": {
@@ -9307,7 +9427,12 @@
            "x-target": "signalling.switchElements"
           },
           "via": {
-           "$ref": "#/$defs/SwitchPosition"
+           "description": "Run over in which position, or from its tip (PlanPro Fahrt_Ueber).",
+           "enum": [
+            "left",
+            "right",
+            "tip"
+           ]
           }
          }
         },
@@ -9333,8 +9458,7 @@
           {
            "type": "object",
            "required": [
-            "switchElementId",
-            "position"
+            "switchElementId"
            ],
            "additionalProperties": false,
            "properties": {
@@ -9343,6 +9467,7 @@
              "x-target": "signalling.switchElements"
             },
             "position": {
+             "description": "The position a switch is held in; a derailer gives it applied, and states none.",
              "$ref": "#/$defs/SwitchPosition"
             }
            }
@@ -9583,7 +9708,7 @@
     },
     "signalling": {
      "version": "1.0",
-     "schema": "sha256:441ecd96e75bdf2114a3d8c669e37b82f1a2d36771394409783a1d80c665a65b",
+     "schema": "sha256:8e4fdf8b8d487f61be93b473521515fe2e5510ef3cdc21d994cd8a405aeb74a0",
      "dependsOn": [
       "core"
      ],
@@ -9602,7 +9727,7 @@
     }
    }
   },
-  "hash": "sha256:3f9a9d1df259e781d9dc6346e07dba4fa6ceebb5d42221f5beae6736a6c87800"
+  "hash": "sha256:a5d7c0355f7a71c6e8f8af019d6b2ac0113366cbe6a93a40cd30ab905baf8c31"
  },
  {
   "name": "signalling depending on nothing",
@@ -9876,7 +10001,7 @@
     },
     "signalling": {
      "version": "1.0",
-     "schema": "sha256:441ecd96e75bdf2114a3d8c669e37b82f1a2d36771394409783a1d80c665a65b",
+     "schema": "sha256:8e4fdf8b8d487f61be93b473521515fe2e5510ef3cdc21d994cd8a405aeb74a0",
      "fields": {
       "catalogue": {
        "id": "db-ril-301",
@@ -10597,7 +10722,7 @@
     },
     "signalling": {
      "version": "1.0",
-     "schema": "sha256:441ecd96e75bdf2114a3d8c669e37b82f1a2d36771394409783a1d80c665a65b",
+     "schema": "sha256:8e4fdf8b8d487f61be93b473521515fe2e5510ef3cdc21d994cd8a405aeb74a0",
      "dependsOn": [
       "core"
      ],
@@ -11320,7 +11445,7 @@
     },
     "signalling": {
      "version": "1.0",
-     "schema": "sha256:441ecd96e75bdf2114a3d8c669e37b82f1a2d36771394409783a1d80c665a65b",
+     "schema": "sha256:8e4fdf8b8d487f61be93b473521515fe2e5510ef3cdc21d994cd8a405aeb74a0",
      "dependsOn": [
       "core"
      ],
@@ -11759,8 +11884,57 @@
     }
    }
   },
-  "valid": false,
-  "code": "invalid_payload"
+  "valid": true,
+  "manifest": {
+   "domains": {
+    "core": {
+     "version": "1.0",
+     "schema": "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6",
+     "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
+     "collections": {
+      "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
+      "kmLines": "sha256:7a0eb47d89ffa24b1917d39c8eab8707f820c9b6bceb81edf5dddcf52ead6457",
+      "operationalPoints": "sha256:6a6eb5b21cdb3c39939da851281a7a8b9c968d36cea93d44d383d292b33beb34",
+      "platforms": "sha256:1ab2e26c887a12abb8b4fdfaf22b1e56ec9406f85b66f80155a57a0c1aa07910",
+      "switches": "sha256:2b44461e52775cdabdc9c02e42115f9441b311b4240d09dca153d5683a4a4da5",
+      "tracks": "sha256:31b7b45b2668805ff32a84d8ebc4586e230ae9152364edac5bc643ef097a075a"
+     }
+    },
+    "layout": {
+     "version": "1.0",
+     "schema": "sha256:b2280dcf6cfe779e148b6c402ac46eb4ff1e8d96b55e6e3abcb370ef48ff1f1b",
+     "dependsOn": [
+      "core"
+     ],
+     "fields": "sha256:8d9ae941998100a45679076ed67feb55eaf5c06dc028c5ff9396bbe93de06ffb",
+     "collections": {
+      "axisSurveys": "sha256:d7c72a86fce12420e2a646aa0087a31572d6db6bedd895b31181daeacff533cc",
+      "referenceAxes": "sha256:04906ea395d28e3d03af2cc45d7057c92d832faaeb875b5fb0ba3c9c40047a3e",
+      "trackPaths": "sha256:b6c705b568655eb210b5794b4ce86a95e2f3da8b51f5c298057698fb02b5db8f"
+     }
+    },
+    "signalling": {
+     "version": "1.0",
+     "schema": "sha256:8e4fdf8b8d487f61be93b473521515fe2e5510ef3cdc21d994cd8a405aeb74a0",
+     "dependsOn": [
+      "core"
+     ],
+     "fields": "sha256:656d837843cb4335b0123484d3dc32d92fdf985a57e0e7b1a4dd29babbbc1693",
+     "collections": {
+      "detectionPoints": "sha256:c98deaa1cfec2a74eded2bfb06749831953268a0e3d4a2d9f5fcf21103d899e7",
+      "flankProtection": "sha256:0f5fddb634a2d9ab8ee97b8c819917e50051b58e8013a3067258bd2b8bd43567",
+      "overlaps": "sha256:3dc90110fb0c0f878b841fd5d497829f036e5627d4099479d1726c8905b62e3e",
+      "pzbElements": "sha256:def17130c353489a2d9d49a717d3208b3846d5622224f38e94df2c1a1e88a1ac",
+      "routes": "sha256:a02939e2f09de570b3f466510e02627b133e46848950a47cbbd0ef01e284ca9c",
+      "signals": "sha256:65661fde03c368bde060a3bb6449cf595c14014526f6a77f0a0e8a87c2e2a0e8",
+      "stationBoundaries": "sha256:54556f1e20a2e22fd145c8d0f66b92640b25f50b66da610ebd8ae7126412d496",
+      "switchElements": "sha256:fe471ee1c255021503a7e8f6862566e6d5aeb76a76cad3782b7ce37c87adb591",
+      "trackSections": "sha256:dd2ee2e1d729211c5aaac5bf7c209b78c81c887bff24f6413ae439d92f4b8496"
+     }
+    }
+   }
+  },
+  "hash": "sha256:e9134f295bd51cc05eb5809b64cb1f5964097879928177f5e83bbdb98750dc7c"
  },
  {
   "name": "signalling without its overlaps",
@@ -12034,7 +12208,7 @@
     },
     "signalling": {
      "version": "1.0",
-     "schema": "sha256:441ecd96e75bdf2114a3d8c669e37b82f1a2d36771394409783a1d80c665a65b",
+     "schema": "sha256:8e4fdf8b8d487f61be93b473521515fe2e5510ef3cdc21d994cd8a405aeb74a0",
      "dependsOn": [
       "core"
      ],

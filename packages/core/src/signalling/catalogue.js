@@ -34,9 +34,22 @@ export const knownSystem = (system, catalogue = KATALOG) => Object.hasOwn(catalo
 /** Whether an aspect may stand on a plate of its own (a board, a Zs 3 as a plate). */
 export const boardAspect = (key, catalogue = KATALOG) => catalogue.ohne_system.tafeln.includes(key)
 
-/** Whether `symbol` is what the aspect asks for: none where it has no symbol, else one that matches its pattern. */
-export function symbolFits(aspect, symbol, catalogue = KATALOG) {
-  if (!aspect.symbol) return symbol === undefined
+/**
+ * Whether `symbol` is what the aspect asks for: none where it has no symbol,
+ * any where its symbol is free text, else one of those the catalogue lists.
+ */
+export function symbolFits(aspect, symbol) {
+  if (!aspect.symbole && !aspect.symbol_frei) return symbol === undefined
   if (symbol === undefined) return false
-  return new RegExp(catalogue.symbole[aspect.symbol].pattern).test(symbol)
+  return aspect.symbol_frei === true || aspect.symbole.includes(symbol)
+}
+
+/** Whether the aspect may stand on a frame of that kind: where the catalogue names none, on any. */
+export const aspectFitsFrame = (aspect, frame) => !aspect.rahmen || aspect.rahmen.includes(frame)
+
+/** The speed an aspect's symbol shows [km/h] — Zs 3, Zs 3v, Lf 6, Lf 7 show it in tens — or null. */
+export function aspectSpeed(aspect, symbol) {
+  if (aspect?.symbol_bedeutung !== 'speed') return null
+  const n = Number(String(symbol ?? '').replace(',', '.'))
+  return Number.isFinite(n) ? n * 10 : null
 }

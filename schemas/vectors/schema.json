@@ -643,10 +643,8 @@
     }
    ]
   },
-  "valid": false,
-  "paths": [
-   "/frames/0/aspects"
-  ]
+  "valid": true,
+  "paths": []
  },
  {
   "ref": "signalling#/$defs/Signal",

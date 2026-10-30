@@ -7,3 +7,4 @@
 
 export { diffProject, diffEntries, diffSize, primary } from './diff.js'
 export { mergeProject, resolve, validationConflicts } from './merge.js'
+export { carryAfterWrite, carryDomain } from './carryLocations.js'

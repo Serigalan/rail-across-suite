@@ -1,4 +1,6 @@
-import { aspectOf, boardAspect, knownSystem, signalKindOf, symbolFits } from './catalogue.js'
+import { aspectFitsFrame, aspectOf, boardAspect, knownSystem, signalKindOf, symbolFits } from './catalogue.js'
+import { trackSectionExtents } from './trackSections.js'
+import { tracksOnFrom } from '../track/index.js'
 
 /**
  * Whether the signalling domain of a project holds together, on its own and
@@ -9,7 +11,9 @@ import { aspectOf, boardAspect, knownSystem, signalKindOf, symbolFits } from './
  * - every signal shows what the catalogue lets its kind show: known aspects,
  *   on the frames they belong on, with the symbol they ask for; a screen with
  *   the aspects its kind must have and none it may not; indicators its kind
- *   carries; a virtual signal shows nothing;
+ *   carries; a screen shows at least one proceed aspect where its kind has
+ *   some; a virtual signal shows nothing;
+ * - a track detection section's points bound one part of the net, exactly;
  * - a route runs from the track of its start signal to that of its target, a
  *   train route ends in an overlap behind its target, at most one of them
  *   preferred, and shows only aspects its signals have;
@@ -28,8 +32,7 @@ import { aspectOf, boardAspect, knownSystem, signalKindOf, symbolFits } from './
  *
  * Not yet checked, for want of the values (catalogue open_points): distances
  * — distant signal to main signal, the length an overlap needs, where the PZB
- * magnets lie. Not yet derived: the extent of a track section from its
- * detection points over the net.
+ * magnets lie.
  */
 export function checkSignalling({ core, signalling }) {
   const errors = []
@@ -88,10 +91,17 @@ export function checkSignalling({ core, signalling }) {
     if (!p?.trackIds?.length) error('path_empty', collection, obj.id, { field }, field)
   }
   const trackOf = (signalId) => signals.get(signalId)?.at?.trackId
+  /** Whether track `b` meets track `a` at an end: at one switch, or laid on from it. */
+  const coreSwitches = core?.collections?.switches ?? []
+  const beside = (a, b) => coreSwitches.some(sw => {
+    const held = Object.values(sw.ports ?? {}).map(p => p?.trackId)
+    return held.includes(a) && held.includes(b)
+  }) || ['BEGIN', 'END'].some(end => tracksOnFrom(a, end, core?.collections?.tracks ?? [], coreSwitches).some(t => t.trackId === b))
 
   // ── signals ──
   for (const s of c.signals ?? []) {
     at('signals', s, s.at)
+    for (const [i, also] of (s.alsoAt ?? []).entries()) at('signals', s, also, `alsoAt.${i}`)
     lifespan('signals', s)
     const frames = s.frames ?? []
     if (s.kind === 'virtual') {
@@ -103,16 +113,17 @@ export function checkSignalling({ core, signalling }) {
     const screens = frames.filter(f => f.kind === 'screen')
     if (screens.length > 1) error('screens_many', 'signals', s.id, { n: screens.length })
     const kind = screens.length ? signalKindOf(s.system, s.type) : null
-    if (screens.length && s.type && !kind && (!s.system || knownSystem(s.system))) {
+    if (screens.length && s.type && s.type !== 'other' && !kind && (!s.system || knownSystem(s.system))) {
       error('type_not_in_system', 'signals', s.id, { type: s.type, system: s.system ?? null })
     }
-    if (screens.length && !s.type) error('type_missing', 'signals', s.id)
+    if (screens.length && s.system && !s.type) error('type_missing', 'signals', s.id)
     for (const [i, frame] of frames.entries()) {
+      if (!frame.aspects.length && frame.kind !== 'nameplate') warning('frame_empty', 'signals', s.id, { frame: frame.kind }, String(i))
       for (const a of frame.aspects) {
         const aspect = aspectOf(a.aspect)
         const where = `${i}:${a.aspect}`
         if (!aspect) { error('aspect_unknown', 'signals', s.id, { aspect: a.aspect }, where); continue }
-        if (!aspect.rahmen.includes(frame.kind)) { error('aspect_not_on_frame', 'signals', s.id, { aspect: a.aspect, frame: frame.kind }, where); continue }
+        if (!aspectFitsFrame(aspect, frame.kind)) { error('aspect_not_on_frame', 'signals', s.id, { aspect: a.aspect, frame: frame.kind }, where); continue }
         if (!symbolFits(aspect, a.symbol)) error('symbol_invalid', 'signals', s.id, { aspect: a.aspect, symbol: a.symbol ?? null }, where)
         if (frame.kind === 'indicator' && kind && !kind.zusatz.includes(a.aspect)) {
           error('indicator_not_allowed', 'signals', s.id, { aspect: a.aspect, type: s.type }, where)
@@ -125,6 +136,8 @@ export function checkSignalling({ core, signalling }) {
     if (kind) {
       const shown = new Set(screens[0].aspects.map(a => a.aspect))
       for (const must of kind.schirm.pflicht) if (!shown.has(must)) error('screen_lacks', 'signals', s.id, { aspect: must, type: s.type }, must)
+      const proceed = kind.schirm.fahrt ?? []
+      if (proceed.length && !proceed.some(a => shown.has(a))) warning('screen_no_proceed', 'signals', s.id, { aspects: proceed, type: s.type })
       for (const has of shown) if (!kind.schirm.erlaubt.includes(has)) error('screen_not_allowed', 'signals', s.id, { aspect: has, type: s.type }, has)
     }
   }
@@ -137,8 +150,16 @@ export function checkSignalling({ core, signalling }) {
     lifespan('trackSections', t)
   }
   for (const d of c.detectionPoints ?? []) if (!bounding.has(d.id)) warning('detection_point_unused', 'detectionPoints', d.id)
+  if (c.trackSections?.length) {
+    for (const [id, extent] of trackSectionExtents({ core, signalling })) {
+      if (!extent.matches) warning('section_extent_differs', 'trackSections', id, { missing: extent.missing })
+    }
+  }
+  const switchElements = new Map((c.switchElements ?? []).map(e => [e.id, e]))
   for (const e of c.switchElements ?? []) {
     ref('switchElements', e.id, 'core.switches', e.switchId, 'switchId')
+    if (e.derailer) at('switchElements', e, e.derailer.at, 'derailer.at')
+    ref('switchElements', e.id, 'signalling.signals', e.clearanceMarkerId, 'clearanceMarkerId')
     lifespan('switchElements', e)
   }
 
@@ -154,6 +175,8 @@ export function checkSignalling({ core, signalling }) {
     if (run.length && trackOf(r.targetSignalId) && run[run.length - 1] !== trackOf(r.targetSignalId)) error('route_target_off_path', 'routes', r.id)
     if (r.kind === 'train' && !r.trainType) warning('route_type_missing', 'routes', r.id)
     if (r.kind === 'shunting' && !r.shuntingType) warning('route_type_missing', 'routes', r.id)
+    if (r.kind === 'middle' && !r.middleType) warning('route_type_missing', 'routes', r.id)
+    for (const t of r.clearSections ?? []) ref('routes', r.id, 'signalling.trackSections', t, 'clearSections')
     if (r.kind === 'shunting' && r.overlaps?.length) error('shunting_with_overlap', 'routes', r.id)
     if (r.kind === 'train' && signals.get(r.targetSignalId)?.kind === 'real' && !r.overlaps?.length) warning('route_without_overlap', 'routes', r.id)
     if ((r.overlaps ?? []).filter(o => o.preferred).length > 1) error('overlap_preferred_many', 'routes', r.id)
@@ -176,7 +199,11 @@ export function checkSignalling({ core, signalling }) {
     lifespan('overlaps', o)
     const run = o.path?.trackIds ?? []
     if (run.length && trackOf(o.signalId) && run[0] !== trackOf(o.signalId)) error('overlap_start_off_path', 'overlaps', o.id)
-    if (run.length && o.end?.anchor === 'station' && o.end.trackId !== run[run.length - 1]) error('overlap_end_off_path', 'overlaps', o.id)
+    // Its end is its danger point: on its last track, or the clearance marker
+    // of a switch at its end, on a track that leaves it there.
+    if (run.length && o.end?.anchor === 'station' && !run.includes(o.end.trackId) && !beside(run[run.length - 1], o.end.trackId)) {
+      error('overlap_end_off_path', 'overlaps', o.id)
+    }
     for (const t of o.clearSections ?? []) ref('overlaps', o.id, 'signalling.trackSections', t, 'clearSections')
     for (const sw of o.switches ?? []) ref('overlaps', o.id, 'signalling.switchElements', sw.switchElementId, 'switches')
   }
@@ -193,6 +220,8 @@ export function checkSignalling({ core, signalling }) {
     if (f.protection.switchElementId) {
       ref('flankProtection', f.id, 'signalling.switchElements', f.protection.switchElementId, 'protection')
       if (f.protection.switchElementId === switchElementId) error('flank_by_itself', 'flankProtection', f.id)
+      const protecting = switchElements.get(f.protection.switchElementId)
+      if (protecting?.switchId && !f.protection.position) error('flank_position_missing', 'flankProtection', f.id)
     }
     for (const side of ['left', 'right']) ref('flankProtection', f.id, 'signalling.flankProtection', f.passOn?.[side], `passOn.${side}`)
     for (const t of f.clearSections ?? []) ref('flankProtection', f.id, 'signalling.trackSections', t, 'clearSections')

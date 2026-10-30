@@ -7,6 +7,7 @@ import {
   reverseTrack, generateId, remapEndMarks, flipEndMarks, pruneEndMarks, endKey, repairRoutes,
   carryPlatforms, flipPlatforms, trackLength,
 } from '@rail-across/core/track'
+import { carryAfterWrite } from '@rail-across/core/merge'
 import { coupleSwitchCants, rebuildSwitchSymbol } from '@rail-across/core/switch'
 import {
   addDependentAt, lengthGovernedRadii, lockBreach, releaseDependency, restoreDependency, setDependencyMode, switchMisfits,
@@ -98,12 +99,15 @@ function mutate(fn, { undo = true, unlock = false } = {}) {
   const next = fn(_project)
   if (!next || next === before) { _idLog = logBefore; return true }
   // A route over a track the write took away runs over what lies there now (decision 249).
+  // What the domains the record carries for others (signalling) place on a
+  // track follows it, or is orphaned in the plane where nothing lies there
+  // now (data model R4, R7).
   // A turnout's two routes carry one cant (decision 376); its WA and ldS lie
   // on their lines and, unless in the design mode, its tracks meet there
   // (decision 384). A curve whose length counts takes the radius its
   // gradients ask for now (decision 266).
   const after = withLengthRadii(before, withSwitchHeights(before,
-    withCoupledCants(before, withPrunedMarks(repairRoutes(before, next))), { design: _switchDesign }))
+    withCoupledCants(before, withPrunedMarks(carryAfterWrite(before, repairRoutes(before, next)))), { design: _switchDesign }))
   // What a lock holds stays (Entscheidung 382): a write that would change it
   // is refused as a whole — and said so, where every step is.
   const parted = new Set(_idLog.slice(logBefore.length).map(e => e.from))

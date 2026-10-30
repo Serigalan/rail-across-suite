@@ -158,6 +158,28 @@ describe('variants and revisions', () => {
     expect(res.json()).toMatchObject({ error: 'invalid_record', errors: [expect.objectContaining({ code: 'platform_track_missing' })] })
   })
 
+  it('checks the signalling a record carries, on its core, and keeps it', async () => {
+    const { max } = await start()
+    const { variantId, revisionId } = await newProject(max, { tracks: [straight('t1')] })
+    const h = await head(max, variantId)
+    const signal = (at) => ({ id: 's1', kind: 'virtual', virtualFunction: 'trainTargetLine', at })
+    const signalling = (at) => ({
+      fields: { catalogue: { id: 'db-ril-301', version: '0.2.0' } },
+      collections: {
+        signals: [signal(at)], detectionPoints: [], trackSections: [], switchElements: [], routes: [], overlaps: [],
+        flankProtection: [], pzbElements: [], stationBoundaries: [],
+      },
+    })
+    const bad = { ...h.payload, signalling: signalling({ anchor: 'station', trackId: 't1', station: 180, direction: 'up' }) }
+    const refused = await max('POST', `/api/variants/${variantId}/revisions`, { base: revisionId, payload: bad, remaps: [] })
+    expect(refused.statusCode).toBe(422)
+    expect(refused.json().errors).toEqual([expect.objectContaining({ code: 'off_track', domain: 'signalling', key: 'signalling:off_track:signals:s1:at' })])
+    const good = { ...h.payload, signalling: signalling({ anchor: 'station', trackId: 't1', station: 80, direction: 'up' }) }
+    const ok = await max('POST', `/api/variants/${variantId}/revisions`, { base: revisionId, payload: good, remaps: [] })
+    expect(ok.statusCode).toBe(201)
+    expect((await head(max, variantId)).payload.signalling.collections.signals).toEqual([signal(good.signalling.collections.signals[0].at)])
+  })
+
   it('takes errors the base already had: they are not this check-in\'s doing', async () => {
     const { max } = await start()
     const broken = { tracks: [straight('t1')], platforms: [{ id: 'pf', trackId: 'nowhere', startStation: 0, endStation: 10 }] }

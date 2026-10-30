@@ -1,6 +1,6 @@
 # 0011 — The signalling domain follows PlanPro, its content is a catalogue
 
-Status: **accepted** · domain `signalling` 1.0, catalogue `db-ril-301` 0.1.0
+Status: **accepted** · domain `signalling` 1.0, catalogue `db-ril-301` 0.2.0 · checked against the PlanPro plan P-Hausen
 
 ## Decision
 
@@ -11,12 +11,12 @@ Status: **accepted** · domain `signalling` 1.0, catalogue `db-ril-301` 0.1.0
 
    | Collection | PlanPro 1.10 |
    |---|---|
-   | `signals` — real or virtual, each real one with its frames and their aspects | `Signal` (`Signal_Real`, `Signal_Fiktiv`), `Signal_Rahmen`, `Signal_Signalbegriff` |
+   | `signals` — real or virtual, each real one with its frames and their aspects; a clearance marker on both branches also `alsoAt` | `Signal` (`Signal_Real`, `Signal_Fiktiv`), `Signal_Rahmen`, `Signal_Signalbegriff` |
    | `detectionPoints` | `FMA_Komponente` |
    | `trackSections` — name, kind, bounding detection points | `FMA_Anlage` |
-   | `switchElements` — the interlocking's switch, referring to the core's | `W_Kr_Gsp_Element` |
-   | `routes` — train and shunting, start and target signal, a `TrackPath`, overlaps, what they show | `Fstr_Zug_Rangier`, `Fstr_Fahrweg`, `Fstr_Signalisierung` |
-   | `overlaps` — run, end, design length, gradient, speed, clear sections, locked switches | `Fstr_DWeg`, `Fstr_DWeg_W_Kr` |
+   | `switchElements` — the interlocking's switch, referring to the core's, or a derailer at its place; its clearance marker, twofold flank protection | `W_Kr_Gsp_Element`, `Fla_Zwieschutz` |
+   | `routes` — train, shunting and middle-switch, start and target signal, a `TrackPath`, rank, overlaps, what they show | `Fstr_Zug_Rangier`, `Fstr_Fahrweg`, `Fstr_Signalisierung` |
+   | `overlaps` — run, danger point, design length, gradient, speed, clear sections, locked switches | `Fstr_DWeg`, `Fstr_DWeg_W_Kr` |
    | `flankProtection` — per switch element and position: by a signal, by a switch element in a position, or waived; passed on | `Fla_Schutz`, `Fla_Freimelde_Zuordnung` |
    | `pzbElements` — magnets of 500, 1000, 2000 Hz and speed checks, their signal and routes | `PZB_Element`, `PZB_Element_Zuordnung` |
    | `stationBoundaries` — what marks the boundary of an operational point | (EBO §4; the roadmap's station boundaries) |
@@ -27,22 +27,31 @@ Status: **accepted** · domain `signalling` 1.0, catalogue `db-ril-301` 0.1.0
 3. **What a signal can show is not in the schema but in a catalogue**,
    [`packages/core/constraints/db-ril-301.json`](../../packages/core/constraints/db-ril-301.json): the aspects by
    PlanPro's names (`Hp_0`, `Ks_1`, `Zs_3` …), the frames each may stand on, the symbol it asks for, and per
-   system and kind of signal what its screen must and may show and which indicators it carries. Version 0.1.0
-   holds **Ks with its indicators, the shunting signal, the boards, and the PZB elements**. H/V, Sv and Hl come as
+   system and kind of signal what its screen must and may show and which indicators it carries. Version 0.2.0
+   holds **all 192 aspects of PlanPro's Ril 301 list** with their symbols, and the kinds of **Ks** signal, the
+   shunting signal, the boards and the PZB elements. H/V, Sv and Hl come as
    entries of the catalogue, without a new schema. The core checks a domain against it
    (`checkSignalling`, [module page](../../packages/core/docs/signalling.md)).
 
 4. **Derived, not stored**:
    - the switch positions of a route and of an overlap follow from its run of tracks, as in PlanPro;
    - flank protection follows from the switch elements a route runs over;
-   - the extent of a track section follows from its detection points over the net. Its name and kind are stored,
-     so a section keeps its identity when a point moves; where the stored and the derived boundaries differ,
-     that is a finding.
+   - the extent of a track section follows from its own detection points over the net. Its name and kind are
+     stored, so a section keeps its identity when a point moves; where its points enclose nothing together,
+     that is a finding. Sections overlap where they meet: each is cut by its own points only.
 
 5. **Overlaps and flank protection are in 1.0**, which a simulation model leaves out and DB planning needs.
 
-6. **The Layout-Tool carries the domain** in its record as `signalling: { fields, collections }`, untouched, so
-   writing a project back never loses it (F1). In a merge it is one value of the project.
+6. **The Layout-Tool carries the domain** in its record as `signalling: { fields, collections }`, so writing a
+   project back never loses it (F1). It does not edit it; the core carries its locations with every write of the
+   net and in every merge (R4), and orphans what stood on a deleted track in the plane (R7).
+
+7. **A PlanPro plan reads in** ([planpro](../../packages/core/docs/planpro.md)): its edges as tracks along their
+   geometry, its switch nodes as turnouts, its signalling as the domain, its start and target state as the two
+   construction stages. Its signalling can be placed on a project's own net by the same remap.
+
+8. **The server checks the domain** at every check-in, on its core; only errors a check-in brings in refuse
+   it, as with the record's own.
 
 ## Why
 
@@ -75,16 +84,41 @@ field by field, and the catalogue's keys need no table. For OSRD the adapter (de
 signals: one for the system of each screen, `Nf` from the signal's kind; Ks needs a driver of its own there,
 which is one of the adaptations to agree upstream.
 
+## Checked against a real plan
+
+The ProSig example plan **P-Hausen** (PlanPro XSD 1.9.0.2) holds a station of 49 edges and 28 switch nodes with
+165 signals, 76 detection points, 56 sections, 189 routes and 34 overlaps. Reading it changed the model in
+these places, all within 1.0:
+
+- **The Ks screen carries its lights**: Kl, Zl, Zs 1, Zs 7 and Zs 8 are aspects of the `Schirm`, not of an
+  indicator. A kind of signal states what its screen must show, at least one of its proceed aspects (`fahrt`),
+  and what it may show; an exit signal that shows Hp 0 and Sh 1 only is a warning, not an error.
+- **The catalogue holds every aspect PlanPro lists**, mast plates, clearance markers, level crossing and
+  orientation signs among them, with the symbols the XSD enumerates.
+- **Frames**: a ceramic body (Ra 12) and a name plate that shows no aspect.
+- **A clearance marker stands on two edges** at once (`alsoAt`), and a switch element names its marker.
+- **Derailers** are switch elements of their own place, not switches of the core.
+- **An overlap ends at its danger point**, often the clearance marker of a switch beyond its run.
+- **Sections overlap** at their ends; the derivation cuts each by its own points. 44 of 56 come out as
+  PlanPro's Gleis_Abschnitt states them, 7 differ by their overlap.
+- **Routes have a rank** where several run between the same two signals, and middle-switch routes a kind.
+
+The plan reads without an error of the record or of the domain; three warnings remain, each a property of the
+plan. What a station plan holds beyond this — level crossings, block, local control zones, key locks,
+platforms of the interlocking, the operating elements — is counted on import and not read yet; each comes as a
+collection of its own when a tool plans it.
+
 ## What it costs
 
 - **Two places to change.** A new system or a new aspect is a change of the catalogue, which the schema's hash
   does not cover. A project names the catalogue version it was planned against (`fields.catalogue`).
 - **A check of our own.** The content check is JavaScript only: the Python core reads the schema through the
   door, but does not check the catalogue.
-- **Carrying references is not done yet.** The core does not yet carry the domain's references (R4) when the
-  Layout-Tool splits, joins or reverses a track. Until it does, such an edit leaves references that
-  `reference_missing` and `off_track` report. This comes with the signalling tool, before it writes real
-  projects.
+- **Carrying is by geometry.** A location is carried to where the track lies now, not by a table of offsets:
+  a track reshaped so that the place is no longer on it keeps the station, and the object moves with the
+  reshaping.
+- **No per-domain rights yet.** The server checks the domain, but does not yet refuse a change of it by an
+  author without the right to write it (S-R5).
 - **Values are missing.** Distances (distant signal spacing, overlap length, where the PZB magnets lie) are not
   checked until the values of Ril 819 and Ril 483 are in the catalogue (`open_points`).
 - **PlanPro's XSD is not in the repository.** It is licensed under RailPL V1.1, whose fit with Apache-2.0 and

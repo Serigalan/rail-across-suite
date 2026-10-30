@@ -1,7 +1,8 @@
 import {
-  PayloadError, dehydrateProjects, parseProjectsPayload, projectsPayload, newFindings,
+  PayloadError, dehydrateProjects, parseProjectsPayload, projectDocument, projectsPayload, newFindings,
   validateProject,
 } from '@rail-across/core/project'
+import { checkSignalling } from '@rail-across/core/signalling'
 import { ApiError } from './errors.js'
 
 /**
@@ -34,7 +35,21 @@ export function checkRecord(payload, { id } = {}) {
   }
   const [record] = dehydrateProjects(parsed.projects)
   const { errors, warnings } = validateProject(record)
-  return { record, errors, warnings }
+  const signalling = signallingFindings(record)
+  return { record, errors: [...errors, ...signalling.errors], warnings: [...warnings, ...signalling.warnings] }
+}
+
+/**
+ * The findings of the record's signalling (decision 0011), where it has
+ * some: checked on the core it stands on, keyed apart from the record's own
+ * so a finding of one never stands for one of the other.
+ */
+function signallingFindings(record) {
+  if (!record.signalling) return { errors: [], warnings: [] }
+  const { domains } = projectDocument(record)
+  const { errors, warnings } = checkSignalling({ core: domains.core, signalling: domains.signalling })
+  const keyed = (f) => ({ ...f, domain: 'signalling', key: `signalling:${f.key}` })
+  return { errors: errors.map(keyed), warnings: warnings.map(keyed) }
 }
 
 /**

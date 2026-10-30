@@ -37,7 +37,8 @@ describe('a station signalled with Ks and PZB', () => {
       byId(c.signals, 'sig-ne1').at = { anchor: 'plane', easting: 500000, northing: 5700000, epsg: 25832, bearing: 90 }
     })
     expect(codes(errors)).toEqual(['off_track'])
-    expect(codes(warnings)).toEqual(['orphaned'])
+    // dp-2 beyond its track cuts nothing, so section 1 no longer closes there.
+    expect(codes(warnings)).toEqual(['orphaned', 'section_extent_differs'])
   })
 })
 
@@ -45,9 +46,28 @@ describe('what a signal may show', () => {
   it('holds a screen to its kind: what it must and may show', () => {
     const { errors } = check((c) => {
       const a = byId(c.signals, 'sig-a')
-      a.frames[0].aspects = [{ aspect: 'Hp_0' }, { aspect: 'Ks_1' }, { aspect: 'Sh_1' }]   // no Ks 2, and Sh 1 on a signal that is none
+      a.frames[0].aspects = [{ aspect: 'Ks_1' }, { aspect: 'Ks_2' }, { aspect: 'Sh_1' }]   // no Hp 0, and Sh 1 on a signal that is none
     })
-    expect(errors.map(e => [e.code, e.params.aspect])).toEqual([['screen_lacks', 'Ks_2'], ['screen_not_allowed', 'Sh_1']])
+    expect(errors.map(e => [e.code, e.params.aspect])).toEqual([['screen_lacks', 'Hp_0'], ['screen_not_allowed', 'Sh_1']])
+  })
+
+  it('takes the lights of Zs 1, Zs 7 and Kl on the screen, as PlanPro plans have them', () => {
+    const { errors } = check((c) => {
+      const a = byId(c.signals, 'sig-a')
+      a.frames[0].aspects.push({ aspect: 'Zs_7' }, { aspect: 'Kl' })
+      a.frames.push({ kind: 'nameplate', aspects: [] })
+    })
+    expect(errors).toEqual([])
+  })
+
+  it('warns of a screen without a proceed aspect, and of a frame that shows nothing', () => {
+    const { errors, warnings } = check((c) => {
+      const n1 = byId(c.signals, 'sig-n1')
+      n1.frames[0].aspects = [{ aspect: 'Hp_0' }, { aspect: 'Sh_1' }]
+      n1.frames[1].aspects = []
+    })
+    expect(codes(errors)).toEqual(['route_aspect_not_on_signal'])   // the route N1 → line shows Ks 1 there
+    expect(codes(warnings)).toEqual(['frame_empty', 'screen_no_proceed'])
   })
 
   it('knows its aspects, their frames and their symbols', () => {
@@ -72,17 +92,31 @@ describe('what a signal may show', () => {
   it('wants a known system and a kind it has; a virtual signal shows nothing', () => {
     const { errors } = check((c) => {
       byId(c.signals, 'sig-n1').system = 'hv'
-      byId(c.signals, 'sig-a').type = 'shunting'
+      byId(c.signals, 'sig-a').type = 'trainCover'
       byId(c.signals, 'sig-v').frames = [{ kind: 'plate', aspects: [{ aspect: 'Ne_1' }] }]
     })
     expect(codes(errors)).toEqual(['system_unknown', 'type_not_in_system', 'virtual_with_frames'])
   })
 
   it('takes a board on its own only where the catalogue has it as one', () => {
-    const { errors } = check((c) => { byId(c.signals, 'sig-ne1').frames[0].aspects = [{ aspect: 'Ne_14' }] })
+    const { errors } = check((c) => { byId(c.signals, 'sig-ne1').frames[0].aspects = [{ aspect: 'Ne_99' }] })
     expect(codes(errors)).toEqual(['aspect_unknown'])
     const { errors: plate } = check((c) => { byId(c.signals, 'sig-ne1').frames = [{ kind: 'plate', aspects: [{ aspect: 'Zs_3', symbol: '8' }] }] })
     expect(plate).toEqual([])
+    const { errors: mast } = check((c) => { byId(c.signals, 'sig-ne1').frames = [{ kind: 'plate', aspects: [{ aspect: 'Ms_ws_rt_ws' }] }] })
+    expect(codes(mast)).toEqual(['board_not_allowed'])
+  })
+
+  it('checks a clearance marker on both tracks it stands at', () => {
+    const { errors } = check((c) => {
+      c.signals.push({
+        id: 'sig-gz', kind: 'real', at: { anchor: 'station', trackId: 't2', station: 20, direction: 'down' },
+        alsoAt: [{ anchor: 'station', trackId: 't9', station: 20 }],
+        frames: [{ kind: 'body', aspects: [{ aspect: 'Ra_12' }] }],
+      })
+      byId(c.switchElements, 'we-1').clearanceMarkerId = 'sig-gz'
+    })
+    expect(errors.map(e => [e.code, e.params.field])).toEqual([['reference_missing', 'alsoAt.0.trackId']])
   })
 })
 
@@ -113,9 +147,19 @@ describe('routes and overlaps', () => {
     expect(codes(errors)).toEqual(['overlap_preferred_many', 'route_aspect_not_on_signal'])
   })
 
-  it('ends an overlap on the last track of its path', () => {
-    const { errors } = check((c) => { byId(c.overlaps, 'ov-n1').end.trackId = 't1' })
+  it('ends an overlap on its run, or just beside its end', () => {
+    const { errors } = check((c, core) => {
+      core.collections.tracks.push({ id: 't3', epsg: 25832, elements: [{ elementType: 0, length: 80 }] })
+      byId(c.overlaps, 'ov-n1').end = { anchor: 'station', trackId: 't3', station: 10 }
+    })
     expect(codes(errors)).toEqual(['overlap_end_off_path'])
+    // The clearance marker of a switch at its end, on the other branch: beside it.
+    const { errors: beside } = check((c, core) => {
+      core.collections.tracks.push({ id: 't3', epsg: 25832, elements: [{ elementType: 0, length: 80 }] })
+      core.collections.switches[0].ports = { A: { trackId: 't2', endpoint: 'BEGIN' }, B1: { trackId: 't3', endpoint: 'BEGIN' } }
+      byId(c.overlaps, 'ov-n1').end = { anchor: 'station', trackId: 't3', station: 10 }
+    })
+    expect(beside).toEqual([])
   })
 })
 
@@ -141,6 +185,32 @@ describe('flank protection, PZB, station boundaries', () => {
     expect(ok).toEqual({ errors: [], warnings: [] })
     const { warnings } = check((c) => { byId(c.stationBoundaries, 'bd-1').marks = [{ signalId: 'sig-n1' }] })
     expect(codes(warnings)).toEqual(['boundary_mark_special'])
+  })
+
+  it('holds a derailer at its place, and a switch giving flank protection to its position', () => {
+    const { errors } = check((c) => {
+      c.switchElements.push({ id: 'gs-1', name: 'Gs1', operation: 'electricRemote', derailer: { at: { anchor: 'station', trackId: 't2', station: 200, direction: 'up' }, preferredPosition: 'applied' } })
+      c.flankProtection.push({ id: 'fla-3', requester: { switchElementId: 'we-1', via: 'tip' }, protection: { switchElementId: 'gs-1' } })
+      byId(c.flankProtection, 'fla-2').protection = { switchElementId: 'we-2' }
+      c.switchElements.push({ id: 'we-2', switchId: 'w1', part: 'b', operation: 'electricRemote' })
+    })
+    expect(errors.map(e => e.code)).toEqual(['off_track', 'flank_position_missing'])
+  })
+
+  it('derives a section from its own points over the net, and says where they enclose nothing', () => {
+    // A point of another section inside it is no boundary of its: sections overlap where they meet.
+    const inside = check((c) => {
+      c.detectionPoints.push({ id: 'dp-3', kind: 'axleCounter', at: { anchor: 'station', trackId: 't1', station: 100 } })
+      c.trackSections.push({ id: 'ts-2', kind: 'axleCounting', boundedBy: ['dp-3', 'dp-2'] })
+    })
+    expect(inside).toEqual({ errors: [], warnings: [] })
+    // t2 is not connected to t1: no part of the net lies between a point on each.
+    const { warnings } = check((c) => {
+      c.detectionPoints.push({ id: 'dp-3', kind: 'axleCounter', at: { anchor: 'station', trackId: 't2', station: 100 } })
+      c.trackSections[0].boundedBy = ['dp-1', 'dp-3']
+    })
+    expect(warnings.map(w => [w.code, w.id])).toEqual([['detection_point_unused', 'dp-2'], ['section_extent_differs', 'ts-1']])
+    expect(warnings[1].params.missing).toHaveLength(1)
   })
 
   it('warns of a detection point that bounds no section', () => {

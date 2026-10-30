@@ -20,6 +20,8 @@ export const RouteIcon = () => <Svg><path d="M4 18c5 0 5-12 11-12h5" /><path d="
 export const FlankIcon = () => <Svg><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z" /><path d="M9 12l2 2 4-4" /></Svg>
 /** A PZB track magnet. */
 export const PzbIcon = () => <Svg><path d="M3 17h18" /><rect x="8" y="11" width="8" height="4" rx="1" /><path d="M10 8l2-2 2 2M10 5l2-2 2 2" /></Svg>
+/** Map layers: three sheets. */
+export const LayersIcon = () => <Svg><path d="M12 3l9 5-9 5-9-5z" /><path d="M3 12.5l9 5 9-5" /><path d="M3 17l9 5 9-5" /></Svg>
 /** The check. */
 export const CheckIcon = () => <Svg><path d="M4 12l5 5L20 6" /></Svg>
 /** A file coming in. */

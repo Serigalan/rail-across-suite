@@ -1,0 +1,20 @@
+{
+  "name": "@rail-across/basemaps",
+  "private": true,
+  "version": "0.1.0",
+  "description": "The basemaps of Rail-Across-Suite: the maps every module's map can lie on, with the colour scale of the elevation basemaps",
+  "license": "Apache-2.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "vitest": "^3.2.7"
+  }
+}

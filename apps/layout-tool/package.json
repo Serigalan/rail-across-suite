@@ -26,6 +26,7 @@
     "i18n:unused": "node tools/i18n-unused.mjs"
   },
   "dependencies": {
+    "@rail-across/basemaps": "*",
     "@rail-across/core": "*",
     "@rail-across/pointcloud": "*",
     "fflate": "^0.8.3",

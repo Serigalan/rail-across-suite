@@ -22,6 +22,7 @@ deletes a track (R4, R7).
 | PZB | magnets and speed checks, the signal they belong to, how they act | a click on a track |
 | Prüfung | the core's `checkSignalling` on every edit; a finding leads to its object | — |
 | PlanPro | a plan's signalling (`.planpro`, `.ppxml`) laid on the project's net: on the plan's own edges where the project was made from it, else carried to the tracks lying there, what nothing lies under orphaned | a file |
+| Kartenebenen | the map under the plan: the suite's basemaps as the Layout-Tool offers them ([`@rail-across/basemaps`](../../packages/basemaps/README.md)) — OpenStreetMap, satellite, relief, basemap.de, DGM5, the states' orthophotos — or the plan alone; the choice is kept in the browser | — |
 
 Every edit is a step (Ctrl+Z, Ctrl+Y); Delete asks before it deletes, and names what goes with it. Checking in
 sends the record with its signalling; where someone checked in first, their state is merged in (the signalling
@@ -32,7 +33,7 @@ the new net.
 
 As every tool of the infrastructure (`apps/README.md`): `?project&variant` works on the variant, `&action=view`
 or `history` shows its head read-only. Comparing and merging (`action=compare|merge`) is the Layout-Tool's, for
-the whole project with its signalling: the tool hands those addresses on to it. It keeps nothing in the browser.
+the whole project with its signalling: the tool hands those addresses on to it. It keeps nothing in the browser but the basemap last chosen.
 
 ## Files
 
@@ -40,7 +41,7 @@ the whole project with its signalling: the tool hands those addresses on to it. 
 |---|---|
 | `src/App.jsx`, `src/suite.js` | what the address asks, the session, loading the variant |
 | `src/Editor.jsx` | the shell: sections, selection, steps, the check, checking in |
-| `src/plan/` | the plan: the net in its true position, the symbols, picking and placing |
+| `src/plan/` | the plan: the net in its true position on a MapLibre map (north up), drawn over it in screen pixels; the symbols, picking and placing |
 | `src/panels/` | one panel per section |
 | `src/model/` | the drawing of the net and finding a place on it (`net.js`), runs over it (`runs.js`), editing the domain (`domain.js`), steps (`history.js`), reading a PlanPro file (`planproFile.js`) |
 | `src/i18n.js`, `src/labels.js` | texts in German and English, the words for the domain's values and the check's findings |

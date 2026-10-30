@@ -21,7 +21,7 @@ its own. The suite asks it by its address what to do (`toolUrl` in `home/src/mod
 | `?project=<id>&variant=<id>&action=history` | shows its revisions |
 | `?project=<id>&action=compare&from=<a>&to=<b>` | compares two variants |
 | `?project=<id>&action=merge&from=<a>&to=<b>` | merges a's changes into b |
-| `?action=storage` | shows what the tool keeps in this browser (the Layout-Tool; the Signalling-Tool keeps nothing there) |
+| `?action=storage` | shows what the tool keeps in this browser (the Layout-Tool; the Signalling-Tool keeps only its chosen basemap) |
 
 Every way back leads to `../#/infrastructure/<tool>`. A line to show there — a merge done, a link to a project
 that is not there — goes in `sessionStorage` under `rail-across-notice`; the start page shows it once.

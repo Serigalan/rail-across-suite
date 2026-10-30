@@ -13,7 +13,7 @@ import { netDrawing } from './model/net.js'
 import { added, cascadeOf, deleted, domainOf, labelOf, replaced } from './model/domain.js'
 import { redo, startHistory, step, undo } from './model/history.js'
 import PlanView from './plan/PlanView.jsx'
-import { CheckIcon, DetectionIcon, FlankIcon, ImportIcon, PzbIcon, RouteIcon, SignalIcon, SwitchIcon } from './icons.jsx'
+import { CheckIcon, DetectionIcon, FlankIcon, ImportIcon, LayersIcon, PzbIcon, RouteIcon, SignalIcon, SwitchIcon } from './icons.jsx'
 import SignalsPanel from './panels/SignalsPanel.jsx'
 import DetectionPanel from './panels/DetectionPanel.jsx'
 import ElementsPanel from './panels/ElementsPanel.jsx'
@@ -22,6 +22,7 @@ import FlankPanel from './panels/FlankPanel.jsx'
 import PzbPanel from './panels/PzbPanel.jsx'
 import CheckPanel from './panels/CheckPanel.jsx'
 import ImportPanel from './panels/ImportPanel.jsx'
+import LayersPanel, { DEFAULT_PLAN_BASEMAP } from './panels/LayersPanel.jsx'
 
 const SECTIONS = [
   { id: 'signals', icon: <SignalIcon />, Panel: SignalsPanel },
@@ -58,6 +59,8 @@ export default function Editor({ project, variant, head, readOnly }) {
   const [dialog, setDialog] = useState(null)
   const [notice, setNotice] = useState(null)
   const [fitKey, setFitKey] = useState(0)
+  const [basemap, chooseBasemap] = useState(keptBasemap)
+  const setBasemap = (id) => { chooseBasemap(id); keepBasemap(id) }
 
   const domain = history.now
   const record = current.record
@@ -172,7 +175,7 @@ export default function Editor({ project, variant, head, readOnly }) {
   const active = SECTIONS.find(s => s.id === section)
   const panelProps = {
     domain, net, drawing, findings, extents, selection, select: chooseFromList, ops, mode, setMode, readOnly, t, language,
-    record, setNotice, setSection,
+    record, setNotice, setSection, basemap, setBasemap,
   }
 
   return (
@@ -188,8 +191,10 @@ export default function Editor({ project, variant, head, readOnly }) {
             count={counts.errors || counts.warnings} countTone={counts.errors ? undefined : 'warn'} />
           {!readOnly && <RailButton icon={<ImportIcon />} label={t('section_import')} pressed={section === 'import'} onClick={() => setSection('import')} />}
         </>}
+        bottom={<RailButton icon={<LayersIcon />} label={t('section_layers')} pressed={section === 'layers'} onClick={() => setSection('layers')} />}
       />
-      {section === 'check' ? <CheckPanel {...panelProps} /> : section === 'import' ? <ImportPanel {...panelProps} /> : <active.Panel {...panelProps} />}
+      {section === 'check' ? <CheckPanel {...panelProps} /> : section === 'import' ? <ImportPanel {...panelProps} />
+        : section === 'layers' ? <LayersPanel {...panelProps} /> : <active.Panel {...panelProps} />}
       <Workspace bar={<>
         <span className="ui-topbar-title">{project.title}</span>
         <span className="ui-muted">{variant.name}</span>
@@ -216,7 +221,7 @@ export default function Editor({ project, variant, head, readOnly }) {
             <Button size="small" onClick={() => setMode(null)}>{mode.kind === 'pick-points' ? t('close') : t('cancel')}</Button>
           </div>
         )}
-        <PlanView drawing={drawing} net={net} domain={domain} selection={selection} highlight={highlight} mode={mode} fitKey={fitKey} focus={focus} t={t}
+        <PlanView drawing={drawing} net={net} domain={domain} selection={selection} highlight={highlight} mode={mode} fitKey={fitKey} focus={focus} basemap={basemap} t={t}
           onPick={select}
           onPlace={(hit) => { const m = mode; setMode(null); m?.apply?.(hit) }}
           onPickPoint={(id) => mode?.toggle?.(id)} />
@@ -235,6 +240,16 @@ export default function Editor({ project, variant, head, readOnly }) {
       )}
     </Shell>
   )
+}
+
+const BASEMAP_KEY = 'rail-across-signalling-basemap'
+
+/** The basemap chosen last in this browser, else the tool's own default. */
+function keptBasemap() {
+  try { return localStorage.getItem(BASEMAP_KEY) || DEFAULT_PLAN_BASEMAP } catch { return DEFAULT_PLAN_BASEMAP }
+}
+function keepBasemap(id) {
+  try { localStorage.setItem(BASEMAP_KEY, id) } catch { /* chosen again next time */ }
 }
 
 /** Where an object is to be shown on the plan: its location, a route's start signal, a section's first point. */

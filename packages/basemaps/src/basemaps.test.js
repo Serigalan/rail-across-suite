@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { allBasemaps, findBasemap, fineReliefStyle, isElevationBasemap, lvBasemapId, lvStatesOf } from './basemaps'
+import { allBasemaps, findBasemap, fineReliefStyle, isElevationBasemap, lvBasemapId, lvStatesOf } from './basemaps.js'
 
 describe('state orthophotos as one basemap', () => {
   it('joins the states in the list order, whatever order they were ticked in', () => {
@@ -36,6 +36,13 @@ describe('state orthophotos as one basemap', () => {
 })
 
 describe('elevation basemaps', () => {
+  it('a module\'s own come after the fixed ones', () => {
+    const dgm1 = { id: 'dgm1', group: 'germany', elevation: true, style: {} }
+    expect(allBasemaps([dgm1]).map((b) => b.id).at(-1)).toBe('dgm1')
+    expect(isElevationBasemap('dgm1', [dgm1])).toBe(true)
+    expect(findBasemap('liberty').thumbnail).toMatch(/thumbnails\/liberty\.webp$/)
+  })
+
   it('without the server only the fixed ones, DGM5 and the worldwide relief coloured by height', () => {
     expect(allBasemaps().map((b) => b.id)).not.toContain('dgm1')
     expect(allBasemaps().filter((b) => b.elevation).map((b) => b.id)).toEqual(['elevation', 'dgm5'])

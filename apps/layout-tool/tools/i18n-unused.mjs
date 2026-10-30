@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Translation keys no source file uses (R6.2). A key counts as used when it
-// appears as a string anywhere under src/ or in the core package, whose
-// findings and messages the app translates (packages/core/src), or when it starts with a prefix
+// appears as a string anywhere under src/ or in the packages whose findings,
+// messages and labels the app translates (packages/core/src, the basemaps'
+// labelKeys in packages/basemaps/src), or when it starts with a prefix
 // that a key is built from at runtime: `status_${s}`, t(`admin_err_${code}`),
 // or a prefix handed on as a string ending in "_" ('admin_err_'), or when it is
 // another literal with a suffix put after it at runtime: t(`${key}_hint`).
@@ -17,7 +18,7 @@ const files = (dir) => readdirSync(dir).flatMap(n => {
   const p = join(dir, n)
   return statSync(p).isDirectory() ? files(p) : [p]
 })
-const sources = [...files(join(ROOT, 'src')), ...files(join(ROOT, '../../packages/core/src'))]
+const sources = [...files(join(ROOT, 'src')), ...files(join(ROOT, '../../packages/core/src')), ...files(join(ROOT, '../../packages/basemaps/src'))]
   .filter(p => /\.(jsx?|mjs)$/.test(p) && !p.startsWith(LOCALES + '/') || p.endsWith('i18n.js'))
   .map(p => readFileSync(p, 'utf8')).join('\n')
 

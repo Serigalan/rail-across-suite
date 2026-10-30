@@ -10,9 +10,7 @@ html, body { margin: 0; background: var(--ui-surface); }
 /* ── the plan ────────────────────────────────────────────────────────── */
 
 .plan {
-  position: relative; flex: 1; min-height: 0; overflow: hidden; cursor: grab; touch-action: none; user-select: none;
-  background:
-    linear-gradient(var(--ui-surface), var(--ui-surface)) padding-box;
+  position: relative; flex: 1; min-height: 0; overflow: hidden; user-select: none; background: var(--ui-surface);
   --plan-track: #2a2d3a;
   --plan-run: var(--color-primary);
   --plan-mark: #1a1a2e;
@@ -20,10 +18,13 @@ html, body { margin: 0; background: var(--ui-surface); }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .plan { --plan-track: #c8cbd6; --plan-mark: #e8e9f0; }
 }
-.plan:active { cursor: grabbing; }
-.plan-placing, .plan-placing:active { cursor: crosshair; }
-.plan svg { display: block; }
-.plan-track { fill: none; stroke: var(--plan-track); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.plan-map { position: absolute; inset: 0; }
+/* MapLibre makes its container `position: relative`: it lives inside the box that is placed. */
+.plan-map-inner { width: 100%; height: 100%; }
+/* The plan over the map: drawn, not clicked — the map takes the pointer. */
+.plan-overlay { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+.plan .maplibregl-ctrl-bottom-left { margin-left: 4px; }
+.plan-track { fill: none; stroke: var(--plan-track); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 1.2px rgba(255, 255, 255, 0.9)); }
 .plan-run { fill: none; stroke: var(--plan-run); stroke-width: 6; stroke-opacity: 0.45; stroke-linecap: round; stroke-linejoin: round; }
 .plan-stretch { fill: none; stroke: #1f9e3a; stroke-width: 7; stroke-opacity: 0.5; stroke-linecap: butt; }
 .plan-stretch-warn { stroke: #d68910; }
@@ -47,12 +48,9 @@ html, body { margin: 0; background: var(--ui-surface); }
 .plan-mark.is-orphan { opacity: 0.6; }
 .plan-label {
   font: 600 11px var(--ui-font); fill: var(--plan-mark); paint-order: stroke; stroke: var(--ui-surface); stroke-width: 3px;
-  pointer-events: none;
 }
-.plan-scale {
-  position: absolute; left: 12px; bottom: 10px; padding: 2px 8px; border-radius: 4px; font-size: var(--ui-fs-s);
-  background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-muted); pointer-events: none;
-}
+/* On a basemap a track keeps a light edge, so it reads on any ground. */
+.plan-track { paint-order: stroke; }
 
 .tool-mode {
   position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); z-index: 5; display: flex; gap: 10px; align-items: center;
@@ -89,3 +87,21 @@ html, body { margin: 0; background: var(--ui-surface); }
 }
 .tool-finding-row:hover { background: var(--ui-hover); }
 .tool-finding-text { flex: 1; min-width: 0; line-height: 1.4; }
+
+/* ── the layers panel ────────────────────────────────────────────────── */
+
+.layer-list { display: flex; flex-direction: column; gap: 4px; }
+.layer-row {
+  display: flex; align-items: center; gap: 10px; width: 100%; padding: 5px; box-sizing: border-box; text-align: left;
+  font: inherit; font-size: var(--ui-fs-m); color: var(--ui-fg); background: none; cursor: pointer;
+  border: 1px solid var(--ui-border); border-radius: 8px;
+}
+.layer-row:hover { background: var(--ui-hover); }
+.layer-row.is-active { border-color: var(--color-primary); background: var(--ui-selected); box-shadow: inset 0 0 0 1px var(--color-primary); }
+.layer-thumbnail { width: 64px; height: 48px; object-fit: cover; border-radius: 5px; flex-shrink: 0; border: 1px solid var(--ui-border); }
+.layer-thumbnail-none { background: repeating-linear-gradient(45deg, var(--ui-surface), var(--ui-surface) 6px, var(--ui-hover) 6px, var(--ui-hover) 12px); }
+.layer-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.layer-sub { font-size: var(--ui-fs-s); }
+.layer-caret { color: var(--ui-muted); transition: transform 0.15s; }
+.layer-caret.open { transform: rotate(90deg); }
+.layer-states { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 10px; padding: 4px 6px 6px; }

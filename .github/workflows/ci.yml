@@ -63,6 +63,40 @@ jobs:
         working-directory: .
       - run: npm test
 
+  # The suite's look as a library, shared by the start page and the modules.
+  ui:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: packages/ui
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+        working-directory: .
+      - run: npm test
+
+  # The Signalling-Tool.
+  signalling-tool:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: apps/signalling-tool
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+        working-directory: .
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+
   # The start page of the suite.
   home:
     runs-on: ubuntu-24.04

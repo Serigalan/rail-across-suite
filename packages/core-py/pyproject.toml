@@ -1,0 +1,14 @@
+[project]
+name = "rail-across-core"
+version = "1.0.0a0"
+description = "Rail-Data-Core for Python: the core 1.0 document, its schema check, canonical JSON and content hashes"
+license = { text = "Apache-2.0" }
+requires-python = ">=3.10"
+dependencies = []
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["rail_across_core"]

@@ -34,6 +34,19 @@ jobs:
       - run: node tools/types.mjs --check
       - run: npm test
 
+  # The Rail-Data-Core for Python, held to the vectors the JavaScript core writes.
+  core-py:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: packages/core-py
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - run: python -m unittest discover -s tests
+
   # Point clouds, shared by the Open-Layout-Tool and the project server.
   pointcloud:
     runs-on: ubuntu-24.04

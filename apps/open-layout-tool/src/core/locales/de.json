@@ -1616,6 +1616,7 @@
   "home_new_title": "Neues Projekt",
   "home_new_template_title": "Neue Vorlage",
   "home_loading": "Wird geladen …",
+  "home_link_missing": "Das verlinkte Projekt gibt es hier nicht, oder du hast keinen Zugang dazu.",
   "home_empty": "Noch keine Projekte. Mit „+ Neu“ oder „Import“ anlegen.",
   "home_templates": "Vorlagen",
   "home_templates_empty": "Noch keine Vorlage.",

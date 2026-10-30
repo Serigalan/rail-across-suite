@@ -11,6 +11,8 @@ import useSession from './useSession'
 import useWorkingCopy from './useWorkingCopy'
 import useViewer from './useViewer'
 import { PALETTE } from '../core/styles/palette'
+import { api } from './api/client'
+import { errorText } from './collab/errorText'
 
 // What the sign-in and the start page do not need is loaded when it is first
 // opened (R9.1) — the map above all, with MapLibre and every panel behind it.
@@ -19,6 +21,15 @@ const HistoryPage = lazy(() => import('./collab/HistoryPage'))
 const MapWorkspace = lazy(() => import('../core/shell/MapWorkspace'))
 const ViewerView = lazy(() => import('./ViewerView'))
 const WorkingCopyLayer = lazy(() => import('./WorkingCopyLayer'))
+
+/**
+ * The variant the address names, `?project=<id>&variant=<id>` — how the
+ * suite's start page opens a project in this tool. Null without one.
+ */
+function linkedVariant() {
+  const q = new URLSearchParams(location.search)
+  return q.get('project') ? { project: q.get('project'), variant: q.get('variant') } : null
+}
 
 /** While a page's chunk is on its way. */
 function Loading() {
@@ -45,10 +56,36 @@ function Shell() {
   const [homeNote, setHomeNote] = useState(null)
   const wc = useWorkingCopy({ t })
   const viewer = useViewer({ t, fill, go: setPage, say: setHomeNote })
+  const [linked, setLinked] = useState(linkedVariant)
 
   useEffect(() => {
     document.documentElement.style.setProperty('--color-primary', loadSettings().color ?? PALETTE.primaryDefault)
   }, [])
+
+  const openVariant = async (serverProject, variant) => {
+    setHomeNote(null)
+    await wc.open(serverProject, variant)
+    setPage('map')
+  }
+
+  // Opened from a link that names a variant: once someone is signed in, that
+  // variant on the map — the main one where the link names the project only.
+  // The address loses the query, so a reload lands on the start page.
+  const ready = session.status === 'user' && !session.user.mustChangePassword
+  useEffect(() => {
+    if (!ready || !linked) return
+    setLinked(null)
+    history.replaceState(null, '', location.pathname + location.hash)
+    api.projects().then(({ projects }) => {
+      const project = projects.find(p => p.id === linked.project)
+      const variants = (project?.variants ?? []).filter(v => !v.archived)
+      const variant = variants.find(v => v.id === linked.variant) ?? variants.find(v => !v.parentVariantId)
+      if (!variant) throw Object.assign(new Error('missing'), { missing: true })
+      return openVariant(project, variant)
+    }).catch(err => setHomeNote(err.missing ? t('home_link_missing') : errorText(t, err.code ?? 'generic')))
+  // openVariant is new on every render; the link is followed once, when ready.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, linked])
 
   if (session.status === 'loading') {
     return <div className="collab-page collab-center"><p className="collab-muted">{t('home_loading')}</p></div>
@@ -80,11 +117,6 @@ function Shell() {
     )
   }
 
-  const openVariant = async (serverProject, variant) => {
-    setHomeNote(null)
-    await wc.open(serverProject, variant)
-    setPage('map')
-  }
   return (
     <StartPage user={session.user} note={homeNote}
       onOpenVariant={openVariant} onViewVariant={viewer.viewVariant}

@@ -1616,6 +1616,7 @@
   "home_new_title": "New project",
   "home_new_template_title": "New template",
   "home_loading": "Loading …",
+  "home_link_missing": "The linked project is not here, or you have no access to it.",
   "home_empty": "No projects yet. Create one with “+ New” or “Import”.",
   "home_templates": "Templates",
   "home_templates_empty": "No template yet.",

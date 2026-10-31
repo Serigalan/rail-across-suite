@@ -2,7 +2,9 @@
 
 One directory per module with its own build, named after the module: `home/` (the suite's start page: the
 sign-in, the user administration, the modules and the projects), `layout-tool/` (the Layout-Tool, which was
-the Open-Layout-Tool before it moved here in phase 0), `signalling-tool/` (the Signalling-Tool), later `catenary-tool/`,
+the Open-Layout-Tool before it moved here in phase 0), `signalling-tool/` (the Signalling-Tool),
+`simulation-tool/` (the running times of the Fahrplan-Sim, with OSRD's simulation core in Rust,
+[decision 0013](../docs/decisions/0013-running-times-in-rust.md)), later `catenary-tool/`,
 `timetable-editor/`, `capacity-sim/` (an adapter to OSRD), `construction-sim/`
 ([decision 0010](../docs/decisions/0010-one-suite-modules-by-task.md)). An app imports packages, never another app
 ([decision 0001](../docs/decisions/0001-one-repository.md)).

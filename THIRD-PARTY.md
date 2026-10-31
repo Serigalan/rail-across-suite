@@ -44,6 +44,7 @@ catalogue under Apache-2.0 has not been checked yet.
 | Software | Used for | Licence |
 |---|---|---|
 | [OSRD](https://github.com/OpenRailAssociation/osrd), OpenRail Association | the base of Open-Capacity-Sim, run as a service at a pinned version ([decision 0006](docs/decisions/0006-capacity-on-osrd.md)) | LGPL-3.0 |
+| [rail-across-sim](https://github.com/Serigalan/rail-across-sim) — OSRD's envelope simulation ported to Rust | the Simulation-Tool's running times: its WebAssembly module is built by `apps/simulation-tool/scripts/sim.mjs` into `public/sim/` (not in the history) and goes with the build beside its `NOTICE.txt`, a file of its own that can be replaced ([decision 0013](docs/decisions/0013-running-times-in-rust.md)) | LGPL-3.0-only |
 
 ## Project pictures
 

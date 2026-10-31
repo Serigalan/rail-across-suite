@@ -15,7 +15,7 @@ export const EDITORS = [
 ]
 
 export const SIMULATIONS = [
-  { id: 'timetableSim', route: 'timetable-sim', available: false, phase: 4 },
+  { id: 'timetableSim', route: 'timetable-sim', available: true, phase: 4, path: 'simulation/' },
   { id: 'capacitySim', route: 'capacity-sim', available: false, phase: 4 },
   { id: 'constructionSim', route: 'construction-sim', available: false, phase: 5 },
 ]
@@ -71,6 +71,12 @@ export function toolUrl(tool, { project, variant, action, from, to } = {}) {
 
 /** Where a variant of a project opens in a tool to be worked on. */
 export const openUrl = (tool, projectId, variantId) => toolUrl(tool, { project: projectId, variant: variantId })
+
+/** Where a variant of a project opens in a simulation that is there, or null. */
+export function simulationUrl(module, projectId, variantId) {
+  if (!module?.available || !module.path) return null
+  return `${module.path}?${new URLSearchParams({ project: projectId, variant: variantId })}`
+}
 
 /**
  * A note a tool leaves for the start page when it sends one back — that a

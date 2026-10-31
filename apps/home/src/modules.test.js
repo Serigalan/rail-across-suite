@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { EDITORS, SIMULATIONS, hashOf, openUrl, routeOf, safeNext, toolOf, toolUrl } from './modules'
+import { EDITORS, SIMULATIONS, hashOf, openUrl, routeOf, safeNext, simulationUrl, toolOf, toolUrl } from './modules'
 import { pairDefaults, splitProjects, variantTree } from './projects'
 import { TEXTS } from './i18n'
 
@@ -90,5 +90,12 @@ describe('the projects listed', () => {
     const variants = [v('2030', { parentVariantId: 'x' }), v('x'), v('2035', { parentVariantId: '2030' })]
     expect(variantTree(variants).map(r => [r.variant.id, r.depth])).toEqual([['x', 0], ['2030', 1], ['2035', 2]])
     expect(pairDefaults(variants)).toEqual({ from: 'x', to: '2030' })
+  })
+})
+
+describe('a simulation that is there', () => {
+  it('opens a variant by its address, and one still to come nowhere', () => {
+    expect(simulationUrl(SIMULATIONS[0], 'p1', 'v1')).toBe('simulation/?project=p1&variant=v1')
+    expect(simulationUrl(SIMULATIONS[1], 'p1', 'v1')).toBeNull()
   })
 })

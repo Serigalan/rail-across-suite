@@ -97,6 +97,14 @@ if [ "$build" = 1 ]; then
   step "Data (NTv2 grids, by version and SHA-256)"
   (cd apps/layout-tool && node tools/data.mjs)
 
+  step "Simulation module (rail-across-sim, from $RA_SIM_DIR)"
+  # OSRD's simulation core in Rust, LGPL-3.0, a repository of its own: built to
+  # WebAssembly with cargo and put beside the Simulation-Tool's page. Without
+  # it the suite deploys all the same, and the tool says the module is missing.
+  if ! (cd apps/simulation-tool && RA_SIM_DIR="$RA_SIM_DIR" node scripts/sim.mjs); then
+    echo "WARNING: no simulation module — the Simulation-Tool cannot compute" >&2
+  fi
+
   step "Build"
   # Built beside the site directory and then synced into it: the directory
   # itself stays (a Caddy in a container may have it bind-mounted), and the

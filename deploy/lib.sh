@@ -43,6 +43,8 @@ load_config() {
   # The site: the suite's start page (apps/home) at the root, each module's
   # app under its path (MODULE_APPS) — one directory, one address, one sign-in.
   RA_SITE_DIR=${RA_SITE_DIR:-$RA_REPO/dist}
+  # The checkout of rail-across-sim the Simulation-Tool's module is built from.
+  RA_SIM_DIR=${RA_SIM_DIR:-$(dirname "$RA_REPO")/rail-across-sim}
   RA_USER=${RA_USER:-rail-across$sfx}
   RA_DATA=${RA_DATA:-/var/lib/rail-across$sfx}
   RA_DB=${RA_DB:-$RA_DATA/rail-across.sqlite}
@@ -94,7 +96,7 @@ load_config() {
 
 # The modules' apps, each built into its path of the site: "<app directory under apps/>:<path>".
 # shellcheck disable=SC2034  # used by deploy.sh
-MODULE_APPS=(layout-tool:layout signalling-tool:signalling)
+MODULE_APPS=(layout-tool:layout signalling-tool:signalling simulation-tool:simulation)
 
 # The units of this instance, as installed (template rail-across-<x> → $RA_UNIT_PREFIX<x>).
 # shellcheck disable=SC2034  # used by setup.sh

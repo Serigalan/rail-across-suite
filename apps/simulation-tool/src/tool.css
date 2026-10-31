@@ -1,0 +1,60 @@
+/* The Simulation-Tool's own: the map, the chart and the parts of its panels.
+   What every module has — colours, buttons, fields, the shell — is the suite's
+   library (@rail-across/ui, ui.css), loaded before this. */
+
+html, body { margin: 0; background: var(--ui-surface); }
+#root { width: 100%; height: 100vh; }
+
+.tool-center { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 24px; text-align: center; }
+
+/* ── the workspace: the map over the chart ───────────────────────────── */
+
+.sim-stack { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.sim-map-wrap { position: relative; flex: 1; min-height: 200px; }
+.sim-map { position: absolute; inset: 0; }
+.sim-map-inner { width: 100%; height: 100%; }
+.sim-map-wrap .maplibregl-ctrl-bottom-left { margin-left: 4px; }
+
+.tool-fit { position: absolute; top: 10px; right: 10px; z-index: 6; }
+.tool-fit .ui-btn { background: var(--ui-bg); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12); }
+.tool-notice { position: absolute; top: 62px; left: 50%; transform: translateX(-50%); z-index: 5; max-width: min(640px, 90%); }
+.tool-notice .ui-message { background: var(--ui-bg); box-shadow: var(--ui-shadow); }
+.tool-mode {
+  position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); z-index: 5; display: flex; gap: 10px; align-items: center;
+  padding: 8px 10px 8px 14px; border-radius: 10px; background: var(--color-primary); color: #fff; font-size: var(--ui-fs-m); font-weight: 600;
+  box-shadow: var(--ui-shadow);
+}
+
+/* ── the chart ───────────────────────────────────────────────────────── */
+
+.sim-chart { flex: 0 0 auto; border-top: 1px solid var(--ui-border); background: var(--ui-bg); padding: 8px 12px 4px; }
+.sim-chart-head { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.sim-chart-box { width: 100%; overflow: hidden; }
+.sim-legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: var(--ui-fs-s); color: var(--ui-muted); }
+.sim-legend-item { display: inline-flex; align-items: center; gap: 6px; }
+.sim-grid { stroke: var(--ui-border); stroke-width: 1; }
+.sim-axis { font: 11px var(--ui-font); fill: var(--ui-muted); font-variant-numeric: tabular-nums; }
+.sim-stop { stroke: var(--ui-muted); stroke-width: 1; stroke-dasharray: 3 3; }
+.sim-line-mrsp { stroke: #8a8fa3; stroke-width: 1.5; }
+.sim-line-base { stroke: #d68910; stroke-width: 1.5; stroke-dasharray: 5 3; }
+.sim-line-final { stroke: var(--color-primary); stroke-width: 2.2; }
+.sim-at { fill: var(--color-primary); stroke: #fff; stroke-width: 2; }
+
+/* ── the panels ──────────────────────────────────────────────────────── */
+
+.sim-spec { margin: 2px 0 0; font-size: var(--ui-fs-s); }
+.sim-place { display: flex; align-items: flex-end; gap: 8px; margin-bottom: 8px; }
+.sim-place .ui-field { flex: 1; min-width: 0; }
+.sim-stop-row { display: flex; align-items: flex-end; gap: 8px; margin: 0 0 8px 12px; padding-left: 8px; border-left: 2px solid #d68910; }
+.sim-stop-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--ui-fs-m); padding-bottom: 8px; }
+.sim-stop-row .ui-field { width: 96px; }
+.sim-facts { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; margin: 0; font-size: var(--ui-fs-m); }
+.sim-facts dt { color: var(--ui-muted); }
+.sim-facts dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+.sim-table { width: 100%; border-collapse: collapse; font-size: var(--ui-fs-m); }
+.sim-table th { text-align: left; font-weight: 600; color: var(--ui-muted); font-size: var(--ui-fs-s); padding: 4px 4px; border-bottom: 1px solid var(--ui-border); }
+.sim-table td { padding: 5px 4px; border-bottom: 1px solid var(--ui-border); font-variant-numeric: tabular-nums; }
+.sim-table td:first-child { max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sim-range { width: 100%; }
+.sim-at-line { margin: 4px 0 8px; font-variant-numeric: tabular-nums; }
+.sim-credit { font-size: var(--ui-fs-s); margin-top: 16px; }

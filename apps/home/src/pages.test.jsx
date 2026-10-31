@@ -4,6 +4,7 @@ import { I18n, textsFor } from './i18n'
 import Home from './pages/Home'
 import Infrastructure from './pages/Infrastructure'
 import Planned from './pages/Planned'
+import Simulation from './pages/Simulation'
 import Admin from './pages/Admin'
 import ProjectCard from './pages/projects/ProjectCard'
 import { INFRASTRUCTURE_TOOLS } from './modules'
@@ -53,6 +54,15 @@ describe('the infrastructure editor', () => {
     expect(html).toContain('+ Variante abzweigen')
   })
 
+})
+
+describe('a simulation that is there', () => {
+  it('lists the projects, each variant opening in it', () => {
+    const html = de(<Simulation route="timetable-sim" projects={projects} />)
+    expect(html).toContain('PEK Halle–Könnern')
+    expect(html).toContain('href="simulation/?project=p1&amp;variant=v1"')
+    expect(html).toContain('Rev. 3')
+  })
 })
 
 describe('a module still to come', () => {

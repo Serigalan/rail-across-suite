@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { api } from './api'
 import { I18n, initialLanguage, keepLanguage, textsFor } from './i18n'
-import { routeOf, takeNotice } from './modules'
+import { MODULES, routeOf, takeNotice } from './modules'
 import Header from './Header'
 import Home from './pages/Home'
 import Infrastructure from './pages/Infrastructure'
 import Planned from './pages/Planned'
+import Simulation from './pages/Simulation'
 import Admin from './pages/Admin'
 import { PasswordPage } from './pages/Account'
 import '@rail-across/ui/ui.css'
@@ -80,6 +81,8 @@ export default function App() {
   }
   const forced = Boolean(user?.mustChangePassword)
   const page = forced ? 'password' : route.page
+  // A simulation that is there lists the projects to open in it.
+  const simulation = MODULES.some(m => m.route === page && m.available && m.path)
 
   return (
     <I18n.Provider value={texts}>
@@ -93,7 +96,8 @@ export default function App() {
           <PasswordPage forced={forced} onDone={passwordChanged} onCancel={() => goOn(route.next)} />
         )}
         {user && page === 'admin' && (user.role === 'admin' ? <Admin me={user} /> : <Home />)}
-        {user && !['', 'infrastructure', 'password', 'admin'].includes(page) && <Planned route={page} />}
+        {user && simulation && <Simulation route={page} projects={projects} />}
+        {user && !simulation && !['', 'infrastructure', 'password', 'admin'].includes(page) && <Planned route={page} />}
       </div>
     </I18n.Provider>
   )

@@ -189,3 +189,10 @@ html, body { margin: 0; background: var(--ui-surface); }
 .ra-disk { margin-top: 28px; }
 .ra-disk h3 { margin: 0 0 8px; font-size: 16px; }
 .ra-disk-list { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
+
+/* A simulation's page: the projects, each variant opening in it. */
+.ra-sim-project { border: 1px solid var(--ui-border); border-radius: 10px; padding: 12px 16px; background: var(--ui-bg); }
+.ra-sim-project h3 { margin: 0 0 8px; font-size: 15px; }
+.ra-sim-variants { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.ra-sim-variants li { display: flex; align-items: center; gap: 10px; font-size: var(--ui-fs-m); }
+.ra-grow { flex: 1; min-width: 0; }

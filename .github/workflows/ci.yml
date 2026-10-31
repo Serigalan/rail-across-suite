@@ -129,6 +129,25 @@ jobs:
       - run: npm test
       - run: npm run build
 
+  # The Simulation-Tool. Its simulation module (rail-across-sim, Rust) is a
+  # repository of its own; without it the test of the module is skipped.
+  simulation-tool:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: apps/simulation-tool
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+        working-directory: .
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+
   # The start page of the suite.
   home:
     runs-on: ubuntu-24.04

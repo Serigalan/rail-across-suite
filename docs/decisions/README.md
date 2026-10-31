@@ -17,3 +17,4 @@ it costs. A record is not rewritten when a decision changes; a new one replaces 
 | [0010](0010-one-suite-modules-by-task.md) | One suite on one server, signing in first; modules named by their task | accepted |
 | [0011](0011-signalling-domain.md) | The signalling domain follows PlanPro and OSRD, its content is a catalogue | accepted |
 | [0012](0012-ui-library.md) | One look for every module, as a library (`@rail-across/ui`) | accepted |
+| [0013](0013-running-times-in-rust.md) | Running times with OSRD's simulation core, ported to Rust | proposed |

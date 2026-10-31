@@ -185,6 +185,13 @@ generalised core most. Catenary follows.
 
 - `operations` domain: train types, rolling stock, train runs, stopping patterns.
 - **Open-Timetable-Tool**: timetable construction on operational points and paths.
+- **Running times** in the Fahrplan-Sim (`apps/simulation-tool/`, [decision 0013](docs/decisions/0013-running-times-in-rust.md)):
+  *done:* OSRD's envelope simulation ported to Rust (`rail-across-sim`, LGPL-3.0, a repository of its own) and
+  held to OSRD's own test cases; a train over the net of a variant — its path over switches, the grades of the
+  heights and curves, the design speeds and the speeds the signals signal, stops at signals, platforms and points
+  on the map, a margin linear or after MARECO —, run in the browser as WebAssembly on the working copy; the
+  speed and the time over the distance, the timetable of its stops, the run played on the map. *Next:* the
+  vehicles from the vehicle editor, the train runs of the `operations` domain, blocking times.
 - **Open-Capacity-Sim builds on OSRD** ([decision 0006](docs/decisions/0006-capacity-on-osrd.md)): an adapter
   from one construction stage of a project to OSRD's infrastructure and timetable, and OSRD's results back as
   derived results; OSRD at a pinned version, its adaptations contributed upstream.

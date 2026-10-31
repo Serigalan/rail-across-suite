@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import {
-  Badge, Button, Checkbox, IconButton, Message, NumberField, Panel, Rail, RailBrand, RailButton, SelectField, SelectList, Tabs,
+  Badge, Button, Checkbox, GroupedList, IconButton, Message, NumberField, Option, Options, OptionsDivider, OptionsHeading, Panel, Rail, RailBrand,
+  RailButton, SelectField, SelectList, Tabs,
 } from './index.js'
 import { PlusIcon } from './icons.jsx'
 
@@ -41,5 +42,32 @@ describe('the suite\'s components', () => {
     expect(html(<Panel title="Signale" intro="Alle Signale">x</Panel>)).toContain('<aside class="ui-panel" aria-label="Signale">')
     expect(html(<Badge tone="danger" solid>3</Badge>)).toBe('<span class="ui-badge ui-badge-danger ui-badge-solid">3</span>')
     expect(html(<Message tone="error">Nein</Message>)).toBe('<p class="ui-message ui-message-error" role="alert">Nein</p>')
+  })
+
+  it('make a panel\'s menu as the Layout-Tool\'s: options under headings, a line between, a page with its way back', () => {
+    const menu = html(<><Options><OptionsHeading>Weichen</OptionsHeading><Option end={3}>Weichenelemente</Option></Options><OptionsDivider /></>)
+    expect(menu).toContain('<span class="ui-options-heading">Weichen</span>')
+    expect(menu).toContain('<button type="button" class="ui-btn ui-btn-option"><span class="ui-grow">Weichenelemente</span><span class="ui-option-end">3</span></button>')
+    expect(menu).toContain('<hr class="ui-options-divider"/>')
+    const page = html(<Panel title="Tafel erstellen" back={{ label: 'Zurück', onClick: () => {} }}>x</Panel>)
+    expect(page).toMatch(/<button type="button" class="ui-back"><svg[^]*<\/svg>Zurück<\/button><h2>Tafel erstellen<\/h2>/)
+  })
+
+  it('list objects under their groups, folded but the one holding the chosen, with a search and the headings over them', () => {
+    const groups = [
+      { key: 'a', heading: 'Signale', title: 'Hauptsignale', items: [{ id: 'A', label: 'A', sub: 'Ks' }, { id: 'B', label: 'B' }] },
+      { key: 'b', heading: 'Signale', title: 'Vorsignale', items: [{ id: 'a', label: 'a' }] },
+      { key: 'c', heading: 'Gleisfreimeldung', title: 'Abschnitte', items: [] },
+    ]
+    const list = html(<GroupedList label="Objekte" groups={groups} selected="B" searchLabel="Suchen" empty="Nichts" />)
+    expect(list).toContain('aria-label="Suchen"')
+    expect(list.match(/ui-options-heading/g)).toHaveLength(1)
+    expect(list).toContain('aria-expanded="true"><span class="ui-group-caret open" aria-hidden="true">▸</span><span class="ui-group-title">Hauptsignale</span><span class="ui-group-count">2</span>')
+    expect(list).toContain('aria-pressed="true" class="ui-btn ui-btn-option ui-btn-small ui-group-item ui-btn-active">')
+    expect(list).toContain('<span class="ui-group-item-sub">Ks</span>')
+    expect(list).toContain('aria-expanded="false"><span class="ui-group-caret" aria-hidden="true">▸</span><span class="ui-group-title">Vorsignale</span>')
+    expect(list).not.toContain('Abschnitte')
+    expect(html(<GroupedList groups={groups} open />)).not.toContain('aria-expanded="false"')
+    expect(html(<GroupedList groups={[]} empty="Nichts" />)).toBe('<p class="ui-list-empty">Nichts</p>')
   })
 })

@@ -37,6 +37,14 @@ export function locationFrom(hit, { directed = true, direction, offset = 0 } = {
  */
 export const placing = (collection, make, apply) => ({ kind: 'place', collection, make, apply })
 
+/** Picking a section's points on the plan: a click on a point adds it, or takes it away again. */
+export const pickingPoints = (ops, sectionId) => ({
+  kind: 'pick-points',
+  toggle: (id) => ops.modify('trackSections', sectionId, (now) => ({
+    ...now, boundedBy: now.boundedBy.includes(id) ? now.boundedBy.filter(x => x !== id) : [...now.boundedBy, id],
+  })),
+})
+
 /**
  * Where a location stands in the plane: the point of its track at its
  * station, `offset` metres to its side, square to the track — { easting,

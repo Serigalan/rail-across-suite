@@ -127,9 +127,9 @@ export function newLogical({ system = 'ks', type = 'multiSection', fn = 'entry' 
 }
 
 /** A new place at a location, with what it is in one system (a Ks signal unless said otherwise), or bare. */
-export function newSignal({ at, system = 'ks', type = 'multiSection', fn = 'entry', name, bare = false }) {
+export function newSignal({ at, system = 'ks', type = 'multiSection', fn = 'entry', name, mounting = 'mast', bare = false }) {
   return withoutEmpty({
-    id: newId(), name, kind: 'real', mounting: 'mast', at,
+    id: newId(), name, kind: 'real', mounting, at,
     logicalSignals: bare ? undefined : [newLogical({ system, type, fn })],
   })
 }
@@ -182,12 +182,12 @@ export function baliseSettings(system, kind, settings = {}) {
   return out
 }
 
-/** A new balise or magnet at a location: of a system and its first kind. */
-export function newBalise({ at, system = 'pzb' }) {
-  const kind = Object.keys(protectionSystemOf(system).arten)[0]
+/** A new balise or magnet at a location: of a system and a kind (its first unless said), how it acts, the signal it belongs to. */
+export function newBalise({ at, system = 'pzb', kind = Object.keys(protectionSystemOf(system).arten)[0], effect, signalId }) {
   const settings = baliseSettings(system, kind)
   return {
-    id: newId(), at, system, kind, effect: system === 'pzb' ? 'switchedBySignal' : 'permanent',
+    id: newId(), at, system, kind, effect: effect ?? (system === 'pzb' ? 'switchedBySignal' : 'permanent'),
+    ...(signalId ? { signalId } : {}),
     ...(Object.keys(settings).length ? { settings } : {}),
   }
 }

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   Badge, Button, ConfirmDialog, FitIcon, FormDialog, IconButton, Message, Rail, RailBrand, RailButton, RailDivider, RailRow,
   RedoIcon, SaveIcon, Shell, TextField, UndoIcon, Workspace,
@@ -17,35 +17,48 @@ import { logicalSignalWord } from './labels.js'
 import { redo, startHistory, step, stepOf, stepText, travel, undo } from './model/history.js'
 import PlanView from './plan/PlanView.jsx'
 import {
-  BaliseIcon, CheckIcon, DetectionIcon, HistoryIcon, HomeIcon, ImportIcon, LayersIcon, LocationIcon, LogoIcon, RouteIcon, SettingsIcon,
+  BaliseIcon, CheckIcon, DetectionIcon, EditIcon, ExchangeIcon, HistoryIcon, HomeIcon, LayersIcon, LogoIcon, RouteIcon, SettingsIcon,
   SignalIcon, SwitchIcon,
 } from './icons.jsx'
-import LocationsPanel from './panels/LocationsPanel.jsx'
 import SignalsPanel from './panels/SignalsPanel.jsx'
 import DetectionPanel from './panels/DetectionPanel.jsx'
 import BalisesPanel from './panels/BalisesPanel.jsx'
+import EditPanel from './panels/EditPanel.jsx'
 import ElementsPanel from './panels/ElementsPanel.jsx'
 import RoutesPanel from './panels/RoutesPanel.jsx'
 import CheckPanel from './panels/CheckPanel.jsx'
-import ImportPanel from './panels/ImportPanel.jsx'
+import ExchangePanel from './panels/ExchangePanel.jsx'
 import LayersPanel, { DEFAULT_PLAN_BASEMAP } from './panels/LayersPanel.jsx'
 import HistoryPanel from './panels/HistoryPanel.jsx'
 import SettingsPanel from './panels/SettingsPanel.jsx'
 
+/**
+ * The sections of the rail, in groups the gray line parts: what creates
+ * signals, train detection and balises (`creates`: not where it only looks),
+ * the editing of all three, the switches and routes, the check and the
+ * exchange of data (not where it only looks either).
+ */
 const SECTIONS = [
-  { id: 'locations', icon: <LocationIcon />, Panel: LocationsPanel },
-  { id: 'signals', icon: <SignalIcon />, Panel: SignalsPanel },
-  { id: 'detection', icon: <DetectionIcon />, Panel: DetectionPanel },
-  { id: 'balises', icon: <BaliseIcon />, Panel: BalisesPanel },
-  { id: 'elements', icon: <SwitchIcon />, Panel: ElementsPanel },
-  { id: 'routes', icon: <RouteIcon />, Panel: RoutesPanel },
+  [
+    { id: 'signals', icon: <SignalIcon />, Panel: SignalsPanel, creates: true },
+    { id: 'detection', icon: <DetectionIcon />, Panel: DetectionPanel, creates: true },
+    { id: 'balises', icon: <BaliseIcon />, Panel: BalisesPanel, creates: true },
+  ],
+  [{ id: 'edit', icon: <EditIcon />, Panel: EditPanel }],
+  [
+    { id: 'elements', icon: <SwitchIcon />, Panel: ElementsPanel },
+    { id: 'routes', icon: <RouteIcon />, Panel: RoutesPanel },
+  ],
+  [
+    { id: 'check', icon: <CheckIcon />, Panel: CheckPanel },
+    { id: 'exchange', icon: <ExchangeIcon />, Panel: ExchangePanel, creates: true },
+  ],
 ]
 
 /** The section a collection's objects are edited in. */
 const SECTION_OF = {
-  signals: 'locations', logicalSignals: 'signals', detectionPoints: 'detection', trackSections: 'detection', balises: 'balises',
+  signals: 'edit', logicalSignals: 'edit', detectionPoints: 'edit', trackSections: 'edit', balises: 'edit',
   switchElements: 'elements', switches: 'elements', flankProtection: 'elements', routes: 'routes', overlaps: 'routes',
-  stationBoundaries: 'locations',
 }
 
 /** How long the edits rest before the working copy is written [ms]. */
@@ -53,12 +66,14 @@ const KEEP_AFTER = 250
 
 /**
  * Working on the signalling of a variant: the rail of sections on the left,
- * as the Layout-Tool orders its own — the map layers first, then the places
- * of the signals, the (logical) signals, train detection, balises and
- * magnets, the switches with their flank protection, routes with their
- * overlaps, the check and the PlanPro import; at its foot undo, the history
- * and redo, the way back to the infrastructure editor and the settings —, the
- * panel of the one chosen, the plan of the net with what the domain holds.
+ * as the Layout-Tool orders its own — the map layers first; then creating
+ * signals, train detection, balises and magnets; editing all three; the
+ * switches with their flank protection and routes with their overlaps; the
+ * check and the exchange of data; at its foot undo, the history and redo, the
+ * way back to the infrastructure editor and the settings —, the panel of the
+ * one chosen, a menu with its pages as the Layout-Tool's panels have, the
+ * plan of the net with what the domain holds. What is chosen, on the plan,
+ * in the check or after creating it, opens in the panel that edits it.
  *
  * Every edit is a step (undo, redo, the history), and is kept at once in the
  * variant's working copy in this browser — the one the Layout-Tool works on
@@ -73,7 +88,9 @@ export default function Editor({ project, variant, head, copy: opened, readOnly 
   const { t, language, setLanguage } = useTexts()
   const [copy, setCopy] = useState(() => opened ?? freshCopy(head))
   const [history, setHistory] = useState(() => startHistory(domainOf(copy.project)))
-  const [section, setSection] = useState('locations')
+  const [section, setSection] = useState(readOnly ? 'edit' : 'signals')
+  // Each time a section is chosen in the rail its panel starts at its menu again.
+  const [visit, setVisit] = useState(0)
   const [selection, setSelection] = useState(null)
   const [mode, setMode] = useState(null)
   const [dialog, setDialog] = useState(null)
@@ -154,6 +171,11 @@ export default function Editor({ project, variant, head, copy: opened, readOnly 
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [selection, readOnly])
+
+  // Picking a section's points ends where its editor is left.
+  useEffect(() => {
+    if (mode?.kind === 'pick-points' && selection?.collection !== 'trackSections') setMode(null)
+  }, [mode, selection])
 
   const highlight = useMemo(() => highlightOf(domain, selection, extents), [domain, selection, extents])
 
@@ -242,7 +264,14 @@ export default function Editor({ project, variant, head, copy: opened, readOnly 
   const redoTitle = history.future.length ? t('redo_step', { step: stepText(stepOf(history.now, history.future[0]), t) }) : t('redo')
 
   const counts = { errors: findings.errors.length, warnings: findings.warnings.length }
-  const active = SECTIONS.find(s => s.id === section)
+  const active = SECTIONS.flat().find(s => s.id === section)
+  /** A section chosen in the rail: its panel from the start, what was open in it closed. */
+  const open = (id) => {
+    setSection(id)
+    setVisit(v => v + 1)
+    setMode(null)
+    if (selection && SECTION_OF[selection.collection] === id) setSelection(null)
+  }
   const panelProps = {
     domain, net, drawing, findings, extents, selection, select: chooseFromList, ops, mode, setMode, readOnly, t, language,
     record, setNotice, setSection, basemap, setBasemap,
@@ -253,33 +282,33 @@ export default function Editor({ project, variant, head, copy: opened, readOnly 
       <Rail label={t('tool')}
         brand={<RailBrand href={projectsUrl()} label={t('infrastructure')} name={t('tool')}><LogoIcon /></RailBrand>}
         top={<>
-          <RailButton icon={<LayersIcon />} label={t('section_layers')} pressed={section === 'layers'} onClick={() => setSection('layers')} />
-          <RailDivider />
-          {SECTIONS.map(s => (
-            <RailButton key={s.id} icon={s.icon} label={t(`section_${s.id}`)} pressed={section === s.id} onClick={() => setSection(s.id)} />
+          <RailButton icon={<LayersIcon />} label={t('section_layers')} pressed={section === 'layers'} onClick={() => open('layers')} />
+          {SECTIONS.map(group => group.filter(s => !(readOnly && s.creates))).filter(group => group.length).map(group => (
+            <Fragment key={group[0].id}>
+              <RailDivider />
+              {group.map(s => (
+                <RailButton key={s.id} icon={s.icon} label={t(`section_${s.id}`)} pressed={section === s.id} onClick={() => open(s.id)}
+                  {...(s.id === 'check' ? { count: counts.errors || counts.warnings, countTone: counts.errors ? undefined : 'warn' } : {})} />
+              ))}
+            </Fragment>
           ))}
-          <RailDivider />
-          <RailButton icon={<CheckIcon />} label={t('section_check')} pressed={section === 'check'} onClick={() => setSection('check')}
-            count={counts.errors || counts.warnings} countTone={counts.errors ? undefined : 'warn'} />
-          {!readOnly && <RailButton icon={<ImportIcon />} label={t('section_import')} pressed={section === 'import'} onClick={() => setSection('import')} />}
         </>}
         bottom={<>
           {!readOnly && <>
             <RailRow>
               <RailButton bare icon={<UndoIcon />} label={undoTitle} disabled={!history.past.length} onClick={() => setHistory(undo)} />
-              <RailButton bare icon={<HistoryIcon />} label={t('step_history_title')} pressed={section === 'history'} onClick={() => setSection('history')} />
+              <RailButton bare icon={<HistoryIcon />} label={t('step_history_title')} pressed={section === 'history'} onClick={() => open('history')} />
               <RailButton bare icon={<RedoIcon />} label={redoTitle} disabled={!history.future.length} onClick={() => setHistory(redo)} />
             </RailRow>
             <RailDivider />
           </>}
           <RailButton icon={<HomeIcon />} label={t('infrastructure')} onClick={() => location.assign(projectsUrl())} />
-          <RailButton icon={<SettingsIcon />} label={t('section_settings')} pressed={section === 'settings'} onClick={() => setSection('settings')} />
+          <RailButton icon={<SettingsIcon />} label={t('section_settings')} pressed={section === 'settings'} onClick={() => open('settings')} />
         </>}
       />
       {section === 'history' ? <HistoryPanel history={history} travel={(n) => setHistory(h => travel(h, n))} t={t} />
-        : section === 'check' ? <CheckPanel {...panelProps} /> : section === 'import' ? <ImportPanel {...panelProps} />
         : section === 'layers' ? <LayersPanel {...panelProps} />
-        : section === 'settings' ? <SettingsPanel t={t} language={language} setLanguage={setLanguage} /> : <active.Panel {...panelProps} />}
+        : section === 'settings' ? <SettingsPanel t={t} language={language} setLanguage={setLanguage} /> : <active.Panel key={`${section}-${visit}`} {...panelProps} />}
       <Workspace bar={<>
         <span className="ui-topbar-title">{project.title}</span>
         <span className="ui-muted">{variant.name} · {t('revision_n', { n: copy.base.number })}</span>

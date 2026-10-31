@@ -1,25 +1,33 @@
 import { useState } from 'react'
-import { Badge, Button, Checkbox, NumberField, Panel, PlusIcon, Section, SelectField, SelectList, Tabs, TextField } from '@rail-across/ui'
+import {
+  Badge, Button, Checkbox, GroupedList, NumberField, Option, Options, OptionsDivider, OptionsHeading, Panel, PlusIcon, Section, SelectField, TextField,
+} from '@rail-across/ui'
 import { signallingSpeedOf } from '@rail-across/core/signalling'
 import { newId, labelOf, logicalId } from '../model/domain.js'
 import { measuredOverlap, overlapSpeed, withMeasuredOverlap } from '../model/overlaps.js'
 import { findRun, runAhead, switchesOnRun } from '../model/runs.js'
 import { SHUNTING_TYPE, TRAIN_TYPE, optionsOf } from '../labels.js'
+import { OverlapIcon, RouteIcon } from '../icons.jsx'
 import { CheckList, EditorHead, ObjectFindings } from './common.jsx'
 import { aspectText, trackName } from '../model/places.js'
 
+/** The kinds of route, each with the type it starts with. */
+const KINDS = { train: { trainType: 'ZZ' }, shunting: { shuntingType: 'RR' }, middle: { middleType: 'ZM' } }
+
 /**
- * Routes and their overlaps. A new route runs from its start signal to its
- * target over the shortest run the net has the way the two act; it shows the
+ * Routes and their overlaps, with a menu as the Layout-Tool's panels: a new
+ * route from a start signal to a target, over the shortest run the net has
+ * the way the two act; a new overlap ahead of a signal; the routes under
+ * their kinds and the overlaps, each opened in its editor. A route shows the
  * aspects of its start signal that are chosen, and names the overlaps at its
- * target. The speed it permits is its start signal's to signal (Signale):
+ * target. The speed it permits is its start signal's to signal (Bearbeiten):
  * here it is shown, and an overlap is measured from it — its length after the
  * speed and the gradient over it, which the heights of the tracks give. A new
  * overlap runs its length ahead of its signal, straight on at every switch;
  * its danger point lies at its end.
  */
 export default function RoutesPanel({ domain, net, findings, extents, selection, select, ops, readOnly, t, language, setNotice }) {
-  const [tab, setTab] = useState(selection?.collection === 'overlaps' ? 'overlaps' : 'routes')
+  const [page, setPage] = useState('menu')
   const { routes, overlaps, signals } = domain.collections
   const sig = (id) => signals.find(s => s.id === id)
   const sigName = (id) => labelOf('signals', sig(id), t)
@@ -27,49 +35,24 @@ export default function RoutesPanel({ domain, net, findings, extents, selection,
   const bad = new Set(findings.errors.filter(f => f.collection === 'routes' || f.collection === 'overlaps').map(f => f.id))
   const chosenRoute = selection?.collection === 'routes' ? routes.find(r => r.id === selection.id) : null
   const chosenOverlap = selection?.collection === 'overlaps' ? overlaps.find(o => o.id === selection.id) : null
-
-  const routeItems = routes.map(r => ({
-    id: r.id, title: routeName(r),
-    sub: [r.kind === 'train' ? `${t('train')} ${r.trainType ?? ''}` : r.kind === 'middle' ? t('middle') : `${t('shunting')} ${r.shuntingType ?? ''}`,
-      signallingSpeedOf(domain, r) != null ? `${signallingSpeedOf(domain, r)} km/h` : null, r.rank ? `#${r.rank}` : null].filter(Boolean).join(' · '),
-    end: bad.has(r.id) ? <Badge tone="danger">!</Badge> : null,
-  })).sort((a, b) => a.title.localeCompare(b.title, 'de', { numeric: true }))
-  const overlapItems = overlaps.map(o => ({
-    id: o.id, title: `${sigName(o.signalId)} ${o.name ?? ''}`.trim(), sub: `${o.length} m${o.speed ? ` · ${o.speed} km/h` : ''}`,
-    end: bad.has(o.id) ? <Badge tone="danger">!</Badge> : null,
-  })).sort((a, b) => a.title.localeCompare(b.title, 'de', { numeric: true }))
+  const back = { label: t('back'), onClick: () => setPage('menu') }
+  const toPage = { label: t('back'), onClick: () => select(null) }
 
   const real = signals.filter(s => s.at?.anchor === 'station')
   const signalOptions = real.map(s => ({ value: s.id, label: labelOf('signals', s, t) })).sort((a, b) => String(a.label).localeCompare(String(b.label), 'de', { numeric: true }))
 
-  const newRoute = () => {
-    const [a, b] = real
-    const route = { id: newId(), kind: 'train', trainType: 'ZZ', startSignalId: a?.id, targetSignalId: b?.id ?? a?.id, path: { trackIds: [] } }
-    const run = a && b ? findRun(net, a.at, b.at) : null
-    ops.add('routes', run ? { ...route, path: { trackIds: run } } : route)
-    setTab('routes')
-  }
-  const newOverlap = (signalId) => {
+  const newOverlap = (signalId, length = 100) => {
     const s = sig(signalId)
     if (!s) return
-    const run = runAhead(net, s.at, 100)
-    ops.add('overlaps', { id: newId(), name: 'D1', signalId, path: { trackIds: run.trackIds }, end: { anchor: 'station', ...run.end }, length: 100 })
-    setTab('overlaps')
+    const run = runAhead(net, s.at, length)
+    const name = `D${overlaps.filter(o => o.signalId === signalId).length + 1}`
+    setPage('overlaps')
+    ops.add('overlaps', { id: newId(), name, signalId, path: { trackIds: run.trackIds }, end: { anchor: 'station', ...run.end }, length })
   }
 
-  return (
-    <Panel title={t('section_routes')} intro={t('section_routes_intro')}
-      actions={!readOnly && <>
-        <Button size="small" variant="primary" icon={<PlusIcon size={14} />} disabled={real.length < 2} onClick={newRoute}>{t('new_route')}</Button>
-        <Button size="small" icon={<PlusIcon size={14} />} disabled={!real.length}
-          onClick={() => newOverlap(chosenRoute?.targetSignalId ?? (selection?.collection === 'signals' ? selection.id : real[0]?.id))}>{t('new_overlap')}</Button>
-      </>}>
-      <Tabs label={t('section_routes')} value={tab} onChange={setTab}
-        options={[{ value: 'routes', label: `${t('section_routes')} (${routes.length})` }, { value: 'overlaps', label: `${t('overlaps')} (${overlaps.length})` }]} />
-      {tab === 'routes'
-        ? <SelectList maxHeight="34vh" label={t('section_routes')} items={routeItems} selected={chosenRoute?.id} onSelect={(id) => select({ collection: 'routes', id })} empty={t('empty_list')} />
-        : <SelectList maxHeight="34vh" label={t('overlaps')} items={overlapItems} selected={chosenOverlap?.id} onSelect={(id) => select({ collection: 'overlaps', id })} empty={t('empty_list')} />}
-      {chosenRoute && (
+  if (chosenRoute) {
+    return (
+      <Panel title={t('object_routes')} back={toPage}>
         <RouteEditor key={chosenRoute.id} route={chosenRoute} name={routeName(chosenRoute)} domain={domain} net={net} findings={findings}
           signalOptions={signalOptions} readOnly={readOnly} t={t} language={language} select={select}
           onChange={(r) => ops.update('routes', r)} onDelete={() => ops.remove('routes', chosenRoute.id)} onNewOverlap={newOverlap}
@@ -78,14 +61,130 @@ export default function RoutesPanel({ domain, net, findings, extents, selection,
             if (next) ops.replaceAll(next)
             else setNotice?.({ tone: 'warn', text: t(`measure_no_${problem}`) })
           }} />
-      )}
-      {chosenOverlap && (
+      </Panel>
+    )
+  }
+  if (chosenOverlap) {
+    return (
+      <Panel title={t('object_overlaps')} back={toPage}>
         <OverlapEditor key={chosenOverlap.id} overlap={chosenOverlap} domain={domain} net={net} findings={findings} extents={extents} setNotice={setNotice}
           signalOptions={signalOptions} readOnly={readOnly} t={t}
           onChange={(o) => ops.update('overlaps', o)} onDelete={() => ops.remove('overlaps', chosenOverlap.id)} />
-      )}
+      </Panel>
+    )
+  }
+
+  if (page === 'new_route') {
+    return (
+      <Panel title={t('create_route')} intro={t('create_route_intro')} back={back}>
+        <NewRoute signalOptions={signalOptions} t={t} language={language}
+          onCreate={(r) => {
+            const a = sig(r.startSignalId), b = sig(r.targetSignalId)
+            const run = a && b ? findRun(net, a.at, b.at) : null
+            setPage('routes')
+            ops.add('routes', { ...r, id: newId(), path: { trackIds: run ?? [] } })
+          }} />
+      </Panel>
+    )
+  }
+  if (page === 'new_overlap') {
+    return (
+      <Panel title={t('create_overlap')} intro={t('create_overlap_intro')} back={back}>
+        <NewOverlap signalOptions={signalOptions} t={t} onCreate={newOverlap} />
+      </Panel>
+    )
+  }
+
+  if (page === 'routes') {
+    const item = (r) => ({
+      id: r.id, label: routeName(r),
+      sub: [r.trainType ?? r.shuntingType ?? r.middleType, signallingSpeedOf(domain, r) != null ? `${signallingSpeedOf(domain, r)} km/h` : null, r.rank ? `#${r.rank}` : null].filter(Boolean).join(' · '),
+      end: bad.has(r.id) ? <Badge tone="danger">!</Badge> : null,
+    })
+    return (
+      <Panel title={t('section_routes')} intro={t('routes_list_intro')} back={back}>
+        <GroupedList label={t('section_routes')} open searchLabel={t('search_objects')} noneFound={t('search_none')} empty={t('empty_list')}
+          groups={Object.keys(KINDS).map(kind => ({
+            key: kind, title: t(`routes_${kind}`),
+            items: routes.filter(r => r.kind === kind).map(item).sort((a, b) => a.label.localeCompare(b.label, 'de', { numeric: true })),
+          }))}
+          onSelect={(id) => select({ collection: 'routes', id })} />
+      </Panel>
+    )
+  }
+  if (page === 'overlaps') {
+    return (
+      <Panel title={t('overlaps')} intro={t('overlaps_list_intro')} back={back}>
+        <GroupedList label={t('overlaps')} open searchLabel={t('search_objects')} noneFound={t('search_none')} empty={t('empty_list')}
+          groups={[{
+            key: 'overlaps', title: t('overlaps'),
+            items: overlaps.map(o => ({
+              id: o.id, label: `${sigName(o.signalId)} ${o.name ?? ''}`.trim(), sub: `${o.length} m${o.speed ? ` · ${o.speed} km/h` : ''}`,
+              end: bad.has(o.id) ? <Badge tone="danger">!</Badge> : null,
+            })).sort((a, b) => a.label.localeCompare(b.label, 'de', { numeric: true })),
+          }]}
+          onSelect={(id) => select({ collection: 'overlaps', id })} />
+      </Panel>
+    )
+  }
+
+  return (
+    <Panel title={t('section_routes')} intro={t('section_routes_intro')}>
+      {!readOnly && <>
+        <Options>
+          <OptionsHeading>{t('menu_create')}</OptionsHeading>
+          <Option icon={<RouteIcon />} disabled={real.length < 2} onClick={() => setPage('new_route')}>{t('create_route')}</Option>
+          <Option icon={<OverlapIcon />} disabled={!real.length} onClick={() => setPage('new_overlap')}>{t('create_overlap')}</Option>
+        </Options>
+        <OptionsDivider />
+      </>}
+      <Options>
+        <OptionsHeading>{t('section_edit')}</OptionsHeading>
+        <Option icon={<RouteIcon />} end={routes.length} onClick={() => setPage('routes')}>{t('section_routes')}</Option>
+        <Option icon={<OverlapIcon />} end={overlaps.length} onClick={() => setPage('overlaps')}>{t('overlaps')}</Option>
+      </Options>
     </Panel>
   )
+}
+
+/** A new route: its kind and type, its start and target signal. */
+function NewRoute({ signalOptions, onCreate, t, language }) {
+  const [kind, setKind] = useState('train')
+  const [type, setType] = useState('ZZ')
+  const [start, setStart] = useState(signalOptions[0]?.value ?? null)
+  const [target, setTarget] = useState(signalOptions[1]?.value ?? null)
+  const typeField = kind === 'train' ? 'trainType' : kind === 'shunting' ? 'shuntingType' : 'middleType'
+  return <>
+    <div className="ui-fields">
+      <SelectField compact label={t('route_kind')} value={kind}
+        options={Object.keys(KINDS).map(k => ({ value: k, label: t(k) }))}
+        onChange={(v) => { setKind(v); setType(Object.values(KINDS[v])[0]) }} />
+      {kind === 'train' && <SelectField compact label={t('train_type')} value={type} options={optionsOf(TRAIN_TYPE, language)} onChange={setType} />}
+      {kind === 'shunting' && <SelectField compact label={t('shunting_type')} value={type} options={optionsOf(SHUNTING_TYPE, language)} onChange={setType} />}
+      <SelectField compact wide label={t('start_signal')} value={start} options={signalOptions} onChange={setStart} />
+      <SelectField compact wide label={t('target_signal')} value={target} options={signalOptions} onChange={setTarget} />
+    </div>
+    <div className="ui-row">
+      <Button variant="primary" icon={<PlusIcon size={14} />} disabled={!start || !target || start === target}
+        onClick={() => onCreate({ kind, [typeField]: type, startSignalId: start, targetSignalId: target })}>{t('create')}</Button>
+    </div>
+  </>
+}
+
+/** A new overlap: the signal it lies ahead of, its length. */
+function NewOverlap({ signalOptions, onCreate, t }) {
+  const [signalId, setSignalId] = useState(signalOptions[0]?.value ?? null)
+  const [length, setLength] = useState(100)
+  return <>
+    <div className="ui-fields">
+      <SelectField compact wide label={t('at_signal')} value={signalId} options={signalOptions} onChange={setSignalId} />
+      <NumberField compact label={t('length')} value={length} min={1} onChange={(v) => setLength(v ?? 100)} />
+    </div>
+    <p className="ui-muted">{t('create_overlap_hint')}</p>
+    <div className="ui-row">
+      <Button variant="primary" icon={<PlusIcon size={14} />} disabled={!signalId} onClick={() => onCreate(signalId, length)}>{t('create')}</Button>
+    </div>
+  </>
 }
 
 function RouteEditor({ route, name, domain, net, findings, signalOptions, onChange, onDelete, onNewOverlap, onMeasure, select, readOnly, t, language }) {

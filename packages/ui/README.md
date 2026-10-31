@@ -21,7 +21,8 @@ import { Button, Panel, Rail, RailButton, Shell, Workspace } from '@rail-across/
 | Feedback | `Badge`, `Message` (errors announced) | `ui-badge`, `ui-message`, `ui-muted`, `ui-error` |
 | Dialogs | `Dialog` (focus kept inside, Escape and a click beside close it), `FormDialog`, `ConfirmDialog` | `ui-overlay`, `ui-dialog`, `ui-actions` |
 | Choosing | `Tabs` (arrow keys), `SelectList` (rows with a mark, title, line below, badges; scrolling within `maxHeight`) | `ui-tabs`, `ui-list` |
-| Menus | — | `ui-menu`, `ui-menu-list` |
+| Menus | — | `ui-menu`, `ui-menu-list` (a menu that drops down) |
+| A panel's menu | `Options`, `OptionsHeading`, `Option` (a symbol, its words, a count after them), `OptionsDivider`; `Panel` with `back` for a page under it; `GroupedList` (objects under groups that fold away with their counts, headings over them, a search) — as the Layout-Tool's panels | `ui-options`, `ui-back`, `ui-grouped`, `ui-group` |
 | The shell of a tool | `Shell`, `Rail`, `RailBrand`, `RailButton` (named beside its symbol, with a count), `RailRow`, `RailDivider`, `Panel`, `Section`, `Workspace` | `ui-shell`, `ui-rail`, `ui-panel`, `ui-workspace`, `ui-topbar` |
 | Symbols | `PlusIcon`, `TrashIcon`, `CloseIcon`, `CheckIcon`, `BackIcon`, `UndoIcon`, `RedoIcon`, `UploadIcon`, `DownloadIcon`, `SaveIcon`, `WarningIcon`, `SearchIcon`, `FitIcon`, `HelpIcon` | — |
 

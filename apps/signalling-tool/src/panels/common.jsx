@@ -87,3 +87,17 @@ export function ObjectFindings({ findings, collection, id, t, only = () => true 
     </ul>
   )
 }
+
+/**
+ * What was just created on a page that creates: its name, and the way to its
+ * editor; the page stays, to create the next one.
+ */
+export function Created({ what, onEdit, t }) {
+  if (!what) return null
+  return (
+    <div className="tool-created" role="status">
+      <span className="ui-grow">{t('created', { what })}</span>
+      <Button size="small" onClick={onEdit}>{t('edit_it')}</Button>
+    </div>
+  )
+}

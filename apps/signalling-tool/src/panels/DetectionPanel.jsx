@@ -1,115 +1,77 @@
-import { useMemo, useState } from 'react'
-import { Badge, Button, Checkbox, Panel, PlusIcon, Section, SelectField, SelectList, Tabs, TextField } from '@rail-across/ui'
-import { newId, labelOf } from '../model/domain.js'
-import { POINT_KIND, SECTION_KIND, optionsOf, word } from '../labels.js'
-import { CheckList, EditorHead, LocationFields, ObjectFindings } from './common.jsx'
-import { locationFrom, placing, trackName } from '../model/places.js'
+import { useState } from 'react'
+import { Button, Option, Options, Panel, SelectField, TextField } from '@rail-across/ui'
+import { labelOf, newId } from '../model/domain.js'
+import { POINT_KIND, SECTION_KIND, optionsOf } from '../labels.js'
+import { DetectionIcon, SectionIcon } from '../icons.jsx'
+import { Created } from './common.jsx'
+import { locationFrom, pickingPoints, placing } from '../model/places.js'
 
 /**
- * Train detection: the points that bound sections — axle counters, joints —
- * and the sections, each bounded by its points; its extent over the net is
- * derived and drawn when it is chosen. A section's points are picked from the
- * list or clicked on the plan.
+ * Creating train detection: a detection point — an axle counter, a joint —
+ * set on the plan, its page staying for the next one; a track section, of a
+ * kind, whose points are then clicked on the plan — it opens in its editor
+ * (Bearbeiten) for that.
  */
-export default function DetectionPanel({ domain, net, findings, extents, selection, select, ops, setMode, mode, readOnly, t, language }) {
-  const [tab, setTab] = useState(selection?.collection === 'detectionPoints' ? 'points' : 'sections')
-  const { detectionPoints: points, trackSections: sections } = domain.collections
-  const pointName = useMemo(() => new Map(points.map(p => [p.id, labelOf('detectionPoints', p, t)])), [points, t])
-  const chosenPoint = selection?.collection === 'detectionPoints' ? points.find(p => p.id === selection.id) : null
-  const chosenSection = selection?.collection === 'trackSections' ? sections.find(s => s.id === selection.id) : null
-  const warned = new Set(findings.warnings.filter(f => f.collection === 'trackSections').map(f => f.id))
+export default function DetectionPanel({ domain, net, ops, select, setMode, t, language }) {
+  const [page, setPage] = useState('menu')
+  const [made, setMade] = useState(null)
+  const [pointKind, setPointKind] = useState('axleCounter')
+  const [sectionKind, setSectionKind] = useState('axleCounting')
+  const [name, setName] = useState('')
+  const go = (next) => { setMade(null); setName(''); setPage(next) }
+  const back = { label: t('back'), onClick: () => go('menu') }
+  const points = domain.collections.detectionPoints
 
-  const sectionItems = sections.map(s => {
-    const ext = extents.get(s.id)
-    const m = ext ? Math.round(ext.parts.reduce((sum, p) => sum + (p.to - p.from), 0)) : 0
-    return {
-      id: s.id, title: labelOf('trackSections', s, t),
-      sub: `${word(SECTION_KIND, s.kind, language)} · ${s.boundedBy.length} × · ${m} m`,
-      end: warned.has(s.id) ? <Badge tone="warn">!</Badge> : null,
-    }
-  }).sort((a, b) => String(a.title).localeCompare(String(b.title), 'de', { numeric: true }))
-  const pointItems = points.map(p => ({
-    id: p.id, title: pointName.get(p.id),
-    sub: [word(POINT_KIND, p.kind, language), p.at?.anchor === 'station' ? `${trackName(net, p.at.trackId)} · ${Math.round(p.at.station)} m` : t('orphan')].join(' · '),
-  })).sort((a, b) => String(a.title).localeCompare(String(b.title), 'de', { numeric: true }))
+  if (page === 'point') {
+    return (
+      <Panel title={t('create_point')} intro={t('create_point_intro')} back={back}>
+        <div className="ui-fields">
+          <SelectField compact label={t('kind')} value={pointKind} options={optionsOf(POINT_KIND, language)} onChange={(v) => setPointKind(v ?? 'axleCounter')} />
+          <TextField compact label={t('name')} value={name} onChange={setName} />
+        </div>
+        <div className="ui-row">
+          <Button variant="primary" disabled={!net.tracks.length}
+            onClick={() => setMode(placing('detectionPoints', (hit) => ({ id: newId(), name: name || undefined, kind: pointKind, at: locationFrom(hit, { directed: false }) }), (p) => {
+              ops.add('detectionPoints', p)
+              setMade({ id: p.id, what: labelOf('detectionPoints', p, t) })
+            }))}>
+            {t('place_on_map')}
+          </Button>
+        </div>
+        <Created what={made?.what} t={t} onEdit={() => select({ collection: 'detectionPoints', id: made.id })} />
+      </Panel>
+    )
+  }
 
-  const pickPoints = (section) => setMode({
-    kind: 'pick-points',
-    toggle: (id) => ops.modify('trackSections', section.id, (now) => ({
-      ...now, boundedBy: now.boundedBy.includes(id) ? now.boundedBy.filter(x => x !== id) : [...now.boundedBy, id],
-    })),
-  })
+  if (page === 'section') {
+    return (
+      <Panel title={t('create_section')} intro={t('create_section_intro')} back={back}>
+        <div className="ui-fields">
+          <SelectField compact wide label={t('kind')} value={sectionKind} options={optionsOf(SECTION_KIND, language)} onChange={(v) => setSectionKind(v ?? 'axleCounting')} />
+          <TextField compact wide label={t('name')} value={name} onChange={setName} />
+        </div>
+        {!points.length && <p className="ui-muted">{t('create_section_no_points')}</p>}
+        <div className="ui-row">
+          <Button variant="primary" disabled={!points.length}
+            onClick={() => {
+              const s = { id: newId(), name: name || undefined, kind: sectionKind, boundedBy: [] }
+              ops.add('trackSections', s)
+              select({ collection: 'trackSections', id: s.id })
+              setMode(pickingPoints(ops, s.id))
+            }}>
+            {t('create_and_pick')}
+          </Button>
+        </div>
+      </Panel>
+    )
+  }
 
   return (
-    <Panel title={t('section_detection')} intro={t('section_detection_intro')}
-      actions={!readOnly && <>
-        <Button size="small" variant="primary" icon={<PlusIcon size={14} />} disabled={!net.tracks.length}
-          onClick={() => setMode(placing('detectionPoints', (hit) => ({ id: newId(), kind: 'axleCounter', at: locationFrom(hit, { directed: false }) }), (p) => ops.add('detectionPoints', p)))}>
-          {t('new_point')}
-        </Button>
-        <Button size="small" icon={<PlusIcon size={14} />} disabled={!points.length}
-          onClick={() => { const s = { id: newId(), kind: 'axleCounting', boundedBy: [] }; ops.add('trackSections', s); setTab('sections'); pickPoints(s) }}>
-          {t('new_section')}
-        </Button>
-      </>}>
-      <Tabs label={t('section_detection')} value={tab} onChange={setTab}
-        options={[{ value: 'sections', label: `${t('track_sections')} (${sections.length})` }, { value: 'points', label: `${t('detection_points')} (${points.length})` }]} />
-      {tab === 'sections'
-        ? <SelectList maxHeight="34vh" label={t('track_sections')} items={sectionItems} selected={chosenSection?.id} onSelect={(id) => select({ collection: 'trackSections', id })} empty={t('empty_list')} />
-        : <SelectList maxHeight="34vh" label={t('detection_points')} items={pointItems} selected={chosenPoint?.id} onSelect={(id) => select({ collection: 'detectionPoints', id })} empty={t('empty_list')} />}
-
-      {chosenSection && (
-        <div className="tool-editor" key={chosenSection.id}>
-          <EditorHead title={labelOf('trackSections', chosenSection, t)} readOnly={readOnly} t={t} onDelete={() => ops.remove('trackSections', chosenSection.id)} />
-          <ObjectFindings findings={findings} collection="trackSections" id={chosenSection.id} t={t} />
-          <div className="ui-fields">
-            <TextField compact label={t('name')} value={chosenSection.name ?? ''} disabled={readOnly} onChange={(v) => ops.update('trackSections', { ...chosenSection, name: v || undefined })} />
-            <TextField compact label={t('area')} value={chosenSection.areaNumber ?? ''} disabled={readOnly} onChange={(v) => ops.update('trackSections', { ...chosenSection, areaNumber: v || undefined })} />
-            <SelectField compact wide label={t('kind')} value={chosenSection.kind} options={optionsOf(SECTION_KIND, language)} disabled={readOnly}
-              onChange={(v) => ops.update('trackSections', { ...chosenSection, kind: v })} />
-            <div className="ui-wide"><Checkbox label={t('auxiliary_clearing')} checked={chosenSection.auxiliaryClearing} disabled={readOnly}
-              onChange={(v) => ops.update('trackSections', { ...chosenSection, auxiliaryClearing: v || undefined })} /></div>
-          </div>
-          <Section title={t('extent')}>
-            <ExtentText extent={extents.get(chosenSection.id)} t={t} />
-          </Section>
-          <Section title={t('bounded_by')} actions={!readOnly && (
-            <Button size="small" active={mode?.kind === 'pick-points'} onClick={() => (mode?.kind === 'pick-points' ? setMode(null) : pickPoints(chosenSection))}>{t('pick_points')}</Button>
-          )}>
-            <CheckList readOnly={readOnly} value={chosenSection.boundedBy}
-              options={[...points].sort((a, b) => String(pointName.get(a.id)).localeCompare(String(pointName.get(b.id)), 'de', { numeric: true }))
-                .map(p => ({ value: p.id, label: pointName.get(p.id) }))}
-              onChange={(boundedBy) => ops.update('trackSections', { ...chosenSection, boundedBy })} />
-          </Section>
-        </div>
-      )}
-
-      {chosenPoint && (
-        <div className="tool-editor" key={chosenPoint.id}>
-          <EditorHead title={pointName.get(chosenPoint.id)} readOnly={readOnly} t={t} onDelete={() => ops.remove('detectionPoints', chosenPoint.id)} />
-          <ObjectFindings findings={findings} collection="detectionPoints" id={chosenPoint.id} t={t} />
-          <div className="ui-fields">
-            <TextField compact label={t('name')} value={chosenPoint.name ?? ''} disabled={readOnly} onChange={(v) => ops.update('detectionPoints', { ...chosenPoint, name: v || undefined })} />
-            <SelectField compact label={t('kind')} value={chosenPoint.kind} options={optionsOf(POINT_KIND, language)} disabled={readOnly}
-              onChange={(v) => ops.update('detectionPoints', { ...chosenPoint, kind: v })} />
-          </div>
-          <Section title={t('location')}>
-            <LocationFields loc={chosenPoint.at} net={net} t={t} directed={false} readOnly={readOnly}
-              onChange={(at) => ops.update('detectionPoints', { ...chosenPoint, at })}
-              onPlace={() => setMode(placing('detectionPoints', (hit) => ({ ...chosenPoint, at: locationFrom(hit, { directed: false, offset: chosenPoint.at?.offset }) }), (p) => ops.update('detectionPoints', p)))} />
-          </Section>
-          <p className="ui-muted">{t('track_sections')}: {sections.filter(s => s.boundedBy.includes(chosenPoint.id)).map(s => labelOf('trackSections', s, t)).join(', ') || t('none')}</p>
-        </div>
-      )}
+    <Panel title={t('section_detection')} intro={t('section_detection_intro')}>
+      <Options>
+        <Option icon={<DetectionIcon />} onClick={() => go('point')}>{t('create_point')}</Option>
+        <Option icon={<SectionIcon />} onClick={() => go('section')}>{t('create_section')}</Option>
+      </Options>
     </Panel>
   )
-}
-
-function ExtentText({ extent, t }) {
-  if (!extent) return null
-  const m = Math.round(extent.parts.reduce((sum, p) => sum + (p.to - p.from), 0))
-  return <>
-    <p className="ui-muted">{t('extent_m', { m, n: new Set(extent.parts.map(p => p.trackId)).size })}</p>
-    {!extent.matches && <p className="ui-message ui-message-warn">{t('extent_differs')}</p>}
-  </>
 }

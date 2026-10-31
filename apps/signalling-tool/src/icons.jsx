@@ -20,6 +20,20 @@ export const SwitchIcon = () => <Svg><path d="M3 16h18" /><path d="M8 16c4 0 7-2
 export const RouteIcon = () => <Svg><path d="M4 18c5 0 5-12 11-12h5" /><path d="M17 3l3 3-3 3" /><circle cx="4" cy="18" r="2" /></Svg>
 /** A balise or track magnet between the rails, sending upwards. */
 export const BaliseIcon = () => <Svg><path d="M3 17h18" /><rect x="8" y="11" width="8" height="4" rx="1" /><path d="M10 8l2-2 2 2M10 5l2-2 2 2" /></Svg>
+/** A board on its post: a plate with a mark. */
+export const BoardIcon = () => <Svg><rect x="6" y="3" width="12" height="9" rx="1" /><path d="M9 7.5h6" /><path d="M12 12v10M8 22h8" /></Svg>
+/** A virtual signal: a place without a mast, dashed. */
+export const VirtualIcon = () => <Svg><rect x="7" y="3" width="10" height="13" rx="3" strokeDasharray="2.5 2.5" /><path d="M12 16v6" strokeDasharray="2 2" /></Svg>
+/** A track section between its two detection points. */
+export const SectionIcon = () => <Svg><path d="M2 15h20" /><path d="M5 11v8M19 11v8" /><path d="M5 7h14M7.5 5L5 7l2.5 2M16.5 5L19 7l-2.5 2" /></Svg>
+/** A derailer on its rail. */
+export const DerailerIcon = () => <Svg><path d="M2 16h20" /><path d="M8 16l4-6h4l-2 6" /></Svg>
+/** An overlap: the run on past the signal to its danger point. */
+export const OverlapIcon = () => <Svg><path d="M3 16h14" strokeDasharray="0" /><path d="M17 16h4" strokeDasharray="1.5 2" /><path d="M5 16V6" /><rect x="3" y="3" width="4" height="6" rx="1.5" /><path d="M21 12v8" /></Svg>
+/** Editing: a pencil. */
+export const EditIcon = () => <Svg><path d="M4 20l1-4L16 5l3 3L8 19z" /><path d="M14 7l3 3" /></Svg>
+/** Data exchange: a file going out and one coming in. */
+export const ExchangeIcon = () => <Svg><path d="M4 8h13M14 4l4 4-4 4" /><path d="M20 16H7M10 12l-4 4 4 4" /></Svg>
 /** Map layers: a folded map, as the Layout-Tool draws it. */
 export const LayersIcon = () => <Svg><path d="M3 6 L9 3.5 L15 6 L21 3.5 V18 L15 20.5 L9 18 L3 20.5 Z" /><path d="M9 3.5 V18 M15 6 V20.5" /></Svg>
 /** The settings: three sliders, as the Layout-Tool draws them. */

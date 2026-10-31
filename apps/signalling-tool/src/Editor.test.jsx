@@ -3,9 +3,8 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { straightElement } from '@rail-across/core/geometry'
 import { I18n, textsFor } from './i18n.js'
 import Editor from './Editor.jsx'
-import BalisesPanel from './panels/BalisesPanel.jsx'
+import EditPanel from './panels/EditPanel.jsx'
 import SettingsPanel from './panels/SettingsPanel.jsx'
-import SignalsPanel from './panels/SignalsPanel.jsx'
 import RoutesPanel from './panels/RoutesPanel.jsx'
 import { logicalId } from './model/domain.js'
 import { linkedRequest } from './suite.js'
@@ -36,6 +35,14 @@ const record = {
   },
 }
 
+/** The editing panel, with `selection` chosen. */
+const edit = (selection, language = 'de', domain = record.signalling) => renderToStaticMarkup(
+  <I18n.Provider value={textsFor(language)}>
+    <EditPanel domain={domain} net={{ tracks: record.tracks, switches: [] }} findings={{ errors: [], warnings: [] }} extents={new Map()}
+      selection={selection} select={() => {}} ops={{}} setMode={() => {}} readOnly={false} {...textsFor(language)} />
+  </I18n.Provider>,
+)
+
 const render = (props = {}, language = 'de') => renderToStaticMarkup(
   <I18n.Provider value={{ ...textsFor(language), setLanguage: () => {} }}>
     <Editor project={{ id: record.id, title: record.title }} variant={{ id: 'v1', name: 'Bestand' }}
@@ -44,11 +51,13 @@ const render = (props = {}, language = 'de') => renderToStaticMarkup(
 )
 
 describe('the Signalling-Tool', () => {
-  it('shows the rail, the places and the plan of a variant, the check counting its findings', () => {
+  it('opens at creating signals, with the plan of a variant and the check counting its findings', () => {
     const html = render()
-    expect(html).toContain('aria-label="Standorte"')
-    expect(html).toContain('<span class="ui-list-title">A</span>')
-    expect(html).toContain('<span class="ui-list-title">N1</span>')
+    expect(html).toContain('aria-label="Signale"')
+    expect(html).toContain('Signalmast erstellen')
+    expect(html).toContain('Tafel erstellen')
+    expect(html).toContain('Logisches Signal erstellen')
+    expect(html).toContain('Fiktives Signal erstellen')
     expect(html).toContain('class="plan-map"')
     expect(html).toContain('aria-label="Kartenebenen"')
     expect(html).toContain('<span class="ui-rail-count" aria-hidden="true">')
@@ -66,10 +75,14 @@ describe('the Signalling-Tool', () => {
     expect(html).not.toContain('Startseite')
   })
 
-  it('offers no editing where it only looks', () => {
+  it('offers no creating and no editing where it only looks, and opens at the overview', () => {
     const html = render({ readOnly: true })
     expect(html).toContain('Nur ansehen')
-    expect(html).not.toContain('Neues Signal')
+    expect(html).not.toContain('Signalmast erstellen')
+    expect(html).not.toContain('<span class="ui-rail-label">Gleisfreimeldung</span>')
+    expect(html).not.toContain('<span class="ui-rail-label">Datenaustausch</span>')
+    expect(html).toContain('<h2>Bearbeiten</h2>')
+    expect(html).toContain('<span class="ui-group-title">Hauptsignale</span><span class="ui-group-count">2</span>')
     expect(html).not.toContain('Einchecken')
   })
 
@@ -77,9 +90,11 @@ describe('the Signalling-Tool', () => {
     const html = render({}, 'en')
     expect(html).toContain('<span class="ui-rail-label">Signals</span>')
     expect(html).toContain('<span class="ui-rail-label">Balises/magnets</span>')
-    expect(html).toContain('Ks multi-section signal')
+    expect(html).toContain('Create signal mast')
     expect(html).toContain('aria-label="Settings"')
-    expect(html).not.toContain('Mehrabschnittssignal')
+    const logical = edit({ collection: 'logicalSignals', id: logicalId('s-a', 'ks') }, 'en')
+    expect(logical).toContain('Ks multi-section signal')
+    expect(logical).not.toContain('Mehrabschnittssignal')
   })
 
   it('orders its rail as the Layout-Tool does: the map layers first, the settings at the foot', () => {
@@ -94,12 +109,7 @@ describe('the Signalling-Tool', () => {
   it('edits a balise or magnet by the settings its system declares, in the language set', () => {
     const balise = { id: 'b1', at: on('t1', 20), system: 'pzb', kind: 'speedCheck', settings: { frequency: '2000', testSpeed: 50, measuringLength: 21 }, effect: 'switchedBySignal', signalId: 's-a' }
     const domain = { ...record.signalling, collections: { ...record.signalling.collections, balises: [balise] } }
-    const panel = (language) => renderToStaticMarkup(
-      <I18n.Provider value={textsFor(language)}>
-        <BalisesPanel domain={domain} net={{ tracks: record.tracks, switches: [] }} findings={{ errors: [], warnings: [] }}
-          selection={{ collection: 'balises', id: 'b1' }} select={() => {}} ops={{}} setMode={() => {}} readOnly={false} {...textsFor(language)} />
-      </I18n.Provider>,
-    )
+    const panel = (language) => edit({ collection: 'balises', id: 'b1' }, language, domain)
     const en = panel('en')
     expect(en).toContain('Speed check · 2000 Hz')
     expect(en).toContain('Test speed [km/h]')
@@ -108,14 +118,35 @@ describe('the Signalling-Tool', () => {
     expect(panel('de')).toContain('Geschwindigkeitsprüfung · 2000 Hz')
   })
 
-  it('has the six sections in the order of the work, the switches with their flank protection', () => {
+  it('has its sections in the order of the work, in groups the gray line parts', () => {
     const html = render()
-    const at = (label) => html.indexOf(`<span class="ui-rail-label">${label}</span>`)
-    const order = ['Standorte', 'Signale', 'Gleisfreimeldung', 'Balisen/Magnete', 'Weichen', 'Fahrstraßen'].map(at)
+    const rail = html.slice(html.indexOf('<nav class="ui-rail"'), html.indexOf('</nav>'))
+    const at = (label) => rail.indexOf(`<span class="ui-rail-label">${label}</span>`)
+    const order = ['Kartenebenen', 'Signale', 'Gleisfreimeldung', 'Balisen/Magnete', 'Bearbeiten', 'Weichen', 'Fahrstraßen', 'Prüfung', 'Datenaustausch', 'Infrastruktur-Editor', 'Einstellungen'].map(at)
     expect(order.every(i => i > 0)).toBe(true)
     expect([...order].sort((a, b) => a - b)).toEqual(order)
-    expect(html).not.toContain('Geschwindigkeiten')
-    expect(html).not.toContain('>Flankenschutz<')
+    // A line after the map layers, after balises, after editing, after routes, and above the foot.
+    const lines = [...rail.matchAll(/ui-rail-divider/g)].map(m => m.index)
+    for (const [before, after] of [[0, 1], [3, 4], [4, 5], [6, 7]]) expect(lines.some(i => i > order[before] && i < order[after])).toBe(true)
+    expect(lines.some(i => i > order[1] && i < order[3])).toBe(false)
+    expect(rail).not.toContain('Standorte')
+    expect(rail).not.toContain('>Flankenschutz<')
+  })
+
+  it('edits signals, train detection and balises in one overview under their kinds', () => {
+    const html = edit(null)
+    expect(html).toContain('<h2>Bearbeiten</h2>')
+    expect(html).toContain('<span class="ui-options-heading">Signale</span>')
+    expect(html).toContain('aria-label="Suchen: Name, Gleis, Art …"')
+    expect(html).toContain('<span class="ui-group-title">Hauptsignale</span><span class="ui-group-count">2</span>')
+    // A signal mast opens in its editor, the way back leading to the overview; its logical signals open from it.
+    const mast = edit({ collection: 'signals', id: 's-a' })
+    expect(mast).toContain('<h2>Signalmast</h2>')
+    expect(mast).toContain('Zurück</button>')
+    expect(mast).toContain('Ks-Mehrabschnittssignal')
+    const logical = edit({ collection: 'logicalSignals', id: logicalId('s-a', 'ks') })
+    expect(logical).toContain('<h2>Logisches Signal</h2>')
+    expect(logical).toMatch(/class="ui-back"[^>]*>.*A<\/button>/)
   })
 
   it('says how many changes the working copy holds and offers to update, discard and check in', () => {
@@ -128,13 +159,8 @@ describe('the Signalling-Tool', () => {
     expect(render()).toContain('alles eingecheckt')
   })
 
-  it('edits a logical signal: its place, kind, function, screen and the speed it signals per route', () => {
-    const panel = (language) => renderToStaticMarkup(
-      <I18n.Provider value={textsFor(language)}>
-        <SignalsPanel domain={record.signalling} net={{ tracks: record.tracks, switches: [] }} findings={{ errors: [], warnings: [] }}
-          selection={{ collection: 'logicalSignals', id: logicalId('s-a', 'ks') }} select={() => {}} ops={{}} setMode={() => {}} readOnly={false} {...textsFor(language)} />
-      </I18n.Provider>,
-    )
+  it('edits a logical signal: its mast, kind, function, screen and the speed it signals per route', () => {
+    const panel = (language) => edit({ collection: 'logicalSignals', id: logicalId('s-a', 'ks') }, language)
     const de = panel('de')
     expect(de).toContain('A · Ks-Mehrabschnittssignal')
     expect(de).toContain('Signalisierte Geschwindigkeit je Fahrstraße')
@@ -143,7 +169,16 @@ describe('the Signalling-Tool', () => {
     expect(panel('en')).toContain('Signalled speed per route')
   })
 
-  it('shows a route\'s signalled speed and offers to determine its overlap from it', () => {
+  it('lists the routes under a menu, and shows a route\'s signalled speed and offers to determine its overlap from it', () => {
+    const menu = renderToStaticMarkup(
+      <I18n.Provider value={textsFor('de')}>
+        <RoutesPanel domain={record.signalling} net={{ tracks: record.tracks, switches: [] }} findings={{ errors: [], warnings: [] }} extents={new Map()}
+          selection={null} select={() => {}} ops={{}} setMode={() => {}} readOnly={false} {...textsFor('de')} />
+      </I18n.Provider>,
+    )
+    expect(menu).toContain('Fahrstraße erstellen')
+    expect(menu).toContain('Durchrutschweg erstellen')
+    expect(menu).toContain('<span class="ui-grow">Fahrstraßen</span><span class="ui-option-end">1</span>')
     const html = renderToStaticMarkup(
       <I18n.Provider value={textsFor('de')}>
         <RoutesPanel domain={record.signalling} net={{ tracks: record.tracks, switches: [] }} findings={{ errors: [], warnings: [] }} extents={new Map()}

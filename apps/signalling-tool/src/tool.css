@@ -63,7 +63,13 @@ html, body { margin: 0; background: var(--ui-surface); }
 
 /* ── the editors ─────────────────────────────────────────────────────── */
 
-.tool-editor { display: flex; flex-direction: column; gap: 12px; border-top: 2px solid var(--ui-border); padding-top: 12px; }
+/* An editor fills its page under the panel's menu. */
+.tool-editor { display: flex; flex-direction: column; gap: 12px; }
+/* What a page that creates has just set, and the way to its editor. */
+.tool-created {
+  display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 8px; font-size: var(--ui-fs-m);
+  background: var(--ui-selected); border: 1px solid var(--color-primary);
+}
 .tool-editor-head { display: flex; align-items: center; gap: 8px; }
 .tool-editor-title { margin: 0; font-size: 16px; flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .tool-fields-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }

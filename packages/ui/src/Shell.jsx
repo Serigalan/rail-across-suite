@@ -1,3 +1,5 @@
+import { BackIcon } from './icons.jsx'
+
 /**
  * The shell of a tool, as the Layout-Tool has it: the rail in the primary
  * colour on the left, its buttons named beside their symbols, the panel of
@@ -54,11 +56,16 @@ export const RailRow = ({ children }) => <div className="ui-rail-row">{children}
 
 export const RailDivider = () => <hr className="ui-rail-divider" />
 
-/** The panel beside the rail: a heading with its `intro`, the body that scrolls, a `foot` that stays. */
-export function Panel({ title, intro, actions, foot, label, children }) {
+/**
+ * The panel beside the rail: a heading with its `intro`, the body that
+ * scrolls, a `foot` that stays. A page under a panel's menu has `back` — {
+ * label, onClick } — the way back above its heading.
+ */
+export function Panel({ title, intro, actions, foot, label, back, children }) {
   return (
     <aside className="ui-panel" aria-label={label ?? (typeof title === 'string' ? title : undefined)}>
       <div className="ui-panel-head">
+        {back && <button type="button" className="ui-back" onClick={back.onClick}><BackIcon size={16} />{back.label}</button>}
         <h2>{title}</h2>
         {intro && <p>{intro}</p>}
         {actions && <div className="ui-row">{actions}</div>}

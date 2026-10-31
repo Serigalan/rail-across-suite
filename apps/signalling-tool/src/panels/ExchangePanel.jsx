@@ -1,5 +1,24 @@
 import { useState } from 'react'
-import { Button, Field, Message, Panel, Section, UploadIcon } from '@rail-across/ui'
+import { Button, Field, Message, Option, Options, OptionsHeading, Panel, Section, UploadIcon } from '@rail-across/ui'
+import { ImportIcon } from '../icons.jsx'
+
+/**
+ * Data exchange, with a menu as the Layout-Tool's panel of that name: for
+ * now taking a PlanPro plan's signalling.
+ */
+export default function ExchangePanel(props) {
+  const { t } = props
+  const [page, setPage] = useState('menu')
+  if (page === 'planpro') return <ImportPage {...props} back={{ label: t('back'), onClick: () => setPage('menu') }} />
+  return (
+    <Panel title={t('section_exchange')} intro={t('section_exchange_intro')}>
+      <Options>
+        <OptionsHeading>PlanPro</OptionsHeading>
+        <Option icon={<ImportIcon />} onClick={() => setPage('planpro')}>{t('import_planpro')}</Option>
+      </Options>
+    </Panel>
+  )
+}
 
 /**
  * Taking a PlanPro plan's signalling: the file is read in the browser, its
@@ -8,7 +27,7 @@ import { Button, Field, Message, Panel, Section, UploadIcon } from '@rail-across
  * plan has that this model does not hold. Replacing the domain is one step;
  * checking in makes it last.
  */
-export default function ImportPanel({ record, domain, ops, setNotice, setSection, t }) {
+function ImportPage({ record, domain, ops, setNotice, setSection, back, t }) {
   const [read, setRead] = useState(null)
   const [error, setError] = useState(null)
   const [busy, setBusy] = useState(false)
@@ -32,7 +51,7 @@ export default function ImportPanel({ record, domain, ops, setNotice, setSection
   const had = Object.values(domain.collections).some(l => l.length)
 
   return (
-    <Panel title={t('section_import')} intro={t('section_import_intro')}>
+    <Panel title={t('import_planpro')} intro={t('section_import_intro')} back={back}>
       <Field label={t('import_choose')}>
         <input type="file" accept=".planpro,.ppxml,.xml" disabled={busy} onChange={(e) => onFile(e.target.files?.[0])} />
       </Field>

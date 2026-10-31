@@ -1,7 +1,7 @@
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
-  Badge, Button, ConfirmDialog, FitIcon, FormDialog, IconButton, Message, Rail, RailBrand, RailButton, RailDivider, RailRow,
-  RedoIcon, SaveIcon, Shell, TextField, UndoIcon, Workspace,
+  Button, ConfirmDialog, FitIcon, FormDialog, IconButton, Message, Rail, RailBrand, RailButton, RailDivider, RailRow,
+  RedoIcon, Shell, TextField, UndoIcon, WorkingCopyBar, Workspace,
 } from '@rail-across/ui'
 import { checkSignalling, trackSectionExtents } from '@rail-across/core/signalling'
 import { carryDomain, mergeProject } from '@rail-across/core/merge'
@@ -309,19 +309,20 @@ export default function Editor({ project, variant, head, copy: opened, readOnly 
       {section === 'history' ? <HistoryPanel history={history} travel={(n) => setHistory(h => travel(h, n))} t={t} />
         : section === 'layers' ? <LayersPanel {...panelProps} />
         : section === 'settings' ? <SettingsPanel t={t} language={language} setLanguage={setLanguage} /> : <active.Panel key={`${section}-${visit}`} {...panelProps} />}
-      <Workspace bar={<>
-        <span className="ui-topbar-title">{project.title}</span>
-        <span className="ui-muted">{variant.name} · {t('revision_n', { n: copy.base.number })}</span>
-        {readOnly ? <Badge tone="primary">{t('read_only')}</Badge>
-          : <Badge tone={changes ? 'warn' : 'ok'} title={changes ? t('local_changes_hint') : undefined}>{changes ? t('local_changes', { n: changes }) : t('saved')}</Badge>}
-        <span className="ui-grow" />
-        <IconButton label={t('fit')} icon={<FitIcon />} variant="ghost" onClick={() => setFitKey(k => k + 1)} />
-        {!readOnly && <>
-          <Button disabled={busy} onClick={update}>{t('update')}</Button>
-          <Button disabled={busy || !changes} onClick={() => setDialog({ kind: 'discard' })}>{t('discard')}</Button>
-          <Button variant="primary" icon={<SaveIcon />} disabled={busy || !changes} onClick={() => setDialog({ kind: 'checkin' })}>{t('check_in')}</Button>
-        </>}
-      </>}>
+      <Workspace>
+        <WorkingCopyBar title={project.title} subtitle={variant.name} revision={t('revision_n', { n: copy.base.number })}
+          {...(readOnly
+            ? { note: t('read_only_note'), actions: [{ label: t('back'), onClick: () => location.assign(projectsUrl()) }] }
+            : {
+              state: changes ? 'local' : 'clean', stateLabel: changes ? t('local_changes', { n: changes }) : t('saved'),
+              stateTitle: changes ? t('local_changes_hint') : undefined,
+              actions: [
+                { label: t('update'), onClick: update, disabled: busy },
+                { label: t('discard'), onClick: () => setDialog({ kind: 'discard' }), disabled: busy || !changes },
+                { label: t('check_in'), onClick: () => setDialog({ kind: 'checkin' }), disabled: busy || !changes, primary: true },
+              ],
+            })} />
+        <div className="tool-fit"><IconButton label={t('fit')} icon={<FitIcon />} onClick={() => setFitKey(k => k + 1)} /></div>
         {notice && (
           <div className="tool-notice" role="status">
             <Message tone={notice.tone}>{notice.text}</Message>

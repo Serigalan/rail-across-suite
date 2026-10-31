@@ -333,6 +333,41 @@
 .ui-section-title { margin: 6px 0 0; font-size: var(--ui-fs-s); font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ui-muted); display: flex; align-items: center; gap: 8px; }
 .ui-section-title .ui-grow { flex: 1; }
 
+/* The working copy's bar over the map or plan, as the Layout-Tool has it. */
+.ui-wc-bar {
+  position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 9;
+  display: flex; align-items: center; flex-wrap: wrap; gap: 6px 12px; width: max-content; max-width: calc(100% - 140px); box-sizing: border-box;
+  padding: 6px 8px 6px 14px; background: var(--ui-bg); color: var(--ui-fg); border: 1px solid var(--ui-border); border-radius: 10px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15); font-family: var(--ui-font); font-size: 13px;
+}
+/* Where and the state stay on one line; the ways to act go below when there is no room. */
+.ui-wc-head { display: flex; align-items: center; gap: 6px 12px; min-width: 0; }
+.ui-wc-state { flex-shrink: 0; white-space: nowrap; }
+.ui-wc-where { display: flex; align-items: baseline; gap: 6px; min-width: 0; overflow-wrap: anywhere; }
+.ui-wc-sep { color: var(--ui-muted); }
+.ui-wc-rev { color: var(--ui-muted); font-size: 12px; }
+.ui-wc-state {
+  font: inherit; font-size: 12px; border-radius: 12px; border: 1px solid currentColor; background: none; padding: 2px 10px;
+  cursor: pointer; display: inline-flex; gap: 8px;
+}
+.ui-wc-state:disabled { cursor: default; }
+.ui-wc-state-clean { color: var(--ui-ok); }
+.ui-wc-state-local { color: var(--ui-warn); }
+.ui-wc-state-newer { color: var(--color-primary); }
+.ui-wc-newer { font-weight: 600; }
+.ui-wc-actions { display: flex; gap: 6px; margin-left: auto; }
+.ui-wc-btn {
+  font: inherit; font-size: 12.5px; padding: 5px 12px; border-radius: 6px; border: 1px solid var(--ui-border);
+  background: var(--ui-surface); color: var(--ui-fg); cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+}
+.ui-wc-btn:hover:not(:disabled) { background: var(--ui-hover); }
+.ui-wc-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.ui-wc-btn-primary { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
+.ui-wc-btn-primary:hover:not(:disabled) { background: var(--color-primary); filter: brightness(1.12); }
+@media (max-width: 760px) {
+  .ui-wc-bar { max-width: calc(100% - 20px); }
+}
+
 .ui-workspace { flex: 1; min-width: 0; position: relative; display: flex; flex-direction: column; }
 .ui-topbar {
   display: flex; align-items: center; gap: 10px; flex-wrap: nowrap; padding: 8px 14px; min-height: 50px; box-sizing: border-box; white-space: nowrap;

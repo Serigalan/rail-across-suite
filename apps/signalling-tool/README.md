@@ -47,7 +47,9 @@ Every edit is a step (Ctrl+Z, Ctrl+Y); Delete asks before it deletes, and names 
 What is changed is kept at once in the variant's working copy in this browser — the one the Layout-Tool works
 on too ([`@rail-across/working-copy`](../../packages/working-copy/README.md)) —, never only in the page. Leaving
 the tool asks nothing: the changes stay in the copy, the top bar says how many there are, and the suite's start
-page says so at the variant. Opening the variant again, in this tool or the Layout-Tool, opens the copy.
+page says so at the variant. Opening the variant again, in this tool or the Layout-Tool, opens the copy. Its bar
+over the plan is the Layout-Tool's (`WorkingCopyBar` of `@rail-across/ui`): project › variant, the revision, the
+state, and the three ways to act on it.
 
 - *Einchecken* sends the copy, tracks and signalling, with its splits and joins; where someone checked in first,
   their state is merged in and the user checks in again.

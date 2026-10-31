@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import {
   Badge, Button, Checkbox, GroupedList, IconButton, Message, NumberField, Option, Options, OptionsDivider, OptionsHeading, Panel, Rail, RailBrand,
-  RailButton, SelectField, SelectList, Tabs,
+  RailButton, SelectField, SelectList, Tabs, WorkingCopyBar,
 } from './index.js'
 import { PlusIcon } from './icons.jsx'
 
@@ -51,6 +51,15 @@ describe('the suite\'s components', () => {
     expect(menu).toContain('<hr class="ui-options-divider"/>')
     const page = html(<Panel title="Tafel erstellen" back={{ label: 'Zurück', onClick: () => {} }}>x</Panel>)
     expect(page).toMatch(/<button type="button" class="ui-back"><svg[^]*<\/svg>Zurück<\/button><h2>Tafel erstellen<\/h2>/)
+  })
+
+  it('make the working copy\'s bar as the Layout-Tool\'s: where, the revision, the state, the ways to act', () => {
+    const bar = html(<WorkingCopyBar title="P" subtitle="Bestand" revision="rev 3" state="local" stateLabel="2 lokale Änderung(en)" onState={() => {}}
+      actions={[{ label: 'Aktualisieren' }, { label: 'Einchecken', primary: true, disabled: true }]} />)
+    expect(bar).toContain('<span class="ui-wc-where"><strong>P</strong><span class="ui-wc-sep">›</span><span>Bestand</span><span class="ui-wc-rev">rev 3</span></span>')
+    expect(bar).toContain('<button type="button" class="ui-wc-state ui-wc-state-local">2 lokale Änderung(en)</button>')
+    expect(bar).toContain('<button type="button" class="ui-wc-btn ui-wc-btn-primary" disabled="">Einchecken</button>')
+    expect(html(<WorkingCopyBar title="P" note="schreibgeschützt" />)).toContain('<span class="ui-wc-rev">schreibgeschützt</span>')
   })
 
   it('list objects under their groups, folded but the one holding the chosen, with a search and the headings over them', () => {

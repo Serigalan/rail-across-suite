@@ -1,4 +1,5 @@
 import { useEffect, useMemo } from 'react'
+import { WorkingCopyBar } from '@rail-across/ui'
 import { useI18n } from '../core/locales/i18nContext'
 import { MapContext } from '../core/map/MapContext'
 import useMapInstance from '../core/map/useMapInstance'
@@ -48,17 +49,8 @@ export default function ViewerView({ viewer: v }) {
         <div className="map-pane">
           <div className="map-container" ref={mapContainer} />
           <TiltToggle tilt={tilt} />
-          <div className="wc-bar" role="status">
-            <span className="wc-where">
-              <strong>{viewer.title}</strong>
-              <span className="wc-sep">›</span>
-              <span>{viewer.subtitle}</span>
-            </span>
-            <span className="wc-rev">{t('viewer_readonly')}</span>
-            <span className="wc-actions">
-              <button type="button" className="wc-btn" onClick={v.close} disabled={v.busy}>{t('viewer_back')}</button>
-            </span>
-          </div>
+          <WorkingCopyBar title={viewer.title} subtitle={viewer.subtitle} note={t('viewer_readonly')}
+            actions={[{ label: t('viewer_back'), onClick: v.close, disabled: v.busy }]} />
           {viewer.kind === 'compare' && (
             <CompareOverlay mapVersion={mapVersion} before={viewer.before} after={viewer.after} drawUnchanged
               beforeLabel={viewer.beforeLabel} afterLabel={viewer.afterLabel} onClose={v.close} />

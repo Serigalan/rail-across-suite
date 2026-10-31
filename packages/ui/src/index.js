@@ -10,6 +10,7 @@ export { SelectList } from './List.jsx'
 export { GroupedList, Option, Options, OptionsDivider, OptionsHeading } from './Options.jsx'
 export { Panel, Rail, RailBrand, RailButton, RailDivider, RailRow, Section, Shell, Workspace } from './Shell.jsx'
 export { Tabs } from './Tabs.jsx'
+export { WorkingCopyBar } from './WorkingCopy.jsx'
 export { LANGUAGE_NAMES, LANGUAGES, keepLanguage, keptLanguage } from './language.js'
 export {
   BackIcon, CheckIcon, CloseIcon, DownloadIcon, FitIcon, HelpIcon, PlusIcon, RedoIcon, SaveIcon, SearchIcon,

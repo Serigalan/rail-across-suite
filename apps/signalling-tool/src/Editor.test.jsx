@@ -77,7 +77,7 @@ describe('the Signalling-Tool', () => {
 
   it('offers no creating and no editing where it only looks, and opens at the overview', () => {
     const html = render({ readOnly: true })
-    expect(html).toContain('Nur ansehen')
+    expect(html).toContain('<span class="ui-wc-rev">schreibgeschützt</span>')
     expect(html).not.toContain('Signalmast erstellen')
     expect(html).not.toContain('<span class="ui-rail-label">Gleisfreimeldung</span>')
     expect(html).not.toContain('<span class="ui-rail-label">Datenaustausch</span>')
@@ -156,7 +156,13 @@ describe('the Signalling-Tool', () => {
     expect(html).toContain('1 lokale Änderung(en)')
     expect(html).toContain('Aktualisieren')
     expect(html).toContain('Verwerfen')
-    expect(render()).toContain('alles eingecheckt')
+    expect(render()).toContain('<button type="button" class="ui-wc-state ui-wc-state-clean" disabled="">alles eingecheckt</button>')
+    // The bar is the Layout-Tool's: project › variant, the revision, the state, then the three ways to act.
+    const bar = html.slice(html.indexOf('<div class="ui-wc-bar"'))
+    expect(bar).toMatch(/<strong>Testdorf<\/strong><span class="ui-wc-sep">›<\/span><span>Bestand<\/span><span class="ui-wc-rev">rev 1<\/span>/)
+    expect(bar.indexOf('Aktualisieren')).toBeLessThan(bar.indexOf('Verwerfen'))
+    expect(bar).toContain('class="ui-wc-btn ui-wc-btn-primary">Einchecken</button>')
+    expect(html).not.toContain('ui-topbar')
   })
 
   it('edits a logical signal: its mast, kind, function, screen and the speed it signals per route', () => {

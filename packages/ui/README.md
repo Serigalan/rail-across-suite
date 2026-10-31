@@ -24,6 +24,7 @@ import { Button, Panel, Rail, RailButton, Shell, Workspace } from '@rail-across/
 | Menus | — | `ui-menu`, `ui-menu-list` (a menu that drops down) |
 | A panel's menu | `Options`, `OptionsHeading`, `Option` (a symbol, its words, a count after them), `OptionsDivider`; `Panel` with `back` for a page under it; `GroupedList` (objects under groups that fold away with their counts, headings over them, a search) — as the Layout-Tool's panels | `ui-options`, `ui-back`, `ui-grouped`, `ui-group` |
 | The shell of a tool | `Shell`, `Rail`, `RailBrand`, `RailButton` (named beside its symbol, with a count), `RailRow`, `RailDivider`, `Panel`, `Section`, `Workspace` | `ui-shell`, `ui-rail`, `ui-panel`, `ui-workspace`, `ui-topbar` |
+| The working copy | `WorkingCopyBar` (over the map or plan: project › variant, the revision, the state — all checked in, local changes, the server newer — and update, discard, check in; read-only with its note and the way back) | `ui-wc-bar` |
 | Symbols | `PlusIcon`, `TrashIcon`, `CloseIcon`, `CheckIcon`, `BackIcon`, `UndoIcon`, `RedoIcon`, `UploadIcon`, `DownloadIcon`, `SaveIcon`, `WarningIcon`, `SearchIcon`, `FitIcon`, `HelpIcon` | — |
 
 Texts are the app's: a component takes its words as props (`cancelLabel`, `label`), so the library has no
@@ -35,7 +36,7 @@ language of its own.
 |---|---|
 | the suite's start page (`apps/home`) | its buttons, fields, dialogs, badges, menus and colours |
 | the Signalling-Tool (`apps/signalling-tool`) | all of it, the shell first |
-| the Layout-Tool (`apps/layout-tool`) | its buttons (the library's classes) and the suite's language; its look is the library's model, its other parts move to the components one by one |
+| the Layout-Tool (`apps/layout-tool`) | its buttons (the library's classes), the working copy's bar and the suite's language; its look is the library's model, its other parts move to the components one by one |
 
 ## Rules
 

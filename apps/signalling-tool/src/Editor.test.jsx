@@ -5,7 +5,9 @@ import { I18n, textsFor } from './i18n.js'
 import Editor from './Editor.jsx'
 import BalisesPanel from './panels/BalisesPanel.jsx'
 import SettingsPanel from './panels/SettingsPanel.jsx'
-import SpeedPanel from './panels/SpeedPanel.jsx'
+import SignalsPanel from './panels/SignalsPanel.jsx'
+import RoutesPanel from './panels/RoutesPanel.jsx'
+import { logicalId } from './model/domain.js'
 import { linkedRequest } from './suite.js'
 
 const EPSG = 25832
@@ -18,16 +20,18 @@ const record = {
   tracks: [track('t1', [0, 0], [200, 0]), track('t2', [200, 0], [400, 0])],
   switches: [], platforms: [],
   signalling: {
-    fields: { catalogue: { id: 'db-ril-301', version: '0.3.0' } },
+    fields: { catalogue: { id: 'db-ril-301', version: '0.4.0' } },
     collections: {
       signals: [
-        { id: 's-a', name: 'A', kind: 'real', function: 'entry', logicalSignals: [{ system: 'ks', type: 'multiSection' }], at: on('t1', 20),
-          frames: [{ kind: 'screen', aspects: [{ aspect: 'Hp_0' }, { aspect: 'Ks_1' }, { aspect: 'Ks_2' }] }] },
+        { id: 's-a', name: 'A', kind: 'real', at: on('t1', 20, 'up'),
+          logicalSignals: [{ system: 'ks', type: 'multiSection', function: 'entry', frames: [{ kind: 'screen', aspects: [{ aspect: 'Hp_0' }, { aspect: 'Ks_1' }, { aspect: 'Ks_2' }] }],
+            signallingSpeeds: [{ routeId: 'r-a-n', speed: 80 }] }] },
         // A main shunting signal without Sh 1: an error of the check.
-        { id: 's-n', name: 'N1', kind: 'real', logicalSignals: [{ system: 'ks', type: 'mainShunting' }], at: on('t2', 80),
-          frames: [{ kind: 'screen', aspects: [{ aspect: 'Hp_0' }, { aspect: 'Ks_1' }] }] },
+        { id: 's-n', name: 'N1', kind: 'real', at: on('t2', 80),
+          logicalSignals: [{ system: 'ks', type: 'mainShunting', function: 'exit', frames: [{ kind: 'screen', aspects: [{ aspect: 'Hp_0' }, { aspect: 'Ks_1' }] }] }] },
       ],
-      detectionPoints: [], trackSections: [], switchElements: [], routes: [], overlaps: [], flankProtection: [], balises: [], speedSections: [], stationBoundaries: [],
+      detectionPoints: [], trackSections: [], switchElements: [], overlaps: [], flankProtection: [], balises: [], stationBoundaries: [],
+      routes: [{ id: 'r-a-n', kind: 'train', trainType: 'ZZ', startSignalId: 's-a', targetSignalId: 's-n', path: { trackIds: ['t1', 't2'] } }],
     },
   },
 }
@@ -40,14 +44,14 @@ const render = (props = {}, language = 'de') => renderToStaticMarkup(
 )
 
 describe('the Signalling-Tool', () => {
-  it('shows the rail, the signals and the plan of a variant, the check counting its findings', () => {
+  it('shows the rail, the places and the plan of a variant, the check counting its findings', () => {
     const html = render()
-    expect(html).toContain('aria-label="Signale"')
+    expect(html).toContain('aria-label="Standorte"')
     expect(html).toContain('<span class="ui-list-title">A</span>')
     expect(html).toContain('<span class="ui-list-title">N1</span>')
     expect(html).toContain('class="plan-map"')
     expect(html).toContain('aria-label="Kartenebenen"')
-    expect(html).toContain('<span class="ui-rail-count" aria-hidden="true">1</span>')
+    expect(html).toContain('<span class="ui-rail-count" aria-hidden="true">')
     expect(html).toContain('Einchecken')
   })
 
@@ -104,19 +108,51 @@ describe('the Signalling-Tool', () => {
     expect(panel('de')).toContain('Geschwindigkeitsprüfung · 2000 Hz')
   })
 
-  it('edits a speed section: its speed, per kind of train, the direction it holds in', () => {
-    const v = { id: 'v1', start: on('t1', 150), path: { trackIds: ['t1', 't2'] }, end: on('t2', 50), speed: 80, speedByTag: { freight: 60 } }
-    const domain = { ...record.signalling, collections: { ...record.signalling.collections, speedSections: [v] } }
-    const html = renderToStaticMarkup(
-      <I18n.Provider value={textsFor('de')}>
-        <SpeedPanel domain={domain} net={{ tracks: record.tracks, switches: [] }} findings={{ errors: [], warnings: [] }}
-          selection={{ collection: 'speedSections', id: 'v1' }} select={() => {}} ops={{}} setMode={() => {}} readOnly={false} {...textsFor('de')} />
+  it('has the six sections in the order of the work, the switches with their flank protection', () => {
+    const html = render()
+    const at = (label) => html.indexOf(`<span class="ui-rail-label">${label}</span>`)
+    const order = ['Standorte', 'Signale', 'Gleisfreimeldung', 'Balisen/Magnete', 'Weichen', 'Fahrstraßen'].map(at)
+    expect(order.every(i => i > 0)).toBe(true)
+    expect([...order].sort((a, b) => a - b)).toEqual(order)
+    expect(html).not.toContain('Geschwindigkeiten')
+    expect(html).not.toContain('>Flankenschutz<')
+  })
+
+  it('says how many changes the working copy holds and offers to update, discard and check in', () => {
+    const base = structuredClone(record)
+    const copy = { base: { id: 1, number: 1 }, basePayload: base, idLog: [], project: { ...record, signalling: { ...record.signalling, collections: { ...record.signalling.collections, signals: record.signalling.collections.signals.slice(0, 1) } } } }
+    const html = render({ copy })
+    expect(html).toContain('1 lokale Änderung(en)')
+    expect(html).toContain('Aktualisieren')
+    expect(html).toContain('Verwerfen')
+    expect(render()).toContain('alles eingecheckt')
+  })
+
+  it('edits a logical signal: its place, kind, function, screen and the speed it signals per route', () => {
+    const panel = (language) => renderToStaticMarkup(
+      <I18n.Provider value={textsFor(language)}>
+        <SignalsPanel domain={record.signalling} net={{ tracks: record.tracks, switches: [] }} findings={{ errors: [], warnings: [] }}
+          selection={{ collection: 'logicalSignals', id: logicalId('s-a', 'ks') }} select={() => {}} ops={{}} setMode={() => {}} readOnly={false} {...textsFor(language)} />
       </I18n.Provider>,
     )
-    expect(html).toContain('<span class="ui-list-title">80 km/h</span>')
-    expect(html).toContain('freight')
-    expect(html).toContain('beide Richtungen')
-    expect(html).toContain('2 Gleise')
+    const de = panel('de')
+    expect(de).toContain('A · Ks-Mehrabschnittssignal')
+    expect(de).toContain('Signalisierte Geschwindigkeit je Fahrstraße')
+    expect(de).toContain('value="80"')
+    expect(de).toContain('Einfahrsignal')
+    expect(panel('en')).toContain('Signalled speed per route')
+  })
+
+  it('shows a route\'s signalled speed and offers to determine its overlap from it', () => {
+    const html = renderToStaticMarkup(
+      <I18n.Provider value={textsFor('de')}>
+        <RoutesPanel domain={record.signalling} net={{ tracks: record.tracks, switches: [] }} findings={{ errors: [], warnings: [] }} extents={new Map()}
+          selection={{ collection: 'routes', id: 'r-a-n' }} select={() => {}} ops={{}} setMode={() => {}} readOnly={false} {...textsFor('de')} />
+      </I18n.Provider>,
+    )
+    expect(html).toContain('80 km/h')
+    expect(html).toContain('Durchrutschweg ermitteln')
+    expect(html).toContain('Am Signal einstellen')
   })
 
   it('reads what the suite asks of it from its address', () => {

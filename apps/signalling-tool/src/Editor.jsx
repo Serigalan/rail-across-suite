@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   Badge, Button, ConfirmDialog, FitIcon, FormDialog, IconButton, Message, Rail, RailBrand, RailButton, RailDivider, RailRow,
   RedoIcon, SaveIcon, Shell, TextField, UndoIcon, Workspace,
@@ -6,24 +6,26 @@ import {
 import { checkSignalling, trackSectionExtents } from '@rail-across/core/signalling'
 import { carryDomain, mergeProject } from '@rail-across/core/merge'
 import { projectDocument } from '@rail-across/core/project'
+import { localChangeCount } from '@rail-across/working-copy'
 import { useTexts } from './i18n.js'
 import { api } from './api.js'
 import { projectsUrl } from './suite.js'
+import { freshCopy, keepCopy } from './workingCopy.js'
 import { netDrawing } from './model/net.js'
-import { added, cascadeOf, deleted, domainOf, labelOf, replaced } from './model/domain.js'
-import { runStretches } from './model/runs.js'
+import { added, cascadeOf, deleted, domainOf, findLogical, labelOf, replaced } from './model/domain.js'
+import { logicalSignalWord } from './labels.js'
 import { redo, startHistory, step, stepOf, stepText, travel, undo } from './model/history.js'
 import PlanView from './plan/PlanView.jsx'
 import {
-  BaliseIcon, CheckIcon, DetectionIcon, FlankIcon, HistoryIcon, HomeIcon, ImportIcon, LayersIcon, LogoIcon, RouteIcon, SettingsIcon, SignalIcon, SpeedIcon, SwitchIcon,
+  BaliseIcon, CheckIcon, DetectionIcon, HistoryIcon, HomeIcon, ImportIcon, LayersIcon, LocationIcon, LogoIcon, RouteIcon, SettingsIcon,
+  SignalIcon, SwitchIcon,
 } from './icons.jsx'
+import LocationsPanel from './panels/LocationsPanel.jsx'
 import SignalsPanel from './panels/SignalsPanel.jsx'
 import DetectionPanel from './panels/DetectionPanel.jsx'
+import BalisesPanel from './panels/BalisesPanel.jsx'
 import ElementsPanel from './panels/ElementsPanel.jsx'
 import RoutesPanel from './panels/RoutesPanel.jsx'
-import FlankPanel from './panels/FlankPanel.jsx'
-import BalisesPanel from './panels/BalisesPanel.jsx'
-import SpeedPanel from './panels/SpeedPanel.jsx'
 import CheckPanel from './panels/CheckPanel.jsx'
 import ImportPanel from './panels/ImportPanel.jsx'
 import LayersPanel, { DEFAULT_PLAN_BASEMAP } from './panels/LayersPanel.jsx'
@@ -31,55 +33,86 @@ import HistoryPanel from './panels/HistoryPanel.jsx'
 import SettingsPanel from './panels/SettingsPanel.jsx'
 
 const SECTIONS = [
+  { id: 'locations', icon: <LocationIcon />, Panel: LocationsPanel },
   { id: 'signals', icon: <SignalIcon />, Panel: SignalsPanel },
   { id: 'detection', icon: <DetectionIcon />, Panel: DetectionPanel },
+  { id: 'balises', icon: <BaliseIcon />, Panel: BalisesPanel },
   { id: 'elements', icon: <SwitchIcon />, Panel: ElementsPanel },
   { id: 'routes', icon: <RouteIcon />, Panel: RoutesPanel },
-  { id: 'flank', icon: <FlankIcon />, Panel: FlankPanel },
-  { id: 'balises', icon: <BaliseIcon />, Panel: BalisesPanel },
-  { id: 'speeds', icon: <SpeedIcon />, Panel: SpeedPanel },
 ]
 
 /** The section a collection's objects are edited in. */
 const SECTION_OF = {
-  signals: 'signals', detectionPoints: 'detection', trackSections: 'detection', switchElements: 'elements', switches: 'elements',
-  routes: 'routes', overlaps: 'routes', flankProtection: 'flank', balises: 'balises', speedSections: 'speeds', stationBoundaries: 'signals',
+  signals: 'locations', logicalSignals: 'signals', detectionPoints: 'detection', trackSections: 'detection', balises: 'balises',
+  switchElements: 'elements', switches: 'elements', flankProtection: 'elements', routes: 'routes', overlaps: 'routes',
+  stationBoundaries: 'locations',
 }
+
+/** How long the edits rest before the working copy is written [ms]. */
+const KEEP_AFTER = 250
 
 /**
  * Working on the signalling of a variant: the rail of sections on the left,
- * as the Layout-Tool orders its own — the map layers first, then signals,
- * train detection, switch elements, routes, flank protection, balises and
- * magnets, speed sections, the check and the PlanPro import; at its foot undo, the history
- * and redo, the way back to the infrastructure editor and the settings —, the panel
- * of the one chosen, the plan of the net with what the domain holds. Every
- * edit is a step (undo, redo, the history);
- * the core's check runs on every one; checking in sends the record with its
- * signalling to the project server, merging what others checked in meanwhile.
- * The core is the Layout-Tool's: this tool reads it and never changes it (R1).
+ * as the Layout-Tool orders its own — the map layers first, then the places
+ * of the signals, the (logical) signals, train detection, balises and
+ * magnets, the switches with their flank protection, routes with their
+ * overlaps, the check and the PlanPro import; at its foot undo, the history
+ * and redo, the way back to the infrastructure editor and the settings —, the
+ * panel of the one chosen, the plan of the net with what the domain holds.
+ *
+ * Every edit is a step (undo, redo, the history), and is kept at once in the
+ * variant's working copy in this browser — the one the Layout-Tool works on
+ * too —, never only in the page: leaving the tool asks nothing, the start
+ * page says the variant holds changes. Checking in sends the copy, tracks and
+ * signalling, to the project server; updating brings in what others checked
+ * in; discarding makes the copy the server's head again. The core's check
+ * runs on every edit. The core is the Layout-Tool's: this tool reads it and
+ * never changes it (R1).
  */
-export default function Editor({ project, variant, head, readOnly }) {
+export default function Editor({ project, variant, head, copy: opened, readOnly }) {
   const { t, language, setLanguage } = useTexts()
-  const [current, setCurrent] = useState({ revision: head.revision, record: head.record })
-  const [history, setHistory] = useState(() => startHistory(domainOf(head.record)))
-  const [savedDomain, setSavedDomain] = useState(history.now)
-  const [section, setSection] = useState('signals')
+  const [copy, setCopy] = useState(() => opened ?? freshCopy(head))
+  const [history, setHistory] = useState(() => startHistory(domainOf(copy.project)))
+  const [section, setSection] = useState('locations')
   const [selection, setSelection] = useState(null)
   const [mode, setMode] = useState(null)
   const [dialog, setDialog] = useState(null)
   const [notice, setNotice] = useState(null)
+  const [busy, setBusy] = useState(false)
   const [fitKey, setFitKey] = useState(0)
   const [basemap, chooseBasemap] = useState(keptBasemap)
   const setBasemap = (id) => { chooseBasemap(id); keepBasemap(id) }
 
   const domain = history.now
-  const record = current.record
+  const record = copy.project
+  const current = useMemo(() => ({ ...record, signalling: domain }), [record, domain])
   const net = useMemo(() => ({ tracks: record.tracks ?? [], switches: record.switches ?? [] }), [record])
   const drawing = useMemo(() => netDrawing(net.tracks), [net])
   const coreDomain = useMemo(() => projectDocument({ ...record, signalling: undefined }).domains.core, [record])
   const findings = useMemo(() => checkSignalling({ core: coreDomain, signalling: domain }), [coreDomain, domain])
   const extents = useMemo(() => trackSectionExtents({ core: { collections: net }, signalling: domain }), [net, domain])
-  const dirty = domain !== savedDomain
+  const changes = useMemo(() => (readOnly ? 0 : localChangeCount({ basePayload: copy.basePayload, project: current })), [readOnly, copy, current])
+
+  // Every edit into the working copy, once the edits come to rest; what was
+  // opened is not written again.
+  const written = useRef(history.now)
+  useEffect(() => {
+    if (readOnly || domain === written.current) return undefined
+    const timer = setTimeout(() => {
+      written.current = domain
+      keepCopy(variant.id, { ...copy, project: current })
+    }, KEEP_AFTER)
+    return () => clearTimeout(timer)
+  }, [readOnly, domain, copy, current, variant.id])
+
+  /** The copy from now on, kept at once; `nextDomain` the domain worked on, as a step. */
+  const adopt = (next, nextDomain = domainOf(next.project)) => {
+    const project = { ...next.project, signalling: nextDomain }
+    setCopy({ ...next, project })
+    written.current = nextDomain
+    keepCopy(variant.id, { ...next, project })
+    setHistory(h => step(h, nextDomain))
+  }
 
   const edit = useCallback((fn) => setHistory(h => (readOnly ? h : step(h, fn(h.now)))), [readOnly])
   const ops = useMemo(() => ({
@@ -122,22 +155,33 @@ export default function Editor({ project, variant, head, readOnly }) {
     return () => window.removeEventListener('keydown', onKey)
   }, [selection, readOnly])
 
-  useEffect(() => {
-    if (!dirty) return undefined
-    const warn = (e) => { e.preventDefault() }
-    window.addEventListener('beforeunload', warn)
-    return () => window.removeEventListener('beforeunload', warn)
-  }, [dirty])
+  const highlight = useMemo(() => highlightOf(domain, selection, extents), [domain, selection, extents])
 
-  const highlight = useMemo(() => highlightOf(domain, selection, extents, net), [domain, selection, extents, net])
+  // ── the server: checking in, updating, discarding ──
 
-  // ── checking in ──
+  /**
+   * What others checked in, brought into the working copy: merged against the
+   * revision the copy rests on, the copy's own splits and joins with it. A
+   * conflict in the signalling is decided here (mine laid on the merged net);
+   * one in the tracks is the Layout-Tool's to decide. True where it was taken.
+   */
+  const bringIn = async (theirs) => {
+    const remaps = await api.remaps(theirs.revision.id, copy.base.id)
+    const merged = mergeProject({ base: copy.basePayload, mine: current, theirs: theirs.record, remapsMine: copy.idLog, remapsTheirs: remaps })
+    const next = { base: theirs.revision, basePayload: theirs.record, project: merged.merged, idLog: copy.idLog }
+    if (!merged.conflicts.length) { adopt(next); return true }
+    if (merged.conflicts.some(c => !(c.collection === 'project' && c.field === 'signalling'))) {
+      setNotice({ tone: 'error', text: t('core_conflict') })
+      return false
+    }
+    setDialog({ kind: 'conflict', next })
+    return false
+  }
+
   const checkIn = async (message) => {
-    const mine = { ...record, signalling: domain }
-    const res = await api.checkIn(variant.id, { base: current.revision.id, message, record: mine })
+    const res = await api.checkIn(variant.id, { base: copy.base.id, message, record: current, remaps: copy.idLog })
     if (res.revision) {
-      setCurrent({ revision: res.revision, record: mine })
-      setSavedDomain(domain)
+      adopt({ base: res.revision, basePayload: current, project: current, idLog: [] }, domain)
       setDialog(null)
       setNotice({ tone: 'ok', text: t('check_in_done', { n: res.revision.number }) })
       return
@@ -149,35 +193,47 @@ export default function Editor({ project, variant, head, readOnly }) {
       return
     }
     // Someone checked in first: bring their state in, then the user checks in again.
-    const theirs = await api.revision(res.stale.id)
-    const remaps = await api.remaps(res.stale.id, current.revision.id)
-    const merged = mergeProject({ base: { ...record, signalling: savedDomain }, mine, theirs: theirs.record, remapsTheirs: remaps })
-    if (!merged.conflicts.length) {
-      adopt(theirs, domainOf(merged.merged))
-      setDialog(null)
-      setNotice({ tone: 'info', text: t('check_in_stale') })
-      return
+    setDialog(null)
+    if (await bringIn(await api.revision(res.stale.id))) setNotice({ tone: 'info', text: t('check_in_stale') })
+  }
+
+  const update = async () => {
+    setBusy(true)
+    try {
+      const theirs = await api.head(variant.id)
+      if (theirs.revision.id === copy.base.id) setNotice({ tone: 'ok', text: t('up_to_date') })
+      else if (await bringIn(theirs)) setNotice({ tone: 'info', text: t('updated', { n: theirs.revision.number }) })
+    } catch (err) {
+      setNotice({ tone: 'error', text: t('load_failed', { error: err.code ?? String(err) }) })
+    } finally {
+      setBusy(false)
     }
-    setDialog({ kind: 'conflict', theirs })
   }
 
-  /** The head of the variant as the base, with `nextDomain` the domain worked on. */
-  const adopt = (theirs, nextDomain) => {
-    setCurrent({ revision: theirs.revision, record: theirs.record })
-    setSavedDomain(domainOf(theirs.record))
-    setHistory(h => step(h, nextDomain))
+  const discard = async () => {
+    setDialog(null)
+    setBusy(true)
+    try {
+      const fresh = freshCopy(await api.head(variant.id))
+      adopt(fresh)
+      setNotice({ tone: 'info', text: t('discarded') })
+    } catch (err) {
+      setNotice({ tone: 'error', text: t('load_failed', { error: err.code ?? String(err) }) })
+    } finally {
+      setBusy(false)
+    }
   }
 
-  /** Mine laid on their net: every location carried by where it stands onto their tracks. */
-  const takeMine = (theirs) => {
+  /** Mine laid on the merged net: every location carried by where it stands onto its tracks. */
+  const takeMine = ({ next }) => {
     const before = new Map((record.tracks ?? []).map(tr => [tr.id, tr]))
-    const now = theirs.record.tracks ?? []
+    const now = next.project.tracks ?? []
     const present = new Set(now.map(tr => tr.id))
     const { domain: carried } = carryDomain(domain, {
       present, changed: (id) => before.has(id) && (!present.has(id) || now.find(tr => tr.id === id) !== before.get(id)),
-      oldTrack: (id) => before.get(id) ?? null, candidates: () => now, tracks: now, switches: theirs.record.switches ?? [],
+      oldTrack: (id) => before.get(id) ?? null, candidates: () => now, tracks: now, switches: next.project.switches ?? [],
     })
-    adopt(theirs, carried)
+    adopt(next, carried)
     setDialog(null)
   }
 
@@ -226,12 +282,16 @@ export default function Editor({ project, variant, head, readOnly }) {
         : section === 'settings' ? <SettingsPanel t={t} language={language} setLanguage={setLanguage} /> : <active.Panel {...panelProps} />}
       <Workspace bar={<>
         <span className="ui-topbar-title">{project.title}</span>
-        <span className="ui-muted">{variant.name}</span>
-        {readOnly ? <Badge tone="primary">{t('read_only')}</Badge> : <Badge tone={dirty ? 'warn' : 'ok'}>{dirty ? t('unsaved') : t('saved')}</Badge>}
+        <span className="ui-muted">{variant.name} · {t('revision_n', { n: copy.base.number })}</span>
+        {readOnly ? <Badge tone="primary">{t('read_only')}</Badge>
+          : <Badge tone={changes ? 'warn' : 'ok'} title={changes ? t('local_changes_hint') : undefined}>{changes ? t('local_changes', { n: changes }) : t('saved')}</Badge>}
         <span className="ui-grow" />
         <IconButton label={t('fit')} icon={<FitIcon />} variant="ghost" onClick={() => setFitKey(k => k + 1)} />
-        {!readOnly && <Button variant="primary" icon={<SaveIcon />} disabled={!dirty} onClick={() => setDialog({ kind: 'checkin' })}>{t('check_in')}</Button>}
-        <a className="ui-link" href={projectsUrl()}>{t('to_projects')}</a>
+        {!readOnly && <>
+          <Button disabled={busy} onClick={update}>{t('update')}</Button>
+          <Button disabled={busy || !changes} onClick={() => setDialog({ kind: 'discard' })}>{t('discard')}</Button>
+          <Button variant="primary" icon={<SaveIcon />} disabled={busy || !changes} onClick={() => setDialog({ kind: 'checkin' })}>{t('check_in')}</Button>
+        </>}
       </>}>
         {notice && (
           <div className="tool-notice" role="status">
@@ -255,12 +315,18 @@ export default function Editor({ project, variant, head, readOnly }) {
       {dialog?.kind === 'checkin' && <CheckInDialog t={t} onCancel={() => setDialog(null)} onSubmit={checkIn} />}
       {dialog?.kind === 'conflict' && (
         <ConfirmDialog title={t('check_in_title')} confirmLabel={t('check_in_take_mine')} cancelLabel={t('cancel')}
-          onCancel={() => setDialog(null)} onConfirm={() => takeMine(dialog.theirs)}>
+          onCancel={() => setDialog(null)} onConfirm={() => takeMine(dialog)}>
           <p className="ui-muted">{t('check_in_conflict')}</p>
         </ConfirmDialog>
       )}
+      {dialog?.kind === 'discard' && (
+        <ConfirmDialog title={t('discard')} confirmLabel={t('discard')} cancelLabel={t('cancel')} danger
+          onCancel={() => setDialog(null)} onConfirm={discard}>
+          <p className="ui-muted">{t('discard_ask', { n: changes })}</p>
+        </ConfirmDialog>
+      )}
       {dialog?.kind === 'delete' && (
-        <DeleteDialog t={t} domain={domain} what={dialog} onCancel={() => setDialog(null)}
+        <DeleteDialog t={t} language={language} domain={domain} what={dialog} onCancel={() => setDialog(null)}
           onConfirm={() => { edit(d => deleted(d, dialog.collection, dialog.id)); setSelection(null); setDialog(null) }} />
       )}
     </Shell>
@@ -285,7 +351,7 @@ function placeToShow(domain, sel) {
   const signalAt = (id) => c.signals.find(s => s.id === id)?.at
   switch (sel.collection) {
     case 'signals': case 'detectionPoints': case 'balises': return obj?.at
-    case 'speedSections': return obj?.start
+    case 'logicalSignals': return findLogical(domain, sel.id).signal?.at ?? null
     case 'switchElements': return obj?.derailer?.at ?? null
     case 'routes': return obj && signalAt(obj.startSignalId)
     case 'overlaps': return obj && signalAt(obj.signalId)
@@ -296,11 +362,15 @@ function placeToShow(domain, sel) {
 }
 
 /** What the plan marks for what is chosen: its run, its section's extent, the signals it names. */
-function highlightOf(domain, selection, extents, net) {
+function highlightOf(domain, selection, extents) {
   if (!selection) return null
   const c = domain.collections
   const find = (name) => c[name].find(o => o.id === selection.id)
   switch (selection.collection) {
+    case 'logicalSignals': {
+      const { signal } = findLogical(domain, selection.id)
+      return signal ? { ids: [signal.id] } : null
+    }
     case 'routes': {
       const r = find('routes')
       if (!r) return null
@@ -319,15 +389,11 @@ function highlightOf(domain, selection, extents, net) {
     }
     case 'flankProtection': {
       const f = find('flankProtection')
-      return f ? { ids: [f.protection.signalId, f.protection.switchElementId].filter(Boolean) } : null
+      return f ? { ids: [f.requester.switchElementId, f.protection.signalId, f.protection.switchElementId].filter(Boolean) } : null
     }
     case 'balises': {
       const b = find('balises')
       return b ? { ids: [b.signalId].filter(Boolean) } : null
-    }
-    case 'speedSections': {
-      const v = find('speedSections')
-      return v ? { stretches: runStretches(net, v.start, v.path.trackIds, v.end), ids: [v.id] } : null
     }
     default: return null
   }
@@ -349,13 +415,15 @@ function CheckInDialog({ t, onCancel, onSubmit }) {
   )
 }
 
-function DeleteDialog({ t, domain, what, onCancel, onConfirm }) {
+function DeleteDialog({ t, language, domain, what, onCancel, onConfirm }) {
+  const logical = what.collection === 'logicalSignals' ? findLogical(domain, what.id) : null
   const obj = domain.collections[what.collection]?.find(o => o.id === what.id)
+  const title = logical?.signal ? `${labelOf('signals', logical.signal, t)} · ${logicalSignalWord(logical.logical, language)}` : labelOf(what.collection, obj, t) ?? t('unnamed')
   const gone = cascadeOf(domain, what.collection, what.id)
   const others = Object.entries(gone).filter(([name]) => name !== what.collection || gone[name].length > 1)
     .map(([name, ids]) => `${ids.length} × ${t(`collection_${name}`)}`)
   return (
-    <ConfirmDialog title={t('delete_title', { what: labelOf(what.collection, obj, t) ?? t('unnamed') })} confirmLabel={t('delete')}
+    <ConfirmDialog title={t('delete_title', { what: title })} confirmLabel={t('delete')}
       cancelLabel={t('cancel')} danger onCancel={onCancel} onConfirm={onConfirm}>
       <p className="ui-muted">{others.length ? t('delete_cascade', { list: others.join(', ') }) : t('delete_alone')}</p>
     </ConfirmDialog>

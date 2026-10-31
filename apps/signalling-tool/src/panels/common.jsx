@@ -75,11 +75,11 @@ export function CheckList({ options, value, onChange, readOnly }) {
   )
 }
 
-/** The findings of the check on one object, under its editor. */
-export function ObjectFindings({ findings, collection, id, t }) {
+/** The findings of the check on one object, under its editor — those `only` takes, where it is given. */
+export function ObjectFindings({ findings, collection, id, t, only = () => true }) {
   const { language } = useTexts()
   const mine = [...findings.errors.map(f => ({ ...f, tone: 'error' })), ...findings.warnings.map(f => ({ ...f, tone: 'warn' }))]
-    .filter(f => f.collection === collection && f.id === id)
+    .filter(f => f.collection === collection && f.id === id && only(f))
   if (!mine.length) return null
   return (
     <ul className="tool-findings">

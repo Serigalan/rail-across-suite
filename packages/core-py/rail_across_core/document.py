@@ -52,8 +52,34 @@ def _breaches(errors, prefix):
     return [f"{prefix}{'' if e['path'] == '/' else e['path']}: {e['message']}" for e in errors]
 
 
+#: Core 1.0 as it was written before the design speed took its name: an
+#: element's ``speed`` is its ``designSpeed`` now — the same step the
+#: JavaScript core's door takes (S-R10).
+CORE_BEFORE_DESIGN_SPEED = 'sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6'
+
+
+def _core_with_design_speed(domain):
+    def element(el):
+        if 'speed' not in el:
+            return el
+        out = {k: v for k, v in el.items() if k != 'speed'}
+        out['designSpeed'] = el['speed']
+        return out
+    tracks = [dict(t, elements=[element(el) for el in t['elements']]) if 'elements' in t else t
+              for t in domain.get('collections', {}).get('tracks', [])]
+    return dict(domain, schema=SCHEMA_HASHES['core'], collections=dict(domain['collections'], tracks=tracks))
+
+
+def _migrated(doc):
+    core = doc['domains'].get('core')
+    if core and core.get('version') == '1.0' and core.get('schema') == CORE_BEFORE_DESIGN_SPEED:
+        return dict(doc, domains=dict(doc['domains'], core=_core_with_design_speed(core)))
+    return doc
+
+
 def check_document(doc):
-    """Check a core 1.0 document; return it, or raise a PayloadError."""
+    """Check a core 1.0 document; return it — a core of the schema before the
+    design speed's name brought to this one —, or raise a PayloadError."""
     if not isinstance(doc, dict) or doc.get('format') != FORMAT:
         raise PayloadError('invalid_payload', ['/format: is not rail-across'])
     shape = _SCHEMAS.check('rail-across', doc)
@@ -65,6 +91,7 @@ def check_document(doc):
     for h, value in doc['blobs'].items():
         if content_hash(value) != h:
             raise PayloadError('invalid_payload', [f'/blobs/{h}: holds other content'])
+    doc = _migrated(doc)
     found = []
     for name, domain in doc['domains'].items():
         if DOMAIN_VERSIONS.get(name) != domain['version']:

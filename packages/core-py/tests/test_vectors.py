@@ -61,9 +61,9 @@ class Documents(unittest.TestCase):
         for v in vectors('documents.json'):
             with self.subTest(name=v['name']):
                 if v['valid']:
-                    check_document(v['document'])
-                    self.assertEqual(manifest_of(v['document']), v['manifest'])
-                    self.assertEqual(document_hash(v['document']), v['hash'])
+                    taken = check_document(v['document'])
+                    self.assertEqual(manifest_of(taken), v['manifest'])
+                    self.assertEqual(document_hash(taken), v['hash'])
                 else:
                     with self.assertRaises(PayloadError) as caught:
                         check_document(v['document'])

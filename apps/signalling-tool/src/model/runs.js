@@ -46,38 +46,6 @@ export function findRun(net, from, to) {
   return null
 }
 
-/**
- * The run between two locations, in either direction, whichever leads there
- * (a speed section holds both ways unless it says otherwise): [trackId], or null.
- */
-export const runBetween = (net, from, to) =>
-  findRun(net, { ...from, direction: 'up' }, { ...to, direction: undefined }) ?? findRun(net, { ...from, direction: 'down' }, { ...to, direction: undefined })
-
-/**
- * The stretches a run covers from `start` to `end`: [{ trackId, from, to }] —
- * of its first track from the start to the end it leaves by, every track
- * between whole, of its last from the end it enters by to the end.
- */
-export function runStretches(net, start, trackIds, end) {
-  if (!trackIds?.length || start?.anchor !== 'station' || end?.anchor !== 'station') return []
-  const length = (id) => trackLength(net.tracks.find(t => t.id === id) ?? { elements: [] })
-  if (trackIds.length === 1) return [{ trackId: trackIds[0], from: start.station, to: end.station }]
-  const out = []
-  let entered = null
-  trackIds.forEach((id, i) => {
-    const next = trackIds[i + 1]
-    // The end it leaves by: the one the next track meets.
-    const leave = next == null ? null
-      : tracksOnFrom(id, 'END', net.tracks, net.switches).some(x => x.trackId === next) ? 'END' : 'BEGIN'
-    const at = (endpoint) => (endpoint === 'BEGIN' ? 0 : length(id))
-    const from = i === 0 ? start.station : at(entered)
-    const to = leave == null ? end.station : at(leave)
-    out.push({ trackId: id, from, to })
-    if (next != null) entered = tracksOnFrom(id, leave, net.tracks, net.switches).find(x => x.trackId === next)?.endpoint ?? 'BEGIN'
-  })
-  return out
-}
-
 /** The port of `sw` holding a track's end, or null. */
 const portHolding = (sw, trackId, endpoint) => portsOf(sw).find(p => portTrack(sw, p.port) === trackId && portEnd(sw, p.port) === endpoint)?.port ?? null
 

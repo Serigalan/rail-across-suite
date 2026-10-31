@@ -13,4 +13,5 @@ export {
   screenOf, settingFits, settingsProblems, signalKindOf, symbolFits, titleIn,
 } from './catalogue.js'
 export { checkSignalling } from './checkSignalling.js'
+export { gradientAlong, overlapLength, signallingSpeedOf } from './overlaps.js'
 export { netParts, trackSectionExtents } from './trackSections.js'

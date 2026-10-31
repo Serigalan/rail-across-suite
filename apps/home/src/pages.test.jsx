@@ -5,6 +5,8 @@ import Home from './pages/Home'
 import Infrastructure from './pages/Infrastructure'
 import Planned from './pages/Planned'
 import Admin from './pages/Admin'
+import ProjectCard from './pages/projects/ProjectCard'
+import { INFRASTRUCTURE_TOOLS } from './modules'
 import { sizeText, startPassword } from './users'
 
 const de = (node) => renderToStaticMarkup(<I18n.Provider value={textsFor('de')}>{node}</I18n.Provider>)
@@ -34,6 +36,13 @@ describe('the infrastructure editor', () => {
     expect(html).toContain('href="layout/?project=p1&amp;variant=v1"')
     expect(html).toContain('href="layout/?project=p1&amp;variant=v1&amp;action=history"')
     expect(html).toContain('+ Neu')
+  })
+
+  it('says at a variant how many changes its working copy in this browser holds', () => {
+    const card = (localChanges) => de(<ProjectCard project={projects.list[0]} user={{ id: 1, role: 'user' }} tool={INFRASTRUCTURE_TOOLS[0]}
+      showArchived={false} localChanges={localChanges} onDialog={() => {}} />)
+    expect(card({ v1: 3 })).toContain('3 lokale Änderung(en)')
+    expect(card({})).not.toContain('lokale Änderung')
   })
 
   it('in a tool that is not there yet lists the projects without a way to open them', () => {

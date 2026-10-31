@@ -96,8 +96,9 @@ layers but an acyclic graph of domains (R2).
 **F8 — Speed.** The rule checks of the layout tool use the design speed on each element. Signalling plans the
 permitted speed (speed boards, speed profile). If the layout check read the permitted speed, the layout would
 depend on signalling, which depends on the layout.
-→ Two facts, two owners (R10). The check "permitted speed ≤ what the geometry allows" belongs to signalling, the
-domain that reads both.
+→ Two facts, two owners (R10): the design speed is the core's (`designSpeed` on a track element), the permitted
+speed the signalling's (`signallingSpeeds`, per route at its start signal). The check "permitted speed ≤ what the
+geometry allows" belongs to signalling, the domain that reads both.
 
 **F9 — An existing mast, and the track is shifted by 0.5 m.** A planned mast should follow the track. A mast that
 stands on its foundation does not move because a design line moved; the change should instead raise a
@@ -205,7 +206,7 @@ core, and derived results above them:
 |---|---|---|---|
 | derived | — | — | stage views, coordination checks, simulation results, reverse index — caches keyed by input hashes, never in a revision |
 | discipline | `layout` | layout-tool | surveys, reference axes, named track paths, plan header |
-| discipline | `signalling` | signalling-tool | signals and boards, detection points, track sections, switch elements, train and shunting routes, overlaps, flank protection, balises and magnets (PZB, ETCS), speed sections (the speed profile), station boundaries ([decision 0011](decisions/0011-signalling-domain.md)) |
+| discipline | `signalling` | signalling-tool | signals and boards, detection points, track sections, switch elements, train and shunting routes, overlaps, flank protection, balises and magnets (PZB, ETCS), station boundaries; the speeds signalled per route at the signals ([decision 0011](decisions/0011-signalling-domain.md)) |
 | discipline | `catenary` | open-catenary-tool | masts, cantilevers, wires, sections, El signals |
 | discipline | `operations` | open-timetable-tool | train runs, timetable, rolling stock |
 | discipline | `construction` | open-construction-sim | closures, temporary speed restrictions, tracks in operation per stage |

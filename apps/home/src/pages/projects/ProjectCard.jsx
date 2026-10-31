@@ -40,9 +40,11 @@ function ToolLink({ href, className, title, children }) {
  * a tree — each indented under the variant it was branched off, with its
  * head (revision, author, date). What the suite does with a project happens
  * here; what a tool does with a variant — working on it, looking at it, its
- * history, comparing and merging two — opens in the tool chosen above.
+ * history, comparing and merging two — opens in the tool chosen above. A
+ * variant whose working copy in this browser holds changes not checked in
+ * says how many (`localChanges`, from any tool).
  */
-export default function ProjectCard({ project, user, tool, showArchived, onDialog }) {
+export default function ProjectCard({ project, user, tool, showArchived, localChanges = {}, onDialog }) {
   const { t, fill, language } = useTexts()
   const rights = rightsOf(project, user)
   const rows = useMemo(() => variantTree(project.variants.filter(v => showArchived || !v.archived)), [project, showArchived])
@@ -94,6 +96,9 @@ export default function ProjectCard({ project, user, tool, showArchived, onDialo
                   <span className="ra-variant-meta">
                     {fill('revision', { n: v.head.number })} · {v.head.author?.name} · {dateText(v.head.createdAt, language)}
                   </span>
+                )}
+                {localChanges[v.id] > 0 && (
+                  <span className="ui-badge ui-badge-warn" title={t('local_changes_hint')}>{fill('local_changes', { n: localChanges[v.id] })}</span>
                 )}
                 <span className="ra-variant-buttons">
                   <ToolLink className="ui-btn ui-btn-small" href={at({ variant: v.id, action: 'history' })}

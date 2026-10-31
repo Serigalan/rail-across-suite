@@ -4,36 +4,44 @@
 // an overlap over switch w1 onto track t2 (150 m), where a route ends at a
 // virtual signal (target on the line). Train detection over t1, flank
 // protection for the switch, the PZB magnets of A and N1, an ETCS balise
-// group of one at N1, a speed section of 60 km/h over the switch, 40 for
-// freight, and the station's boundary at A. The tests of the check and the shared vectors start from it.
+// group of one at N1, and the station's boundary at A. A signals 60 km/h for
+// its route to N1, whose overlap is long enough for that. The tests of the check and the shared vectors start from it.
 //
 // `operationalPoint` names the station of the core's register it bounds.
 
 export function ksStation({ operationalPoint = 'op1' } = {}) {
   const on = (trackId, station, extra = {}) => ({ anchor: 'station', trackId, station, side: 'right', offset: 3.1, direction: 'up', ...extra })
   return {
-    fields: { catalogue: { id: 'db-ril-301', version: '0.3.0' } },
+    fields: { catalogue: { id: 'db-ril-301', version: '0.4.0' } },
     collections: {
       signals: [
         {
-          id: 'sig-a', name: 'A', kind: 'real', function: 'entry', mounting: 'mast',
-          logicalSignals: [{ system: 'ks', type: 'multiSection' }],
+          id: 'sig-a', name: 'A', kind: 'real', mounting: 'mast',
           at: on('t1', 20), sight: { required: 300, achievable: 420 },
-          frames: [
-            { kind: 'screen', aspects: [{ aspect: 'Hp_0' }, { aspect: 'Ks_1' }, { aspect: 'Ks_2' }] },
-            { kind: 'indicator', aspects: [{ aspect: 'Zs_3', symbol: '6' }] },
-            { kind: 'indicator', aspects: [{ aspect: 'Zs_2', symbol: 'H' }] },
-            { kind: 'indicator', aspects: [{ aspect: 'Zs_1' }] },
-          ],
+          logicalSignals: [{
+            system: 'ks', type: 'multiSection', function: 'entry',
+            frames: [
+              { kind: 'screen', aspects: [{ aspect: 'Hp_0' }, { aspect: 'Ks_1' }, { aspect: 'Ks_2' }] },
+              { kind: 'indicator', aspects: [{ aspect: 'Zs_3', symbol: '6' }] },
+              { kind: 'indicator', aspects: [{ aspect: 'Zs_2', symbol: 'H' }] },
+              { kind: 'indicator', aspects: [{ aspect: 'Zs_1' }] },
+            ],
+            signallingSpeeds: [{ routeId: 'rt-a-n1', speed: 60 }],
+          }],
+          frames: [{ kind: 'nameplate', aspects: [] }],
         },
         {
-          id: 'sig-n1', name: 'N1', kind: 'real', function: 'exit', mounting: 'mast',
-          logicalSignals: [{ system: 'ks', type: 'mainShunting' }],
+          id: 'sig-n1', name: 'N1', kind: 'real', mounting: 'mast',
           at: on('t1', 230),
-          frames: [
-            { kind: 'screen', aspects: [{ aspect: 'Hp_0' }, { aspect: 'Ks_1' }, { aspect: 'Sh_1' }] },
-            { kind: 'indicator', aspects: [{ aspect: 'Zs_1' }] },
-          ],
+          logicalSignals: [{
+            system: 'ks', type: 'mainShunting', function: 'exit',
+            frames: [
+              { kind: 'screen', aspects: [{ aspect: 'Hp_0' }, { aspect: 'Ks_1' }, { aspect: 'Sh_1' }] },
+              { kind: 'indicator', aspects: [{ aspect: 'Zs_1' }] },
+            ],
+            signallingSpeeds: [{ routeId: 'rt-n1-v', speed: 80 }],
+          }],
+          frames: [],
         },
         {
           id: 'sig-ne1', kind: 'real', function: 'standaloneIndicator', mounting: 'foundation', at: on('t1', 5),
@@ -50,7 +58,7 @@ export function ksStation({ operationalPoint = 'op1' } = {}) {
       routes: [
         {
           id: 'rt-a-n1', name: 'A–N1', kind: 'train', trainType: 'ZZ', startSignalId: 'sig-a', targetSignalId: 'sig-n1',
-          path: { trackIds: ['t1'] }, speed: 60,
+          path: { trackIds: ['t1'] },
           overlaps: [{ overlapId: 'ov-n1', preferred: true }],
           aspects: [{ signalId: 'sig-a', aspect: 'Ks_1' }, { signalId: 'sig-a', aspect: 'Zs_3', symbol: '6' }],
         },
@@ -80,12 +88,6 @@ export function ksStation({ operationalPoint = 'op1' } = {}) {
           routes: [{ routeId: 'rt-n1-v', effect: 'inactiveWhenSet' }],
         },
         { id: 'etcs-n1', name: 'N1', at: on('t1', 226), system: 'etcs', kind: 'fixed', settings: { group: 'N1', position: 1 }, signalId: 'sig-n1', effect: 'permanent' },
-      ],
-      speedSections: [
-        {
-          id: 'v-w1', name: 'W1', start: { anchor: 'station', trackId: 't1', station: 200 }, path: { trackIds: ['t1', 't2'] },
-          end: { anchor: 'station', trackId: 't2', station: 60 }, speed: 60, speedByTag: { freight: 40 },
-        },
       ],
       stationBoundaries: [{ id: 'bd-1', operationalPointId: operationalPoint, marks: [{ signalId: 'sig-a' }] }],
     },

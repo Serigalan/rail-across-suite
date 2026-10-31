@@ -115,6 +115,33 @@ function operationalRegister(projectId, tracks, platforms) {
   return { points: [...points.values()], pointOf: (obj) => of.get(obj) }
 }
 
+// ── The design speed ────────────────────────────────────────────────────────
+
+// An element's design speed is `designSpeed` in the document, as the data
+// format names it beside the signalling speeds; the record the layout tool
+// works on keeps it as `speed`, the name its code and its files have used.
+function designSpeedOut(el) {
+  if (!Object.hasOwn(el, 'speed')) return el
+  const { speed, ...rest } = el
+  return { ...rest, designSpeed: speed }
+}
+function designSpeedIn(el) {
+  if (!Object.hasOwn(el, 'designSpeed')) return el
+  const { designSpeed, ...rest } = el
+  return { ...rest, speed: designSpeed }
+}
+
+/**
+ * A carried domain's value as JSON writes it: a member that is `undefined` is
+ * no member — an editor that clears a field leaves it so, and a file would
+ * never hold it.
+ */
+function asWritten(value) {
+  if (Array.isArray(value)) return value.map(v => (v === undefined ? null : asWritten(v)))
+  if (value === null || typeof value !== 'object') return value
+  return Object.fromEntries(Object.entries(value).filter(([, v]) => v !== undefined).map(([k, v]) => [k, asWritten(v)]))
+}
+
 // ── Record → document ───────────────────────────────────────────────────────
 
 /**
@@ -156,6 +183,7 @@ export function recordToDocument(record, schemaHashes) {
     collections: {
       tracks: tracks.map((t) => {
         const { status: _s, stationName: _n, uicStation: _u, ...rest } = t
+        if (rest.elements) rest.elements = rest.elements.map(designSpeedOut)
         return located(t, withoutNull(rest))
       }),
       switches: (record.switches ?? []).map(({ switchId, status, ...sw }) => withoutNull({
@@ -191,8 +219,8 @@ export function recordToDocument(record, schemaHashes) {
     version: DOMAIN_VERSIONS[name],
     schema: schemaHashes[name],
     dependsOn: ['core'],
-    fields: { ...(record[name].fields ?? {}) },
-    collections: { ...(record[name].collections ?? {}) },
+    fields: asWritten(record[name].fields ?? {}),
+    collections: asWritten(record[name].collections ?? {}),
   }]))
   for (const domain of [core, layout, ...Object.values(carried)]) {
     for (const name of Object.keys(domain.collections)) domain.collections[name] = [...domain.collections[name]].sort(byId)
@@ -233,6 +261,7 @@ export function documentToRecord(doc) {
   const collections = {
     tracks: (c.tracks ?? []).map(({ lifespan: _l, operationalPoint: _o, ...t }, i, all) => {
       const p = pointOf(all[i])
+      if (t.elements) t.elements = t.elements.map(designSpeedIn)
       return withoutNull({ ...t, stationName: p.name, uicStation: p.uic, status: status(all[i]) })
     }),
     switches: (c.switches ?? []).map(({ id, lifespan: _l, ...sw }, i, all) => withoutNull({

@@ -18,7 +18,7 @@ writes canonical JSON and content hashes. The `project` module opens the door fo
 
 | File | What it does |
 |---|---|
-| `door.js` | The one door: `checkDocument` (envelope, domain versions and schema hashes, every object against its domain's schema, ids unique per collection, blobs against their hashes), `toDocument` (a record as a checked document, the schemas carried where it travels), `fromDocument` (a checked document as the record) |
+| `door.js` | The one door: `checkDocument` (envelope, domain versions and schema hashes — a domain of an earlier schema of its version brought to this one first: core before `designSpeed`, signalling's three earlier schemas —, every object against its domain's schema, ids unique per collection, blobs against their hashes), `toDocument` (a record as a checked document, the schemas carried where it travels), `fromDocument` (a checked document as the record) |
 | `coreFormat.js` | The record ↔ document conversion, both ways and lossless; the first step of the migration chain (oltjson-1.1 → core 1.0) |
 | `schemaCheck.js` | The part of JSON Schema the domain schemas use — no more, so Python reads them alike; a schema with another keyword is refused when it is registered |
 | `canonical.js` | Canonical JSON after RFC 8785, content hashes (`sha256:` + hex), ids of UUID form drawn from a text |
@@ -55,8 +55,9 @@ it differs from oltjson-1.1:
 | a platform's `trackId`, `startStation`, `endStation`, `side` | `at`: a `TrackRange` `{ anchor: 'station', trackId, startStation, endStation, side }` |
 | an end mark's `trackId`, `endpoint` | `at`: a `TrackEnd` `{ trackId, endpoint }` |
 | a switch's `switchId` | `id`, like every object of every collection |
+| an element's `speed` | `designSpeed`, as the data format names the design speed beside the speeds the signalling signals |
 | `routes` `{ id, name, trackIds }` | `layout.trackPaths` `{ id, name, path: { trackIds } }` |
-| `signalling` `{ fields, collections }`, carried as it came | the domain `signalling`, `dependsOn: ["core"]` ([signalling](signalling.md)) |
+| `signalling` `{ fields, collections }`, carried as it came, a member that is `undefined` left out as JSON leaves it | the domain `signalling`, `dependsOn: ["core"]` ([signalling](signalling.md)) |
 | a survey's or reference axis' `points` inline | `points: "sha256:…"`, the array a blob |
 | collections in the order they were written | sorted by id, so the same state is the same bytes |
 

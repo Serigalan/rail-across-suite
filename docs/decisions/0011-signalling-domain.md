@@ -1,6 +1,6 @@
 # 0011 — The signalling domain follows PlanPro and OSRD, its content is a catalogue
 
-Status: **accepted** · domain `signalling` 1.0, catalogue `db-ril-301` 0.3.0 · checked against the PlanPro plan P-Hausen
+Status: **accepted** · domain `signalling` 1.0, catalogue `db-ril-301` 0.4.0 · checked against the PlanPro plan P-Hausen
 
 ## Decision
 
@@ -11,7 +11,7 @@ Status: **accepted** · domain `signalling` 1.0, catalogue `db-ril-301` 0.3.0 ·
 
    | Collection | PlanPro 1.10 | OSRD (RailJSON) |
    |---|---|---|
-   | `signals` — real or virtual, each real one with its logical signals (one per signalling system, see 3) and its frames and their aspects; a clearance marker on both branches also `alsoAt` | `Signal` (`Signal_Real`, `Signal_Fiktiv`), `Signalsystem` and `Signal_Art` of the screen, `Signal_Rahmen`, `Signal_Signalbegriff` | `Signal`: `track`, `position`, `direction`, `sight_distance`, `logical_signals` (system, `next_signaling_systems`, settings, default and per-route parameters); `extensions.sncf.side` is our `side` |
+   | `signals` — the places of the signals, real or virtual; a real one with its logical signals (one per signalling system, see 3), each with its function, its frames and their aspects and the speed it signals per route (signallingSpeed), and the boards of no system its own; a clearance marker on both branches also `alsoAt` | `Signal` (`Signal_Real`, `Signal_Fiktiv`), `Signalsystem`, `Signal_Art` and `Signal_Funktion` of the screen, `Signal_Rahmen`, `Signal_Signalbegriff`; `Fstr_V_Hg` as the start signal's signallingSpeed | `Signal`: `track`, `position`, `direction`, `sight_distance`, `logical_signals` (system, `next_signaling_systems`, settings, default and per-route parameters); `extensions.sncf.side` is our `side` |
    | `detectionPoints` | `FMA_Komponente` | `Detector` |
    | `trackSections` — name, kind, bounding detection points | `FMA_Anlage` | — (derived from detectors, as here) |
    | `switchElements` — the interlocking's switch, referring to the core's, or a derailer at its place; its clearance marker, twofold flank protection | `W_Kr_Gsp_Element`, `Fla_Zwieschutz` | `Switch` (the core's) |
@@ -19,7 +19,6 @@ Status: **accepted** · domain `signalling` 1.0, catalogue `db-ril-301` 0.3.0 ·
    | `overlaps` — run, danger point, design length, gradient, speed, clear sections, locked switches | `Fstr_DWeg`, `Fstr_DWeg_W_Kr` | — |
    | `flankProtection` — per switch element and position: by a signal, by a switch element in a position, or waived; passed on | `Fla_Schutz`, `Fla_Freimelde_Zuordnung` | — |
    | `balises` — the balises and magnets of train protection: of a system and kind, with their settings (a PZB magnet of 500, 1000, 2000 Hz or a speed check, an ETCS Eurobalise), their signal and routes | `PZB_Element`, `PZB_Element_Zuordnung`; `Balise` (ETCS) | — (OSRD has no balises yet) |
-   | `speedSections` — the speed profile: a stretch from a start over a run to an end, in a direction or both, its speed and per tag of train, the routes it holds on | `Geschwindigkeitsprofil` | `SpeedSection`: `track_ranges` (derived from start, run and end), `speed_limit`, `speed_limit_by_tag`, `on_routes` |
    | `stationBoundaries` — what marks the boundary of an operational point: an entry signal or board, an entry switch, a halt's platform | (EBO §4; the roadmap's station boundaries) | `OperationalPoint` parts |
 
 2. **Boards are signals.** Ne 1, Ne 2, Lf 6, Lf 7 and the like are signals whose frame is a plate, as in PlanPro.
@@ -30,15 +29,18 @@ Status: **accepted** · domain `signalling` 1.0, catalogue `db-ril-301` 0.3.0 ·
    shunting signal as well has one of `ks` and one of `sh`, and its screen shows what both ask. A **balise**
    names its train protection system, its kind and its settings: a PZB magnet its frequency, an ETCS Eurobalise
    its place in its group. The schema holds the system, kind and settings as keys and plain values; which there
-   are is the catalogue's. Speed sections hold their stretch as an overlap does — a start, a run and an end —
-   so the core carries them through every track edit with what it carries already; OSRD's track ranges follow
-   from them. OSRD's units are converted at the adapter: speeds are km/h here (conventions), m/s there.
+   are is the catalogue's. **Two speeds, two owners** (data model F8): the design speed of a track element is
+   the core's (`designSpeed`, set in the Layout-Tool), the speed a route permits is signalled — its start signal's
+   logical signal states it for the route (`signallingSpeeds`). There is no speed profile of its own: OSRD's
+   speed sections follow from the signalled speeds and the routes at the adapter, which also converts the units
+   (km/h here, m/s there).
 
 4. **What there is lies not in the schema but in a catalogue**,
    [`packages/core/constraints/db-ril-301.json`](../../packages/core/constraints/db-ril-301.json): the aspects by
    PlanPro's names (`Hp_0`, `Ks_1`, `Zs_3` …), the frames each may stand on, the symbol it asks for; per
    signalling system and kind of signal what its screen must and may show and which indicators it carries; per
-   train protection system its kinds of balise and magnet and the settings each must and may have. Version 0.3.0
+   train protection system its kinds of balise and magnet and the settings each must and may have; the length an
+   overlap needs for a speed and a gradient (`durchrutschweg`, a draft of Ril 819.0202). Version 0.4.0
    holds **all 192 aspects of PlanPro's Ril 301 list** with their symbols, the kinds of **Ks** signal and the
    **shunting signal** as systems, the boards, and **PZB** and **ETCS** as train protection systems — every entry
    titled in German and in English, so a tool shows it in the language set. H/V, Sv and Hl, ZUB or LZB come as
@@ -136,9 +138,14 @@ collection of its own when a tool plans it.
   author without the right to write it (S-R5).
 - **Values are missing.** Distances (distant signal spacing, overlap length, where balises and magnets lie) are not
   checked until the values of Ril 819 and Ril 483 are in the catalogue (`open_points`).
-- **1.0 was changed in place, twice.** Its first schema (`type` and `system` on the signal, `pzbElements`) and
-  its second (without speed sections) went into documents; the door brings a domain of either to the current
-  one as it reads it, step by step. The Python core does not: it reads only the current 1.0.
+- **1.0 was changed in place, three times.** Its first schema (`type` and `system` on the signal,
+  `pzbElements`), its second (without speed sections) and its third (speed sections, a route's own speed, frames
+  and function on the signal) went into documents; the door brings a domain of any of them to the current one as
+  it reads it, step by step. The Python core does not: it reads only the current 1.0.
+- **The overlap lengths are a draft.** The base lengths per speed step are the known values; the lengthening on
+  a fall is an approximation of our own, documented in the catalogue, to be checked against Ril 819.0202. The
+  check allows 1 % for a length measured off a plan, and takes the speed an overlap allows where it states one
+  (PlanPro `DWeg_V`).
 - **Where a signal is drawn is derived.** A location is its track, station, side and offset; the point in the
   plane follows (a signal is set two metres off by default, a balise or magnet at the rail) and is never stored,
   as OSRD derives its map layers from track and position.

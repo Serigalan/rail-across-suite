@@ -3,7 +3,7 @@
     "id": "db-ril-301",
     "title": "DB Ril 301 | Signalbuch — die Signalbegriffe nach PlanPro 1.10, Signalarten des Ks-Systems und der Sperrsignale, Tafeln, Balisen und Magnete der Zugbeeinflussung",
     "title_en": "DB Ril 301 | Signal book — the aspects after PlanPro 1.10, the kinds of Ks and shunting signal, boards, the balises and magnets of train protection",
-    "katalog_version": "0.3.0",
+    "katalog_version": "0.4.0",
     "status": "draft",
     "date": "2026-10-30",
     "language": "de",
@@ -26,6 +26,13 @@
     "label_note": "Die Schlüssel der Begriffe sind die Namen der Signalbegriffe in PlanPro 1.10 (Signalbegriffe_Ril_301.xsd): Hp_0, Ks_1, Zs_3 … So bildet der Export jeden Begriff ohne Tabelle ab. Ein Schlüssel wird nicht umbenannt — ein gespeichertes Projekt schlägt seine Begriffe darüber nach. title ist deutsch, title_en englisch; ein Werkzeug zeigt den Titel in der Sprache, die eingestellt ist."
   },
   "changelog": [
+    {
+      "version": "0.4.0",
+      "date": "2026-10-30",
+      "changes": [
+        "durchrutschweg: Solllänge nach Geschwindigkeit und maßgebender Neigung (Entwurf, gegen Ril 819.0202 zu prüfen)."
+      ]
+    },
     {
       "version": "0.3.0",
       "date": "2026-10-30",
@@ -2767,6 +2774,31 @@
       }
     }
   },
+  "durchrutschweg": {
+    "title": "Länge des Durchrutschwegs (Ril 819.0202)",
+    "title_en": "Length of the overlap (Ril 819.0202)",
+    "status": "entwurf",
+    "beschreibung": "Die Solllänge des Durchrutschwegs hinter einem Hauptsignal nach der Geschwindigkeit, mit der die Fahrstraße an das Signal heranführt (ihre signallingSpeed), und der maßgebenden Neigung über den Durchrutschweg. ENTWURF aus allgemein bekannten Regelwerten, nicht gegen die gültige Ril 819.0202 geprüft: die Grundlängen je Geschwindigkeitsstufe sind die Regelwerte; die Verlängerung im Gefälle ist eine eigene Näherung — der Weg wächst mit dem Kehrwert der Verzögerung, die das Gefälle übrig lässt: L = L0 · a / (a − g · |i| / 1000) für ein Gefälle i steiler als ab_gefaelle, auf volle zehn Meter aufgerundet; eine Steigung verkürzt nicht.",
+    "stufen": [
+      {
+        "bis": 40,
+        "laenge": 50
+      },
+      {
+        "bis": 60,
+        "laenge": 100
+      },
+      {
+        "laenge": 200
+      }
+    ],
+    "neigung": {
+      "ab_gefaelle": 5,
+      "verzoegerung": 0.75,
+      "schwere": 9.81,
+      "runden": 10
+    }
+  },
   "open_points": [
     {
       "id": "OP.S.01",
@@ -2782,7 +2814,7 @@
         "Overlap.length"
       ],
       "topic": "Länge des Durchrutschwegs",
-      "assumption": "Die Solllänge steht am Durchrutschweg (Laenge_Soll), der Core rechnet sie nicht nach. Die Tabelle nach Ril 819 (Geschwindigkeit, maßgebende Neigung) fehlt."
+      "assumption": "Die Solllänge rechnet der Core nach dem Entwurf unter durchrutschweg (Grundlänge je Geschwindigkeitsstufe, Verlängerung im Gefälle als Näherung); die Werte sind gegen die gültige Ril 819.0202 zu prüfen."
     },
     {
       "id": "OP.S.03",

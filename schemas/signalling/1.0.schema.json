@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "signalling",
   "title": "Rail-Data-Core, domain signalling 1.0",
-  "description": "The signalling of a project, as the signalling tool plans it: signals and boards, train detection, the switch elements of the interlocking, train and shunting routes with their overlaps, flank protection, the balises and magnets of train protection, the speed sections and the station boundaries. Depends on core; its references go into the core or into itself (R2, R9). Its objects follow PlanPro 1.10, and like OSRD it keeps every signalling and train protection system out of the schema (decision 0011): a signal carries a logical signal per system, a balise names its system; which systems, kinds, aspects and settings there are is not in this schema but in the catalogue (packages/core/constraints/db-ril-301.json), which the content check reads.",
+  "description": "The signalling of a project, as the signalling tool plans it: signals and boards, train detection, the switch elements of the interlocking, train and shunting routes with their overlaps, flank protection, the balises and magnets of train protection and the station boundaries. Depends on core; its references go into the core or into itself (R2, R9). Its objects follow PlanPro 1.10, and like OSRD it keeps every signalling and train protection system out of the schema (decision 0011): a signal carries a logical signal per system, a balise names its system; which systems, kinds, aspects and settings there are is not in this schema but in the catalogue (packages/core/constraints/db-ril-301.json), which the content check reads.",
   "type": "object",
   "required": ["fields", "collections"],
   "additionalProperties": false,
@@ -10,7 +10,7 @@
     "fields": { "$ref": "#/$defs/Fields" },
     "collections": {
       "type": "object",
-      "required": ["signals", "detectionPoints", "trackSections", "switchElements", "routes", "overlaps", "flankProtection", "balises", "speedSections", "stationBoundaries"],
+      "required": ["signals", "detectionPoints", "trackSections", "switchElements", "routes", "overlaps", "flankProtection", "balises", "stationBoundaries"],
       "additionalProperties": false,
       "properties": {
         "signals": { "type": "array", "items": { "$ref": "#/$defs/Signal" } },
@@ -21,7 +21,6 @@
         "overlaps": { "type": "array", "items": { "$ref": "#/$defs/Overlap" } },
         "flankProtection": { "type": "array", "items": { "$ref": "#/$defs/FlankProtection" } },
         "balises": { "type": "array", "items": { "$ref": "#/$defs/Balise" } },
-        "speedSections": { "type": "array", "items": { "$ref": "#/$defs/SpeedSection" } },
         "stationBoundaries": { "type": "array", "items": { "$ref": "#/$defs/StationBoundary" } }
       }
     }
@@ -55,7 +54,7 @@
       "enum": ["left", "right"]
     },
     "Signal": {
-      "description": "A signal or a board at the track (PlanPro: Signal), real or virtual. A real one stands at `at` and acts in its direction — or in both (`bothDirections`); what it can show are its frames, each with its aspects, keyed by the catalogue. A virtual one (PlanPro: Signal_Fiktiv) has no frames: it marks where a route starts or ends without a signal there.",
+      "description": "A signal's place at the track, the physical signal (PlanPro: Signal; OSRD: Signal), real or virtual. A real one stands at `at` and acts in its direction — or in both (`bothDirections`), on its mounting, seen from its sighting distances; what it is in each signalling system it shows are its logical signals, each with the frames it shows; the boards it carries of no system (Ne 1, Ra 12, mast plates, its name plate) are its own frames. A virtual one (PlanPro: Signal_Fiktiv) has neither: it marks where a route starts or ends without a signal there.",
       "type": "object",
       "required": ["id", "kind", "at"],
       "additionalProperties": false,
@@ -72,7 +71,7 @@
         },
         "bothDirections": { "type": "boolean" },
         "function": {
-          "description": "PlanPro Signal_Funktion.",
+          "description": "PlanPro Signal_Funktion, for a signal of no system (a level crossing's monitoring signal, a standalone indicator); one with logical signals states it on each.",
           "enum": [
             "entry", "exit", "entryExit", "intermediate", "exitIntermediate", "entryBlock", "block",
             "groupExit", "groupIntermediate", "groupExitIntermediate", "followUp", "cover", "trainCover",
@@ -106,18 +105,43 @@
             "achievable": { "type": "number", "minimum": 0 }
           }
         },
-        "frames": { "type": "array", "items": { "$ref": "#/$defs/Frame" } },
+        "frames": {
+          "description": "What it shows of no system: boards, the ceramic body of a clearance marker, its name plate — and the screen of a signal of no system. A logical signal's screen and indicators are the logical signal's.",
+          "type": "array", "items": { "$ref": "#/$defs/Frame" }
+        },
         "lifespan": { "$ref": "core#/$defs/Lifespan" }
       }
     },
     "LogicalSignal": {
-      "description": "A signal in one signalling system (OSRD: LogicalSignal): the system, a key of the catalogue's `systeme`; the kind of signal it is there, a key of that system's `signalarten` or `other`; its settings, as the catalogue declares them for the system; the systems the signals it announces may be of (OSRD next_signaling_systems); and the parameters it shows with, by default and per route (OSRD default_parameters, conditional_parameters), as the system declares them.",
+      "description": "A signal in one signalling system at a place (OSRD: LogicalSignal): the system, a key of the catalogue's `systeme`; the kind of signal it is there, a key of that system's `signalarten` or `other`; its function (PlanPro Signal_Funktion); the frames it shows — its screen, its indicators; the speed it signals for each route that starts at its place (signallingSpeed; PlanPro Fstr_V_Hg), where the design speed of the track (core `designSpeed`) is the layout's; its settings, as the catalogue declares them for the system; the systems the signals it announces may be of (OSRD next_signaling_systems); and the parameters it shows with, by default and per route (OSRD default_parameters, conditional_parameters), as the system declares them.",
       "type": "object",
       "required": ["system"],
       "additionalProperties": false,
       "properties": {
         "system": { "type": "string", "minLength": 1 },
         "type": { "type": "string", "minLength": 1 },
+        "function": {
+          "description": "PlanPro Signal_Funktion.",
+          "enum": [
+            "entry", "exit", "entryExit", "intermediate", "exitIntermediate", "entryBlock", "block",
+            "groupExit", "groupIntermediate", "groupExitIntermediate", "followUp", "cover", "trainCover",
+            "trainTarget", "levelCrossing", "distant", "standaloneIndicator", "other"
+          ]
+        },
+        "frames": { "type": "array", "items": { "$ref": "#/$defs/Frame" } },
+        "signallingSpeeds": {
+          "description": "Per route that starts at its place, the speed it signals for it [km/h] (signallingSpeed; PlanPro Fstr_V_Hg).",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["routeId", "speed"],
+            "additionalProperties": false,
+            "properties": {
+              "routeId": { "$ref": "core#/$defs/Ref", "x-target": "signalling.routes" },
+              "speed": { "type": "number", "minimum": 0 }
+            }
+          }
+        },
         "settings": { "$ref": "#/$defs/Settings" },
         "nextSystems": { "type": "array", "items": { "type": "string", "minLength": 1 } },
         "defaultParameters": { "$ref": "#/$defs/Settings" },
@@ -245,7 +269,7 @@
       }
     },
     "Route": {
-      "description": "A train, shunting or middle-switch route (PlanPro Fstr_Zug_Rangier with its Fstr_Fahrweg): from a start signal to a target signal along a run of tracks. Which way each switch element lies follows from the run and is not stored (as in PlanPro). A train route names the overlaps it may end in; flank protection follows from the switch elements it runs over. Where several routes run between the same two signals, `rank` orders them.",
+      "description": "A train, shunting or middle-switch route (PlanPro Fstr_Zug_Rangier with its Fstr_Fahrweg): from a start signal to a target signal along a run of tracks. Which way each switch element lies follows from the run and is not stored (as in PlanPro). A train route names the overlaps it may end in; flank protection follows from the switch elements it runs over. Where several routes run between the same two signals, `rank` orders them. The speed it permits is not its own: its start signal signals it (a logical signal's signallingSpeeds).",
       "type": "object",
       "required": ["id", "kind", "startSignalId", "targetSignalId", "path"],
       "additionalProperties": false,
@@ -260,7 +284,6 @@
         "startSignalId": { "$ref": "core#/$defs/Ref", "x-target": "signalling.signals" },
         "targetSignalId": { "$ref": "core#/$defs/Ref", "x-target": "signalling.signals" },
         "path": { "$ref": "core#/$defs/TrackPath" },
-        "speed": { "description": "The speed the route permits [km/h] (PlanPro Fstr_V_Hg).", "type": "number", "minimum": 0 },
         "autoSetting": { "type": "boolean", "description": "Set by the automatic route setting (PlanPro Automatische_Einstellung)." },
         "shortDistantSpacing": { "type": "boolean", "description": "Its distant signal stands at a shortened braking distance (PlanPro Fstr_Vsigabstand_Verkuerzt)." },
         "clearSections": {
@@ -414,31 +437,6 @@
               "effect": { "enum": ["activeWhenSet", "inactiveWhenSet", "other"] }
             }
           }
-        },
-        "lifespan": { "$ref": "core#/$defs/Lifespan" }
-      }
-    },
-    "SpeedSection": {
-      "description": "A stretch where a speed holds (OSRD: SpeedSection; the speed profile of the roadmap): from `start` along a run of tracks to `end`, both on the run's first and last track — as an overlap runs, so the core carries it as it carries every location and run. In the direction `start` states, or both where it states none. The speed [km/h], per tag of train where it differs (OSRD speed_limit_by_tag), and the routes it holds on only, where it holds on some.",
-      "type": "object",
-      "required": ["id", "start", "path", "end"],
-      "additionalProperties": false,
-      "properties": {
-        "id": { "$ref": "core#/$defs/Id" },
-        "name": { "$ref": "core#/$defs/Text" },
-        "start": { "$ref": "core#/$defs/TrackLocation" },
-        "path": { "$ref": "core#/$defs/TrackPath" },
-        "end": { "$ref": "core#/$defs/TrackLocation" },
-        "speed": { "description": "[km/h]", "type": "number", "minimum": 0 },
-        "speedByTag": {
-          "description": "Per tag of train, the speed it may run at here [km/h] (OSRD speed_limit_by_tag).",
-          "type": "object",
-          "additionalProperties": { "type": "number", "minimum": 0 }
-        },
-        "onRoutes": {
-          "description": "The routes it holds on; on all where it names none (OSRD on_routes).",
-          "type": "array",
-          "items": { "$ref": "core#/$defs/Ref", "x-target": "signalling.routes" }
         },
         "lifespan": { "$ref": "core#/$defs/Lifespan" }
       }

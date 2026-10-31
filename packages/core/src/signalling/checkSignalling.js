@@ -1,6 +1,7 @@
 import {
-  SIGNAL_CATALOGUE, aspectFitsFrame, aspectOf, baliseKindOf, boardAspect, knownSystem, protectionSystemOf, screenOf, settingsProblems, signalKindOf, symbolFits,
+  SIGNAL_CATALOGUE, aspectFitsFrame, aspectOf, baliseKindOf, boardAspect, knownSystem, protectionSystemOf, settingsProblems, signalKindOf, symbolFits,
 } from './catalogue.js'
+import { overlapLength, signallingSpeedOf } from './overlaps.js'
 import { trackSectionExtents } from './trackSections.js'
 import { tracksOnFrom } from '../track/index.js'
 
@@ -13,11 +14,16 @@ import { tracksOnFrom } from '../track/index.js'
  * - every logical signal of a signal is of a system and kind the catalogue
  *   knows, each system once, its settings and parameters as the system
  *   declares them, the systems it announces known;
- * - every signal shows what the catalogue lets its kinds show: known aspects,
- *   on the frames they belong on, with the symbol they ask for; a screen with
- *   the aspects its kinds must have and none they may not; indicators its
- *   kinds carry; a screen shows a proceed aspect of every kind that has
- *   some; a virtual signal shows nothing;
+ * - every logical signal shows what the catalogue lets its kind show: known
+ *   aspects, on the frames they belong on, with the symbol they ask for; one
+ *   screen with the aspects its kind must have and none it may not, a proceed
+ *   aspect where its kind has some; indicators its kind carries; a place shows
+ *   its boards, and a screen of its own only without logical signals; a
+ *   virtual signal shows nothing;
+ * - the speed a logical signal signals is for a route from its place, once;
+ * - an overlap is as long as its speed — the one it allows, else the one its
+ *   route leads up with — and its gradient ask (catalogue: durchrutschweg, a
+ *   draft);
  * - a track detection section's points bound one part of the net, exactly;
  * - a route runs from the track of its start signal to that of its target, a
  *   train route ends in an overlap behind its target, at most one of them
@@ -28,8 +34,6 @@ import { tracksOnFrom } from '../track/index.js'
  * - a balise or magnet is of a train protection system and kind the
  *   catalogue knows, has the settings its kind asks for and no others, each
  *   fitting; one switched by its signal names it;
- * - a speed section runs from the track of its start to that of its end and
- *   states a speed, for all trains or per tag;
  * - a station boundary is marked by an entry signal, a board Ne 1, a switch
  *   or a platform — anything else is a special case worth a warning (EBO §4).
  *
@@ -39,8 +43,7 @@ import { tracksOnFrom } from '../track/index.js'
  * `key` naming it stably (code and ids) for newFindings.
  *
  * Not yet checked, for want of the values (catalogue open_points): distances
- * — distant signal to main signal, the length an overlap needs, where the
- * balises and magnets lie.
+ * — distant signal to main signal, where the balises and magnets lie.
  */
 export function checkSignalling({ core, signalling }) {
   const errors = []
@@ -108,18 +111,42 @@ export function checkSignalling({ core, signalling }) {
     return held.includes(a) && held.includes(b)
   }) || ['BEGIN', 'END'].some(end => tracksOnFrom(a, end, core?.collections?.tracks ?? [], coreSwitches).some(t => t.trackId === b))
 
-  // ── signals ──
+  // ── signals: their places, their logical signals ──
+  const routesById = new Map((c.routes ?? []).map(r => [r.id, r]))
+  const isScreen = (f) => f.kind === 'screen'
+  /** The aspects of frames: known, on the frames they belong on, with their symbols; indicators of `kind`, boards that stand alone. */
+  const frameChecks = (s, frames, field, kind, anyScreen) => {
+    for (const [i, frame] of frames.entries()) {
+      if (!frame.aspects.length && frame.kind !== 'nameplate') warning('frame_empty', 'signals', s.id, { frame: frame.kind }, `${field}.${i}`)
+      for (const a of frame.aspects) {
+        const aspect = aspectOf(a.aspect)
+        const where = `${field}.${i}:${a.aspect}`
+        if (!aspect) { error('aspect_unknown', 'signals', s.id, { aspect: a.aspect }, where); continue }
+        if (!aspectFitsFrame(aspect, frame.kind)) { error('aspect_not_on_frame', 'signals', s.id, { aspect: a.aspect, frame: frame.kind }, where); continue }
+        if (!symbolFits(aspect, a.symbol)) error('symbol_invalid', 'signals', s.id, { aspect: a.aspect, symbol: a.symbol ?? null }, where)
+        if (frame.kind === 'indicator' && kind && !kind.zusatz.includes(a.aspect)) error('indicator_not_allowed', 'signals', s.id, { aspect: a.aspect }, where)
+        if (frame.kind === 'plate' && !anyScreen && !boardAspect(a.aspect)) error('board_not_allowed', 'signals', s.id, { aspect: a.aspect }, where)
+      }
+    }
+  }
   for (const s of c.signals ?? []) {
     at('signals', s, s.at)
     for (const [i, also] of (s.alsoAt ?? []).entries()) at('signals', s, also, `alsoAt.${i}`)
     lifespan('signals', s)
-    const frames = s.frames ?? []
+    const own = s.frames ?? []
+    const logical = s.logicalSignals ?? []
     if (s.kind === 'virtual') {
-      if (frames.length) error('virtual_with_frames', 'signals', s.id)
+      if (own.length || logical.length) error('virtual_with_frames', 'signals', s.id)
       if (!s.virtualFunction) warning('virtual_without_function', 'signals', s.id)
       continue
     }
-    const logical = s.logicalSignals ?? []
+    const anyScreen = own.some(isScreen) || logical.some(l => (l.frames ?? []).some(isScreen))
+    // The place: its boards; a screen of its own only where it has no logical signal to show it.
+    if (logical.length) {
+      for (const [i, f] of own.entries()) if (f.kind === 'screen' || f.kind === 'indicator') error('frame_of_logical_signal', 'signals', s.id, { frame: f.kind }, `frames.${i}`)
+    }
+    if (own.filter(isScreen).length > 1) error('screens_many', 'signals', s.id, { n: own.filter(isScreen).length })
+    frameChecks(s, own, 'frames', null, anyScreen)
     const seen = new Set()
     for (const [i, l] of logical.entries()) {
       const where = `logicalSignals.${i}`
@@ -134,41 +161,36 @@ export function checkSignalling({ core, signalling }) {
       for (const next of l.nextSystems ?? []) {
         if (!knownSystem(next)) error('system_unknown', 'signals', s.id, { system: next }, `${where}:next:${next}`)
       }
-      const parameterSets = [l.defaultParameters, ...(l.conditionalParameters ?? []).map(c => c.parameters)]
+      const parameterSets = [l.defaultParameters, ...(l.conditionalParameters ?? []).map(p => p.parameters)]
       for (const [k, parameters] of parameterSets.entries()) {
         for (const p of settingsProblems(parameters, system.parameter)) {
           error(`parameter_${p.problem}`, 'signals', s.id, { parameter: p.setting, system: l.system }, `${where}:${k}:${p.setting}`)
         }
       }
-      for (const c of l.conditionalParameters ?? []) ref('signals', s.id, 'signalling.routes', c.routeId, `${where}.conditionalParameters`)
-    }
-    const screens = frames.filter(f => f.kind === 'screen')
-    if (screens.length > 1) error('screens_many', 'signals', s.id, { n: screens.length })
-    if (screens.length && logical.length && logical.every(l => !l.type)) error('type_missing', 'signals', s.id)
-    const kind = screens.length ? screenOf(logical) : null
-    for (const [i, frame] of frames.entries()) {
-      if (!frame.aspects.length && frame.kind !== 'nameplate') warning('frame_empty', 'signals', s.id, { frame: frame.kind }, String(i))
-      for (const a of frame.aspects) {
-        const aspect = aspectOf(a.aspect)
-        const where = `${i}:${a.aspect}`
-        if (!aspect) { error('aspect_unknown', 'signals', s.id, { aspect: a.aspect }, where); continue }
-        if (!aspectFitsFrame(aspect, frame.kind)) { error('aspect_not_on_frame', 'signals', s.id, { aspect: a.aspect, frame: frame.kind }, where); continue }
-        if (!symbolFits(aspect, a.symbol)) error('symbol_invalid', 'signals', s.id, { aspect: a.aspect, symbol: a.symbol ?? null }, where)
-        if (frame.kind === 'indicator' && kind && !kind.zusatz.includes(a.aspect)) {
-          error('indicator_not_allowed', 'signals', s.id, { aspect: a.aspect }, where)
-        }
-        if (frame.kind === 'plate' && !screens.length && !boardAspect(a.aspect)) {
-          error('board_not_allowed', 'signals', s.id, { aspect: a.aspect }, where)
-        }
+      for (const p of l.conditionalParameters ?? []) ref('signals', s.id, 'signalling.routes', p.routeId, `${where}.conditionalParameters`)
+      // What it shows: one screen, holding what its kind must and may show; indicators its kind carries.
+      const frames = l.frames ?? []
+      const screens = frames.filter(isScreen)
+      const kind = signalKindOf(l.system, l.type)
+      if (screens.length > 1) error('screens_many', 'signals', s.id, { n: screens.length }, where)
+      if (screens.length && !l.type) error('type_missing', 'signals', s.id, { system: l.system }, where)
+      frameChecks(s, frames, `${where}.frames`, kind, anyScreen)
+      if (kind && screens.length) {
+        const shown = new Set(screens[0].aspects.map(a => a.aspect))
+        for (const must of kind.schirm.pflicht) if (!shown.has(must)) error('screen_lacks', 'signals', s.id, { aspect: must, system: l.system }, `${where}:${must}`)
+        const proceed = kind.schirm.fahrt ?? []
+        if (proceed.length && !proceed.some(a => shown.has(a))) warning('screen_no_proceed', 'signals', s.id, { aspects: proceed, system: l.system }, where)
+        for (const has of shown) if (!kind.schirm.erlaubt.includes(has)) error('screen_not_allowed', 'signals', s.id, { aspect: has, system: l.system }, `${where}:${has}`)
       }
-    }
-    if (kind) {
-      const shown = new Set(screens[0].aspects.map(a => a.aspect))
-      for (const must of kind.pflicht) if (!shown.has(must)) error('screen_lacks', 'signals', s.id, { aspect: must }, must)
-      for (const proceed of kind.fahrt) {
-        if (!proceed.some(a => shown.has(a))) warning('screen_no_proceed', 'signals', s.id, { aspects: proceed }, proceed.join('+'))
+      // The speeds it signals: each for a route from its place, once.
+      const speeds = new Set()
+      for (const v of l.signallingSpeeds ?? []) {
+        ref('signals', s.id, 'signalling.routes', v.routeId, `${where}.signallingSpeeds`)
+        const route = routesById.get(v.routeId)
+        if (route && route.startSignalId !== s.id) error('speed_route_elsewhere', 'signals', s.id, { route: v.routeId }, `${where}:${v.routeId}`)
+        if (speeds.has(v.routeId)) error('speed_route_twice', 'signals', s.id, { route: v.routeId }, `${where}:${v.routeId}:twice`)
+        speeds.add(v.routeId)
       }
-      for (const has of shown) if (!kind.erlaubt.includes(has)) error('screen_not_allowed', 'signals', s.id, { aspect: has }, has)
     }
   }
 
@@ -210,15 +232,24 @@ export function checkSignalling({ core, signalling }) {
     if (r.kind === 'shunting' && r.overlaps?.length) error('shunting_with_overlap', 'routes', r.id)
     if (r.kind === 'train' && signals.get(r.targetSignalId)?.kind === 'real' && !r.overlaps?.length) warning('route_without_overlap', 'routes', r.id)
     if ((r.overlaps ?? []).filter(o => o.preferred).length > 1) error('overlap_preferred_many', 'routes', r.id)
+    const speed = r.kind === 'train' ? signallingSpeedOf(signalling, r) : null
     for (const o of r.overlaps ?? []) {
       ref('routes', r.id, 'signalling.overlaps', o.overlapId, 'overlaps')
       const overlap = overlaps.get(o.overlapId)
       if (overlap && overlap.signalId !== r.targetSignalId) error('overlap_not_at_target', 'routes', r.id, { overlap: o.overlapId }, o.overlapId)
+      // As long as its speed and the gradient over it ask (catalogue: durchrutschweg): the speed it allows
+      // where it states one (PlanPro DWeg_V), else the one the route leads up with.
+      const governing = overlap?.speed ?? speed
+      const needed = overlap && overlapLength(governing, overlap.gradient ?? 0)
+      if (needed != null && overlap.length < needed * (1 - OVERLAP_TOL)) {
+        warning('overlap_short', 'overlaps', overlap.id, { length: overlap.length, needed, speed: governing, route: r.id }, r.id)
+      }
     }
     for (const a of r.aspects ?? []) {
       ref('routes', r.id, 'signalling.signals', a.signalId, 'aspects')
       const s = signals.get(a.signalId)
-      const has = (s?.frames ?? []).some(f => f.aspects.some(x => x.aspect === a.aspect && (a.symbol === undefined || x.symbol === a.symbol)))
+      const shown = [...(s?.frames ?? []), ...(s?.logicalSignals ?? []).flatMap(l => l.frames ?? [])]
+      const has = shown.some(f => f.aspects.some(x => x.aspect === a.aspect && (a.symbol === undefined || x.symbol === a.symbol)))
       if (s && !has) error('route_aspect_not_on_signal', 'routes', r.id, { signal: a.signalId, aspect: a.aspect, symbol: a.symbol ?? null }, `${a.signalId}:${a.aspect}`)
     }
   }
@@ -274,19 +305,6 @@ export function checkSignalling({ core, signalling }) {
     }
   }
 
-  // ── speed sections ──
-  for (const v of c.speedSections ?? []) {
-    path('speedSections', v, v.path)
-    at('speedSections', v, v.start, 'start')
-    at('speedSections', v, v.end, 'end')
-    lifespan('speedSections', v)
-    const run = v.path?.trackIds ?? []
-    if (run.length && v.start?.anchor === 'station' && run[0] !== v.start.trackId) error('speed_start_off_path', 'speedSections', v.id)
-    if (run.length && v.end?.anchor === 'station' && run[run.length - 1] !== v.end.trackId) error('speed_end_off_path', 'speedSections', v.id)
-    if (!(v.speed > 0) && !Object.values(v.speedByTag ?? {}).some(x => x > 0)) error('speed_missing', 'speedSections', v.id)
-    for (const r of v.onRoutes ?? []) ref('speedSections', v.id, 'signalling.routes', r, 'onRoutes')
-  }
-
   // ── station boundaries ──
   for (const b of c.stationBoundaries ?? []) {
     ref('stationBoundaries', b.id, 'core.operationalPoints', b.operationalPointId, 'operationalPointId')
@@ -295,7 +313,7 @@ export function checkSignalling({ core, signalling }) {
       if (m.platformId) { ref('stationBoundaries', b.id, 'core.platforms', m.platformId, 'marks'); continue }
       ref('stationBoundaries', b.id, 'signalling.signals', m.signalId, 'marks')
       const s = signals.get(m.signalId)
-      const entry = ['entry', 'entryExit', 'entryBlock'].includes(s?.function)
+      const entry = [s?.function, ...(s?.logicalSignals ?? []).map(l => l.function)].some(fn => ['entry', 'entryExit', 'entryBlock'].includes(fn))
       const board = (s?.frames ?? []).some(f => f.aspects.some(a => a.aspect === 'Ne_1'))
       if (s && !entry && !board) warning('boundary_mark_special', 'stationBoundaries', b.id, { signal: m.signalId }, m.signalId)
     }
@@ -304,6 +322,9 @@ export function checkSignalling({ core, signalling }) {
 
   return { errors, warnings }
 }
+
+/** An overlap may fall short of the length it needs by this share: a length measured off a plan rounds (199 m for 200). */
+const OVERLAP_TOL = 0.01
 
 /** Stations may overshoot the track length by this much [m], as validateProject allows. */
 const STATION_TOL = 0.01

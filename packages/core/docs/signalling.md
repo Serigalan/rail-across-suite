@@ -24,6 +24,7 @@ settings: a new signalling system (H/V, Sv) is a new entry under `systeme`, a ne
 |---|---|
 | `catalogue.js` | The catalogue: an aspect by its key (`aspectOf`), what a kind of signal of a system shows (`signalKindOf`) and what a screen of several logical signals shows (`screenOf`), a train protection system and its kinds (`protectionSystemOf`, `baliseKindOf`), how settings stand to what is declared (`settingsProblems`), whether a symbol fits, which aspects stand on a board of their own, an entry's title in a language (`titleIn`) |
 | `checkSignalling.js` | `checkSignalling({ core, signalling })`: the findings of the domain on the core it stands on, `{ errors, warnings }` as validateProject gives them |
+| `overlaps.js` | What an overlap needs: the speed a route's start signal signals for it (`signallingSpeedOf`), the length a speed and gradient ask (`overlapLength`, catalogue `durchrutschweg`), the gradient over a run from the tracks' heights (`gradientAlong`) |
 | `trackSections.js` | The extent of the track detection sections, derived over the net from their points (`trackSectionExtents`, `netParts`) |
 
 ## The catalogue
@@ -34,6 +35,7 @@ settings: a new signalling system (H/V, Sv) is a new entry under `systeme`, a ne
 | `systeme` | the signalling systems a logical signal is of: `ks` with its kinds (`main`, `mainShunting`, `multiSection`, `multiSectionShunting`, `shunting`, `distant`, `distantRepeater`), `sh`, the shunting signal (Sh 0, Sh 1). Per kind what its screen must show (`pflicht`), at least one of (`fahrt`), and may show (`erlaubt`) — Kl, Zl, Zs 1, Zs 7 and Zs 8 are lights of the Ks screen, as PlanPro plans have them — and which indicators it carries (`zusatz`); a system may declare `einstellungen` for its logical signals. A signal of several logical signals shows what they ask together |
 | `ohne_system` | the aspects that may stand on a board of their own (`tafeln`: Ne, Lf, Ra, El, So, Bü, Oz …, not the mast plates Ms) |
 | `zugbeeinflussung` | the train protection systems of balises and magnets — `pzb` (track magnet, speed check), `etcs` (fixed and controlled Eurobalise) —, each with its short `name`, the settings it declares (`einstellungen`: a choice of `werte`, a number with `einheit`, `min`, `max`, a flag, a text; `vorgabe` the value a tool starts with) and its kinds (`arten`), each with the settings it must (`pflicht`) and may (`erlaubt`) have; how a balise acts (`wirksamkeit`), with PlanPro's names |
+| `durchrutschweg` | the length an overlap needs: per speed step (≤ 40 km/h 50 m, ≤ 60 km/h 100 m, beyond 200 m), longer on a fall steeper than 5 ‰ — a draft of Ril 819.0202, its lengthening an approximation stated with it |
 | `open_points` | what is not in yet: distant signal spacing, overlap lengths, where balises and magnets lie (Ril 819, Ril 483) |
 
 ## The check
@@ -44,7 +46,10 @@ settings: a new signalling system (H/V, Sv) is a new entry under `systeme`, a ne
 | `off_track`, `orphaned` | error, warning | a station beyond its track; a location in the plane, without a track (R7) |
 | `aspect_unknown`, `aspect_not_on_frame`, `symbol_invalid` | error | an aspect the catalogue does not have, on a frame it does not belong on, without the symbol it asks for |
 | `frame_empty` | warning | a frame that shows nothing, other than a name plate |
-| `screen_lacks`, `screen_not_allowed`, `screens_many` | error | a screen without an aspect its kind must show, with one it may not, more than one screen |
+| `screen_lacks`, `screen_not_allowed`, `screens_many` | error | a logical signal's screen without an aspect its kind must show, with one it may not, more than one screen |
+| `frame_of_logical_signal` | error | a screen or indicator at a place that has logical signals: it is a logical signal's |
+| `speed_route_elsewhere`, `speed_route_twice` | error | a logical signal signals a speed for a route that does not start at its place, or two for one route |
+| `overlap_short` | warning | an overlap shorter than its speed and gradient ask (catalogue `durchrutschweg`; its own speed where it states one, else its route's signalled speed; 1 % allowed for a measured length) |
 | `screen_no_proceed` | warning | a screen showing none of a kind's proceed aspects (an exit signal of P-Hausen shows Hp 0 and Sh 1 only) |
 | `indicator_not_allowed`, `board_not_allowed` | error | an indicator the kind does not carry; a board on its own that is none |
 | `system_unknown`, `system_twice`, `type_missing`, `type_not_in_system` | error | each logical signal's system and kind, each system once, the systems it announces (`nextSystems`) known; a screen whose logical signals name no kind. A screen of no logical signal (a level crossing's monitoring signal, a lone Zs 6) is checked for known aspects only |
@@ -57,7 +62,6 @@ settings: a new signalling system (H/V, Sv) is a new entry under `systeme`, a ne
 | `overlap_start_off_path`, `overlap_end_off_path` | error | an overlap runs from its signal's track; its end, the danger point, lies on its run or beside its end (the clearance marker of a switch there) |
 | `flank_asked_twice`, `flank_by_itself`, `flank_position_missing` | error | one flank protection per switch element and position, never given by the element itself; a switch giving it states its position (a derailer gives it applied) |
 | `system_unknown`, `kind_not_in_system`, `balise_switched_without_signal` | error | a balise of a train protection system and kind the catalogue knows; one its signal switches names it |
-| `speed_start_off_path`, `speed_end_off_path`, `speed_missing` | error | a speed section runs from the track of its start to that of its end, and states a speed for all trains or per tag |
 | `detection_point_unused` | warning | a detection point that bounds no track section |
 | `section_extent_differs` | warning | a section's points enclose no part of the net together (see below) |
 | `boundary_mark_special` | warning | a station boundary marked by neither an entry signal nor a board Ne 1 nor a switch nor a platform — a special case of EBO §4 |

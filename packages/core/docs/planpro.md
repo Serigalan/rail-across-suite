@@ -34,7 +34,7 @@ the offset. A double slip is four nodes in PlanPro and four turnouts here (repor
 
 | PlanPro | Domain |
 |---|---|
-| `Signal` with `Signal_Rahmen` and `Signal_Signalbegriff` | `signals` with their frames and aspects, the `Signalsystem` and `Signal_Art` of the screen as its logical signal (a `Sperrsignal` of no system one of `sh`); a second `Punkt_Objekt_TOP_Kante` (a clearance marker on both branches) is `alsoAt` |
+| `Signal` with `Signal_Rahmen` and `Signal_Signalbegriff` | `signals` — places — with their logical signal from the `Signalsystem` and `Signal_Art` of the screen (a `Sperrsignal` of no system one of `sh`), which takes the screen, the indicators, the `Signal_Funktion` and, from each route starting there, its `Fstr_V_Hg` as signallingSpeed; boards and the name plate stay the place's; a second `Punkt_Objekt_TOP_Kante` (a clearance marker on both branches) is `alsoAt` |
 | `FMA_Komponente`, `FMA_Anlage` | `detectionPoints`, `trackSections` — bounded by the points whose `ID_FMAgrenze` names them |
 | `W_Kr_Gsp_Element` (Weiche_Element, Gleissperre_Element), `Fla_Zwieschutz` | `switchElements`, on the turnout of their component's node, or a derailer at its place |
 | `Fstr_Zug_Rangier`, `Fstr_Fahrweg`, `Fstr_Signalisierung` | `routes`: the run's edges in running order from the start signal's edge, what they show |

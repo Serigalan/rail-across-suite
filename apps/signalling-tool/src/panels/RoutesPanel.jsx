@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Badge, Button, Checkbox, NumberField, Panel, PlusIcon, Section, SelectField, SelectList, Tabs, TextField } from '@rail-across/ui'
-import { newId, labelOf } from '../model/domain.js'
+import { signallingSpeedOf } from '@rail-across/core/signalling'
+import { newId, labelOf, logicalId } from '../model/domain.js'
+import { measuredOverlap, overlapSpeed, withMeasuredOverlap } from '../model/overlaps.js'
 import { findRun, runAhead, switchesOnRun } from '../model/runs.js'
 import { SHUNTING_TYPE, TRAIN_TYPE, optionsOf } from '../labels.js'
 import { CheckList, EditorHead, ObjectFindings } from './common.jsx'
@@ -10,10 +12,13 @@ import { aspectText, trackName } from '../model/places.js'
  * Routes and their overlaps. A new route runs from its start signal to its
  * target over the shortest run the net has the way the two act; it shows the
  * aspects of its start signal that are chosen, and names the overlaps at its
- * target. A new overlap runs its length ahead of its signal, straight on at
- * every switch; its danger point lies at its end.
+ * target. The speed it permits is its start signal's to signal (Signale):
+ * here it is shown, and an overlap is measured from it — its length after the
+ * speed and the gradient over it, which the heights of the tracks give. A new
+ * overlap runs its length ahead of its signal, straight on at every switch;
+ * its danger point lies at its end.
  */
-export default function RoutesPanel({ domain, net, findings, extents, selection, select, ops, readOnly, t, language }) {
+export default function RoutesPanel({ domain, net, findings, extents, selection, select, ops, readOnly, t, language, setNotice }) {
   const [tab, setTab] = useState(selection?.collection === 'overlaps' ? 'overlaps' : 'routes')
   const { routes, overlaps, signals } = domain.collections
   const sig = (id) => signals.find(s => s.id === id)
@@ -26,7 +31,7 @@ export default function RoutesPanel({ domain, net, findings, extents, selection,
   const routeItems = routes.map(r => ({
     id: r.id, title: routeName(r),
     sub: [r.kind === 'train' ? `${t('train')} ${r.trainType ?? ''}` : r.kind === 'middle' ? t('middle') : `${t('shunting')} ${r.shuntingType ?? ''}`,
-      r.speed ? `${r.speed} km/h` : null, r.rank ? `#${r.rank}` : null].filter(Boolean).join(' · '),
+      signallingSpeedOf(domain, r) != null ? `${signallingSpeedOf(domain, r)} km/h` : null, r.rank ? `#${r.rank}` : null].filter(Boolean).join(' · '),
     end: bad.has(r.id) ? <Badge tone="danger">!</Badge> : null,
   })).sort((a, b) => a.title.localeCompare(b.title, 'de', { numeric: true }))
   const overlapItems = overlaps.map(o => ({
@@ -66,11 +71,16 @@ export default function RoutesPanel({ domain, net, findings, extents, selection,
         : <SelectList maxHeight="34vh" label={t('overlaps')} items={overlapItems} selected={chosenOverlap?.id} onSelect={(id) => select({ collection: 'overlaps', id })} empty={t('empty_list')} />}
       {chosenRoute && (
         <RouteEditor key={chosenRoute.id} route={chosenRoute} name={routeName(chosenRoute)} domain={domain} net={net} findings={findings}
-          signalOptions={signalOptions} readOnly={readOnly} t={t} language={language}
-          onChange={(r) => ops.update('routes', r)} onDelete={() => ops.remove('routes', chosenRoute.id)} onNewOverlap={newOverlap} />
+          signalOptions={signalOptions} readOnly={readOnly} t={t} language={language} select={select}
+          onChange={(r) => ops.update('routes', r)} onDelete={() => ops.remove('routes', chosenRoute.id)} onNewOverlap={newOverlap}
+          onMeasure={() => {
+            const { domain: next, problem } = withMeasuredOverlap(domain, net, chosenRoute)
+            if (next) ops.replaceAll(next)
+            else setNotice?.({ tone: 'warn', text: t(`measure_no_${problem}`) })
+          }} />
       )}
       {chosenOverlap && (
-        <OverlapEditor key={chosenOverlap.id} overlap={chosenOverlap} domain={domain} net={net} findings={findings} extents={extents}
+        <OverlapEditor key={chosenOverlap.id} overlap={chosenOverlap} domain={domain} net={net} findings={findings} extents={extents} setNotice={setNotice}
           signalOptions={signalOptions} readOnly={readOnly} t={t}
           onChange={(o) => ops.update('overlaps', o)} onDelete={() => ops.remove('overlaps', chosenOverlap.id)} />
       )}
@@ -78,7 +88,7 @@ export default function RoutesPanel({ domain, net, findings, extents, selection,
   )
 }
 
-function RouteEditor({ route, name, domain, net, findings, signalOptions, onChange, onDelete, onNewOverlap, readOnly, t, language }) {
+function RouteEditor({ route, name, domain, net, findings, signalOptions, onChange, onDelete, onNewOverlap, onMeasure, select, readOnly, t, language }) {
   const { signals, overlaps } = domain.collections
   const set = (patch) => onChange({ ...route, ...patch })
   const start = signals.find(s => s.id === route.startSignalId)
@@ -89,13 +99,16 @@ function RouteEditor({ route, name, domain, net, findings, signalOptions, onChan
     const run = a && b ? findRun(net, a.at, b.at) : null
     onChange({ ...r, path: { trackIds: run ?? [] } })
   }
-  // What it may show: the aspects of its start signal, with their symbols.
-  const shown = (start?.frames ?? []).flatMap(f => f.aspects).filter(a => !['Hp_0', 'Sh_1'].includes(a.aspect) || route.kind === 'shunting')
+  // What it may show: the aspects of its start signal, at its place and its logical signals, with their symbols.
+  const shown = [...(start?.frames ?? []), ...(start?.logicalSignals ?? []).flatMap(l => l.frames ?? [])].flatMap(f => f.aspects).filter(a => !['Hp_0', 'Sh_1'].includes(a.aspect) || route.kind === 'shunting')
   const key = (a) => `${a.aspect}|${a.symbol ?? ''}`
   const chosenShows = new Set((route.aspects ?? []).filter(a => a.signalId === route.startSignalId).map(key))
   const atTarget = overlaps.filter(o => o.signalId === route.targetSignalId)
   const named = new Map((route.overlaps ?? []).map(o => [o.overlapId, o]))
   const elements = switchesOnRun(net, route.path.trackIds)
+  const speed = signallingSpeedOf(domain, route)
+  // Where its speed is set: the logical signal at its start that signals it, else the first.
+  const setter = start?.logicalSignals?.find(l => l.signallingSpeeds?.some(v => v.routeId === route.id)) ?? start?.logicalSignals?.[0]
 
   return (
     <div className="tool-editor">
@@ -113,10 +126,19 @@ function RouteEditor({ route, name, domain, net, findings, signalOptions, onChan
               : { kind: v, middleType: 'ZM', trainType: undefined, shuntingType: undefined })} />
         {route.kind === 'train' && <SelectField compact label={t('train_type')} value={route.trainType ?? null} empty={t('none')} options={optionsOf(TRAIN_TYPE, language)} disabled={readOnly} onChange={(v) => set({ trainType: v ?? undefined })} />}
         {route.kind === 'shunting' && <SelectField compact label={t('shunting_type')} value={route.shuntingType ?? null} empty={t('none')} options={optionsOf(SHUNTING_TYPE, language)} disabled={readOnly} onChange={(v) => set({ shuntingType: v ?? undefined })} />}
-        <NumberField compact label={t('speed')} value={route.speed ?? null} min={0} disabled={readOnly} onChange={(v) => set({ speed: v ?? undefined })} />
         <NumberField compact label={t('rank')} value={route.rank ?? null} min={0} step={1} disabled={readOnly} onChange={(v) => set({ rank: v ?? undefined })} />
         <TextField compact wide label={t('name')} value={route.name ?? ''} disabled={readOnly} onChange={(v) => set({ name: v || undefined })} />
       </div>
+      <Section title={t('route_speed')}>
+        <div className="ui-row">
+          <span className="ui-grow">{speed != null ? `${speed} km/h` : t('speed_not_signalled')}</span>
+          {setter && (
+            <Button size="small" onClick={() => select({ collection: 'logicalSignals', id: logicalId(start.id, setter.system) })}>
+              {t('set_at_signal')}
+            </Button>
+          )}
+        </div>
+      </Section>
       <Section title={t('path')} actions={!readOnly && <Button size="small" onClick={() => rerun()}>{t('find_path')}</Button>}>
         {route.path.trackIds.length
           ? <p className="ui-muted">{route.path.trackIds.map(id => trackName(net, id)).join(' → ')}{elements.length ? ` · ${elements.length} × ${t('switch')}` : ''}</p>
@@ -135,10 +157,13 @@ function RouteEditor({ route, name, domain, net, findings, signalOptions, onChan
       </Section>
       {route.kind === 'train' && (
         <Section title={`${t('overlaps')} — ${target ? labelOf('signals', target, t) : ''}`}
-          actions={!readOnly && target && <Button size="small" icon={<PlusIcon size={12} />} onClick={() => onNewOverlap(target.id)}>{t('new')}</Button>}>
+          actions={!readOnly && target && <>
+            <Button size="small" variant="primary" disabled={speed == null} title={t('measure_overlap_hint')} onClick={onMeasure}>{t('measure_overlap')}</Button>
+            <Button size="small" icon={<PlusIcon size={12} />} onClick={() => onNewOverlap(target.id)}>{t('new')}</Button>
+          </>}>
           {atTarget.length ? atTarget.map(o => (
             <div key={o.id} className="tool-aspect-row">
-              <Checkbox label={`${o.name ?? ''} · ${o.length} m`} checked={named.has(o.id)} disabled={readOnly}
+              <Checkbox label={`${o.name ?? ''} · ${o.length} m${o.gradient != null ? ` · ${o.gradient} ‰` : ''}${o.speed != null ? ` · ${o.speed} km/h` : ''}`} checked={named.has(o.id)} disabled={readOnly}
                 onChange={(on) => set({ overlaps: on ? [...(route.overlaps ?? []), { overlapId: o.id }] : (route.overlaps ?? []).filter(x => x.overlapId !== o.id) })} />
               {named.has(o.id) && (
                 <Checkbox label={t('preferred_overlap')} checked={named.get(o.id).preferred} disabled={readOnly}
@@ -152,7 +177,7 @@ function RouteEditor({ route, name, domain, net, findings, signalOptions, onChan
   )
 }
 
-function OverlapEditor({ overlap, domain, net, findings, extents, signalOptions, onChange, onDelete, readOnly, t }) {
+function OverlapEditor({ overlap, domain, net, findings, extents, signalOptions, onChange, onDelete, setNotice, readOnly, t }) {
   const { signals, switchElements, trackSections } = domain.collections
   const set = (patch) => onChange({ ...overlap, ...patch })
   const rerun = (patch = {}) => {
@@ -165,6 +190,15 @@ function OverlapEditor({ overlap, domain, net, findings, extents, signalOptions,
   const elementsOnRun = switchElements.filter(e => onRun.has(e.switchId))
   const locked = new Map((overlap.switches ?? []).map(s => [s.switchElementId, s.locked]))
   const near = trackSections.filter(s => (extents.get(s.id)?.parts ?? []).some(p => overlap.path.trackIds.includes(p.trackId)))
+  const forSpeed = overlapSpeed(domain, overlap)
+  const measure = () => {
+    const m = measuredOverlap(net, signals.find(x => x.id === overlap.signalId), forSpeed)
+    if (!m) setNotice?.({ tone: 'warn', text: t(forSpeed == null ? 'measure_no_speed' : 'measure_no_target') })
+    else {
+      const { gradient: _before, ...rest } = overlap
+      onChange({ ...rest, ...m })
+    }
+  }
   return (
     <div className="tool-editor">
       <EditorHead title={`${labelOf('signals', signals.find(s => s.id === overlap.signalId), t)} ${overlap.name ?? ''}`} readOnly={readOnly} t={t} onDelete={onDelete} />
@@ -177,6 +211,12 @@ function OverlapEditor({ overlap, domain, net, findings, extents, signalOptions,
         <NumberField compact label={t('speed')} value={overlap.speed ?? null} min={0} disabled={readOnly} onChange={(v) => set({ speed: v ?? undefined })} />
         <NumberField compact label={t('release_delay')} value={overlap.releaseDelay ?? null} min={0} disabled={readOnly} onChange={(v) => set({ releaseDelay: v ?? undefined })} />
       </div>
+      {!readOnly && (
+        <div className="ui-row">
+          <Button size="small" variant="primary" disabled={forSpeed == null} onClick={measure}>{t('measure_overlap')}</Button>
+          <span className="ui-muted">{forSpeed != null ? t('measure_for', { speed: forSpeed }) : t('speed_not_signalled')}</span>
+        </div>
+      )}
       <Section title={t('path')} actions={!readOnly && <Button size="small" onClick={() => rerun()}>{t('rerun')}</Button>}>
         <p className="ui-muted">{overlap.path.trackIds.map(id => trackName(net, id)).join(' → ')}</p>
         <p className="ui-muted">{t('danger_point')}: {trackName(net, overlap.end?.trackId)} · {Math.round(overlap.end?.station ?? 0)} m</p>

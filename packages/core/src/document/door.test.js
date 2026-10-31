@@ -112,6 +112,20 @@ describe('the door', () => {
     expect(fromDocument(doc)).toEqual(record())
   })
 
+  it('names an element\'s design speed designSpeed in the document, and speed in the record', () => {
+    const doc = toDocument(record({ tracks: [track('t1', { elements: [el(0, 100, { speed: 80 })] })] }))
+    expect(doc.domains.core.collections.tracks[0].elements[0]).toMatchObject({ designSpeed: 80 })
+    expect(doc.domains.core.collections.tracks[0].elements[0]).not.toHaveProperty('speed')
+    expect(fromDocument(doc).tracks[0].elements[0]).toMatchObject({ speed: 80 })
+    // A document of the core before the name: its element's speed is read as the design speed.
+    const before = structuredClone(doc)
+    before.domains.core.schema = 'sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6'
+    const e = before.domains.core.collections.tracks[0].elements[0]
+    e.speed = e.designSpeed
+    delete e.designSpeed
+    expect(checkDocument(before)).toEqual(doc)
+  })
+
   it('refuses a version or a domain it does not read', () => {
     const doc = toDocument(record())
     expect(() => checkDocument({ ...doc, domains: { ...doc.domains, core: { ...doc.domains.core, version: '1.1' } } })).toThrow('unsupported_version')
@@ -130,31 +144,63 @@ describe('the door', () => {
     expect(Object.keys(toDocument(record(), { carrySchemas: true }).schemas)).not.toContain(SCHEMA_HASHES.signalling)
   })
 
-  it('reads signalling 1.0 as it was first written, before logical signals and balises, as of now', () => {
+  // The station as signalling 1.0 was written before: third (speed sections, a route's own speed, frames and
+  // function on the signal), second (no speed sections yet), first (no logical signals, PZB elements).
+  const THIRD = 'sha256:0194c1e7fe2a63741270025beb48929d106d74a80bf5b33ed4305965a5303487'
+  const SECOND = 'sha256:72fccdfdcac3f5ce42d7f49d10fb9134e1c4ed792f7365ec9f01d997f0049724'
+  const FIRST = 'sha256:8e4fdf8b8d487f61be93b473521515fe2e5510ef3cdc21d994cd8a405aeb74a0'
+  const stationNow = () => {
     const signalling = ksStation()
     signalling.collections.balises = signalling.collections.balises.filter(b => b.system === 'pzb')
-    signalling.collections.speedSections = []
-    const now = toDocument(record({ signalling }))
-    const first = structuredClone(now)
-    const old = first.domains.signalling
-    old.schema = 'sha256:8e4fdf8b8d487f61be93b473521515fe2e5510ef3cdc21d994cd8a405aeb74a0'
-    old.collections.signals = old.collections.signals.map(({ logicalSignals, ...s }) => (logicalSignals ? { ...s, ...logicalSignals[0] } : s))
-    old.collections.pzbElements = old.collections.balises.map(({ system, settings: { frequency, ina, ...speedCheck }, ...b }) => ({
+    // A logical signal of its own in each system, as the first schema could say it: one per signal.
+    return toDocument(record({ signalling }))
+  }
+  const asThird = (doc) => {
+    const d = structuredClone(doc)
+    const c = d.domains.signalling.collections
+    d.domains.signalling.schema = THIRD
+    const speeds = new Map()
+    c.signals = c.signals.map((s) => {
+      if (!s.logicalSignals?.length) return s
+      const [{ function: fn, frames = [], signallingSpeeds = [], ...first }, ...others] = s.logicalSignals
+      for (const v of signallingSpeeds) speeds.set(v.routeId, v.speed)
+      return { ...s, function: fn, frames: [...frames, ...(s.frames ?? [])], logicalSignals: [first, ...others] }
+    })
+    c.routes = c.routes.map(r => (speeds.has(r.id) ? { ...r, speed: speeds.get(r.id) } : r))
+    c.speedSections = []
+    return d
+  }
+  const asSecond = (doc) => {
+    const d = asThird(doc)
+    d.domains.signalling.schema = SECOND
+    delete d.domains.signalling.collections.speedSections
+    return d
+  }
+  const asFirst = (doc) => {
+    const d = asSecond(doc)
+    const c = d.domains.signalling.collections
+    d.domains.signalling.schema = FIRST
+    c.signals = c.signals.map(({ logicalSignals, ...s }) => (logicalSignals ? { ...s, ...logicalSignals[0] } : s))
+    c.pzbElements = c.balises.map(({ system: _s, settings: { frequency, ina, ...speedCheck }, ...b }) => ({
       ...b, frequency, ...(ina ? { ina } : {}), ...(Object.keys(speedCheck).length ? { speedCheck } : {}),
     }))
-    delete old.collections.balises
-    delete old.collections.speedSections
-    expect(checkDocument(first)).toEqual(now)
+    delete c.balises
+    return d
+  }
+
+  it('reads signalling 1.0 as each earlier schema wrote it, as of now', () => {
+    const now = stationNow()
+    expect(checkDocument(asThird(now))).toEqual(now)
+    expect(checkDocument(asSecond(now))).toEqual(now)
+    expect(checkDocument(asFirst(now))).toEqual(now)
   })
 
-  it('reads signalling 1.0 as it was written before speed sections, as of now', () => {
+  it('leaves out a member of the signalling that is undefined, as a file would', () => {
     const signalling = ksStation()
-    signalling.collections.speedSections = []
-    const now = toDocument(record({ signalling }))
-    const second = structuredClone(now)
-    second.domains.signalling.schema = 'sha256:72fccdfdcac3f5ce42d7f49d10fb9134e1c4ed792f7365ec9f01d997f0049724'
-    delete second.domains.signalling.collections.speedSections
-    expect(checkDocument(second)).toEqual(now)
+    signalling.collections.overlaps[0].gradient = undefined
+    signalling.collections.signals[0].name = undefined
+    const doc = toDocument(record({ signalling }))
+    expect(doc.domains.signalling.collections.overlaps[0]).not.toHaveProperty('gradient')
   })
 
   it('refuses a signalling domain its schema does not take', () => {

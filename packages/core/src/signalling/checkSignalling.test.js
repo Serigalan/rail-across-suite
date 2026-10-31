@@ -45,7 +45,7 @@ describe('a station signalled with Ks and PZB', () => {
 describe('what a signal may show', () => {
   it('holds a screen to its kind: what it must and may show', () => {
     const { errors } = check((c) => {
-      const a = byId(c.signals, 'sig-a')
+      const a = byId(c.signals, 'sig-a').logicalSignals[0]
       a.frames[0].aspects = [{ aspect: 'Ks_1' }, { aspect: 'Ks_2' }, { aspect: 'Sh_1' }]   // no Hp 0, and Sh 1 on a signal that is none
     })
     expect(errors.map(e => [e.code, e.params.aspect])).toEqual([['screen_lacks', 'Hp_0'], ['screen_not_allowed', 'Sh_1']])
@@ -53,16 +53,15 @@ describe('what a signal may show', () => {
 
   it('takes the lights of Zs 1, Zs 7 and Kl on the screen, as PlanPro plans have them', () => {
     const { errors } = check((c) => {
-      const a = byId(c.signals, 'sig-a')
-      a.frames[0].aspects.push({ aspect: 'Zs_7' }, { aspect: 'Kl' })
-      a.frames.push({ kind: 'nameplate', aspects: [] })
+      byId(c.signals, 'sig-a').logicalSignals[0].frames[0].aspects.push({ aspect: 'Zs_7' }, { aspect: 'Kl' })
+      byId(c.signals, 'sig-n1').frames.push({ kind: 'nameplate', aspects: [] })
     })
     expect(errors).toEqual([])
   })
 
   it('warns of a screen without a proceed aspect, and of a frame that shows nothing', () => {
     const { errors, warnings } = check((c) => {
-      const n1 = byId(c.signals, 'sig-n1')
+      const n1 = byId(c.signals, 'sig-n1').logicalSignals[0]
       n1.frames[0].aspects = [{ aspect: 'Hp_0' }, { aspect: 'Sh_1' }]
       n1.frames[1].aspects = []
     })
@@ -72,7 +71,7 @@ describe('what a signal may show', () => {
 
   it('knows its aspects, their frames and their symbols', () => {
     const { errors } = check((c) => {
-      byId(c.signals, 'sig-a').frames.push(
+      byId(c.signals, 'sig-a').logicalSignals[0].frames.push(
         { kind: 'indicator', aspects: [{ aspect: 'Zs_3', symbol: '17' }] },
         { kind: 'indicator', aspects: [{ aspect: 'Zs_2' }] },
         { kind: 'indicator', aspects: [{ aspect: 'Hp_0' }] },
@@ -85,35 +84,50 @@ describe('what a signal may show', () => {
   })
 
   it('lets a main signal carry no Zs 3v, which only announces', () => {
-    const { errors } = check((c) => { byId(c.signals, 'sig-n1').frames[1].aspects = [{ aspect: 'Zs_3v', symbol: '4' }] })
+    const { errors } = check((c) => { byId(c.signals, 'sig-n1').logicalSignals[0].frames[1].aspects = [{ aspect: 'Zs_3v', symbol: '4' }] })
     expect(codes(errors)).toEqual(['indicator_not_allowed'])
   })
 
   it('wants a known system and a kind it has; a virtual signal shows nothing', () => {
     const { errors } = check((c) => {
-      byId(c.signals, 'sig-n1').logicalSignals = [{ system: 'hv', type: 'main' }]
-      byId(c.signals, 'sig-a').logicalSignals = [{ system: 'ks', type: 'trainCover' }]
+      Object.assign(byId(c.signals, 'sig-n1').logicalSignals[0], { system: 'hv', type: 'main' })
+      byId(c.signals, 'sig-a').logicalSignals[0].type = 'trainCover'
       byId(c.signals, 'sig-v').frames = [{ kind: 'plate', aspects: [{ aspect: 'Ne_1' }] }]
     })
     expect(codes(errors)).toEqual(['system_unknown', 'type_not_in_system', 'virtual_with_frames'])
   })
 
-  it('holds a screen to all its logical signals at once, each system once', () => {
-    // A Ks signal that is a shunting signal too must show Sh 0 as well, and may show Sh 1.
+  it('holds each logical signal\'s screen to its own kind, each system once', () => {
+    // A shunting signal on the same mast has a screen of its own, which must show Sh 0 as well.
     const { errors } = check((c) => {
-      const a = byId(c.signals, 'sig-a')
-      a.logicalSignals.push({ system: 'sh', type: 'shunting' })
-      a.frames[0].aspects.push({ aspect: 'Sh_1' })
+      byId(c.signals, 'sig-a').logicalSignals.push({ system: 'sh', type: 'shunting', frames: [{ kind: 'screen', aspects: [{ aspect: 'Sh_1' }] }] })
     })
     expect(errors.map(e => [e.code, e.params.aspect])).toEqual([['screen_lacks', 'Sh_0']])
     const { errors: twice } = check((c) => { byId(c.signals, 'sig-a').logicalSignals.push({ system: 'ks', type: 'main' }) })
     expect(codes(twice)).toEqual(['system_twice'])
   })
 
-  it('wants a kind where a signal has a screen; a screen of no system shows only known aspects', () => {
-    const { errors } = check((c) => { byId(c.signals, 'sig-a').logicalSignals = [{ system: 'ks' }] })
+  it('wants a kind where a logical signal has a screen; a screen of no system shows only known aspects', () => {
+    const { errors } = check((c) => { delete byId(c.signals, 'sig-a').logicalSignals[0].type })
     expect(codes(errors)).toEqual(['type_missing'])
-    expect(check((c) => { delete byId(c.signals, 'sig-a').logicalSignals })).toEqual({ errors: [], warnings: [] })
+    // A signal of no system shows its screen itself, and states its function itself.
+    expect(check((c) => {
+      const a = byId(c.signals, 'sig-a')
+      Object.assign(a, { frames: a.logicalSignals[0].frames, function: 'entry' })
+      delete a.logicalSignals
+    })).toEqual({ errors: [], warnings: [] })
+  })
+
+  it('leaves a screen to the logical signals where a place has some', () => {
+    const { errors } = check((c) => { byId(c.signals, 'sig-n1').frames.push({ kind: 'indicator', aspects: [{ aspect: 'Zs_1' }] }) })
+    expect(codes(errors)).toEqual(['frame_of_logical_signal'])
+  })
+
+  it('signals a speed only for a route from its place, once', () => {
+    const { errors } = check((c) => {
+      byId(c.signals, 'sig-a').logicalSignals[0].signallingSpeeds.push({ routeId: 'rt-n1-v', speed: 80 }, { routeId: 'rt-a-n1', speed: 40 })
+    })
+    expect(codes(errors)).toEqual(['speed_route_elsewhere', 'speed_route_twice'])
   })
 
   it('takes no settings a system does not declare', () => {
@@ -219,15 +233,18 @@ describe('flank protection, balises and magnets, station boundaries', () => {
     expect(codes(errors)).toEqual(['kind_not_in_system', 'system_unknown'])
   })
 
-  it('runs a speed section from its start to its end, and wants a speed', () => {
-    const { errors } = check((c) => {
-      const v = byId(c.speedSections, 'v-w1')
-      v.end = { anchor: 'station', trackId: 't1', station: 240 }
-      delete v.speed
-      v.speedByTag = {}
-      v.onRoutes = ['rt-gone']
+  it('wants an overlap as long as the speed its route leads up with and its gradient ask', () => {
+    // 60 km/h asks 100 m; 80 km/h 200 m; on a fall of 20 ‰ more.
+    expect(check(() => {}).warnings).toEqual([])
+    const { warnings } = check((c) => {
+      byId(c.signals, 'sig-a').logicalSignals[0].signallingSpeeds[0].speed = 80
+      delete byId(c.overlaps, 'ov-n1').speed
     })
-    expect(codes(errors)).toEqual(['reference_missing', 'speed_end_off_path', 'speed_missing'])
+    expect(warnings.map(w => [w.code, w.params.needed])).toEqual([['overlap_short', 200]])
+    // The speed the overlap allows governs where it states one.
+    expect(check((c) => { byId(c.signals, 'sig-a').logicalSignals[0].signallingSpeeds[0].speed = 80 }).warnings).toEqual([])
+    const { warnings: fall } = check((c) => { byId(c.overlaps, 'ov-n1').gradient = -20 })
+    expect(fall.map(w => [w.code, w.params.needed])).toEqual([['overlap_short', 140]])
   })
 
   it('holds a logical signal to the systems it announces and the parameters its system declares', () => {

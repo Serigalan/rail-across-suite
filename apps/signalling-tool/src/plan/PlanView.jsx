@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { findBasemap, isElevationBasemap, updateElevationRange } from '@rail-across/basemaps'
 import { locate, placeOf, stretchLine } from '../model/net.js'
-import { runStretches } from '../model/runs.js'
 import { signalTone, TONE_FILL } from './symbols.js'
 import { labelOf } from '../model/domain.js'
 
@@ -108,7 +107,6 @@ export default function PlanView({ drawing, net, domain, selection, highlight, m
     for (const d of domain.collections.detectionPoints) put('detectionPoints', d, d.at)
     for (const b of domain.collections.balises) put('balises', b, b.at)
     for (const e of domain.collections.switchElements) if (e.derailer) put('switchElements', e, e.derailer.at)
-    for (const v of domain.collections.speedSections) put('speedSections', v, v.start)
     return out
   }, [domain, drawing])
   const switchDots = useMemo(() => {
@@ -225,13 +223,6 @@ export default function PlanView({ drawing, net, domain, selection, highlight, m
               return <Placed key={`${mk.collection}:${mk.obj.id}`} mk={mk} screen={screenOf(mk)} sel={sel} showName={showNames} t={t} />
             })}
           </g>
-          {preview?.collection === 'speedSections' && (
-            <g className="plan-preview">
-              {runStretches(net, preview.obj.start, preview.obj.path.trackIds, preview.obj.end).map((st, i) => (
-                <path key={i} d={path(llOf(stretchLine(drawing, st.trackId, st.from, st.to)))} className="plan-stretch" />
-              ))}
-            </g>
-          )}
           {preview && (
             <g className="plan-preview">
               <circle cx={screenOf(preview).on[0]} cy={screenOf(preview).on[1]} r="4" className="plan-snap" />
@@ -244,8 +235,8 @@ export default function PlanView({ drawing, net, domain, selection, highlight, m
   )
 }
 
-/** Where an object of a collection stands: its location, a derailer's its own, a speed section's its start. */
-const locOf = (collection, obj) => (collection === 'switchElements' ? obj.derailer?.at : collection === 'speedSections' ? obj.start : obj.at)
+/** Where an object of a collection stands: its location, a derailer's its own. */
+const locOf = (collection, obj) => (collection === 'switchElements' ? obj.derailer?.at : obj.at)
 
 /** An object on the plan: a dot on its track, a stroke out to its symbol, the symbol, its name. */
 function Placed({ mk, screen, sel, showName, t }) {
@@ -274,10 +265,6 @@ function Mark({ collection, obj, angle }) {
     if (obj.system === 'etcs') return <g transform={rot}><path d="M0,-4 L4,0 L0,4 L-4,0 Z" className="plan-balise plan-balise-etcs" /></g>
     const frequency = obj.system === 'pzb' ? String(obj.settings?.frequency ?? '').replace('+', '-') : 'other'
     return <g transform={rot}><rect x="-3" y="-3" width="6" height="6" className={`plan-balise plan-balise-pzb-${frequency}`} /></g>
-  }
-  if (collection === 'speedSections') {
-    // A speed board at its start, upright, its number in tens as Lf 7 shows it.
-    return <g><rect x="-7" y="-6" width="14" height="12" rx="1.5" className="plan-speed" /><text y="3.5" className="plan-speed-text">{obj.speed != null ? Math.round(obj.speed / 10) : '?'}</text></g>
   }
   if (collection === 'switchElements') {
     return <g transform={rot}><path d="M-4,-4 L4,4 M-4,4 L4,-4" className="plan-derailer" /></g>

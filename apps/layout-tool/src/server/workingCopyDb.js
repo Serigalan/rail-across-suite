@@ -1,7 +1,10 @@
 import { storedBytes } from '../core/localStore'
-import { FORMAT_NAME } from '@rail-across/core/project'
+import { WORKING, done as txDone, openDb, request as req } from '@rail-across/working-copy'
 
-// Thin promise wrapper around IndexedDB for the working copies (phase 10).
+// The working copies in IndexedDB (phase 10): the suite's store, shared with
+// the Signalling-Tool and the start page (@rail-across/working-copy), and what
+// this tool alone does with the database — listing and emptying the stores of
+// its version 1.
 //
 // DB `olt`, version 2, one object store in use:
 //   workingCopies – keyPath `variantId`, one record per variant a user has
@@ -18,76 +21,7 @@ import { FORMAT_NAME } from '@rail-across/core/project'
 // workingCopies.js, which calls these; localStoreSections.js lists them in the
 // local storage dialog. Nothing here is imported by UI code.
 
-const DB_NAME = 'olt'
-const DB_VERSION = 2
-const WORKING = 'workingCopies'
-
-let _dbPromise = null
-
-function req(request) {
-  return new Promise((resolve, reject) => {
-    request.onsuccess = () => resolve(request.result)
-    request.onerror   = () => reject(request.error)
-  })
-}
-
-function txDone(tx) {
-  return new Promise((resolve, reject) => {
-    tx.oncomplete = () => resolve()
-    tx.onabort = tx.onerror = () => reject(tx.error)
-  })
-}
-
-export function openDb() {
-  if (_dbPromise) return _dbPromise
-  _dbPromise = new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION)
-    request.onupgradeneeded = () => {
-      const db = request.result
-      if (!db.objectStoreNames.contains(WORKING)) db.createObjectStore(WORKING, { keyPath: 'variantId' })
-    }
-    request.onsuccess = () => resolve(request.result)
-    request.onerror   = () => reject(request.error)
-  })
-  return _dbPromise
-}
-
-// A working copy is stored with the format its records are in (oltjson-1.1,
-// decision 333). One from before it is not read: it was not converted, and
-// what the server keeps of that state is not opened either.
-const current = (record) => record?.format === FORMAT_NAME
-
-/** One working copy, or null. */
-export async function getWorkingCopy(variantId) {
-  const db = await openDb()
-  const tx = db.transaction(WORKING, 'readonly')
-  const record = await req(tx.objectStore(WORKING).get(variantId))
-  await txDone(tx)
-  return current(record) ? record : null
-}
-
-/** Every working copy. */
-export async function getAllWorkingCopies() {
-  const db = await openDb()
-  const tx = db.transaction(WORKING, 'readonly')
-  const records = await req(tx.objectStore(WORKING).getAll())
-  await txDone(tx)
-  return records.filter(current)
-}
-
-export async function putWorkingCopy(record) {
-  const db = await openDb()
-  const tx = db.transaction(WORKING, 'readwrite')
-  tx.objectStore(WORKING).put({ ...record, format: FORMAT_NAME })
-  await txDone(tx)
-}
-
-export async function deleteWorkingCopy(variantId) {
-  const db = await openDb()
-  const tx = db.transaction(WORKING, 'readwrite')
-  tx.objectStore(WORKING).delete(variantId)
-  await txDone(tx)
-}
+export { deleteWorkingCopy, getAllWorkingCopies, getWorkingCopy, openDb, putWorkingCopy } from '@rail-across/working-copy'
 
 /** The stores this version no longer reads (see above), those that are there. */
 const legacyStores = (db) => [...db.objectStoreNames].filter(name => name !== WORKING)

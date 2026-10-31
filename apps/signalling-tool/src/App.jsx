@@ -3,6 +3,7 @@ import { Message, keepLanguage, keptLanguage } from '@rail-across/ui'
 import { I18n, textsFor, useTexts } from './i18n.js'
 import { api } from './api.js'
 import Editor from './Editor.jsx'
+import { openCopy } from './workingCopy.js'
 import { SUITE, linkedRequest, projectsUrl, signInAgain, toProjects } from './suite.js'
 
 export default function App() {
@@ -15,7 +16,9 @@ export default function App() {
 /**
  * The variant asked for, loaded: the session first (without one the page is
  * loaded again, and the suite's sign-in answers in its place), then the
- * project and its variant, then the variant's head.
+ * project and its variant, then the variant's head — and to work on it, its
+ * working copy in this browser where there is one (what the Layout-Tool or
+ * this tool changed and did not check in yet).
  */
 function Loader() {
   const { t } = useTexts()
@@ -37,13 +40,14 @@ function Loader() {
       if (!project) { toProjects(t('no_project')); return }
       const variant = project.variants?.find(v => v.id === linked.variant) ?? project.variants?.find(v => !v.parentVariantId) ?? project.variants?.[0]
       const head = await api.head(variant.id)
-      if (!gone) setState({ status: 'ready', user, project, variant, head })
+      const copy = linked.action === 'open' ? await openCopy(variant.id, head) : null
+      if (!gone) setState({ status: 'ready', user, project, variant, head, copy })
     })().catch(err => { if (!gone) setState({ status: 'failed', error: err.code ?? String(err) }) })
     return () => { gone = true }
   }, [linked, t])
 
   if (state.status === 'ready') {
-    return <Editor project={state.project} variant={state.variant} head={state.head} readOnly={linked.action !== 'open'} />
+    return <Editor project={state.project} variant={state.variant} head={state.head} copy={state.copy} readOnly={linked.action !== 'open'} />
   }
   return (
     <div className="ui-page tool-center">

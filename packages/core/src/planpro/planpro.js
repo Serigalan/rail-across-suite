@@ -523,6 +523,7 @@ function convert(model, projectId) {
     shown.get(route).push(withoutUndefined({ signalId: a.signal, aspect: a.aspect.aspect, symbol: a.aspect.symbol }))
   }
   const routes = []
+  const routeSpeeds = new Map()   // start signal → the speeds it signals per route (Fstr_V_Hg)
   for (const o of of('Fstr_Zug_Rangier')) {
     const id = idOf(o.el)
     const run = runs.get(lower(value(o.el, 'ID_Fstr_Fahrweg')))
@@ -536,7 +537,7 @@ function convert(model, projectId) {
       trainType: known(TRAIN_TYPES, value(train, 'Fstr_Zug_Art')), shuntingType: known(SHUNTING_TYPES, value(shunting, 'Fstr_Rangier_Art')),
       middleType: known(MIDDLE_TYPES, value(middle, 'Fstr_Mittel_Art')),
       rank: num(value(o.el, 'Fstr_Zug_Rangier_Allg/Fstr_Reihenfolge')),
-      startSignalId: run.start, targetSignalId: run.target, path: { trackIds: run.trackIds }, speed: run.speed,
+      startSignalId: run.start, targetSignalId: run.target, path: { trackIds: run.trackIds },
       autoSetting: value(train, 'Automatische_Einstellung') === 'ZL' || undefined,
       shortDistantSpacing: bool(value(train, 'Fstr_Vsigabstand_Verkuerzt')) || undefined,
       clearSections: nonEmpty(sectionRefs(shunting, 'ID_FMA_Anlage_Rangier_Frei')),
@@ -544,6 +545,7 @@ function convert(model, projectId) {
       aspects: nonEmpty(shown.get(id)),
       lifespan: lifespanOf(o),
     }))
+    if (run.speed != null) routeSpeeds.set(run.start, [...(routeSpeeds.get(run.start) ?? []), { routeId: id, speed: run.speed }])
   }
   const routeIds = new Set(routes.map(r => r.id))
 
@@ -632,8 +634,8 @@ function convert(model, projectId) {
   const signalling = {
     fields: { catalogue: { ...CATALOGUE_REF } },
     collections: {
-      signals, detectionPoints, trackSections, switchElements, routes, overlaps, flankProtection, balises,
-      speedSections: [], stationBoundaries: [],
+      signals: signals.map(s => byLogicalSignal(s, routeSpeeds.get(s.id))), detectionPoints, trackSections, switchElements,
+      routes, overlaps, flankProtection, balises, stationBoundaries: [],
     },
   }
   return { tracks, switches, endMarks, signalling, report }
@@ -721,4 +723,20 @@ function logicalSignalsOf(system, type) {
   if (system) return [withoutUndefined({ system, type })]
   if (type === 'shunting') return [{ system: 'sh', type }]
   return undefined
+}
+
+/**
+ * A signal as the domain holds it: its function, screen and indicators its
+ * logical signal's, with the speeds it signals for the routes from it; its
+ * boards and name plate its own. A signal of no system keeps them all.
+ */
+function byLogicalSignal(signal, speeds) {
+  if (!signal.logicalSignals?.length) return signal
+  const { function: fn, frames = [], logicalSignals: [first, ...others], ...place } = signal
+  const shown = frames.filter(f => f.kind === 'screen' || f.kind === 'indicator')
+  return {
+    ...place,
+    frames: frames.filter(f => !shown.includes(f)),
+    logicalSignals: [withoutUndefined({ ...first, function: fn, frames: nonEmpty(shown), signallingSpeeds: nonEmpty(speeds) }), ...others],
+  }
 }

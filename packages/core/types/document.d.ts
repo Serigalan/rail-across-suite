@@ -140,7 +140,8 @@ export namespace Core {
     reasons?: {
       [name: string]: string
     }
-    speed?: number | null
+    /** The design speed of the element [km/h], which the layout tool lays it out for and checks it against (the signalling domain states the speeds it signals, signallingSpeed, on its signals). */
+    designSpeed?: number | null
     switchBranch?: boolean
     switchRoute?: "main" | "branch" | "cross" | "slip1" | "slip2"
     switchId?: Ref
@@ -319,7 +320,7 @@ export namespace Layout {
 
 /** Rail-Data-Core, domain signalling 1.0 */
 export namespace Signalling {
-  /** The signalling of a project, as the signalling tool plans it: signals and boards, train detection, the switch elements of the interlocking, train and shunting routes with their overlaps, flank protection, the balises and magnets of train protection, the speed sections and the station boundaries. Depends on core; its references go into the core or into itself (R2, R9). Its objects follow PlanPro 1.10, and like OSRD it keeps every signalling and train protection system out of the schema (decision 0011): a signal carries a logical signal per system, a balise names its system; which systems, kinds, aspects and settings there are is not in this schema but in the catalogue (packages/core/constraints/db-ril-301.json), which the content check reads. */
+  /** The signalling of a project, as the signalling tool plans it: signals and boards, train detection, the switch elements of the interlocking, train and shunting routes with their overlaps, flank protection, the balises and magnets of train protection and the station boundaries. Depends on core; its references go into the core or into itself (R2, R9). Its objects follow PlanPro 1.10, and like OSRD it keeps every signalling and train protection system out of the schema (decision 0011): a signal carries a logical signal per system, a balise names its system; which systems, kinds, aspects and settings there are is not in this schema but in the catalogue (packages/core/constraints/db-ril-301.json), which the content check reads. */
   export type Root = {
     fields: Fields
     collections: {
@@ -331,7 +332,6 @@ export namespace Signalling {
       overlaps: Array<Overlap>
       flankProtection: Array<FlankProtection>
       balises: Array<Balise>
-      speedSections: Array<SpeedSection>
       stationBoundaries: Array<StationBoundary>
     }
   }
@@ -346,7 +346,7 @@ export namespace Signalling {
   export type Directed = 
   /** Where a switch element lies, seen from its tip, as the interlocking names it (PlanPro: L, R). */
   export type SwitchPosition = "left" | "right"
-  /** A signal or a board at the track (PlanPro: Signal), real or virtual. A real one stands at `at` and acts in its direction — or in both (`bothDirections`); what it can show are its frames, each with its aspects, keyed by the catalogue. A virtual one (PlanPro: Signal_Fiktiv) has no frames: it marks where a route starts or ends without a signal there. */
+  /** A signal's place at the track, the physical signal (PlanPro: Signal; OSRD: Signal), real or virtual. A real one stands at `at` and acts in its direction — or in both (`bothDirections`), on its mounting, seen from its sighting distances; what it is in each signalling system it shows are its logical signals, each with the frames it shows; the boards it carries of no system (Ne 1, Ra 12, mast plates, its name plate) are its own frames. A virtual one (PlanPro: Signal_Fiktiv) has neither: it marks where a route starts or ends without a signal there. */
   export type Signal = {
     id: Core.Id
     name?: Core.Label
@@ -357,7 +357,7 @@ export namespace Signalling {
     /** Further tracks it stands at, at the same place: a clearance marker (Ra 12) between the two tracks beyond a switch, which PlanPro places on both edges. */
     alsoAt?: Array<Core.TrackLocation>
     bothDirections?: boolean
-    /** PlanPro Signal_Funktion. */
+    /** PlanPro Signal_Funktion, for a signal of no system (a level crossing's monitoring signal, a standalone indicator); one with logical signals states it on each. */
     function?: "entry" | "exit" | "entryExit" | "intermediate" | "exitIntermediate" | "entryBlock" | "block" | "groupExit" | "groupIntermediate" | "groupExitIntermediate" | "followUp" | "cover" | "trainCover" | "trainTarget" | "levelCrossing" | "distant" | "standaloneIndicator" | "other"
     /** PlanPro Fiktives_Signal_Funktion, for a virtual signal. */
     virtualFunction?: "trainStartWithoutSignal" | "trainTargetWithoutSignal" | "trainTargetLine" | "trainStartSiding" | "trainTargetSiding" | "trainStartMiddleSwitch" | "trainStartTargetBlock" | "trainStartTargetBlockZs1" | "trainStartTargetBlockZs7" | "shuntingStartTargetWithoutSignal" | "virtualDistant" | "other"
@@ -371,13 +371,22 @@ export namespace Signalling {
       minimum?: number
       achievable?: number
     }
+    /** What it shows of no system: boards, the ceramic body of a clearance marker, its name plate — and the screen of a signal of no system. A logical signal's screen and indicators are the logical signal's. */
     frames?: Array<Frame>
     lifespan?: Core.Lifespan
   }
-  /** A signal in one signalling system (OSRD: LogicalSignal): the system, a key of the catalogue's `systeme`; the kind of signal it is there, a key of that system's `signalarten` or `other`; its settings, as the catalogue declares them for the system; the systems the signals it announces may be of (OSRD next_signaling_systems); and the parameters it shows with, by default and per route (OSRD default_parameters, conditional_parameters), as the system declares them. */
+  /** A signal in one signalling system at a place (OSRD: LogicalSignal): the system, a key of the catalogue's `systeme`; the kind of signal it is there, a key of that system's `signalarten` or `other`; its function (PlanPro Signal_Funktion); the frames it shows — its screen, its indicators; the speed it signals for each route that starts at its place (signallingSpeed; PlanPro Fstr_V_Hg), where the design speed of the track (core `designSpeed`) is the layout's; its settings, as the catalogue declares them for the system; the systems the signals it announces may be of (OSRD next_signaling_systems); and the parameters it shows with, by default and per route (OSRD default_parameters, conditional_parameters), as the system declares them. */
   export type LogicalSignal = {
     system: string
     type?: string
+    /** PlanPro Signal_Funktion. */
+    function?: "entry" | "exit" | "entryExit" | "intermediate" | "exitIntermediate" | "entryBlock" | "block" | "groupExit" | "groupIntermediate" | "groupExitIntermediate" | "followUp" | "cover" | "trainCover" | "trainTarget" | "levelCrossing" | "distant" | "standaloneIndicator" | "other"
+    frames?: Array<Frame>
+    /** Per route that starts at its place, the speed it signals for it [km/h] (signallingSpeed; PlanPro Fstr_V_Hg). */
+    signallingSpeeds?: Array<{
+      routeId: Core.Ref
+      speed: number
+    }>
     settings?: Settings
     nextSystems?: Array<string>
     defaultParameters?: Settings
@@ -425,7 +434,7 @@ export namespace Signalling {
   }
   /** A switch of the core or a derailer as the interlocking knows it (PlanPro W_Kr_Gsp_Element): its name, how it is worked, the position it rests in. A slip has two, one per pair of points. A derailer is no switch of the core: it stands `at` a place of its own and is applied or removed. */
   export type SwitchElement =  | 
-  /** A train, shunting or middle-switch route (PlanPro Fstr_Zug_Rangier with its Fstr_Fahrweg): from a start signal to a target signal along a run of tracks. Which way each switch element lies follows from the run and is not stored (as in PlanPro). A train route names the overlaps it may end in; flank protection follows from the switch elements it runs over. Where several routes run between the same two signals, `rank` orders them. */
+  /** A train, shunting or middle-switch route (PlanPro Fstr_Zug_Rangier with its Fstr_Fahrweg): from a start signal to a target signal along a run of tracks. Which way each switch element lies follows from the run and is not stored (as in PlanPro). A train route names the overlaps it may end in; flank protection follows from the switch elements it runs over. Where several routes run between the same two signals, `rank` orders them. The speed it permits is not its own: its start signal signals it (a logical signal's signallingSpeeds). */
   export type Route = {
     id: Core.Id
     name?: Core.Text
@@ -441,8 +450,6 @@ export namespace Signalling {
     startSignalId: Core.Ref
     targetSignalId: Core.Ref
     path: Core.TrackPath
-    /** The speed the route permits [km/h] (PlanPro Fstr_V_Hg). */
-    speed?: number
     /** Set by the automatic route setting (PlanPro Automatische_Einstellung). */
     autoSetting?: boolean
     /** Its distant signal stands at a shortened braking distance (PlanPro Fstr_Vsigabstand_Verkuerzt). */
@@ -528,23 +535,6 @@ export namespace Signalling {
       routeId: Core.Ref
       effect: "activeWhenSet" | "inactiveWhenSet" | "other"
     }>
-    lifespan?: Core.Lifespan
-  }
-  /** A stretch where a speed holds (OSRD: SpeedSection; the speed profile of the roadmap): from `start` along a run of tracks to `end`, both on the run's first and last track — as an overlap runs, so the core carries it as it carries every location and run. In the direction `start` states, or both where it states none. The speed [km/h], per tag of train where it differs (OSRD speed_limit_by_tag), and the routes it holds on only, where it holds on some. */
-  export type SpeedSection = {
-    id: Core.Id
-    name?: Core.Text
-    start: Core.TrackLocation
-    path: Core.TrackPath
-    end: Core.TrackLocation
-    /** [km/h] */
-    speed?: number
-    /** Per tag of train, the speed it may run at here [km/h] (OSRD speed_limit_by_tag). */
-    speedByTag?: {
-      [name: string]: number
-    }
-    /** The routes it holds on; on all where it names none (OSRD on_routes). */
-    onRoutes?: Array<Core.Ref>
     lifespan?: Core.Lifespan
   }
   /** The boundary of a station of the core's register, where trains enter it: what marks it — an entry signal or a board (Ne 1), an entry switch where there is neither (EBO §4), or for a halt its platform. Where it is not where the rules put it, a finding says so. */

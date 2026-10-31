@@ -9,3 +9,6 @@ lists and the shell of a tool, for every module's pages ([decision 0012](../docs
 
 [`basemaps/`](basemaps/README.md) (`@rail-across/basemaps`) are the maps every module's map can lie on, shared by the
 Layout-Tool and the Signalling-Tool.
+
+[`working-copy/`](working-copy/README.md) (`@rail-across/working-copy`) is the local working copy of a variant in the
+browser, one per variant, shared by the Layout-Tool, the Signalling-Tool and the suite's start page.

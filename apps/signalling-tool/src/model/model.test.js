@@ -1,8 +1,12 @@
 import { describe, it, expect } from 'vitest'
 import { straightElement } from '@rail-across/core/geometry'
 import { netDrawing, placeOf, locate, stretchLine } from './net.js'
-import { findRun, runAhead, runBetween, runStretches, switchesOnRun } from './runs.js'
-import { added, cascadeOf, deleted, domainOf, emptyDomain, newBalise, baliseSettings, newSignal, withLogicalSignals } from './domain.js'
+import { findRun, runAhead, switchesOnRun } from './runs.js'
+import {
+  added, allLogical, baliseSettings, cascadeOf, deleted, domainOf, emptyDomain, findLogical, logicalId, newBalise, newLogical, newSignal, withKind,
+  withLogical, withSignallingSpeed,
+} from './domain.js'
+import { measuredOverlap, withMeasuredOverlap } from './overlaps.js'
 import { OFFSET, locationFrom, planePoint } from './places.js'
 import { redo, startHistory, step, stepOf, stepsOf, travel, undo } from './history.js'
 
@@ -58,18 +62,6 @@ describe('setting objects beside the track', () => {
   })
 })
 
-describe('a speed section over the net', () => {
-  it('finds the run between its ends either way, and the stretches it covers', () => {
-    const start = { anchor: 'station', trackId: 't1', station: 150 }
-    const end = { anchor: 'station', trackId: 't2', station: 50 }
-    expect(runBetween(net, start, end)).toEqual(['t1', 't2'])
-    expect(runBetween(net, end, start)).toEqual(['t2', 't1'])
-    expect(runStretches(net, start, ['t1', 't2'], end)).toEqual([{ trackId: 't1', from: 150, to: 200 }, { trackId: 't2', from: 0, to: 50 }])
-    expect(runStretches(net, end, ['t2', 't1'], start)).toEqual([{ trackId: 't2', from: 50, to: 0 }, { trackId: 't1', from: 200, to: 150 }])
-    expect(runStretches(net, start, ['t1'], { ...start, station: 20 })).toEqual([{ trackId: 't1', from: 150, to: 20 }])
-  })
-})
-
 describe('runs over the net', () => {
   it('finds the run from a signal to another, through the switch the way they act', () => {
     expect(findRun(net, on('t1', 20), on('t3', 100))).toEqual(['t1', 't3'])
@@ -86,14 +78,50 @@ describe('runs over the net', () => {
 })
 
 describe('editing the domain', () => {
-  it('makes a signal of a kind with what its screen must show, and changes its kind', () => {
-    const s = newSignal({ at: on('t1', 20), type: 'mainShunting' })
-    expect(s.frames[0].aspects.map(a => a.aspect)).toEqual(['Hp_0', 'Sh_1', 'Ks_1'])
-    const d = withLogicalSignals(s, [{ system: 'ks', type: 'distant' }])
+  it('makes a place with a logical signal showing what its kind must, and changes its kind', () => {
+    const s = newSignal({ at: on('t1', 20), type: 'mainShunting', fn: 'exit' })
+    expect(s.frames).toBeUndefined()
+    expect(s.logicalSignals[0]).toMatchObject({ system: 'ks', type: 'mainShunting', function: 'exit' })
+    expect(s.logicalSignals[0].frames[0].aspects.map(a => a.aspect)).toEqual(['Hp_0', 'Sh_1', 'Ks_1'])
+    expect(newSignal({ at: on('t1', 20), bare: true }).logicalSignals).toBeUndefined()
+    const d = withKind({ ...s.logicalSignals[0], frames: [...s.logicalSignals[0].frames, { kind: 'indicator', aspects: [{ aspect: 'Zs_1' }] }] }, 'ks', 'distant')
     expect(d.frames[0].aspects.map(a => a.aspect)).toEqual(['Ks_1', 'Ks_2'])
-    // A shunting signal as well: its screen shows what both must.
-    const both = withLogicalSignals(s, [{ system: 'ks', type: 'main' }, { system: 'sh', type: 'shunting' }])
-    expect(both.frames[0].aspects.map(a => a.aspect)).toEqual(['Hp_0', 'Sh_1', 'Ks_1', 'Sh_0'])
+    expect(d.frames).toHaveLength(1)   // a distant signal carries no Zs 1
+    expect(newLogical({ system: 'sh', type: 'shunting' }).frames[0].aspects.map(a => a.aspect)).toEqual(['Sh_0', 'Sh_1'])
+  })
+
+  it('names a logical signal by its place and system, and edits it there', () => {
+    let d = emptyDomain()
+    d = added(d, 'signals', newSignal({ at: on('t1', 20) }))
+    const sid = d.collections.signals[0].id
+    const id = logicalId(sid, 'ks')
+    expect(findLogical(d, id).logical.type).toBe('multiSection')
+    d = withLogical(d, id, withSignallingSpeed(findLogical(d, id).logical, 'r1', 60))
+    expect(findLogical(d, id).logical.signallingSpeeds).toEqual([{ routeId: 'r1', speed: 60 }])
+    expect(allLogical(d)).toHaveLength(1)
+    d = deleted(d, 'logicalSignals', id)
+    expect(d.collections.signals[0].logicalSignals).toBeUndefined()
+    expect(findLogical(d, id)).toEqual({})
+  })
+
+  it('measures an overlap from the speed its route\'s start signal signals, rising with a fall', () => {
+    const tracks = net.tracks.map(tr => ({ ...tr, heights: [{ station: 0, z: 100 }, { station: 200, z: 100 - (tr.id === 't2' ? 6 : 0) }] }))
+    const hilly = { ...net, tracks }
+    const a = { id: 'a', kind: 'real', at: on('t1', 150), logicalSignals: [{ system: 'ks', type: 'main', signallingSpeeds: [{ routeId: 'r', speed: 50 }] }] }
+    expect(measuredOverlap(net, a, 50)).toMatchObject({ length: 100, path: { trackIds: ['t1', 't2'] }, end: { trackId: 't2', station: 50 }, speed: 50 })
+    expect(measuredOverlap(hilly, a, 50).length).toBeGreaterThan(100)
+    let d = emptyDomain()
+    d = added(d, 'signals', { ...a, at: on('t1', 20) })
+    d = added(d, 'signals', a)
+    d.collections.signals[0] = { ...d.collections.signals[0], id: 's' }
+    d.collections.signals[0].logicalSignals = [{ system: 'ks', type: 'main', signallingSpeeds: [{ routeId: 'r', speed: 50 }] }]
+    d.collections.signals[1].logicalSignals = [{ system: 'ks', type: 'main' }]
+    d = added(d, 'routes', { id: 'r', kind: 'train', startSignalId: 's', targetSignalId: 'a', path: { trackIds: ['t1'] } })
+    const { domain: next } = withMeasuredOverlap(d, net, d.collections.routes[0])
+    expect(next.collections.overlaps).toHaveLength(1)
+    expect(next.collections.overlaps[0]).toMatchObject({ signalId: 'a', length: 100, speed: 50 })
+    expect(next.collections.routes[0].overlaps).toEqual([{ overlapId: next.collections.overlaps[0].id, preferred: true }])
+    expect(withMeasuredOverlap(d, net, { ...d.collections.routes[0], id: 'other' }).problem).toBe('speed')
   })
 
   it('makes a balise with the settings its kind asks for, and keeps what a new kind allows', () => {

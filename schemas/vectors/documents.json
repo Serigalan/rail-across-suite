@@ -6,7 +6,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6",
+     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -48,7 +48,7 @@
           ],
           "bearing": 90,
           "length": 100,
-          "speed": 80
+          "designSpeed": 80
          },
          {
           "elementType": 0,
@@ -329,7 +329,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6",
+     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
      "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -337,7 +337,7 @@
       "operationalPoints": "sha256:6a6eb5b21cdb3c39939da851281a7a8b9c968d36cea93d44d383d292b33beb34",
       "platforms": "sha256:1ab2e26c887a12abb8b4fdfaf22b1e56ec9406f85b66f80155a57a0c1aa07910",
       "switches": "sha256:2b44461e52775cdabdc9c02e42115f9441b311b4240d09dca153d5683a4a4da5",
-      "tracks": "sha256:31b7b45b2668805ff32a84d8ebc4586e230ae9152364edac5bc643ef097a075a"
+      "tracks": "sha256:c210042920f2702be7c34786b7e9b01dcceee6fe893c5c05ea8f80f2cde7dd15"
      }
     },
     "layout": {
@@ -355,7 +355,7 @@
     }
    }
   },
-  "hash": "sha256:96171c3fe7794d2f789c98c7ccdada83bd39ab8af186cd1258e13740a4ee1d3a"
+  "hash": "sha256:6b061a6bdd38c1b7ad29f4bceffa808f5a557b2aa6a22118a78e9610dffdb6ce"
  },
  {
   "name": "the sample, carrying its schemas",
@@ -364,7 +364,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6",
+     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -406,7 +406,7 @@
           ],
           "bearing": 90,
           "length": 100,
-          "speed": 80
+          "designSpeed": 80
          },
          {
           "elementType": 0,
@@ -682,7 +682,7 @@
     }
    },
    "schemas": {
-    "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6": {
+    "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19": {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
      "$id": "core",
      "title": "Rail-Data-Core, domain core 1.0",
@@ -1090,7 +1090,8 @@
           "type": "string"
          }
         },
-        "speed": {
+        "designSpeed": {
+         "description": "The design speed of the element [km/h], which the layout tool lays it out for and checks it against (the signalling domain states the speeds it signals, signallingSpeed, on its signals).",
          "type": [
           "number",
           "null"
@@ -1743,7 +1744,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6",
+     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
      "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -1751,7 +1752,7 @@
       "operationalPoints": "sha256:6a6eb5b21cdb3c39939da851281a7a8b9c968d36cea93d44d383d292b33beb34",
       "platforms": "sha256:1ab2e26c887a12abb8b4fdfaf22b1e56ec9406f85b66f80155a57a0c1aa07910",
       "switches": "sha256:2b44461e52775cdabdc9c02e42115f9441b311b4240d09dca153d5683a4a4da5",
-      "tracks": "sha256:31b7b45b2668805ff32a84d8ebc4586e230ae9152364edac5bc643ef097a075a"
+      "tracks": "sha256:c210042920f2702be7c34786b7e9b01dcceee6fe893c5c05ea8f80f2cde7dd15"
      }
     },
     "layout": {
@@ -1769,7 +1770,7 @@
     }
    }
   },
-  "hash": "sha256:96171c3fe7794d2f789c98c7ccdada83bd39ab8af186cd1258e13740a4ee1d3a"
+  "hash": "sha256:6b061a6bdd38c1b7ad29f4bceffa808f5a557b2aa6a22118a78e9610dffdb6ce"
  },
  {
   "name": "another format",
@@ -1778,7 +1779,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6",
+     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -1820,7 +1821,7 @@
           ],
           "bearing": 90,
           "length": 100,
-          "speed": 80
+          "designSpeed": 80
          },
          {
           "elementType": 0,
@@ -2106,7 +2107,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6",
+     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -2148,7 +2149,7 @@
           ],
           "bearing": 90,
           "length": 100,
-          "speed": 80
+          "designSpeed": 80
          },
          {
           "elementType": 0,
@@ -2434,7 +2435,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6",
+     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -2476,7 +2477,7 @@
           ],
           "bearing": 90,
           "length": 100,
-          "speed": 80
+          "designSpeed": 80
          },
          {
           "elementType": 0,
@@ -2821,7 +2822,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6",
+     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -2863,7 +2864,7 @@
           ],
           "bearing": 90,
           "length": 100,
-          "speed": 80
+          "designSpeed": 80
          },
          {
           "elementType": 0,
@@ -3149,7 +3150,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6",
+     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -3191,7 +3192,7 @@
           ],
           "bearing": 90,
           "length": 100,
-          "speed": 80
+          "designSpeed": 80
          },
          {
           "elementType": 0,
@@ -3467,7 +3468,7 @@
     }
    },
    "schemas": {
-    "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6": {
+    "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19": {
      "$id": "core"
     },
     "sha256:b2280dcf6cfe779e148b6c402ac46eb4ff1e8d96b55e6e3abcb370ef48ff1f1b": {
@@ -3694,7 +3695,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6",
+     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -3736,7 +3737,7 @@
           ],
           "bearing": 90,
           "length": 100,
-          "speed": 80
+          "designSpeed": 80
          },
          {
           "elementType": 0,
@@ -3992,7 +3993,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6",
+     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -4034,7 +4035,7 @@
           ],
           "bearing": 90,
           "length": 100,
-          "speed": 80
+          "designSpeed": 80
          },
          {
           "elementType": 0,
@@ -4317,7 +4318,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6",
+     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -4359,7 +4360,7 @@
           ],
           "bearing": 90,
           "length": 100,
-          "speed": 80
+          "designSpeed": 80
          },
          {
           "elementType": 0,
@@ -4459,7 +4460,7 @@
           ],
           "bearing": 90,
           "length": 100,
-          "speed": 80
+          "designSpeed": 80
          },
          {
           "elementType": 0,
@@ -4696,7 +4697,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6",
+     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -4738,7 +4739,7 @@
           ],
           "bearing": 90,
           "length": 100,
-          "speed": 80,
+          "designSpeed": 80,
           "renderCoords": []
          },
          {
@@ -5025,7 +5026,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6",
+     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -5064,7 +5065,7 @@
           ],
           "bearing": 90,
           "length": 100,
-          "speed": 80
+          "designSpeed": 80
          },
          {
           "elementType": 0,
@@ -5350,7 +5351,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6",
+     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -5392,7 +5393,7 @@
           ],
           "bearing": 90,
           "length": 100,
-          "speed": 80
+          "designSpeed": 80
          },
          {
           "elementType": 0,
@@ -5679,7 +5680,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6",
+     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -5721,7 +5722,7 @@
           ],
           "bearing": 90,
           "length": 100,
-          "speed": 80
+          "designSpeed": 80
          },
          {
           "elementType": 0,
@@ -6096,7 +6097,7 @@
   "code": "invalid_payload"
  },
  {
-  "name": "the sample with its signalling",
+  "name": "core as written before the design speed took its name",
   "document": {
    "format": "rail-across",
    "domains": {
@@ -6364,17 +6365,375 @@
        }
       ]
      }
+    }
+   },
+   "blobs": {
+    "sha256:b4aa72abe9415d526401fd1bf2a5b35429b0f47eb23781632212aa9e77710d48": {
+     "e0": 500000,
+     "n0": 5700000,
+     "z0": 108,
+     "st": [
+      0,
+      500
+     ],
+     "de": [
+      0,
+      500
+     ],
+     "dn": [
+      0,
+      0
+     ],
+     "zl": [
+      550,
+      560
+     ],
+     "zr": [
+      550,
+      561
+     ],
+     "ga": [
+      1435,
+      1436
+     ],
+     "q": [
+      1,
+      1
+     ]
+    },
+    "sha256:55dda32d20595141bb76c28a3769eb9345e54af5adea57d111f73a0b63b52acf": {
+     "s0": 0,
+     "step": 0.01,
+     "count": 3,
+     "e0": 500000,
+     "n0": 5700000,
+     "de": [
+      0,
+      10,
+      10
+     ],
+     "dn": [
+      0,
+      0,
+      0
+     ],
+     "z": null
+    }
+   }
+  },
+  "valid": true,
+  "manifest": {
+   "domains": {
+    "core": {
+     "version": "1.0",
+     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
+     "collections": {
+      "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
+      "kmLines": "sha256:7a0eb47d89ffa24b1917d39c8eab8707f820c9b6bceb81edf5dddcf52ead6457",
+      "operationalPoints": "sha256:6a6eb5b21cdb3c39939da851281a7a8b9c968d36cea93d44d383d292b33beb34",
+      "platforms": "sha256:1ab2e26c887a12abb8b4fdfaf22b1e56ec9406f85b66f80155a57a0c1aa07910",
+      "switches": "sha256:2b44461e52775cdabdc9c02e42115f9441b311b4240d09dca153d5683a4a4da5",
+      "tracks": "sha256:c210042920f2702be7c34786b7e9b01dcceee6fe893c5c05ea8f80f2cde7dd15"
+     }
+    },
+    "layout": {
+     "version": "1.0",
+     "schema": "sha256:b2280dcf6cfe779e148b6c402ac46eb4ff1e8d96b55e6e3abcb370ef48ff1f1b",
+     "dependsOn": [
+      "core"
+     ],
+     "fields": "sha256:8d9ae941998100a45679076ed67feb55eaf5c06dc028c5ff9396bbe93de06ffb",
+     "collections": {
+      "axisSurveys": "sha256:d7c72a86fce12420e2a646aa0087a31572d6db6bedd895b31181daeacff533cc",
+      "referenceAxes": "sha256:04906ea395d28e3d03af2cc45d7057c92d832faaeb875b5fb0ba3c9c40047a3e",
+      "trackPaths": "sha256:b6c705b568655eb210b5794b4ce86a95e2f3da8b51f5c298057698fb02b5db8f"
+     }
+    }
+   }
+  },
+  "hash": "sha256:6b061a6bdd38c1b7ad29f4bceffa808f5a557b2aa6a22118a78e9610dffdb6ce"
+ },
+ {
+  "name": "the sample with its signalling",
+  "document": {
+   "format": "rail-across",
+   "domains": {
+    "core": {
+     "version": "1.0",
+     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "fields": {
+      "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
+      "title": "Halle-Trotha",
+      "description": "vectors",
+      "creator": "core",
+      "createdAt": "2026-10-29T13:21:07.630Z",
+      "crsSystem": "ETRS89_UTM",
+      "lineCategory": "secondary",
+      "gaugeProfile": "hauptgleis",
+      "stages": [
+       {
+        "id": "b2a40cac-c53f-8ee2-b693-61aab009da16"
+       },
+       {
+        "id": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+       }
+      ]
+     },
+     "collections": {
+      "tracks": [
+       {
+        "id": "t1",
+        "name": "6050.001",
+        "trackType": 1,
+        "lineNumber": 6050,
+        "side": 1,
+        "epsg": 25832,
+        "heightEpsg": 7837,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500000,
+           5700000
+          ],
+          "endNode": [
+           500100,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 100,
+          "designSpeed": 80
+         },
+         {
+          "elementType": 0,
+          "startNode": [
+           500100,
+           5700000
+          ],
+          "endNode": [
+           500250,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 150,
+          "cant": 0,
+          "role": "follow"
+         }
+        ],
+        "heights": [
+         {
+          "station": 0,
+          "z": 108.55
+         },
+         {
+          "station": 250,
+          "z": 109.1,
+          "rv": 15000
+         }
+        ]
+       },
+       {
+        "id": "t2",
+        "name": "1",
+        "trackType": 2,
+        "trackNumber": "1",
+        "epsg": 25832,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500250,
+           5700000
+          ],
+          "endNode": [
+           500400,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 150
+         }
+        ],
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "lifespan": {
+         "from": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+        }
+       },
+       {
+        "id": "t3",
+        "name": "alt",
+        "epsg": 25832,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500400,
+           5700000
+          ],
+          "endNode": [
+           500450,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 50
+         }
+        ],
+        "lifespan": {
+         "to": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+        }
+       }
+      ],
+      "switches": [
+       {
+        "id": "w1",
+        "kind": "link",
+        "formVersion": 1,
+        "name": "link.001",
+        "ports": {
+         "A": {
+          "trackId": "t1",
+          "endpoint": "END"
+         },
+         "B": {
+          "trackId": "t2",
+          "endpoint": "BEGIN"
+         }
+        }
+       }
+      ],
+      "platforms": [
+       {
+        "at": {
+         "anchor": "station",
+         "trackId": "t2",
+         "startStation": 10,
+         "endStation": 140,
+         "side": "left"
+        },
+        "id": "p1",
+        "frontOffset": 1.67,
+        "height": 550,
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+       }
+      ],
+      "endMarks": [
+       {
+        "id": "e1",
+        "kind": "buffer_stop",
+        "type": 4,
+        "brakeLength": 4,
+        "at": {
+         "trackId": "t3",
+         "endpoint": "END"
+        }
+       }
+      ],
+      "kmLines": [
+       {
+        "id": "km-6050",
+        "lineNumber": 6050,
+        "crs": "EPSG:4326",
+        "clip": [
+         11.9,
+         51.5,
+         12,
+         51.6
+        ],
+        "runs": [
+         [
+          [
+           11.95,
+           51.55,
+           1200.5
+          ],
+          [
+           11.96,
+           51.56,
+           1300
+          ]
+         ]
+        ]
+       }
+      ],
+      "operationalPoints": [
+       {
+        "id": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "name": "Halle-Trotha",
+        "rl100": "LHT",
+        "uic": "8023111"
+       }
+      ]
+     }
+    },
+    "layout": {
+     "version": "1.0",
+     "schema": "sha256:b2280dcf6cfe779e148b6c402ac46eb4ff1e8d96b55e6e3abcb370ef48ff1f1b",
+     "dependsOn": [
+      "core"
+     ],
+     "fields": {
+      "planHeader": {
+       "subtitle": "Lageplan"
+      },
+      "imageHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+     },
+     "collections": {
+      "trackPaths": [
+       {
+        "id": "r1",
+        "name": "Gleis 1 durch",
+        "path": {
+         "trackIds": [
+          "t1",
+          "t2"
+         ]
+        }
+       }
+      ],
+      "axisSurveys": [
+       {
+        "id": "a1",
+        "name": "Trace",
+        "epsg": 25832,
+        "rail": "54E4",
+        "guide": {
+         "kind": "track",
+         "trackId": "t1"
+        },
+        "cloudNames": [
+         "W0"
+        ],
+        "createdAt": "2026-10-29T13:21:07.630Z",
+        "step": 0.5,
+        "gaps": [],
+        "points": "sha256:b4aa72abe9415d526401fd1bf2a5b35429b0f47eb23781632212aa9e77710d48"
+       }
+      ],
+      "referenceAxes": [
+       {
+        "id": "x1",
+        "name": "Bestand",
+        "epsg": 25832,
+        "heightEpsg": null,
+        "source": {
+         "tra": "a.TRA",
+         "gra": null
+        },
+        "points": "sha256:55dda32d20595141bb76c28a3769eb9345e54af5adea57d111f73a0b63b52acf"
+       }
+      ]
+     }
     },
     "signalling": {
      "version": "1.0",
-     "schema": "sha256:0194c1e7fe2a63741270025beb48929d106d74a80bf5b33ed4305965a5303487",
+     "schema": "sha256:cee619f2ae1b256a81ca5536e3851602cce96841d16bb2fe5f11ffe1a5e1f64c",
      "dependsOn": [
       "core"
      ],
      "fields": {
       "catalogue": {
        "id": "db-ril-301",
-       "version": "0.3.0"
+       "version": "0.4.0"
       }
      },
      "collections": {
@@ -6383,14 +6742,7 @@
         "id": "sig-a",
         "name": "A",
         "kind": "real",
-        "function": "entry",
         "mounting": "mast",
-        "logicalSignals": [
-         {
-          "system": "ks",
-          "type": "multiSection"
-         }
-        ],
         "at": {
          "anchor": "station",
          "trackId": "t1",
@@ -6403,46 +6755,65 @@
          "required": 300,
          "achievable": 420
         },
+        "logicalSignals": [
+         {
+          "system": "ks",
+          "type": "multiSection",
+          "function": "entry",
+          "frames": [
+           {
+            "kind": "screen",
+            "aspects": [
+             {
+              "aspect": "Hp_0"
+             },
+             {
+              "aspect": "Ks_1"
+             },
+             {
+              "aspect": "Ks_2"
+             }
+            ]
+           },
+           {
+            "kind": "indicator",
+            "aspects": [
+             {
+              "aspect": "Zs_3",
+              "symbol": "6"
+             }
+            ]
+           },
+           {
+            "kind": "indicator",
+            "aspects": [
+             {
+              "aspect": "Zs_2",
+              "symbol": "H"
+             }
+            ]
+           },
+           {
+            "kind": "indicator",
+            "aspects": [
+             {
+              "aspect": "Zs_1"
+             }
+            ]
+           }
+          ],
+          "signallingSpeeds": [
+           {
+            "routeId": "rt-a-n1",
+            "speed": 60
+           }
+          ]
+         }
+        ],
         "frames": [
          {
-          "kind": "screen",
-          "aspects": [
-           {
-            "aspect": "Hp_0"
-           },
-           {
-            "aspect": "Ks_1"
-           },
-           {
-            "aspect": "Ks_2"
-           }
-          ]
-         },
-         {
-          "kind": "indicator",
-          "aspects": [
-           {
-            "aspect": "Zs_3",
-            "symbol": "6"
-           }
-          ]
-         },
-         {
-          "kind": "indicator",
-          "aspects": [
-           {
-            "aspect": "Zs_2",
-            "symbol": "H"
-           }
-          ]
-         },
-         {
-          "kind": "indicator",
-          "aspects": [
-           {
-            "aspect": "Zs_1"
-           }
-          ]
+          "kind": "nameplate",
+          "aspects": []
          }
         ]
        },
@@ -6450,14 +6821,7 @@
         "id": "sig-n1",
         "name": "N1",
         "kind": "real",
-        "function": "exit",
         "mounting": "mast",
-        "logicalSignals": [
-         {
-          "system": "ks",
-          "type": "mainShunting"
-         }
-        ],
         "at": {
          "anchor": "station",
          "trackId": "t1",
@@ -6466,30 +6830,44 @@
          "offset": 3.1,
          "direction": "up"
         },
-        "frames": [
+        "logicalSignals": [
          {
-          "kind": "screen",
-          "aspects": [
+          "system": "ks",
+          "type": "mainShunting",
+          "function": "exit",
+          "frames": [
            {
-            "aspect": "Hp_0"
+            "kind": "screen",
+            "aspects": [
+             {
+              "aspect": "Hp_0"
+             },
+             {
+              "aspect": "Ks_1"
+             },
+             {
+              "aspect": "Sh_1"
+             }
+            ]
            },
            {
-            "aspect": "Ks_1"
-           },
-           {
-            "aspect": "Sh_1"
+            "kind": "indicator",
+            "aspects": [
+             {
+              "aspect": "Zs_1"
+             }
+            ]
            }
-          ]
-         },
-         {
-          "kind": "indicator",
-          "aspects": [
+          ],
+          "signallingSpeeds": [
            {
-            "aspect": "Zs_1"
+            "routeId": "rt-n1-v",
+            "speed": 80
            }
           ]
          }
-        ]
+        ],
+        "frames": []
        },
        {
         "id": "sig-ne1",
@@ -6590,7 +6968,6 @@
           "t1"
          ]
         },
-        "speed": 60,
         "overlaps": [
          {
           "overlapId": "ov-n1",
@@ -6784,32 +7161,6 @@
         },
         "signalId": "sig-n1",
         "effect": "switchedBySignal"
-       }
-      ],
-      "speedSections": [
-       {
-        "id": "v-w1",
-        "name": "W1",
-        "start": {
-         "anchor": "station",
-         "trackId": "t1",
-         "station": 200
-        },
-        "path": {
-         "trackIds": [
-          "t1",
-          "t2"
-         ]
-        },
-        "end": {
-         "anchor": "station",
-         "trackId": "t2",
-         "station": 60
-        },
-        "speed": 60,
-        "speedByTag": {
-         "freight": 40
-        }
        }
       ],
       "stationBoundaries": [
@@ -6885,7 +7236,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6",
+     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
      "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -6893,7 +7244,7 @@
       "operationalPoints": "sha256:6a6eb5b21cdb3c39939da851281a7a8b9c968d36cea93d44d383d292b33beb34",
       "platforms": "sha256:1ab2e26c887a12abb8b4fdfaf22b1e56ec9406f85b66f80155a57a0c1aa07910",
       "switches": "sha256:2b44461e52775cdabdc9c02e42115f9441b311b4240d09dca153d5683a4a4da5",
-      "tracks": "sha256:31b7b45b2668805ff32a84d8ebc4586e230ae9152364edac5bc643ef097a075a"
+      "tracks": "sha256:c210042920f2702be7c34786b7e9b01dcceee6fe893c5c05ea8f80f2cde7dd15"
      }
     },
     "layout": {
@@ -6911,19 +7262,18 @@
     },
     "signalling": {
      "version": "1.0",
-     "schema": "sha256:0194c1e7fe2a63741270025beb48929d106d74a80bf5b33ed4305965a5303487",
+     "schema": "sha256:cee619f2ae1b256a81ca5536e3851602cce96841d16bb2fe5f11ffe1a5e1f64c",
      "dependsOn": [
       "core"
      ],
-     "fields": "sha256:bf7160c75b5f29cc2ca47056ac05cda1e4d4a8a486436531604d8c1020b2f9e7",
+     "fields": "sha256:483174c02387768f3e96d7579990e99942be258641301103b3470f929958cd37",
      "collections": {
       "balises": "sha256:713e18f2b19483ec5e1bfb0babf3a580a0db65c71f49bfa2e8e11c5a4d588c14",
       "detectionPoints": "sha256:c98deaa1cfec2a74eded2bfb06749831953268a0e3d4a2d9f5fcf21103d899e7",
       "flankProtection": "sha256:0f5fddb634a2d9ab8ee97b8c819917e50051b58e8013a3067258bd2b8bd43567",
       "overlaps": "sha256:3dc90110fb0c0f878b841fd5d497829f036e5627d4099479d1726c8905b62e3e",
-      "routes": "sha256:a02939e2f09de570b3f466510e02627b133e46848950a47cbbd0ef01e284ca9c",
-      "signals": "sha256:d2804a5a7172543bcb1bd6d87b3de36a265d5b0ee4e764a1f4355465013b9fb4",
-      "speedSections": "sha256:defe546e84fc6d69cf5e6d5d2fdc18f40d3d6302640bb6feced901ff6ad24df2",
+      "routes": "sha256:8460ec8eb8679ccbafe0fd56878bbaf049e8c8562d45d2c675607f5a48784be2",
+      "signals": "sha256:d3d1d3f90c136fc0f8eb102df7733eff0a7518749a7781d1a5eb06433b9b9bd3",
       "stationBoundaries": "sha256:54556f1e20a2e22fd145c8d0f66b92640b25f50b66da610ebd8ae7126412d496",
       "switchElements": "sha256:fe471ee1c255021503a7e8f6862566e6d5aeb76a76cad3782b7ce37c87adb591",
       "trackSections": "sha256:dd2ee2e1d729211c5aaac5bf7c209b78c81c887bff24f6413ae439d92f4b8496"
@@ -6931,7 +7281,7 @@
     }
    }
   },
-  "hash": "sha256:3552a0515b35a87cba87f854be85b9a7273b2ca5283e1a6511f0851f366cb05c"
+  "hash": "sha256:fbd15a07ef5475924bcff440b808242760aa7be32652cf25561fe58d5504716d"
  },
  {
   "name": "the sample with its signalling, carrying its schemas",
@@ -6940,7 +7290,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6",
+     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -6982,7 +7332,7 @@
           ],
           "bearing": 90,
           "length": 100,
-          "speed": 80
+          "designSpeed": 80
          },
          {
           "elementType": 0,
@@ -7205,14 +7555,14 @@
     },
     "signalling": {
      "version": "1.0",
-     "schema": "sha256:0194c1e7fe2a63741270025beb48929d106d74a80bf5b33ed4305965a5303487",
+     "schema": "sha256:cee619f2ae1b256a81ca5536e3851602cce96841d16bb2fe5f11ffe1a5e1f64c",
      "dependsOn": [
       "core"
      ],
      "fields": {
       "catalogue": {
        "id": "db-ril-301",
-       "version": "0.3.0"
+       "version": "0.4.0"
       }
      },
      "collections": {
@@ -7221,14 +7571,7 @@
         "id": "sig-a",
         "name": "A",
         "kind": "real",
-        "function": "entry",
         "mounting": "mast",
-        "logicalSignals": [
-         {
-          "system": "ks",
-          "type": "multiSection"
-         }
-        ],
         "at": {
          "anchor": "station",
          "trackId": "t1",
@@ -7241,46 +7584,65 @@
          "required": 300,
          "achievable": 420
         },
+        "logicalSignals": [
+         {
+          "system": "ks",
+          "type": "multiSection",
+          "function": "entry",
+          "frames": [
+           {
+            "kind": "screen",
+            "aspects": [
+             {
+              "aspect": "Hp_0"
+             },
+             {
+              "aspect": "Ks_1"
+             },
+             {
+              "aspect": "Ks_2"
+             }
+            ]
+           },
+           {
+            "kind": "indicator",
+            "aspects": [
+             {
+              "aspect": "Zs_3",
+              "symbol": "6"
+             }
+            ]
+           },
+           {
+            "kind": "indicator",
+            "aspects": [
+             {
+              "aspect": "Zs_2",
+              "symbol": "H"
+             }
+            ]
+           },
+           {
+            "kind": "indicator",
+            "aspects": [
+             {
+              "aspect": "Zs_1"
+             }
+            ]
+           }
+          ],
+          "signallingSpeeds": [
+           {
+            "routeId": "rt-a-n1",
+            "speed": 60
+           }
+          ]
+         }
+        ],
         "frames": [
          {
-          "kind": "screen",
-          "aspects": [
-           {
-            "aspect": "Hp_0"
-           },
-           {
-            "aspect": "Ks_1"
-           },
-           {
-            "aspect": "Ks_2"
-           }
-          ]
-         },
-         {
-          "kind": "indicator",
-          "aspects": [
-           {
-            "aspect": "Zs_3",
-            "symbol": "6"
-           }
-          ]
-         },
-         {
-          "kind": "indicator",
-          "aspects": [
-           {
-            "aspect": "Zs_2",
-            "symbol": "H"
-           }
-          ]
-         },
-         {
-          "kind": "indicator",
-          "aspects": [
-           {
-            "aspect": "Zs_1"
-           }
-          ]
+          "kind": "nameplate",
+          "aspects": []
          }
         ]
        },
@@ -7288,14 +7650,7 @@
         "id": "sig-n1",
         "name": "N1",
         "kind": "real",
-        "function": "exit",
         "mounting": "mast",
-        "logicalSignals": [
-         {
-          "system": "ks",
-          "type": "mainShunting"
-         }
-        ],
         "at": {
          "anchor": "station",
          "trackId": "t1",
@@ -7304,30 +7659,44 @@
          "offset": 3.1,
          "direction": "up"
         },
-        "frames": [
+        "logicalSignals": [
          {
-          "kind": "screen",
-          "aspects": [
+          "system": "ks",
+          "type": "mainShunting",
+          "function": "exit",
+          "frames": [
            {
-            "aspect": "Hp_0"
+            "kind": "screen",
+            "aspects": [
+             {
+              "aspect": "Hp_0"
+             },
+             {
+              "aspect": "Ks_1"
+             },
+             {
+              "aspect": "Sh_1"
+             }
+            ]
            },
            {
-            "aspect": "Ks_1"
-           },
-           {
-            "aspect": "Sh_1"
+            "kind": "indicator",
+            "aspects": [
+             {
+              "aspect": "Zs_1"
+             }
+            ]
            }
-          ]
-         },
-         {
-          "kind": "indicator",
-          "aspects": [
+          ],
+          "signallingSpeeds": [
            {
-            "aspect": "Zs_1"
+            "routeId": "rt-n1-v",
+            "speed": 80
            }
           ]
          }
-        ]
+        ],
+        "frames": []
        },
        {
         "id": "sig-ne1",
@@ -7428,7 +7797,6 @@
           "t1"
          ]
         },
-        "speed": 60,
         "overlaps": [
          {
           "overlapId": "ov-n1",
@@ -7624,32 +7992,6 @@
         "effect": "switchedBySignal"
        }
       ],
-      "speedSections": [
-       {
-        "id": "v-w1",
-        "name": "W1",
-        "start": {
-         "anchor": "station",
-         "trackId": "t1",
-         "station": 200
-        },
-        "path": {
-         "trackIds": [
-          "t1",
-          "t2"
-         ]
-        },
-        "end": {
-         "anchor": "station",
-         "trackId": "t2",
-         "station": 60
-        },
-        "speed": 60,
-        "speedByTag": {
-         "freight": 40
-        }
-       }
-      ],
       "stationBoundaries": [
        {
         "id": "bd-1",
@@ -7718,7 +8060,7 @@
     }
    },
    "schemas": {
-    "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6": {
+    "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19": {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
      "$id": "core",
      "title": "Rail-Data-Core, domain core 1.0",
@@ -8126,7 +8468,8 @@
           "type": "string"
          }
         },
-        "speed": {
+        "designSpeed": {
+         "description": "The design speed of the element [km/h], which the layout tool lays it out for and checks it against (the signalling domain states the speeds it signals, signallingSpeed, on its signals).",
          "type": [
           "number",
           "null"
@@ -8772,11 +9115,11 @@
       }
      }
     },
-    "sha256:0194c1e7fe2a63741270025beb48929d106d74a80bf5b33ed4305965a5303487": {
+    "sha256:cee619f2ae1b256a81ca5536e3851602cce96841d16bb2fe5f11ffe1a5e1f64c": {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
      "$id": "signalling",
      "title": "Rail-Data-Core, domain signalling 1.0",
-     "description": "The signalling of a project, as the signalling tool plans it: signals and boards, train detection, the switch elements of the interlocking, train and shunting routes with their overlaps, flank protection, the balises and magnets of train protection, the speed sections and the station boundaries. Depends on core; its references go into the core or into itself (R2, R9). Its objects follow PlanPro 1.10, and like OSRD it keeps every signalling and train protection system out of the schema (decision 0011): a signal carries a logical signal per system, a balise names its system; which systems, kinds, aspects and settings there are is not in this schema but in the catalogue (packages/core/constraints/db-ril-301.json), which the content check reads.",
+     "description": "The signalling of a project, as the signalling tool plans it: signals and boards, train detection, the switch elements of the interlocking, train and shunting routes with their overlaps, flank protection, the balises and magnets of train protection and the station boundaries. Depends on core; its references go into the core or into itself (R2, R9). Its objects follow PlanPro 1.10, and like OSRD it keeps every signalling and train protection system out of the schema (decision 0011): a signal carries a logical signal per system, a balise names its system; which systems, kinds, aspects and settings there are is not in this schema but in the catalogue (packages/core/constraints/db-ril-301.json), which the content check reads.",
      "type": "object",
      "required": [
       "fields",
@@ -8798,7 +9141,6 @@
         "overlaps",
         "flankProtection",
         "balises",
-        "speedSections",
         "stationBoundaries"
        ],
        "additionalProperties": false,
@@ -8849,12 +9191,6 @@
          "type": "array",
          "items": {
           "$ref": "#/$defs/Balise"
-         }
-        },
-        "speedSections": {
-         "type": "array",
-         "items": {
-          "$ref": "#/$defs/SpeedSection"
          }
         },
         "stationBoundaries": {
@@ -8922,7 +9258,7 @@
        ]
       },
       "Signal": {
-       "description": "A signal or a board at the track (PlanPro: Signal), real or virtual. A real one stands at `at` and acts in its direction — or in both (`bothDirections`); what it can show are its frames, each with its aspects, keyed by the catalogue. A virtual one (PlanPro: Signal_Fiktiv) has no frames: it marks where a route starts or ends without a signal there.",
+       "description": "A signal's place at the track, the physical signal (PlanPro: Signal; OSRD: Signal), real or virtual. A real one stands at `at` and acts in its direction — or in both (`bothDirections`), on its mounting, seen from its sighting distances; what it is in each signalling system it shows are its logical signals, each with the frames it shows; the boards it carries of no system (Ne 1, Ra 12, mast plates, its name plate) are its own frames. A virtual one (PlanPro: Signal_Fiktiv) has neither: it marks where a route starts or ends without a signal there.",
        "type": "object",
        "required": [
         "id",
@@ -8961,7 +9297,7 @@
          "type": "boolean"
         },
         "function": {
-         "description": "PlanPro Signal_Funktion.",
+         "description": "PlanPro Signal_Funktion, for a signal of no system (a level crossing's monitoring signal, a standalone indicator); one with logical signals states it on each.",
          "enum": [
           "entry",
           "exit",
@@ -9038,6 +9374,7 @@
          }
         },
         "frames": {
+         "description": "What it shows of no system: boards, the ceramic body of a clearance marker, its name plate — and the screen of a signal of no system. A logical signal's screen and indicators are the logical signal's.",
          "type": "array",
          "items": {
           "$ref": "#/$defs/Frame"
@@ -9049,7 +9386,7 @@
        }
       },
       "LogicalSignal": {
-       "description": "A signal in one signalling system (OSRD: LogicalSignal): the system, a key of the catalogue's `systeme`; the kind of signal it is there, a key of that system's `signalarten` or `other`; its settings, as the catalogue declares them for the system; the systems the signals it announces may be of (OSRD next_signaling_systems); and the parameters it shows with, by default and per route (OSRD default_parameters, conditional_parameters), as the system declares them.",
+       "description": "A signal in one signalling system at a place (OSRD: LogicalSignal): the system, a key of the catalogue's `systeme`; the kind of signal it is there, a key of that system's `signalarten` or `other`; its function (PlanPro Signal_Funktion); the frames it shows — its screen, its indicators; the speed it signals for each route that starts at its place (signallingSpeed; PlanPro Fstr_V_Hg), where the design speed of the track (core `designSpeed`) is the layout's; its settings, as the catalogue declares them for the system; the systems the signals it announces may be of (OSRD next_signaling_systems); and the parameters it shows with, by default and per route (OSRD default_parameters, conditional_parameters), as the system declares them.",
        "type": "object",
        "required": [
         "system"
@@ -9063,6 +9400,57 @@
         "type": {
          "type": "string",
          "minLength": 1
+        },
+        "function": {
+         "description": "PlanPro Signal_Funktion.",
+         "enum": [
+          "entry",
+          "exit",
+          "entryExit",
+          "intermediate",
+          "exitIntermediate",
+          "entryBlock",
+          "block",
+          "groupExit",
+          "groupIntermediate",
+          "groupExitIntermediate",
+          "followUp",
+          "cover",
+          "trainCover",
+          "trainTarget",
+          "levelCrossing",
+          "distant",
+          "standaloneIndicator",
+          "other"
+         ]
+        },
+        "frames": {
+         "type": "array",
+         "items": {
+          "$ref": "#/$defs/Frame"
+         }
+        },
+        "signallingSpeeds": {
+         "description": "Per route that starts at its place, the speed it signals for it [km/h] (signallingSpeed; PlanPro Fstr_V_Hg).",
+         "type": "array",
+         "items": {
+          "type": "object",
+          "required": [
+           "routeId",
+           "speed"
+          ],
+          "additionalProperties": false,
+          "properties": {
+           "routeId": {
+            "$ref": "core#/$defs/Ref",
+            "x-target": "signalling.routes"
+           },
+           "speed": {
+            "type": "number",
+            "minimum": 0
+           }
+          }
+         }
         },
         "settings": {
          "$ref": "#/$defs/Settings"
@@ -9367,7 +9755,7 @@
        }
       },
       "Route": {
-       "description": "A train, shunting or middle-switch route (PlanPro Fstr_Zug_Rangier with its Fstr_Fahrweg): from a start signal to a target signal along a run of tracks. Which way each switch element lies follows from the run and is not stored (as in PlanPro). A train route names the overlaps it may end in; flank protection follows from the switch elements it runs over. Where several routes run between the same two signals, `rank` orders them.",
+       "description": "A train, shunting or middle-switch route (PlanPro Fstr_Zug_Rangier with its Fstr_Fahrweg): from a start signal to a target signal along a run of tracks. Which way each switch element lies follows from the run and is not stored (as in PlanPro). A train route names the overlaps it may end in; flank protection follows from the switch elements it runs over. Where several routes run between the same two signals, `rank` orders them. The speed it permits is not its own: its start signal signals it (a logical signal's signallingSpeeds).",
        "type": "object",
        "required": [
         "id",
@@ -9435,11 +9823,6 @@
         },
         "path": {
          "$ref": "core#/$defs/TrackPath"
-        },
-        "speed": {
-         "description": "The speed the route permits [km/h] (PlanPro Fstr_V_Hg).",
-         "type": "number",
-         "minimum": 0
         },
         "autoSetting": {
          "type": "boolean",
@@ -9774,58 +10157,6 @@
         }
        }
       },
-      "SpeedSection": {
-       "description": "A stretch where a speed holds (OSRD: SpeedSection; the speed profile of the roadmap): from `start` along a run of tracks to `end`, both on the run's first and last track — as an overlap runs, so the core carries it as it carries every location and run. In the direction `start` states, or both where it states none. The speed [km/h], per tag of train where it differs (OSRD speed_limit_by_tag), and the routes it holds on only, where it holds on some.",
-       "type": "object",
-       "required": [
-        "id",
-        "start",
-        "path",
-        "end"
-       ],
-       "additionalProperties": false,
-       "properties": {
-        "id": {
-         "$ref": "core#/$defs/Id"
-        },
-        "name": {
-         "$ref": "core#/$defs/Text"
-        },
-        "start": {
-         "$ref": "core#/$defs/TrackLocation"
-        },
-        "path": {
-         "$ref": "core#/$defs/TrackPath"
-        },
-        "end": {
-         "$ref": "core#/$defs/TrackLocation"
-        },
-        "speed": {
-         "description": "[km/h]",
-         "type": "number",
-         "minimum": 0
-        },
-        "speedByTag": {
-         "description": "Per tag of train, the speed it may run at here [km/h] (OSRD speed_limit_by_tag).",
-         "type": "object",
-         "additionalProperties": {
-          "type": "number",
-          "minimum": 0
-         }
-        },
-        "onRoutes": {
-         "description": "The routes it holds on; on all where it names none (OSRD on_routes).",
-         "type": "array",
-         "items": {
-          "$ref": "core#/$defs/Ref",
-          "x-target": "signalling.routes"
-         }
-        },
-        "lifespan": {
-         "$ref": "core#/$defs/Lifespan"
-        }
-       }
-      },
       "StationBoundary": {
        "description": "The boundary of a station of the core's register, where trains enter it: what marks it — an entry signal or a board (Ne 1), an entry switch where there is neither (EBO §4), or for a halt its platform. Where it is not where the rules put it, a finding says so.",
        "type": "object",
@@ -9904,7 +10235,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6",
+     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
      "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -9912,7 +10243,7 @@
       "operationalPoints": "sha256:6a6eb5b21cdb3c39939da851281a7a8b9c968d36cea93d44d383d292b33beb34",
       "platforms": "sha256:1ab2e26c887a12abb8b4fdfaf22b1e56ec9406f85b66f80155a57a0c1aa07910",
       "switches": "sha256:2b44461e52775cdabdc9c02e42115f9441b311b4240d09dca153d5683a4a4da5",
-      "tracks": "sha256:31b7b45b2668805ff32a84d8ebc4586e230ae9152364edac5bc643ef097a075a"
+      "tracks": "sha256:c210042920f2702be7c34786b7e9b01dcceee6fe893c5c05ea8f80f2cde7dd15"
      }
     },
     "layout": {
@@ -9930,19 +10261,18 @@
     },
     "signalling": {
      "version": "1.0",
-     "schema": "sha256:0194c1e7fe2a63741270025beb48929d106d74a80bf5b33ed4305965a5303487",
+     "schema": "sha256:cee619f2ae1b256a81ca5536e3851602cce96841d16bb2fe5f11ffe1a5e1f64c",
      "dependsOn": [
       "core"
      ],
-     "fields": "sha256:bf7160c75b5f29cc2ca47056ac05cda1e4d4a8a486436531604d8c1020b2f9e7",
+     "fields": "sha256:483174c02387768f3e96d7579990e99942be258641301103b3470f929958cd37",
      "collections": {
       "balises": "sha256:713e18f2b19483ec5e1bfb0babf3a580a0db65c71f49bfa2e8e11c5a4d588c14",
       "detectionPoints": "sha256:c98deaa1cfec2a74eded2bfb06749831953268a0e3d4a2d9f5fcf21103d899e7",
       "flankProtection": "sha256:0f5fddb634a2d9ab8ee97b8c819917e50051b58e8013a3067258bd2b8bd43567",
       "overlaps": "sha256:3dc90110fb0c0f878b841fd5d497829f036e5627d4099479d1726c8905b62e3e",
-      "routes": "sha256:a02939e2f09de570b3f466510e02627b133e46848950a47cbbd0ef01e284ca9c",
-      "signals": "sha256:d2804a5a7172543bcb1bd6d87b3de36a265d5b0ee4e764a1f4355465013b9fb4",
-      "speedSections": "sha256:defe546e84fc6d69cf5e6d5d2fdc18f40d3d6302640bb6feced901ff6ad24df2",
+      "routes": "sha256:8460ec8eb8679ccbafe0fd56878bbaf049e8c8562d45d2c675607f5a48784be2",
+      "signals": "sha256:d3d1d3f90c136fc0f8eb102df7733eff0a7518749a7781d1a5eb06433b9b9bd3",
       "stationBoundaries": "sha256:54556f1e20a2e22fd145c8d0f66b92640b25f50b66da610ebd8ae7126412d496",
       "switchElements": "sha256:fe471ee1c255021503a7e8f6862566e6d5aeb76a76cad3782b7ce37c87adb591",
       "trackSections": "sha256:dd2ee2e1d729211c5aaac5bf7c209b78c81c887bff24f6413ae439d92f4b8496"
@@ -9950,7 +10280,7 @@
     }
    }
   },
-  "hash": "sha256:3552a0515b35a87cba87f854be85b9a7273b2ca5283e1a6511f0851f366cb05c"
+  "hash": "sha256:fbd15a07ef5475924bcff440b808242760aa7be32652cf25561fe58d5504716d"
  },
  {
   "name": "signalling depending on nothing",
@@ -9959,7 +10289,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6",
+     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -10001,7 +10331,7 @@
           ],
           "bearing": 90,
           "length": 100,
-          "speed": 80
+          "designSpeed": 80
          },
          {
           "elementType": 0,
@@ -10224,11 +10554,11 @@
     },
     "signalling": {
      "version": "1.0",
-     "schema": "sha256:0194c1e7fe2a63741270025beb48929d106d74a80bf5b33ed4305965a5303487",
+     "schema": "sha256:cee619f2ae1b256a81ca5536e3851602cce96841d16bb2fe5f11ffe1a5e1f64c",
      "fields": {
       "catalogue": {
        "id": "db-ril-301",
-       "version": "0.3.0"
+       "version": "0.4.0"
       }
      },
      "collections": {
@@ -10237,14 +10567,7 @@
         "id": "sig-a",
         "name": "A",
         "kind": "real",
-        "function": "entry",
         "mounting": "mast",
-        "logicalSignals": [
-         {
-          "system": "ks",
-          "type": "multiSection"
-         }
-        ],
         "at": {
          "anchor": "station",
          "trackId": "t1",
@@ -10257,46 +10580,65 @@
          "required": 300,
          "achievable": 420
         },
+        "logicalSignals": [
+         {
+          "system": "ks",
+          "type": "multiSection",
+          "function": "entry",
+          "frames": [
+           {
+            "kind": "screen",
+            "aspects": [
+             {
+              "aspect": "Hp_0"
+             },
+             {
+              "aspect": "Ks_1"
+             },
+             {
+              "aspect": "Ks_2"
+             }
+            ]
+           },
+           {
+            "kind": "indicator",
+            "aspects": [
+             {
+              "aspect": "Zs_3",
+              "symbol": "6"
+             }
+            ]
+           },
+           {
+            "kind": "indicator",
+            "aspects": [
+             {
+              "aspect": "Zs_2",
+              "symbol": "H"
+             }
+            ]
+           },
+           {
+            "kind": "indicator",
+            "aspects": [
+             {
+              "aspect": "Zs_1"
+             }
+            ]
+           }
+          ],
+          "signallingSpeeds": [
+           {
+            "routeId": "rt-a-n1",
+            "speed": 60
+           }
+          ]
+         }
+        ],
         "frames": [
          {
-          "kind": "screen",
-          "aspects": [
-           {
-            "aspect": "Hp_0"
-           },
-           {
-            "aspect": "Ks_1"
-           },
-           {
-            "aspect": "Ks_2"
-           }
-          ]
-         },
-         {
-          "kind": "indicator",
-          "aspects": [
-           {
-            "aspect": "Zs_3",
-            "symbol": "6"
-           }
-          ]
-         },
-         {
-          "kind": "indicator",
-          "aspects": [
-           {
-            "aspect": "Zs_2",
-            "symbol": "H"
-           }
-          ]
-         },
-         {
-          "kind": "indicator",
-          "aspects": [
-           {
-            "aspect": "Zs_1"
-           }
-          ]
+          "kind": "nameplate",
+          "aspects": []
          }
         ]
        },
@@ -10304,14 +10646,7 @@
         "id": "sig-n1",
         "name": "N1",
         "kind": "real",
-        "function": "exit",
         "mounting": "mast",
-        "logicalSignals": [
-         {
-          "system": "ks",
-          "type": "mainShunting"
-         }
-        ],
         "at": {
          "anchor": "station",
          "trackId": "t1",
@@ -10320,30 +10655,44 @@
          "offset": 3.1,
          "direction": "up"
         },
-        "frames": [
+        "logicalSignals": [
          {
-          "kind": "screen",
-          "aspects": [
+          "system": "ks",
+          "type": "mainShunting",
+          "function": "exit",
+          "frames": [
            {
-            "aspect": "Hp_0"
+            "kind": "screen",
+            "aspects": [
+             {
+              "aspect": "Hp_0"
+             },
+             {
+              "aspect": "Ks_1"
+             },
+             {
+              "aspect": "Sh_1"
+             }
+            ]
            },
            {
-            "aspect": "Ks_1"
-           },
-           {
-            "aspect": "Sh_1"
+            "kind": "indicator",
+            "aspects": [
+             {
+              "aspect": "Zs_1"
+             }
+            ]
            }
-          ]
-         },
-         {
-          "kind": "indicator",
-          "aspects": [
+          ],
+          "signallingSpeeds": [
            {
-            "aspect": "Zs_1"
+            "routeId": "rt-n1-v",
+            "speed": 80
            }
           ]
          }
-        ]
+        ],
+        "frames": []
        },
        {
         "id": "sig-ne1",
@@ -10444,7 +10793,6 @@
           "t1"
          ]
         },
-        "speed": 60,
         "overlaps": [
          {
           "overlapId": "ov-n1",
@@ -10638,32 +10986,6 @@
         },
         "signalId": "sig-n1",
         "effect": "switchedBySignal"
-       }
-      ],
-      "speedSections": [
-       {
-        "id": "v-w1",
-        "name": "W1",
-        "start": {
-         "anchor": "station",
-         "trackId": "t1",
-         "station": 200
-        },
-        "path": {
-         "trackIds": [
-          "t1",
-          "t2"
-         ]
-        },
-        "end": {
-         "anchor": "station",
-         "trackId": "t2",
-         "station": 60
-        },
-        "speed": 60,
-        "speedByTag": {
-         "freight": 40
-        }
        }
       ],
       "stationBoundaries": [
@@ -10744,7 +11066,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6",
+     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -10786,7 +11108,7 @@
           ],
           "bearing": 90,
           "length": 100,
-          "speed": 80
+          "designSpeed": 80
          },
          {
           "elementType": 0,
@@ -11009,14 +11331,14 @@
     },
     "signalling": {
      "version": "1.0",
-     "schema": "sha256:0194c1e7fe2a63741270025beb48929d106d74a80bf5b33ed4305965a5303487",
+     "schema": "sha256:cee619f2ae1b256a81ca5536e3851602cce96841d16bb2fe5f11ffe1a5e1f64c",
      "dependsOn": [
       "core"
      ],
      "fields": {
       "catalogue": {
        "id": "db-ril-301",
-       "version": "0.3.0"
+       "version": "0.4.0"
       }
      },
      "collections": {
@@ -11025,14 +11347,7 @@
         "id": "sig-a",
         "name": "A",
         "kind": "real",
-        "function": "entry",
         "mounting": "mast",
-        "logicalSignals": [
-         {
-          "system": "ks",
-          "type": "multiSection"
-         }
-        ],
         "at": {
          "anchor": "station",
          "trackId": "t1",
@@ -11044,46 +11359,65 @@
          "required": 300,
          "achievable": 420
         },
+        "logicalSignals": [
+         {
+          "system": "ks",
+          "type": "multiSection",
+          "function": "entry",
+          "frames": [
+           {
+            "kind": "screen",
+            "aspects": [
+             {
+              "aspect": "Hp_0"
+             },
+             {
+              "aspect": "Ks_1"
+             },
+             {
+              "aspect": "Ks_2"
+             }
+            ]
+           },
+           {
+            "kind": "indicator",
+            "aspects": [
+             {
+              "aspect": "Zs_3",
+              "symbol": "6"
+             }
+            ]
+           },
+           {
+            "kind": "indicator",
+            "aspects": [
+             {
+              "aspect": "Zs_2",
+              "symbol": "H"
+             }
+            ]
+           },
+           {
+            "kind": "indicator",
+            "aspects": [
+             {
+              "aspect": "Zs_1"
+             }
+            ]
+           }
+          ],
+          "signallingSpeeds": [
+           {
+            "routeId": "rt-a-n1",
+            "speed": 60
+           }
+          ]
+         }
+        ],
         "frames": [
          {
-          "kind": "screen",
-          "aspects": [
-           {
-            "aspect": "Hp_0"
-           },
-           {
-            "aspect": "Ks_1"
-           },
-           {
-            "aspect": "Ks_2"
-           }
-          ]
-         },
-         {
-          "kind": "indicator",
-          "aspects": [
-           {
-            "aspect": "Zs_3",
-            "symbol": "6"
-           }
-          ]
-         },
-         {
-          "kind": "indicator",
-          "aspects": [
-           {
-            "aspect": "Zs_2",
-            "symbol": "H"
-           }
-          ]
-         },
-         {
-          "kind": "indicator",
-          "aspects": [
-           {
-            "aspect": "Zs_1"
-           }
-          ]
+          "kind": "nameplate",
+          "aspects": []
          }
         ]
        },
@@ -11091,14 +11425,7 @@
         "id": "sig-n1",
         "name": "N1",
         "kind": "real",
-        "function": "exit",
         "mounting": "mast",
-        "logicalSignals": [
-         {
-          "system": "ks",
-          "type": "mainShunting"
-         }
-        ],
         "at": {
          "anchor": "station",
          "trackId": "t1",
@@ -11107,30 +11434,44 @@
          "offset": 3.1,
          "direction": "up"
         },
-        "frames": [
+        "logicalSignals": [
          {
-          "kind": "screen",
-          "aspects": [
+          "system": "ks",
+          "type": "mainShunting",
+          "function": "exit",
+          "frames": [
            {
-            "aspect": "Hp_0"
+            "kind": "screen",
+            "aspects": [
+             {
+              "aspect": "Hp_0"
+             },
+             {
+              "aspect": "Ks_1"
+             },
+             {
+              "aspect": "Sh_1"
+             }
+            ]
            },
            {
-            "aspect": "Ks_1"
-           },
-           {
-            "aspect": "Sh_1"
+            "kind": "indicator",
+            "aspects": [
+             {
+              "aspect": "Zs_1"
+             }
+            ]
            }
-          ]
-         },
-         {
-          "kind": "indicator",
-          "aspects": [
+          ],
+          "signallingSpeeds": [
            {
-            "aspect": "Zs_1"
+            "routeId": "rt-n1-v",
+            "speed": 80
            }
           ]
          }
-        ]
+        ],
+        "frames": []
        },
        {
         "id": "sig-ne1",
@@ -11231,7 +11572,6 @@
           "t1"
          ]
         },
-        "speed": 60,
         "overlaps": [
          {
           "overlapId": "ov-n1",
@@ -11425,32 +11765,6 @@
         },
         "signalId": "sig-n1",
         "effect": "switchedBySignal"
-       }
-      ],
-      "speedSections": [
-       {
-        "id": "v-w1",
-        "name": "W1",
-        "start": {
-         "anchor": "station",
-         "trackId": "t1",
-         "station": 200
-        },
-        "path": {
-         "trackIds": [
-          "t1",
-          "t2"
-         ]
-        },
-        "end": {
-         "anchor": "station",
-         "trackId": "t2",
-         "station": 60
-        },
-        "speed": 60,
-        "speedByTag": {
-         "freight": 40
-        }
        }
       ],
       "stationBoundaries": [
@@ -11531,7 +11845,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6",
+     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -11573,7 +11887,7 @@
           ],
           "bearing": 90,
           "length": 100,
-          "speed": 80
+          "designSpeed": 80
          },
          {
           "elementType": 0,
@@ -11796,14 +12110,14 @@
     },
     "signalling": {
      "version": "1.0",
-     "schema": "sha256:0194c1e7fe2a63741270025beb48929d106d74a80bf5b33ed4305965a5303487",
+     "schema": "sha256:cee619f2ae1b256a81ca5536e3851602cce96841d16bb2fe5f11ffe1a5e1f64c",
      "dependsOn": [
       "core"
      ],
      "fields": {
       "catalogue": {
        "id": "db-ril-301",
-       "version": "0.3.0"
+       "version": "0.4.0"
       }
      },
      "collections": {
@@ -11812,14 +12126,7 @@
         "id": "sig-a",
         "name": "A",
         "kind": "real",
-        "function": "entry",
         "mounting": "mast",
-        "logicalSignals": [
-         {
-          "system": "ks",
-          "type": "multiSection"
-         }
-        ],
         "at": {
          "anchor": "station",
          "trackId": "t1",
@@ -11832,36 +12139,65 @@
          "required": 300,
          "achievable": 420
         },
+        "logicalSignals": [
+         {
+          "system": "ks",
+          "type": "multiSection",
+          "function": "entry",
+          "frames": [
+           {
+            "kind": "screen",
+            "aspects": [
+             {
+              "aspect": "Hp_0"
+             },
+             {
+              "aspect": "Ks_1"
+             },
+             {
+              "aspect": "Ks_2"
+             }
+            ]
+           },
+           {
+            "kind": "indicator",
+            "aspects": [
+             {
+              "aspect": "Zs_3",
+              "symbol": "6"
+             }
+            ]
+           },
+           {
+            "kind": "indicator",
+            "aspects": [
+             {
+              "aspect": "Zs_2",
+              "symbol": "H"
+             }
+            ]
+           },
+           {
+            "kind": "indicator",
+            "aspects": [
+             {
+              "aspect": "Zs_1"
+             }
+            ]
+           }
+          ],
+          "signallingSpeeds": [
+           {
+            "routeId": "rt-a-n1",
+            "speed": 60
+           }
+          ]
+         }
+        ],
         "frames": [
          {
-          "kind": "screen",
+          "kind": "nameplate",
           "aspects": []
-         },
-         {
-          "kind": "indicator",
-          "aspects": [
-           {
-            "aspect": "Zs_3",
-            "symbol": "6"
-           }
-          ]
-         },
-         {
-          "kind": "indicator",
-          "aspects": [
-           {
-            "aspect": "Zs_2",
-            "symbol": "H"
-           }
-          ]
-         },
-         {
-          "kind": "indicator",
-          "aspects": [
-           {
-            "aspect": "Zs_1"
-           }
-          ]
          }
         ]
        },
@@ -11869,14 +12205,7 @@
         "id": "sig-n1",
         "name": "N1",
         "kind": "real",
-        "function": "exit",
         "mounting": "mast",
-        "logicalSignals": [
-         {
-          "system": "ks",
-          "type": "mainShunting"
-         }
-        ],
         "at": {
          "anchor": "station",
          "trackId": "t1",
@@ -11885,30 +12214,44 @@
          "offset": 3.1,
          "direction": "up"
         },
-        "frames": [
+        "logicalSignals": [
          {
-          "kind": "screen",
-          "aspects": [
+          "system": "ks",
+          "type": "mainShunting",
+          "function": "exit",
+          "frames": [
            {
-            "aspect": "Hp_0"
+            "kind": "screen",
+            "aspects": [
+             {
+              "aspect": "Hp_0"
+             },
+             {
+              "aspect": "Ks_1"
+             },
+             {
+              "aspect": "Sh_1"
+             }
+            ]
            },
            {
-            "aspect": "Ks_1"
-           },
-           {
-            "aspect": "Sh_1"
+            "kind": "indicator",
+            "aspects": [
+             {
+              "aspect": "Zs_1"
+             }
+            ]
            }
-          ]
-         },
-         {
-          "kind": "indicator",
-          "aspects": [
+          ],
+          "signallingSpeeds": [
            {
-            "aspect": "Zs_1"
+            "routeId": "rt-n1-v",
+            "speed": 80
            }
           ]
          }
-        ]
+        ],
+        "frames": []
        },
        {
         "id": "sig-ne1",
@@ -12009,7 +12352,6 @@
           "t1"
          ]
         },
-        "speed": 60,
         "overlaps": [
          {
           "overlapId": "ov-n1",
@@ -12205,32 +12547,6 @@
         "effect": "switchedBySignal"
        }
       ],
-      "speedSections": [
-       {
-        "id": "v-w1",
-        "name": "W1",
-        "start": {
-         "anchor": "station",
-         "trackId": "t1",
-         "station": 200
-        },
-        "path": {
-         "trackIds": [
-          "t1",
-          "t2"
-         ]
-        },
-        "end": {
-         "anchor": "station",
-         "trackId": "t2",
-         "station": 60
-        },
-        "speed": 60,
-        "speedByTag": {
-         "freight": 40
-        }
-       }
-      ],
       "stationBoundaries": [
        {
         "id": "bd-1",
@@ -12304,7 +12620,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6",
+     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
      "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -12312,7 +12628,7 @@
       "operationalPoints": "sha256:6a6eb5b21cdb3c39939da851281a7a8b9c968d36cea93d44d383d292b33beb34",
       "platforms": "sha256:1ab2e26c887a12abb8b4fdfaf22b1e56ec9406f85b66f80155a57a0c1aa07910",
       "switches": "sha256:2b44461e52775cdabdc9c02e42115f9441b311b4240d09dca153d5683a4a4da5",
-      "tracks": "sha256:31b7b45b2668805ff32a84d8ebc4586e230ae9152364edac5bc643ef097a075a"
+      "tracks": "sha256:c210042920f2702be7c34786b7e9b01dcceee6fe893c5c05ea8f80f2cde7dd15"
      }
     },
     "layout": {
@@ -12330,19 +12646,18 @@
     },
     "signalling": {
      "version": "1.0",
-     "schema": "sha256:0194c1e7fe2a63741270025beb48929d106d74a80bf5b33ed4305965a5303487",
+     "schema": "sha256:cee619f2ae1b256a81ca5536e3851602cce96841d16bb2fe5f11ffe1a5e1f64c",
      "dependsOn": [
       "core"
      ],
-     "fields": "sha256:bf7160c75b5f29cc2ca47056ac05cda1e4d4a8a486436531604d8c1020b2f9e7",
+     "fields": "sha256:483174c02387768f3e96d7579990e99942be258641301103b3470f929958cd37",
      "collections": {
       "balises": "sha256:713e18f2b19483ec5e1bfb0babf3a580a0db65c71f49bfa2e8e11c5a4d588c14",
       "detectionPoints": "sha256:c98deaa1cfec2a74eded2bfb06749831953268a0e3d4a2d9f5fcf21103d899e7",
       "flankProtection": "sha256:0f5fddb634a2d9ab8ee97b8c819917e50051b58e8013a3067258bd2b8bd43567",
       "overlaps": "sha256:3dc90110fb0c0f878b841fd5d497829f036e5627d4099479d1726c8905b62e3e",
-      "routes": "sha256:a02939e2f09de570b3f466510e02627b133e46848950a47cbbd0ef01e284ca9c",
-      "signals": "sha256:c9e269b55dba9f2431a2d7f1fdc8163182d23ee9e24e61c09bb87230c32aed76",
-      "speedSections": "sha256:defe546e84fc6d69cf5e6d5d2fdc18f40d3d6302640bb6feced901ff6ad24df2",
+      "routes": "sha256:8460ec8eb8679ccbafe0fd56878bbaf049e8c8562d45d2c675607f5a48784be2",
+      "signals": "sha256:d3d1d3f90c136fc0f8eb102df7733eff0a7518749a7781d1a5eb06433b9b9bd3",
       "stationBoundaries": "sha256:54556f1e20a2e22fd145c8d0f66b92640b25f50b66da610ebd8ae7126412d496",
       "switchElements": "sha256:fe471ee1c255021503a7e8f6862566e6d5aeb76a76cad3782b7ce37c87adb591",
       "trackSections": "sha256:dd2ee2e1d729211c5aaac5bf7c209b78c81c887bff24f6413ae439d92f4b8496"
@@ -12350,7 +12665,7 @@
     }
    }
   },
-  "hash": "sha256:dbdc80fc22637fdf8c47700de3a02c3e2ddbd5ad610839cacc636f27eb512d94"
+  "hash": "sha256:fbd15a07ef5475924bcff440b808242760aa7be32652cf25561fe58d5504716d"
  },
  {
   "name": "signalling without its overlaps",
@@ -12359,7 +12674,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6",
+     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -12401,7 +12716,7 @@
           ],
           "bearing": 90,
           "length": 100,
-          "speed": 80
+          "designSpeed": 80
          },
          {
           "elementType": 0,
@@ -12624,14 +12939,14 @@
     },
     "signalling": {
      "version": "1.0",
-     "schema": "sha256:0194c1e7fe2a63741270025beb48929d106d74a80bf5b33ed4305965a5303487",
+     "schema": "sha256:cee619f2ae1b256a81ca5536e3851602cce96841d16bb2fe5f11ffe1a5e1f64c",
      "dependsOn": [
       "core"
      ],
      "fields": {
       "catalogue": {
        "id": "db-ril-301",
-       "version": "0.3.0"
+       "version": "0.4.0"
       }
      },
      "collections": {
@@ -12640,14 +12955,7 @@
         "id": "sig-a",
         "name": "A",
         "kind": "real",
-        "function": "entry",
         "mounting": "mast",
-        "logicalSignals": [
-         {
-          "system": "ks",
-          "type": "multiSection"
-         }
-        ],
         "at": {
          "anchor": "station",
          "trackId": "t1",
@@ -12660,46 +12968,65 @@
          "required": 300,
          "achievable": 420
         },
+        "logicalSignals": [
+         {
+          "system": "ks",
+          "type": "multiSection",
+          "function": "entry",
+          "frames": [
+           {
+            "kind": "screen",
+            "aspects": [
+             {
+              "aspect": "Hp_0"
+             },
+             {
+              "aspect": "Ks_1"
+             },
+             {
+              "aspect": "Ks_2"
+             }
+            ]
+           },
+           {
+            "kind": "indicator",
+            "aspects": [
+             {
+              "aspect": "Zs_3",
+              "symbol": "6"
+             }
+            ]
+           },
+           {
+            "kind": "indicator",
+            "aspects": [
+             {
+              "aspect": "Zs_2",
+              "symbol": "H"
+             }
+            ]
+           },
+           {
+            "kind": "indicator",
+            "aspects": [
+             {
+              "aspect": "Zs_1"
+             }
+            ]
+           }
+          ],
+          "signallingSpeeds": [
+           {
+            "routeId": "rt-a-n1",
+            "speed": 60
+           }
+          ]
+         }
+        ],
         "frames": [
          {
-          "kind": "screen",
-          "aspects": [
-           {
-            "aspect": "Hp_0"
-           },
-           {
-            "aspect": "Ks_1"
-           },
-           {
-            "aspect": "Ks_2"
-           }
-          ]
-         },
-         {
-          "kind": "indicator",
-          "aspects": [
-           {
-            "aspect": "Zs_3",
-            "symbol": "6"
-           }
-          ]
-         },
-         {
-          "kind": "indicator",
-          "aspects": [
-           {
-            "aspect": "Zs_2",
-            "symbol": "H"
-           }
-          ]
-         },
-         {
-          "kind": "indicator",
-          "aspects": [
-           {
-            "aspect": "Zs_1"
-           }
-          ]
+          "kind": "nameplate",
+          "aspects": []
          }
         ]
        },
@@ -12707,14 +13034,7 @@
         "id": "sig-n1",
         "name": "N1",
         "kind": "real",
-        "function": "exit",
         "mounting": "mast",
-        "logicalSignals": [
-         {
-          "system": "ks",
-          "type": "mainShunting"
-         }
-        ],
         "at": {
          "anchor": "station",
          "trackId": "t1",
@@ -12723,30 +13043,44 @@
          "offset": 3.1,
          "direction": "up"
         },
-        "frames": [
+        "logicalSignals": [
          {
-          "kind": "screen",
-          "aspects": [
+          "system": "ks",
+          "type": "mainShunting",
+          "function": "exit",
+          "frames": [
            {
-            "aspect": "Hp_0"
+            "kind": "screen",
+            "aspects": [
+             {
+              "aspect": "Hp_0"
+             },
+             {
+              "aspect": "Ks_1"
+             },
+             {
+              "aspect": "Sh_1"
+             }
+            ]
            },
            {
-            "aspect": "Ks_1"
-           },
-           {
-            "aspect": "Sh_1"
+            "kind": "indicator",
+            "aspects": [
+             {
+              "aspect": "Zs_1"
+             }
+            ]
            }
-          ]
-         },
-         {
-          "kind": "indicator",
-          "aspects": [
+          ],
+          "signallingSpeeds": [
            {
-            "aspect": "Zs_1"
+            "routeId": "rt-n1-v",
+            "speed": 80
            }
           ]
          }
-        ]
+        ],
+        "frames": []
        },
        {
         "id": "sig-ne1",
@@ -12847,7 +13181,6 @@
           "t1"
          ]
         },
-        "speed": 60,
         "overlaps": [
          {
           "overlapId": "ov-n1",
@@ -13011,32 +13344,6 @@
         },
         "signalId": "sig-n1",
         "effect": "switchedBySignal"
-       }
-      ],
-      "speedSections": [
-       {
-        "id": "v-w1",
-        "name": "W1",
-        "start": {
-         "anchor": "station",
-         "trackId": "t1",
-         "station": 200
-        },
-        "path": {
-         "trackIds": [
-          "t1",
-          "t2"
-         ]
-        },
-        "end": {
-         "anchor": "station",
-         "trackId": "t2",
-         "station": 60
-        },
-        "speed": 60,
-        "speedByTag": {
-         "freight": 40
-        }
        }
       ],
       "stationBoundaries": [

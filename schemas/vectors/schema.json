@@ -418,14 +418,7 @@
    "id": "sig-a",
    "name": "A",
    "kind": "real",
-   "function": "entry",
    "mounting": "mast",
-   "logicalSignals": [
-    {
-     "system": "ks",
-     "type": "multiSection"
-    }
-   ],
    "at": {
     "anchor": "station",
     "trackId": "t1",
@@ -438,46 +431,65 @@
     "required": 300,
     "achievable": 420
    },
+   "logicalSignals": [
+    {
+     "system": "ks",
+     "type": "multiSection",
+     "function": "entry",
+     "frames": [
+      {
+       "kind": "screen",
+       "aspects": [
+        {
+         "aspect": "Hp_0"
+        },
+        {
+         "aspect": "Ks_1"
+        },
+        {
+         "aspect": "Ks_2"
+        }
+       ]
+      },
+      {
+       "kind": "indicator",
+       "aspects": [
+        {
+         "aspect": "Zs_3",
+         "symbol": "6"
+        }
+       ]
+      },
+      {
+       "kind": "indicator",
+       "aspects": [
+        {
+         "aspect": "Zs_2",
+         "symbol": "H"
+        }
+       ]
+      },
+      {
+       "kind": "indicator",
+       "aspects": [
+        {
+         "aspect": "Zs_1"
+        }
+       ]
+      }
+     ],
+     "signallingSpeeds": [
+      {
+       "routeId": "rt-a-n1",
+       "speed": 60
+      }
+     ]
+    }
+   ],
    "frames": [
     {
-     "kind": "screen",
-     "aspects": [
-      {
-       "aspect": "Hp_0"
-      },
-      {
-       "aspect": "Ks_1"
-      },
-      {
-       "aspect": "Ks_2"
-      }
-     ]
-    },
-    {
-     "kind": "indicator",
-     "aspects": [
-      {
-       "aspect": "Zs_3",
-       "symbol": "6"
-      }
-     ]
-    },
-    {
-     "kind": "indicator",
-     "aspects": [
-      {
-       "aspect": "Zs_2",
-       "symbol": "H"
-      }
-     ]
-    },
-    {
-     "kind": "indicator",
-     "aspects": [
-      {
-       "aspect": "Zs_1"
-      }
-     ]
+     "kind": "nameplate",
+     "aspects": []
     }
    ]
   },
@@ -490,14 +502,7 @@
    "id": "sig-a",
    "name": "A",
    "kind": "real",
-   "function": "entry",
    "mounting": "mast",
-   "logicalSignals": [
-    {
-     "system": "ks",
-     "type": "multiSection"
-    }
-   ],
    "at": {
     "anchor": "station",
     "trackId": "t1",
@@ -507,46 +512,65 @@
     "required": 300,
     "achievable": 420
    },
+   "logicalSignals": [
+    {
+     "system": "ks",
+     "type": "multiSection",
+     "function": "entry",
+     "frames": [
+      {
+       "kind": "screen",
+       "aspects": [
+        {
+         "aspect": "Hp_0"
+        },
+        {
+         "aspect": "Ks_1"
+        },
+        {
+         "aspect": "Ks_2"
+        }
+       ]
+      },
+      {
+       "kind": "indicator",
+       "aspects": [
+        {
+         "aspect": "Zs_3",
+         "symbol": "6"
+        }
+       ]
+      },
+      {
+       "kind": "indicator",
+       "aspects": [
+        {
+         "aspect": "Zs_2",
+         "symbol": "H"
+        }
+       ]
+      },
+      {
+       "kind": "indicator",
+       "aspects": [
+        {
+         "aspect": "Zs_1"
+        }
+       ]
+      }
+     ],
+     "signallingSpeeds": [
+      {
+       "routeId": "rt-a-n1",
+       "speed": 60
+      }
+     ]
+    }
+   ],
    "frames": [
     {
-     "kind": "screen",
-     "aspects": [
-      {
-       "aspect": "Hp_0"
-      },
-      {
-       "aspect": "Ks_1"
-      },
-      {
-       "aspect": "Ks_2"
-      }
-     ]
-    },
-    {
-     "kind": "indicator",
-     "aspects": [
-      {
-       "aspect": "Zs_3",
-       "symbol": "6"
-      }
-     ]
-    },
-    {
-     "kind": "indicator",
-     "aspects": [
-      {
-       "aspect": "Zs_2",
-       "symbol": "H"
-      }
-     ]
-    },
-    {
-     "kind": "indicator",
-     "aspects": [
-      {
-       "aspect": "Zs_1"
-      }
-     ]
+     "kind": "nameplate",
+     "aspects": []
     }
    ]
   },
@@ -561,14 +585,7 @@
    "id": "sig-a",
    "name": "A",
    "kind": "real",
-   "function": "entry",
    "mounting": "mast",
-   "logicalSignals": [
-    {
-     "system": "ks",
-     "type": "multiSection"
-    }
-   ],
    "at": {
     "anchor": "plane",
     "easting": 500000,
@@ -580,46 +597,65 @@
     "required": 300,
     "achievable": 420
    },
+   "logicalSignals": [
+    {
+     "system": "ks",
+     "type": "multiSection",
+     "function": "entry",
+     "frames": [
+      {
+       "kind": "screen",
+       "aspects": [
+        {
+         "aspect": "Hp_0"
+        },
+        {
+         "aspect": "Ks_1"
+        },
+        {
+         "aspect": "Ks_2"
+        }
+       ]
+      },
+      {
+       "kind": "indicator",
+       "aspects": [
+        {
+         "aspect": "Zs_3",
+         "symbol": "6"
+        }
+       ]
+      },
+      {
+       "kind": "indicator",
+       "aspects": [
+        {
+         "aspect": "Zs_2",
+         "symbol": "H"
+        }
+       ]
+      },
+      {
+       "kind": "indicator",
+       "aspects": [
+        {
+         "aspect": "Zs_1"
+        }
+       ]
+      }
+     ],
+     "signallingSpeeds": [
+      {
+       "routeId": "rt-a-n1",
+       "speed": 60
+      }
+     ]
+    }
+   ],
    "frames": [
     {
-     "kind": "screen",
-     "aspects": [
-      {
-       "aspect": "Hp_0"
-      },
-      {
-       "aspect": "Ks_1"
-      },
-      {
-       "aspect": "Ks_2"
-      }
-     ]
-    },
-    {
-     "kind": "indicator",
-     "aspects": [
-      {
-       "aspect": "Zs_3",
-       "symbol": "6"
-      }
-     ]
-    },
-    {
-     "kind": "indicator",
-     "aspects": [
-      {
-       "aspect": "Zs_2",
-       "symbol": "H"
-      }
-     ]
-    },
-    {
-     "kind": "indicator",
-     "aspects": [
-      {
-       "aspect": "Zs_1"
-      }
-     ]
+     "kind": "nameplate",
+     "aspects": []
     }
    ]
   },
@@ -632,14 +668,7 @@
    "id": "sig-a",
    "name": "A",
    "kind": "real",
-   "function": "entry",
    "mounting": "mast",
-   "logicalSignals": [
-    {
-     "system": "ks",
-     "type": "multiSection"
-    }
-   ],
    "at": {
     "anchor": "station",
     "trackId": "t1",
@@ -652,6 +681,61 @@
     "required": 300,
     "achievable": 420
    },
+   "logicalSignals": [
+    {
+     "system": "ks",
+     "type": "multiSection",
+     "function": "entry",
+     "frames": [
+      {
+       "kind": "screen",
+       "aspects": [
+        {
+         "aspect": "Hp_0"
+        },
+        {
+         "aspect": "Ks_1"
+        },
+        {
+         "aspect": "Ks_2"
+        }
+       ]
+      },
+      {
+       "kind": "indicator",
+       "aspects": [
+        {
+         "aspect": "Zs_3",
+         "symbol": "6"
+        }
+       ]
+      },
+      {
+       "kind": "indicator",
+       "aspects": [
+        {
+         "aspect": "Zs_2",
+         "symbol": "H"
+        }
+       ]
+      },
+      {
+       "kind": "indicator",
+       "aspects": [
+        {
+         "aspect": "Zs_1"
+        }
+       ]
+      }
+     ],
+     "signallingSpeeds": [
+      {
+       "routeId": "rt-a-n1",
+       "speed": 60
+      }
+     ]
+    }
+   ],
    "frames": [
     {
      "kind": "screen",
@@ -668,14 +752,7 @@
    "id": "sig-a",
    "name": "A",
    "kind": "fictive",
-   "function": "gate",
    "mounting": "mast",
-   "logicalSignals": [
-    {
-     "system": "ks",
-     "type": "multiSection"
-    }
-   ],
    "at": {
     "anchor": "station",
     "trackId": "t1",
@@ -688,48 +765,68 @@
     "required": 300,
     "achievable": 420
    },
-   "frames": [
+   "logicalSignals": [
     {
-     "kind": "screen",
-     "aspects": [
+     "system": "ks",
+     "type": "multiSection",
+     "function": "entry",
+     "frames": [
       {
-       "aspect": "Hp_0"
+       "kind": "screen",
+       "aspects": [
+        {
+         "aspect": "Hp_0"
+        },
+        {
+         "aspect": "Ks_1"
+        },
+        {
+         "aspect": "Ks_2"
+        }
+       ]
       },
       {
-       "aspect": "Ks_1"
+       "kind": "indicator",
+       "aspects": [
+        {
+         "aspect": "Zs_3",
+         "symbol": "6"
+        }
+       ]
       },
       {
-       "aspect": "Ks_2"
-      }
-     ]
-    },
-    {
-     "kind": "indicator",
-     "aspects": [
+       "kind": "indicator",
+       "aspects": [
+        {
+         "aspect": "Zs_2",
+         "symbol": "H"
+        }
+       ]
+      },
       {
-       "aspect": "Zs_3",
-       "symbol": "6"
+       "kind": "indicator",
+       "aspects": [
+        {
+         "aspect": "Zs_1"
+        }
+       ]
       }
-     ]
-    },
-    {
-     "kind": "indicator",
-     "aspects": [
+     ],
+     "signallingSpeeds": [
       {
-       "aspect": "Zs_2",
-       "symbol": "H"
-      }
-     ]
-    },
-    {
-     "kind": "indicator",
-     "aspects": [
-      {
-       "aspect": "Zs_1"
+       "routeId": "rt-a-n1",
+       "speed": 60
       }
      ]
     }
-   ]
+   ],
+   "frames": [
+    {
+     "kind": "nameplate",
+     "aspects": []
+    }
+   ],
+   "function": "gate"
   },
   "valid": false,
   "paths": [
@@ -751,7 +848,6 @@
      "t1"
     ]
    },
-   "speed": 60,
    "overlaps": [
     {
      "overlapId": "ov-n1",
@@ -787,7 +883,6 @@
      "t1"
     ]
    },
-   "speed": 60,
    "overlaps": [
     {
      "preferred": true

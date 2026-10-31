@@ -33,9 +33,17 @@ export const SCHEMA_HASHES = Object.fromEntries(Object.entries(DOMAIN_SCHEMAS).m
  *   shunting signal of no system one of `sh`), a PZB element a balise of the
  *   system `pzb` with its values as settings.
  * - Second: the speed sections come, none yet.
+ * - Third: the speed sections go again — a speed is signalled now, per route
+ *   at its start signal; a signal's function, screen and indicators become
+ *   its first logical signal's, and a route's speed that logical signal's
+ *   signalling speed for it. A signal of no system keeps them.
  */
 const SIGNALLING_FIRST = 'sha256:8e4fdf8b8d487f61be93b473521515fe2e5510ef3cdc21d994cd8a405aeb74a0'
 const SIGNALLING_SECOND = 'sha256:72fccdfdcac3f5ce42d7f49d10fb9134e1c4ed792f7365ec9f01d997f0049724'
+const SIGNALLING_THIRD = 'sha256:0194c1e7fe2a63741270025beb48929d106d74a80bf5b33ed4305965a5303487'
+
+/** The frames a logical signal shows; the rest stay its place's. */
+const OF_LOGICAL = new Set(['screen', 'indicator'])
 
 const defined = (o) => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined))
 
@@ -56,16 +64,65 @@ const SIGNALLING_STEPS = {
     }
   },
   [SIGNALLING_SECOND]: (domain) => ({
-    ...domain, schema: SCHEMA_HASHES.signalling, collections: { ...domain.collections, speedSections: [] },
+    ...domain, schema: SIGNALLING_THIRD, collections: { ...domain.collections, speedSections: [] },
   }),
+  [SIGNALLING_THIRD]: (domain) => {
+    const { speedSections: _gone, signals = [], routes = [], ...rest } = domain.collections ?? {}
+    const speeds = new Map()   // start signal → [{ routeId, speed }]
+    for (const r of routes) {
+      if (r.speed == null) continue
+      if (!speeds.has(r.startSignalId)) speeds.set(r.startSignalId, [])
+      speeds.get(r.startSignalId).push({ routeId: r.id, speed: r.speed })
+    }
+    return {
+      ...domain,
+      schema: SCHEMA_HASHES.signalling,
+      collections: {
+        ...rest,
+        signals: signals.map((s) => {
+          if (!s.logicalSignals?.length) return s
+          const { function: fn, frames = [], logicalSignals: [first, ...others], ...place } = s
+          const own = frames.filter(f => !OF_LOGICAL.has(f.kind))
+          const shown = frames.filter(f => OF_LOGICAL.has(f.kind))
+          return defined({
+            ...place,
+            frames: own.length || s.kind === 'real' ? own : undefined,
+            logicalSignals: [defined({
+              ...first, function: fn, frames: shown.length ? shown : undefined,
+              signallingSpeeds: speeds.get(s.id),
+            }), ...others],
+          })
+        }),
+        routes: routes.map(({ speed: _s, ...r }) => r),
+      },
+    }
+  },
+}
+
+/**
+ * Core 1.0 as it was written before the design speed took its name: an
+ * element's `speed` is its `designSpeed` now (S-R10).
+ */
+const CORE_BEFORE_DESIGN_SPEED = 'sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6'
+
+function coreWithDesignSpeed(domain) {
+  const tracks = (domain.collections?.tracks ?? []).map(t => (t.elements
+    ? { ...t, elements: t.elements.map(el => {
+      if (!Object.hasOwn(el, 'speed')) return el
+      const { speed, ...rest } = el
+      return { ...rest, designSpeed: speed }
+    }) }
+    : t))
+  return { ...domain, schema: SCHEMA_HASHES.core, collections: { ...domain.collections, tracks } }
 }
 
 /** The document with every domain of an earlier schema of its version brought to this build's. */
 function migrated(doc) {
-  let signalling = doc.domains.signalling
-  if (signalling?.version !== '1.0' || !SIGNALLING_STEPS[signalling.schema]) return doc
-  while (SIGNALLING_STEPS[signalling.schema]) signalling = SIGNALLING_STEPS[signalling.schema](signalling)
-  return { ...doc, domains: { ...doc.domains, signalling } }
+  let { core, signalling } = doc.domains
+  if (core?.version === '1.0' && core.schema === CORE_BEFORE_DESIGN_SPEED) core = coreWithDesignSpeed(core)
+  if (signalling?.version === '1.0') while (SIGNALLING_STEPS[signalling.schema]) signalling = SIGNALLING_STEPS[signalling.schema](signalling)
+  if (core === doc.domains.core && signalling === doc.domains.signalling) return doc
+  return { ...doc, domains: { ...doc.domains, core, ...(signalling ? { signalling } : {}) } }
 }
 
 /** The breaches of a schema as "path: what" lines, the path prefixed with where the value lies. */

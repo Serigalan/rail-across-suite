@@ -62,13 +62,8 @@ export default function useWorkingCopy({ t }) {
     return () => { alive = false; clearInterval(timer); document.removeEventListener('visibilitychange', onFocus) }
   }, [wc])
 
-  // Leaving the tab with changes not checked in is asked about by the browser.
-  useEffect(() => {
-    if (!changes.length) return undefined
-    const onBeforeUnload = (e) => { e.preventDefault(); e.returnValue = '' }
-    window.addEventListener('beforeunload', onBeforeUnload)
-    return () => window.removeEventListener('beforeunload', onBeforeUnload)
-  }, [changes.length])
+  // Leaving the tab asks nothing: the changes stay in the working copy, kept
+  // in the browser, and the suite's start page says so at the variant.
 
   const open = useCallback(async (serverProject, variant) => {
     await openVariant(variant.id)

@@ -1,0 +1,23 @@
+{
+  "name": "@rail-across/working-copy",
+  "private": true,
+  "version": "0.1.0",
+  "description": "The local working copy of a variant, in the browser's IndexedDB: one per variant, shared by the Layout-Tool, the Signalling-Tool and the suite's start page",
+  "license": "Apache-2.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@rail-across/core": "*"
+  },
+  "devDependencies": {
+    "vitest": "^3.2.7"
+  }
+}

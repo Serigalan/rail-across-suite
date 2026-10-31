@@ -113,14 +113,20 @@ describe('a PlanPro plan as a record', () => {
   it('reads its signals with their frames, places and states', () => {
     const { signals } = read().record.signalling.collections
     expect(byId(signals, 'sig-a')).toMatchObject({
-      name: 'A', areaNumber: '60', kind: 'real', function: 'entry', logicalSignals: [{ system: 'ks', type: 'multiSection' }], mounting: 'mast',
+      name: 'A', areaNumber: '60', kind: 'real', mounting: 'mast',
       at: { anchor: 'station', trackId: 'e1', station: 20, side: 'right', offset: 3.1, direction: 'up' }, sight: { required: 400 },
-      frames: [
-        { kind: 'screen', aspects: [{ aspect: 'Hp_0' }, { aspect: 'Ks_1' }, { aspect: 'Ks_2' }, { aspect: 'Zs_7' }] },
-        { kind: 'indicator', aspects: [{ aspect: 'Zs_3', symbol: '6' }] },
-        { kind: 'nameplate', aspects: [] },
-      ],
+      // Its screen and indicator are its Ks signal's, with the speed it signals for its route; the name plate its own.
+      logicalSignals: [{
+        system: 'ks', type: 'multiSection', function: 'entry',
+        frames: [
+          { kind: 'screen', aspects: [{ aspect: 'Hp_0' }, { aspect: 'Ks_1' }, { aspect: 'Ks_2' }, { aspect: 'Zs_7' }] },
+          { kind: 'indicator', aspects: [{ aspect: 'Zs_3', symbol: '6' }] },
+        ],
+        signallingSpeeds: [{ routeId: expect.any(String), speed: 60 }],
+      }],
+      frames: [{ kind: 'nameplate', aspects: [] }],
     })
+    expect(byId(signals, 'sig-a')).not.toHaveProperty('function')
     expect(byId(signals, 'sig-a').lifespan).toBeUndefined()
     expect(byId(signals, 'sig-gz')).toMatchObject({ at: { trackId: 'e2', station: 40, direction: 'down' }, alsoAt: [{ trackId: 'e3', station: 40 }] })
     expect(byId(signals, 'sig-x')).toMatchObject({ kind: 'virtual', virtualFunction: 'trainTargetLine', lifespan: { to: expect.any(String) } })
@@ -131,7 +137,7 @@ describe('a PlanPro plan as a record', () => {
     expect(c.trackSections).toEqual([{ id: 'fma-w1', name: 'W1', areaNumber: '60', kind: 'axleCounting', boundedBy: ['dp-1', 'dp-2', 'dp-3'] }])
     expect(c.switchElements).toEqual([expect.objectContaining({ id: 'we-1', switchId: 'k1', operation: 'electricRemote', preferredPosition: 'right', clearanceMarkerId: 'sig-gz' })])
     expect(c.routes).toEqual([expect.objectContaining({
-      kind: 'train', startSignalId: 'sig-a', targetSignalId: 'sig-n1', path: { trackIds: ['e1', 'e2'] }, speed: 60, rank: 0,
+      kind: 'train', startSignalId: 'sig-a', targetSignalId: 'sig-n1', path: { trackIds: ['e1', 'e2'] }, rank: 0,
       overlaps: [{ overlapId: 'dw-1', preferred: true }],
       aspects: [{ signalId: 'sig-a', aspect: 'Ks_1' }, { signalId: 'sig-a', aspect: 'Zs_3', symbol: '6' }],
     })])

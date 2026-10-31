@@ -176,7 +176,7 @@
         "cantException": { "$ref": "#/$defs/Text" },
         "role": { "enum": ["follow", "intermediate"] },
         "reasons": { "type": "object", "additionalProperties": { "type": "string" } },
-        "speed": { "type": ["number", "null"], "minimum": 0 },
+        "designSpeed": { "description": "The design speed of the element [km/h], which the layout tool lays it out for and checks it against (the signalling domain states the speeds it signals, signallingSpeed, on its signals).", "type": ["number", "null"], "minimum": 0 },
         "switchBranch": { "type": "boolean" },
         "switchRoute": { "enum": ["main", "branch", "cross", "slip1", "slip2"] },
         "switchId": { "$ref": "#/$defs/Ref", "x-target": "core.switches" },

@@ -7,6 +7,7 @@ import { errorText } from '../useAction'
 import { importedProjects, splitProjects } from '../projects'
 import { splitDataUrl } from '../projectImages'
 import ProjectCard from './projects/ProjectCard'
+import { useLocalChanges } from '../localChanges'
 import MembersDialog from './projects/MembersDialog'
 import {
   BranchDialog, DeleteProjectDialog, ExportDialog, NewProjectDialog, PairDialog, RenameProjectDialog, VariantDialog,
@@ -64,6 +65,7 @@ export default function Infrastructure({ toolId, user, projects, onReload = asyn
   const { regular, templates } = splitProjects(projects.list)
   const isAdmin = user?.role === 'admin'
   const storage = toolUrl(tool, { action: 'storage' })
+  const localChanges = useLocalChanges()
 
   const done = async () => { setDialog(null); await onReload() }
   const say = (text) => { setError(null); setNotice(text) }
@@ -97,7 +99,7 @@ export default function Infrastructure({ toolId, user, projects, onReload = asyn
   }
 
   const card = (p) => (
-    <ProjectCard key={p.id} project={p} user={user} tool={tool} showArchived={showArchived}
+    <ProjectCard key={p.id} project={p} user={user} tool={tool} showArchived={showArchived} localChanges={localChanges}
       onDialog={(d) => { say(null); setDialog(d) }} />
   )
 

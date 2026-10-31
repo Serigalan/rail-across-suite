@@ -1,5 +1,5 @@
 import { Badge, Message, Panel, Section } from '@rail-across/ui'
-import { labelOf } from '../model/domain.js'
+import { labelOf, logicalId } from '../model/domain.js'
 import { findingText } from '../labels.js'
 
 /**
@@ -15,9 +15,15 @@ export default function CheckPanel({ domain, findings, select, t, language }) {
     if (f.collection === 'overlaps' && obj) return `${signalName(obj.signalId)} ${obj.name ?? ''}`.trim()
     return labelOf(f.collection, obj, t) ?? t(`collection_${f.collection}`)
   }
+  // A finding on a logical signal leads to it, one on a place to the place.
+  const whereTo = (f) => {
+    const i = f.collection === 'signals' && /:logicalSignals\.(\d+)/.exec(f.key)?.[1]
+    const system = i != null && domain.collections.signals.find(s => s.id === f.id)?.logicalSignals?.[Number(i)]?.system
+    return system ? { collection: 'logicalSignals', id: logicalId(f.id, system) } : { collection: f.collection, id: f.id }
+  }
   const row = (f, tone) => (
     <li key={f.key}>
-      <button type="button" className="tool-finding-row" onClick={() => select({ collection: f.collection, id: f.id })}>
+      <button type="button" className="tool-finding-row" onClick={() => select(whereTo(f))}>
         <Badge tone={tone === 'error' ? 'danger' : 'warn'}>{t(`collection_${f.collection}`)}</Badge>
         <span className="tool-finding-text"><strong>{name(f)}</strong> — {findingText(f, t, language)}</span>
       </button>

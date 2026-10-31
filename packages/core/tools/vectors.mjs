@@ -157,6 +157,12 @@ const DOCUMENT_CASES = [
   ['a platform with its stations loose', (d) => { const p = d.domains.core.collections.platforms[0]; p.startStation = p.at.startStation }],
   ['a collection missing', (d) => { delete d.domains.core.collections.kmLines }],
   ['no core', (d) => { delete d.domains.core }],
+  ['core as written before the design speed took its name', (d) => {
+    d.domains.core.schema = 'sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6'
+    for (const el of d.domains.core.collections.tracks.flatMap(t => t.elements)) {
+      if (Object.hasOwn(el, 'designSpeed')) { el.speed = el.designSpeed; delete el.designSpeed }
+    }
+  }],
   ['the sample with its signalling', () => {}, { signalling: true }],
   ['the sample with its signalling, carrying its schemas', (d, carry) => carry(), { signalling: true }],
   ['signalling depending on nothing', (d) => { delete d.domains.signalling.dependsOn }, { signalling: true }],
@@ -165,10 +171,11 @@ const DOCUMENT_CASES = [
   ['signalling without its overlaps', (d) => { delete d.domains.signalling.collections.overlaps }, { signalling: true }],
 ]
 
+/** The verdict on a document: the manifest and hash of what the door takes, an earlier schema brought to this one. */
 function verdict(doc) {
   try {
-    checkDocument(doc)
-    return { valid: true, manifest: manifestOf(doc), hash: documentHash(doc) }
+    const taken = checkDocument(doc)
+    return { valid: true, manifest: manifestOf(taken), hash: documentHash(taken) }
   } catch (err) {
     if (!(err instanceof PayloadError)) throw err
     return { valid: false, code: err.code }

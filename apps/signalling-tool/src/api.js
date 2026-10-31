@@ -47,13 +47,14 @@ export const api = {
   /** The id logs `head` has that `base` has not. */
   remaps: (head, base) => request('GET', `/revisions/${enc(head)}/remaps?base=${enc(base)}`).then(r => r.remaps ?? []),
   /**
-   * Check `record` in on `base`: { revision, warnings } — or { stale: head }
-   * when someone else checked in first, or { refused: errors } when it brings
-   * in errors.
+   * Check `record` in on `base`, with the splits and joins since (`remaps`, the
+   * working copy's id log): { revision, warnings } — or { stale: head } when
+   * someone else checked in first, or { refused: errors } when it brings in
+   * errors.
    */
-  async checkIn(variantId, { base, message, record }) {
+  async checkIn(variantId, { base, message, record, remaps = [] }) {
     try {
-      return await request('POST', `/variants/${enc(variantId)}/revisions`, { base, message, payload: projectDocument(record), remaps: [] })
+      return await request('POST', `/variants/${enc(variantId)}/revisions`, { base, message, payload: projectDocument(record), remaps })
     } catch (err) {
       if (err.status === 409 && err.code === 'stale_base') return { stale: err.body.head }
       if (err.status === 422 && err.code === 'invalid_record') return { refused: err.body.errors ?? [] }

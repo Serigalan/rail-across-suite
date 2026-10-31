@@ -79,6 +79,22 @@ jobs:
         working-directory: .
       - run: npm test
 
+  # The local working copies, shared by the tools and the start page.
+  working-copy:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: packages/working-copy
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+        working-directory: .
+      - run: npm test
+
   # The basemaps, shared by the Layout-Tool and the Signalling-Tool.
   basemaps:
     runs-on: ubuntu-24.04

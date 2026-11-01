@@ -82,7 +82,10 @@ export default function App() {
   const forced = Boolean(user?.mustChangePassword)
   const page = forced ? 'password' : route.page
   // A simulation that is there lists the projects to open in it.
-  const simulation = MODULES.some(m => m.route === page && m.available && m.path)
+  const simulation = MODULES.some(m => m.route === page && m.available && m.path && !m.direct)
+  // a module that needs no project is its app: its old page leads there
+  const direct = MODULES.find(m => m.route === page && m.available && m.direct)
+  useEffect(() => { if (user && direct) location.replace(direct.path) }, [user, direct])
 
   return (
     <I18n.Provider value={texts}>
@@ -97,7 +100,7 @@ export default function App() {
         )}
         {user && page === 'admin' && (user.role === 'admin' ? <Admin me={user} /> : <Home />)}
         {user && simulation && <Simulation route={page} projects={projects} />}
-        {user && !simulation && !['', 'infrastructure', 'password', 'admin'].includes(page) && <Planned route={page} />}
+        {user && !simulation && !direct && !['', 'infrastructure', 'password', 'admin'].includes(page) && <Planned route={page} />}
       </div>
     </I18n.Provider>
   )

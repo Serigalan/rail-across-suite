@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "description": "The look of Rail-Across-Suite as a library: colours, buttons, fields, dialogs, lists and the shell of a tool, for every module",
-  "license": "Apache-2.0",
+  "license": "LGPL-3.0-only",
   "type": "module",
   "engines": {
     "node": ">=22"

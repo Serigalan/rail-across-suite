@@ -12,3 +12,7 @@ Layout-Tool and the Signalling-Tool.
 
 [`working-copy/`](working-copy/README.md) (`@rail-across/working-copy`) is the local working copy of a variant in the
 browser, one per variant, shared by the Layout-Tool, the Signalling-Tool and the suite's start page.
+
+[`vehicles/`](vehicles/README.md) (`@rail-across/vehicles`) are the suite's vehicles as OSRD's RailJSON rolling stock:
+the model, OSRD's example vehicles built in, and the catalogue on the project server — shared by the Fahrzeug-Editor
+and the Fahrplan-Sim ([decision 0014](../docs/decisions/0014-vehicles-in-osrds-form.md)).

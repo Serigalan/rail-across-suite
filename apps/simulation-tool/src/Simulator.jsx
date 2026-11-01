@@ -11,14 +11,22 @@ import { lngLatAt, nearestLocation, netLines, placesOf } from './model/places.js
 import { locationAt } from './model/path.js'
 import { routeThrough } from './model/route.js'
 import { marginValue, simulationRequest } from './model/request.js'
-import { vehicleOf } from './model/vehicles.js'
+import { comfortsOf, useCatalogue } from '@rail-across/vehicles'
 import { simulate } from './model/engine.js'
 import { pointAt } from './format.js'
 import { projectsUrl } from './suite.js'
 
+const KEPT_VEHICLE = 'rail-across-sim-vehicle'
+const keptVehicle = () => { try { return localStorage.getItem(KEPT_VEHICLE) } catch { return null } }
+const keepVehicle = (key) => { try { localStorage.setItem(KEPT_VEHICLE, key) } catch { /* not kept */ } }
+
+/** The vehicle a train starts with: the one chosen last in this browser, else OSRD's regional multiple unit. */
+const FIRST_VEHICLE = 'osrd:emu-regional-train'
+
 /**
  * The simulation of one train over the net of a variant, which it only
- * reads: a train — an example vehicle —, where it starts, stops and ends —
+ * reads: a train — a vehicle of the suite's catalogue (the Fahrzeug-Editor's),
+ * in a traction mode and comfort —, where it starts, stops and ends —
  * signals, platforms or points picked on the map —, the margin it runs with;
  * its path found over the net, and the run simulated by rail-across-sim (OSRD's
  * simulation core in Rust): the fastest run, the run with its margin, the
@@ -28,7 +36,10 @@ import { projectsUrl } from './suite.js'
 export default function Simulator({ project, variant, revision, record, local }) {
   const { t, language, setLanguage } = useTexts()
   const [section, setSection] = useState('train')
-  const [vehicleId, setVehicleId] = useState('emu')
+  // a vehicle changed in the Fahrzeug-Editor's tab is there when this one is shown again
+  const catalogue = useCatalogue({ refreshOnShow: true })
+  const [vehicleKey, setVehicleKey] = useState(() => keptVehicle() ?? FIRST_VEHICLE)
+  const [traction, setTraction] = useState({ mode: null, comfort: 'STANDARD' })
   const [start, setStart] = useState(null)
   const [end, setEnd] = useState(null)
   const [stops, setStops] = useState([])   // [{ key, place, duration }]
@@ -50,9 +61,15 @@ export default function Simulator({ project, variant, revision, record, local })
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [record, start, end, stops.map(s => s.place.id).join('|')],
   )
-  const vehicle = vehicleOf(vehicleId)
+  const entry = catalogue.entries.find(e => e.key === vehicleKey) ?? catalogue.entries.find(e => e.key === FIRST_VEHICLE) ?? catalogue.entries[0] ?? null
+  const vehicle = entry?.vehicle ?? null
+  const modes = Object.keys(vehicle?.effort_curves?.modes ?? {})
+  const mode = modes.includes(traction.mode) ? traction.mode : vehicle?.effort_curves?.default_mode
+  const comforts = vehicle ? comfortsOf(vehicle, mode) : []
+  const comfort = comforts.includes(traction.comfort) ? traction.comfort : 'STANDARD'
+  const chooseVehicle = (key) => { setVehicleKey(key); keepVehicle(key); setTraction(tr => ({ ...tr, mode: null })) }
   const marginText = marginValue(margin)
-  const key = JSON.stringify([vehicleId, chosen.map(p => p?.id), stops.map(s => s.duration), marginText, distribution])
+  const key = JSON.stringify([entry?.key, entry?.version, mode, comfort, chosen.map(p => p?.id), stops.map(s => s.duration), marginText, distribution])
   const stale = run && run.key !== key
 
   const pickOnMap = (lngLat, reach) => {
@@ -66,9 +83,9 @@ export default function Simulator({ project, variant, revision, record, local })
   }
 
   const go = async () => {
-    if (!route?.path || marginText == null) return
+    if (!route?.path || marginText == null || !vehicle) return
     const stopsSpec = [...stops.map((s, i) => ({ offset: route.offsets[i + 1], duration: s.duration ?? 0 })), { offset: route.offsets.at(-1), duration: 0 }]
-    const { request, properties } = simulationRequest(record, route.path, { vehicle, stops: stopsSpec, margin: { value: marginText, distribution } })
+    const { request, properties } = simulationRequest(record, route.path, { vehicle, traction: { mode, comfort }, stops: stopsSpec, margin: { value: marginText, distribution } })
     setBusy(true)
     try {
       const result = await simulate(request)
@@ -89,7 +106,7 @@ export default function Simulator({ project, variant, revision, record, local })
   const at = ok ? pointAt(ok.result.final, moment) : null
   const train = at ? lngLatAt(record, locationAt(ok.path, at.position)) : null
   const mapPoints = chosen.map((p, i) => p && { kind: i === 0 ? 'start' : i === chosen.length - 1 ? 'end' : 'stop', lngLat: lngLatAt(record, p.loc) }).filter(Boolean)
-  const panelProps = { t, language, record, places, vehicleId, setVehicleId, start, setStart, end, setEnd, stops, setStops, margin, setMargin, marginText, distribution, setDistribution, picking, setPicking, route, run, stale, busy, go, moment, setMoment, at }
+  const panelProps = { t, language, record, places, catalogue, entry, vehicle, chooseVehicle, modes, mode, comforts, comfort, setTraction, start, setStart, end, setEnd, stops, setStops, margin, setMargin, marginText, distribution, setDistribution, picking, setPicking, route, run, stale, busy, go, moment, setMoment, at }
 
   return (
     <Shell>

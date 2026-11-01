@@ -6,7 +6,7 @@ it costs. A record is not rewritten when a decision changes; a new one replaces 
 | No. | Decision | Status |
 |---|---|---|
 | [0001](0001-one-repository.md) | One repository for the core, all modules and the services | accepted |
-| [0002](0002-licences.md) | Code under Apache-2.0, documentation under CC BY 4.0, contributions signed off | accepted |
+| [0002](0002-licences.md) | Code under Apache-2.0, documentation under CC BY 4.0, contributions signed off | replaced by 0015 |
 | [0003](0003-construction-stages.md) | Construction stages as lifespans on one state | accepted |
 | [0004](0004-ids-on-tracks.md) | Ids on tracks, not on their elements | accepted |
 | [0005](0005-sketch-mode.md) | A sketch mode in every module | accepted |
@@ -18,3 +18,5 @@ it costs. A record is not rewritten when a decision changes; a new one replaces 
 | [0011](0011-signalling-domain.md) | The signalling domain follows PlanPro and OSRD, its content is a catalogue | accepted |
 | [0012](0012-ui-library.md) | One look for every module, as a library (`@rail-across/ui`) | accepted |
 | [0013](0013-running-times-in-rust.md) | Running times with OSRD's simulation core, ported to Rust | proposed |
+| [0014](0014-vehicles-in-osrds-form.md) | The suite's vehicles, in OSRD's form, beside the projects | proposed |
+| [0015](0015-lgpl.md) | Everything under LGPL-3.0-only, OSRD's simulation core in the repository | accepted |

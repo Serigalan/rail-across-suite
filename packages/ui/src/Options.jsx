@@ -40,6 +40,20 @@ export function Option({ icon, end, active = false, children, ...rest }) {
 export function GroupedList({ label, groups, selected, onSelect, empty, searchLabel, noneFound, open: allOpen = false }) {
   const [query, setQuery] = useState('')
   const [toggled, setToggled] = useState(() => new Set())
+  const holding = (id) => (id == null ? undefined : groups.find(g => g.items.some(i => i.id === id))?.key)
+  // Choosing keeps the groups as they are, and opens the one chosen in: the
+  // group left keeps its state, the one entered is open.
+  const [seen, setSeen] = useState(selected)
+  if (seen !== selected) {
+    const prev = holding(seen), next = holding(selected)
+    setSeen(selected)
+    if (prev !== next) {
+      const t = new Set(toggled)
+      if (prev && !allOpen && !t.delete(prev)) t.add(prev)
+      if (next) t.delete(next)
+      setToggled(t)
+    }
+  }
   const words = query.trim().toLowerCase()
   const found = groups
     .map(g => ({ ...g, items: words ? g.items.filter(i => `${i.label} ${i.sub ?? ''}`.toLowerCase().includes(words)) : g.items }))

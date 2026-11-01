@@ -4,7 +4,8 @@
 // `?project=<id>&variant=<id>` — the main variant without `variant`; it
 // simulates the variant as this browser's working copy holds it, where there
 // is one, else its head; `&action=view` its head alone. Nothing is written:
-// the tool reads the infrastructure. Every way back leads to that tile.
+// the tool reads the infrastructure, and its vehicles are the Fahrzeug-
+// Editor's (../vehicles/). Every way back leads to that tile.
 
 export const SUITE = import.meta.env?.VITE_RA_SUITE ?? '../'
 export const NOTICE = 'rail-across-notice'
@@ -28,6 +29,9 @@ export function linkedRequest(search = globalThis.location?.search ?? '') {
   if (!['open', 'view'].includes(action) || !q.get('project')) return null
   return { action, project: q.get('project'), variant: q.get('variant') }
 }
+
+/** A vehicle in the Fahrzeug-Editor, beside this tool. */
+export const vehicleUrl = (key) => `${SUITE}vehicles/?${new URLSearchParams({ vehicle: key })}`
 
 const RELOADED = 'ra-sign-in-reload'
 

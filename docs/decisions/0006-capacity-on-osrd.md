@@ -1,6 +1,6 @@
 # 0006 — Open-Capacity-Sim builds on OSRD
 
-Status: **accepted**
+Status: **accepted** — point 5 changed by [0015](0015-lgpl.md): the suite is under LGPL-3.0-only, as OSRD
 
 ## Decision
 

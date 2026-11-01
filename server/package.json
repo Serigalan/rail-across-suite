@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "description": "The project server of Rail-Across-Suite — users, projects, variants and revisions, point clouds",
+  "license": "LGPL-3.0-only",
   "type": "module",
   "bin": {
     "rail-across-server": "./bin/rail-across-server.mjs"

@@ -47,12 +47,12 @@ change either way.
 
 Every commit carries a `Signed-off-by:` line with your real name and e-mail (`git commit -s` adds it). With it
 you certify the [Developer Certificate of Origin 1.1](https://developercertificate.org/): that you wrote the
-change or have the right to submit it under the project's licences. There is no separate contributor
+change or have the right to submit it under the project's licence. There is no separate contributor
 agreement.
 
 ## Licences
 
-By contributing you agree that your contribution is licensed like the files it changes: code under the
-[Apache License 2.0](LICENSE), documentation under [CC BY 4.0](LICENSE-docs) — which files are which is listed
-in the [README](README.md#licence). Material of third parties keeps its own licence and is named where it is
-used; do not add any whose licence does not allow it.
+By contributing you agree that your contribution is licensed like everything of the project: under the
+[GNU Lesser General Public License v3.0 only](LICENSE) (`LGPL-3.0-only`), code and documentation alike
+([README](README.md#licence)). Material of third parties keeps its own licence and is named where it is used; do
+not add any whose licence does not allow it.

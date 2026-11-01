@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "description": "The Signalling-Tool of Rail-Across-Suite: signals, train detection, switch elements, routes, overlaps, flank protection and PZB on the project's net",
-  "license": "Apache-2.0",
+  "license": "LGPL-3.0-only",
   "type": "module",
   "engines": {
     "node": ">=22"

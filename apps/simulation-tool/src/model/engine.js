@@ -1,6 +1,6 @@
 /**
  * The running time simulation: rail-across-sim, OSRD's simulation core
- * ported to Rust and built to WebAssembly (LGPL-3.0, its own repository) —
+ * ported to Rust (sim/) and built to WebAssembly —
  * a module beside the page, loaded the first time it is needed. It takes a
  * request's JSON and gives back the result's, or { error: { code, message } }.
  */

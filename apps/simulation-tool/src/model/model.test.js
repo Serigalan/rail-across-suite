@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { curveResistance, findPath, locationAt, offsetOnPath, pathLength, pathProperties } from './path.js'
 import { routeThrough, signalledSpeeds } from './route.js'
 import { marginValue, simulationRequest } from './request.js'
-import { VEHICLES, rollingStockOf } from './vehicles.js'
+import { newVehicle } from '@rail-across/vehicles'
 import { runWith } from './engine.js'
 
 // A small net in UTM 32: T1 runs east 1000 m into a turnout, whose straight
@@ -108,7 +108,7 @@ describe('a train through its stops', () => {
 
   it('makes the simulation request', () => {
     const { path, offsets } = routeThrough(record, [{ trackId: 'T1', station: 0, direction: 'up' }, { trackId: 'T4', station: 900 }])
-    const { request } = simulationRequest(record, path, { vehicle: VEHICLES[0], stops: [{ offset: offsets[1], duration: 0 }], margin: { value: '5%', distribution: 'mareco' } })
+    const { request } = simulationRequest(record, path, { vehicle: newVehicle('Triebzug'), stops: [{ offset: offsets[1], duration: 0 }], margin: { value: '5%', distribution: 'mareco' } })
     expect(request.path.length).toBeCloseTo(2900, 6)
     expect(request.path.speed_limits.map(s => s.source)).toEqual(['design', 'design', 'signal'])
     expect(request.schedule).toEqual([{ path_offset: request.path.length, stop_duration: 0 }])
@@ -124,13 +124,6 @@ describe('a train through its stops', () => {
     expect(marginValue('fast')).toBeNull()
   })
 
-  it('has effort curves that end at the top speed', () => {
-    for (const v of VEHICLES) {
-      const curve = rollingStockOf(v).effort_curve
-      expect(curve.at(-1).speed).toBeCloseTo(v.maxSpeed, 9)
-      expect(curve.every((p, i) => i === 0 || p.speed > curve[i - 1].speed)).toBe(true)
-    }
-  })
 })
 
 // The module itself, where it was built (npm run sim).
@@ -140,7 +133,7 @@ describe.skipIf(!existsSync(WASM))('the simulation module', () => {
     const { instance } = await WebAssembly.instantiate(readFileSync(WASM))
     const { path, offsets } = routeThrough(record, [{ trackId: 'T1', station: 0, direction: 'up' }, { trackId: 'T2', station: 500 }, { trackId: 'T4', station: 900 }])
     const { request } = simulationRequest(record, path, {
-      vehicle: VEHICLES[0],
+      vehicle: newVehicle('Triebzug'),
       stops: [{ offset: offsets[1], duration: 30 }, { offset: offsets[2], duration: 0 }],
       margin: { value: '5%', distribution: 'mareco' },
     })

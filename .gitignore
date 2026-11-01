@@ -8,3 +8,6 @@ __pycache__/
 /dist/
 apps/home/dist/
 /.tmp-build-*/
+
+# The simulation core's cargo builds
+sim/target/

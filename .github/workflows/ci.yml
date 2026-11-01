@@ -79,6 +79,22 @@ jobs:
         working-directory: .
       - run: npm test
 
+  # The suite's vehicles, shared by the Fahrzeug-Editor and the Fahrplan-Sim.
+  vehicles:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: packages/vehicles
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+        working-directory: .
+      - run: npm test
+
   # The local working copies, shared by the tools and the start page.
   working-copy:
     runs-on: ubuntu-24.04
@@ -129,13 +145,45 @@ jobs:
       - run: npm test
       - run: npm run build
 
-  # The Simulation-Tool. Its simulation module (rail-across-sim, Rust) is a
-  # repository of its own; without it the test of the module is skipped.
+  # OSRD's simulation core in Rust: OSRD's own cases, clippy, the format.
+  sim:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: sim
+    steps:
+      - uses: actions/checkout@v5
+      - run: cargo fmt --check
+      - run: cargo clippy --all-targets -- -D warnings
+      - run: cargo test
+
+  # The Simulation-Tool, with its simulation module built from sim/, so the
+  # tests that run it (OSRD's example vehicles among them) run too.
   simulation-tool:
     runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: apps/simulation-tool
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+        working-directory: .
+      - run: rustup target add wasm32-unknown-unknown
+      - run: npm run sim
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+
+  # The Fahrzeug-Editor.
+  vehicle-editor:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: apps/vehicle-editor
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5

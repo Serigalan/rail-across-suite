@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { EDITORS, SIMULATIONS, hashOf, openUrl, routeOf, safeNext, simulationUrl, toolOf, toolUrl } from './modules'
+import { EDITORS, SIMULATIONS, hashOf, openUrl, routeOf, safeNext, simulationUrl, tileUrl, toolOf, toolUrl } from './modules'
 import { pairDefaults, splitProjects, variantTree } from './projects'
 import { TEXTS } from './i18n'
 
@@ -97,5 +97,9 @@ describe('a simulation that is there', () => {
   it('opens a variant by its address, and one still to come nowhere', () => {
     expect(simulationUrl(SIMULATIONS[0], 'p1', 'v1')).toBe('simulation/?project=p1&variant=v1')
     expect(simulationUrl(SIMULATIONS[1], 'p1', 'v1')).toBeNull()
+    expect(tileUrl(EDITORS[1])).toBe('vehicles/')   // the Fahrzeug-Editor needs no project
+    expect(tileUrl(EDITORS[0])).toBe('#/infrastructure')
+    expect(tileUrl(EDITORS[2])).toBe('#/timetable')
+    expect(simulationUrl(EDITORS[1], 'p1', 'v1')).toBeNull()
   })
 })

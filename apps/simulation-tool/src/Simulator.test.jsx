@@ -5,7 +5,7 @@ import Simulator from './Simulator.jsx'
 import ResultPanel from './panels/ResultPanel.jsx'
 import RunChart from './charts/RunChart.jsx'
 import { formatTime, pointAt } from './format.js'
-import { linkedRequest } from './suite.js'
+import { linkedRequest, vehicleUrl } from './suite.js'
 
 const de = (node) => renderToStaticMarkup(<I18n.Provider value={textsFor('de')}>{node}</I18n.Provider>)
 const { t } = textsFor('de')
@@ -31,7 +31,7 @@ const run = {
 describe('the simulator', () => {
   it('offers the train, its places from the signals and platforms, and the margin', () => {
     const html = de(<Simulator project={{ title: 'Hausen' }} variant={{ name: 'Bestand' }} revision={{ number: 4 }} record={record} local={false} />)
-    expect(html).toContain('Regionaltriebzug (Beispiel)')
+    expect(html).toContain('Wird geladen')   // the suite's vehicles, loading at first
     expect(html).toContain('Signal A')
     expect(html).toContain('Hausen Gl. 1')
     expect(html).toContain('energiesparend (MARECO)')
@@ -67,5 +67,6 @@ describe('helpers', () => {
     expect(linkedRequest('?project=p&variant=v')).toEqual({ action: 'open', project: 'p', variant: 'v' })
     expect(linkedRequest('?project=p&action=view')).toEqual({ action: 'view', project: 'p', variant: null })
     expect(linkedRequest('?action=view')).toBeNull()
+    expect(vehicleUrl('osrd:freight-train')).toBe('../vehicles/?vehicle=osrd%3Afreight-train')
   })
 })

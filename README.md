@@ -36,13 +36,14 @@ The [roadmap](ROADMAP.md) starts with the Rail-Data-Core; how its data is struct
 
 ## Licence
 
-Copyright 2026 Serigalan and the Rail-Across-Suite contributors.
+Copyright 2026 Serigalan and the Rail-Across-Suite contributors; the simulation core in `sim/` and OSRD's
+example vehicles also 2022 The OSRD Contributors.
 
-- **Code** — everything that is not documentation, including the schemas — under the
-  [Apache License 2.0](LICENSE) (`Apache-2.0`).
-- **Documentation** — `README.md`, `ROADMAP.md`, the `README.md` files in the directories, everything in `docs/`
-  and `architecture.svg` — under [Creative Commons Attribution 4.0 International](LICENSE-docs) (`CC-BY-4.0`).
+- **Everything** — code, schemas, documentation, `architecture.svg` — under the
+  [GNU Lesser General Public License v3.0 only](LICENSE) (`LGPL-3.0-only`), which builds on the
+  [GNU General Public License v3.0](LICENSE-GPL) — the licence of OSRD, whose simulation core the suite carries
+  ([decision 0015](docs/decisions/0015-lgpl.md)).
 - **Third-party material** keeps its own licence, listed in [THIRD-PARTY.md](THIRD-PARTY.md).
 
-Contributions are made under these licences and signed off (`Signed-off-by:`) after the
+Contributions are made under this licence and signed off (`Signed-off-by:`) after the
 [Developer Certificate of Origin](https://developercertificate.org/).

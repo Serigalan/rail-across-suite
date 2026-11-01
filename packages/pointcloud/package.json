@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0-alpha.0",
   "description": "Point clouds of Rail-Across-Suite: LAS/LAZ and E57 readers, tiles, sections, rail detection and tracing, registration, clearance scans",
-  "license": "Apache-2.0",
+  "license": "LGPL-3.0-only",
   "type": "module",
   "engines": {
     "node": ">=22"

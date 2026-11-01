@@ -1,0 +1,18 @@
+# SPDX-FileCopyrightText: 2026 Serigalan and the Rail-Across-Suite contributors
+# SPDX-License-Identifier: LGPL-3.0-only
+
+[package]
+name = "rail-across-sim"
+description = "Running time simulation of a train, ported from OSRD's simulation core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[lib]
+name = "rail_across_sim"
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true

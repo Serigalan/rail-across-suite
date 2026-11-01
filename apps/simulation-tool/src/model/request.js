@@ -1,18 +1,19 @@
 import { pathProperties } from './path.js'
 import { signalledSpeeds } from './route.js'
-import { rollingStockOf } from './vehicles.js'
+import { rollingStockOf } from '@rail-across/vehicles'
 
 /**
  * The request the simulation takes (rail-across-sim's SimulationRequest),
  * from a train's way over the net: the path's length, grades and speed
  * limits — the layout's design speeds and the speeds the signals signal —,
- * the train, its stops and the margin. Returns { request, properties }.
+ * the train — a vehicle, its traction `{ mode, comfort }` —, its stops and
+ * the margin. Returns { request, properties }.
  *
  * `stops` [{ offset, duration, arrival }] along the path — the last at its
  * end; `margin` { value: '5%' | '4min/100km' | 'none', distribution:
  * 'mareco' | 'linear' }.
  */
-export function simulationRequest(record, path, { vehicle, stops = [], margin = null, timeStep = 2 }) {
+export function simulationRequest(record, path, { vehicle, traction = {}, stops = [], margin = null, timeStep = 2 }) {
   const properties = pathProperties(record, path)
   const signalled = signalledSpeeds(record, path)
   const length = properties.length
@@ -27,7 +28,7 @@ export function simulationRequest(record, path, { vehicle, stops = [], margin = 
       gradients: properties.gradients,
       speed_limits: [...properties.speedLimits, ...signalled],
     },
-    rolling_stock: rollingStockOf(vehicle),
+    rolling_stock: rollingStockOf(vehicle, traction),
     schedule,
     ...(margin?.value && margin.value !== 'none' ? { margins: { boundaries: [], values: [margin.value] } } : {}),
     distribution: margin?.distribution ?? 'mareco',

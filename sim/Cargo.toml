@@ -1,0 +1,22 @@
+# SPDX-FileCopyrightText: 2026 Serigalan and the Rail-Across-Suite contributors
+# SPDX-License-Identifier: LGPL-3.0-only
+
+[workspace]
+resolver = "2"
+members = ["crates/sim", "crates/wasm", "crates/cli"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "LGPL-3.0-only"
+repository = "https://github.com/Serigalan/rail-across-suite"
+rust-version = "1.85"
+
+[workspace.dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1

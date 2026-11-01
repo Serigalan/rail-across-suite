@@ -37,14 +37,22 @@ of PlanPro 1.10.0.3.3's `Signalbegriffe_Ril_301.xsd` by their names there, with 
 (the XSD's Langbezeichnung, else the first clause of its Beschreibung) and the symbols its enumerations allow
 ([decision 0011](docs/decisions/0011-signalling-domain.md)). No file of PlanPro is in the repository. PlanPro is
 published by DB InfraGO under the RailPL V1.1 licence; whether that licence covers these facts taken into a
-catalogue under Apache-2.0 has not been checked yet.
+catalogue under LGPL-3.0-only has not been checked yet.
 
 ## Used, not included
 
 | Software | Used for | Licence |
 |---|---|---|
 | [OSRD](https://github.com/OpenRailAssociation/osrd), OpenRail Association | the base of Open-Capacity-Sim, run as a service at a pinned version ([decision 0006](docs/decisions/0006-capacity-on-osrd.md)) | LGPL-3.0 |
-| [rail-across-sim](https://github.com/Serigalan/rail-across-sim) — OSRD's envelope simulation ported to Rust | the Simulation-Tool's running times: its WebAssembly module is built by `apps/simulation-tool/scripts/sim.mjs` into `public/sim/` (not in the history) and goes with the build beside its `NOTICE.txt`, a file of its own that can be replaced ([decision 0013](docs/decisions/0013-running-times-in-rust.md)) | LGPL-3.0-only |
+
+## OSRD's work in the repository
+
+Under OSRD's licence, LGPL-3.0, which is the suite's ([decision 0015](docs/decisions/0015-lgpl.md)):
+
+| What | Where | From OSRD |
+|---|---|---|
+| The envelope simulation, ported from Kotlin/Java to Rust — every file names the OSRD files it comes from | `sim/`; its WebAssembly module is built by `apps/simulation-tool/scripts/sim.mjs` into `public/sim/` and goes with the build beside its `NOTICE.txt`, a file of its own that can be replaced ([decision 0013](docs/decisions/0013-running-times-in-rust.md)) | `core/` at commit `fda69ee1`, © 2022 The OSRD Contributors |
+| The eleven example vehicles, unchanged | `packages/vehicles/data/osrd/`, the suite's built-in vehicles ([decision 0014](docs/decisions/0014-vehicles-in-osrds-form.md)) | `tests/data/rolling_stocks/realistic/` at the same commit |
 
 ## Project pictures
 
@@ -55,6 +63,6 @@ The default project pictures (`apps/home/public/project-images/`, and for the La
 
 ## Not third-party
 
-- `Leitfaden_Trassierung.pdf` and its HTML versions are the project's own work, published under CC BY 4.0 like
-  the rest of the documentation.
+- `Leitfaden_Trassierung.pdf` and its HTML versions are the project's own work, under LGPL-3.0-only like the
+  rest of the project (published under CC BY 4.0 before decision 0015).
 - The values from the DB guidelines (Ril 800.0110, 800.0120, 800.0130) in the rule catalogues may be taken over.

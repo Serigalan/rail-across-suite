@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "description": "The basemaps of Rail-Across-Suite: the maps every module's map can lie on, with the colour scale of the elevation basemaps",
-  "license": "Apache-2.0",
+  "license": "LGPL-3.0-only",
   "type": "module",
   "engines": {
     "node": ">=22"

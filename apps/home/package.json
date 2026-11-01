@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "description": "The start page of Rail-Across-Suite: the editors and simulations, and the projects of the infrastructure, managed for every tool",
-  "license": "Apache-2.0",
+  "license": "LGPL-3.0-only",
   "type": "module",
   "engines": {
     "node": ">=22"

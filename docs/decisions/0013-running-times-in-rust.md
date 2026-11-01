@@ -1,6 +1,7 @@
 # 0013 — Running times with OSRD's simulation core, ported to Rust
 
-Status: **proposed** — changes [0006](0006-capacity-on-osrd.md) for the running time of one train
+Status: **proposed** — changes [0006](0006-capacity-on-osrd.md) for the running time of one train; points 2 and 3
+changed by [0015](0015-lgpl.md): the port is in this repository under `sim/`, as everything under LGPL-3.0-only
 
 ## Decision
 
@@ -35,8 +36,8 @@ Status: **proposed** — changes [0006](0006-capacity-on-osrd.md) for the runnin
 - A second language and toolchain (cargo, the `wasm32-unknown-unknown` target) for the deploy.
 - LGPL-3.0 code next to the suite: kept in its own repository and loaded as a replaceable module; its notice
   goes with the build (`public/sim/NOTICE.txt`, THIRD-PARTY.md).
-- Not ported: ETCS braking curves, electrification and power restrictions, DB's driver behaviour; vehicles are
-  examples until the suite has its vehicle editor.
+- Not ported: ETCS braking curves, electrification and power restrictions, DB's driver behaviour. The vehicles
+  are the suite's catalogue in OSRD's form ([0014](0014-vehicles-in-osrds-form.md)).
 
 ## Alternatives considered
 

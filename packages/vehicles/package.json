@@ -1,0 +1,24 @@
+{
+  "name": "@rail-across/vehicles",
+  "private": true,
+  "version": "0.1.0",
+  "description": "The vehicles of Rail-Across-Suite: OSRD's RailJSON rolling stock — the model, OSRD's example vehicles, and the suite's catalogue on the server — for the Fahrzeug-Editor and the Fahrplan-Sim",
+  "license": "LGPL-3.0-only",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {
+    "test": "vitest run"
+  },
+  "peerDependencies": {
+    "react": "^19.2.4"
+  },
+  "devDependencies": {
+    "react": "^19.2.4",
+    "vitest": "^3.2.7"
+  }
+}

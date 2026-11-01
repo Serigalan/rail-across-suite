@@ -1,4 +1,4 @@
-import { EDITORS, SIMULATIONS, hashOf } from '../modules'
+import { EDITORS, SIMULATIONS, tileUrl } from '../modules'
 import { ModuleIcon } from '../icons'
 import { useTexts } from '../i18n'
 
@@ -7,7 +7,7 @@ function ModuleTile({ module }) {
   const { t, fill } = useTexts()
   return (
     <li>
-      <a className={`ra-tile${module.available ? '' : ' ra-tile-planned'}`} href={hashOf({ page: module.route })}>
+      <a className={`ra-tile${module.available ? '' : ' ra-tile-planned'}`} href={tileUrl(module)}>
         <span className="ra-tile-icon"><ModuleIcon id={module.id} /></span>
         <span className="ra-tile-name">{t(`module_${module.id}`)}</span>
         <span className="ra-tile-desc">{t(`module_${module.id}_desc`)}</span>

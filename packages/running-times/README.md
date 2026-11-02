@@ -17,7 +17,7 @@ shared by the Simulation-Tool and the Fahrplan-Editor:
 
 An app that runs trains puts the module beside its page with `npm run sim`, which runs
 [`scripts/sim.mjs`](scripts/sim.mjs) in the app's directory: it builds `sim/` with cargo (rustup, target
-`wasm32-unknown-unknown`), or takes `RA_SIM_WASM`, and writes `public/sim/` with the module's notice.
+`wasm32-unknown-unknown`), or takes `RA_SIM_WASM`, and writes `public/sim/` with the module's notice and the licence texts.
 
 ```sh
 npm test   # the tests that run the module where cargo built it (sim/target/…)

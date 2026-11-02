@@ -4,7 +4,7 @@
 `fda69ee1f8027175096371d258c563fc98f9295e`), unchanged, in OSRD's RailJSON rolling stock format. They are not
 types of real vehicles but typical ones of their kind: a commuter train, regional trains (diesel and electric),
 tram-trains, an intercity, a high-speed and a night train, freight trains and a touristic train. They are OSRD's
-work under LGPL-3.0-only, the suite's licence.
+work, © 2022 The OSRD Contributors, under LGPL-3.0-only, the suite's licence.
 
 They are the suite's built-in vehicles: `src/builtIn.js` takes them into the build, the Fahrzeug-Editor shows and
 copies them, the Fahrplan-Sim runs them.

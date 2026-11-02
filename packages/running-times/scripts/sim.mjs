@@ -41,8 +41,11 @@ writeFileSync(join(out, 'NOTICE.txt'), [
   'rail_across_sim.wasm — the running time simulation of OSRD',
   '(https://github.com/OpenRailAssociation/osrd, core/) ported to Rust.',
   'Copyright 2022 The OSRD Contributors; 2026 Serigalan and the Rail-Across-Suite contributors.',
-  'Licensed under the GNU Lesser General Public License v3.0 only (LGPL-3.0-only).',
+  'Licensed under the GNU Lesser General Public License v3.0 only (LGPL-3.0-only),',
+  'beside it in LICENSE.txt, with the GNU GPL v3.0 it builds on in LICENSE-GPL.txt.',
   'Source: https://github.com/Serigalan/rail-across-suite, sim/' + (revision ? ` at ${revision}` : ''),
   '',
 ].join('\n'))
+copyFileSync(resolve(sim, '../LICENSE'), join(out, 'LICENSE.txt'))
+copyFileSync(resolve(sim, '../LICENSE-GPL'), join(out, 'LICENSE-GPL.txt'))
 console.log(`simulation module: ${target}`)

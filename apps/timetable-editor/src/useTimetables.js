@@ -78,6 +78,8 @@ export function useTimetables(projectId, initial = null) {
     /** The trains changed: `fn(trains)` gives them as they are to be. */
     changeTrains: (fn) => setDraft(d => (d ? { ...d, data: { ...d.data, trains: fn(d.data.trains) } } : d)),
     rename: (name) => setDraft(d => (d ? { ...d, name } : d)),
+    /** How conflicts of blocks are dealt with (occupancy.js): the timetable's `dispatch`. */
+    changeDispatch: (dispatch) => setDraft(d => (d ? { ...d, data: { ...d.data, dispatch } } : d)),
     /** The changes dropped — for the timetable as someone else saved it, where that is what a save found. */
     discard: () => { if (conflict) { replaced(conflict); open(conflict) } else open(current) },
     async create(name) {

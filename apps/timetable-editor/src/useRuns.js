@@ -1,22 +1,32 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { simulate } from '@rail-across/running-times'
-import { runKey, runTrain } from '@rail-across/timetables'
+import { occupancy, runKey, runTrain } from '@rail-across/timetables'
+
+/** Runs kept for a net: beyond them the oldest are made again when asked for. */
+const KEPT = 2000
 
 /**
- * The runs of a timetable's trains over the net, made in the background one
- * after the other with the simulation module, and made again only for a
- * train whose run would change — its points, departure, vehicle, margin —
- * or when the net is another. Map train id → { key, rows, route, request,
- * properties, result } | { key, problems } | { key, failedAt } | { key,
- * error }; a train not run yet is not in it.
+ * The runs of a timetable's trains over the net, made in the background
+ * with the simulation module: first each train for itself, as they come;
+ * then the occupancy of the blocks (occupancy.js) as the timetable's
+ * `dispatch` says — the conflicts said, or the trains waiting for a free
+ * block, run again where they wait. A run is made again only where what it
+ * is run with changed — its points, departure, vehicle, margin, where it
+ * waits — or when the net is another. Map train id → { key, rows, route,
+ * request, properties, result, blocks, conflicts, waits, delay } | { key,
+ * problems } | { key, failedAt } | { key, error }; a train not run yet is
+ * not in it, one whose blocks are not known yet has none.
  */
-export function useRuns(record, stations, trains, catalogue) {
+export function useRuns(record, stations, trains, catalogue, dispatch) {
   const [runs, setRuns] = useState(() => new Map())
   const made = useRef({ record: null, byKey: new Map() })
   // the catalogue is new on every load; its vehicles, as they are, decide
   const vehicles = catalogue.loading ? null : catalogue.entries.map(e => `${e.key}@${e.version ?? 0}`).join('|')
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const entries = useMemo(() => catalogue.entries, [vehicles])
+  const rules = JSON.stringify(dispatch)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const settled = useMemo(() => dispatch, [rules])
 
   useEffect(() => {
     if (vehicles == null) return undefined
@@ -24,30 +34,42 @@ export function useRuns(record, stations, trains, catalogue) {
     const byKey = made.current.byKey
     const entryOf = (train) => entries.find(e => e.key === train.vehicle) ?? null
     let gone = false
+    const runOf = async (train, holds = []) => {
+      if (gone) throw new Error('gone')
+      const key = holds.length ? `${runKey(train, entryOf(train))}|${JSON.stringify(holds)}` : runKey(train, entryOf(train))
+      if (byKey.has(key)) return byKey.get(key)
+      let run
+      try {
+        run = { key, ...await runTrain(record, stations, train, entryOf(train)?.vehicle ?? null, simulate, holds) }
+      } catch (err) {
+        run = { key, error: { code: err.code ?? 'internal', message: String(err.message ?? err) } }
+      }
+      if (byKey.size >= KEPT) byKey.delete(byKey.keys().next().value)
+      byKey.set(key, run)
+      return run
+    }
     ;(async () => {
       const next = new Map()
-      const todo = []
       for (const train of trains) {
         const key = runKey(train, entryOf(train))
         if (byKey.has(key)) next.set(train.id, byKey.get(key))
-        else todo.push({ train, key })
       }
       setRuns(new Map(next))
-      for (const { train, key } of todo) {
-        let run
-        try {
-          run = { key, ...await runTrain(record, stations, train, entryOf(train)?.vehicle ?? null, simulate) }
-        } catch (err) {
-          run = { key, error: { code: err.code ?? 'internal', message: String(err.message ?? err) } }
+      try {
+        for (const train of trains) {
+          if (next.has(train.id)) continue
+          next.set(train.id, await runOf(train))
+          if (gone) return
+          setRuns(new Map(next))
         }
-        if (gone) return
-        byKey.set(key, run)
-        next.set(train.id, run)
-        setRuns(new Map(next))
+        const placed = await occupancy(record, trains, runOf, settled)
+        if (!gone) setRuns(placed)
+      } catch (err) {
+        if (!gone) throw err
       }
     })()
     return () => { gone = true }
-  }, [record, stations, trains, entries, vehicles])
+  }, [record, stations, trains, entries, vehicles, settled])
 
   return runs
 }

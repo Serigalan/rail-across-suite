@@ -21,8 +21,16 @@ where there is one, else its head, and only read; the timetables are the project
 - **Its times**: run with OSRD's simulation core (`@rail-across/running-times`) whenever what it is run with changes
   — a row for every station along its way, the stations it passes among them (*Hier halten* makes it stop there),
   its running time, length, speed and energy, its way on the map.
+- **Blockbelegung**: a train runs only into a free block — from main signal to main signal of the variant's
+  signalling, the overlap beyond with it; without main signals the whole way is one block. The timetable says what
+  happens where two trains need one block: *Konflikte nur anzeigen*, each train run for itself; or *Züge warten
+  automatisch*, the trains given the net by departure or by kind in an order set (*Vorrang*), each waiting —
+  later from its start, longer at a stop, else before the signal — until the block is free. A train's page says
+  where it waits and for whom, or where it conflicts and when; the list marks both. The times a block is held
+  beyond the running (route setting, distant signal, release) are set there too.
 - **Takt**: copies of a train at an interval, their numbers counted on.
-- **Bildfahrplan**: every train along the way of one, the stations across at their distances, the time downwards.
+- **Bildfahrplan**: every train along the way of one, the stations across at their distances, the time downwards;
+  under each, the blocks it holds over time (Sperrzeitentreppe), red where two trains hold one at once.
 
 ## Development
 

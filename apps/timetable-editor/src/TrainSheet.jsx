@@ -39,7 +39,7 @@ export default function TrainSheet(props) {
   return <Sheet {...props} />
 }
 
-function Sheet({ t, language, train, run, timetables, stations, catalogue, record, net, mayEdit, update, onCopy, onTakt, onDelete }) {
+function Sheet({ t, language, train, run, timetables, stations, catalogue, record, net, mayEdit, titles, update, onCopy, onTakt, onDelete }) {
   const entry = catalogue.entries.find(e => e.key === train.vehicle) ?? null
   const problems = trainProblems(train, stations, { vehicle: catalogue.loading || Boolean(entry) })
   const set = (patch) => update(tr => ({ ...tr, ...patch }))
@@ -94,6 +94,7 @@ function Sheet({ t, language, train, run, timetables, stations, catalogue, recor
 
           <div className="tt-col">
             <TimesCard t={t} language={language} train={train} run={run} stations={stations} problems={problems} ro={ro} update={update} />
+            {run?.blocks && !problems.length && <OccupancyCard t={t} train={train} run={run} record={record} titles={titles} />}
             <section className="tt-card tt-map-card">
               <h2>{t('card_map')}</h2>
               <div className="tt-map-box">
@@ -298,6 +299,60 @@ function Clock({ value }) {
   if (value == null) return null
   const s = Math.round(value)
   return <span className="tt-clock">{formatClock(s)}<small>{String(s % 60).padStart(2, '0')}</small></span>
+}
+
+/** A signal as the plan names it: its area's number and its name. */
+const signalName = (record, id) => {
+  const s = (record?.signalling?.collections?.signals ?? []).find(x => x.id === id)
+  return s ? `${s.areaNumber ?? ''}${s.name ?? ''}` || '?' : null
+}
+
+/**
+ * The blocks the train holds: where it waits for one another holds — at its
+ * start, at a stop, before a signal — and for which trains; where it holds
+ * one another holds at the same time, a conflict, with the time both hold it.
+ */
+function OccupancyCard({ t, train, run, record, titles }) {
+  const { blocks, waits = [], conflicts = [] } = run
+  const names = (ids) => ids.map(id => titles.get(id) ?? '?').join(', ')
+  const waitLine = (w) => {
+    const of = { wait: duration(t, w.wait), trains: names(w.because) }
+    if (w.point === 0) return t('wait_start', of)
+    if (w.point != null) return t('wait_stop', { ...of, station: train.points[w.point]?.station ?? '?' })
+    return t('wait_signal', { ...of, signal: signalName(record, w.signalId) ?? '?' })
+  }
+  const blockName = (i) => (blocks[i]?.signalId ? t('block_from', { signal: signalName(record, blocks[i].signalId) }) : t('block_start'))
+  // one line for each other train and block, the times they share
+  const seen = new Map()
+  for (const c of conflicts) {
+    const key = `${c.other}|${c.block}`
+    const was = seen.get(key)
+    seen.set(key, was ? { ...was, begin: Math.min(was.begin, c.begin), end: Math.max(was.end, c.end) } : c)
+  }
+  const shown = [...seen.values()]
+  return (
+    <section className="tt-card">
+      <h2>{t('card_occupancy')}</h2>
+      <p className="ui-muted">{t(blocks.length > 1 ? 'blocks_n' : 'blocks_one', { n: blocks.length })}</p>
+      {waits.length > 0 && (
+        <ul className="tt-waits">
+          {waits.map((w, i) => <li key={i}>{waitLine(w)}</li>)}
+          {run.delay > 0.5 && <li><strong>{t('wait_delay', { delay: duration(t, run.delay) })}</strong></li>}
+        </ul>
+      )}
+      {shown.length > 0 && (
+        <>
+          <Message tone="warn">{t('conflicts_n', { n: shown.length })}</Message>
+          <ul className="tt-waits tt-conflicts">
+            {shown.slice(0, 8).map((c, i) => (
+              <li key={i}>{t('conflict_line', { train: names([c.other]), block: blockName(c.block), from: formatClock(c.begin, { seconds: true }), to: formatClock(c.end, { seconds: true }) })}</li>
+            ))}
+          </ul>
+        </>
+      )}
+      {!waits.length && !shown.length && <p className="ui-muted">{t('blocks_free')}</p>}
+    </section>
+  )
 }
 
 /**

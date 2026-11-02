@@ -7,7 +7,8 @@ import { I18n, textsFor } from './i18n.js'
 import Editor from './Editor.jsx'
 import TrainSheet from './TrainSheet.jsx'
 import Graph from './Graph.jsx'
-import { axisOf, insertionIndex, linesOn, trainLine } from './rows.js'
+import DispatchSection from './panels/DispatchSection.jsx'
+import { axisOf, blocksOn, insertionIndex, linesOn, trainLine } from './rows.js'
 import { linkedRequest } from './suite.js'
 import { net } from '../../../packages/running-times/test/net.js'
 
@@ -124,5 +125,31 @@ describe('what it shows of runs', () => {
   it('reads its address', () => {
     expect(linkedRequest('?project=p&variant=v&timetable=tt&train=x')).toEqual({ action: 'open', project: 'p', variant: 'v', timetable: 'tt', train: 'x' })
     expect(linkedRequest('?variant=v')).toBeNull()
+  })
+
+  it('sets what happens where two trains need one block: they wait, the kinds first in the order set, or only the conflicts are said', () => {
+    const tt = (dispatch) => timetables({ trains: [train, { ...train, id: 'x', category: 'Sonder' }], draft: { id: 'tt', name: 'F', data: { trains: [], dispatch }, version: 1 } })
+    const waiting = de(<DispatchSection t={t} timetables={tt({ mode: 'wait', priority: 'category' })} mayEdit />)
+    expect(waiting).toContain('Züge warten automatisch')
+    expect(waiting).toContain('Nach Zuggattung')
+    // the kinds set first, then the trains' own
+    expect(waiting.indexOf('>ICE<')).toBeLessThan(waiting.indexOf('>RB<'))
+    expect(waiting.indexOf('>Lz<')).toBeLessThan(waiting.indexOf('>Sonder<'))
+    expect(waiting).toContain('Vorsignalabstand [m]')
+    const showing = de(<DispatchSection t={t} timetables={tt({ mode: 'show' })} mayEdit />)
+    expect(showing).not.toContain('Vorrang')
+  })
+
+  it('lays a train\'s blocking times on the axis of the graphical timetable', () => {
+    const axis = axisOf(rows)
+    const held = blocksOn(axis, rows, [{ index: 0, from: 0, reach: 700, begin: 25190, end: 25260 }, { index: 1, from: 700, reach: 3200, begin: 25240, end: 25400 }])
+    expect(held.map(b => [Math.round(b.a0), Math.round(b.a1), b.block])).toEqual([[0, 700, 0], [700, 3200, 1]])
+  })
+
+  it('says in a train\'s sheet where it waits for a block, and for whom', () => {
+    const waiting = { ...run, blocks: [{ index: 0, signalId: null }, { index: 1, signalId: null }], waits: [{ offset: 0, point: 0, wait: 90, because: ['y'] }], conflicts: [], delay: 95 }
+    const html = sheet({ run: waiting, titles: new Map([['y', 'ICE 1']]) })
+    expect(html).toContain('Blockbelegung')
+    expect(html).toContain('Fährt 1 min 30 s später ab – wegen ICE 1')
   })
 })

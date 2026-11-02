@@ -98,3 +98,13 @@ html, body { margin: 0; background: var(--ui-surface); }
 }
 .tt-point-leg { padding-bottom: 10px; }
 .tt-point-leg .ui-field > span { color: var(--ui-muted); }
+
+/* Blocking times (Sperrzeitentreppe) under the trains' lines; red where two trains hold a block at once. */
+.tt-block { fill-opacity: 0.16; stroke: none; pointer-events: none; }
+.tt-block-conflict { fill: #c0392b; fill-opacity: 0.5; }
+.tt-waits { margin: 4px 0 0; padding-left: 18px; font-size: var(--ui-fs-m); display: flex; flex-direction: column; gap: 2px; }
+/* The kinds of trains in the order they are given the net. */
+.tt-kinds { margin: 0 0 8px; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 2px; counter-reset: kind; }
+.tt-kinds li { display: flex; align-items: center; gap: 4px; padding: 2px 4px 2px 8px; border: 1px solid var(--ui-border); border-radius: 6px; font-size: var(--ui-fs-m); counter-increment: kind; }
+.tt-kinds li::before { content: counter(kind) "."; color: var(--ui-muted); min-width: 1.6em; }
+.tt-conflicts { color: var(--ui-danger, #c0392b); }

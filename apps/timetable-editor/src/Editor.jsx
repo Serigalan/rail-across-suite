@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ConfirmDialog, FormDialog, NumberField, Rail, RailBrand, RailButton, RailDivider, Shell, TextField, Workspace, WorkingCopyBar } from '@rail-across/ui'
 import { netLines, stationsOf } from '@rail-across/running-times'
-import { copyTrain, newTrain, numberAfter, taktCopies } from '@rail-across/timetables'
+import { copyTrain, dispatchOf, newTrain, numberAfter, taktCopies, trainTitle } from '@rail-across/timetables'
 import { useCatalogue } from '@rail-across/vehicles'
 import { useTexts } from './i18n.js'
 import { GraphIcon, HomeIcon, LogoIcon, SettingsIcon, TrainIcon } from './icons.jsx'
@@ -44,11 +44,13 @@ export default function Editor({ project, variant, revision, record, local, init
   const catalogue = useCatalogue({ refreshOnShow: true })
   const stations = useMemo(() => stationsOf(record), [record])
   const net = useMemo(() => netLines(record), [record])
-  const runs = useRuns(record, stations, timetables.trains, catalogue)
+  const dispatch = useMemo(() => dispatchOf(timetables.draft?.data), [timetables.draft?.data])
+  const runs = useRuns(record, stations, timetables.trains, catalogue, dispatch)
+  const titles = useMemo(() => new Map(timetables.trains.map(tr => [tr.id, trainTitle(tr) || t('train_unnamed')])), [timetables.trains, t])
   const [trainId, setTrainId] = useState(initial.train ?? null)
   const [dialog, setDialog] = useState(null)   // { kind: 'new' | 'rename' | 'delete' | 'deleteTrain' | 'takt', ... }
   const [axisId, setAxisId] = useState(null)
-  const [view, setView] = useState({ from: null, to: null, scale: 4 })
+  const [view, setView] = useState({ from: null, to: null, scale: 4, blocks: true })
 
   const sorted = useMemo(() => byDeparture(timetables.trains), [timetables.trains])
   const train = timetables.trains.find(tr => tr.id === trainId) ?? sorted[0] ?? null
@@ -87,7 +89,7 @@ export default function Editor({ project, variant, revision, record, local, init
         : [{ label: t('back'), onClick: leave }]} />
   )
 
-  const panelProps = { t, language, timetables, sorted, train, setTrainId, runs, stations, mayEdit, addTrain, setDialog }
+  const panelProps = { t, language, timetables, sorted, train, setTrainId, runs, stations, mayEdit, addTrain, setDialog, dispatch }
   return (
     <Shell>
       <Rail label={t('tool')}
@@ -111,7 +113,7 @@ export default function Editor({ project, variant, revision, record, local, init
           ? <Graph t={t} trains={sorted} runs={runs} axisTrain={timetables.trains.find(tr => tr.id === axisId) ?? train} view={view}
               selected={train?.id} onSelect={(id) => { setTrainId(id); setSection('trains') }} />
           : <TrainSheet key={train?.id ?? 'none'} t={t} language={language} train={train} run={train ? runs.get(train.id) : null}
-              timetables={timetables} stations={stations} catalogue={catalogue} record={record} net={net} mayEdit={mayEdit}
+              timetables={timetables} stations={stations} catalogue={catalogue} record={record} net={net} mayEdit={mayEdit} titles={titles}
               update={(fn) => train && update(train.id, fn)} onCopy={() => copy(train)} onTakt={() => setDialog({ kind: 'takt' })}
               onDelete={() => setDialog({ kind: 'deleteTrain' })} onNewTimetable={() => setDialog({ kind: 'new' })} onAddTrain={addTrain} />}
       </Workspace>

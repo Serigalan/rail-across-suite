@@ -25,7 +25,9 @@ const LABEL_AT = [9, -7]
 const LABEL_FONT_PX = 11
 const LABEL_PAD = 3
 
-const SRC = { tracks: 'plan-tracks', marked: 'plan-marked', switches: 'plan-switches', marks: 'plan-marks', preview: 'plan-preview' }
+const SRC = { tracks: 'plan-tracks', places: 'plan-places', marked: 'plan-marked', switches: 'plan-switches', marks: 'plan-marks', preview: 'plan-preview' }
+/** A stopping place's band on its track, where it is not chosen. */
+const PLACE_COLOR = '#0e8a8f'
 
 /** Pixels per metre at a latitude and zoom. */
 export const pixelsPerMetre = (lat, zoom) => (PPM0 * 2 ** zoom) / Math.cos((lat * Math.PI) / 180)
@@ -84,6 +86,25 @@ export function switchDots(drawing, net) {
   return out
 }
 
+/** The stopping places as lines along their tracks, with their names: [{ id, name, line: [lngLat] }]. */
+export function placeLines(drawing, places) {
+  return places.map(h => ({
+    id: h.id, name: h.name ?? null,
+    line: stretchLine(drawing, h.at.trackId, h.at.startStation, h.at.endStation).map(p => drawing.frame.toLngLat(p)),
+  })).filter(h => h.line.length > 1)
+}
+
+/** The middle of a line, along it. */
+function middleOfLine(lls) {
+  const lengths = lls.slice(1).map((p, i) => Math.hypot(p[0] - lls[i][0], p[1] - lls[i][1]))
+  let rest = lengths.reduce((a, b) => a + b, 0) / 2
+  for (let i = 0; i < lengths.length; i++) {
+    if (rest <= lengths[i]) { const k = lengths[i] ? rest / lengths[i] : 0; return [lls[i][0] + (lls[i + 1][0] - lls[i][0]) * k, lls[i][1] + (lls[i + 1][1] - lls[i][1]) * k] }
+    rest -= lengths[i]
+  }
+  return lls[0]
+}
+
 /** Which symbol an object is drawn with. */
 function symbolOf(collection, obj) {
   if (collection === 'detectionPoints') return 'dp'
@@ -131,10 +152,11 @@ function markFeatures(marks, { isSelected, names, t }) {
 }
 
 /**
- * The plan's data, one FeatureCollection per source: { tracks, marked,
- * switches, marks, preview }, and the labels' texts whose icons it needs.
+ * The plan's data, one FeatureCollection per source: { tracks, places,
+ * marked, switches, marks, preview }, and the labels' texts whose icons it
+ * needs. `stretch` is the stretch a pick would take.
  */
-export function planData({ drawing, marks, switches, selection, highlight, preview, snap, t }) {
+export function planData({ drawing, places, marks, switches, selection, highlight, preview, stretch, snap, t }) {
   const isSel = (collection, id) => selection?.collection === collection && selection.id === id
   const lineOf = (pts) => pts.map(p => drawing.frame.toLngLat(p))
   const tracks = [...drawing.tracks.values()].map(tr => feature(line(lineOf(tr.line)), { id: tr.id }))
@@ -146,15 +168,21 @@ export function planData({ drawing, marks, switches, selection, highlight, previ
   const markSel = (mk) => isSel(mk.collection, mk.obj.id) || !!highlight?.ids?.includes(mk.obj.id)
   const data = {
     tracks: collection(tracks),
+    places: collection(places.flatMap(h => [
+      feature(line(h.line), { kind: 'place', id: h.id, sel: isSel('stoppingPlaces', h.id) }),
+      ...(h.name ? [feature(point(middleOfLine(h.line)), { kind: 'label', icon: `ra-label:${h.name}` })] : []),
+    ])),
     marked: collection(marked),
     switches: collection(switches.map(s => feature(point(s.ll), { id: s.id, sel: isSel('switches', s.id) }))),
     marks: collection(markFeatures(shown, { isSelected: markSel, names: true, t })),
     preview: collection([
       ...(snap ? [feature(point(snap), { kind: 'snap' })] : []),
+      ...(stretch ? [feature(line(lineOf(stretchLine(drawing, stretch.trackId, stretch.from, stretch.to))), { kind: 'stretch' })]
+        .filter(f => f.geometry.coordinates.length > 1) : []),
       ...(preview ? markFeatures([preview], { isSelected: () => true, names: false, t }) : []),
     ]),
   }
-  const labels = data.marks.features.filter(f => f.properties.kind === 'label').map(f => f.properties.icon)
+  const labels = [...data.marks.features, ...data.places.features].filter(f => f.properties.kind === 'label').map(f => f.properties.icon)
   return { data, labels }
 }
 
@@ -312,6 +340,9 @@ export function addPlanLayers(map, pal, data, nameZoom) {
   const layers = [
     // On a basemap a track keeps a light edge, so it reads on any ground.
     { id: 'plan-track-edges', type: 'line', source: SRC.tracks, layout: round, paint: { 'line-color': '#ffffff', 'line-width': 4.8, 'line-opacity': 0.9, 'line-blur': 1.2 } },
+    // A stopping place a band under its track, as a platform lies beside it.
+    { id: 'plan-places', type: 'line', source: SRC.places, filter: kind('place'), layout: { 'line-cap': 'butt' },
+      paint: { 'line-color': ['case', ['get', 'sel'], pal.primary, PLACE_COLOR], 'line-width': 11, 'line-opacity': ['case', ['get', 'sel'], 0.6, 0.4] } },
     { id: 'plan-tracks', type: 'line', source: SRC.tracks, layout: round, paint: { 'line-color': pal.track, 'line-width': 2.4 } },
     { id: 'plan-runs', type: 'line', source: SRC.marked, filter: kind('run'), layout: round, paint: { 'line-color': pal.primary, 'line-width': 6, 'line-opacity': 0.45 } },
     { id: 'plan-stretches', type: 'line', source: SRC.marked, filter: kind('stretch'),
@@ -320,12 +351,17 @@ export function addPlanLayers(map, pal, data, nameZoom) {
       paint: { 'circle-radius': ['case', ['get', 'sel'], 5, 3], 'circle-color': ['case', ['get', 'sel'], pal.primary, pal.bg],
         'circle-stroke-color': ['case', ['get', 'sel'], pal.primary, pal.track], 'circle-stroke-width': 1.5 } },
     ...markLayers('plan-marks', SRC.marks, pal, 1),
+    { id: 'plan-place-labels', type: 'symbol', source: SRC.places, filter: kind('label'),
+      layout: { ...SYMBOL, 'icon-image': ['get', 'icon'], 'icon-rotation-alignment': 'viewport', 'icon-offset': [0, -14] } },
+    { id: 'plan-preview-stretch', type: 'line', source: SRC.preview, filter: kind('stretch'),
+      paint: { 'line-color': pal.primary, 'line-width': 9, 'line-opacity': 0.55, 'line-dasharray': [1.2, 0.8] } },
     ...markLayers('plan-preview', SRC.preview, pal, 0.75),
     { id: 'plan-snap', type: 'circle', source: SRC.preview, filter: kind('snap'),
       paint: { 'circle-radius': 4, 'circle-color': 'rgba(0,0,0,0)', 'circle-stroke-color': pal.primary, 'circle-stroke-width': 2 } },
   ]
   for (const layer of layers) map.addLayer(layer)
   map.setLayerZoomRange('plan-marks-labels', nameZoom, 24)
+  map.setLayerZoomRange('plan-place-labels', nameZoom, 24)
 }
 
 /** The plan's data on its sources, the names' zoom on their layer, the colours on the layers' paint. */
@@ -333,8 +369,11 @@ export function setPlanData(map, pal, data, nameZoom) {
   if (!map.getSource(SRC.tracks)) return
   for (const [k, id] of Object.entries(SRC)) map.getSource(id).setData(data[k])
   map.setLayerZoomRange('plan-marks-labels', nameZoom, 24)
+  map.setLayerZoomRange('plan-place-labels', nameZoom, 24)
   map.setPaintProperty('plan-tracks', 'line-color', pal.track)
   map.setPaintProperty('plan-runs', 'line-color', pal.primary)
+  map.setPaintProperty('plan-preview-stretch', 'line-color', pal.primary)
+  map.setPaintProperty('plan-places', 'line-color', ['case', ['get', 'sel'], pal.primary, PLACE_COLOR])
   map.setPaintProperty('plan-snap', 'circle-stroke-color', pal.primary)
   map.setPaintProperty('plan-switches', 'circle-color', ['case', ['get', 'sel'], pal.primary, pal.bg])
   map.setPaintProperty('plan-switches', 'circle-stroke-color', ['case', ['get', 'sel'], pal.primary, pal.track])

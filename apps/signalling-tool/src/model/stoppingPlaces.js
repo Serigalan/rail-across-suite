@@ -62,6 +62,27 @@ function boundAt(domain, trackId, station, t) {
 
 const round = (s) => Math.round(s * 1000) / 1000
 
+/**
+ * The stretch a click on the plan offers as a stopping place, `hit` where it
+ * meets a track: within one of `platforms` there, else on the track where it
+ * is one of `tracks` — the stretch the signals and detection points cut
+ * around it: { trackId, platformId, from, to, below, above }, or null.
+ */
+export function stretchAt(net, domain, { tracks, platforms }, hit, t) {
+  if (!hit?.trackId) return null
+  const platform = platforms.find(pf => pf.trackId === hit.trackId && hit.station >= pf.startStation && hit.station <= pf.endStation)
+  if (!platform && !tracks.includes(hit.trackId)) return null
+  const range = platform ? [platform.startStation, platform.endStation] : []
+  const s = stoppingStretches(net, domain, hit.trackId, t, range).find(x => hit.station >= x.from && hit.station <= x.to)
+  return s ? { ...s, trackId: hit.trackId, platformId: platform?.id } : null
+}
+
+/** A station of a track picked on the plan: at what bounds a stopping place there within `reach` [m], else to the decimetre. */
+export function snappedStation(domain, trackId, station, reach, t) {
+  const near = boundsOn(domain, trackId, t).map(b => ({ ...b, d: Math.abs(b.station - station) })).filter(b => b.d <= reach)
+  return near.length ? round(near.sort((a, b) => a.d - b.d)[0].station) : Math.round(station * 10) / 10
+}
+
 /** A new stopping place on a stretch of a track: of a station, at a platform, or both. */
 export const newStoppingPlace = ({ name, operationalPointId, platformId, trackId, from, to }) => Object.fromEntries(Object.entries({
   id: newId(), name, operationalPointId, platformId, at: { anchor: 'station', trackId, startStation: from, endStation: to },

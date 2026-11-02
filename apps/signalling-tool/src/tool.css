@@ -49,6 +49,8 @@ html, body { margin: 0; background: var(--ui-surface); }
 .schema-run { fill: none; stroke: var(--color-primary); stroke-width: 8; stroke-opacity: 0.35; stroke-linecap: round; }
 .schema-stretch { fill: none; stroke: #1f9e3a; stroke-width: 9; stroke-opacity: 0.45; }
 .schema-stretch-warn { stroke: #d68910; }
+.schema-place { fill: none; stroke: #0e8a8f; stroke-width: 11; stroke-opacity: 0.4; }
+.schema-place.is-selected { stroke: var(--color-primary); stroke-opacity: 0.6; }
 
 .tool-mode {
   position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); z-index: 5; display: flex; gap: 10px; align-items: center;

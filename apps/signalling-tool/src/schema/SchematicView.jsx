@@ -9,8 +9,8 @@ import { signalSymbolOf, symbolLength } from './symbols.js'
  * The schematic view: the net as the strip of the core's schematic layout —
  * its lines lanes along the longest of them, every switch a 45° connection,
  * the length along the lanes to scale — and on it the signalling in the
- * symbols of a signalling plan (planzeichen.jsx). It shows, picks and
- * highlights as the site plan does; setting anew is the site plan's. Wheel
+ * symbols of a signalling plan (planzeichen.jsx), the stopping places bands
+ * under their tracks. It shows, picks and highlights as the site plan does; setting anew is the site plan's. Wheel
  * zooms along the lanes, which keep their spacing; a drag moves.
  */
 
@@ -146,6 +146,15 @@ export default function SchematicView({ net, platforms, domain, selection, highl
       const d = Math.hypot(px - X(it.x), py - Y(laneY(it.node.lane)))
       if (d < PICK_PX && (!best || d < best.d)) best = { d, collection: 'switches', id: it.node.sw.switchId }
     }
+    if (best) return best
+    // A stopping place along its band.
+    for (const h of domain.collections.stoppingPlaces) {
+      const line = place.stretch(h.at.trackId, h.at.startStation, h.at.endStation).map(([x, y]) => [X(x), Y(y)])
+      for (let i = 1; i < line.length; i++) {
+        const d = toSegment(px, py, line[i - 1], line[i])
+        if (d < PICK_PX / 2 + 2 && (!best || d < best.d)) best = { d, collection: 'stoppingPlaces', id: h.id }
+      }
+    }
     return best
   }
 
@@ -184,6 +193,14 @@ export default function SchematicView({ net, platforms, domain, selection, highl
     <div ref={box} className="schema" onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp}
       onWheel={onWheel}>
       <svg className="schema-svg" role="img" aria-label={t('view_schema')}>
+        <g className="schema-places">
+          {domain.collections.stoppingPlaces.map(h => {
+            const line = place.stretch(h.at.trackId, h.at.startStation, h.at.endStation)
+            return line.length > 1
+              ? <path key={h.id} d={pts(line)} className={`schema-place${isSel('stoppingPlaces', h.id) ? ' is-selected' : ''}`} />
+              : null
+          })}
+        </g>
         <Highlight highlight={highlight} strip={strip} place={place} pts={pts} />
         <g className="schema-net">
           {strip.items.map((it, i) => {
@@ -219,6 +236,14 @@ export default function SchematicView({ net, platforms, domain, selection, highl
       </svg>
     </div>
   )
+}
+
+/** Distance of a point from a segment [px]. */
+function toSegment(px, py, [ax, ay], [bx, by]) {
+  const dx = bx - ax, dy = by - ay
+  const len2 = dx * dx + dy * dy
+  const k = len2 ? Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / len2)) : 0
+  return Math.hypot(px - (ax + k * dx), py - (ay + k * dy))
 }
 
 const statusStyle = (status) => (status && status !== 'existing' ? { stroke: STATUS_COLOR[status] } : undefined)

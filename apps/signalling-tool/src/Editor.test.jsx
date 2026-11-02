@@ -213,7 +213,7 @@ describe('the Signalling-Tool', () => {
     const panel = (selection, language = 'de') => renderToStaticMarkup(
       <I18n.Provider value={textsFor(language)}>
         <StationsPanel domain={domain} net={{ tracks: record.tracks, switches: [] }} core={core} findings={{ errors: [], warnings: [] }}
-          selection={selection} select={() => {}} ops={{}} readOnly={false} {...textsFor(language)} />
+          selection={selection} select={() => {}} ops={{}} setMode={() => {}} readOnly={false} {...textsFor(language)} />
       </I18n.Provider>,
     )
     const menu = panel(null)
@@ -231,6 +231,16 @@ describe('the Signalling-Tool', () => {
     // Its stopping places, on its tracks or at its platform.
     expect(station).toContain('Halteplätze')
     expect(station).toContain('<option value="pf:pf1">Bahnsteig an t2, 10–150 m</option>')
+    // … or picked on the plan, as the Layout-Tool picks a platform's track; a stopping place's ends too.
+    expect(station).toContain('In der Karte wählen')
+    const placed = { ...domain, collections: { ...domain.collections, stoppingPlaces: [{ id: 'h1', name: 'Gl. t2', operationalPointId: testdorf, at: { anchor: 'station', trackId: 't2', startStation: 10, endStation: 70 } }] } }
+    const editor = renderToStaticMarkup(
+      <I18n.Provider value={textsFor('de')}>
+        <StationsPanel domain={placed} net={{ tracks: record.tracks, switches: [] }} core={core} findings={{ errors: [], warnings: [] }}
+          selection={{ collection: 'stoppingPlaces', id: 'h1' }} select={() => {}} ops={{}} setMode={() => {}} readOnly={false} {...textsFor('de')} />
+      </I18n.Provider>,
+    )
+    expect(editor).toContain('Anfang und Ende in der Karte wählen')
     expect(menu).toContain('Halteplätze an der freien Strecke')
     expect(panel({ collection: 'operationalPoints', id: 'op-w' }, 'en')).toContain('Boundary towards the open line')
     // A signal belongs to a station or to the open line.

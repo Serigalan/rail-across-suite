@@ -352,7 +352,7 @@ export default function Editor({ project, variant, head, copy: opened, readOnly 
         {!net.tracks.length && <div className="tool-notice"><Message tone="info">{t('empty_net')}</Message></div>}
         {mode && (
           <div className="tool-mode" role="status">
-            <span>{t(mode.kind === 'pick-points' ? 'picking_points' : 'placing')}</span>
+            <span>{mode.hint ?? t(mode.kind === 'pick-points' ? 'picking_points' : 'placing')}</span>
             <Button size="small" onClick={() => setMode(null)}>{mode.kind === 'pick-points' ? t('close') : t('cancel')}</Button>
           </div>
         )}
@@ -363,7 +363,7 @@ export default function Editor({ project, variant, head, copy: opened, readOnly 
         <PlanView hidden={view === 'schema'} drawing={drawing} net={net} domain={domain} selection={selection} highlight={highlight} mode={mode} fitKey={fitKey} focus={focus} basemap={basemap} t={t}
           onPick={select}
           onPlace={(hit) => { const m = mode; setMode(null); m?.apply?.(m.make(hit)) }}
-          onPickPoint={(id) => mode?.toggle?.(id)} />
+          onPickPoint={(id) => mode?.toggle?.(id)} onPickStretch={(s) => mode?.apply?.(s)} />
       </Workspace>
 
       {dialog?.kind === 'checkin' && <CheckInDialog t={t} onCancel={() => setDialog(null)} onSubmit={checkIn} />}
@@ -471,10 +471,6 @@ function highlightOf(domain, selection, extents) {
     case 'operationalPoints': return {
       ids: c.signals.filter(s => s.operationalPointId === selection.id).map(s => s.id),
       stretches: c.stoppingPlaces.filter(h => h.operationalPointId === selection.id).map(h => ({ trackId: h.at.trackId, from: h.at.startStation, to: h.at.endStation })),
-    }
-    case 'stoppingPlaces': {
-      const h = find('stoppingPlaces')
-      return h ? { stretches: [{ trackId: h.at.trackId, from: h.at.startStation, to: h.at.endStation }] } : null
     }
     case 'itineraries': {
       const it = find('itineraries')

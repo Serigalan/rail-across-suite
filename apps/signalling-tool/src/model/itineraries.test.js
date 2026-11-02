@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { domainOf, deleted } from './domain.js'
 import { searchItineraries, waysBetween, withItinerary } from './itineraries.js'
-import { newStoppingPlace, stoppingStretches } from './stoppingPlaces.js'
+import { newStoppingPlace, snappedStation, stoppingStretches, stretchAt } from './stoppingPlaces.js'
 
 const t = (k) => k
 // A station X with a passing loop between two turnouts, a line to the next station Y:
@@ -42,6 +42,19 @@ describe('stopping places and itineraries', () => {
     ])
     // A platform's stretch is cut the same way, within it.
     expect(stoppingStretches(net, domain, 'm', t, [100, 390])).toEqual([{ from: 100, to: 380, below: null, above: 'N1' }, { from: 380, to: 390, below: 'N1', above: null }])
+  })
+
+  it('offers the stretch a click on the plan meets, at a platform before on a track', () => {
+    const domain = domainOf(record)
+    const where = { tracks: ['m'], platforms: [{ id: 'p1', trackId: 'l', startStation: 50, endStation: 350 }] }
+    expect(stretchAt(net, domain, where, { trackId: 'm', station: 200 }, t)).toMatchObject({ trackId: 'm', from: 20, to: 380, platformId: undefined })
+    expect(stretchAt(net, domain, where, { trackId: 'l', station: 100 }, t)).toMatchObject({ trackId: 'l', from: 50, to: 350, platformId: 'p1' })
+    // Beside the platform, on a track that is not the station's, there is none.
+    expect(stretchAt(net, domain, where, { trackId: 'l', station: 380 }, t)).toBeNull()
+    expect(stretchAt(net, domain, where, { trackId: 'b', station: 50 }, t)).toBeNull()
+    // An end picked near a signal or detection point is taken at it.
+    expect(snappedStation(domain, 'm', 377.2, 5, t)).toBe(380)
+    expect(snappedStation(domain, 'm', 300.04, 5, t)).toBe(300)
   })
 
   it('finds the ways from one stopping place to another, never turning back, the shortest first', () => {

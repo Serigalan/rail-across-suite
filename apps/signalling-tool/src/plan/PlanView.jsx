@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { findBasemap, isElevationBasemap, updateElevationRange } from '@rail-across/basemaps'
 import { locate, placeOf } from '../model/net.js'
-import { addPlanLayers, domainMarks, ensureImages, nameZoomAt, paletteOf, pixelsPerMetre, placedMark, planData, setPlanData, switchDots, symbolOnScreen } from './planLayers.js'
+import {
+  addPlanLayers, domainMarks, ensureImages, nameZoomAt, paletteOf, pixelsPerMetre, placedMark, placeLines, planData, setPlanData, switchDots, symbolOnScreen,
+} from './planLayers.js'
 
 /**
  * The plan: the net in its true position on the basemap chosen in the layers
@@ -11,13 +13,16 @@ import { addPlanLayers, domainMarks, ensureImages, nameZoomAt, paletteOf, pixels
  * has them, each stands where it is in the plane: a dot on its track at its
  * station, its symbol beside it at its offset on its side, turned the way it
  * acts — never closer than a few pixels, so it stays apart from the track
- * when zoomed out. What is chosen is drawn in the primary colour, with its
+ * when zoomed out. A stopping place is a band under its track, as a platform
+ * lies beside it. What is chosen is drawn in the primary colour, with its
  * run, its section or its overlap. The map moves and zooms (MapLibre, north
  * up) and draws the plan as its own layers (planLayers.js), in the frame it
  * draws the basemap in; a symbol keeps its size in pixels, so it stays
  * readable at every zoom. A click picks what is nearest. While placing, as in OSRD's
  * editor, the mouse snaps to the nearest track within reach and the object is
- * drawn there before the click sets it.
+ * drawn there before the click sets it. Picking a stretch — a stopping place
+ * where the signals bound it, or its two ends —, the mouse snaps to a track
+ * the same way and what the click would take is drawn dashed.
  */
 
 const PICK_PX = 12
@@ -27,12 +32,14 @@ export const NO_BASEMAP = 'none'
 
 const styleOf = (basemapId) => (basemapId === NO_BASEMAP ? PLAIN : findBasemap(basemapId)?.style ?? PLAIN)
 
-export default function PlanView({ hidden, drawing, net, domain, selection, highlight, mode, onPick, onPlace, onPickPoint, fitKey, focus, basemap, t }) {
+export default function PlanView({
+  hidden, drawing, net, domain, selection, highlight, mode, onPick, onPlace, onPickPoint, onPickStretch, fitKey, focus, basemap, t,
+}) {
   const box = useRef(null)
   const mapBox = useRef(null)
   const map = useRef(null)
   const [ready, setReady] = useState(false)
-  const [hover, setHover] = useState(null)   // where placing would set, snapped to a track
+  const [hover, setHover] = useState(null)   // where placing or picking a stretch would set, snapped to a track
   const [scheme, setScheme] = useState(0)   // a new one whenever light and dark change, for the plan's colours
   const handlers = useRef({})
   const plan = useRef(null)   // what the map's layers show: { pal, data, labels, nameZoom }
@@ -119,6 +126,7 @@ export default function PlanView({ hidden, drawing, net, domain, selection, high
   // The plan on the map: its sources and layers, again after every new basemap.
   const marks = useMemo(() => domainMarks(drawing, domain), [domain, drawing])
   const switches = useMemo(() => switchDots(drawing, net), [net, drawing])
+  const places = useMemo(() => placeLines(drawing, domain.collections.stoppingPlaces), [domain, drawing])
 
   const m = ready ? map.current : null
   /** The mark of each object's symbol nearest a point of the screen, within reach. */
@@ -135,6 +143,18 @@ export default function PlanView({ hidden, drawing, net, domain, selection, high
       const d = Math.hypot(q.x - px, q.y - py)
       if (d < PICK_PX && (!best || d < best.d)) best = { d, collection: 'switches', id: s.id }
     }
+    return best ?? placeAt(px, py)
+  }
+  /** The stopping place whose band is nearest a point of the screen, within reach. */
+  const placeAt = (px, py) => {
+    let best = null
+    for (const h of places) {
+      const pts = h.line.map(ll => m.project(ll))
+      for (let i = 1; i < pts.length; i++) {
+        const d = toSegment(px, py, pts[i - 1], pts[i])
+        if (d < PICK_PX / 2 + 3 && (!best || d < best.d)) best = { d, collection: 'stoppingPlaces', id: h.id }
+      }
+    }
     return best
   }
 
@@ -143,10 +163,16 @@ export default function PlanView({ hidden, drawing, net, domain, selection, high
     const ll = m.unproject([px, py])
     return locate(drawing, drawing.frame.toLocal([ll.lng, ll.lat]), (PICK_PX * 1.6) / pixelsPerMetre(ll.lat, m.getZoom()) + 2)
   }
+  /** Where a pick of a stretch is: on a track, with how far it reaches there [m]. */
+  const stretchHit = (px, py) => {
+    const hit = snapAt(px, py)
+    return hit && { ...hit, reach: PICK_PX / pixelsPerMetre(m.unproject([px, py]).lat, m.getZoom()) }
+  }
+  const snaps = mode?.kind === 'place' || mode?.kind === 'pick-stretch'
   // Placing: the mouse snaps to a track, and what would be set is drawn there.
   handlers.current.move = (px, py) => {
-    if (!m || mode?.kind !== 'place') return
-    const hit = px == null ? null : snapAt(px, py)
+    if (!m || !snaps) return
+    const hit = px == null ? null : mode.kind === 'place' ? snapAt(px, py) : stretchHit(px, py)
     setHover(h => (h?.trackId === hit?.trackId && h?.station === hit?.station && h?.side === hit?.side ? h : hit))
   }
   // What a click does, as it is now (the map's listener is made once).
@@ -157,6 +183,11 @@ export default function PlanView({ hidden, drawing, net, domain, selection, high
       if (hit && mode.make(hit)) { setHover(null); onPlace?.(hit) }
       return
     }
+    if (mode?.kind === 'pick-stretch') {
+      const stretch = mode.stretchAt(stretchHit(px, py))
+      if (stretch) onPickStretch?.(stretch)
+      return
+    }
     const hit = pickAt(px, py)
     if (mode?.kind === 'pick-points') {
       if (hit?.collection === 'detectionPoints') onPickPoint?.(hit.id)
@@ -164,10 +195,14 @@ export default function PlanView({ hidden, drawing, net, domain, selection, high
     }
     onPick?.(hit ? { collection: hit.collection, id: hit.id } : null)
   }
+  // What a pick of a stretch would take where the mouse is.
+  const stretch = useMemo(() => (mode?.kind === 'pick-stretch' && hover ? mode.stretchAt(hover) : null), [mode, hover])
   useEffect(() => {
-    if (m) m.getCanvas().style.cursor = mode ? (mode.kind === 'place' && !(hover && mode.make(hover)) ? 'not-allowed' : 'crosshair') : ''
-  }, [m, mode, hover])
-  useEffect(() => { if (mode?.kind !== 'place') setHover(null) }, [mode])
+    if (!m) return
+    const refused = (mode?.kind === 'place' && !(hover && mode.make(hover))) || (mode?.kind === 'pick-stretch' && !stretch)
+    m.getCanvas().style.cursor = mode ? (refused ? 'not-allowed' : 'crosshair') : ''
+  }, [m, mode, hover, stretch])
+  useEffect(() => { if (!snaps) setHover(null) }, [snaps])
 
   // What placing would set where the mouse is, drawn as the plan draws it.
   const preview = useMemo(() => {
@@ -180,20 +215,29 @@ export default function PlanView({ hidden, drawing, net, domain, selection, high
   useEffect(() => {
     if (!m || !box.current) return
     const pal = paletteOf(box.current)
-    const { data, labels } = planData({ drawing, marks, switches, selection, highlight, preview, snap: preview?.on ?? null, t })
+    const snap = preview?.on ?? (stretch && hover ? drawing.frame.toLngLat(placeOf(drawing, hover).xy) : null)
+    const { data, labels } = planData({ drawing, places, marks, switches, selection, highlight, preview, stretch, snap, t })
     const nameZoom = nameZoomAt(drawing.frame.toLngLat([0, 0])[1])
     plan.current = { pal, data, labels, nameZoom }
     if (!styled.current) return   // style.load puts them on
     ensureImages(m, pal, labels)
     if (m.getSource('plan-tracks')) setPlanData(m, pal, data, nameZoom)
     else addPlanLayers(m, pal, data, nameZoom)
-  }, [m, drawing, marks, switches, selection, highlight, preview, t, scheme])
+  }, [m, drawing, places, marks, switches, selection, highlight, preview, stretch, hover, t, scheme])
 
   return (
     <div ref={box} className={`plan${hidden ? ' is-hidden' : ''}`}>
       <div className="plan-map"><div ref={mapBox} className="plan-map-inner" /></div>
     </div>
   )
+}
+
+/** Distance of a point of the screen from a segment of it [px]. */
+function toSegment(px, py, a, b) {
+  const dx = b.x - a.x, dy = b.y - a.y
+  const len2 = dx * dx + dy * dy
+  const k = len2 ? Math.max(0, Math.min(1, ((px - a.x) * dx + (py - a.y) * dy) / len2)) : 0
+  return Math.hypot(px - (a.x + k * dx), py - (a.y + k * dy))
 }
 
 /** Where an object of a collection stands: its location, a derailer's its own. */

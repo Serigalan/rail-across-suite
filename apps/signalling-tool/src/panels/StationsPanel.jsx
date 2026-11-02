@@ -25,7 +25,7 @@ const designation = designationOf
  * named and deleted in the Layout-Tool, where its tracks are. The open line
  * has stopping places too, at the platforms of no station.
  */
-export default function StationsPanel({ domain, net, core, findings, selection, select, ops, readOnly, t, language }) {
+export default function StationsPanel({ domain, net, core, findings, selection, select, ops, mode, setMode, readOnly, t, language }) {
   const [page, setPage] = useState('menu')
   const stations = useMemo(() => stationsOf(core), [core])
   const register = useMemo(() => core.collections.operationalPoints ?? [], [core])
@@ -41,7 +41,8 @@ export default function StationsPanel({ domain, net, core, findings, selection, 
       : { label: t('back'), onClick: () => { select(null); setPage('openLine') } }
     return (
       <Panel title={t('object_stoppingPlaces')} back={toOwner}>
-        <StoppingPlaceEditor key={place.id} place={place} domain={domain} net={net} core={core} findings={findings} ops={ops} readOnly={readOnly} t={t} />
+        <StoppingPlaceEditor key={place.id} place={place} domain={domain} net={net} core={core} findings={findings} ops={ops} mode={mode} setMode={setMode}
+          readOnly={readOnly} t={t} />
       </Panel>
     )
   }
@@ -50,7 +51,7 @@ export default function StationsPanel({ domain, net, core, findings, selection, 
     return (
       <Panel title={t('object_operationalPoints')} back={{ label: t('back'), onClick: () => select(null) }}>
         <StationEditor key={chosen.point.id} entry={chosen} stations={stations} register={register} domain={domain} net={net} core={core}
-          findings={findings} ops={ops} select={select} readOnly={readOnly} t={t} language={language} />
+          findings={findings} ops={ops} select={select} mode={mode} setMode={setMode} readOnly={readOnly} t={t} language={language} />
       </Panel>
     )
   }
@@ -62,7 +63,7 @@ export default function StationsPanel({ domain, net, core, findings, selection, 
   if (page === 'openLine') {
     return (
       <Panel title={t('stopping_places_open')} intro={t('stopping_places_open_intro')} back={back}>
-        <StoppingPlacesSection entry={null} domain={domain} net={net} core={core} ops={ops} select={select} readOnly={readOnly} t={t} />
+        <StoppingPlacesSection entry={null} domain={domain} net={net} core={core} ops={ops} select={select} mode={mode} setMode={setMode} readOnly={readOnly} t={t} />
       </Panel>
     )
   }
@@ -134,7 +135,7 @@ function CommitField({ label, value, onCommit, check = () => null, disabled, wid
 }
 
 /** A station: its name and code, its signals, its platforms and its boundary. */
-function StationEditor({ entry, stations, register, domain, net, core, findings, ops, select, readOnly, t, language }) {
+function StationEditor({ entry, stations, register, domain, net, core, findings, ops, select, mode, setMode, readOnly, t, language }) {
   const [asking, setAsking] = useState(false)
   const { point, tracks, platforms } = entry
   const byTracks = tracks.length > 0
@@ -198,7 +199,7 @@ function StationEditor({ entry, stations, register, domain, net, core, findings,
           : <p className="ui-list-empty">{t('station_platforms_none')}</p>}
       </Section>
 
-      <StoppingPlacesSection entry={entry} domain={domain} net={net} core={core} ops={ops} select={select} readOnly={readOnly} t={t} />
+      <StoppingPlacesSection entry={entry} domain={domain} net={net} core={core} ops={ops} select={select} mode={mode} setMode={setMode} readOnly={readOnly} t={t} />
 
       <Section title={t('station_boundary')}>
         <p className="ui-muted">{t('station_boundary_hint')}</p>

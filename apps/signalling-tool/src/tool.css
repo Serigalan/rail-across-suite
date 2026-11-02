@@ -22,6 +22,33 @@ html, body { margin: 0; background: var(--ui-surface); }
 /* MapLibre makes its container `position: relative`: it lives inside the box that is placed. */
 .plan-map-inner { width: 100%; height: 100%; }
 .plan .maplibregl-ctrl-bottom-left { margin-left: 4px; }
+.plan.is-hidden { display: none; }
+
+/* ── the schematic view ──────────────────────────────────────────────── */
+
+.schema {
+  position: relative; flex: 1; min-height: 0; overflow: hidden; user-select: none; touch-action: none; cursor: grab;
+  background: var(--ui-surface); --plan-track: #2a2d3a; --plan-mark: #1a1a2e;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .schema { --plan-track: #c8cbd6; --plan-mark: #e8e9f0; }
+}
+.schema:active { cursor: grabbing; }
+.schema-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.schema-track { fill: none; stroke: var(--plan-track); stroke-width: 2; stroke-linecap: round; }
+.schema-wedge { fill: var(--plan-track); }
+.schema-platform { fill: var(--ui-bg); stroke: var(--plan-track); stroke-width: 0.8; }
+.schema-switch { fill: var(--plan-track); }
+.schema-switch.is-selected { fill: var(--color-primary); }
+.schema-switch-label { font: 600 9px var(--ui-font); fill: var(--plan-track); }
+.schema-switch-label.is-selected { fill: var(--color-primary); }
+.schema-track-label { font: 500 10px var(--ui-font); fill: var(--ui-muted); }
+.schema-name { font: 700 10px var(--ui-font), sans-serif; fill: var(--plan-mark); paint-order: stroke; stroke: var(--ui-surface); stroke-width: 3px; }
+.schema-mark.is-selected .schema-name { fill: var(--color-primary); }
+.schema-text { font-family: var(--ui-font), sans-serif; }
+.schema-run { fill: none; stroke: var(--color-primary); stroke-width: 8; stroke-opacity: 0.35; stroke-linecap: round; }
+.schema-stretch { fill: none; stroke: #1f9e3a; stroke-width: 9; stroke-opacity: 0.45; }
+.schema-stretch-warn { stroke: #d68910; }
 
 .tool-mode {
   position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); z-index: 5; display: flex; gap: 10px; align-items: center;
@@ -32,6 +59,9 @@ html, body { margin: 0; background: var(--ui-surface); }
 /* Showing the whole net: at the plan's top right corner, beside the working copy's bar. */
 .tool-fit { position: absolute; top: 10px; right: 10px; z-index: 6; }
 .tool-fit .ui-btn { background: var(--ui-bg); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12); }
+/* Site plan or schematic view: at the plan's bottom right corner, clear of the working copy's bar. */
+.tool-view { position: absolute; bottom: 12px; right: 44px; z-index: 6; }
+.tool-view .ui-tabs { background: var(--ui-bg); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12); }
 .tool-notice .ui-message { background: var(--ui-bg); box-shadow: var(--ui-shadow); }
 
 /* ── the editors ─────────────────────────────────────────────────────── */

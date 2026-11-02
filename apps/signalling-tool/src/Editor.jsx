@@ -1,7 +1,7 @@
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   Button, ConfirmDialog, FitIcon, FormDialog, IconButton, Message, Rail, RailBrand, RailButton, RailDivider, RailRow,
-  RedoIcon, Shell, TextField, UndoIcon, WorkingCopyBar, Workspace,
+  RedoIcon, Shell, Tabs, TextField, UndoIcon, WorkingCopyBar, Workspace,
 } from '@rail-across/ui'
 import { checkSignalling, trackSectionExtents } from '@rail-across/core/signalling'
 import { carryDomain, mergeProject } from '@rail-across/core/merge'
@@ -16,6 +16,7 @@ import { added, cascadeOf, deleted, domainOf, findLogical, labelOf, replaced } f
 import { logicalSignalWord } from './labels.js'
 import { redo, startHistory, step, stepOf, stepText, travel, undo } from './model/history.js'
 import PlanView from './plan/PlanView.jsx'
+import SchematicView from './schema/SchematicView.jsx'
 import {
   BaliseIcon, CheckIcon, DetectionIcon, EditIcon, ExchangeIcon, HistoryIcon, HomeIcon, LayersIcon, LogoIcon, RouteIcon, SettingsIcon,
   SignalIcon, SwitchIcon,
@@ -99,6 +100,9 @@ export default function Editor({ project, variant, head, copy: opened, readOnly 
   const [fitKey, setFitKey] = useState(0)
   const [basemap, chooseBasemap] = useState(keptBasemap)
   const setBasemap = (id) => { chooseBasemap(id); keepBasemap(id) }
+  // The site plan or the schematic view; setting anew is the site plan's.
+  const [view, chooseView] = useState(keptView)
+  const setView = (v) => { chooseView(v); keepView(v) }
 
   const domain = history.now
   const record = copy.project
@@ -171,6 +175,9 @@ export default function Editor({ project, variant, head, copy: opened, readOnly 
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [selection, readOnly])
+
+  // Placing or picking points is done on the site plan.
+  useEffect(() => { if (mode) chooseView('plan') }, [mode])
 
   // Picking a section's points ends where its editor is left.
   useEffect(() => {
@@ -322,6 +329,10 @@ export default function Editor({ project, variant, head, copy: opened, readOnly 
                 { label: t('check_in'), onClick: () => setDialog({ kind: 'checkin' }), disabled: busy || !changes, primary: true },
               ],
             })} />
+        <div className="tool-view">
+          <Tabs label={t('view_label')} value={view} onChange={setView}
+            options={[{ value: 'plan', label: t('view_plan') }, { value: 'schema', label: t('view_schema') }]} />
+        </div>
         <div className="tool-fit"><IconButton label={t('fit')} icon={<FitIcon />} onClick={() => setFitKey(k => k + 1)} /></div>
         {notice && (
           <div className="tool-notice" role="status">
@@ -336,7 +347,11 @@ export default function Editor({ project, variant, head, copy: opened, readOnly 
             <Button size="small" onClick={() => setMode(null)}>{mode.kind === 'pick-points' ? t('close') : t('cancel')}</Button>
           </div>
         )}
-        <PlanView drawing={drawing} net={net} domain={domain} selection={selection} highlight={highlight} mode={mode} fitKey={fitKey} focus={focus} basemap={basemap} t={t}
+        {view === 'schema' && (
+          <SchematicView net={net} platforms={record.platforms} domain={domain} selection={selection} highlight={highlight}
+            fitKey={fitKey} focus={focus} t={t} onPick={select} />
+        )}
+        <PlanView hidden={view === 'schema'} drawing={drawing} net={net} domain={domain} selection={selection} highlight={highlight} mode={mode} fitKey={fitKey} focus={focus} basemap={basemap} t={t}
           onPick={select}
           onPlace={(hit) => { const m = mode; setMode(null); m?.apply?.(m.make(hit)) }}
           onPickPoint={(id) => mode?.toggle?.(id)} />
@@ -364,6 +379,15 @@ export default function Editor({ project, variant, head, copy: opened, readOnly 
 }
 
 const BASEMAP_KEY = 'rail-across-signalling-basemap'
+const VIEW_KEY = 'rail-across-signalling-view'
+
+/** The view chosen last in this browser, else the site plan. */
+function keptView() {
+  try { return localStorage.getItem(VIEW_KEY) === 'schema' ? 'schema' : 'plan' } catch { return 'plan' }
+}
+function keepView(v) {
+  try { localStorage.setItem(VIEW_KEY, v) } catch { /* the site plan next time */ }
+}
 
 /** The basemap chosen last in this browser, else the tool's own default. */
 function keptBasemap() {

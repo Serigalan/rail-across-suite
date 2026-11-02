@@ -27,7 +27,7 @@ export const NO_BASEMAP = 'none'
 
 const styleOf = (basemapId) => (basemapId === NO_BASEMAP ? PLAIN : findBasemap(basemapId)?.style ?? PLAIN)
 
-export default function PlanView({ drawing, net, domain, selection, highlight, mode, onPick, onPlace, onPickPoint, fitKey, focus, basemap, t }) {
+export default function PlanView({ hidden, drawing, net, domain, selection, highlight, mode, onPick, onPlace, onPickPoint, fitKey, focus, basemap, t }) {
   const box = useRef(null)
   const mapBox = useRef(null)
   const map = useRef(null)
@@ -93,14 +93,19 @@ export default function PlanView({ drawing, net, domain, selection, highlight, m
     if (isElevationBasemap(basemap)) m.once('idle', () => updateElevationRange(m, { force: true }))
   }, [ready, basemap])
 
-  // The whole net in view: when it is first there, and again on asking.
+  // The whole net in view: when it is first there, and again on asking — once
+  // the plan is shown, as a hidden map has no size to fit it into.
+  const fitted = useRef(null)
   useEffect(() => {
     const m = map.current
-    if (!ready || !m) return
+    if (!ready || !m || hidden) return
+    if (fitted.current?.drawing === drawing && fitted.current?.fitKey === fitKey) return
+    fitted.current = { drawing, fitKey }
     const [x0, y0, x1, y1] = drawing.bounds
     const sw = drawing.frame.toLngLat([x0, y0]), ne = drawing.frame.toLngLat([x1, y1])
+    m.resize()
     m.fitBounds([sw, ne], { padding: 40, animate: false, maxZoom: 19 })
-  }, [ready, drawing, fitKey])
+  }, [ready, drawing, fitKey, hidden])
 
   // An object chosen in a list is brought into view, close enough to tell it from its neighbours.
   useEffect(() => {
@@ -185,7 +190,7 @@ export default function PlanView({ drawing, net, domain, selection, highlight, m
   }, [m, drawing, marks, switches, selection, highlight, preview, t, scheme])
 
   return (
-    <div ref={box} className="plan">
+    <div ref={box} className={`plan${hidden ? ' is-hidden' : ''}`}>
       <div className="plan-map"><div ref={mapBox} className="plan-map-inner" /></div>
     </div>
   )

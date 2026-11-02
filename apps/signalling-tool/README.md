@@ -38,6 +38,24 @@ that it stands on the right; a balise or magnet at the rail. Every object is dra
 a dot on its track, a stroke out to its symbol at its offset, turned the way it acts; its editor states the
 point (easting, northing), derived from track, station, side and offset and never stored.
 
+## Site plan and schematic view
+
+At the plan's bottom right the view is chosen, and kept in the browser: the **site plan** — the net in its true
+position on the map — or the **schematic view**: the net as the core's schematic strip
+([`@rail-across/core/schematic`](../../packages/core/docs/schematic.md), the one the Layout-Tool's schematic
+overview cuts into sheets) — its lines lanes along the longest of them, every switch a 45° connection, the length
+along the lanes to scale — and on it the signalling in the symbols of a signalling plan, after the principles of
+DB Ril 819.9002 rather than its every measure: a signal folded down along its track in the direction it acts, its
+foot where it stands, the screen at the end of its mast — a main signal's rounded at its end, a multi-section
+signal's at both, a distant signal's towards the mast, a shunting signal a disc with its bar —, filled (the
+plans draw a signal the train works open; the domain does not say who works one yet); boards by their shape
+(Ne 1, Ne 2, Ne 4, Ne 5, Ne 14, Lf 1 – 7, Zs 3), every text on a symbol and a signal's name turned the way it
+acts, its top towards the mast; axle counters and joints on the track,
+PZB magnets beside the rail with their frequency, ETCS data points on it, filled where they are switched.
+
+The schematic view shows, picks, highlights and is edited from as the site plan is; setting anew is the site
+plan's, which it switches to. The wheel zooms along the lanes, which keep their spacing; a drag moves.
+
 Every text is German or English, the catalogue's titles too, in the language of the suite (*Einstellungen*).
 
 Every edit is a step (Ctrl+Z, Ctrl+Y); Delete asks before it deletes, and names what goes with it.
@@ -69,7 +87,8 @@ the whole project with its signalling: the tool hands those addresses on to it. 
 |---|---|
 | `src/App.jsx`, `src/suite.js`, `src/workingCopy.js` | what the address asks, the session, loading the variant and its working copy |
 | `src/Editor.jsx` | the shell: sections, selection, steps, the check, the working copy, checking in, updating, discarding |
-| `src/plan/` | the plan: the net in its true position on a MapLibre map (north up), drawn over it in screen pixels; the symbols, picking and placing |
+| `src/plan/` | the site plan: the net in its true position on a MapLibre map (north up), drawn as its layers; the symbols, picking and placing |
+| `src/schema/` | the schematic view: the core's strip with the symbols of a signalling plan (`planzeichen.jsx`, which symbol an object takes in `symbols.js`), picking |
 | `src/panels/` | one panel per section, its menu and pages; `editors/` the editors of what *Bearbeiten* edits |
 | `src/model/` | the drawing of the net and finding a place on it (`net.js`), runs over it (`runs.js`), editing the domain — places and their logical signals (`domain.js`), measuring overlaps (`overlaps.js`), steps (`history.js`), reading a PlanPro file (`planproFile.js`) |
 | `src/i18n.js`, `src/labels.js` | texts in German and English, the words for the domain's values and the check's findings |

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { buildSchematicPlan, switchNumber } from './planSchematicPlan'
-import { tracks, switches, platforms, isWedge } from '../../test/schematicFixture'
+import { tracks, switches, platforms, isWedge } from '@rail-across/core/test/schematicFixture.js'
 
 describe('schematic plan', () => {
   const plan = buildSchematicPlan({

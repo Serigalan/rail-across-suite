@@ -20,7 +20,7 @@ that model; the preview in the app shows the SVG, so it shows exactly what is pr
 | `planTrackItems.js` | What a sheet shows of the tracks: lines, labels, stations, switches, kilometrage, main points, buffer stops |
 | `planSheet.js` | Sheet furniture: frame, fold mark (DIN 824), scale bar, north arrow |
 | `planTitleBlock.js`, `planLogo.js`, `planSketch.js`, `planHeader.js` | Title blocks (compact and full DB template), wordmark, location sketch, editable header fields |
-| `planSchematic.js`, `planSchematicPlan.js` | The network as a schematic strip along a reference axis, and that strip as sheets |
+| `planSchematicPlan.js` | The schematic strip of the core ([schematic](../../../../packages/core/docs/schematic.md)) as sheets |
 | `rasterBasemap.js` | A MapLibre style rendered north-up offscreen and warped onto the sheet as backdrop |
 | `planPdf.js`, `planSvg.js` | The two backends |
 
@@ -83,5 +83,5 @@ kilometrage and drawn with the same primitives and furniture as the site plan.
 
 ## Tests
 
-`planAssemble.test.js` (the whole model from a project, sheets and texts), `planSchematic.test.js`,
-`planSchematicPlan.test.js`, `planTitleBlock.test.js`; `src/core/test/schematicFixture.js`.
+`planAssemble.test.js` (the whole model from a project, sheets and texts), `planSchematicPlan.test.js`,
+`planTitleBlock.test.js`; the network they draw is the core's `test/schematicFixture.js`.

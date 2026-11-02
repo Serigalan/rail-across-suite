@@ -60,9 +60,10 @@ order — each needs only modules above it:
 | [crossSection](../../../packages/core/docs/crossSection.md) *core* | geometry, track | cross section, superstructure, clearance contours |
 | [switch](../../../packages/core/docs/switch.md) *core* | geometry, rules, track | switch forms, routes, symbols, crossings, switch connections, deletion |
 | [topology](../../../packages/core/docs/topology.md) *core* | track | connection diagram |
+| [schematic](../../../packages/core/docs/schematic.md) *core* | geometry, track | the schematic strip |
 | [commands](../../../packages/core/docs/commands.md) *core* | crossSection, geometry, rules, switch, track | what the dialogs commit |
 | [elevation](modules/elevation.md) | common, crossSection, geometry, rules, switch, track | Höhenplan rules, turnout planes, coupling on request, terrain |
-| [plan](modules/plan.md) | common, geometry, km, rules, switch, track | plan export (PDF/SVG) |
+| [plan](modules/plan.md) | common, geometry, km, rules, schematic, switch, track | plan export (PDF/SVG) |
 | [exchange](modules/exchange.md) | elevation, geometry, rules, switch, track | RailJSON, Verm.ESN, ProVI, CSV, MDB |
 | [survey](../../../packages/core/docs/survey.md) *core* | commands, geometry, track | measured axes, reference axes, shift values, alignment fit |
 | [pointCloud](modules/pointCloud.md) | crossSection, elevation, geometry, km, survey, track | point clouds |

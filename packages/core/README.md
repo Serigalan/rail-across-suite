@@ -11,6 +11,7 @@ The shared model of Rail-Across-Suite in JavaScript: every module reads and writ
 | `track` | tracks, switch records and ports, heights, links, track ends, platforms, routes | [track](docs/track.md) |
 | `crossSection` | cross section, superstructure, clearance contours | [crossSection](docs/crossSection.md) |
 | `topology` | the connection diagram | [topology](docs/topology.md) |
+| `schematic` | the net as a schematic strip along a reference axis, and where a station lies on it | [schematic](docs/schematic.md) |
 | `switch` | switch forms, routes, symbols, crossings, switch connections, deletion | [switch](docs/switch.md) |
 | `commands` | what an edit commits: new tracks and switches, connecting, splicing, reconnecting | [commands](docs/commands.md) |
 | `survey` | measured axes, reference axes, shift values, alignment fit | [survey](docs/survey.md) |

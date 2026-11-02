@@ -32,6 +32,7 @@ whoever maintains or reviews the tool. User guidance is in the app (*Leitfaden*,
 | [exchange](modules/exchange.md) | RailJSON/OSRD, Verm.ESN, ProVI, Gleislage CSV, MDB |
 | [plan](modules/plan.md) | plan export |
 | [topology](../../../packages/core/docs/topology.md) | connection diagram |
+| [schematic](../../../packages/core/docs/schematic.md) | the schematic strip |
 | [km](modules/km.md) | kilometrage lines |
 | [project](../../../packages/core/docs/project.md) | the record as a whole: format, settings, validation |
 | [merge](../../../packages/core/docs/merge.md) | three-way merge and comparison |

@@ -1,6 +1,6 @@
 import { trackPointAt } from './planGeometry'
 import { trackLength } from '@rail-across/core/track'
-import { toPlane } from './planSchematic'
+import { toPlane } from '@rail-across/core/schematic'
 
 /**
  * The location sketch of the title block: the whole network as coarse

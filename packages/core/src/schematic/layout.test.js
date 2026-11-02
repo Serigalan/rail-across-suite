@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { schematicLayout, schematicNetwork } from './planSchematic'
+import { schematicLayout, schematicNetwork } from './layout.js'
 
-import { tracks, switches, platforms, straight } from '../../test/schematicFixture'
+import { tracks, switches, platforms, straight } from '../../test/schematicFixture.js'
 
 describe('schematic network', () => {
   it('joins the tracks through the turnouts into strands', () => {

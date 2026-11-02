@@ -1,7 +1,7 @@
-import { trackPointAt } from './planGeometry'
-import { trackLength, isLinkSwitch, portsOf, turnoutLinePort, portTrack, portEnd, trackStatus } from '@rail-across/core/track'
-import { kmForTrackPoint } from '../km'
-import { utmToWgs84, wgs84ToUTM } from '@rail-across/core/geometry'
+import {
+  elementAtStation, isLinkSwitch, pointAtStationUtm, portEnd, portsOf, portTrack, trackLength, trackStatus, turnoutLinePort,
+} from '../track/index.js'
+import { utmToWgs84, wgs84ToUTM } from '../geometry/index.js'
 
 /**
  * The track network as a schematic strip: the lines of the layout become
@@ -18,6 +18,9 @@ import { utmToWgs84, wgs84ToUTM } from '@rail-across/core/geometry'
  * same holds for the A–C road of a crossing and for a link. Every other port —
  * a turnout's branch, the second road of a crossing — attaches a strand to the
  * switch as a node on the strand that carries it through.
+ *
+ * Moved here from the Layout-Tool's plan output, so the Signalling-Tool's
+ * schematic view and the plan sheets lay the net out alike.
  */
 
 /** Spacing of the samples a track is measured by [m]. */
@@ -41,6 +44,14 @@ export function toPlane(point, from, to) {
   return [u.easting, u.northing]
 }
 
+/** A track's point at a station, in its own plane: [easting, northing], or null. */
+function trackPoint(track, station) {
+  const hit = elementAtStation(track.elements, station)
+  if (!hit) return null
+  const p = pointAtStationUtm(hit.el, hit.s, track.epsg)
+  return [p.easting, p.northing]
+}
+
 /** Samples along a track, in the plane of `epsg`. */
 function sampleTrack(track, epsg) {
   const total = trackLength(track)
@@ -48,8 +59,8 @@ function sampleTrack(track, epsg) {
   const out = []
   for (let i = 0; i <= n; i++) {
     const s = total * i / n
-    const at = trackPointAt(track, s)
-    if (at) out.push({ s, p: toPlane(at.point, track.epsg, epsg) })
+    const at = trackPoint(track, s)
+    if (at) out.push({ s, p: toPlane(at, track.epsg, epsg) })
   }
   return out
 }
@@ -230,12 +241,13 @@ export function schematicNetwork(tracks, switches) {
  * @param {Array}  o.tracks
  * @param {Array}  o.switches
  * @param {Array}  o.platforms
- * @param {Array}  o.kmLines
+ * @param {Function} o.kmOf       (track, plane point) → { km, offset } or null: the kilometrage there,
+ *                                where the caller has a line to read it off
  * @param {string} o.leadTrackId  track whose strand is the reference (default: the longest strand)
  * @param {number} o.corridor     what lies further from the reference is left out [m]
  */
 export function schematicLayout({
-  tracks, switches = [], platforms = [], kmLines = [], leadTrackId = null, corridor = DEFAULT_CORRIDOR,
+  tracks, switches = [], platforms = [], kmOf = null, leadTrackId = null, corridor = DEFAULT_CORRIDOR,
 }) {
   const net = schematicNetwork(tracks, switches)
   if (!net.strands.length) return null
@@ -267,8 +279,8 @@ export function schematicLayout({
   for (const { track, reversed } of ref.parts) {
     const sm = samples.get(track.id)
     for (const q of (reversed ? [...sm].reverse() : sm)) {
-      const raw = trackPointAt(track, q.s)
-      const hit = raw && kmLines.length ? kmForTrackPoint(kmLines, track, raw.point) : null
+      const raw = kmOf ? trackPoint(track, q.s) : null
+      const hit = raw ? kmOf(track, raw) : null
       const on = axis.project(q.p)
       if (hit && on && hit.offset < 200) kmTable.push({ x: on.x, km: hit.km })
     }
@@ -289,6 +301,18 @@ export function schematicLayout({
   const along = new Map()
   for (const [id, sm] of samples) {
     along.set(id, sm.map(q => ({ s: q.s, ...proj(q.p) })))
+  }
+
+  /** The x of a station of a track on the strip, from its samples; null for a track not drawn. */
+  const stationX = (trackId, station) => {
+    const a = along.get(trackId)
+    if (!a?.length) return null
+    let i = 1
+    while (i < a.length - 1 && a[i].s < station) i++
+    const p = a[i - 1]
+    const q = a[i] ?? p
+    const t = q.s > p.s ? Math.min(Math.max((station - p.s) / (q.s - p.s), 0), 1) : 0
+    return p.x + (q.x - p.x) * t
   }
 
   const nodePoint = (key) => {
@@ -413,16 +437,8 @@ export function schematicLayout({
     const a = along.get(pf.trackId)
     const sc = sectionOfTrack.get(pf.trackId)
     if (!a || sc?.lane == null) continue
-    const xAt = (s) => {
-      let i = 1
-      while (i < a.length - 1 && a[i].s < s) i++
-      const p = a[i - 1]
-      const q = a[i]
-      const t = q.s > p.s ? Math.min(Math.max((s - p.s) / (q.s - p.s), 0), 1) : 0
-      return p.x + (q.x - p.x) * t
-    }
-    const xa = xAt(pf.startStation)
-    const xb = xAt(pf.endStation)
+    const xa = stationX(pf.trackId, pf.startStation)
+    const xb = stationX(pf.trackId, pf.endStation)
     const increasing = a[a.length - 1].x >= a[0].x
     const left = pf.side === 'left'
     placedPlatforms.push({
@@ -442,6 +458,8 @@ export function schematicLayout({
   }
   return {
     strands: net.strands,
+    trackById: net.byId,
+    stationX,
     nodes: net.nodes,
     platforms: placedPlatforms,
     sectionOfTrack,

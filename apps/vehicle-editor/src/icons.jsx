@@ -8,17 +8,21 @@ const Svg = ({ children }) => (
   </svg>
 )
 
-/** The tool's mark: a multiple unit from the side, as the start page's tile. */
+/**
+ * The tool's mark, as the start page draws the Fahrzeug-Editor — a multiple
+ * unit from the side — but for the rail's 28 px: thick lines, few of them,
+ * the windows filled.
+ */
 export const LogoIcon = () => (
-  <svg viewBox="0 0 48 48" width="28" height="28" aria-hidden="true">
-    <rect width="48" height="48" rx="12" fill="#303383" />
-    <g fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M8 31 V19 a4 4 0 0 1 4 -4 H31 c2.4 0 4.2 1 5.4 3 L40 25 V31 Z" />
-      <path d="M13 19.5 H18.5 V24.5 H13 Z M22 19.5 H27.5 V24.5 H22 Z M31 19.5 H33.6 L36.4 24.5 H31 Z" fill="#fff" stroke="none" />
-      <path d="M7 38 H41" strokeOpacity="0.6" />
-      <circle cx="15" cy="34.5" r="2.4" fill="#fff" stroke="none" />
-      <circle cx="33" cy="34.5" r="2.4" fill="#fff" stroke="none" />
+  <svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true">
+    <g fill="none" stroke="#303383" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M15 11L12.5 7.5L16.5 4.5M13 4.5H20" />
+      <path d="M2.5 23Q3.5 19.5 5.6 14.2Q6.4 12.5 8.3 12.5H23.7Q25.6 12.5 26.4 14.2Q28.5 19.5 29.5 23Z" />
+      <path d="M9 16h3.5v3H9zM14.3 16h3.5v3h-3.5zM19.6 16h3.5v3h-3.5z" fill="#303383" strokeWidth="1" />
+      <path d="M2 27.5H30" strokeOpacity=".45" strokeWidth="1.6" />
     </g>
+    <circle cx="8.5" cy="25" r="1.8" fill="#303383" />
+    <circle cx="23.5" cy="25" r="1.8" fill="#303383" />
   </svg>
 )
 /** A train: its front, two windows, its wheels on the rail. */

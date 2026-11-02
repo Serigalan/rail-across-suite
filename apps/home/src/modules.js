@@ -6,21 +6,28 @@
 /**
  * The tiles of the start page, in two rows. `route` is the page a tile
  * opens; `available` whether there is anything to work with yet; `phase` the
- * phase of the roadmap that brings it. A module with `path` lists the projects
- * on its page and opens a variant in its app there; one with `direct` needs no
- * project: its tile opens its app at `path` itself.
+ * phase of the roadmap that brings it. A module with `apps` lists the projects
+ * on its page and opens a variant in each of its apps there — the Fahrplan-Sim its
+ * timetables in the Fahrplan-Editor, a train's running times in the
+ * Simulation-Tool; one with `direct` needs no project: its tile opens its app
+ * at `path` itself.
  */
 export const EDITORS = [
   { id: 'infrastructure', route: 'infrastructure', available: true, phase: 1 },
   { id: 'vehicles', route: 'vehicles', available: true, phase: 4, path: 'vehicles/', direct: true },
-  { id: 'timetable', route: 'timetable', available: true, phase: 4, path: 'timetable/' },
 ]
 
 export const SIMULATIONS = [
-  { id: 'timetableSim', route: 'timetable-sim', available: true, phase: 4, path: 'simulation/' },
+  {
+    id: 'timetable', route: 'timetable', available: true, phase: 4,
+    apps: [{ id: 'timetables', path: 'timetable/' }, { id: 'runs', path: 'simulation/' }],
+  },
   { id: 'capacitySim', route: 'capacity-sim', available: false, phase: 4 },
   { id: 'constructionSim', route: 'construction-sim', available: false, phase: 5 },
 ]
+
+/** Routes of modules that went into another, and the one they are now. */
+const MOVED = { 'timetable-sim': 'timetable' }
 
 export const MODULES = [...EDITORS, ...SIMULATIONS]
 
@@ -74,10 +81,10 @@ export function toolUrl(tool, { project, variant, action, from, to } = {}) {
 /** Where a variant of a project opens in a tool to be worked on. */
 export const openUrl = (tool, projectId, variantId) => toolUrl(tool, { project: projectId, variant: variantId })
 
-/** Where a variant of a project opens in a module that works on one — a simulation, the Fahrplan-Editor —, or null. */
-export function simulationUrl(module, projectId, variantId) {
-  if (!module?.available || !module.path || module.direct) return null
-  return `${module.path}?${new URLSearchParams({ project: projectId, variant: variantId })}`
+/** Where a variant of a project opens in an app of a module that works on one — the Fahrplan-Sim's two —, or null. */
+export function simulationUrl(module, app, projectId, variantId) {
+  if (!module?.available || !module.apps?.includes(app)) return null
+  return `${app.path}?${new URLSearchParams({ project: projectId, variant: variantId })}`
 }
 
 /** Where a module's tile leads: its app for a module that needs no project, else its page here. */
@@ -120,7 +127,7 @@ export function safeNext(next) {
 /**
  * The page a location hash names: { page, tool, next } — `#/` the start,
  * `#/infrastructure/signalling` the infrastructure editor in that mode,
- * `#/capacity-sim` a module's own page, `#/password?next=/layout/` changing
+ * `#/capacity-sim` a module's own page (`#/timetable-sim` the Fahrplan-Sim's, as it was), `#/password?next=/layout/` changing
  * the password and back to where one came from, `#/admin` the users.
  */
 export function routeOf(hash) {
@@ -129,6 +136,7 @@ export function routeOf(hash) {
   if (page === 'infrastructure') return { page, tool: toolOf(tool).id }
   if (ACCOUNT_PAGES.includes(page)) return { page, next: safeNext(new URLSearchParams(query).get('next')) }
   if (page === 'admin') return { page }
+  if (MOVED[page]) return { page: MOVED[page] }
   const module = MODULES.find(m => m.route === page)
   return module ? { page: module.route } : { page: '' }
 }

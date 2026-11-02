@@ -185,7 +185,7 @@ generalised core most. Catenary follows.
 ## Phase 4 — Operations, timetable, capacity
 
 - `operations` domain: train types, rolling stock, train runs, stopping patterns.
-- **Fahrplan-Editor** (`apps/timetable-editor/`, [decision 0016](docs/decisions/0016-timetables-of-a-project.md)):
+- **Fahrplan-Editor** of the Fahrplan-Sim (`apps/timetable-editor/`, [decision 0016](docs/decisions/0016-timetables-of-a-project.md)):
   *done:* a project's timetables on the server, laid on any of its variants; trains with number, kind, vehicle,
   departure and margin that begin and end at a station (the layout's station tracks) and stop at or pass stations
   and halts on the way, a departure waited for at a stop; their times from the running time simulation, a row for

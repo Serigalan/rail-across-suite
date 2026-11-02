@@ -6,7 +6,7 @@ the Open-Layout-Tool before it moved here in phase 0), `signalling-tool/` (the S
 `simulation-tool/` (the running times of the Fahrplan-Sim, with OSRD's simulation core in Rust,
 [decision 0013](../docs/decisions/0013-running-times-in-rust.md)), `vehicle-editor/` (the Fahrzeug-Editor: the
 suite's vehicles in OSRD's form, [decision 0014](../docs/decisions/0014-vehicles-in-osrds-form.md)),
-`timetable-editor/` (the Fahrplan-Editor: a project's timetables, trains from station to station,
+`timetable-editor/` (the Fahrplan-Editor of the Fahrplan-Sim: a project's timetables, trains from station to station,
 [decision 0016](../docs/decisions/0016-timetables-of-a-project.md)), later `catenary-tool/`,
 `capacity-sim/` (an adapter to OSRD), `construction-sim/`
 ([decision 0010](../docs/decisions/0010-one-suite-modules-by-task.md)). An app imports packages, never another app

@@ -106,7 +106,7 @@ export default function Simulator({ project, variant, revision, record, local })
   return (
     <Shell>
       <Rail label={t('tool')}
-        brand={<RailBrand href={projectsUrl()} label={t('suite_sims')} name={t('tool')}><LogoIcon /></RailBrand>}
+        brand={<RailBrand href={projectsUrl()} label={t('suite_sims')} name={t('suite_sims')}><LogoIcon /></RailBrand>}
         top={<>
           <RailButton icon={<TrainIcon />} label={t('section_train')} pressed={section === 'train'} onClick={() => setSection('train')} />
           <RailButton icon={<ChartIcon />} label={t('section_result')} pressed={section === 'result'} onClick={() => setSection('result')} />

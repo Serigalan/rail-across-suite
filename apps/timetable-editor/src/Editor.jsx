@@ -91,7 +91,7 @@ export default function Editor({ project, variant, revision, record, local, init
   return (
     <Shell>
       <Rail label={t('tool')}
-        brand={<RailBrand href={projectsUrl()} label={t('suite_timetables')} name={t('tool')}><LogoIcon /></RailBrand>}
+        brand={<RailBrand href={projectsUrl()} label={t('suite_timetables')} name={t('suite_timetables')}><LogoIcon /></RailBrand>}
         top={<>
           <RailButton icon={<TrainIcon />} label={t('section_trains')} pressed={section === 'trains'} onClick={() => show('trains')} />
           <RailButton icon={<GraphIcon />} label={t('section_graph')} pressed={section === 'graph'} onClick={() => show('graph')} />

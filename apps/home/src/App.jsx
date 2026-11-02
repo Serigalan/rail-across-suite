@@ -81,8 +81,8 @@ export default function App() {
   }
   const forced = Boolean(user?.mustChangePassword)
   const page = forced ? 'password' : route.page
-  // A module that works on a variant — a simulation, the Fahrplan-Editor — lists the projects to open in it.
-  const simulation = MODULES.some(m => m.route === page && m.available && m.path && !m.direct)
+  // A module that works on a variant — the Fahrplan-Sim — lists the projects to open in it.
+  const simulation = MODULES.some(m => m.route === page && m.available && m.apps)
   // a module that needs no project is its app: its old page leads there
   const direct = MODULES.find(m => m.route === page && m.available && m.direct)
   useEffect(() => { if (user && direct) location.replace(direct.path) }, [user, direct])

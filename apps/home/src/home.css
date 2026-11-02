@@ -34,9 +34,18 @@ html, body { margin: 0; background: var(--ui-surface); }
 
 /* ── the start page's own: tiles, tabs, the projects ─────────────────── */
 
-.ra-icon { width: 100%; height: 100%; }
-.ra-tagline { margin: 4px 0 18px; font-size: 15px; color: var(--ui-muted); }
-.ra-group { margin: 6px 0 12px; font-size: 13px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ui-muted); }
+.ra-icon, .ra-art { display: block; width: 100%; height: 100%; overflow: visible; }
+/* The drawings' lines stay as thin at any size, and readable in the dark. */
+.ra-icon *, .ra-art * { vector-effect: non-scaling-stroke; }
+.home {
+  --ra-line: var(--color-primary); --ra-line-off: color-mix(in srgb, var(--ui-muted) 55%, var(--ui-bg));
+  --ra-art-bg: color-mix(in srgb, var(--ra-line) 5%, var(--ui-bg)); --ra-art-border: color-mix(in srgb, var(--ra-line) 14%, var(--ui-border));
+  /* the trains of the graphical timetable, each kind in its own tone of the line */
+  --ra-tone-1: var(--ra-line); --ra-tone-2: #3d82d1; --ra-tone-3: #7462d4;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .home { --ra-line: #a9adf2; --ra-tone-2: #72b4f5; --ra-tone-3: #c5a8f5; } }
+:root[data-theme="dark"] .home { --ra-line: #a9adf2; --ra-tone-2: #72b4f5; --ra-tone-3: #c5a8f5; }
+.ra-group { margin: 10px 0 12px; font-size: 13px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ui-muted); }
 .ra-page-title { margin: 6px 0 16px; font-size: 22px; }
 .ra-back { display: inline-block; margin-bottom: 10px; }
 .ra-rule { border: none; border-top: 2px solid var(--ui-border); margin: 26px 0 18px; }
@@ -51,12 +60,46 @@ html, body { margin: 0; background: var(--ui-surface); }
 }
 .ra-tile:hover { border-color: var(--color-primary); box-shadow: 0 6px 20px rgba(48, 51, 131, 0.14); transform: translateY(-2px); }
 .ra-tile:focus-visible, .ra-tab:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
-.ra-tile-icon { width: 48px; height: 48px; color: var(--color-primary); margin-bottom: 4px; }
-.ra-tile-icon .ra-icon { display: block; filter: drop-shadow(0 2px 4px rgba(48, 51, 131, 0.18)); }
+.ra-tile-icon { width: 48px; height: 48px; color: var(--ra-line); margin-bottom: 4px; }
 .ra-tile-name { font-size: 17px; font-weight: 700; }
 .ra-tile-desc { font-size: 13px; line-height: 1.45; color: var(--ui-muted); flex: 1; }
-.ra-tile-planned .ra-tile-icon { color: color-mix(in srgb, var(--ui-muted) 60%, var(--ui-bg)); }
-.ra-tile-planned .ra-tile-icon .ra-icon { filter: none; }
+/* A module's drawing as wide as the tile, framed on squared paper — its
+   tracks running to the frame —, its name below. */
+.ra-tile-art {
+  --ra-grid: color-mix(in srgb, currentColor 8%, transparent);
+  display: block; margin-bottom: 8px; padding: 14px 0; overflow: hidden; color: var(--ra-line);
+  background-color: var(--ra-art-bg); border: 1px solid var(--ra-art-border); border-radius: 10px;
+  background-image: linear-gradient(var(--ra-grid) 1px, transparent 1px), linear-gradient(90deg, var(--ra-grid) 1px, transparent 1px);
+  background-size: 12px 12px; background-position: -1px -1px;
+}
+.ra-tile-art .ra-art { height: auto; aspect-ratio: 120 / 48; }
+.ra-tile-planned .ra-tile-art { color: var(--ra-line-off); background-color: var(--ui-surface); border-color: var(--ui-border); }
+.ra-tile-planned .ra-tile-name { color: var(--ui-muted); }
+.ra-group-next { margin-top: 32px; }
+
+/* The infrastructure editor's tile: two columns wide, the module on the left,
+   its tools listed on the right. */
+.ra-tile-wide { grid-column: span 2; }
+.ra-tile-split { flex-direction: row; gap: 0; padding: 0; }
+.ra-tile-split:hover { transform: none; }
+.ra-tile-main {
+  flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; padding: 18px 18px 16px;
+  color: inherit; text-decoration: none; border-radius: 13px 0 0 13px;
+}
+.ra-subtools {
+  flex: 1; min-width: 0; list-style: none; margin: 0; padding: 12px;
+  display: flex; flex-direction: column; justify-content: center; gap: 4px; border-left: 1px solid var(--ui-border);
+}
+.ra-subtool {
+  display: flex; align-items: center; gap: 12px;
+  padding: 8px 10px; border-radius: 10px; color: inherit; text-decoration: none; transition: background 0.15s;
+}
+.ra-subtool:hover { background: var(--ui-hover); }
+.ra-tile-main:focus-visible, .ra-subtool:focus-visible { outline: 2px solid var(--color-primary); outline-offset: -2px; }
+.ra-subtool-icon { width: 40px; height: 40px; flex-shrink: 0; color: var(--ra-line); }
+.ra-subtool-name { font-size: 15px; font-weight: 600; }
+.ra-subtool-planned .ra-subtool-icon { color: var(--ra-line-off); }
+.ra-subtool-planned .ra-subtool-name { color: var(--ui-muted); }
 
 /* The tools as tabs: the chosen one in the primary colour, sitting on the line
    below like a tab on its sheet; the others greyed until chosen. */
@@ -77,9 +120,9 @@ html, body { margin: 0; background: var(--ui-surface); }
   display: flex; align-items: center; gap: 10px; margin: 0 0 16px; padding: 10px 14px;
   border-radius: 10px; background: var(--ui-selected); font-size: 14px; font-weight: 500;
 }
-.ra-mode-icon { width: 28px; height: 28px; color: var(--color-primary); flex-shrink: 0; }
+.ra-mode-icon { width: 28px; height: 28px; color: var(--ra-line); flex-shrink: 0; }
 .ra-mode-off { background: var(--ui-hover); color: var(--ui-muted); }
-.ra-mode-off .ra-mode-icon { color: color-mix(in srgb, var(--ui-muted) 60%, var(--ui-bg)); }
+.ra-mode-off .ra-mode-icon { color: var(--ra-line-off); }
 
 .ra-mode-text { flex: 1; }
 .ra-mode .ui-link { font-size: 12.5px; font-weight: 400; }
@@ -148,12 +191,16 @@ html, body { margin: 0; background: var(--ui-surface); }
   display: flex; gap: 20px; align-items: flex-start; padding: 24px; margin-top: 8px;
   background: var(--ui-bg); border: 1px solid var(--ui-border); border-radius: 14px;
 }
-.ra-planned .ra-tile-icon { width: 64px; height: 64px; flex-shrink: 0; color: color-mix(in srgb, var(--ui-muted) 60%, var(--ui-bg)); }
+.ra-planned .ra-tile-icon { width: 64px; height: 64px; flex-shrink: 0; color: var(--ra-line-off); }
 .ra-planned h2 { margin: 0 0 8px; font-size: 20px; }
 .ra-planned p { margin: 0 0 10px; line-height: 1.5; }
 
 @media (max-width: 760px) {
   .ra-tiles, .ra-tabs { grid-template-columns: minmax(0, 1fr); }
+  .ra-tile-wide { grid-column: auto; }
+  .ra-tile-split { flex-direction: column; }
+  .ra-tile-main { border-radius: 13px 13px 0 0; }
+  .ra-subtools { border-left: none; border-top: 1px solid var(--ui-border); }
   .ra-tab-chosen::after { display: none; }
 }
 @media (max-width: 560px) {

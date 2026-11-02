@@ -1,6 +1,7 @@
 # 0016 — Timetables belong to a project; a train begins and ends at a station
 
-Status: **proposed** — goes with [0013](0013-running-times-in-rust.md) and [0014](0014-vehicles-in-osrds-form.md)
+Status: **proposed** — goes with [0013](0013-running-times-in-rust.md) and [0014](0014-vehicles-in-osrds-form.md) ·
+amended 2026-11-02: one tile with the Simulation-Tool, the Fahrplan-Sim
 
 ## Decision
 
@@ -23,8 +24,9 @@ Status: **proposed** — goes with [0013](0013-running-times-in-rust.md) and [00
    the time it passes every station on the way. A departure waited for at a stop moves the run on from there.
 5. **The way, the stations along it and the simulation module are a package** (`@rail-across/running-times`) the
    Simulation-Tool and the Fahrplan-Editor share; the timetable's model, its runs and its API another
-   (`@rail-across/timetables`). The Fahrplan-Editor is a module of its own (`apps/timetable-editor/`, `timetable/`),
-   opened from its tile on the start page by a project's variant.
+   (`@rail-across/timetables`). The Fahrplan-Editor is an app of its own (`apps/timetable-editor/`, `timetable/`);
+   on the start page it is one module with the Simulation-Tool, the *Fahrplan-Sim*, whose tile lists the
+   projects and opens a variant in either app.
 
 ## Why
 

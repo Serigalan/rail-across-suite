@@ -17,14 +17,16 @@ const projects = {
 }
 
 describe('the start page', () => {
-  it('shows the six modules, the editors and the simulations apart', () => {
+  it('shows two editors and three simulations apart, the infrastructure editor with its tools', () => {
     const html = de(<Home />)
-    for (const name of ['Infrastruktur-Editor', 'Fahrzeug-Editor', 'Fahrplan-Editor', 'Fahrplan-Sim', 'Kapazitäts-Sim', 'Baubetriebs-Sim']) {
+    for (const name of ['Infrastruktur-Editor', 'Fahrzeug-Editor', 'Fahrplan-Sim', 'Kapazitäts-Sim', 'Baubetriebs-Sim']) {
       expect(html).toContain(name)
     }
-    expect(html.indexOf('Fahrplan-Editor')).toBeLessThan(html.indexOf('<hr'))
-    expect(html.indexOf('<hr')).toBeLessThan(html.indexOf('Fahrplan-Sim'))
+    expect(html.indexOf('Fahrzeug-Editor')).toBeLessThan(html.indexOf('Simulationen'))
+    expect(html.indexOf('Simulationen')).toBeLessThan(html.indexOf('>Fahrplan-Sim<'))
     expect(html).toContain('href="#/infrastructure"')
+    for (const tool of ['layout', 'signalling', 'catenary']) expect(html).toContain(`href="#/infrastructure/${tool}"`)
+    expect(html).not.toContain('ui-badge')
   })
 })
 
@@ -56,18 +58,15 @@ describe('the infrastructure editor', () => {
 
 })
 
-describe('a simulation that is there', () => {
-  it('lists the projects, each variant opening in it', () => {
-    const html = de(<Simulation route="timetable-sim" projects={projects} />)
-    expect(html).toContain('PEK Halle–Könnern')
-    expect(html).toContain('href="simulation/?project=p1&amp;variant=v1"')
-    expect(html).toContain('Rev. 3')
-  })
-
-  it('lists them for the Fahrplan-Editor as well', () => {
+describe('the Fahrplan-Sim', () => {
+  it('lists the projects, each variant opening in the Fahrplan-Editor and the simulation', () => {
     const html = de(<Simulation route="timetable" projects={projects} />)
+    expect(html).toContain('PEK Halle–Könnern')
+    expect(html).toContain('Rev. 3')
     expect(html).toContain('href="timetable/?project=p1&amp;variant=v1"')
     expect(html).toContain('>Fahrpläne</a>')
+    expect(html).toContain('href="simulation/?project=p1&amp;variant=v1"')
+    expect(html).toContain('>Fahrzeit rechnen</a>')
     expect(html).toContain('beginnt und endet in einem Bahnhof')
   })
 })

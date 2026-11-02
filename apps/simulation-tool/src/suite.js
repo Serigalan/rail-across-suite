@@ -1,6 +1,6 @@
 // The Simulation-Tool is a module of Rail-Across-Suite: the account and the
-// projects are the suite's. Its tile on the start page (Fahrplan-Sim) lists
-// the projects and opens a variant here by its address:
+// projects are the suite's. Its tile on the start page (Fahrplan-Sim, with
+// the Fahrplan-Editor) lists the projects and opens a variant here by its address:
 // `?project=<id>&variant=<id>` — the main variant without `variant`; it
 // simulates the variant as this browser's working copy holds it, where there
 // is one, else its head; `&action=view` its head alone. Nothing is written:
@@ -11,7 +11,7 @@ export const SUITE = import.meta.env?.VITE_RA_SUITE ?? '../'
 export const NOTICE = 'rail-across-notice'
 
 /** The simulation's page on the suite's start page. */
-export const projectsUrl = () => `${SUITE}#/timetable-sim`
+export const projectsUrl = () => `${SUITE}#/timetable`
 
 /** Back to the projects, with a line the suite shows once. */
 export function toProjects(note = null) {

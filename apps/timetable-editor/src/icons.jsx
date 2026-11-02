@@ -8,13 +8,18 @@ const Svg = ({ children }) => (
   </svg>
 )
 
-/** The tool's mark: a graphical timetable — two stations, trains as lines through time —, as the start page's tile. */
+/**
+ * The mark of the Fahrplan-Sim, as the start page draws it — the graphical
+ * timetable, each kind of train in its own tone — but for the rail's 28 px:
+ * two stations, three trains, thick lines.
+ */
 export const LogoIcon = () => (
-  <svg viewBox="0 0 48 48" width="28" height="28" aria-hidden="true">
-    <rect width="48" height="48" rx="12" fill="#303383" />
-    <g fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 9 V39 M36 9 V39" strokeOpacity="0.5" strokeWidth="2" />
-      <path d="M12 12 L36 22 M12 24 L36 34 M12 37 L36 15" />
+  <svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true">
+    <g fill="none" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 3.5V28.5M26 3.5V28.5" stroke="#303383" strokeOpacity=".4" strokeWidth="1.6" />
+      <path d="M6 5L26 15" stroke="#303383" />
+      <path d="M6 15L26 25" stroke="#7462d4" />
+      <path d="M26 5.5L6 26.5" stroke="#3d82d1" />
     </g>
   </svg>
 )

@@ -11,6 +11,7 @@ describe('the pages by the address', () => {
     expect(routeOf('#/infrastructure/catenary')).toEqual({ page: 'infrastructure', tool: 'catenary' })
     expect(routeOf('#/infrastructure/nonsense')).toEqual({ page: 'infrastructure', tool: 'layout' })
     expect(routeOf('#/capacity-sim')).toEqual({ page: 'capacity-sim' })
+    expect(routeOf('#/timetable-sim')).toEqual({ page: 'timetable' })   // gone into the Fahrplan-Sim
     expect(routeOf('#/elsewhere')).toEqual({ page: '' })
   })
 
@@ -33,9 +34,9 @@ describe('the pages by the address', () => {
 })
 
 describe('the tiles', () => {
-  it('are three editors and three simulations, each with its name and description in both languages', () => {
-    expect(EDITORS.map(m => m.id)).toEqual(['infrastructure', 'vehicles', 'timetable'])
-    expect(SIMULATIONS.map(m => m.id)).toEqual(['timetableSim', 'capacitySim', 'constructionSim'])
+  it('are two editors and three simulations, each with its name and description in both languages', () => {
+    expect(EDITORS.map(m => m.id)).toEqual(['infrastructure', 'vehicles'])
+    expect(SIMULATIONS.map(m => m.id)).toEqual(['timetable', 'capacitySim', 'constructionSim'])
     for (const texts of Object.values(TEXTS)) {
       for (const m of [...EDITORS, ...SIMULATIONS]) {
         expect(texts[`module_${m.id}`], m.id).toBeTruthy()
@@ -95,11 +96,13 @@ describe('the projects listed', () => {
 
 describe('a simulation that is there', () => {
   it('opens a variant by its address, and one still to come nowhere', () => {
-    expect(simulationUrl(SIMULATIONS[0], 'p1', 'v1')).toBe('simulation/?project=p1&variant=v1')
-    expect(simulationUrl(SIMULATIONS[1], 'p1', 'v1')).toBeNull()
+    const [timetables, runs] = SIMULATIONS[0].apps
+    expect(simulationUrl(SIMULATIONS[0], timetables, 'p1', 'v1')).toBe('timetable/?project=p1&variant=v1')
+    expect(simulationUrl(SIMULATIONS[0], runs, 'p1', 'v1')).toBe('simulation/?project=p1&variant=v1')
+    expect(simulationUrl(SIMULATIONS[1], runs, 'p1', 'v1')).toBeNull()
     expect(tileUrl(EDITORS[1])).toBe('vehicles/')   // the Fahrzeug-Editor needs no project
     expect(tileUrl(EDITORS[0])).toBe('#/infrastructure')
-    expect(tileUrl(EDITORS[2])).toBe('#/timetable')
-    expect(simulationUrl(EDITORS[1], 'p1', 'v1')).toBeNull()
+    expect(tileUrl(SIMULATIONS[0])).toBe('#/timetable')
+    expect(simulationUrl(EDITORS[1], runs, 'p1', 'v1')).toBeNull()
   })
 })

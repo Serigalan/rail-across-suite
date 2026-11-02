@@ -2,7 +2,7 @@
 
 The timetables of a project, laid on the net of one of its variants
 ([decision 0016](../../docs/decisions/0016-timetables-of-a-project.md)). The start page lists the projects under
-*Fahrplan-Editor* and opens a variant here, `timetable/?project=<id>&variant=<id>` (`&action=view` its head alone,
+*Fahrplan-Sim* and opens a variant here, `timetable/?project=<id>&variant=<id>` (`&action=view` its head alone,
 `&timetable=<id>&train=<id>` the timetable and train shown). The net is this browser's working copy of the variant
 where there is one, else its head, and only read; the timetables are the project's, on the server.
 

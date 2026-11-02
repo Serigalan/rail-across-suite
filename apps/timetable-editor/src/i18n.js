@@ -5,7 +5,7 @@ import { createContext, useContext } from 'react'
 
 const de = {
   tool: 'Fahrplan-Editor',
-  suite_timetables: 'Fahrplan-Editor',
+  suite_timetables: 'Fahrplan-Sim',
   to_projects: 'Zu den Projekten',
   back: 'Zurück',
   no_project: 'Kein Projekt gewählt. Die Projekte werden auf der Startseite der Suite verwaltet.',
@@ -175,7 +175,7 @@ const de = {
 
 const en = {
   tool: 'Timetable editor',
-  suite_timetables: 'Timetable editor',
+  suite_timetables: 'Timetable sim',
   to_projects: 'To the projects',
   back: 'Back',
   no_project: 'No project chosen. Projects are managed on the suite\'s start page.',

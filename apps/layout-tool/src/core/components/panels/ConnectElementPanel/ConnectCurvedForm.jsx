@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { addElementsToTrack, loadTracks } from '../../../storage'
+import { addElementsToTrack, loadSwitches, loadTracks } from '../../../storage'
 import {
   computeCurvedValuesUtm, arcCoordsFromRadiusUtm, projectOnBearingUtm, endPointCurvedUtm,
   wgs84ToUTM, toWgs, computeClothoidUtm, SAGITTA_ELEMENT,
@@ -75,7 +75,7 @@ export default function ConnectCurvedForm({ onCommitted }) {
       setSelectedTrack(track)
       setStartPoint(a.endUtm)
       setBearing(a.bearing)
-      setSpeed(inheritedSpeed(track) ?? a.lastEl.speed ?? 80)
+      setSpeed(inheritedSpeed(track, loadSwitches()) ?? a.lastEl.speed ?? 80)
       setPrevRadius(a.lastEl.radius ?? null)
       setLastEl(a.lastEl)
       bearingRef.current = a.bearing

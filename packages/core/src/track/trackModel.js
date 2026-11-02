@@ -152,13 +152,22 @@ export function trackEndAnchor(track) {
 /**
  * The speed a stretch appended at a track's end takes by default: the last
  * element's — or, where that one states none (0 or missing, as an imported
- * turnout branch often does), the nearest one before it that does. Null when
- * no element of the track states one.
+ * turnout branch often does), the nearest one before it that does. An element
+ * on the branch of a turnout of `switches` runs at the turnout's speed (60 km/h
+ * for an EW 500-1:12), or slower where it states so itself. Null when no
+ * element of the track states one.
  */
-export function inheritedSpeed(track) {
+export function inheritedSpeed(track, switches = []) {
   const els = track?.elements ?? []
+  const branchSpeed = (el) => {
+    if (!el.switchBranch || el.switchRoute !== 'branch' || !el.switchId) return null
+    const v = switches.find(sw => sw.id === el.switchId)?.speed
+    return v > 0 ? v : null
+  }
   for (let i = els.length - 1; i >= 0; i--) {
-    if (els[i].speed > 0) return els[i].speed
+    const own = els[i].speed > 0 ? els[i].speed : null
+    const branch = branchSpeed(els[i])
+    if (own != null || branch != null) return Math.min(own ?? Infinity, branch ?? Infinity)
   }
   return null
 }

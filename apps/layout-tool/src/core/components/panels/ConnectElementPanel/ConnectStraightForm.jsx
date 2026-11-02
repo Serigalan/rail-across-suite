@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { addElementsToTrack, loadTracks } from '../../../storage'
+import { addElementsToTrack, loadSwitches, loadTracks } from '../../../storage'
 import {
   projectOnBearingUtm, endPointStraightUtm, wgs84ToUTM, toWgs, computeClothoidUtm, SAGITTA_ELEMENT,
 } from '@rail-across/core/geometry'
@@ -75,7 +75,7 @@ export default function ConnectStraightForm({ onCommitted }) {
       setSelectedTrack(track)
       setStartPoint(a.endUtm)
       setBearing(a.bearing)
-      setSpeed(inheritedSpeed(track) ?? a.lastEl.speed ?? 80)
+      setSpeed(inheritedSpeed(track, loadSwitches()) ?? a.lastEl.speed ?? 80)
       setPrevRadius(a.lastEl.radius ?? null)
       setLastEl(a.lastEl)
       setTransitionEnabled(a.lastEl.radius != null && (a.lastEl.cant ?? 0) !== 0)

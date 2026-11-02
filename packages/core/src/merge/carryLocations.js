@@ -7,8 +7,9 @@ import { pointAtStation, repairRoute, stationOnTrack } from '../track/index.js'
  * A domain the core does not write — signalling, and whatever follows — says
  * where its objects stand with the core's location types only: a
  * `TrackLocation` (`{ anchor: 'station', trackId, station, side, offset,
- * direction }`) and a `TrackPath` (`{ trackIds }`). Those shapes are all this
- * module looks for, so it carries a domain it has never heard of.
+ * direction }`), a `TrackRange` (`{ anchor: 'station', trackId, startStation,
+ * endStation, side }`) and a `TrackPath` (`{ trackIds }`). Those shapes are all
+ * this module looks for, so it carries a domain it has never heard of.
  *
  * Carried by geometry, as remap.js carries switch ports and platforms: a
  * location on a track that changed is looked for, at the place it stood, on
@@ -18,7 +19,9 @@ import { pointAtStation, repairRoute, stationOnTrack } from '../track/index.js'
  * is orphaned in the same step: its location becomes the plane point it stood
  * at (R7), its id and every reference to it stay. Where the track is still
  * there but reshaped so the place is no longer on it, the station stays — a
- * station follows the track's reshaping, which is what it is for.
+ * station follows the track's reshaping, which is what it is for. A range is
+ * carried as a platform is: both its ends onto the one track that lies under
+ * them; where none does, it stays as it is, and the check names it.
  */
 
 /** A point lies on a track below this [m]. */
@@ -30,6 +33,7 @@ const round = (s) => Math.round(s * 1000) / 1000
 const bearingGap = (a, b) => Math.abs(((a - b + 540) % 360) - 180)
 
 const isLocation = (v) => v?.anchor === 'station' && typeof v.trackId === 'string' && Number.isFinite(v.station)
+const isRange = (v) => v?.anchor === 'station' && typeof v.trackId === 'string' && Number.isFinite(v.startStation) && Number.isFinite(v.endStation)
 const isPath = (v) => Array.isArray(v?.trackIds) && Object.keys(v).length === 1
 
 const FLIP_SIDE = { left: 'right', right: 'left' }
@@ -72,6 +76,35 @@ function carryLocation(loc, ctx) {
   return out
 }
 
+/**
+ * Where a range on a changed track lies now: on the one track that lies under
+ * both its ends (the same one preferred), its stations in order, its side
+ * swapped where that track runs the other way. The range itself where none
+ * holds both, or nothing changes.
+ */
+function carryRange(range, ctx) {
+  const old = ctx.oldTrack(range.trackId)
+  if (!old) return range
+  const p0 = pointAtStation(old, range.startStation)
+  const p1 = pointAtStation(old, range.endStation)
+  if (!p0 || !p1) return range
+  let hit = null
+  for (const track of ctx.candidates(range.trackId)) {
+    if (track.epsg !== old.epsg) continue
+    const a = stationOnTrack(track, p0.utm)
+    const b = stationOnTrack(track, p1.utm)
+    if (!a || !b || a.dist > ON_TRACK || b.dist > ON_TRACK) continue
+    if (!hit || track.id === range.trackId) hit = { track, a, b }
+  }
+  if (!hit) return range
+  const reversed = bearingGap(hit.a.bearing, p0.bearing) > 90
+  const [s0, s1] = [round(hit.a.station), round(hit.b.station)]
+  const out = { ...range, trackId: hit.track.id, startStation: Math.min(s0, s1), endStation: Math.max(s0, s1) }
+  if (reversed && range.side && FLIP_SIDE[range.side]) out.side = FLIP_SIDE[range.side]
+  const same = out.trackId === range.trackId && Math.abs(out.startStation - range.startStation) < 1e-3 && Math.abs(out.endStation - range.endStation) < 1e-3 && out.side === range.side
+  return same ? range : out
+}
+
 /** A run of tracks with each one that went replaced by the pieces lying where it lay, in running order. */
 function carryPath(path, ctx) {
   const next = repairRoute(path, ctx.tracks, ctx.switches, ctx.oldTrack, ctx.candidates)
@@ -111,6 +144,12 @@ export function carryDomain(domain, ctx) {
       if (!ctx.changed(value.trackId)) return value
       const next = carryLocation(value, ctx)
       if (next !== value) note(field, value.trackId, next.anchor === 'plane' ? 'plane' : next.trackId)
+      return next
+    }
+    if (isRange(value)) {
+      if (!ctx.changed(value.trackId)) return value
+      const next = carryRange(value, ctx)
+      if (next !== value) note(field, value.trackId, next.trackId)
       return next
     }
     if (isPath(value)) {

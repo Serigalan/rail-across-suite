@@ -15,7 +15,9 @@ where there is one, else its head, and only read; the timetables are the project
   of its own) in a traction mode and comfort, its departure, its margin and how it is spread.
 - **Its way**: it **begins and ends at a station** — the layout's station tracks of one name — on a track chosen or
   the nearest; on the way it stops or passes at stations and halts (a name only platforms carry), with its dwell and
-  a departure it waits for. The choice of its first and last point offers stations only.
+  a departure it waits for. The choice of its first and last point offers stations only. From each point to the
+  next it may prefer an itinerary of the Signalling-Tool, between stopping places of the two stations; where the
+  run cannot take it, it runs the shortest way and says so.
 - **Its times**: run with OSRD's simulation core (`@rail-across/running-times`) whenever what it is run with changes
   — a row for every station along its way, the stations it passes among them (*Hier halten* makes it stop there),
   its running time, length, speed and energy, its way on the map.

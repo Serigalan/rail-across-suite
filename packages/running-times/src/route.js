@@ -29,20 +29,23 @@ export function routeThrough(record, points) {
  * further on (`tries` legs at the most). Returns { path, offsets, chosen } —
  * `chosen` the place taken at each point —, or { failedAt } the furthest point
  * it found no way to (0 where the start has no place).
+ *
+ * `legPath(i, from, direction, to)`, where given, is asked first for the leg
+ * to point `i`: a path, or nothing where that leg takes the shortest way.
  */
-export function routeVia(record, points, { tries = 200 } = {}) {
+export function routeVia(record, points, { tries = 200, legPath = null } = {}) {
   let failedAt = 1
   let left = tries
   const legs = new Map()
-  const legOf = (from, direction, to) => {
-    const key = `${from.trackId}:${from.station}:${direction}>${to.trackId}:${to.station}:${to.direction}`
-    if (!legs.has(key)) legs.set(key, findPath(record, { ...from, direction }, to))
+  const legOf = (i, from, direction, to) => {
+    const key = `${i}|${from.trackId}:${from.station}:${direction}>${to.trackId}:${to.station}:${to.direction}`
+    if (!legs.has(key)) legs.set(key, legPath?.(i, from, direction, to) ?? findPath(record, { ...from, direction }, to))
     return legs.get(key)
   }
   const go = (i, path, offsets, chosen, direction) => {
     if (i === points.length) return { path, offsets, chosen }
     const options = (points[i] ?? [])
-      .map(to => ({ to, leg: legOf(chosen[i - 1], direction, to) }))
+      .map(to => ({ to, leg: legOf(i, chosen[i - 1], direction, to) }))
       .filter(o => o.leg)
       .sort((a, b) => pathLength(a.leg) - pathLength(b.leg))
     if (!options.length) { failedAt = Math.max(failedAt, i); return null }

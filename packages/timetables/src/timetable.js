@@ -1,4 +1,4 @@
-import { marginValue, routeVia, simulationRequest, stationNamed, stationTargets, stationsAlong, timeAtPosition } from '@rail-across/running-times'
+import { marginValue, pathAlong, routeVia, simulationRequest, stationNamed, stationTargets, stationsAlong, timeAtPosition } from '@rail-across/running-times'
 
 /**
  * The timetables of the suite (decision 0016): a project's trains, each with
@@ -10,12 +10,17 @@ import { marginValue, routeVia, simulationRequest, stationNamed, stationTargets,
  *
  * train = { id, number, category, name, vehicle, mode, comfort, departure,
  *           margin, distribution, points }
- * point = { id, station, track, stop, dwell, departure }
+ * point = { id, station, track, stop, dwell, departure, itinerary }
  *
  * `departure` [s from midnight] at the first point; a point's `track` the
  * station's track it uses (an id of the variant's tracks), or null for any;
  * `stop` whether it stops there (it always does at its ends), `dwell` how
- * long [s], `departure` the time it waits for there before leaving, or null.
+ * long [s], `departure` the time it waits for there before leaving, or null;
+ * `itinerary` the way it prefers from there to the next point — an itinerary
+ * of the variant's signalling, from a stopping place of the one station to
+ * one of the other —, or null for the shortest. A way preferred is taken
+ * where the variant has it and it leads there; else the train runs the
+ * shortest way, and says so.
  */
 
 /** The kinds of trains offered; any other is written as it is. */
@@ -36,7 +41,7 @@ const newId = () => globalThis.crypto?.randomUUID?.() ?? `${Date.now().toString(
 
 export const newTimetable = () => ({ trains: [] })
 
-export const newPoint = (station, patch = {}) => ({ id: newId(), station, track: null, stop: true, dwell: 60, departure: null, ...patch })
+export const newPoint = (station, patch = {}) => ({ id: newId(), station, track: null, stop: true, dwell: 60, departure: null, itinerary: null, ...patch })
 
 export const newTrain = (patch = {}) => ({
   id: newId(), number: '', category: 'RB', name: '', vehicle: null, mode: null, comfort: 'STANDARD',
@@ -111,6 +116,49 @@ export function trainProblems(train, stations, { vehicle = true } = {}) {
   return out
 }
 
+/** The signalling's stopping places at a station: on its tracks or at its platforms. */
+export function stoppingPlacesAt(record, station) {
+  if (!station) return []
+  const tracks = new Set(station.tracks.map(tr => tr.id))
+  const platforms = new Set(station.platforms.map(p => p.id))
+  return (record?.signalling?.collections?.stoppingPlaces ?? []).filter(h => tracks.has(h.at.trackId) || platforms.has(h.platformId))
+}
+
+/**
+ * The itineraries a train may prefer from its point `i` to the next: from a
+ * stopping place of the one station to one of the other — on the track each
+ * point asks for, where it asks for one.
+ */
+export function itineraryOptions(record, stations, train, i) {
+  const a = train.points[i], b = train.points[i + 1]
+  if (!a || !b) return []
+  const at = (p) => stoppingPlacesAt(record, stationNamed(stations, p.station)).filter(h => !p.track || h.at.trackId === p.track).map(h => h.id)
+  const from = new Set(at(a)), to = new Set(at(b))
+  return (record?.signalling?.collections?.itineraries ?? []).filter(it => from.has(it.startStoppingPlaceId) && to.has(it.targetStoppingPlaceId))
+}
+
+/** A stopping place's middle, where a train is in it. */
+const middleOf = (h) => ({ trackId: h.at.trackId, station: (h.at.startStation + h.at.endStation) / 2, direction: null })
+
+/**
+ * The ways a train prefers, leg by leg (from its point i to i + 1): { from,
+ * to, trackIds } — its two stopping places' middles and the run between —, or
+ * null where it prefers none or the variant does not have the one it names
+ * (`missing` says which legs those are).
+ */
+export function preferredLegs(record, stations, train) {
+  const missing = []
+  const legs = train.points.slice(0, -1).map((p, i) => {
+    if (!p.itinerary) return null
+    const it = itineraryOptions(record, stations, train, i).find(x => x.id === p.itinerary)
+    const places = record?.signalling?.collections?.stoppingPlaces ?? []
+    const from = places.find(h => h.id === it?.startStoppingPlaceId), to = places.find(h => h.id === it?.targetStoppingPlaceId)
+    if (!it || !from || !to) { missing.push(i); return null }
+    return { from: middleOf(from), to: middleOf(to), trackIds: it.path.trackIds }
+  })
+  return { legs, missing }
+}
+
 /** Where each point of a train may be on the net: its station's tracks (stationTargets), the ends stopping always. */
 export function routePoints(train, stations) {
   const last = train.points.length - 1
@@ -124,8 +172,26 @@ export function routePoints(train, stations) {
  * the point it found no way to.
  */
 export function trainRequest(record, stations, train, vehicle) {
-  const route = routeVia(record, routePoints(train, stations))
+  const points = routePoints(train, stations)
+  // A leg with a way preferred runs from its start's stopping place to its target's, along it where it leads there.
+  const { legs, missing } = preferredLegs(record, stations, train)
+  legs.forEach((leg, i) => {
+    if (!leg) return
+    if (!legs[i - 1]) points[i] = [leg.from]
+    points[i + 1] = [leg.to]
+  })
+  const taken = new Map()
+  const route = routeVia(record, points, {
+    legPath: (i, from, direction, to) => {
+      const leg = legs[i - 1]
+      if (!leg) return null
+      const path = pathAlong(record, leg.trackIds, from, to, direction)
+      taken.set(i - 1, Boolean(path))
+      return path
+    },
+  })
   if (!route.path) return { failedAt: route.failedAt }
+  route.preferred = legs.map((leg, i) => (leg ? (taken.get(i) ? 'taken' : 'other') : missing.includes(i) ? 'missing' : null))
   const last = train.points.length - 1
   const stops = train.points.map((p, i) => i).filter(i => i > 0 && (i === last || train.points[i].stop))
   const { request, properties } = simulationRequest(record, route.path, {

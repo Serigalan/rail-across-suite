@@ -3,7 +3,9 @@ import { describe, expect, it } from 'vitest'
 import { newVehicle } from '@rail-across/vehicles'
 import { runWith, stationsOf } from '@rail-across/running-times'
 import { net, WASM } from '../../running-times/test/net.js'
-import { copyTrain, formatClock, newPoint, newTrain, numberAfter, parseClock, runTrain, taktCopies, trainProblems, trainTitle } from './timetable.js'
+import {
+  copyTrain, formatClock, itineraryOptions, newPoint, newTrain, numberAfter, parseClock, runTrain, taktCopies, trainProblems, trainRequest, trainTitle,
+} from './timetable.js'
 
 const stations = stationsOf(net)
 const train = (points, patch = {}) => newTrain({ number: '16001', vehicle: 'v', departure: parseClock('7:00'), points: points.map(([station, p]) => newPoint(station, p)), ...patch })
@@ -44,6 +46,46 @@ describe('a train of the timetable', () => {
     expect(new Set([t.id, ...copies.map(c => c.id)]).size).toBe(3)
     expect(copyTrain(t).points[0].id).not.toBe(t.points[0].id)
     expect(trainTitle({ ...t, name: 'Bummler' })).toBe('RB 16001 · Bummler')
+  })
+})
+
+describe('the way a train prefers', () => {
+  // Stopping places on A-Dorf's track 1 and at C-Stadt's two platforms; an itinerary to each, and one whose run does not lead there.
+  const range = (trackId, startStation, endStation) => ({ anchor: 'station', trackId, startStation, endStation })
+  const signalled = {
+    ...net,
+    signalling: {
+      fields: {},
+      collections: {
+        stoppingPlaces: [
+          { id: 'hA', name: '1', at: range('A1', 100, 300) },
+          { id: 'hC1', name: '1', platformId: 'pC1', at: range('C1', 300, 500) },
+          { id: 'hC2', name: '2', platformId: 'pC2', at: range('C2', 300, 500) },
+        ],
+        itineraries: [
+          { id: 'f1', startStoppingPlaceId: 'hA', targetStoppingPlaceId: 'hC1', routeIds: [], path: { trackIds: ['A1', 'L', 'C1'] } },
+          { id: 'f2', startStoppingPlaceId: 'hA', targetStoppingPlaceId: 'hC2', routeIds: [], path: { trackIds: ['A1', 'L', 'C2'] } },
+          { id: 'f3', startStoppingPlaceId: 'hA', targetStoppingPlaceId: 'hC2', routeIds: [], path: { trackIds: ['A1', 'L', 'C1'] } },
+        ],
+      },
+    },
+  }
+  const vehicle = newVehicle('Triebzug')
+  const ends = (t) => trainRequest(signalled, stations, t, vehicle).route
+
+  it('offers the itineraries from a stopping place of the one station to one of the next, on the tracks asked for', () => {
+    expect(itineraryOptions(signalled, stations, train([['A-Dorf'], ['C-Stadt']]), 0).map(i => i.id)).toEqual(['f1', 'f2', 'f3'])
+    expect(itineraryOptions(signalled, stations, train([['A-Dorf'], ['C-Stadt', { track: 'C1' }]]), 0).map(i => i.id)).toEqual(['f1'])
+  })
+
+  it('takes the way it prefers, else the shortest, and says which', () => {
+    const route = ends(train([['A-Dorf', { itinerary: 'f2' }], ['C-Stadt']]))
+    expect(route.path.map(p => p.trackId)).toEqual(['A1', 'L', 'C2'])
+    expect(route.preferred).toEqual(['taken'])
+    // One whose run does not lead to its target is not taken; one the variant lacks neither.
+    expect(ends(train([['A-Dorf', { itinerary: 'f3' }], ['C-Stadt']])).preferred).toEqual(['other'])
+    expect(ends(train([['A-Dorf', { itinerary: 'gone' }], ['C-Stadt']])).preferred).toEqual(['missing'])
+    expect(ends(train([['A-Dorf'], ['C-Stadt']])).preferred).toEqual([null])
   })
 })
 

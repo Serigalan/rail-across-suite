@@ -57,6 +57,21 @@ describe('the Fahrplan-Editor', () => {
     expect(html).toContain('59 km/h')
   })
 
+  it('offers the itineraries of the signalling as the way a train prefers to the next point, and says where it ran another', () => {
+    const range = (trackId, startStation, endStation) => ({ anchor: 'station', trackId, startStation, endStation })
+    const signalled = { ...net, signalling: { fields: {}, collections: {
+      stoppingPlaces: [{ id: 'hA', name: '1', at: range('A1', 100, 300) }, { id: 'hB', name: 'B', platformId: 'pB', at: range('L', 1000, 1200) }],
+      itineraries: [{ id: 'f1', name: 'A-Dorf 1 → B-Halt', startStoppingPlaceId: 'hA', targetStoppingPlaceId: 'hB', routeIds: [], path: { trackIds: ['A1', 'L'] } }],
+    } } }
+    const html = sheet({ record: signalled })
+    expect(html).toContain('Bevorzugter Fahrweg bis B-Halt')
+    expect(html).toContain('<option value="" selected="">kürzester Weg</option><option value="f1">A-Dorf 1 → B-Halt</option>')
+    expect(html).not.toContain('Bevorzugter Fahrweg bis C-Stadt')
+    const preferring = { ...train, points: train.points.map((p, i) => (i === 0 ? { ...p, itinerary: 'f1' } : p)) }
+    const other = sheet({ record: signalled, train: preferring, run: { ...run, route: { ...run.route, preferred: ['other', null] } } })
+    expect(other).toContain('Der bevorzugte Fahrweg führt nicht dorthin')
+  })
+
   it('says what keeps a train from running', () => {
     const lonely = { ...train, points: [newPoint('A-Dorf'), newPoint('B-Halt')] }
     const html = sheet({ train: lonely, run: { key: 'k', problems: [{ key: 'end_not_station', point: 1 }] } })

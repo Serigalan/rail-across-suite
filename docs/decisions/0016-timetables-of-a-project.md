@@ -1,7 +1,7 @@
 # 0016 — Timetables belong to a project; a train begins and ends at a station
 
 Status: **proposed** — goes with [0013](0013-running-times-in-rust.md) and [0014](0014-vehicles-in-osrds-form.md) ·
-amended 2026-11-02: one tile with the Simulation-Tool, the Fahrplan-Sim
+amended 2026-11-02: one tile with the Simulation-Tool, the Fahrplan-Sim; a way a train prefers (6)
 
 ## Decision
 
@@ -27,6 +27,13 @@ amended 2026-11-02: one tile with the Simulation-Tool, the Fahrplan-Sim
    (`@rail-across/timetables`). The Fahrplan-Editor is an app of its own (`apps/timetable-editor/`, `timetable/`);
    on the start page it is one module with the Simulation-Tool, the *Fahrplan-Sim*, whose tile lists the
    projects and opens a variant in either app.
+
+6. **A train may prefer a way** from one of its points to the next: an itinerary of the variant's signalling
+   ([0011](0011-signalling-domain.md)), from a stopping place of the one station to one of the other, named by its
+   id on the point it starts at (`itinerary`). The run takes it where the variant has it and its run of tracks
+   leads there, from the middle of the one stopping place to the middle of the other; else the train runs the
+   shortest way, and the editor says so under the leg. Other ways stay open: a leg without one, or one whose
+   itinerary does not lead there, runs the shortest.
 
 ## Why
 

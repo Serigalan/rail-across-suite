@@ -96,3 +96,5 @@ html, body { margin: 0; background: var(--ui-surface); }
   .tt-page { padding: 16px; }
   .tt-fields-3, .tt-fields-2, .tt-point-fields { grid-template-columns: minmax(0, 1fr); }
 }
+.tt-point-leg { padding-bottom: 10px; }
+.tt-point-leg .ui-field > span { color: var(--ui-muted); }

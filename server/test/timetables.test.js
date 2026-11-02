@@ -79,6 +79,8 @@ describe('timetables', () => {
     expect(timetableFault({ trains: [train({ distribution: 'fast' })] })).toBe('train_invalid')
     expect(timetableFault({ trains: [train({ points: [point('')] })] })).toBe('points_invalid')
     expect(timetableFault({ trains: [train({ points: [point('A', { stop: 'yes' })] })] })).toBe('points_invalid')
+    expect(timetableFault({ trains: [train({ points: [point('A', { place: 'a' }), point('B', { place: 'x'.repeat(65) })] })] })).toBe('points_invalid')
+    expect(timetableFault({ trains: [train({ points: [point('A', { place: '3f2a' })] })] })).toBeNull()
     // a train not done yet is kept: a night train past midnight, no points yet
     expect(timetableFault({ trains: [train({ departure: 25 * 3600, points: [] })] })).toBeNull()
   })

@@ -10,7 +10,7 @@ shared by the Simulation-Tool and the Fahrplan-Editor:
 - **what the physics needs of it** (`path.js`, `request.js`): its length, its grades from the tracks' heights and
   the curves' resistance (Röckl), the layout's design speeds and the speeds the signals signal, and the request
   the simulation takes;
-- **the stations** (`stations.js`): a station is the station tracks of one name, as the Layout-Tool groups them, or
+- **the stations** (`stations.js`), each by its id — its point of the core's register (`stationRegister`), an end's mark —, found by it (`stationById`, `placeOf`), the name only shown: a station is the station tracks of one point, as the Layout-Tool groups them, or
   a station of the register on the tracks of its stopping places and platforms, as far as they reach; a halt a name
   only platforms carry; an end a buffer stop or a boundary of the planning area, a place at a track's end where a
   train may begin and end, over a boundary at its speed (`crossingSpeed`, the request's `startSpeed`, `endSpeed`); where a train may be at one, and the stations along a way;

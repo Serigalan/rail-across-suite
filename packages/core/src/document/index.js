@@ -10,6 +10,7 @@
 
 export { canonicalJson, contentHash, derivedId } from './canonical.js'
 export { DOMAIN_VERSIONS, defaultStages } from './coreFormat.js'
+export { renamedStation, stationRegister } from './stations.js'
 export { documentHash, manifestOf } from './manifest.js'
 export { checkDocument, FORMAT, fromDocument, SCHEMA_HASHES, schemaOf, toDocument } from './door.js'
 export { PayloadError } from './payloadError.js'

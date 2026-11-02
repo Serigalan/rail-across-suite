@@ -1,3 +1,4 @@
+import { stationRegister } from '@rail-across/core/document'
 import { CATALOGUE_REF, baliseKindOf, protectionSystemOf, signalKindOf } from '@rail-across/core/signalling'
 
 /**
@@ -48,10 +49,26 @@ export function domainOf(record) {
 /** The signalling domain of the state, without the parts of the core. */
 export const signallingOf = (state) => ({ fields: state.fields, collections: Object.fromEntries(COLLECTIONS.map(c => [c, state.collections[c]])) })
 
-/** The record with the state laid on it: its domain and the parts of the core the tool writes. */
+/**
+ * The record with the state laid on it: its domain and the parts of the core
+ * the tool writes. A station renamed keeps its id: the tracks of it state its
+ * new name too, as its platforms do (withStation).
+ */
 export function recordOf(record, state) {
   const { operationalPoints, platforms } = state.collections
-  return { ...record, platforms, operationalPoints: operationalPoints.length ? operationalPoints : undefined, signalling: signallingOf(state) }
+  const points = new Map(operationalPoints.map(p => [p.id, p]))
+  const register = stationRegister(record)
+  let renamed = false
+  const tracks = (record?.tracks ?? []).map(tr => {
+    const p = points.get(register.pointOf(tr))
+    if (!p?.name || p.name === tr.stationName) return tr
+    renamed = true
+    return { ...tr, stationName: p.name }
+  })
+  return {
+    ...record, ...(renamed ? { tracks } : {}), platforms,
+    operationalPoints: operationalPoints.length ? operationalPoints : undefined, signalling: signallingOf(state),
+  }
 }
 
 /** The state with another domain — the parts of the core as they are. */

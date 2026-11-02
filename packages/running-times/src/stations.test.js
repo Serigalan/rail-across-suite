@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { marked, net } from '../test/net.js'
 import { routeVia } from './route.js'
-import { crossingSpeed, stationNamed, stationTargets, stationsAlong, stationsOf } from './stations.js'
+import { renamedStation } from '@rail-across/core/document'
+import { parseProjectsPayload, projectDocument } from '@rail-across/core/project'
+import { crossingSpeed, placeOf, stationById, stationNamed, stationTargets, stationsAlong, stationsOf } from './stations.js'
 
 describe('the stations of a net', () => {
   const stations = stationsOf(net)
@@ -77,5 +79,25 @@ describe('the stations of a net', () => {
     const along = stationsAlong(route.path, all)
     expect(along.map(s => s.name)).toEqual(['West', 'A-Dorf', 'B-Halt', 'C-Stadt', stop])
     expect(along.at(-1).at).toBeCloseTo(route.offsets[1], 6)
+  })
+
+  it('know each station by its id, which a rename keeps, through the document and back', () => {
+    const project = { ...net, switches: [], id: '5dbd8fed-f8dc-4995-8934-9d71be69cae0', title: 'Netz' }
+    const before = stationsOf(project)
+    const c = stationNamed(before, 'C-Stadt')
+    expect(c.id).toMatch(/^[0-9a-f-]{36}$/)
+    expect(new Set(before.map(s => s.id)).size).toBe(before.length)
+    // the same ids from the project's document
+    const read = (record) => parseProjectsPayload(JSON.parse(JSON.stringify(projectDocument(record)))).projects[0]
+    expect(stationsOf(read(project)).map(s => [s.id, s.name])).toEqual(before.map(s => [s.id, s.name]))
+    // renamed: the same id under the new name, its tracks with it
+    const renamed = read({ ...project, ...renamedStation(project, c.id, { name: 'C-City' }) })
+    const after = stationById(stationsOf(renamed), c.id)
+    expect(after).toMatchObject({ name: 'C-City', kind: 'station' })
+    expect(after.tracks.map(tr => tr.id)).toEqual(['C1', 'C2'])
+    // a point finds it by its id, an old one by its name
+    expect(placeOf(stationsOf(renamed), { place: c.id, station: 'C-Stadt' })?.name).toBe('C-City')
+    expect(placeOf(stationsOf(renamed), { station: 'C-Stadt' })).toBeNull()
+    expect(placeOf(before, { station: 'c-stadt' })?.id).toBe(c.id)
   })
 })

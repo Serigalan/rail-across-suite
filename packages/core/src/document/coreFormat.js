@@ -88,7 +88,7 @@ function statusOf(lifespan, final) {
  * id and its codes, and takes the codes the objects agree on where it has
  * none; an object stating another code is a point of its own.
  */
-function operationalRegister(projectId, tracks, platforms, stored = []) {
+export function operationalRegister(projectId, tracks, platforms, stored = []) {
   const named = [
     ...tracks.map(t => ({ obj: t, name: text(t.stationName), uic: text(t.uicStation), rl100: undefined })),
     ...platforms.map(p => ({ obj: p, name: text(p.stationName), uic: undefined, rl100: text(p.code) })),

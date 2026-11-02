@@ -14,11 +14,12 @@ const isTime = (v) => Number.isFinite(v) && v >= 0 && v < DAY_LIMIT
 
 /**
  * A train's point — a station it starts at, stops at, passes or ends at —:
- * the station's name, its track or none, whether it stops there, how long,
- * the departure it waits for there.
+ * the place's id — absent in a point written before places had ids — and
+ * its name to show it by, its track or none, whether it stops there, how
+ * long, the departure it waits for there.
  */
 function isPoint(p) {
-  return isObject(p) && isText(p.id, 64, true) && isText(p.station, 200, true)
+  return isObject(p) && isText(p.id, 64, true) && orNull(p.place, v => isText(v, 64, true)) && isText(p.station, 200, true)
     && orNull(p.track, v => isText(v, 64, true)) && typeof p.stop === 'boolean'
     && orNull(p.dwell, v => Number.isFinite(v) && v >= 0 && v <= 86400) && orNull(p.departure, isTime)
 }

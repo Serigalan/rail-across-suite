@@ -18,6 +18,7 @@ writes canonical JSON and content hashes. The `project` module opens the door fo
 
 | File | What it does |
 |---|---|
+| `stations.js` | The stations of a record by their ids: `stationRegister` (every station and halt a point of the register, and which point a track or platform is of), `renamedStation` (a station renamed, keeping its id, its tracks and platforms stating the new name) |
 | `door.js` | The one door: `checkDocument` (envelope, domain versions and schema hashes — a domain of an earlier schema of its version brought to this one first: core before `designSpeed` and before an end mark's name and speed, signalling's five earlier schemas —, every object against its domain's schema, ids unique per collection, blobs against their hashes), `toDocument` (a record as a checked document, the schemas carried where it travels), `fromDocument` (a checked document as the record) |
 | `coreFormat.js` | The record ↔ document conversion, both ways and lossless; the first step of the migration chain (oltjson-1.1 → core 1.0) |
 | `schemaCheck.js` | The part of JSON Schema the domain schemas use — no more, so Python reads them alike; a schema with another keyword is refused when it is registered |

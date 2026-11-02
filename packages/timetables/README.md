@@ -4,7 +4,7 @@ A project's timetables ([decision 0016](../../docs/decisions/0016-timetables-of-
 Fahrplan-Editor:
 
 - **the model** (`timetable.js`): a train — number, kind, name, a vehicle of the catalogue (`@rail-across/vehicles`)
-  with its traction mode and comfort, its departure, its margin — and its points, each a station or halt by name,
+  with its traction mode and comfort, its departure, its margin — and its points, each a place by its id (`place`, the name only shown; `withPlaces` gives a point named by its name only its id),
   its track or any, a stop or a pass, the dwell, a departure waited for, the itinerary it prefers to the next
   (`itineraryOptions`, `preferredLegs`: between the signalling's stopping places of the two). A train begins and ends at a station, a buffer stop or a boundary only
   (`trainProblems` says where it does not), over a boundary at its speed (`crossingSpeed`); copies at an interval (`taktCopies`); clock times read and written;

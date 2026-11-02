@@ -1,10 +1,10 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { newVehicle } from '@rail-across/vehicles'
-import { runWith, stationsOf } from '@rail-across/running-times'
+import { runWith, stationTargets, stationsOf } from '@rail-across/running-times'
 import { marked, net, WASM } from '../../running-times/test/net.js'
 import {
-  copyTrain, formatClock, itineraryOptions, newPoint, newTrain, numberAfter, parseClock, runTrain, taktCopies, trainProblems, trainRequest, trainTitle,
+  copyTrain, formatClock, itineraryOptions, newPoint, newTrain, numberAfter, parseClock, routePoints, runTrain, taktCopies, trainProblems, trainRequest, trainTitle, withPlaces,
 } from './timetable.js'
 
 const stations = stationsOf(net)
@@ -24,6 +24,22 @@ describe('a train of the timetable', () => {
     const stop = 'Prellbock C-Stadt Gl. 2 Ende'
     expect(trainProblems(train([['West'], [stop]]), ends)).toEqual([])
     expect(trainProblems(train([['A-Dorf'], ['West'], ['C-Stadt']]), ends)).toEqual([{ key: 'end_on_the_way', point: 1 }])
+  })
+
+  it('names its places by their ids, shown by their names, and finds those of a timetable written before by name', () => {
+    const a = stations.find(s => s.name === 'A-Dorf'), c = stations.find(s => s.name === 'C-Stadt')
+    const byId = newTrain({ vehicle: 'v', points: [newPoint(a), newPoint(c)] })
+    expect(byId.points.map(p => [p.place, p.station])).toEqual([[a.id, 'A-Dorf'], [c.id, 'C-Stadt']])
+    // renamed on the variant: the point still finds it by its id, and is shown by the name it was given
+    const renamed = stations.map(s => (s.id === c.id ? { ...s, name: 'C-City' } : s))
+    expect(trainProblems(byId, renamed)).toEqual([])
+    expect(routePoints(byId, renamed)[1]).toEqual(stationTargets(c))
+    // a place the variant lacks is missing, whatever its name
+    expect(trainProblems(byId, stations.filter(s => s.id !== c.id))).toEqual([{ key: 'station_missing', point: 1 }])
+    const old = train([['A-Dorf'], ['C-Stadt']])
+    expect(trainProblems(old, stations)).toEqual([])
+    expect(withPlaces(old, stations).points.map(p => p.place)).toEqual([a.id, c.id])
+    expect(withPlaces(byId, stations)).toBe(byId)
   })
 
   it('names stations and tracks the variant has, a vehicle and a margin that reads', () => {

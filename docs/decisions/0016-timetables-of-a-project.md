@@ -10,12 +10,17 @@ only into a free block (7); the register's stations are stations (3)
    table of their own (`timetable`, migration 010) under `/api/projects/<id>/timetables` and `/api/timetables/<id>`.
    Whoever sees the project sees its timetables and changes them; a template's are the admins'. A save names the
    version it changed; a save on an older one is refused with the timetable as it is now (409), as for vehicles.
-2. **A train names its stations by their names.** A train is its number, kind and name, a vehicle of the catalogue
+2. **A train names its places by their ids.** A train is its number, kind and name, a vehicle of the catalogue
    (0014) with its traction mode and comfort, its departure, its margin and how it is spread, and its points —
-   each a station or halt by name, a track of it or any, whether it stops there, how long, and a departure it
-   waits for. So one timetable is laid on any variant of its project: the Fahrplan-Editor opens a variant —
-   this browser's working copy, else its head — and runs the trains over its net. A station the variant lacks is
-   said, not dropped.
+   each a place by its id (`place`), a track of it or any, whether it stops there, how long, and a departure it
+   waits for. A station's or halt's id is that of its point of the operational point register (R10) — drawn from
+   the project and the name for a new one, so the same on every variant, and kept when the station is renamed
+   (in the Layout-Tool under *Gleise zuordnen*, or in the Signalling-Tool); a buffer stop's or boundary's is its
+   end mark's. The name is only what a place is shown by: a point keeps the one it was chosen under
+   (`station`) to say which place a variant lacks, and a point written before places had ids is found by it,
+   and takes the id once its train's way is edited. So one timetable is laid on any variant of its project:
+   the Fahrplan-Editor opens a variant — this browser's working copy, else its head — and runs the trains over
+   its net. A place the variant lacks is said, not dropped.
 3. **A station is the layout's or the register's**: the station tracks of one name (a track's `trackType` and
    `stationName`, as the Layout-Tool groups them); a halt is a name only platforms carry. A station of the register
    of operational points ([0017](0017-stations-in-the-signalling-tool.md)) — one the Signalling-Tool made — is a

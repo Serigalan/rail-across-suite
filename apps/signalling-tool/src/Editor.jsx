@@ -12,20 +12,21 @@ import { api } from './api.js'
 import { projectsUrl } from './suite.js'
 import { freshCopy, keepCopy } from './workingCopy.js'
 import { netDrawing } from './model/net.js'
-import { added, cascadeOf, deleted, domainOf, findLogical, labelOf, replaced } from './model/domain.js'
+import { added, cascadeOf, deleted, domainOf, findLogical, labelOf, recordOf, replaced, signallingOf, withSignalling } from './model/domain.js'
 import { logicalSignalWord } from './labels.js'
 import { redo, startHistory, step, stepOf, stepText, travel, undo } from './model/history.js'
 import PlanView from './plan/PlanView.jsx'
 import SchematicView from './schema/SchematicView.jsx'
 import {
   BaliseIcon, CheckIcon, DetectionIcon, EditIcon, ExchangeIcon, HistoryIcon, HomeIcon, LayersIcon, LogoIcon, RouteIcon, SettingsIcon,
-  SignalIcon, SwitchIcon,
+  SignalIcon, StationIcon, SwitchIcon,
 } from './icons.jsx'
 import SignalsPanel from './panels/SignalsPanel.jsx'
 import DetectionPanel from './panels/DetectionPanel.jsx'
 import BalisesPanel from './panels/BalisesPanel.jsx'
 import EditPanel from './panels/EditPanel.jsx'
 import ElementsPanel from './panels/ElementsPanel.jsx'
+import StationsPanel from './panels/StationsPanel.jsx'
 import RoutesPanel from './panels/RoutesPanel.jsx'
 import CheckPanel from './panels/CheckPanel.jsx'
 import ExchangePanel from './panels/ExchangePanel.jsx'
@@ -36,8 +37,8 @@ import SettingsPanel from './panels/SettingsPanel.jsx'
 /**
  * The sections of the rail, in groups the gray line parts: what creates
  * signals, train detection and balises (`creates`: not where it only looks),
- * the editing of all three, the switches and routes, the check and the
- * exchange of data (not where it only looks either).
+ * the editing of all three, the stations, switches and routes, the check and
+ * the exchange of data (not where it only looks either).
  */
 const SECTIONS = [
   [
@@ -47,6 +48,7 @@ const SECTIONS = [
   ],
   [{ id: 'edit', icon: <EditIcon />, Panel: EditPanel }],
   [
+    { id: 'stations', icon: <StationIcon />, Panel: StationsPanel },
     { id: 'elements', icon: <SwitchIcon />, Panel: ElementsPanel },
     { id: 'routes', icon: <RouteIcon />, Panel: RoutesPanel },
   ],
@@ -60,6 +62,7 @@ const SECTIONS = [
 const SECTION_OF = {
   signals: 'edit', logicalSignals: 'edit', detectionPoints: 'edit', trackSections: 'edit', balises: 'edit',
   switchElements: 'elements', switches: 'elements', flankProtection: 'elements', routes: 'routes', overlaps: 'routes',
+  operationalPoints: 'stations', stationBoundaries: 'stations',
 }
 
 /** How long the edits rest before the working copy is written [ms]. */
@@ -69,7 +72,8 @@ const KEEP_AFTER = 250
  * Working on the signalling of a variant: the rail of sections on the left,
  * as the Layout-Tool orders its own — the map layers first; then creating
  * signals, train detection, balises and magnets; editing all three; the
- * switches with their flank protection and routes with their overlaps; the
+ * stations with their signals, platforms and boundary; the switches with
+ * their flank protection and routes with their overlaps; the
  * check and the exchange of data; at its foot undo, the history and redo, the
  * way back to the infrastructure editor and the settings —, the panel of the
  * one chosen, a menu with its pages as the Layout-Tool's panels have, the
@@ -82,8 +86,10 @@ const KEEP_AFTER = 250
  * page says the variant holds changes. Checking in sends the copy, tracks and
  * signalling, to the project server; updating brings in what others checked
  * in; discarding makes the copy the server's head again. The core's check
- * runs on every edit. The core is the Layout-Tool's: this tool reads it and
- * never changes it (R1).
+ * runs on every edit. The core is the Layout-Tool's: this tool reads it, and
+ * writes of it only the stations — the points of the operational point
+ * register and which station a platform is of (data model, R1) —, which its
+ * state holds beside the domain (domainOf).
  */
 export default function Editor({ project, variant, head, copy: opened, readOnly }) {
   const { t, language, setLanguage } = useTexts()
@@ -104,14 +110,16 @@ export default function Editor({ project, variant, head, copy: opened, readOnly 
   const [view, chooseView] = useState(keptView)
   const setView = (v) => { chooseView(v); keepView(v) }
 
+  // The state: the domain, and the parts of the core the tool writes (the stations).
   const domain = history.now
   const record = copy.project
-  const current = useMemo(() => ({ ...record, signalling: domain }), [record, domain])
+  const signalling = useMemo(() => signallingOf(domain), [domain])
+  const current = useMemo(() => recordOf(record, domain), [record, domain])
   const net = useMemo(() => ({ tracks: record.tracks ?? [], switches: record.switches ?? [] }), [record])
   const drawing = useMemo(() => netDrawing(net.tracks), [net])
-  const coreDomain = useMemo(() => projectDocument({ ...record, signalling: undefined }).domains.core, [record])
-  const findings = useMemo(() => checkSignalling({ core: coreDomain, signalling: domain }), [coreDomain, domain])
-  const extents = useMemo(() => trackSectionExtents({ core: { collections: net }, signalling: domain }), [net, domain])
+  const coreDomain = useMemo(() => projectDocument({ ...current, signalling: undefined }).domains.core, [current])
+  const findings = useMemo(() => checkSignalling({ core: coreDomain, signalling }), [coreDomain, signalling])
+  const extents = useMemo(() => trackSectionExtents({ core: { collections: net }, signalling }), [net, signalling])
   const changes = useMemo(() => (readOnly ? 0 : localChangeCount({ basePayload: copy.basePayload, project: current })), [readOnly, copy, current])
 
   // Every edit into the working copy, once the edits come to rest; what was
@@ -128,7 +136,7 @@ export default function Editor({ project, variant, head, copy: opened, readOnly 
 
   /** The copy from now on, kept at once; `nextDomain` the domain worked on, as a step. */
   const adopt = (next, nextDomain = domainOf(next.project)) => {
-    const project = { ...next.project, signalling: nextDomain }
+    const project = recordOf(next.project, nextDomain)
     setCopy({ ...next, project })
     written.current = nextDomain
     keepCopy(variant.id, { ...next, project })
@@ -144,7 +152,8 @@ export default function Editor({ project, variant, head, copy: opened, readOnly 
       const obj = d.collections[collection].find(o => o.id === id)
       return obj ? replaced(d, collection, fn(obj)) : d
     }),
-    replaceAll: (next) => edit(() => next),
+    /** The state anew; a collection `next` does not hold — the core's, where a domain is read in — stays as it is. */
+    replaceAll: (next) => edit(d => ({ fields: next.fields, collections: { ...d.collections, ...next.collections } })),
     remove: (collection, id) => setDialog({ kind: 'delete', collection, id }),
   }), [edit])
 
@@ -168,7 +177,7 @@ export default function Editor({ project, variant, head, copy: opened, readOnly 
       if (mod && e.key.toLowerCase() === 'z' && !e.shiftKey) { e.preventDefault(); setHistory(undo) }
       else if (mod && (e.key.toLowerCase() === 'y' || (e.key.toLowerCase() === 'z' && e.shiftKey))) { e.preventDefault(); setHistory(redo) }
       else if (e.key === 'Escape') setMode(null)
-      else if ((e.key === 'Delete' || e.key === 'Backspace') && selection && !readOnly && selection.collection !== 'switches') {
+      else if ((e.key === 'Delete' || e.key === 'Backspace') && selection && !readOnly && !['switches', 'operationalPoints'].includes(selection.collection)) {
         e.preventDefault(); setDialog({ kind: 'delete', ...selection })
       }
     }
@@ -258,11 +267,11 @@ export default function Editor({ project, variant, head, copy: opened, readOnly 
     const before = new Map((record.tracks ?? []).map(tr => [tr.id, tr]))
     const now = next.project.tracks ?? []
     const present = new Set(now.map(tr => tr.id))
-    const { domain: carried } = carryDomain(domain, {
+    const { domain: carried } = carryDomain(signalling, {
       present, changed: (id) => before.has(id) && (!present.has(id) || now.find(tr => tr.id === id) !== before.get(id)),
       oldTrack: (id) => before.get(id) ?? null, candidates: () => now, tracks: now, switches: next.project.switches ?? [],
     })
-    adopt(next, carried)
+    adopt(next, withSignalling(domainOf(next.project), carried))
     setDialog(null)
   }
 
@@ -281,7 +290,7 @@ export default function Editor({ project, variant, head, copy: opened, readOnly 
   }
   const panelProps = {
     domain, net, drawing, findings, extents, selection, select: chooseFromList, ops, mode, setMode, readOnly, t, language,
-    record, setNotice, setSection, basemap, setBasemap,
+    record, core: coreDomain, setNotice, setSection, basemap, setBasemap,
   }
 
   return (
@@ -348,7 +357,7 @@ export default function Editor({ project, variant, head, copy: opened, readOnly 
           </div>
         )}
         {view === 'schema' && (
-          <SchematicView net={net} platforms={record.platforms} domain={domain} selection={selection} highlight={highlight}
+          <SchematicView net={net} platforms={domain.collections.platforms} domain={domain} selection={selection} highlight={highlight}
             fitKey={fitKey} focus={focus} t={t} onPick={select} />
         )}
         <PlanView hidden={view === 'schema'} drawing={drawing} net={net} domain={domain} selection={selection} highlight={highlight} mode={mode} fitKey={fitKey} focus={focus} basemap={basemap} t={t}
@@ -411,6 +420,8 @@ function placeToShow(domain, sel) {
     case 'overlaps': return obj && signalAt(obj.signalId)
     case 'trackSections': return obj && c.detectionPoints.find(d => d.id === obj.boundedBy[0])?.at
     case 'flankProtection': return obj?.protection.signalId ? signalAt(obj.protection.signalId) : null
+    case 'operationalPoints': return c.signals.find(s => s.operationalPointId === sel.id)?.at ?? null
+    case 'stationBoundaries': return obj ? c.signals.find(s => obj.marks.some(m => m.signalId === s.id))?.at ?? null : null
     default: return null
   }
 }
@@ -448,6 +459,11 @@ function highlightOf(domain, selection, extents) {
     case 'balises': {
       const b = find('balises')
       return b ? { ids: [b.signalId].filter(Boolean) } : null
+    }
+    case 'operationalPoints': return { ids: c.signals.filter(s => s.operationalPointId === selection.id).map(s => s.id) }
+    case 'stationBoundaries': {
+      const b = find('stationBoundaries')
+      return b ? { ids: c.signals.filter(s => s.operationalPointId === b.operationalPointId).map(s => s.id) } : null
     }
     default: return null
   }

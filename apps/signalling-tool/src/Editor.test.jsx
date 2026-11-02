@@ -6,6 +6,8 @@ import Editor from './Editor.jsx'
 import EditPanel from './panels/EditPanel.jsx'
 import SettingsPanel from './panels/SettingsPanel.jsx'
 import RoutesPanel from './panels/RoutesPanel.jsx'
+import StationsPanel from './panels/StationsPanel.jsx'
+import { projectDocument } from '@rail-across/core/project'
 import { logicalId } from './model/domain.js'
 import { linkedRequest } from './suite.js'
 
@@ -38,7 +40,7 @@ const record = {
 /** The editing panel, with `selection` chosen. */
 const edit = (selection, language = 'de', domain = record.signalling) => renderToStaticMarkup(
   <I18n.Provider value={textsFor(language)}>
-    <EditPanel domain={domain} net={{ tracks: record.tracks, switches: [] }} findings={{ errors: [], warnings: [] }} extents={new Map()}
+    <EditPanel domain={domain} net={{ tracks: record.tracks, switches: [] }} core={projectDocument(record).domains.core} findings={{ errors: [], warnings: [] }} extents={new Map()}
       selection={selection} select={() => {}} ops={{}} setMode={() => {}} readOnly={false} {...textsFor(language)} />
   </I18n.Provider>,
 )
@@ -122,13 +124,14 @@ describe('the Signalling-Tool', () => {
     const html = render()
     const rail = html.slice(html.indexOf('<nav class="ui-rail"'), html.indexOf('</nav>'))
     const at = (label) => rail.indexOf(`<span class="ui-rail-label">${label}</span>`)
-    const order = ['Kartenebenen', 'Signale', 'Gleisfreimeldung', 'Balisen/Magnete', 'Bearbeiten', 'Weichen', 'Fahrstraßen', 'Prüfung', 'Datenaustausch', 'Infrastruktur-Editor', 'Einstellungen'].map(at)
+    const order = ['Kartenebenen', 'Signale', 'Gleisfreimeldung', 'Balisen/Magnete', 'Bearbeiten', 'Bahnhöfe', 'Weichen', 'Fahrstraßen', 'Prüfung', 'Datenaustausch', 'Infrastruktur-Editor', 'Einstellungen'].map(at)
     expect(order.every(i => i > 0)).toBe(true)
     expect([...order].sort((a, b) => a - b)).toEqual(order)
-    // A line after the map layers, after balises, after editing, after routes, and above the foot.
+    // A line after the map layers, after balises, after editing, after routes, and above the foot; the stations above the switches.
     const lines = [...rail.matchAll(/ui-rail-divider/g)].map(m => m.index)
-    for (const [before, after] of [[0, 1], [3, 4], [4, 5], [6, 7]]) expect(lines.some(i => i > order[before] && i < order[after])).toBe(true)
+    for (const [before, after] of [[0, 1], [3, 4], [4, 5], [7, 8]]) expect(lines.some(i => i > order[before] && i < order[after])).toBe(true)
     expect(lines.some(i => i > order[1] && i < order[3])).toBe(false)
+    expect(lines.some(i => i > order[5] && i < order[7])).toBe(false)
     expect(rail).not.toContain('Standorte')
     expect(rail).not.toContain('>Flankenschutz<')
   })
@@ -194,6 +197,40 @@ describe('the Signalling-Tool', () => {
     expect(html).toContain('80 km/h')
     expect(html).toContain('Durchrutschweg ermitteln')
     expect(html).toContain('Am Signal einstellen')
+  })
+
+  it('creates stations, and gives each its signals, its platforms and its boundary', () => {
+    const withStation = {
+      ...record,
+      platforms: [{ id: 'pf1', trackId: 't2', startStation: 10, endStation: 150, side: 'right', stationName: 'Testdorf' }],
+      operationalPoints: [{ id: 'op-w', name: 'Wiesenthal' }],
+    }
+    const core = projectDocument({ ...withStation, signalling: undefined }).domains.core
+    const testdorf = core.collections.operationalPoints.find(p => p.name === 'Testdorf').id
+    const domain = { ...withStation.signalling, collections: { ...withStation.signalling.collections, platforms: withStation.platforms, operationalPoints: withStation.operationalPoints } }
+    const panel = (selection, language = 'de') => renderToStaticMarkup(
+      <I18n.Provider value={textsFor(language)}>
+        <StationsPanel domain={domain} net={{ tracks: record.tracks, switches: [] }} core={core} findings={{ errors: [], warnings: [] }}
+          selection={selection} select={() => {}} ops={{}} readOnly={false} {...textsFor(language)} />
+      </I18n.Provider>,
+    )
+    const menu = panel(null)
+    expect(menu).toContain('<h2>Bahnhöfe</h2>')
+    expect(menu).toContain('Bahnhof anlegen')
+    expect(menu).toContain('<span class="ui-grow">Bahnhöfe</span><span class="ui-option-end">2</span>')
+    // One the platforms name: its platform ticked, its signals to choose, its boundary by the rule.
+    const station = panel({ collection: 'operationalPoints', id: testdorf })
+    expect(station).toContain('<h2>Bahnhof</h2>')
+    expect(station).toContain('Bahnsteig an t2, 10–150 m')
+    expect(station).toMatch(/checked=""\/><span>Bahnsteig an t2/)
+    expect(station).toMatch(/type="checkbox"\/><span>A · Einfahrsignal<\/span>/)
+    expect(station).toContain('Grenze zur freien Strecke')
+    expect(station).toContain('Einfahrsignale und Trapeztafeln übernehmen (0)')
+    expect(panel({ collection: 'operationalPoints', id: 'op-w' }, 'en')).toContain('Boundary towards the open line')
+    // A signal belongs to a station or to the open line.
+    const mast = edit({ collection: 'signals', id: 's-a' })
+    expect(mast).toContain('Gehört zu')
+    expect(mast).toContain('<option value="" selected="">Freie Strecke</option>')
   })
 
   it('reads what the suite asks of it from its address', () => {

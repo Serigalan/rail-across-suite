@@ -6,14 +6,15 @@ import { SignalIcon } from '../../icons.jsx'
 import { EditorHead, LocationFields, ObjectFindings } from '../common.jsx'
 import FramesEditor from '../frames.jsx'
 import { trackName } from '../../model/places.js'
+import { stationName } from '../../model/stations.js'
 
 /**
  * A signal mast — the physical signal: where it stands, on what mounting,
- * from how far it is seen, the boards it carries of no system, and its
- * logical signals, each opened in an editor of its own; a virtual signal has
- * its function instead.
+ * from how far it is seen, the station it belongs to or the open line, the
+ * boards it carries of no system, and its logical signals, each opened in an
+ * editor of its own; a virtual signal has its function instead.
  */
-export default function LocationEditor({ signal, net, findings, onChange, onDelete, onPlace, select, readOnly, t, language }) {
+export default function LocationEditor({ signal, net, core, findings, onChange, onDelete, onPlace, select, readOnly, t, language }) {
   const set = (patch) => onChange({ ...signal, ...patch })
   const logical = signal.logicalSignals ?? []
   const free = Object.keys(SIGNAL_CATALOGUE.systeme).filter(sys => !logical.some(l => l.system === sys))
@@ -44,6 +45,10 @@ export default function LocationEditor({ signal, net, findings, onChange, onDele
           )}
           <SelectField compact label={t('mounting')} value={signal.mounting ?? null} empty={t('none')} disabled={readOnly}
             options={optionsOf(MOUNTING, language)} onChange={(v) => set({ mounting: v ?? undefined })} />
+          <SelectField compact wide label={t('station_of_signal')} value={signal.operationalPointId ?? null} empty={t('open_line')} disabled={readOnly}
+            options={(core?.collections.operationalPoints ?? []).map(p => ({ value: p.id, label: stationName(p) }))
+              .sort((a, b) => a.label.localeCompare(b.label, 'de', { numeric: true }))}
+            onChange={(v) => set({ operationalPointId: v ?? undefined })} />
           <div className="ui-check-cell"><Checkbox label={t('both_directions')} checked={signal.bothDirections} disabled={readOnly} onChange={(v) => set({ bothDirections: v || undefined })} /></div>
         </>}
       </div>

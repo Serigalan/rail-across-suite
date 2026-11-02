@@ -16,18 +16,46 @@ export const COLLECTIONS = [
   'stationBoundaries',
 ]
 
+/**
+ * The collections of the record's core the tool writes as well: the points of
+ * the operational point register the record keeps, and the platforms, which
+ * name their station (model/stations.js). The tool's state holds them beside
+ * the domain's, so an edit of a station is one step with the rest.
+ */
+export const CORE_PARTS = ['operationalPoints', 'platforms']
+
 /** An empty domain, planned against the catalogue this build has. */
 export const emptyDomain = () => ({
   fields: { catalogue: { ...CATALOGUE_REF } },
   collections: Object.fromEntries(COLLECTIONS.map(c => [c, []])),
 })
 
-/** The domain of a record, or an empty one; every collection there. */
+/**
+ * The state the tool edits, of a record: its domain — or an empty one —, every
+ * collection there, and the parts of the core it writes (CORE_PARTS).
+ */
 export function domainOf(record) {
-  const d = record?.signalling
-  if (!d) return emptyDomain()
-  return { fields: d.fields ?? {}, collections: Object.fromEntries(COLLECTIONS.map(c => [c, d.collections?.[c] ?? []])) }
+  const d = record?.signalling ?? emptyDomain()
+  return {
+    fields: d.fields ?? {},
+    collections: Object.fromEntries([
+      ...COLLECTIONS.map(c => [c, d.collections?.[c] ?? []]),
+      ...CORE_PARTS.map(c => [c, record?.[c] ?? []]),
+    ]),
+  }
 }
+
+/** The signalling domain of the state, without the parts of the core. */
+export const signallingOf = (state) => ({ fields: state.fields, collections: Object.fromEntries(COLLECTIONS.map(c => [c, state.collections[c]])) })
+
+/** The record with the state laid on it: its domain and the parts of the core the tool writes. */
+export function recordOf(record, state) {
+  const { operationalPoints, platforms } = state.collections
+  return { ...record, platforms, operationalPoints: operationalPoints.length ? operationalPoints : undefined, signalling: signallingOf(state) }
+}
+
+/** The state with another domain — the parts of the core as they are. */
+export const withSignalling = (state, domain) => ({ fields: domain.fields, collections: { ...state.collections, ...signallingOf(domain).collections } })
 
 export const newId = () => (globalThis.crypto?.randomUUID?.() ?? `id-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`)
 
@@ -68,7 +96,7 @@ export function deleted(domain, collection, id) {
   if (collection === 'logicalSignals') return withLogical(domain, id, null)
   const gone = cascadeOf(domain, collection, id)
   const is = (name, oid) => gone[name]?.includes(oid)
-  const c = Object.fromEntries(COLLECTIONS.map(name => [name, domain.collections[name].filter(o => !is(name, o.id))]))
+  const c = { ...domain.collections, ...Object.fromEntries(COLLECTIONS.map(name => [name, domain.collections[name].filter(o => !is(name, o.id))])) }
   c.trackSections = c.trackSections.map(t => (t.boundedBy.some(p => is('detectionPoints', p)) ? { ...t, boundedBy: t.boundedBy.filter(p => !is('detectionPoints', p)) } : t))
   c.routes = c.routes.map(r => {
     const overlaps = r.overlaps?.filter(o => !is('overlaps', o.overlapId))
@@ -199,6 +227,8 @@ export function labelOf(collection, obj, t) {
   switch (collection) {
     case 'signals': return name ?? (hasScreen(obj) ? null : boardName(obj)) ?? t('unnamed')
     case 'routes': return name ?? null
+    case 'operationalPoints': return name ?? obj.rl100 ?? t('unnamed')
+    case 'platforms': return [obj.stationName, obj.code].filter(Boolean).join(' ') || t('unnamed')
     default: return name ?? t('unnamed')
   }
 }

@@ -131,3 +131,4 @@ html, body { margin: 0; background: var(--ui-surface); }
 .tool-plane { margin: 0; font-size: var(--ui-fs-s); font-variant-numeric: tabular-nums; }
 .tool-frame-chosen { border-color: var(--color-primary); }
 .tool-speed-row .ui-field { max-width: 120px; }
+.tool-marks { list-style: none; margin: 0 0 8px; padding: 0; display: flex; flex-direction: column; gap: 4px; font-size: var(--ui-fs-m); }

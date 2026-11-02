@@ -166,6 +166,15 @@ export function switchTypeByLabel(label) {
   return FORMEN.find(form => form.label === label) ?? null
 }
 
+/**
+ * The speed a turnout allows on its branch [km/h]: its record's, else its
+ * form's in the catalogue (a record imported or built without one); null
+ * where neither states one.
+ */
+export function switchBranchSpeed(sw) {
+  return sw?.speed > 0 ? sw.speed : switchTypeByLabel(sw?.label)?.speed ?? null
+}
+
 /** Length of the arc a form turns its frog angle through. */
 export function switchArcLength(R, ratio) {
   return R * Math.atan(1 / ratio)

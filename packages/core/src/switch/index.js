@@ -9,7 +9,7 @@
 export {
   ALL_SWITCH_TYPES, asRadius, bauform, CROSSING_TYPES, DEFAULT_SWITCH_TYPE_IDX, SWITCH_PICK_TYPES,
   switchBranchLength, switchBranchPointAt, switchBranchSections, switchFormChain, switchStraightLength,
-  switchMark, switchTypeByLabel,
+  switchBranchSpeed, switchMark, switchTypeByLabel,
 } from './catalogue.js'
 export {
   connectionAnchor, connectionRoots, END_CHAIN_OPEN, endChainDefault, endChainOpen, fitConnectingElement,

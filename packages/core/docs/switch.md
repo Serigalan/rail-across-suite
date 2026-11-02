@@ -12,7 +12,7 @@ ports, element marks — is in the `track` module; what the dialogs commit is in
 
 | File | What it does |
 |---|---|
-| `catalogue.js` | The forms of `packages/core/constraints/db-ril-800-0120.json` as the geometry reads them: turnout tables, crossing tables, fallback stages for connections, branch radius of a bent turnout, bauform, Weichenmarke distance |
+| `catalogue.js` | The forms of `packages/core/constraints/db-ril-800-0120.json` as the geometry reads them: turnout tables, crossing tables, fallback stages for connections, branch radius of a bent turnout, bauform, Weichenmarke distance, the speed a turnout allows on its branch (`switchBranchSpeed`: its record's, else its form's) |
 | `route.js` | A switch route `{ length, r1, r2 }` and chains of them: points, bearings and slices along a route, the branch of a turnout laid on a given stem |
 | `symbol.js` | The drawn switch: routes as polylines, the filled body between them, the LCS line, the label; `rebuildSwitchSymbol` derives all of it from the tracks on load |
 | `crossing.js` | Crossings and crossing switches (incl. Bogenkreuzungsweiche): angle, legs, end distances, connecting curves, geometry |

@@ -14,4 +14,5 @@ export {
 } from './catalogue.js'
 export { checkSignalling } from './checkSignalling.js'
 export { gradientAlong, overlapLength, signallingSpeedOf } from './overlaps.js'
+export { branchSpeedOnRun } from './switchSpeeds.js'
 export { netParts, trackSectionExtents } from './trackSections.js'

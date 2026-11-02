@@ -2,6 +2,7 @@ import {
   SIGNAL_CATALOGUE, aspectFitsFrame, aspectOf, baliseKindOf, boardAspect, knownSystem, protectionSystemOf, settingsProblems, signalKindOf, symbolFits,
 } from './catalogue.js'
 import { overlapLength, signallingSpeedOf } from './overlaps.js'
+import { branchSpeedOnRun } from './switchSpeeds.js'
 import { trackSectionExtents } from './trackSections.js'
 import { tracksOnFrom } from '../track/index.js'
 
@@ -28,6 +29,8 @@ import { tracksOnFrom } from '../track/index.js'
  * - a route runs from the track of its start signal to that of its target, a
  *   train route ends in an overlap behind its target, at most one of them
  *   preferred, and shows only aspects its signals have;
+ * - a train route over the branch of a turnout signals at most the speed the
+ *   turnout allows there — and signals one at all;
  * - an overlap starts at its signal's track and ends on the last of its path;
  * - flank protection is asked for once per switch element and position, and
  *   never given by the element that asks for it;
@@ -234,6 +237,12 @@ export function checkSignalling({ core, signalling }) {
     if (r.kind === 'train' && signals.get(r.targetSignalId)?.kind === 'real' && !r.overlaps?.length) warning('route_without_overlap', 'routes', r.id)
     if ((r.overlaps ?? []).filter(o => o.preferred).length > 1) error('overlap_preferred_many', 'routes', r.id)
     const speed = r.kind === 'train' ? signallingSpeedOf(signalling, r) : null
+    const branch = r.kind === 'train' ? branchSpeedOnRun(core?.collections?.switches, run) : null
+    if (branch?.speed != null && speed == null) {
+      warning('route_speed_over_branch_missing', 'routes', r.id, { allowed: branch.speed, switches: branch.switchIds })
+    } else if (branch?.speed != null && speed > branch.speed) {
+      warning('route_speed_over_branch', 'routes', r.id, { speed, allowed: branch.speed, switches: branch.switchIds })
+    }
     for (const o of r.overlaps ?? []) {
       ref('routes', r.id, 'signalling.overlaps', o.overlapId, 'overlaps')
       const overlap = overlaps.get(o.overlapId)

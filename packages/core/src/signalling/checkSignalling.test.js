@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { checkSignalling } from './index.js'
+import { branchSpeedOnRun, checkSignalling } from './index.js'
 import { ksStation, ksStationCore } from '../../test/signallingFixture.js'
 
 const check = (change = () => {}) => {
@@ -198,6 +198,40 @@ describe('routes and overlaps', () => {
       byId(c.overlaps, 'ov-n1').end = { anchor: 'station', trackId: 't3', station: 10 }
     })
     expect(beside).toEqual([])
+  })
+})
+
+describe('a route over the branch of a turnout', () => {
+  // N1's route runs from t1 onto t2 — over W1's branch once its ports say so.
+  const overBranch = (speed, signalled) => check((c, core) => {
+    core.collections.switches[0] = { ...core.collections.switches[0], ...(speed ? { speed } : {}),
+      ports: { A: { trackId: 't1', endpoint: 'END' }, B1: { trackId: 't2', endpoint: 'BEGIN' }, B2: { trackId: 't3', endpoint: 'BEGIN' } } }
+    const n1 = byId(c.signals, 'sig-n1').logicalSignals[0]
+    n1.signallingSpeeds = signalled == null ? undefined : [{ routeId: 'rt-n1-v', speed: signalled }]
+  }).warnings.filter(w => w.code.startsWith('route_speed'))
+
+  it('signals at most the speed the turnout allows there', () => {
+    expect(overBranch(60, 80).map(w => [w.code, w.id, w.params.allowed])).toEqual([['route_speed_over_branch', 'rt-n1-v', 60]])
+    expect(overBranch(60, 60)).toEqual([])
+    expect(overBranch(60, 40)).toEqual([])
+  })
+
+  it('signals one at all, and says nothing where the turnout states none', () => {
+    expect(overBranch(60, null).map(w => [w.code, w.params.switches])).toEqual([['route_speed_over_branch_missing', ['w1']]])
+    expect(overBranch(null, 80)).toEqual([])
+  })
+
+  it('is one that passes from the toe to the branch, either way, not along the straight', () => {
+    const sw = (id, speed, a, b1, b2) => ({ id, kind: 'turnout', speed, ports: { A: { trackId: a }, B1: { trackId: b1 }, B2: { trackId: b2 } } })
+    const switches = [sw('w1', 60, 'a', 'l', 'm'), sw('w2', 40, 'x', 'l', 'y'), { switchId: 'w3', speed: 100, ports: { A: { trackId: 'm' }, B1: { trackId: 'n' } } }]
+    expect(branchSpeedOnRun(switches, ['a', 'm'])).toBeNull()
+    expect(branchSpeedOnRun(switches, ['a', 'l'])).toEqual({ speed: 60, switchIds: ['w1'] })
+    expect(branchSpeedOnRun(switches, ['x', 'l', 'a'])).toEqual({ speed: 40, switchIds: ['w2', 'w1'] })
+    expect(branchSpeedOnRun(switches, ['a', 'm', 'n'])).toEqual({ speed: 100, switchIds: ['w3'] })
+    expect(branchSpeedOnRun([], ['a', 'l'])).toBeNull()
+    // A turnout that states no speed allows its form's.
+    expect(branchSpeedOnRun([{ ...switches[0], speed: undefined, label: '500 – 1:12' }], ['a', 'l']).speed).toBe(60)
+    expect(branchSpeedOnRun([{ ...switches[0], speed: undefined }], ['a', 'l']).speed).toBeNull()
   })
 })
 

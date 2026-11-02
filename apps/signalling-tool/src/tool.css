@@ -132,3 +132,9 @@ html, body { margin: 0; background: var(--ui-surface); }
 .tool-frame-chosen { border-color: var(--color-primary); }
 .tool-speed-row .ui-field { max-width: 120px; }
 .tool-marks { list-style: none; margin: 0 0 8px; padding: 0; display: flex; flex-direction: column; gap: 4px; font-size: var(--ui-fs-m); }
+.tool-facts { display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; margin: 8px 0; font-size: var(--ui-fs-m); }
+.tool-facts dt { color: var(--ui-muted); }
+.tool-facts dd { margin: 0; }
+.tool-way { border: 1px solid var(--ui-border); border-radius: 8px; padding: 8px 10px; margin: 0 0 8px; display: flex; flex-direction: column; gap: 6px; font-size: var(--ui-fs-m); }
+.tool-way-head { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+.tool-way ul { margin: 0; padding-left: 18px; }

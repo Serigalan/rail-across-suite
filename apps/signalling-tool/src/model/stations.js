@@ -1,4 +1,4 @@
-import { newId } from './domain.js'
+import { deleted, newId } from './domain.js'
 
 /**
  * The stations, as the tool edits them: points of the core's operational
@@ -113,12 +113,13 @@ export function entryMarks(state, pointId) {
 /**
  * The state without a station that nothing but the tool keeps: its kept
  * point, its platforms of no station, its signals of the open line, its
- * boundary gone.
+ * boundary and its stopping places gone, with the itineraries from and to them.
  */
 export function withoutStation(state, pointId, platformIds = []) {
-  const gone = withCollections(withPlatforms(withSignals(state, pointId, []), null, [], platformIds), {
+  let gone = withCollections(withPlatforms(withSignals(state, pointId, []), null, [], platformIds), {
     operationalPoints: state.collections.operationalPoints.filter(p => p.id !== pointId),
   })
+  for (const h of state.collections.stoppingPlaces.filter(x => x.operationalPointId === pointId)) gone = deleted(gone, 'stoppingPlaces', h.id)
   return withBoundary(gone, pointId, [])
 }
 

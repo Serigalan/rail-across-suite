@@ -62,7 +62,7 @@ const SECTIONS = [
 const SECTION_OF = {
   signals: 'edit', logicalSignals: 'edit', detectionPoints: 'edit', trackSections: 'edit', balises: 'edit',
   switchElements: 'elements', switches: 'elements', flankProtection: 'elements', routes: 'routes', overlaps: 'routes',
-  operationalPoints: 'stations', stationBoundaries: 'stations',
+  operationalPoints: 'stations', stationBoundaries: 'stations', stoppingPlaces: 'stations', itineraries: 'routes',
 }
 
 /** How long the edits rest before the working copy is written [ms]. */
@@ -421,10 +421,18 @@ function placeToShow(domain, sel) {
     case 'trackSections': return obj && c.detectionPoints.find(d => d.id === obj.boundedBy[0])?.at
     case 'flankProtection': return obj?.protection.signalId ? signalAt(obj.protection.signalId) : null
     case 'operationalPoints': return c.signals.find(s => s.operationalPointId === sel.id)?.at ?? null
+    case 'stoppingPlaces': return obj ? middleOf(obj.at) : null
+    case 'itineraries': {
+      const h = obj && c.stoppingPlaces.find(x => x.id === obj.startStoppingPlaceId)
+      return h ? middleOf(h.at) : null
+    }
     case 'stationBoundaries': return obj ? c.signals.find(s => obj.marks.some(m => m.signalId === s.id))?.at ?? null : null
     default: return null
   }
 }
+
+/** A range's middle, as a location to show. */
+const middleOf = (at) => ({ anchor: 'station', trackId: at.trackId, station: (at.startStation + at.endStation) / 2 })
 
 /** What the plan marks for what is chosen: its run, its section's extent, the signals it names. */
 function highlightOf(domain, selection, extents) {
@@ -460,7 +468,21 @@ function highlightOf(domain, selection, extents) {
       const b = find('balises')
       return b ? { ids: [b.signalId].filter(Boolean) } : null
     }
-    case 'operationalPoints': return { ids: c.signals.filter(s => s.operationalPointId === selection.id).map(s => s.id) }
+    case 'operationalPoints': return {
+      ids: c.signals.filter(s => s.operationalPointId === selection.id).map(s => s.id),
+      stretches: c.stoppingPlaces.filter(h => h.operationalPointId === selection.id).map(h => ({ trackId: h.at.trackId, from: h.at.startStation, to: h.at.endStation })),
+    }
+    case 'stoppingPlaces': {
+      const h = find('stoppingPlaces')
+      return h ? { stretches: [{ trackId: h.at.trackId, from: h.at.startStation, to: h.at.endStation }] } : null
+    }
+    case 'itineraries': {
+      const it = find('itineraries')
+      if (!it) return null
+      const ends = c.stoppingPlaces.filter(h => h.id === it.startStoppingPlaceId || h.id === it.targetStoppingPlaceId)
+      const ids = it.routeIds.flatMap(id => { const r = c.routes.find(x => x.id === id); return r ? [r.startSignalId, r.targetSignalId] : [] })
+      return { runs: it.path.trackIds, ids, stretches: ends.map(h => ({ trackId: h.at.trackId, from: h.at.startStation, to: h.at.endStation })) }
+    }
     case 'stationBoundaries': {
       const b = find('stationBoundaries')
       return b ? { ids: c.signals.filter(s => s.operationalPointId === b.operationalPointId).map(s => s.id) } : null

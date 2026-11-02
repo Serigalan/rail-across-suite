@@ -186,6 +186,8 @@ describe('the Signalling-Tool', () => {
       </I18n.Provider>,
     )
     expect(menu).toContain('Fahrstraße erstellen')
+    expect(menu).toContain('Fahrwege suchen')
+    expect(menu).toContain('<span class="ui-grow">Fahrwege</span><span class="ui-option-end">0</span>')
     expect(menu).toContain('Durchrutschweg erstellen')
     expect(menu).toContain('<span class="ui-grow">Fahrstraßen</span><span class="ui-option-end">1</span>')
     const html = renderToStaticMarkup(
@@ -226,6 +228,10 @@ describe('the Signalling-Tool', () => {
     expect(station).toMatch(/type="checkbox"\/><span>A · Einfahrsignal<\/span>/)
     expect(station).toContain('Grenze zur freien Strecke')
     expect(station).toContain('Einfahrsignale und Trapeztafeln übernehmen (0)')
+    // Its stopping places, on its tracks or at its platform.
+    expect(station).toContain('Halteplätze')
+    expect(station).toContain('<option value="pf:pf1">Bahnsteig an t2, 10–150 m</option>')
+    expect(menu).toContain('Halteplätze an der freien Strecke')
     expect(panel({ collection: 'operationalPoints', id: 'op-w' }, 'en')).toContain('Boundary towards the open line')
     // A signal belongs to a station or to the open line.
     const mast = edit({ collection: 'signals', id: 's-a' })

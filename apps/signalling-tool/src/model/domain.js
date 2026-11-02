@@ -71,7 +71,8 @@ export const replaced = (domain, collection, obj) =>
 /**
  * What a deletion takes with it, within the domain: { collection: [ids] } —
  * routes from or to a deleted signal, overlaps at it, flank protection given
- * by it or asked by a deleted switch element; objects that only name it lose
+ * by it or asked by a deleted switch element, the itineraries over a route or
+ * from or to a stopping place that goes; objects that only name it lose
  * the name (a balise its signal, a section the point, a logical signal the
  * speed or parameters it states for a route). A logical signal goes alone.
  */
@@ -88,6 +89,9 @@ export function cascadeOf(domain, collection, id) {
   if (collection === 'switchElements') {
     add('flankProtection', c.flankProtection.filter(f => f.requester.switchElementId === id || f.protection.switchElementId === id).map(f => f.id))
   }
+  const routeGone = new Set(gone.routes ?? []), placeGone = new Set(gone.stoppingPlaces ?? [])
+  add('itineraries', c.itineraries.filter(it => it.routeIds.some(r => routeGone.has(r))
+    || placeGone.has(it.startStoppingPlaceId) || placeGone.has(it.targetStoppingPlaceId)).map(it => it.id))
   return gone
 }
 
@@ -219,6 +223,9 @@ export function newBalise({ at, system = 'pzb', kind = Object.keys(protectionSys
     ...(Object.keys(settings).length ? { settings } : {}),
   }
 }
+
+/** A signal's full designation, its area's number leading (60A): names repeat from area to area. */
+export const designationOf = (s, t) => `${s?.areaNumber ?? ''}${labelOf('signals', s, t)}`
 
 /** A short label of an object for lists and findings. */
 export function labelOf(collection, obj, t) {

@@ -16,6 +16,10 @@ export const LocationIcon = () => <Svg><path d="M12 22V9" /><path d="M8 22h8" />
 export const DetectionIcon = () => <Svg><path d="M2 14h20" /><path d="M12 8v12" /><circle cx="12" cy="6" r="2" /><path d="M5 18h3M16 18h3" /></Svg>
 /** A station: its building with a gabled roof, by the track. */
 export const StationIcon = () => <Svg><path d="M2 20h20" /><path d="M5 16V9l7-5 7 5v7" /><path d="M3.5 10L12 4l8.5 6" /><path d="M10 16v-4h4v4" /></Svg>
+/** A stopping place: a stretch of track between two marks, a stop board at its end. */
+export const StopIcon = () => <Svg><path d="M2 18h20" /><path d="M5 14v8M19 14v8" /><rect x="14" y="3" width="6" height="7" rx="1" /><path d="M17 10v4" /><path d="M7 18h10" strokeWidth="3" /></Svg>
+/** An itinerary: a way from one stopping place to another, over a switch. */
+export const ItineraryIcon = () => <Svg><path d="M3 18h6c4 0 5-12 9-12h3" /><path d="M3 15v6M21 3v6" /><circle cx="12" cy="12" r="1.6" /></Svg>
 /** A turnout. */
 export const SwitchIcon = () => <Svg><path d="M3 16h18" /><path d="M8 16c4 0 7-2 11-8" /><circle cx="8" cy="16" r="1.6" /></Svg>
 /** A route from signal to signal. */

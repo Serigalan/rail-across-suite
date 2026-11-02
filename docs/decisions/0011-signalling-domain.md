@@ -20,6 +20,8 @@ Status: **accepted** · domain `signalling` 1.0, catalogue `db-ril-301` 0.4.0 ·
    | `flankProtection` — per switch element and position: by a signal, by a switch element in a position, or waived; passed on | `Fla_Schutz`, `Fla_Freimelde_Zuordnung` | — |
    | `balises` — the balises and magnets of train protection: of a system and kind, with their settings (a PZB magnet of 500, 1000, 2000 Hz or a speed check, an ETCS Eurobalise), their signal and routes | `PZB_Element`, `PZB_Element_Zuordnung`; `Balise` (ETCS) | — (OSRD has no balises yet) |
    | `stationBoundaries` — what marks the boundary of an operational point: an entry signal or board, an entry switch, a halt's platform | (EBO §4; the roadmap's station boundaries) | `OperationalPoint` parts |
+| `stoppingPlaces` — where trains stop: a stretch of one track (`TrackRange`), in a station on one of its tracks or at a platform, on the open line at a platform; bounded by the signals and detection points | (Halteplatz; `Bahnsteig_Kante` for one at a platform) | `OperationalPoint` parts, a train schedule's stop locations |
+| `itineraries` — a way from one stopping place to another: its run of tracks and the train routes it takes, one of each station from signal to signal, none on the open line; a timetable names it as the way a train prefers | (Fahrweg of the timetable) | an itinerary of a train schedule's path |
 
 2. **Boards are signals.** Ne 1, Ne 2, Lf 6, Lf 7 and the like are signals whose frame is a plate, as in PlanPro.
    There is no collection of signs.

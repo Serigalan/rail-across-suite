@@ -1,27 +1,29 @@
 import { useMemo, useState } from 'react'
 import { Button, ConfirmDialog, GroupedList, Option, Options, OptionsHeading, Panel, PlusIcon, Section, SelectField, TextField } from '@rail-across/ui'
-import { labelOf } from '../model/domain.js'
+import { designationOf } from '../model/domain.js'
 import {
   boundaryOf, entryMarks, nameTaken, newStation, stationName, stationsOf, withBoundary, withPlatforms, withSignals, withStation, withoutStation,
 } from '../model/stations.js'
 import { trackName } from '../model/places.js'
 import { FUNCTION, word } from '../labels.js'
-import { StationIcon } from '../icons.jsx'
+import { StationIcon, StopIcon } from '../icons.jsx'
 import { CheckList, EditorHead, ObjectFindings } from './common.jsx'
+import { StoppingPlaceEditor, StoppingPlacesSection } from './StoppingPlaces.jsx'
 
 const byLabel = (a, b) => String(a.label).localeCompare(String(b.label), 'de', { numeric: true })
 
-/** A signal's full designation, its area's number leading (60A): names repeat from area to area. */
-const designation = (s, t) => `${s?.areaNumber ?? ''}${labelOf('signals', s, t)}`
+const designation = designationOf
 
 /**
  * The stations, with a menu as the other panels: creating one — a point of
  * the core's operational point register, its name and RL100 code —, and the
  * list of the register's stations, each opened in its editor: its name and
  * code, its signals (the others are of the open line), its platforms from
- * the Layout-Tool, and its boundary towards the open line — its entry signals
- * or boards Ne 1, else its entry switches (EBO §4). A station the tracks name
- * is named and deleted in the Layout-Tool, where its tracks are.
+ * the Layout-Tool, its boundary towards the open line — its entry signals
+ * or boards Ne 1, else its entry switches (EBO §4) —, and its stopping
+ * places, on its tracks or at its platforms. A station the tracks name is
+ * named and deleted in the Layout-Tool, where its tracks are. The open line
+ * has stopping places too, at the platforms of no station.
  */
 export default function StationsPanel({ domain, net, core, findings, selection, select, ops, readOnly, t, language }) {
   const [page, setPage] = useState('menu')
@@ -31,11 +33,23 @@ export default function StationsPanel({ domain, net, core, findings, selection, 
   const chosenId = selection?.collection === 'operationalPoints' ? selection.id
     : selection?.collection === 'stationBoundaries' ? boundaryById(domain, selection.id)?.operationalPointId : null
   const chosen = chosenId ? stations.get(chosenId) : null
+  const place = selection?.collection === 'stoppingPlaces' ? domain.collections.stoppingPlaces.find(h => h.id === selection.id) : null
+
+  if (place) {
+    const toOwner = place.operationalPointId && stations.has(place.operationalPointId)
+      ? { label: stationName(stations.get(place.operationalPointId).point), onClick: () => select({ collection: 'operationalPoints', id: place.operationalPointId }) }
+      : { label: t('back'), onClick: () => { select(null); setPage('openLine') } }
+    return (
+      <Panel title={t('object_stoppingPlaces')} back={toOwner}>
+        <StoppingPlaceEditor key={place.id} place={place} domain={domain} net={net} core={core} findings={findings} ops={ops} readOnly={readOnly} t={t} />
+      </Panel>
+    )
+  }
 
   if (chosen) {
     return (
       <Panel title={t('object_operationalPoints')} back={{ label: t('back'), onClick: () => select(null) }}>
-        <StationEditor key={chosen.point.id} entry={chosen} stations={stations} register={register} domain={domain} net={net}
+        <StationEditor key={chosen.point.id} entry={chosen} stations={stations} register={register} domain={domain} net={net} core={core}
           findings={findings} ops={ops} select={select} readOnly={readOnly} t={t} language={language} />
       </Panel>
     )
@@ -43,6 +57,14 @@ export default function StationsPanel({ domain, net, core, findings, selection, 
 
   if (page === 'create') {
     return <Panel title={t('create_station')} intro={t('create_station_intro')} back={back}><CreatePage register={register} ops={ops} t={t} /></Panel>
+  }
+
+  if (page === 'openLine') {
+    return (
+      <Panel title={t('stopping_places_open')} intro={t('stopping_places_open_intro')} back={back}>
+        <StoppingPlacesSection entry={null} domain={domain} net={net} core={core} ops={ops} select={select} readOnly={readOnly} t={t} />
+      </Panel>
+    )
   }
 
   if (page === 'list') {
@@ -66,6 +88,10 @@ export default function StationsPanel({ domain, net, core, findings, selection, 
         <OptionsHeading>{t('stations')}</OptionsHeading>
         <Option icon={<StationIcon />} end={stations.size} onClick={() => setPage('list')}>{t('stations')}</Option>
         {!readOnly && <Option icon={<PlusIcon size={22} />} onClick={() => setPage('create')}>{t('create_station')}</Option>}
+      </Options>
+      <Options>
+        <OptionsHeading>{t('open_line')}</OptionsHeading>
+        <Option icon={<StopIcon />} end={domain.collections.stoppingPlaces.filter(h => !h.operationalPointId).length} onClick={() => setPage('openLine')}>{t('stopping_places_open')}</Option>
       </Options>
     </Panel>
   )
@@ -108,7 +134,7 @@ function CommitField({ label, value, onCommit, check = () => null, disabled, wid
 }
 
 /** A station: its name and code, its signals, its platforms and its boundary. */
-function StationEditor({ entry, stations, register, domain, net, findings, ops, select, readOnly, t, language }) {
+function StationEditor({ entry, stations, register, domain, net, core, findings, ops, select, readOnly, t, language }) {
   const [asking, setAsking] = useState(false)
   const { point, tracks, platforms } = entry
   const byTracks = tracks.length > 0
@@ -171,6 +197,8 @@ function StationEditor({ entry, stations, register, domain, net, findings, ops, 
             onChange={(ids) => ops.replaceAll(withPlatforms(domain, point, ids, platforms))} />
           : <p className="ui-list-empty">{t('station_platforms_none')}</p>}
       </Section>
+
+      <StoppingPlacesSection entry={entry} domain={domain} net={net} core={core} ops={ops} select={select} readOnly={readOnly} t={t} />
 
       <Section title={t('station_boundary')}>
         <p className="ui-muted">{t('station_boundary_hint')}</p>

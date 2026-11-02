@@ -84,10 +84,20 @@ export default function SchematicView({ net, platforms, domain, selection, highl
     : null), [layout, laneY, scale])
   const place = useMemo(() => (strip ? schematicPlacer(layout, strip) : null), [layout, strip])
 
-  // An object chosen in a list is brought into view, close enough to tell it from its neighbours.
+  // An object chosen in a list is brought into view, close enough to tell it
+  // from its neighbours; what reaches further — a way — as a whole.
   useEffect(() => {
-    const at = focus?.at
-    if (!layout || !measured || at?.anchor !== 'station') return
+    if (!layout || !measured || !focus) return
+    if (focus.fit) {
+      const xs = focus.fit.map(loc => layout.stationX(loc.trackId, loc.station)).filter(x => x != null)
+      if (!xs.length) return
+      const [xa, xb] = [Math.min(...xs), Math.max(...xs)]
+      const next = Math.min(MAX_SCALE, Math.max(MIN_SCALE, (size.w - 160) / Math.max(xb - xa, 1)))
+      setView(v => ({ ...v, scale: next, tx: size.w / 2 - ((xa + xb) / 2) * next }))
+      return
+    }
+    const at = focus.at
+    if (at?.anchor !== 'station') return
     const x = layout.stationX(at.trackId, at.station)
     if (x == null) return
     setView(v => {
@@ -258,6 +268,10 @@ function Highlight({ highlight, strip, place, pts }) {
       {strip.items.filter(it => it.kind === 'line' && it.trackIds.some(id => runs.has(id))).map((it, i) => (
         <path key={`r${i}`} d={pts(it.pts)} className="schema-run" />
       ))}
+      {(highlight.ways ?? []).flatMap((w, i) => w.pieces.map((p, j) => {
+        const line = place.stretch(p.trackId, p.from, p.to)
+        return line.length > 1 ? <path key={`w${i}-${j}`} d={pts(line)} className={`schema-way${w.strong ? ' is-strong' : ''}`} /> : null
+      }))}
       {(highlight.stretches ?? []).map((s, i) => {
         const line = place.stretch(s.trackId, s.from, s.to)
         return line.length > 1 ? <path key={`s${i}`} d={pts(line)} className={`schema-stretch${s.tone ? ` schema-stretch-${s.tone}` : ''}`} /> : null

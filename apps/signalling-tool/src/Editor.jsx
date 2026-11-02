@@ -13,6 +13,7 @@ import { projectsUrl } from './suite.js'
 import { freshCopy, keepCopy } from './workingCopy.js'
 import { netDrawing } from './model/net.js'
 import { added, cascadeOf, deleted, domainOf, findLogical, labelOf, recordOf, replaced, signallingOf, withSignalling } from './model/domain.js'
+import { waysBetween } from './model/itineraries.js'
 import { logicalSignalWord } from './labels.js'
 import { redo, startHistory, step, stepOf, stepText, travel, undo } from './model/history.js'
 import PlanView from './plan/PlanView.jsx'
@@ -100,6 +101,8 @@ export default function Editor({ project, variant, head, copy: opened, readOnly 
   const [visit, setVisit] = useState(0)
   const [selection, setSelection] = useState(null)
   const [mode, setMode] = useState(null)
+  // What a panel draws on the plan beyond what is chosen — the ways it found.
+  const [sketch, setSketch] = useState(null)
   const [dialog, setDialog] = useState(null)
   const [notice, setNotice] = useState(null)
   const [busy, setBusy] = useState(false)
@@ -193,7 +196,10 @@ export default function Editor({ project, variant, head, copy: opened, readOnly 
     if (mode?.kind === 'pick-points' && selection?.collection !== 'trackSections') setMode(null)
   }, [mode, selection])
 
-  const highlight = useMemo(() => highlightOf(domain, selection, extents), [domain, selection, extents])
+  const chosen = useMemo(() => highlightOf(domain, net, selection, extents), [domain, net, selection, extents])
+  const highlight = sketch ?? chosen
+  /** Bring locations into view on the plan, all of them at once. */
+  const showOnPlan = useCallback((fit) => setFocus(f => ({ fit, n: (f?.n ?? 0) + 1 })), [])
 
   // ── the server: checking in, updating, discarding ──
 
@@ -290,7 +296,7 @@ export default function Editor({ project, variant, head, copy: opened, readOnly 
   }
   const panelProps = {
     domain, net, drawing, findings, extents, selection, select: chooseFromList, ops, mode, setMode, readOnly, t, language,
-    record, core: coreDomain, setNotice, setSection, basemap, setBasemap,
+    record, core: coreDomain, setNotice, setSection, basemap, setBasemap, setSketch, showOnPlan,
   }
 
   return (
@@ -363,7 +369,7 @@ export default function Editor({ project, variant, head, copy: opened, readOnly 
         <PlanView hidden={view === 'schema'} drawing={drawing} net={net} domain={domain} selection={selection} highlight={highlight} mode={mode} fitKey={fitKey} focus={focus} basemap={basemap} t={t}
           onPick={select}
           onPlace={(hit) => { const m = mode; setMode(null); m?.apply?.(m.make(hit)) }}
-          onPickPoint={(id) => mode?.toggle?.(id)} onPickStretch={(s) => mode?.apply?.(s)} />
+          onPickPoint={(id) => mode?.toggle?.(id)} onPickStretch={(s) => mode?.apply?.(s)} onPickPlace={(id) => mode?.apply?.(id)} />
       </Workspace>
 
       {dialog?.kind === 'checkin' && <CheckInDialog t={t} onCancel={() => setDialog(null)} onSubmit={checkIn} />}
@@ -434,8 +440,8 @@ function placeToShow(domain, sel) {
 /** A range's middle, as a location to show. */
 const middleOf = (at) => ({ anchor: 'station', trackId: at.trackId, station: (at.startStation + at.endStation) / 2 })
 
-/** What the plan marks for what is chosen: its run, its section's extent, the signals it names. */
-function highlightOf(domain, selection, extents) {
+/** What the plan marks for what is chosen: its run, its section's extent, the signals it names; an itinerary's way, the way it runs. */
+function highlightOf(domain, net, selection, extents) {
   if (!selection) return null
   const c = domain.collections
   const find = (name) => c[name].find(o => o.id === selection.id)
@@ -475,9 +481,14 @@ function highlightOf(domain, selection, extents) {
     case 'itineraries': {
       const it = find('itineraries')
       if (!it) return null
-      const ends = c.stoppingPlaces.filter(h => h.id === it.startStoppingPlaceId || h.id === it.targetStoppingPlaceId)
+      const [from, to] = [it.startStoppingPlaceId, it.targetStoppingPlaceId].map(id => c.stoppingPlaces.find(h => h.id === id))
       const ids = it.routeIds.flatMap(id => { const r = c.routes.find(x => x.id === id); return r ? [r.startSignalId, r.targetSignalId] : [] })
-      return { runs: it.path.trackIds, ids, stretches: ends.map(h => ({ trackId: h.at.trackId, from: h.at.startStation, to: h.at.endStation })) }
+      const stretches = [from, to].filter(Boolean).map(h => ({ trackId: h.at.trackId, from: h.at.startStation, to: h.at.endStation }))
+      // Its way as the search found it, where the net still has it; else its tracks.
+      const way = from && to ? waysBetween(net, from, to).find(w => w.trackIds.join() === it.path.trackIds.join()) : null
+      return way
+        ? { ways: [{ pieces: way.pieces.map(p => ({ trackId: p.trackId, from: p.start, to: p.end })), strong: true }], ids, stretches }
+        : { runs: it.path.trackIds, ids, stretches }
     }
     case 'stationBoundaries': {
       const b = find('stationBoundaries')

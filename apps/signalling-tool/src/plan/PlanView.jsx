@@ -15,14 +15,16 @@ import {
  * acts — never closer than a few pixels, so it stays apart from the track
  * when zoomed out. A stopping place is a band under its track, as a platform
  * lies beside it. What is chosen is drawn in the primary colour, with its
- * run, its section or its overlap. The map moves and zooms (MapLibre, north
+ * run, its section or its overlap; ways found, the one shown with arrows the
+ * way it runs. The map moves and zooms (MapLibre, north
  * up) and draws the plan as its own layers (planLayers.js), in the frame it
  * draws the basemap in; a symbol keeps its size in pixels, so it stays
  * readable at every zoom. A click picks what is nearest. While placing, as in OSRD's
  * editor, the mouse snaps to the nearest track within reach and the object is
  * drawn there before the click sets it. Picking a stretch — a stopping place
  * where the signals bound it, or its two ends —, the mouse snaps to a track
- * the same way and what the click would take is drawn dashed.
+ * the same way and what the click would take is drawn dashed; picking a
+ * stopping place takes the one clicked.
  */
 
 const PICK_PX = 12
@@ -33,7 +35,7 @@ export const NO_BASEMAP = 'none'
 const styleOf = (basemapId) => (basemapId === NO_BASEMAP ? PLAIN : findBasemap(basemapId)?.style ?? PLAIN)
 
 export default function PlanView({
-  hidden, drawing, net, domain, selection, highlight, mode, onPick, onPlace, onPickPoint, onPickStretch, fitKey, focus, basemap, t,
+  hidden, drawing, net, domain, selection, highlight, mode, onPick, onPlace, onPickPoint, onPickStretch, onPickPlace, fitKey, focus, basemap, t,
 }) {
   const box = useRef(null)
   const mapBox = useRef(null)
@@ -114,10 +116,18 @@ export default function PlanView({
     m.fitBounds([sw, ne], { padding: 40, animate: false, maxZoom: 19 })
   }, [ready, drawing, fitKey, hidden])
 
-  // An object chosen in a list is brought into view, close enough to tell it from its neighbours.
+  // An object chosen in a list is brought into view, close enough to tell it
+  // from its neighbours; what reaches further — a way — as a whole.
   useEffect(() => {
     const m = map.current
     if (!ready || !m || !focus) return
+    if (focus.fit) {
+      const lls = focus.fit.map(loc => placeOf(drawing, loc)).filter(Boolean).map(p => drawing.frame.toLngLat(p.xy))
+      if (!lls.length) return
+      const lng = lls.map(l => l[0]), lat = lls.map(l => l[1])
+      m.fitBounds([[Math.min(...lng), Math.min(...lat)], [Math.max(...lng), Math.max(...lat)]], { padding: { top: 90, bottom: 70, left: 60, right: 60 }, duration: 400, maxZoom: 17 })
+      return
+    }
     const p = placeOf(drawing, focus.at)
     if (!p) return
     m.easeTo({ center: drawing.frame.toLngLat(p.xy), zoom: Math.max(m.getZoom(), 16.5), duration: 400 })
@@ -186,6 +196,11 @@ export default function PlanView({
     if (mode?.kind === 'pick-stretch') {
       const stretch = mode.stretchAt(stretchHit(px, py))
       if (stretch) onPickStretch?.(stretch)
+      return
+    }
+    if (mode?.kind === 'pick-place') {
+      const place = placeAt(px, py)
+      if (place) onPickPlace?.(place.id)
       return
     }
     const hit = pickAt(px, py)

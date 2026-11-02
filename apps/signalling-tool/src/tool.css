@@ -51,6 +51,8 @@ html, body { margin: 0; background: var(--ui-surface); }
 .schema-stretch-warn { stroke: #d68910; }
 .schema-place { fill: none; stroke: #0e8a8f; stroke-width: 11; stroke-opacity: 0.4; }
 .schema-place.is-selected { stroke: var(--color-primary); stroke-opacity: 0.6; }
+.schema-way { fill: none; stroke: var(--color-primary); stroke-width: 4; stroke-opacity: 0.18; stroke-linecap: round; }
+.schema-way.is-strong { stroke-width: 7; stroke-opacity: 0.5; }
 
 .tool-mode {
   position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); z-index: 5; display: flex; gap: 10px; align-items: center;
@@ -140,3 +142,6 @@ html, body { margin: 0; background: var(--ui-surface); }
 .tool-way { border: 1px solid var(--ui-border); border-radius: 8px; padding: 8px 10px; margin: 0 0 8px; display: flex; flex-direction: column; gap: 6px; font-size: var(--ui-fs-m); }
 .tool-way-head { display: flex; align-items: center; gap: 8px; font-weight: 600; }
 .tool-way ul { margin: 0; padding-left: 18px; }
+.tool-way.is-shown { border-color: var(--color-primary); box-shadow: inset 3px 0 0 var(--color-primary); }
+.tool-way-show { all: unset; cursor: pointer; text-align: left; }
+.tool-way-show:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; border-radius: 4px; }

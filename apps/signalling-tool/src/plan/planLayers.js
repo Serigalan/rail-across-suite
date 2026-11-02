@@ -154,7 +154,8 @@ function markFeatures(marks, { isSelected, names, t }) {
 /**
  * The plan's data, one FeatureCollection per source: { tracks, places,
  * marked, switches, marks, preview }, and the labels' texts whose icons it
- * needs. `stretch` is the stretch a pick would take.
+ * needs. `highlight.ways` are ways found, along the tracks the way they run,
+ * the strong one with arrows; `stretch` is the stretch a pick would take.
  */
 export function planData({ drawing, places, marks, switches, selection, highlight, preview, stretch, snap, t }) {
   const isSel = (collection, id) => selection?.collection === collection && selection.id === id
@@ -163,6 +164,10 @@ export function planData({ drawing, places, marks, switches, selection, highligh
   const marked = [
     ...(highlight?.runs ?? []).flatMap(id => { const tr = drawing.tracks.get(id); return tr ? [feature(line(lineOf(tr.line)), { kind: 'run' })] : [] }),
     ...(highlight?.stretches ?? []).map(s => feature(line(lineOf(stretchLine(drawing, s.trackId, s.from, s.to))), { kind: 'stretch', tone: s.tone ?? '' })),
+    ...(highlight?.ways ?? []).flatMap(w => w.pieces.map(p => {
+      const lls = lineOf(stretchLine(drawing, p.trackId, p.from, p.to))
+      return feature(line(p.from > p.to ? lls.reverse() : lls), { kind: 'way', strong: !!w.strong })
+    })),
   ].filter(f => f.geometry.coordinates.length > 1)
   const shown = marks.filter(mk => !(preview && mk.obj.id === preview.obj.id))
   const markSel = (mk) => isSel(mk.collection, mk.obj.id) || !!highlight?.ids?.includes(mk.obj.id)
@@ -269,6 +274,20 @@ function drawStub(pal) {
   return imageOf(cv)
 }
 
+/** The arrow along a way found, pointing the way it runs (+x, as a line lays it). */
+function drawArrow(pal) {
+  const c = document.createElement('canvas')
+  c.width = c.height = 14 * RATIO
+  const g = c.getContext('2d')
+  g.scale(RATIO, RATIO)
+  g.fillStyle = pal.primary
+  g.strokeStyle = pal.bg
+  g.lineWidth = 1.2
+  const d = new Path2D('M3,2.5 L11.5,7 L3,11.5 L5,7 Z')
+  g.stroke(d); g.fill(d)
+  return g.getImageData(0, 0, c.width, c.height)
+}
+
 /** A signal's name, with a halo of the surface's colour; its baseline LABEL_PAD above the bottom. */
 function drawLabel(text, pal) {
   const font = `600 ${LABEL_FONT_PX}px ${pal.font}`
@@ -302,6 +321,7 @@ export function ensureImages(map, pal, labels) {
     add(`ra-${s}-sel`, () => drawSymbol(s, true, pal))
   }
   add('ra-stub', () => drawStub(pal))
+  add('ra-arrow', () => drawArrow(pal))
   for (const id of labels) add(id, () => drawLabel(id.slice('ra-label:'.length), pal))
 }
 
@@ -344,9 +364,14 @@ export function addPlanLayers(map, pal, data, nameZoom) {
     { id: 'plan-places', type: 'line', source: SRC.places, filter: kind('place'), layout: { 'line-cap': 'butt' },
       paint: { 'line-color': ['case', ['get', 'sel'], pal.primary, PLACE_COLOR], 'line-width': 11, 'line-opacity': ['case', ['get', 'sel'], 0.6, 0.4] } },
     { id: 'plan-tracks', type: 'line', source: SRC.tracks, layout: round, paint: { 'line-color': pal.track, 'line-width': 2.4 } },
+    { id: 'plan-ways', type: 'line', source: SRC.marked, filter: kind('way'), layout: round,
+      paint: { 'line-color': pal.primary, 'line-width': ['case', ['get', 'strong'], 7, 4], 'line-opacity': ['case', ['get', 'strong'], 0.5, 0.18] } },
     { id: 'plan-runs', type: 'line', source: SRC.marked, filter: kind('run'), layout: round, paint: { 'line-color': pal.primary, 'line-width': 6, 'line-opacity': 0.45 } },
     { id: 'plan-stretches', type: 'line', source: SRC.marked, filter: kind('stretch'),
       paint: { 'line-color': ['case', ['==', ['get', 'tone'], 'warn'], '#d68910', '#1f9e3a'], 'line-width': 7, 'line-opacity': 0.5 } },
+    { id: 'plan-way-arrows', type: 'symbol', source: SRC.marked, filter: ['all', kind('way'), ['get', 'strong']],
+      layout: { 'symbol-placement': 'line', 'symbol-spacing': 90, 'icon-image': 'ra-arrow', 'icon-allow-overlap': true, 'icon-ignore-placement': true,
+        'icon-rotation-alignment': 'map' } },
     { id: 'plan-switches', type: 'circle', source: SRC.switches,
       paint: { 'circle-radius': ['case', ['get', 'sel'], 5, 3], 'circle-color': ['case', ['get', 'sel'], pal.primary, pal.bg],
         'circle-stroke-color': ['case', ['get', 'sel'], pal.primary, pal.track], 'circle-stroke-width': 1.5 } },
@@ -372,6 +397,7 @@ export function setPlanData(map, pal, data, nameZoom) {
   map.setLayerZoomRange('plan-place-labels', nameZoom, 24)
   map.setPaintProperty('plan-tracks', 'line-color', pal.track)
   map.setPaintProperty('plan-runs', 'line-color', pal.primary)
+  map.setPaintProperty('plan-ways', 'line-color', pal.primary)
   map.setPaintProperty('plan-preview-stretch', 'line-color', pal.primary)
   map.setPaintProperty('plan-places', 'line-color', ['case', ['get', 'sel'], pal.primary, PLACE_COLOR])
   map.setPaintProperty('plan-snap', 'circle-stroke-color', pal.primary)

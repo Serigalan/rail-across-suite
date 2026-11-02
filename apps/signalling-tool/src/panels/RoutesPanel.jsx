@@ -33,7 +33,9 @@ const KINDS = { train: { trainType: 'ZZ' }, shunting: { shuntingType: 'RR' }, mi
  * itineraries from one stopping place to another are searched here over the
  * net, and made with the routes they take.
  */
-export default function RoutesPanel({ domain, net, core, findings, extents, selection, select, ops, readOnly, t, language, setNotice }) {
+export default function RoutesPanel({
+  domain, net, core, findings, extents, selection, select, ops, mode, setMode, setSketch, showOnPlan, readOnly, t, language, setNotice,
+}) {
   const [page, setPage] = useState('menu')
   const { routes, overlaps, signals, itineraries, stoppingPlaces } = domain.collections
   const sig = (id) => signals.find(s => s.id === id)
@@ -82,7 +84,8 @@ export default function RoutesPanel({ domain, net, core, findings, extents, sele
   if (page === 'search') {
     return (
       <Panel title={t('itinerary_search_title')} intro={t('itinerary_search_intro')} back={back}>
-        <ItinerarySearch domain={domain} net={net} core={core} ops={ops} select={select} t={t} />
+        <ItinerarySearch domain={domain} net={net} core={core} ops={ops} select={select} mode={mode} setMode={setMode} setSketch={setSketch}
+          showOnPlan={showOnPlan} t={t} />
       </Panel>
     )
   }

@@ -24,8 +24,9 @@ async function call(method, path, body) {
   try {
     res = await fetch(`${BASE}${path}`, {
       method, credentials: 'same-origin',
-      headers: { accept: 'application/json', ...(body !== undefined ? { 'content-type': 'application/json' } : {}) },
-      ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+      // Every writing request carries JSON — a DELETE an empty object —, or the server refuses it.
+      headers: { accept: 'application/json', ...(method !== 'GET' ? { 'content-type': 'application/json' } : {}) },
+      ...(method !== 'GET' ? { body: JSON.stringify(body ?? {}) } : {}),
     })
   } catch {
     throw new VehicleApiError(0, 'offline')

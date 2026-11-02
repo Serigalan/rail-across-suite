@@ -4,7 +4,7 @@ import {
   connectionRoots, fitConnectingElement, joinRouteIntoTrack, refitTrackEnd, crossingAngle,
   crossingEndDistance,
 } from '../switch/index.js'
-import { trackLength, nextTrackName, reverseTrack, portTrack, withPort } from '../track/index.js'
+import { trackLength, nextTrackName, portTrack, withPort } from '../track/index.js'
 
 // "Kreuzung(-sweiche) an Gleis anschließen" (Entscheidung 307): a crossing or
 // crossing switch laid into the host track, one end of its cross route — B or
@@ -100,11 +100,9 @@ export function buildCrossingConnect({ track, target, anchor, solution, tracks, 
   const record = laid.addSwitches[0]
   const legId = portTrack(record, solution.port)
   const leg = laid.addTracks.find(tr => tr.id === legId)
-  // Leg B runs from its port in to the crossing point, leg D out from it; the
-  // join wants the route from the crossing point out.
-  const route = solution.port === 'B' ? reverseTrack(leg) : leg
+  // Both legs run from the crossing point out, as the join wants the route.
   const refitted = refitTrackEnd(target, anchor, solution.fit, solution.at.port, { speedLimit })
-  const { track: joined, shift } = joinRouteIntoTrack(refitted, anchor, route)
+  const { track: joined, shift } = joinRouteIntoTrack(refitted, anchor, leg)
   const moved = shift ? shift + trackLength(refitted) - trackLength(target) : 0
   const hostIds = new Set(laid.remap.flatMap(r => r.newId))
   const own = describe(target)

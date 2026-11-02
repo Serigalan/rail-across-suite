@@ -1,6 +1,6 @@
 import {
   generateId, buildTypeFields, splitElementAt, splitTrackAtJoint, carveSwitchRoute,
-  elementBelongsToSwitch, newSwitchFields, switchElementMark, elementAtStation, trackLength,
+  elementBelongsToSwitch, newSwitchFields, switchElementMark, elementAtStation, trackLength, reverseTrack,
 } from '../track/index.js'
 
 import {
@@ -521,13 +521,15 @@ export function buildCrossingOnTrack({ g, ahead, track, tracks, form, endDist, s
 
   // One element per cross leg and per connecting route, marked with its route
   // — the same elements the end-anchored crossing commits. The main legs are
-  // the host's own, carved above.
+  // the host's own, carved above. Both cross legs run from the crossing point
+  // out, so that each ends where the crossing does: a track goes on from
+  // there as from any track's end.
   const els = crossingElements(g, identity)
   const tracksOf = (el, trackName = null) => ({
     id: generateId(), name: trackName, owner: fields.owner, ...buildTypeFields(fields),
     epsg: track.epsg, coordinates: el.geometry.coordinates, elements: [el],
   })
-  const legB = tracksOf(els.B)
+  const legB = reverseTrack(tracksOf(els.B))
   const legD = tracksOf(els.D, name)
   const slipTracks = [els.slip1, els.slip2].filter(Boolean).map(el => tracksOf(el))
 
@@ -540,7 +542,7 @@ export function buildCrossingOnTrack({ g, ahead, track, tracks, form, endDist, s
     number: switchNumber,
     ports: {
       A: { trackId: carvedBehind.id, endpoint: split.behindEndpoint },
-      B: { trackId: legB.id, endpoint: 'END' },
+      B: { trackId: legB.id, endpoint: 'BEGIN' },
       C: { trackId: carvedAhead.id, endpoint: split.aheadEndpoint },
       D: { trackId: legD.id, endpoint: 'BEGIN' },
     },

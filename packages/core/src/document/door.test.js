@@ -185,9 +185,11 @@ describe('the door', () => {
     expect(Object.keys(toDocument(record(), { carrySchemas: true }).schemas)).not.toContain(SCHEMA_HASHES.signalling)
   })
 
-  // The station as signalling 1.0 was written before: fourth (no station of a signal), third (speed sections,
-  // a route's own speed, frames and function on the signal), second (no speed sections yet), first (no
-  // logical signals, PZB elements). Each before the fourth reads as of the open line.
+  // The station as signalling 1.0 was written before: fifth (no stopping places and itineraries), fourth (no
+  // station of a signal), third (speed sections, a route's own speed, frames and function on the signal),
+  // second (no speed sections yet), first (no logical signals, PZB elements). Each before the fifth reads
+  // without stopping places, each before the fourth as of the open line.
+  const FIFTH = 'sha256:d5c61938fb3da1cc80f638c051cac562c19ad207507373ac3381f3a97922d83c'
   const FOURTH = 'sha256:cee619f2ae1b256a81ca5536e3851602cce96841d16bb2fe5f11ffe1a5e1f64c'
   const THIRD = 'sha256:0194c1e7fe2a63741270025beb48929d106d74a80bf5b33ed4305965a5303487'
   const SECOND = 'sha256:72fccdfdcac3f5ce42d7f49d10fb9134e1c4ed792f7365ec9f01d997f0049724'
@@ -198,8 +200,15 @@ describe('the door', () => {
     // A logical signal of its own in each system, as the first schema could say it: one per signal.
     return toDocument(record({ signalling }))
   }
-  const asFourth = (doc) => {
+  const asFifth = (doc) => {
     const d = structuredClone(doc)
+    d.domains.signalling.schema = FIFTH
+    delete d.domains.signalling.collections.stoppingPlaces
+    delete d.domains.signalling.collections.itineraries
+    return d
+  }
+  const asFourth = (doc) => {
+    const d = asFifth(doc)
     d.domains.signalling.schema = FOURTH
     d.domains.signalling.collections.signals = d.domains.signalling.collections.signals.map(({ operationalPointId: _o, ...s }) => s)
     return d
@@ -239,8 +248,14 @@ describe('the door', () => {
 
   it('reads signalling 1.0 as each earlier schema wrote it, as of now', () => {
     const now = stationNow()
-    const open = asFourth(now)
-    open.domains.signalling.schema = now.domains.signalling.schema
+    const without = (doc) => {
+      const d = structuredClone(doc)
+      d.domains.signalling.schema = now.domains.signalling.schema
+      Object.assign(d.domains.signalling.collections, { stoppingPlaces: [], itineraries: [] })
+      return d
+    }
+    expect(checkDocument(asFifth(now))).toEqual(without(asFifth(now)))
+    const open = without(asFourth(now))
     expect(checkDocument(asFourth(now))).toEqual(open)
     expect(checkDocument(asThird(now))).toEqual(open)
     expect(checkDocument(asSecond(now))).toEqual(open)

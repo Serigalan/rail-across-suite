@@ -264,6 +264,26 @@ describe('flank protection, balises and magnets, station boundaries', () => {
     expect(codes(warnings)).toEqual(['boundary_mark_special'])
   })
 
+  it('bounds a stopping place by the signals and detection points, and keeps it at its platform or in a station', () => {
+    const { warnings, errors } = check((c) => {
+      byId(c.stoppingPlaces, 'hp-1').at.startStation = 10
+      byId(c.stoppingPlaces, 'hp-2').operationalPointId = undefined
+    })
+    expect(errors).toEqual([])
+    expect(warnings.map(w => [w.code, w.params.signal ?? w.params.detectionPoint ?? null])).toEqual([
+      ['stopping_place_crossed', 'sig-a'], ['stopping_place_crossed', 'dp-1'], ['stopping_place_open_line', null],
+    ])
+    expect(codes(check((c) => { byId(c.stoppingPlaces, 'hp-1').at.endStation = 5 }).errors)).toEqual(['stopping_place_empty'])
+  })
+
+  it('holds an itinerary to its stopping places and its routes to its run', () => {
+    const { errors } = check((c) => {
+      byId(c.itineraries, 'fw-1').routeIds = ['rt-n1-v', 'rt-a-n1']
+      byId(c.itineraries, 'fw-1').targetStoppingPlaceId = 'hp-1'
+    })
+    expect(errors.map(e => [e.code, e.params.route ?? null])).toEqual([['itinerary_off_stopping_place', null], ['itinerary_route_off_path', 'rt-a-n1']])
+  })
+
   it('takes a station\'s boundary from its own signals, not from the open line\'s', () => {
     const { warnings } = check((c) => { delete byId(c.signals, 'sig-a').operationalPointId })
     expect(warnings.map(w => [w.code, w.params.signal])).toEqual([['boundary_mark_elsewhere', 'sig-a']])
@@ -282,13 +302,13 @@ describe('flank protection, balises and magnets, station boundaries', () => {
   it('derives a section from its own points over the net, and says where they enclose nothing', () => {
     // A point of another section inside it is no boundary of its: sections overlap where they meet.
     const inside = check((c) => {
-      c.detectionPoints.push({ id: 'dp-3', kind: 'axleCounter', at: { anchor: 'station', trackId: 't1', station: 100 } })
+      c.detectionPoints.push({ id: 'dp-3', kind: 'axleCounter', at: { anchor: 'station', trackId: 't1', station: 235 } })
       c.trackSections.push({ id: 'ts-2', kind: 'axleCounting', boundedBy: ['dp-3', 'dp-2'] })
     })
     expect(inside).toEqual({ errors: [], warnings: [] })
     // t2 is not connected to t1: no part of the net lies between a point on each.
     const { warnings } = check((c) => {
-      c.detectionPoints.push({ id: 'dp-3', kind: 'axleCounter', at: { anchor: 'station', trackId: 't2', station: 100 } })
+      c.detectionPoints.push({ id: 'dp-3', kind: 'axleCounter', at: { anchor: 'station', trackId: 't2', station: 145 } })
       c.trackSections[0].boundedBy = ['dp-1', 'dp-3']
     })
     expect(warnings.map(w => [w.code, w.id])).toEqual([['detection_point_unused', 'dp-2'], ['section_extent_differs', 'ts-1']])

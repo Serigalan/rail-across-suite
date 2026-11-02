@@ -31,7 +31,7 @@ const record = {
         { id: 's-n', name: 'N1', kind: 'real', at: on('t2', 80),
           logicalSignals: [{ system: 'ks', type: 'mainShunting', function: 'exit', frames: [{ kind: 'screen', aspects: [{ aspect: 'Hp_0' }, { aspect: 'Ks_1' }] }] }] },
       ],
-      detectionPoints: [], trackSections: [], switchElements: [], overlaps: [], flankProtection: [], balises: [], stationBoundaries: [],
+      detectionPoints: [], trackSections: [], switchElements: [], overlaps: [], flankProtection: [], balises: [], stationBoundaries: [], stoppingPlaces: [], itineraries: [],
       routes: [{ id: 'r-a-n', kind: 'train', trainType: 'ZZ', startSignalId: 's-a', targetSignalId: 's-n', path: { trackIds: ['t1', 't2'] } }],
     },
   },

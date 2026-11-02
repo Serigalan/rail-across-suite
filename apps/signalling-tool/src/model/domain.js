@@ -13,7 +13,7 @@ import { CATALOGUE_REF, baliseKindOf, protectionSystemOf, signalKindOf } from '@
 
 export const COLLECTIONS = [
   'signals', 'detectionPoints', 'trackSections', 'switchElements', 'routes', 'overlaps', 'flankProtection', 'balises',
-  'stationBoundaries',
+  'stationBoundaries', 'stoppingPlaces', 'itineraries',
 ]
 
 /**

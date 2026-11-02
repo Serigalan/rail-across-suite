@@ -64,7 +64,7 @@ export function checkSignalling({ core, signalling }) {
   const signals = new Map((c.signals ?? []).map(s => [s.id, s]))
   const known = {
     detectionPoints: ids('detectionPoints'), trackSections: ids('trackSections'), switchElements: ids('switchElements'),
-    routes: ids('routes'), overlaps: ids('overlaps'), flankProtection: ids('flankProtection'),
+    routes: ids('routes'), overlaps: ids('overlaps'), flankProtection: ids('flankProtection'), stoppingPlaces: ids('stoppingPlaces'),
   }
   const overlaps = new Map((c.overlaps ?? []).map(o => [o.id, o]))
 
@@ -323,11 +323,66 @@ export function checkSignalling({ core, signalling }) {
     lifespan('stationBoundaries', b)
   }
 
+  // ── stopping places: in a station or at a platform, bounded by signals and detection points ──
+  const corePlatforms = new Map((core?.collections?.platforms ?? []).map(p => [p.id, p]))
+  const showsScreen = (s) => [...(s.frames ?? []), ...(s.logicalSignals ?? []).flatMap(l => l.frames ?? [])].some(isScreen)
+  const bounds = [
+    ...(c.signals ?? []).filter(s => s.kind === 'real' && showsScreen(s)).flatMap(s => [s.at, ...(s.alsoAt ?? [])].map(loc => ({ loc, ref: { signal: s.id } }))),
+    ...(c.detectionPoints ?? []).map(d => ({ loc: d.at, ref: { detectionPoint: d.id } })),
+  ].filter(b => b.loc?.anchor === 'station')
+  const stoppingPlaces = new Map((c.stoppingPlaces ?? []).map(h => [h.id, h]))
+  for (const h of c.stoppingPlaces ?? []) {
+    const r = h.at
+    ref('stoppingPlaces', h.id, 'core.tracks', r.trackId, 'at.trackId')
+    ref('stoppingPlaces', h.id, 'core.operationalPoints', h.operationalPointId, 'operationalPointId')
+    ref('stoppingPlaces', h.id, 'core.platforms', h.platformId, 'platformId')
+    lifespan('stoppingPlaces', h)
+    const track = tracks.get(r.trackId)
+    if (!(r.endStation > r.startStation)) error('stopping_place_empty', 'stoppingPlaces', h.id)
+    else if (track && (r.startStation < -STATION_TOL || r.endStation > trackLength(track) + STATION_TOL)) {
+      error('off_track', 'stoppingPlaces', h.id, { field: 'at', station: r.startStation < 0 ? r.startStation : r.endStation, length: trackLength(track) }, 'at')
+    }
+    if (!h.operationalPointId && !h.platformId) warning('stopping_place_open_line', 'stoppingPlaces', h.id)
+    const pf = corePlatforms.get(h.platformId)
+    if (pf?.at && (pf.at.trackId !== r.trackId || r.startStation < pf.at.startStation - STOP_TOL || r.endStation > pf.at.endStation + STOP_TOL)) {
+      warning('stopping_place_off_platform', 'stoppingPlaces', h.id)
+    }
+    for (const b of bounds) {
+      if (b.loc.trackId !== r.trackId || b.loc.station <= r.startStation + STOP_TOL || b.loc.station >= r.endStation - STOP_TOL) continue
+      warning('stopping_place_crossed', 'stoppingPlaces', h.id, b.ref, b.ref.signal ?? b.ref.detectionPoint)
+    }
+  }
+
+  // ── itineraries: from stopping place to stopping place, over the routes of the stations on the way ──
+  for (const it of c.itineraries ?? []) {
+    for (const field of ['startStoppingPlaceId', 'targetStoppingPlaceId']) ref('itineraries', it.id, 'signalling.stoppingPlaces', it[field], field)
+    for (const r of it.routeIds) ref('itineraries', it.id, 'signalling.routes', r, 'routeIds')
+    path('itineraries', it, it.path)
+    lifespan('itineraries', it)
+    const run = it.path?.trackIds ?? []
+    if (!run.length) continue
+    const start = stoppingPlaces.get(it.startStoppingPlaceId), target = stoppingPlaces.get(it.targetStoppingPlaceId)
+    if ((start && start.at.trackId !== run[0]) || (target && target.at.trackId !== run[run.length - 1])) error('itinerary_off_stopping_place', 'itineraries', it.id)
+    // Its routes lie on its run, one after the other.
+    let from = 0
+    for (const id of it.routeIds) {
+      const ids = routesById.get(id)?.path?.trackIds
+      if (!ids?.length) continue
+      let at = -1
+      for (let i = Math.max(0, from - 1); i + ids.length <= run.length && at < 0; i++) if (ids.every((t, k) => run[i + k] === t)) at = i
+      if (at < 0) { error('itinerary_route_off_path', 'itineraries', it.id, { route: id }, id); continue }
+      from = at + ids.length
+    }
+  }
+
   return { errors, warnings }
 }
 
 /** An overlap may fall short of the length it needs by this share: a length measured off a plan rounds (199 m for 200). */
 const OVERLAP_TOL = 0.01
+
+/** A signal or detection point this close to a stopping place's end [m] bounds it rather than standing in it; a stopping place may reach this far beyond its platform. */
+const STOP_TOL = 0.5
 
 /** Stations may overshoot the track length by this much [m], as validateProject allows. */
 const STATION_TOL = 0.01

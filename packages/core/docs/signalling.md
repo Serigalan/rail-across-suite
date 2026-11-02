@@ -65,6 +65,9 @@ settings: a new signalling system (H/V, Sv) is a new entry under `systeme`, a ne
 | `detection_point_unused` | warning | a detection point that bounds no track section |
 | `section_extent_differs` | warning | a section's points enclose no part of the net together (see below) |
 | `boundary_mark_special` | warning | a station boundary marked by neither an entry signal nor a board Ne 1 nor a switch nor a platform — a special case of EBO §4 |
+| `stopping_place_empty`, `stopping_place_crossed` | error, warning | a stopping place is a stretch of its track, bounded by the signals and detection points: none stands within it |
+| `stopping_place_open_line`, `stopping_place_off_platform` | warning | a stopping place is of a station, or on the open line at a platform; at its platform, it lies along it |
+| `itinerary_off_stopping_place`, `itinerary_route_off_path` | error | an itinerary runs from its start's track to its target's, and its routes lie on its run, one after the other |
 | `boundary_mark_elsewhere` | warning | a station boundary marked by a signal that does not belong to the station (`operationalPointId`): one of the open line or of another station |
 
 ## Track sections over the net

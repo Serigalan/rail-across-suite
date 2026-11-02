@@ -78,6 +78,7 @@ Collections, each keyed by its own id (which is also how the merge compares them
 | `endMarks` | `id` | buffer stops and planning-area boundaries at free track ends |
 | `routes` | `id` | named runs of tracks |
 | `kmLines` | `lineNumber` | the stretch of each DB line around the project, with kilometrage |
+| `operationalPoints` | `id` | stations of the register that the tracks' and platforms' station names do not make by themselves — with codes no object states, renamed, or named by the signalling; `{ id, name, rl100, uic }` |
 | `axisSurveys` | `id` | measured axis points traced in point clouds |
 | `referenceAxes` | `id` | reference axes (Bestandsachsen) as centimetre points |
 

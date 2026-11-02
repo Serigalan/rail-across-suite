@@ -72,6 +72,47 @@ describe('a record as a core 1.0 document', () => {
     expect(roundTrip(r).tracks.map(t => t.uicStation)).toEqual(['1', '2'])
   })
 
+  it('keeps a station nothing names yet in the register, and only what the names do not make', () => {
+    const r = record({ operationalPoints: [{ id: 'op-k', name: 'Könnern', rl100: 'LKO' }] })
+    expect(toDocument(r).domains.core.collections.operationalPoints).toEqual([{ id: 'op-k', name: 'Könnern', rl100: 'LKO' }])
+    expect(roundTrip(r).operationalPoints).toEqual([{ id: 'op-k', name: 'Könnern', rl100: 'LKO' }])
+    // A platform that names it is of it, and states its code.
+    const named = record({ ...r, platforms: [{ id: 'pf', trackId: 't1', startStation: 0, endStation: 50, stationName: 'Könnern' }] })
+    expect(toDocument(named).domains.core.collections.platforms[0].operationalPoint).toBe('op-k')
+    expect(roundTrip(named).platforms[0]).toMatchObject({ stationName: 'Könnern', code: 'LKO' })
+    expect(roundTrip(named).operationalPoints).toEqual([{ id: 'op-k', name: 'Könnern', rl100: 'LKO' }])
+    // A point just as the names make it is not kept: a record without one stays without.
+    const made = toDocument(record({ tracks: [track('t1', { stationName: 'Wallwitz' })] })).domains.core.collections.operationalPoints[0]
+    const same = record({ tracks: [track('t1', { stationName: 'Wallwitz' })], operationalPoints: [made] })
+    expect(roundTrip(same).operationalPoints).toBeUndefined()
+  })
+
+  it('keeps a station the signalling names, so it keeps its id when the tracks are named anew', () => {
+    const made = toDocument(record({ tracks: [track('t1', { stationName: 'Wallwitz' })] })).domains.core.collections.operationalPoints[0]
+    const signalling = ksStation({ operationalPoint: made.id })
+    const back = roundTrip(record({ tracks: [track('t1', { stationName: 'Wallwitz' })], signalling }))
+    expect(back.operationalPoints).toEqual([made])
+    const renamed = toDocument({ ...back, tracks: [track('t1', { stationName: 'Wallwitz (Saalkr)' })] }).domains.core.collections.operationalPoints
+    expect(renamed.map(p => p.name).sort()).toEqual(['Wallwitz', 'Wallwitz (Saalkr)'])
+    expect(renamed.find(p => p.name === 'Wallwitz').id).toBe(made.id)
+  })
+
+  it('keeps a kept station\'s id under its name, and its codes where an object states none', () => {
+    const r = record({
+      tracks: [track('t1', { stationName: 'Könnern', uicStation: '8010195' })],
+      platforms: [{ id: 'pf', trackId: 't1', startStation: 0, endStation: 50, stationName: 'Könnern', code: 'XX' }],
+      operationalPoints: [{ id: 'op-k', name: 'Könnern', rl100: 'LKO' }],
+    })
+    const { tracks, platforms, operationalPoints } = toDocument(r).domains.core.collections
+    expect(tracks[0].operationalPoint).toBe('op-k')
+    expect(operationalPoints.find(p => p.id === 'op-k')).toEqual({ id: 'op-k', name: 'Könnern', rl100: 'LKO', uic: '8010195' })
+    // A platform stating another code is a point of its own, as two codes under one name are.
+    expect(platforms[0].operationalPoint).not.toBe('op-k')
+    expect(operationalPoints).toHaveLength(2)
+    expect(roundTrip(r).operationalPoints).toEqual([{ id: 'op-k', name: 'Könnern', rl100: 'LKO', uic: '8010195' }])
+    expect(toDocument(roundTrip(r)).domains.core.collections).toEqual(toDocument(r).domains.core.collections)
+  })
+
   it('makes runs of tracks TrackPaths and the bulk point arrays blobs', () => {
     const points = { s0: 0, step: 0.01, count: 2, e0: 1, n0: 2, de: [0, 1], dn: [0, 0], z: null }
     const r = record({

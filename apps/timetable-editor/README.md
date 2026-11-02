@@ -13,7 +13,8 @@ where there is one, else its head, and only read; the timetables are the project
   so.
 - **A train**: its number, kind and name, its vehicle from the catalogue (the Fahrzeug-Editor's, *Ansehen* in a tab
   of its own) in a traction mode and comfort, its departure, its margin and how it is spread.
-- **Its way**: it **begins and ends at a station** — the layout's station tracks of one name — on a track chosen or
+- **Its way**: it **begins and ends at a station** — the layout's station tracks of one name, or a station of the
+  Signalling-Tool on the tracks of its stopping places and platforms — on a track chosen or
   the nearest; on the way it stops or passes at stations and halts (a name only platforms carry), with its dwell and
   a departure it waits for. The choice of its first and last point offers stations only. From each point to the
   next it may prefer an itinerary of the Signalling-Tool, between stopping places of the two stations; where the

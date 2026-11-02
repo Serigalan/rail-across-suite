@@ -2,7 +2,7 @@
 
 Status: **proposed** — goes with [0013](0013-running-times-in-rust.md) and [0014](0014-vehicles-in-osrds-form.md) ·
 amended 2026-11-02: one tile with the Simulation-Tool, the Fahrplan-Sim; a way a train prefers (6); a train runs
-only into a free block (7)
+only into a free block (7); the register's stations are stations (3)
 
 ## Decision
 
@@ -16,8 +16,11 @@ only into a free block (7)
    waits for. So one timetable is laid on any variant of its project: the Fahrplan-Editor opens a variant —
    this browser's working copy, else its head — and runs the trains over its net. A station the variant lacks is
    said, not dropped.
-3. **A station is the layout's**: the station tracks of one name (a track's `trackType` and `stationName`, as the
-   Layout-Tool groups them); a halt is a name only platforms carry. **A train begins and ends at a station only**
+3. **A station is the layout's or the register's**: the station tracks of one name (a track's `trackType` and
+   `stationName`, as the Layout-Tool groups them); a halt is a name only platforms carry. A station of the register
+   of operational points ([0017](0017-stations-in-the-signalling-tool.md)) — one the Signalling-Tool made — is a
+   station too where no station tracks name it: on the tracks of its stopping places and platforms, as far as they
+   reach, a train stopping in the middle of its stopping place. So a station is made in one place, not twice. **A train begins and ends at a station only**
    — on one of its tracks, the one asked for or the nearest —; on the way it stops or passes at stations and
    halts. The editor offers no other for a train's first and last point, and says so for a train that has one.
 4. **The times come from the running time simulation** (0013), not from the user: a train's way is the shortest

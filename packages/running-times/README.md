@@ -10,8 +10,9 @@ shared by the Simulation-Tool and the Fahrplan-Editor:
 - **what the physics needs of it** (`path.js`, `request.js`): its length, its grades from the tracks' heights and
   the curves' resistance (Röckl), the layout's design speeds and the speeds the signals signal, and the request
   the simulation takes;
-- **the stations** (`stations.js`): a station is the station tracks of one name, as the Layout-Tool groups them, a
-  halt a name only platforms carry; where a train may be at one, and the stations along a way;
+- **the stations** (`stations.js`): a station is the station tracks of one name, as the Layout-Tool groups them, or
+  a station of the register on the tracks of its stopping places and platforms, as far as they reach; a halt a name
+  only platforms carry; where a train may be at one, and the stations along a way;
 - **the simulation module** (`engine.js`): OSRD's simulation core in Rust (`sim/`) as WebAssembly, loaded from
   `sim/rail_across_sim.wasm` beside the app's page;
 - the map's lines and the formats of times and distances (`places.js`, `format.js`).

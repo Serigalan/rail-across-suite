@@ -37,4 +37,24 @@ describe('the stations of a net', () => {
     expect(turned.failedAt).toBe(2)
     expect(routeVia(net, [[], stationTargets(stationNamed(stations, 'A-Dorf'))]).failedAt).toBe(0)
   })
+
+  it('take the stations of the register as stations too, on the tracks of their stopping places and platforms as far as they reach', () => {
+    // B-Halt made a station in the Signalling-Tool, a stopping place of it on the line; a station nothing places is none.
+    const registered = {
+      ...net,
+      operationalPoints: [{ id: 'op-b', name: 'B-Halt', rl100: 'LBH' }, { id: 'op-x', name: 'X-Feld' }, { id: 'op-c', name: 'C-Stadt' }],
+      signalling: { fields: {}, collections: { stoppingPlaces: [{ id: 'h1', name: '1', operationalPointId: 'op-b', at: { anchor: 'station', trackId: 'L', startStation: 900, endStation: 1150 } }] } },
+    }
+    const all = stationsOf(registered)
+    expect(all.map(s => [s.name, s.kind])).toEqual([['A-Dorf', 'station'], ['B-Halt', 'station'], ['C-Stadt', 'station']])
+    const b = stationNamed(all, 'B-Halt')
+    expect(b).toMatchObject({ pointId: 'op-b', tracks: [{ id: 'L', from: 900, to: 1200, at: 1025 }] })
+    expect(stationNamed(all, 'C-Stadt').pointId).toBe('op-c')
+    // a train begins there, at its platform; passing, the station is as long as it reaches on the line
+    expect(stationTargets(b)).toEqual([{ trackId: 'L', station: 1100, direction: null }])
+    const route = routeVia(registered, ['B-Halt', 'C-Stadt'].map(n => stationTargets(stationNamed(all, n))))
+    expect(route.chosen[0]).toMatchObject({ trackId: 'L', station: 1100 })
+    const along = stationsAlong(routeVia(registered, ['A-Dorf', 'C-Stadt'].map(n => stationTargets(stationNamed(all, n)))).path, all)
+    expect(along.map(s => [s.name, s.begin, s.end])).toEqual([['A-Dorf', 0, 300], ['B-Halt', 1200, 1500], ['C-Stadt', 2800, 3200]])
+  })
 })

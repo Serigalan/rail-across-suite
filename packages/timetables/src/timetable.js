@@ -116,12 +116,16 @@ export function trainProblems(train, stations, { vehicle = true } = {}) {
   return out
 }
 
-/** The signalling's stopping places at a station: on its tracks or at its platforms. */
+/**
+ * The signalling's stopping places at a station: those of its point of the
+ * register, where it has one; else on its tracks or at its platforms.
+ */
 export function stoppingPlacesAt(record, station) {
   if (!station) return []
   const tracks = new Set(station.tracks.map(tr => tr.id))
   const platforms = new Set(station.platforms.map(p => p.id))
-  return (record?.signalling?.collections?.stoppingPlaces ?? []).filter(h => tracks.has(h.at.trackId) || platforms.has(h.platformId))
+  const mine = (h) => (station.pointId && h.operationalPointId ? h.operationalPointId === station.pointId : tracks.has(h.at.trackId) || platforms.has(h.platformId))
+  return (record?.signalling?.collections?.stoppingPlaces ?? []).filter(mine)
 }
 
 /**

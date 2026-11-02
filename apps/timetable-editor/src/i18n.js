@@ -109,7 +109,7 @@ const de = {
 
   card_route: 'Fahrweg',
   route_lead: 'Wo der Zug beginnt und endet — immer ein Bahnhof —, und wo er unterwegs hält oder durchfährt. Ohne Gleis nimmt er das, das am kürzesten erreichbar ist.',
-  no_stations: 'Das Netz dieser Variante hat keinen Bahnhof. Bahnhöfe sind Bahnhofsgleise mit einem Bahnhofsnamen; sie werden im Layout-Tool zugeordnet.',
+  no_stations: 'Das Netz dieser Variante hat keinen Bahnhof. Bahnhöfe sind Bahnhofsgleise mit einem Bahnhofsnamen, im Layout-Tool zugeordnet, oder Bahnhöfe des Signalling-Tools mit Halteplätzen oder Bahnsteigen.',
   start: 'Beginn (Bahnhof)',
   end: 'Ende (Bahnhof)',
   via: 'Unterwegs',
@@ -312,7 +312,7 @@ const en = {
 
   card_route: 'Route',
   route_lead: 'Where the train begins and ends — always a station —, and where it stops or passes on the way. Without a track it takes the one it reaches the shortest way.',
-  no_stations: 'This variant\'s net has no station. Stations are station tracks with a station name; they are assigned in the Layout-Tool.',
+  no_stations: 'This variant\'s net has no station. Stations are station tracks with a station name, assigned in the Layout-Tool, or stations of the Signalling-Tool with stopping places or platforms.',
   start: 'Begins (station)',
   end: 'Ends (station)',
   via: 'On the way',

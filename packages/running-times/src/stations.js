@@ -2,12 +2,17 @@ import { trackGroupKey, trackKind, trackLength } from '@rail-across/core/track'
 import { directionOf, pathLength } from './path.js'
 
 /**
- * The stations of a net, as the layout says them: a station (Bahnhof) is
- * the station tracks of one name (trackKind 'station', grouped as the
- * Layout-Tool groups them, by name, else by UIC number), with the platforms
- * on them or of its name; a halt (Haltepunkt) a name only platforms carry —
- * no track of its own, platforms on the line's tracks. A train begins and
- * ends at a station only, on one of its tracks; it stops or passes at either.
+ * The stations of a net, as the layout and the register say them: a station
+ * (Bahnhof) is the station tracks of one name (trackKind 'station', grouped
+ * as the Layout-Tool groups them, by name, else by UIC number), with the
+ * platforms on them or of its name; a halt (Haltepunkt) a name only
+ * platforms carry — no track of its own, platforms on the line's tracks. A
+ * station of the register of operational points the record keeps — one the
+ * Signalling-Tool made — is a station too, where no station tracks name it:
+ * its tracks are those of its stopping places and platforms, each only as
+ * far as they reach (`from`, `to`), a train stopping in the middle of its
+ * stopping place (`at`). A train begins and ends at a station only, on one
+ * of its tracks; it stops or passes at either.
  */
 
 const text = (v) => (v != null ? String(v).trim() : '')
@@ -25,10 +30,13 @@ export const trackLabel = (track) => text(track?.trackNumber) || text(track?.nam
 const platformMiddle = (p) => (p.startStation + p.endStation) / 2
 
 /**
- * [{ key, name, uic, kind: 'station' | 'halt', tracks: [{ id, label, length,
- * platforms }], platforms: [{ id, code, trackId, at }] }], sorted by name.
- * `name` is what a train's point names it by: the station's name, else its
- * UIC number. A platform's `at` is its middle on its track.
+ * [{ key, name, uic, kind: 'station' | 'halt', pointId, tracks: [{ id,
+ * label, length, platforms, from, to, at }], platforms: [{ id, code,
+ * trackId, at }] }], sorted by name. `name` is what a train's point names
+ * it by: the station's name, else its UIC number; `pointId` its point of
+ * the register, where the record keeps one. A platform's `at` is its middle
+ * on its track; a track's `from`, `to` how far the station reaches on it
+ * (absent: all of it), `at` where a train stops on it without a platform.
  */
 export function stationsOf(record) {
   const byKey = new Map()
@@ -56,8 +64,50 @@ export function stationsOf(record) {
     station.platforms.push(platform)
     station.tracks.find(tr => tr.id === p.trackId)?.platforms.push(platform)
   }
+  withRegister(record, byKey)
   for (const s of byKey.values()) s.tracks.sort((a, b) => collator.compare(a.label, b.label))
   return [...byKey.values()].sort((a, b) => collator.compare(a.name, b.name))
+}
+
+/**
+ * The stations of the register that the record keeps, made stations: one of
+ * a name the station tracks give is theirs; one only platforms name, or
+ * nothing, gets the tracks of its stopping places and platforms, as far as
+ * they reach. One without either is no place a train can be.
+ */
+function withRegister(record, byKey) {
+  const lengths = new Map((record?.tracks ?? []).map(tr => [tr.id, tr]))
+  const places = record?.signalling?.collections?.stoppingPlaces ?? []
+  for (const point of record?.operationalPoints ?? []) {
+    const name = text(point.name) || text(point.rl100) || text(point.uic)
+    const key = stationKey(name)
+    if (!key) continue
+    const known = byKey.get(key)
+    if (known?.kind === 'station') { known.pointId ??= point.id; continue }
+    const station = known ?? { key, name, uic: text(point.uic) || null, platforms: [] }
+    const tracks = new Map()
+    const reach = (trackId, from, to, at, platform = null) => {
+      const track = lengths.get(trackId)
+      if (!track) return
+      const was = tracks.get(trackId)
+      if (was) {
+        was.from = Math.min(was.from, from); was.to = Math.max(was.to, to)
+        if (platform) was.platforms.push(platform)
+        return
+      }
+      tracks.set(trackId, { id: trackId, label: trackLabel(track), length: trackLength(track), platforms: platform ? [platform] : [], from, to, at })
+    }
+    for (const h of places) {
+      if (h.operationalPointId !== point.id || !h.at) continue
+      reach(h.at.trackId, h.at.startStation, h.at.endStation, (h.at.startStation + h.at.endStation) / 2)
+    }
+    for (const p of station.platforms) {
+      const pf = (record?.platforms ?? []).find(x => x.id === p.id)
+      reach(p.trackId, pf?.startStation ?? p.at, pf?.endStation ?? p.at, p.at, p)
+    }
+    if (!tracks.size) continue
+    byKey.set(key, { ...station, kind: 'station', pointId: point.id, tracks: [...tracks.values()] })
+  }
 }
 
 /** The station of that name among `stations`, or null. */
@@ -72,7 +122,7 @@ export const stationNamed = (stations, name) => stations.find(s => s.key === sta
  */
 export function stationTargets(station, { trackId = null, stop = true } = {}) {
   if (!station) return []
-  const onTrack = (tr) => ({ trackId: tr.id, station: tr.platforms[0]?.at ?? tr.length / 2, direction: null })
+  const onTrack = (tr) => ({ trackId: tr.id, station: tr.platforms[0]?.at ?? tr.at ?? tr.length / 2, direction: null })
   if (station.kind === 'halt') {
     const ps = trackId ? station.platforms.filter(p => p.trackId === trackId) : station.platforms
     return ps.map(p => ({ trackId: p.trackId, station: p.at, direction: null }))
@@ -87,25 +137,29 @@ export function stationTargets(station, { trackId = null, stop = true } = {}) {
 
 /**
  * The stations a path runs through, in running order: [{ key, name, begin,
- * end, at }] — where it enters and leaves their tracks along the path, and
- * `at` the middle of that, where a train passing is timed. A halt is passed
- * at its platform's middle.
+ * end, at }] — where it enters and leaves their tracks along the path, as
+ * far as a station reaches on each, and `at` the middle of that, where a
+ * train passing is timed. A halt is passed at its platform's middle.
  */
 export function stationsAlong(path, stations) {
   const ofTrack = new Map()
-  for (const s of stations) for (const tr of s.tracks) ofTrack.set(tr.id, s)
+  for (const s of stations) for (const tr of s.tracks) ofTrack.set(tr.id, { s, from: tr.from ?? -Infinity, to: tr.to ?? Infinity })
   const halts = stations.filter(s => s.kind === 'halt')
   const out = []
   let offset = 0
   for (const piece of path) {
     const len = Math.abs(piece.end - piece.start)
-    const s = ofTrack.get(piece.trackId)
-    if (s) {
-      const last = out[out.length - 1]
-      if (last?.key === s.key && Math.abs(last.end - offset) < 1e-6) last.end = offset + len
-      else out.push({ key: s.key, name: s.name, begin: offset, end: offset + len })
-    }
     const lo = Math.min(piece.start, piece.end), hi = Math.max(piece.start, piece.end)
+    const on = ofTrack.get(piece.trackId)
+    if (on && Math.min(hi, on.to) >= Math.max(lo, on.from) - 1e-6) {
+      const { s } = on
+      // where along the path the piece is within the station's reach on the track
+      const along = (station) => offset + Math.abs(station - piece.start)
+      const [a, b] = [along(Math.max(lo, on.from)), along(Math.min(hi, on.to))].sort((x, y) => x - y)
+      const last = out[out.length - 1]
+      if (last?.key === s.key && Math.abs(last.end - a) < 1e-6) last.end = b
+      else out.push({ key: s.key, name: s.name, begin: a, end: b })
+    }
     for (const h of halts) {
       const p = h.platforms.find(x => x.trackId === piece.trackId && x.at >= lo - 1e-6 && x.at <= hi + 1e-6)
       if (p) {

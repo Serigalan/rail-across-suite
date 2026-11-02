@@ -1,4 +1,4 @@
-import { trackGroupKey, trackKind, trackLength } from '@rail-across/core/track'
+import { BOUNDARY, endMarkName, endMarkStation, trackGroupKey, trackKind, trackLength } from '@rail-across/core/track'
 import { directionOf, pathLength } from './path.js'
 
 /**
@@ -11,8 +11,10 @@ import { directionOf, pathLength } from './path.js'
  * Signalling-Tool made — is a station too, where no station tracks name it:
  * its tracks are those of its stopping places and platforms, each only as
  * far as they reach (`from`, `to`), a train stopping in the middle of its
- * stopping place (`at`). A train begins and ends at a station only, on one
- * of its tracks; it stops or passes at either.
+ * stopping place (`at`). A buffer stop and a boundary of the planning area
+ * are an end (`kind` 'end') under their names (endMarkName): a place at a
+ * track's end. A train begins and ends at a station or an end only, on one
+ * of its tracks; it stops or passes at a station or a halt.
  */
 
 const text = (v) => (v != null ? String(v).trim() : '')
@@ -30,13 +32,16 @@ export const trackLabel = (track) => text(track?.trackNumber) || text(track?.nam
 const platformMiddle = (p) => (p.startStation + p.endStation) / 2
 
 /**
- * [{ key, name, uic, kind: 'station' | 'halt', pointId, tracks: [{ id,
- * label, length, platforms, from, to, at }], platforms: [{ id, code,
+ * [{ key, name, uic, kind: 'station' | 'halt' | 'end', pointId, tracks: [{
+ * id, label, length, platforms, from, to, at }], platforms: [{ id, code,
  * trackId, at }] }], sorted by name. `name` is what a train's point names
  * it by: the station's name, else its UIC number; `pointId` its point of
  * the register, where the record keeps one. A platform's `at` is its middle
  * on its track; a track's `from`, `to` how far the station reaches on it
  * (absent: all of it), `at` where a train stops on it without a platform.
+ * An end has the one track its mark is on, `at` where a train stands there,
+ * and `end` { kind: 'buffer_stop' | 'boundary', markId, speed } — `speed`
+ * a boundary's [km/h], or null.
  */
 export function stationsOf(record) {
   const byKey = new Map()
@@ -65,6 +70,7 @@ export function stationsOf(record) {
     station.tracks.find(tr => tr.id === p.trackId)?.platforms.push(platform)
   }
   withRegister(record, byKey)
+  withEnds(record, byKey)
   for (const s of byKey.values()) s.tracks.sort((a, b) => collator.compare(a.label, b.label))
   return [...byKey.values()].sort((a, b) => collator.compare(a.name, b.name))
 }
@@ -110,6 +116,37 @@ function withRegister(record, byKey) {
   }
 }
 
+/**
+ * The buffer stops and boundaries of the record, made ends: each under its
+ * name, unless a station has it.
+ */
+function withEnds(record, byKey) {
+  const tracks = new Map((record?.tracks ?? []).map(tr => [tr.id, tr]))
+  for (const mark of record?.endMarks ?? []) {
+    const track = tracks.get(mark.trackId)
+    if (!track) continue
+    const name = endMarkName(mark, track)
+    const key = stationKey(name)
+    if (!key || byKey.has(key)) continue
+    const length = trackLength(track)
+    const at = endMarkStation(length, mark)
+    byKey.set(key, {
+      key, name, uic: null, kind: 'end', platforms: [],
+      tracks: [{ id: track.id, label: trackLabel(track), length, platforms: [], from: at, to: at, at }],
+      end: { kind: mark.kind, markId: mark.id, speed: mark.kind === BOUNDARY && mark.speed > 0 ? mark.speed : null },
+    })
+  }
+}
+
+/**
+ * The speed a train has at a place it begins or ends at [m/s]: at a boundary
+ * its speed, or Infinity — what the line allows there —; elsewhere it stands, 0.
+ */
+export function crossingSpeed(station) {
+  if (station?.end?.kind !== BOUNDARY) return 0
+  return station.end.speed ? station.end.speed / 3.6 : Infinity
+}
+
 /** The station of that name among `stations`, or null. */
 export const stationNamed = (stations, name) => stations.find(s => s.key === stationKey(name)) ?? null
 
@@ -139,12 +176,15 @@ export function stationTargets(station, { trackId = null, stop = true } = {}) {
  * The stations a path runs through, in running order: [{ key, name, begin,
  * end, at }] — where it enters and leaves their tracks along the path, as
  * far as a station reaches on each, and `at` the middle of that, where a
- * train passing is timed. A halt is passed at its platform's middle.
+ * train passing is timed. A halt is passed at its platform's middle, an end
+ * where a train stands there.
  */
 export function stationsAlong(path, stations) {
   const ofTrack = new Map()
-  for (const s of stations) for (const tr of s.tracks) ofTrack.set(tr.id, { s, from: tr.from ?? -Infinity, to: tr.to ?? Infinity })
-  const halts = stations.filter(s => s.kind === 'halt')
+  for (const s of stations) if (s.kind === 'station') for (const tr of s.tracks) ofTrack.set(tr.id, { s, from: tr.from ?? -Infinity, to: tr.to ?? Infinity })
+  // a halt at its platforms' middles, an end where a train stands there
+  const halts = stations.filter(s => s.kind === 'halt' || s.kind === 'end')
+    .map(s => ({ s, at: s.kind === 'halt' ? s.platforms : s.tracks.map(tr => ({ trackId: tr.id, at: tr.at })) }))
   const out = []
   let offset = 0
   for (const piece of path) {
@@ -161,15 +201,15 @@ export function stationsAlong(path, stations) {
       else out.push({ key: s.key, name: s.name, begin: a, end: b })
     }
     for (const h of halts) {
-      const p = h.platforms.find(x => x.trackId === piece.trackId && x.at >= lo - 1e-6 && x.at <= hi + 1e-6)
+      const p = h.at.find(x => x.trackId === piece.trackId && x.at >= lo - 1e-6 && x.at <= hi + 1e-6)
       if (p) {
         const at = offset + Math.abs(p.at - piece.start)
-        out.push({ key: h.key, name: h.name, begin: at, end: at })
+        out.push({ key: h.s.key, name: h.s.name, begin: at, end: at })
       }
     }
     offset += len
   }
-  return out.sort((a, b) => a.begin - b.begin).map(s => ({ ...s, at: (s.begin + s.end) / 2 }))
+  return out.sort((a, b) => a.begin - b.begin || a.end - b.end).map(s => ({ ...s, at: (s.begin + s.end) / 2 }))
 }
 
 /** The direction a path leaves a location in, for a way that goes on from it. */

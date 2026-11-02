@@ -29,7 +29,7 @@ export default function TrainsPanel({ t, timetables, sorted, train, setTrainId, 
     <Panel title={t('section_trains')} intro={t('section_trains_intro')}
       actions={mayEdit && draft && <Button size="small" icon={<PlusIcon size={14} />} onClick={addTrain}>{t('train_new')}</Button>}>
       {error && <Message tone="error">{t('error_save', { error })}</Message>}
-      {!stations.some(s => s.kind === 'station') && <Message tone="warn">{t('no_stations')}</Message>}
+      {!stations.some(s => s.kind !== 'halt') && <Message tone="warn">{t('no_stations')}</Message>}
       <Section title={t('timetable')}
         actions={mayEdit && draft && <span className="ui-row">
           <Button size="small" variant="ghost" onClick={() => setDialog({ kind: 'rename' })}>{t('rename')}</Button>

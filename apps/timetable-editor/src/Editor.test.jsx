@@ -10,7 +10,7 @@ import Graph from './Graph.jsx'
 import DispatchSection from './panels/DispatchSection.jsx'
 import { axisOf, blocksOn, insertionIndex, linesOn, trainLine } from './rows.js'
 import { linkedRequest } from './suite.js'
-import { net } from '../../../packages/running-times/test/net.js'
+import { marked, net } from '../../../packages/running-times/test/net.js'
 
 const de = (node) => renderToStaticMarkup(<I18n.Provider value={textsFor('de')}>{node}</I18n.Provider>)
 const { t } = textsFor('de')
@@ -46,9 +46,9 @@ describe('the Fahrplan-Editor', () => {
   it('shows a train: what it is, its way from a station to a station, its times with the stations it passes', () => {
     const html = sheet()
     expect(html).toContain('RB 16001')
-    expect(html).toContain('Beginn (Bahnhof)')
+    expect(html).toContain('<span>Beginn</span>')
     // begin and end offer stations only; on the way a halt as well
-    const begin = html.slice(html.indexOf('Beginn (Bahnhof)'), html.indexOf('Unterwegs'))
+    const begin = html.slice(html.indexOf('<span>Beginn</span>'), html.indexOf('Unterwegs'))
     expect(begin).toContain('A-Dorf')
     expect(begin).not.toContain('B-Halt')
     expect(html).toContain('B-Halt (Haltepunkt)')
@@ -56,6 +56,17 @@ describe('the Fahrplan-Editor', () => {
     expect(html).toContain('07:01<small>30</small>')
     expect(html).toContain('Hier halten')
     expect(html).toContain('59 km/h')
+  })
+
+  it('offers a buffer stop and a boundary to begin and end at, not to pass', () => {
+    const ends = stationsOf(marked)
+    const html = sheet({ stations: ends, record: marked })
+    const begin = html.slice(html.indexOf('<span>Beginn</span>'), html.indexOf('Unterwegs'))
+    expect(begin).toContain('West (Betrachtungsgrenze)')
+    expect(begin).toContain('Prellbock C-Stadt Gl. 2 Ende (Prellbock)')
+    const via = html.slice(html.indexOf('Unterwegs'), html.indexOf('<span>Ende</span>'))
+    expect(via).not.toContain('Betrachtungsgrenze')
+    expect(via).not.toContain('(Prellbock)')
   })
 
   it('offers the itineraries of the signalling as the way a train prefers to the next point, and says where it ran another', () => {

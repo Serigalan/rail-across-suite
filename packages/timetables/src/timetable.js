@@ -1,4 +1,4 @@
-import { marginValue, pathAlong, pathLength, routeVia, simulationRequest, stationNamed, stationTargets, stationsAlong, timeAtPosition } from '@rail-across/running-times'
+import { crossingSpeed, marginValue, pathAlong, pathLength, routeVia, simulationRequest, stationNamed, stationTargets, stationsAlong, timeAtPosition } from '@rail-across/running-times'
 
 /**
  * The timetables of the suite (decision 0016): a project's trains, each with
@@ -6,7 +6,10 @@ import { marginValue, pathAlong, pathLength, routeVia, simulationRequest, statio
  * margin, and its points — the station it starts at, the stations and halts
  * it stops at or passes, the station it ends at —, the stations named by
  * their names, so that one timetable is laid on any variant of its project.
- * A train begins and ends at a station (Bahnhof) only, on one of its tracks.
+ * A train begins and ends at a station (Bahnhof) only, on one of its tracks,
+ * or at a buffer stop or a boundary of the planning area — an end, which it
+ * cannot pass. It stands at a buffer stop; it crosses a boundary at the
+ * boundary's speed, or what the line allows there, coming in or going out.
  *
  * train = { id, number, category, name, vehicle, mode, comfort, departure,
  *           margin, distribution, points }
@@ -97,8 +100,9 @@ export const trainTitle = (train) => [[train.category, train.number].filter(Bool
 /**
  * What keeps a train from being run, as [{ key, point? }] — `point` the index
  * of the point it is about: too few points, a first or last point that is no
- * station of the net (a train begins and ends at a station only), a station or
- * track the variant does not have, no vehicle, a margin that cannot be read.
+ * station or end of the net (a train begins and ends at one only), an end on
+ * the way, a station or track the variant does not have, no vehicle, a margin
+ * that cannot be read.
  */
 export function trainProblems(train, stations, { vehicle = true } = {}) {
   const out = []
@@ -108,7 +112,8 @@ export function trainProblems(train, stations, { vehicle = true } = {}) {
     const station = stationNamed(stations, p.station)
     const end = i === 0 || i === points.length - 1
     if (!station) out.push({ key: 'station_missing', point: i })
-    else if (end && points.length >= 2 && station.kind !== 'station') out.push({ key: i === 0 ? 'start_not_station' : 'end_not_station', point: i })
+    else if (end && points.length >= 2 && station.kind === 'halt') out.push({ key: i === 0 ? 'start_not_station' : 'end_not_station', point: i })
+    else if (!end && station.kind === 'end') out.push({ key: 'end_on_the_way', point: i })
     else if (p.track && !station.tracks.some(tr => tr.id === p.track) && !station.platforms.some(pl => pl.trackId === p.track)) out.push({ key: 'track_missing', point: i })
   })
   if (!vehicle) out.push({ key: 'no_vehicle' })
@@ -205,14 +210,18 @@ export function trainRequest(record, stations, train, vehicle, holds = []) {
   const last = train.points.length - 1
   const stops = train.points.map((p, i) => i).filter(i => i > 0 && (i === last || train.points[i].stop))
   const waitAt = (i) => holds.filter(h => h.point === i).reduce((sum, h) => sum + h.wait, 0)
+  // at a boundary it runs in, and on out
+  const startSpeed = crossingSpeed(stationNamed(stations, train.points[0].station))
+  const endSpeed = crossingSpeed(stationNamed(stations, train.points[last].station))
   const schedule = [
-    ...stops.map(i => ({ offset: route.offsets[i], duration: i === last ? 0 : (train.points[i].dwell ?? 0) + waitAt(i), point: i })),
+    ...stops.map(i => ({ offset: route.offsets[i], duration: i < last ? (train.points[i].dwell ?? 0) + waitAt(i) : endSpeed > 0 ? null : 0, point: i })),
     ...holds.filter(h => h.point == null).map(h => ({ offset: h.offset, duration: h.wait, point: null })),
   ].sort((a, b) => a.offset - b.offset)
   const { request, properties } = simulationRequest(record, route.path, {
     vehicle, traction: { mode: train.mode, comfort: train.comfort ?? 'STANDARD' },
     stops: schedule.map(s => ({ offset: s.offset, duration: s.duration })),
     margin: { value: marginValue(train.margin), distribution: train.distribution ?? 'mareco' },
+    startSpeed, endSpeed: endSpeed > 0 ? endSpeed : null,
   })
   return { route, request, properties, stops, schedule, startWait: waitAt(0) }
 }

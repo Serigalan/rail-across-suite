@@ -166,9 +166,10 @@ function trackOptions(t, station) {
 }
 
 /**
- * The train's way: where it begins — a station —, the points on the way —
- * stations and halts, a stop or a pass, how long it stands, a departure it
- * waits for —, where it ends — a station. Each with its track, or any; and
+ * The train's way: where it begins — a station, a buffer stop or a boundary
+ * of the planning area —, the points on the way — stations and halts, a stop
+ * or a pass, how long it stands, a departure it waits for —, where it ends —
+ * a station, a buffer stop or a boundary. Each with its track, or any; and
  * from each to the next the way it prefers, an itinerary of the variant's
  * signalling, or the shortest. A way preferred that the run could not take
  * is said under it.
@@ -176,9 +177,11 @@ function trackOptions(t, station) {
 function RouteCard({ t, train, stations, record, run, problems, ro, update }) {
   const points = train.points
   const last = points.length - 1
-  const ends = stations.filter(s => s.kind === 'station')
-  const endOptions = ends.map(s => ({ value: s.name, label: s.name }))
-  const allOptions = stations.map(s => ({ value: s.name, label: s.kind === 'halt' ? t('halt_name', { name: s.name }) : s.name }))
+  const ends = stations.filter(s => s.kind !== 'halt')
+  const nameOf = (s) => (s.kind === 'halt' ? t('halt_name', { name: s.name }) : s.kind === 'end' ? t(`${s.end.kind}_name`, { name: s.name }) : s.name)
+  const endOptions = ends.map(s => ({ value: s.name, label: nameOf(s) }))
+  // a buffer stop or a boundary is no place to pass
+  const allOptions = stations.filter(s => s.kind !== 'end').map(s => ({ value: s.name, label: nameOf(s) }))
   const setPoints = (fn) => update(tr => ({ ...tr, points: fn(tr.points) }))
   // A point's station or track changed: the ways preferred to and from it are no longer its.
   const setPoint = (i, patch) => setPoints(ps => ps.map((p, j) => {

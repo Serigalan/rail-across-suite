@@ -12,7 +12,8 @@ shared by the Simulation-Tool and the Fahrplan-Editor:
   the simulation takes;
 - **the stations** (`stations.js`): a station is the station tracks of one name, as the Layout-Tool groups them, or
   a station of the register on the tracks of its stopping places and platforms, as far as they reach; a halt a name
-  only platforms carry; where a train may be at one, and the stations along a way;
+  only platforms carry; an end a buffer stop or a boundary of the planning area, a place at a track's end where a
+  train may begin and end, over a boundary at its speed (`crossingSpeed`, the request's `startSpeed`, `endSpeed`); where a train may be at one, and the stations along a way;
 - **the simulation module** (`engine.js`): OSRD's simulation core in Rust (`sim/`) as WebAssembly, loaded from
   `sim/rail_across_sim.wasm` beside the app's page;
 - the map's lines and the formats of times and distances (`places.js`, `format.js`).

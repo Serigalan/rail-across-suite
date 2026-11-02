@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { newVehicle } from '@rail-across/vehicles'
 import { runWith, stationsOf } from '@rail-across/running-times'
-import { net, WASM } from '../../running-times/test/net.js'
+import { marked, net, WASM } from '../../running-times/test/net.js'
 import {
   copyTrain, formatClock, itineraryOptions, newPoint, newTrain, numberAfter, parseClock, runTrain, taktCopies, trainProblems, trainRequest, trainTitle,
 } from './timetable.js'
@@ -17,6 +17,13 @@ describe('a train of the timetable', () => {
     expect(trainProblems(train([['B-Halt'], ['C-Stadt']]), stations)).toEqual([{ key: 'start_not_station', point: 0 }])
     // a halt on the way is a stop like any
     expect(trainProblems(train([['A-Dorf'], ['B-Halt'], ['C-Stadt']]), stations)).toEqual([])
+  })
+
+  it('begins and ends at a buffer stop or a boundary too, and passes neither', () => {
+    const ends = stationsOf(marked)
+    const stop = 'Prellbock C-Stadt Gl. 2 Ende'
+    expect(trainProblems(train([['West'], [stop]]), ends)).toEqual([])
+    expect(trainProblems(train([['A-Dorf'], ['West'], ['C-Stadt']]), ends)).toEqual([{ key: 'end_on_the_way', point: 1 }])
   })
 
   it('names stations and tracks the variant has, a vehicle and a margin that reads', () => {
@@ -118,6 +125,25 @@ describe.skipIf(!existsSync(WASM))('a train run', () => {
     expect(waits.rows[1].departure).toBe(parseClock('7:10'))
     expect(waits.rows[1].arrival).toBeCloseTo(plain.rows[1].arrival, 6)
     expect(waits.rows[2].arrival - plain.rows[2].arrival).toBeCloseTo(parseClock('7:10') - plain.rows[1].departure, 6)
+  })
+
+  it('runs in over a boundary at its speed, on out over one at the line\'s, and stands at a buffer stop', async () => {
+    const ends = stationsOf(marked)
+    const stop = 'Prellbock C-Stadt Gl. 2 Ende'
+    const kmh = (v) => v * 3.6
+    const inward = await runTrain(marked, ends, train([['West'], ['B-Halt', { dwell: 30 }], [stop]]), vehicle, simulate)
+    const speeds = inward.result.final.speeds
+    expect(kmh(speeds[0])).toBeCloseTo(60, 3)
+    expect(speeds.at(-1)).toBeCloseTo(0, 6)
+    expect(inward.rows.map(r => [r.name, r.point])).toEqual([['West', 0], ['A-Dorf', null], ['B-Halt', 1], ['C-Stadt', null], [stop, 2]])
+    expect(inward.rows[0].departure).toBe(25200)
+    // out over a boundary of no speed of its own: it does not brake for it
+    const free = { ...marked, endMarks: marked.endMarks.map(m => (m.id === 'mW' ? { ...m, speed: undefined } : m)) }
+    const outward = await runTrain(free, stationsOf(free), train([['C-Stadt', { track: 'C1' }], ['West']]), vehicle, simulate)
+    expect(kmh(outward.result.final.speeds.at(-1))).toBeGreaterThan(80)
+    const slow = await runTrain(marked, ends, train([['C-Stadt', { track: 'C1' }], ['West']]), vehicle, simulate)
+    expect(kmh(slow.result.final.speeds.at(-1))).toBeCloseTo(60, 0)
+    expect(slow.rows.at(-1).arrival).toBeGreaterThan(outward.rows.at(-1).arrival)
   })
 
   it('says why it cannot run', async () => {

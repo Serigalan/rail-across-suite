@@ -21,8 +21,12 @@ only into a free block (7); the register's stations are stations (3)
    of operational points ([0017](0017-stations-in-the-signalling-tool.md)) — one the Signalling-Tool made — is a
    station too where no station tracks name it: on the tracks of its stopping places and platforms, as far as they
    reach, a train stopping in the middle of its stopping place. So a station is made in one place, not twice. **A train begins and ends at a station only**
-   — on one of its tracks, the one asked for or the nearest —; on the way it stops or passes at stations and
-   halts. The editor offers no other for a train's first and last point, and says so for a train that has one.
+   — on one of its tracks, the one asked for or the nearest —, **or at an end of the layout**: a buffer stop or a
+   boundary of the planning area, under the end mark's name (else one made of its kind, track and end). It stands
+   before a buffer stop's face; it crosses a boundary at the boundary's speed, or what the line allows there,
+   running in or out, as the part of its run beyond the planning area is not modelled. On the way it stops or
+   passes at stations and halts, never at an end. The editor offers no other for a train's first and last point,
+   and says so for a train that has one.
 4. **The times come from the running time simulation** (0013), not from the user: a train's way is the shortest
    over the net through its points, never turning back; its run gives the arrival and departure at every stop and
    the time it passes every station on the way. A departure waited for at a stop moves the run on from there.

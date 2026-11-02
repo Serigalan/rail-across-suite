@@ -24,14 +24,29 @@ function isPoint(p) {
 }
 
 /**
+ * What a timetable does where trains would hold the same block
+ * (@rail-across/timetables, occupancy.js): only say so, or let them wait —
+ * by departure or by kind, the kinds in an order —, and the times a block is
+ * held beyond a train's running in it.
+ */
+function isDispatch(d) {
+  if (!isObject(d)) return false
+  const times = d.times ?? {}
+  return orNull(d.mode, v => ['show', 'wait'].includes(v)) && orNull(d.priority, v => ['departure', 'category'].includes(v))
+    && orNull(d.categories, v => Array.isArray(v) && v.length <= 100 && v.every(c => isText(c, 20, true)))
+    && isObject(times) && ['setup', 'approach', 'release'].every(k => orNull(times[k], v => Number.isFinite(v) && v >= 0 && v <= 10000))
+}
+
+/**
  * A timetable's data, checked for its shape: its trains, each with an id of
  * its own, its number, kind and name, its vehicle, departure, margin and
- * points. That a train begins and ends at a station of the net is the
+ * points; what it does where trains would hold the same block. That a train begins and ends at a station of the net is the
  * Fahrplan-Editor's to say, which knows the variant it lays it on; a train
  * not done yet is kept as it is. The key of the first fault, else null.
  */
 export function timetableFault(data) {
   if (!isObject(data) || !Array.isArray(data.trains) || data.trains.length > 5000) return 'timetable_invalid'
+  if (data.dispatch != null && !isDispatch(data.dispatch)) return 'dispatch_invalid'
   const ids = new Set()
   for (const t of data.trains) {
     if (!isObject(t) || !isText(t.id, 64, true) || ids.has(t.id)) return 'train_invalid'

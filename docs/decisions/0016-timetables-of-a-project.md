@@ -1,7 +1,8 @@
 # 0016 — Timetables belong to a project; a train begins and ends at a station
 
 Status: **proposed** — goes with [0013](0013-running-times-in-rust.md) and [0014](0014-vehicles-in-osrds-form.md) ·
-amended 2026-11-02: one tile with the Simulation-Tool, the Fahrplan-Sim; a way a train prefers (6)
+amended 2026-11-02: one tile with the Simulation-Tool, the Fahrplan-Sim; a way a train prefers (6); a train runs
+only into a free block (7)
 
 ## Decision
 
@@ -34,6 +35,18 @@ amended 2026-11-02: one tile with the Simulation-Tool, the Fahrplan-Sim; a way a
    leads there, from the middle of the one stopping place to the middle of the other; else the train runs the
    shortest way, and the editor says so under the leg. Other ways stay open: a leg without one, or one whose
    itinerary does not lead there, runs the shortest.
+7. **A train runs only into a free block.** A block is the stretch of a train's way from one main signal of the
+   variant's signalling acting its way to the next, the overlap beyond the second with it; without main signals
+   the whole way is one. A train holds a block from when it passes the distant signal before it (or leaves where
+   it stood within that distance), less the time to set the route, until its tail has left it and it is released
+   — its blocking time after Ril 405, as OSRD's spacing requirements are; two trains conflict where they hold a
+   stretch of the same track at the same time. The timetable says what is done (`dispatch`): **only show the
+   conflicts**, each train run for itself as OSRD does, or **let the trains wait** — given the net one after the
+   other, by departure or by their kinds in an order the timetable sets, each run again waiting for a free block
+   where a train before it holds one: longer at its last stop before the block (its start among them), else
+   before the block's signal. The waits are the run's, not the timetable's: the trains' departures stay as they
+   are written. The times a block is held beyond the running (route setting, the distant signal's distance,
+   release) are the timetable's too.
 
 ## Why
 
@@ -50,8 +63,11 @@ amended 2026-11-02: one tile with the Simulation-Tool, the Fahrplan-Sim; a way a
 - Timetables have no history and no variants of their own; the version number only keeps two saves from
   overwriting each other unseen.
 - A station renamed in the layout leaves the trains that name it pointing at nothing until they are changed.
-- There is no conflict detection yet (blocking times, headways), no connections, no periodic patterns beyond
-  copying a train at an interval; and no exchange with OSRD's timetables (0006) yet.
+- Blocks are held by stretches of track, not by the detection sections and routes they are set and released in:
+  no sectional release, no flank protection, no routes set early. A train waiting takes the place it is given;
+  nothing looks for a way round or reorders the trains, and what waiting cannot clear is said as a conflict.
+- There are no connections, no periodic patterns beyond copying a train at an interval; and no exchange with
+  OSRD's timetables (0006) yet.
 
 ## Alternatives considered
 

@@ -1,4 +1,4 @@
-import { marginValue, pathAlong, routeVia, simulationRequest, stationNamed, stationTargets, stationsAlong, timeAtPosition } from '@rail-across/running-times'
+import { marginValue, pathAlong, pathLength, routeVia, simulationRequest, stationNamed, stationTargets, stationsAlong, timeAtPosition } from '@rail-across/running-times'
 
 /**
  * The timetables of the suite (decision 0016): a project's trains, each with
@@ -167,11 +167,17 @@ export function routePoints(train, stations) {
 
 /**
  * The way of a train over the net and the request for its run: { route,
- * request, properties, stops } — `stops` the indices of the points it stops
- * at after its start, as the request's schedule has them —, or { failedAt }
- * the point it found no way to.
+ * request, properties, stops, schedule, startWait } — `stops` the indices
+ * of the points it stops at after its start; `schedule` the request's stops
+ * in order, [{ offset, duration, point }] with `point` null for a hold —,
+ * or { failedAt } the point it found no way to.
+ *
+ * `holds` are where it waits for a block to be free (occupancy.js), [{
+ * offset, wait, point }]: at a point it stops at, longer — at its first, it
+ * leaves later (`startWait`) —; with `point` null, at a stop of its own on
+ * the way, before a signal.
  */
-export function trainRequest(record, stations, train, vehicle) {
+export function trainRequest(record, stations, train, vehicle, holds = []) {
   const points = routePoints(train, stations)
   // A leg with a way preferred runs from its start's stopping place to its target's, along it where it leads there.
   const { legs, missing } = preferredLegs(record, stations, train)
@@ -194,12 +200,52 @@ export function trainRequest(record, stations, train, vehicle) {
   route.preferred = legs.map((leg, i) => (leg ? (taken.get(i) ? 'taken' : 'other') : missing.includes(i) ? 'missing' : null))
   const last = train.points.length - 1
   const stops = train.points.map((p, i) => i).filter(i => i > 0 && (i === last || train.points[i].stop))
+  const waitAt = (i) => holds.filter(h => h.point === i).reduce((sum, h) => sum + h.wait, 0)
+  const schedule = [
+    ...stops.map(i => ({ offset: route.offsets[i], duration: i === last ? 0 : (train.points[i].dwell ?? 0) + waitAt(i), point: i })),
+    ...holds.filter(h => h.point == null).map(h => ({ offset: h.offset, duration: h.wait, point: null })),
+  ].sort((a, b) => a.offset - b.offset)
   const { request, properties } = simulationRequest(record, route.path, {
     vehicle, traction: { mode: train.mode, comfort: train.comfort ?? 'STANDARD' },
-    stops: stops.map(i => ({ offset: route.offsets[i], duration: i === last ? 0 : train.points[i].dwell ?? 0 })),
+    stops: schedule.map(s => ({ offset: s.offset, duration: s.duration })),
     margin: { value: marginValue(train.margin), distribution: train.distribution ?? 'mareco' },
   })
-  return { route, request, properties, stops }
+  return { route, request, properties, stops, schedule, startWait: waitAt(0) }
+}
+
+/**
+ * A train's run in time, as the timetable has it: { at0, length, end,
+ * first(offset), last(offset), standstills, scheduled } — `at0` when it
+ * leaves its start, `end` when it arrives at its end; `first` when it gets to
+ * an offset along its way, `last` the last moment it is still there (where it
+ * stands, when it leaves); `standstills` [{ offset, leave }] where it stands
+ * on the way, `scheduled` the simulation's times at the stops of its points.
+ * Where it waits for a departure, the run on from there is that much later.
+ * Times in seconds from midnight.
+ */
+export function runClock(train, { route, stops, schedule }, result) {
+  const final = result.final
+  const at0 = train.departure
+  const scheduled = new Map()
+  ;(schedule ?? stops.map(i => ({ point: i }))).forEach((s, k) => { if (s.point != null) scheduled.set(s.point, final.scheduled_points[k]) })
+  const shifts = []   // [{ offset, shift }] from that offset on
+  let shift = 0
+  for (const i of stops) {
+    const s = scheduled.get(i)
+    const wait = train.points[i].departure
+    if (wait != null && i < train.points.length - 1) {
+      const leaves = at0 + s.departure + shift
+      if (wait > leaves) shift += wait - leaves
+    }
+    shifts.push({ offset: route.offsets[i], shift })
+  }
+  const shiftBefore = (offset) => { let v = 0; for (const s of shifts) if (s.offset < offset - 1e-6) v = s.shift; return v }
+  const shiftAt = (offset) => { let v = 0; for (const s of shifts) if (s.offset <= offset + 1e-6) v = s.shift; return v }
+  const length = pathLength(route.path)
+  const first = (offset) => at0 + (timeAtPosition(final, offset) ?? 0) + shiftBefore(offset)
+  const last = (offset) => at0 + (timeAtPosition(final, offset, { last: true }) ?? 0) + shiftAt(offset)
+  const standstills = (schedule ?? []).filter(s => s.offset < length - 1e-6).map(s => ({ offset: s.offset, leave: last(s.offset) }))
+  return { at0, length, end: first(length), first, last, standstills, scheduled, shiftBefore, shiftAt }
 }
 
 /**
@@ -210,24 +256,11 @@ export function trainRequest(record, stations, train, vehicle) {
  * a pass's arrival its departure. Where it waits for a departure, the run on
  * from there is that much later. Times in seconds from midnight.
  */
-export function trainTimes(train, stations, { route, stops }, result) {
+export function trainTimes(train, stations, made, result) {
+  const { route } = made
   const final = result.final
-  const at0 = train.departure
   // the simulation's times at the stops, and how much later each is left for a departure waited for
-  const sched = new Map(stops.map((i, k) => [i, final.scheduled_points[k]]))
-  const shifts = []   // [{ offset, shift }] from that offset on
-  let shift = 0
-  for (const i of stops) {
-    const s = sched.get(i)
-    const wait = train.points[i].departure
-    if (wait != null && i < train.points.length - 1) {
-      const leaves = at0 + s.departure + shift
-      if (wait > leaves) shift += wait - leaves
-    }
-    shifts.push({ offset: route.offsets[i], shift })
-  }
-  const shiftBefore = (offset) => { let v = 0; for (const s of shifts) if (s.offset < offset - 1e-6) v = s.shift; return v }
-  const shiftAt = (offset) => { let v = 0; for (const s of shifts) if (s.offset <= offset + 1e-6) v = s.shift; return v }
+  const { at0, scheduled: sched, shiftBefore, shiftAt } = runClock(train, made, result)
 
   const along = stationsAlong(route.path, stations)
   const rows = []
@@ -265,17 +298,19 @@ export function trainTimes(train, stations, { route, stops }, result) {
 
 /**
  * A train run: its way and request, simulated with `simulate` (the module's,
- * async), and its times. { route, request, properties, result, rows } — or {
- * problems }, { failedAt } or { error } where it cannot be run.
+ * async), and its times. { route, request, properties, result, rows, clock }
+ * — or { problems }, { failedAt } or { error } where it cannot be run.
+ * `holds` where it waits for a block (trainRequest).
  */
-export async function runTrain(record, stations, train, vehicle, simulate) {
+export async function runTrain(record, stations, train, vehicle, simulate, holds = []) {
   const problems = trainProblems(train, stations, { vehicle: Boolean(vehicle) })
   if (problems.length) return { problems }
-  const made = trainRequest(record, stations, train, vehicle)
+  const made = trainRequest(record, stations, train, vehicle, holds)
   if (made.failedAt != null) return { failedAt: made.failedAt }
   const result = await simulate(made.request)
   if (result.error) return { error: result.error }
-  return { ...made, result, rows: trainTimes(train, stations, made, result) }
+  const late = { ...train, departure: train.departure + made.startWait }
+  return { ...made, holds, result, rows: trainTimes(late, stations, made, result), clock: runClock(late, made, result) }
 }
 
 /** The key a train's run is known by: what it is run with, so a run is only made again when that changes. */

@@ -1,13 +1,12 @@
 import { useMemo, useState } from 'react'
 import { loadTracks } from '../storage'
-import { nextTrackName } from '@rail-across/core/track'
-import { kmTrackName } from '@rail-across/core/track'
+import { kmTrackName, nextTrackName, stationTrackStem } from '@rail-across/core/track'
 import useLineStation from './useLineStation'
 
-/** Prefix a new track's name is built from: line number, station name, else 'track'. */
+/** Prefix a new track's name is built from: line number, the station's name as an identifier (`koennern`), else 'track'. */
 function trackNamePrefix(fields) {
   if (fields?.type === 'line_track' && fields.lineNumber) return String(fields.lineNumber)
-  if (fields?.type === 'station_track' && fields.stationName) return fields.stationName
+  if (fields?.type === 'station_track' && fields.stationName) return stationTrackStem(fields.stationName)
   return 'track'
 }
 

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import {
-  trackKind, trackTypeName, trackGroupKey, groupTracks, groupTitle, assignTracks, plannedNames,
+  trackKind, trackTypeName, trackGroupKey, groupTracks, groupTitle, assignTracks, plannedNames, stationTrackStem,
 } from './trackGroups.js'
 import { kmTrackName } from './trackGroups.js'
 import { buildTypeFields } from './identifierUtils.js'
@@ -119,7 +119,7 @@ describe('renaming tracks as they are assigned', () => {
     { id: 'b', name: 'track 2', trackNumber: 3 },
     { id: 'c', name: 'track 3' },
     { id: 'o', name: '6344.02912' },
-    { id: 'k', name: 'Könnern.4' },
+    { id: 'k', name: 'koennern.4' },
   ]
 
   it('names them by line and kilometre, moving on past names taken', () => {
@@ -137,11 +137,25 @@ describe('renaming tracks as they are assigned', () => {
   it('names them by station and track number, numbering on those without one', () => {
     const { names, fallback, clashes } = plannedNames(tracks, ['a', 'b', 'c'],
       { kind: 'station', stationName: 'Könnern' }, { numberById: { a: '1', b: ' 3 ', c: '' } })
-    expect(names.get('a')).toBe('Könnern.1')
-    expect(names.get('b')).toBe('Könnern.3')
-    expect(names.get('c')).toBe('Könnern.001')
+    expect(names.get('a')).toBe('koennern.1')
+    expect(names.get('b')).toBe('koennern.3')
+    expect(names.get('c')).toBe('koennern.001')
     expect([...fallback]).toEqual(['c'])
     expect(clashes.size).toBe(0)
+  })
+
+  it('builds a station track\'s name from the station\'s name as an identifier', () => {
+    expect(stationTrackStem('Könnern')).toBe('koennern')
+    expect(stationTrackStem('Wallwitz (Saalkreis)')).toBe('wallwitz')
+    expect(stationTrackStem('Wallwitz (Saalkr)')).toBe('wallwitz')
+    expect(stationTrackStem('Halle (Saale) Hbf')).toBe('halle-hbf')
+    expect(stationTrackStem('Halle-Trotha')).toBe('halle-trotha')
+    expect(stationTrackStem('Großkorbetha')).toBe('grosskorbetha')
+    expect(stationTrackStem('Dürrenberg / Süd')).toBe('duerrenberg-sued')
+    expect(stationTrackStem('Žilina')).toBe('zilina')
+    expect(stationTrackStem('8010159')).toBe('8010159')
+    expect(stationTrackStem(' (–) ')).toBe('track')
+    expect(plannedNames([], ['x'], { kind: 'station', stationName: 'Wallwitz (Saalkreis)' }, { numberById: { x: '' } }).names.get('x')).toBe('wallwitz.001')
   })
 
   it('says which station names clash, with another track or among themselves', () => {
@@ -152,7 +166,7 @@ describe('renaming tracks as they are assigned', () => {
 
   it('lets a renamed track give up its own name', () => {
     const { names } = plannedNames(tracks, ['k'], { kind: 'station', stationName: 'Könnern' }, { numberById: { k: '4' } })
-    expect(names.get('k')).toBe('Könnern.4')
+    expect(names.get('k')).toBe('koennern.4')
   })
 
   it('writes the names and the track numbers with the assignment', () => {
@@ -162,8 +176,8 @@ describe('renaming tracks as they are assigned', () => {
     expect(withSuffix[2].trackNumber).toBe('3a')
     const { names } = plannedNames(tracks, ['a', 'b'], target, { numberById })
     const out = assignTracks(tracks, ['a', 'b'], target, { names, trackNumbers: numberById })
-    expect(out[0]).toMatchObject({ name: 'Könnern.1', trackNumber: 1, stationName: 'Könnern' })
-    expect(out[1]).toMatchObject({ name: 'Könnern.001', trackNumber: null })
+    expect(out[0]).toMatchObject({ name: 'koennern.1', trackNumber: 1, stationName: 'Könnern' })
+    expect(out[1]).toMatchObject({ name: 'koennern.001', trackNumber: null })
     expect(out[2]).toBe(tracks[2])
   })
 })

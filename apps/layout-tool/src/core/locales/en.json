@@ -464,7 +464,7 @@
   "assign_error_station_name": "Please enter a station name or UIC number.",
   "assign_rename": "Rename tracks",
   "assign_rename_line_hint": "Name from the line number and the kilometre of the track's middle, e.g. 6344.02912 at km 29.12.",
-  "assign_rename_station_hint": "Name from the station name and the track number, e.g. Könnern.3.",
+  "assign_rename_station_hint": "Name from the station name and the track number, e.g. koennern.3 for Könnern: lower case, umlauts written out, without brackets and special characters.",
   "assign_rename_no_km": "Italic: the line does not reach the track (no kilometre), so it is numbered on.",
   "assign_rename_no_number": "Italic: no track number, so it is numbered on.",
   "assign_error_name_clash": "The names marked red are already taken – please choose other track numbers.",

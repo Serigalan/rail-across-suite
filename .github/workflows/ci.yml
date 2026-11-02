@@ -5,6 +5,7 @@ on:
   pull_request:
 
 jobs:
+  # The repository's own rules: the import boundaries between apps and packages.
   check:
     runs-on: ubuntu-24.04
     steps:
@@ -13,3 +14,306 @@ jobs:
         with:
           node-version: 22
       - run: npm run check
+
+  # The Rail-Data-Core: its tests and its module rules.
+  core:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: packages/core
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+        working-directory: .
+      - run: node tools/modules.mjs
+      - run: node tools/vectors.mjs --check
+      - run: node tools/types.mjs --check
+      - run: npm test
+
+  # The Rail-Data-Core for Python, held to the vectors the JavaScript core writes.
+  core-py:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: packages/core-py
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - run: python -m unittest discover -s tests
+
+  # Point clouds, shared by the Open-Layout-Tool and the project server.
+  pointcloud:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: packages/pointcloud
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+        working-directory: .
+      - run: npm test
+
+  # The suite's look as a library, shared by the start page and the modules.
+  ui:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: packages/ui
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+        working-directory: .
+      - run: npm test
+
+  # The suite's vehicles, shared by the Fahrzeug-Editor and the Fahrplan-Sim.
+  vehicles:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: packages/vehicles
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+        working-directory: .
+      - run: npm test
+
+  # The running times — the way over the net, the stations along it, the
+  # simulation module — and the timetables, shared by the Simulation-Tool and
+  # the Fahrplan-Editor; with the module built from sim/, so the tests that
+  # run it run too.
+  running-times:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: rustup target add wasm32-unknown-unknown
+      - run: cargo build --release -p rail-across-sim-wasm --target wasm32-unknown-unknown
+        working-directory: sim
+      - run: npm test
+        working-directory: packages/running-times
+      - run: npm test
+        working-directory: packages/timetables
+
+  # The local working copies, shared by the tools and the start page.
+  working-copy:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: packages/working-copy
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+        working-directory: .
+      - run: npm test
+
+  # The basemaps, shared by the Layout-Tool and the Signalling-Tool.
+  basemaps:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: packages/basemaps
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+        working-directory: .
+      - run: npm test
+
+  # The Signalling-Tool.
+  signalling-tool:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: apps/signalling-tool
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+        working-directory: .
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+
+  # OSRD's simulation core in Rust: OSRD's own cases, clippy, the format.
+  sim:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: sim
+    steps:
+      - uses: actions/checkout@v5
+      - run: cargo fmt --check
+      - run: cargo clippy --all-targets -- -D warnings
+      - run: cargo test
+
+  # The Simulation-Tool, with its simulation module built from sim/, so the
+  # tests that run it (OSRD's example vehicles among them) run too.
+  simulation-tool:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: apps/simulation-tool
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+        working-directory: .
+      - run: rustup target add wasm32-unknown-unknown
+      - run: npm run sim
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+
+  # The Fahrzeug-Editor.
+  vehicle-editor:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: apps/vehicle-editor
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+        working-directory: .
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+
+  # The Fahrplan-Editor.
+  timetable-editor:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: apps/timetable-editor
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+        working-directory: .
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+
+  # The start page of the suite.
+  home:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: apps/home
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+        working-directory: .
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+
+  # The Open-Layout-Tool with the project server, whose tests its vitest runs.
+  layout-tool:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: apps/layout-tool
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      # One install for the whole workspace: apps, packages and the server.
+      - run: npm ci --no-audit --no-fund
+        working-directory: .
+      - run: node tools/data.mjs
+      - run: npm run lint
+      - run: npm run knip
+      - run: npm run i18n:unused
+      - run: node tools/boundary.mjs --core
+      - run: node tools/modules.mjs
+      - run: node tools/docs.mjs
+      - run: npm test
+      - run: npx vite build --outDir /tmp/olt-dist
+      - run: npx vite build --mode standalone --outDir /tmp/olt-dist-local
+      - run: node tools/check-local-bundle.mjs /tmp/olt-dist-local
+
+  optimizer:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: services/optimizer
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          # The servers' Python (Ubuntu 22.04), with the versions they run.
+          python-version: '3.10'
+          cache: pip
+          cache-dependency-path: |
+            services/optimizer/pyproject.toml
+            services/optimizer/requirements.lock
+      - run: pip install -c requirements.lock -e '.[terrain]'
+      - run: python tests/vectors.py
+      - run: python tests/verify_service.py
+      - run: python tests/verify_splice.py
+      - run: python tests/verify_align.py
+      - run: python tests/verify_reconnect.py
+      - run: python tests/verify_crossover.py
+      - run: python tests/verify_clearance.py
+      - run: python tests/verify_splice_props.py
+      # The app's splice (apps/layout-tool/src/core/utils/splice) is held against these answers (decision 294).
+      - run: python tests/splice_answers_fixture.py --check
+      - run: python tests/verify.py
+
+  # The suite's deployment (deploy/) and the Layout-Tool's check script.
+  deploy-scripts:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - run: bash -n deploy/setup.sh && bash -n deploy/deploy.sh && bash -n deploy/lib.sh && bash -n deploy/release.sh && bash -n deploy/monitor.sh
+      - run: shellcheck -x deploy/setup.sh deploy/deploy.sh deploy/lib.sh deploy/release.sh deploy/monitor.sh
+      - run: shellcheck -x tools/check.sh
+        working-directory: apps/layout-tool

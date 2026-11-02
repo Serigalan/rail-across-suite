@@ -27,26 +27,26 @@ describe('importsOf', () => {
 
 describe('breach', () => {
   it('allows apps to import packages and anything to import within its own area', () => {
-    assert.equal(breach('app:open-layout-tool', 'package:core'), null)
-    assert.equal(breach('app:open-layout-tool', 'app:open-layout-tool'), null)
+    assert.equal(breach('app:layout-tool', 'package:core'), null)
+    assert.equal(breach('app:layout-tool', 'app:layout-tool'), null)
     assert.equal(breach('server', 'package:core'), null)
   })
   it('refuses an app importing another app, and anything else importing an app', () => {
-    assert.equal(breach('app:open-signalling-tool', 'app:open-layout-tool'), 'an app imports another app')
-    assert.equal(breach('package:core', 'app:open-layout-tool'), 'package imports an app')
-    assert.equal(breach('server', 'app:open-layout-tool'), 'server imports an app')
-    assert.equal(breach('service:optimizer', 'app:open-layout-tool'), 'service imports an app')
+    assert.equal(breach('app:open-signalling-tool', 'app:layout-tool'), 'an app imports another app')
+    assert.equal(breach('package:core', 'app:layout-tool'), 'package imports an app')
+    assert.equal(breach('server', 'app:layout-tool'), 'server imports an app')
+    assert.equal(breach('service:optimizer', 'app:layout-tool'), 'service imports an app')
   })
 })
 
 describe('checkBoundaries', () => {
   it('reports imports across the boundaries, by path and by package name', () => {
     const root = repo({
-      'apps/open-layout-tool/package.json': JSON.stringify({ name: 'open-layout-tool' }),
-      'apps/open-layout-tool/src/a.js': "import { core } from '@rail-across/core'\nimport b from './b.js'\n",
-      'apps/open-signalling-tool/src/m.js': "import x from '../../open-layout-tool/src/a.js'\nimport y from 'open-layout-tool/src/a.js'\n",
+      'apps/layout-tool/package.json': JSON.stringify({ name: 'layout-tool' }),
+      'apps/layout-tool/src/a.js': "import { core } from '@rail-across/core'\nimport b from './b.js'\n",
+      'apps/open-signalling-tool/src/m.js': "import x from '../../layout-tool/src/a.js'\nimport y from 'layout-tool/src/a.js'\n",
       'packages/core/package.json': JSON.stringify({ name: '@rail-across/core' }),
-      'packages/core/index.js': "import z from '../../apps/open-layout-tool/src/a.js'\nimport { readFileSync } from 'node:fs'\n",
+      'packages/core/index.js': "import z from '../../apps/layout-tool/src/a.js'\nimport { readFileSync } from 'node:fs'\n",
       'server/api.js': "import { core } from '@rail-across/core'\n",
     })
     try {

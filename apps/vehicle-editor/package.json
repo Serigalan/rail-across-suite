@@ -1,0 +1,34 @@
+{
+  "name": "rail-across-vehicle-editor",
+  "private": true,
+  "version": "0.1.0",
+  "description": "The Fahrzeug-Editor of Rail-Across-Suite: the suite's vehicles as OSRD's RailJSON rolling stock — viewed, added, edited, imported and exported, OSRD's example vehicles among them",
+  "license": "LGPL-3.0-only",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@rail-across/ui": "*",
+    "@rail-across/vehicles": "*",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "@vitejs/plugin-react": "^6.0.1",
+    "eslint": "^9.39.4",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "globals": "^17.4.0",
+    "vite": "^8.0.1",
+    "vitest": "^3.2.7"
+  }
+}

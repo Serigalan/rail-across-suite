@@ -5,7 +5,7 @@ for phases 1 and 2 of the [roadmap](../ROADMAP.md).
 
 Every module of Rail-Across-Suite reads and writes one shared description of the railway. This page proposes
 how that description is structured and stored. It starts from what already works, the project format of the
-Open-Layout-Tool, **oltjson-1.1** (`open-layout-tool/docs/data-format.md`), and generalises it where the
+Open-Layout-Tool (now the suite's Layout-Tool), **oltjson-1.1** (`apps/layout-tool/docs/data-format.md`), and generalises it where the
 planned modules need more than a track layout.
 
 Section 2 tests the model against concrete cases; sections 3 to 5 give the rules that follow from them.
@@ -96,8 +96,9 @@ layers but an acyclic graph of domains (R2).
 **F8 — Speed.** The rule checks of the layout tool use the design speed on each element. Signalling plans the
 permitted speed (speed boards, speed profile). If the layout check read the permitted speed, the layout would
 depend on signalling, which depends on the layout.
-→ Two facts, two owners (R10). The check "permitted speed ≤ what the geometry allows" belongs to signalling, the
-domain that reads both.
+→ Two facts, two owners (R10): the design speed is the core's (`designSpeed` on a track element), the permitted
+speed the signalling's (`signallingSpeeds`, per route at its start signal). The check "permitted speed ≤ what the
+geometry allows" belongs to signalling, the domain that reads both.
 
 **F9 — An existing mast, and the track is shifted by 0.5 m.** A planned mast should follow the track. A mast that
 stands on its foundation does not move because a design line moved; the change should instead raise a
@@ -204,12 +205,12 @@ core, and derived results above them:
 | Level | Domain | Written by | Content |
 |---|---|---|---|
 | derived | — | — | stage views, coordination checks, simulation results, reverse index — caches keyed by input hashes, never in a revision |
-| discipline | `layout` | open-layout-tool | surveys, reference axes, named track paths, plan header |
-| discipline | `signalling` | open-signalling-tool | signals, detection points, track sections, signalling routes, LST switch elements, station boundaries, speed profile |
+| discipline | `layout` | layout-tool | surveys, reference axes, named track paths, plan header |
+| discipline | `signalling` | signalling-tool | signals and boards, detection points, track sections, switch elements, train and shunting routes, overlaps, flank protection, balises and magnets (PZB, ETCS), station boundaries; the speeds signalled per route at the signals ([decision 0011](decisions/0011-signalling-domain.md)) |
 | discipline | `catenary` | open-catenary-tool | masts, cantilevers, wires, sections, El signals |
 | discipline | `operations` | open-timetable-tool | train runs, timetable, rolling stock |
 | discipline | `construction` | open-construction-sim | closures, temporary speed restrictions, tracks in operation per stage |
-| base | `core` | open-layout-tool | **reference**: coordinate systems, km lines and designed kilometrage, operational point register, catalogue versions (rules, switch forms, profiles) · **net**: tracks (elements, heights, cant, superstructure), switches and connectors · **context**: platforms, end marks, structures (bridges, tunnels, level crossings) · **stages**: the ordered construction stages · **types**: `TrackLocation`, `TrackRange`, `TrackEnd`, `TrackPath`, `Lifespan`, `Ref` |
+| base | `core` | layout-tool | **reference**: coordinate systems, km lines and designed kilometrage, operational point register, catalogue versions (rules, switch forms, profiles) · **net**: tracks (elements, heights, cant, superstructure), switches and connectors · **context**: platforms, end marks, structures (bridges, tunnels, level crossings) · **stages**: the ordered construction stages · **types**: `TrackLocation`, `TrackRange`, `TrackEnd`, `TrackPath`, `Lifespan`, `Ref` |
 | project | — | server | variants and sketches, approvals, comments — they refer into revisions, never back |
 
 Discipline domains store references only into the core (R2, R9). Open-Capacity-Sim writes no domain: it builds on
@@ -232,9 +233,10 @@ A located object, here a new signal, with its location and its lifespan as one v
 
 ```json
 {
-  "id": "5d1c…", "kind": "main", "name": "N3",
+  "id": "5d1c…", "kind": "real", "type": "main", "system": "ks", "name": "N3",
   "at": { "trackId": "a9f5…", "station": 812.400, "side": "right", "offset": 2.90,
           "direction": "down", "anchor": "station" },
+  "frames": [ { "kind": "screen", "aspects": [ { "aspect": "Hp_0" }, { "aspect": "Ks_1" } ] } ],
   "lifespan": { "from": "c41e…" }
 }
 ```
@@ -306,8 +308,9 @@ Point clouds stay in the browser's private file system (OPFS) or on the server, 
 
 In the core, all three become one remap for every location (R4).
 
-**Model changes** the Open-Layout-Tool goes through in phase 2, each brought to existing data by a step of the
-migration chain at the one door (S-R10):
+**Model changes** the Open-Layout-Tool goes through, each brought to existing data by a step of the migration
+chain at the one door (S-R10). The format has them since core 1.0, the first step of the chain
+([decision 0009](decisions/0009-core-1-0-in-the-data-model.md)); the app's own model follows in phase 2:
 
 | oltjson-1.1 | Core after phase 2 |
 |---|---|
@@ -330,6 +333,7 @@ migration chain at the one door (S-R10):
 | How does one try something without the other disciplines? | in a sketch, which returns only through a takeover | [decision 0005](decisions/0005-sketch-mode.md) |
 | What does capacity simulation build on? | OSRD, run as a service; only the adapter is ours | [decision 0006](decisions/0006-capacity-on-osrd.md) |
 | What are the project and its files called? | Rail-Across-Suite; files `.railacross` | [decision 0007](decisions/0007-project-name.md) |
+| How is the signalling domain structured? | after PlanPro 1.10; like OSRD every signalling and train protection system is in a catalogue, a signal has a logical signal per system (Ks, shunting signals; PZB and ETCS balises first), overlaps and flank protection from 1.0 | [decision 0011](decisions/0011-signalling-domain.md) |
 
 ## 8. Open questions
 

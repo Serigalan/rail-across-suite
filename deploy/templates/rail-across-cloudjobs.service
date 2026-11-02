@@ -1,0 +1,28 @@
+# Rendered by deploy/setup.sh from deploy/templates/rail-across-cloudjobs.service — edit the template, not this file.
+[Unit]
+Description=Rail-Across-Suite@RA_LABEL@ — point cloud jobs (levels of detail from an upload)
+After=network.target
+
+[Service]
+User=@RA_USER@
+WorkingDirectory=@RA_REPO@/server
+ExecStart=@RA_NODE@ @RA_REPO@/server/bin/rail-across-cloudjobs.mjs serve
+Environment=RA_SERVER_DB=@RA_DB@
+Environment=RA_SERVER_CLOUDS=@RA_CLOUDS@
+Environment=RA_CLOUDJOBS_PARALLEL=@RA_CLOUDJOBS_PARALLEL@
+Environment=RA_CLOUDRUNS_PARALLEL=@RA_CLOUDRUNS_PARALLEL@
+# The server is shared (with OSRD and a second instance on the live one): at
+# most three cores, behind everything else. Each preparation has a heap of
+# 768 MB, each long run 320 MB; the memory limit has to hold all of them at
+# once plus this process (RA_CLOUDJOBS_MEMORY, 3G for two of each).
+CPUQuota=300%
+Nice=10
+MemoryMax=@RA_CLOUDJOBS_MEMORY@
+# A job stopped by a restart is queued again when the service comes back.
+TimeoutStopSec=20
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

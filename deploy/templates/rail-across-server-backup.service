@@ -1,0 +1,10 @@
+# Rendered by deploy/setup.sh from deploy/templates/rail-across-server-backup.service — edit the template, not this file.
+[Unit]
+Description=Rail-Across-Suite@RA_LABEL@ — daily copy of the project database
+
+[Service]
+Type=oneshot
+User=@RA_USER@
+WorkingDirectory=@RA_REPO@/server
+Environment=RA_SERVER_DB=@RA_DB@
+ExecStart=/bin/sh -c '@RA_NODE@ bin/rail-across-server.mjs backup "@RA_BACKUPS@/rail-across-$(date +%%F).sqlite" && find "@RA_BACKUPS@" -name "rail-across-*.sqlite" -mtime +@RA_BACKUP_DAYS@ -delete'

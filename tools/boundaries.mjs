@@ -26,6 +26,7 @@ function sourceFiles(dir) {
   for (const name of readdirSync(dir)) {
     if (SKIP.has(name)) continue
     const path = join(dir, name)
+    if (!existsSync(path)) continue // a link to data that is not fetched
     if (statSync(path).isDirectory()) out.push(...sourceFiles(path))
     else if (SOURCE.test(name)) out.push(path)
   }
@@ -93,7 +94,7 @@ export function breach(from, to) {
   return from.startsWith('app:') ? 'an app imports another app' : `${from.split(':')[0]} imports an app`
 }
 
-/** Every breach below `root`: [{ file, line, spec, rule }]. */
+/** Every breach below `root`: [{ file, line, spec, rule, from, to }]. */
 export function checkBoundaries(root) {
   const names = packageNames(root)
   const found = []
@@ -101,8 +102,9 @@ export function checkBoundaries(root) {
     for (const file of sourceFiles(join(root, top))) {
       const from = areaOf(root, file)
       for (const { spec, line } of importsOf(readFileSync(file, 'utf8'))) {
-        const rule = breach(from, targetOf(root, file, spec, names))
-        if (rule) found.push({ file: relative(root, file), line, spec, rule })
+        const to = targetOf(root, file, spec, names)
+        const rule = breach(from, to)
+        if (rule) found.push({ file: relative(root, file), line, spec, rule, from, to })
       }
     }
   }

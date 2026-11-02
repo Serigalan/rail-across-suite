@@ -1,0 +1,247 @@
+/* The start page of Rail-Across-Suite: its bar, tiles, tool tabs and
+   projects. What every module's pages are made of — the colours, buttons,
+   fields, menus, dialogs, badges — is the suite's library (@rail-across/ui,
+   ui.css), loaded before this. */
+
+html, body { margin: 0; background: var(--ui-surface); }
+
+.home-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  padding: 14px 24px;
+  background: var(--ui-bg);
+  border-bottom: 1px solid var(--ui-border);
+}
+.ra-brand { display: flex; align-items: center; gap: 10px; color: inherit; text-decoration: none; }
+.ra-logo { height: 64px; width: auto; aspect-ratio: 320 / 220; color: var(--ui-fg); flex-shrink: 0; margin: -10px 0; }
+.home-user { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; position: relative; }
+
+.home-main { max-width: 980px; margin: 0 auto; padding: 20px 24px 40px; box-sizing: border-box; }
+.home-section-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin: 8px 0 14px; }
+.home-section-head h2 { margin: 0; font-size: 18px; }
+.home-section-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.home-projects { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+.home-project { background: var(--ui-bg); border: 1px solid var(--ui-border); border-radius: 12px; padding: 14px 16px; }
+
+.ui-menu-user { margin: 0 0 4px; padding: 6px 10px 8px; font-weight: 600; font-size: 13px; border-bottom: 1px solid var(--ui-border); }
+.home-language-list { min-width: 150px; }
+.home-language-list button { display: flex; align-items: center; gap: 6px; }
+.home-language-list button.current { font-weight: 600; }
+.home-language-check { width: 1em; color: var(--color-primary); }
+
+/* ── the start page's own: tiles, tabs, the projects ─────────────────── */
+
+.ra-icon, .ra-art { display: block; width: 100%; height: 100%; overflow: visible; }
+/* The drawings' lines stay as thin at any size, and readable in the dark. */
+.ra-icon *, .ra-art * { vector-effect: non-scaling-stroke; }
+.home {
+  --ra-line: var(--color-primary); --ra-line-off: color-mix(in srgb, var(--ui-muted) 55%, var(--ui-bg));
+  --ra-art-bg: color-mix(in srgb, var(--ra-line) 5%, var(--ui-bg)); --ra-art-border: color-mix(in srgb, var(--ra-line) 14%, var(--ui-border));
+  /* the trains of the graphical timetable, each kind in its own tone of the line */
+  --ra-tone-1: var(--ra-line); --ra-tone-2: #3d82d1; --ra-tone-3: #7462d4;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .home { --ra-line: #a9adf2; --ra-tone-2: #72b4f5; --ra-tone-3: #c5a8f5; } }
+:root[data-theme="dark"] .home { --ra-line: #a9adf2; --ra-tone-2: #72b4f5; --ra-tone-3: #c5a8f5; }
+.ra-group { margin: 10px 0 12px; font-size: 13px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ui-muted); }
+.ra-page-title { margin: 6px 0 16px; font-size: 22px; }
+.ra-back { display: inline-block; margin-bottom: 10px; }
+.ra-rule { border: none; border-top: 2px solid var(--ui-border); margin: 26px 0 18px; }
+
+.ra-tiles { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.ra-tile, .ra-tab {
+  position: relative; box-sizing: border-box; height: 100%;
+  display: flex; flex-direction: column; gap: 6px; padding: 18px 18px 16px;
+  background: var(--ui-bg); color: var(--ui-fg); text-decoration: none;
+  border: 1px solid var(--ui-border); border-radius: 14px;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s, opacity 0.15s, filter 0.15s;
+}
+.ra-tile:hover { border-color: var(--color-primary); box-shadow: 0 6px 20px rgba(48, 51, 131, 0.14); transform: translateY(-2px); }
+.ra-tile:focus-visible, .ra-tab:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+.ra-tile-icon { width: 48px; height: 48px; color: var(--ra-line); margin-bottom: 4px; }
+.ra-tile-name { font-size: 17px; font-weight: 700; }
+.ra-tile-desc { font-size: 13px; line-height: 1.45; color: var(--ui-muted); flex: 1; }
+/* A module's drawing as wide as the tile, framed on squared paper — its
+   tracks running to the frame —, its name below. */
+.ra-tile-art {
+  --ra-grid: color-mix(in srgb, currentColor 8%, transparent);
+  display: block; margin-bottom: 8px; padding: 14px 0; overflow: hidden; color: var(--ra-line);
+  background-color: var(--ra-art-bg); border: 1px solid var(--ra-art-border); border-radius: 10px;
+  background-image: linear-gradient(var(--ra-grid) 1px, transparent 1px), linear-gradient(90deg, var(--ra-grid) 1px, transparent 1px);
+  background-size: 12px 12px; background-position: -1px -1px;
+}
+.ra-tile-art .ra-art { height: auto; aspect-ratio: 120 / 48; }
+.ra-tile-planned .ra-tile-art { color: var(--ra-line-off); background-color: var(--ui-surface); border-color: var(--ui-border); }
+.ra-tile-planned .ra-tile-name { color: var(--ui-muted); }
+.ra-group-next { margin-top: 32px; }
+
+/* The infrastructure editor's tile: two columns wide, the module on the left,
+   its tools listed on the right. */
+.ra-tile-wide { grid-column: span 2; }
+.ra-tile-split { flex-direction: row; gap: 0; padding: 0; }
+.ra-tile-split:hover { transform: none; }
+.ra-tile-main {
+  flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; padding: 18px 18px 16px;
+  color: inherit; text-decoration: none; border-radius: 13px 0 0 13px;
+}
+.ra-subtools {
+  flex: 1; min-width: 0; list-style: none; margin: 0; padding: 12px;
+  display: flex; flex-direction: column; justify-content: center; gap: 4px; border-left: 1px solid var(--ui-border);
+}
+.ra-subtool {
+  display: flex; align-items: center; gap: 12px;
+  padding: 8px 10px; border-radius: 10px; color: inherit; text-decoration: none; transition: background 0.15s;
+}
+.ra-subtool:hover { background: var(--ui-hover); }
+.ra-tile-main:focus-visible, .ra-subtool:focus-visible { outline: 2px solid var(--color-primary); outline-offset: -2px; }
+.ra-subtool-icon { width: 40px; height: 40px; flex-shrink: 0; color: var(--ra-line); }
+.ra-subtool-name { font-size: 15px; font-weight: 600; }
+.ra-subtool-planned .ra-subtool-icon { color: var(--ra-line-off); }
+.ra-subtool-planned .ra-subtool-name { color: var(--ui-muted); }
+
+/* The tools as tabs: the chosen one in the primary colour, sitting on the line
+   below like a tab on its sheet; the others greyed until chosen. */
+.ra-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: stretch; }
+.ra-tab { padding: 20px 20px 18px; border-width: 2px; }
+.ra-tab .ra-tile-icon { width: 56px; height: 56px; }
+.ra-tab:not(.ra-tab-chosen) { opacity: 0.5; filter: grayscale(1); }
+.ra-tab:not(.ra-tab-chosen):hover { opacity: 0.8; }
+.ra-tab-chosen { border-color: var(--color-primary); background: var(--ui-selected); box-shadow: 0 6px 20px rgba(48, 51, 131, 0.16); }
+.ra-tab-chosen::after {
+  content: ''; position: absolute; left: 50%; bottom: -12px; width: 20px; height: 20px; transform: translateX(-50%) rotate(45deg);
+  background: var(--ui-selected); border-right: 2px solid var(--color-primary); border-bottom: 2px solid var(--color-primary);
+}
+.ra-tabs + .ra-rule { margin-top: 30px; }
+
+/* Which tool the projects below open in. */
+.ra-mode {
+  display: flex; align-items: center; gap: 10px; margin: 0 0 16px; padding: 10px 14px;
+  border-radius: 10px; background: var(--ui-selected); font-size: 14px; font-weight: 500;
+}
+.ra-mode-icon { width: 28px; height: 28px; color: var(--ra-line); flex-shrink: 0; }
+.ra-mode-off { background: var(--ui-hover); color: var(--ui-muted); }
+.ra-mode-off .ra-mode-icon { color: var(--ra-line-off); }
+
+.ra-mode-text { flex: 1; }
+.ra-mode .ui-link { font-size: 12.5px; font-weight: 400; }
+
+/* The projects: each with its picture, its menu, and its variants as a tree
+   — indented under the variant each was branched off. */
+.ra-project { display: flex; gap: 14px; align-items: flex-start; }
+.ra-project-image {
+  width: 72px; height: 54px; box-sizing: border-box; border: 1px solid var(--ui-border); object-fit: cover;
+  border-radius: 8px; flex-shrink: 0; background: var(--ui-hover);
+}
+.ra-project-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.ra-project-body h3 { margin: 2px 0 0; font-size: 16px; overflow-wrap: anywhere; }
+.ra-variant-tree { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; }
+.ra-variant-row { padding: 6px 0 6px calc(var(--depth) * 22px); border-top: 1px solid var(--ui-border); }
+.ra-variant-archived { opacity: 0.6; }
+.ra-variant-main { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 12px; }
+.ra-variant-name { font-weight: 600; font-size: 14px; min-width: 110px; overflow-wrap: anywhere; }
+.ra-branch { color: var(--ui-muted); margin-right: 6px; font-weight: 400; }
+.ra-variant-meta { flex: 1; font-size: 12.5px; color: var(--ui-muted); min-width: 160px; }
+.ra-variant-buttons { display: flex; gap: 6px; align-items: center; margin-left: auto; }
+.ra-variant-ahead { font-size: 12px; color: var(--ui-muted); }
+.ra-project-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.ra-archived-toggle { margin-top: 12px; color: var(--ui-muted); }
+.ra-section { margin-top: 32px; }
+.ra-line { margin-bottom: 14px; }
+
+.image-picker { border: none; margin: 0; padding: 0; min-width: 0; display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
+.image-picker legend { padding: 0; margin-bottom: 5px; color: var(--ui-muted); font-weight: 500; }
+.image-picker-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(56px, 1fr)); gap: 6px; }
+.image-option { position: relative; display: block; cursor: pointer; }
+.image-option input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.image-option-tile {
+  display: flex; align-items: center; justify-content: center;
+  aspect-ratio: 4 / 3; border-radius: 6px; overflow: hidden;
+  border: 1px solid var(--ui-border); background: var(--ui-surface);
+}
+.image-option-tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.image-option-text { font-size: 10.5px; line-height: 1.15; text-align: center; color: var(--ui-muted); padding: 2px; overflow-wrap: anywhere; }
+.image-option:hover .image-option-tile { border-color: var(--ui-muted); }
+.image-option input:checked + .image-option-tile { outline: 2px solid var(--color-primary); outline-offset: 1px; border-color: transparent; }
+.image-option input:focus-visible + .image-option-tile { outline: 2px solid var(--color-primary); outline-offset: 3px; }
+.image-picker:disabled .image-option { cursor: default; opacity: 0.6; }
+.image-picker-caption { margin: 0; color: var(--ui-fg); font-weight: 500; }
+.image-picker-credit { margin: 0; font-size: 11px; color: var(--ui-muted); }
+
+.members-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.members-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-top: 1px solid var(--ui-border); font-size: 13.5px; }
+.members-row:first-child { border-top: none; }
+.members-row .ui-badge { align-self: center; }
+.members-who { flex: 1; min-width: 0; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; overflow-wrap: anywhere; }
+.members-who .ui-muted { font-size: 12.5px; }
+.members-add { display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--ui-border); padding-top: 12px; }
+.members-hits { max-height: 220px; overflow-y: auto; }
+
+.ra-sign-in { max-width: 360px; display: flex; flex-direction: column; gap: 12px; }
+.ra-account { display: flex; justify-content: center; padding-top: 48px; }
+.ra-card {
+  width: 100%; max-width: 380px; box-sizing: border-box; padding: 24px;
+  background: var(--ui-bg); border: 1px solid var(--ui-border); border-radius: 14px;
+}
+.ra-card h2 { margin: 0 0 12px; font-size: 20px; }
+.ra-notice { max-width: 980px; margin: 16px auto 0; padding: 0 24px; box-sizing: border-box; }
+
+.ra-planned {
+  display: flex; gap: 20px; align-items: flex-start; padding: 24px; margin-top: 8px;
+  background: var(--ui-bg); border: 1px solid var(--ui-border); border-radius: 14px;
+}
+.ra-planned .ra-tile-icon { width: 64px; height: 64px; flex-shrink: 0; color: var(--ra-line-off); }
+.ra-planned h2 { margin: 0 0 8px; font-size: 20px; }
+.ra-planned p { margin: 0 0 10px; line-height: 1.5; }
+
+@media (max-width: 760px) {
+  .ra-tiles, .ra-tabs { grid-template-columns: minmax(0, 1fr); }
+  .ra-tile-wide { grid-column: auto; }
+  .ra-tile-split { flex-direction: column; }
+  .ra-tile-main { border-radius: 13px 13px 0 0; }
+  .ra-subtools { border-left: none; border-top: 1px solid var(--ui-border); }
+  .ra-tab-chosen::after { display: none; }
+}
+@media (max-width: 560px) {
+  .home-top { padding: 12px 16px; }
+  .home-main { padding: 16px 16px 32px; }
+  .ra-project-image { width: 56px; height: 42px; }
+  .ra-variant-row { padding-left: calc(var(--depth) * 12px); }
+}
+
+/* ── the sign-in page, before anything of the suite ──────────────────── */
+
+.ra-gate { display: flex; flex-direction: column; align-items: center; padding: 48px 16px; position: relative; }
+.ra-gate-logo { height: 132px; width: auto; aspect-ratio: 320 / 220; color: var(--ui-fg); margin-bottom: 8px; }
+.ra-gate-language { position: absolute; top: 16px; right: 20px; display: flex; gap: 10px; }
+.ra-gate-language button { background: none; border: none; cursor: pointer; font: inherit; font-size: 13px; padding: 2px; }
+.ra-gate-language .ra-current { color: var(--ui-fg); font-weight: 700; }
+.ra-gate .ra-account { padding-top: 12px; width: 100%; }
+.ra-gate-title { margin: 0 0 12px; font-size: 20px; }
+
+/* ── the users of the suite ──────────────────────────────────────────── */
+
+.ra-admin-intro { margin: -6px 0 16px; }
+.ra-admin-notice { margin: 0 0 14px; line-height: 1.6; }
+.ra-password { font-size: 14px; padding: 2px 6px; border-radius: 4px; background: var(--ui-hover); color: var(--ui-fg); user-select: all; }
+.ra-users { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.ra-user { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; }
+.ra-user-off { opacity: 0.6; }
+.ra-user-who { display: flex; flex-direction: column; min-width: 180px; flex: 1; }
+.ra-user-facts { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 12px; flex: 2; }
+.ra-user-facts .ui-badge { align-self: center; }
+.ra-user-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.ra-user-form { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; max-width: 520px; }
+.ra-user-form h3 { margin: 0; font-size: 16px; }
+.ra-password-row { display: flex; gap: 8px; align-items: center; }
+.ra-disk { margin-top: 28px; }
+.ra-disk h3 { margin: 0 0 8px; font-size: 16px; }
+.ra-disk-list { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
+
+/* A simulation's page: the projects, each variant opening in it. */
+.ra-sim-project { border: 1px solid var(--ui-border); border-radius: 10px; padding: 12px 16px; background: var(--ui-bg); }
+.ra-sim-project h3 { margin: 0 0 8px; font-size: 15px; }
+.ra-sim-variants { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.ra-sim-variants li { display: flex; align-items: center; gap: 10px; font-size: var(--ui-fs-m); }
+.ra-grow { flex: 1; min-width: 0; }

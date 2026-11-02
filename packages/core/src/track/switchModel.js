@@ -1,0 +1,253 @@
+/**
+ * What makes a record a switch, and what ties the elements of its routes back
+ * to it.
+ *
+ * Until now an element found its switch by comparing `el.switchName` with
+ * `sw.name`. That is a display string: the user can change it, an import can
+ * drop it, and two records can carry the same one — at which point the elements
+ * of one turnout answer for the other. `switchId` is the link now. The name
+ * stays for what it always was, a label on the map and in the plan.
+ *
+ * `kind` tells a plain turnout from the crossings and slips that are still to
+ * come, so the code that branches on shape has something to branch on instead of
+ * inferring it from the port count.
+ *
+ * `formVersion` freezes the form table (SWITCH_TYPES and its fallbacks) a record
+ * was built against. Three of the labels that are to gain a straight end piece
+ * already exist without one, so a later table would silently move the geometry
+ * of switches already drawn; a record that states the version it was built
+ * against can be read with the table it meant.
+ */
+
+/**
+ * Discriminator of a switch record. The first four are track shapes; `link` is
+ * not one of them.
+ *
+ * A link is a node between two track ends and nothing else — no form, no
+ * routes, no geometry of its own. It exists because a track carries one plane
+ * (`track.epsg`) and a line does not stop where the plane does: at a change of
+ * coordinate system one chain ends and the next begins, and what joins them
+ * cannot be a stretch of track, because a stretch would have to lie in one of
+ * the two planes. OSRD models exactly this as its `link` node type, and that is
+ * what the export writes (alignmentCodec).
+ */
+export const LINK_KIND = 'link'
+
+export const SWITCH_KINDS = ['turnout', 'crossing', 'single_slip', 'double_slip', LINK_KIND]
+
+export const DEFAULT_SWITCH_KIND = 'turnout'
+
+/**
+ * Version of the switch form table. Bumped when a form's dimensions change —
+ * the straight end pieces are the next such change.
+ */
+export const SWITCH_FORM_VERSION = 1
+
+/**
+ * The routes each kind has, as its elements mark themselves, with the ports each
+ * route runs between.
+ *
+ * A turnout's two routes share the toe: they part there, which is what makes it
+ * a turnout. The crossing kinds instead have four ports and routes that cross
+ * without sharing an end — `main` from A to C, `cross` from B to D — and a slip
+ * adds the connecting curves between them, one for the single slip and two for
+ * the double. That the routes of a crossing share no port is why both of them
+ * can outlive it as ordinary track, which the turnout's pair never can (see
+ * switchDelete).
+ */
+const ROUTE_PORTS = {
+  turnout:     { main: ['A', 'B2'], branch: ['A', 'B1'] },
+  crossing:    { main: ['A', 'C'],  cross: ['B', 'D'] },
+  single_slip: { main: ['A', 'C'],  cross: ['B', 'D'], slip1: ['A', 'D'] },
+  double_slip: { main: ['A', 'C'],  cross: ['B', 'D'], slip1: ['A', 'D'], slip2: ['B', 'C'] },
+  // A link has no route because it has no length: both of its ports are the
+  // one node. Everything that walks routes therefore walks nothing here, which
+  // is what makes a link own no elements and take none with it when it goes.
+  link: {},
+}
+
+/** The ports each route of this kind runs between, as { route: [port, port] }. */
+export const switchRoutePorts = (kind) => ROUTE_PORTS[kind] ?? ROUTE_PORTS[DEFAULT_SWITCH_KIND]
+
+/** The routes of a kind, in the order a shared port is claimed (see switchDelete). */
+export const switchRoutes = (kind) => Object.keys(switchRoutePorts(kind))
+
+/** The routes a turnout has — the pair everything built so far marks itself with. */
+export const SWITCH_ROUTES = switchRoutes(DEFAULT_SWITCH_KIND)
+
+/**
+ * The port of a turnout the line it lies on runs on through: B2, the through
+ * route — unless the turnout is `swapped`. An outer-bent turnout whose stem
+ * radius is its form's own has a straight branch; that is no bent turnout but
+ * the plain form with its routes swapped, and it is built as one: the curved
+ * line it was laid into is its branch (B1), the straight leaving it its
+ * through route (B2). The line then runs on over B1, and only the record can
+ * say so — at a joint the tracks give no sign which of the two it is.
+ */
+export const turnoutLinePort = (sw) => (sw?.swapped ? 'B1' : 'B2')
+
+/** …and the port the turnout leads off that line at. */
+export const turnoutDivergingPort = (sw) => (sw?.swapped ? 'B2' : 'B1')
+
+/** The route of a turnout that its line runs over, as its elements are marked. */
+export const turnoutLineRoute = (sw) => (sw?.swapped ? 'branch' : 'main')
+
+/**
+ * What a kind and its routes are called, as locale keys — a turnout is a
+ * Weiche, a crossing a Kreuzung, both slips a Kreuzungsweiche, and each route
+ * carries the name the dialogs give it. The element table reads them so a
+ * turnout's elements say what they are instead of reading as plain running
+ * line; an unknown kind falls back to the turnout's names, the same way
+ * switchRoutePorts does.
+ */
+const KIND_LABEL_KEY = {
+  turnout:     'table_type_switch',
+  crossing:    'table_type_crossing',
+  single_slip: 'table_type_crossing_switch',
+  double_slip: 'table_type_crossing_switch',
+  link:        'table_type_link',
+}
+
+const ROUTE_LABEL_KEY = {
+  turnout:  { main: 'table_route_stem',    branch: 'table_route_branch' },
+  crossing: { main: 'table_route_through', cross:  'table_route_cross',
+    slip1: 'table_route_slip', slip2: 'table_route_slip' },
+}
+
+/** Locale key naming this kind of switch. */
+export const switchKindLabelKey = (kind) =>
+  KIND_LABEL_KEY[kind] ?? KIND_LABEL_KEY[DEFAULT_SWITCH_KIND]
+
+/**
+ * Locale key naming one route of this kind — null for a route it does not have,
+ * and therefore null throughout for a link, which has none. The crossing kinds
+ * share their route names: a slip is a crossing with the connecting curves
+ * added, so its two crossing roads are called the same.
+ */
+export const switchRouteLabelKey = (kind, route) => {
+  // Against the kind's own routes, not against the name table: `main` is a
+  // route of a crossing and of a turnout, and of a link it is neither.
+  if (ROUTE_PORTS[kind] && !ROUTE_PORTS[kind][route]) return null
+  const names = kind !== DEFAULT_SWITCH_KIND && ROUTE_PORTS[kind]
+    ? ROUTE_LABEL_KEY.crossing
+    : ROUTE_LABEL_KEY.turnout
+  return names[route] ?? null
+}
+
+/** A node between two track ends rather than a shape of track (see SWITCH_KINDS). */
+export const isLinkSwitch = (sw) => sw?.kind === LINK_KIND
+
+const newSwitchId = () => crypto.randomUUID()
+
+/**
+ * What an element of a switch's route carries so it can be found again: the
+ * switch's id and which of its routes this is. Its name and form label are the
+ * switch's own and are read there (oltjson-1.0, decision 333) — an element
+ * keeps no copy of them.
+ */
+export function switchElementMark(sw, route) {
+  return {
+    switchBranch: true,
+    switchRoute:  route,
+    ...(sw.switchId ? { switchId: sw.switchId } : {}),
+  }
+}
+
+/**
+ * Does this element belong to that switch? The id decides, and only the id —
+ * every record and every marked element carries one, and a payload that does
+ * not is refused at the door (persistenceUtils.parseProjectsPayload). The
+ * missing id is checked for explicitly: two of them absent must not read as a
+ * match and join elements of unrelated turnouts.
+ */
+export function elementBelongsToSwitch(el, sw) {
+  return el.switchId != null && el.switchId === sw.switchId
+}
+
+/** The fields a record needs to be one of the current model, for a new record. */
+export function newSwitchFields(kind = DEFAULT_SWITCH_KIND) {
+  return { switchId: newSwitchId(), kind, formVersion: SWITCH_FORM_VERSION }
+}
+
+/** Does this record carry what the model requires of it? */
+export function isModelledSwitch(sw) {
+  return Boolean(sw?.switchId) && Boolean(sw?.kind) && sw?.formVersion != null
+}
+
+/**
+ * The ports of each kind: which of the switch's routes carries the elements
+ * marked there. What a port joins stands on the record under `ports` (oltjson-
+ * 1.0, decision 333): `ports.A = { trackId, endpoint }` — the track it names
+ * and which end of that track ('BEGIN' | 'END') the switch sits at. portTrack and
+ * portEnd read it, withPort writes it.
+ *
+ * A turnout has three, and port A is its toe: the switch owns no elements there
+ * — the toe is a node, not a stretch — so `route` says which route *would* run
+ * into it. The crossing kinds have four, one per end of the two crossing
+ * routes, and every one of them carries elements.
+ *
+ * Everything that walks a record's ports walks the list for its kind, so a kind
+ * with more of them is a further entry here and nothing else.
+ */
+const PORTS_BY_KIND = {
+  turnout: [
+    { port: 'A', route: 'main' },
+    { port: 'B1', route: 'branch' },
+    { port: 'B2', route: 'main' },
+  ],
+  crossing: [
+    { port: 'A', route: 'main' },
+    { port: 'B', route: 'cross' },
+    { port: 'C', route: 'main' },
+    { port: 'D', route: 'cross' },
+  ],
+}
+PORTS_BY_KIND.single_slip = PORTS_BY_KIND.crossing
+PORTS_BY_KIND.double_slip = PORTS_BY_KIND.crossing
+// A link has two, and neither carries elements: both are the same node, met
+// from opposite sides. `route: null` is not a gap in the table — it says there
+// is no route to look for, which is how switchParts finds none.
+PORTS_BY_KIND.link = [
+  { port: 'A', route: null },
+  { port: 'B', route: null },
+]
+
+/** The ports of a kind. */
+export const switchPorts = (kind) => PORTS_BY_KIND[kind] ?? PORTS_BY_KIND[DEFAULT_SWITCH_KIND]
+
+/** The ports of this record, by its own kind. */
+export const portsOf = (sw) => switchPorts(sw?.kind)
+
+/** The ports of a turnout — what every record built so far carries. */
+export const SWITCH_PORTS = switchPorts(DEFAULT_SWITCH_KIND)
+
+/** The track `port` of `sw` joins, or null. */
+export const portTrack = (sw, port) => sw?.ports?.[port]?.trackId ?? null
+
+/** Which end of its track `port` of `sw` sits at ('BEGIN' | 'END'), or null. */
+export const portEnd = (sw, port) => sw?.ports?.[port]?.endpoint ?? null
+
+/** `sw` with `patch` ({ trackId?, endpoint? }) written over its `port`. */
+export const withPort = (sw, port, patch) => ({
+  ...sw, ports: { ...sw.ports, [port]: { ...sw.ports?.[port], ...patch } },
+})
+
+/** Does this element carry `sw`'s mark for `route`? */
+export const elementOnSwitchRoute = (el, sw, route) => Boolean(el?.switchBranch)
+  && elementBelongsToSwitch(el, sw)
+  && (!el.switchRoute || el.switchRoute === route)
+
+/**
+ * The element without any of the marks that tied it to a switch — what a route
+ * becomes when the switch over it is deleted and the geometry stays as ordinary
+ * track. The cant justification goes with them: it was written for a switch
+ * route's 100 mm limit, and on a line element (limit 170) it would claim an
+ * exception nothing needs any more.
+ */
+export function unmarkSwitchElement(el) {
+  const {
+    switchBranch: _b, switchRoute: _r, switchId: _i,
+    cantException: _c, ...rest
+  } = el
+  return rest
+}

@@ -1,0 +1,10 @@
+# Rendered by deploy/monitor.sh --install from deploy/templates/rail-across-monitor.service — edit the template, not this file.
+[Unit]
+Description=Rail-Across-Suite — watch every instance on this machine
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=@RA_MONITOR_EXEC@
+# Optional: a command that gets the findings on stdin, e.g. a mail or chat sender.
+#Environment="RA_MONITOR_NOTIFY=mail -s 'Rail-Across-Suite' admin@example.org"

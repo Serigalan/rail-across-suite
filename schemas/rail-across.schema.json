@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "rail-across",
+  "title": "A Rail-Across-Suite project as one JSON file (.railacross.json)",
+  "description": "The domain documents of one project state, each with its version and the hash of its schema; the schemas the file carries, by hash; and the blobs its objects name, by hash. The same canonical documents as the container (.railacross) holds, giving the same hashes (S-R9). What each domain holds, its own schema says.",
+  "type": "object",
+  "required": ["format", "domains", "blobs"],
+  "additionalProperties": false,
+  "properties": {
+    "format": { "const": "rail-across" },
+    "domains": {
+      "type": "object",
+      "required": ["core"],
+      "additionalProperties": false,
+      "patternProperties": {
+        "^[a-z][a-zA-Z0-9]*$": { "$ref": "#/$defs/Domain" }
+      }
+    },
+    "schemas": {
+      "description": "The schemas of the domains, keyed by the hash the domains name them by.",
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": { "^sha256:[0-9a-f]{64}$": { "type": "object" } }
+    },
+    "blobs": {
+      "description": "Bulk arrays the objects name by hash, each the value whose canonical JSON has that hash.",
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": { "^sha256:[0-9a-f]{64}$": {} }
+    }
+  },
+  "$defs": {
+    "Domain": {
+      "type": "object",
+      "required": ["version", "schema", "fields", "collections"],
+      "additionalProperties": false,
+      "properties": {
+        "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+$" },
+        "schema": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+        "dependsOn": { "type": "array", "items": { "type": "string" } },
+        "fields": { "type": "object" },
+        "collections": {
+          "type": "object",
+          "additionalProperties": { "type": "array", "items": { "type": "object", "required": ["id"] } }
+        }
+      }
+    }
+  }
+}

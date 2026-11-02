@@ -12,13 +12,18 @@ One repository holds the core, every module and the services
 
 | Directory | Content |
 |---|---|
-| `packages/` | the Rail-Data-Core (JavaScript and Python) |
+| `packages/` | the Rail-Data-Core (JavaScript and Python) and the libraries the apps and the server share (point clouds, the suite's look `ui`) |
 | `schemas/` | JSON Schema per domain, shared test vectors |
-| `apps/` | the modules, starting with the Open-Layout-Tool |
+| `apps/` | the modules: the suite's start page, the Layout-Tool, the Signalling-Tool, the Simulation-Tool, the Fahrzeug-Editor, the Fahrplan-Editor |
 | `server/` | the project server for all modules |
 | `services/` | the Python services |
 | `docs/` | data model, decisions, glossary, conventions |
 | `tools/` | repository checks (`npm run check`) |
+
+The JavaScript parts — apps, packages and the server — are one npm workspace: `npm install` at the root installs
+them all, `npm run check` checks the repository's rules. Data kept out of the history is fetched per app
+([decision 0008](docs/decisions/0008-data-outside-history.md)), for the Layout-Tool with `npm run data` in
+`apps/layout-tool/`.
 
 How to contribute: [CONTRIBUTING.md](CONTRIBUTING.md).
 
@@ -31,13 +36,14 @@ The [roadmap](ROADMAP.md) starts with the Rail-Data-Core; how its data is struct
 
 ## Licence
 
-Copyright 2026 Serigalan and the Rail-Across-Suite contributors.
+Copyright 2026 Serigalan and the Rail-Across-Suite contributors; the simulation core in `sim/` and OSRD's
+example vehicles also 2022 The OSRD Contributors.
 
-- **Code** — everything that is not documentation, including the schemas — under the
-  [Apache License 2.0](LICENSE) (`Apache-2.0`).
-- **Documentation** — `README.md`, `ROADMAP.md`, the `README.md` files in the directories, everything in `docs/`
-  and `architecture.svg` — under [Creative Commons Attribution 4.0 International](LICENSE-docs) (`CC-BY-4.0`).
+- **Everything** — code, schemas, documentation, `architecture.svg` — under the
+  [GNU Lesser General Public License v3.0 only](LICENSE) (`LGPL-3.0-only`), which builds on the
+  [GNU General Public License v3.0](LICENSE-GPL) — the licence of OSRD, whose simulation core the suite carries
+  ([decision 0015](docs/decisions/0015-lgpl.md)).
 - **Third-party material** keeps its own licence, listed in [THIRD-PARTY.md](THIRD-PARTY.md).
 
-Contributions are made under these licences and signed off (`Signed-off-by:`) after the
+Contributions are made under this licence and signed off (`Signed-off-by:`) after the
 [Developer Certificate of Origin](https://developercertificate.org/).

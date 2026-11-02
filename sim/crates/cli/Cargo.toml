@@ -1,0 +1,15 @@
+[package]
+name = "rail-across-sim-cli"
+description = "The running time simulation on the command line"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[[bin]]
+name = "ra-sim"
+path = "src/main.rs"
+
+[dependencies]
+rail-across-sim = { path = "../sim" }

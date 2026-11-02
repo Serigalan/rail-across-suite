@@ -1,0 +1,25 @@
+# Rendered by deploy/setup.sh from deploy/templates/rail-across-server.service — edit the template, not this file.
+[Unit]
+Description=Rail-Across-Suite@RA_LABEL@ — project server (users, variants, revisions)
+After=network.target
+
+[Service]
+User=@RA_USER@
+WorkingDirectory=@RA_REPO@/server
+ExecStart=@RA_NODE@ @RA_REPO@/server/bin/rail-across-server.mjs serve
+Environment=RA_SERVER_DB=@RA_DB@
+# Point clouds (phase 13): tiles and uploads, outside the daily backup.
+Environment=RA_SERVER_CLOUDS=@RA_CLOUDS@
+# Only Caddy reaches it, never the public interface.
+Environment=RA_SERVER_HOST=@RA_BIND@
+Environment=RA_SERVER_PORT=@RA_SERVER_PORT@
+# Whose X-Forwarded-For is believed — Caddy's address only.
+Environment=RA_SERVER_TRUST_PROXY=@RA_TRUST_PROXY@
+Environment=RA_SERVER_LOG=@RA_SERVER_LOG@
+MemoryMax=@RA_SERVER_MEMORY@
+Restart=on-failure
+RestartSec=2
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

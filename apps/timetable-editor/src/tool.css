@@ -1,0 +1,98 @@
+/* The Fahrplan-Editor's own: a train's page, its way, its times, its map, and
+   the graphical timetable. What every module has — colours, buttons, fields,
+   the shell — is the suite's library (@rail-across/ui, ui.css), loaded before
+   this. */
+
+html, body { margin: 0; background: var(--ui-surface); }
+#root { width: 100%; height: 100vh; }
+
+.tool-center { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 24px; text-align: center; }
+
+/* ── the page under the bar of the open project ──────────────────────── */
+
+.tt-scroll { flex: 1; min-height: 0; overflow: auto; background: var(--ui-surface); padding-top: 72px; }
+.tt-page { max-width: 1280px; margin: 0 auto; padding: 16px 24px 40px; display: flex; flex-direction: column; gap: 14px; }
+.tt-empty { align-items: center; justify-content: center; min-height: 50vh; text-align: center; }
+.tt-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.tt-title h1 { margin: 0 0 6px; font-size: 22px; font-weight: 650; color: var(--ui-fg); display: flex; align-items: center; gap: 10px; }
+.tt-badges { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.tt-actions { justify-content: flex-end; }
+.tt-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 14px; align-items: start; }
+.tt-col { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.tt-card { background: var(--ui-bg); border: 1px solid var(--ui-border); border-radius: 10px; padding: 14px 16px 16px; min-width: 0; }
+.tt-card h2 { margin: 0 0 10px; font-size: var(--ui-fs-l); font-weight: 600; color: var(--ui-fg); }
+.tt-card > .ui-fields + .ui-fields { margin-top: 10px; }
+.tt-fields-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.tt-fields-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.tt-lead { margin: 0 0 12px; }
+.tt-spec { margin: 6px 0 0; font-size: var(--ui-fs-s); }
+.tt-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.tt-dot-big { width: 14px; height: 14px; }
+
+/* ── the way: begin, the points on it, end, on one line ──────────────── */
+
+.tt-point { position: relative; padding: 0 0 12px 26px; }
+.tt-point::before { content: ''; position: absolute; left: 7px; top: 0; bottom: 0; width: 2px; background: var(--ui-border); }
+.tt-point-start::before { top: 26px; }
+.tt-point-end::before { bottom: auto; height: 26px; }
+.tt-point-mark { position: absolute; left: 1px; top: 22px; width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--ui-bg); background: #d68910; box-shadow: 0 0 0 1px #d68910; }
+.tt-point-start .tt-point-mark { background: #1f9e3a; box-shadow: 0 0 0 1px #1f9e3a; }
+.tt-point-end .tt-point-mark { background: #c0392b; box-shadow: 0 0 0 1px #c0392b; }
+.tt-point-pass .tt-point-mark { background: var(--ui-bg); }
+.tt-point-add .tt-point-mark { background: var(--ui-bg); box-shadow: 0 0 0 1px var(--ui-border); }
+.tt-point-fields { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); }
+.tt-point-more { display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+.tt-point-more .ui-check { padding-bottom: 8px; }
+.tt-point-more .ui-field { width: 120px; }
+.tt-point-tools { margin-left: auto; gap: 2px; padding-bottom: 2px; }
+.tt-point-problem { margin: 6px 0 0; font-size: var(--ui-fs-s); }
+
+/* ── the times ───────────────────────────────────────────────────────── */
+
+.tt-table { width: 100%; border-collapse: collapse; font-size: var(--ui-fs-m); margin-bottom: 12px; }
+.tt-table th { text-align: left; font-weight: 600; color: var(--ui-muted); font-size: var(--ui-fs-s); padding: 4px; border-bottom: 1px solid var(--ui-border); }
+.tt-table td { padding: 4px; border-bottom: 1px solid var(--ui-border); font-variant-numeric: tabular-nums; }
+.tt-table td:first-child { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tt-row-stop td:first-child { font-weight: 600; }
+.tt-row-pass td { color: var(--ui-muted); }
+.tt-row-end { text-align: right; white-space: nowrap; width: 1%; }
+.tt-row-end .ui-btn { padding: 1px 8px; }
+.tt-clock small { font-size: 0.72em; margin-left: 1px; vertical-align: super; opacity: 0.7; }
+.tt-pass { font-style: italic; }
+.tt-facts { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; margin: 0 0 10px; font-size: var(--ui-fs-m); }
+.tt-facts dt { color: var(--ui-muted); }
+.tt-facts dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+
+/* ── the map ─────────────────────────────────────────────────────────── */
+
+.tt-map-box { position: relative; height: 340px; border-radius: 8px; overflow: hidden; border: 1px solid var(--ui-border); }
+.tt-map { position: absolute; inset: 0; }
+.tt-map-inner { width: 100%; height: 100%; }
+
+/* ── the graphical timetable ─────────────────────────────────────────── */
+
+.tt-graph { display: block; background: var(--ui-bg); font-family: var(--ui-font); }
+.tt-grid { stroke: var(--ui-border); stroke-width: 1; }
+.tt-grid-hour { stroke: var(--ui-muted); stroke-width: 1; opacity: 0.55; }
+.tt-axis { font-size: 10px; fill: var(--ui-muted); font-variant-numeric: tabular-nums; }
+.tt-axis-hour { font-size: 11px; font-weight: 600; fill: var(--ui-fg); }
+.tt-station-line { stroke: var(--ui-border); stroke-width: 1; }
+.tt-station-name { font-size: 11px; fill: var(--ui-fg); }
+.tt-train { cursor: pointer; }
+.tt-train-line { fill: none; stroke-linejoin: round; stroke-linecap: round; }
+.tt-train-hit { fill: none; stroke: transparent; stroke-width: 10; }
+.tt-train:hover .tt-train-line { stroke-width: 3; }
+.tt-train-label { font-size: 10px; font-weight: 600; paint-order: stroke; stroke: var(--ui-bg); stroke-width: 3px; }
+
+@media (max-width: 1080px) {
+  .tt-grid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 760px) {
+  /* the bar of the open project above the page, not over it */
+  .ui-workspace > .ui-wc-bar { position: static; transform: none; width: auto; max-width: none; margin: 8px 8px 0; }
+  .tt-scroll { padding-top: 0; }
+}
+@media (max-width: 560px) {
+  .tt-page { padding: 16px; }
+  .tt-fields-3, .tt-fields-2, .tt-point-fields { grid-template-columns: minmax(0, 1fr); }
+}

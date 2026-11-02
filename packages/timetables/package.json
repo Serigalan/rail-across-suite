@@ -1,0 +1,23 @@
+{
+  "name": "@rail-across/timetables",
+  "private": true,
+  "version": "0.1.0",
+  "description": "The timetables of Rail-Across-Suite: a project's trains — their vehicles, departures, the stations they begin, stop and end at — on the project server, and their running times over a variant's net, for the Fahrplan-Editor",
+  "license": "LGPL-3.0-only",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@rail-across/running-times": "*"
+  },
+  "devDependencies": {
+    "vitest": "^3.2.7"
+  }
+}

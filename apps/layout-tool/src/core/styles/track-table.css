@@ -1,0 +1,390 @@
+/* The element table (TrackTableOverlay): the overlay, its rows and cells, the rule verdicts. */
+
+.track-table-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: #fff;
+  border-top: 2px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  z-index: 10;
+  font-family: var(--font-ui);
+}
+
+.track-table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.track-table-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.track-table-close {
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  color: var(--color-muted);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.track-table-close:hover {
+  background: #f0f0f0;
+  color: var(--color-text);
+}
+
+.track-table-scroll {
+  overflow: auto;
+  flex: 1;
+}
+
+.track-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-s);
+}
+
+.track-table th {
+  position: sticky;
+  top: 0;
+  background: var(--color-surface-alt);
+  text-align: left;
+  padding: 6px 12px;
+  font-weight: 600;
+  color: var(--color-text-soft);
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+  /* Above the comparison radius fields, which reach half a row upwards. */
+  z-index: 2;
+}
+
+.track-table td {
+  padding: 5px 12px;
+  border-bottom: 1px solid #f0f0f0;
+  color: var(--color-text);
+  white-space: nowrap;
+}
+
+.track-table tbody tr:hover td {
+  background: #f9f9ff;
+}
+
+/* Active row = the element the map draws in red on tracks-selected-layer;
+   the bar matches that layer's line colour. */
+.track-table tbody tr.track-table-row-active td {
+  background: #fbe4e1;
+}
+
+.track-table tbody tr.track-table-row-active td:first-child {
+  box-shadow: inset 3px 0 0 var(--color-map-selected);
+  font-weight: 600;
+}
+
+/* A route's table names each of its tracks above its first row. */
+.track-table tbody tr.track-table-part td {
+  background: var(--color-surface-alt);
+  color: var(--color-text-soft);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 8px;
+  position: sticky;
+  left: 0;
+}
+
+.track-table-input {
+  width: 80px;
+  padding: 3px 6px;
+  font-size: var(--fs-s);
+  font-family: var(--font-ui);
+  border: 1px solid #d0d0d0;
+  border-radius: 4px;
+  background: #fff;
+  color: var(--color-text);
+  box-sizing: border-box;
+}
+
+/* Type labels, the r1 → r2 ramp of a transition and the cant justification need
+   more room than a number. */
+.track-table-input-wide {
+  width: 160px;
+}
+
+/* The radius column: one width for every row — an arc's signed radius and a
+   transition's r₁ → r₂ (−1 200 → ∞, 1 234,567 → 900). */
+.track-table-input-radius {
+  width: 124px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The element role (Entscheidung 375): Fest-, Folge-, Zwischenelement. */
+.track-table-role {
+  width: 172px;
+}
+
+/* The one ladder of severities the rule catalogue answers with (AP R.7),
+   as colour: grey → amber → orange → violet → red. It is shared, not owned by
+   any one view — the element table's cell, a creation dialog's findings and
+   the catalogue's own legend all read from here, so the same step is the same
+   colour wherever it is said. */
+.rule-sev-none         { color: #bbb; font-weight: 400; }
+.rule-sev-ok           { color: #2e7d32; }
+.rule-sev-hint         { color: #6b7280; }
+.rule-sev-warning      { color: #e08b00; }
+.rule-sev-approval     { color: #d35400; }
+.rule-sev-special_case { color: #6a1b9a; }
+.rule-sev-error        { color: var(--color-danger); }
+
+/* The element table's cell: the worst step of the row, small and on one line,
+   with the rules themselves in the tooltip. A glance down the column finds
+   the worst row without reading a word of it. */
+.track-table-rule {
+  white-space: nowrap;
+  font-weight: 600;
+  font-size: var(--fs-xs);
+}
+
+/* The rule column's buttons (Entscheidung 374): the errors, and the Hinweise
+   — red until each has its reason, then green. Text-like, so a column of
+   them still reads at a glance. */
+.track-table-rule-cell {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.track-table-rule-btn {
+  font: inherit;
+  font-weight: 600;
+  background: none;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  padding: 1px 6px;
+  cursor: pointer;
+}
+
+.track-table-rule-btn:hover {
+  background: var(--color-surface-alt);
+}
+
+/* The dialog the buttons open: one finding per item, a reason under each Hinweis. */
+.modal.rule-dialog {
+  width: min(560px, calc(100vw - 32px));
+}
+
+.rule-dialog-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 60vh;
+  overflow: auto;
+}
+
+.rule-dialog-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rule-dialog-head {
+  font-weight: 600;
+  font-size: var(--fs-s);
+}
+
+.rule-dialog-reason {
+  font: inherit;
+  font-size: var(--fs-s);
+  width: 100%;
+  box-sizing: border-box;
+  padding: 4px 6px;
+  border: 1px solid #d0d0d0;
+  border-radius: 4px;
+  resize: vertical;
+}
+
+/* The same verdict beside a creation dialog's fields, before the element
+   exists. It reads like the dialog's other messages — the family and size of
+   .form-error, one line per finding — and not as a bulleted list: a panel
+   keeps bullets for what it is about to do (.form-list), not for what it has
+   to say about it. */
+.rule-findings,
+.rule-findings-ok {
+  font-family: var(--font-ui);
+  font-size: var(--fs-s);
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rule-findings li {
+  margin: 2px 0;
+}
+
+.rule-findings-ok {
+  color: #2e7d32;
+}
+
+/* A cant a switch route carries on a written exception: inside the rules, but
+   not the ordinary case, so it is marked without being called an error. Over the
+   limit the cell takes .input-error instead. */
+.track-table-input-exception {
+  /* Like .input-error, it has to win over :disabled — a read-only ramp cell is
+     exactly where the mark is needed. */
+  border-color: #e08b00 !important;
+  background: #fffaf0 !important;
+}
+
+/* A transition's end that follows its neighbour: the value it follows stands
+   as the placeholder, set apart from one the transition states itself. */
+.track-table-input-implied::placeholder {
+  color: #8a8a8a;
+  font-style: italic;
+}
+
+.track-table-input:disabled {
+  background: var(--color-surface-alt);
+  color: #999;
+  border-color: #e8e8e8;
+  cursor: default;
+  /* Let the click through to the row: a disabled input fires no click event,
+     so read-only columns would otherwise not activate their row. */
+  pointer-events: none;
+}
+
+.track-table-input:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -1px;
+  border-color: var(--color-primary);
+}
+
+/* Line-speed ceiling, sitting with the V_max button it bounds. */
+.track-table-cap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-s);
+  color: var(--color-text-soft);
+}
+
+.track-table-cap-input {
+  width: 64px;
+}
+
+/* Secondary action next to Save — outlined so the primary button stays the
+   one that commits the table. */
+.track-table-vmax-btn {
+  padding: 4px 12px;
+  background: #fff;
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  border-radius: 4px;
+  font-size: var(--fs-s);
+  font-family: var(--font-ui);
+  cursor: pointer;
+}
+
+.track-table-vmax-btn:hover {
+  background: #f0f0f8;
+}
+
+/* What the last edit reached, and why it was refused (AP 5.1). */
+.track-table-reach,
+.track-table-reach-error {
+  font-family: var(--font-ui);
+  font-size: var(--fs-xs);
+  white-space: nowrap;
+}
+
+.track-table-reach {
+  color: #6c5ce7;
+}
+
+.track-table-reach-error {
+  color: var(--color-danger);
+  font-weight: 600;
+}
+
+.track-table-save-btn {
+  padding: 4px 12px;
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: var(--fs-s);
+  font-family: var(--font-ui);
+  cursor: pointer;
+}
+
+.track-table-save-btn:hover {
+  background: #232660;
+}
+
+/* Nothing is written until Save is pressed, so an idle button is a table with
+   nothing waiting — and a dirty one is the one thing left to do. */
+.track-table-save-btn:disabled {
+  background: #e8e8e8;
+  color: #999;
+  cursor: default;
+}
+
+.track-table-save-btn-dirty {
+  box-shadow: 0 0 0 2px #fbe4e1;
+}
+
+/* The track's length, beside its name in the table's title. */
+.track-table-subtitle {
+  margin-left: 8px;
+  font-weight: 400;
+  color: var(--color-muted);
+}
+
+@media (max-width: 1440px) {
+  .track-table-overlay { height: 42%; }
+}
+
+/* The comparison radius belongs to the joint between two elements: its field
+   stands on the line between their rows, half in each. */
+.track-table td.track-table-joint {
+  position: relative;
+  min-width: 80px;
+}
+
+.track-table-joint-field {
+  position: absolute;
+  left: 12px;
+  top: 0;
+  transform: translateY(-50%);
+  z-index: 1;
+}
+
+/* The tracks of the project settings (decision 324): a table over the map with
+   the search in its head, the groups as rows across it. */
+.project-tracks-tools { display: flex; align-items: center; gap: 10px; }
+.project-tracks-tools input[type="search"] {
+  width: 220px; padding: 4px 8px; border: 1px solid #ddd; border-radius: 5px; font-family: var(--font-ui); font-size: var(--fs-s);
+}
+.project-tracks-error { padding: 4px 16px; }
+.project-tracks-empty { padding: 12px 16px; color: var(--color-text-soft); font-size: var(--fs-s); }
+.project-tracks-table td.num, .project-tracks-table th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.project-tracks-table tr.active td { background: #eef0fb; }
+.project-tracks-table .project-tracks-group td { background: var(--color-surface-alt); padding: 2px 8px; }
+.project-tracks-table .project-tracks-group .track-group-toggle { width: 100%; }
+.project-tracks-own { display: inline-flex; align-items: center; gap: 6px; }
+.project-tracks-table select {
+  max-width: 220px; padding: 2px 6px; border: 1px solid #ddd; border-radius: 5px;
+  font-size: var(--fs-s); font-family: var(--font-ui); color: var(--color-text); background: white;
+}
+.project-tracks-table select:disabled { background: var(--color-surface-alt); color: var(--color-muted); }

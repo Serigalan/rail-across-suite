@@ -1,0 +1,70 @@
+/* The Fahrzeug-Editor's own: the vehicle's page, its chart and its curve
+   table. What every module has — colours, buttons, fields, the shell — is the
+   suite's library (@rail-across/ui, ui.css), loaded before this. */
+
+html, body { margin: 0; background: var(--ui-surface); }
+#root { width: 100%; height: 100vh; }
+
+.tool-center { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 24px; text-align: center; }
+
+/* ── the vehicle's page ──────────────────────────────────────────────── */
+
+.veh-scroll { flex: 1; min-height: 0; overflow-y: auto; background: var(--ui-surface); }
+.veh-notice { padding: 16px 24px 0; max-width: 1240px; margin: 0 auto; }
+.veh-page { max-width: 1240px; margin: 0 auto; padding: 20px 24px 40px; display: flex; flex-direction: column; gap: 14px; }
+.veh-empty { align-items: center; justify-content: center; min-height: 50vh; text-align: center; }
+.veh-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.veh-title h1 { margin: 0 0 6px; font-size: 22px; font-weight: 650; color: var(--ui-fg); }
+.veh-badges { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.veh-actions { flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.veh-lead { margin: 0 0 10px; }
+.veh-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 14px; align-items: start; }
+.veh-col { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.veh-card { background: var(--ui-bg); border: 1px solid var(--ui-border); border-radius: 10px; padding: 14px 16px 16px; min-width: 0; }
+.veh-card h2 { margin: 0 0 10px; font-size: var(--ui-fs-l); font-weight: 600; color: var(--ui-fg); }
+.veh-fields-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.veh-fact { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.veh-fact > span { font-size: var(--ui-fs-xs); text-transform: uppercase; letter-spacing: 0.04em; color: var(--ui-muted); font-weight: 500; }
+.veh-fact > b { font-weight: 500; font-size: var(--ui-fs-m); color: var(--ui-fg); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.veh-checks { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 6px 12px; margin-top: 12px; }
+.veh-modes, .veh-comforts { margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px; }
+.veh-modes .ui-tabs, .veh-comforts .ui-tabs { flex-wrap: wrap; }
+.veh-tools { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; padding: 10px; border: 1px dashed var(--ui-border); border-radius: 8px; }
+.veh-tool-row { display: flex; align-items: flex-end; gap: 8px; flex-wrap: wrap; }
+.veh-tool-row .ui-field { flex: 1; min-width: 160px; }
+.veh-tools > .ui-btn { align-self: flex-start; }
+.veh-chart { margin: 4px 0 8px; }
+.veh-chart > svg { width: 100%; height: auto; display: block; }
+.veh-chart .veh-legend-item { white-space: nowrap; }
+.veh-chart .veh-legend-item svg { flex-shrink: 0; }
+.veh-line-other { stroke: #8a8fa3; stroke-width: 1.3; stroke-dasharray: 4 3; }
+.veh-line-resistance { stroke: #d68910; stroke-width: 1.5; stroke-dasharray: 6 3; }
+.veh-point { fill: var(--color-primary); }
+.veh-curve { display: flex; flex-direction: column; gap: 8px; }
+.veh-table th, .veh-table td { text-align: right; }
+.veh-table th { white-space: nowrap; }
+.veh-fields-3 + .veh-lead { margin: 10px 0 0; }
+.veh-table th:first-child, .veh-table td:first-child { text-align: right; }
+.veh-table td:last-child { width: 1%; }
+.veh-cell { width: 100%; max-width: 120px; padding: 3px 6px; font-size: var(--ui-fs-m); text-align: right; }
+.veh-curve-actions { flex-wrap: wrap; gap: 6px; }
+
+@media (max-width: 980px) {
+  .veh-grid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 560px) {
+  .veh-page { padding: 16px; }
+  .veh-fields-3 { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ── the chart and the table ─────────────────────────────────────────── */
+
+.veh-legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: var(--ui-fs-s); color: var(--ui-muted); }
+.veh-legend-item { display: inline-flex; align-items: center; gap: 6px; }
+.veh-grid-line { stroke: var(--ui-border); stroke-width: 1; }
+.veh-axis { font: 11px var(--ui-font); fill: var(--ui-muted); font-variant-numeric: tabular-nums; }
+.veh-line-top { stroke: var(--ui-muted); stroke-width: 1; stroke-dasharray: 3 3; }
+.veh-line-curve { stroke: var(--color-primary); stroke-width: 2.2; }
+.veh-table-base { width: 100%; border-collapse: collapse; font-size: var(--ui-fs-m); }
+.veh-table-base th { font-weight: 600; color: var(--ui-muted); font-size: var(--ui-fs-s); padding: 4px 4px; border-bottom: 1px solid var(--ui-border); }
+.veh-table-base td { padding: 5px 4px; border-bottom: 1px solid var(--ui-border); font-variant-numeric: tabular-nums; }

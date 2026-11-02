@@ -1,0 +1,107 @@
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { api } from './api'
+import { I18n, initialLanguage, keepLanguage, textsFor } from './i18n'
+import { MODULES, routeOf, takeNotice } from './modules'
+import Header from './Header'
+import Home from './pages/Home'
+import Infrastructure from './pages/Infrastructure'
+import Planned from './pages/Planned'
+import Simulation from './pages/Simulation'
+import Admin from './pages/Admin'
+import { PasswordPage } from './pages/Account'
+import '@rail-across/ui/ui.css'
+import './home.css'
+
+/** The page the address names, following it as it changes (back and forward included). */
+function useRoute() {
+  const [route, setRoute] = useState(() => routeOf(location.hash))
+  useEffect(() => {
+    const follow = () => setRoute(routeOf(location.hash))
+    addEventListener('hashchange', follow)
+    return () => removeEventListener('hashchange', follow)
+  }, [])
+  return route
+}
+
+// What a tool said when it sent one back here (a merge done, a link to a
+// project that is not there) — taken once, when the page loads.
+const LEFT_BY_TOOL = takeNotice()
+
+/** On to a module's address after changing the password (`next`), or to the overview. */
+function goOn(next) {
+  if (next) location.assign(next)
+  else location.hash = '#/'
+}
+
+/**
+ * The start page of the suite. Nothing of it opens without a session: the
+ * server shows the sign-in page (sign-in/) in its place until one is signed
+ * in, so here somebody always is — and where the session ends meanwhile, the
+ * page is loaded again and the server asks for the sign-in. Pages by the
+ * address' hash: the overview, the infrastructure editor with its tools and
+ * the projects — managed here for every tool —, a page for every module still to come, the password, and for
+ * admins the users of the whole suite.
+ */
+export default function App() {
+  const [language, setLanguage] = useState(initialLanguage)
+  const texts = useMemo(() => textsFor(language), [language])
+  const route = useRoute()
+  const [user, setUser] = useState(undefined)
+  const [projects, setProjects] = useState({ list: null, error: false })
+  const [notice, setNotice] = useState(LEFT_BY_TOOL ? { text: LEFT_BY_TOOL } : null)
+
+  useEffect(() => { document.documentElement.lang = language }, [language])
+  useEffect(() => {
+    api.me().then(u => (u ? setUser(u) : location.reload()), () => setUser(null))
+  }, [])
+  const loadProjects = useCallback(() => api.projects().then(
+    list => setProjects({ list, error: false }),
+    () => setProjects(p => ({ list: p.list, error: true })),
+  ), [])
+  useEffect(() => {
+    if (!user || user.mustChangePassword) return undefined
+    let alive = true
+    api.projects().then(
+      list => { if (alive) setProjects({ list, error: false }) },
+      () => { if (alive) setProjects({ list: null, error: true }) },
+    )
+    return () => { alive = false }
+  }, [user])
+
+  const chooseLanguage = (l) => { keepLanguage(l); setLanguage(l) }
+  const passwordChanged = (u) => {
+    setUser(u)
+    setNotice({ key: 'password_done' })
+    goOn(route.next)
+  }
+  // Signed out, the start page is the sign-in page again.
+  const signOut = async () => {
+    await api.logout().catch(() => {})
+    location.assign('/')
+  }
+  const forced = Boolean(user?.mustChangePassword)
+  const page = forced ? 'password' : route.page
+  // A module that works on a variant — the Fahrplan-Sim — lists the projects to open in it.
+  const simulation = MODULES.some(m => m.route === page && m.available && m.apps)
+  // a module that needs no project is its app: its old page leads there
+  const direct = MODULES.find(m => m.route === page && m.available && m.direct)
+  useEffect(() => { if (user && direct) location.replace(direct.path) }, [user, direct])
+
+  return (
+    <I18n.Provider value={texts}>
+      <div className="ui-page home">
+        <Header user={user} onLanguage={chooseLanguage} onSignOut={signOut} />
+        {notice && <p className="ui-ok ra-notice" role="status">{notice.text ?? texts.t(notice.key)}</p>}
+        {user === null && <p className="ui-error ra-notice" role="alert">{texts.t('server_unreachable')}</p>}
+        {user && page === '' && <Home />}
+        {user && page === 'infrastructure' && <Infrastructure toolId={route.tool} user={user} projects={projects} onReload={loadProjects} />}
+        {user && page === 'password' && (
+          <PasswordPage forced={forced} onDone={passwordChanged} onCancel={() => goOn(route.next)} />
+        )}
+        {user && page === 'admin' && (user.role === 'admin' ? <Admin me={user} /> : <Home />)}
+        {user && simulation && <Simulation route={page} projects={projects} />}
+        {user && !simulation && !direct && !['', 'infrastructure', 'password', 'admin'].includes(page) && <Planned route={page} />}
+      </div>
+    </I18n.Provider>
+  )
+}

@@ -5,7 +5,7 @@ German rules. This list fixes one English word for each German term, so that cod
 thing. Where the data model has an identifier for a term, it is given; `—` means there is none yet.
 
 A German term of art without a good English equivalent stays German, in italics (*Höhenplan*, *Festelement*), as
-the Open-Layout-Tool's documentation does.
+the Layout-Tool's documentation does.
 
 ## Network and alignment
 
@@ -111,14 +111,18 @@ the Open-Layout-Tool's documentation does.
 |---|---|---|---|
 | Leit- und Sicherungstechnik (LST) | control-command and signalling (CCS) | — | the signalling domain |
 | Hauptsignal, Vorsignal | main signal, distant signal | — | |
+| Signalsystem, logisches Signal | signalling system, logical signal | `logicalSignals` | what a signal is in one system it shows (Ks, Sperrsignal), as OSRD has it; the systems are the catalogue's |
 | Einfahrsignal, Trapeztafel | entry signal, trapezoid board | — | mark a station boundary (EBO §4) |
 | Bahnhofsgrenze | station boundary | — | stored in the signalling domain as a reference to what marks it |
 | Haltetafel, Geschwindigkeitstafel | stop board, speed board | — | |
-| Achszähler | axle counter | — | |
-| Gleisfreimeldeabschnitt | track section | — | track vacancy detection |
+| Freimeldepunkt, Achszähler | detection point, axle counter | `detectionPoints` | a point bounding track sections: an axle counter or a joint |
+| Gleisfreimeldeabschnitt | track section | `trackSections` | track vacancy detection |
 | Isolierstoß | insulated rail joint | — | |
-| Balise | balise | — | |
+| Zugbeeinflussung; Balise, Gleismagnet | train protection; balise, track magnet | `balises` | a track element of a train protection system acting at a point: a PZB magnet or speed check, an ETCS Eurobalise; the system, kind and settings are the catalogue's |
 | Fahrstraße | route | — | reserved for this meaning |
+| Entwurfsgeschwindigkeit | design speed | `designSpeed` (core, track element) | what the layout is laid out and checked for; set in the Layout-Tool |
+| signalisierte Geschwindigkeit | signalled speed | `signallingSpeeds` (a logical signal's, per route) | what a route permits, signalled at its start signal; a speed profile follows from it |
+| Standort (eines Signals) | signal's place, physical signal | `signals` | where a signal stands, with its logical signals |
 | Durchrutschweg | overlap | — | |
 | Flankenschutz | flank protection | — | |
 | Blockabschnitt | block section | — | |

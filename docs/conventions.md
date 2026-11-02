@@ -1,7 +1,7 @@
 # Conventions
 
 Units, signs and precision that every part of Rail-Across-Suite uses — in data, in code and in its interfaces.
-They are taken over from the Open-Layout-Tool (`docs/architecture.md`, *Conventions*, and `docs/data-format.md`,
+They are taken over from the Layout-Tool (`docs/architecture.md`, *Conventions*, and `docs/data-format.md`,
 *Numbers*) and extended by what the [data model](data-model.md) adds. Exchange formats may use other units
 (gon, km); they are converted at the edge, never inside.
 

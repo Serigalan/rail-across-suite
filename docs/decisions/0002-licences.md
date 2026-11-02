@@ -1,6 +1,7 @@
 # 0002 — Code under Apache-2.0, documentation under CC BY 4.0, contributions signed off
 
-Status: **accepted**
+Status: **replaced** by [0015](0015-lgpl.md) for the licences — everything is under LGPL-3.0-only; the sign-off
+after the DCO stands
 
 ## Decision
 

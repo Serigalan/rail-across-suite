@@ -1,0 +1,1182 @@
+[
+ {
+  "ref": "core#/$defs/TrackEnd",
+  "value": {
+   "trackId": "t1",
+   "endpoint": "END"
+  },
+  "valid": true,
+  "paths": []
+ },
+ {
+  "ref": "core#/$defs/TrackEnd",
+  "value": {
+   "trackId": "t1",
+   "endpoint": "MIDDLE"
+  },
+  "valid": false,
+  "paths": [
+   "/endpoint"
+  ]
+ },
+ {
+  "ref": "core#/$defs/TrackEnd",
+  "value": {
+   "trackId": "t1"
+  },
+  "valid": false,
+  "paths": [
+   "/"
+  ]
+ },
+ {
+  "ref": "core#/$defs/TrackEnd",
+  "value": {
+   "trackId": "",
+   "endpoint": "BEGIN",
+   "extra": 1
+  },
+  "valid": false,
+  "paths": [
+   "/",
+   "/trackId"
+  ]
+ },
+ {
+  "ref": "core#/$defs/TrackRange",
+  "value": {
+   "anchor": "station",
+   "trackId": "t1",
+   "startStation": 120,
+   "endStation": 260,
+   "side": "left"
+  },
+  "valid": true,
+  "paths": []
+ },
+ {
+  "ref": "core#/$defs/TrackRange",
+  "value": {
+   "anchor": "plane",
+   "trackId": "t1",
+   "startStation": 120,
+   "endStation": 260
+  },
+  "valid": false,
+  "paths": [
+   "/anchor"
+  ]
+ },
+ {
+  "ref": "core#/$defs/TrackLocation",
+  "value": {
+   "anchor": "station",
+   "trackId": "t1",
+   "station": 812.4,
+   "side": "right",
+   "offset": 2.9,
+   "direction": "down"
+  },
+  "valid": true,
+  "paths": []
+ },
+ {
+  "ref": "core#/$defs/TrackLocation",
+  "value": {
+   "anchor": "plane",
+   "easting": 500000,
+   "northing": 5700000,
+   "epsg": 25832,
+   "bearing": 12
+  },
+  "valid": true,
+  "paths": []
+ },
+ {
+  "ref": "core#/$defs/TrackLocation",
+  "value": {
+   "anchor": "station",
+   "trackId": "t1",
+   "station": "km 3"
+  },
+  "valid": false,
+  "paths": [
+   "/"
+  ]
+ },
+ {
+  "ref": "core#/$defs/TrackLocation",
+  "value": {
+   "anchor": "plane",
+   "easting": 500000,
+   "northing": 5700000
+  },
+  "valid": false,
+  "paths": [
+   "/"
+  ]
+ },
+ {
+  "ref": "core#/$defs/TrackLocation",
+  "value": "nowhere",
+  "valid": false,
+  "paths": [
+   "/"
+  ]
+ },
+ {
+  "ref": "core#/$defs/Lifespan",
+  "value": {
+   "from": "s1"
+  },
+  "valid": true,
+  "paths": []
+ },
+ {
+  "ref": "core#/$defs/Lifespan",
+  "value": {},
+  "valid": false,
+  "paths": [
+   "/"
+  ]
+ },
+ {
+  "ref": "core#/$defs/Lifespan",
+  "value": {
+   "from": "s1",
+   "until": "s2"
+  },
+  "valid": false,
+  "paths": [
+   "/"
+  ]
+ },
+ {
+  "ref": "core#/$defs/TrackPath",
+  "value": {
+   "trackIds": [
+    "a",
+    "b"
+   ]
+  },
+  "valid": true,
+  "paths": []
+ },
+ {
+  "ref": "core#/$defs/TrackPath",
+  "value": {
+   "trackIds": "a"
+  },
+  "valid": false,
+  "paths": [
+   "/trackIds"
+  ]
+ },
+ {
+  "ref": "core#/$defs/Track",
+  "value": {
+   "id": "t1",
+   "epsg": 25832,
+   "elements": [
+    {
+     "elementType": 0,
+     "startNode": [
+      500000,
+      5700000
+     ],
+     "endNode": [
+      500100,
+      5700000
+     ],
+     "bearing": 90,
+     "length": 100
+    }
+   ]
+  },
+  "valid": true,
+  "paths": []
+ },
+ {
+  "ref": "core#/$defs/Track",
+  "value": {
+   "id": "t1",
+   "epsg": 25832,
+   "elements": []
+  },
+  "valid": false,
+  "paths": [
+   "/elements"
+  ]
+ },
+ {
+  "ref": "core#/$defs/Track",
+  "value": {
+   "id": "t1",
+   "epsg": 25832.5,
+   "elements": [
+    {
+     "elementType": 0,
+     "startNode": [
+      500000,
+      5700000
+     ],
+     "endNode": [
+      500100,
+      5700000
+     ],
+     "bearing": 90,
+     "length": 100
+    }
+   ],
+   "trackType": 3
+  },
+  "valid": false,
+  "paths": [
+   "/epsg",
+   "/trackType"
+  ]
+ },
+ {
+  "ref": "core#/$defs/Track",
+  "value": {
+   "id": "t1",
+   "epsg": 25832,
+   "elements": [
+    {
+     "elementType": 0,
+     "startNode": [
+      500000,
+      5700000
+     ],
+     "endNode": [
+      500100,
+      5700000
+     ],
+     "bearing": 90,
+     "length": 100,
+     "radius": null,
+     "r1": "x",
+     "geometry": {}
+    }
+   ]
+  },
+  "valid": false,
+  "paths": [
+   "/elements/0",
+   "/elements/0/r1"
+  ]
+ },
+ {
+  "ref": "core#/$defs/Switch",
+  "value": {
+   "id": "s",
+   "kind": "turnout",
+   "formVersion": 1,
+   "ports": {
+    "A": {
+     "trackId": "t1",
+     "endpoint": "END"
+    },
+    "B1": null
+   }
+  },
+  "valid": true,
+  "paths": []
+ },
+ {
+  "ref": "core#/$defs/Switch",
+  "value": {
+   "id": "s",
+   "kind": "turnout",
+   "formVersion": 1,
+   "ports": {
+    "E": {
+     "trackId": "t1",
+     "endpoint": "END"
+    }
+   }
+  },
+  "valid": false,
+  "paths": [
+   "/ports"
+  ]
+ },
+ {
+  "ref": "core#/$defs/Switch",
+  "value": {
+   "id": "s",
+   "kind": "turnout",
+   "formVersion": 1,
+   "ports": {
+    "A": {
+     "trackId": "t1"
+    }
+   }
+  },
+  "valid": false,
+  "paths": [
+   "/ports/A"
+  ]
+ },
+ {
+  "ref": "core#/$defs/OperationalPoint",
+  "value": {
+   "id": "o",
+   "rl100": "LHT"
+  },
+  "valid": true,
+  "paths": []
+ },
+ {
+  "ref": "core#/$defs/OperationalPoint",
+  "value": {
+   "id": "o"
+  },
+  "valid": false,
+  "paths": [
+   "/"
+  ]
+ },
+ {
+  "ref": "core#/$defs/KmLine",
+  "value": {
+   "id": "km-6050",
+   "lineNumber": 6050,
+   "runs": [
+    [
+     [
+      11.9,
+      51.5,
+      1200.5
+     ]
+    ]
+   ]
+  },
+  "valid": true,
+  "paths": []
+ },
+ {
+  "ref": "core#/$defs/KmLine",
+  "value": {
+   "id": "km-6050",
+   "lineNumber": 6050,
+   "runs": [
+    [
+     [
+      11.9,
+      51.5
+     ]
+    ]
+   ]
+  },
+  "valid": false,
+  "paths": [
+   "/runs/0/0"
+  ]
+ },
+ {
+  "ref": "layout#/$defs/NamedTrackPath",
+  "value": {
+   "id": "r",
+   "name": "Route 1",
+   "path": {
+    "trackIds": [
+     "t1"
+    ]
+   }
+  },
+  "valid": true,
+  "paths": []
+ },
+ {
+  "ref": "layout#/$defs/AxisSurvey",
+  "value": {
+   "id": "a",
+   "epsg": 25832,
+   "points": "sha256:abc"
+  },
+  "valid": false,
+  "paths": [
+   "/points"
+  ]
+ },
+ {
+  "ref": "layout#/$defs/Fields",
+  "value": {
+   "planHeader": {},
+   "osrd": {
+    "version": "4.0.0"
+   },
+   "imageHash": "f00"
+  },
+  "valid": true,
+  "paths": []
+ },
+ {
+  "ref": "signalling#/$defs/Signal",
+  "value": {
+   "id": "sig-a",
+   "name": "A",
+   "kind": "real",
+   "mounting": "mast",
+   "at": {
+    "anchor": "station",
+    "trackId": "t1",
+    "station": 20,
+    "side": "right",
+    "offset": 3.1,
+    "direction": "up"
+   },
+   "sight": {
+    "required": 300,
+    "achievable": 420
+   },
+   "logicalSignals": [
+    {
+     "system": "ks",
+     "type": "multiSection",
+     "function": "entry",
+     "frames": [
+      {
+       "kind": "screen",
+       "aspects": [
+        {
+         "aspect": "Hp_0"
+        },
+        {
+         "aspect": "Ks_1"
+        },
+        {
+         "aspect": "Ks_2"
+        }
+       ]
+      },
+      {
+       "kind": "indicator",
+       "aspects": [
+        {
+         "aspect": "Zs_3",
+         "symbol": "6"
+        }
+       ]
+      },
+      {
+       "kind": "indicator",
+       "aspects": [
+        {
+         "aspect": "Zs_2",
+         "symbol": "H"
+        }
+       ]
+      },
+      {
+       "kind": "indicator",
+       "aspects": [
+        {
+         "aspect": "Zs_1"
+        }
+       ]
+      }
+     ],
+     "signallingSpeeds": [
+      {
+       "routeId": "rt-a-n1",
+       "speed": 60
+      }
+     ]
+    }
+   ],
+   "frames": [
+    {
+     "kind": "nameplate",
+     "aspects": []
+    }
+   ]
+  },
+  "valid": true,
+  "paths": []
+ },
+ {
+  "ref": "signalling#/$defs/Signal",
+  "value": {
+   "id": "sig-a",
+   "name": "A",
+   "kind": "real",
+   "mounting": "mast",
+   "at": {
+    "anchor": "station",
+    "trackId": "t1",
+    "station": 20
+   },
+   "sight": {
+    "required": 300,
+    "achievable": 420
+   },
+   "logicalSignals": [
+    {
+     "system": "ks",
+     "type": "multiSection",
+     "function": "entry",
+     "frames": [
+      {
+       "kind": "screen",
+       "aspects": [
+        {
+         "aspect": "Hp_0"
+        },
+        {
+         "aspect": "Ks_1"
+        },
+        {
+         "aspect": "Ks_2"
+        }
+       ]
+      },
+      {
+       "kind": "indicator",
+       "aspects": [
+        {
+         "aspect": "Zs_3",
+         "symbol": "6"
+        }
+       ]
+      },
+      {
+       "kind": "indicator",
+       "aspects": [
+        {
+         "aspect": "Zs_2",
+         "symbol": "H"
+        }
+       ]
+      },
+      {
+       "kind": "indicator",
+       "aspects": [
+        {
+         "aspect": "Zs_1"
+        }
+       ]
+      }
+     ],
+     "signallingSpeeds": [
+      {
+       "routeId": "rt-a-n1",
+       "speed": 60
+      }
+     ]
+    }
+   ],
+   "frames": [
+    {
+     "kind": "nameplate",
+     "aspects": []
+    }
+   ]
+  },
+  "valid": false,
+  "paths": [
+   "/at"
+  ]
+ },
+ {
+  "ref": "signalling#/$defs/Signal",
+  "value": {
+   "id": "sig-a",
+   "name": "A",
+   "kind": "real",
+   "mounting": "mast",
+   "at": {
+    "anchor": "plane",
+    "easting": 500000,
+    "northing": 5700000,
+    "epsg": 25832,
+    "bearing": 90
+   },
+   "sight": {
+    "required": 300,
+    "achievable": 420
+   },
+   "logicalSignals": [
+    {
+     "system": "ks",
+     "type": "multiSection",
+     "function": "entry",
+     "frames": [
+      {
+       "kind": "screen",
+       "aspects": [
+        {
+         "aspect": "Hp_0"
+        },
+        {
+         "aspect": "Ks_1"
+        },
+        {
+         "aspect": "Ks_2"
+        }
+       ]
+      },
+      {
+       "kind": "indicator",
+       "aspects": [
+        {
+         "aspect": "Zs_3",
+         "symbol": "6"
+        }
+       ]
+      },
+      {
+       "kind": "indicator",
+       "aspects": [
+        {
+         "aspect": "Zs_2",
+         "symbol": "H"
+        }
+       ]
+      },
+      {
+       "kind": "indicator",
+       "aspects": [
+        {
+         "aspect": "Zs_1"
+        }
+       ]
+      }
+     ],
+     "signallingSpeeds": [
+      {
+       "routeId": "rt-a-n1",
+       "speed": 60
+      }
+     ]
+    }
+   ],
+   "frames": [
+    {
+     "kind": "nameplate",
+     "aspects": []
+    }
+   ]
+  },
+  "valid": true,
+  "paths": []
+ },
+ {
+  "ref": "signalling#/$defs/Signal",
+  "value": {
+   "id": "sig-a",
+   "name": "A",
+   "kind": "real",
+   "mounting": "mast",
+   "at": {
+    "anchor": "station",
+    "trackId": "t1",
+    "station": 20,
+    "side": "right",
+    "offset": 3.1,
+    "direction": "up"
+   },
+   "sight": {
+    "required": 300,
+    "achievable": 420
+   },
+   "logicalSignals": [
+    {
+     "system": "ks",
+     "type": "multiSection",
+     "function": "entry",
+     "frames": [
+      {
+       "kind": "screen",
+       "aspects": [
+        {
+         "aspect": "Hp_0"
+        },
+        {
+         "aspect": "Ks_1"
+        },
+        {
+         "aspect": "Ks_2"
+        }
+       ]
+      },
+      {
+       "kind": "indicator",
+       "aspects": [
+        {
+         "aspect": "Zs_3",
+         "symbol": "6"
+        }
+       ]
+      },
+      {
+       "kind": "indicator",
+       "aspects": [
+        {
+         "aspect": "Zs_2",
+         "symbol": "H"
+        }
+       ]
+      },
+      {
+       "kind": "indicator",
+       "aspects": [
+        {
+         "aspect": "Zs_1"
+        }
+       ]
+      }
+     ],
+     "signallingSpeeds": [
+      {
+       "routeId": "rt-a-n1",
+       "speed": 60
+      }
+     ]
+    }
+   ],
+   "frames": [
+    {
+     "kind": "screen",
+     "aspects": []
+    }
+   ]
+  },
+  "valid": true,
+  "paths": []
+ },
+ {
+  "ref": "signalling#/$defs/Signal",
+  "value": {
+   "id": "sig-a",
+   "name": "A",
+   "kind": "fictive",
+   "mounting": "mast",
+   "at": {
+    "anchor": "station",
+    "trackId": "t1",
+    "station": 20,
+    "side": "right",
+    "offset": 3.1,
+    "direction": "up"
+   },
+   "sight": {
+    "required": 300,
+    "achievable": 420
+   },
+   "logicalSignals": [
+    {
+     "system": "ks",
+     "type": "multiSection",
+     "function": "entry",
+     "frames": [
+      {
+       "kind": "screen",
+       "aspects": [
+        {
+         "aspect": "Hp_0"
+        },
+        {
+         "aspect": "Ks_1"
+        },
+        {
+         "aspect": "Ks_2"
+        }
+       ]
+      },
+      {
+       "kind": "indicator",
+       "aspects": [
+        {
+         "aspect": "Zs_3",
+         "symbol": "6"
+        }
+       ]
+      },
+      {
+       "kind": "indicator",
+       "aspects": [
+        {
+         "aspect": "Zs_2",
+         "symbol": "H"
+        }
+       ]
+      },
+      {
+       "kind": "indicator",
+       "aspects": [
+        {
+         "aspect": "Zs_1"
+        }
+       ]
+      }
+     ],
+     "signallingSpeeds": [
+      {
+       "routeId": "rt-a-n1",
+       "speed": 60
+      }
+     ]
+    }
+   ],
+   "frames": [
+    {
+     "kind": "nameplate",
+     "aspects": []
+    }
+   ],
+   "function": "gate"
+  },
+  "valid": false,
+  "paths": [
+   "/function",
+   "/kind"
+  ]
+ },
+ {
+  "ref": "signalling#/$defs/Route",
+  "value": {
+   "id": "rt-a-n1",
+   "name": "A–N1",
+   "kind": "train",
+   "trainType": "ZZ",
+   "startSignalId": "sig-a",
+   "targetSignalId": "sig-n1",
+   "path": {
+    "trackIds": [
+     "t1"
+    ]
+   },
+   "overlaps": [
+    {
+     "overlapId": "ov-n1",
+     "preferred": true
+    }
+   ],
+   "aspects": [
+    {
+     "signalId": "sig-a",
+     "aspect": "Ks_1"
+    },
+    {
+     "signalId": "sig-a",
+     "aspect": "Zs_3",
+     "symbol": "6"
+    }
+   ]
+  },
+  "valid": true,
+  "paths": []
+ },
+ {
+  "ref": "signalling#/$defs/Route",
+  "value": {
+   "id": "rt-a-n1",
+   "name": "A–N1",
+   "kind": "train",
+   "trainType": "ZZ",
+   "startSignalId": "sig-a",
+   "targetSignalId": "sig-n1",
+   "path": {
+    "trackIds": [
+     "t1"
+    ]
+   },
+   "overlaps": [
+    {
+     "preferred": true
+    }
+   ],
+   "aspects": [
+    {
+     "signalId": "sig-a",
+     "aspect": "Ks_1"
+    },
+    {
+     "signalId": "sig-a",
+     "aspect": "Zs_3",
+     "symbol": "6"
+    }
+   ]
+  },
+  "valid": false,
+  "paths": [
+   "/overlaps/0"
+  ]
+ },
+ {
+  "ref": "signalling#/$defs/Overlap",
+  "value": {
+   "id": "ov-n1",
+   "name": "N1/200",
+   "signalId": "sig-n1",
+   "path": {
+    "trackIds": [
+     "t1",
+     "t2"
+    ]
+   },
+   "end": {
+    "anchor": "station",
+    "trackId": "t2",
+    "station": 100
+   },
+   "length": 120,
+   "gradient": -2.5,
+   "speed": 60,
+   "clearSections": [
+    "ts-1"
+   ],
+   "switches": [
+    {
+     "switchElementId": "we-1",
+     "locked": true
+    }
+   ]
+  },
+  "valid": true,
+  "paths": []
+ },
+ {
+  "ref": "signalling#/$defs/FlankProtection",
+  "value": {
+   "id": "fla-1",
+   "requester": {
+    "switchElementId": "we-1",
+    "via": "left"
+   },
+   "protection": {
+    "signalId": "sig-n1"
+   }
+  },
+  "valid": true,
+  "paths": []
+ },
+ {
+  "ref": "signalling#/$defs/FlankProtection",
+  "value": {
+   "id": "fla-2",
+   "requester": {
+    "switchElementId": "we-1",
+    "via": "right"
+   },
+   "protection": {
+    "waived": true
+   }
+  },
+  "valid": true,
+  "paths": []
+ },
+ {
+  "ref": "signalling#/$defs/FlankProtection",
+  "value": {
+   "id": "fla-1",
+   "requester": {
+    "switchElementId": "we-1",
+    "via": "left"
+   },
+   "protection": {
+    "signalId": "sig-n1",
+    "switchElementId": "we-1",
+    "position": "left"
+   }
+  },
+  "valid": false,
+  "paths": [
+   "/protection"
+  ]
+ },
+ {
+  "ref": "signalling#/$defs/FlankProtection",
+  "value": {
+   "id": "fla-1",
+   "requester": {
+    "switchElementId": "we-1",
+    "via": "left"
+   },
+   "protection": {
+    "waived": false
+   }
+  },
+  "valid": false,
+  "paths": [
+   "/protection"
+  ]
+ },
+ {
+  "ref": "signalling#/$defs/Balise",
+  "value": {
+   "id": "pzb-gue",
+   "at": {
+    "anchor": "station",
+    "trackId": "t1",
+    "station": 200,
+    "side": "right",
+    "offset": 3.1,
+    "direction": "up"
+   },
+   "system": "pzb",
+   "kind": "speedCheck",
+   "signalId": "sig-n1",
+   "effect": "switchedBySignal",
+   "settings": {
+    "frequency": "2000",
+    "testSpeed": 50,
+    "measuringLength": 21.4,
+    "arrangement": "startFirst"
+   },
+   "routes": [
+    {
+     "routeId": "rt-n1-v",
+     "effect": "inactiveWhenSet"
+    }
+   ]
+  },
+  "valid": true,
+  "paths": []
+ },
+ {
+  "ref": "signalling#/$defs/Balise",
+  "value": {
+   "id": "etcs-n1",
+   "name": "N1",
+   "at": {
+    "anchor": "station",
+    "trackId": "t1",
+    "station": 226,
+    "side": "right",
+    "offset": 3.1,
+    "direction": "up"
+   },
+   "system": "etcs",
+   "kind": "fixed",
+   "settings": {
+    "group": "N1",
+    "position": 1
+   },
+   "signalId": "sig-n1",
+   "effect": "permanent"
+  },
+  "valid": true,
+  "paths": []
+ },
+ {
+  "ref": "signalling#/$defs/Balise",
+  "value": {
+   "id": "pzb-a-1000",
+   "at": {
+    "anchor": "station",
+    "trackId": "t1",
+    "station": 20,
+    "side": "right",
+    "offset": 3.1,
+    "direction": "up"
+   },
+   "system": "pzb",
+   "kind": "magnet",
+   "settings": {
+    "frequency": [
+     "1000"
+    ]
+   },
+   "signalId": "sig-a",
+   "effect": "switchedBySignal"
+  },
+  "valid": false,
+  "paths": [
+   "/settings/frequency"
+  ]
+ },
+ {
+  "ref": "signalling#/$defs/Balise",
+  "value": {
+   "id": "pzb-a-1000",
+   "at": {
+    "anchor": "station",
+    "trackId": "t1",
+    "station": 20,
+    "side": "right",
+    "offset": 3.1,
+    "direction": "up"
+   },
+   "system": "pzb",
+   "kind": "magnet",
+   "settings": {
+    "frequency": "1000"
+   },
+   "signalId": "sig-a",
+   "effect": "switchedBySignal",
+   "frequency": "1000"
+  },
+  "valid": false,
+  "paths": [
+   "/"
+  ]
+ },
+ {
+  "ref": "signalling#/$defs/LogicalSignal",
+  "value": {
+   "system": "ks",
+   "type": "main",
+   "settings": {
+    "Nf": true
+   }
+  },
+  "valid": true,
+  "paths": []
+ },
+ {
+  "ref": "signalling#/$defs/LogicalSignal",
+  "value": {
+   "type": "main"
+  },
+  "valid": false,
+  "paths": [
+   "/"
+  ]
+ },
+ {
+  "ref": "signalling#/$defs/StationBoundary",
+  "value": {
+   "id": "bd-1",
+   "operationalPointId": "op1",
+   "marks": [
+    {
+     "signalId": "sig-a"
+    }
+   ]
+  },
+  "valid": true,
+  "paths": []
+ },
+ {
+  "ref": "signalling#/$defs/StationBoundary",
+  "value": {
+   "id": "bd-1",
+   "operationalPointId": "op1",
+   "marks": [
+    {
+     "signalId": "sig-a",
+     "switchId": "w1"
+    }
+   ]
+  },
+  "valid": false,
+  "paths": [
+   "/marks/0"
+  ]
+ },
+ {
+  "ref": "signalling#/$defs/TrackSection",
+  "value": {
+   "id": "ts",
+   "kind": "axleCounting",
+   "boundedBy": []
+  },
+  "valid": false,
+  "paths": [
+   "/boundedBy"
+  ]
+ }
+]

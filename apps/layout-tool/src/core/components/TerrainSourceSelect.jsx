@@ -1,0 +1,19 @@
+import { saveSettings } from '../utils/common'
+import { terrainSources } from '../utils/elevation'
+import { useI18n } from '../locales/i18nContext'
+
+/**
+ * Which height data the terrain is read from: automatically the best there is
+ * (a point source of the server — the Länder's DGM1 —, then DGM5, then MapTiler), or one of them outright. The
+ * choice is the user's, kept with the other settings, so the cross section and
+ * the gradient read from the same source (chosenTerrainSource).
+ */
+export default function TerrainSourceSelect({ value, onChange, className = 'settings-select' }) {
+  const { t } = useI18n()
+  return (
+    <select className={className} value={value} title={t('terrain_source_hint')}
+      onChange={e => { saveSettings({ terrainSource: e.target.value }); onChange?.(e.target.value) }}>
+      {terrainSources().map(s => <option key={s} value={s}>{t(`terrain_source_${s}`)}</option>)}
+    </select>
+  )
+}

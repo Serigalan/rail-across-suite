@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "layout",
+  "title": "Rail-Data-Core, domain layout 1.0",
+  "description": "What only the layout tool needs: named runs of tracks, measured axes traced in point clouds, reference axes from surveys, the plan header and the project picture. Depends on core; its references go into the core only. Bulk point arrays are blobs, named by their hash (S-R2).",
+  "type": "object",
+  "required": ["fields", "collections"],
+  "additionalProperties": false,
+  "properties": {
+    "fields": { "$ref": "#/$defs/Fields" },
+    "collections": {
+      "type": "object",
+      "required": ["trackPaths", "axisSurveys", "referenceAxes"],
+      "additionalProperties": false,
+      "properties": {
+        "trackPaths": { "type": "array", "items": { "$ref": "#/$defs/NamedTrackPath" } },
+        "axisSurveys": { "type": "array", "items": { "$ref": "#/$defs/AxisSurvey" } },
+        "referenceAxes": { "type": "array", "items": { "$ref": "#/$defs/ReferenceAxis" } }
+      }
+    }
+  },
+  "$defs": {
+    "BlobRef": {
+      "description": "A bulk array kept as a blob of its own: the SHA-256 of its canonical JSON.",
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "Fields": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "planHeader": { "type": "object", "description": "The editable title block of the plan export." },
+        "image": { "type": "string", "description": "The project picture as a data URL, where a file or a device keeps it." },
+        "imageHash": { "type": "string", "description": "The project picture as a blob on the server, by its SHA-256." },
+        "osrd": { "type": "object", "description": "RailJSON objects the layout tool does not model, handed back on export." }
+      }
+    },
+    "NamedTrackPath": {
+      "description": "A named run of tracks (a `route` in the Open-Layout-Tool; the bare word is reserved for the signalling route).",
+      "type": "object",
+      "required": ["id", "path"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "core#/$defs/Id" },
+        "name": { "$ref": "core#/$defs/Text" },
+        "path": { "$ref": "core#/$defs/TrackPath" }
+      }
+    },
+    "AxisSurvey": {
+      "description": "A measured track axis traced in point clouds, in a plane of its own; its points are whole millimetres in parallel arrays, a blob.",
+      "type": "object",
+      "required": ["id", "epsg", "points"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "core#/$defs/Id" },
+        "name": { "$ref": "core#/$defs/Text" },
+        "epsg": { "$ref": "core#/$defs/Epsg" },
+        "rail": { "type": "string" },
+        "guide": {
+          "type": "object",
+          "required": ["kind"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "enum": ["track", "line"] },
+            "trackId": { "$ref": "core#/$defs/Ref", "x-target": "core.tracks" }
+          }
+        },
+        "cloudNames": { "type": "array", "items": { "type": "string" } },
+        "cloudRefs": { "type": "array" },
+        "createdAt": { "$ref": "core#/$defs/Text" },
+        "step": { "type": "number" },
+        "gaps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["from", "to"],
+            "additionalProperties": false,
+            "properties": { "from": { "type": "number" }, "to": { "type": "number" } }
+          }
+        },
+        "points": { "$ref": "#/$defs/BlobRef" }
+      }
+    },
+    "ReferenceAxis": {
+      "description": "The axis of a surveyed track as points every centimetre (Bestandsachse); its points are a blob.",
+      "type": "object",
+      "required": ["id", "epsg", "points"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "core#/$defs/Id" },
+        "name": { "$ref": "core#/$defs/Text" },
+        "epsg": { "$ref": "core#/$defs/Epsg" },
+        "heightEpsg": { "oneOf": [{ "$ref": "core#/$defs/Epsg" }, { "type": "null" }] },
+        "source": { "type": "object" },
+        "points": { "$ref": "#/$defs/BlobRef" }
+      }
+    }
+  }
+}

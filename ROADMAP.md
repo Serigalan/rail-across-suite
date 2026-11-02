@@ -23,7 +23,8 @@ Done:
 - One repository for core, modules and services ([decision 0001](docs/decisions/0001-one-repository.md));
   directory layout in place.
 - `CODEOWNERS` (`.github/CODEOWNERS`); its review becomes required for `main` once a second maintainer is named.
-- Licences: code under Apache-2.0, documentation under CC BY 4.0 ([decision 0002](docs/decisions/0002-licences.md)).
+- Licences: code under Apache-2.0, documentation under CC BY 4.0 ([decision 0002](docs/decisions/0002-licences.md));
+  since then everything under LGPL-3.0-only, OSRD's licence ([decision 0015](docs/decisions/0015-lgpl.md)).
 - [Contribution guide](CONTRIBUTING.md) with sign-off after the DCO; decision records (`docs/decisions/`).
 - [Glossary](docs/glossary.md) German ↔ English and [conventions](docs/conventions.md) (units, signs,
   coordinates, stations, precision), taken over from OLT.
@@ -33,16 +34,19 @@ Done:
 - [Data model](docs/data-model.md) reviewed by its code owner and accepted; the questions left open name the phase
   that decides them.
 
-Open:
-
-- **Move the Open-Layout-Tool** into `apps/open-layout-tool/` with its history; its server to `server/`, its Python
+- The Open-Layout-Tool moved into `apps/layout-tool/` with its history; its server to `server/`, its Python
   service to `services/optimizer/`; CI and deployment scripts on the new paths. The toolkit gets a new server of
   its own; the running server of the Open-Layout-Tool is not migrated.
-- Large binary data (NTv2 grids, kilometrage tiles, map images) out of the history: Git LFS, release assets or a
-  data repository, referenced by version.
-- Third-party material listed in [THIRD-PARTY.md](THIRD-PARTY.md): the NTv2 grids come with their licences;
-  the kilometrage data moves into test fixtures and leaves the published apps; the guideline is the project's
-  own (CC BY 4.0); the values from the DB guidelines may be taken over.
+- Large binary data out of the history, fetched by version and SHA-256
+  ([decision 0008](docs/decisions/0008-data-outside-history.md)): the NTv2 grids as release assets; the
+  kilometrage tiles not published at all.
+- Third-party material listed in [THIRD-PARTY.md](THIRD-PARTY.md): the NTv2 grids with their licences; the
+  kilometrage data outside the repository and every published build; the guideline is the project's own
+  (now LGPL-3.0-only like everything); the values from the DB guidelines may be taken over.
+
+Open:
+
+- Upload the NTv2 grids as the assets of release `data-1` (until then they come from cdn.proj.org).
 - The name ([decision 0007](docs/decisions/0007-project-name.md)): *Across* checked in the registers of the DPMA
   and the EUIPO before the first release.
 
@@ -51,30 +55,65 @@ Open-Layout-Tool builds, tests and deploys from this repository.
 
 ## Phase 1 — Rail-Data-Core v1.0, extracted from Open-Layout-Tool
 
-Goal: the core exists as a package of its own and OLT runs on it **without any change in behaviour**.
+Goal: the core exists as a package of its own and OLT runs on it **without any change in behaviour** — what it
+keeps and exchanges is core 1.0, already in the data model's shape
+([decision 0009](docs/decisions/0009-core-1-0-in-the-data-model.md)).
 
-- Move the model parts of OLT into the core: geometry (planes, elements, transitions, integrator), track and
-  switch records, ports and remaps, heights, topology, project load/hydrate/dehydrate/validate, diff and merge.
-- JSON Schema for the `core` domain; schema-derived types; the one door (`parse` → `validate`).
-- Python package reading the same schema (for optimizer and simulations), held to shared test vectors.
-- Conversion oltjson-1.1 → core 1.0 at the door (the first entry of the migration chain). Ids stay on tracks,
-  not on their elements ([decision 0004](docs/decisions/0004-ids-on-tracks.md)).
-- The three remap defects the data model cases found, fixed on the way
+Done:
+
+- The JavaScript parts are one npm workspace; the core is the package `@rail-across/core` in `packages/core`.
+- The model parts of OLT moved into the core with their history and tests: geometry, rules and their
+  catalogues, track and switch records, ports and remaps, heights, cross sections, topology, commands, measured
+  axes, the project record (load/hydrate/dehydrate/validate), diff and merge
+  ([packages/core](packages/core/README.md)). The app imports them as `@rail-across/core/<module>`; the project
+  server checks records with the core. The same 2649 tests pass, and the main build is the same.
+- The three remap defects the data model cases found, fixed
   ([data model §6](docs/data-model.md#6-consequences-for-the-open-layout-tool)): the merge carries all three
-  states before it compares, and a reversed or spliced track carries its platforms.
+  states before it compares, and a platform's location is one value (F2); a reversed or spliced track carries
+  its platforms (F3). Both cases are tests and pass.
+- Plain Node loads the core without a bundler or a module hook: its imports name their files, JSON comes in by
+  attribute, and the catalogue files a bundle carries are read by the app (`tools/modules.mjs` in the core holds it
+  to that).
+- The point clouds' computation is the package `@rail-across/pointcloud` (readers, tiles, sections, rail
+  detection and trace, registration, clearance), and the turnout plane the clearance scan needs is the core's: the
+  project server imports no app and runs on plain Node without a module hook.
+- **core 1.0** ([schemas](schemas/README.md), [document](packages/core/docs/document.md)): JSON Schemas for
+  the domains `core` and `layout` with the core types `TrackEnd`, `TrackLocation`, `TrackRange`, `TrackPath`,
+  `Lifespan`, `Ref`; platforms and end marks located by them, named runs of tracks as `trackPaths`, the planning
+  status as lifespans over the stage list (existing, final), stations as an operational point register, bulk point
+  arrays as blobs; collections sorted by id, canonical JSON after RFC 8785, a manifest of hashes per domain and
+  collection; a project as one file, `.railacross.json`, carrying its schemas. The types derived from the schemas
+  (`packages/core/types/document.d.ts`).
+- The one door: a document is checked whole (envelope, versions, schema hashes, every object against its schema,
+  blob hashes) on the way in and on the way out. oltjson-1.1 is migrated at the door — the first step of the
+  migration chain —, losslessly both ways (the PEK data set is a test). Ids stay on tracks, not on their elements
+  ([decision 0004](docs/decisions/0004-ids-on-tracks.md)). Files and the project server hold core 1.0 documents;
+  the server migrates its oltjson-1.1 revisions when it reads them. The app keeps its record as the model it
+  works on.
+- The Python core `packages/core-py` (no dependencies): the same door, canonical JSON, hashes and manifest, held
+  with the JavaScript core to the shared vectors in `schemas/vectors/`.
+
+Open:
+
+- Nothing of phase 1's own. The name check (phase 0) and the release `data-1` are still to do.
 
 **Exit:** OLT imports its model only from the core; all OLT tests and the PEK data set pass; an oltjson-1.1
 file opens and saves losslessly; the cases F2 and F3 (reversal and splice) of the data model are tests and
-pass.
+pass. — Reached.
 
 ## Phase 2 — Generalised core
 
 Goal: the core can carry what the planned modules need, before they are written.
 
-- Location types `TrackLocation`, `TrackRange`, `TrackEnd`, `TrackPath`, `Ref`, each one value, with the anchors
-  station / km / plane. Before they are written: a look at libLRS, the linear referencing library of the
-  OpenRail Association.
-- References declared in each domain's schema through these types; the schema travels with the data.
+The format has this phase's shape since core 1.0 (decision 0009): domains, location types, lifespans, the
+register, canonical JSON and the manifest exist as data. What this phase adds is the behaviour behind them, and
+the app working on the document instead of its record.
+
+- The app works on the core 1.0 document; the record and the conversion go.
+- Location types `TrackLocation`, `TrackRange`, `TrackEnd`, `TrackPath`, `Ref` (in the schema since core 1.0) as
+  values the core computes with, and the anchor `km` beside station and plane. Before they are written: a look
+  at libLRS, the linear referencing library of the OpenRail Association.
+- References declared in each domain's schema through these types (`x-target`); the schema travels with the data.
 - **One** remap in the core that carries every declared reference in every domain — also in domains the running
   module does not understand; platforms and end marks moved onto it.
 - Reverse index (what stands on a track) derived on load; deleting leaves other domains' objects orphaned with a
@@ -86,13 +125,15 @@ Goal: the core can carry what the planned modules need, before they are written.
 - **Construction stages** in the core: the ordered stage list, lifespans `{ from, to }` on every object, the
   planning status derived from them, a stage as a view with every check run per stage, replacements naming
   their predecessor, containment as a check, and two-end connectors (`link`) also within one plane for parts
-  of a track that are rebuilt ([decision 0003](docs/decisions/0003-construction-stages.md)). The status of
-  oltjson-1.1 converts at the door: new = from the final stage, removal = up to it.
+  of a track that are rebuilt ([decision 0003](docs/decisions/0003-construction-stages.md)). The stage list and
+  lifespans are in the format since core 1.0 (oltjson-1.1's status converted at the door: new = from the final
+  stage, removal = up to it); the app holds and edits stages of a project's own.
+- The operational point register (in the format since core 1.0, drawn from the station texts) edited as such.
 - Domains with ownership: `core` (net, platforms, end marks, structures, operational point register, designed
   kilometrage) and discipline domains that store references only into the core.
-- Storage as a hash tree: revision → manifest → domain → collection; bulk point arrays as blobs; canonical JSON
-  after RFC 8785, the same bytes from JavaScript and Python; the exchange container (`.railacross`) with its
-  `mimetype` entry.
+- Storage as a hash tree on the server and in the browser: revision → manifest → domain → collection, the blobs
+  stored once (the manifest, the blobs and canonical JSON exist since core 1.0); the exchange container
+  (`.railacross`) with its `mimetype` entry.
 - Server: rights per domain; a domain the author may not write may only change by carrying or by orphans
   moved to their plane position.
 - **Sketches** ([decision 0005](docs/decisions/0005-sketch-mode.md)): variants with a scope domain that hold only
@@ -119,6 +160,15 @@ Goal: prove the core with a second real module.
   profiles; station boundaries stored as references to what marks them (entry signals, trapezoid boards, entry
   switches, platforms), with a special-case finding where they differ from EBO §4; export towards PlanPro /
   EULYNX.
+  *Done:* the domain `signalling` 1.0 after PlanPro 1.10 with overlaps and flank protection, checked against the
+  PlanPro plan P-Hausen; the catalogue of all Ril 301 aspects with the Ks and shunting signal kinds as logical signals after OSRD, and the balises and magnets of PZB and ETCS, in German and English; places and their logical signals, the speed signalled per route at the start signal (the design speed the core's), overlaps measured from speed and gradient (a draft of Ril 819.0202), platforms as station boundaries, the domain checked against OSRD's RailJSON; one working copy per variant in the browser for both tools; its content check
+  with track sections derived over the net; the core carrying its locations on every track edit and merge (R4,
+  R7); reading PlanPro plans; the server checking the domain at check-in; the Signalling-Tool's first version,
+  setting objects as OSRD's editor does (snapped to a track, shown before the click) and drawing them beside their track,
+  its panels with menus and pages as the Layout-Tool's — creating signals, train detection and balises apart from editing them in one overview
+  ([decision 0011](docs/decisions/0011-signalling-domain.md)) on the suite's look as a library, `@rail-across/ui`
+  ([decision 0012](docs/decisions/0012-ui-library.md)). *Next:* the values of Ril 819 and Ril 483, level
+  crossings, block and the other parts of a station plan, writing PlanPro.
 
 **Signalling goes first**: it needs locations, ranges, functional objects and topology, and so tests the
 generalised core most. Catenary follows.
@@ -135,7 +185,22 @@ generalised core most. Catenary follows.
 ## Phase 4 — Operations, timetable, capacity
 
 - `operations` domain: train types, rolling stock, train runs, stopping patterns.
-- **Open-Timetable-Tool**: timetable construction on operational points and paths.
+- **Fahrplan-Editor** of the Fahrplan-Sim (`apps/timetable-editor/`, [decision 0016](docs/decisions/0016-timetables-of-a-project.md)):
+  *done:* a project's timetables on the server, laid on any of its variants; trains with number, kind, vehicle,
+  departure and margin that begin and end at a station (the layout's station tracks) and stop at or pass stations
+  and halts on the way, a departure waited for at a stop; their times from the running time simulation, a row for
+  every station passed; copies at an interval (Takt); the graphical timetable along a train's way. *Next:* times
+  typed in and checked against the running times, connections, conflicts from blocking times, the exchange with
+  OSRD's timetables.
+- **Running times** in the Fahrplan-Sim (`apps/simulation-tool/`, [decision 0013](docs/decisions/0013-running-times-in-rust.md)):
+  *done:* OSRD's envelope simulation ported to Rust (`sim/`, [decision 0015](docs/decisions/0015-lgpl.md)) and
+  held to OSRD's own test cases; a train over the net of a variant — its path over switches, the grades of the
+  heights and curves, the design speeds and the speeds the signals signal, stops at signals, platforms and points
+  on the map, a margin linear or after MARECO —, run in the browser as WebAssembly on the working copy; the
+  speed and the time over the distance, the timetable of its stops, the run played on the map; the vehicles as
+  OSRD's RailJSON rolling stock in a catalogue of the suite, edited in the Fahrzeug-Editor
+  (`apps/vehicle-editor/`), OSRD's example vehicles built in ([decision 0014](docs/decisions/0014-vehicles-in-osrds-form.md)). *Next:* the electrification of the net for
+  the traction mode, blocking times.
 - **Open-Capacity-Sim builds on OSRD** ([decision 0006](docs/decisions/0006-capacity-on-osrd.md)): an adapter
   from one construction stage of a project to OSRD's infrastructure and timetable, and OSRD's results back as
   derived results; OSRD at a pinned version, its adaptations contributed upstream.

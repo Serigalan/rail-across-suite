@@ -1,0 +1,2828 @@
+{
+  "katalog": {
+    "id": "db-ril-301",
+    "title": "DB Ril 301 | Signalbuch — die Signalbegriffe nach PlanPro 1.10, Signalarten des Ks-Systems und der Sperrsignale, Tafeln, Balisen und Magnete der Zugbeeinflussung",
+    "title_en": "DB Ril 301 | Signal book — the aspects after PlanPro 1.10, the kinds of Ks and shunting signal, boards, the balises and magnets of train protection",
+    "katalog_version": "0.4.0",
+    "status": "draft",
+    "date": "2026-10-30",
+    "language": "de",
+    "scope": {
+      "included": [
+        "Alle 192 Signalbegriffe der Ril 301, wie PlanPro 1.10 sie führt (Signalbegriffe_Ril_301.xsd): Schlüssel, Kurzbezeichnung, Langbezeichnung, die erlaubten Symbole, ob beleuchtbar und schaltbar",
+        "Auf welchem Rahmen ein Begriff steht (Schirm, Zusatzanzeiger, Blechtafel, Keramikkörper), wie PlanPro-Pläne ihn führen: am Ks-Schirm auch Kennlicht, Zusatzlicht, Zs 1, Zs 7 und Zs 8",
+        "Signalarten des Ks-Systems und was ihr Schirm zeigen muss und darf, welche Zusatzanzeiger sie tragen: Haupt-, Hauptsperr-, Mehrabschnitts-, Mehrabschnittssperr-, Sperr-, Vorsignal, Vorsignalwiederholer",
+        "Das System der Sperrsignale (Sh 0, Sh 1) und die Begriffe, die als Tafel für sich stehen dürfen (Ne, Lf, Ra, El, So, Bü, Orientierungszeichen …)",
+        "Symbole: aus der Aufzählung der XSD; Zs 3, Zs 3v, Lf 6, Lf 7 in Zehnern km/h",
+        "Zugbeeinflussung: Balisen und Magnete je System — PZB mit Gleismagneten und Geschwindigkeitsprüfungen (PlanPro PZB_Art, Wirksamkeit), ETCS mit Fest- und Transparentdatenbalisen —, ihre Arten und Einstellungen",
+        "Englische Titel (title_en) neben den deutschen für jeden Begriff, jede Signalart, jedes System, jede Art und Einstellung"
+      ],
+      "excluded": [
+        "Signalarten von H/V, Sv und Hl — ihre Begriffe sind im Katalog, ihre Signalarten folgen als eigene Einträge unter systeme, ohne Änderung am Schema",
+        "Abstände: Vorsignalabstand, Durchrutschweglänge, Lage der Balisen und Magnete zum Signal — siehe open_points",
+        "ETCS-Signalarten (Ne 14 als logisches Signal) — folgen mit ETCS Level 2; die Balisen sind da"
+      ]
+    },
+    "label_note": "Die Schlüssel der Begriffe sind die Namen der Signalbegriffe in PlanPro 1.10 (Signalbegriffe_Ril_301.xsd): Hp_0, Ks_1, Zs_3 … So bildet der Export jeden Begriff ohne Tabelle ab. Ein Schlüssel wird nicht umbenannt — ein gespeichertes Projekt schlägt seine Begriffe darüber nach. title ist deutsch, title_en englisch; ein Werkzeug zeigt den Titel in der Sprache, die eingestellt ist."
+  },
+  "changelog": [
+    {
+      "version": "0.4.0",
+      "date": "2026-10-30",
+      "changes": [
+        "durchrutschweg: Solllänge nach Geschwindigkeit und maßgebender Neigung (Entwurf, gegen Ril 819.0202 zu prüfen)."
+      ]
+    },
+    {
+      "version": "0.3.0",
+      "date": "2026-10-30",
+      "changes": [
+        "Englische Titel (title_en) für alle 192 Begriffe, die Signalarten, die Systeme und die Zugbeeinflussung.",
+        "Signalsysteme als logische Signale nach OSRD: das Sperrsignal ist das System sh, nicht mehr ohne_system.signalarten.",
+        "pzb wird zugbeeinflussung: Systeme mit Arten und Einstellungen — PZB (Gleismagnet, Geschwindigkeitsprüfung) und ETCS (Fest- und Transparentdatenbalise); die Wirksamkeit mit Titeln."
+      ]
+    },
+    {
+      "version": "0.2.0",
+      "date": "2026-10-30",
+      "changes": [
+        "Alle 192 Begriffe der Signalbegriffe_Ril_301.xsd, mit den Symbolen ihrer Aufzählung statt eigener Muster (symbole, symbol_frei, symbol_bedeutung).",
+        "Rahmen nach dem Beispielplan P-Hausen (ProSig): Kl, Zl, Zs 1, Zs 7, Zs 8 am Schirm; Ra 12 am Keramikkörper; Mastschilder als Blechtafel. Ein Begriff ohne rahmen darf an jedem Rahmen stehen.",
+        "Ks-Signalarten: pflicht ist der Haltbegriff (und Sh 1 am Sperrsignal), fahrt nennt die Fahrtbegriffe, von denen der Schirm mindestens einen zeigen soll; das Ks-Sperrsignal (Hp 0, Sh 1, Kl); Zp 9 und Zp 10 als Zusatzanzeiger.",
+        "Tafeln: alle Begriffe, die für sich an einer Tafel stehen dürfen."
+      ]
+    },
+    {
+      "version": "0.1.0",
+      "date": "2026-10-30",
+      "changes": [
+        "Erste Fassung: Ks mit Zusatzsignalen, Sperrsignalen und Tafeln; PZB-Arten (Entscheidung 0011)."
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "id": "ril-301",
+      "title": "DB Ril 301 Signalbuch"
+    },
+    {
+      "id": "planpro-1.10",
+      "title": "PlanPro 1.10.0.3.3 — Signalbegriffe_Ril_301.xsd, Signale.xsd, PZB.xsd (RailPL V1.1)"
+    }
+  ],
+  "begriffe": [
+    {
+      "id": "So_20",
+      "name": "So 20",
+      "title": "Zuordnungstafel",
+      "title_en": "Assignment board",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "Ms_ws_rt_ws",
+      "name": "Ms ws rt ws",
+      "title": "Mastschild weiß-rot-weiß",
+      "title_en": "Mast plate white-red-white",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "Ms_rt",
+      "name": "Ms rt",
+      "title": "Mastschild rot",
+      "title_en": "Mast plate red",
+      "rahmen": [
+        "plate"
+      ],
+      "nur_dv": true
+    },
+    {
+      "id": "Ms_ws_ge_ws",
+      "name": "Ms ws ge ws",
+      "title": "Mastschild weiß-gelb-weiß-gelb-weiß",
+      "title_en": "Mast plate white-yellow-white-yellow-white",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "Ms_ws_sw_ws",
+      "name": "Ms ws sw ws",
+      "title": "Mastschild weiß-schwarz-weiß-schwarz-weiß",
+      "title_en": "Mast plate white-black-white-black-white",
+      "rahmen": [
+        "plate"
+      ],
+      "nur_dv": true
+    },
+    {
+      "id": "Ms_ws_2swP",
+      "name": "Ms ws 2swP",
+      "title": "Mastschild weiß mit zwei schwarzen Punkten",
+      "title_en": "Mast plate white with two black dots",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "Ukr",
+      "name": "Ukr",
+      "title": "Ungültigkeitskreuz (weißes Kreuz mit schwarzem Rand)",
+      "title_en": "Cross of invalidity (white cross with black border)",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "Hp_0",
+      "name": "Hp 0",
+      "title": "Halt",
+      "title_en": "Stop",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Hp_0_2Lp",
+      "name": "Hp 0",
+      "title": "Halt (zwei Lichtpunkte)",
+      "title_en": "Stop (two lights)",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Hp_0_F",
+      "name": "Hp 0",
+      "title": "Halt (Formsignal)",
+      "title_en": "Stop (semaphore)",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Hp_1",
+      "name": "Hp 1",
+      "title": "Fahrt",
+      "title_en": "Proceed",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Hp_1_F",
+      "name": "Hp 1",
+      "title": "Fahrt (Formsignal)",
+      "title_en": "Proceed (semaphore)",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Hp_2",
+      "name": "Hp 2",
+      "title": "Langsamfahrt",
+      "title_en": "Proceed at reduced speed",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Hp_2_F",
+      "name": "Hp 2",
+      "title": "Langsamfahrt (Formsignal)",
+      "title_en": "Proceed at reduced speed (semaphore)",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Ms_ge_D",
+      "name": "Ms ge D",
+      "title": "gelbes Dreieck mit Spitze nach unten",
+      "title_en": "Yellow triangle pointing down",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "Zl_o",
+      "name": "Zl o",
+      "title": "Zusatzlicht",
+      "title_en": "Additional light",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Zl_u",
+      "name": "Zl u",
+      "title": "Zusatzlicht",
+      "title_en": "Additional light",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Kl",
+      "name": "Kl",
+      "title": "Kennlicht",
+      "title_en": "Identification light",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Ks_1",
+      "name": "Ks 1",
+      "title": "Fahrt",
+      "title_en": "Proceed",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Ks_2",
+      "name": "Ks 2",
+      "title": "Halt erwarten",
+      "title_en": "Expect stop",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Hl_1",
+      "name": "Hl 1",
+      "title": "ein grünes Licht",
+      "title_en": "one green light",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Hl_2",
+      "name": "Hl 2",
+      "title": "ein gelbes Licht mit einem grünen Lichtstreifen, darüber ein grünes Licht",
+      "title_en": "one yellow light with a green light strip, a green light above",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Hl_3a",
+      "name": "Hl 3a",
+      "title": "ein gelbes Licht, darüber ein grünes Licht",
+      "title_en": "one yellow light, a green light above",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Hl_3b",
+      "name": "Hl 3b",
+      "title": "ein gelbes Licht mit einem gelben Lichtstreifen, darüber ein grünes Licht",
+      "title_en": "one yellow light with a yellow light strip, a green light above",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Hl_4",
+      "name": "Hl 4",
+      "title": "ein grünes Blinklicht",
+      "title_en": "one flashing green light",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Hl_5",
+      "name": "Hl 5",
+      "title": "ein gelbes Licht mit einem grünen Lichtstreifen, darüber ein grünes Blinklicht",
+      "title_en": "one yellow light with a green light strip, a flashing green light above",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Hl_6a",
+      "name": "Hl 6a",
+      "title": "ein gelbes Licht, darüber ein grünes Blinklicht",
+      "title_en": "one yellow light, a flashing green light above",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Hl_6b",
+      "name": "Hl 6b",
+      "title": "ein gelbes Licht mit einem gelben Lichtstreifen, darüber ein grünes Blinklicht",
+      "title_en": "one yellow light with a yellow light strip, a flashing green light above",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Hl_7",
+      "name": "Hl 7",
+      "title": "ein gelbes Blinklicht",
+      "title_en": "one flashing yellow light",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Hl_8",
+      "name": "Hl 8",
+      "title": "ein gelbes Licht mit einem grünen Lichtstreifen, darüber ein gelbes Blinklicht",
+      "title_en": "one yellow light with a green light strip, a flashing yellow light above",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Hl_9a",
+      "name": "Hl 9a",
+      "title": "ein gelbes Licht, darüber ein gelbes Blinklicht",
+      "title_en": "one yellow light, a flashing yellow light above",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Hl_9b",
+      "name": "Hl 9b",
+      "title": "ein gelbes Licht mit einem gelben Lichtstreifen, darüber ein gelbes Blinklicht",
+      "title_en": "one yellow light with a yellow light strip, a flashing yellow light above",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Hl_10",
+      "name": "Hl 10",
+      "title": "ein gelbes Licht",
+      "title_en": "one yellow light",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Hl_11",
+      "name": "Hl 11",
+      "title": "ein gelbes Licht mit einem grünen Lichtstreifen, darüber ein gelbes Licht",
+      "title_en": "one yellow light with a green light strip, a yellow light above",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Hl_12a",
+      "name": "Hl 12a",
+      "title": "zwei gelbe Lichter übereinander",
+      "title_en": "two yellow lights one above the other",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Hl_12b",
+      "name": "Hl 12b",
+      "title": "ein gelbes Licht mit einem gelben Lichtstreifen, darüber ein gelbes Licht",
+      "title_en": "one yellow light with a yellow light strip, a yellow light above",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Sv_0",
+      "name": "Sv 0",
+      "title": "Zughalt, Weiterfahren auf Sicht",
+      "title_en": "Train stop, proceed on sight",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Sv_1",
+      "name": "Sv 1",
+      "title": "Fahrt, Fahrt erwarten",
+      "title_en": "Proceed, expect proceed",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Sv_2",
+      "name": "Sv 2",
+      "title": "Fahrt, Halt erwarten",
+      "title_en": "Proceed, expect stop",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Sv_3",
+      "name": "Sv 3",
+      "title": "Fahrt, Langsamfahrt erwarten",
+      "title_en": "Proceed, expect reduced speed",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Sv_4",
+      "name": "Sv 4",
+      "title": "Langsamfahrt, Fahrt erwarten",
+      "title_en": "Reduced speed, expect proceed",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Sv_5",
+      "name": "Sv 5",
+      "title": "Langsamfahrt, Langsamfahrt erwarten",
+      "title_en": "Reduced speed, expect reduced speed",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Sv_6",
+      "name": "Sv 6",
+      "title": "Langsamfahrt, Halt erwarten",
+      "title_en": "Reduced speed, expect stop",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Sv_wPf",
+      "name": "Sv wPf",
+      "title": "Signal im verkürzten Abstand des Bremsweges, weißleuchtender Pfeil über den …",
+      "title_en": "Signal at a shortened braking distance, white light arrow above the …",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Ms_Vw",
+      "name": "Ms Vw",
+      "title": "weiße Tafel mit schwarzem Rand und schwarzem Ring",
+      "title_en": "White board with black border and black ring",
+      "rahmen": [
+        "plate"
+      ],
+      "nur_dv": true
+    },
+    {
+      "id": "Wvs",
+      "name": "Wvs",
+      "title": "Wärtervorsignal",
+      "title_en": "Attendant's distant signal"
+    },
+    {
+      "id": "Vr_0",
+      "name": "Vr 0",
+      "title": "Halt erwarten",
+      "title_en": "Expect stop",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Vr_0_F",
+      "name": "Vr 0",
+      "title": "Halt erwarten (Formsignal)",
+      "title_en": "Expect stop (semaphore)",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Vr_1",
+      "name": "Vr 1",
+      "title": "Fahrt erwarten",
+      "title_en": "Expect proceed",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Vr_1_F",
+      "name": "Vr 1",
+      "title": "Fahrt erwarten (Formsignal)",
+      "title_en": "Expect proceed (semaphore)",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Vr_2",
+      "name": "Vr 2",
+      "title": "Langsamfahrt erwarten",
+      "title_en": "Expect reduced speed",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Vr_2_F",
+      "name": "Vr 2",
+      "title": "Langsamfahrt erwarten (Formsignal)",
+      "title_en": "Expect reduced speed (semaphore)",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Vr_1_2_F",
+      "name": "Vr 1/2",
+      "title": "Tageszeichen: Die runde Scheibe liegt waagerecht",
+      "title_en": "Day sign: the round disc lies horizontal",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Zs_1",
+      "name": "Zs 1",
+      "title": "Ersatzsignal",
+      "title_en": "Substitute signal",
+      "rahmen": [
+        "screen",
+        "indicator"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Zs_1_A",
+      "name": "Zs 1",
+      "title": "Ersatzsignal",
+      "title_en": "Substitute signal",
+      "rahmen": [
+        "screen",
+        "indicator"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Zs_2",
+      "name": "Zs 2",
+      "title": "Richtungsanzeiger",
+      "title_en": "Route indicator",
+      "rahmen": [
+        "indicator"
+      ],
+      "symbole": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "H",
+        "I",
+        "J",
+        "K",
+        "L",
+        "M",
+        "N",
+        "O",
+        "P",
+        "R",
+        "S",
+        "T",
+        "U",
+        "V",
+        "W",
+        "X",
+        "Z"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Zs_2v",
+      "name": "Zs 2v",
+      "title": "Richtungsvoranzeiger",
+      "title_en": "Route pre-indicator",
+      "rahmen": [
+        "indicator"
+      ],
+      "symbole": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "H",
+        "I",
+        "J",
+        "K",
+        "L",
+        "M",
+        "N",
+        "O",
+        "P",
+        "R",
+        "S",
+        "T",
+        "U",
+        "V",
+        "W",
+        "X",
+        "Z"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Zs_3",
+      "name": "Zs 3",
+      "title": "Geschwindigkeitsanzeiger",
+      "title_en": "Speed indicator",
+      "rahmen": [
+        "indicator",
+        "plate"
+      ],
+      "symbole": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15",
+        "16"
+      ],
+      "symbol_bedeutung": "speed",
+      "beleuchtbar": true,
+      "schaltbar": true
+    },
+    {
+      "id": "Zs_3v",
+      "name": "Zs 3v",
+      "title": "Geschwindigkeitsvoranzeiger",
+      "title_en": "Speed pre-indicator",
+      "rahmen": [
+        "indicator",
+        "plate"
+      ],
+      "symbole": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15"
+      ],
+      "symbol_bedeutung": "speed",
+      "beleuchtbar": true,
+      "schaltbar": true
+    },
+    {
+      "id": "Zs_6",
+      "name": "Zs 6",
+      "title": "Gegengleisanzeiger",
+      "title_en": "Opposite track indicator",
+      "rahmen": [
+        "screen",
+        "indicator"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Zs_7",
+      "name": "Zs 7",
+      "title": "Vorsichtssignal",
+      "title_en": "Caution signal",
+      "rahmen": [
+        "screen",
+        "indicator"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Zs_8_A",
+      "name": "Zs 8",
+      "title": "Gegengleisfahrt-Ersatzsignal",
+      "title_en": "Opposite track substitute signal",
+      "rahmen": [
+        "screen",
+        "indicator"
+      ],
+      "schaltbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Zs_8",
+      "name": "Zs 8",
+      "title": "Gegengleisfahrt-Ersatzsignal",
+      "title_en": "Opposite track substitute signal",
+      "rahmen": [
+        "screen",
+        "indicator"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Zs_9",
+      "name": "Zs 9",
+      "title": "Bahnübergangstafel",
+      "title_en": "Level crossing board",
+      "rahmen": [
+        "indicator"
+      ],
+      "nur_dv": true
+    },
+    {
+      "id": "Zs_10",
+      "name": "Zs 10",
+      "title": "Endesignal",
+      "title_en": "End signal",
+      "rahmen": [
+        "indicator",
+        "plate"
+      ]
+    },
+    {
+      "id": "Zs_12",
+      "name": "Zs 12",
+      "title": "M-Tafel",
+      "title_en": "M board",
+      "rahmen": [
+        "indicator"
+      ],
+      "nur_dv": true
+    },
+    {
+      "id": "Zs_13",
+      "name": "Zs 13",
+      "title": "Stumpfgleis- und Frühhaltanzeiger",
+      "title_en": "Stub track and early stop indicator",
+      "rahmen": [
+        "screen",
+        "indicator"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Zs_103",
+      "name": "Zs 103",
+      "title": "Rautentafel",
+      "title_en": "Diamond board",
+      "rahmen": [
+        "indicator"
+      ],
+      "nur_dv": true
+    },
+    {
+      "id": "Ts_1",
+      "name": "Ts 1",
+      "title": "Nachschieben einstellen, ein um 90° nach rechts umgelegtes weißes T auf …",
+      "title_en": "Set up banking, a white T turned 90° to the right on …",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Ts_2",
+      "name": "Ts 2",
+      "title": "Halt für zurückkehrende Schiebelokomotiven und Sperrfahrten, quadratische, …",
+      "title_en": "Stop for returning banking locomotives and engineering trains, square …",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Ts_3",
+      "name": "Ts 3",
+      "title": "Weiterfahrt für zurückkehrende Schiebelokomotiven und Sperrfahrten, auf …",
+      "title_en": "Proceed for returning banking locomotives and engineering trains, on …",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Lf_1",
+      "name": "Lf 1",
+      "title": "Langsamfahrscheibe",
+      "title_en": "Speed restriction disc",
+      "rahmen": [
+        "plate"
+      ],
+      "symbole": [
+        "0,5",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15"
+      ],
+      "symbol_bedeutung": "speed",
+      "beleuchtbar": true
+    },
+    {
+      "id": "Lf_1_2",
+      "name": "Lf 1/2",
+      "title": "Langsamfahrbeginnscheibe",
+      "title_en": "Start of speed restriction disc",
+      "rahmen": [
+        "plate"
+      ],
+      "symbole": [
+        "0,5",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15"
+      ],
+      "symbol_bedeutung": "speed",
+      "beleuchtbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Lf_2",
+      "name": "Lf 2",
+      "title": "Anfangscheibe",
+      "title_en": "Commencement disc",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "Lf_3",
+      "name": "Lf 3",
+      "title": "Endscheibe",
+      "title_en": "Termination disc",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "Lf_4_DS",
+      "name": "Lf 4",
+      "title": "Geschwindigkeitstafel",
+      "title_en": "Speed board",
+      "rahmen": [
+        "plate"
+      ],
+      "symbole": [
+        "0,5",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15"
+      ],
+      "symbol_bedeutung": "speed",
+      "beleuchtbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Lf_4_DV",
+      "name": "Lf 4",
+      "title": "Geschwindigkeitstafel",
+      "title_en": "Speed board",
+      "rahmen": [
+        "plate"
+      ],
+      "symbole": [
+        "0",
+        "10",
+        "20",
+        "30",
+        "40",
+        "50",
+        "60",
+        "70",
+        "80",
+        "90",
+        "100",
+        "110",
+        "120",
+        "130",
+        "140",
+        "150"
+      ],
+      "symbol_bedeutung": "speed",
+      "beleuchtbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Lf_5_DS",
+      "name": "Lf 5",
+      "title": "Anfangtafel",
+      "title_en": "Commencement board",
+      "rahmen": [
+        "plate"
+      ],
+      "nur_dv": true
+    },
+    {
+      "id": "Lf_5_DV",
+      "name": "Lf 5",
+      "title": "Eckentafel",
+      "title_en": "Corner board",
+      "rahmen": [
+        "plate"
+      ],
+      "nur_dv": true
+    },
+    {
+      "id": "Lf_6",
+      "name": "Lf 6",
+      "title": "Geschwindigkeits-Ankündesignal",
+      "title_en": "Speed warning signal",
+      "rahmen": [
+        "plate"
+      ],
+      "symbole": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15"
+      ],
+      "symbol_bedeutung": "speed",
+      "beleuchtbar": true
+    },
+    {
+      "id": "Lf_7",
+      "name": "Lf 7",
+      "title": "Geschwindigkeitssignal",
+      "title_en": "Speed signal",
+      "rahmen": [
+        "indicator",
+        "plate"
+      ],
+      "symbole": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15",
+        "16"
+      ],
+      "symbol_bedeutung": "speed",
+      "beleuchtbar": true
+    },
+    {
+      "id": "Sh_0",
+      "name": "Sh 0",
+      "title": "Halt! Fahrverbot",
+      "title_en": "Stop! No movement",
+      "rahmen": [
+        "screen",
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "Sh_1",
+      "name": "Sh 1",
+      "title": "Rangierfahrtsignal",
+      "title_en": "Shunting movement signal",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Sh_2",
+      "name": "Sh 2",
+      "title": "Schutzhalt",
+      "title_en": "Protective stop",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "Ra_10",
+      "name": "Ra 10",
+      "title": "Rangierhalttafel",
+      "title_en": "Shunting limit board",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "Ra_11",
+      "name": "Ra 11",
+      "title": "Wartezeichen",
+      "title_en": "Wait sign",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "Ra_11b",
+      "name": "Ra 11b",
+      "title": "Wartezeichen",
+      "title_en": "Wait sign",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Ra_12",
+      "name": "Ra 12",
+      "title": "Grenzzeichen",
+      "title_en": "Clearance marker",
+      "rahmen": [
+        "body",
+        "plate"
+      ]
+    },
+    {
+      "id": "Ra_13",
+      "name": "Ra 13",
+      "title": "Isolierzeichen",
+      "title_en": "Insulation marker",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "Wn_1",
+      "name": "Wn 1",
+      "title": "auf der Schmalseite stehendes weißes Rechteck auf schwarzem Grund bzw",
+      "title_en": "white rectangle standing on its narrow side on a black ground, or",
+      "beleuchtbar": true,
+      "schaltbar": true
+    },
+    {
+      "id": "Wn_2",
+      "name": "Wn 2",
+      "title": "weißer Pfeil oder Streifen auf schwarzem Grund schräg nach links oder rechts …",
+      "title_en": "white arrow or stripe on a black ground, slanting to the left or right …",
+      "beleuchtbar": true,
+      "schaltbar": true
+    },
+    {
+      "id": "Wn_3",
+      "name": "Wn 3",
+      "title": "Pfeile, Streifen oder Lichter bilden eine von links nach rechts steigende Linie",
+      "title_en": "arrows, stripes or lights form a line rising from left to right",
+      "beleuchtbar": true,
+      "schaltbar": true
+    },
+    {
+      "id": "Wn_4",
+      "name": "Wn 4",
+      "title": "Pfeile, Streifen oder Lichter bilden eine von rechts nach links steigende Linie",
+      "title_en": "arrows, stripes or lights form a line rising from right to left",
+      "beleuchtbar": true,
+      "schaltbar": true
+    },
+    {
+      "id": "Wn_5",
+      "name": "Wn 5",
+      "title": "Pfeile, Streifen oder Lichter bilden einen nach links geöffneten rechten Winkel",
+      "title_en": "arrows, stripes or lights form a right angle open to the left",
+      "beleuchtbar": true,
+      "schaltbar": true
+    },
+    {
+      "id": "Wn_6",
+      "name": "Wn 6",
+      "title": "Pfeile, Streifen oder Lichter bilden einen nach rechts geöffneten rechten Winkel",
+      "title_en": "arrows, stripes or lights form a right angle open to the right",
+      "beleuchtbar": true,
+      "schaltbar": true
+    },
+    {
+      "id": "Wn_7",
+      "name": "Wn 7",
+      "title": "senkrechter, schwarzer Streifen in einer runden, weißen Scheibe auf …",
+      "title_en": "vertical black stripe in a round white disc on …",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "Zp_6",
+      "name": "Zp 6",
+      "title": "ein weißes Licht",
+      "title_en": "one white light",
+      "schaltbar": true
+    },
+    {
+      "id": "Zp_7",
+      "name": "Zp 7",
+      "title": "zwei weiße Lichter senkrecht übereinander",
+      "title_en": "two white lights one above the other",
+      "schaltbar": true
+    },
+    {
+      "id": "Zp_8",
+      "name": "Zp 8",
+      "title": "drei weiße Lichter senkrecht übereinander",
+      "title_en": "three white lights one above the other",
+      "schaltbar": true
+    },
+    {
+      "id": "Zp_9",
+      "name": "Zp 9",
+      "title": "Abfahrauftrag",
+      "title_en": "Departure order",
+      "rahmen": [
+        "screen",
+        "indicator"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Zp_9_Ls",
+      "name": "Zp 9",
+      "title": "Abfahrauftrag (Lichtstreifen)",
+      "title_en": "Departure order (light strip)",
+      "rahmen": [
+        "screen",
+        "indicator"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Zp_10_Ls",
+      "name": "Zp 10",
+      "title": "Türschliessauftrag",
+      "title_en": "Door closing order",
+      "rahmen": [
+        "screen",
+        "indicator"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Zp_10",
+      "name": "Zp 10",
+      "title": "Türschliessauftrag",
+      "title_en": "Door closing order",
+      "rahmen": [
+        "screen",
+        "indicator"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "El_1v",
+      "name": "El 1v",
+      "title": "zwei weiße Rechtecke waagerecht nebeneinander",
+      "title_en": "two white rectangles side by side",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "El_1",
+      "name": "El 1",
+      "title": "Ausschaltsignal",
+      "title_en": "Switch off signal",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "El_2",
+      "name": "El 2",
+      "title": "Einschaltsignal",
+      "title_en": "Switch on signal",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "El_T_DC",
+      "name": "El T DC",
+      "title": "auf der Spitze stehende weiß- und schwarzumrandete blaue quadratischen …",
+      "title_en": "blue square board standing on its point, bordered white and black …",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "El_T_AC",
+      "name": "El T AC",
+      "title": "auf der Spitze stehende weiß- und schwarzumrandete blaue quadratische Tafel, …",
+      "title_en": "blue square board standing on its point, bordered white and black, …",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "El_3",
+      "name": "El 3",
+      "title": "„Bügel ab“-Ankündesignal",
+      "title_en": "“Lower pantograph” warning signal",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "El_4",
+      "name": "El 4",
+      "title": "„Bügel ab“-Signal",
+      "title_en": "“Lower pantograph” signal",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "El_5",
+      "name": "El 5",
+      "title": "„Bügel an“-Signal",
+      "title_en": "“Raise pantograph” signal",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "El_6",
+      "name": "El 6",
+      "title": "Halt für Fahrzeuge mit gehobenen Stromabnehmern, auf der Spitze stehender …",
+      "title_en": "Stop for vehicles with raised pantographs, standing on its point …",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "El_Pf_o",
+      "name": "El Pf o",
+      "title": "El-Richtungspfeil, blauer Pfeil auf weißer pfeilförmiger Tafel senkrecht …",
+      "title_en": "El direction arrow, blue arrow on a white arrow-shaped board, vertical …",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "El_Pf_r",
+      "name": "El Pf r",
+      "title": "El-Richtungspfeil, blauer Pfeil auf weißer pfeilförmiger Tafel waagerecht …",
+      "title_en": "El direction arrow, blue arrow on a white arrow-shaped board, horizontal …",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "El_Pf_l",
+      "name": "El Pf l",
+      "title": "El-Richtungspfeil, blauer Pfeil auf weißer pfeilförmiger Tafel waagerecht …",
+      "title_en": "El direction arrow, blue arrow on a white arrow-shaped board, horizontal …",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "El_Pf_b",
+      "name": "El Pf b",
+      "title": "El-Richtungspfeil, blauer waagerechter Doppelpfeil auf weißer, beidseitig …",
+      "title_en": "El direction arrow, blue horizontal double arrow on a white board, pointed at both …",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "Ne_1",
+      "name": "Ne 1",
+      "title": "Trapeztafel",
+      "title_en": "Trapezium board",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "Ne_2",
+      "name": "Ne 2",
+      "title": "Vorsignaltafel",
+      "title_en": "Distant signal board",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "Ne_2_vRVA",
+      "name": "Ne 2 vRVA",
+      "title": "Vorsignaltafel verkürzter Vorsignalabstand, schwarz geränderte, weiße Tafel …",
+      "title_en": "Distant signal board for a shortened distance, white board with black border …",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true,
+      "nur_dv": true
+    },
+    {
+      "id": "Ne_3_1str",
+      "name": "Ne 3 1str",
+      "title": "Vorsignalbake",
+      "title_en": "Distant signal beacon",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "Ne_3_2str",
+      "name": "Ne 3 2str",
+      "title": "Vorsignalbake",
+      "title_en": "Distant signal beacon",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "Ne_3_3str",
+      "name": "Ne 3 3str",
+      "title": "Vorsignalbake",
+      "title_en": "Distant signal beacon",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "Ne_3_4str",
+      "name": "Ne 3 4str",
+      "title": "Vorsignalbake",
+      "title_en": "Distant signal beacon",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "Ne_3_5str",
+      "name": "Ne 3 5str",
+      "title": "Vorsignalbake",
+      "title_en": "Distant signal beacon",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "BS_vRVA",
+      "name": "BS vRVA",
+      "title": "verkürzter Regelvorsignalabstand, ein auf der Spitze stehendes weißes …",
+      "title_en": "Shortened regular distant signal spacing, a white … standing on its point",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "Ne_4",
+      "name": "Ne 4",
+      "title": "Schachbretttafel",
+      "title_en": "Chequered board",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "Ne_5",
+      "name": "Ne 5",
+      "title": "Haltetafel",
+      "title_en": "Stopping board",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "Ne_6",
+      "name": "Ne 6",
+      "title": "Haltepunkttafel",
+      "title_en": "Halt board",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "Ne_7a",
+      "name": "Ne 7",
+      "title": "Schneepflugtafel",
+      "title_en": "Snow plough board",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "Ne_7b",
+      "name": "Ne 7",
+      "title": "Schneepflugtafel",
+      "title_en": "Snow plough board",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "So_1",
+      "name": "So 1",
+      "title": "Endtafel",
+      "title_en": "End board",
+      "rahmen": [
+        "plate"
+      ],
+      "nur_dv": true
+    },
+    {
+      "id": "Ne_12",
+      "name": "Ne 12",
+      "title": "Ankündigungsbake",
+      "title_en": "Advance beacon",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "Ne_13a",
+      "name": "Ne 13a",
+      "title": "weißes Licht über einem orangefarbenen waagerechten Streifen und einem …",
+      "title_en": "white light above an orange horizontal stripe and a …",
+      "rahmen": [
+        "plate"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Ne_13b",
+      "name": "Ne 13b",
+      "title": "orangefarbener waagerechter Streifen und einem orange-weiß schräg …",
+      "title_en": "orange horizontal stripe and an orange and white diagonally …",
+      "rahmen": [
+        "plate"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "So_19_1P",
+      "name": "So 19",
+      "title": "Hauptsignalbake",
+      "title_en": "Main signal beacon",
+      "rahmen": [
+        "plate"
+      ],
+      "nur_dv": true
+    },
+    {
+      "id": "So_19_2P",
+      "name": "So 19",
+      "title": "Hauptsignalbake",
+      "title_en": "Main signal beacon",
+      "rahmen": [
+        "plate"
+      ],
+      "nur_dv": true
+    },
+    {
+      "id": "So_19_3P",
+      "name": "So 19",
+      "title": "Hauptsignalbake",
+      "title_en": "Main signal beacon",
+      "rahmen": [
+        "plate"
+      ],
+      "nur_dv": true
+    },
+    {
+      "id": "So_106",
+      "name": "So 106",
+      "title": "Kreuztafel",
+      "title_en": "Cross board",
+      "rahmen": [
+        "plate"
+      ],
+      "nur_dv": true
+    },
+    {
+      "id": "Ms_UES_Wdh",
+      "name": "Ms UES Wdh",
+      "title": "Mastschild für Überwachungssignalwiederholer, eine oder zwei weiß umrandete …",
+      "title_en": "Mast plate for a monitoring signal repeater, one or two white-bordered …",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "Bue_0_1S",
+      "name": "Bü 0",
+      "title": "eine runde gelbe Scheibe in einer gelben Umrahmung über einem oder zwei …",
+      "title_en": "one round yellow disc in a yellow frame above one or two …",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Bue_0_2S",
+      "name": "Bü 0",
+      "title": "zwei waagerecht angeordnete gelbe rückstrahlende Scheiben über einem oder …",
+      "title_en": "two yellow reflecting discs side by side above one or …",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Bue_0_2Lp",
+      "name": "Bü 0",
+      "title": "zwei waagerecht angeordnete gelbe Lichtpunkte über einem oder zwei …",
+      "title_en": "two yellow lights side by side above one or two …",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Bue_0_1Lp",
+      "name": "Bü 0",
+      "title": "ein gelber Lichtpunkt über einem oder zwei schwarz-weiß schräg gestreiften …",
+      "title_en": "one yellow light above one or two black and white diagonally striped …",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Bue_0_0Lp",
+      "name": "Bü 0",
+      "title": "kein Lichtpunkt über einem oder zwei schwarz-weiß schräg gestreiften …",
+      "title_en": "no light above one or two black and white diagonally striped …",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Bue_1_1S_bli",
+      "name": "Bü 1",
+      "title": "ein blinkendes weißes Licht über einer runden gelben Scheibe in einer gelben …",
+      "title_en": "one flashing white light above a round yellow disc in a yellow …",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Bue_1_2S_st",
+      "name": "Bü 1",
+      "title": "ein weißes Licht über zwei waagerecht angeordneten gelben Scheiben und einem …",
+      "title_en": "one white light above two yellow discs side by side and a …",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Bue_1_2Lp_st",
+      "name": "Bü 1",
+      "title": "ein weißes Licht über zwei waagerecht angeordneten gelben Lichtpunkten und …",
+      "title_en": "one white light above two yellow lights side by side and …",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Bue_1_1Lp_bli",
+      "name": "Bü 1",
+      "title": "ein blinkendes weißes Licht über einem gelben Lichtpunkt und einem oder zwei …",
+      "title_en": "one flashing white light above a yellow light and one or two …",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Bue_AT",
+      "name": "Bue AT",
+      "title": "Bü-Ankündetafel",
+      "title_en": "Level crossing warning board",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "Bue_KT",
+      "name": "Bue KT",
+      "title": "Bü-Kennzeichentafel",
+      "title_en": "Level crossing marker board",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "Bue_4",
+      "name": "Bü 4",
+      "title": "Pfeiftafel",
+      "title_en": "Whistle board",
+      "rahmen": [
+        "plate"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "Pf_2",
+      "name": "Pf 2",
+      "title": "Pfeiftafel vor Bahnübergängen",
+      "title_en": "Whistle board before level crossings",
+      "rahmen": [
+        "plate"
+      ],
+      "nur_dv": true
+    },
+    {
+      "id": "Bue_5",
+      "name": "Bü 5",
+      "title": "Laeutetafel",
+      "title_en": "Bell board",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "Oz_Zf",
+      "name": "Oz Zf",
+      "title": "Zugfunktafel",
+      "title_en": "Train radio board",
+      "rahmen": [
+        "screen",
+        "indicator",
+        "plate"
+      ]
+    },
+    {
+      "id": "Oz_ICE",
+      "name": "Oz ICE",
+      "title": "„ICE“-Zeichen",
+      "title_en": "“ICE” sign",
+      "rahmen": [
+        "screen",
+        "indicator",
+        "plate"
+      ]
+    },
+    {
+      "id": "Oz_Auto_HET",
+      "name": "Oz Auto HET",
+      "title": "Schild mit der Aufschrift \"Automatik-HET\"",
+      "title_en": "Sign reading \"Automatik-HET\"",
+      "rahmen": [
+        "screen",
+        "indicator",
+        "plate"
+      ]
+    },
+    {
+      "id": "Oz_HET",
+      "name": "Oz HET",
+      "title": "Schild mit der Aufschrift \"HET\"",
+      "title_en": "Sign reading \"HET\"",
+      "rahmen": [
+        "screen",
+        "indicator",
+        "plate"
+      ]
+    },
+    {
+      "id": "Oz_Auto_ET",
+      "name": "Oz Auto ET",
+      "title": "Schild mit der Aufschrift \"Automatik-ET\"",
+      "title_en": "Sign reading \"Automatik-ET\"",
+      "rahmen": [
+        "screen",
+        "indicator",
+        "plate"
+      ]
+    },
+    {
+      "id": "Oz_ET",
+      "name": "Oz ET",
+      "title": "Schild mit der Aufschrift \"ET\"",
+      "title_en": "Sign reading \"ET\"",
+      "rahmen": [
+        "screen",
+        "indicator",
+        "plate"
+      ]
+    },
+    {
+      "id": "Oz_Fa",
+      "name": "Oz Fa",
+      "title": "Fahrtanzeiger",
+      "title_en": "Proceed indicator",
+      "rahmen": [
+        "screen",
+        "indicator",
+        "plate"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Oz_LZB-Ber",
+      "name": "Oz LZB-Ber",
+      "title": "LZB-Bereichskennzeichen",
+      "title_en": "LZB area marker",
+      "rahmen": [
+        "screen",
+        "indicator",
+        "plate"
+      ]
+    },
+    {
+      "id": "Oz_Bk",
+      "name": "Oz Bk",
+      "title": "Blockkennzeichen",
+      "title_en": "Block marker",
+      "rahmen": [
+        "screen",
+        "indicator",
+        "plate"
+      ]
+    },
+    {
+      "id": "Oz_HM",
+      "name": "HM",
+      "title": "Signalhaltmelder",
+      "title_en": "Signal stop repeater",
+      "rahmen": [
+        "screen",
+        "indicator",
+        "plate"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Ne_14",
+      "name": "Ne 14",
+      "title": "ETCS-Halt-Tafel",
+      "title_en": "ETCS stop marker",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "Oz_OB_Grenze",
+      "name": "Oz OB Grenze",
+      "title": "Beginn Ortsstellbereich",
+      "title_en": "Start of local control area",
+      "rahmen": [
+        "screen",
+        "indicator",
+        "plate"
+      ]
+    },
+    {
+      "id": "BS_vA_UES",
+      "name": "BS vA UES",
+      "title": "verkürzter Abstand des Überwachungssignals, ein rückstrahlendes, auf der …",
+      "title_en": "Shortened distance of the monitoring signal, a reflecting … standing on its …",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "BS_Wdh",
+      "name": "BS Wdh",
+      "title": "Wiederholungszeichen",
+      "title_en": "Repeater sign",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "BS_Zusatz",
+      "name": "BS Zusatz",
+      "title": "Zusatzinformation (teilw",
+      "title_en": "Additional information (partly",
+      "rahmen": [
+        "plate"
+      ],
+      "symbol_frei": true
+    },
+    {
+      "id": "Lf_Pf_r",
+      "name": "Lf Pf r",
+      "title": "Richtungspfeil nach rechts, gelber oder weißer Pfeil nach rechts auf einer …",
+      "title_en": "Direction arrow to the right, yellow or white arrow to the right on a …",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "Lf_Pf_l",
+      "name": "Lf Pf l",
+      "title": "Richtungspfeil nach links, gelber oder weißer Pfeil nach links auf einer …",
+      "title_en": "Direction arrow to the left, yellow or white arrow to the left on a …",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "Oz_PZB_BUE",
+      "name": "Oz PZB BUE",
+      "title": "PZB BÜ",
+      "title_en": "PZB level crossing",
+      "rahmen": [
+        "screen",
+        "indicator",
+        "plate"
+      ]
+    },
+    {
+      "id": "Ms_Sk_rt",
+      "name": "Ms Sk rt",
+      "title": "Mastschild rot",
+      "title_en": "Mast plate red",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "Ms_Sk_ge",
+      "name": "Ms Sk ge",
+      "title": "Mastschild gelb",
+      "title_en": "Mast plate yellow",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "Sk_1",
+      "name": "Sk 1",
+      "title": "Fahrt",
+      "title_en": "Proceed",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Sk_2",
+      "name": "Sk 2",
+      "title": "Halt erwarten",
+      "title_en": "Expect stop",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Oz_Fak",
+      "name": "Oz Fak",
+      "title": "Fahrtankünder",
+      "title_en": "Proceed pre-indicator",
+      "rahmen": [
+        "screen",
+        "indicator",
+        "plate"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Oz_Zugl",
+      "name": "Oz Zugl",
+      "title": "Zuglänge",
+      "title_en": "Train length",
+      "rahmen": [
+        "screen",
+        "indicator",
+        "plate"
+      ],
+      "symbol_frei": true
+    },
+    {
+      "id": "Bue_AT_Zusatz",
+      "name": "Bue AT Zusatz",
+      "title": "Zusatzschild \"Bü/Bü\"",
+      "title_en": "Additional plate \"Bü/Bü\"",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "Bue_1_0Lp_bli",
+      "name": "Bü 1",
+      "title": "ein blinkendes weißes Licht über einem oder zwei schwarz-weiß schräg …",
+      "title_en": "one flashing white light above one or two black and white diagonally …",
+      "rahmen": [
+        "screen"
+      ],
+      "schaltbar": true
+    },
+    {
+      "id": "Bue_2",
+      "name": "Bü 2",
+      "title": "Rautentafel",
+      "title_en": "Diamond board",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "Bue_2_3R",
+      "name": "Bü 2",
+      "title": "Rautentafel",
+      "title_en": "Diamond board",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "Bue_2_2R",
+      "name": "Bü 2",
+      "title": "Rautentafel",
+      "title_en": "Diamond board",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "Bue_2_1R",
+      "name": "Bü 2",
+      "title": "Rautentafel",
+      "title_en": "Diamond board",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "So_15",
+      "name": "So 15",
+      "title": "Warntafel",
+      "title_en": "Warning board",
+      "rahmen": [
+        "plate"
+      ],
+      "nur_dv": true
+    },
+    {
+      "id": "Bue_3",
+      "name": "Bü 3",
+      "title": "Merktafel",
+      "title_en": "Marker board",
+      "rahmen": [
+        "plate"
+      ]
+    },
+    {
+      "id": "So_14",
+      "name": "So 14",
+      "title": "Merkpfahl",
+      "title_en": "Marker post",
+      "rahmen": [
+        "plate"
+      ],
+      "nur_dv": true
+    },
+    {
+      "id": "BS_ZBS-Ber",
+      "name": "BS ZBS-Ber",
+      "title": "ZBS-Bereichskennzeichen",
+      "title_en": "ZBS area marker",
+      "rahmen": [
+        "plate"
+      ],
+      "nur_dv": true
+    },
+    {
+      "id": "Oz_GSM-R",
+      "name": "Oz GSM-R",
+      "title": "GSM-R-Funknetztafel",
+      "title_en": "GSM-R radio network board",
+      "rahmen": [
+        "screen",
+        "indicator",
+        "plate"
+      ]
+    },
+    {
+      "id": "Lf_1_Wdh",
+      "name": "Lf 1 Wdh",
+      "title": "zweites Signal Lf 1 (Wiederholer)",
+      "title_en": "second signal Lf 1 (repeater)",
+      "rahmen": [
+        "plate"
+      ],
+      "symbole": [
+        "0,5",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15"
+      ],
+      "symbol_bedeutung": "speed",
+      "beleuchtbar": true
+    },
+    {
+      "id": "El_3_4_Zusatz",
+      "name": "El 3 4 Zusatz",
+      "title": "Zusatztafel “Richtungsangabe“",
+      "title_en": "Additional plate “direction”",
+      "rahmen": [
+        "plate"
+      ],
+      "symbole": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "H",
+        "I",
+        "J",
+        "K",
+        "L",
+        "M",
+        "N",
+        "O",
+        "P",
+        "R",
+        "S",
+        "T",
+        "U",
+        "V",
+        "W",
+        "X",
+        "Z"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "El_3_4_Zusatz_Kombi",
+      "name": "El 3 4 Zusatz Kombi",
+      "title": "Zusatztafel “Richtungsangabe“",
+      "title_en": "Additional plate “direction”",
+      "rahmen": [
+        "plate"
+      ],
+      "symbole": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "H",
+        "I",
+        "J",
+        "K",
+        "L",
+        "M",
+        "N",
+        "O",
+        "P",
+        "R",
+        "S",
+        "T",
+        "U",
+        "V",
+        "W",
+        "X",
+        "Z"
+      ],
+      "beleuchtbar": true
+    },
+    {
+      "id": "Oz_PZB_2000_Hz",
+      "name": "Oz PZB 2000 Hz",
+      "title": "PZB 2000 Hz",
+      "title_en": "PZB 2000 Hz",
+      "rahmen": [
+        "screen",
+        "indicator",
+        "plate"
+      ]
+    }
+  ],
+  "systeme_beschreibung": "Die Signalsysteme, wie OSRD sie als logische Signale führt: ein Signal am Gleis trägt ein logisches Signal je System, das es zeigt, jedes mit seiner Signalart. Was ein Schirm zeigen muss und darf, ist die Vereinigung über seine logischen Signale. pflicht: was der Schirm zeigen muss; fahrt: von diesen Fahrtbegriffen mindestens einen (ein Mehrabschnittssignal vor kurzem Gleis zeigt nur Ks 2); erlaubt: was er zeigen darf; zusatz: die Zusatzanzeiger der Signalart.",
+  "systeme": {
+    "ks": {
+      "title": "Ks-Signalsystem",
+      "title_en": "Ks signalling system",
+      "signalarten": {
+        "main": {
+          "title": "Ks-Hauptsignal",
+          "title_en": "Ks main signal",
+          "schirm": {
+            "pflicht": [
+              "Hp_0"
+            ],
+            "fahrt": [
+              "Ks_1"
+            ],
+            "erlaubt": [
+              "Hp_0",
+              "Ks_1",
+              "Kl",
+              "Zs_1",
+              "Zs_7",
+              "Zs_8"
+            ]
+          },
+          "zusatz": [
+            "Zs_1",
+            "Zs_2",
+            "Zs_3",
+            "Zs_6",
+            "Zs_7",
+            "Zs_8",
+            "Zs_13",
+            "Zp_9",
+            "Zp_10",
+            "Oz_Fa"
+          ]
+        },
+        "mainShunting": {
+          "title": "Ks-Hauptsperrsignal",
+          "title_en": "Ks main shunting signal",
+          "schirm": {
+            "pflicht": [
+              "Hp_0",
+              "Sh_1"
+            ],
+            "fahrt": [
+              "Ks_1"
+            ],
+            "erlaubt": [
+              "Hp_0",
+              "Ks_1",
+              "Sh_1",
+              "Kl",
+              "Zs_1",
+              "Zs_7",
+              "Zs_8"
+            ]
+          },
+          "zusatz": [
+            "Zs_1",
+            "Zs_2",
+            "Zs_3",
+            "Zs_6",
+            "Zs_7",
+            "Zs_8",
+            "Zs_13",
+            "Zp_9",
+            "Zp_10",
+            "Oz_Fa"
+          ]
+        },
+        "multiSection": {
+          "title": "Ks-Mehrabschnittssignal",
+          "title_en": "Ks multi-section signal",
+          "schirm": {
+            "pflicht": [
+              "Hp_0"
+            ],
+            "fahrt": [
+              "Ks_1",
+              "Ks_2"
+            ],
+            "erlaubt": [
+              "Hp_0",
+              "Ks_1",
+              "Ks_2",
+              "Zl_o",
+              "Kl",
+              "Zs_1",
+              "Zs_7",
+              "Zs_8"
+            ]
+          },
+          "zusatz": [
+            "Zs_1",
+            "Zs_2",
+            "Zs_2v",
+            "Zs_3",
+            "Zs_3v",
+            "Zs_6",
+            "Zs_7",
+            "Zs_8",
+            "Zs_13",
+            "Zp_9",
+            "Zp_10",
+            "Oz_Fa"
+          ]
+        },
+        "multiSectionShunting": {
+          "title": "Ks-Mehrabschnittssperrsignal",
+          "title_en": "Ks multi-section shunting signal",
+          "schirm": {
+            "pflicht": [
+              "Hp_0",
+              "Sh_1"
+            ],
+            "fahrt": [
+              "Ks_1",
+              "Ks_2"
+            ],
+            "erlaubt": [
+              "Hp_0",
+              "Ks_1",
+              "Ks_2",
+              "Sh_1",
+              "Zl_o",
+              "Kl",
+              "Zs_1",
+              "Zs_7",
+              "Zs_8"
+            ]
+          },
+          "zusatz": [
+            "Zs_1",
+            "Zs_2",
+            "Zs_2v",
+            "Zs_3",
+            "Zs_3v",
+            "Zs_6",
+            "Zs_7",
+            "Zs_8",
+            "Zs_13",
+            "Zp_9",
+            "Zp_10",
+            "Oz_Fa"
+          ]
+        },
+        "shunting": {
+          "title": "Ks-Sperrsignal",
+          "title_en": "Ks shunting signal",
+          "schirm": {
+            "pflicht": [
+              "Hp_0",
+              "Sh_1"
+            ],
+            "erlaubt": [
+              "Hp_0",
+              "Sh_1",
+              "Kl"
+            ]
+          },
+          "zusatz": []
+        },
+        "distant": {
+          "title": "Ks-Vorsignal",
+          "title_en": "Ks distant signal",
+          "schirm": {
+            "pflicht": [
+              "Ks_1",
+              "Ks_2"
+            ],
+            "erlaubt": [
+              "Ks_1",
+              "Ks_2",
+              "Zl_o"
+            ]
+          },
+          "zusatz": [
+            "Zs_2v",
+            "Zs_3v"
+          ]
+        },
+        "distantRepeater": {
+          "title": "Ks-Vorsignalwiederholer",
+          "title_en": "Ks distant repeater",
+          "schirm": {
+            "pflicht": [
+              "Ks_1",
+              "Ks_2",
+              "Zl_u"
+            ],
+            "erlaubt": [
+              "Ks_1",
+              "Ks_2",
+              "Zl_o",
+              "Zl_u"
+            ]
+          },
+          "zusatz": [
+            "Zs_2v",
+            "Zs_3v"
+          ]
+        }
+      }
+    },
+    "sh": {
+      "title": "Sperrsignale",
+      "title_en": "Shunting signals",
+      "signalarten": {
+        "shunting": {
+          "title": "Sperrsignal",
+          "title_en": "Shunting signal",
+          "schirm": {
+            "pflicht": [
+              "Sh_0",
+              "Sh_1"
+            ],
+            "erlaubt": [
+              "Sh_0",
+              "Sh_1"
+            ]
+          },
+          "zusatz": []
+        }
+      }
+    }
+  },
+  "ohne_system": {
+    "beschreibung": "Die Begriffe, die als Tafel für sich stehen dürfen, an einem Signal ohne Schirm. Schirme ohne logisches Signal (BÜ-Überwachungssignal, alleinstehender Zs 6, Fahrtanzeiger) prüft der Core nur auf bekannte Begriffe.",
+    "tafeln": [
+      "So_20",
+      "Ukr",
+      "Zs_3",
+      "Zs_3v",
+      "Zs_10",
+      "Ts_1",
+      "Ts_2",
+      "Ts_3",
+      "Lf_1",
+      "Lf_1_2",
+      "Lf_2",
+      "Lf_3",
+      "Lf_4_DS",
+      "Lf_4_DV",
+      "Lf_5_DS",
+      "Lf_5_DV",
+      "Lf_6",
+      "Lf_7",
+      "Sh_0",
+      "Sh_2",
+      "Ra_10",
+      "Ra_11",
+      "Ra_11b",
+      "Ra_12",
+      "Ra_13",
+      "Wn_7",
+      "El_1v",
+      "El_1",
+      "El_2",
+      "El_T_DC",
+      "El_T_AC",
+      "El_3",
+      "El_4",
+      "El_5",
+      "El_6",
+      "El_Pf_o",
+      "El_Pf_r",
+      "El_Pf_l",
+      "El_Pf_b",
+      "Ne_1",
+      "Ne_2",
+      "Ne_2_vRVA",
+      "Ne_3_1str",
+      "Ne_3_2str",
+      "Ne_3_3str",
+      "Ne_3_4str",
+      "Ne_3_5str",
+      "BS_vRVA",
+      "Ne_4",
+      "Ne_5",
+      "Ne_6",
+      "Ne_7a",
+      "Ne_7b",
+      "So_1",
+      "Ne_12",
+      "Ne_13a",
+      "Ne_13b",
+      "So_19_1P",
+      "So_19_2P",
+      "So_19_3P",
+      "So_106",
+      "Bue_AT",
+      "Bue_KT",
+      "Bue_4",
+      "Pf_2",
+      "Bue_5",
+      "Oz_Zf",
+      "Oz_ICE",
+      "Oz_Auto_HET",
+      "Oz_HET",
+      "Oz_Auto_ET",
+      "Oz_ET",
+      "Oz_LZB-Ber",
+      "Oz_Bk",
+      "Oz_HM",
+      "Ne_14",
+      "Oz_OB_Grenze",
+      "BS_vA_UES",
+      "BS_Wdh",
+      "BS_Zusatz",
+      "Lf_Pf_r",
+      "Lf_Pf_l",
+      "Oz_PZB_BUE",
+      "Oz_Fak",
+      "Oz_Zugl",
+      "Bue_AT_Zusatz",
+      "Bue_2",
+      "Bue_2_3R",
+      "Bue_2_2R",
+      "Bue_2_1R",
+      "So_15",
+      "Bue_3",
+      "So_14",
+      "BS_ZBS-Ber",
+      "Oz_GSM-R",
+      "Lf_1_Wdh",
+      "El_3_4_Zusatz",
+      "El_3_4_Zusatz_Kombi",
+      "Oz_PZB_2000_Hz"
+    ]
+  },
+  "zugbeeinflussung": {
+    "beschreibung": "Die Gleiselemente der Zugbeeinflussung, die an einem Punkt wirken — Balisen und Magnete —, je System mit seinen Arten und Einstellungen, so wie ein Signal seine logischen Signale hat. Eine Einstellung ist eine Auswahl (werte), eine Zahl (einheit, min, max), ein Wahrheitswert oder ein Text, vorgabe der Wert, mit dem ein Werkzeug sie anlegt; je Art steht, welche sie haben muss (pflicht) und haben darf (erlaubt). name ist das Kurzzeichen eines Systems.",
+    "wirksamkeit": {
+      "permanent": {
+        "title": "ständig wirksam",
+        "title_en": "always active",
+        "planpro": "staendig_wirksam"
+      },
+      "switchedBySignal": {
+        "title": "schaltbar vom Signal",
+        "title_en": "switched by the signal",
+        "planpro": "schaltbar_von_Signal"
+      },
+      "other": {
+        "title": "sonstige",
+        "title_en": "other",
+        "planpro": "sonstige"
+      }
+    },
+    "systeme": {
+      "pzb": {
+        "name": "PZB",
+        "title": "PZB (punktförmige Zugbeeinflussung)",
+        "title_en": "PZB (intermittent train protection)",
+        "einstellungen": {
+          "frequency": {
+            "title": "Frequenz",
+            "title_en": "Frequency",
+            "typ": "auswahl",
+            "vorgabe": "1000",
+            "werte": {
+              "500": {
+                "title": "500 Hz",
+                "title_en": "500 Hz",
+                "planpro": "500_Hz"
+              },
+              "1000": {
+                "title": "1000 Hz",
+                "title_en": "1000 Hz",
+                "planpro": "1000_Hz"
+              },
+              "2000": {
+                "title": "2000 Hz",
+                "title_en": "2000 Hz",
+                "planpro": "2000_Hz"
+              },
+              "1000+2000": {
+                "title": "1000/2000 Hz",
+                "title_en": "1000/2000 Hz",
+                "planpro": "1000_2000_Hz"
+              }
+            }
+          },
+          "ina": {
+            "title": "INA (Bahnsteig)",
+            "title_en": "INA (platform)",
+            "typ": "wahrheitswert",
+            "beschreibung": "Ein Magnet, der dort abgeschaltet wird, wo ein Zug am Bahnsteig hält (PlanPro PZB_INA)."
+          },
+          "testSpeed": {
+            "title": "Prüfgeschwindigkeit",
+            "title_en": "Test speed",
+            "typ": "zahl",
+            "einheit": "km/h",
+            "min": 0
+          },
+          "measuringLength": {
+            "title": "Messlänge",
+            "title_en": "Measuring length",
+            "typ": "zahl",
+            "einheit": "m",
+            "min": 0
+          },
+          "arrangement": {
+            "title": "Anordnung",
+            "title_en": "Arrangement",
+            "typ": "auswahl",
+            "werte": {
+              "startFirst": {
+                "title": "Anfangsmagnet zuerst",
+                "title_en": "start magnet first"
+              },
+              "endFirst": {
+                "title": "Endmagnet zuerst",
+                "title_en": "end magnet first"
+              }
+            }
+          }
+        },
+        "arten": {
+          "magnet": {
+            "title": "Gleismagnet",
+            "title_en": "Track magnet",
+            "pflicht": [
+              "frequency"
+            ],
+            "erlaubt": [
+              "frequency",
+              "ina"
+            ]
+          },
+          "speedCheck": {
+            "title": "Geschwindigkeitsprüfung",
+            "title_en": "Speed check",
+            "beschreibung": "Eine Geschwindigkeitsprüfeinrichtung (GÜ) aus zwei Magneten, als ein Element mit Prüfgeschwindigkeit und Messlänge.",
+            "pflicht": [
+              "frequency",
+              "testSpeed",
+              "measuringLength"
+            ],
+            "erlaubt": [
+              "frequency",
+              "ina",
+              "testSpeed",
+              "measuringLength",
+              "arrangement"
+            ]
+          }
+        }
+      },
+      "etcs": {
+        "name": "ETCS",
+        "title": "ETCS (Eurobalise)",
+        "title_en": "ETCS (Eurobalise)",
+        "einstellungen": {
+          "group": {
+            "title": "Balisengruppe",
+            "title_en": "Balise group",
+            "typ": "text"
+          },
+          "position": {
+            "title": "Lage in der Gruppe",
+            "title_en": "Position in the group",
+            "typ": "zahl",
+            "min": 1,
+            "max": 8
+          }
+        },
+        "arten": {
+          "fixed": {
+            "title": "Festdatenbalise",
+            "title_en": "Fixed balise",
+            "pflicht": [
+              "position"
+            ],
+            "erlaubt": [
+              "group",
+              "position"
+            ]
+          },
+          "controlled": {
+            "title": "Transparentdatenbalise (gesteuert)",
+            "title_en": "Controlled balise",
+            "pflicht": [
+              "position"
+            ],
+            "erlaubt": [
+              "group",
+              "position"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "durchrutschweg": {
+    "title": "Länge des Durchrutschwegs (Ril 819.0202)",
+    "title_en": "Length of the overlap (Ril 819.0202)",
+    "status": "entwurf",
+    "beschreibung": "Die Solllänge des Durchrutschwegs hinter einem Hauptsignal nach der Geschwindigkeit, mit der die Fahrstraße an das Signal heranführt (ihre signallingSpeed), und der maßgebenden Neigung über den Durchrutschweg. ENTWURF aus allgemein bekannten Regelwerten, nicht gegen die gültige Ril 819.0202 geprüft: die Grundlängen je Geschwindigkeitsstufe sind die Regelwerte; die Verlängerung im Gefälle ist eine eigene Näherung — der Weg wächst mit dem Kehrwert der Verzögerung, die das Gefälle übrig lässt: L = L0 · a / (a − g · |i| / 1000) für ein Gefälle i steiler als ab_gefaelle, auf volle zehn Meter aufgerundet; eine Steigung verkürzt nicht.",
+    "stufen": [
+      {
+        "bis": 40,
+        "laenge": 50
+      },
+      {
+        "bis": 60,
+        "laenge": 100
+      },
+      {
+        "laenge": 200
+      }
+    ],
+    "neigung": {
+      "ab_gefaelle": 5,
+      "verzoegerung": 0.75,
+      "schwere": 9.81,
+      "runden": 10
+    }
+  },
+  "open_points": [
+    {
+      "id": "OP.S.01",
+      "refs": [
+        "systeme.ks"
+      ],
+      "topic": "Vorsignalabstand",
+      "assumption": "Noch nicht im Katalog. Die Werte nach Ril 819 (Regelabstand, verkürzter Abstand, Abhängigkeit von Geschwindigkeit und Neigung) fehlen; bis sie vorliegen, prüft der Core den Abstand nicht."
+    },
+    {
+      "id": "OP.S.02",
+      "refs": [
+        "Overlap.length"
+      ],
+      "topic": "Länge des Durchrutschwegs",
+      "assumption": "Die Solllänge rechnet der Core nach dem Entwurf unter durchrutschweg (Grundlänge je Geschwindigkeitsstufe, Verlängerung im Gefälle als Näherung); die Werte sind gegen die gültige Ril 819.0202 zu prüfen."
+    },
+    {
+      "id": "OP.S.03",
+      "refs": [
+        "zugbeeinflussung"
+      ],
+      "topic": "Lage der Balisen und Magnete zum Signal",
+      "assumption": "Wo ein 1000-, 500- und 2000-Hz-Magnet zum Vor- und Hauptsignal liegt, wann eine GÜ nötig ist und wo eine ETCS-Balisengruppe steht, prüft der Core noch nicht; die Werte nach Ril 483 und Ril 819 fehlen."
+    }
+  ]
+}

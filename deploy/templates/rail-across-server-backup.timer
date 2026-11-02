@@ -1,0 +1,10 @@
+# Rendered by deploy/setup.sh from deploy/templates/rail-across-server-backup.timer — edit the template, not this file.
+[Unit]
+Description=Rail-Across-Suite@RA_LABEL@ — daily copy of the project database
+
+[Timer]
+OnCalendar=*-*-* 03:30:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

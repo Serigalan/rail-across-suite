@@ -1,0 +1,555 @@
+/* The longitudinal profile and the cross section overlays, and the cross-section panel. */
+
+/* ── Longitudinal profile overlay ─────────────────────────────────────────── */
+.profile-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 45%;
+  background: #fff;
+  border-top: 2px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  z-index: 10;
+  font-family: var(--font-ui);
+}
+
+/* Grab the top edge to change the overlay's height. */
+.profile-resize {
+  position: absolute;
+  top: -5px;
+  left: 0;
+  right: 0;
+  height: 10px;
+  cursor: ns-resize;
+  z-index: 1;
+}
+
+/* The controls wrap onto further rows rather than run out of the overlay. */
+.profile-overlay .track-table-header {
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 6px 14px;
+}
+
+.profile-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 6px 14px;
+  min-width: 0;
+}
+
+.profile-edit {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  font-size: var(--fs-s);
+  color: var(--color-text-soft);
+}
+
+.profile-edit .track-table-input {
+  width: 90px;
+}
+
+.profile-edit .track-table-save-btn {
+  white-space: nowrap;
+  flex: none;
+}
+
+/* What a point shown only is, beside the buttons: kept readable when they crowd it. */
+.profile-edit .profile-hint {
+  min-width: 14em;
+}
+
+/* The reason for a gradient change in a turnout: a line of text, not a number. */
+.profile-edit .track-table-input.profile-reason {
+  width: 16em;
+  text-align: left;
+}
+
+/* Discreet entry point at the bottom of a panel — a section that is there when
+   it is wanted and out of the way otherwise. */
+.panel-dot-row {
+  display: flex;
+  justify-content: center;
+  padding: 10px 0 4px;
+}
+
+.panel-dot {
+  width: 9px;
+  height: 9px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: #ccc;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.15s;
+}
+
+.panel-dot:hover {
+  background: #999;
+  transform: scale(1.25);
+}
+
+.panel-dot.active {
+  background: var(--color-primary);
+}
+
+.profile-delete-btn {
+  background: var(--color-error);
+}
+
+.profile-delete-btn:hover:not(:disabled) {
+  background: var(--color-danger);
+}
+
+.profile-delete-btn:disabled {
+  background: #ccc;
+  cursor: default;
+}
+
+.profile-hint {
+  font-size: var(--fs-s);
+  color: var(--color-muted);
+}
+
+/* The reference axis laid over the Höhenplan: its dashed brown line, as a key. */
+.profile-ref-swatch {
+  width: 18px;
+  border-top: 2px dashed #6d4c41;
+}
+
+/* What the Höhenplan rules say, in the colour of the worst step (rule-sev-*). */
+.profile-rules {
+  font-size: var(--fs-s);
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: help;
+}
+
+.profile-body {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.profile-svg {
+  display: block;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+}
+
+.profile-svg.dragging {
+  cursor: grabbing;
+}
+
+/* How far either side other tracks are looked for — a number, a few digits wide. */
+.profile-edit .cross-section-reach {
+  width: 56px;
+}
+
+.cross-section-svg {
+  display: block;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+}
+
+.cross-section-svg.picking { cursor: crosshair; }
+.cross-section-svg.dragging {
+  cursor: grabbing;
+}
+
+/* The station the section is taken at — walked with the slider, stated beside
+   it, and marked on the map by the overlay's dot. */
+.cross-section-slider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px 10px;
+  border-top: 1px solid var(--color-border-soft);
+}
+
+.cross-section-slider input[type="range"] {
+  flex: 1;
+  accent-color: var(--color-primary);
+}
+
+.cross-section-step {
+  flex: none;
+  width: 28px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #fff;
+  color: var(--color-primary);
+  font-size: var(--fs-xs);
+  cursor: pointer;
+}
+
+.cross-section-step:hover:not(:disabled) {
+  background: #f3f1fd;
+}
+
+.cross-section-step:disabled {
+  color: #bbb;
+  cursor: default;
+}
+
+.cross-section-slider-label {
+  font-size: var(--fs-s);
+  color: var(--color-text-soft);
+  white-space: nowrap;
+}
+
+.cross-section-slider-label .cross-section-station {
+  width: 72px;
+  text-align: right;
+}
+
+/* Near an end of the track: the tracks that carry on there, one button each. */
+.cross-section-onward {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-s);
+  color: var(--color-text-soft);
+  white-space: nowrap;
+}
+
+.cross-section-onward-btn {
+  padding: 2px 8px;
+  border: 1px solid var(--color-primary);
+  border-radius: 4px;
+  background: #fff;
+  color: var(--color-primary);
+  font-size: var(--fs-s);
+  cursor: pointer;
+}
+
+.cross-section-onward-btn:hover {
+  background: #f3f1fd;
+}
+
+/* One superstructure stretch: type, from, to and the button that drops it. */
+.range-row {
+  display: grid;
+  grid-template-columns: 1fr 72px 72px 18px;
+  gap: 4px;
+  align-items: center;
+}
+
+.range-use {
+  font-family: var(--font-ui);
+  font-size: var(--fs-xs);
+  color: var(--color-muted);
+}
+
+.profile-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-muted);
+  font-size: var(--fs-m);
+}
+
+@media (max-width: 1440px) {
+  .profile-overlay { height: 40%; }
+}
+
+/* The cross section in a window of its own: the whole window, no edge to drag. */
+.popout-root {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.profile-overlay.detached {
+  position: static;
+  flex: 1;
+  height: auto;
+  min-height: 0;
+  border-top: none;
+}
+
+.cross-section-detach {
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--fs-s);
+}
+
+/* ── The bands of a track (Prüfen) ────────────────────────────────────────── */
+.bands-overlay {
+  height: 60%;
+}
+
+.bands-readout {
+  font-size: var(--fs-s);
+  color: var(--color-text-soft);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.bands-findings-toggle {
+  cursor: pointer;
+}
+
+.bands-findings-toggle .profile-rules {
+  cursor: pointer;
+}
+
+/* ── The Höhenplan over the whole map area (decision 391) ─────────────────────
+   Above the divider the longitudinal section or the map seen through, below
+   it the table or the selected point; each half under a bar of its tabs. The
+   overlay itself lets the pointer through: what is open in it takes it. */
+.elevation-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  pointer-events: none;
+  font-family: var(--font-ui);
+}
+
+.elevation-upper,
+.elevation-lower {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.elevation-upper > .profile-body,
+.elevation-lower {
+  background: #fff;
+  pointer-events: auto;
+}
+
+/* The map tab: the section stays in place, unseen, and the map takes the pointer. */
+.elevation-overlay.map-shown .elevation-upper > .profile-body {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Title, tabs standing on the bar's bottom edge, the rules; on the right what
+   the open tab is set with. One height whichever tab is open. */
+.elevation-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+  min-height: 44px;
+  padding: 0 16px;
+  box-sizing: border-box;
+  border-bottom: 1px solid var(--color-border);
+  background: #fff;
+  pointer-events: auto;
+  flex-shrink: 0;
+}
+
+.elevation-bar-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px 14px;
+  margin-left: auto;
+  min-width: 0;
+}
+
+.elevation-lower-body {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+/* The divider: dragged up or down, a double click puts it back in the middle. */
+.elevation-divider {
+  height: 7px;
+  background: var(--color-border);
+  border-top: 1px solid #fff;
+  border-bottom: 1px solid #fff;
+  cursor: ns-resize;
+  pointer-events: auto;
+  position: relative;
+}
+
+.elevation-divider::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 2px;
+  width: 36px;
+  height: 3px;
+  margin-left: -18px;
+  border-radius: 2px;
+  background: var(--color-muted);
+}
+
+.elevation-divider:hover,
+.elevation-divider:active {
+  background: var(--color-primary);
+}
+
+/* While the map is seen through the overlay, what sits at its top edge moves below the tab bar. */
+.map-pane:has(> .elevation-overlay.map-shown) .maplibregl-ctrl-top-right,
+.map-pane:has(> .elevation-overlay.map-shown) .maplibregl-ctrl-top-left {
+  top: 44px;
+}
+
+/* Under the section the map's own legend has nothing to explain. */
+.map-pane:has(> .elevation-overlay:not(.map-shown)) .map-legend {
+  display: none;
+}
+
+.map-pane:has(> .elevation-overlay.map-shown) .map-legend,
+.map-pane:has(> .elevation-overlay.map-shown) .elevation-legend {
+  top: 56px;
+}
+
+.profile-tabs {
+  display: flex;
+  align-self: flex-end;
+  gap: 2px;
+  margin-bottom: -1px;   /* onto the bar's border */
+}
+
+.profile-tab {
+  position: relative;
+  padding: 7px 16px 8px;
+  border: 1px solid transparent;
+  border-bottom: 0;
+  border-radius: 6px 6px 0 0;
+  background: transparent;
+  font: inherit;
+  font-size: var(--fs-s);
+  color: var(--color-text-soft);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.profile-tab:hover {
+  color: var(--color-text);
+  background: var(--color-surface-alt);
+}
+
+.profile-tab.active {
+  border-color: var(--color-border);
+  background: #fff;
+  color: var(--color-primary);
+  font-weight: 600;
+  padding-bottom: 9px;
+  box-shadow: inset 0 2px 0 var(--color-primary);
+}
+
+/* The table view fills the body and scrolls in it. */
+.profile-table {
+  position: absolute;
+  inset: 0;
+}
+
+.profile-table .track-table-input {
+  width: 96px;
+}
+
+/* The lock of a point (Entscheidung 382): a toggle in the table's first column. */
+.profile-lock-btn {
+  background: none; border: 0; cursor: pointer; padding: 0 2px; font-size: 13px; opacity: 0.35;
+}
+.profile-lock-btn.on, .profile-lock-btn:hover { opacity: 1; }
+.profile-lock-cell { text-align: center; }
+
+.profile-table-error {
+  margin: 6px 12px;
+}
+
+/* A curve whose length counts (decision 266): its length in the table, set apart. */
+.profile-table .profile-governing,
+.profile-table .profile-governing .track-table-input {
+  font-weight: 600;
+}
+
+/* The point view (decision 386): the point's facts beside its dependencies. */
+.profile-point {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(260px, 2fr);
+  gap: 12px 32px;
+  padding: 12px 16px;
+  overflow: auto;
+  height: 100%;
+  box-sizing: border-box;
+  font-size: var(--fs-s);
+  color: var(--color-text);
+}
+.profile-point h4 { margin: 0 0 8px; font-size: var(--fs-m); }
+.profile-point h5 { margin: 10px 0 4px; font-size: var(--fs-s); color: var(--color-text-soft); }
+.profile-point-facts { display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; margin: 0; }
+.profile-point-facts > div { display: contents; }
+.profile-point-facts dt { color: var(--color-text-soft); }
+.profile-point-facts dd { margin: 0; }
+.profile-point-links { margin: 0; padding-left: 18px; }
+.profile-point-links li { margin: 2px 0; display: flex; align-items: center; gap: 8px; }
+.profile-point-links li::before { content: '•'; margin-left: -12px; color: var(--color-muted); }
+.profile-point-links { list-style: none; }
+.profile-point-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin-top: 12px; }
+@media (max-width: 700px) {
+  .profile-point { grid-template-columns: 1fr; }
+}
+
+/* The point view's fields (decision 387): label, value, unit in a row each. */
+.profile-point-edit { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+.profile-point-edit label { display: grid; grid-template-columns: 9em auto 2em; align-items: center; gap: 6px; }
+.profile-point-edit label span:first-child { color: var(--color-text-soft); }
+.profile-point-edit .track-table-input { width: 110px; }
+.profile-point-edit .track-table-input.profile-reason { width: 16em; }
+.profile-point-value { padding: 2px 0; }
+.profile-point-regular { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; padding-left: calc(9em + 6px); }
+/* The × behind a dependency: lets it go (design mode). */
+.profile-point-x {
+  border: none; background: none; cursor: pointer; padding: 0 4px;
+  font-size: 15px; line-height: 1; color: var(--color-muted);
+}
+.profile-point-x:hover { color: var(--color-danger); }
+
+/* "Depends on" and "dependent" in the colours their points have on the map and in the graphic. */
+.profile-point h5.profile-point-from { color: var(--color-height-source-text); }
+.profile-point h5.profile-point-to { color: var(--color-height-dependent); }
+.profile-point-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+.profile-point-from .profile-point-dot { background: var(--color-height-source); }
+.profile-point-to .profile-point-dot { background: var(--color-height-dependent); }
+.profile-point-links.from li::before { color: var(--color-height-source); }
+.profile-point-links.to li::before { color: var(--color-height-dependent); }
+.profile-point-actions { display: flex; gap: 8px; margin-top: 4px; }
+/* What the last action said, across both columns at the head. */
+.profile-point-note { grid-column: 1 / -1; margin: 0; }
+
+/* The table's selected rows in the red of the selected point, and the rows of what it depends on
+   and what depends on it, as in the section and on the map. */
+.profile-table tr.track-table-row-active td:first-child { box-shadow: inset 4px 0 0 var(--color-height-selected); }
+.profile-table tr.profile-row-source td:first-child { box-shadow: inset 4px 0 0 var(--color-height-source); }
+.profile-table tr.profile-row-dependent td:first-child { box-shadow: inset 4px 0 0 var(--color-height-dependent); }
+.profile-point-none { flex-direction: column; gap: 8px; max-width: 46em; text-align: center; margin: 0 auto; }
+
+/* How a point depends (decision 390): beside its sources, and behind each dependent. */
+.profile-point-how { margin: 0 0 4px 18px; }
+.profile-point-mode { font-size: var(--fs-s); padding: 1px 4px; }
+.profile-point-picking { color: var(--color-primary); font-weight: 600; }
+/* A turnout's toe (decision 392): marked, not a dependency. */
+.profile-toe-tag {
+  margin-left: 6px; padding: 0 5px; border-radius: 3px;
+  background: var(--color-surface-alt); border: 1px solid var(--color-border);
+  font-size: var(--fs-xs); font-weight: 600; color: var(--color-text-soft); vertical-align: 1px;
+}
+.profile-point-lead { margin: 4px 0 8px; }

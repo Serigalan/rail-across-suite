@@ -1,5 +1,5 @@
 import { Button, Message, Panel, Section } from '@rail-across/ui'
-import { formatDistance, formatTime } from '../format.js'
+import { formatDistance, formatTime } from '@rail-across/running-times'
 
 /**
  * The run: its running time — the fastest, with the margin —, the times it

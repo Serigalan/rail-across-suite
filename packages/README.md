@@ -14,5 +14,13 @@ Layout-Tool and the Signalling-Tool.
 browser, one per variant, shared by the Layout-Tool, the Signalling-Tool and the suite's start page.
 
 [`vehicles/`](vehicles/README.md) (`@rail-across/vehicles`) are the suite's vehicles as OSRD's RailJSON rolling stock:
-the model, OSRD's example vehicles built in, and the catalogue on the project server — shared by the Fahrzeug-Editor
-and the Fahrplan-Sim ([decision 0014](../docs/decisions/0014-vehicles-in-osrds-form.md)).
+the model, OSRD's example vehicles built in, and the catalogue on the project server — shared by the Fahrzeug-Editor,
+the Fahrplan-Sim and the Fahrplan-Editor ([decision 0014](../docs/decisions/0014-vehicles-in-osrds-form.md)).
+
+[`running-times/`](running-times/README.md) (`@rail-across/running-times`) is a train's way over a variant's net, what
+the physics needs of it, the stations along it, and the simulation module (OSRD's simulation core in Rust, `sim/`) —
+shared by the Fahrplan-Sim and the Fahrplan-Editor ([decision 0013](../docs/decisions/0013-running-times-in-rust.md)).
+
+[`timetables/`](timetables/README.md) (`@rail-across/timetables`) are a project's timetables: their trains, the runs
+of those over a variant's net, and the timetables on the project server
+([decision 0016](../docs/decisions/0016-timetables-of-a-project.md)).

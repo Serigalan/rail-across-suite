@@ -14,11 +14,12 @@
     "preview": "vite preview",
     "test": "vitest run",
     "lint": "eslint .",
-    "sim": "node scripts/sim.mjs"
+    "sim": "node ../../packages/running-times/scripts/sim.mjs"
   },
   "dependencies": {
     "@rail-across/basemaps": "*",
     "@rail-across/core": "*",
+    "@rail-across/running-times": "*",
     "@rail-across/ui": "*",
     "@rail-across/vehicles": "*",
     "@rail-across/working-copy": "*",

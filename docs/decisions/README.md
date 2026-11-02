@@ -20,3 +20,4 @@ it costs. A record is not rewritten when a decision changes; a new one replaces 
 | [0013](0013-running-times-in-rust.md) | Running times with OSRD's simulation core, ported to Rust | proposed |
 | [0014](0014-vehicles-in-osrds-form.md) | The suite's vehicles, in OSRD's form, beside the projects | proposed |
 | [0015](0015-lgpl.md) | Everything under LGPL-3.0-only, OSRD's simulation core in the repository | accepted |
+| [0016](0016-timetables-of-a-project.md) | Timetables belong to a project; a train begins and ends at a station | proposed |

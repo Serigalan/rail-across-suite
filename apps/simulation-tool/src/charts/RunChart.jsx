@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Tabs } from '@rail-across/ui'
-import { formatTime } from '../format.js'
+import { formatTime } from '@rail-across/running-times'
 
 /**
  * The run over the path: the speed over the distance — the speed allowed

@@ -33,3 +33,23 @@ export function pointAt(report, time) {
   const n = times.length - 1
   return { position: positions[n], speed: speeds[n], time: times[n] }
 }
+
+/**
+ * When a run is at a position: the first moment it gets there, interpolated
+ * between its points — or, with `last`, the last it is still there (where it
+ * stands, the moment it leaves). Null beyond its ends.
+ */
+export function timeAtPosition(report, position, { last = false } = {}) {
+  const { times, positions } = report
+  const n = positions.length
+  if (!n || position < positions[0] - 1e-6 || position > positions[n - 1] + 1e-6) return null
+  const between = (i) => times[i] + (times[i + 1] - times[i]) * (position - positions[i]) / (positions[i + 1] - positions[i])
+  if (last) {
+    let i = n - 1
+    while (i > 0 && positions[i] > position + 1e-6) i--
+    return Math.abs(positions[i] - position) <= 1e-6 || i === n - 1 ? times[i] : between(i)
+  }
+  let i = 0
+  while (i < n - 1 && positions[i] < position - 1e-6) i++
+  return i === 0 || Math.abs(positions[i] - position) <= 1e-6 ? times[i] : between(i - 1)
+}

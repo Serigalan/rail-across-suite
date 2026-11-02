@@ -8,14 +8,17 @@ const Svg = ({ children }) => (
   </svg>
 )
 
-/** The tool's mark: a railcar from the side, as the start page's tile. */
+/** The tool's mark: a multiple unit from the side, as the start page's tile. */
 export const LogoIcon = () => (
-  <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true">
-    <rect width="24" height="24" rx="5" fill="#303383" />
-    <path d="M4 16V9a2 2 0 0 1 2-2h10l4 5v4z" fill="none" stroke="#fff" strokeWidth="1.6" strokeLinejoin="round" />
-    <path d="M7 10h3v2.5H7zM12 10h3v2.5h-3z" fill="#fff" />
-    <circle cx="8" cy="18" r="1.5" fill="#fff" />
-    <circle cx="16" cy="18" r="1.5" fill="#fff" />
+  <svg viewBox="0 0 48 48" width="28" height="28" aria-hidden="true">
+    <rect width="48" height="48" rx="12" fill="#303383" />
+    <g fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M8 31 V19 a4 4 0 0 1 4 -4 H31 c2.4 0 4.2 1 5.4 3 L40 25 V31 Z" />
+      <path d="M13 19.5 H18.5 V24.5 H13 Z M22 19.5 H27.5 V24.5 H22 Z M31 19.5 H33.6 L36.4 24.5 H31 Z" fill="#fff" stroke="none" />
+      <path d="M7 38 H41" strokeOpacity="0.6" />
+      <circle cx="15" cy="34.5" r="2.4" fill="#fff" stroke="none" />
+      <circle cx="33" cy="34.5" r="2.4" fill="#fff" stroke="none" />
+    </g>
   </svg>
 )
 /** A train: its front, two windows, its wheels on the rail. */

@@ -95,6 +95,27 @@ jobs:
         working-directory: .
       - run: npm test
 
+  # The running times — the way over the net, the stations along it, the
+  # simulation module — and the timetables, shared by the Simulation-Tool and
+  # the Fahrplan-Editor; with the module built from sim/, so the tests that
+  # run it run too.
+  running-times:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: rustup target add wasm32-unknown-unknown
+      - run: cargo build --release -p rail-across-sim-wasm --target wasm32-unknown-unknown
+        working-directory: sim
+      - run: npm test
+        working-directory: packages/running-times
+      - run: npm test
+        working-directory: packages/timetables
+
   # The local working copies, shared by the tools and the start page.
   working-copy:
     runs-on: ubuntu-24.04
@@ -184,6 +205,24 @@ jobs:
     defaults:
       run:
         working-directory: apps/vehicle-editor
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+        working-directory: .
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+
+  # The Fahrplan-Editor.
+  timetable-editor:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: apps/timetable-editor
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5

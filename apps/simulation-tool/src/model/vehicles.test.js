@@ -1,9 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { BUILT_IN } from '@rail-across/vehicles'
-import { routeThrough } from './route.js'
-import { simulationRequest } from './request.js'
-import { runWith } from './engine.js'
+import { routeThrough, runWith, simulationRequest } from '@rail-across/running-times'
 
 // OSRD's example vehicles through the module, where it was built (npm run sim)
 const WASM = new URL('../../public/sim/rail_across_sim.wasm', import.meta.url)

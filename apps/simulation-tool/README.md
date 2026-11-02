@@ -15,8 +15,8 @@ vehicles on their own.
 - **Where it runs**: a start, stops with their dwell times and an end — signals of the signalling domain (in the
   way they act), platforms of the layout (at their middle), or points picked on the map. The path is the
   shortest over the net, over switches along their routes, links and joints; at a stop the train never turns
-  back (`src/model/path.js`, `route.js`).
-- **What the physics gets** (`src/model/request.js`): the path's length; its grades from the tracks' heights,
+  back (`path.js`, `route.js` of `@rail-across/running-times`).
+- **What the physics gets** (`request.js` of `@rail-across/running-times`, which the Fahrplan-Editor shares): the path's length; its grades from the tracks' heights,
   the curves' resistance counted in after Röckl (650 / (r − 55) ‰); the layout's design speeds and the speeds
   the signals signal per route (a logical signal's `signallingSpeeds`, from the start signal to the target);
   a standard margin (`5 %`, `3 min/100km`), spread energy-saving after MARECO or linearly. Where heights or
@@ -35,8 +35,8 @@ chosen one there in a tab of its own, and the catalogue is loaded again when thi
 
 The simulation is OSRD's envelope simulation in Rust, held to OSRD's own test cases (`sim/`,
 [decision 0013](../../docs/decisions/0013-running-times-in-rust.md)). This tool loads its WebAssembly module from
-`public/sim/rail_across_sim.wasm`, a file of its own beside the page (`src/model/engine.js`: JSON in, JSON out,
-no bindings generator), with its notice. The built module is not in the history:
+`public/sim/rail_across_sim.wasm`, a file of its own beside the page (`engine.js` of `@rail-across/running-times`:
+JSON in, JSON out, no bindings generator), with its notice. The built module is not in the history:
 
 ```sh
 npm run sim   # builds it with cargo from sim/ (rustup, target wasm32-unknown-unknown), or takes RA_SIM_WASM

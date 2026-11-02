@@ -1,0 +1,41 @@
+{
+  "name": "rail-across-timetable-editor",
+  "private": true,
+  "version": "0.1.0",
+  "description": "The Fahrplan-Editor of Rail-Across-Suite: a project's timetables — trains that begin and end at stations, stop and pass on the way — with their running times over a variant's net, as a table and a graphical timetable",
+  "license": "LGPL-3.0-only",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "lint": "eslint .",
+    "sim": "node ../../packages/running-times/scripts/sim.mjs"
+  },
+  "dependencies": {
+    "@rail-across/basemaps": "*",
+    "@rail-across/core": "*",
+    "@rail-across/running-times": "*",
+    "@rail-across/timetables": "*",
+    "@rail-across/ui": "*",
+    "@rail-across/vehicles": "*",
+    "@rail-across/working-copy": "*",
+    "maplibre-gl": "^5.21.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "@vitejs/plugin-react": "^6.0.1",
+    "eslint": "^9.39.4",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "globals": "^17.4.0",
+    "vite": "^8.0.1",
+    "vitest": "^3.2.7"
+  }
+}

@@ -4,7 +4,7 @@ import { I18n, textsFor } from './i18n.js'
 import Simulator from './Simulator.jsx'
 import ResultPanel from './panels/ResultPanel.jsx'
 import RunChart from './charts/RunChart.jsx'
-import { formatTime, pointAt } from './format.js'
+import { formatTime, pointAt } from '@rail-across/running-times'
 import { linkedRequest, vehicleUrl } from './suite.js'
 
 const de = (node) => renderToStaticMarkup(<I18n.Provider value={textsFor('de')}>{node}</I18n.Provider>)

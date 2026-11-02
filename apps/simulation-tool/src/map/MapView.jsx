@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { DEFAULT_BASEMAP, findBasemap } from '@rail-across/basemaps'
-import { netGeoJSON, pathGeoJSON } from '../model/places.js'
+import { netGeoJSON, pathGeoJSON } from '@rail-across/running-times'
 
 /**
  * The map: the net on the suite's basemap, the train's path over it, the

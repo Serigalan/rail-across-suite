@@ -63,6 +63,13 @@ describe('a simulation that is there', () => {
     expect(html).toContain('href="simulation/?project=p1&amp;variant=v1"')
     expect(html).toContain('Rev. 3')
   })
+
+  it('lists them for the Fahrplan-Editor as well', () => {
+    const html = de(<Simulation route="timetable" projects={projects} />)
+    expect(html).toContain('href="timetable/?project=p1&amp;variant=v1"')
+    expect(html).toContain('>Fahrpläne</a>')
+    expect(html).toContain('beginnt und endet in einem Bahnhof')
+  })
 })
 
 describe('a module still to come', () => {

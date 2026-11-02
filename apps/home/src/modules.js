@@ -6,13 +6,14 @@
 /**
  * The tiles of the start page, in two rows. `route` is the page a tile
  * opens; `available` whether there is anything to work with yet; `phase` the
- * phase of the roadmap that brings it. A module with `direct` needs no project:
- * its tile opens its app at `path` itself.
+ * phase of the roadmap that brings it. A module with `path` lists the projects
+ * on its page and opens a variant in its app there; one with `direct` needs no
+ * project: its tile opens its app at `path` itself.
  */
 export const EDITORS = [
   { id: 'infrastructure', route: 'infrastructure', available: true, phase: 1 },
   { id: 'vehicles', route: 'vehicles', available: true, phase: 4, path: 'vehicles/', direct: true },
-  { id: 'timetable', route: 'timetable', available: false, phase: 4 },
+  { id: 'timetable', route: 'timetable', available: true, phase: 4, path: 'timetable/' },
 ]
 
 export const SIMULATIONS = [
@@ -73,7 +74,7 @@ export function toolUrl(tool, { project, variant, action, from, to } = {}) {
 /** Where a variant of a project opens in a tool to be worked on. */
 export const openUrl = (tool, projectId, variantId) => toolUrl(tool, { project: projectId, variant: variantId })
 
-/** Where a variant of a project opens in a simulation that is there, or null. */
+/** Where a variant of a project opens in a module that works on one — a simulation, the Fahrplan-Editor —, or null. */
 export function simulationUrl(module, projectId, variantId) {
   if (!module?.available || !module.path || module.direct) return null
   return `${module.path}?${new URLSearchParams({ project: projectId, variant: variantId })}`

@@ -1,8 +1,9 @@
 import { LOGO_WORDS } from './logoWords'
 
-// The marks of the suite: its logo, and one icon per module and tool — line
-// drawings in currentColor on a 48 × 48 grid, in the manner of the
-// Layout-Tool's sidebar icons.
+// The marks of the suite: its logo, and one mark per module and tool — a line
+// drawing in white on a rounded square of currentColor, 48 × 48, as an app's
+// icon. The Fahrzeug-Editor, the Fahrplan-Editor and the Simulation-Tool show
+// the same mark at the top of their rails and as their pages' icons.
 
 // The logo: half a rail's profile drawn as one line between two points, the
 // rail's axis dashed beside it, and the name. The profile is in the primary
@@ -21,88 +22,92 @@ export const Logo = ({ className }) => (
   </svg>
 )
 
+// A module's mark, as an app's: its drawing in white on a rounded square of
+// the current colour — the primary colour, grey for what is still to come.
 const Icon = ({ children }) => (
-  <svg viewBox="0 0 48 48" className="ra-icon" fill="none" stroke="currentColor" strokeWidth="2.4"
-    strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    {children}
+  <svg viewBox="0 0 48 48" className="ra-icon" aria-hidden="true">
+    <rect width="48" height="48" rx="12" fill="currentColor" />
+    <g fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">{children}</g>
   </svg>
 )
+const Dot = ({ x, y, r = 2.8 }) => <circle cx={x} cy={y} r={r} fill="#fff" stroke="none" />
 
 const ICONS = {
-  // A through track and a branch leaving it.
+  // A through track and a branch leaving it at the switch.
   infrastructure: (
     <Icon>
-      <path d="M4 34 H44" />
-      <path d="M10 34 C22 34 24 16 36 16 H44" />
-      <circle cx="10" cy="34" r="2.6" fill="currentColor" />
+      <path d="M8 32 H40" />
+      <path d="M14 32 C23 32 25 17 34 17 H40" />
+      <Dot x={14} y={32} />
     </Icon>
   ),
-  // A railcar from the side.
+  // A multiple unit from the side: its nose, two windows, its bogies on the rail.
   vehicles: (
     <Icon>
-      <path d="M6 32 V16 a4 4 0 0 1 4 -4 H34 l8 10 V32 Z" />
-      <path d="M11 18 H17 V24 H11 Z M22 18 H28 V24 H22 Z M34 18 l4 6" />
-      <circle cx="14" cy="36" r="3" />
-      <circle cx="34" cy="36" r="3" />
+      <path d="M8 31 V19 a4 4 0 0 1 4 -4 H31 c2.4 0 4.2 1 5.4 3 L40 25 V31 Z" />
+      <path d="M13 19.5 H18.5 V24.5 H13 Z M22 19.5 H27.5 V24.5 H22 Z M31 19.5 H33.6 L36.4 24.5 H31 Z" fill="#fff" stroke="none" />
+      <path d="M7 38 H41" strokeOpacity="0.6" />
+      <Dot x={15} y={34.5} r={2.4} />
+      <Dot x={33} y={34.5} r={2.4} />
     </Icon>
   ),
-  // A graphic timetable: stations across, trains as lines through time.
+  // The graphical timetable: two stations across, trains as lines through time.
   timetable: (
     <Icon>
-      <path d="M6 8 V40 M42 8 V40 M6 24 H42" strokeOpacity="0.45" />
-      <path d="M6 10 L42 26 M6 20 L42 38 M6 40 L42 14" />
+      <path d="M12 9 V39 M36 9 V39" strokeOpacity="0.5" strokeWidth="2" />
+      <path d="M12 12 L36 22 M12 24 L36 34 M12 37 L36 15" />
     </Icon>
   ),
-  // The timetable played through: the graphic timetable's lines behind a play mark.
+  // A run over the distance: speeding up, running, braking, on its axes.
   timetableSim: (
     <Icon>
-      <path d="M6 10 L42 26 M6 24 L42 40" strokeOpacity="0.45" />
-      <circle cx="24" cy="24" r="12" />
-      <path d="M21 18 V30 L31 24 Z" fill="currentColor" />
+      <path d="M10 11 V37 H39" strokeOpacity="0.5" strokeWidth="2" />
+      <path d="M12 36 C14 24 17 18 22 18 H29 C32 18 34 25 36 36" />
+      <path d="M10 18 H14" strokeOpacity="0.5" strokeWidth="2" />
     </Icon>
   ),
   // Capacity: a gauge on the line — how far it is filled.
   capacitySim: (
     <Icon>
-      <path d="M6 34 a18 18 0 0 1 36 0" />
-      <path d="M12 22 l3 2 M24 16 v4 M36 22 l-3 2" />
-      <path d="M24 34 L33 23" />
-      <circle cx="24" cy="34" r="2.6" fill="currentColor" />
-      <path d="M4 42 H44" />
+      <path d="M10 32 a14 14 0 0 1 28 0" />
+      <path d="M14.5 22 l2.4 1.8 M24 17.5 v3 M33.5 22 l-2.4 1.8" strokeWidth="2" />
+      <path d="M24 32 L31.5 23.5" />
+      <Dot x={24} y={32} />
+      <path d="M8 38 H40" strokeOpacity="0.6" />
     </Icon>
   ),
   // A construction site on the track: a barrier with its stripes.
   constructionSim: (
     <Icon>
-      <path d="M4 40 H44" />
-      <path d="M8 18 H40 V26 H8 Z" />
-      <path d="M14 18 l-6 8 M24 18 l-6 8 M34 18 l-6 8 M40 20 l-4 6" />
-      <path d="M12 26 V40 M36 26 V40" />
+      <path d="M9 17 H39 V25 H9 Z" />
+      <path d="M15 17 l-5 8 M23 17 l-5 8 M31 17 l-5 8 M39 17 l-5 8" strokeWidth="2" />
+      <path d="M14 25 V37 M34 25 V37" />
+      <path d="M8 38 H40" strokeOpacity="0.6" />
     </Icon>
   ),
-  // The layout tool: an alignment of straights and an arc, its elements' ends marked.
+  // The Layout-Tool: an alignment of a straight, a transition and an arc, its elements' ends marked.
   layout: (
     <Icon>
-      <path d="M4 38 H16 C26 38 30 30 32 22 C34 14 38 10 44 10" />
-      <circle cx="16" cy="38" r="2.6" fill="currentColor" />
-      <circle cx="32" cy="22" r="2.6" fill="currentColor" />
+      <path d="M8 34 H18 C26 34 28 28 30 22 C32 15 35 13 40 13" />
+      <Dot x={18} y={34} />
+      <Dot x={30} y={22} />
     </Icon>
   ),
-  // The signalling tool: a main signal on its mast.
+  // The Signalling-Tool: a main signal on its mast.
   signalling: (
     <Icon>
-      <path d="M20 44 V26 M14 44 H26" />
-      <rect x="13" y="4" width="14" height="22" rx="4" />
-      <circle cx="20" cy="11" r="2.6" fill="currentColor" />
-      <circle cx="20" cy="19" r="2.6" />
+      <path d="M24 40 V28 M18 40 H30" />
+      <rect x="17" y="8" width="14" height="20" rx="4" />
+      <Dot x={24} y={14} r={2.6} />
+      <circle cx="24" cy="21.5" r="2.4" strokeWidth="2" />
     </Icon>
   ),
-  // The catenary tool: a mast, its cantilever and the contact wire.
+  // The Catenary-Tool: a mast, its cantilever and the contact wire.
   catenary: (
     <Icon>
-      <path d="M10 44 V6 M6 44 H14" />
-      <path d="M10 12 H38 M10 20 L38 14 M30 13 V22" />
-      <path d="M4 22 H44" />
+      <path d="M13 40 V9 M9 40 H17" />
+      <path d="M13 14 H37 M13 21 L37 16 M31 15 V25" strokeWidth="2.2" />
+      <path d="M8 25 H40" />
     </Icon>
   ),
 }

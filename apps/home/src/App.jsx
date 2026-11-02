@@ -81,7 +81,7 @@ export default function App() {
   }
   const forced = Boolean(user?.mustChangePassword)
   const page = forced ? 'password' : route.page
-  // A simulation that is there lists the projects to open in it.
+  // A module that works on a variant — a simulation, the Fahrplan-Editor — lists the projects to open in it.
   const simulation = MODULES.some(m => m.route === page && m.available && m.path && !m.direct)
   // a module that needs no project is its app: its old page leads there
   const direct = MODULES.find(m => m.route === page && m.available && m.direct)

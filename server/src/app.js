@@ -10,6 +10,7 @@ import cloudRoutes from './routes/clouds.js'
 import runRoutes from './routes/runs.js'
 import shareRoutes from './routes/shares.js'
 import vehicleRoutes from './routes/vehicles.js'
+import timetableRoutes from './routes/timetables.js'
 import { cloudStorage } from './clouds/storage.js'
 
 /** Largest request body [bytes] — a large MDB import fits, a runaway does not fill the disk. */
@@ -105,6 +106,7 @@ export function buildApp({
     api.register(runRoutes)
     api.register(shareRoutes)
     api.register(vehicleRoutes)
+    api.register(timetableRoutes)
     for (const r of routes) api.register(r)
   }, { prefix: '/api' })
 

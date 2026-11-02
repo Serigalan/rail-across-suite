@@ -4,10 +4,10 @@ import { useTexts } from '../i18n'
 import { splitProjects, variantTree } from '../projects'
 
 /**
- * The page of a simulation that is there: what it does, and the projects
- * with their variants, each opening in it. A simulation reads the
- * infrastructure and writes nothing: the projects are managed in the
- * infrastructure editor, not here.
+ * The page of a module that works on a variant — a simulation, the
+ * Fahrplan-Editor —: what it does, and the projects with their variants, each
+ * opening in it. Neither changes the infrastructure: the projects are managed
+ * in the infrastructure editor, not here.
  */
 export default function Simulation({ route, projects }) {
   const { t, fill } = useTexts()
@@ -34,7 +34,7 @@ export default function Simulation({ route, projects }) {
                 <li key={variant.id} style={{ paddingLeft: depth * 18 }}>
                   <span className="ra-grow">{variant.name}</span>
                   {variant.head && <span className="ui-muted">{fill('revision', { n: variant.head.number })}</span>}
-                  <a className="ui-btn ui-btn-small" href={simulationUrl(module, p.id, variant.id)}>{t('simulate')}</a>
+                  <a className="ui-btn ui-btn-small" href={simulationUrl(module, p.id, variant.id)}>{t(module.id === 'timetable' ? 'edit_timetables' : 'simulate')}</a>
                 </li>
               ))}
             </ul>

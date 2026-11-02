@@ -8,13 +8,15 @@ const Svg = ({ children }) => (
   </svg>
 )
 
-/** The tool's mark: a speedometer. */
+/** The tool's mark: a run over the distance — speeding up, running, braking —, as the start page's tile. */
 export const LogoIcon = () => (
-  <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true">
-    <rect width="24" height="24" rx="5" fill="#303383" />
-    <path d="M4 17.5a8 8 0 0 1 16 0" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" />
-    <path d="M12 17.5l4.2-5.2" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" />
-    <circle cx="12" cy="17.5" r="1.6" fill="#fff" />
+  <svg viewBox="0 0 48 48" width="28" height="28" aria-hidden="true">
+    <rect width="48" height="48" rx="12" fill="#303383" />
+    <g fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M10 11 V37 H39" strokeOpacity="0.5" strokeWidth="2" />
+      <path d="M12 36 C14 24 17 18 22 18 H29 C32 18 34 25 36 36" />
+      <path d="M10 18 H14" strokeOpacity="0.5" strokeWidth="2" />
+    </g>
   </svg>
 )
 /** A train: its front, two windows, its wheels on the rail. */

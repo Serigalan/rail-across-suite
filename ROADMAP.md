@@ -185,7 +185,13 @@ generalised core most. Catenary follows.
 ## Phase 4 — Operations, timetable, capacity
 
 - `operations` domain: train types, rolling stock, train runs, stopping patterns.
-- **Open-Timetable-Tool**: timetable construction on operational points and paths.
+- **Fahrplan-Editor** (`apps/timetable-editor/`, [decision 0016](docs/decisions/0016-timetables-of-a-project.md)):
+  *done:* a project's timetables on the server, laid on any of its variants; trains with number, kind, vehicle,
+  departure and margin that begin and end at a station (the layout's station tracks) and stop at or pass stations
+  and halts on the way, a departure waited for at a stop; their times from the running time simulation, a row for
+  every station passed; copies at an interval (Takt); the graphical timetable along a train's way. *Next:* times
+  typed in and checked against the running times, connections, conflicts from blocking times, the exchange with
+  OSRD's timetables.
 - **Running times** in the Fahrplan-Sim (`apps/simulation-tool/`, [decision 0013](docs/decisions/0013-running-times-in-rust.md)):
   *done:* OSRD's envelope simulation ported to Rust (`sim/`, [decision 0015](docs/decisions/0015-lgpl.md)) and
   held to OSRD's own test cases; a train over the net of a variant — its path over switches, the grades of the
@@ -194,7 +200,7 @@ generalised core most. Catenary follows.
   speed and the time over the distance, the timetable of its stops, the run played on the map; the vehicles as
   OSRD's RailJSON rolling stock in a catalogue of the suite, edited in the Fahrzeug-Editor
   (`apps/vehicle-editor/`), OSRD's example vehicles built in ([decision 0014](docs/decisions/0014-vehicles-in-osrds-form.md)). *Next:* the electrification of the net for
-  the traction mode, the train runs of the `operations` domain, blocking times.
+  the traction mode, blocking times.
 - **Open-Capacity-Sim builds on OSRD** ([decision 0006](docs/decisions/0006-capacity-on-osrd.md)): an adapter
   from one construction stage of a project to OSRD's infrastructure and timetable, and OSRD's results back as
   derived results; OSRD at a pinned version, its adaptations contributed upstream.

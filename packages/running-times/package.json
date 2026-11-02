@@ -1,0 +1,24 @@
+{
+  "name": "@rail-across/running-times",
+  "private": true,
+  "version": "0.1.0",
+  "description": "The running times of Rail-Across-Suite: a train's way over a variant's net, what the physics needs of it, the stations along it, and OSRD's simulation core in Rust (sim/) as WebAssembly — for the Simulation-Tool and the Fahrplan-Editor",
+  "license": "LGPL-3.0-only",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@rail-across/core": "*",
+    "@rail-across/vehicles": "*"
+  },
+  "devDependencies": {
+    "vitest": "^3.2.7"
+  }
+}

@@ -126,8 +126,8 @@ describe('a train through its stops', () => {
 
 })
 
-// The module itself, where it was built (npm run sim).
-const WASM = new URL('../../public/sim/rail_across_sim.wasm', import.meta.url)
+// The module itself, where cargo built it (npm run sim in an app).
+const WASM = new URL('../../../sim/target/wasm32-unknown-unknown/release/rail_across_sim_wasm.wasm', import.meta.url)
 describe.skipIf(!existsSync(WASM))('the simulation module', () => {
   it('runs the train', async () => {
     const { instance } = await WebAssembly.instantiate(readFileSync(WASM))

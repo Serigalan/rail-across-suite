@@ -1,7 +1,7 @@
 import { Button, IconButton, Message, NumberField, Panel, Section, SelectField, TextField, TrashIcon } from '@rail-across/ui'
 import { curveFor, modeLabel, powerOf } from '@rail-across/vehicles'
 import { vehicleUrl } from '../suite.js'
-import { formatDistance } from '../format.js'
+import { formatDistance } from '@rail-across/running-times'
 
 /**
  * The train to simulate: its vehicle from the catalogue — shown in the

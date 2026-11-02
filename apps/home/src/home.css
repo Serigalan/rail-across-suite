@@ -51,10 +51,12 @@ html, body { margin: 0; background: var(--ui-surface); }
 }
 .ra-tile:hover { border-color: var(--color-primary); box-shadow: 0 6px 20px rgba(48, 51, 131, 0.14); transform: translateY(-2px); }
 .ra-tile:focus-visible, .ra-tab:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
-.ra-tile-icon { width: 46px; height: 46px; color: var(--color-primary); }
+.ra-tile-icon { width: 48px; height: 48px; color: var(--color-primary); margin-bottom: 4px; }
+.ra-tile-icon .ra-icon { display: block; filter: drop-shadow(0 2px 4px rgba(48, 51, 131, 0.18)); }
 .ra-tile-name { font-size: 17px; font-weight: 700; }
 .ra-tile-desc { font-size: 13px; line-height: 1.45; color: var(--ui-muted); flex: 1; }
-.ra-tile-planned .ra-tile-icon { color: var(--ui-muted); }
+.ra-tile-planned .ra-tile-icon { color: color-mix(in srgb, var(--ui-muted) 60%, var(--ui-bg)); }
+.ra-tile-planned .ra-tile-icon .ra-icon { filter: none; }
 
 /* The tools as tabs: the chosen one in the primary colour, sitting on the line
    below like a tab on its sheet; the others greyed until chosen. */
@@ -75,9 +77,9 @@ html, body { margin: 0; background: var(--ui-surface); }
   display: flex; align-items: center; gap: 10px; margin: 0 0 16px; padding: 10px 14px;
   border-radius: 10px; background: var(--ui-selected); font-size: 14px; font-weight: 500;
 }
-.ra-mode-icon { width: 26px; height: 26px; color: var(--color-primary); flex-shrink: 0; }
+.ra-mode-icon { width: 28px; height: 28px; color: var(--color-primary); flex-shrink: 0; }
 .ra-mode-off { background: var(--ui-hover); color: var(--ui-muted); }
-.ra-mode-off .ra-mode-icon { color: var(--ui-muted); }
+.ra-mode-off .ra-mode-icon { color: color-mix(in srgb, var(--ui-muted) 60%, var(--ui-bg)); }
 
 .ra-mode-text { flex: 1; }
 .ra-mode .ui-link { font-size: 12.5px; font-weight: 400; }
@@ -146,7 +148,7 @@ html, body { margin: 0; background: var(--ui-surface); }
   display: flex; gap: 20px; align-items: flex-start; padding: 24px; margin-top: 8px;
   background: var(--ui-bg); border: 1px solid var(--ui-border); border-radius: 14px;
 }
-.ra-planned .ra-tile-icon { width: 64px; height: 64px; flex-shrink: 0; color: var(--ui-muted); }
+.ra-planned .ra-tile-icon { width: 64px; height: 64px; flex-shrink: 0; color: color-mix(in srgb, var(--ui-muted) 60%, var(--ui-bg)); }
 .ra-planned h2 { margin: 0 0 8px; font-size: 20px; }
 .ra-planned p { margin: 0 0 10px; line-height: 1.5; }
 

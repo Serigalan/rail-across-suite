@@ -12,7 +12,7 @@ Helpers without a railway in them, shared by modules and interface alike.
 | `settings.js` | The user's own settings (colour, layers, terrain source, …) — per browser in `localStorage` (`olt_settings`), **never part of a project**; the language is the suite's (`@rail-across/ui`), the one kept here before standing in until one is chosen there |
 | `chartAxes.js` | Axis steps and ticks of the drawing overlays (bands, profiles) that keep labels apart |
 | `svgPath.js` | SVG path data reduced to absolute `M L C Z` for the plan backends (arcs and quadratics become cubics) |
-| `logoMark.js`, `logoImage.js` | The app's mark (one track writing O, L and T) and converting an image file into a bounded PNG data URL for title blocks |
+| `logoMark.js`, `logoImage.js` | The plan's mark (one track writing O, L and T) and converting an image file into a bounded PNG data URL for title blocks |
 | `projectImages.js` | The pictures a new project can start with (country outlines and pictograms under `public/project-images/`); a chosen one is uploaded and referenced by hash like any other |
 | `mapTiler.js` | The MapTiler key for satellite and terrain tiles (`VITE_MAPTILER_KEY` overrides it at build time) |
 

@@ -185,8 +185,10 @@ describe('the door', () => {
     expect(Object.keys(toDocument(record(), { carrySchemas: true }).schemas)).not.toContain(SCHEMA_HASHES.signalling)
   })
 
-  // The station as signalling 1.0 was written before: third (speed sections, a route's own speed, frames and
-  // function on the signal), second (no speed sections yet), first (no logical signals, PZB elements).
+  // The station as signalling 1.0 was written before: fourth (no station of a signal), third (speed sections,
+  // a route's own speed, frames and function on the signal), second (no speed sections yet), first (no
+  // logical signals, PZB elements). Each before the fourth reads as of the open line.
+  const FOURTH = 'sha256:cee619f2ae1b256a81ca5536e3851602cce96841d16bb2fe5f11ffe1a5e1f64c'
   const THIRD = 'sha256:0194c1e7fe2a63741270025beb48929d106d74a80bf5b33ed4305965a5303487'
   const SECOND = 'sha256:72fccdfdcac3f5ce42d7f49d10fb9134e1c4ed792f7365ec9f01d997f0049724'
   const FIRST = 'sha256:8e4fdf8b8d487f61be93b473521515fe2e5510ef3cdc21d994cd8a405aeb74a0'
@@ -196,8 +198,14 @@ describe('the door', () => {
     // A logical signal of its own in each system, as the first schema could say it: one per signal.
     return toDocument(record({ signalling }))
   }
-  const asThird = (doc) => {
+  const asFourth = (doc) => {
     const d = structuredClone(doc)
+    d.domains.signalling.schema = FOURTH
+    d.domains.signalling.collections.signals = d.domains.signalling.collections.signals.map(({ operationalPointId: _o, ...s }) => s)
+    return d
+  }
+  const asThird = (doc) => {
+    const d = asFourth(doc)
     const c = d.domains.signalling.collections
     d.domains.signalling.schema = THIRD
     const speeds = new Map()
@@ -231,9 +239,12 @@ describe('the door', () => {
 
   it('reads signalling 1.0 as each earlier schema wrote it, as of now', () => {
     const now = stationNow()
-    expect(checkDocument(asThird(now))).toEqual(now)
-    expect(checkDocument(asSecond(now))).toEqual(now)
-    expect(checkDocument(asFirst(now))).toEqual(now)
+    const open = asFourth(now)
+    open.domains.signalling.schema = now.domains.signalling.schema
+    expect(checkDocument(asFourth(now))).toEqual(open)
+    expect(checkDocument(asThird(now))).toEqual(open)
+    expect(checkDocument(asSecond(now))).toEqual(open)
+    expect(checkDocument(asFirst(now))).toEqual(open)
   })
 
   it('leaves out a member of the signalling that is undefined, as a file would', () => {

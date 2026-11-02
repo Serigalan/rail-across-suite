@@ -37,10 +37,13 @@ export const SCHEMA_HASHES = Object.fromEntries(Object.entries(DOMAIN_SCHEMAS).m
  *   at its start signal; a signal's function, screen and indicators become
  *   its first logical signal's, and a route's speed that logical signal's
  *   signalling speed for it. A signal of no system keeps them.
+ * - Fourth: a signal may name the station it belongs to; none does yet, each
+ *   is of the open line.
  */
 const SIGNALLING_FIRST = 'sha256:8e4fdf8b8d487f61be93b473521515fe2e5510ef3cdc21d994cd8a405aeb74a0'
 const SIGNALLING_SECOND = 'sha256:72fccdfdcac3f5ce42d7f49d10fb9134e1c4ed792f7365ec9f01d997f0049724'
 const SIGNALLING_THIRD = 'sha256:0194c1e7fe2a63741270025beb48929d106d74a80bf5b33ed4305965a5303487'
+const SIGNALLING_FOURTH = 'sha256:cee619f2ae1b256a81ca5536e3851602cce96841d16bb2fe5f11ffe1a5e1f64c'
 
 /** The frames a logical signal shows; the rest stay its place's. */
 const OF_LOGICAL = new Set(['screen', 'indicator'])
@@ -76,7 +79,7 @@ const SIGNALLING_STEPS = {
     }
     return {
       ...domain,
-      schema: SCHEMA_HASHES.signalling,
+      schema: SIGNALLING_FOURTH,
       collections: {
         ...rest,
         signals: signals.map((s) => {
@@ -97,6 +100,7 @@ const SIGNALLING_STEPS = {
       },
     }
   },
+  [SIGNALLING_FOURTH]: (domain) => ({ ...domain, schema: SCHEMA_HASHES.signalling }),
 }
 
 /**

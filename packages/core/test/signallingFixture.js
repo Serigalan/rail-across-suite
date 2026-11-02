@@ -4,10 +4,10 @@
 // an overlap over switch w1 onto track t2 (150 m), where a route ends at a
 // virtual signal (target on the line). Train detection over t1, flank
 // protection for the switch, the PZB magnets of A and N1, an ETCS balise
-// group of one at N1, and the station's boundary at A. A signals 60 km/h for
+// group of one at N1, and the station's boundary at A; A, N1 and the board Ne 1 are its. A signals 60 km/h for
 // its route to N1, whose overlap is long enough for that. The tests of the check and the shared vectors start from it.
 //
-// `operationalPoint` names the station of the core's register it bounds.
+// `operationalPoint` names the station of the core's register it bounds and A, N1 and Ne 1 belong to.
 
 export function ksStation({ operationalPoint = 'op1' } = {}) {
   const on = (trackId, station, extra = {}) => ({ anchor: 'station', trackId, station, side: 'right', offset: 3.1, direction: 'up', ...extra })
@@ -16,7 +16,7 @@ export function ksStation({ operationalPoint = 'op1' } = {}) {
     collections: {
       signals: [
         {
-          id: 'sig-a', name: 'A', kind: 'real', mounting: 'mast',
+          id: 'sig-a', name: 'A', kind: 'real', mounting: 'mast', operationalPointId: operationalPoint,
           at: on('t1', 20), sight: { required: 300, achievable: 420 },
           logicalSignals: [{
             system: 'ks', type: 'multiSection', function: 'entry',
@@ -31,7 +31,7 @@ export function ksStation({ operationalPoint = 'op1' } = {}) {
           frames: [{ kind: 'nameplate', aspects: [] }],
         },
         {
-          id: 'sig-n1', name: 'N1', kind: 'real', mounting: 'mast',
+          id: 'sig-n1', name: 'N1', kind: 'real', mounting: 'mast', operationalPointId: operationalPoint,
           at: on('t1', 230),
           logicalSignals: [{
             system: 'ks', type: 'mainShunting', function: 'exit',
@@ -44,7 +44,7 @@ export function ksStation({ operationalPoint = 'op1' } = {}) {
           frames: [],
         },
         {
-          id: 'sig-ne1', kind: 'real', function: 'standaloneIndicator', mounting: 'foundation', at: on('t1', 5),
+          id: 'sig-ne1', kind: 'real', function: 'standaloneIndicator', mounting: 'foundation', at: on('t1', 5), operationalPointId: operationalPoint,
           frames: [{ kind: 'plate', aspects: [{ aspect: 'Ne_1' }] }],
         },
         { id: 'sig-v', kind: 'virtual', virtualFunction: 'trainTargetLine', at: on('t2', 140) },

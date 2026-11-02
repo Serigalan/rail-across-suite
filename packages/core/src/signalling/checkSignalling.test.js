@@ -23,11 +23,12 @@ describe('a station signalled with Ks and PZB', () => {
       byId(c.routes, 'rt-a-n1').overlaps[0].overlapId = 'ov-9'
       byId(c.stationBoundaries, 'bd-1').operationalPointId = 'op9'
       byId(c.signals, 'sig-n1').lifespan = { from: 'stage-9' }
+      byId(c.signals, 'sig-n1').operationalPointId = 'op8'
     })
     const missing = errors.filter(e => e.code === 'reference_missing').map(e => [e.id, e.params.target, e.params.ref])
     expect(missing).toEqual(expect.arrayContaining([
       ['sig-a', 'core.tracks', 'gone'], ['we-1', 'core.switches', 'w9'], ['rt-a-n1', 'signalling.overlaps', 'ov-9'],
-      ['bd-1', 'core.operationalPoints', 'op9'], ['sig-n1', 'core.fields.stages', 'stage-9'],
+      ['bd-1', 'core.operationalPoints', 'op9'], ['sig-n1', 'core.fields.stages', 'stage-9'], ['sig-n1', 'core.operationalPoints', 'op8'],
     ]))
   })
 
@@ -261,6 +262,11 @@ describe('flank protection, balises and magnets, station boundaries', () => {
     expect(ok).toEqual({ errors: [], warnings: [] })
     const { warnings } = check((c) => { byId(c.stationBoundaries, 'bd-1').marks = [{ signalId: 'sig-n1' }] })
     expect(codes(warnings)).toEqual(['boundary_mark_special'])
+  })
+
+  it('takes a station\'s boundary from its own signals, not from the open line\'s', () => {
+    const { warnings } = check((c) => { delete byId(c.signals, 'sig-a').operationalPointId })
+    expect(warnings.map(w => [w.code, w.params.signal])).toEqual([['boundary_mark_elsewhere', 'sig-a']])
   })
 
   it('holds a derailer at its place, and a switch giving flank protection to its position', () => {

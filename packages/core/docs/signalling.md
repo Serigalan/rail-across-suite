@@ -65,6 +65,7 @@ settings: a new signalling system (H/V, Sv) is a new entry under `systeme`, a ne
 | `detection_point_unused` | warning | a detection point that bounds no track section |
 | `section_extent_differs` | warning | a section's points enclose no part of the net together (see below) |
 | `boundary_mark_special` | warning | a station boundary marked by neither an entry signal nor a board Ne 1 nor a switch nor a platform — a special case of EBO §4 |
+| `boundary_mark_elsewhere` | warning | a station boundary marked by a signal that does not belong to the station (`operationalPointId`): one of the open line or of another station |
 
 ## Track sections over the net
 

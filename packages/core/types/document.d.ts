@@ -352,6 +352,8 @@ export namespace Signalling {
     name?: Core.Label
     /** The number of the interlocking area it belongs to, which leads its full designation (PlanPro Kennzahl: 60 in 60A). */
     areaNumber?: Core.Label
+    /** The station it belongs to; without one it is a signal of the open line. */
+    operationalPointId?: Core.Ref
     kind: "real" | "virtual"
     at: Directed
     /** Further tracks it stands at, at the same place: a clearance marker (Ra 12) between the two tracks beyond a switch, which PlanPro places on both edges. */

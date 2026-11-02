@@ -62,6 +62,7 @@
         "id": { "$ref": "core#/$defs/Id" },
         "name": { "$ref": "core#/$defs/Label" },
         "areaNumber": { "$ref": "core#/$defs/Label", "description": "The number of the interlocking area it belongs to, which leads its full designation (PlanPro Kennzahl: 60 in 60A)." },
+        "operationalPointId": { "$ref": "core#/$defs/Ref", "x-target": "core.operationalPoints", "description": "The station it belongs to; without one it is a signal of the open line." },
         "kind": { "enum": ["real", "virtual"] },
         "at": { "$ref": "#/$defs/Directed" },
         "alsoAt": {

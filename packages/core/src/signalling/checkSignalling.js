@@ -133,6 +133,7 @@ export function checkSignalling({ core, signalling }) {
     at('signals', s, s.at)
     for (const [i, also] of (s.alsoAt ?? []).entries()) at('signals', s, also, `alsoAt.${i}`)
     lifespan('signals', s)
+    ref('signals', s.id, 'core.operationalPoints', s.operationalPointId, 'operationalPointId')
     const own = s.frames ?? []
     const logical = s.logicalSignals ?? []
     if (s.kind === 'virtual') {
@@ -316,6 +317,8 @@ export function checkSignalling({ core, signalling }) {
       const entry = [s?.function, ...(s?.logicalSignals ?? []).map(l => l.function)].some(fn => ['entry', 'entryExit', 'entryBlock'].includes(fn))
       const board = (s?.frames ?? []).some(f => f.aspects.some(a => a.aspect === 'Ne_1'))
       if (s && !entry && !board) warning('boundary_mark_special', 'stationBoundaries', b.id, { signal: m.signalId }, m.signalId)
+      // What bounds a station is its own: its entry signal is not of the open line, nor of another station.
+      if (s && s.operationalPointId !== b.operationalPointId) warning('boundary_mark_elsewhere', 'stationBoundaries', b.id, { signal: m.signalId }, m.signalId)
     }
     lifespan('stationBoundaries', b)
   }

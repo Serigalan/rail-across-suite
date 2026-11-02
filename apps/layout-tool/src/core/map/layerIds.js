@@ -29,6 +29,7 @@ export const PLATFORMS_OUTLINE_LAYER = 'platforms-outline-layer'
 export const BUFFER_STOPS_SOURCE      = 'buffer-stops-source'
 export const BUFFER_STOPS_LAYER       = 'buffer-stops-layer'
 export const BUFFER_STOPS_BRAKE_LAYER = 'buffer-stops-brake-layer'
+export const BOUNDARIES_LAYER         = 'boundaries-layer'
 
 // The height points of the profile on show (decision 389): clicked, one opens in the point view.
 export const ELEVATION_POINTS_LAYER   = 'elevation-points-layer'

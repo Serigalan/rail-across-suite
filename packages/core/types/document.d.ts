@@ -224,13 +224,17 @@ export namespace Core {
     operationalPoint?: Ref
     lifespan?: Lifespan
   }
-  /** A buffer stop or the boundary of the planning area at a free track end. */
+  /** A buffer stop or the boundary of the planning area at a free track end; a train may begin and end at either. */
   export type EndMark = {
     id: Id
     kind: "buffer_stop" | "boundary"
     at: TrackEnd
+    /** What a timetable names the place by. */
+    name?: Text
     type?: number | string
     brakeLength?: number
+    /** At a boundary: the speed [km/h] a train crosses it at in a simulation, entering or leaving; without one, what the line allows there. */
+    speed?: number
     lifespan?: Lifespan
   }
   /** Foreign reference data: the stretch of a DB line around the project, in WGS84, the third value of each point its kilometrage [m]. */

@@ -6,12 +6,12 @@ import { FILTER_NONE } from './pick'
 import { highlightColors } from './mapColors'
 import { loadSettings } from '../utils/common'
 import { hiddenTracks } from '../storage'
-import { bufferStopFeatures } from '@rail-across/core/track'
-import { showTopology } from './topologyLayer'
+import { boundaryFeatures, bufferStopFeatures } from '@rail-across/core/track'
+import { BOUNDARY_GREY, showTopology } from './topologyLayer'
 import { getColor, PLATFORM_FILL_COLOR, PLATFORM_FILL_OPACITY, PLATFORM_OUTLINE_COLOR } from './mapRenderUtils'
 import { updateLabels, clearTrackLabels, createTrackLabel, labelGeneration, removeTrackLabels, SWITCH_LABEL_MIN_ZOOM } from './labelUtils'
 import { ensureMarkerImages, TRACK_MARKER_ICON_IMAGE } from './markerImages'
-import { BUFFER_STOPS_BRAKE_LAYER, BUFFER_STOPS_LAYER, BUFFER_STOPS_SOURCE, PLATFORMS_FILL_LAYER, PLATFORMS_OUTLINE_LAYER, PLATFORMS_SOURCE, SWITCH_FILLS_LAYER, SWITCH_FILLS_SOURCE, SWITCH_LCS_LAYER, SWITCH_LCS_SOURCE, TRACKS_FLASH_LAYER, TRACKS_HOVER_LAYER, TRACKS_LAYER, TRACKS_SELECTED_LAYER, TRACKS_SOURCE, TRACK_MARKERS_LAYER, TRACK_MARKERS_SOURCE } from './layerIds'
+import { BOUNDARIES_LAYER, BUFFER_STOPS_BRAKE_LAYER, BUFFER_STOPS_LAYER, BUFFER_STOPS_SOURCE, PLATFORMS_FILL_LAYER, PLATFORMS_OUTLINE_LAYER, PLATFORMS_SOURCE, SWITCH_FILLS_LAYER, SWITCH_FILLS_SOURCE, SWITCH_LCS_LAYER, SWITCH_LCS_SOURCE, TRACKS_FLASH_LAYER, TRACKS_HOVER_LAYER, TRACKS_LAYER, TRACKS_SELECTED_LAYER, TRACKS_SOURCE, TRACK_MARKERS_LAYER, TRACK_MARKERS_SOURCE } from './layerIds'
 
 // The project on the map: tracks, switch bodies, platforms, buffer stops, the
 // start/end markers and the labels — drawn from a project record. One source
@@ -224,8 +224,12 @@ export function renderTracksOnMap(map, project, { fit = false, topology = false 
 
   // Buffer stops stand on track ends (trackEndMarks): face and body solid and
   // heavier than the track, the brake length behind them dashed — white gaps
-  // laid over the track line, which is already drawn there.
-  const bufferStopGeoJSON = { type: 'FeatureCollection', features: bufferStopFeatures(tracks, project.endMarks ?? []) }
+  // laid over the track line, which is already drawn there. The boundaries of
+  // the planning area in the same source: a grey bar across the track's end.
+  const bufferStopGeoJSON = {
+    type: 'FeatureCollection',
+    features: [...bufferStopFeatures(tracks, project.endMarks ?? []), ...boundaryFeatures(tracks, project.endMarks ?? [])],
+  }
 
   if (map.getSource(TRACKS_SOURCE)) {
     map.getSource(TRACKS_SOURCE).setData(lineGeoJSON)
@@ -272,8 +276,15 @@ export function renderTracksOnMap(map, project, { fit = false, topology = false 
       id: BUFFER_STOPS_LAYER,
       type: 'line',
       source: BUFFER_STOPS_SOURCE,
-      filter: ['!=', ['get', 'part'], 'brake'],
+      filter: ['!', ['in', ['get', 'part'], ['literal', ['brake', 'boundary']]]],
       paint: { 'line-color': c, 'line-width': ZOOM_LINE_WIDTH_BUFFER_STOP },
+    })
+    map.addLayer({
+      id: BOUNDARIES_LAYER,
+      type: 'line',
+      source: BUFFER_STOPS_SOURCE,
+      filter: ['==', ['get', 'part'], 'boundary'],
+      paint: { 'line-color': BOUNDARY_GREY, 'line-width': ZOOM_LINE_WIDTH_BUFFER_STOP },
     })
     map.addSource(TRACK_MARKERS_SOURCE, { type: 'geojson', data: pointGeoJSON, maxzoom: GEOJSON_MAXZOOM })
     map.addSource(SWITCH_FILLS_SOURCE, { type: 'geojson', data: switchFillGeoJSON, maxzoom: GEOJSON_MAXZOOM })

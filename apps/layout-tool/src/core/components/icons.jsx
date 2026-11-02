@@ -121,6 +121,16 @@ export const BufferStopIcon = () => (
   </MenuIcon>
 )
 
+// A boundary of the planning area: the track drawn up to a bar, running on beyond it undrawn.
+export const BoundaryIcon = () => (
+  <MenuIcon>
+    <path d="M2 8 H9" />
+    <path d="M9 3 V13" />
+    <path d="M11 8 H14" strokeDasharray="1.5 1.5" opacity="0.55" />
+    <IconNode cx={2} cy={8} />
+  </MenuIcon>
+)
+
 // Connect element panel — the piece that joins two existing ends.
 export const ConnectStraightIcon = () => (
   <MenuIcon>

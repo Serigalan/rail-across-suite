@@ -10,7 +10,7 @@ export {
   bandFindings, bandRange, bandRuns, bandValueAt, cantBand, curvatureBand,
   elementSpans, speedBand, withBandValue, withCantEnds,
 } from './alignmentBands.js'
-export { bufferStopFeatures, FACE_HALF_WIDTH } from './bufferStopGeometry.js'
+export { BOUNDARY_HALF_WIDTH, boundaryFeatures, bufferStopFeatures, FACE_HALF_WIDTH } from './bufferStopGeometry.js'
 export { DEFAULT_HEIGHT_EPSG, HEIGHT_DATUMS, heightDatumLabel } from './heightDatums.js'
 export {
   adjacentTracks, elementAtStation, endOfIndex, GIVEN_MODES, gradientAt, heightAt, heightStations,
@@ -45,7 +45,7 @@ export {
 export { classifyTrackEnds, freeEnds, isOpenState, switchNodes, tracksOnFrom } from './topology.js'
 export {
   BOUNDARY, BUFFER_STOP, BUFFER_STOP_LENGTH, BUFFER_STOP_TYPES, bufferStopFits, bufferStopStations,
-  DEFAULT_BUFFER_STOP_TYPE, defaultBrakeLength, endKey, flipEndMarks, newBoundary, newBufferStop,
+  DEFAULT_BUFFER_STOP_TYPE, defaultBrakeLength, endKey, endMarkName, endMarkStation, flipEndMarks, newBoundary, newBufferStop,
   pruneEndMarks, remapEndMarks,
 } from './trackEndMarks.js'
 export {

@@ -10,12 +10,13 @@ import DeleteTrackForm from './DeleteTrackForm'
 import DeleteSwitchForm from './DeleteSwitchForm'
 import SwitchStatusForm from './SwitchStatusForm'
 import RoutesForm from './RoutesForm'
-import BufferStopForm from '../CreateElementPanel/BufferStopForm'
+import EndMarkForm from '../CreateElementPanel/EndMarkForm'
+import { BOUNDARY } from '@rail-across/core/track'
 import SwitchConnectionEdit from '../ConnectSwitchPanel/SwitchConnectionEdit'
 import {
   EditLengthIcon, DeleteElementIcon, EditTracksIcon, EditPropertiesIcon,
   ChangeDirectionIcon, DeleteTrackIcon, DeleteSwitchIcon,
-  BufferStopIcon, RouteIcon, SwitchConnectionIcon,
+  BufferStopIcon, BoundaryIcon, RouteIcon, SwitchConnectionIcon,
 } from '../../icons'
 import { useI18n } from '../../../locales/i18nContext'
 import useMapPick from '../../../map/useMapPick'
@@ -134,7 +135,16 @@ export default function EditElementPanel({ trackTableId, trackTableRouteId, onSh
     <>
       {backButton()}
       <h2>{t('buffer_stop_edit')}</h2>
-      <BufferStopForm edit
+      <EndMarkForm edit
+        onCommitted={() => setPage('menu')} />
+    </>
+  )
+
+  if (page === 'boundary') return (
+    <>
+      {backButton()}
+      <h2>{t('boundary_edit')}</h2>
+      <EndMarkForm edit kind={BOUNDARY}
         onCommitted={() => setPage('menu')} />
     </>
   )
@@ -199,6 +209,10 @@ export default function EditElementPanel({ trackTableId, trackTableRouteId, onSh
         <button className="ui-btn ui-btn-option" onClick={() => goto('buffer_stop')}>
           <BufferStopIcon />
           {t('buffer_stop_edit')}
+        </button>
+        <button className="ui-btn ui-btn-option" onClick={() => goto('boundary')}>
+          <BoundaryIcon />
+          {t('boundary_edit')}
         </button>
       </div>
     </>

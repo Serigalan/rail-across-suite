@@ -18,7 +18,7 @@ writes canonical JSON and content hashes. The `project` module opens the door fo
 
 | File | What it does |
 |---|---|
-| `door.js` | The one door: `checkDocument` (envelope, domain versions and schema hashes — a domain of an earlier schema of its version brought to this one first: core before `designSpeed`, signalling's three earlier schemas —, every object against its domain's schema, ids unique per collection, blobs against their hashes), `toDocument` (a record as a checked document, the schemas carried where it travels), `fromDocument` (a checked document as the record) |
+| `door.js` | The one door: `checkDocument` (envelope, domain versions and schema hashes — a domain of an earlier schema of its version brought to this one first: core before `designSpeed` and before an end mark's name and speed, signalling's five earlier schemas —, every object against its domain's schema, ids unique per collection, blobs against their hashes), `toDocument` (a record as a checked document, the schemas carried where it travels), `fromDocument` (a checked document as the record) |
 | `coreFormat.js` | The record ↔ document conversion, both ways and lossless; the first step of the migration chain (oltjson-1.1 → core 1.0) |
 | `schemaCheck.js` | The part of JSON Schema the domain schemas use — no more, so Python reads them alike; a schema with another keyword is refused when it is registered |
 | `canonical.js` | Canonical JSON after RFC 8785, content hashes (`sha256:` + hex), ids of UUID form drawn from a text |

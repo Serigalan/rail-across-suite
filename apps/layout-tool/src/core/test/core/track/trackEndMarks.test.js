@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import {
   newBufferStop, newBoundary, bufferStopStations, bufferStopFits, remapEndMarks, flipEndMarks,
-  pruneEndMarks, defaultBrakeLength, BUFFER_STOP_LENGTH, BUFFER_STOP_TYPES,
+  pruneEndMarks, defaultBrakeLength, endMarkName, endMarkStation, BUFFER_STOP_LENGTH, BUFFER_STOP_TYPES,
 } from '@rail-across/core/src/track/trackEndMarks.js'
-import { bufferStopShape, bufferStopFeatures } from '@rail-across/core/src/track/bufferStopGeometry.js'
+import { boundaryFeatures, bufferStopShape, bufferStopFeatures } from '@rail-across/core/src/track/bufferStopGeometry.js'
 import { classifyTrackEnds, freeEnds, switchNodes } from '@rail-across/core/src/track/topology.js'
 import { endPointStraightUtm, endPointCurvedUtm } from '@rail-across/core/src/geometry/elementUtils.js'
 import { utmToWgs84 } from '@rail-across/core/src/geometry/coordinateUtils.js'
@@ -120,6 +120,33 @@ describe('buffer stop shape', () => {
       newBufferStop('t', 'END', 4), newBoundary('t', 'BEGIN'), newBufferStop('gone', 'END', 4),
     ])
     expect(feats.map(f => f.properties.part).sort()).toEqual(['body', 'brake', 'face'])
+  })
+
+  it('draws a boundary as a bar across its track\'s end', () => {
+    const tr = straight('t', E0, N0, 90, 100)
+    const feats = boundaryFeatures([tr], [newBufferStop('t', 'END', 4), newBoundary('t', 'BEGIN', 60), newBoundary('gone', 'END')])
+    expect(feats.map(f => f.properties.part)).toEqual(['boundary'])
+    const [a, b] = feats[0].geometry.coordinates
+    const at = utmToWgs84(E0, N0, UTM)
+    // across the track's start: the middle of the bar is where it begins
+    expect((a[0] + b[0]) / 2).toBeCloseTo(at[0], 7)
+    expect((a[1] + b[1]) / 2).toBeCloseTo(at[1], 7)
+  })
+})
+
+describe('an end mark as a place of the timetable', () => {
+  it('is called by its name, else by its kind, track and end', () => {
+    expect(endMarkName({ ...newBoundary('t', 'END'), name: ' Grenze Nord ' }, { name: 'x' })).toBe('Grenze Nord')
+    expect(endMarkName(newBoundary('t', 'END'), { name: '6344.003' })).toBe('Grenze 6344.003 Ende')
+    expect(endMarkName(newBufferStop('t', 'BEGIN'), { stationName: 'Könnern', trackNumber: '5' })).toBe('Prellbock Könnern Gl. 5 Anfang')
+  })
+
+  it('is where a train stands: before a buffer stop\'s face, on a boundary\'s end', () => {
+    expect(endMarkStation(100, newBufferStop('t', 'END', 4, 6))).toBeCloseTo(100 - 6 - BUFFER_STOP_LENGTH)
+    expect(endMarkStation(100, newBoundary('t', 'END'))).toBe(100)
+    expect(endMarkStation(100, newBoundary('t', 'BEGIN'))).toBe(0)
+    expect(newBoundary('t', 'END', 60).speed).toBe(60)
+    expect(newBoundary('t', 'END')).not.toHaveProperty('speed')
   })
 })
 

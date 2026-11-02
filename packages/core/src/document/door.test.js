@@ -167,6 +167,17 @@ describe('the door', () => {
     expect(checkDocument(before)).toEqual(doc)
   })
 
+  it('keeps an end mark\'s name and a boundary\'s speed, and reads a core from before them', () => {
+    const marks = [{ id: 'e1', kind: 'boundary', trackId: 't1', endpoint: 'END', name: 'Grenze Nord', speed: 80 }]
+    const doc = toDocument(record({ tracks: [track('t1')], endMarks: marks }))
+    expect(doc.domains.core.collections.endMarks[0]).toMatchObject({ name: 'Grenze Nord', speed: 80, at: { trackId: 't1', endpoint: 'END' } })
+    expect(fromDocument(doc).endMarks).toEqual(marks)
+    const before = toDocument(record({ tracks: [track('t1')], endMarks: [{ id: 'e1', kind: 'boundary', trackId: 't1', endpoint: 'END' }] }))
+    const now = structuredClone(before)
+    before.domains.core.schema = 'sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19'
+    expect(checkDocument(before)).toEqual(now)
+  })
+
   it('refuses a version or a domain it does not read', () => {
     const doc = toDocument(record())
     expect(() => checkDocument({ ...doc, domains: { ...doc.domains, core: { ...doc.domains.core, version: '1.1' } } })).toThrow('unsupported_version')

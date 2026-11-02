@@ -188,10 +188,14 @@ There is **no station on an element** — stations are the running sum of the le
   "frontOffset": 1.67, "backOffset": 4.67, "height": 550, "stationName": "Halle-Trotha", "code": "LHT" }
 
 { "id": "…", "kind": "buffer_stop", "trackId": "…", "endpoint": "END", "type": 4, "brakeLength": 4 }
-{ "id": "…", "kind": "boundary",    "trackId": "…", "endpoint": "BEGIN" }
+{ "id": "…", "kind": "boundary",    "trackId": "…", "endpoint": "BEGIN", "name": "Grenze Nord", "speed": 80 }
 
 { "id": "…", "name": "Route 1", "trackIds": ["…", "…", "…"] }
 ```
+
+An end mark's `name` is what a timetable calls the place — a train may begin and end at a buffer stop and at a
+boundary; without one it is named by its kind, track and end (`endMarkName`). A boundary's `speed` [km/h] is the
+speed a train crosses it at in a simulation, entering or leaving; without one, what the line allows there.
 
 A platform's polygon and a buffer stop's drawing are derived. A route stores only its tracks in running order;
 the direction it runs each one is derived from where they meet.

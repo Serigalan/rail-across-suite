@@ -109,26 +109,34 @@ const SIGNALLING_STEPS = {
 }
 
 /**
- * Core 1.0 as it was written before the design speed took its name: an
- * element's `speed` is its `designSpeed` now (S-R10).
+ * Core 1.0 as it was written before, by the hash its schema went by, and the
+ * step that brings a domain of it one schema on (S-R10).
+ *
+ * - First: an element's `speed` is its `designSpeed` now.
+ * - Second: an end mark may have a name, and a boundary the speed a train
+ *   crosses it at; none has yet.
  */
-const CORE_BEFORE_DESIGN_SPEED = 'sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6'
+const CORE_FIRST = 'sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6'
+const CORE_SECOND = 'sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19'
 
-function coreWithDesignSpeed(domain) {
-  const tracks = (domain.collections?.tracks ?? []).map(t => (t.elements
-    ? { ...t, elements: t.elements.map(el => {
-      if (!Object.hasOwn(el, 'speed')) return el
-      const { speed, ...rest } = el
-      return { ...rest, designSpeed: speed }
-    }) }
-    : t))
-  return { ...domain, schema: SCHEMA_HASHES.core, collections: { ...domain.collections, tracks } }
+const CORE_STEPS = {
+  [CORE_FIRST]: (domain) => {
+    const tracks = (domain.collections?.tracks ?? []).map(t => (t.elements
+      ? { ...t, elements: t.elements.map(el => {
+        if (!Object.hasOwn(el, 'speed')) return el
+        const { speed, ...rest } = el
+        return { ...rest, designSpeed: speed }
+      }) }
+      : t))
+    return { ...domain, schema: CORE_SECOND, collections: { ...domain.collections, tracks } }
+  },
+  [CORE_SECOND]: (domain) => ({ ...domain, schema: SCHEMA_HASHES.core }),
 }
 
 /** The document with every domain of an earlier schema of its version brought to this build's. */
 function migrated(doc) {
   let { core, signalling } = doc.domains
-  if (core?.version === '1.0' && core.schema === CORE_BEFORE_DESIGN_SPEED) core = coreWithDesignSpeed(core)
+  if (core?.version === '1.0') while (CORE_STEPS[core.schema]) core = CORE_STEPS[core.schema](core)
   if (signalling?.version === '1.0') while (SIGNALLING_STEPS[signalling.schema]) signalling = SIGNALLING_STEPS[signalling.schema](signalling)
   if (core === doc.domains.core && signalling === doc.domains.signalling) return doc
   return { ...doc, domains: { ...doc.domains, core, ...(signalling ? { signalling } : {}) } }

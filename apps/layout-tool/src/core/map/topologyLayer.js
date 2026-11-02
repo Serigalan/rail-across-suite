@@ -1,7 +1,7 @@
 import { classifyTrackEnds, switchNodes } from '@rail-across/core/track'
 import { GEOJSON_MAXZOOM } from '@rail-across/core/geometry'
 import { ZOOM_LINE_WIDTH } from './style'
-import { BUFFER_STOPS_BRAKE_LAYER, BUFFER_STOPS_LAYER, PLATFORMS_FILL_LAYER, PLATFORMS_OUTLINE_LAYER, SWITCH_FILLS_LAYER, SWITCH_LCS_LAYER, TRACKS_LAYER, TRACKS_SOURCE, TRACK_MARKERS_LAYER } from './layerIds'
+import { BOUNDARIES_LAYER, BUFFER_STOPS_BRAKE_LAYER, BUFFER_STOPS_LAYER, PLATFORMS_FILL_LAYER, PLATFORMS_OUTLINE_LAYER, SWITCH_FILLS_LAYER, SWITCH_LCS_LAYER, TRACKS_LAYER, TRACKS_SOURCE, TRACK_MARKERS_LAYER } from './layerIds'
 import { EMPTY_FC } from './geojson'
 
 /**
@@ -16,7 +16,8 @@ import { EMPTY_FC } from './geojson'
  */
 
 export const TOPOLOGY_RED = '#d62828'
-const BOUNDARY_GREY = '#8a8a8a'
+/** The grey of a boundary of the planning area, here and on the ordinary drawing. */
+export const BOUNDARY_GREY = '#8a8a8a'
 
 /** Line width of a track in the topology view [px], at every zoom. */
 const LINE_WIDTH = 2.5
@@ -27,7 +28,7 @@ const SWITCH_RADIUS = 13
 const HIDDEN = [
   SWITCH_FILLS_LAYER, SWITCH_LCS_LAYER, TRACK_MARKERS_LAYER,
   PLATFORMS_FILL_LAYER, PLATFORMS_OUTLINE_LAYER,
-  BUFFER_STOPS_LAYER, BUFFER_STOPS_BRAKE_LAYER,
+  BUFFER_STOPS_LAYER, BUFFER_STOPS_BRAKE_LAYER, BOUNDARIES_LAYER,
 ]
 
 const SOURCE_NODES = 'topology-nodes-source'

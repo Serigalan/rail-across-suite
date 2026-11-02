@@ -21,7 +21,7 @@ the importers, the merge and the Node project server use the same code.
 | `trackLinkUtils.js` | Links: the node where one track ends and the next begins in another plane |
 | `topology.js` | The state of every track end (switch, link, joint, buffer stop, boundary, open); which tracks continue from an end |
 | `trackEndMarks.js` | Buffer stops and planning-area boundaries at free track ends |
-| `bufferStopGeometry.js` | How a buffer stop is drawn |
+| `bufferStopGeometry.js` | How a buffer stop and a boundary are drawn |
 | `platformUtils.js` | Platforms anchored to a track by two stations; stationing helpers (`pointAtStation`, `stationOnTrack`, `pointOnElement`); carrying platforms when their track turns round or goes into another (`carryPlatforms`, `flipPlatforms`) |
 | `platformForm.js` | The platform dialog's fields and the record they make |
 | `routes.js` | Routes: named runs of connected tracks with their own stationing |
@@ -120,6 +120,9 @@ intentional. They are a collection and not a track field because tracks are spli
 dozen places that already hand the switch ports a remap; a mark rides that remap, while a field would be
 copied onto both halves of a split. A buffer stop is 2.20 m long and stands in the track; the brake length
 lies between it and the track end. Only free ends carry marks; a port taking the end over removes it.
+Either mark is a place a train may begin and end at, under its `name` (`endMarkName`, else made of kind, track
+and end), standing before a buffer stop's face or on a boundary's end (`endMarkStation`); a boundary's `speed`
+[km/h] is the speed a train crosses it at in a simulation, entering or leaving.
 
 ## Heights — the vertical alignment
 

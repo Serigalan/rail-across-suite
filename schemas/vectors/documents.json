@@ -6,7 +6,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -329,7 +329,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -355,7 +355,7 @@
     }
    }
   },
-  "hash": "sha256:6b061a6bdd38c1b7ad29f4bceffa808f5a557b2aa6a22118a78e9610dffdb6ce"
+  "hash": "sha256:4f96b6001f2f1cad14bcb89bf92feb9a1f3bb3ea2e6fae1ef11107b277644161"
  },
  {
   "name": "the sample, carrying its schemas",
@@ -364,7 +364,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -682,7 +682,7 @@
     }
    },
    "schemas": {
-    "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19": {
+    "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4": {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
      "$id": "core",
      "title": "Rail-Data-Core, domain core 1.0",
@@ -1402,7 +1402,7 @@
        }
       },
       "EndMark": {
-       "description": "A buffer stop or the boundary of the planning area at a free track end.",
+       "description": "A buffer stop or the boundary of the planning area at a free track end; a train may begin and end at either.",
        "type": "object",
        "required": [
         "id",
@@ -1423,6 +1423,10 @@
         "at": {
          "$ref": "#/$defs/TrackEnd"
         },
+        "name": {
+         "$ref": "#/$defs/Text",
+         "description": "What a timetable names the place by."
+        },
         "type": {
          "type": [
           "integer",
@@ -1431,6 +1435,11 @@
         },
         "brakeLength": {
          "type": "number"
+        },
+        "speed": {
+         "type": "number",
+         "minimum": 0,
+         "description": "At a boundary: the speed [km/h] a train crosses it at in a simulation, entering or leaving; without one, what the line allows there."
         },
         "lifespan": {
          "$ref": "#/$defs/Lifespan"
@@ -1744,7 +1753,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -1770,7 +1779,7 @@
     }
    }
   },
-  "hash": "sha256:6b061a6bdd38c1b7ad29f4bceffa808f5a557b2aa6a22118a78e9610dffdb6ce"
+  "hash": "sha256:4f96b6001f2f1cad14bcb89bf92feb9a1f3bb3ea2e6fae1ef11107b277644161"
  },
  {
   "name": "another format",
@@ -1779,7 +1788,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -2107,7 +2116,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -2435,7 +2444,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -2822,7 +2831,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -3150,7 +3159,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -3468,7 +3477,7 @@
     }
    },
    "schemas": {
-    "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19": {
+    "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4": {
      "$id": "core"
     },
     "sha256:b2280dcf6cfe779e148b6c402ac46eb4ff1e8d96b55e6e3abcb370ef48ff1f1b": {
@@ -3695,7 +3704,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -3993,7 +4002,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -4318,7 +4327,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -4697,7 +4706,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -5026,7 +5035,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -5351,7 +5360,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -5680,7 +5689,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -6426,7 +6435,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -6452,7 +6461,7 @@
     }
    }
   },
-  "hash": "sha256:6b061a6bdd38c1b7ad29f4bceffa808f5a557b2aa6a22118a78e9610dffdb6ce"
+  "hash": "sha256:4f96b6001f2f1cad14bcb89bf92feb9a1f3bb3ea2e6fae1ef11107b277644161"
  },
  {
   "name": "the sample with its signalling",
@@ -6461,7 +6470,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -7280,7 +7289,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -7327,7 +7336,7 @@
     }
    }
   },
-  "hash": "sha256:b3275e7bfcf13c4a99be3b23bcdd0e57bbb0fd003285aa72a17be0d1223b7610"
+  "hash": "sha256:ba2d9e20c1186d86a5abb9cc9248db76eb460f33ad32b0baf6da6413b1b20c71"
  },
  {
   "name": "the sample with its signalling, carrying its schemas",
@@ -7336,7 +7345,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -8150,7 +8159,7 @@
     }
    },
    "schemas": {
-    "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19": {
+    "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4": {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
      "$id": "core",
      "title": "Rail-Data-Core, domain core 1.0",
@@ -8870,7 +8879,7 @@
        }
       },
       "EndMark": {
-       "description": "A buffer stop or the boundary of the planning area at a free track end.",
+       "description": "A buffer stop or the boundary of the planning area at a free track end; a train may begin and end at either.",
        "type": "object",
        "required": [
         "id",
@@ -8891,6 +8900,10 @@
         "at": {
          "$ref": "#/$defs/TrackEnd"
         },
+        "name": {
+         "$ref": "#/$defs/Text",
+         "description": "What a timetable names the place by."
+        },
         "type": {
          "type": [
           "integer",
@@ -8899,6 +8912,11 @@
         },
         "brakeLength": {
          "type": "number"
+        },
+        "speed": {
+         "type": "number",
+         "minimum": 0,
+         "description": "At a boundary: the speed [km/h] a train crosses it at in a simulation, entering or leaving; without one, what the line allows there."
         },
         "lifespan": {
          "$ref": "#/$defs/Lifespan"
@@ -10418,7 +10436,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -10465,7 +10483,7 @@
     }
    }
   },
-  "hash": "sha256:b3275e7bfcf13c4a99be3b23bcdd0e57bbb0fd003285aa72a17be0d1223b7610"
+  "hash": "sha256:ba2d9e20c1186d86a5abb9cc9248db76eb460f33ad32b0baf6da6413b1b20c71"
  },
  {
   "name": "signalling depending on nothing",
@@ -10474,7 +10492,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -11295,7 +11313,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -12118,7 +12136,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -12937,7 +12955,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -12984,7 +13002,7 @@
     }
    }
   },
-  "hash": "sha256:b3275e7bfcf13c4a99be3b23bcdd0e57bbb0fd003285aa72a17be0d1223b7610"
+  "hash": "sha256:ba2d9e20c1186d86a5abb9cc9248db76eb460f33ad32b0baf6da6413b1b20c71"
  },
  {
   "name": "signalling without its overlaps",
@@ -12993,7 +13011,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",

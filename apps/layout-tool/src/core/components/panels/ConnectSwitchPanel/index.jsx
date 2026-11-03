@@ -21,7 +21,9 @@ export default function ConnectSwitchPanel({ detailTarget = null, onShowDetail }
   const { t } = useI18n()
   const [page, setPage] = useState('menu')
   const [switchQuery, setSwitchQuery] = useState('')
-  const back = () => setPage('menu')
+  // The picks the switch connection hands over to the extended one.
+  const [handedPicks, setHandedPicks] = useState(null)
+  const back = () => { setHandedPicks(null); setPage('menu') }
 
   if (page === 'ontrack') return (
     <>
@@ -43,7 +45,8 @@ export default function ConnectSwitchPanel({ detailTarget = null, onShowDetail }
     <>
       <BackButton onBack={back} />
       <h2>{t('scurve_title')}</h2>
-      <SCurveForm onCommitted={() => setPage('menu')} />
+      <SCurveForm onCommitted={() => setPage('menu')}
+        onExtended={(picks) => { setHandedPicks(picks); setPage('scurve_ext') }} />
     </>
   )
 
@@ -51,7 +54,7 @@ export default function ConnectSwitchPanel({ detailTarget = null, onShowDetail }
     <>
       <BackButton onBack={back} />
       <h2>{t('xcon_title')}</h2>
-      <ExtendedConnectionForm onCommitted={() => setPage('menu')} />
+      <ExtendedConnectionForm initialPicks={handedPicks} onCommitted={back} />
     </>
   )
 

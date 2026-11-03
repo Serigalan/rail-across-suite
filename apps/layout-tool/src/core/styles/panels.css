@@ -989,7 +989,6 @@ input.input-error, select.input-error, textarea.input-error { border-color: var(
 .mid-chain-add { margin: 6px 0 2px; }
 
 /* Extended switch connection: the answers of its search (decision 0018). */
-.crossover-solver { margin: 8px 0; }
 .crossover-solutions { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
 .crossover-solution {
   display: flex; gap: 8px; align-items: center; justify-content: space-between;

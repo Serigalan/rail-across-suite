@@ -22,6 +22,8 @@ export default function SwitchConnectionEdit({ onCommitted }) {
   const { t, fill } = useI18n()
   const [edit, setEdit] = useState(null)       // { found, apart, start }
   const [status, setStatus] = useState(null)   // a locale key: why the track picked cannot be edited
+  // The switch connection handed the edit over to the extended one.
+  const [handedOver, setHandedOver] = useState(false)
 
   useMapPick({
     active: !edit, hover: 'element',
@@ -33,6 +35,7 @@ export default function SwitchConnectionEdit({ onCommitted }) {
       if (apart.error) { setStatus(apart.error); return }
       const start = editStart(found, apart)
       setStatus(null)
+      setHandedOver(false)
       setEdit({ found, apart, start })
     },
   })
@@ -40,7 +43,7 @@ export default function SwitchConnectionEdit({ onCommitted }) {
 
   if (edit) {
     const [first, second] = edit.found.turnouts.map(tu => tu.sw.name ?? '')
-    const extended = edit.found.mids.length > 1 || Array.isArray(edit.found.form)
+    const extended = handedOver || edit.found.mids.length > 1 || Array.isArray(edit.found.form)
     // Cancelled (nothing laid): back to picking another one.
     const done = (laid) => {
       if (laid) onCommitted?.(laid)
@@ -52,10 +55,12 @@ export default function SwitchConnectionEdit({ onCommitted }) {
           {fill('crossover_edit_selected', { name: trackLabel(edit.found.conn), w1: first, w2: second })}
         </p>
         {/* As it lies, the construction does not lay it: the reason shows below. */}
-        {!edit.start.closes && <p className="msg-hint">{t('crossover_edit_not_closing')}</p>}
+        {!edit.start.closes && (
+          <p className="msg-hint">{t(extended ? 'crossover_edit_not_closing_extended' : 'crossover_edit_not_closing')}</p>
+        )}
         {extended
           ? <ExtendedConnectionForm key={edit.found.conn.id} edit={edit} onCommitted={done} />
-          : <SCurveForm key={edit.found.conn.id} edit={edit} onCommitted={done} />}
+          : <SCurveForm key={edit.found.conn.id} edit={edit} onCommitted={done} onExtended={() => setHandedOver(true)} />}
       </>
     )
   }

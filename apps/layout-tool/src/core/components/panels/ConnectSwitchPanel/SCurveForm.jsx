@@ -1,7 +1,7 @@
-import { useDeferredValue, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { loadTracks, loadSwitches, commitSwitchConnection, commitSwitchConnectionEdit } from '../../../storage'
 import { elementStations } from '@rail-across/core/track'
-import { SWITCH_TYPES, CONNECTION_SPEEDS, computeSwitchConnections, DEFAULT_MIDS, formPair } from '@rail-across/core/switch'
+import { SWITCH_TYPES, CONNECTION_SPEEDS, computeSwitchConnections, formPair } from '@rail-across/core/switch'
 import { useI18n } from '../../../locales/i18nContext'
 import {
   REASON_MSG, buildSCurve, computeShiftBounds, editCommit, hasStraightMid, preferredShift,
@@ -14,8 +14,6 @@ import usePreview from '../../../map/usePreview'
 import ReadOnlyField from '../../form/ReadOnlyField'
 import AdvancedInfo from '../../form/AdvancedInfo'
 import CommitBar from '../../form/CommitBar'
-import MidChainFields from './MidChainFields'
-import CrossoverSolver from './CrossoverSolver'
 import useConnectionPicks from './useConnectionPicks'
 import PickPhase from './PickPhase'
 import { PREVIEW_LAYERS, PREVIEW_SOURCE, POINTS_SOURCE, ldsCants, pointsGeoJSON, previewGeoJSON } from './connectionPreview'
@@ -26,13 +24,18 @@ const DEFAULT_TYPE = Math.max(0,
   CONNECTION_SPEEDS.indexOf(SWITCH_TYPES.find(s => s.R === 1200)?.speed))
 
 /**
- * The switch connection dialog. `edit` ({ found, apart, start } of
- * commands/crossoverEdit) opens it on a connection that exists (Entscheidung
- * 364): on the two tracks taken apart, the picks where the toes stood, its
- * middle elements as they are — the turnouts' form and the speed fixed. The
- * commit then replaces the old connection.
+ * The switch connection dialog: two turnouts of the form the speed falls back
+ * through and one element between their branches — a straight where the
+ * tracks allow one, which the slider is laid on first and snaps to, else an
+ * arc (decision 0018). Any other configuration is the extended switch
+ * connection's, which `onExtended(picks)` opens on the two picks made here.
+ *
+ * `edit` ({ found, apart, start } of commands/crossoverEdit) opens it on a
+ * connection that exists (Entscheidung 364): on the two tracks taken apart,
+ * the picks where the toes stood — the turnouts' form and the speed fixed.
+ * The commit then replaces the old connection.
  */
-export default function SCurveForm({ onCommitted, edit = null }) {
+export default function SCurveForm({ onCommitted, onExtended = null, edit = null }) {
   const { t, fill } = useI18n()
   const { phase, picks, pickStatus, reset: resetPicks } = useConnectionPicks({ initial: edit?.apart.picks ?? null })
   const [speedIdx, setSpeedIdx] = useState(DEFAULT_TYPE)   // selected design speed (index into CONNECTION_SPEEDS)
@@ -40,16 +43,6 @@ export default function SCurveForm({ onCommitted, edit = null }) {
   // Straight the turnouts' through routes need beside the junction [m], set
   // when the commit found too little of it (see carveThrough).
   const [carveError, setCarveError] = useState(null)
-  // The elements between the two branches (Entscheidung 305).
-  const [mids, setMids] = useState(edit?.start.mids ?? DEFAULT_MIDS)
-  // A chain is solved by iteration over the whole slider range: typing goes on
-  // while it runs, and the solution follows the last value typed.
-  const solvedMids = useDeferredValue(mids)
-  // An answer of the Python solver adopted (Entscheidung 357): where its
-  // iteration starts, and the shift it was adopted at — the slider's range is
-  // the stretch around it.
-  const [seed, setSeed] = useState(edit?.start.seed ?? null)
-  const [adoptAt, setAdoptAt] = useState(null)
 
   // An edited connection keeps its form and its speed.
   const form     = edit?.found.form ?? null
@@ -71,29 +64,28 @@ export default function SCurveForm({ onCommitted, edit = null }) {
     // shift 0 is where track 1 was clicked.
     // Where no valid connection stands, the stretch over which one only the
     // rulebook refuses does, to commit it anyway (Entscheidung 361).
-    const valid = computeShiftBounds({ picks, speed, mids: solvedMids, seed, form, around: adoptAt })
+    const valid = computeShiftBounds({ picks, speed, form })
     const lenient = !(valid.max > valid.min)
-    const whole = lenient ? computeShiftBounds({ picks, speed, mids: solvedMids, seed, form, lenient }) : valid
+    const whole = lenient ? computeShiftBounds({ picks, speed, form, lenient }) : valid
     // Where the connection stands nowhere near the click, the whole range.
-    // An adopted answer keeps its whole stretch: it may stand far from the click.
     const near = { min: Math.max(whole.min, -SLIDER_REACH), max: Math.min(whole.max, SLIDER_REACH) }
-    const bounds = adoptAt == null && near.max >= near.min ? near : whole
+    const bounds = near.max >= near.min ? near : whole
     const track1 = tracksNow().find(tr => tr.id === picks[0].trackId)
     const elStart = track1 ? elementStations(track1)[picks[0].elIdx]?.start ?? 0 : 0
     const dir1 = stems(picks).g1.dir ?? 1
     return {
       bounds, lenient,
-      snaps: shiftSnaps({ picks, speed, mids: solvedMids, seed, form, lenient }, bounds),
-      preferred: preferredShift({ picks, speed, mids: solvedMids, seed, form, lenient }, bounds),
+      snaps: shiftSnaps({ picks, speed, form, lenient }, bounds),
+      preferred: preferredShift({ picks, speed, form, lenient }, bounds),
       // Where the element between the branches is a straight, the connection one wants.
-      straights: straightShifts({ picks, speed, mids: solvedMids, seed, form, lenient }, bounds),
+      straights: straightShifts({ picks, speed, form, lenient }, bounds),
       offset: waOffset(picks),
       toStation: (sh) => elStart + picks[0].along + dir1 * sh,
       toShift: (st) => (st - elStart - picks[0].along) * dir1,
     }
     // tracksNow follows `edit`, which is fixed for the dialog's life
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phase, picks, speed, solvedMids, seed, adoptAt, form])
+  }, [phase, picks, speed, form])
 
   // The shift asked for, held inside the range the connection stands over.
   const shift = slider
@@ -106,8 +98,8 @@ export default function SCurveForm({ onCommitted, edit = null }) {
   const connections = useMemo(() => {
     if (!picks[0] || !picks[1]) return []
     const { g1, g2 } = stems(picks)
-    return computeSwitchConnections(g1, g2, shift, solvedMids, seed)
-  }, [picks, shift, solvedMids, seed])
+    return computeSwitchConnections(g1, g2, shift)
+  }, [picks, shift])
 
   // ── The connection itself ─────────────────────────────────────────────────
   // Closed-form and pure, so it is derived from the picks, the speed and the
@@ -116,9 +108,9 @@ export default function SCurveForm({ onCommitted, edit = null }) {
   // element's node (settleConnection, LP.EL.01).
   const settled = useMemo(() => (
     phase === 'config' && picks[0] && picks[1] && speed
-      ? settleConnection({ picks, speed, shift, mids: solvedMids, seed, form })
+      ? settleConnection({ picks, speed, shift, form })
       : null
-  ), [phase, picks, speed, shift, solvedMids, seed, form])
+  ), [phase, picks, speed, shift, form])
   const result = settled?.result ?? null
   // A connection to show and build: valid, or refused by the rulebook alone.
   const stands = !!(result?.valid || result?.overridable)
@@ -133,34 +125,11 @@ export default function SCurveForm({ onCommitted, edit = null }) {
     }
   }, [result, stands, preview])
 
-  const handleSpeedChange = (i) => {
-    setSpeedIdx(i)
-    setSeed(null)
-    setAdoptAt(null)
-  }
-  // The middle elements as the user types them: an adopted answer's seed and
-  // stretch no longer apply.
-  const changeMids = (next) => {
-    setMids(next)
-    setSeed(null)
-    setAdoptAt(null)
-  }
-  const adoptSolution = ({ shift: s, mids: m, seed: sd }) => {
-    setCarveError(null)
-    setMids(m)
-    setSeed(sd)
-    setAdoptAt(s)
-    setShift(s)
-  }
-
   const reset = () => {
     preview.clear()
     resetPicks()
     setShift(null)
     setCarveError(null)
-    setMids(DEFAULT_MIDS)
-    setSeed(null)
-    setAdoptAt(null)
   }
   const handleCancel = () => { reset(); onCommitted?.() }
 
@@ -183,12 +152,8 @@ export default function SCurveForm({ onCommitted, edit = null }) {
   // ── Render ─────────────────────────────────────────────────────────────────
   if (phase === 'config') {
     const deg = (r) => (r * RAD2DEG).toFixed(3)
-    // Where a joint of the middle elements lies: at the start of the element
-    // it comes before, the last at the end of the last one.
-    const midCount = result?.midPieces?.length ?? 1
-    const jointText = (k) => (k < midCount
-      ? fill('scurve_joint_start', { n: String(k + 1) })
-      : fill('scurve_joint_end', { n: String(midCount) }))
+    // Where a joint of the element between the branches lies: at its start or its end.
+    const jointText = (k) => fill(k < 1 ? 'scurve_joint_start' : 'scurve_joint_end', { n: '1' })
     // WA's distance from the element change behind it, for the slider's label.
     const wa = (s) => {
       const d = s + (slider?.offset ?? 0)
@@ -203,10 +168,10 @@ export default function SCurveForm({ onCommitted, edit = null }) {
           )}
           {!edit && <div className="form-field">
             <label>{t('field_speed')}</label>
-            <select value={speedIdx} onChange={e => { setCarveError(null); handleSpeedChange(Number(e.target.value)) }}>
+            <select value={speedIdx} onChange={e => { setCarveError(null); setSpeedIdx(Number(e.target.value)) }}>
               {/* A speed without a connection where the slider stands stays
-                  selectable: the reason shows, and the Python solver may still
-                  find one (Entscheidung 357). */}
+                  selectable: the reason shows, and the extended switch
+                  connection may still find one (decision 0018). */}
               {CONNECTION_SPEEDS.map((sp, i) => (
                 <option key={sp} value={i}>
                   {connections[i] && !connections[i].valid ? fill('scurve_speed_none_here', { v: String(sp) }) : `${sp} km/h`}
@@ -233,9 +198,11 @@ export default function SCurveForm({ onCommitted, edit = null }) {
             )
           })()}
 
-          <MidChainFields mids={mids} onChange={(next) => { setCarveError(null); changeMids(next) }}
-            solved={result?.midPieces?.map(p => p.route)
-              ?? (stands ? [{ length: result.Lg, r1: result.signedRg, r2: result.signedRg }] : null)} />
+          {stands && (
+            <ReadOnlyField label={t('scurve_mid_element')} value={result.signedRg
+              ? fill('scurve_mid_arc_value', { l: result.Lg.toFixed(2), r: Math.abs(result.signedRg).toFixed(0) })
+              : fill('scurve_mid_straight_value', { l: result.Lg.toFixed(2) })} />
+          )}
 
           <AdvancedInfo>
             <ReadOnlyField label={t('scurve_line1')} value={picks[0]?.name ?? ''} />
@@ -246,11 +213,9 @@ export default function SCurveForm({ onCommitted, edit = null }) {
             <ReadOnlyField label={t('scurve_angle')} value={`1:${result.switchType.ratio}  (${deg(result.w)}°)`} />
             <ReadOnlyField label={t('scurve_delta')} value={`${deg(result.delta)}°`} />
             <ReadOnlyField label={t('scurve_zgl')} value={`${result.Lg.toFixed(2)} m`} />
-            {!result.midPieces && (
-              <ReadOnlyField label={t('scurve_mid_radius')} value={result.signedRg
-                ? `${Math.abs(result.signedRg).toFixed(0)} m`
-                : t('scurve_mid_straight')} />
-            )}
+            <ReadOnlyField label={t('scurve_mid_radius')} value={result.signedRg
+              ? `${Math.abs(result.signedRg).toFixed(0)} m`
+              : t('scurve_mid_straight')} />
             {/* A branch bent straight is built as the plain form with its
                 routes swapped: the running track is then its branch, on the form's radius. */}
             <ReadOnlyField label={t('scurve_branch_radius')} value={[result.signedR1, result.signedR2]
@@ -283,8 +248,13 @@ export default function SCurveForm({ onCommitted, edit = null }) {
             {fill('scurve_mid_jump_hint', { at: jointText(h.index), rw: h.rw.toFixed(0), reg: h.reg.toFixed(0) })}
           </p>
         ))}
-        {slider && !result?.valid && slider.lenient && (
-          <CrossoverSolver picks={picks} speed={speed} form={form} stationOf={slider.toStation} onAdopt={adoptSolution} />
+        {onExtended && !result?.valid && (
+          <div className="msg-hint">
+            <p>{t('scurve_extended_hint')}</p>
+            <button type="button" className="ui-btn ui-btn-block" onClick={() => { reset(); onExtended(picks) }}>
+              {t('scurve_extended_open')}
+            </button>
+          </div>
         )}
         {stands && !hasStraightMid(result) && slider?.straights.length > 0 && (() => {
           const near = [...slider.straights].sort((a, b) => Math.abs(a - shift) - Math.abs(b - shift))[0]

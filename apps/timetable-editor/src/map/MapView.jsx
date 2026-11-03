@@ -20,7 +20,7 @@ function stationsGeoJSON(record, stations) {
   return {
     type: 'FeatureCollection',
     features: stations.map(s => {
-      const locs = s.tracks.length ? s.tracks.map(tr => ({ trackId: tr.id, station: tr.length / 2 })) : s.platforms.map(p => ({ trackId: p.trackId, station: p.at }))
+      const locs = s.tracks.length ? s.tracks.map(tr => ({ trackId: tr.id, station: tr.at ?? tr.length / 2 })) : s.platforms.map(p => ({ trackId: p.trackId, station: p.at }))
       const lls = locs.map(l => lngLatAt(record, l)).filter(Boolean)
       if (!lls.length) return null
       const at = [lls.reduce((a, l) => a + l[0], 0) / lls.length, lls.reduce((a, l) => a + l[1], 0) / lls.length]

@@ -9,10 +9,9 @@ import { sectionAtStation } from '../crossSection/index.js'
 // Splicing two tracks into one (R5.5, AP 12.4): what a picked element offers
 // the splice, the request the construction is built from, and the commit that
 // merges the two tracks around the chain it answers with. The construction
-// itself is utils/splice/solveSplice (decision 294), or with a spacing to
-// another track the optimizer service's splice.py, which it was ported from
-// and which answers in the same form (decision 295); what is here
-// is pure, so the dialog only collects the settings and the tests call the
+// itself is the optimizer module's (optimizer/ of the repository, Rust,
+// decision 0019 of the suite), with or without a spacing to another track;
+// what is here is pure, so the dialog only collects the settings and the tests call the
 // same functions.
 
 const lengthOf = (els) => els.reduce((sum, el) => sum + (el.length ?? 0), 0)
@@ -128,12 +127,12 @@ export function spliceKeptCant(picks, transitionOn) {
 }
 
 /**
- * The request for the service's `POST /splice`: the two picks in the order
+ * The request for the splice of the optimizer module: the two picks in the order
  * they were clicked — their ends in the shared plane, the bearing at the end,
  * the signed radius, cant and speed, their length and what of their track
  * lies either side —
- * and the settings. Which ends meet and which pick departs is the service's
- * to find (olt_optimizer/splice.py, AP S.2). The transition beside each pick,
+ * and the settings. Which ends meet and which pick departs is the optimizer module's
+ * to find (optimizer/…/splice.rs, AP S.2). The transition beside each pick,
  * in the same order, has a mode (AP S.3): 'regular' or 'minimum' — the
  * service sets the Regellänge or Mindestlänge in the chain it solves, from
  * `transitions` [m] on — or 'fixed', `transitions` as they are. `speed` is
@@ -141,7 +140,7 @@ export function spliceKeptCant(picks, transitionOn) {
  * `transitionOn` [first, second] switches the transition beside each pick on
  * — one side alone is fine — and `transitionTypes` gives each its shape,
  * 'clothoid' or 'bloss'; `transitionType` is that of a single transition from
- * arc to arc (`arcJoin` 'transition'). The service decides the case from the
+ * arc to arc (`arcJoin` 'transition'). The optimizer module decides the case from the
  * radii: two straights take `radius` and the transitions, two arcs a straight
  * between them (with the transitions) or with `arcJoin` 'transition' one
  * transition from arc to arc, an arc and a straight a new arc of `radius`.
@@ -181,13 +180,13 @@ export function spliceRequest(first, second, {
   }
 }
 
-/** Step of the neighbour's axis handed to the service [m]. */
+/** Step of the neighbour's axis handed to the optimizer module [m]. */
 const AXIS_STEP = 1
 /** How far around the two picked elements the neighbour's axis is handed over [m]. */
 const AXIS_MARGIN = 150
 
 /**
- * The axis of the track a splice keeps its distance to, as the service reads
+ * The axis of the track a splice keeps its distance to, as the optimizer module reads
  * it: [easting, northing, cant] every metre, in the plane of the splice
  * (`epsg`), the cant signed as stored and as it holds at that station
  * (ramping over a transition) — only where it lies near the two picked
@@ -229,7 +228,7 @@ export function neighbourAxisNear(track, epsg, corners) {
  * The spacing a splice is held to (the `clearance` of its request): the
  * neighbour's axis, the minimum spacing `dMin` [m], the half clearance outline
  * of the project's profile, and either the cant of the new arc (checked at
- * the dialog's radius) or, with `maximize`, the speed the service proposes the
+ * the dialog's radius) or, with `maximize`, the speed the optimizer module proposes the
  * cant from for every radius it tries — and the shortest arc it may insert
  * there (LP.EL.01).
  */
@@ -244,8 +243,8 @@ export function clearanceRequest({ axis, dMin, profile, maximize, speed, cant })
 }
 
 /**
- * A transition's lengths as the service gives them, each rule on them with its
- * formula (rules/transitionLength) for the transition's `form` — the service's
+ * A transition's lengths as the optimizer module gives them, each rule on them with its
+ * formula (rules/transitionLength) for the transition's `form` — the optimizer module's
  * `lengths` stand by pick, in the order of the request's transitionDep/-Arr.
  */
 const withFormulas = (forms) => (l, k) => ({
@@ -254,14 +253,14 @@ const withFormulas = (forms) => (l, k) => ({
   minimumBy: (l.minimumBy ?? []).map(b => ({ ...b, formula: lengthRuleFormula(b.id, 'warning', forms[k]) })),
 })
 
-/** The form of the transition beside each pick, as the service reads the request. */
+/** The form of the transition beside each pick, as the optimizer module reads the request. */
 const requestForms = (request) => [
   request?.transitionDep || request?.transition || 'clothoid',
   request?.transitionArr || request?.transition || 'clothoid',
 ]
 
 /**
- * The service's answer as the dialog and the commit read it: { solutions },
+ * The optimizer module's answer as the dialog and the commit read it: { solutions },
  * the best first (Entscheidung 180), each { dep, arr, result } — `dep` and
  * `arr` the two picks in the order the solution runs, `result` the chain with
  * its display geometry rebuilt in the track's plane, the preview line, how it
@@ -269,7 +268,7 @@ const requestForms = (request) => [
  * whether that is the `alternative` to the way asked for), the transition beside each
  * pick ({ mode, length } and the rules on it, `lengths`), what the rule
  * catalogue finds on the whole stretch (`findings` as { at, index, id,
- * severity } by element of `elements`, `worst`, `judged`) and what the service
+ * severity } by element of `elements`, `worst`, `judged`) and what the optimizer module
  * says about it (arcLength, straightLength, transitionLength, …) — or { error,
  * params, lengths } for a splice that does not fit, `lengths` the transitions
  * beside each pick as the rules would have them all the same. `request` is the
@@ -310,7 +309,7 @@ export function spliceFromAnswer(answer, picks, request = null) {
 
 /**
  * The Regellänge set once (Entscheidung 185): a side whose transition was
- * just switched on asks the service for it (mode 'regular'); as soon as an
+ * just switched on asks the optimizer module for it (mode 'regular'); as soon as an
  * answer names it — a solution's, or the rules' where nothing fits — it
  * becomes that side's length as if typed (mode 'fixed'), and from then on the
  * buttons set another. `s` the dialog's settings, `lengths` the transition
@@ -423,7 +422,7 @@ function spliceHeights({ depTrack, arrTrack, dep, arr, chain, reverseDep, revers
 }
 
 /**
- * The merged chain: what stays of the departure track, the service's chain,
+ * The merged chain: what stays of the departure track, the optimizer module's chain,
  * what stays of the arrival track. A track run against its own direction —
  * the departure where it departs from its start, the arrival where it is met
  * at its end — comes in reversed. The chain's re-shaped ends keep what their
@@ -437,7 +436,7 @@ function mergedChain({ dep, arr, result }, depTrack, arrTrack, { speed, cant }) 
   const arrOrig = arrTrack.elements[arr.elIdx]
   const depBase = reverseDep ? reverseElement(depOrig) : depOrig
   const arrBase = reverseArr ? reverseElement(arrOrig) : arrOrig
-  // The plane geometry of the answer; the service's speed and cant on it are
+  // The plane geometry of the answer; the optimizer module's speed and cant on it are
   // what it judged the chain with, and the same as these, but the app's own
   // elements are what they come from.
   const plane = ({ role: _role, speed: _speed, cant: _cant, ...el }) => el

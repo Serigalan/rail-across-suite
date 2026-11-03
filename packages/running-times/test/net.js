@@ -26,5 +26,18 @@ export const net = {
   ],
 }
 
+/**
+ * The net with its ends marked: a boundary of the planning area at the
+ * beginning of A-Dorf's track 1, crossed at 60 km/h, and a buffer stop with
+ * 4 m of brake length at the end of C-Stadt's track 2.
+ */
+export const marked = {
+  ...net,
+  endMarks: [
+    { id: 'mW', kind: 'boundary', trackId: 'A1', endpoint: 'BEGIN', name: 'West', speed: 60 },
+    { id: 'mP', kind: 'buffer_stop', trackId: 'C2', endpoint: 'END', type: 4, brakeLength: 4 },
+  ],
+}
+
 /** The simulation module where cargo built it (npm run sim in an app), or null. */
 export const WASM = new URL('../../../sim/target/wasm32-unknown-unknown/release/rail_across_sim_wasm.wasm', import.meta.url)

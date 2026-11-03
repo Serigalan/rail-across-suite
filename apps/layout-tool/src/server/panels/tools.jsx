@@ -1,34 +1,9 @@
 import { Suspense, lazy } from 'react'
-import BackButton from '../../core/components/panels/BackButton'
 
-// The panels of the optimizer service as tools in the panels of core
+// The panels of the server's MDB conversion as sections in core's data exchange
 // (`panelTools`, `importSections`, Paket L). Each is its own chunk (R9.1),
 // loaded the first time it is opened.
-const ReconnectPanel = lazy(() => import('./splice/ReconnectPanel'))
-const OptimizeTrackPanel = lazy(() => import('./OptimizeTrackPanel'))
 const MdbSection = lazy(() => import('./MdbSection'))
-
-export function ReconnectTool({ onExit }) {
-  return (
-    <>
-      <BackButton onBack={onExit} />
-      <ReconnectPanel />
-    </>
-  )
-}
-
-// The optimizer on one of its pages: a track, an element, or the alignment fit.
-export function OptimizeTrackTool({ onExit, onShowRegelwerk }) {
-  return <OptimizeTrackPanel initialPage="track" onExit={onExit} onShowRegelwerk={onShowRegelwerk} />
-}
-
-export function OptimizeElementTool({ onExit, onShowRegelwerk }) {
-  return <OptimizeTrackPanel initialPage="element" onExit={onExit} onShowRegelwerk={onShowRegelwerk} />
-}
-
-export function AxisFitTool({ onExit, onShowRegelwerk }) {
-  return <OptimizeTrackPanel initialPage="axis" onExit={onExit} onShowRegelwerk={onShowRegelwerk} />
-}
 
 export function MdbImport({ onReport }) {
   return <Suspense fallback={null}><MdbSection onReport={onReport} /></Suspense>

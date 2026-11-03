@@ -187,6 +187,24 @@ export function assignTracks(tracks, ids, target, { names = null, trackNumbers =
 }
 
 /**
+ * The stem a station's track names are built from: its name as an
+ * identifier — lower case, umlauts and ß written out, other accents dropped,
+ * what stands in brackets left out, anything but letters and digits a single
+ * hyphen. `Könnern` is `koennern`, `Wallwitz (Saalkreis)` `wallwitz`, `Halle
+ * (Saale) Hbf` `halle-hbf`. A name of nothing it keeps gives `track`.
+ */
+export function stationTrackStem(name) {
+  const stem = String(name ?? '')
+    .replace(/\([^)]*\)|\[[^\]]*\]/g, ' ')
+    .toLowerCase()
+    .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+  return stem || 'track'
+}
+
+/**
  * The names the tracks `ids` take on `target`, as `{ names, fallback,
  * clashes }`: `names` maps id → name, `fallback` holds the ids named without
  * what the name should be built from, `clashes` those whose name another
@@ -195,8 +213,9 @@ export function assignTracks(tracks, ids, target, { names = null, trackNumbers =
  * On a line the name is the line number and the kilometrage of the track's
  * middle, `6344.02912` (see kmTrackName) — `kmById` says where each lies, null
  * where the line does not reach it; those are numbered on, `6344.001`. In a
- * station it is the station and the track number, `Könnern.3`, from
- * `numberById`; a track without one is numbered on, `Könnern.001`.
+ * station it is the station's stem (stationTrackStem) and the track number,
+ * `koennern.3`, from `numberById`; a track without one is numbered on,
+ * `koennern.001`.
  *
  * The names of the other tracks are taken; the ones renamed give theirs up.
  * On a line a taken name moves on by ten metres, so none clash; in a station
@@ -222,7 +241,7 @@ export function plannedNames(tracks, ids, target, { kmById = {}, numberById = {}
       taken.add(name)
     }
   } else if (target?.kind === 'station') {
-    const prefix = text(target.stationName) || text(target.uicStation)
+    const prefix = stationTrackStem(text(target.stationName) || text(target.uicStation))
     const numbered = ids.filter(id => text(numberById[id]))
     const seen = new Map()
     for (const id of numbered) {

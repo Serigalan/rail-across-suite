@@ -142,8 +142,8 @@ plane DB_REF GK zone 3; the row's system code is not read as a plane — the use
 
 ### MDB — the DB ASCII interface
 
-The Access database (GND-Edit, format version 4 or 6 „AGON“) is converted to JSON by the server (`/mdb` of the
-optimizer service: one table per Satzart, records marked deleted dropped); everything else is here, where it
+The Access database (GND-Edit, format version 4 or 6 „AGON“) is converted to JSON by the project server (`/api/mdb`,
+`mdb-export`: one table per Satzart, records marked deleted dropped); everything else is here, where it
 is testable. The ProVI import of the same files (DBGNDIN) served as a reference for code lists and checks;
 where it is silent or guesses, the delivered files decide.
 

@@ -72,6 +72,47 @@ describe('a record as a core 1.0 document', () => {
     expect(roundTrip(r).tracks.map(t => t.uicStation)).toEqual(['1', '2'])
   })
 
+  it('keeps a station nothing names yet in the register, and only what the names do not make', () => {
+    const r = record({ operationalPoints: [{ id: 'op-k', name: 'Könnern', rl100: 'LKO' }] })
+    expect(toDocument(r).domains.core.collections.operationalPoints).toEqual([{ id: 'op-k', name: 'Könnern', rl100: 'LKO' }])
+    expect(roundTrip(r).operationalPoints).toEqual([{ id: 'op-k', name: 'Könnern', rl100: 'LKO' }])
+    // A platform that names it is of it, and states its code.
+    const named = record({ ...r, platforms: [{ id: 'pf', trackId: 't1', startStation: 0, endStation: 50, stationName: 'Könnern' }] })
+    expect(toDocument(named).domains.core.collections.platforms[0].operationalPoint).toBe('op-k')
+    expect(roundTrip(named).platforms[0]).toMatchObject({ stationName: 'Könnern', code: 'LKO' })
+    expect(roundTrip(named).operationalPoints).toEqual([{ id: 'op-k', name: 'Könnern', rl100: 'LKO' }])
+    // A point just as the names make it is not kept: a record without one stays without.
+    const made = toDocument(record({ tracks: [track('t1', { stationName: 'Wallwitz' })] })).domains.core.collections.operationalPoints[0]
+    const same = record({ tracks: [track('t1', { stationName: 'Wallwitz' })], operationalPoints: [made] })
+    expect(roundTrip(same).operationalPoints).toBeUndefined()
+  })
+
+  it('keeps a station the signalling names, so it keeps its id when the tracks are named anew', () => {
+    const made = toDocument(record({ tracks: [track('t1', { stationName: 'Wallwitz' })] })).domains.core.collections.operationalPoints[0]
+    const signalling = ksStation({ operationalPoint: made.id })
+    const back = roundTrip(record({ tracks: [track('t1', { stationName: 'Wallwitz' })], signalling }))
+    expect(back.operationalPoints).toEqual([made])
+    const renamed = toDocument({ ...back, tracks: [track('t1', { stationName: 'Wallwitz (Saalkr)' })] }).domains.core.collections.operationalPoints
+    expect(renamed.map(p => p.name).sort()).toEqual(['Wallwitz', 'Wallwitz (Saalkr)'])
+    expect(renamed.find(p => p.name === 'Wallwitz').id).toBe(made.id)
+  })
+
+  it('keeps a kept station\'s id under its name, and its codes where an object states none', () => {
+    const r = record({
+      tracks: [track('t1', { stationName: 'Könnern', uicStation: '8010195' })],
+      platforms: [{ id: 'pf', trackId: 't1', startStation: 0, endStation: 50, stationName: 'Könnern', code: 'XX' }],
+      operationalPoints: [{ id: 'op-k', name: 'Könnern', rl100: 'LKO' }],
+    })
+    const { tracks, platforms, operationalPoints } = toDocument(r).domains.core.collections
+    expect(tracks[0].operationalPoint).toBe('op-k')
+    expect(operationalPoints.find(p => p.id === 'op-k')).toEqual({ id: 'op-k', name: 'Könnern', rl100: 'LKO', uic: '8010195' })
+    // A platform stating another code is a point of its own, as two codes under one name are.
+    expect(platforms[0].operationalPoint).not.toBe('op-k')
+    expect(operationalPoints).toHaveLength(2)
+    expect(roundTrip(r).operationalPoints).toEqual([{ id: 'op-k', name: 'Könnern', rl100: 'LKO', uic: '8010195' }])
+    expect(toDocument(roundTrip(r)).domains.core.collections).toEqual(toDocument(r).domains.core.collections)
+  })
+
   it('makes runs of tracks TrackPaths and the bulk point arrays blobs', () => {
     const points = { s0: 0, step: 0.01, count: 2, e0: 1, n0: 2, de: [0, 1], dn: [0, 0], z: null }
     const r = record({
@@ -126,6 +167,17 @@ describe('the door', () => {
     expect(checkDocument(before)).toEqual(doc)
   })
 
+  it('keeps an end mark\'s name and a boundary\'s speed, and reads a core from before them', () => {
+    const marks = [{ id: 'e1', kind: 'boundary', trackId: 't1', endpoint: 'END', name: 'Grenze Nord', speed: 80 }]
+    const doc = toDocument(record({ tracks: [track('t1')], endMarks: marks }))
+    expect(doc.domains.core.collections.endMarks[0]).toMatchObject({ name: 'Grenze Nord', speed: 80, at: { trackId: 't1', endpoint: 'END' } })
+    expect(fromDocument(doc).endMarks).toEqual(marks)
+    const before = toDocument(record({ tracks: [track('t1')], endMarks: [{ id: 'e1', kind: 'boundary', trackId: 't1', endpoint: 'END' }] }))
+    const now = structuredClone(before)
+    before.domains.core.schema = 'sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19'
+    expect(checkDocument(before)).toEqual(now)
+  })
+
   it('refuses a version or a domain it does not read', () => {
     const doc = toDocument(record())
     expect(() => checkDocument({ ...doc, domains: { ...doc.domains, core: { ...doc.domains.core, version: '1.1' } } })).toThrow('unsupported_version')
@@ -144,8 +196,12 @@ describe('the door', () => {
     expect(Object.keys(toDocument(record(), { carrySchemas: true }).schemas)).not.toContain(SCHEMA_HASHES.signalling)
   })
 
-  // The station as signalling 1.0 was written before: third (speed sections, a route's own speed, frames and
-  // function on the signal), second (no speed sections yet), first (no logical signals, PZB elements).
+  // The station as signalling 1.0 was written before: fifth (no stopping places and itineraries), fourth (no
+  // station of a signal), third (speed sections, a route's own speed, frames and function on the signal),
+  // second (no speed sections yet), first (no logical signals, PZB elements). Each before the fifth reads
+  // without stopping places, each before the fourth as of the open line.
+  const FIFTH = 'sha256:d5c61938fb3da1cc80f638c051cac562c19ad207507373ac3381f3a97922d83c'
+  const FOURTH = 'sha256:cee619f2ae1b256a81ca5536e3851602cce96841d16bb2fe5f11ffe1a5e1f64c'
   const THIRD = 'sha256:0194c1e7fe2a63741270025beb48929d106d74a80bf5b33ed4305965a5303487'
   const SECOND = 'sha256:72fccdfdcac3f5ce42d7f49d10fb9134e1c4ed792f7365ec9f01d997f0049724'
   const FIRST = 'sha256:8e4fdf8b8d487f61be93b473521515fe2e5510ef3cdc21d994cd8a405aeb74a0'
@@ -155,8 +211,21 @@ describe('the door', () => {
     // A logical signal of its own in each system, as the first schema could say it: one per signal.
     return toDocument(record({ signalling }))
   }
-  const asThird = (doc) => {
+  const asFifth = (doc) => {
     const d = structuredClone(doc)
+    d.domains.signalling.schema = FIFTH
+    delete d.domains.signalling.collections.stoppingPlaces
+    delete d.domains.signalling.collections.itineraries
+    return d
+  }
+  const asFourth = (doc) => {
+    const d = asFifth(doc)
+    d.domains.signalling.schema = FOURTH
+    d.domains.signalling.collections.signals = d.domains.signalling.collections.signals.map(({ operationalPointId: _o, ...s }) => s)
+    return d
+  }
+  const asThird = (doc) => {
+    const d = asFourth(doc)
     const c = d.domains.signalling.collections
     d.domains.signalling.schema = THIRD
     const speeds = new Map()
@@ -190,9 +259,18 @@ describe('the door', () => {
 
   it('reads signalling 1.0 as each earlier schema wrote it, as of now', () => {
     const now = stationNow()
-    expect(checkDocument(asThird(now))).toEqual(now)
-    expect(checkDocument(asSecond(now))).toEqual(now)
-    expect(checkDocument(asFirst(now))).toEqual(now)
+    const without = (doc) => {
+      const d = structuredClone(doc)
+      d.domains.signalling.schema = now.domains.signalling.schema
+      Object.assign(d.domains.signalling.collections, { stoppingPlaces: [], itineraries: [] })
+      return d
+    }
+    expect(checkDocument(asFifth(now))).toEqual(without(asFifth(now)))
+    const open = without(asFourth(now))
+    expect(checkDocument(asFourth(now))).toEqual(open)
+    expect(checkDocument(asThird(now))).toEqual(open)
+    expect(checkDocument(asSecond(now))).toEqual(open)
+    expect(checkDocument(asFirst(now))).toEqual(open)
   })
 
   it('leaves out a member of the signalling that is undefined, as a file would', () => {

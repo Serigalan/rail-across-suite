@@ -3,7 +3,8 @@ import { portsOf, portTrack, portEnd } from './switchModel.js'
 /**
  * What a track end says about itself when nothing is connected to it: a
  * buffer stop stands there, or the drawing simply stops (a boundary of the
- * planning area — the line runs on, it is only not drawn).
+ * planning area — the line runs on, it is only not drawn). Either is a place
+ * a train may begin and end at; it crosses a boundary at its `speed`.
  *
  * A mark is a record of its own, `project.endMarks`, naming its end the way a
  * switch port does: a track id plus BEGIN or END. That is deliberate. Tracks
@@ -44,8 +45,26 @@ export function newBufferStop(trackId, endpoint, type = DEFAULT_BUFFER_STOP_TYPE
   return { id: crypto.randomUUID(), kind: BUFFER_STOP, trackId, endpoint, type, brakeLength }
 }
 
-export function newBoundary(trackId, endpoint) {
-  return { id: crypto.randomUUID(), kind: BOUNDARY, trackId, endpoint }
+/**
+ * A boundary of the planning area; `speed` [km/h] the speed a train crosses
+ * it at in a simulation, entering or leaving — none, what the line allows.
+ */
+export function newBoundary(trackId, endpoint, speed = null) {
+  return { id: crypto.randomUUID(), kind: BOUNDARY, trackId, endpoint, ...(speed != null ? { speed } : {}) }
+}
+
+/**
+ * What a timetable calls the place of a mark — a train may begin and end at
+ * a buffer stop and at a boundary: its own name, else one made of its kind
+ * and its track's name — or station and number — and end, in the words of
+ * the data (German, as the stations').
+ */
+export function endMarkName(mark, track) {
+  const own = String(mark?.name ?? '').trim()
+  if (own) return own
+  const station = [track?.stationName, track?.trackNumber && `Gl. ${track.trackNumber}`].filter(Boolean).join(' ')
+  const where = String(track?.name ?? '').trim() || station || String(mark?.trackId ?? '').slice(0, 8)
+  return `${mark?.kind === BOUNDARY ? 'Grenze' : 'Prellbock'} ${where} ${mark?.endpoint === 'BEGIN' ? 'Anfang' : 'Ende'}`
 }
 
 /** Does a buffer stop with this brake length fit on a track this long? */
@@ -79,6 +98,15 @@ export function bufferStopStations(trackLength, mark) {
     body:  [clamp(trackLength - brake - BUFFER_STOP_LENGTH), clamp(trackLength - brake)],
     brake: [clamp(trackLength - brake), trackLength],
   }
+}
+
+/**
+ * Where a train stands at a mark [m from BEGIN]: before a buffer stop's face,
+ * at a boundary on the track's end.
+ */
+export function endMarkStation(trackLength, mark) {
+  if (mark.kind === BUFFER_STOP) return bufferStopStations(trackLength, mark).face
+  return mark.endpoint === 'BEGIN' ? 0 : trackLength
 }
 
 /**

@@ -11,7 +11,7 @@ export { clamp, formatNumber } from './format'
 export { isMultilineTarget, isProjectRedo, isProjectUndo } from './keyboard'
 export { fileToLogo } from './logoImage'
 export {
-  MARK_BLUE, MARK_GROUND, MARK_HEIGHT, MARK_INNER, MARK_LETTERS, MARK_LINK_BLUE, MARK_LINK_OPACITY,
+  MARK_BLUE, MARK_GROUND, MARK_INNER, MARK_LETTERS, MARK_LINK_BLUE,
   MARK_LINKS, MARK_RAIL, MARK_WIDTH,
 } from './logoMark'
 export { MAPTILER_KEY } from './mapTiler'

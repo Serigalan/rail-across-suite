@@ -6,7 +6,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -329,7 +329,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -355,7 +355,7 @@
     }
    }
   },
-  "hash": "sha256:6b061a6bdd38c1b7ad29f4bceffa808f5a557b2aa6a22118a78e9610dffdb6ce"
+  "hash": "sha256:4f96b6001f2f1cad14bcb89bf92feb9a1f3bb3ea2e6fae1ef11107b277644161"
  },
  {
   "name": "the sample, carrying its schemas",
@@ -364,7 +364,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -682,7 +682,7 @@
     }
    },
    "schemas": {
-    "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19": {
+    "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4": {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
      "$id": "core",
      "title": "Rail-Data-Core, domain core 1.0",
@@ -1402,7 +1402,7 @@
        }
       },
       "EndMark": {
-       "description": "A buffer stop or the boundary of the planning area at a free track end.",
+       "description": "A buffer stop or the boundary of the planning area at a free track end; a train may begin and end at either.",
        "type": "object",
        "required": [
         "id",
@@ -1423,6 +1423,10 @@
         "at": {
          "$ref": "#/$defs/TrackEnd"
         },
+        "name": {
+         "$ref": "#/$defs/Text",
+         "description": "What a timetable names the place by."
+        },
         "type": {
          "type": [
           "integer",
@@ -1431,6 +1435,11 @@
         },
         "brakeLength": {
          "type": "number"
+        },
+        "speed": {
+         "type": "number",
+         "minimum": 0,
+         "description": "At a boundary: the speed [km/h] a train crosses it at in a simulation, entering or leaving; without one, what the line allows there."
         },
         "lifespan": {
          "$ref": "#/$defs/Lifespan"
@@ -1744,7 +1753,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -1770,7 +1779,7 @@
     }
    }
   },
-  "hash": "sha256:6b061a6bdd38c1b7ad29f4bceffa808f5a557b2aa6a22118a78e9610dffdb6ce"
+  "hash": "sha256:4f96b6001f2f1cad14bcb89bf92feb9a1f3bb3ea2e6fae1ef11107b277644161"
  },
  {
   "name": "another format",
@@ -1779,7 +1788,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -2107,7 +2116,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -2435,7 +2444,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -2822,7 +2831,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -3150,7 +3159,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -3468,7 +3477,7 @@
     }
    },
    "schemas": {
-    "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19": {
+    "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4": {
      "$id": "core"
     },
     "sha256:b2280dcf6cfe779e148b6c402ac46eb4ff1e8d96b55e6e3abcb370ef48ff1f1b": {
@@ -3695,7 +3704,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -3993,7 +4002,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -4318,7 +4327,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -4697,7 +4706,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -5026,7 +5035,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -5351,7 +5360,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -5680,7 +5689,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -6426,7 +6435,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -6452,7 +6461,7 @@
     }
    }
   },
-  "hash": "sha256:6b061a6bdd38c1b7ad29f4bceffa808f5a557b2aa6a22118a78e9610dffdb6ce"
+  "hash": "sha256:4f96b6001f2f1cad14bcb89bf92feb9a1f3bb3ea2e6fae1ef11107b277644161"
  },
  {
   "name": "the sample with its signalling",
@@ -6461,7 +6470,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -6726,7 +6735,7 @@
     },
     "signalling": {
      "version": "1.0",
-     "schema": "sha256:cee619f2ae1b256a81ca5536e3851602cce96841d16bb2fe5f11ffe1a5e1f64c",
+     "schema": "sha256:aeb06433b03125995823095d7ab89567311237560cbc3b9e6a954385305f0134",
      "dependsOn": [
       "core"
      ],
@@ -6743,6 +6752,7 @@
         "name": "A",
         "kind": "real",
         "mounting": "mast",
+        "operationalPointId": "Halle-Trotha",
         "at": {
          "anchor": "station",
          "trackId": "t1",
@@ -6822,6 +6832,7 @@
         "name": "N1",
         "kind": "real",
         "mounting": "mast",
+        "operationalPointId": "Halle-Trotha",
         "at": {
          "anchor": "station",
          "trackId": "t1",
@@ -6882,6 +6893,7 @@
          "offset": 3.1,
          "direction": "up"
         },
+        "operationalPointId": "Halle-Trotha",
         "frames": [
          {
           "kind": "plate",
@@ -7172,6 +7184,47 @@
           "signalId": "sig-a"
          }
         ]
+       }
+      ],
+      "stoppingPlaces": [
+       {
+        "id": "hp-1",
+        "name": "Gleis 1",
+        "operationalPointId": "Halle-Trotha",
+        "at": {
+         "anchor": "station",
+         "trackId": "t1",
+         "startStation": 20,
+         "endStation": 230
+        }
+       },
+       {
+        "id": "hp-2",
+        "name": "Gleis 2",
+        "operationalPointId": "Halle-Trotha",
+        "at": {
+         "anchor": "station",
+         "trackId": "t2",
+         "startStation": 0,
+         "endStation": 140
+        }
+       }
+      ],
+      "itineraries": [
+       {
+        "id": "fw-1",
+        "name": "1 → 2",
+        "startStoppingPlaceId": "hp-1",
+        "targetStoppingPlaceId": "hp-2",
+        "routeIds": [
+         "rt-n1-v"
+        ],
+        "path": {
+         "trackIds": [
+          "t1",
+          "t2"
+         ]
+        }
        }
       ]
      }
@@ -7236,7 +7289,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -7262,7 +7315,7 @@
     },
     "signalling": {
      "version": "1.0",
-     "schema": "sha256:cee619f2ae1b256a81ca5536e3851602cce96841d16bb2fe5f11ffe1a5e1f64c",
+     "schema": "sha256:aeb06433b03125995823095d7ab89567311237560cbc3b9e6a954385305f0134",
      "dependsOn": [
       "core"
      ],
@@ -7271,17 +7324,19 @@
       "balises": "sha256:713e18f2b19483ec5e1bfb0babf3a580a0db65c71f49bfa2e8e11c5a4d588c14",
       "detectionPoints": "sha256:c98deaa1cfec2a74eded2bfb06749831953268a0e3d4a2d9f5fcf21103d899e7",
       "flankProtection": "sha256:0f5fddb634a2d9ab8ee97b8c819917e50051b58e8013a3067258bd2b8bd43567",
+      "itineraries": "sha256:48fa57878f19759e28d9bc188310030a7bd27e244d1e2f4726e27ce637de77ce",
       "overlaps": "sha256:3dc90110fb0c0f878b841fd5d497829f036e5627d4099479d1726c8905b62e3e",
       "routes": "sha256:8460ec8eb8679ccbafe0fd56878bbaf049e8c8562d45d2c675607f5a48784be2",
-      "signals": "sha256:d3d1d3f90c136fc0f8eb102df7733eff0a7518749a7781d1a5eb06433b9b9bd3",
+      "signals": "sha256:1dd74c06b897b1b9f01f33432da145754ca9c51d2915dc35ef4182da1c830da8",
       "stationBoundaries": "sha256:54556f1e20a2e22fd145c8d0f66b92640b25f50b66da610ebd8ae7126412d496",
+      "stoppingPlaces": "sha256:74d0ecd0dd5493c8be6f74e74b225c3257e97d820fb734a8bfecffab6917aad3",
       "switchElements": "sha256:fe471ee1c255021503a7e8f6862566e6d5aeb76a76cad3782b7ce37c87adb591",
       "trackSections": "sha256:dd2ee2e1d729211c5aaac5bf7c209b78c81c887bff24f6413ae439d92f4b8496"
      }
     }
    }
   },
-  "hash": "sha256:fbd15a07ef5475924bcff440b808242760aa7be32652cf25561fe58d5504716d"
+  "hash": "sha256:ba2d9e20c1186d86a5abb9cc9248db76eb460f33ad32b0baf6da6413b1b20c71"
  },
  {
   "name": "the sample with its signalling, carrying its schemas",
@@ -7290,7 +7345,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -7555,7 +7610,7 @@
     },
     "signalling": {
      "version": "1.0",
-     "schema": "sha256:cee619f2ae1b256a81ca5536e3851602cce96841d16bb2fe5f11ffe1a5e1f64c",
+     "schema": "sha256:aeb06433b03125995823095d7ab89567311237560cbc3b9e6a954385305f0134",
      "dependsOn": [
       "core"
      ],
@@ -7572,6 +7627,7 @@
         "name": "A",
         "kind": "real",
         "mounting": "mast",
+        "operationalPointId": "Halle-Trotha",
         "at": {
          "anchor": "station",
          "trackId": "t1",
@@ -7651,6 +7707,7 @@
         "name": "N1",
         "kind": "real",
         "mounting": "mast",
+        "operationalPointId": "Halle-Trotha",
         "at": {
          "anchor": "station",
          "trackId": "t1",
@@ -7711,6 +7768,7 @@
          "offset": 3.1,
          "direction": "up"
         },
+        "operationalPointId": "Halle-Trotha",
         "frames": [
          {
           "kind": "plate",
@@ -8002,6 +8060,47 @@
          }
         ]
        }
+      ],
+      "stoppingPlaces": [
+       {
+        "id": "hp-1",
+        "name": "Gleis 1",
+        "operationalPointId": "Halle-Trotha",
+        "at": {
+         "anchor": "station",
+         "trackId": "t1",
+         "startStation": 20,
+         "endStation": 230
+        }
+       },
+       {
+        "id": "hp-2",
+        "name": "Gleis 2",
+        "operationalPointId": "Halle-Trotha",
+        "at": {
+         "anchor": "station",
+         "trackId": "t2",
+         "startStation": 0,
+         "endStation": 140
+        }
+       }
+      ],
+      "itineraries": [
+       {
+        "id": "fw-1",
+        "name": "1 → 2",
+        "startStoppingPlaceId": "hp-1",
+        "targetStoppingPlaceId": "hp-2",
+        "routeIds": [
+         "rt-n1-v"
+        ],
+        "path": {
+         "trackIds": [
+          "t1",
+          "t2"
+         ]
+        }
+       }
       ]
      }
     }
@@ -8060,7 +8159,7 @@
     }
    },
    "schemas": {
-    "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19": {
+    "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4": {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
      "$id": "core",
      "title": "Rail-Data-Core, domain core 1.0",
@@ -8780,7 +8879,7 @@
        }
       },
       "EndMark": {
-       "description": "A buffer stop or the boundary of the planning area at a free track end.",
+       "description": "A buffer stop or the boundary of the planning area at a free track end; a train may begin and end at either.",
        "type": "object",
        "required": [
         "id",
@@ -8801,6 +8900,10 @@
         "at": {
          "$ref": "#/$defs/TrackEnd"
         },
+        "name": {
+         "$ref": "#/$defs/Text",
+         "description": "What a timetable names the place by."
+        },
         "type": {
          "type": [
           "integer",
@@ -8809,6 +8912,11 @@
         },
         "brakeLength": {
          "type": "number"
+        },
+        "speed": {
+         "type": "number",
+         "minimum": 0,
+         "description": "At a boundary: the speed [km/h] a train crosses it at in a simulation, entering or leaving; without one, what the line allows there."
         },
         "lifespan": {
          "$ref": "#/$defs/Lifespan"
@@ -9115,11 +9223,11 @@
       }
      }
     },
-    "sha256:cee619f2ae1b256a81ca5536e3851602cce96841d16bb2fe5f11ffe1a5e1f64c": {
+    "sha256:aeb06433b03125995823095d7ab89567311237560cbc3b9e6a954385305f0134": {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
      "$id": "signalling",
      "title": "Rail-Data-Core, domain signalling 1.0",
-     "description": "The signalling of a project, as the signalling tool plans it: signals and boards, train detection, the switch elements of the interlocking, train and shunting routes with their overlaps, flank protection, the balises and magnets of train protection and the station boundaries. Depends on core; its references go into the core or into itself (R2, R9). Its objects follow PlanPro 1.10, and like OSRD it keeps every signalling and train protection system out of the schema (decision 0011): a signal carries a logical signal per system, a balise names its system; which systems, kinds, aspects and settings there are is not in this schema but in the catalogue (packages/core/constraints/db-ril-301.json), which the content check reads.",
+     "description": "The signalling of a project, as the signalling tool plans it: signals and boards, train detection, the switch elements of the interlocking, train and shunting routes with their overlaps, flank protection, the balises and magnets of train protection, the station boundaries, the stopping places and the itineraries from one to another. Depends on core; its references go into the core or into itself (R2, R9). Its objects follow PlanPro 1.10, and like OSRD it keeps every signalling and train protection system out of the schema (decision 0011): a signal carries a logical signal per system, a balise names its system; which systems, kinds, aspects and settings there are is not in this schema but in the catalogue (packages/core/constraints/db-ril-301.json), which the content check reads.",
      "type": "object",
      "required": [
       "fields",
@@ -9141,7 +9249,9 @@
         "overlaps",
         "flankProtection",
         "balises",
-        "stationBoundaries"
+        "stationBoundaries",
+        "stoppingPlaces",
+        "itineraries"
        ],
        "additionalProperties": false,
        "properties": {
@@ -9197,6 +9307,18 @@
          "type": "array",
          "items": {
           "$ref": "#/$defs/StationBoundary"
+         }
+        },
+        "stoppingPlaces": {
+         "type": "array",
+         "items": {
+          "$ref": "#/$defs/StoppingPlace"
+         }
+        },
+        "itineraries": {
+         "type": "array",
+         "items": {
+          "$ref": "#/$defs/Itinerary"
          }
         }
        }
@@ -9276,6 +9398,11 @@
         "areaNumber": {
          "$ref": "core#/$defs/Label",
          "description": "The number of the interlocking area it belongs to, which leads its full designation (PlanPro Kennzahl: 60 in 60A)."
+        },
+        "operationalPointId": {
+         "$ref": "core#/$defs/Ref",
+         "x-target": "core.operationalPoints",
+         "description": "The station it belongs to; without one it is a signal of the open line."
         },
         "kind": {
          "enum": [
@@ -10225,6 +10352,80 @@
          "$ref": "core#/$defs/Lifespan"
         }
        }
+      },
+      "StoppingPlace": {
+       "description": "Where trains stop (Halteplatz): a stretch of one track, in a station on one of its tracks or at a platform, on the open line at a platform. Signals and detection points bound it; where one stands within it, a finding says so.",
+       "type": "object",
+       "required": [
+        "id",
+        "at"
+       ],
+       "additionalProperties": false,
+       "properties": {
+        "id": {
+         "$ref": "core#/$defs/Id"
+        },
+        "name": {
+         "$ref": "core#/$defs/Text"
+        },
+        "operationalPointId": {
+         "$ref": "core#/$defs/Ref",
+         "x-target": "core.operationalPoints",
+         "description": "The station it is of; without one it lies on the open line, at a platform."
+        },
+        "platformId": {
+         "$ref": "core#/$defs/Ref",
+         "x-target": "core.platforms",
+         "description": "The platform it lies at, where it is one's."
+        },
+        "at": {
+         "$ref": "core#/$defs/TrackRange"
+        },
+        "lifespan": {
+         "$ref": "core#/$defs/Lifespan"
+        }
+       }
+      },
+      "Itinerary": {
+       "description": "A way from one stopping place to another (Fahrweg): its run of tracks, and the train routes it takes, in running order — one route of each station it runs through from signal to signal, none on the open line. A timetable names it as the way a train prefers between two of its points.",
+       "type": "object",
+       "required": [
+        "id",
+        "startStoppingPlaceId",
+        "targetStoppingPlaceId",
+        "routeIds",
+        "path"
+       ],
+       "additionalProperties": false,
+       "properties": {
+        "id": {
+         "$ref": "core#/$defs/Id"
+        },
+        "name": {
+         "$ref": "core#/$defs/Text"
+        },
+        "startStoppingPlaceId": {
+         "$ref": "core#/$defs/Ref",
+         "x-target": "signalling.stoppingPlaces"
+        },
+        "targetStoppingPlaceId": {
+         "$ref": "core#/$defs/Ref",
+         "x-target": "signalling.stoppingPlaces"
+        },
+        "routeIds": {
+         "type": "array",
+         "items": {
+          "$ref": "core#/$defs/Ref",
+          "x-target": "signalling.routes"
+         }
+        },
+        "path": {
+         "$ref": "core#/$defs/TrackPath"
+        },
+        "lifespan": {
+         "$ref": "core#/$defs/Lifespan"
+        }
+       }
       }
      }
     }
@@ -10235,7 +10436,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -10261,7 +10462,7 @@
     },
     "signalling": {
      "version": "1.0",
-     "schema": "sha256:cee619f2ae1b256a81ca5536e3851602cce96841d16bb2fe5f11ffe1a5e1f64c",
+     "schema": "sha256:aeb06433b03125995823095d7ab89567311237560cbc3b9e6a954385305f0134",
      "dependsOn": [
       "core"
      ],
@@ -10270,17 +10471,19 @@
       "balises": "sha256:713e18f2b19483ec5e1bfb0babf3a580a0db65c71f49bfa2e8e11c5a4d588c14",
       "detectionPoints": "sha256:c98deaa1cfec2a74eded2bfb06749831953268a0e3d4a2d9f5fcf21103d899e7",
       "flankProtection": "sha256:0f5fddb634a2d9ab8ee97b8c819917e50051b58e8013a3067258bd2b8bd43567",
+      "itineraries": "sha256:48fa57878f19759e28d9bc188310030a7bd27e244d1e2f4726e27ce637de77ce",
       "overlaps": "sha256:3dc90110fb0c0f878b841fd5d497829f036e5627d4099479d1726c8905b62e3e",
       "routes": "sha256:8460ec8eb8679ccbafe0fd56878bbaf049e8c8562d45d2c675607f5a48784be2",
-      "signals": "sha256:d3d1d3f90c136fc0f8eb102df7733eff0a7518749a7781d1a5eb06433b9b9bd3",
+      "signals": "sha256:1dd74c06b897b1b9f01f33432da145754ca9c51d2915dc35ef4182da1c830da8",
       "stationBoundaries": "sha256:54556f1e20a2e22fd145c8d0f66b92640b25f50b66da610ebd8ae7126412d496",
+      "stoppingPlaces": "sha256:74d0ecd0dd5493c8be6f74e74b225c3257e97d820fb734a8bfecffab6917aad3",
       "switchElements": "sha256:fe471ee1c255021503a7e8f6862566e6d5aeb76a76cad3782b7ce37c87adb591",
       "trackSections": "sha256:dd2ee2e1d729211c5aaac5bf7c209b78c81c887bff24f6413ae439d92f4b8496"
      }
     }
    }
   },
-  "hash": "sha256:fbd15a07ef5475924bcff440b808242760aa7be32652cf25561fe58d5504716d"
+  "hash": "sha256:ba2d9e20c1186d86a5abb9cc9248db76eb460f33ad32b0baf6da6413b1b20c71"
  },
  {
   "name": "signalling depending on nothing",
@@ -10289,7 +10492,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -10554,7 +10757,7 @@
     },
     "signalling": {
      "version": "1.0",
-     "schema": "sha256:cee619f2ae1b256a81ca5536e3851602cce96841d16bb2fe5f11ffe1a5e1f64c",
+     "schema": "sha256:aeb06433b03125995823095d7ab89567311237560cbc3b9e6a954385305f0134",
      "fields": {
       "catalogue": {
        "id": "db-ril-301",
@@ -10568,6 +10771,7 @@
         "name": "A",
         "kind": "real",
         "mounting": "mast",
+        "operationalPointId": "Halle-Trotha",
         "at": {
          "anchor": "station",
          "trackId": "t1",
@@ -10647,6 +10851,7 @@
         "name": "N1",
         "kind": "real",
         "mounting": "mast",
+        "operationalPointId": "Halle-Trotha",
         "at": {
          "anchor": "station",
          "trackId": "t1",
@@ -10707,6 +10912,7 @@
          "offset": 3.1,
          "direction": "up"
         },
+        "operationalPointId": "Halle-Trotha",
         "frames": [
          {
           "kind": "plate",
@@ -10998,6 +11204,47 @@
          }
         ]
        }
+      ],
+      "stoppingPlaces": [
+       {
+        "id": "hp-1",
+        "name": "Gleis 1",
+        "operationalPointId": "Halle-Trotha",
+        "at": {
+         "anchor": "station",
+         "trackId": "t1",
+         "startStation": 20,
+         "endStation": 230
+        }
+       },
+       {
+        "id": "hp-2",
+        "name": "Gleis 2",
+        "operationalPointId": "Halle-Trotha",
+        "at": {
+         "anchor": "station",
+         "trackId": "t2",
+         "startStation": 0,
+         "endStation": 140
+        }
+       }
+      ],
+      "itineraries": [
+       {
+        "id": "fw-1",
+        "name": "1 → 2",
+        "startStoppingPlaceId": "hp-1",
+        "targetStoppingPlaceId": "hp-2",
+        "routeIds": [
+         "rt-n1-v"
+        ],
+        "path": {
+         "trackIds": [
+          "t1",
+          "t2"
+         ]
+        }
+       }
       ]
      }
     }
@@ -11066,7 +11313,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -11331,7 +11578,7 @@
     },
     "signalling": {
      "version": "1.0",
-     "schema": "sha256:cee619f2ae1b256a81ca5536e3851602cce96841d16bb2fe5f11ffe1a5e1f64c",
+     "schema": "sha256:aeb06433b03125995823095d7ab89567311237560cbc3b9e6a954385305f0134",
      "dependsOn": [
       "core"
      ],
@@ -11348,6 +11595,7 @@
         "name": "A",
         "kind": "real",
         "mounting": "mast",
+        "operationalPointId": "Halle-Trotha",
         "at": {
          "anchor": "station",
          "trackId": "t1",
@@ -11426,6 +11674,7 @@
         "name": "N1",
         "kind": "real",
         "mounting": "mast",
+        "operationalPointId": "Halle-Trotha",
         "at": {
          "anchor": "station",
          "trackId": "t1",
@@ -11486,6 +11735,7 @@
          "offset": 3.1,
          "direction": "up"
         },
+        "operationalPointId": "Halle-Trotha",
         "frames": [
          {
           "kind": "plate",
@@ -11776,6 +12026,47 @@
           "signalId": "sig-a"
          }
         ]
+       }
+      ],
+      "stoppingPlaces": [
+       {
+        "id": "hp-1",
+        "name": "Gleis 1",
+        "operationalPointId": "Halle-Trotha",
+        "at": {
+         "anchor": "station",
+         "trackId": "t1",
+         "startStation": 20,
+         "endStation": 230
+        }
+       },
+       {
+        "id": "hp-2",
+        "name": "Gleis 2",
+        "operationalPointId": "Halle-Trotha",
+        "at": {
+         "anchor": "station",
+         "trackId": "t2",
+         "startStation": 0,
+         "endStation": 140
+        }
+       }
+      ],
+      "itineraries": [
+       {
+        "id": "fw-1",
+        "name": "1 → 2",
+        "startStoppingPlaceId": "hp-1",
+        "targetStoppingPlaceId": "hp-2",
+        "routeIds": [
+         "rt-n1-v"
+        ],
+        "path": {
+         "trackIds": [
+          "t1",
+          "t2"
+         ]
+        }
        }
       ]
      }
@@ -11845,7 +12136,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -12110,7 +12401,7 @@
     },
     "signalling": {
      "version": "1.0",
-     "schema": "sha256:cee619f2ae1b256a81ca5536e3851602cce96841d16bb2fe5f11ffe1a5e1f64c",
+     "schema": "sha256:aeb06433b03125995823095d7ab89567311237560cbc3b9e6a954385305f0134",
      "dependsOn": [
       "core"
      ],
@@ -12127,6 +12418,7 @@
         "name": "A",
         "kind": "real",
         "mounting": "mast",
+        "operationalPointId": "Halle-Trotha",
         "at": {
          "anchor": "station",
          "trackId": "t1",
@@ -12206,6 +12498,7 @@
         "name": "N1",
         "kind": "real",
         "mounting": "mast",
+        "operationalPointId": "Halle-Trotha",
         "at": {
          "anchor": "station",
          "trackId": "t1",
@@ -12266,6 +12559,7 @@
          "offset": 3.1,
          "direction": "up"
         },
+        "operationalPointId": "Halle-Trotha",
         "frames": [
          {
           "kind": "plate",
@@ -12557,6 +12851,47 @@
          }
         ]
        }
+      ],
+      "stoppingPlaces": [
+       {
+        "id": "hp-1",
+        "name": "Gleis 1",
+        "operationalPointId": "Halle-Trotha",
+        "at": {
+         "anchor": "station",
+         "trackId": "t1",
+         "startStation": 20,
+         "endStation": 230
+        }
+       },
+       {
+        "id": "hp-2",
+        "name": "Gleis 2",
+        "operationalPointId": "Halle-Trotha",
+        "at": {
+         "anchor": "station",
+         "trackId": "t2",
+         "startStation": 0,
+         "endStation": 140
+        }
+       }
+      ],
+      "itineraries": [
+       {
+        "id": "fw-1",
+        "name": "1 → 2",
+        "startStoppingPlaceId": "hp-1",
+        "targetStoppingPlaceId": "hp-2",
+        "routeIds": [
+         "rt-n1-v"
+        ],
+        "path": {
+         "trackIds": [
+          "t1",
+          "t2"
+         ]
+        }
+       }
       ]
      }
     }
@@ -12620,7 +12955,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -12646,7 +12981,7 @@
     },
     "signalling": {
      "version": "1.0",
-     "schema": "sha256:cee619f2ae1b256a81ca5536e3851602cce96841d16bb2fe5f11ffe1a5e1f64c",
+     "schema": "sha256:aeb06433b03125995823095d7ab89567311237560cbc3b9e6a954385305f0134",
      "dependsOn": [
       "core"
      ],
@@ -12655,17 +12990,19 @@
       "balises": "sha256:713e18f2b19483ec5e1bfb0babf3a580a0db65c71f49bfa2e8e11c5a4d588c14",
       "detectionPoints": "sha256:c98deaa1cfec2a74eded2bfb06749831953268a0e3d4a2d9f5fcf21103d899e7",
       "flankProtection": "sha256:0f5fddb634a2d9ab8ee97b8c819917e50051b58e8013a3067258bd2b8bd43567",
+      "itineraries": "sha256:48fa57878f19759e28d9bc188310030a7bd27e244d1e2f4726e27ce637de77ce",
       "overlaps": "sha256:3dc90110fb0c0f878b841fd5d497829f036e5627d4099479d1726c8905b62e3e",
       "routes": "sha256:8460ec8eb8679ccbafe0fd56878bbaf049e8c8562d45d2c675607f5a48784be2",
-      "signals": "sha256:d3d1d3f90c136fc0f8eb102df7733eff0a7518749a7781d1a5eb06433b9b9bd3",
+      "signals": "sha256:1dd74c06b897b1b9f01f33432da145754ca9c51d2915dc35ef4182da1c830da8",
       "stationBoundaries": "sha256:54556f1e20a2e22fd145c8d0f66b92640b25f50b66da610ebd8ae7126412d496",
+      "stoppingPlaces": "sha256:74d0ecd0dd5493c8be6f74e74b225c3257e97d820fb734a8bfecffab6917aad3",
       "switchElements": "sha256:fe471ee1c255021503a7e8f6862566e6d5aeb76a76cad3782b7ce37c87adb591",
       "trackSections": "sha256:dd2ee2e1d729211c5aaac5bf7c209b78c81c887bff24f6413ae439d92f4b8496"
      }
     }
    }
   },
-  "hash": "sha256:fbd15a07ef5475924bcff440b808242760aa7be32652cf25561fe58d5504716d"
+  "hash": "sha256:ba2d9e20c1186d86a5abb9cc9248db76eb460f33ad32b0baf6da6413b1b20c71"
  },
  {
   "name": "signalling without its overlaps",
@@ -12674,7 +13011,7 @@
    "domains": {
     "core": {
      "version": "1.0",
-     "schema": "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -12939,7 +13276,7 @@
     },
     "signalling": {
      "version": "1.0",
-     "schema": "sha256:cee619f2ae1b256a81ca5536e3851602cce96841d16bb2fe5f11ffe1a5e1f64c",
+     "schema": "sha256:aeb06433b03125995823095d7ab89567311237560cbc3b9e6a954385305f0134",
      "dependsOn": [
       "core"
      ],
@@ -12956,6 +13293,7 @@
         "name": "A",
         "kind": "real",
         "mounting": "mast",
+        "operationalPointId": "Halle-Trotha",
         "at": {
          "anchor": "station",
          "trackId": "t1",
@@ -13035,6 +13373,7 @@
         "name": "N1",
         "kind": "real",
         "mounting": "mast",
+        "operationalPointId": "Halle-Trotha",
         "at": {
          "anchor": "station",
          "trackId": "t1",
@@ -13095,6 +13434,7 @@
          "offset": 3.1,
          "direction": "up"
         },
+        "operationalPointId": "Halle-Trotha",
         "frames": [
          {
           "kind": "plate",
@@ -13355,6 +13695,47 @@
           "signalId": "sig-a"
          }
         ]
+       }
+      ],
+      "stoppingPlaces": [
+       {
+        "id": "hp-1",
+        "name": "Gleis 1",
+        "operationalPointId": "Halle-Trotha",
+        "at": {
+         "anchor": "station",
+         "trackId": "t1",
+         "startStation": 20,
+         "endStation": 230
+        }
+       },
+       {
+        "id": "hp-2",
+        "name": "Gleis 2",
+        "operationalPointId": "Halle-Trotha",
+        "at": {
+         "anchor": "station",
+         "trackId": "t2",
+         "startStation": 0,
+         "endStation": 140
+        }
+       }
+      ],
+      "itineraries": [
+       {
+        "id": "fw-1",
+        "name": "1 → 2",
+        "startStoppingPlaceId": "hp-1",
+        "targetStoppingPlaceId": "hp-2",
+        "routeIds": [
+         "rt-n1-v"
+        ],
+        "path": {
+         "trackIds": [
+          "t1",
+          "t2"
+         ]
+        }
        }
       ]
      }

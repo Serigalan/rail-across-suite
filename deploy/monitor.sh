@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Rail-Across-Suite — watch every instance of this machine: services running,
-# project server and optimizer answering, the site answering from outside
+# project server answering, the site answering from outside
 # through Caddy, its certificate not about to run out, space left for the data.
 # Exits non-zero when something is wrong, so the timer's unit shows up in
 # `systemctl --failed` and the journal (journalctl -u rail-across-monitor); with
@@ -51,9 +51,7 @@ check_instance() {
   done
   if curl -fs -m 10 -o /dev/null "http://$RA_BIND:$RA_SERVER_PORT/api/health"; then ok "$name: project server answers"
   else problem "$name: project server does not answer on $RA_BIND:$RA_SERVER_PORT"; fi
-  if curl -fs -m 10 -o /dev/null "http://$RA_BIND:$RA_OPTIMIZER_PORT/health"; then ok "$name: optimizer answers"
-  else problem "$name: optimizer does not answer on $RA_BIND:$RA_OPTIMIZER_PORT"; fi
-  # From outside, through Caddy and TLS (the optimizer is behind the sign-in there).
+  # From outside, through Caddy and TLS.
   if curl -fs -m 15 -o /dev/null "https://$RA_DOMAIN/api/health"; then ok "$name: https://$RA_DOMAIN answers"
   else problem "$name: https://$RA_DOMAIN/api/health does not answer"; fi
   days=$(echo | timeout 15 openssl s_client -connect "$RA_DOMAIN:443" -servername "$RA_DOMAIN" 2>/dev/null \

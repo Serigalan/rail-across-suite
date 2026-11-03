@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { curveResistance, findPath, locationAt, offsetOnPath, pathLength, pathProperties } from './path.js'
-import { routeThrough, signalledSpeeds } from './route.js'
+import { curveResistance, findPath, locationAt, offsetOnPath, pathAlong, pathLength, pathProperties } from './path.js'
+import { routeThrough, routeVia, signalledSpeeds } from './route.js'
 import { marginValue, simulationRequest } from './request.js'
 import { newVehicle } from '@rail-across/vehicles'
 import { runWith } from './engine.js'
@@ -51,6 +51,22 @@ describe('a path over the net', () => {
 
   it('keeps a target ahead on the same track to that track', () => {
     expect(findPath(record, { trackId: 'T1', station: 100, direction: 'up' }, { trackId: 'T1', station: 600 })).toEqual([{ trackId: 'T1', start: 100, end: 600 }])
+  })
+
+  it('runs a given run of tracks, where it leads from the one to the other', () => {
+    const at = (trackId, station) => ({ trackId, station })
+    expect(pathAlong(record, ['T1', 'T3'], at('T1', 500), at('T3', 100))).toEqual([
+      { trackId: 'T1', start: 500, end: 1000 }, { trackId: 'T3', start: 0, end: 100 },
+    ])
+    // Not where its tracks do not meet, its ends are not the two places', or it would turn back.
+    expect(pathAlong(record, ['T1', 'T4'], at('T1', 500), at('T4', 100))).toBeNull()
+    expect(pathAlong(record, ['T1', 'T3'], at('T1', 500), at('T2', 100))).toBeNull()
+    expect(pathAlong(record, ['T1', 'T3'], at('T1', 500), at('T3', 100), 'down')).toBeNull()
+    // A leg given its way takes it, though another is shorter.
+    const via = routeVia(record, [[at('T1', 500)], [at('T2', 100)]], {
+      legPath: (i, from, direction, to) => pathAlong(record, ['T1', 'T2'], from, to, direction),
+    })
+    expect(via.path.map(p => p.trackId)).toEqual(['T1', 'T2'])
   })
 
   it('finds offsets and locations along it', () => {

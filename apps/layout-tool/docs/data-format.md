@@ -78,6 +78,7 @@ Collections, each keyed by its own id (which is also how the merge compares them
 | `endMarks` | `id` | buffer stops and planning-area boundaries at free track ends |
 | `routes` | `id` | named runs of tracks |
 | `kmLines` | `lineNumber` | the stretch of each DB line around the project, with kilometrage |
+| `operationalPoints` | `id` | stations of the register that the tracks' and platforms' station names do not make by themselves — created in the Signalling-Tool, with codes no object states, renamed, or named by the signalling; `{ id, name, rl100, uic }` ([decision 0017](../../../docs/decisions/0017-stations-in-the-signalling-tool.md)) |
 | `axisSurveys` | `id` | measured axis points traced in point clouds |
 | `referenceAxes` | `id` | reference axes (Bestandsachsen) as centimetre points |
 
@@ -187,10 +188,14 @@ There is **no station on an element** — stations are the running sum of the le
   "frontOffset": 1.67, "backOffset": 4.67, "height": 550, "stationName": "Halle-Trotha", "code": "LHT" }
 
 { "id": "…", "kind": "buffer_stop", "trackId": "…", "endpoint": "END", "type": 4, "brakeLength": 4 }
-{ "id": "…", "kind": "boundary",    "trackId": "…", "endpoint": "BEGIN" }
+{ "id": "…", "kind": "boundary",    "trackId": "…", "endpoint": "BEGIN", "name": "Grenze Nord", "speed": 80 }
 
 { "id": "…", "name": "Route 1", "trackIds": ["…", "…", "…"] }
 ```
+
+An end mark's `name` is what a timetable calls the place — a train may begin and end at a buffer stop and at a
+boundary; without one it is named by its kind, track and end (`endMarkName`). A boundary's `speed` [km/h] is the
+speed a train crosses it at in a simulation, entering or leaving; without one, what the line allows there.
 
 A platform's polygon and a buffer stop's drawing are derived. A route stores only its tracks in running order;
 the direction it runs each one is derived from where they meet.

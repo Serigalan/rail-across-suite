@@ -1,14 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
 import { categoryColor, formatClock, trainTitle } from '@rail-across/timetables'
-import { axisOf, linesOn } from './rows.js'
+import { axisOf, blocksOn, linesOn } from './rows.js'
 
 /**
  * The graphical timetable (Bildfahrplan): the stations along the way of one
  * train across, at their distances, the time downwards, and every train of
  * the timetable that runs along that way as a line — sloping where it runs,
- * straight down where it stands. A line's train is chosen with a click.
- * `view` { from, to, scale } — the hours shown (all the trains' without),
- * and pixels per minute.
+ * straight down where it stands; under it, with `view.blocks`, the blocks
+ * it holds as they are held over time (Sperrzeitentreppe), red where
+ * another holds one at the same time. A line's train is chosen with a click.
+ * `view` { from, to, scale, blocks } — the hours shown (all the trains'
+ * without), pixels per minute, whether blocking times are drawn.
  */
 const LEFT = 56, RIGHT = 80, TOP = 120, BOTTOM = 24
 
@@ -27,14 +29,20 @@ export default function Graph({ t, trains, runs, axisTrain, view, selected, onSe
     return <div className="tt-scroll" ref={box}><div className="tt-page tt-empty"><p className="ui-muted">{t(trains.length ? 'graph_no_axis' : 'trains_none_lead')}</p></div></div>
   }
   const axis = axisOf(axisRun.rows)
-  const drawn = trains.map(tr => ({ train: tr, lines: linesOn(axis, runs.get(tr.id)?.rows) })).filter(d => d.lines.length)
+  const drawn = trains.map(tr => {
+    const run = runs.get(tr.id)
+    const bad = new Set((run?.conflicts ?? []).map(c => c.block))
+    const held = view.blocks ? blocksOn(axis, run?.rows, run?.blocks).map(b => ({ ...b, conflict: bad.has(b.block) })) : []
+    return { train: tr, lines: linesOn(axis, run?.rows), held }
+  }).filter(d => d.lines.length)
   const times = drawn.flatMap(d => d.lines.flat().map(p => p.t))
   const from = view.from ?? Math.floor(Math.min(...times) / 3600) * 3600
   const to = view.to ?? Math.ceil(Math.max(...times) / 3600) * 3600
   const span = Math.max(to - from, 3600)
   const height = TOP + BOTTOM + span / 60 * view.scale
   const total = axis[axis.length - 1].at || 1
-  const x = (i) => LEFT + (axis[i].at / total) * (width - LEFT - RIGHT)
+  const xAt = (at) => LEFT + (at / total) * (width - LEFT - RIGHT)
+  const x = (i) => xAt(axis[i].at)
   const y = (s) => TOP + (s - from) / 60 * view.scale
   const ticks = []
   const minor = view.scale >= 6 ? 300 : 600
@@ -57,6 +65,15 @@ export default function Graph({ t, trains, runs, axisTrain, view, selected, onSe
           </g>
         ))}
         <g clipPath="url(#tt-graph-clip)">
+          {drawn.map(({ train, held }) => (
+            <g key={`b-${train.id}`} className="tt-blocks">
+              {held.map((b, k) => (
+                <rect key={k} className={b.conflict ? 'tt-block tt-block-conflict' : 'tt-block'} x={xAt(b.a0)} y={y(b.begin)}
+                  width={Math.max(2, xAt(b.a1) - xAt(b.a0))} height={Math.max(1, y(b.end) - y(b.begin))}
+                  fill={b.conflict ? undefined : categoryColor(train.category)} />
+              ))}
+            </g>
+          ))}
           {drawn.map(({ train, lines }) => {
             const color = categoryColor(train.category)
             const chosen = train.id === selected

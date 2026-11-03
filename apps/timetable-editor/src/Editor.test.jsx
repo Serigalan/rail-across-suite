@@ -7,9 +7,10 @@ import { I18n, textsFor } from './i18n.js'
 import Editor from './Editor.jsx'
 import TrainSheet from './TrainSheet.jsx'
 import Graph from './Graph.jsx'
-import { axisOf, insertionIndex, linesOn, trainLine } from './rows.js'
+import DispatchSection from './panels/DispatchSection.jsx'
+import { axisOf, blocksOn, insertionIndex, linesOn, trainLine } from './rows.js'
 import { linkedRequest } from './suite.js'
-import { net } from '../../../packages/running-times/test/net.js'
+import { marked, net } from '../../../packages/running-times/test/net.js'
 
 const de = (node) => renderToStaticMarkup(<I18n.Provider value={textsFor('de')}>{node}</I18n.Provider>)
 const { t } = textsFor('de')
@@ -45,9 +46,9 @@ describe('the Fahrplan-Editor', () => {
   it('shows a train: what it is, its way from a station to a station, its times with the stations it passes', () => {
     const html = sheet()
     expect(html).toContain('RB 16001')
-    expect(html).toContain('Beginn (Bahnhof)')
+    expect(html).toContain('<span>Beginn</span>')
     // begin and end offer stations only; on the way a halt as well
-    const begin = html.slice(html.indexOf('Beginn (Bahnhof)'), html.indexOf('Unterwegs'))
+    const begin = html.slice(html.indexOf('<span>Beginn</span>'), html.indexOf('Unterwegs'))
     expect(begin).toContain('A-Dorf')
     expect(begin).not.toContain('B-Halt')
     expect(html).toContain('B-Halt (Haltepunkt)')
@@ -55,6 +56,32 @@ describe('the Fahrplan-Editor', () => {
     expect(html).toContain('07:01<small>30</small>')
     expect(html).toContain('Hier halten')
     expect(html).toContain('59 km/h')
+  })
+
+  it('offers a buffer stop and a boundary to begin and end at, not to pass', () => {
+    const ends = stationsOf(marked)
+    const html = sheet({ stations: ends, record: marked })
+    const begin = html.slice(html.indexOf('<span>Beginn</span>'), html.indexOf('Unterwegs'))
+    expect(begin).toContain('West (Betrachtungsgrenze)')
+    expect(begin).toContain('Prellbock C-Stadt Gl. 2 Ende (Prellbock)')
+    const via = html.slice(html.indexOf('Unterwegs'), html.indexOf('<span>Ende</span>'))
+    expect(via).not.toContain('Betrachtungsgrenze')
+    expect(via).not.toContain('(Prellbock)')
+  })
+
+  it('offers the itineraries of the signalling as the way a train prefers to the next point, and says where it ran another', () => {
+    const range = (trackId, startStation, endStation) => ({ anchor: 'station', trackId, startStation, endStation })
+    const signalled = { ...net, signalling: { fields: {}, collections: {
+      stoppingPlaces: [{ id: 'hA', name: '1', at: range('A1', 100, 300) }, { id: 'hB', name: 'B', platformId: 'pB', at: range('L', 1000, 1200) }],
+      itineraries: [{ id: 'f1', name: 'A-Dorf 1 → B-Halt', startStoppingPlaceId: 'hA', targetStoppingPlaceId: 'hB', routeIds: [], path: { trackIds: ['A1', 'L'] } }],
+    } } }
+    const html = sheet({ record: signalled })
+    expect(html).toContain('Bevorzugter Fahrweg bis B-Halt')
+    expect(html).toContain('<option value="" selected="">kürzester Weg</option><option value="f1">A-Dorf 1 → B-Halt</option>')
+    expect(html).not.toContain('Bevorzugter Fahrweg bis C-Stadt')
+    const preferring = { ...train, points: train.points.map((p, i) => (i === 0 ? { ...p, itinerary: 'f1' } : p)) }
+    const other = sheet({ record: signalled, train: preferring, run: { ...run, route: { ...run.route, preferred: ['other', null] } } })
+    expect(other).toContain('Der bevorzugte Fahrweg führt nicht dorthin')
   })
 
   it('says what keeps a train from running', () => {
@@ -109,5 +136,31 @@ describe('what it shows of runs', () => {
   it('reads its address', () => {
     expect(linkedRequest('?project=p&variant=v&timetable=tt&train=x')).toEqual({ action: 'open', project: 'p', variant: 'v', timetable: 'tt', train: 'x' })
     expect(linkedRequest('?variant=v')).toBeNull()
+  })
+
+  it('sets what happens where two trains need one block: they wait, the kinds first in the order set, or only the conflicts are said', () => {
+    const tt = (dispatch) => timetables({ trains: [train, { ...train, id: 'x', category: 'Sonder' }], draft: { id: 'tt', name: 'F', data: { trains: [], dispatch }, version: 1 } })
+    const waiting = de(<DispatchSection t={t} timetables={tt({ mode: 'wait', priority: 'category' })} mayEdit />)
+    expect(waiting).toContain('Züge warten automatisch')
+    expect(waiting).toContain('Nach Zuggattung')
+    // the kinds set first, then the trains' own
+    expect(waiting.indexOf('>ICE<')).toBeLessThan(waiting.indexOf('>RB<'))
+    expect(waiting.indexOf('>Lz<')).toBeLessThan(waiting.indexOf('>Sonder<'))
+    expect(waiting).toContain('Vorsignalabstand [m]')
+    const showing = de(<DispatchSection t={t} timetables={tt({ mode: 'show' })} mayEdit />)
+    expect(showing).not.toContain('Vorrang')
+  })
+
+  it('lays a train\'s blocking times on the axis of the graphical timetable', () => {
+    const axis = axisOf(rows)
+    const held = blocksOn(axis, rows, [{ index: 0, from: 0, reach: 700, begin: 25190, end: 25260 }, { index: 1, from: 700, reach: 3200, begin: 25240, end: 25400 }])
+    expect(held.map(b => [Math.round(b.a0), Math.round(b.a1), b.block])).toEqual([[0, 700, 0], [700, 3200, 1]])
+  })
+
+  it('says in a train\'s sheet where it waits for a block, and for whom', () => {
+    const waiting = { ...run, blocks: [{ index: 0, signalId: null }, { index: 1, signalId: null }], waits: [{ offset: 0, point: 0, wait: 90, because: ['y'] }], conflicts: [], delay: 95 }
+    const html = sheet({ run: waiting, titles: new Map([['y', 'ICE 1']]) })
+    expect(html).toContain('Blockbelegung')
+    expect(html).toContain('Fährt 1 min 30 s später ab – wegen ICE 1')
   })
 })

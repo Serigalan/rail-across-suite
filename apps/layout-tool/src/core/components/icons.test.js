@@ -18,12 +18,12 @@ const MENU_ICONS = [
   'BackIcon', 'SearchIcon', 'ConfirmIcon', 'CancelIcon',
   'CreateLineIcon', 'CreateArcIcon', 'CreateParallelIcon', 'CreateParallelTrackIcon',
   'ConnectStraightIcon', 'ConnectCurvedIcon',
-  'SwitchOnTrackIcon', 'SwitchConnectTrackIcon', 'SwitchConnectionIcon',
+  'SwitchOnTrackIcon', 'SwitchConnectTrackIcon', 'SwitchConnectionIcon', 'SwitchConnectionExtendedIcon',
   'EditLengthIcon', 'DeleteElementIcon', 'EditTracksIcon', 'EditPropertiesIcon',
   'ChangeDirectionIcon', 'AssignTracksIcon', 'DeleteTrackIcon', 'DeleteSwitchIcon', 'TrackVisibilityIcon', 'RouteIcon',
   'OptimizeTrackModeIcon', 'OptimizeElementModeIcon', 'AxisFitModeIcon', 'BandsIcon',
   'CrossingOnTrackIcon', 'CrossingConnectTrackIcon', 'SwitchLinkIcon', 'SwitchDetailIcon',
-  'SpliceJoinIcon', 'ReconnectIcon', 'AboutIcon', 'ShiftValuesIcon', 'NewPlatformIcon', 'BufferStopIcon', 'PointCloudIcon',
+  'SpliceJoinIcon', 'ReconnectIcon', 'AboutIcon', 'ShiftValuesIcon', 'NewPlatformIcon', 'BufferStopIcon', 'BoundaryIcon', 'PointCloudIcon',
 ]
 
 // Walk a path the way a renderer does and state every absolute position it

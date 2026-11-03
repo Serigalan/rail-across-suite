@@ -29,11 +29,13 @@ const portAt = (sw, trackId, endpoint) => ['A', ...ROUTE_PORTS]
 /**
  * The switch connection track `trackId` is — or why it is none: { error } with
  * a locale key. It begins at a route of one turnout and ends at a route of
- * another, of one form a turnout can be laid in with, and between the two
+ * another, of forms a turnout can be laid in with, and between the two
  * turnouts' own elements lie one to EDIT_MAX_MIDS elements of its own.
  *
  * Returns { conn, turnouts: [first, second] — each { sw, port, linePort,
- * own } (`own` its elements on the connection) —, mids, form, speed }.
+ * own } (`own` its elements on the connection) —, mids, forms: [first's,
+ * second's], form (the one form, or the pair where they differ), speed (the
+ * lower of the two forms' speeds) }.
  */
 export function switchConnectionOf({ trackId, tracks, switches }) {
   const conn = tracks.find(tr => tr.id === trackId)
@@ -58,10 +60,12 @@ export function switchConnectionOf({ trackId, tracks, switches }) {
   if (!first.own.length || !second.own.length || mids.some(el => el.switchId)) return { error: 'crossover_edit_error_none' }
   if (mids.length < 1 || mids.length > EDIT_MAX_MIDS) return { error: 'crossover_edit_error_mids' }
   // Any form a turnout can be laid in with (SWITCH_PICK_TYPES): the
-  // construction lays every one of them, not only those it chooses itself.
-  const form = SWITCH_PICK_TYPES.find(f => f.label === first.sw.label)
-  if (!form || second.sw.label !== first.sw.label) return { error: 'crossover_edit_error_form' }
-  return { conn, turnouts, mids, form, speed: form.speed }
+  // construction lays every one of them, not only those it chooses itself —
+  // and each turnout its own (the extended connection, decision 0018).
+  const forms = turnouts.map(tu => SWITCH_PICK_TYPES.find(f => f.label === tu.sw.label))
+  if (forms.some(f => !f)) return { error: 'crossover_edit_error_form' }
+  const form = forms[0] === forms[1] ? forms[0] : forms
+  return { conn, turnouts, mids, form, forms, speed: Math.min(...forms.map(f => f.speed)) }
 }
 
 /**
@@ -158,8 +162,8 @@ export function takeApart(found, { tracks, switches }) {
  * A connection the construction does not lay as it is — cants that disagree
  * at the ldS, a chain that does not close at the toes — still opens (`closes` false): its elements as
  * they are, the first two lengths open, the old values where the iteration
- * starts; the dialog says why, and the slider, the elements and the Python
- * solver find where it does.
+ * starts; the dialog says why, and the slider or the search of the extended
+ * switch connection find where it does.
  *
  * Returns { shift, mids, seed, closes }.
  */
@@ -170,8 +174,8 @@ export function editStart(found, apart) {
     const closes = !!(result?.valid || result?.overridable)
     return { shift: closes ? shift : 0, mids: DEFAULT_MIDS, seed: null, closes }
   }
-  // The middle elements as an answer of the Python solver states them; the
-  // toes stand where the picks are. Exact first: the connection as it is.
+  // The middle elements as an answer of the search states them; the toes
+  // stand where the picks are. Exact first: the connection as it is.
   const pieces = found.mids.map(el => (el.elementType === 2
     ? { type: 'transition', length: el.length }
     : el.radius == null

@@ -3,17 +3,18 @@ import LineForm from './CreateElementPanel/LineForm'
 import CurvedLineForm from './CreateElementPanel/CurvedLineForm'
 import ParallelLineForm from './CreateElementPanel/ParallelLineForm'
 import ParallelTrackForm from './CreateElementPanel/ParallelTrackForm'
-import BufferStopForm from './CreateElementPanel/BufferStopForm'
+import EndMarkForm from './CreateElementPanel/EndMarkForm'
 import PlatformPanel from './PlatformPanel'
 import {
-  CreateLineIcon, CreateArcIcon, CreateParallelIcon, CreateParallelTrackIcon, BufferStopIcon, NewPlatformIcon,
+  CreateLineIcon, CreateArcIcon, CreateParallelIcon, CreateParallelTrackIcon, BufferStopIcon, BoundaryIcon, NewPlatformIcon,
 } from '../icons'
 import { useI18n } from '../../locales/i18nContext'
 import BackButton from './BackButton'
+import { BOUNDARY } from '@rail-across/core/track'
 
 /**
- * Creating elements, buffer stops and platforms in one panel: the menu keeps
- * the three headings, separated by the gray line, and a tool click opens that
+ * Creating elements, track ends (buffer stops, boundaries of the planning
+ * area) and platforms in one panel: the menu keeps the three headings, separated by the gray line, and a tool click opens that
  * tool's form. The groups share the panel the way the switch panel's tools do
  * — one menu, one back. Connecting to a track end is in the splice panel.
  */
@@ -58,7 +59,15 @@ export default function CreatePanel() {
     <>
       <BackButton onBack={back} />
       <h2>{t('buffer_stop_create')}</h2>
-      <BufferStopForm onCommitted={back} />
+      <EndMarkForm onCommitted={back} />
+    </>
+  )
+
+  if (page === 'boundary') return (
+    <>
+      <BackButton onBack={back} />
+      <h2>{t('boundary_create')}</h2>
+      <EndMarkForm kind={BOUNDARY} onCommitted={back} />
     </>
   )
 
@@ -96,6 +105,10 @@ export default function CreatePanel() {
         <button className="ui-btn ui-btn-option" onClick={() => setPage('buffer_stop')}>
           <BufferStopIcon />
           {t('buffer_stop_create')}
+        </button>
+        <button className="ui-btn ui-btn-option" onClick={() => setPage('boundary')}>
+          <BoundaryIcon />
+          {t('boundary_create')}
         </button>
       </div>
       <hr className="divider divider-wide" />

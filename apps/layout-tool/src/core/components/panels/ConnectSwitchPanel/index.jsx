@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import SCurveForm from './SCurveForm'
+import ExtendedConnectionForm from './ExtendedConnectionForm'
 import SwitchOnTrackForm from './SwitchOnTrackForm'
 import SwitchConnectForm from './SwitchConnectForm'
 import CrossingOnTrackForm from './CrossingOnTrackForm'
@@ -8,8 +9,8 @@ import TrackLinkForm from './TrackLinkForm'
 import SwitchDetailPage from './SwitchDetailPage'
 import SwitchSearch from './SwitchSearch'
 import {
-  SwitchOnTrackIcon, SwitchConnectTrackIcon, SwitchConnectionIcon, CrossingOnTrackIcon, CrossingConnectTrackIcon, SwitchLinkIcon,
-  SwitchDetailIcon,
+  SwitchOnTrackIcon, SwitchConnectTrackIcon, SwitchConnectionIcon, SwitchConnectionExtendedIcon, CrossingOnTrackIcon,
+  CrossingConnectTrackIcon, SwitchLinkIcon, SwitchDetailIcon,
 } from '../../icons'
 import { useI18n } from '../../../locales/i18nContext'
 import BackButton from '../BackButton'
@@ -20,7 +21,9 @@ export default function ConnectSwitchPanel({ detailTarget = null, onShowDetail }
   const { t } = useI18n()
   const [page, setPage] = useState('menu')
   const [switchQuery, setSwitchQuery] = useState('')
-  const back = () => setPage('menu')
+  // The picks the switch connection hands over to the extended one.
+  const [handedPicks, setHandedPicks] = useState(null)
+  const back = () => { setHandedPicks(null); setPage('menu') }
 
   if (page === 'ontrack') return (
     <>
@@ -42,7 +45,16 @@ export default function ConnectSwitchPanel({ detailTarget = null, onShowDetail }
     <>
       <BackButton onBack={back} />
       <h2>{t('scurve_title')}</h2>
-      <SCurveForm onCommitted={() => setPage('menu')} />
+      <SCurveForm onCommitted={() => setPage('menu')}
+        onExtended={(picks) => { setHandedPicks(picks); setPage('scurve_ext') }} />
+    </>
+  )
+
+  if (page === 'scurve_ext') return (
+    <>
+      <BackButton onBack={back} />
+      <h2>{t('xcon_title')}</h2>
+      <ExtendedConnectionForm initialPicks={handedPicks} onCommitted={back} />
     </>
   )
 
@@ -97,6 +109,10 @@ export default function ConnectSwitchPanel({ detailTarget = null, onShowDetail }
         <button className="ui-btn ui-btn-option" onClick={() => setPage('scurve')}>
           <SwitchConnectionIcon />
           {t('scurve_title')}
+        </button>
+        <button className="ui-btn ui-btn-option" onClick={() => setPage('scurve_ext')}>
+          <SwitchConnectionExtendedIcon />
+          {t('xcon_title')}
         </button>
         <hr className="divider divider-wide" />
         <button className="ui-btn ui-btn-option" onClick={() => setPage('crossing_ontrack')}>

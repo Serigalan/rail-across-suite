@@ -224,13 +224,17 @@ export namespace Core {
     operationalPoint?: Ref
     lifespan?: Lifespan
   }
-  /** A buffer stop or the boundary of the planning area at a free track end. */
+  /** A buffer stop or the boundary of the planning area at a free track end; a train may begin and end at either. */
   export type EndMark = {
     id: Id
     kind: "buffer_stop" | "boundary"
     at: TrackEnd
+    /** What a timetable names the place by. */
+    name?: Text
     type?: number | string
     brakeLength?: number
+    /** At a boundary: the speed [km/h] a train crosses it at in a simulation, entering or leaving; without one, what the line allows there. */
+    speed?: number
     lifespan?: Lifespan
   }
   /** Foreign reference data: the stretch of a DB line around the project, in WGS84, the third value of each point its kilometrage [m]. */
@@ -320,7 +324,7 @@ export namespace Layout {
 
 /** Rail-Data-Core, domain signalling 1.0 */
 export namespace Signalling {
-  /** The signalling of a project, as the signalling tool plans it: signals and boards, train detection, the switch elements of the interlocking, train and shunting routes with their overlaps, flank protection, the balises and magnets of train protection and the station boundaries. Depends on core; its references go into the core or into itself (R2, R9). Its objects follow PlanPro 1.10, and like OSRD it keeps every signalling and train protection system out of the schema (decision 0011): a signal carries a logical signal per system, a balise names its system; which systems, kinds, aspects and settings there are is not in this schema but in the catalogue (packages/core/constraints/db-ril-301.json), which the content check reads. */
+  /** The signalling of a project, as the signalling tool plans it: signals and boards, train detection, the switch elements of the interlocking, train and shunting routes with their overlaps, flank protection, the balises and magnets of train protection, the station boundaries, the stopping places and the itineraries from one to another. Depends on core; its references go into the core or into itself (R2, R9). Its objects follow PlanPro 1.10, and like OSRD it keeps every signalling and train protection system out of the schema (decision 0011): a signal carries a logical signal per system, a balise names its system; which systems, kinds, aspects and settings there are is not in this schema but in the catalogue (packages/core/constraints/db-ril-301.json), which the content check reads. */
   export type Root = {
     fields: Fields
     collections: {
@@ -333,6 +337,8 @@ export namespace Signalling {
       flankProtection: Array<FlankProtection>
       balises: Array<Balise>
       stationBoundaries: Array<StationBoundary>
+      stoppingPlaces: Array<StoppingPlace>
+      itineraries: Array<Itinerary>
     }
   }
   /** The domain's own fields: the catalogue of signal aspects its signals were planned against. */
@@ -352,6 +358,8 @@ export namespace Signalling {
     name?: Core.Label
     /** The number of the interlocking area it belongs to, which leads its full designation (PlanPro Kennzahl: 60 in 60A). */
     areaNumber?: Core.Label
+    /** The station it belongs to; without one it is a signal of the open line. */
+    operationalPointId?: Core.Ref
     kind: "real" | "virtual"
     at: Directed
     /** Further tracks it stands at, at the same place: a clearance marker (Ra 12) between the two tracks beyond a switch, which PlanPro places on both edges. */
@@ -548,6 +556,27 @@ export namespace Signalling {
     } | {
       platformId: Core.Ref
     }>
+    lifespan?: Core.Lifespan
+  }
+  /** Where trains stop (Halteplatz): a stretch of one track, in a station on one of its tracks or at a platform, on the open line at a platform. Signals and detection points bound it; where one stands within it, a finding says so. */
+  export type StoppingPlace = {
+    id: Core.Id
+    name?: Core.Text
+    /** The station it is of; without one it lies on the open line, at a platform. */
+    operationalPointId?: Core.Ref
+    /** The platform it lies at, where it is one's. */
+    platformId?: Core.Ref
+    at: Core.TrackRange
+    lifespan?: Core.Lifespan
+  }
+  /** A way from one stopping place to another (Fahrweg): its run of tracks, and the train routes it takes, in running order — one route of each station it runs through from signal to signal, none on the open line. A timetable names it as the way a train prefers between two of its points. */
+  export type Itinerary = {
+    id: Core.Id
+    name?: Core.Text
+    startStoppingPlaceId: Core.Ref
+    targetStoppingPlaceId: Core.Ref
+    routeIds: Array<Core.Ref>
+    path: Core.TrackPath
     lifespan?: Core.Lifespan
   }
 }

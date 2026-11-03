@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { solveSplice } from './solveSplice'
+import { built, solveSplice } from '../../test/optimizerModule'
 import { spliceRemedies } from './spliceRemedies'
 
 // Two straights at 80 km/h that almost line up, 17 m apart and 1.5° off — as
@@ -22,7 +22,7 @@ const remediesFor = (req) => {
   })
 }
 
-describe('ways out of a curvature jump the rules reject', () => {
+describe.skipIf(!built)('ways out of a curvature jump the rules reject', () => {
   it('finds the jump an error at the faster speed of the picks', () => {
     const sol = solveSplice(request).solutions[0]
     expect(sol.findings.filter(f => f.id === 'LP.KS.01').map(f => f.severity)).toEqual(['error', 'error'])

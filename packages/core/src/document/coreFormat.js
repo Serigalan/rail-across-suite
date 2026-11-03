@@ -14,11 +14,14 @@ import { PayloadError } from './payloadError.js'
 // point arrays as blobs named by their hash (S-R2). Turning a record into a
 // document is the first step of the migration chain (oltjson-1.1 → core 1.0).
 //
-// Until the app holds the stages and the register itself, the document's are
-// drawn from the record: two stages (existing, final) with ids drawn from the
-// project's id, and one operational point per station the tracks and
-// platforms name, its id drawn from the name. Which is why a document with
-// other stages is refused here (`stages_unsupported`).
+// Until the app holds the stages itself, the document's are drawn from the
+// record: two stages (existing, final) with ids drawn from the project's id.
+// Which is why a document with other stages is refused here
+// (`stages_unsupported`). The register is drawn from the record too — one
+// operational point per station the tracks and platforms name, its id drawn
+// from the name —, and holds besides what the record keeps of it itself
+// (`operationalPoints`): a station the Signalling-Tool created that nothing
+// names yet, its codes, the id it keeps when it is renamed.
 //
 // The domains of the other tools the record carries as they are, untouched:
 // `signalling` ({ fields, collections }, decision 0011) — the Layout-Tool does
@@ -38,7 +41,7 @@ const CORE_FIELDS = ['id', 'title', 'description', 'creator', 'createdAt', 'crsS
 const LAYOUT_FIELDS = ['planHeader', 'image', 'imageHash', 'osrd']
 /** The domains a record carries whole, each as { fields, collections }. */
 const CARRIED = ['signalling']
-const COLLECTIONS = ['tracks', 'switches', 'platforms', 'endMarks', 'routes', 'kmLines', 'axisSurveys', 'referenceAxes']
+const COLLECTIONS = ['tracks', 'switches', 'platforms', 'endMarks', 'routes', 'kmLines', 'axisSurveys', 'referenceAxes', 'operationalPoints']
 /** Collections a record always has, empty or not; the others only where they hold something. */
 const ALWAYS = new Set(['tracks', 'switches', 'platforms'])
 
@@ -77,33 +80,58 @@ function statusOf(lifespan, final) {
 // ── Operational points ──────────────────────────────────────────────────────
 
 /**
- * The register the tracks' and platforms' station texts make, and which point
- * each of them names: { points, pointOf(kind, obj) }. One point per station
- * name, holding the codes stated for it; where two objects state different
- * codes under one name, each code its own point.
+ * The register the tracks' and platforms' station texts make, with the points
+ * the record keeps of it (`stored`), and which point each of them names:
+ * { points, pointOf(obj) }. One point per station name, holding the codes
+ * stated for it; where two objects state different codes under one name,
+ * each code its own point. A kept point is the one of its name: it keeps its
+ * id and its codes, and takes the codes the objects agree on where it has
+ * none; an object stating another code is a point of its own.
  */
-function operationalRegister(projectId, tracks, platforms) {
+export function operationalRegister(projectId, tracks, platforms, stored = []) {
   const named = [
     ...tracks.map(t => ({ obj: t, name: text(t.stationName), uic: text(t.uicStation), rl100: undefined })),
     ...platforms.map(p => ({ obj: p, name: text(p.stationName), uic: undefined, rl100: text(p.code) })),
   ].filter(e => e.name !== undefined || e.uic !== undefined || e.rl100 !== undefined)
+  const keyOf = (e) => (e.name !== undefined ? `name\u0000${e.name}` : `code\u0000${e.uic ?? ''}\u0000${e.rl100 ?? ''}`)
   const groups = new Map()
+  const kept = new Map()
+  const points = new Map()
+  for (const p of stored) {
+    const key = keyOf({ name: text(p.name), uic: text(p.uic), rl100: text(p.rl100) })
+    // A second point kept under one name is named by nothing; it stays as it is.
+    if (kept.has(key)) points.set(`id\u0000${p.id}`, p)
+    else { kept.set(key, p); groups.set(key, []) }
+  }
   for (const e of named) {
-    const key = e.name !== undefined ? `name\u0000${e.name}` : `code\u0000${e.uic ?? ''}\u0000${e.rl100 ?? ''}`
+    const key = keyOf(e)
     if (!groups.has(key)) groups.set(key, [])
     groups.get(key).push(e)
   }
-  const points = new Map()
   const of = new Map()
+  const derived = (own, e) => withoutNull({ id: derivedId(`${projectId}\u0000operationalPoint\u0000${own}`), name: e.name, rl100: e.rl100, uic: e.uic })
   for (const [key, entries] of groups) {
     const distinct = (k) => new Set(entries.map(e => e[k]).filter(v => v !== undefined).map(String))
+    const keep = kept.get(key)
+    if (keep) {
+      const agreed = (k) => (distinct(k).size === 1 ? [...distinct(k)][0] : undefined)
+      const point = withoutNull({ id: keep.id, name: keep.name, rl100: keep.rl100 ?? agreed('rl100'), uic: keep.uic ?? agreed('uic') })
+      points.set(key, point)
+      for (const e of entries) {
+        const fits = ['rl100', 'uic'].every(k => e[k] === undefined || String(e[k]) === String(point[k]))
+        if (fits) { of.set(e.obj, point.id); continue }
+        const own = `${key}\u0000${e.uic ?? ''}\u0000${e.rl100 ?? ''}`
+        if (!points.has(own)) points.set(own, derived(own, e))
+        of.set(e.obj, points.get(own).id)
+      }
+      continue
+    }
     const agree = distinct('uic').size <= 1 && distinct('rl100').size <= 1
     for (const e of entries) {
       const own = agree ? key : `${key}\u0000${e.uic ?? ''}\u0000${e.rl100 ?? ''}`
       if (!points.has(own)) {
         const from = agree ? entries : [e]
-        points.set(own, withoutNull({
-          id: derivedId(`${projectId}\u0000operationalPoint\u0000${own}`),
+        points.set(own, derived(own, {
           name: e.name,
           rl100: from.find(x => x.rl100 !== undefined)?.rl100,
           uic: from.find(x => x.uic !== undefined)?.uic,
@@ -112,7 +140,29 @@ function operationalRegister(projectId, tracks, platforms) {
       of.set(e.obj, points.get(own).id)
     }
   }
-  return { points: [...points.values()], pointOf: (obj) => of.get(obj) }
+  // A point kept under a name that the names make anew is the one they make.
+  const unique = new Map([...points.values()].map(p => [p.id, p]))
+  return { points: [...unique.values()], pointOf: (obj) => of.get(obj) }
+}
+
+/**
+ * What the record keeps of the register: the points of `points` that its
+ * tracks and platforms do not make by themselves — with another id, other
+ * codes, or named by nothing —, and those the signalling names (`named`), so
+ * a station keeps the id its signals and boundaries name when the tracks
+ * are named anew.
+ */
+function keptPoints(projectId, tracks, platforms, points, named) {
+  const same = (a, b) => b && ['name', 'rl100', 'uic'].every(k => (a[k] ?? null) === (b[k] ?? null))
+  const madeWith = (kept) => new Map(operationalRegister(projectId, tracks, platforms, kept).points.map(p => [p.id, p]))
+  const made = madeWith([])
+  let kept = points.filter(p => named.has(p.id) || !same(p, made.get(p.id)))
+  // One the names make once the others are kept — a code of its own beside a kept point — is not kept either.
+  for (const p of kept.filter(k => !named.has(k.id))) {
+    const others = kept.filter(k => k !== p)
+    if (same(p, madeWith(others).get(p.id))) kept = others
+  }
+  return kept.map(p => withoutNull({ id: p.id, name: p.name, rl100: p.rl100, uic: p.uic }))
 }
 
 // ── The design speed ────────────────────────────────────────────────────────
@@ -163,7 +213,7 @@ export function recordToDocument(record, schemaHashes) {
   const final = stages[1].id
   const tracks = record.tracks ?? []
   const platforms = record.platforms ?? []
-  const register = operationalRegister(record.id, tracks, platforms)
+  const register = operationalRegister(record.id, tracks, platforms, record.operationalPoints ?? [])
   const blobs = {}
   const blob = (value) => {
     const hash = contentHash(value)
@@ -280,6 +330,9 @@ export function documentToRecord(doc) {
     axisSurveys: (l.axisSurveys ?? []).map(s => ({ ...s, points: blob(s.points) })),
     referenceAxes: (l.referenceAxes ?? []).map(a => ({ ...a, points: blob(a.points) })),
   }
+  const sc = doc.domains.signalling?.collections ?? {}
+  const named = new Set([...(sc.signals ?? []), ...(sc.stationBoundaries ?? [])].map(o => o.operationalPointId).filter(Boolean))
+  collections.operationalPoints = keptPoints(core.fields.id, collections.tracks, collections.platforms, c.operationalPoints ?? [], named)
   const { stages: _st, ...coreFields } = core.fields
   const record = { ...coreFields, ...(layout.fields ?? {}) }
   for (const name of COLLECTIONS) {

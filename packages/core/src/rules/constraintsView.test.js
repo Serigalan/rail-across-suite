@@ -16,7 +16,7 @@ describe('the bundled physics file', () => {
   // the repo, not a transcription of it. A copy pasted into src/ would still
   // render — and would be stale the first time the file changes — so the
   // identity is worth stating.
-  it('is services/optimizer/physics.json itself, not a copy of it', () => {
+  it('is constraints/physics.json itself, not a copy of it', () => {
     expect(PHYSICS).toEqual(physics)
   })
 })
@@ -86,10 +86,10 @@ describe('evalFormel', () => {
 
 // formel_calc/kruemmung_calc exist so a test can hold the file to the same
 // arithmetic the kernel runs — not just eyeball that the strings look like the
-// right formula. tests/verify.py runs the matching check against geometry.py
-// itself; there is no JS reimplementation of the kernel left to check against
-// here (AP 7.1, decision 14: Python is the only optimizer), so this checks
-// evalFormel against the closed forms worked out by hand instead.
+// right formula. The optimizer module runs the matching check against its own
+// kernel (optimizer/…/tests/grenzen.rs); there is no JS reimplementation of the
+// kernel to check against here, so this checks evalFormel against the closed
+// forms worked out by hand instead.
 describe('formel_calc/kruemmung_calc, evaluated against physics.json', () => {
   const { konstanten, profile } = flattenPhysics(physics)
 
@@ -190,9 +190,8 @@ describe('the MathML physics.json states', () => {
 })
 
 describe('optimizerLimitRows', () => {
-  // What GET /regelwerke/db-ril-800-0110 answers from a service built from
-  // this commit (services/optimizer, grenzen.py: Grenzen.describe) — JSON floats,
-  // as Python sends them.
+  // What the optimizer module answers to 'limits' (optimizer/…/grenzen.rs,
+  // Grenzen::describe) — JSON floats, as the module sends them.
   const served = {
     id: 'db-ril-800-0110', name: katalog.catalog.title, version: katalog.catalog.katalog_version,
     grenzwerte: {

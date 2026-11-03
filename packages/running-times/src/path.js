@@ -60,6 +60,43 @@ export function findPath(record, from, to) {
   return best.path.filter(p => pieceLength(p) > 1e-6)
 }
 
+/**
+ * The path from one location to another along a given run of tracks — the
+ * way a timetable prefers, an itinerary's —, or null where the run does not
+ * lead from the one to the other: its first track the start's, its last the
+ * target's, each meeting the next at an end (tracksOnFrom), the target ahead.
+ * `direction`, where given, is the way the start must be left: never turning
+ * back.
+ */
+export function pathAlong(record, trackIds, from, to, direction = null) {
+  const tracks = record?.tracks ?? []
+  const switches = record?.switches ?? []
+  const lengths = new Map(tracks.map(t => [t.id, trackLength(t)]))
+  if (!trackIds?.length || trackIds[0] !== from?.trackId || trackIds[trackIds.length - 1] !== to?.trackId) return null
+  if (trackIds.some(id => !lengths.has(id))) return null
+  if (trackIds.length === 1) {
+    const dir = to.station >= from.station ? 'up' : 'down'
+    if ((direction && direction !== dir) || (to.direction && to.direction !== dir)) return null
+    return [{ trackId: from.trackId, start: from.station, end: to.station }].filter(p => pieceLength(p) > 1e-6)
+  }
+  // The way the first track is left: by the end the second meets it at.
+  const leaveBy = ['END', 'BEGIN'].find(end => tracksOnFrom(trackIds[0], end, tracks, switches).some(n => n.trackId === trackIds[1]))
+  if (!leaveBy) return null
+  let dir = leaveBy === 'END' ? 'up' : 'down'
+  if (direction && direction !== dir) return null
+  const path = [{ trackId: trackIds[0], start: from.station, end: dir === 'up' ? lengths.get(trackIds[0]) : 0 }]
+  for (let i = 1; i < trackIds.length; i++) {
+    const next = tracksOnFrom(trackIds[i - 1], away(dir), tracks, switches).find(n => n.trackId === trackIds[i])
+    if (!next) return null
+    dir = next.endpoint === 'BEGIN' ? 'up' : 'down'
+    const enter = dir === 'up' ? 0 : lengths.get(trackIds[i])
+    const last = i === trackIds.length - 1
+    path.push({ trackId: trackIds[i], start: enter, end: last ? to.station : lengths.get(trackIds[i]) - enter })
+  }
+  if (to.direction && to.direction !== dir) return null
+  return path.filter(p => pieceLength(p) > 1e-6)
+}
+
 /** The length of a path [m]. */
 export const pathLength = (path) => path.reduce((sum, p) => sum + pieceLength(p), 0)
 

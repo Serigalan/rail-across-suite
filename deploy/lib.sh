@@ -48,12 +48,10 @@ load_config() {
   RA_DB=${RA_DB:-$RA_DATA/rail-across.sqlite}
   RA_BACKUPS=${RA_BACKUPS:-$RA_DATA/backups}
   RA_BACKUP_DAYS=${RA_BACKUP_DAYS:-30}
-  RA_VENV=${RA_VENV:-$RA_DATA/venv}
   RA_TERRAIN_CACHE=${RA_TERRAIN_CACHE:-$RA_DATA/terrain-cache}
   RA_CLOUDS=${RA_CLOUDS:-$RA_DATA/clouds}
   RA_BIND=${RA_BIND:-127.0.0.1}
   RA_SERVER_PORT=${RA_SERVER_PORT:-8787}
-  RA_OPTIMIZER_PORT=${RA_OPTIMIZER_PORT:-8099}
   RA_SERVER_LOG=${RA_SERVER_LOG:-info}
   RA_CADDY=${RA_CADDY:-system}
   RA_UPSTREAM=${RA_UPSTREAM:-$RA_BIND}
@@ -64,8 +62,6 @@ load_config() {
   RA_CADDY_SITE=$RA_CADDY_DIR/rail-across$sfx.caddy
   RA_CADDY_RELOAD=${RA_CADDY_RELOAD:-}
   RA_ADMIN_LOGIN=${RA_ADMIN_LOGIN:-admin}
-  RA_OPTIMIZER_TIMEOUT=${RA_OPTIMIZER_TIMEOUT:-120}
-  RA_OPTIMIZER_WORKERS=${RA_OPTIMIZER_WORKERS:-2}
   RA_CLOUDJOBS_PARALLEL=${RA_CLOUDJOBS_PARALLEL:-2}
   RA_CLOUDRUNS_PARALLEL=${RA_CLOUDRUNS_PARALLEL:-2}
   # Memory per service (systemd MemoryMax). The point cloud jobs: up to
@@ -73,7 +69,6 @@ load_config() {
   # long runs of 320 MB, plus the queue process — 3G holds two of each.
   RA_CLOUDJOBS_MEMORY=${RA_CLOUDJOBS_MEMORY:-3G}
   RA_SERVER_MEMORY=${RA_SERVER_MEMORY:-infinity}
-  RA_OPTIMIZER_MEMORY=${RA_OPTIMIZER_MEMORY:-infinity}
   # What deploy.sh may put on this instance: "main" (git pull, the test
   # server) or "tags" (only prod-* tags with a green CI, production).
   RA_TRACK=${RA_TRACK:-main}
@@ -81,11 +76,11 @@ load_config() {
   RA_NODE=${RA_NODE:-$(command -v node || echo /usr/bin/node)}
   RA_STATE=$RA_DATA/.deploy-state
   export RA_DOMAIN RA_INSTANCE RA_UNIT_PREFIX RA_LABEL RA_REPO RA_SITE_DIR RA_USER RA_DATA RA_DB \
-    RA_BACKUPS RA_BACKUP_DAYS RA_VENV RA_TERRAIN_CACHE RA_CLOUDS RA_BIND RA_SERVER_PORT \
-    RA_OPTIMIZER_PORT RA_SERVER_LOG RA_CADDY RA_UPSTREAM RA_SITE_ROOT RA_TRUST_PROXY \
-    RA_CADDY_DIR RA_CADDY_SITE RA_CADDY_RELOAD RA_ADMIN_LOGIN RA_OPTIMIZER_TIMEOUT \
-    RA_OPTIMIZER_WORKERS RA_CLOUDJOBS_PARALLEL RA_CLOUDRUNS_PARALLEL RA_CLOUDJOBS_MEMORY \
-    RA_SERVER_MEMORY RA_OPTIMIZER_MEMORY RA_TRACK RA_GITHUB_REPO RA_NODE
+    RA_BACKUPS RA_BACKUP_DAYS RA_TERRAIN_CACHE RA_CLOUDS RA_BIND RA_SERVER_PORT \
+    RA_SERVER_LOG RA_CADDY RA_UPSTREAM RA_SITE_ROOT RA_TRUST_PROXY \
+    RA_CADDY_DIR RA_CADDY_SITE RA_CADDY_RELOAD RA_ADMIN_LOGIN \
+    RA_CLOUDJOBS_PARALLEL RA_CLOUDRUNS_PARALLEL RA_CLOUDJOBS_MEMORY \
+    RA_SERVER_MEMORY RA_TRACK RA_GITHUB_REPO RA_NODE
 
   case "$RA_BIND" in 0.0.0.0|::|'') die "RA_BIND=$RA_BIND would put the services on every interface" ;; esac
   case "$RA_CADDY" in system|external) ;; *) die "RA_CADDY must be system or external" ;; esac
@@ -98,9 +93,12 @@ MODULE_APPS=(layout-tool:layout signalling-tool:signalling simulation-tool:simul
 
 # The units of this instance, as installed (template rail-across-<x> → $RA_UNIT_PREFIX<x>).
 # shellcheck disable=SC2034  # used by setup.sh
-UNIT_TEMPLATES=(rail-across-server.service rail-across-optimizer.service rail-across-cloudjobs.service rail-across-server-backup.service rail-across-server-backup.timer)
+UNIT_TEMPLATES=(rail-across-server.service rail-across-cloudjobs.service rail-across-server-backup.service rail-across-server-backup.timer)
+# Units of earlier versions, taken out by deploy.sh and setup.sh: the Python optimizer service (decision 0019).
+# shellcheck disable=SC2034  # used by deploy.sh and setup.sh
+RETIRED_UNITS=(rail-across-optimizer.service)
 unit_name() { echo "$RA_UNIT_PREFIX${1#rail-across-}"; }
-SERVICES=(server optimizer cloudjobs)
+SERVICES=(server cloudjobs)
 service_units() { local s; for s in "${SERVICES[@]}"; do echo "${RA_UNIT_PREFIX}$s.service"; done; }
 
 # ci_green <commit>: true when GitHub's CI finished green for that commit.

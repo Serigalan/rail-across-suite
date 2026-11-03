@@ -1,13 +1,16 @@
 import { pointAtStation, offsetEdgeCoords } from './platformUtils.js'
 import { utmToWgs84 } from '../geometry/index.js'
 import { trackLength } from './heightUtils.js'
-import { BUFFER_STOP, bufferStopStations } from './trackEndMarks.js'
+import { BOUNDARY, BUFFER_STOP, bufferStopStations } from './trackEndMarks.js'
 
 /**
  * Half the width of the bar drawn across the track at the buffer face [m]: a
  * little wider than the gauge, so it reads as standing across the rails.
  */
 export const FACE_HALF_WIDTH = 1.75
+
+/** Half the width of the bar a boundary of the planning area is drawn as [m]: wider than a buffer stop's, so the two are not taken for one another. */
+export const BOUNDARY_HALF_WIDTH = 3
 
 const DEG = Math.PI / 180
 
@@ -61,6 +64,24 @@ export function bufferStopFeatures(tracks, marks) {
     push('face', shape.face)
     push('body', shape.body)
     push('brake', shape.brake)
+  }
+  return features
+}
+
+/**
+ * The boundaries of the planning area of a project as GeoJSON line features:
+ * a bar across the track at its end, with its mark id and track.
+ */
+export function boundaryFeatures(tracks, marks) {
+  const byId = new Map((tracks ?? []).map(t => [t.id, t]))
+  const features = []
+  for (const mark of marks ?? []) {
+    if (mark.kind !== BOUNDARY) continue
+    const track = byId.get(mark.trackId)
+    if (!track?.epsg) continue
+    const total = trackLength(track)
+    const bar = total > 0 && barAt(track, mark.endpoint === 'BEGIN' ? 0 : total, BOUNDARY_HALF_WIDTH)
+    if (bar) features.push({ type: 'Feature', properties: { markId: mark.id, trackId: mark.trackId, part: 'boundary' }, geometry: { type: 'LineString', coordinates: bar } })
   }
   return features
 }

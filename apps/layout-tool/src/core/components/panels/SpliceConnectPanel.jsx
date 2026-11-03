@@ -1,14 +1,15 @@
 import { Suspense, lazy, useState } from 'react'
 import ConnectStraightForm from './ConnectElementPanel/ConnectStraightForm'
 import ConnectCurvedForm from './ConnectElementPanel/ConnectCurvedForm'
-import { ConnectStraightIcon, ConnectCurvedIcon, SpliceJoinIcon } from '../icons'
+import { ConnectStraightIcon, ConnectCurvedIcon, ReconnectIcon, SpliceJoinIcon } from '../icons'
 import { useI18n } from '../../locales/i18nContext'
 import BackButton from './BackButton'
 import PanelToolButtons from './PanelTools'
 import { extensionsOf } from '../../extensions'
 
-// Splicing is its own chunk, loaded the first time it is opened.
+// Splicing and reconnecting are chunks of their own, loaded the first time they are opened.
 const SpliceElementPanel = lazy(() => import('./splice/SpliceElementPanel'))
+const ReconnectPanel = lazy(() => import('./splice/ReconnectPanel'))
 
 // The gray line between the two tool groups, the same separator the layers
 // panel draws between its basemap groups.
@@ -18,9 +19,9 @@ const SpliceElementPanel = lazy(() => import('./splice/SpliceElementPanel'))
  * tools pick on the map, so only the chosen one is ever mounted — the menu is
  * what keeps their click handlers from meeting. Optimizing is in the check panel.
  *
- * Splicing is computed in the browser (decision 294) and is there in both
- * builds; reconnecting runs on the optimizer service, which puts it in
- * beside it (`panelTools` of 'splice', Paket L).
+ * Splicing and reconnecting are computed in the browser by the optimizer
+ * module (decision 0019 of the suite) and are there in both builds; a server
+ * may put more tools beside them (`panelTools` of 'splice', Paket L).
  */
 export default function SpliceConnectPanel() {
   const { t } = useI18n()
@@ -32,6 +33,13 @@ export default function SpliceConnectPanel() {
     <>
       <BackButton onBack={back} />
       <Suspense fallback={<p className="selecting-hint">…</p>}><SpliceElementPanel /></Suspense>
+    </>
+  )
+
+  if (page === 'reconnect') return (
+    <>
+      <BackButton onBack={back} />
+      <Suspense fallback={<p className="selecting-hint">…</p>}><ReconnectPanel /></Suspense>
     </>
   )
 
@@ -64,6 +72,10 @@ export default function SpliceConnectPanel() {
         <button className="ui-btn ui-btn-option" onClick={() => setPage('splice')}>
           <SpliceJoinIcon />
           {t('splice_start')}
+        </button>
+        <button className="ui-btn ui-btn-option" onClick={() => setPage('reconnect')}>
+          <ReconnectIcon />
+          {t('reconnect_title')}
         </button>
         <PanelToolButtons panel="splice" onPick={setPage} />
       </div>

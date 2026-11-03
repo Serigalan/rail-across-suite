@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 import { Badge, Button, Checkbox, IconButton, Message, NumberField, PlusIcon, SelectField, TextField, TrashIcon } from '@rail-across/ui'
-import { CATEGORIES, categoryColor, formatClock, newPoint, parseClock, trainProblems, trainTitle } from '@rail-across/timetables'
-import { formatDistance, lngLatAt, marginValue, stationNamed } from '@rail-across/running-times'
+import { atPlace, CATEGORIES, categoryColor, formatClock, itineraryOptions, newPoint, parseClock, trainProblems, trainTitle, withPlaces } from '@rail-across/timetables'
+import { formatDistance, lngLatAt, marginValue, placeOf, stationById } from '@rail-across/running-times'
 import { comfortsOf, curveFor, modeLabel, powerOf } from '@rail-across/vehicles'
 import { CopyIcon, DownIcon, TaktIcon, UpIcon } from './icons.jsx'
 import MapView from './map/MapView.jsx'
@@ -39,7 +39,7 @@ export default function TrainSheet(props) {
   return <Sheet {...props} />
 }
 
-function Sheet({ t, language, train, run, timetables, stations, catalogue, record, net, mayEdit, update, onCopy, onTakt, onDelete }) {
+function Sheet({ t, language, train, run, timetables, stations, catalogue, record, net, mayEdit, titles, update, onCopy, onTakt, onDelete }) {
   const entry = catalogue.entries.find(e => e.key === train.vehicle) ?? null
   const problems = trainProblems(train, stations, { vehicle: catalogue.loading || Boolean(entry) })
   const set = (patch) => update(tr => ({ ...tr, ...patch }))
@@ -89,11 +89,12 @@ function Sheet({ t, language, train, run, timetables, stations, catalogue, recor
               </div>
             </section>
 
-            <RouteCard t={t} train={train} stations={stations} problems={problems} ro={ro} update={update} />
+            <RouteCard t={t} train={train} stations={stations} record={record} run={run} problems={problems} ro={ro} update={update} />
           </div>
 
           <div className="tt-col">
             <TimesCard t={t} language={language} train={train} run={run} stations={stations} problems={problems} ro={ro} update={update} />
+            {run?.blocks && !problems.length && <OccupancyCard t={t} train={train} run={run} record={record} stations={stations} titles={titles} />}
             <section className="tt-card tt-map-card">
               <h2>{t('card_map')}</h2>
               <div className="tt-map-box">
@@ -157,6 +158,9 @@ function VehicleFields({ t, train, entry, catalogue, ro, set }) {
   )
 }
 
+/** What a point is shown by: its place's name, else the name it was given. */
+const shown = (stations, point) => (point ? placeOf(stations, point)?.name ?? point.station : '?')
+
 /** The choice of a station's track: any, or one of its tracks — for a halt, the tracks of its platforms. */
 function trackOptions(t, station) {
   if (!station) return []
@@ -165,38 +169,76 @@ function trackOptions(t, station) {
 }
 
 /**
- * The train's way: where it begins — a station —, the points on the way —
- * stations and halts, a stop or a pass, how long it stands, a departure it
- * waits for —, where it ends — a station. Each with its track, or any.
+ * The train's way: where it begins — a station, a buffer stop or a boundary
+ * of the planning area —, the points on the way — stations and halts, a stop
+ * or a pass, how long it stands, a departure it waits for —, where it ends —
+ * a station, a buffer stop or a boundary. Each with its track, or any; and
+ * from each to the next the way it prefers, an itinerary of the variant's
+ * signalling, or the shortest. A way preferred that the run could not take
+ * is said under it.
  */
-function RouteCard({ t, train, stations, problems, ro, update }) {
+function RouteCard({ t, train, stations, record, run, problems, ro, update }) {
   const points = train.points
   const last = points.length - 1
-  const ends = stations.filter(s => s.kind === 'station')
-  const endOptions = ends.map(s => ({ value: s.name, label: s.name }))
-  const allOptions = stations.map(s => ({ value: s.name, label: s.kind === 'halt' ? t('halt_name', { name: s.name }) : s.name }))
-  const setPoints = (fn) => update(tr => ({ ...tr, points: fn(tr.points) }))
-  const setPoint = (i, patch) => setPoints(ps => ps.map((p, j) => (j === i ? { ...p, ...patch } : p)))
+  const ends = stations.filter(s => s.kind !== 'halt')
+  const nameOf = (s) => (s.kind === 'halt' ? t('halt_name', { name: s.name }) : s.kind === 'end' ? t(`${s.end.kind}_name`, { name: s.name }) : s.name)
+  // each place by its id; its name is what it is shown by
+  const endOptions = ends.map(s => ({ value: s.id, label: nameOf(s) }))
+  // a buffer stop or a boundary is no place to pass
+  const allOptions = stations.filter(s => s.kind !== 'end').map(s => ({ value: s.id, label: nameOf(s) }))
+  // An edit of the way names every place of the train by its id, those named by their names before too.
+  const setPoints = (fn) => update(tr => withPlaces({ ...tr, points: fn(tr.points) }, stations))
+  // A point's place or track changed: the ways preferred to and from it are no longer its.
+  const setPoint = (i, patch) => setPoints(ps => ps.map((p, j) => {
+    const moved = 'place' in patch || 'track' in patch
+    if (j === i) return { ...p, ...patch, ...(moved ? { itinerary: null } : {}) }
+    return moved && j === i - 1 ? { ...p, itinerary: null } : p
+  }))
   const problemAt = (i) => problems.find(p => p.point === i)
-  // a station kept by name that the variant does not have stays in the choice
-  const withMissing = (options, name) => (name && !options.some(o => o.value === name) ? [{ value: name, label: t('station_not_in_net', { name }) }, ...options] : options)
+  // a place the variant does not have stays in the choice, by the name it was given
+  const valueOf = (p) => (p ? placeOf(stations, p)?.id ?? p.place ?? p.station : null)
+  const withMissing = (options, p) => {
+    const value = valueOf(p)
+    return value && !options.some(o => o.value === value) ? [{ value, label: t('station_not_in_net', { name: p.station }) }, ...options] : options
+  }
+  const place = (id) => stationById(stations, id)
 
   const start = points[0] ?? null
   const end = points.length >= 2 ? points[last] : null
-  const setStart = (name) => setPoints(ps => (ps.length ? [{ ...ps[0], station: name, track: null }, ...ps.slice(1)] : [newPoint(name)]))
-  const setEnd = (name) => setPoints(ps => (ps.length >= 2 ? [...ps.slice(0, -1), { ...ps[ps.length - 1], station: name, track: null }] : [...ps, newPoint(name)]))
-  const addVia = (name) => setPoints(ps => [...ps.slice(0, -1), newPoint(name, { dwell: 30 }), ps[ps.length - 1]])
+  const setStart = (id) => setPoints(ps => (ps.length ? [atPlace({ ...ps[0], track: null }, place(id)), ...ps.slice(1)] : [newPoint(place(id))]))
+  const setEnd = (id) => setPoints(ps => (ps.length >= 2 ? [...ps.slice(0, -1), atPlace({ ...ps[ps.length - 1], track: null }, place(id))] : [...ps, newPoint(place(id))]))
+  const addVia = (id) => setPoints(ps => [...ps.slice(0, -1), newPoint(place(id), { dwell: 30 }), ps[ps.length - 1]])
   const move = (i, by) => setPoints(ps => { const out = [...ps]; [out[i], out[i + by]] = [out[i + by], out[i]]; return out })
   const remove = (i) => setPoints(ps => ps.filter((_, j) => j !== i))
 
+  // The way preferred from point i to the next: an itinerary between their stopping places, or the shortest.
+  const legRow = (i) => {
+    if (i >= last || !points[i + 1]) return null
+    const p = points[i]
+    const options = itineraryOptions(record, stations, train, i)
+    if (!options.length && !p.itinerary) return null
+    const choices = options.map(o => ({ value: o.id, label: o.name ?? o.id.slice(0, 8) }))
+    if (p.itinerary && !options.some(o => o.id === p.itinerary)) choices.unshift({ value: p.itinerary, label: t('itinerary_not_in_net') })
+    const state = run?.route?.preferred?.[i]
+    return (
+      <div className="tt-point tt-point-leg">
+        <div className="ui-fields tt-point-fields">
+          <SelectField compact wide label={t('preferred_way', { to: placeOf(stations, points[i + 1])?.name ?? points[i + 1].station })} value={p.itinerary ?? null} empty={t('shortest_way')}
+            options={choices} disabled={ro} onChange={(v) => setPoints(ps => ps.map((x, j) => (j === i ? { ...x, itinerary: v } : x)))} />
+        </div>
+        {(state === 'other' || state === 'missing') && <p className="ui-muted tt-point-problem">{t(`preferred_${state}`)}</p>}
+      </div>
+    )
+  }
+
   const endRow = (kind, point, i, onStation) => {
-    const station = point ? stationNamed(stations, point.station) : null
+    const station = point ? placeOf(stations, point) : null
     return (
       <div className={`tt-point tt-point-${kind}`}>
         <span className="tt-point-mark" aria-hidden="true" />
         <div className="ui-fields tt-point-fields">
-          <SelectField compact label={t(kind === 'start' ? 'start' : 'end')} value={point?.station ?? null} empty={t('choose_station')} disabled={ro || (kind === 'end' && !start)}
-            options={withMissing(endOptions, point?.station)} onChange={(v) => v && onStation(v)} />
+          <SelectField compact label={t(kind === 'start' ? 'start' : 'end')} value={valueOf(point)} empty={t('choose_station')} disabled={ro || (kind === 'end' && !start)}
+            options={withMissing(endOptions, point)} onChange={(v) => v && place(v) && onStation(v)} />
           {point && <SelectField compact label={t('track')} value={point.track} empty={t('track_any')} disabled={ro || !station} options={trackOptions(t, station)}
             onChange={(v) => setPoint(i, { track: v })} />}
         </div>
@@ -211,15 +253,17 @@ function RouteCard({ t, train, stations, problems, ro, update }) {
       <p className="ui-muted tt-lead">{t('route_lead')}</p>
       {!ends.length && <Message tone="warn">{t('no_stations')}</Message>}
       {endRow('start', start, 0, setStart)}
+      {legRow(0)}
       {points.slice(1, -1).map((p, k) => {
         const i = k + 1
-        const station = stationNamed(stations, p.station)
+        const station = placeOf(stations, p)
         return (
-          <div key={p.id} className={`tt-point tt-point-${p.stop ? 'stop' : 'pass'}`}>
+          <Fragment key={p.id}>
+          <div className={`tt-point tt-point-${p.stop ? 'stop' : 'pass'}`}>
             <span className="tt-point-mark" aria-hidden="true" />
             <div className="ui-fields tt-point-fields">
-              <SelectField compact label={t('via')} value={p.station} disabled={ro} options={withMissing(allOptions, p.station)}
-                onChange={(v) => v && setPoint(i, { station: v, track: null })} />
+              <SelectField compact label={t('via')} value={valueOf(p)} disabled={ro} options={withMissing(allOptions, p)}
+                onChange={(v) => v && place(v) && setPoint(i, { place: v, station: place(v).name, track: null })} />
               <SelectField compact label={t('track')} value={p.track} empty={t('track_any')} disabled={ro || !station} options={trackOptions(t, station)}
                 onChange={(v) => setPoint(i, { track: v })} />
             </div>
@@ -237,6 +281,8 @@ function RouteCard({ t, train, stations, problems, ro, update }) {
             </div>
             {problemAt(i) && <p className="ui-error tt-point-problem">{t(`problem_${problemAt(i).key}`)}</p>}
           </div>
+          {legRow(i)}
+          </Fragment>
         )
       })}
       {!ro && end && (
@@ -268,6 +314,60 @@ function Clock({ value }) {
   return <span className="tt-clock">{formatClock(s)}<small>{String(s % 60).padStart(2, '0')}</small></span>
 }
 
+/** A signal as the plan names it: its area's number and its name. */
+const signalName = (record, id) => {
+  const s = (record?.signalling?.collections?.signals ?? []).find(x => x.id === id)
+  return s ? `${s.areaNumber ?? ''}${s.name ?? ''}` || '?' : null
+}
+
+/**
+ * The blocks the train holds: where it waits for one another holds — at its
+ * start, at a stop, before a signal — and for which trains; where it holds
+ * one another holds at the same time, a conflict, with the time both hold it.
+ */
+function OccupancyCard({ t, train, run, record, stations, titles }) {
+  const { blocks, waits = [], conflicts = [] } = run
+  const names = (ids) => ids.map(id => titles.get(id) ?? '?').join(', ')
+  const waitLine = (w) => {
+    const of = { wait: duration(t, w.wait), trains: names(w.because) }
+    if (w.point === 0) return t('wait_start', of)
+    if (w.point != null) return t('wait_stop', { ...of, station: shown(stations, train.points[w.point]) })
+    return t('wait_signal', { ...of, signal: signalName(record, w.signalId) ?? '?' })
+  }
+  const blockName = (i) => (blocks[i]?.signalId ? t('block_from', { signal: signalName(record, blocks[i].signalId) }) : t('block_start'))
+  // one line for each other train and block, the times they share
+  const seen = new Map()
+  for (const c of conflicts) {
+    const key = `${c.other}|${c.block}`
+    const was = seen.get(key)
+    seen.set(key, was ? { ...was, begin: Math.min(was.begin, c.begin), end: Math.max(was.end, c.end) } : c)
+  }
+  const shown = [...seen.values()]
+  return (
+    <section className="tt-card">
+      <h2>{t('card_occupancy')}</h2>
+      <p className="ui-muted">{t(blocks.length > 1 ? 'blocks_n' : 'blocks_one', { n: blocks.length })}</p>
+      {waits.length > 0 && (
+        <ul className="tt-waits">
+          {waits.map((w, i) => <li key={i}>{waitLine(w)}</li>)}
+          {run.delay > 0.5 && <li><strong>{t('wait_delay', { delay: duration(t, run.delay) })}</strong></li>}
+        </ul>
+      )}
+      {shown.length > 0 && (
+        <>
+          <Message tone="warn">{t('conflicts_n', { n: shown.length })}</Message>
+          <ul className="tt-waits tt-conflicts">
+            {shown.slice(0, 8).map((c, i) => (
+              <li key={i}>{t('conflict_line', { train: names([c.other]), block: blockName(c.block), from: formatClock(c.begin, { seconds: true }), to: formatClock(c.end, { seconds: true }) })}</li>
+            ))}
+          </ul>
+        </>
+      )}
+      {!waits.length && !shown.length && <p className="ui-muted">{t('blocks_free')}</p>}
+    </section>
+  )
+}
+
 /**
  * The train's times as it runs: a row for every station along its way —
  * where it stops, its arrival and departure; where it passes, the time it
@@ -280,7 +380,7 @@ function TimesCard({ t, language, train, run, stations, problems, ro, update }) 
     if (row.point != null) return { ...tr, points: tr.points.map((p, i) => (i === row.point ? { ...p, stop: true, dwell: p.dwell || 30 } : p)) }
     const at = insertionIndex(run, row.offset)
     const points = [...tr.points]
-    points.splice(at, 0, newPoint(row.name, { dwell: 30, track: null }))
+    points.splice(at, 0, newPoint(stationById(stations, row.key) ?? row.name, { dwell: 30, track: null }))
     return { ...tr, points }
   })
   let body
@@ -289,7 +389,7 @@ function TimesCard({ t, language, train, run, stations, problems, ro, update }) 
   } else if (!run) {
     body = <p className="ui-muted">{t('running')}</p>
   } else if (run.failedAt != null) {
-    body = <Message tone="warn">{t('no_way', { station: train.points[run.failedAt]?.station ?? '?' })}</Message>
+    body = <Message tone="warn">{t('no_way', { station: shown(stations, train.points[run.failedAt]) })}</Message>
   } else if (run.error) {
     body = <Message tone="error">{t(`error_${run.error.code}`, { message: run.error.message })}</Message>
   } else if (run.problems) {
@@ -302,7 +402,7 @@ function TimesCard({ t, language, train, run, stations, problems, ro, update }) 
   const dwell = rows ? rows.reduce((s, r) => s + (r.arrival != null && r.departure != null ? r.departure - r.arrival : 0), 0) : 0
   const gaps = run?.properties?.gaps
   const trackLabel = (row) => {
-    const station = stationNamed(stations, row.name)
+    const station = stationById(stations, row.key)
     return station?.tracks.find(tr => tr.id === row.track)?.label ?? station?.platforms.find(p => p.trackId === row.track)?.code ?? ''
   }
   return (

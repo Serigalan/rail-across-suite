@@ -16,9 +16,10 @@
 ```
 
 - **`src/core`** — everything that computes and stores in the browser alone. The local build ships only this.
-- **`src/server`** — what needs the project server or the Python service. The main build ships both.
-- **`server`**, **`services/optimizer`** — the two services at the root of the repository ([server](server.md)):
-  the suite's project server and the Layout-Tool's Python service; the suite's **`deploy/`** — operation.
+- **`src/server`** — what needs the project server. The main build ships both.
+- **`server`** — the suite's project server at the root of the repository ([server](server.md)); **`optimizer/`**,
+  **`crossover/`** — the Rust modules beside the page ([optimizer](modules/optimizer.md),
+  [crossover](modules/crossover.md)); the suite's **`deploy/`** — operation.
 
 Two builds from one codebase: `vite build` (entry `src/main.jsx`, core + server → `dist/`) and
 `vite build --mode standalone` (entry `src/main.local.jsx`, core alone → `dist-local/`, served by
@@ -55,14 +56,17 @@ order — each needs only modules above it:
 | [geometry](../../../packages/core/docs/geometry.md) *core* | — | planes and datums, elements, transitions, parallels, plane changes, chain invariants |
 | [km](modules/km.md) | geometry | kilometrage lines, line names |
 | [rules](../../../packages/core/docs/rules.md) *core* | geometry | rule catalogue DB Ril 800.0110, expression language, alignment checks, cant/speed/length limits |
-| [splice](modules/splice.md) | geometry, rules | joining two track ends (port of the service's splice) |
+| [splice](modules/splice.md) | rules | what a splice can change where the rules reject a curvature jump |
+| [crossover](modules/crossover.md) | — | the search of the extended switch connection (the Rust module beside the page) |
+| [optimizer](modules/optimizer.md) | — | splicing, its spacing, reconnecting, optimizing, the alignment fit (the Rust module beside the page) |
 | [track](../../../packages/core/docs/track.md) *core* | geometry, rules | tracks, switch records and ports, heights, links, track ends, platforms, routes |
 | [crossSection](../../../packages/core/docs/crossSection.md) *core* | geometry, track | cross section, superstructure, clearance contours |
 | [switch](../../../packages/core/docs/switch.md) *core* | geometry, rules, track | switch forms, routes, symbols, crossings, switch connections, deletion |
 | [topology](../../../packages/core/docs/topology.md) *core* | track | connection diagram |
+| [schematic](../../../packages/core/docs/schematic.md) *core* | geometry, track | the schematic strip |
 | [commands](../../../packages/core/docs/commands.md) *core* | crossSection, geometry, rules, switch, track | what the dialogs commit |
 | [elevation](modules/elevation.md) | common, crossSection, geometry, rules, switch, track | Höhenplan rules, turnout planes, coupling on request, terrain |
-| [plan](modules/plan.md) | common, geometry, km, rules, switch, track | plan export (PDF/SVG) |
+| [plan](modules/plan.md) | common, geometry, km, rules, schematic, switch, track | plan export (PDF/SVG) |
 | [exchange](modules/exchange.md) | elevation, geometry, rules, switch, track | RailJSON, Verm.ESN, ProVI, CSV, MDB |
 | [survey](../../../packages/core/docs/survey.md) *core* | commands, geometry, track | measured axes, reference axes, shift values, alignment fit |
 | [pointCloud](modules/pointCloud.md) | crossSection, elevation, geometry, km, survey, track | point clouds |
@@ -102,8 +106,9 @@ own module, and a worker only the server build needs lives in `src/server` (the 
 
 | Worker | Why |
 |---|---|
-| `utils/splice/spliceWorker.js` | the largest-radius search builds the splice many times (a second or two) |
+| `utils/optimizer/optimizerWorker.js` | splicing, reconnecting, optimizing, the alignment fit: searches that build a chain many times (up to seconds) |
 | `utils/pointCloud/pointCloudWorker.js` | importing gigabytes of LAS/LAZ/E57 into OPFS |
+| `utils/crossover/crossoverWorker.js` | the search of the extended switch connection (a few hundred milliseconds to seconds) |
 | `src/server/mdb/mdbWorker.js` | building, placing and transforming a whole MDB takes seconds |
 | `src/server/cloud3d/tileWorker.js` | decoding and transforming point tiles for the 3D view |
 
@@ -126,21 +131,22 @@ own module, and a worker only the server build needs lives in `src/server` (the 
 - Unit tests next to every module file (`*.test.js`), run by Vitest under Node (no DOM).
 - **Chain invariants** (`packages/core/test/chainInvariants.js`): every construction that builds or changes element
   chains asserts `expectValidTrack`, `expectSwitchCantAdmissible` and `expectSwitchRoutesCarved`.
-- **Shared vectors** between JavaScript and Python: the rule expression language, the alignment check and
-  transition lengths (`packages/core/constraints/tests/`), and the splice answers (`splice/serviceAnswers.json`).
+- **Shared vectors** between JavaScript and the optimizer module (Rust): the rule expression language, the
+  alignment check and transition lengths (`packages/core/constraints/tests/`).
 - **Real data**: MDB, ProVI and point cloud excerpts in `src/core/test/fixtures/`; the PEK Halle–Könnern data set
   where present (tests skip without it).
 - **Architecture tests** for layers, modules, colours in components and accessible buttons.
 - The project server's API tests run against an in-memory database with `fastify.inject`.
-- The optimizer's acceptance tests (`services/optimizer/tests/`) run in CI.
+- The Rust modules' tests (`optimizer/`, `crossover/`) run in CI, the module built for the app's tests too.
 
 ## Adding something
 
 - A new computation belongs in the module of its subject; if something outside the module needs it, add it to
   that module's `index.js`. If it fits no module, add a directory with an `index.js` and a page in
   `docs/modules/` (the check requires both) and make sure the dependency order stays acyclic.
-- What needs the project server or the Python service goes to `src/server` and docks on through an extension
+- What needs the project server goes to `src/server` and docks on through an extension
   point; `npm run build:local` must stay green.
-- A rule value belongs in the catalogue file, not in code. Whoever changes `splice.py` rewrites the splice
-  answers fixture and follows the change in `solveSplice.js`.
+- A rule value belongs in the catalogue file, not in code; the optimizer module (`optimizer/`, Rust) reads the
+  file the app bundles, and the shared vectors in `packages/core/constraints/tests/` hold its rule check to the
+  app's.
 - Write the reason for a behaviour into the module page's *Decisions* section.

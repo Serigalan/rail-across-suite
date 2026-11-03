@@ -9,6 +9,6 @@ export { assembleSchematic, assembleSite, BACKGROUNDS, planFileBase } from './pl
 export { PAPER_FORMATS, SCALES } from './planExport'
 export { normalizeHeader, PARTIES, STAFF } from './planHeader'
 export { renderPdf } from './planPdf'
-export { DEFAULT_CORRIDOR } from './planSchematic'
+export { DEFAULT_CORRIDOR } from '@rail-across/core/schematic'
 export { SCHEMATIC_SCALES } from './planSchematicPlan'
 export { renderSvg } from './planSvg'

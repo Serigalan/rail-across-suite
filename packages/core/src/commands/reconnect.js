@@ -5,11 +5,11 @@ import { pickRuns, picksAtSpeed, spliceFromAnswer } from './splice.js'
 
 // Reconnecting existing elements (Paket N): a stretch of one track is taken
 // out and its two neighbours joined again by the splice construction, the
-// best one within a tolerance of the old axis (olt_optimizer/reconnect.py).
+// best one within a tolerance of the old axis (optimizer/…/reconnect.rs).
 // What is here is the app's half and pure: which elements the stretch is,
 // the old axis every centimetre, the request, and the track written back.
 
-/** Spacing of the old axis handed to the service [m] (Entscheidung 187). */
+/** Spacing of the old axis handed to the optimizer module [m] (Entscheidung 187). */
 export const AXIS_SPACING = 0.01
 
 const lengthOf = (els) => els.reduce((sum, el) => sum + (el.length ?? 0), 0)
@@ -106,7 +106,7 @@ export function elementPoints(el, epsg, step) {
 /**
  * The old axis of the elements `first`…`last` every AXIS_SPACING (each
  * element in equal steps of at most that, elementPoints), in travel order: { e0, n0, de, dn } — whole
- * millimetres from the first point, the way the service reads it — and
+ * millimetres from the first point, the way the optimizer module reads it — and
  * `coords` [[e, n], …] in the plane, for the map.
  */
 export function axisPoints(track, first, last, step = AXIS_SPACING) {
@@ -174,7 +174,7 @@ export function reconnectRequest(picks, points, { tolerance, speed, transitionTy
 }
 
 /**
- * The service's answer as the panel reads it: the splice solutions
+ * The optimizer module's answer as the panel reads it: the splice solutions
  * (commands/splice spliceFromAnswer), each with what the search says of it
  * (`reconnect`: variant, radius, cant, within, max, rms, worstAt,
  * worstStation, band) — or { error }. `request` the one it was given to.
@@ -218,7 +218,7 @@ function restationedHeights(heights, map, length) {
 
 /**
  * The track as it is after reconnecting (Entscheidung 191): what lies before
- * the stretch, the service's chain, what lies behind it — the same id, name
+ * the stretch, the optimizer module's chain, what lies behind it — the same id, name
  * and data. The re-shaped neighbours keep what they carried (speed, a
  * re-signed cant) — a speed above the panel's comes down to it, as the
  * request judged them —; what the chain inserts takes the panel's speed and an

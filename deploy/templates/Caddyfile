@@ -14,15 +14,6 @@
 		reverse_proxy @RA_UPSTREAM@:@RA_SERVER_PORT@
 	}
 
-	# The Layout-Tool's optimizer and terrain service, only with a session.
-	# /optimizer/optimize → the service sees /optimize (prefix cut off).
-	handle_path /optimizer/* {
-		forward_auth @RA_UPSTREAM@:@RA_SERVER_PORT@ {
-			uri /api/me
-		}
-		reverse_proxy @RA_UPSTREAM@:@RA_OPTIMIZER_PORT@
-	}
-
 	# Open without a session: the sign-in page and the built, hashed files it
 	# and the apps load (the same for everybody, nothing of a project), the
 	# suite's mark, the NTv2 grids, and the entry of the Layout-Tool's

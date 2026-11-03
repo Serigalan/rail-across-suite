@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { checkSignalling } from './index.js'
+import { branchSpeedOnRun, checkSignalling } from './index.js'
 import { ksStation, ksStationCore } from '../../test/signallingFixture.js'
 
 const check = (change = () => {}) => {
@@ -23,11 +23,12 @@ describe('a station signalled with Ks and PZB', () => {
       byId(c.routes, 'rt-a-n1').overlaps[0].overlapId = 'ov-9'
       byId(c.stationBoundaries, 'bd-1').operationalPointId = 'op9'
       byId(c.signals, 'sig-n1').lifespan = { from: 'stage-9' }
+      byId(c.signals, 'sig-n1').operationalPointId = 'op8'
     })
     const missing = errors.filter(e => e.code === 'reference_missing').map(e => [e.id, e.params.target, e.params.ref])
     expect(missing).toEqual(expect.arrayContaining([
       ['sig-a', 'core.tracks', 'gone'], ['we-1', 'core.switches', 'w9'], ['rt-a-n1', 'signalling.overlaps', 'ov-9'],
-      ['bd-1', 'core.operationalPoints', 'op9'], ['sig-n1', 'core.fields.stages', 'stage-9'],
+      ['bd-1', 'core.operationalPoints', 'op9'], ['sig-n1', 'core.fields.stages', 'stage-9'], ['sig-n1', 'core.operationalPoints', 'op8'],
     ]))
   })
 
@@ -200,6 +201,40 @@ describe('routes and overlaps', () => {
   })
 })
 
+describe('a route over the branch of a turnout', () => {
+  // N1's route runs from t1 onto t2 — over W1's branch once its ports say so.
+  const overBranch = (speed, signalled) => check((c, core) => {
+    core.collections.switches[0] = { ...core.collections.switches[0], ...(speed ? { speed } : {}),
+      ports: { A: { trackId: 't1', endpoint: 'END' }, B1: { trackId: 't2', endpoint: 'BEGIN' }, B2: { trackId: 't3', endpoint: 'BEGIN' } } }
+    const n1 = byId(c.signals, 'sig-n1').logicalSignals[0]
+    n1.signallingSpeeds = signalled == null ? undefined : [{ routeId: 'rt-n1-v', speed: signalled }]
+  }).warnings.filter(w => w.code.startsWith('route_speed'))
+
+  it('signals at most the speed the turnout allows there', () => {
+    expect(overBranch(60, 80).map(w => [w.code, w.id, w.params.allowed])).toEqual([['route_speed_over_branch', 'rt-n1-v', 60]])
+    expect(overBranch(60, 60)).toEqual([])
+    expect(overBranch(60, 40)).toEqual([])
+  })
+
+  it('signals one at all, and says nothing where the turnout states none', () => {
+    expect(overBranch(60, null).map(w => [w.code, w.params.switches])).toEqual([['route_speed_over_branch_missing', ['w1']]])
+    expect(overBranch(null, 80)).toEqual([])
+  })
+
+  it('is one that passes from the toe to the branch, either way, not along the straight', () => {
+    const sw = (id, speed, a, b1, b2) => ({ id, kind: 'turnout', speed, ports: { A: { trackId: a }, B1: { trackId: b1 }, B2: { trackId: b2 } } })
+    const switches = [sw('w1', 60, 'a', 'l', 'm'), sw('w2', 40, 'x', 'l', 'y'), { switchId: 'w3', speed: 100, ports: { A: { trackId: 'm' }, B1: { trackId: 'n' } } }]
+    expect(branchSpeedOnRun(switches, ['a', 'm'])).toBeNull()
+    expect(branchSpeedOnRun(switches, ['a', 'l'])).toEqual({ speed: 60, switchIds: ['w1'] })
+    expect(branchSpeedOnRun(switches, ['x', 'l', 'a'])).toEqual({ speed: 40, switchIds: ['w2', 'w1'] })
+    expect(branchSpeedOnRun(switches, ['a', 'm', 'n'])).toEqual({ speed: 100, switchIds: ['w3'] })
+    expect(branchSpeedOnRun([], ['a', 'l'])).toBeNull()
+    // A turnout that states no speed allows its form's.
+    expect(branchSpeedOnRun([{ ...switches[0], speed: undefined, label: '500 – 1:12' }], ['a', 'l']).speed).toBe(60)
+    expect(branchSpeedOnRun([{ ...switches[0], speed: undefined }], ['a', 'l']).speed).toBeNull()
+  })
+})
+
 describe('flank protection, balises and magnets, station boundaries', () => {
   it('asks once per switch element and position, never of the element itself', () => {
     const { errors } = check((c) => {
@@ -263,6 +298,31 @@ describe('flank protection, balises and magnets, station boundaries', () => {
     expect(codes(warnings)).toEqual(['boundary_mark_special'])
   })
 
+  it('bounds a stopping place by the signals and detection points, and keeps it at its platform or in a station', () => {
+    const { warnings, errors } = check((c) => {
+      byId(c.stoppingPlaces, 'hp-1').at.startStation = 10
+      byId(c.stoppingPlaces, 'hp-2').operationalPointId = undefined
+    })
+    expect(errors).toEqual([])
+    expect(warnings.map(w => [w.code, w.params.signal ?? w.params.detectionPoint ?? null])).toEqual([
+      ['stopping_place_crossed', 'sig-a'], ['stopping_place_crossed', 'dp-1'], ['stopping_place_open_line', null],
+    ])
+    expect(codes(check((c) => { byId(c.stoppingPlaces, 'hp-1').at.endStation = 5 }).errors)).toEqual(['stopping_place_empty'])
+  })
+
+  it('holds an itinerary to its stopping places and its routes to its run', () => {
+    const { errors } = check((c) => {
+      byId(c.itineraries, 'fw-1').routeIds = ['rt-n1-v', 'rt-a-n1']
+      byId(c.itineraries, 'fw-1').targetStoppingPlaceId = 'hp-1'
+    })
+    expect(errors.map(e => [e.code, e.params.route ?? null])).toEqual([['itinerary_off_stopping_place', null], ['itinerary_route_off_path', 'rt-a-n1']])
+  })
+
+  it('takes a station\'s boundary from its own signals, not from the open line\'s', () => {
+    const { warnings } = check((c) => { delete byId(c.signals, 'sig-a').operationalPointId })
+    expect(warnings.map(w => [w.code, w.params.signal])).toEqual([['boundary_mark_elsewhere', 'sig-a']])
+  })
+
   it('holds a derailer at its place, and a switch giving flank protection to its position', () => {
     const { errors } = check((c) => {
       c.switchElements.push({ id: 'gs-1', name: 'Gs1', operation: 'electricRemote', derailer: { at: { anchor: 'station', trackId: 't2', station: 200, direction: 'up' }, preferredPosition: 'applied' } })
@@ -276,13 +336,13 @@ describe('flank protection, balises and magnets, station boundaries', () => {
   it('derives a section from its own points over the net, and says where they enclose nothing', () => {
     // A point of another section inside it is no boundary of its: sections overlap where they meet.
     const inside = check((c) => {
-      c.detectionPoints.push({ id: 'dp-3', kind: 'axleCounter', at: { anchor: 'station', trackId: 't1', station: 100 } })
+      c.detectionPoints.push({ id: 'dp-3', kind: 'axleCounter', at: { anchor: 'station', trackId: 't1', station: 235 } })
       c.trackSections.push({ id: 'ts-2', kind: 'axleCounting', boundedBy: ['dp-3', 'dp-2'] })
     })
     expect(inside).toEqual({ errors: [], warnings: [] })
     // t2 is not connected to t1: no part of the net lies between a point on each.
     const { warnings } = check((c) => {
-      c.detectionPoints.push({ id: 'dp-3', kind: 'axleCounter', at: { anchor: 'station', trackId: 't2', station: 100 } })
+      c.detectionPoints.push({ id: 'dp-3', kind: 'axleCounter', at: { anchor: 'station', trackId: 't2', station: 145 } })
       c.trackSections[0].boundedBy = ['dp-1', 'dp-3']
     })
     expect(warnings.map(w => [w.code, w.id])).toEqual([['detection_point_unused', 'dp-2'], ['section_extent_differs', 'ts-1']])

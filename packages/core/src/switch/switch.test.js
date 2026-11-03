@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import {
-  SWITCH_TYPES, SWITCH_TYPES_SPECIAL, SWITCH_CONNECTION_STAGES, switchTypeByLabel, switchArcLength, switchStraightLength, switchBranchSections, switchBranchLength, switchFormChain, branchRadius, switchMarkDistance, switchBranchPointAt, switchTangents,
+  SWITCH_TYPES, SWITCH_TYPES_SPECIAL, SWITCH_CONNECTION_STAGES, switchTypeByLabel, switchBranchSpeed, switchArcLength, switchStraightLength, switchBranchSections, switchBranchLength, switchFormChain, branchRadius, switchMarkDistance, switchBranchPointAt, switchTangents,
 } from './catalogue.js'
 import { switchBranchChain, switchBranchRoute, switchChainTo, switchChainSlice } from './route.js'
 import { computeSwitchGeometryUtm } from './symbol.js'
@@ -418,5 +418,15 @@ describe('a point of the branch', () => {
     expect(end.x).toBeCloseTo(t1 + t2 * Math.cos(alpha), 9)
     expect(end.y).toBeCloseTo(t2 * Math.sin(alpha), 9)
     expect(switchBranchPointAt(form, 1000)).toEqual(end)
+  })
+})
+
+describe('the speed a turnout allows on its branch', () => {
+  it('is its record\'s, else its form\'s', () => {
+    expect(switchBranchSpeed({ label: '500 – 1:12', speed: 40 })).toBe(40)
+    expect(switchBranchSpeed({ label: '500 – 1:12' })).toBe(60)
+    expect(switchBranchSpeed({ label: '760 – 1:14', speed: 0 })).toBe(80)
+    expect(switchBranchSpeed({})).toBeNull()
+    expect(switchBranchSpeed(null)).toBeNull()
   })
 })

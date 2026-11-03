@@ -1,11 +1,14 @@
 import { Badge, Button, Message, Panel, PlusIcon, Section, SelectField, SelectList } from '@rail-across/ui'
 import { categoryColor, trainTitle } from '@rail-across/timetables'
 import { trainLine } from '../rows.js'
+import DispatchSection from './DispatchSection.jsx'
 
 /**
  * The timetables of the project — the one shown, a new one, another name,
  * deleting it — and its trains by their departure, each with where it begins
- * and ends and when, marked where it cannot be run.
+ * and ends and when, marked where it cannot be run, where it conflicts with
+ * another and where it waits for a block; what is done where trains would
+ * hold the same block.
  */
 export default function TrainsPanel({ t, timetables, sorted, train, setTrainId, runs, stations, mayEdit, addTrain, setDialog }) {
   const { list, loading, mayAdd, draft, error } = timetables
@@ -17,14 +20,16 @@ export default function TrainsPanel({ t, timetables, sorted, train, setTrainId, 
       mark: <span className="tt-dot" style={{ background: categoryColor(tr.category) }} />,
       title: trainTitle(tr) || t('train_unnamed'),
       sub: trainLine(tr, run),
-      end: bad ? <Badge tone="warn" title={t('train_cannot_run')}>!</Badge> : null,
+      end: bad ? <Badge tone="warn" title={t('train_cannot_run')}>!</Badge>
+        : run?.conflicts?.length ? <Badge tone="danger" title={t('conflicts_n', { n: run.conflicts.length })}>!</Badge>
+          : run?.waits?.length ? <Badge title={t('waits_blocks', { time: Math.round(run.delay ?? 0) })}>+{Math.round((run.delay ?? 0) / 60)}′</Badge> : null,
     }
   })
   return (
     <Panel title={t('section_trains')} intro={t('section_trains_intro')}
       actions={mayEdit && draft && <Button size="small" icon={<PlusIcon size={14} />} onClick={addTrain}>{t('train_new')}</Button>}>
       {error && <Message tone="error">{t('error_save', { error })}</Message>}
-      {!stations.some(s => s.kind === 'station') && <Message tone="warn">{t('no_stations')}</Message>}
+      {!stations.some(s => s.kind !== 'halt') && <Message tone="warn">{t('no_stations')}</Message>}
       <Section title={t('timetable')}
         actions={mayEdit && draft && <span className="ui-row">
           <Button size="small" variant="ghost" onClick={() => setDialog({ kind: 'rename' })}>{t('rename')}</Button>
@@ -44,6 +49,7 @@ export default function TrainsPanel({ t, timetables, sorted, train, setTrainId, 
           <SelectList label={t('section_trains')} items={items} selected={train?.id} onSelect={setTrainId} empty={t('trains_none')} />
         </Section>
       )}
+      {draft && <DispatchSection t={t} timetables={timetables} mayEdit={mayEdit} />}
     </Panel>
   )
 }

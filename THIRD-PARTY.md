@@ -39,6 +39,15 @@ of PlanPro 1.10.0.3.3's `Signalbegriffe_Ril_301.xsd` by their names there, with 
 published by DB InfraGO under the RailPL V1.1 licence; whether that licence covers these facts taken into a
 catalogue under LGPL-3.0-only has not been checked yet.
 
+## Libraries built into the crossover module
+
+The Layout-Tool's search of the extended switch connection (`crossover/`, built into
+`apps/layout-tool/public/crossover/` by `apps/layout-tool/tools/crossover.mjs`) contains the Rust crate
+[slsqp](https://crates.io/crates/slsqp) 1.0.2, © 2023 Rémi Lafage, under the MIT licence
+(`crossover/LICENSES/slsqp-MIT.txt`, beside the module as `LICENSE-slsqp.txt`). It translates the SLSQP of
+[NLopt](https://github.com/stevengj/nlopt) (S. G. Johnson), from Dieter Kraft's ACM Algorithm 733, which the ACM
+released under the BSD licence — the code scipy uses.
+
 ## Used, not included
 
 | Software | Used for | Licence |

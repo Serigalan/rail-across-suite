@@ -9,5 +9,7 @@ __pycache__/
 apps/home/dist/
 /.tmp-build-*/
 
-# The simulation core's cargo builds
+# The simulation core's, the crossover search's and the optimizer's cargo builds
 sim/target/
+crossover/target/
+optimizer/target/

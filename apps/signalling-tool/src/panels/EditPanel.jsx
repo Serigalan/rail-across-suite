@@ -28,10 +28,10 @@ function signalGroup(s) {
  * its editor; a logical signal is opened from its mast. The way back leads to
  * the overview, from a logical signal to its mast.
  */
-export default function EditPanel({ domain, net, findings, extents, selection, select, ops, mode, setMode, readOnly, t, language }) {
+export default function EditPanel({ domain, net, core, findings, extents, selection, select, ops, mode, setMode, readOnly, t, language }) {
   const { signals, detectionPoints, trackSections, balises } = domain.collections
   const toOverview = { label: t('back'), onClick: () => select(null) }
-  const editorProps = { domain, net, findings, extents, ops, mode, setMode, select, readOnly, t, language }
+  const editorProps = { domain, net, core, findings, extents, ops, mode, setMode, select, readOnly, t, language }
   const find = (name) => domain.collections[name].find(o => o.id === selection?.id)
 
   switch (selection?.collection) {

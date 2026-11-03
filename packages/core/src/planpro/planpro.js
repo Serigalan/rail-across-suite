@@ -635,7 +635,7 @@ function convert(model, projectId) {
     fields: { catalogue: { ...CATALOGUE_REF } },
     collections: {
       signals: signals.map(s => byLogicalSignal(s, routeSpeeds.get(s.id))), detectionPoints, trackSections, switchElements,
-      routes, overlaps, flankProtection, balises, stationBoundaries: [],
+      routes, overlaps, flankProtection, balises, stationBoundaries: [], stoppingPlaces: [], itineraries: [],
     },
   }
   return { tracks, switches, endMarks, signalling, report }

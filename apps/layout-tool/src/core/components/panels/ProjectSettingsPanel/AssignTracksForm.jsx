@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { loadTracks, replaceAllTracks } from '../../../storage'
+import { currentProject, loadTracks, replaceAllTracks, updateProject } from '../../../storage'
+import { renamedStation, stationRegister } from '@rail-across/core/document'
 import useNearbyLines from '../../../hooks/useNearbyLines'
 import useLineNameSuggestion from '../../../hooks/useLineNameSuggestion'
 import {
@@ -38,6 +39,11 @@ const filterForTracks = (ids) => ['in', ['get', 'trackId'], ['literal', ids]]
  *
  * The form stays open after a commit — the list regroups at once, and the
  * next tracks are usually just picked for the next line or station.
+ *
+ * A station chosen can be renamed here (StationRename): it keeps its id, the
+ * one a timetable names it by, and all its tracks and platforms take the new
+ * name. Typing another name into a track's own fields puts that track into
+ * another station instead.
  */
 export default function AssignTracksForm({ onCommitted }) {
   const { t, fill } = useI18n()
@@ -237,6 +243,11 @@ export default function AssignTracksForm({ onCommitted }) {
           </>
         )}
 
+        {kind === 'station' && chosen && (
+          <StationRename key={chosen.key} station={chosen} taken={(name) => existing.some(g => g !== chosen && String(g.stationName ?? '').trim().toLowerCase() === name.toLowerCase())}
+            onRenamed={(next) => { setDone(null); setChoice(next) }} />
+        )}
+
         {kind === 'station' && !chosen && (
           <>
             <div className="form-field">
@@ -304,5 +315,51 @@ export default function AssignTracksForm({ onCommitted }) {
       <CommitBar onCommit={handleCommit} onCancel={onCommitted} disabled={selected.size === 0 || kmPending}
         commitLabel={t('assign_commit')} cancelLabel={t('btn_back')} />
     </>
+  )
+}
+
+/**
+ * Rename the station `station` (a group of groupTracks): its name and UIC
+ * number, the same station still — its point of the register keeps its id
+ * (renamedStation), its tracks and platforms state the new name. One undo
+ * step. `onRenamed` gets the group key it goes by now.
+ */
+function StationRename({ station, taken, onRenamed }) {
+  const { t } = useI18n()
+  const [open, setOpen] = useState(false)
+  const [name, setName] = useState(station.stationName ?? '')
+  const [uic, setUic] = useState(station.uicStation ?? '')
+  const [error, setError] = useState(null)
+  if (!open) {
+    return (
+      <button type="button" className="ui-btn ui-btn-block" onClick={() => setOpen(true)}>{t('station_rename')}</button>
+    )
+  }
+  const apply = () => {
+    const next = name.trim()
+    if (!next) { setError('assign_error_station_name'); return }
+    if (taken(next)) { setError('station_rename_taken'); return }
+    const project = currentProject()
+    const id = stationRegister(project).pointOf(station.tracks[0])
+    const changed = id && renamedStation(project, id, { name: next, uic: uic.trim() })
+    if (!changed) return
+    updateProject(changed)
+    setOpen(false)
+    onRenamed(trackGroupKey(assignmentFields({ kind: 'station', stationName: next, uicStation: uic.trim() })))
+  }
+  return (
+    <div className="element-form">
+      <p className="selecting-hint m-0">{t('station_rename_hint')}</p>
+      <div className="form-field">
+        <label>{t('station_name')}</label>
+        <input type="text" value={name} onChange={(e) => { setError(null); setName(e.target.value) }} />
+      </div>
+      <div className="form-field">
+        <label>{t('uic_station_number')}</label>
+        <input type="text" value={uic} onChange={(e) => { setError(null); setUic(e.target.value) }} />
+      </div>
+      {error && <p className="form-error">{t(error)}</p>}
+      <CommitBar onCommit={apply} onCancel={() => setOpen(false)} commitLabel={t('station_rename_commit')} />
+    </div>
   )
 }

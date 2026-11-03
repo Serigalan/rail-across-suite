@@ -27,6 +27,11 @@ jobs:
       - run: npm ci --no-audit --no-fund
         working-directory: .
       - run: node tools/data.mjs
+      # The Rust modules beside the page: the extended switch connection's
+      # search and the optimizer (decisions 0018, 0019).
+      - run: rustup target add wasm32-unknown-unknown
+      - run: npm run crossover
+      - run: npm run optimizer
       - run: npm run build:local
       - name: Pack
         run: |

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { assembleSchematic, assembleSite, planDate, planFileBase, titleBlockOf } from './planAssemble'
 import { normalizeHeader } from './planHeader'
-import { tracks, switches, platforms } from '../../test/schematicFixture'
+import { tracks, switches, platforms } from '@rail-across/core/test/schematicFixture.js'
 
 // Keys come back as they are, so the test reads what was asked for.
 const t = (key) => key

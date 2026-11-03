@@ -5,10 +5,10 @@
  * switch into the line along the top, branches off that into the L and runs
  * on as the T's bar, the T's stem branching off it in turn. The track is
  * drawn as a pair of rails — a wide stroke with a thin one in the ground's
- * colour on it — white in the letters, half-transparent white between them,
- * which reads as a lighter shade of whatever the ground is: the app draws the
- * ground in the user's primary colour, the plan and the favicon in the
- * default one. Lines end square (butt caps), as both plan backends draw them.
+ * colour on it — white in the letters, a lighter blue between them. The
+ * plan's title block draws it; the app itself shows the suite's mark of the
+ * tool (components/icons LogoIcon), as the start page does. Lines end square
+ * (butt caps), as both plan backends draw them.
  * public/favicon.svg is the whole mark on a square ground, drawn simple:
  * every line of it, each a single stroke of the same width without the inner
  * rail, white in the letters and MARK_LINK_BLUE between them.
@@ -18,12 +18,10 @@
 import { PALETTE } from '../../styles/palette'
 
 export const MARK_WIDTH = 228
-export const MARK_HEIGHT = 158
+const MARK_HEIGHT = 158
 const MARK_RADIUS = 24
 export const MARK_BLUE = PALETTE.primaryDefault
-/** The track between the letters: white at this opacity over the ground… */
-export const MARK_LINK_OPACITY = 0.45
-/** …which over MARK_BLUE comes to this, for the plan backends, which draw opaque. */
+/** The track between the letters: white at 45 % over MARK_BLUE, opaque for the plan backends. */
 export const MARK_LINK_BLUE = '#8d8fbb'
 /** Stroke width of the track, and of the inner rail drawn on it. */
 export const MARK_RAIL = 14

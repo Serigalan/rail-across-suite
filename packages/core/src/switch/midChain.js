@@ -13,7 +13,7 @@ import { STRAIGHT_CURVATURE } from './catalogue.js'
 // A spec: [{ type: 'straight' | 'arc' | 'transition', length: number|null,
 // radius: number|null, side?: ±1 }] — radius as a magnitude, the side it bends
 // to part of the solution unless `side` fixes it (the sign of its project
-// radius, as an adopted answer of the Python solver states it).
+// radius, as an adopted answer of the search states it).
 
 /** The one element the connection always had: an arc whose length and radius both follow. */
 export const DEFAULT_MIDS = [{ type: 'arc', length: null, radius: null }]

@@ -539,9 +539,7 @@ function commitCrossingOnTrack(host, station, type, crossAngleDeg, crossBeyond =
   const tracks = commit.addTracks.map(tr => {
     if (!crossBeyond) return tr
     if (tr.id === sw.ports?.B?.trackId) {
-      return trackOf(tr.id, [straightElement(
-        endPointStraightUtm(g.portB_utm, (g.crossBearing + 180) % 360, crossBeyond),
-        g.crossBearing, crossBeyond), ...tr.elements])
+      return trackOf(tr.id, [...tr.elements, straightElement(g.portB_utm, (g.crossBearing + 180) % 360, crossBeyond)])
     }
     if (tr.id === sw.ports?.D?.trackId) {
       return trackOf(tr.id, [...tr.elements, straightElement(g.portD_utm, g.crossBearing, crossBeyond)])
@@ -568,6 +566,19 @@ describe('the crossing laid into a track (AP 3.3)', () => {
     expect(place.error).toBeUndefined()
     expect(place.pieces.some(p => p.r1 != null)).toBe(true)
     expect(commitCrossingOnTrack(arcHost, 50, kr9, alpha).error).toBe('crossing_on_track_straight_only')
+  })
+
+  it('runs both cross legs from the crossing point out, a track to go on from at each port', () => {
+    for (const type of [kr9, dkw500]) {
+      const { sw, tracks, g } = commitCrossingOnTrack(hostTrack(), 60, type, crossingAngle(type) * 180 / Math.PI)
+      for (const port of ['B', 'D']) {
+        expect(sw.ports[port].endpoint).toBe('BEGIN')
+        const leg = tracks.find(tr => tr.id === sw.ports[port].trackId)
+        expect(dist(leg.elements[0].startNode, [g.centreUtm.easting, g.centreUtm.northing])).toBeLessThan(1e-6)
+        const out = g[`port${port}_utm`]
+        expect(dist(leg.elements.at(-1).endNode, [out.easting, out.northing])).toBeLessThan(1e-6)
+      }
+    }
   })
 
   it('reads back as a crossing: point, bearings, legs — on the parted halves', () => {

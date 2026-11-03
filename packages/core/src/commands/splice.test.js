@@ -9,10 +9,11 @@ import { edgeAt } from '../../test/platformEdge.js'
 import { carryPlatforms } from '../track/index.js'
 import answers from '../../test/fixtures/splice_answers.json' with { type: 'json' }
 
-// The construction is the service's (olt_optimizer/splice.py); what is tested
+// The construction is the optimizer module's (optimizer/…/splice.rs); what is tested
 // here is the app's half — the request it sends and the track it builds from
-// the answer. The answers are real ones, written by
-// services/optimizer/tests/splice_fixture.py for the very same picks.
+// the answer. The answers are real ones, recorded from the optimizer service
+// for the very same picks before the module replaced it (decision 0019 of the
+// suite); the module gives the same (apps/layout-tool …/optimizer/splice.test.js).
 
 const EPSG = 25832
 const P = (x, y, zone = EPSG) => ({ easting: 500000 + x, northing: 5700000 + y, zone })
@@ -22,7 +23,7 @@ const track = (id, elements, extra = {}) => {
   return { id, name: id, epsg: EPSG, elements: els, coordinates: rebuildCoords(els), ...extra }
 }
 const settings = { radius: 300, transitionOn: [false, false], transitions: [60, 60], transitionType: 'clothoid', arcJoin: 'straight' }
-// The solution the service proposes, as the dialog reads it.
+// The solution the optimizer module proposes, as the dialog reads it.
 const best = (answer, picks) => spliceFromAnswer(answer, picks).solutions[0]
 
 // Track a runs east to x = 200; track b runs north from y = 100 at x = 400. An
@@ -55,7 +56,7 @@ describe('picking the two elements', () => {
 })
 
 describe('which pick departs', () => {
-  // The service finds it (olt_optimizer/splice.py, AP S.2); the answer names it.
+  // The optimizer module finds it (optimizer/…/splice.rs, AP S.2); the answer names it.
   const [pa, pb] = [splicePick(a, 0), splicePick(b, 0)]
 
   it('is the one whose end faces the gap, whichever was picked first', () => {
@@ -127,7 +128,7 @@ describe('a transition at the end of its track (AP S.7)', () => {
 describe('the request to the service', () => {
   const dep = splicePick(a, 0), arr = splicePick(b, 0)
 
-  it('holds both picks and the settings, as the service is asked', () => {
+  it('holds both picks and the settings, as the optimizer module is asked', () => {
     const req = spliceRequest(dep, arr, settings)
     const want = answers.corner.request
     expect(req.radius).toBe(want.radius)
@@ -208,7 +209,7 @@ describe('the track built from the answer', () => {
     expect(sol.result.worst).toBe('hint')
   })
 
-  it('reads the lengths the service set for each pick, every rule with its formula', () => {
+  it('reads the lengths the optimizer module set for each pick, every rule with its formula', () => {
     // Project SBSS: R 410 / 80 mm into R 750 / 45 mm at 80 km/h (AP S.3).
     const { request, answer } = answers.sbssRegular
     const g = track('g', [arcElement(at(request.dep.start), at(request.dep.end), request.dep.radius, { speed: 80, cant: 80 })])
@@ -257,7 +258,7 @@ describe('the track built from the answer', () => {
     expect(spliceFromAnswer({ error: 'splice_error_no_fit', params: {} }, [dep, arr]).lengths).toBeNull()
   })
 
-  it('sets the Regellänge once, as soon as the service names it (Entscheidung 185)', () => {
+  it('sets the Regellänge once, as soon as the optimizer module names it (Entscheidung 185)', () => {
     const s = { transitionOn: [true, true], transitions: [60, 60], modes: ['regular', 'regular'] }
     const settled = settleLengths(s, [{ regular: 28 }, { regular: null }])
     expect(settled).toMatchObject({ transitions: [28, 60], modes: ['fixed', 'regular'] })

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { provided } from '../extensions'
+import { optimizerRegelwerke } from '../utils/optimizer'
 import { BUNDLED_KATALOG_VERSION, GRENZWERTE, optimizerLimitRows, CATALOG_ID } from '@rail-across/core/rules'
 import { WEICHEN_REGELWERK } from '@rail-across/core/switch'
 import WeichenRegelwerk from './WeichenRegelwerk'
@@ -17,28 +17,20 @@ import CloseButton from './form/CloseButton'
  * **One rulebook is one entry**, however many faces it has. DB Ril 800.0110 is
  * the rules the app bundles (`regelkatalog.js`) and the very file the optimizer
  * applies — so it is listed once, the rules first, and under them the limits
- * the service says a run is held to at Regelwert and Ermessensgrenze. Those
- * are still fetched rather than read out of the rules: a service deployed
- * from an older commit than this bundle runs on its own copy of the file, and
- * that is the copy a run really uses.
- *
- * Bundled rulebooks come first and are always there; anything else the service
- * lists is appended, so a regelwerk added to the service later shows up here
- * without a change to this file. Without the service (the local build: no
- * `regelwerkService`, Paket L) the bundled rulebooks are all there is.
+ * the optimizer module (decision 0019 of the suite) says a run is held to at
+ * Regelwert and Ermessensgrenze, read out of the same file.
  */
 
 const BUNDLED_IDS = [CATALOG_ID, WEICHEN_REGELWERK.id, QUERSCHNITT_KATALOG.katalog.id]
 
 export default function RegelwerkOverlay({ regelwerkId, onClose }) {
   const { t, fill } = useI18n()
-  // The optimizer service's catalogues: { list() → { regelwerke, drift }, get(id) → regelwerk | null }.
-  const service = provided('regelwerkService', null)
+  // The optimizer module's catalogue: { list() → { regelwerke, drift }, get(id) → regelwerk | null }.
+  const service = optimizerRegelwerke
   // null while the list is still being asked for, [] once the service has
   // answered with nothing — the two read the same in a table but not to the
   // reader, who is told either "loading" or "no server".
   const [regelwerke, setRegelwerke] = useState(service ? null : [])
-  const [catalogDrift, setCatalogDrift] = useState(null)   // R0.1
   const [wanted, setWanted] = useState(regelwerkId ?? '')
   // Keyed by id, and only ever written from the fetch callback — never
   // synchronously in the effect body — so a change of id does not need its own
@@ -49,10 +41,8 @@ export default function RegelwerkOverlay({ regelwerkId, onClose }) {
   useEffect(() => {
     if (!service) return undefined
     let cancelled = false
-    service.list().then(({ regelwerke: list, drift }) => {
-      if (cancelled) return
-      setRegelwerke(list)
-      setCatalogDrift(drift)
+    service.list().then(({ regelwerke: list }) => {
+      if (!cancelled) setRegelwerke(list)
     })
     return () => { cancelled = true }
   }, [service])
@@ -121,7 +111,6 @@ export default function RegelwerkOverlay({ regelwerkId, onClose }) {
         {service && regelwerke?.length === 0 && (
           <p className="constraints-error">{t('constraints_service_down')}</p>
         )}
-        {catalogDrift && <p className="constraints-error">{t('optimizer_catalog_drift')}</p>}
 
         {id === CATALOG_ID && <RegelkatalogView />}
         {id === WEICHEN_REGELWERK.id && <WeichenRegelwerk />}
@@ -133,9 +122,9 @@ export default function RegelwerkOverlay({ regelwerkId, onClose }) {
         {served && !failed && !regelwerk && (
           <p className="constraints-hint">{t('constraints_loading')}</p>
         )}
-        {failed && <p className="constraints-error">{t('optimize_err_unavailable')}</p>}
+        {failed && <p className="constraints-error">{t('optimizer_missing')}</p>}
         {!bundled && !served && regelwerke !== null && (
-          <p className="constraints-error">{t('optimize_err_unavailable')}</p>
+          <p className="constraints-error">{t('optimizer_missing')}</p>
         )}
 
         {regelwerk && (

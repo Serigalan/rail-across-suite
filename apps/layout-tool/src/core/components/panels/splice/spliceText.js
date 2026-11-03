@@ -26,8 +26,8 @@ export const SPLICE_DEFAULTS = {
  * it, the longest transitions.
  */
 export function spliceErrorText(t, fill, error, params = {}) {
-  // The keys are the splice's (and the service's, splice.py); one this bundle does not know reads as no fit.
-  const known = error.startsWith('splice_error_') || error === 'splice_clearance_unavailable'
+  // The keys are the splice's (optimizer/…/splice.rs); one this bundle does not know reads as no fit.
+  const known = error.startsWith('splice_error_') || error === 'optimizer_missing'
   const text = t(known ? error : 'splice_error_no_fit')
   const hints = [
     params.rMax != null && fill('splice_r_max', { r: String(params.rMax) }),

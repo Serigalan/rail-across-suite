@@ -1,17 +1,13 @@
 import { describe, it, expect } from 'vitest'
-import fs from 'node:fs'
-import path from 'node:path'
-import { fileURLToPath } from 'node:url'
 import { WEICHEN_REGELWERK, WEICHEN_REGELWERK_ID, weichenGruppen } from '@rail-across/core/src/switch/weichenRegelwerk.js'
 import { SWITCH_TYPES, SWITCH_TYPES_SPECIAL, CROSSING_TYPES } from '@rail-across/core/src/switch/catalogue.js'
 import { switchKindLabelKey } from '@rail-across/core/src/track/switchModel.js'
 import { translations } from '../../../locales/i18n'
 import {
-  evaluateRule, ruleById, lookupPiecewise, KATALOG, IN_SWITCH_AREA,
+  evaluateRule, ruleById, lookupPiecewise, KATALOG, IN_SWITCH_AREA, CATALOG_ID,
 } from '@rail-across/core/src/rules/regelkatalog.js'
 import { computeCantDefSigned } from '@rail-across/core/src/rules/cant.js'
 
-const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../../..')
 const languages = Object.keys(translations)
 const says = (key) => languages.every(lang => typeof translations[lang][key] === 'string')
 
@@ -175,13 +171,11 @@ describe('what rulebook it is', () => {
     expect(WEICHEN_REGELWERK_ID).toBe(WEICHEN_REGELWERK.id)
   })
 
-  // The selector puts served and bundled regelwerke in one list, and folds two
-  // entries with one id into one — so 800.0120, which the service does not
-  // serve, may not collide with the id of one it does.
-  it('is not the id the service serves', () => {
-    const served = JSON.parse(fs.readFileSync(
-      path.join(repoRoot, '../../services/optimizer/olt_optimizer/constraints/db-ril-800-0110.json'), 'utf-8'))
-    expect(served.catalog.id).not.toBe(WEICHEN_REGELWERK_ID)
+  // The selector puts the optimizer's catalogue and the bundled regelwerke in
+  // one list, and folds two entries with one id into one — so 800.0120 may not
+  // collide with the id of the one the optimizer applies.
+  it('is not the id of the catalogue the optimizer applies', () => {
+    expect(CATALOG_ID).not.toBe(WEICHEN_REGELWERK_ID)
   })
 })
 

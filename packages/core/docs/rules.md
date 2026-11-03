@@ -23,7 +23,6 @@ The vertical (Höhenplan) half of the catalogue is applied in `elevation/gradien
 | `regelwerkDefaults.js` | The few values the dialogs need synchronously, read from the catalogue |
 | `ruleFields.js` | Which form field a finding belongs to |
 | `constraintsView.js` | The physics file and the optimizer's limits as table rows for the viewers |
-| `catalogHash.js` | The recipe of the catalogue hash the optimizer service is compared with: SHA-256 over the catalogue files in name order (which files a bundle carries, the app reads with its bundler) |
 
 ## The catalogue
 
@@ -51,10 +50,10 @@ deficiency for clothoid and Bloss, steepest and flattest mean ramp, clothoid as 
 (comparison radius at a curvature jump, jumps outside turnouts), HP.LN.01–03 (gradients), HP.AR.01–07
 (vertical curves).
 
-The same file is read by the optimizer service (`services/optimizer`, through a symlink), which evaluates it
-with its own port of the expression language. Shared test vectors in `packages/core/constraints/tests/` hold the
+The same file is handed to the optimizer module (`optimizer/`, Rust, decision 0019 of the suite), which evaluates
+it with its own port of the expression language. Shared test vectors in `packages/core/constraints/tests/` hold the
 two implementations to the same answers (`ruleExpr.vectors.test.js`, `trassierungCheck.vectors.test.js`,
-`transitionLength.vectors.test.js` against `services/optimizer/tests/vectors.py`).
+`transitionLength.vectors.test.js` here, `optimizer/crates/optimizer/tests/vectors.rs` there).
 
 ## The expression language
 
@@ -83,7 +82,7 @@ disagreement with the layout.
   arcs of one radius, are one element on the ground (a straight split at a switch end, the straight end
   piece of a turnout's branch running on into the connecting straight), whatever cant each carries — two
   straights with ramps of their own stay two elements and are one straight to the rule. Transitions stand
-  alone. The Python port (`pruefung.py`) does the same (Entscheidung 356).
+  alone. The optimizer module's port (`pruefung.rs`) does the same (Entscheidung 356).
 - A check of **part of a track** — what a dialog is about to write — is given what lies beside it:
   `checkTrack(chain, { context: [before, after] })` (and `hasRuleError`, `RuleFindings`, `check_track(...,
   context=)`) lets a run reaching the chain's end go on into it. `runBeside(elements, i, side)` reads the
@@ -133,7 +132,7 @@ Limits are read from the rules with `catalogLimit(ruleId, threshold, scope)`:
   away; it is shown on the plan and warned about in the element table (LP.KB.05); deficiency per LP.KB.06.
 
 The cant a dialog proposes (`computeAutoC`) is the Regelüberhöhung, except that a curve whose deficiency
-without any cant stays under 60 mm gets none. The optimizer service proposes the same (`AUTO_CANT_MODEL`).
+without any cant stays under 60 mm gets none. The optimizer module proposes the same (`AUTO_CANT_MODEL`).
 Even the step where the deficiency limit changes is found by asking the rule speed by speed, so a Ril with a
 third step would need no change here.
 
@@ -162,13 +161,11 @@ check.
 - **Only errors block**; warnings require justification, approvals are flagged, special cases are allowed.
   An error blocks the plain Commit, not the user: "trotzdem übernehmen" commits it anyway (Entscheidung 361).
 - **Speedless elements are not judged.**
-- **The rulebooks are edited in the repository, not in the app.** The service is shared; a write path would
-  change limits for everyone, and browser-only values would be numbers no drift check reads.
-- **Same catalogue in browser and service**, checked by hash (`catalogHash.js`): when the service runs on
-  other rules than the app shows, the panels say so.
+- **The rulebooks are edited in the repository, not in the app.** A write path would change limits for
+  everyone, and browser-only values would be numbers nothing else reads.
+- **Same catalogue in the app and the optimizer**: the module is handed the file the app bundles.
 
 ## Tests
 
 `ruleExpr.test.js`, `regelkatalog.test.js`, `trassierungCheck.test.js`, `cant.test.js`, `speed.test.js`,
-`transitionLength.test.js`, the three `*.vectors.test.js`, `regelwerkDefaults.test.js` (no copy of the
-catalogue beside the optimizer), `catalogHash.test.js` (same hash as the service computes over the files on disk).
+`transitionLength.test.js`, the three `*.vectors.test.js`, `regelwerkDefaults.test.js`.

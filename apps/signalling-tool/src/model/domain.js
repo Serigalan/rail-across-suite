@@ -1,4 +1,5 @@
-import { CATALOGUE_REF, baliseKindOf, protectionSystemOf, signalKindOf } from '@rail-across/core/signalling'
+import { stationRegister } from '@rail-across/core/document'
+import { CATALOGUE_REF, baliseKindOf, branchSpeedOnRun, protectionSystemOf, signalKindOf, signallingSpeedOf } from '@rail-across/core/signalling'
 
 /**
  * The signalling domain as the tool edits it: pure functions from one state
@@ -13,8 +14,16 @@ import { CATALOGUE_REF, baliseKindOf, protectionSystemOf, signalKindOf } from '@
 
 export const COLLECTIONS = [
   'signals', 'detectionPoints', 'trackSections', 'switchElements', 'routes', 'overlaps', 'flankProtection', 'balises',
-  'stationBoundaries',
+  'stationBoundaries', 'stoppingPlaces', 'itineraries',
 ]
+
+/**
+ * The collections of the record's core the tool writes as well: the points of
+ * the operational point register the record keeps, and the platforms, which
+ * name their station (model/stations.js). The tool's state holds them beside
+ * the domain's, so an edit of a station is one step with the rest.
+ */
+export const CORE_PARTS = ['operationalPoints', 'platforms']
 
 /** An empty domain, planned against the catalogue this build has. */
 export const emptyDomain = () => ({
@@ -22,12 +31,48 @@ export const emptyDomain = () => ({
   collections: Object.fromEntries(COLLECTIONS.map(c => [c, []])),
 })
 
-/** The domain of a record, or an empty one; every collection there. */
+/**
+ * The state the tool edits, of a record: its domain — or an empty one —, every
+ * collection there, and the parts of the core it writes (CORE_PARTS).
+ */
 export function domainOf(record) {
-  const d = record?.signalling
-  if (!d) return emptyDomain()
-  return { fields: d.fields ?? {}, collections: Object.fromEntries(COLLECTIONS.map(c => [c, d.collections?.[c] ?? []])) }
+  const d = record?.signalling ?? emptyDomain()
+  return {
+    fields: d.fields ?? {},
+    collections: Object.fromEntries([
+      ...COLLECTIONS.map(c => [c, d.collections?.[c] ?? []]),
+      ...CORE_PARTS.map(c => [c, record?.[c] ?? []]),
+    ]),
+  }
 }
+
+/** The signalling domain of the state, without the parts of the core. */
+export const signallingOf = (state) => ({ fields: state.fields, collections: Object.fromEntries(COLLECTIONS.map(c => [c, state.collections[c]])) })
+
+/**
+ * The record with the state laid on it: its domain and the parts of the core
+ * the tool writes. A station renamed keeps its id: the tracks of it state its
+ * new name too, as its platforms do (withStation).
+ */
+export function recordOf(record, state) {
+  const { operationalPoints, platforms } = state.collections
+  const points = new Map(operationalPoints.map(p => [p.id, p]))
+  const register = stationRegister(record)
+  let renamed = false
+  const tracks = (record?.tracks ?? []).map(tr => {
+    const p = points.get(register.pointOf(tr))
+    if (!p?.name || p.name === tr.stationName) return tr
+    renamed = true
+    return { ...tr, stationName: p.name }
+  })
+  return {
+    ...record, ...(renamed ? { tracks } : {}), platforms,
+    operationalPoints: operationalPoints.length ? operationalPoints : undefined, signalling: signallingOf(state),
+  }
+}
+
+/** The state with another domain — the parts of the core as they are. */
+export const withSignalling = (state, domain) => ({ fields: domain.fields, collections: { ...state.collections, ...signallingOf(domain).collections } })
 
 export const newId = () => (globalThis.crypto?.randomUUID?.() ?? `id-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`)
 
@@ -43,7 +88,8 @@ export const replaced = (domain, collection, obj) =>
 /**
  * What a deletion takes with it, within the domain: { collection: [ids] } —
  * routes from or to a deleted signal, overlaps at it, flank protection given
- * by it or asked by a deleted switch element; objects that only name it lose
+ * by it or asked by a deleted switch element, the itineraries over a route or
+ * from or to a stopping place that goes; objects that only name it lose
  * the name (a balise its signal, a section the point, a logical signal the
  * speed or parameters it states for a route). A logical signal goes alone.
  */
@@ -60,6 +106,9 @@ export function cascadeOf(domain, collection, id) {
   if (collection === 'switchElements') {
     add('flankProtection', c.flankProtection.filter(f => f.requester.switchElementId === id || f.protection.switchElementId === id).map(f => f.id))
   }
+  const routeGone = new Set(gone.routes ?? []), placeGone = new Set(gone.stoppingPlaces ?? [])
+  add('itineraries', c.itineraries.filter(it => it.routeIds.some(r => routeGone.has(r))
+    || placeGone.has(it.startStoppingPlaceId) || placeGone.has(it.targetStoppingPlaceId)).map(it => it.id))
   return gone
 }
 
@@ -68,7 +117,7 @@ export function deleted(domain, collection, id) {
   if (collection === 'logicalSignals') return withLogical(domain, id, null)
   const gone = cascadeOf(domain, collection, id)
   const is = (name, oid) => gone[name]?.includes(oid)
-  const c = Object.fromEntries(COLLECTIONS.map(name => [name, domain.collections[name].filter(o => !is(name, o.id))]))
+  const c = { ...domain.collections, ...Object.fromEntries(COLLECTIONS.map(name => [name, domain.collections[name].filter(o => !is(name, o.id))])) }
   c.trackSections = c.trackSections.map(t => (t.boundedBy.some(p => is('detectionPoints', p)) ? { ...t, boundedBy: t.boundedBy.filter(p => !is('detectionPoints', p)) } : t))
   c.routes = c.routes.map(r => {
     const overlaps = r.overlaps?.filter(o => !is('overlaps', o.overlapId))
@@ -165,6 +214,37 @@ export function withSignallingSpeed(logical, routeId, speed) {
 }
 
 /**
+ * The domain with the speed a route's start signal signals for it set: at
+ * the logical signal that signals it already, else the first of the place —
+ * unchanged where the place has none.
+ */
+export function withRouteSpeed(domain, route, speed) {
+  const start = domain.collections.signals.find(s => s.id === route.startSignalId)
+  const setter = start?.logicalSignals?.find(l => l.signallingSpeeds?.some(v => v.routeId === route.id)) ?? start?.logicalSignals?.[0]
+  if (!setter) return domain
+  return withLogical(domain, logicalId(start.id, setter.system), withSignallingSpeed(setter, route.id, speed))
+}
+
+/**
+ * The domain with every train route over the branch of a turnout (of
+ * `routeIds`, or all) signalling the speed the turnout allows there where it
+ * signals none or a higher one: { domain, changed } — the routes it set.
+ */
+export function withSwitchSpeeds(domain, switches, routeIds = null) {
+  let next = domain
+  const changed = []
+  for (const route of domain.collections.routes) {
+    if (route.kind !== 'train' || (routeIds && !routeIds.includes(route.id))) continue
+    const allowed = branchSpeedOnRun(switches, route.path?.trackIds)?.speed
+    const speed = signallingSpeedOf(next, route)
+    if (allowed == null || (speed != null && speed <= allowed)) continue
+    const set = withRouteSpeed(next, route, allowed)
+    if (set !== next) { next = set; changed.push(route.id) }
+  }
+  return { domain: next, changed }
+}
+
+/**
  * The settings a balise of that system and kind starts with, or keeps when
  * it becomes one: what it had that the kind allows, and for what the kind
  * asks the catalogue's `vorgabe`, else the first choice of a setting that is one.
@@ -192,6 +272,9 @@ export function newBalise({ at, system = 'pzb', kind = Object.keys(protectionSys
   }
 }
 
+/** A signal's full designation, its area's number leading (60A): names repeat from area to area. */
+export const designationOf = (s, t) => `${s?.areaNumber ?? ''}${labelOf('signals', s, t)}`
+
 /** A short label of an object for lists and findings. */
 export function labelOf(collection, obj, t) {
   if (!obj) return '—'
@@ -199,6 +282,8 @@ export function labelOf(collection, obj, t) {
   switch (collection) {
     case 'signals': return name ?? (hasScreen(obj) ? null : boardName(obj)) ?? t('unnamed')
     case 'routes': return name ?? null
+    case 'operationalPoints': return name ?? obj.rl100 ?? t('unnamed')
+    case 'platforms': return [obj.stationName, obj.code].filter(Boolean).join(' ') || t('unnamed')
     default: return name ?? t('unnamed')
   }
 }

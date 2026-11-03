@@ -70,7 +70,8 @@ the Layout-Tool's documentation does.
 | Weichenverbindung, Gleisverbindung | switch connection, crossover | — | |
 | Verbinder | connector | `kind: "link"` | two track ends joined at a node: where the plane changes, or where a rebuilt part ties in |
 | Prellbock | buffer stop | `endMarks`, `kind: "buffer_stop"` | |
-| Planungsgrenze | planning-area boundary | `endMarks`, `kind: "boundary"` | |
+| Betrachtungsgrenze, Planungsgrenze | planning-area boundary | `endMarks`, `kind: "boundary"` | a train may begin and end at it, and at a buffer stop |
+| Durchfahrgeschwindigkeit (an der Betrachtungsgrenze) | speed crossing it | `speed` of a boundary | km/h, in a simulation; without one, the line's |
 
 ## Objects along the track
 

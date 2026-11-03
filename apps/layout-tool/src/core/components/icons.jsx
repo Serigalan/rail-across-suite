@@ -1,8 +1,4 @@
 import { PALETTE } from '../styles/palette'
-import {
-  MARK_GROUND, MARK_HEIGHT, MARK_INNER, MARK_LETTERS, MARK_LINK_OPACITY, MARK_LINKS, MARK_RAIL,
-  MARK_WIDTH,
-} from '../utils/common'
 // ── Panel menu icons ────────────────────────────────────────────────────────
 //
 // One rule for every icon a panel button carries (AP 4.3): 16 × 16, currentColor,
@@ -121,6 +117,16 @@ export const BufferStopIcon = () => (
   </MenuIcon>
 )
 
+// A boundary of the planning area: the track drawn up to a bar, running on beyond it undrawn.
+export const BoundaryIcon = () => (
+  <MenuIcon>
+    <path d="M2 8 H9" />
+    <path d="M9 3 V13" />
+    <path d="M11 8 H14" strokeDasharray="1.5 1.5" opacity="0.55" />
+    <IconNode cx={2} cy={8} />
+  </MenuIcon>
+)
+
 // Connect element panel — the piece that joins two existing ends.
 export const ConnectStraightIcon = () => (
   <MenuIcon>
@@ -166,6 +172,17 @@ export const SwitchConnectionIcon = () => (
   <MenuIcon>
     <path d="M2 13 A6 6 0 0 1 8 8 A6 6 0 0 0 14 3" />
     <IconNode cx={2} cy={13} />
+    <IconNode cx={14} cy={3} />
+  </MenuIcon>
+)
+
+// The extended one: elements of their own between the branches.
+export const SwitchConnectionExtendedIcon = () => (
+  <MenuIcon>
+    <path d="M2 13 A5 5 0 0 1 6 10 L10 6 A5 5 0 0 0 14 3" />
+    <IconNode cx={2} cy={13} />
+    <IconNode cx={6} cy={10} />
+    <IconNode cx={10} cy={6} />
     <IconNode cx={14} cy={3} />
   </MenuIcon>
 )
@@ -537,16 +554,17 @@ export const DataExchangeIcon = () => (
   </SidebarIcon>
 )
 
-// The app's mark (utils/common/logoMark): one track writing O, L and T, drawn as a
-// pair of rails, on the ground in currentColor — the primary colour.
+// The app's mark, as the start page draws it — an alignment of a straight, a
+// transition and an arc leaving the straight, its elements' ends marked — but
+// for the sidebar's 28 px: thick lines in currentColor, the primary colour.
 export const LogoIcon = ({ className }) => (
-  <svg viewBox={`0 0 ${MARK_WIDTH} ${MARK_HEIGHT}`} className={className} aria-hidden="true">
-    <path d={MARK_GROUND} fill="currentColor" />
-    <g fill="none">
-      <path d={MARK_LINKS} stroke={PALETTE.white} strokeOpacity={MARK_LINK_OPACITY} strokeWidth={MARK_RAIL} />
-      <path d={MARK_LETTERS} stroke={PALETTE.white} strokeWidth={MARK_RAIL} />
-      <path d={`${MARK_LINKS} ${MARK_LETTERS}`} stroke="currentColor" strokeWidth={MARK_INNER} />
+  <svg viewBox="2 6 44 34" className={className} aria-hidden="true">
+    <g fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17 36H44" strokeOpacity="0.45" strokeDasharray="3 4.5" />
+      <path d="M4 36H17C25 36 28 31 31 25C34 18 37 13 44 11" />
     </g>
+    <circle cx="17" cy="36" r="3.4" fill="currentColor" />
+    <circle cx="31" cy="25" r="3.4" fill="currentColor" />
   </svg>
 )
 

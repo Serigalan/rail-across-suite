@@ -28,7 +28,8 @@ async function request(method, path, body) {
       method,
       credentials: 'same-origin',
       headers: method === 'GET' ? { accept: 'application/json' } : { 'content-type': 'application/json', accept: 'application/json' },
-      body: body === undefined ? undefined : JSON.stringify(body),
+      // A request that says it carries JSON carries some: the server reads an empty body as malformed.
+      body: method === 'GET' ? undefined : JSON.stringify(body ?? {}),
     })
   } catch {
     throw new ApiError(0, 'offline')

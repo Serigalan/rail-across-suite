@@ -45,7 +45,7 @@ function smallestComparisonRadius(v) {
  * Up to three ways out of a curvature jump LP.KS.01 rejects, for the splice
  * `request` (commands/splice spliceRequest) whose solution `key` joins the
  * ends shown (solutionKey) and found `findings` with `elements` — each solved
- * again with `solve` (request → answer, as solveSplice) and kept where the
+ * again with `solve` (request → answer, the optimizer module's splice) and kept where the
  * jump no longer is an error:
  *
  * - `speed`: the highest speed in 5 km/h steps below the one at the joint at

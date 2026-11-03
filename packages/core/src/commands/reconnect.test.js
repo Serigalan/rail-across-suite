@@ -8,10 +8,10 @@ import { rebuildCoords } from '../track/trackModel.js'
 import { expectValidTrack } from '../../test/chainInvariants.js'
 import fixture from '../../test/fixtures/reconnect_answers.json' with { type: 'json' }
 
-// The search is the service's (olt_optimizer/reconnect.py); what is tested
+// The search is the optimizer module's (optimizer/…/reconnect.rs); what is tested
 // here is the app's half — the stretch, the old axis, the request and the
-// track written back. Track and answers come from
-// services/optimizer/tests/reconnect_fixture.py: straight 50, straight 200, a
+// track written back. Track and answers were recorded from the optimizer
+// service before the module replaced it (decision 0019 of the suite): straight 50, straight 200, a
 // curve R 800 with 60 m transitions, straight 200, straight 50.
 
 const EPSG = 25832
@@ -75,7 +75,7 @@ describe('the old axis', () => {
     expect(pts.e0).toBeCloseTo(request.points.e0, 6)
     expect(Math.abs(pts.de.length - request.points.count)).toBeLessThan(6)
     // Both are a point every centimetre along the same line, not necessarily
-    // the same ones: each of the service's lies within half a step of one here.
+    // the same ones: each of the optimizer module's lies within half a step of one here.
     for (const [i, de, dn] of request.points.sample) {
       let best = Infinity
       for (let k = Math.max(0, i - 50); k < Math.min(pts.de.length, i + 50); k++) {
@@ -87,7 +87,7 @@ describe('the old axis', () => {
 })
 
 describe('the request', () => {
-  it('hands over the two neighbours as the service took them', () => {
+  it('hands over the two neighbours as the optimizer module took them', () => {
     const { request } = fixture.cases.curve
     const r = reconnectRange(track, 2, 4)
     const picks = [reconnectPick(track, r.dep.idx, 'end', r.dep.fixed), reconnectPick(track, r.arr.idx, 'start', r.arr.fixed)]

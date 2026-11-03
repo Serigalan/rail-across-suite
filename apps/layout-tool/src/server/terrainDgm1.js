@@ -1,5 +1,5 @@
 import { fineReliefStyle } from '../core/basemaps'
-import { demTilesUrl, terrainOnServer } from './optimizerService'
+import { demTilesUrl, terrainOnServer } from './dataServices'
 
 /**
  * The Länder's DGM1 as a source of ground heights (core/utils/elevation/elevationSource.js,
@@ -7,15 +7,15 @@ import { demTilesUrl, terrainOnServer } from './optimizerService'
  * Sachsen, Berlin, Brandenburg, Bayern, Baden-Württemberg and
  * Nordrhein-Westfalen, the ones whose tiles can be had at a fixed URL. The
  * Länder publish them as tiles a page cannot read (no CORS header, megabytes
- * each), so the optimizer service reads them and answers points
+ * each), so the project server reads them and answers points
  * (terrainOnServer). Only points in those Länder are sent at all.
  */
 
 /**
- * The Länder the service has a DGM1 for, as a WGS84 box around each — a coarse
- * test so a point far away is not sent at all. The service answers null for a
+ * The Länder the server has a DGM1 for, as a WGS84 box around each — a coarse
+ * test so a point far away is not sent at all. The server answers null for a
  * point inside a box but outside the Land. Kept in step with SOURCES in
- * services/optimizer/olt_optimizer/terrain.py.
+ * server/src/terrain/sources.js.
  */
 const DGM1_LAENDER = {
   th: { name: 'Thüringen',           box: [9.85, 50.17, 12.68, 51.68] },
@@ -64,8 +64,8 @@ export const dgm1Source = { id: 'dgm1', sample: sampleDgm1, label: dgm1Label }
 
 /**
  * The Länder's DGM1 as a basemap (extension point `basemaps`): DGM5 coloured
- * and shaded as everywhere, and over it the service's 1 m relief tiles of zoom
- * 16 and 17 (services/optimizer/olt_optimizer/dem_tiles.py), drawn from map zoom
+ * and shaded as everywhere, and over it the server's 1 m relief tiles of zoom
+ * 16 and 17 (server/src/terrain/dem.js), drawn from map zoom
  * 15 (~1.5 m a pixel) on — heights to the centimetre, packed as
  * `h = (R · 65536 + G · 256 + B) · 0.01 − 10000`. Zoomed out, outside these
  * Länder and until a tile has come, DGM5 shows.

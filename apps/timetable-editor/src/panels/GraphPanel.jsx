@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Panel, Section, SelectField, TextField } from '@rail-across/ui'
+import { Checkbox, Panel, Section, SelectField, TextField } from '@rail-across/ui'
 import { formatClock, parseClock, trainTitle } from '@rail-across/timetables'
 
 /**
@@ -27,6 +27,7 @@ export default function GraphPanel({ t, sorted, train, runs, axisId, setAxisId, 
           <SelectField compact label={t('graph_scale')} value={String(view.scale)} onChange={(s) => s && setView(v => ({ ...v, scale: Number(s) }))}
             options={[2, 4, 8, 12].map(s => ({ value: String(s), label: t('graph_scale_n', { n: s }) }))} />
         </div>
+        <Checkbox label={t('graph_blocks')} checked={view.blocks} onChange={(blocks) => setView(v => ({ ...v, blocks }))} />
       </Section>
     </Panel>
   )

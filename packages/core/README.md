@@ -11,6 +11,7 @@ The shared model of Rail-Across-Suite in JavaScript: every module reads and writ
 | `track` | tracks, switch records and ports, heights, links, track ends, platforms, routes | [track](docs/track.md) |
 | `crossSection` | cross section, superstructure, clearance contours | [crossSection](docs/crossSection.md) |
 | `topology` | the connection diagram | [topology](docs/topology.md) |
+| `schematic` | the net as a schematic strip along a reference axis, and where a station lies on it | [schematic](docs/schematic.md) |
 | `switch` | switch forms, routes, symbols, crossings, switch connections, deletion | [switch](docs/switch.md) |
 | `commands` | what an edit commits: new tracks and switches, connecting, splicing, reconnecting | [commands](docs/commands.md) |
 | `survey` | measured axes, reference axes, shift values, alignment fit | [survey](docs/survey.md) |
@@ -23,8 +24,8 @@ The shared model of Rail-Across-Suite in JavaScript: every module reads and writ
 `schemas/` links the JSON Schemas of the domains at the root of the repository ([schemas](../../schemas/README.md)),
 and `types/document.d.ts` holds the types derived from them (`node tools/types.mjs`); the Python core
 (`packages/core-py`) reads the same schemas and is held to the same vectors (`node tools/vectors.mjs`).
-`constraints/` holds the rule and form catalogues as data, shared with the Python optimizer
-(`services/optimizer/olt_optimizer/constraints` links here); `test/` holds helpers and fixtures the tests of the
+`constraints/` holds the rule and form catalogues as data, handed to the optimizer module in Rust as they are
+(`optimizer/` of the repository); `test/` holds helpers and fixtures the tests of the
 core and of the apps share.
 
 ## Use

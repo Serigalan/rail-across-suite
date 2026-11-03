@@ -8,8 +8,8 @@ import {
 import { gaugeProfile } from '@rail-across/core/crossSection'
 import { utmToWgs84 } from '@rail-across/core/geometry'
 import { trackLabel } from '@rail-across/core/track'
-import { solveSpliceInWorker, hasJumpError, spliceRemedies } from '../../../utils/splice'
-import { provided } from '../../../extensions'
+import { hasJumpError, spliceRemedies } from '../../../utils/splice'
+import { runOptimizer } from '../../../utils/optimizer'
 import { ZOOM_LINE_WIDTH } from '../../../map/style'
 import { TRACKS_HOVER_LAYER } from '../../../map/layerIds'
 import usePreview from '../../../map/usePreview'
@@ -63,15 +63,15 @@ const DEFAULTS = { ...SPLICE_DEFAULTS, clearanceOn: false, clearanceDMin: 4.0, c
 const trackName = (track) => (track ? track.name || trackLabel(track) : '')
 
 /**
- * Splice two tracks into one (R5.5; the construction in utils/splice, computed
- * in the browser for both builds since decision 294 — before that on the
- * optimizer service —, the commit in utils/commands/splice). Two elements are
+ * Splice two tracks into one (R5.5; the construction is the optimizer
+ * module's, computed in the browser for both builds — decision 0019 of the
+ * suite —, the commit in commands/splice). Two elements are
  * picked, in either order; the splice finds which ends meet and which one
  * departs (AP S.2) and joins them by an arc, re-shaped arcs or a transition —
  * where several ways fit, the best is shown and the others can be stepped
  * through. The merged track is one commit. Every change of the settings
  * computes the splice again in a worker, once they rest — held to a spacing
- * to another track, which only the server offers, on the optimizer service.
+ * to another track where one is named.
  */
 export default function SpliceElementPanel() {
   const { t, fill } = useI18n()
@@ -89,14 +89,10 @@ export default function SpliceElementPanel() {
   const [pickStatus, setPickStatus] = useState(null)   // { msg, error }
   const configuring = picks.length === 2
   const bothArcs = configuring && picks[0].signedR != null && picks[1].signedR != null
-  // The spacing to another track is the optimizer service's (decision 295):
-  // where the server provides it, a splice held to one is asked there as a
-  // whole; without it (the local build) there is no spacing to keep.
-  const withClearance = provided('spliceWithClearance', null)
   // The track the splice keeps its distance to, and whether it is being picked.
   const [refTrackId, setRefTrackId] = useState(null)
   const [pickingRef, setPickingRef] = useState(false)
-  const keeping = !!withClearance && configuring && s.clearanceOn && refTrackId != null
+  const keeping = configuring && s.clearanceOn && refTrackId != null
   // Two arcs have no radius of their own to choose: their spacing is only checked.
   const maximize = keeping && s.clearanceMax && !bothArcs
 
@@ -168,11 +164,10 @@ export default function SpliceElementPanel() {
       neighbour: clearance ? refTrackId : undefined,
     })
     : null
-  // A request as the key carries it, solved: held to a spacing on the
-  // service, with the neighbour's axis put in; else in the worker.
-  const solveRequest = (req, signal) => (req.clearance
-    ? withClearance({ ...req, clearance: { ...req.clearance, ref: axis } }, { signal })
-    : solveSpliceInWorker(req, { signal }))
+  // A request as the key carries it, solved by the optimizer module — held
+  // to a spacing with the neighbour's axis put in (decision 0019).
+  const solveRequest = (req, signal) => runOptimizer('splice',
+    req.clearance ? { ...req, clearance: { ...req.clearance, ref: axis } } : req, { signal })
   useEffect(() => {
     if (!requestKey) return undefined
     const ctl = new AbortController()
@@ -187,8 +182,7 @@ export default function SpliceElementPanel() {
         setS(prev => settleLengths(prev, sol?.result?.lengths ?? read.lengths))
       } catch (err) {
         if (err?.name === 'AbortError') return
-        const { neighbour } = JSON.parse(requestKey)
-        setAnswer({ key: requestKey, splice: { error: neighbour ? 'splice_clearance_unavailable' : 'splice_error_failed' } })
+        setAnswer({ key: requestKey, splice: { error: err?.code === 'optimizer_missing' ? 'optimizer_missing' : 'splice_error_failed' } })
       }
     }, SPLICE_DEBOUNCE)
     return () => { clearTimeout(timer); ctl.abort() }
@@ -301,19 +295,17 @@ export default function SpliceElementPanel() {
         <h2>{t('splice_element')}</h2>
         <SpliceSettings picks={picks} departure={departure} s={s} set={set} cant={cant} setCant={setCant} keptCant={keptCant}
           transitionLength={solution?.result?.transitionLength} transitionRules={transitionRules} maximize={maximize} found={found}>
-          {withClearance && (
-            <ClearanceFields on={s.clearanceOn} onToggle={v => set('clearanceOn', v)} refName={refName}
-              picking={pickingRef} onPick={() => setPickingRef(p => !p)} dMin={s.clearanceDMin} onDMin={v => set('clearanceDMin', v)}>
-              {!bothArcs ? (
-                <label className="transition-curve-row">
-                  <input type="checkbox" checked={s.clearanceMax} onChange={e => set('clearanceMax', e.target.checked)} />
-                  <span>{t('splice_clearance_max')}</span>
-                </label>
-              ) : (
-                <p className="msg-hint">{t('splice_clearance_arcs')}</p>
-              )}
-            </ClearanceFields>
-          )}
+          <ClearanceFields on={s.clearanceOn} onToggle={v => set('clearanceOn', v)} refName={refName}
+            picking={pickingRef} onPick={() => setPickingRef(p => !p)} dMin={s.clearanceDMin} onDMin={v => set('clearanceDMin', v)}>
+            {!bothArcs ? (
+              <label className="transition-curve-row">
+                <input type="checkbox" checked={s.clearanceMax} onChange={e => set('clearanceMax', e.target.checked)} />
+                <span>{t('splice_clearance_max')}</span>
+              </label>
+            ) : (
+              <p className="msg-hint">{t('splice_clearance_arcs')}</p>
+            )}
+          </ClearanceFields>
         </SpliceSettings>
         {solution && (solutions.length > 1 || solution.result.alternative) && (
           <SolutionSwitch solutions={solutions} solution={solution} picks={picks}

@@ -272,12 +272,15 @@ function turnoutOnElement(pick, toe, dir, opening, throughLength) {
     && far >= from - FIT_TOL && far <= to + FIT_TOL
 }
 
+/** The through length of turnout `k` (0 or 1) of a solved connection: each has its own form. */
+const throughOf = (res, k) => (k === 0 ? res.throughLength : res.throughLength2 ?? res.throughLength)
+
 /** Both turnouts of a solved connection on the elements they were picked on. */
 function turnoutsOnElements([p1, p2], dir1, shift, res) {
   if (res.s2 == null) return false
   const dir2 = res.flipped2 ? -1 : 1
-  return turnoutOnElement(p1, p1.along + dir1 * shift, dir1, 1, res.throughLength)
-      && turnoutOnElement(p2, p2.along + dir2 * res.s2, dir2, -1, res.throughLength)
+  return turnoutOnElement(p1, p1.along + dir1 * shift, dir1, 1, throughOf(res, 0))
+      && turnoutOnElement(p2, p2.along + dir2 * res.s2, dir2, -1, throughOf(res, 1))
 }
 
 // ── Minimum element length (LP.EL.01) ────────────────────────────────────────
@@ -296,7 +299,7 @@ function turnoutSpan(picks, k, shift, res) {
   const dir = k === 0 ? (stems(picks).g1.dir ?? 1) : (res.flipped2 ? -1 : 1)
   const toe = k === 0 ? p.along + dir * shift : p.along + dir * res.s2
   // The first turnout opens with the connection, the second against it.
-  const far = toe + dir * (k === 0 ? 1 : -1) * res.throughLength
+  const far = toe + dir * (k === 0 ? 1 : -1) * throughOf(res, k)
   const len = p.route.length
   return { toe, far, len, node: far > toe ? 0 : len }
 }
@@ -467,15 +470,11 @@ export function settleConnection({ picks, speed, shift, mids = null, seed = null
  * the edge of what holds, found to a micron — so a toe can be
  * put right onto its element's node.
  *
- * Where `around` holds, the stretch is the one around it, however narrow —
- * the shift an answer of the Python solver was adopted at (Entscheidung 357),
- * which the scan may step over.
- *
  * `lenient` counts a connection only the rulebook refuses as standing too: the
  * range the slider gets where no valid one stands, to commit one anyway
  * (Entscheidung 361). shiftSnaps and preferredShift take it alike.
  */
-export function computeShiftBounds({ picks, speed, mids = null, seed = null, form = null, around = null, lenient = false }) {
+export function computeShiftBounds({ picks, speed, mids = null, seed = null, form = null, lenient = false }) {
   const [p1] = picks
   const dir1 = stems(picks).g1.dir ?? 1
   // The shifts that put the first toe on either end of its element.
@@ -494,20 +493,6 @@ export function computeShiftBounds({ picks, speed, mids = null, seed = null, for
       if (probe(m)) good = m; else bad = m
     }
     return good
-  }
-
-  if (around != null && around >= lo1 && around <= hi1 && probe(around)) {
-    const step = span / n
-    const reach = (dir, end) => {
-      let good = around
-      for (;;) {
-        const next = dir > 0 ? Math.min(end, good + step) : Math.max(end, good - step)
-        if (next === good) return good
-        if (!probe(next)) return edge(next, good)
-        good = next
-      }
-    }
-    return { min: reach(-1, lo1), max: reach(1, hi1) }
   }
 
   const c = Math.min(hi1, Math.max(lo1, 0))
@@ -597,17 +582,59 @@ function secondToeCrossings({ picks, speed, mids, seed, form = null, lenient = f
   return out
 }
 
+/** Is the element between the branches of a solved connection a straight? */
+export const hasStraightMid = (res) => !!res && !res.mid && Number.isFinite(res.Lg) && res.signedRg == null
+
+/**
+ * The shifts within `bounds` at which the element between the branches is a
+ * straight (Zwischengerade), ascending — the connection one wants. On two
+ * parallel tracks it is one wherever the slider stands; where either track
+ * bends the turn δ of the middle element follows the toes, and a straight is
+ * where it passes through nought: found in one pass over the range, each
+ * change of sign then halved down. A stretch that is straight throughout
+ * gives no shift: there is nothing to snap to.
+ */
+export function straightShifts({ picks, speed, mids = null, seed = null, form = null, lenient = false }, bounds) {
+  const span = bounds.max - bounds.min
+  if (!(span > 0)) return []
+  // The sign of the turn, 0 where the middle is straight, null where nothing stands.
+  const sign = (s) => {
+    const res = solveConnection({ picks, speed, shift: s, mids, seed, form })
+    if (!stands(res, lenient) || res.mid || !Number.isFinite(res.Lg)) return null
+    return hasStraightMid(res) ? 0 : Math.sign(res.delta)
+  }
+  const n = Math.ceil(span / Math.max(0.5, span / 200))
+  const at = [...Array(n + 1).keys()].map(i => bounds.min + span * i / n)
+  const signs = at.map(sign)
+  const out = []
+  for (let i = 0; i < at.length; i++) {
+    // A single sample on a straight between two that turn.
+    if (signs[i] === 0 && signs[i - 1] !== 0 && signs[i + 1] !== 0) out.push(at[i])
+    if (i === 0 || !signs[i - 1] || !signs[i] || signs[i - 1] === signs[i]) continue
+    let a = at[i - 1], b = at[i], root = null
+    for (let it = 0; it < 80 && b - a > 1e-9; it++) {
+      const m = (a + b) / 2, fm = sign(m)
+      if (fm == null) break
+      if (fm === 0) { root = m; break }
+      if (fm === signs[i - 1]) a = m; else b = m
+    }
+    root ??= (a + b) / 2
+    if (sign(root) === 0) out.push(root)
+  }
+  return out
+}
+
 /**
  * The shifts the position slider snaps to (Entscheidung 310), within
  * `bounds`, ascending: where the toe (WA) or the switch end (WE) of either
- * turnout falls on a node of the element it is laid into.
+ * turnout falls on a node of the element it is laid into, and where the
+ * element between the branches is a straight (straightShifts).
  */
 export function shiftSnaps({ picks, speed, mids = null, seed = null, form = null, lenient = false }, bounds) {
   if (!(bounds.max > bounds.min)) return []
   const atMin = solveConnection({ picks, speed, shift: bounds.min, mids, seed, form })
   const res = stands(atMin, lenient) ? atMin : solveConnection({ picks, speed, shift: bounds.max, mids, seed, form })
   if (!stands(res, lenient)) return []
-  const through = res.throughLength
   const [p1, p2] = picks
   const dir1 = stems(picks).g1.dir ?? 1
   const dir2 = res.flipped2 ? -1 : 1
@@ -617,29 +644,45 @@ export function shiftSnaps({ picks, speed, mids = null, seed = null, form = null
   const nodes = (p) => [...pickPieces(p).map(q => q.s0), pickExtent(p)[1]]
   // Turnout 1 opens with the connection: WE lies the through length ahead of WA.
   for (const node of [0, p1.route.length]) out.push((node - p1.along) * dir1)
-  for (const node of nodes(p1)) out.push((node - dir1 * through - p1.along) * dir1)
+  for (const node of nodes(p1)) out.push((node - dir1 * throughOf(res, 0) - p1.along) * dir1)
   // Turnout 2 opens against it: its WE lies the through length behind its WA.
-  const targets = [0, p2.route.length, ...nodes(p2).map(node => node + dir2 * through)]
+  const targets = [0, p2.route.length, ...nodes(p2).map(node => node + dir2 * throughOf(res, 1))]
   out.push(...secondToeCrossings({ picks, speed, mids, seed, form, lenient }, targets, bounds.min, bounds.max))
+  out.push(...straightShifts({ picks, speed, mids, seed, form, lenient }, bounds))
   return uniqueStations(out).filter(s => s >= bounds.min - 1e-9 && s <= bounds.max + 1e-9)
 }
 
 /**
- * Where the dialog lays the connection first: the toe (WA) on the element
- * change behind it (Entscheidung 170) — the first turnout's, else the second
- * one's, whichever stands nearer to the click where both do; a node that is
- * its track's open end is no element change. Where neither stands, the shift
- * nearest to the click.
+ * Where the dialog lays the connection first: with a straight between the
+ * branches wherever one stands — on an element change if one of those gives
+ * it, else the straight nearest to the click (straightShifts). Then the toe
+ * (WA) on the element change behind it (Entscheidung 170) — the first
+ * turnout's, else the second one's, whichever stands nearer to the click
+ * where both do; a node that is its track's open end is no element change.
+ * Where neither stands, the shift nearest to the click.
+ *
+ * A shift counts as it is built: where settleConnection pushes a toe onto its
+ * node, the straight it was found for is gone.
  */
 export function preferredShift({ picks, speed, mids = null, seed = null, form = null, lenient = false }, bounds) {
-  const ok = (s) => s != null && stands(settleConnection({ picks, speed, shift: s, mids, seed, form }).result, lenient)
+  const settledAt = (s) => settleConnection({ picks, speed, shift: s, mids, seed, form })
+  const ok = (s) => s != null && stands(settledAt(s).result, lenient)
+  const straight = (s) => {
+    const st = settledAt(s)
+    return stands(st.result, lenient) && Math.abs(st.shift - s) < 1e-6 && hasStraightMid(st.result)
+  }
+  const nearest = (a, b) => Math.abs(a) - Math.abs(b)
   const candidates = []
   const d0 = waOffset(picks)
   const node1 = (stems(picks).g1.dir ?? 1) > 0 ? 0 : 1
   if (!picks[0].trackEnds?.[node1] && -d0 >= bounds.min - 1e-6) candidates.push(-d0)
   const s2 = secondToeOnNode({ picks, speed, mids, seed, form, lenient }, bounds)
   if (s2 != null) candidates.push(s2)
-  const fit = candidates.filter(ok).sort((a, b) => Math.abs(a) - Math.abs(b))
+  const onNode = candidates.filter(straight).sort(nearest)
+  if (onNode.length) return onNode[0]
+  const straights = straightShifts({ picks, speed, mids, seed, form, lenient }, bounds).filter(straight).sort(nearest)
+  if (straights.length) return straights[0]
+  const fit = candidates.filter(ok).sort(nearest)
   return fit.length ? fit[0] : Math.min(bounds.max, Math.max(bounds.min, 0))
 }
 
@@ -667,7 +710,10 @@ export function buildSCurve({ result, picks, tracks, switches, speed, force = fa
   if (!t1 || !t2 || t1.id === t2.id) return null   // needs two distinct line tracks
 
   const zone   = res.zone
-  const swType = res.switchType   // the form the solver settled on (primary or fallback)
+  // The forms the solver settled on (primary or fallback), or the two the
+  // extended connection names (Entscheidung 0018).
+  const swType  = res.switchType
+  const swType2 = res.switchType2 ?? swType
   // The side the form is laid to, the same for both turnouts: track 2 lies to
   // the left of track 1 where track 1 lies to the left of track 2 run backwards,
   // which is the way the second turnout opens.
@@ -697,12 +743,12 @@ export function buildSCurve({ result, picks, tracks, switches, speed, force = fa
   // The identity each record shares with the elements of its two routes: the
   // id ties them together, and it has to exist before the first element is
   // marked — which here is before either record is built.
-  const identity = (old, no) => ({
-    ...newSwitchFields(), name: switchDesignation(no), label: swType.label,
+  const identity = (old, no, form) => ({
+    ...newSwitchFields(), name: switchDesignation(no), label: form.label,
     ...(old ? { switchId: old.switchId, name: old.name } : {}),
   })
-  const id1 = identity(identities?.[0], no1)
-  const id2 = identity(identities?.[1], no2)
+  const id1 = identity(identities?.[0], no1, swType)
+  const id2 = identity(identities?.[1], no2, swType2)
 
   // The connection track runs S1 → S2, so it begins at switch 1 and ends at switch 2.
   const connId = oldConn?.id ?? generateId()
@@ -717,7 +763,7 @@ export function buildSCurve({ result, picks, tracks, switches, speed, force = fa
   })
   const j2 = buildJunctionSwitch({
     jWgs: res.tp2Wgs, jNode: [res.TP2.easting, res.TP2.northing], zone,
-    tangentBearing: res.bearing2, side, sw: swType, speed, switchNumber: no2, identity: id2,
+    tangentBearing: res.bearing2, side, sw: swType2, speed, switchNumber: no2, identity: id2,
     // Turnout 2 opens against the direction the connection runs, so its stem
     // turns the other way under it.
     stemR: bentOnto(res.stemRoute2, res.stemR2 == null ? null : -res.stemR2), branchStraight: straight(res.chain2),

@@ -6,19 +6,24 @@ import { useI18n } from '../../../locales/i18nContext'
 import useMapPick, { useSelectedOnMap } from '../../../map/useMapPick'
 import CancelButton from '../../form/CancelButton'
 import SCurveForm from './SCurveForm'
+import ExtendedConnectionForm from './ExtendedConnectionForm'
 
 /**
  * Editing a switch connection (Entscheidung 364): a click on the connecting
  * track — a track between two turnouts' routes with one to three elements of
  * its own — takes it apart in memory and opens the switch connection dialog
  * on it, the turnouts free to move along their tracks, their form and the
- * speed fixed. What cannot be edited says why; what the construction does not
- * lay as it lies opens all the same, with the reason (editStart `closes`).
+ * speed fixed. One of two turnouts of different forms, or with more than one
+ * element between them, opens in the extended switch connection instead
+ * (decision 0018). What cannot be edited says why; what the construction does
+ * not lay as it lies opens all the same, with the reason (editStart `closes`).
  */
 export default function SwitchConnectionEdit({ onCommitted }) {
   const { t, fill } = useI18n()
   const [edit, setEdit] = useState(null)       // { found, apart, start }
   const [status, setStatus] = useState(null)   // a locale key: why the track picked cannot be edited
+  // The switch connection handed the edit over to the extended one.
+  const [handedOver, setHandedOver] = useState(false)
 
   useMapPick({
     active: !edit, hover: 'element',
@@ -30,6 +35,7 @@ export default function SwitchConnectionEdit({ onCommitted }) {
       if (apart.error) { setStatus(apart.error); return }
       const start = editStart(found, apart)
       setStatus(null)
+      setHandedOver(false)
       setEdit({ found, apart, start })
     },
   })
@@ -37,18 +43,24 @@ export default function SwitchConnectionEdit({ onCommitted }) {
 
   if (edit) {
     const [first, second] = edit.found.turnouts.map(tu => tu.sw.name ?? '')
+    const extended = handedOver || edit.found.mids.length > 1 || Array.isArray(edit.found.form)
+    // Cancelled (nothing laid): back to picking another one.
+    const done = (laid) => {
+      if (laid) onCommitted?.(laid)
+      else setEdit(null)
+    }
     return (
       <>
         <p className="msg-info">
           {fill('crossover_edit_selected', { name: trackLabel(edit.found.conn), w1: first, w2: second })}
         </p>
         {/* As it lies, the construction does not lay it: the reason shows below. */}
-        {!edit.start.closes && <p className="msg-hint">{t('crossover_edit_not_closing')}</p>}
-        <SCurveForm key={edit.found.conn.id} edit={edit} onCommitted={(laid) => {
-          // Cancelled (nothing laid): back to picking another one.
-          if (laid) onCommitted?.(laid)
-          else setEdit(null)
-        }} />
+        {!edit.start.closes && (
+          <p className="msg-hint">{t(extended ? 'crossover_edit_not_closing_extended' : 'crossover_edit_not_closing')}</p>
+        )}
+        {extended
+          ? <ExtendedConnectionForm key={edit.found.conn.id} edit={edit} onCommitted={done} />
+          : <SCurveForm key={edit.found.conn.id} edit={edit} onCommitted={done} onExtended={() => setHandedOver(true)} />}
       </>
     )
   }

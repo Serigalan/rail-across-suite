@@ -51,6 +51,17 @@ describe('carrying a domain\'s locations across a write of the net (R4)', () => 
     expect(carryAfterWrite(before, after).signalling.collections.signals[0].at).toEqual(on('a', 150))
   })
 
+  it('carries a range onto the piece that holds both its ends, turned round with its track', () => {
+    const ranged = { ...before, signalling: { fields: {}, collections: { stoppingPlaces: [{ id: 'h1', at: { anchor: 'station', trackId: 'a', startStation: 120, endStation: 180, side: 'right' } }] } } }
+    const split = carryAfterWrite(ranged, { ...ranged, tracks: [track('a1', 0, 100), track('a2', 100, 200), b] })
+    expect(split.signalling.collections.stoppingPlaces[0].at).toEqual({ anchor: 'station', trackId: 'a2', startStation: 20, endStation: 80, side: 'right' })
+    const turned = carryAfterWrite(ranged, { ...ranged, tracks: [track('a', 200, 0), b] })
+    expect(turned.signalling.collections.stoppingPlaces[0].at).toEqual({ anchor: 'station', trackId: 'a', startStation: 20, endStation: 80, side: 'left' })
+    // Split under it, no one track holds it: it stays, for the check to name.
+    const across = carryAfterWrite(ranged, { ...ranged, tracks: [track('a1', 0, 150), track('a2', 150, 200), b] })
+    expect(across.signalling.collections.stoppingPlaces[0].at.trackId).toBe('a')
+  })
+
   it('changes nothing, not even the object, where the write left the tracks alone', () => {
     const after = { ...before, title: 'x' }
     expect(carryAfterWrite(before, after)).toBe(after)

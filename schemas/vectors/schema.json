@@ -419,6 +419,7 @@
    "name": "A",
    "kind": "real",
    "mounting": "mast",
+   "operationalPointId": "op1",
    "at": {
     "anchor": "station",
     "trackId": "t1",
@@ -503,6 +504,7 @@
    "name": "A",
    "kind": "real",
    "mounting": "mast",
+   "operationalPointId": "op1",
    "at": {
     "anchor": "station",
     "trackId": "t1",
@@ -586,6 +588,7 @@
    "name": "A",
    "kind": "real",
    "mounting": "mast",
+   "operationalPointId": "op1",
    "at": {
     "anchor": "plane",
     "easting": 500000,
@@ -669,6 +672,7 @@
    "name": "A",
    "kind": "real",
    "mounting": "mast",
+   "operationalPointId": "op1",
    "at": {
     "anchor": "station",
     "trackId": "t1",
@@ -753,6 +757,7 @@
    "name": "A",
    "kind": "fictive",
    "mounting": "mast",
+   "operationalPointId": "op1",
    "at": {
     "anchor": "station",
     "trackId": "t1",

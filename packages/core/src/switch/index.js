@@ -9,7 +9,7 @@
 export {
   ALL_SWITCH_TYPES, asRadius, bauform, CROSSING_TYPES, DEFAULT_SWITCH_TYPE_IDX, SWITCH_PICK_TYPES,
   switchBranchLength, switchBranchPointAt, switchBranchSections, switchFormChain, switchStraightLength,
-  switchMark, switchTypeByLabel,
+  switchBranchSpeed, switchMark, switchTypeByLabel,
 } from './catalogue.js'
 export {
   connectionAnchor, connectionRoots, END_CHAIN_OPEN, endChainDefault, endChainOpen, fitConnectingElement,
@@ -30,7 +30,7 @@ export {
 } from './route.js'
 export { nearestValid, settleStation, uniqueStations, validIntervals } from './stationSlider.js'
 export {
-  buildConnectionElements, computeSwitchConnections, connectionBranchEnds, CONNECTION_SPEEDS,
+  buildConnectionElements, computeSwitchConnections, connectionBranchEnds, CONNECTION_SPEEDS, formPair,
   orientStemToward, solveSwitchConnection, SWITCH_TYPES,
 } from './switchConnectionUtils.js'
 export { planSwitchDeletion, switchParts } from './switchDelete.js'

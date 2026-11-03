@@ -2,10 +2,10 @@
  * The rule catalogue — DB Ril 800.0110 Linienführung as the repo holds it
  * (packages/core/constraints/db-ril-800-0110.json), read and applied.
  *
- * One rulebook, one id: the same `db-ril-800-0110` the optimizer service
- * serves the *values* of. The two are the two faces of one Ril — the rules
- * with their steps of severity here, the bare numbers a run is measured
- * against there — and sharing the id is what says so.
+ * One rulebook, one id: the same `db-ril-800-0110` the optimizer module
+ * reads the *values* of a run out of. The two are the two faces of one Ril —
+ * the rules with their steps of severity here, the bare numbers a run is
+ * measured against there — and sharing the id is what says so.
  *
  * The file is the rule, not a description of one: every limit, every step of
  * severity and every formula lives there, and this module only walks it. That

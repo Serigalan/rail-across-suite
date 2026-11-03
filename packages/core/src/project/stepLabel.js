@@ -89,9 +89,11 @@ export function describeStep(before, after) {
     if (list.length) return { key, params: { name: list[0].name ?? '' } }
   }
   const em = delta(before.endMarks, after.endMarks)
-  if (em.added.length) return { key: 'step_end_mark_added', params: {} }
-  if (em.removed.length) return { key: 'step_end_mark_removed', params: {} }
-  if (em.changed.length) return { key: 'step_end_mark_changed', params: {} }
+  // a buffer stop, or a boundary of the planning area
+  const mark = (list, what) => ({ key: `step_${list[0].kind === 'boundary' ? 'boundary' : 'end_mark'}_${what}`, params: {} })
+  if (em.added.length) return mark(em.added, 'added')
+  if (em.removed.length) return mark(em.removed, 'removed')
+  if (em.changed.length) return mark(em.changed, 'changed')
   if (SETTINGS_FIELDS.some(k => before[k] !== after[k])) return { key: 'step_project_settings', params: {} }
   return { key: 'step_project', params: {} }
 }

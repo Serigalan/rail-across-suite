@@ -1,9 +1,11 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { newVehicle } from '@rail-across/vehicles'
-import { runWith, stationsOf } from '@rail-across/running-times'
-import { net, WASM } from '../../running-times/test/net.js'
-import { copyTrain, formatClock, newPoint, newTrain, numberAfter, parseClock, runTrain, taktCopies, trainProblems, trainTitle } from './timetable.js'
+import { runWith, stationTargets, stationsOf } from '@rail-across/running-times'
+import { marked, net, WASM } from '../../running-times/test/net.js'
+import {
+  copyTrain, formatClock, itineraryOptions, newPoint, newTrain, numberAfter, parseClock, routePoints, runTrain, taktCopies, trainProblems, trainRequest, trainTitle, withPlaces,
+} from './timetable.js'
 
 const stations = stationsOf(net)
 const train = (points, patch = {}) => newTrain({ number: '16001', vehicle: 'v', departure: parseClock('7:00'), points: points.map(([station, p]) => newPoint(station, p)), ...patch })
@@ -15,6 +17,29 @@ describe('a train of the timetable', () => {
     expect(trainProblems(train([['B-Halt'], ['C-Stadt']]), stations)).toEqual([{ key: 'start_not_station', point: 0 }])
     // a halt on the way is a stop like any
     expect(trainProblems(train([['A-Dorf'], ['B-Halt'], ['C-Stadt']]), stations)).toEqual([])
+  })
+
+  it('begins and ends at a buffer stop or a boundary too, and passes neither', () => {
+    const ends = stationsOf(marked)
+    const stop = 'Prellbock C-Stadt Gl. 2 Ende'
+    expect(trainProblems(train([['West'], [stop]]), ends)).toEqual([])
+    expect(trainProblems(train([['A-Dorf'], ['West'], ['C-Stadt']]), ends)).toEqual([{ key: 'end_on_the_way', point: 1 }])
+  })
+
+  it('names its places by their ids, shown by their names, and finds those of a timetable written before by name', () => {
+    const a = stations.find(s => s.name === 'A-Dorf'), c = stations.find(s => s.name === 'C-Stadt')
+    const byId = newTrain({ vehicle: 'v', points: [newPoint(a), newPoint(c)] })
+    expect(byId.points.map(p => [p.place, p.station])).toEqual([[a.id, 'A-Dorf'], [c.id, 'C-Stadt']])
+    // renamed on the variant: the point still finds it by its id, and is shown by the name it was given
+    const renamed = stations.map(s => (s.id === c.id ? { ...s, name: 'C-City' } : s))
+    expect(trainProblems(byId, renamed)).toEqual([])
+    expect(routePoints(byId, renamed)[1]).toEqual(stationTargets(c))
+    // a place the variant lacks is missing, whatever its name
+    expect(trainProblems(byId, stations.filter(s => s.id !== c.id))).toEqual([{ key: 'station_missing', point: 1 }])
+    const old = train([['A-Dorf'], ['C-Stadt']])
+    expect(trainProblems(old, stations)).toEqual([])
+    expect(withPlaces(old, stations).points.map(p => p.place)).toEqual([a.id, c.id])
+    expect(withPlaces(byId, stations)).toBe(byId)
   })
 
   it('names stations and tracks the variant has, a vehicle and a margin that reads', () => {
@@ -47,6 +72,46 @@ describe('a train of the timetable', () => {
   })
 })
 
+describe('the way a train prefers', () => {
+  // Stopping places on A-Dorf's track 1 and at C-Stadt's two platforms; an itinerary to each, and one whose run does not lead there.
+  const range = (trackId, startStation, endStation) => ({ anchor: 'station', trackId, startStation, endStation })
+  const signalled = {
+    ...net,
+    signalling: {
+      fields: {},
+      collections: {
+        stoppingPlaces: [
+          { id: 'hA', name: '1', at: range('A1', 100, 300) },
+          { id: 'hC1', name: '1', platformId: 'pC1', at: range('C1', 300, 500) },
+          { id: 'hC2', name: '2', platformId: 'pC2', at: range('C2', 300, 500) },
+        ],
+        itineraries: [
+          { id: 'f1', startStoppingPlaceId: 'hA', targetStoppingPlaceId: 'hC1', routeIds: [], path: { trackIds: ['A1', 'L', 'C1'] } },
+          { id: 'f2', startStoppingPlaceId: 'hA', targetStoppingPlaceId: 'hC2', routeIds: [], path: { trackIds: ['A1', 'L', 'C2'] } },
+          { id: 'f3', startStoppingPlaceId: 'hA', targetStoppingPlaceId: 'hC2', routeIds: [], path: { trackIds: ['A1', 'L', 'C1'] } },
+        ],
+      },
+    },
+  }
+  const vehicle = newVehicle('Triebzug')
+  const ends = (t) => trainRequest(signalled, stations, t, vehicle).route
+
+  it('offers the itineraries from a stopping place of the one station to one of the next, on the tracks asked for', () => {
+    expect(itineraryOptions(signalled, stations, train([['A-Dorf'], ['C-Stadt']]), 0).map(i => i.id)).toEqual(['f1', 'f2', 'f3'])
+    expect(itineraryOptions(signalled, stations, train([['A-Dorf'], ['C-Stadt', { track: 'C1' }]]), 0).map(i => i.id)).toEqual(['f1'])
+  })
+
+  it('takes the way it prefers, else the shortest, and says which', () => {
+    const route = ends(train([['A-Dorf', { itinerary: 'f2' }], ['C-Stadt']]))
+    expect(route.path.map(p => p.trackId)).toEqual(['A1', 'L', 'C2'])
+    expect(route.preferred).toEqual(['taken'])
+    // One whose run does not lead to its target is not taken; one the variant lacks neither.
+    expect(ends(train([['A-Dorf', { itinerary: 'f3' }], ['C-Stadt']])).preferred).toEqual(['other'])
+    expect(ends(train([['A-Dorf', { itinerary: 'gone' }], ['C-Stadt']])).preferred).toEqual(['missing'])
+    expect(ends(train([['A-Dorf'], ['C-Stadt']])).preferred).toEqual([null])
+  })
+})
+
 describe.skipIf(!existsSync(WASM))('a train run', () => {
   const simulate = async (request) => {
     const { instance } = await WebAssembly.instantiate(readFileSync(WASM))
@@ -76,6 +141,25 @@ describe.skipIf(!existsSync(WASM))('a train run', () => {
     expect(waits.rows[1].departure).toBe(parseClock('7:10'))
     expect(waits.rows[1].arrival).toBeCloseTo(plain.rows[1].arrival, 6)
     expect(waits.rows[2].arrival - plain.rows[2].arrival).toBeCloseTo(parseClock('7:10') - plain.rows[1].departure, 6)
+  })
+
+  it('runs in over a boundary at its speed, on out over one at the line\'s, and stands at a buffer stop', async () => {
+    const ends = stationsOf(marked)
+    const stop = 'Prellbock C-Stadt Gl. 2 Ende'
+    const kmh = (v) => v * 3.6
+    const inward = await runTrain(marked, ends, train([['West'], ['B-Halt', { dwell: 30 }], [stop]]), vehicle, simulate)
+    const speeds = inward.result.final.speeds
+    expect(kmh(speeds[0])).toBeCloseTo(60, 3)
+    expect(speeds.at(-1)).toBeCloseTo(0, 6)
+    expect(inward.rows.map(r => [r.name, r.point])).toEqual([['West', 0], ['A-Dorf', null], ['B-Halt', 1], ['C-Stadt', null], [stop, 2]])
+    expect(inward.rows[0].departure).toBe(25200)
+    // out over a boundary of no speed of its own: it does not brake for it
+    const free = { ...marked, endMarks: marked.endMarks.map(m => (m.id === 'mW' ? { ...m, speed: undefined } : m)) }
+    const outward = await runTrain(free, stationsOf(free), train([['C-Stadt', { track: 'C1' }], ['West']]), vehicle, simulate)
+    expect(kmh(outward.result.final.speeds.at(-1))).toBeGreaterThan(80)
+    const slow = await runTrain(marked, ends, train([['C-Stadt', { track: 'C1' }], ['West']]), vehicle, simulate)
+    expect(kmh(slow.result.final.speeds.at(-1))).toBeCloseTo(60, 0)
+    expect(slow.rows.at(-1).arrival).toBeGreaterThan(outward.rows.at(-1).arrival)
   })
 
   it('says why it cannot run', async () => {

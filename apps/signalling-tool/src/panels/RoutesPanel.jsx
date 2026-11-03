@@ -2,12 +2,16 @@ import { useState } from 'react'
 import {
   Badge, Button, Checkbox, GroupedList, NumberField, Option, Options, OptionsDivider, OptionsHeading, Panel, PlusIcon, Section, SelectField, TextField,
 } from '@rail-across/ui'
-import { signallingSpeedOf } from '@rail-across/core/signalling'
-import { newId, labelOf, logicalId } from '../model/domain.js'
+import { branchSpeedOnRun, signallingSpeedOf } from '@rail-across/core/signalling'
+import {
+  added, designationOf as signalDesignation, newId, labelOf, logicalId, withRouteSpeed, withSwitchSpeeds,
+} from '../model/domain.js'
 import { measuredOverlap, overlapSpeed, withMeasuredOverlap } from '../model/overlaps.js'
 import { findRun, runAhead, switchesOnRun } from '../model/runs.js'
 import { SHUNTING_TYPE, TRAIN_TYPE, optionsOf } from '../labels.js'
-import { OverlapIcon, RouteIcon } from '../icons.jsx'
+import { ItineraryIcon, OverlapIcon, RouteIcon } from '../icons.jsx'
+import { stationName } from '../model/stations.js'
+import { ItineraryEditor, ItineraryList, ItinerarySearch } from './Itineraries.jsx'
 import { CheckList, EditorHead, ObjectFindings } from './common.jsx'
 import { aspectText, trackName } from '../model/places.js'
 
@@ -25,21 +29,29 @@ const KINDS = { train: { trainType: 'ZZ' }, shunting: { shuntingType: 'RR' }, mi
  * speed and the gradient over it, which the heights of the tracks give. A new
  * overlap runs its length ahead of its signal, straight on at every switch;
  * its danger point lies at its end.
+ *
+ * Routes are a station's: the station of their start signal, under which
+ * they are listed; the open line has none, the block has its signals. The
+ * itineraries from one stopping place to another are searched here over the
+ * net, and made with the routes they take.
  */
-export default function RoutesPanel({ domain, net, findings, extents, selection, select, ops, readOnly, t, language, setNotice }) {
+export default function RoutesPanel({
+  domain, net, core, findings, extents, selection, select, ops, mode, setMode, setSketch, showOnPlan, readOnly, t, language, setNotice,
+}) {
   const [page, setPage] = useState('menu')
-  const { routes, overlaps, signals } = domain.collections
+  const { routes, overlaps, signals, itineraries, stoppingPlaces } = domain.collections
   const sig = (id) => signals.find(s => s.id === id)
-  const sigName = (id) => labelOf('signals', sig(id), t)
+  const sigName = (id) => signalDesignation(sig(id), t)
   const routeName = (r) => r.name ?? `${sigName(r.startSignalId)} → ${sigName(r.targetSignalId)}`
   const bad = new Set(findings.errors.filter(f => f.collection === 'routes' || f.collection === 'overlaps').map(f => f.id))
   const chosenRoute = selection?.collection === 'routes' ? routes.find(r => r.id === selection.id) : null
   const chosenOverlap = selection?.collection === 'overlaps' ? overlaps.find(o => o.id === selection.id) : null
+  const chosenItinerary = selection?.collection === 'itineraries' ? itineraries.find(i => i.id === selection.id) : null
   const back = { label: t('back'), onClick: () => setPage('menu') }
   const toPage = { label: t('back'), onClick: () => select(null) }
 
   const real = signals.filter(s => s.at?.anchor === 'station')
-  const signalOptions = real.map(s => ({ value: s.id, label: labelOf('signals', s, t) })).sort((a, b) => String(a.label).localeCompare(String(b.label), 'de', { numeric: true }))
+  const signalOptions = real.map(s => ({ value: s.id, label: signalDesignation(s, t) })).sort((a, b) => String(a.label).localeCompare(String(b.label), 'de', { numeric: true }))
 
   const newOverlap = (signalId, length = 100) => {
     const s = sig(signalId)
@@ -50,17 +62,47 @@ export default function RoutesPanel({ domain, net, findings, extents, selection,
     ops.add('overlaps', { id: newId(), name, signalId, path: { trackIds: run.trackIds }, end: { anchor: 'station', ...run.end }, length })
   }
 
+  // Every train route over a turnout's branch signals at most the turnout's speed there.
+  const takeSwitchSpeeds = () => {
+    const { domain: next, changed } = withSwitchSpeeds(domain, net.switches)
+    if (changed.length) ops.replaceAll(next)
+    setNotice?.({ tone: changed.length ? 'ok' : 'info', text: t('switch_speeds_taken', { n: changed.length }) })
+  }
+
   if (chosenRoute) {
     return (
       <Panel title={t('object_routes')} back={toPage}>
         <RouteEditor key={chosenRoute.id} route={chosenRoute} name={routeName(chosenRoute)} domain={domain} net={net} findings={findings}
           signalOptions={signalOptions} readOnly={readOnly} t={t} language={language} select={select}
           onChange={(r) => ops.update('routes', r)} onDelete={() => ops.remove('routes', chosenRoute.id)} onNewOverlap={newOverlap}
+          onSignal={(speed) => ops.replaceAll(withRouteSpeed(domain, chosenRoute, speed))}
           onMeasure={() => {
             const { domain: next, problem } = withMeasuredOverlap(domain, net, chosenRoute)
             if (next) ops.replaceAll(next)
             else setNotice?.({ tone: 'warn', text: t(`measure_no_${problem}`) })
           }} />
+      </Panel>
+    )
+  }
+  if (chosenItinerary) {
+    return (
+      <Panel title={t('object_itineraries')} back={toPage}>
+        <ItineraryEditor key={chosenItinerary.id} itinerary={chosenItinerary} domain={domain} core={core} findings={findings} ops={ops} select={select} readOnly={readOnly} t={t} />
+      </Panel>
+    )
+  }
+  if (page === 'search') {
+    return (
+      <Panel title={t('itinerary_search_title')} intro={t('itinerary_search_intro')} back={back}>
+        <ItinerarySearch domain={domain} net={net} core={core} ops={ops} select={select} mode={mode} setMode={setMode} setSketch={setSketch}
+          showOnPlan={showOnPlan} t={t} />
+      </Panel>
+    )
+  }
+  if (page === 'itineraries') {
+    return (
+      <Panel title={t('itineraries')} intro={t('itineraries_intro')} back={back}>
+        <ItineraryList domain={domain} core={core} findings={findings} select={select} t={t} />
       </Panel>
     )
   }
@@ -81,8 +123,11 @@ export default function RoutesPanel({ domain, net, findings, extents, selection,
           onCreate={(r) => {
             const a = sig(r.startSignalId), b = sig(r.targetSignalId)
             const run = a && b ? findRun(net, a.at, b.at) : null
+            const route = { ...r, id: newId(), path: { trackIds: run ?? [] } }
             setPage('routes')
-            ops.add('routes', { ...r, id: newId(), path: { trackIds: run ?? [] } })
+            // Over the branch of a turnout it signals the turnout's speed from the start.
+            ops.replaceAll(withSwitchSpeeds(added(domain, 'routes', route), net.switches, [route.id]).domain)
+            select({ collection: 'routes', id: route.id })
           }} />
       </Panel>
     )
@@ -98,17 +143,26 @@ export default function RoutesPanel({ domain, net, findings, extents, selection,
   if (page === 'routes') {
     const item = (r) => ({
       id: r.id, label: routeName(r),
-      sub: [r.trainType ?? r.shuntingType ?? r.middleType, signallingSpeedOf(domain, r) != null ? `${signallingSpeedOf(domain, r)} km/h` : null, r.rank ? `#${r.rank}` : null].filter(Boolean).join(' · '),
+      sub: [r.kind === 'train' ? null : t(`routes_${r.kind}`), r.trainType ?? r.shuntingType ?? r.middleType,
+        signallingSpeedOf(domain, r) != null ? `${signallingSpeedOf(domain, r)} km/h` : null, r.rank ? `#${r.rank}` : null].filter(Boolean).join(' · '),
       end: bad.has(r.id) ? <Badge tone="danger">!</Badge> : null,
     })
+    // Under the station of their start signal; those of a signal of the open line last.
+    const points = new Map((core?.collections.operationalPoints ?? []).map(p => [p.id, p]))
+    const byStation = new Map()
+    for (const r of routes) {
+      const key = sig(r.startSignalId)?.operationalPointId ?? null
+      if (!byStation.has(key)) byStation.set(key, [])
+      byStation.get(key).push(item(r))
+    }
+    const groups = [...byStation].map(([key, items]) => ({
+      key: key ?? 'open', title: key ? stationName(points.get(key)) : t('routes_open_line'),
+      items: items.sort((a, b) => a.label.localeCompare(b.label, 'de', { numeric: true })),
+    })).sort((a, b) => (a.key === 'open') - (b.key === 'open') || a.title.localeCompare(b.title, 'de', { numeric: true }))
     return (
       <Panel title={t('section_routes')} intro={t('routes_list_intro')} back={back}>
         <GroupedList label={t('section_routes')} open searchLabel={t('search_objects')} noneFound={t('search_none')} empty={t('empty_list')}
-          groups={Object.keys(KINDS).map(kind => ({
-            key: kind, title: t(`routes_${kind}`),
-            items: routes.filter(r => r.kind === kind).map(item).sort((a, b) => a.label.localeCompare(b.label, 'de', { numeric: true })),
-          }))}
-          onSelect={(id) => select({ collection: 'routes', id })} />
+          groups={groups} onSelect={(id) => select({ collection: 'routes', id })} />
       </Panel>
     )
   }
@@ -133,6 +187,7 @@ export default function RoutesPanel({ domain, net, findings, extents, selection,
       {!readOnly && <>
         <Options>
           <OptionsHeading>{t('menu_create')}</OptionsHeading>
+          <Option icon={<ItineraryIcon />} disabled={stoppingPlaces.length < 2} onClick={() => setPage('search')}>{t('itinerary_search_title')}</Option>
           <Option icon={<RouteIcon />} disabled={real.length < 2} onClick={() => setPage('new_route')}>{t('create_route')}</Option>
           <Option icon={<OverlapIcon />} disabled={!real.length} onClick={() => setPage('new_overlap')}>{t('create_overlap')}</Option>
         </Options>
@@ -140,8 +195,10 @@ export default function RoutesPanel({ domain, net, findings, extents, selection,
       </>}
       <Options>
         <OptionsHeading>{t('section_edit')}</OptionsHeading>
+        <Option icon={<ItineraryIcon />} end={itineraries.length} onClick={() => setPage('itineraries')}>{t('itineraries')}</Option>
         <Option icon={<RouteIcon />} end={routes.length} onClick={() => setPage('routes')}>{t('section_routes')}</Option>
         <Option icon={<OverlapIcon />} end={overlaps.length} onClick={() => setPage('overlaps')}>{t('overlaps')}</Option>
+        {!readOnly && <Option icon={<RouteIcon />} disabled={!routes.length} onClick={takeSwitchSpeeds}>{t('take_switch_speeds')}</Option>}
       </Options>
     </Panel>
   )
@@ -187,7 +244,7 @@ function NewOverlap({ signalOptions, onCreate, t }) {
   </>
 }
 
-function RouteEditor({ route, name, domain, net, findings, signalOptions, onChange, onDelete, onNewOverlap, onMeasure, select, readOnly, t, language }) {
+function RouteEditor({ route, name, domain, net, findings, signalOptions, onChange, onDelete, onNewOverlap, onMeasure, onSignal, select, readOnly, t, language }) {
   const { signals, overlaps } = domain.collections
   const set = (patch) => onChange({ ...route, ...patch })
   const start = signals.find(s => s.id === route.startSignalId)
@@ -208,6 +265,9 @@ function RouteEditor({ route, name, domain, net, findings, signalOptions, onChan
   const speed = signallingSpeedOf(domain, route)
   // Where its speed is set: the logical signal at its start that signals it, else the first.
   const setter = start?.logicalSignals?.find(l => l.signallingSpeeds?.some(v => v.routeId === route.id)) ?? start?.logicalSignals?.[0]
+  // The turnouts it passes on their branch, and the speed they allow there.
+  const branch = route.kind === 'train' ? branchSpeedOnRun(net.switches, route.path.trackIds) : null
+  const switchName = (id) => { const sw = net.switches.find(x => x.switchId === id); return sw?.name ?? sw?.label ?? id.slice(0, 8) }
 
   return (
     <div className="tool-editor">
@@ -237,6 +297,14 @@ function RouteEditor({ route, name, domain, net, findings, signalOptions, onChan
             </Button>
           )}
         </div>
+        {branch?.speed != null && (
+          <div className="ui-row">
+            <span className="ui-grow ui-muted">{t('route_switch_speed', { speed: branch.speed, list: branch.switchIds.map(switchName).join(', ') })}</span>
+            {setter && !readOnly && (speed == null || speed > branch.speed) && (
+              <Button size="small" onClick={() => onSignal(branch.speed)}>{t('take_switch_speed', { speed: branch.speed })}</Button>
+            )}
+          </div>
+        )}
       </Section>
       <Section title={t('path')} actions={!readOnly && <Button size="small" onClick={() => rerun()}>{t('find_path')}</Button>}>
         {route.path.trackIds.length

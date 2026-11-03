@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { parseMdbPayload, listMdbStrecken, ALL_STRECKEN } from '../../core/utils/exchange'
-import { convertMdbOnServer, OptimizerError } from '../optimizerService'
+import { convertMdbOnServer, ServiceError } from '../dataServices'
 import { useI18n } from '../../core/locales/i18nContext'
 
 /**
@@ -38,7 +38,7 @@ export default function useMdbFile() {
     } catch (err) {
       payloadRef.current = null
       if (err?.name === 'AbortError') { setErrors([t('run_aborted')]); return }
-      const code = err instanceof OptimizerError ? err.code : 'internal'
+      const code = err instanceof ServiceError ? err.code : 'internal'
       setErrors([t(`data_exchange_mdb_err_${code}`) ?? code, ...(err?.detail ? [err.detail] : [])])
     } finally {
       setBusy(false)

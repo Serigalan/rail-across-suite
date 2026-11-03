@@ -11,6 +11,7 @@ import runRoutes from './routes/runs.js'
 import shareRoutes from './routes/shares.js'
 import vehicleRoutes from './routes/vehicles.js'
 import timetableRoutes from './routes/timetables.js'
+import terrainRoutes from './routes/terrain.js'
 import { cloudStorage } from './clouds/storage.js'
 
 /** Largest request body [bytes] — a large MDB import fits, a runaway does not fill the disk. */
@@ -19,12 +20,16 @@ const BODY_LIMIT = 20 * 1024 * 1024
 const WRITING = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
 
 /**
- * The one writing request that carries bytes, not JSON: a piece of a point
- * cloud upload (AP 13.2). It must say so in a header of its own, which no
- * form of another site can send without the browser asking first.
+ * The writing requests that carry bytes, not JSON: a piece of a point cloud
+ * upload (AP 13.2) and an Access file for the MDB import. Each must say so in
+ * a header of its own, which no form of another site can send without the
+ * browser asking first.
  */
-const UPLOAD = /^\/api\/projects\/[^/?]+\/clouds\/[^/?]+\/raw(\?|$)/
-const isUpload = (req) => req.method === 'PUT' && UPLOAD.test(req.url)
+const UPLOADS = [
+  ['PUT', /^\/api\/projects\/[^/?]+\/clouds\/[^/?]+\/raw(\?|$)/],
+  ['POST', /^\/api\/mdb(\?|$)/],
+]
+const isUpload = (req) => UPLOADS.some(([method, path]) => req.method === method && path.test(req.url))
   && String(req.headers['content-type'] ?? '').startsWith('application/octet-stream') && req.headers['x-olt-upload'] === '1'
 
 /**
@@ -107,6 +112,7 @@ export function buildApp({
     api.register(shareRoutes)
     api.register(vehicleRoutes)
     api.register(timetableRoutes)
+    api.register(terrainRoutes)
     for (const r of routes) api.register(r)
   }, { prefix: '/api' })
 

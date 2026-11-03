@@ -11,8 +11,8 @@ html, body { margin: 0; background: var(--ui-surface); }
 
 .plan {
   position: relative; flex: 1; min-height: 0; overflow: hidden; user-select: none; background: var(--ui-surface);
+  /* The plan's colours, which the map's layers take (planLayers.js). */
   --plan-track: #2a2d3a;
-  --plan-run: var(--color-primary);
   --plan-mark: #1a1a2e;
 }
 @media (prefers-color-scheme: dark) {
@@ -21,37 +21,38 @@ html, body { margin: 0; background: var(--ui-surface); }
 .plan-map { position: absolute; inset: 0; }
 /* MapLibre makes its container `position: relative`: it lives inside the box that is placed. */
 .plan-map-inner { width: 100%; height: 100%; }
-/* The plan over the map: drawn, not clicked — the map takes the pointer. */
-.plan-overlay { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
 .plan .maplibregl-ctrl-bottom-left { margin-left: 4px; }
-.plan-track { fill: none; stroke: var(--plan-track); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 1.2px rgba(255, 255, 255, 0.9)); }
-.plan-run { fill: none; stroke: var(--plan-run); stroke-width: 6; stroke-opacity: 0.45; stroke-linecap: round; stroke-linejoin: round; }
-.plan-stretch { fill: none; stroke: #1f9e3a; stroke-width: 7; stroke-opacity: 0.5; stroke-linecap: butt; }
-.plan-stretch-warn { stroke: #d68910; }
-.plan-switch { fill: var(--ui-bg); stroke: var(--plan-track); stroke-width: 1.5; }
-.plan-switch.is-selected { fill: var(--color-primary); stroke: var(--color-primary); }
+.plan.is-hidden { display: none; }
 
-.plan-mark { cursor: pointer; }
-.plan-mast { stroke: var(--plan-mark); stroke-width: 1.6; }
-.plan-head { stroke: var(--plan-mark); stroke-width: 1.2; }
-.plan-board { stroke: var(--plan-mark); stroke-width: 1.2; }
-.plan-virtual { fill: none; stroke: var(--plan-mark); stroke-width: 1.2; stroke-dasharray: 2 2; }
-.plan-dp { stroke: #1f6fb5; stroke-width: 2; }
-.plan-dp-dot { fill: #1f6fb5; }
-.plan-balise { fill: #7b3fbf; stroke: none; }
-.plan-balise-pzb-500 { fill: #d0308f; }
-.plan-balise-pzb-2000 { fill: #0f9fb5; }
-.plan-balise-pzb-1000-2000 { fill: #0f9fb5; stroke: #7b3fbf; stroke-width: 1.5; }
-.plan-balise-etcs { fill: #f2c200; stroke: #333; stroke-width: 1; }
-.plan-derailer { stroke: #c0392b; stroke-width: 2; }
-.plan-mark.is-selected .plan-head, .plan-mark.is-selected .plan-board, .plan-mark.is-selected .plan-balise { stroke: var(--color-primary); stroke-width: 3; }
-.plan-mark.is-selected .plan-dp, .plan-mark.is-selected .plan-mast { stroke: var(--color-primary); stroke-width: 3; }
-.plan-mark.is-orphan { opacity: 0.6; }
-.plan-label {
-  font: 600 11px var(--ui-font); fill: var(--plan-mark); paint-order: stroke; stroke: var(--ui-surface); stroke-width: 3px;
+/* ── the schematic view ──────────────────────────────────────────────── */
+
+.schema {
+  position: relative; flex: 1; min-height: 0; overflow: hidden; user-select: none; touch-action: none; cursor: grab;
+  background: var(--ui-surface); --plan-track: #2a2d3a; --plan-mark: #1a1a2e;
 }
-/* On a basemap a track keeps a light edge, so it reads on any ground. */
-.plan-track { paint-order: stroke; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .schema { --plan-track: #c8cbd6; --plan-mark: #e8e9f0; }
+}
+.schema:active { cursor: grabbing; }
+.schema-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.schema-track { fill: none; stroke: var(--plan-track); stroke-width: 2; stroke-linecap: round; }
+.schema-wedge { fill: var(--plan-track); }
+.schema-platform { fill: var(--ui-bg); stroke: var(--plan-track); stroke-width: 0.8; }
+.schema-switch { fill: var(--plan-track); }
+.schema-switch.is-selected { fill: var(--color-primary); }
+.schema-switch-label { font: 600 9px var(--ui-font); fill: var(--plan-track); }
+.schema-switch-label.is-selected { fill: var(--color-primary); }
+.schema-track-label { font: 500 10px var(--ui-font); fill: var(--ui-muted); }
+.schema-name { font: 700 10px var(--ui-font), sans-serif; fill: var(--plan-mark); paint-order: stroke; stroke: var(--ui-surface); stroke-width: 3px; }
+.schema-mark.is-selected .schema-name { fill: var(--color-primary); }
+.schema-text { font-family: var(--ui-font), sans-serif; }
+.schema-run { fill: none; stroke: var(--color-primary); stroke-width: 8; stroke-opacity: 0.35; stroke-linecap: round; }
+.schema-stretch { fill: none; stroke: #1f9e3a; stroke-width: 9; stroke-opacity: 0.45; }
+.schema-stretch-warn { stroke: #d68910; }
+.schema-place { fill: none; stroke: #0e8a8f; stroke-width: 11; stroke-opacity: 0.4; }
+.schema-place.is-selected { stroke: var(--color-primary); stroke-opacity: 0.6; }
+.schema-way { fill: none; stroke: var(--color-primary); stroke-width: 4; stroke-opacity: 0.18; stroke-linecap: round; }
+.schema-way.is-strong { stroke-width: 7; stroke-opacity: 0.5; }
 
 .tool-mode {
   position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); z-index: 5; display: flex; gap: 10px; align-items: center;
@@ -62,6 +63,9 @@ html, body { margin: 0; background: var(--ui-surface); }
 /* Showing the whole net: at the plan's top right corner, beside the working copy's bar. */
 .tool-fit { position: absolute; top: 10px; right: 10px; z-index: 6; }
 .tool-fit .ui-btn { background: var(--ui-bg); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12); }
+/* Site plan or schematic view: at the plan's bottom right corner, clear of the working copy's bar. */
+.tool-view { position: absolute; bottom: 12px; right: 44px; z-index: 6; }
+.tool-view .ui-tabs { background: var(--ui-bg); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12); }
 .tool-notice .ui-message { background: var(--ui-bg); box-shadow: var(--ui-shadow); }
 
 /* ── the editors ─────────────────────────────────────────────────────── */
@@ -128,12 +132,16 @@ html, body { margin: 0; background: var(--ui-surface); }
 .step-history-now { font-weight: 600; }
 .step-history-now::before { content: '●'; position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--color-primary); font-size: 9px; }
 .step-history-start { color: var(--ui-muted); border-top: 1px solid var(--ui-border); margin-top: 4px; padding-top: 8px; }
-/* An object beside its track: a dot on the track, a stroke out to its symbol (as OSRD's map). */
-.plan-stem { stroke: var(--plan-track); stroke-width: 1; opacity: 0.6; fill: none; }
-.plan-foot { fill: var(--plan-track); }
-/* Placing: the place snapped to on the track, and what would be set there. */
-.plan-snap { fill: none; stroke: var(--color-primary); stroke-width: 2; }
-.plan-preview { opacity: 0.75; pointer-events: none; }
 .tool-plane { margin: 0; font-size: var(--ui-fs-s); font-variant-numeric: tabular-nums; }
 .tool-frame-chosen { border-color: var(--color-primary); }
 .tool-speed-row .ui-field { max-width: 120px; }
+.tool-marks { list-style: none; margin: 0 0 8px; padding: 0; display: flex; flex-direction: column; gap: 4px; font-size: var(--ui-fs-m); }
+.tool-facts { display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; margin: 8px 0; font-size: var(--ui-fs-m); }
+.tool-facts dt { color: var(--ui-muted); }
+.tool-facts dd { margin: 0; }
+.tool-way { border: 1px solid var(--ui-border); border-radius: 8px; padding: 8px 10px; margin: 0 0 8px; display: flex; flex-direction: column; gap: 6px; font-size: var(--ui-fs-m); }
+.tool-way-head { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+.tool-way ul { margin: 0; padding-left: 18px; }
+.tool-way.is-shown { border-color: var(--color-primary); box-shadow: inset 3px 0 0 var(--color-primary); }
+.tool-way-show { all: unset; cursor: pointer; text-align: left; }
+.tool-way-show:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; border-radius: 4px; }

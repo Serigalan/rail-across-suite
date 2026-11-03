@@ -20,8 +20,8 @@ export {
   reconnectRequest, replacedSpan, stretchDefaults,
 } from './reconnect.js'
 export {
-  buildSCurve, computeShiftBounds, connectionPick, isUsableStem, preferredShift, REASON_MSG,
-  settleConnection, shiftSnaps, stems, waOffset,
+  buildSCurve, computeShiftBounds, connectionPick, hasStraightMid, isUsableStem, preferredShift, REASON_MSG,
+  settleConnection, shiftSnaps, stems, straightShifts, waOffset,
 } from './sCurve.js'
 export {
   buildSplice, clearanceRequest, neighbourAxis, neighbourAxisNear, secondPickRefusal,

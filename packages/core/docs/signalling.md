@@ -25,6 +25,7 @@ settings: a new signalling system (H/V, Sv) is a new entry under `systeme`, a ne
 | `catalogue.js` | The catalogue: an aspect by its key (`aspectOf`), what a kind of signal of a system shows (`signalKindOf`) and what a screen of several logical signals shows (`screenOf`), a train protection system and its kinds (`protectionSystemOf`, `baliseKindOf`), how settings stand to what is declared (`settingsProblems`), whether a symbol fits, which aspects stand on a board of their own, an entry's title in a language (`titleIn`) |
 | `checkSignalling.js` | `checkSignalling({ core, signalling })`: the findings of the domain on the core it stands on, `{ errors, warnings }` as validateProject gives them |
 | `overlaps.js` | What an overlap needs: the speed a route's start signal signals for it (`signallingSpeedOf`), the length a speed and gradient ask (`overlapLength`, catalogue `durchrutschweg`), the gradient over a run from the tracks' heights (`gradientAlong`) |
+| `switchSpeeds.js` | The turnouts a run passes on their branch and the slowest speed they allow there (`branchSpeedOnRun`; a turnout's own, else its form's — `switchBranchSpeed`) |
 | `trackSections.js` | The extent of the track detection sections, derived over the net from their points (`trackSectionExtents`, `netParts`) |
 
 ## The catalogue
@@ -50,6 +51,7 @@ settings: a new signalling system (H/V, Sv) is a new entry under `systeme`, a ne
 | `frame_of_logical_signal` | error | a screen or indicator at a place that has logical signals: it is a logical signal's |
 | `speed_route_elsewhere`, `speed_route_twice` | error | a logical signal signals a speed for a route that does not start at its place, or two for one route |
 | `overlap_short` | warning | an overlap shorter than its speed and gradient ask (catalogue `durchrutschweg`; its own speed where it states one, else its route's signalled speed; 1 % allowed for a measured length) |
+| `route_speed_over_branch`, `route_speed_over_branch_missing` | warning | a train route over the branch of a turnout signals at most the speed the turnout allows there, and signals one at all — it is the speed a train runs at there (running-times reads the signalled speeds) |
 | `screen_no_proceed` | warning | a screen showing none of a kind's proceed aspects (an exit signal of P-Hausen shows Hp 0 and Sh 1 only) |
 | `indicator_not_allowed`, `board_not_allowed` | error | an indicator the kind does not carry; a board on its own that is none |
 | `system_unknown`, `system_twice`, `type_missing`, `type_not_in_system` | error | each logical signal's system and kind, each system once, the systems it announces (`nextSystems`) known; a screen whose logical signals name no kind. A screen of no logical signal (a level crossing's monitoring signal, a lone Zs 6) is checked for known aspects only |
@@ -65,6 +67,10 @@ settings: a new signalling system (H/V, Sv) is a new entry under `systeme`, a ne
 | `detection_point_unused` | warning | a detection point that bounds no track section |
 | `section_extent_differs` | warning | a section's points enclose no part of the net together (see below) |
 | `boundary_mark_special` | warning | a station boundary marked by neither an entry signal nor a board Ne 1 nor a switch nor a platform — a special case of EBO §4 |
+| `stopping_place_empty`, `stopping_place_crossed` | error, warning | a stopping place is a stretch of its track, bounded by the signals and detection points: none stands within it |
+| `stopping_place_open_line`, `stopping_place_off_platform` | warning | a stopping place is of a station, or on the open line at a platform; at its platform, it lies along it |
+| `itinerary_off_stopping_place`, `itinerary_route_off_path` | error | an itinerary runs from its start's track to its target's, and its routes lie on its run, one after the other |
+| `boundary_mark_elsewhere` | warning | a station boundary marked by a signal that does not belong to the station (`operationalPointId`): one of the open line or of another station |
 
 ## Track sections over the net
 

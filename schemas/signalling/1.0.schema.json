@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "signalling",
   "title": "Rail-Data-Core, domain signalling 1.0",
-  "description": "The signalling of a project, as the signalling tool plans it: signals and boards, train detection, the switch elements of the interlocking, train and shunting routes with their overlaps, flank protection, the balises and magnets of train protection and the station boundaries. Depends on core; its references go into the core or into itself (R2, R9). Its objects follow PlanPro 1.10, and like OSRD it keeps every signalling and train protection system out of the schema (decision 0011): a signal carries a logical signal per system, a balise names its system; which systems, kinds, aspects and settings there are is not in this schema but in the catalogue (packages/core/constraints/db-ril-301.json), which the content check reads.",
+  "description": "The signalling of a project, as the signalling tool plans it: signals and boards, train detection, the switch elements of the interlocking, train and shunting routes with their overlaps, flank protection, the balises and magnets of train protection, the station boundaries, the stopping places and the itineraries from one to another. Depends on core; its references go into the core or into itself (R2, R9). Its objects follow PlanPro 1.10, and like OSRD it keeps every signalling and train protection system out of the schema (decision 0011): a signal carries a logical signal per system, a balise names its system; which systems, kinds, aspects and settings there are is not in this schema but in the catalogue (packages/core/constraints/db-ril-301.json), which the content check reads.",
   "type": "object",
   "required": ["fields", "collections"],
   "additionalProperties": false,
@@ -10,7 +10,7 @@
     "fields": { "$ref": "#/$defs/Fields" },
     "collections": {
       "type": "object",
-      "required": ["signals", "detectionPoints", "trackSections", "switchElements", "routes", "overlaps", "flankProtection", "balises", "stationBoundaries"],
+      "required": ["signals", "detectionPoints", "trackSections", "switchElements", "routes", "overlaps", "flankProtection", "balises", "stationBoundaries", "stoppingPlaces", "itineraries"],
       "additionalProperties": false,
       "properties": {
         "signals": { "type": "array", "items": { "$ref": "#/$defs/Signal" } },
@@ -21,7 +21,9 @@
         "overlaps": { "type": "array", "items": { "$ref": "#/$defs/Overlap" } },
         "flankProtection": { "type": "array", "items": { "$ref": "#/$defs/FlankProtection" } },
         "balises": { "type": "array", "items": { "$ref": "#/$defs/Balise" } },
-        "stationBoundaries": { "type": "array", "items": { "$ref": "#/$defs/StationBoundary" } }
+        "stationBoundaries": { "type": "array", "items": { "$ref": "#/$defs/StationBoundary" } },
+        "stoppingPlaces": { "type": "array", "items": { "$ref": "#/$defs/StoppingPlace" } },
+        "itineraries": { "type": "array", "items": { "$ref": "#/$defs/Itinerary" } }
       }
     }
   },
@@ -62,6 +64,7 @@
         "id": { "$ref": "core#/$defs/Id" },
         "name": { "$ref": "core#/$defs/Label" },
         "areaNumber": { "$ref": "core#/$defs/Label", "description": "The number of the interlocking area it belongs to, which leads its full designation (PlanPro Kennzahl: 60 in 60A)." },
+        "operationalPointId": { "$ref": "core#/$defs/Ref", "x-target": "core.operationalPoints", "description": "The station it belongs to; without one it is a signal of the open line." },
         "kind": { "enum": ["real", "virtual"] },
         "at": { "$ref": "#/$defs/Directed" },
         "alsoAt": {
@@ -475,6 +478,35 @@
             ]
           }
         },
+        "lifespan": { "$ref": "core#/$defs/Lifespan" }
+      }
+    },
+    "StoppingPlace": {
+      "description": "Where trains stop (Halteplatz): a stretch of one track, in a station on one of its tracks or at a platform, on the open line at a platform. Signals and detection points bound it; where one stands within it, a finding says so.",
+      "type": "object",
+      "required": ["id", "at"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "core#/$defs/Id" },
+        "name": { "$ref": "core#/$defs/Text" },
+        "operationalPointId": { "$ref": "core#/$defs/Ref", "x-target": "core.operationalPoints", "description": "The station it is of; without one it lies on the open line, at a platform." },
+        "platformId": { "$ref": "core#/$defs/Ref", "x-target": "core.platforms", "description": "The platform it lies at, where it is one's." },
+        "at": { "$ref": "core#/$defs/TrackRange" },
+        "lifespan": { "$ref": "core#/$defs/Lifespan" }
+      }
+    },
+    "Itinerary": {
+      "description": "A way from one stopping place to another (Fahrweg): its run of tracks, and the train routes it takes, in running order — one route of each station it runs through from signal to signal, none on the open line. A timetable names it as the way a train prefers between two of its points.",
+      "type": "object",
+      "required": ["id", "startStoppingPlaceId", "targetStoppingPlaceId", "routeIds", "path"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "core#/$defs/Id" },
+        "name": { "$ref": "core#/$defs/Text" },
+        "startStoppingPlaceId": { "$ref": "core#/$defs/Ref", "x-target": "signalling.stoppingPlaces" },
+        "targetStoppingPlaceId": { "$ref": "core#/$defs/Ref", "x-target": "signalling.stoppingPlaces" },
+        "routeIds": { "type": "array", "items": { "$ref": "core#/$defs/Ref", "x-target": "signalling.routes" } },
+        "path": { "$ref": "core#/$defs/TrackPath" },
         "lifespan": { "$ref": "core#/$defs/Lifespan" }
       }
     }

@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { net } from '../test/net.js'
+import { marked, net } from '../test/net.js'
 import { routeVia } from './route.js'
-import { stationNamed, stationTargets, stationsAlong, stationsOf } from './stations.js'
+import { renamedStation } from '@rail-across/core/document'
+import { parseProjectsPayload, projectDocument } from '@rail-across/core/project'
+import { crossingSpeed, placeOf, stationById, stationNamed, stationTargets, stationsAlong, stationsOf } from './stations.js'
 
 describe('the stations of a net', () => {
   const stations = stationsOf(net)
@@ -36,5 +38,66 @@ describe('the stations of a net', () => {
     const turned = routeVia(net, ['A-Dorf', 'C-Stadt', 'B-Halt'].map(n => stationTargets(stationNamed(stations, n))))
     expect(turned.failedAt).toBe(2)
     expect(routeVia(net, [[], stationTargets(stationNamed(stations, 'A-Dorf'))]).failedAt).toBe(0)
+  })
+
+  it('take the stations of the register as stations too, on the tracks of their stopping places and platforms as far as they reach', () => {
+    // B-Halt made a station in the Signalling-Tool, a stopping place of it on the line; a station nothing places is none.
+    const registered = {
+      ...net,
+      operationalPoints: [{ id: 'op-b', name: 'B-Halt', rl100: 'LBH' }, { id: 'op-x', name: 'X-Feld' }, { id: 'op-c', name: 'C-Stadt' }],
+      signalling: { fields: {}, collections: { stoppingPlaces: [{ id: 'h1', name: '1', operationalPointId: 'op-b', at: { anchor: 'station', trackId: 'L', startStation: 900, endStation: 1150 } }] } },
+    }
+    const all = stationsOf(registered)
+    expect(all.map(s => [s.name, s.kind])).toEqual([['A-Dorf', 'station'], ['B-Halt', 'station'], ['C-Stadt', 'station']])
+    const b = stationNamed(all, 'B-Halt')
+    expect(b).toMatchObject({ pointId: 'op-b', tracks: [{ id: 'L', from: 900, to: 1200, at: 1025 }] })
+    expect(stationNamed(all, 'C-Stadt').pointId).toBe('op-c')
+    // a train begins there, at its platform; passing, the station is as long as it reaches on the line
+    expect(stationTargets(b)).toEqual([{ trackId: 'L', station: 1100, direction: null }])
+    const route = routeVia(registered, ['B-Halt', 'C-Stadt'].map(n => stationTargets(stationNamed(all, n))))
+    expect(route.chosen[0]).toMatchObject({ trackId: 'L', station: 1100 })
+    const along = stationsAlong(routeVia(registered, ['A-Dorf', 'C-Stadt'].map(n => stationTargets(stationNamed(all, n)))).path, all)
+    expect(along.map(s => [s.name, s.begin, s.end])).toEqual([['A-Dorf', 0, 300], ['B-Halt', 1200, 1500], ['C-Stadt', 2800, 3200]])
+  })
+
+  it('take the buffer stops and boundaries as ends, by their names, a train standing before a buffer stop and on a boundary', () => {
+    const all = stationsOf(marked)
+    const stop = 'Prellbock C-Stadt Gl. 2 Ende'
+    expect(all.map(s => [s.name, s.kind])).toEqual([['A-Dorf', 'station'], ['B-Halt', 'halt'], ['C-Stadt', 'station'], [stop, 'end'], ['West', 'end']])
+    const west = stationNamed(all, 'West'), buffer = stationNamed(all, stop)
+    expect(west).toMatchObject({ tracks: [{ id: 'A1', at: 0 }], end: { kind: 'boundary', markId: 'mW', speed: 60 } })
+    const c2 = buffer.tracks[0]
+    expect(c2.at).toBeCloseTo(c2.length - 4 - 2.2, 6)
+    expect(stationTargets(buffer)).toEqual([{ trackId: 'C2', station: c2.at, direction: null }])
+    // C-Stadt keeps its track 2: the buffer stop is a place of its own on it
+    expect(stationNamed(all, 'C-Stadt').tracks.map(tr => tr.id)).toEqual(['C1', 'C2'])
+    expect([crossingSpeed(west), crossingSpeed(buffer), crossingSpeed(stationNamed(all, 'A-Dorf'))]).toEqual([60 / 3.6, 0, 0])
+    expect(crossingSpeed({ end: { kind: 'boundary', speed: null } })).toBe(Infinity)
+    // from the boundary to the buffer stop, through the stations between
+    const route = routeVia(marked, ['West', stop].map(n => stationTargets(stationNamed(all, n))))
+    expect(route.chosen.map(c => c.trackId)).toEqual(['A1', 'C2'])
+    const along = stationsAlong(route.path, all)
+    expect(along.map(s => s.name)).toEqual(['West', 'A-Dorf', 'B-Halt', 'C-Stadt', stop])
+    expect(along.at(-1).at).toBeCloseTo(route.offsets[1], 6)
+  })
+
+  it('know each station by its id, which a rename keeps, through the document and back', () => {
+    const project = { ...net, switches: [], id: '5dbd8fed-f8dc-4995-8934-9d71be69cae0', title: 'Netz' }
+    const before = stationsOf(project)
+    const c = stationNamed(before, 'C-Stadt')
+    expect(c.id).toMatch(/^[0-9a-f-]{36}$/)
+    expect(new Set(before.map(s => s.id)).size).toBe(before.length)
+    // the same ids from the project's document
+    const read = (record) => parseProjectsPayload(JSON.parse(JSON.stringify(projectDocument(record)))).projects[0]
+    expect(stationsOf(read(project)).map(s => [s.id, s.name])).toEqual(before.map(s => [s.id, s.name]))
+    // renamed: the same id under the new name, its tracks with it
+    const renamed = read({ ...project, ...renamedStation(project, c.id, { name: 'C-City' }) })
+    const after = stationById(stationsOf(renamed), c.id)
+    expect(after).toMatchObject({ name: 'C-City', kind: 'station' })
+    expect(after.tracks.map(tr => tr.id)).toEqual(['C1', 'C2'])
+    // a point finds it by its id, an old one by its name
+    expect(placeOf(stationsOf(renamed), { place: c.id, station: 'C-Stadt' })?.name).toBe('C-City')
+    expect(placeOf(stationsOf(renamed), { station: 'C-Stadt' })).toBeNull()
+    expect(placeOf(before, { station: 'c-stadt' })?.id).toBe(c.id)
   })
 })

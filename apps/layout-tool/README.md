@@ -43,16 +43,16 @@ grids; the kilometrage lines are not published — whoever has them puts them in
 links them into the app.
 
 The dev server runs over HTTPS (with a self-signed certificate, which the browser will warn about once).
-It forwards `/api` to the project server ([`server/`](../../server/README.md)) and `/optimizer` to the
-optimizer service ([`services/optimizer/`](../../services/optimizer/README.md)); see the suite's
-[`deploy/README.md`](../../deploy/README.md) for running both locally. Signing in and the users are the
+It forwards `/api` to the project server ([`server/`](../../server/README.md)); see the suite's
+[`deploy/README.md`](../../deploy/README.md) for running it locally. The Rust modules beside the page are built
+with `npm run optimizer` and `npm run crossover` (cargo, target `wasm32-unknown-unknown`). Signing in and the users are the
 suite's: sign in on its sign-in page (`apps/home`), or the tool says where to sign in.
 
 ## Local version
 
 The same codebase also builds a version that runs in the browser alone — no server, no sign-in, the
 projects kept in the browser's storage, with export and import as files (Paket L). It holds only the
-browser components (`src/core`); what needs the project server or the optimizer service (`src/server`)
+browser components (`src/core`) with the optimizer module; what needs the project server (`src/server`)
 is left out of its bundle.
 
 ```bash

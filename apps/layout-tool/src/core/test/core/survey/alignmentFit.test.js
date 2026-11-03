@@ -9,10 +9,11 @@ import { expectValidTrack } from '@rail-across/core/test/chainInvariants.js'
 import { trackLength } from '@rail-across/core/src/track/heightUtils.js'
 import fixture from '@rail-across/core/test/fixtures/align_answer.json'
 
-// The fit is the service's (olt_optimizer/alignment_fit.py); what is tested
-// here is the app's half — the point file it reads, the request it sends, and
-// the track, the diagram and the report it makes of the answer. The answer is
-// a real one, written by services/optimizer/tests/align_fixture.py.
+// The fit is the optimizer module's (optimizer/…/alignment.rs); what is
+// tested here is the app's half — the point file it reads, the request it
+// sends, and the track, the diagram and the report it makes of the answer.
+// The answer is a real one, recorded from the Python service the module
+// replaced, which gives the same (optimizer/…/tests/alignment.rs).
 
 const { answer, epsg } = fixture
 

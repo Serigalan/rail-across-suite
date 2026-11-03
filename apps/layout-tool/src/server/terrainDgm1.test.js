@@ -59,7 +59,7 @@ describe('the Länder\'s DGM1 as a basemap', () => {
     expect(style.terrain.source).toBe('dgm5Source')
     expect(style.sources.fineSource).toMatchObject({
       type: 'raster-dem', minzoom: 16, maxzoom: 17, encoding: 'custom',
-      tiles: ['https://online.open-layout-tool.org/optimizer/dem/{z}/{x}/{y}.png'],
+      tiles: ['https://online.open-layout-tool.org/api/dem/{z}/{x}/{y}.png'],
     })
     // h = (R · 65536 + G · 256 + B) · 0.01 − 10000, as dem_tiles.py packs it.
     const { redFactor, greenFactor, blueFactor, baseShift } = style.sources.fineSource

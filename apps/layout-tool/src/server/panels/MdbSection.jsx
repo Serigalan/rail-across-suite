@@ -28,8 +28,8 @@ export default function MdbSection({ dbref = false, onReport }) {
   const mdb = useMdbFile()
   const [withSwitches, setWithSwitches] = useState(true)
   const [target, setTarget] = useState('5684')
-  // The conversion needs the optimizer service; without it the section says so (R10.12).
-  const optimizerDown = useServiceHealth().optimizer.ok === false
+  // The conversion needs the project server; without it the section says so (R10.12).
+  const serverDown = useServiceHealth().server.ok === false
   const elapsed = useElapsed(mdb.busy)
 
   const importIt = async () => {
@@ -60,9 +60,9 @@ export default function MdbSection({ dbref = false, onReport }) {
   return (
     <ExchangeSection title={t(dbref ? 'data_exchange_dbref' : 'data_exchange_mdb')}
       description={t(dbref ? 'data_exchange_dbref_desc' : 'data_exchange_mdb_desc')}>
-      {optimizerDown && <p className="msg-warn msg-small">{t('service_needs_optimizer')}</p>}
-      <FilePickButton accept=".mdb,.MDB,.accdb,application/x-msaccess" disabled={!project || mdb.busy || optimizerDown}
-        title={optimizerDown ? t('service_needs_optimizer') : undefined} onFile={mdb.read}>
+      {serverDown && <p className="msg-warn msg-small">{t('service_needs_server')}</p>}
+      <FilePickButton accept=".mdb,.MDB,.accdb,application/x-msaccess" disabled={!project || mdb.busy || serverDown}
+        title={serverDown ? t('service_needs_server') : undefined} onFile={mdb.read}>
         {mdb.busy ? t('data_exchange_mdb_reading') : t('data_exchange_mdb_choose')}
       </FilePickButton>
       {/* A run of minutes says how long it has been going, and can be stopped. */}

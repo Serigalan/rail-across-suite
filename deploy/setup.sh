@@ -7,9 +7,9 @@
 #   sudo deploy/setup.sh                     needs /etc/rail-across/rail-across.env (see rail-across.env.example)
 #   sudo deploy/setup.sh --config <file>     another instance on the same machine (RA_INSTANCE)
 #
-# What it does: system packages (Node 22, Python venv, mdbtools, acl, Caddy),
+# What it does: system packages (Node 22, mdbtools, acl, Caddy),
 # the service user and data directory (with the point clouds' directory), the
-# NTv2 grids for PROJ, the systemd units (rail-across-server, rail-across-optimizer,
+# NTv2 grids for PROJ, the systemd units (rail-across-server,
 # rail-across-cloudjobs, the backup) and the Caddy site, then deploy.sh for the first build, and finally the
 # first admin when the database has no user yet.
 set -euo pipefail
@@ -37,17 +37,13 @@ for u in /etc/systemd/system/rail-across-*server.service; do
   grep -q "^Environment=RA_SERVER_DB=$RA_DB\$" "$u" && die "$u already uses the database $RA_DB"
   grep -q "^Environment=RA_SERVER_PORT=$RA_SERVER_PORT\$" "$u" && die "$u already uses port $RA_SERVER_PORT"
 done
-for u in /etc/systemd/system/rail-across-*optimizer.service; do
-  if [ ! -f "$u" ] || [ "$(basename "$u")" = "$(unit_name rail-across-optimizer.service)" ]; then continue; fi
-  grep -q "^Environment=RA_OPTIMIZER_PORT=$RA_OPTIMIZER_PORT\$" "$u" && die "$u already uses port $RA_OPTIMIZER_PORT"
-done
 # The configuration names paths and users, nothing secret, but it is root's.
 chmod go-w "$RA_CONFIG"
 
 step "System packages"
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -q
-apt-get install -y -q ca-certificates curl gnupg git rsync python3 python3-venv python3-dev \
+apt-get install -y -q ca-certificates curl gnupg git rsync python3 \
   build-essential mdbtools acl debian-keyring debian-archive-keyring apt-transport-https
 
 node_major() { node -p 'process.versions.node.split(".")[0]' 2>/dev/null || echo 0; }
@@ -62,7 +58,9 @@ if [ "$(node_major)" -lt 22 ]; then
   apt-get install -y -q nodejs
 fi
 [ "$(node_major)" -ge 22 ] || die "Node.js 22 or newer is needed"
-RA_NODE=$(command -v node); export RA_NODE
+# The services run the configured RA_NODE (default: the node on the PATH);
+# checked below, once the service user exists.
+export RA_NODE
 
 if [ "$RA_CADDY" = system ] && ! command -v caddy >/dev/null; then
   step "Caddy"
@@ -96,6 +94,10 @@ done
 if ! as_user test -r "$RA_REPO/server/bin/rail-across-server.mjs"; then
   die "$RA_USER cannot read $RA_REPO — make the checkout readable (chmod -R a+rX)"
 fi
+# A node under root's home (nvm) is closed to the service user: the units
+# would not start. RA_NODE names one it can run.
+major=$(as_user "$RA_NODE" -p 'process.versions.node.split(".")[0]' 2>/dev/null || echo 0)
+[ "$major" -ge 22 ] || die "$RA_USER cannot run Node.js 22 or newer at $RA_NODE — set RA_NODE in $RA_CONFIG"
 
 step "NTv2 grids for PROJ"
 (cd apps/layout-tool && node tools/data.mjs)
@@ -103,15 +105,19 @@ for g in apps/layout-tool/grids/*.tif; do
   install -m 0644 "$g" "$RA_DATA/share/proj/$(basename "$g")"
 done
 
-step "Python environment"
-if [ ! -x "$RA_VENV/bin/python" ]; then
-  python3 -m venv "$RA_VENV"
-fi
-
 step "First build and install"
 "$RA_REPO/deploy/deploy.sh" --config "$RA_CONFIG" --no-restart
 
 step "systemd units"
+# A service of an earlier version taken out, as deploy.sh does.
+for t in "${RETIRED_UNITS[@]}"; do
+  u=$(unit_name "$t")
+  if [ -f "/etc/systemd/system/$u" ]; then
+    systemctl disable --now "$u" || true
+    rm "/etc/systemd/system/$u"
+    echo "$u retired"
+  fi
+done
 for t in "${UNIT_TEMPLATES[@]}"; do
   unit=$(unit_name "$t")
   # A unit linked in from elsewhere (an older hand-made setup) is replaced.

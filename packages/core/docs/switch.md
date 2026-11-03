@@ -12,7 +12,7 @@ ports, element marks — is in the `track` module; what the dialogs commit is in
 
 | File | What it does |
 |---|---|
-| `catalogue.js` | The forms of `packages/core/constraints/db-ril-800-0120.json` as the geometry reads them: turnout tables, crossing tables, fallback stages for connections, branch radius of a bent turnout, bauform, Weichenmarke distance |
+| `catalogue.js` | The forms of `packages/core/constraints/db-ril-800-0120.json` as the geometry reads them: turnout tables, crossing tables, fallback stages for connections, branch radius of a bent turnout, bauform, Weichenmarke distance, the speed a turnout allows on its branch (`switchBranchSpeed`: its record's, else its form's) |
 | `route.js` | A switch route `{ length, r1, r2 }` and chains of them: points, bearings and slices along a route, the branch of a turnout laid on a given stem |
 | `symbol.js` | The drawn switch: routes as polylines, the filled body between them, the LCS line, the label; `rebuildSwitchSymbol` derives all of it from the tracks on load |
 | `crossing.js` | Crossings and crossing switches (incl. Bogenkreuzungsweiche): angle, legs, end distances, connecting curves, geometry |
@@ -217,8 +217,8 @@ the intermediate element breaks LP.EL.01 or LP.KS.01 (below), when a curve or be
 permitted cant deficiency, or when the cant at the two ends of the middle element differs — the middle
 element carries one value, a step would be a ramp of no length.
 
-**Up to three intermediate elements** (`midChain.js`). Instead of one arc the dialog may ask for one to
-three elements, each a straight, an arc or a transition, each with length (and an arc's radius) given or
+**Up to three intermediate elements** (`midChain.js`). Instead of one arc the extended switch connection
+(decision 0018) may lay one to three elements, each a straight, an arc or a transition, each with length (and an arc's radius) given or
 left open. A radius is given with its sign, as the element table shows one — + right, − left, in the
 direction the connection runs from the first turnout to the second — and that fixes the side it bends to
 (`side` in the spec, Entscheidung 368); an open radius finds its side. Exactly two values are sought; the third unknown is s₂. Transitions run between the curvatures
@@ -237,15 +237,23 @@ the run of the element's curvature beyond the node they end in (`connectionPick`
 the toe is put on the element change behind it where it can be. "Weiche auf Gleis" measures its pieces
 the same way (`switchOnTrackRemnant` `run`, `runAhead`).
 
-**Python solver** (Entscheidungen 357–358). Where no shift of the slider gives a connection, the server
-build offers a search in the optimizer service (`/crossover`, `crossover.py`): both toes free on their
-elements and one to three middle elements. The geometry stays here — `connectionBranchEnds` samples
-both branch ends (point, tangent, curvature, end run, cant at the ldS, the turnout's own checks) every
-0.5 m within 300 m of the picks, for every form of the fallback chain; the service interpolates them and
-closes element sequences with least squares and SLSQP under the dialog's limits. An answer is adopted as
-a shift and a spec with two values open, a `side` for each given radius and a `seed` (second toe and
-open values) the iteration starts from (`commands/crossover.js`); the slider's range is then the stretch
-around the adopted shift (`computeShiftBounds({ around })`).
+**A straight between the turnouts** is the connection one wants. On two parallel tracks the middle
+element is one wherever the slider stands; where either track bends, its turn δ follows the toes and it
+is a straight only where δ passes through nought. `straightShifts` finds those shifts — one pass over the
+slider's range, each change of sign halved down; `hasStraightMid` says whether a solved connection has
+one. They are snaps of the slider, and `preferredShift` lays the connection on a straight first (on an
+element change where one gives it, else the straight nearest to the click) and only then on the element
+change behind the toe; a straight a toe would be pushed off (`settleConnection`) does not count.
+
+**The search of the extended switch connection** (decision 0018, Entscheidung 358). The switch
+connection's dialog lays one element; every other configuration — each turnout of its own form, one to three
+elements, values given or sought — is searched by the module of `crossover/` (Rust, WebAssembly, in the
+browser): both toes free on their elements, the elements between closed by least squares and SLSQP under
+the dialog's limits. The geometry stays here — `connectionBranchEnds` samples both branch ends (point,
+tangent, curvature, end run, cant at the ldS, the turnout's own checks) every 0.5 m within 300 m of the
+picks, for every form of the fallback chain or the pair named (`crossoverRequest`). An answer is adopted
+as a shift and a spec with two values open, a `side` for each given radius and a `seed` (second toe and
+open values) the iteration starts from (`adoptCrossover`), and solved again here before it is built.
 
 **Committed anyway** (Entscheidung 361). A form refused only by the rules above — middle element
 (LP.EL.01, LP.KS.01), cant, cant deficiency, the pieces before WA and behind WE — still has a geometry:
@@ -258,6 +266,13 @@ valid the slider spans the shifts at which one is overridable (`computeShiftBoun
 **Edited** (Entscheidung 364). `solveSwitchConnection(..., form)` and `connectionBranchEnds(..., { form })`
 take one form instead of the speed's fallback chain: an existing connection is laid again with its own
 turnouts' form (see `commands/crossoverEdit.js`).
+
+**Two forms** (decision 0018). `form` may also be a pair [first turnout's, second turnout's] (`formPair`): each
+turnout is then its own form laid into its own track, with its own branch, through route and ldS. The result
+names both (`switchType`, `switchType2`, `throughLength`, `throughLength2`, `L1`, `L2`), the samples of
+`connectionBranchEnds` the second form's at the second branch end (`sw2`, `through2`), and `buildSCurve` writes
+each record with its own form. An edited connection whose turnouts differ comes back with the pair
+(`switchConnectionOf`: `forms`, `form`, the lower of the two speeds).
 
 ## Connecting to an open track end
 

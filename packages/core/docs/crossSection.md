@@ -6,7 +6,7 @@ The cross section of a track at a station: the running plane turned by the cant,
 it (rails, sleepers, planum edge) and the clearance contour over it, plus what the section line crosses —
 neighbouring tracks, platforms, the terrain. Used by the cross-section overlay, the platform height, the
 clearance checks against point clouds (`pointCloud`), rail detection, the turnout plane (`elevation`) and
-the track-spacing rule of the optimizer service.
+the track-spacing rule of the optimizer module.
 
 ## Files
 

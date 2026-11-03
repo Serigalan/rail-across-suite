@@ -18,7 +18,7 @@
 import { PALETTE } from '../../styles/palette'
 
 export const MARK_WIDTH = 228
-export const MARK_HEIGHT = 158
+const MARK_HEIGHT = 158
 const MARK_RADIUS = 24
 export const MARK_BLUE = PALETTE.primaryDefault
 /** The track between the letters: white at 45 % over MARK_BLUE, opaque for the plan backends. */

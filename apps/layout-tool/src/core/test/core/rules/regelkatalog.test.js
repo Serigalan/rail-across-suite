@@ -47,16 +47,6 @@ describe('the catalogue file', () => {
     expect(source.version).toBeUndefined()
     expect(source.gueltig_ab).toBeUndefined()
   })
-
-  // The rules the app checks by and the rules the optimizer builds to are one
-  // file — the optimizer's package reaches it through a symlink, so there is
-  // no second copy that could say something else.
-  it('is the very file the optimizer applies', () => {
-    const applied = JSON.parse(fs.readFileSync(path.join(here,
-      '../../../../../../../services/optimizer/olt_optimizer/constraints/db-ril-800-0110.json'), 'utf-8'))
-    expect(applied).toEqual(KATALOG)
-    expect(applied.catalog.id).toBe(CATALOG_ID)
-  })
 })
 
 describe('every rule the catalogue states', () => {

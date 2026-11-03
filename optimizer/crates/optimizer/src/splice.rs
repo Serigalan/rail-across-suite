@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 
 //! Splicing two elements into one chain — the construction of "Zwei Gleise
-//! zusammenfügen" (services/optimizer's splice.py and the app's
+//! zusammenfügen" (the former Python service's splice.py and the app's
 //! solveSplice.js, which it replaces both; decision 0019). Reconnecting
 //! existing elements ([`crate::reconnect`]) builds its arcs with it too.
 //!

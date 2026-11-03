@@ -3,8 +3,8 @@
 The Layout-Tool designs railway track layouts on a map: alignments of straights, arcs and transitions, turnouts
 and crossings after DB Ril 800.0120, vertical alignments, platforms, cross sections with clearance and point
 clouds, rule checks after DB Ril 800.0110, plans, and exchange with OSRD, Verm.ESN, ProVI and the DB inventory. It
-runs in the browser; a project server adds users, variants and revisions, a Python service optimization and
-conversions.
+runs in the browser — splicing, optimizing and the alignment fit in the optimizer module in Rust; a project server
+adds users, variants and revisions, the Länder's DGM1 and the MDB conversion.
 
 These pages describe what each part does, how it computes and why it is built the way it is. They are written for
 whoever maintains or reviews the tool. User guidance is in the app (*Leitfaden*, `public/guideline*.html`).
@@ -14,7 +14,7 @@ whoever maintains or reviews the tool. User guidance is in the app (*Leitfaden*,
 - [Architecture](architecture.md) — layers, builds, modules and their order, data flow, conventions, testing
 - [Data format](data-format.md) — oltjson-1.1, field by field, and why it is shaped this way
 - [Interface layer](interface.md) — store, shell, panels, overlays, map, translations
-- [Server parts](server.md) — browser server parts, the project server, the Python service
+- [Server parts](server.md) — browser server parts, the project server, what it reads for the app
 
 ## Modules of `src/core/utils`
 
@@ -46,6 +46,6 @@ whoever maintains or reviews the tool. User guidance is in the app (*Leitfaden*,
 - [`README.md`](../README.md) — features, getting started, the local version
 - [`deploy/README.md`](../../../deploy/README.md) — operating the suite's server
 - [`server/README.md`](../../../server/README.md) — the project server
-- [`services/optimizer/README.md`](../../../services/optimizer/README.md) — the optimizer (German)
+- [`optimizer/README.md`](../../../optimizer/README.md) — the optimizer module in Rust
 - [`tools/local/README.md`](../tools/local/README.md) — the local version as handed out
 - `packages/core/constraints/*.json` — the rulebooks themselves (DB Ril 800.0110, 800.0120, 800.0130, physics)

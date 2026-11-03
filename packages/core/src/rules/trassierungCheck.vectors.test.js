@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest'
 import { checkTrack } from './trassierungCheck.js'
 import vectors from '../../constraints/tests/checks.json' with { type: 'json' }
 
-// The same chains services/optimizer/tests/vectors.py runs through its port of
-// this check (olt_optimizer/pruefung.py).
+// The same chains the optimizer module runs through its port of this check
+// (optimizer/…/pruefung.rs, tests/vectors.rs).
 const key = (f) => JSON.stringify(f)
 function findings(elements) {
   const r = checkTrack(elements)

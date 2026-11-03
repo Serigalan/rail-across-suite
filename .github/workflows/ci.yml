@@ -311,31 +311,6 @@ jobs:
       - run: npx vite build --mode standalone --outDir /tmp/olt-dist-local
       - run: node tools/check-local-bundle.mjs /tmp/olt-dist-local
 
-  optimizer:
-    runs-on: ubuntu-24.04
-    defaults:
-      run:
-        working-directory: services/optimizer
-    steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-python@v6
-        with:
-          # The servers' Python (Ubuntu 22.04), with the versions they run.
-          python-version: '3.10'
-          cache: pip
-          cache-dependency-path: |
-            services/optimizer/pyproject.toml
-            services/optimizer/requirements.lock
-      - run: pip install -c requirements.lock -e '.[terrain]'
-      - run: python tests/vectors.py
-      - run: python tests/verify_service.py
-      - run: python tests/verify_splice.py
-      - run: python tests/verify_align.py
-      - run: python tests/verify_reconnect.py
-      - run: python tests/verify_clearance.py
-      - run: python tests/verify_splice_props.py
-      - run: python tests/verify.py
-
   # The suite's deployment (deploy/) and the Layout-Tool's check script.
   deploy-scripts:
     runs-on: ubuntu-24.04

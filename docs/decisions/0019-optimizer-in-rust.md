@@ -16,14 +16,15 @@ Status: **accepted** · 2026-11-03 · carries on [0018](0018-crossover-search-in
    (`/regelwerke`) and comparing their hash with the app's falls away. The app's own check
    (`packages/core/src/rules`) stays in JavaScript: Rust has its own for its searches, and the shared vectors
    (`packages/core/constraints/tests/`) hold both to the same answers, as they held JavaScript and Python.
-4. **What is not computing moves to the Node server**: the Länder's DGM1 (`/terrain`, `/dem/…`: fetching tiles,
-   keeping them, GeoTIFF, plane transforms) and the Access import (`/mdb`), unless a reader in JavaScript
-   proves as good on real files — then it runs in the browser.
+4. **What is not computing moves to the Node server**: the Länder's DGM1 (`/api/terrain`, `/api/dem/…`:
+   fetching tiles, keeping them, GeoTIFF, plane transforms, DGM5 decoded with libwebp as WebAssembly) and the
+   Access import (`/api/mdb`, `mdb-export`).
 5. **Then the Python service is removed** — its unit, its venv, its step in the deploy, its route, its CI job.
 
-It is done in steps, each deployable on its own, the Python part of each removed with it: the catalogue and
-the geometry kernel; the splice, the spacing and reconnecting; optimizing; the fits; DGM1 and the Access import;
-the service itself.
+Done in steps: the catalogue and the geometry kernel; the splice, the spacing and reconnecting; optimizing; the
+fits; DGM1 and the Access import on the Node server (`server/src/terrain/`, `server/src/mdb.js`); the service
+itself. A JavaScript reader for Access files was not taken: there was no real file in the repository to hold it
+against the import, so `mdb-export` stays, called by the Node server.
 
 ## Why
 

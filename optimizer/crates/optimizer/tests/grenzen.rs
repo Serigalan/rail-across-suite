@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 
 //! The catalogue a run applies and the limits it makes of it — the cases of
-//! services/optimizer/tests/verify.py (sections 13 and 14) the Python port
+//! the Python service's verify.py (sections 13 and 14) the Python port
 //! was held to.
 
 mod common;

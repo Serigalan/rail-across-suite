@@ -13,7 +13,6 @@ export {
   MAX_SWITCH_CANT_DEF, MAX_SWITCH_CANT_EXCEPTION, regelCant,
   switchCantError, worstCantOf,
 } from './cant.js'
-export { catalogFiles, hashCatalogFiles } from './catalogHash.js'
 export { BUNDLED_KATALOG_VERSION, flattenPhysics, GRENZWERTE, optimizerLimitRows, PHYSICS } from './constraintsView.js'
 export { comparisonRadiusLimits, minElementLength } from './elementLength.js'
 export {

@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Serigalan and the Rail-Across-Suite contributors
 // SPDX-License-Identifier: LGPL-3.0-only
 
-//! A track as the optimizer reads and writes it (services/optimizer's
+//! A track as the optimizer reads and writes it (the former Python service's
 //! track_io.py, ported): one object with scalar elements in the app's form —
 //! startNode/endNode [E, N] in the track's own CRS (`epsg`), bearings in
 //! degrees, lengths in metres. The elements are kept as they came: what a run

@@ -3,11 +3,12 @@ import { reconstructElements, crsName } from '../geometry/index.js'
 import { surveyPoints } from './axisSurvey.js'
 
 // An alignment from measured axis points (AP 12.5, Entscheidungen 133, 134,
-// 138): what the panel sends the service, what it makes of the point file the
-// points may come in, and the new track it builds from the answer. The fit
-// itself — curvature, straights, curves, and from the points' heights and
-// cant the gradient and the cant of the elements — is the service's (olt_optimizer/alignment_fit.py,
-// gradient_fit.py) and nowhere else.
+// 138): what the panel sends the optimizer module, what it makes of the point
+// file the points may come in, and the new track it builds from the answer.
+// The fit itself — curvature, straights, curves, and from the points' heights
+// and cant the gradient and the cant of the elements — is the module's
+// (optimizer/…/alignment.rs, gradient.rs; decision 0019 of the suite) and
+// nowhere else.
 
 /**
  * The settings of the fit as the panel shows them — the chord of the

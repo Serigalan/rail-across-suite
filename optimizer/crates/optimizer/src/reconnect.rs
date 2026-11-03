@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 
 //! Reconnecting existing elements — "Bestehende Elemente neu verbinden"
-//! (Paket N; services/optimizer's reconnect.py, ported).
+//! (Paket N; the former Python service's reconnect.py, ported).
 //!
 //! A stretch of one track is replaced: the app hands over the element before
 //! it and the one after it as the two picks of a splice ([`crate::splice`]),

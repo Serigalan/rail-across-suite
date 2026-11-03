@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // The line between browser and server components (Paket L, decision 277).
 //
-// Every module under src/ that needs the project server or the Python service
+// Every module under src/ that needs the project server
 // — directly, because it imports one of the two clients, or indirectly,
 // because something it imports does. Those belong to src/server; the rest is
 // src/core. Once the split is done the list under src/core is empty: core
@@ -17,12 +17,8 @@ import { join, dirname, relative, resolve } from 'node:path'
 const ROOT = resolve(dirname(new URL(import.meta.url).pathname), '..')
 const SRC = join(ROOT, 'src')
 
-/** The two ways out of the browser: the project server and the Python service. */
-// (Before AP L.1 moved them, both lived in src/api and src/utils.)
-export const CLIENTS = [
-  'src/server/api/client.js', 'src/server/optimizerService.js',
-  'src/server/api/client.js', 'src/server/optimizerService.js',
-]
+/** The ways out of the browser: the project server's API and what it reads for the app (DGM1, MDB). */
+export const CLIENTS = ['src/server/api/client.js', 'src/server/dataServices.js']
 
 const files = (dir) => readdirSync(dir).flatMap(name => {
   const path = join(dir, name)

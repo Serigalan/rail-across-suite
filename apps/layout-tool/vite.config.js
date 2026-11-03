@@ -49,18 +49,12 @@ export default defineConfig(({ mode }) => ({
     ? { outDir: 'dist-local', rollupOptions: { treeshake } }
     : { rollupOptions: { treeshake, input: { main: 'index.html', share: 'share.html' } } },
   worker: { rollupOptions: { treeshake } },
-  // The project server (server/ in the repository) answers under /api and the optimizer
-  // service (services/optimizer) under /optimizer on the app's own origin, as both
-  // do behind Caddy in production (deploy/templates/Caddyfile). The optimizer
-  // itself knows nothing of the prefix, so it is cut off here as there. The
-  // local build asks neither.
+  // The project server (server/ in the repository) answers under /api on the
+  // app's own origin, as it does behind Caddy in production
+  // (deploy/templates/Caddyfile). The local build does not ask it.
   server: mode === LOCAL ? {} : {
     proxy: {
       '/api': { target: process.env.OLT_API_TARGET ?? 'http://127.0.0.1:8787' },
-      '/optimizer/': {
-        target: process.env.OLT_OPTIMIZER_TARGET ?? 'http://127.0.0.1:8099',
-        rewrite: path => path.replace(/^\/optimizer/, ''),
-      },
     },
   },
 }))

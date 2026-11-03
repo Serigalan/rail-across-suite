@@ -63,15 +63,15 @@ const DEFAULTS = { ...SPLICE_DEFAULTS, clearanceOn: false, clearanceDMin: 4.0, c
 const trackName = (track) => (track ? track.name || trackLabel(track) : '')
 
 /**
- * Splice two tracks into one (R5.5; the construction in utils/splice, computed
- * in the browser for both builds since decision 294 — before that on the
- * optimizer service —, the commit in utils/commands/splice). Two elements are
+ * Splice two tracks into one (R5.5; the construction is the optimizer
+ * module's, computed in the browser for both builds — decision 0019 of the
+ * suite —, the commit in commands/splice). Two elements are
  * picked, in either order; the splice finds which ends meet and which one
  * departs (AP S.2) and joins them by an arc, re-shaped arcs or a transition —
  * where several ways fit, the best is shown and the others can be stepped
  * through. The merged track is one commit. Every change of the settings
  * computes the splice again in a worker, once they rest — held to a spacing
- * to another track, which only the server offers, on the optimizer service.
+ * to another track where one is named.
  */
 export default function SpliceElementPanel() {
   const { t, fill } = useI18n()

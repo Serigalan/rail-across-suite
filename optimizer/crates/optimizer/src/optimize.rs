@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 
 //! Track optimization, simple curves and compound curves (Korbbögen) —
-//! services/optimizer's optimize.py and api.py, ported.
+//! the former Python service's optimize.py and api.py, ported.
 //!
 //! Model:
 //! * variables: lateral shifts s_i of the interior straights (parallel,

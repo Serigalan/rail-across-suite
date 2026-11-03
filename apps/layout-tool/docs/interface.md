@@ -17,7 +17,7 @@ src/core/
   home/             the local build's start page and project list
   locales/          de.json, en.json and the i18n context
   styles/           CSS by area, design tokens, palette
-  constraints/      the rulebooks as JSON (read by modules and by the optimizer service)
+  constraints/      the rulebooks as JSON (read by modules and by the optimizer module)
   utils/            the computing modules (see the module pages)
   test/             shared test helpers, invariants, fixtures, architecture tests
 ```

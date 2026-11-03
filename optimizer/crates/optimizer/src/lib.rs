@@ -1,15 +1,18 @@
 // SPDX-FileCopyrightText: 2026 Serigalan and the Rail-Across-Suite contributors
 // SPDX-License-Identifier: LGPL-3.0-only
 
-//! The track optimizer of the Layout-Tool, in Rust — replacing the Python
-//! service (services/optimizer) piece by piece, for the browser
-//! (WebAssembly).
+//! The track optimizer of the Layout-Tool, in Rust, for the browser
+//! (WebAssembly; decision 0019 — it replaced the Python service): splicing
+//! two tracks and its spacing to a neighbour ([`splice`], [`clearance`]),
+//! reconnecting existing elements ([`reconnect`]), optimizing a track
+//! ([`optimize`]), the alignment and gradient fit from axis points
+//! ([`alignment`], [`gradient`]).
 //!
-//! This is its foundation: the rule catalogue read and applied
-//! ([`expr`], [`katalog`]), judged on an element chain as the app's element
-//! table judges it ([`pruefung`]), turned into the limits a run is held to
-//! ([`grenzen`]), and the geometry kernel ([`geometry`]). The catalogue is not
-//! compiled in — the app hands over the file it bundles. The shared vectors in
+//! Under them: the rule catalogue read and applied ([`expr`], [`katalog`]),
+//! judged on an element chain as the app's element table judges it
+//! ([`pruefung`]), turned into the limits a run is held to ([`grenzen`]), and
+//! the geometry kernel ([`geometry`]). The catalogue is not compiled in — the
+//! app hands over the file it bundles. The shared vectors in
 //! packages/core/constraints/tests/ hold the expression language, the check
 //! and the shortest transition lengths to the app's own (tests/vectors.rs).
 

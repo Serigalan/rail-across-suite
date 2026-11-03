@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 
 //! An alignment from measured axis points — phase 12, stage B (AP 12.5;
-//! services/optimizer's alignment_fit.py, ported).
+//! the former Python service's alignment_fit.py, ported).
 //!
 //! The points come in travel order: easting and northing in one plane, and
 //! the height of the top of rail and the cant where they are known. What goes

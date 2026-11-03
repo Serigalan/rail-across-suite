@@ -7,17 +7,8 @@
  * `catalogLimit` evaluates the very rule a dialog is held to. The drift the
  * AP R.3 note was about — two independently maintained copies with no test
  * between them — is gone by construction. The optimizer has no copy either:
- * it applies the same file (services/optimizer/olt_optimizer/constraints is a
- * symlink to packages/core/constraints), so the two halves of the one Ril cannot part
- * company at all — short of a service deployed from another commit, which the
- * regelwerk popup shows.
- *
- * AP R.3 stops short of pulling the app live off the service at startup and
- * re-rendering every open dialog should a second regelwerk ever appear: a
- * switch dialog cannot await a network round trip. The optimizer panel
- * (OptimizeTrackPanel.jsx) does ask the service which regelwerke exist and
- * sends the chosen id along with a run — this module is only what the rest of
- * the app draws on without one.
+ * the app hands its module the very file it bundles (decision 0019 of the
+ * suite), so the two halves of the one Ril cannot part company at all.
  */
 
 import { catalogLimit, IN_SWITCH_AREA } from './regelkatalog.js'

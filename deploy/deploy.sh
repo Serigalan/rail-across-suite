@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Rail-Across-Suite — bring a set-up server to the state of the checkout:
 # dependencies where they changed, the build of the site (the start page and
-# every module's app), the optimizer package, a copy of the database, a
-# restart of the services and a health check.
+# every module's app with its Rust modules), the systemd units, a copy of the
+# database, a restart of the services and a health check.
 #
 #   sudo deploy/deploy.sh                    after git pull (or with --pull)
 #   sudo deploy/deploy.sh --pull             git pull --ff-only first (RA_TRACK=main)
@@ -83,16 +83,6 @@ if [ "$build" = 1 ]; then
     npm ci --no-audit --no-fund
     mark_done npm package-lock.json
   fi
-  if changed pip services/optimizer/pyproject.toml services/optimizer/requirements.lock || [ ! -x "$RA_VENV/bin/olt-optimizer-serve" ]; then
-    step "pip install (optimizer, editable)"
-    # Editable: the service reads packages/core/constraints through the symlink
-    # olt_optimizer/constraints, so app and service always read the same
-    # catalogue files (the app compares their hash, R0.1). The versions come
-    # from requirements.lock, the same on every server and in CI.
-    "$RA_VENV/bin/pip" install -q --upgrade pip
-    "$RA_VENV/bin/pip" install -q -c services/optimizer/requirements.lock -e 'services/optimizer[terrain]'
-    mark_done pip services/optimizer/pyproject.toml services/optimizer/requirements.lock
-  fi
 
   step "Data (NTv2 grids, by version and SHA-256)"
   (cd apps/layout-tool && node tools/data.mjs)
@@ -158,6 +148,24 @@ if [ "$restart" = 1 ]; then
     copy="$RA_BACKUPS/rail-across-$(date +%F)-predeploy-$(date +%H%M%S).sqlite"
     (cd server && RA_SERVER_DB="$RA_DB" as_user "$RA_NODE" bin/rail-across-server.mjs backup "$copy")
   fi
+  # The units as the templates of this checkout have them — a service of an
+  # earlier version taken out (the Python optimizer, decision 0019), the
+  # environment of the others rendered again. Not before setup.sh made them.
+  if [ -f "/etc/systemd/system/$(unit_name rail-across-server.service)" ]; then
+    step "systemd units"
+    for t in "${RETIRED_UNITS[@]}"; do
+      u=$(unit_name "$t")
+      if [ -f "/etc/systemd/system/$u" ]; then
+        systemctl disable --now "$u" || true
+        rm "/etc/systemd/system/$u"
+        echo "$u retired"
+      fi
+    done
+    for t in "${UNIT_TEMPLATES[@]}"; do
+      render "deploy/templates/$t" "/etc/systemd/system/$(unit_name "$t")"
+    done
+    systemctl daemon-reload
+  fi
   step "Restart"
   for u in "${services[@]}"; do
     if [ -f "/etc/systemd/system/$u" ]; then
@@ -171,5 +179,4 @@ fi
 if [ "$build" = 0 ] || [ "$restart" = 1 ]; then
   step "Health"
   health "project server" "http://$RA_BIND:$RA_SERVER_PORT/api/health"
-  health "optimizer" "http://$RA_BIND:$RA_OPTIMIZER_PORT/health"
 fi

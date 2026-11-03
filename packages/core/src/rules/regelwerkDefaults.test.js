@@ -19,13 +19,6 @@ describe('regelwerkDefaults, against the files it reads', () => {
     expect(MAX_SWITCH_CANT_DEF).toBe(Number(rule('LP.KB.06').thresholds.max.expr))
   })
 
-  it('has no copy of the catalogue beside the optimizer any more — it reads this one', () => {
-    // services/optimizer/olt_optimizer/constraints is a symlink to packages/core/constraints.
-    const linked = fs.realpathSync(path.join(pkgRoot, '../../services/optimizer/olt_optimizer/constraints'))
-    expect(linked).toBe(fs.realpathSync(path.join(pkgRoot, 'constraints')))
-    expect(fs.existsSync(path.join(pkgRoot, '../../services/optimizer/olt_optimizer/regelwerke'))).toBe(false)
-  })
-
   it('matches constraints/physics.json', () => {
     const physics = readJson('constraints/physics.json')
     expect(CANT_DEFICIENCY_COEFF).toBe(physics.ueberhoehungsfehlbetrag_koeffizient.wert)

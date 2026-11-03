@@ -10,6 +10,8 @@ ExecStart=@RA_NODE@ @RA_REPO@/server/bin/rail-across-server.mjs serve
 Environment=RA_SERVER_DB=@RA_DB@
 # Point clouds (phase 13): tiles and uploads, outside the daily backup.
 Environment=RA_SERVER_CLOUDS=@RA_CLOUDS@
+# The Länder's DGM1 tiles, kept between requests (decision 0019).
+Environment=RA_TERRAIN_CACHE=@RA_TERRAIN_CACHE@
 # Only Caddy reaches it, never the public interface.
 Environment=RA_SERVER_HOST=@RA_BIND@
 Environment=RA_SERVER_PORT=@RA_SERVER_PORT@

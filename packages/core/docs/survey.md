@@ -5,7 +5,7 @@
 Track axes that were measured rather than designed, and comparing designs with them: axis points traced in
 point clouds (`axisSurveys`), reference axes of existing track read from Verm.ESN files (`referenceAxes`),
 shift values of a design against a reference axis, and the request and result of fitting an alignment to
-axis points (the fit itself runs in the optimizer service).
+axis points (the fit itself runs in the optimizer module).
 
 ## Files
 
@@ -60,7 +60,7 @@ strip in mm.
 The interface between detection and design is a **point file**: easting, northing, top of rail and cant per
 axis point (`Nr;Station [m];Rechtswert [m];Hochwert [m];SO [m];Überhöhung [mm];Güte`), the stage-A export or
 points delivered from elsewhere (headers in German or English, or none). The fit runs in the optimizer
-service (`alignment_fit.py`, `gradient_fit.py`): straights after the client's procedure (6 m window, 1 cm
+module (`optimizer/`, Rust: `alignment.rs`, `gradient.rs`): straights after the client's procedure (6 m window, 1 cm
 tolerance, 0.5 m step, 6 m spacing) with a fitted line, curvature test and minimum length; curves between
 them by the splice mathematics, with R and transitions fitted to the points; the gradient and the cant of
 the elements from the points' heights and cant. The result is a **new track**, never a change to an existing
@@ -78,7 +78,7 @@ for transitions that shift the curve by less than 2 cm (L²/24R).
 - **Surveys and reference axes are their own collections**, in their own planes, not tied to tracks.
 - **Reference axes keep points, not elements**, every centimetre as millimetre differences.
 - **Shift values along the reference normal**, warnings only.
-- **Fitting runs in Python**; its result is always a new track.
+- **Fitting runs in the optimizer module** (Rust, in the browser); its result is always a new track.
 
 ## Tests
 

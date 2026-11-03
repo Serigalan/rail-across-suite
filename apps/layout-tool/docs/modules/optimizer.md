@@ -37,7 +37,7 @@ is a second implementation beside `packages/core/src/rules`, held to the same an
 
 ## Tests
 
-The Rust side is held to what the Python service answered: 243 splice requests, the spacing cases and the
+The Rust side is held to what the Python service it replaced answered: 243 splice requests, the spacing cases and the
 reconnect round trips, the optimizer on the service's test tracks, the alignment fits
 (`optimizer/crates/optimizer/tests/`). Here `splice.test.js`, `optimize.test.js` and
 `spliceRemedies.test.js` of [splice](splice.md) run the module cargo built (`src/core/test/optimizerModule.js`, skipped

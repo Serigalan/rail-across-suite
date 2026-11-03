@@ -31,7 +31,6 @@ export default function RegelwerkOverlay({ regelwerkId, onClose }) {
   // answered with nothing — the two read the same in a table but not to the
   // reader, who is told either "loading" or "no server".
   const [regelwerke, setRegelwerke] = useState(service ? null : [])
-  const [catalogDrift, setCatalogDrift] = useState(null)   // R0.1
   const [wanted, setWanted] = useState(regelwerkId ?? '')
   // Keyed by id, and only ever written from the fetch callback — never
   // synchronously in the effect body — so a change of id does not need its own
@@ -42,10 +41,8 @@ export default function RegelwerkOverlay({ regelwerkId, onClose }) {
   useEffect(() => {
     if (!service) return undefined
     let cancelled = false
-    service.list().then(({ regelwerke: list, drift }) => {
-      if (cancelled) return
-      setRegelwerke(list)
-      setCatalogDrift(drift)
+    service.list().then(({ regelwerke: list }) => {
+      if (!cancelled) setRegelwerke(list)
     })
     return () => { cancelled = true }
   }, [service])
@@ -114,7 +111,6 @@ export default function RegelwerkOverlay({ regelwerkId, onClose }) {
         {service && regelwerke?.length === 0 && (
           <p className="constraints-error">{t('constraints_service_down')}</p>
         )}
-        {catalogDrift && <p className="constraints-error">{t('optimizer_catalog_drift')}</p>}
 
         {id === CATALOG_ID && <RegelkatalogView />}
         {id === WEICHEN_REGELWERK.id && <WeichenRegelwerk />}

@@ -183,8 +183,8 @@ mapped onto the route; curves and their overlaps are drawn across track boundari
 In the automatic choice the best source with a value answers each point:
 
 1. registered point sources (extension point `terrainSources`): in the main build the Länder's **DGM1**
-   read by the optimizer service — the Länder publish it only as ZIP tiles without CORS headers, hence the
-   service; the local build has none;
+   read by the project server — the Länder publish it only as ZIP tiles without CORS headers, hence the
+   server; the local build has none;
 2. **DGM5** of the BKG as terrain-RGB tiles to zoom 15 (~3 m per pixel);
 3. **MapTiler** terrain tiles worldwide (zoom 12, ~20 m per pixel).
 

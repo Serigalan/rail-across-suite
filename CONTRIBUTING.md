@@ -21,8 +21,8 @@ Thank you for helping build Rail-Across-Suite. This page says how a change gets 
 
 ## Rules for code
 
-- **Apps import packages, never each other.** What two apps need belongs in a package. Packages, the server
-  and the services never import an app. `npm run check` enforces it.
+- **Apps import packages, never each other.** What two apps need belongs in a package. Packages and the server
+  never import an app. `npm run check` enforces it.
 - **The core has one implementation per language** (`packages/core`, `packages/core-py`); both are held to the
   shared test vectors in `schemas/`. A change to one is a change to both.
 - **Derived data is not stored**, references are ids, locations are one value — see the data model's rules.

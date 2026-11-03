@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 
 //! A gradient from the heights of measured axis points — with the alignment
-//! fit (AP 12.5; services/optimizer's gradient_fit.py, ported).
+//! fit (AP 12.5; the former Python service's gradient_fit.py, ported).
 //!
 //! The axis points of a trace carry the top of rail. Stationed along the
 //! fitted chain, they give the vertical alignment of the new track in the

@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Serigalan and the Rail-Across-Suite contributors
 // SPDX-License-Identifier: LGPL-3.0-only
 
-//! The geometry kernel of the optimizer — services/optimizer's geometry.py,
+//! The geometry kernel of the optimizer — the former Python service's geometry.py,
 //! ported; the reference values it was held to are the tests here.
 //!
 //! Conventions — the app's, so an element chain crosses unchanged:

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 
 //! Track spacing of a splice to a neighbouring track — and the largest radius
-//! that keeps it (services/optimizer's clearance.py, ported).
+//! that keeps it (the former Python service's clearance.py, ported).
 //!
 //! The splice dialog may name a track the new geometry has to keep its
 //! distance to (Entscheidung 167). The distance asked for is the user's

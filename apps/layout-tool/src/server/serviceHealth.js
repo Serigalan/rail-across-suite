@@ -1,8 +1,6 @@
-import { optimizerReachable } from './optimizerService'
-
 // What the app depends on, and whether it was there at the last look (R10.12):
-// the project server, the optimizer service (which also converts MDB files and
-// serves the DGM1 heights), and the BKG's DGM5 terrain tiles. Asked once a
+// the project server (which also converts MDB files and serves the DGM1
+// heights) and the BKG's DGM5 terrain tiles. Asked once a
 // minute while someone works on the map, and at once on request.
 
 const PROJECT_HEALTH = `${import.meta.env?.VITE_OLT_API ?? '/api'}/health`
@@ -10,7 +8,7 @@ const PROJECT_HEALTH = `${import.meta.env?.VITE_OLT_API ?? '/api'}/health`
 const DGM5_PROBE = 'https://sg.geodatenzentrum.de/gdz_basemapde_3d_gelaende/dgm5_rgb_tiles/5/16/10.png'
 const INTERVAL_MS = 60000
 
-export const SERVICES = ['server', 'optimizer', 'terrain']
+export const SERVICES = ['server', 'terrain']
 
 const reachable = async (url) => {
   try { return (await fetch(url, { method: 'GET', cache: 'no-store' })).ok } catch { return false }
@@ -18,7 +16,6 @@ const reachable = async (url) => {
 
 const CHECKS = {
   server: () => reachable(PROJECT_HEALTH),
-  optimizer: () => optimizerReachable(),
   terrain: () => reachable(DGM5_PROBE),
 }
 

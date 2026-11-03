@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { evalExpr, ExprError } from './ruleExpr.js'
 import vectors from '../../constraints/tests/expressions.json' with { type: 'json' }
 
-// The same cases services/optimizer/tests/vectors.py runs against ruleexpr.py.
+// The same cases the optimizer module runs against its expr.rs (optimizer/…/tests/vectors.rs).
 const fns = {
   min: (...xs) => Math.min(...xs),
   max: (...xs) => Math.max(...xs),

@@ -16,9 +16,10 @@
 ```
 
 - **`src/core`** — everything that computes and stores in the browser alone. The local build ships only this.
-- **`src/server`** — what needs the project server or the Python service. The main build ships both.
-- **`server`**, **`services/optimizer`** — the two services at the root of the repository ([server](server.md)):
-  the suite's project server and the Layout-Tool's Python service; the suite's **`deploy/`** — operation.
+- **`src/server`** — what needs the project server. The main build ships both.
+- **`server`** — the suite's project server at the root of the repository ([server](server.md)); **`optimizer/`**,
+  **`crossover/`** — the Rust modules beside the page ([optimizer](modules/optimizer.md),
+  [crossover](modules/crossover.md)); the suite's **`deploy/`** — operation.
 
 Two builds from one codebase: `vite build` (entry `src/main.jsx`, core + server → `dist/`) and
 `vite build --mode standalone` (entry `src/main.local.jsx`, core alone → `dist-local/`, served by
@@ -136,14 +137,14 @@ own module, and a worker only the server build needs lives in `src/server` (the 
   where present (tests skip without it).
 - **Architecture tests** for layers, modules, colours in components and accessible buttons.
 - The project server's API tests run against an in-memory database with `fastify.inject`.
-- The optimizer's acceptance tests (`services/optimizer/tests/`) run in CI.
+- The Rust modules' tests (`optimizer/`, `crossover/`) run in CI, the module built for the app's tests too.
 
 ## Adding something
 
 - A new computation belongs in the module of its subject; if something outside the module needs it, add it to
   that module's `index.js`. If it fits no module, add a directory with an `index.js` and a page in
   `docs/modules/` (the check requires both) and make sure the dependency order stays acyclic.
-- What needs the project server or the Python service goes to `src/server` and docks on through an extension
+- What needs the project server goes to `src/server` and docks on through an extension
   point; `npm run build:local` must stay green.
 - A rule value belongs in the catalogue file, not in code; the optimizer module (`optimizer/`, Rust) reads the
   file the app bundles, and the shared vectors in `packages/core/constraints/tests/` hold its rule check to the

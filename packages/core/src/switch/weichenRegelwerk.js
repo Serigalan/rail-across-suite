@@ -10,9 +10,7 @@
 // It is not a second copy of anything: switch/catalogue.js reads the same file for
 // the geometry, and a form here is that file's entry.
 //
-// The difference to the served regelwerk is where it comes from, not what it
-// is: this one is bundled, so it is there whether or not the optimizer service
-// answers.
+// Like DB Ril 800.0110 it is bundled, and read where it lies.
 
 import { SWITCH_TYPES, SWITCH_TYPES_SPECIAL, CROSSING_TYPES, WEICHEN_KATALOG, switchMark, switchVariants } from './catalogue.js'
 

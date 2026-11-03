@@ -2,7 +2,7 @@
 
 Rail-Across-Suite läuft auf **einem** Server: die Startseite der Suite, die Apps der Module, der Projektserver
 mit der einen Anmeldung für alle, die Dienste der Module. Alles dafür liegt hier: eine Konfigurationsdatei, ein
-paar Skripte und die Vorlagen für systemd und Caddy. Dienste: `rail-across-server`, `rail-across-optimizer`,
+paar Skripte und die Vorlagen für systemd und Caddy. Dienste: `rail-across-server`,
 `rail-across-cloudjobs` und die tägliche Sicherung — je Instanz, siehe *Mehrere Instanzen*.
 
 | Datei | |
@@ -21,9 +21,8 @@ Internet ─▶ Caddy (TLS, Let's Encrypt)
              ├─ /sign-in/    die Anmeldeseite (apps/home)           ┐ statisch, aus dist/ (RA_SITE_DIR);
              ├─ /            die Startseite der Suite (apps/home)   │ ohne Sitzung antwortet an jeder
              ├─ /layout/     das Layout-Tool (apps/layout-tool)     ┘ Adresse die Anmeldeseite
-             ├─ /api/*       rail-across-server     Node: Anmeldung, Nutzer, Projekte, Varianten,
-             │                                       Revisionen (core 1.0), Punktwolken; SQLite
-             └─ /optimizer/* rail-across-optimizer  Python: Optimierung, MDB, Gelände (nur mit Sitzung)
+             └─ /api/*       rail-across-server     Node: Anmeldung, Nutzer, Projekte, Varianten,
+                                                     Revisionen (core 1.0), Punktwolken, MDB, DGM1; SQLite
 
 rail-across-cloudjobs (ohne Port): bereitet hochgeladene Punktwolken auf und rechnet lange Läufe darauf
 ```
@@ -36,8 +35,14 @@ Sitzung bekommt 401. Offen sind nur die Anmeldeseite, die gehashten Build-Dateie
 3D-Ansicht für Leute ohne Konto. Die Sitzung (Cookie `ra_session`) gilt für alle Module. Passwort, Abmelden und
 die Nutzerverwaltung mit den Rechten der Module liegen auf der Startseite (`#/password`, `#/admin`).
 
-Beide Dienste hören nur auf `RA_BIND` (Standard `127.0.0.1`), nie öffentlich. Caddy fragt für `/optimizer/*` und
-die Km-Linien per `forward_auth` beim Projektserver (`/api/me`), ob die Anfrage eine gültige Sitzung trägt.
+Der Projektserver hört nur auf `RA_BIND` (Standard `127.0.0.1`), nie öffentlich. Caddy fragt für die Km-Linien
+per `forward_auth` beim Projektserver (`/api/me`), ob die Anfrage eine gültige Sitzung trägt.
+
+Gerechnet wird im Browser: die Laufzeitsimulation (`sim/`), die Suche der erweiterten Weichenverbindung
+(`crossover/`) und der Optimierer (`optimizer/`: Zusammenfügen, Neu verbinden, Optimieren, Achse aus Punkten)
+sind Rust, als WebAssembly neben die Seiten gelegt ([Entscheidung 0019](../docs/decisions/0019-optimizer-in-rust.md)).
+`deploy.sh` baut sie mit cargo (Ziel `wasm32-unknown-unknown`). Der Projektserver liest für das Layout-Tool die
+DGM1-Kacheln der Länder (`RA_TERRAIN_CACHE`) und wandelt Access-Dateien mit `mdb-export` um.
 
 ## Neuer Server
 
@@ -56,9 +61,9 @@ Die NTv2-Gitter sind nicht im Repository: `setup.sh` und `deploy.sh` holen sie m
 Layout-Tools (Version und SHA-256 in `apps/layout-tool/data.json`). Die Km-Linien gibt es nur für Tests und
 den eigenen Betrieb; wer sie hat, legt sie nach `apps/layout-tool/tiles/`.
 
-`setup.sh` installiert Node 22 (NodeSource), Python-venv, `mdbtools` und Caddy, legt den Dienstnutzer
+`setup.sh` installiert Node 22 (NodeSource), `mdbtools` und Caddy, legt den Dienstnutzer
 `rail-across` und `/var/lib/rail-across` an, kopiert die NTv2-Gitter dorthin, wo PROJ sie findet, baut die Site,
-installiert den Optimierer (editierbar, liest `packages/core/constraints` direkt), richtet die systemd-Units und
+richtet die systemd-Units und
 die Caddy-Site ein und legt den ersten Admin an. Dessen Startpasswort steht danach in
 `/var/lib/rail-across/admin-start-password.txt`; es wird bei der ersten Anmeldung auf der Startseite geändert,
 die Datei danach löschen. Weitere Nutzer legt ein Admin in der Nutzerverwaltung der Startseite an.
@@ -165,12 +170,10 @@ will, kopiert `clouds/` gesondert. Was die Detailstufen sind:
 ## Lokale Entwicklung
 
 Die Startseite (`apps/home`) und das Layout-Tool (`apps/layout-tool`) leiten mit `npm run dev` `/api` an
-`OLT_API_TARGET` (Standard `http://127.0.0.1:8787`) weiter, das Layout-Tool `/optimizer` an
-`OLT_OPTIMIZER_TARGET` (Standard `http://127.0.0.1:8099`), wie Caddy im Betrieb. Dienste lokal:
+`OLT_API_TARGET` (Standard `http://127.0.0.1:8787`) weiter, wie Caddy im Betrieb. Der Projektserver lokal:
 
 ```bash
 npm ci && cd server && RA_SERVER_INSECURE_COOKIE=1 RA_SERVER_DB=/tmp/rail-across.sqlite node bin/rail-across-server.mjs serve
-python3 -m venv .venv && .venv/bin/pip install -c services/optimizer/requirements.lock -e 'services/optimizer[terrain]' && .venv/bin/olt-optimizer-serve
 ```
 
 Ohne Caddy davor gibt es keine Sperre: angemeldet wird lokal mit der Anmeldeseite der Startseite

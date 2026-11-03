@@ -22,3 +22,4 @@ it costs. A record is not rewritten when a decision changes; a new one replaces 
 | [0015](0015-lgpl.md) | Everything under LGPL-3.0-only, OSRD's simulation core in the repository | accepted |
 | [0016](0016-timetables-of-a-project.md) | Timetables belong to a project; a train begins and ends at a station | proposed |
 | [0017](0017-stations-in-the-signalling-tool.md) | The Signalling-Tool creates the stations, in the core's register | accepted |
+| [0018](0018-crossover-search-in-rust.md) | The switch connection: one element in JavaScript, the extended one searched in Rust | accepted |

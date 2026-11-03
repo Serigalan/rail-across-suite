@@ -24,6 +24,7 @@
     "modules": "node tools/modules.mjs",
     "docs": "node tools/docs.mjs",
     "data": "node tools/data.mjs",
+    "crossover": "node tools/crossover.mjs",
     "i18n:unused": "node tools/i18n-unused.mjs"
   },
   "dependencies": {

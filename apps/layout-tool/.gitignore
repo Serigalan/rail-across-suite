@@ -8,6 +8,8 @@ grids/
 tiles/
 public/data/km
 public/data/km_linie.pmtiles
+# The crossover search module, built by tools/crossover.mjs
+public/crossover/
 
 # Build output
 dist/

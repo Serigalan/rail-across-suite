@@ -108,6 +108,14 @@ if [ "$build" = 1 ]; then
     fi
   done
 
+  step "Crossover module (crossover/)"
+  # The search of the Layout-Tool's extended switch connection in Rust, built
+  # to WebAssembly with cargo and put beside its page. Without it the suite
+  # deploys all the same, and the dialog says the module is missing.
+  if ! (cd apps/layout-tool && node tools/crossover.mjs); then
+    echo "WARNING: no crossover module — the extended switch connection cannot search" >&2
+  fi
+
   step "Build"
   # Built beside the site directory and then synced into it: the directory
   # itself stays (a Caddy in a container may have it bind-mounted), and the

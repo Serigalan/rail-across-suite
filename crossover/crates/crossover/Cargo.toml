@@ -1,0 +1,16 @@
+[package]
+name = "rail-across-crossover"
+description = "The search of a switch connection: both toes and one to three elements between the branches"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[lib]
+name = "rail_across_crossover"
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+slsqp.workspace = true

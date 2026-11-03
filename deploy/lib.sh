@@ -94,8 +94,8 @@ MODULE_APPS=(layout-tool:layout signalling-tool:signalling simulation-tool:simul
 # The units of this instance, as installed (template rail-across-<x> → $RA_UNIT_PREFIX<x>).
 # shellcheck disable=SC2034  # used by setup.sh
 UNIT_TEMPLATES=(rail-across-server.service rail-across-cloudjobs.service rail-across-server-backup.service rail-across-server-backup.timer)
-# Units of earlier versions, taken out by deploy.sh: the Python optimizer service (decision 0019).
-# shellcheck disable=SC2034  # used by deploy.sh
+# Units of earlier versions, taken out by deploy.sh and setup.sh: the Python optimizer service (decision 0019).
+# shellcheck disable=SC2034  # used by deploy.sh and setup.sh
 RETIRED_UNITS=(rail-across-optimizer.service)
 unit_name() { echo "$RA_UNIT_PREFIX${1#rail-across-}"; }
 SERVICES=(server cloudjobs)

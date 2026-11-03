@@ -43,7 +43,7 @@ chmod go-w "$RA_CONFIG"
 step "System packages"
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -q
-apt-get install -y -q ca-certificates curl gnupg git rsync python3 python3-dev \
+apt-get install -y -q ca-certificates curl gnupg git rsync python3 \
   build-essential mdbtools acl debian-keyring debian-archive-keyring apt-transport-https
 
 node_major() { node -p 'process.versions.node.split(".")[0]' 2>/dev/null || echo 0; }
@@ -103,6 +103,15 @@ step "First build and install"
 "$RA_REPO/deploy/deploy.sh" --config "$RA_CONFIG" --no-restart
 
 step "systemd units"
+# A service of an earlier version taken out, as deploy.sh does.
+for t in "${RETIRED_UNITS[@]}"; do
+  u=$(unit_name "$t")
+  if [ -f "/etc/systemd/system/$u" ]; then
+    systemctl disable --now "$u" || true
+    rm "/etc/systemd/system/$u"
+    echo "$u retired"
+  fi
+done
 for t in "${UNIT_TEMPLATES[@]}"; do
   unit=$(unit_name "$t")
   # A unit linked in from elsewhere (an older hand-made setup) is replaced.

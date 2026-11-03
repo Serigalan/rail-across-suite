@@ -74,7 +74,7 @@ die Datei danach löschen. Weitere Nutzer legt ein Admin in der Nutzerverwaltung
 cd /opt/rail-across-suite && deploy/deploy.sh --pull
 ```
 
-Installiert npm- und pip-Abhängigkeiten nur, wenn sich ihre Lock-/Projektdatei geändert hat, baut die Site neben
+Installiert die npm-Abhängigkeiten nur, wenn sich `package-lock.json` geändert hat, baut die Rust-Module, baut die Site neben
 `dist/` und gleicht sie dann hinein ab (die Seite ist während des Builds nie leer): je Modul seine App unter
 seinem Pfad (`MODULE_APPS` in `lib.sh`), dann die Startseite an die Wurzel. Danach eine Kopie der Datenbank
 (`backups/rail-across-JJJJ-MM-TT-predeploy-HHMMSS.sqlite`), Neustart der Dienste, Prüfung von `/api/health` und
@@ -111,7 +111,7 @@ Seit 2026-10-30, unter `https://railacross.open-layout-tool.org/`:
 | Konfiguration | `/etc/rail-across/rail-across.env` |
 | Checkout | `/opt/rail-across-suite` (folgt `dev`) |
 | Units, Nutzer | `rail-across-*`, `rail-across` |
-| Ports (an 172.18.0.1) | 8789 (Projektserver), 8101 (Optimierer) |
+| Ports (an 172.18.0.1) | 8789 (Projektserver) |
 | Daten | `/var/lib/rail-across` |
 | Site im Caddy | `/opt/rail-across-suite/dist` → `/srv/railacross` |
 | Node | `/usr/local/bin/node` (`RA_NODE`: das Node in roots nvm darf der Dienstnutzer nicht lesen) |
@@ -149,7 +149,7 @@ Admin von Hand anlegen:
 ## Überwachung
 
 `deploy/monitor.sh <rail-across.env> …` prüft je Instanz: laufen die Dienste und der Sicherungs-Timer,
-antworten Projektserver und Optimierer, antwortet `https://<domain>/api/health` von außen, ist das Zertifikat
+antwortet der Projektserver, antwortet `https://<domain>/api/health` von außen, ist das Zertifikat
 noch mindestens 14 Tage gültig, sind mindestens 20 GB frei. Eingerichtet mit
 `deploy/monitor.sh --install /etc/rail-across/rail-across.env` läuft es alle 5 Minuten
 (`rail-across-monitor.timer`, Skript nach `/usr/local/lib/rail-across/` kopiert — nach Änderungen `--install`

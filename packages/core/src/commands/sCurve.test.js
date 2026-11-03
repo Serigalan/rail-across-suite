@@ -544,3 +544,43 @@ describe('a connection only the rulebook refuses (Entscheidung 361)', () => {
     expect(buildSCurve({ result: res, picks: close, tracks: [t1], switches: [], speed: 60, force: true })).toBeNull()
   })
 })
+
+describe('a connection of two turnouts of different forms (Entscheidung 0018)', () => {
+  const straight = (start, bearing, length) => {
+    const end = utmEndRoute(start, bearing, length, null)
+    return { elementType: 0, startNode: [start.easting, start.northing], endNode: [end.easting, end.northing],
+      bearing, length, speed: 100 }
+  }
+  const project = hydrateProjects(JSON.parse(JSON.stringify(dehydrateProjects([{ id: 'p', switches: [], tracks: [
+    { id: 't1', name: 'line.001', epsg: EPSG, elements: [straight(P(500000, 5600000), 90, 600)] },
+    { id: 't2', name: 'line.002', epsg: EPSG, elements: [straight(P(500000, 5600004.5), 90, 600)] },
+  ] }]))))[0]
+  const picks = [connectionPick(project.tracks[0], 0, 200), connectionPick(project.tracks[1], 0, 300)]
+  const forms = ['500 – 1:12', '760 – 1:14'].map(label => SWITCH_TYPES.find(f => f.label === label))
+  // At 4.5 m the short arc between jumps too far for more.
+  const speed = 40
+  const bounds = computeShiftBounds({ picks, speed, form: forms })
+  const { result: res } = settleConnection({ picks, speed, shift: preferredShift({ picks, speed, form: forms }, bounds), form: forms })
+
+  it('lays each turnout of its own form, the middle turning by the difference of their angles', () => {
+    expect(res.valid).toBe(true)
+    expect(res.switchType.label).toBe('500 – 1:12')
+    expect(res.switchType2.label).toBe('760 – 1:14')
+    expect(res.throughLength2).toBeCloseTo(switchStraightLength(forms[1]), 9)
+    expect(res.L2).toBeCloseTo(switchBranchLength(forms[1]), 9)
+    // 1:12 out, 1:14 back in: the middle is an arc, not a straight.
+    expect(hasStraightMid(res)).toBe(false)
+  })
+
+  it('builds the records with their own forms and the through routes their own lengths', () => {
+    const commit = buildSCurve({ result: res, picks, tracks: project.tracks, switches: [], speed })
+    expect(commit.addSwitches.map(sw => sw.label)).toEqual(['500 – 1:12', '760 – 1:14'])
+    const conn = commit.addTracks.find(tr => tr.elements.some(el => !el.switchId))
+    expectNodesJoin(conn.elements)
+    expectTangentsContinuous(conn.elements, conn.epsg)
+    const routes = commit.addTracks.filter(tr => tr !== conn).flatMap(tr => tr.elements.filter(el => el.switchId))
+    const byForm = (label) => routes.find(el => commit.addSwitches.find(sw => sw.switchId === el.switchId)?.label === label)
+    expect(byForm('500 – 1:12').length).toBeCloseTo(switchStraightLength(forms[0]), 6)
+    expect(byForm('760 – 1:14').length).toBeCloseTo(switchStraightLength(forms[1]), 6)
+  })
+})

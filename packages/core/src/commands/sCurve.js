@@ -272,12 +272,15 @@ function turnoutOnElement(pick, toe, dir, opening, throughLength) {
     && far >= from - FIT_TOL && far <= to + FIT_TOL
 }
 
+/** The through length of turnout `k` (0 or 1) of a solved connection: each has its own form. */
+const throughOf = (res, k) => (k === 0 ? res.throughLength : res.throughLength2 ?? res.throughLength)
+
 /** Both turnouts of a solved connection on the elements they were picked on. */
 function turnoutsOnElements([p1, p2], dir1, shift, res) {
   if (res.s2 == null) return false
   const dir2 = res.flipped2 ? -1 : 1
-  return turnoutOnElement(p1, p1.along + dir1 * shift, dir1, 1, res.throughLength)
-      && turnoutOnElement(p2, p2.along + dir2 * res.s2, dir2, -1, res.throughLength)
+  return turnoutOnElement(p1, p1.along + dir1 * shift, dir1, 1, throughOf(res, 0))
+      && turnoutOnElement(p2, p2.along + dir2 * res.s2, dir2, -1, throughOf(res, 1))
 }
 
 // ── Minimum element length (LP.EL.01) ────────────────────────────────────────
@@ -296,7 +299,7 @@ function turnoutSpan(picks, k, shift, res) {
   const dir = k === 0 ? (stems(picks).g1.dir ?? 1) : (res.flipped2 ? -1 : 1)
   const toe = k === 0 ? p.along + dir * shift : p.along + dir * res.s2
   // The first turnout opens with the connection, the second against it.
-  const far = toe + dir * (k === 0 ? 1 : -1) * res.throughLength
+  const far = toe + dir * (k === 0 ? 1 : -1) * throughOf(res, k)
   const len = p.route.length
   return { toe, far, len, node: far > toe ? 0 : len }
 }
@@ -650,7 +653,6 @@ export function shiftSnaps({ picks, speed, mids = null, seed = null, form = null
   const atMin = solveConnection({ picks, speed, shift: bounds.min, mids, seed, form })
   const res = stands(atMin, lenient) ? atMin : solveConnection({ picks, speed, shift: bounds.max, mids, seed, form })
   if (!stands(res, lenient)) return []
-  const through = res.throughLength
   const [p1, p2] = picks
   const dir1 = stems(picks).g1.dir ?? 1
   const dir2 = res.flipped2 ? -1 : 1
@@ -660,9 +662,9 @@ export function shiftSnaps({ picks, speed, mids = null, seed = null, form = null
   const nodes = (p) => [...pickPieces(p).map(q => q.s0), pickExtent(p)[1]]
   // Turnout 1 opens with the connection: WE lies the through length ahead of WA.
   for (const node of [0, p1.route.length]) out.push((node - p1.along) * dir1)
-  for (const node of nodes(p1)) out.push((node - dir1 * through - p1.along) * dir1)
+  for (const node of nodes(p1)) out.push((node - dir1 * throughOf(res, 0) - p1.along) * dir1)
   // Turnout 2 opens against it: its WE lies the through length behind its WA.
-  const targets = [0, p2.route.length, ...nodes(p2).map(node => node + dir2 * through)]
+  const targets = [0, p2.route.length, ...nodes(p2).map(node => node + dir2 * throughOf(res, 1))]
   out.push(...secondToeCrossings({ picks, speed, mids, seed, form, lenient }, targets, bounds.min, bounds.max))
   out.push(...straightShifts({ picks, speed, mids, seed, form, lenient }, bounds))
   return uniqueStations(out).filter(s => s >= bounds.min - 1e-9 && s <= bounds.max + 1e-9)
@@ -726,7 +728,10 @@ export function buildSCurve({ result, picks, tracks, switches, speed, force = fa
   if (!t1 || !t2 || t1.id === t2.id) return null   // needs two distinct line tracks
 
   const zone   = res.zone
-  const swType = res.switchType   // the form the solver settled on (primary or fallback)
+  // The forms the solver settled on (primary or fallback), or the two the
+  // extended connection names (Entscheidung 0018).
+  const swType  = res.switchType
+  const swType2 = res.switchType2 ?? swType
   // The side the form is laid to, the same for both turnouts: track 2 lies to
   // the left of track 1 where track 1 lies to the left of track 2 run backwards,
   // which is the way the second turnout opens.
@@ -756,12 +761,12 @@ export function buildSCurve({ result, picks, tracks, switches, speed, force = fa
   // The identity each record shares with the elements of its two routes: the
   // id ties them together, and it has to exist before the first element is
   // marked — which here is before either record is built.
-  const identity = (old, no) => ({
-    ...newSwitchFields(), name: switchDesignation(no), label: swType.label,
+  const identity = (old, no, form) => ({
+    ...newSwitchFields(), name: switchDesignation(no), label: form.label,
     ...(old ? { switchId: old.switchId, name: old.name } : {}),
   })
-  const id1 = identity(identities?.[0], no1)
-  const id2 = identity(identities?.[1], no2)
+  const id1 = identity(identities?.[0], no1, swType)
+  const id2 = identity(identities?.[1], no2, swType2)
 
   // The connection track runs S1 → S2, so it begins at switch 1 and ends at switch 2.
   const connId = oldConn?.id ?? generateId()
@@ -776,7 +781,7 @@ export function buildSCurve({ result, picks, tracks, switches, speed, force = fa
   })
   const j2 = buildJunctionSwitch({
     jWgs: res.tp2Wgs, jNode: [res.TP2.easting, res.TP2.northing], zone,
-    tangentBearing: res.bearing2, side, sw: swType, speed, switchNumber: no2, identity: id2,
+    tangentBearing: res.bearing2, side, sw: swType2, speed, switchNumber: no2, identity: id2,
     // Turnout 2 opens against the direction the connection runs, so its stem
     // turns the other way under it.
     stemR: bentOnto(res.stemRoute2, res.stemR2 == null ? null : -res.stemR2), branchStraight: straight(res.chain2),

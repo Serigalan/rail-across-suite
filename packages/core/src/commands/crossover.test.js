@@ -3,7 +3,7 @@ import { adoptCrossover, crossoverRequest } from './crossover.js'
 import { computeShiftBounds, solveConnection } from './sCurve.js'
 import { minElementLength } from '../rules/elementLength.js'
 import { checkTrack } from '../rules/trassierungCheck.js'
-import { buildConnectionElements } from '../switch/switchConnectionUtils.js'
+import { buildConnectionElements, SWITCH_TYPES } from '../switch/switchConnectionUtils.js'
 
 const EPSG = 25832
 const P = (e, n) => ({ easting: e, northing: n, zone: EPSG })
@@ -53,6 +53,17 @@ describe('the Python solver of a switch connection (Entscheidungen 357–358)', 
     }
     // Relative to the first branch end, in metres.
     expect(Math.hypot(form.first[0].x, form.first[0].y)).toBeLessThan(1e-9)
+  })
+
+  it('samples each turnout of its own form where a pair is named (Entscheidung 0018)', () => {
+    const pair = ['500 – 1:12', '760 – 1:14'].map(label => SWITCH_TYPES.find(f => f.label === label))
+    const req = crossoverRequest({ picks, speed: SPEED, form: pair })
+    expect(req.forms).toHaveLength(1)
+    expect([req.forms[0].label, req.forms[0].label2]).toEqual(['500 – 1:12', '760 – 1:14'])
+    const same = crossoverRequest({ picks, speed: SPEED, form: pair[0] }).forms[0]
+    // The first branch end is the first form's either way, the second not.
+    expect(req.forms[0].first[10]).toEqual(same.first[10])
+    expect(req.forms[0].second[10].psi).not.toBeCloseTo(same.second[10].psi, 6)
   })
 
   it('adopts an answer as a shift and a spec with two values open, solved again here', () => {

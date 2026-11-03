@@ -2032,7 +2032,7 @@
   "crossover_edit_form": "Weichenform",
   "crossover_edit_error_none": "Das ist keine Weichenverbindung: ein Gleis, das an beiden Enden am Zweig einer Weiche endet.",
   "crossover_edit_error_mids": "Zwischen den beiden Weichen liegen keine oder mehr als drei Elemente.",
-  "crossover_edit_error_form": "Die beiden Weichen haben verschiedene Formen oder eine, die die Weichenverbindung nicht kennt.",
+  "crossover_edit_error_form": "Eine der beiden Weichen hat eine Form, die die Weichenverbindung nicht kennt.",
   "crossover_edit_error_line": "Die Weichen lassen sich nicht aus ihren Gleisen lösen: das Gleis läuft nicht durch beide hindurch, oder beide liegen im selben Gleis.",
   "crossover_edit_not_closing": "So, wie sie liegt, legt die Weichenverbindung diese Verbindung nicht – der Grund steht unten. Verschiebe die Weichen, ändere die Zwischenelemente oder lass den Python-Löser suchen.",
   "search_tracks": "Name, Strecke, Bahnhof…",

@@ -33,12 +33,12 @@ export function crossoverRequest({ picks, speed, form = null }) {
   const { g1, g2 } = stems(picks)
   const { flipped2, forms } = connectionBranchEnds(g1, g2, speed, { step: SAMPLE_STEP, reach: SEARCH_REACH, form })
   const origin = forms.flatMap(f => f.first)[0] ?? { x: 0, y: 0 }
-  const remnantsOk = (k, s, through) => !connectionRemnants(
-    picks, k === 0 ? s : 0, { s2: k === 1 ? s : 0, flipped2, throughLength: through }, speed,
+  const remnantsOk = (k, s, f) => !connectionRemnants(
+    picks, k === 0 ? s : 0, { s2: k === 1 ? s : 0, flipped2, throughLength: f.through, throughLength2: f.through2 }, speed,
   ).some(r => r.track === k && r.short)
-  const sample = (k, through) => (p) => ({
+  const sample = (k, f) => (p) => ({
     s: p.s, x: p.x - origin.x, y: p.y - origin.y, psi: p.psi, kappa: p.kappa,
-    tail: p.tail, cantLds: p.cantLds, ok: p.ok && remnantsOk(k, p.s, through),
+    tail: p.tail, cantLds: p.cantLds, ok: p.ok && remnantsOk(k, p.s, f),
   })
   const rw = comparisonRadiusLimits(speed)
   return {
@@ -53,8 +53,9 @@ export function crossoverRequest({ picks, speed, form = null }) {
     },
     forms: forms.map(f => ({
       label: f.sw.label,
-      first: f.first.map(sample(0, f.through)),
-      second: f.second.map(sample(1, f.through)),
+      label2: f.sw2.label,
+      first: f.first.map(sample(0, f)),
+      second: f.second.map(sample(1, f)),
     })),
   }
 }

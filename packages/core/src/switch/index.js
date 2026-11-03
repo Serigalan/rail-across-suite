@@ -30,7 +30,7 @@ export {
 } from './route.js'
 export { nearestValid, settleStation, uniqueStations, validIntervals } from './stationSlider.js'
 export {
-  buildConnectionElements, computeSwitchConnections, connectionBranchEnds, CONNECTION_SPEEDS,
+  buildConnectionElements, computeSwitchConnections, connectionBranchEnds, CONNECTION_SPEEDS, formPair,
   orientStemToward, solveSwitchConnection, SWITCH_TYPES,
 } from './switchConnectionUtils.js'
 export { planSwitchDeletion, switchParts } from './switchDelete.js'

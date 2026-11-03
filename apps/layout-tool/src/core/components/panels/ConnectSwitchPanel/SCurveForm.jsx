@@ -2,7 +2,7 @@ import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import { loadTracks, loadSwitches, commitSwitchConnection, commitSwitchConnectionEdit } from '../../../storage'
 import { elementStations, stationFromClick } from '@rail-across/core/track'
 import { wgs84ToUTM } from '@rail-across/core/geometry'
-import { SWITCH_TYPES, CONNECTION_SPEEDS, computeSwitchConnections, DEFAULT_MIDS } from '@rail-across/core/switch'
+import { SWITCH_TYPES, CONNECTION_SPEEDS, computeSwitchConnections, DEFAULT_MIDS, formPair } from '@rail-across/core/switch'
 import { ZOOM_LINE_WIDTH } from '../../../map/style'
 import { useI18n } from '../../../locales/i18nContext'
 import {
@@ -308,7 +308,8 @@ export default function SCurveForm({ onCommitted, edit = null }) {
       <>
         <div className="element-form">
           {edit && (
-            <ReadOnlyField label={t('crossover_edit_form')} value={`${form.label} · ${speed} km/h`} />
+            <ReadOnlyField label={t('crossover_edit_form')}
+              value={`${[...new Set(formPair(form).map(f => f.label))].join(' / ')} · ${speed} km/h`} />
           )}
           {!edit && <div className="form-field">
             <label>{t('field_speed')}</label>

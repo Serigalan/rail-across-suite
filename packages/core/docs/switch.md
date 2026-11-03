@@ -267,6 +267,13 @@ valid the slider spans the shifts at which one is overridable (`computeShiftBoun
 take one form instead of the speed's fallback chain: an existing connection is laid again with its own
 turnouts' form (see `commands/crossoverEdit.js`).
 
+**Two forms** (decision 0018). `form` may also be a pair [first turnout's, second turnout's] (`formPair`): each
+turnout is then its own form laid into its own track, with its own branch, through route and ldS. The result
+names both (`switchType`, `switchType2`, `throughLength`, `throughLength2`, `L1`, `L2`), the samples of
+`connectionBranchEnds` the second form's at the second branch end (`sw2`, `through2`), and `buildSCurve` writes
+each record with its own form. An edited connection whose turnouts differ comes back with the pair
+(`switchConnectionOf`: `forms`, `form`, the lower of the two speeds).
+
 ## Connecting to an open track end
 
 "Weiche/Kreuzung an Gleis anschließen" (`connectToTrack.js`): a turnout (or crossing) is laid into a host

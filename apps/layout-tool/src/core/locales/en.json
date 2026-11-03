@@ -2032,7 +2032,7 @@
   "crossover_edit_form": "Switch form",
   "crossover_edit_error_none": "This is no switch connection: a track that ends at a switch's branch at both ends.",
   "crossover_edit_error_mids": "There are no elements, or more than three, between the two switches.",
-  "crossover_edit_error_form": "The two switches have different forms, or one the switch connection does not know.",
+  "crossover_edit_error_form": "One of the two switches has a form the switch connection does not know.",
   "crossover_edit_error_line": "The switches cannot be taken out of their tracks: the track does not run on through both, or both lie in one track.",
   "crossover_edit_not_closing": "As it lies, the switch connection does not lay this connection – the reason is below. Move the switches, change the intermediate elements or let the Python solver search.",
   "search_tracks": "Name, line, station…",

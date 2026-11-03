@@ -163,6 +163,16 @@ describe('a switch connection, edited (Entscheidung 364)', () => {
     expect(found.speed).toBe(100)
   })
 
+  it('takes two turnouts of different forms as a pair, at the lower of their speeds', () => {
+    const [a, b] = project.switches
+    const mixed = project.switches.map(sw => ({ ...sw, label: sw === a ? '1200 – 1:19.277' : sw === b ? '500 – 1:12' : sw.label }))
+    const found = switchConnectionOf({ trackId: conn.id, tracks: project.tracks, switches: mixed })
+    expect(found.error).toBeUndefined()
+    expect(found.forms.map(f => f.label).sort()).toEqual(['1200 – 1:19.277', '500 – 1:12'])
+    expect(found.form).toEqual(found.forms)
+    expect(found.speed).toBe(60)
+  })
+
   it('names why it cannot be edited', () => {
     // More than three elements between the turnouts' routes.
     const found = switchConnectionOf({ trackId: conn.id, ...project })

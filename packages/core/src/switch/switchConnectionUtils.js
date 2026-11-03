@@ -105,11 +105,16 @@ function fallbackChain(speed) {
 }
 
 /**
- * The forms a connection may be built from: `form` alone where one is fixed —
- * a connection edited keeps its turnouts' form (Entscheidung 364) —, else the
- * fallback chain of the speed.
+ * The forms a connection may be built from, each a pair [first turnout's,
+ * second turnout's]: `form` alone where one is fixed — a connection edited
+ * keeps its turnouts' form (Entscheidung 364), the extended connection takes
+ * the two its dialog names, a pair (Entscheidung 0018) —, else the fallback
+ * chain of the speed, each form for both turnouts.
  */
-const formsFor = (speed, form = null) => (form ? [form] : fallbackChain(speed))
+const formsFor = (speed, form = null) => (form ? [formPair(form)] : fallbackChain(speed).map(formPair))
+
+/** A form for both turnouts, or a pair [first, second] as it is. */
+export const formPair = (form) => (Array.isArray(form) ? form : [form, form])
 
 /**
  * A stem is the element a turnout of the connection sits on, as the route it is
@@ -392,9 +397,10 @@ const branchDeficiency = (chain, uA, uB, speed) => Math.max(0, ...chain.map((pie
 }))
 
 /**
- * The connection built from one switch form, in the frame above.
+ * The connection built from a pair of switch forms ([first turnout's, second
+ * turnout's], formPair), in the frame above.
  *
- * Both turnouts are the form laid into their own track, so each branch runs the
+ * Each turnout is its form laid into its own track, so each branch runs its
  * form's own length on the curvature its stem adds to the form's
  * (branchRadius). The middle element turns by whatever is left between the two
  * branch ends; its length follows from where they are.
@@ -402,22 +408,27 @@ const branchDeficiency = (chain, uA, uB, speed) => Math.max(0, ...chain.map((pie
  * `seed` ({ ds, values }) starts a chain's iteration where an earlier answer
  * stood: the second toe `ds` from the first, the open values (switch/midChain).
  */
-function buildConnection(sw, frame, speed, mids = null, seed = null) {
+function buildConnection(forms, frame, speed, mids = null, seed = null) {
+  const [sw, sw2] = forms
   const { toe1, psiToe1, stem1, stem2, s1, side } = frame
   const w   = Math.atan(1 / sw.ratio)
-  const Lb  = switchBranchLength(sw)              // the form's branch, bent or not
-  const through = switchStraightLength(sw)
-  const formChain = formChainOf(sw, side)
+  // Each form's branch, bent or not, and its through route.
+  const Lb  = switchBranchLength(sw)
+  const Lb2 = switchBranchLength(sw2)
+  const through  = switchStraightLength(sw)
+  const through2 = switchStraightLength(sw2)
+  const formChain  = formChainOf(sw, side)
+  const formChain2 = formChainOf(sw2, side)
 
   // Branch 1 does not depend on s₂.
   const one = firstBranch(formChain, stem1, s1, through)
-  if (!one) return { sw, valid: false, reason: 'no_solution', Lg: NaN, s2: null }
+  if (!one) return { sw, sw2, valid: false, reason: 'no_solution', Lg: NaN, s2: null }
   const { chain1, B1E, t1 } = one
   const b1E = B1E.easting, b1N = B1E.northing
 
   /** Everything that depends on where turnout 2 sits. */
   const at = (s2) => {
-    const two = secondBranch(formChain, stem2, s2, through)
+    const two = secondBranch(formChain2, stem2, s2, through2)
     // A station off track 2's element has no stem under the turnout: no residual.
     if (!two) return { residual: NaN, Lg: NaN }
     const { B2A, t2 } = two
@@ -436,9 +447,9 @@ function buildConnection(sw, frame, speed, mids = null, seed = null) {
 
   // The search stays on the element the second turnout was picked on: outside it
   // there is no stem to lay a turnout in, and the shift bounds refuse it anyway.
-  const closed = solveStation(at, Lb, stem2.route.length + 2 * Lb)
+  const closed = solveStation(at, Lb2, stem2.route.length + 2 * Lb2)
   const single = isDefaultMids(mids)
-  const unsolved = (reason) => ({ sw, valid: false, reason, Lg: NaN, s2: null })
+  const unsolved = (reason) => ({ sw, sw2, valid: false, reason, Lg: NaN, s2: null })
   if (!single && midUnknowns(mids).length !== MID_OPEN) return unsolved('mid_unknowns')
 
   // Up to three elements between the branches (Entscheidung 305): solved by
@@ -494,10 +505,10 @@ function buildConnection(sw, frame, speed, mids = null, seed = null) {
   // read at the through route's station abreast (switchAbreast), so at the
   // switch end both tracks carry exactly one cant.
   const joints1 = switchChainJoints(stemUnder(stem1, s1, through))
-  const joints2 = switchChainJoints(stemUnder(reverseStem(stem2), -s2, through))
+  const joints2 = switchChainJoints(stemUnder(reverseStem(stem2), -s2, through2))
   const cantOn1 = (u) => stemCant(stem1, s1 + switchAbreast(u, joints1, Lb, through))
-  // Branch 2 runs from B2A, `Lb − v` from its own toe.
-  const cantOn2 = (v) => stemCant(stem2, s2 - switchAbreast(Lb - v, joints2, Lb, through))
+  // Branch 2 runs from B2A, `Lb2 − v` from its own toe.
+  const cantOn2 = (v) => stemCant(stem2, s2 - switchAbreast(Lb2 - v, joints2, Lb2, through2))
   const pieceCants = (chain, at) => {
     let u = 0
     return chain.map((piece) => {
@@ -517,9 +528,9 @@ function buildConnection(sw, frame, speed, mids = null, seed = null) {
   // which a turnout lies on its own track's sleepers. At WA they may differ
   // (Entscheidung 218). Where the form states no ldS, it is WE. Read along the
   // stem: an ldS beyond its last element takes the cant at its end.
-  const toLds    = through + (Number.isFinite(sw.lds) ? sw.lds : 0)
-  const cantLds1 = stemCant(stem1, s1 + toLds)
-  const cantLds2 = stemCant(stem2, s2 - toLds)
+  const toLds  = (form, length) => length + (Number.isFinite(form.lds) ? form.lds : 0)
+  const cantLds1 = stemCant(stem1, s1 + toLds(sw, through))
+  const cantLds2 = stemCant(stem2, s2 - toLds(sw2, through2))
   const cantMid  = Math.round((cantLds1 + cantLds2) / 2)
 
   const defOf = (chain, uA, uB) => branchDeficiency(chain, uA, uB, speed)
@@ -555,14 +566,14 @@ function buildConnection(sw, frame, speed, mids = null, seed = null) {
     && !(Math.abs(cantLds1 - cantLds2) > CANT_TOL)
 
   return {
-    sw, R: sw.R, w, side, delta, s2,
+    sw, sw2, R: sw.R, w, side, delta, s2,
     TP1: toe1, B1E, B2A, TP2,
     Lg, signedRg, mid, midShort, midJump: midCheck.jump, midJumpHints: midCheck.hints,
     chain1, chain2,
     // The branch radius each turnout is built with: the form's own arc, which
     // is the piece at the toe. A straight end piece says nothing about the form.
     signedR1: chain1[0].r1, signedR2: negR(chain2own[0].r1),
-    L1: Lb, L2: Lb,
+    L1: Lb, L2: Lb2,
     cant1Start, cant1End, cant2Start, cant2End, cants1, cants2, cantMid, cantLds1, cantLds2,
     cantDef: defMid, branchCantDef: Math.max(defB1, defB2),
     bearing1: bearingOf(psiToe1),
@@ -722,8 +733,9 @@ function endRun(chain) {
 
 /**
  * The two branch ends of a connection, each on its own, for every form the
- * speed falls back through (Entscheidung 358) — what the Python solver
- * searches over: turnout 1 sampled every `step` metres over the shifts that
+ * speed falls back through or the pair of forms given (Entscheidung 358) —
+ * what the search of the extended switch connection (crossover/, decision
+ * 0018) searches over: turnout 1 sampled every `step` metres over the shifts that
  * keep it on its element, turnout 2 likewise over its toe station s₂ (both as
  * solveSwitchConnection counts them). Each sample, at B1E or B2A and in the
  * direction the connection runs:
@@ -738,7 +750,8 @@ function endRun(chain) {
  * Only within `reach` of either pick: the search looks for a connection near
  * where it was asked for.
  *
- * Returns { flipped2, forms: [{ sw, through, first: [...], second: [...] }] }.
+ * Returns { flipped2, forms: [{ sw, sw2, through, through2, first: [...], second: [...] }] } —
+ * `sw` the first turnout's form, `sw2` the second's (`form` a pair [first, second], formPair).
  */
 export function connectionBranchEnds(g1, g2, speed, { step = 0.5, reach = 300, form = null } = {}) {
   const frame = connectionFrame(g1, g2, 0)
@@ -749,10 +762,12 @@ export function connectionBranchEnds(g1, g2, speed, { step = 0.5, reach = 300, f
     const n = Math.max(1, Math.ceil((range[1] - range[0]) / step))
     return [...Array(n + 1).keys()].map(i => range[0] + (range[1] - range[0]) * i / n)
   }
-  const forms = formsFor(speed, form).map(sw => {
+  const forms = formsFor(speed, form).map(([sw, sw2]) => {
     const through = switchStraightLength(sw)
+    const through2 = switchStraightLength(sw2)
     const formChain = formChainOf(sw, side)
-    const toLds = through + (Number.isFinite(sw.lds) ? sw.lds : 0)
+    const formChain2 = formChainOf(sw2, side)
+    const toLds = (f, length) => length + (Number.isFinite(f.lds) ? f.lds : 0)
     const branchOk = (chain, uA, uB) => Math.max(Math.abs(uA), Math.abs(uB)) <= MAX_SWITCH_CANT
       && branchDeficiency(chain, uA, uB, speed) <= MAX_SWITCH_CANT_DEF
     const first = grid(onElementRange(stem1, through, 1)).map(s => {
@@ -762,23 +777,23 @@ export function connectionBranchEnds(g1, g2, speed, { step = 0.5, reach = 300, f
       return {
         s, x: one.B1E.easting, y: one.B1E.northing, psi: one.t1,
         kappa: -endCurvature(one.chain1), tail: endRun(one.chain1),
-        cantLds: stemCant(stem1, s + toLds), ok: branchOk(one.chain1, uA, uB),
+        cantLds: stemCant(stem1, s + toLds(sw, through)), ok: branchOk(one.chain1, uA, uB),
       }
     }).filter(Boolean)
-    const second = grid(onElementRange(stem2, through, -1)).map(s => {
-      const two = secondBranch(formChain, stem2, s, through)
+    const second = grid(onElementRange(stem2, through2, -1)).map(s => {
+      const two = secondBranch(formChain2, stem2, s, through2)
       if (!two) return null
-      const uA = stemCant(stem2, s - through), uB = stemCant(stem2, s)
+      const uA = stemCant(stem2, s - through2), uB = stemCant(stem2, s)
       const chain2 = [...two.chain2own].reverse()
         .map(piece => ({ length: piece.length, r1: negR(piece.r2), r2: negR(piece.r1) }))
       return {
         s, x: two.B2A.easting, y: two.B2A.northing, psi: two.t2,
         // At B2A the connection runs against turnout 2's own direction.
         kappa: endCurvature(two.chain2own), tail: endRun(two.chain2own),
-        cantLds: stemCant(stem2, s - toLds), ok: branchOk(chain2, uA, uB),
+        cantLds: stemCant(stem2, s - toLds(sw2, through2)), ok: branchOk(chain2, uA, uB),
       }
     }).filter(Boolean)
-    return { sw, through, first, second }
+    return { sw, sw2, through, through2, first, second }
   })
   return { flipped2: frame.flipped2, forms }
 }
@@ -802,7 +817,7 @@ export function computeSwitchConnections(g1, g2, s = 0, mids = null, seed = null
   const frame = connectionFrame(g1, g2, s)
   return CONNECTION_SPEEDS.map(speed => ({
     speed,
-    valid: fallbackChain(speed).some(sw => buildConnection(sw, frame, speed, mids, seed).valid),
+    valid: fallbackChain(speed).some(sw => buildConnection(formPair(sw), frame, speed, mids, seed).valid),
   }))
 }
 
@@ -832,8 +847,8 @@ export function solveSwitchConnection(g1, g2, speed, s = 0, mids = null, seed = 
   const chain = formsFor(speed, form)
   let c = null
   let refused = null
-  for (const sw of chain) {
-    c = buildConnection(sw, frame, speed, mids, seed)
+  for (const pair of chain) {
+    c = buildConnection(pair, frame, speed, mids, seed)
     if (c.valid) break
     if (!refused && c.ruleOnly) refused = c
   }
@@ -843,6 +858,7 @@ export function solveSwitchConnection(g1, g2, speed, s = 0, mids = null, seed = 
 
   const gap = frame.gap
   const throughLength = switchStraightLength(c.sw)
+  const throughLength2 = switchStraightLength(c.sw2)
 
   // A pick the construction has no answer for comes back before anything is
   // derived from a point that does not exist.
@@ -851,7 +867,8 @@ export function solveSwitchConnection(g1, g2, speed, s = 0, mids = null, seed = 
       TP1: frame.toe1, R: c.sw.R, w: Math.atan(1 / c.sw.ratio), delta: 0, Lg: NaN, signedRg: null,
       arc1Coords: null, arc2Coords: null, midCoords: [], allCoords: [],
       branch1: [], branch2: [],
-      valid: false, overridable: false, reason: c.reason, zone, gap, switchType: c.sw, throughLength,
+      valid: false, overridable: false, reason: c.reason, zone, gap,
+      switchType: c.sw, switchType2: c.sw2, throughLength, throughLength2,
       s2: null, flipped2: frame.flipped2,
       cant1Start: 0, cant1End: 0, cant2Start: 0, cant2End: 0, cantMid: 0,
     }
@@ -915,7 +932,7 @@ export function solveSwitchConnection(g1, g2, speed, s = 0, mids = null, seed = 
     // to follow to end on the track — the radius at the toe carried on would
     // put the switch end beside it.
     stemRoute1: stemUnder(frame.stem1, frame.s1, throughLength),
-    stemRoute2: stemUnder(reverseStem(frame.stem2), -c.s2, throughLength),
+    stemRoute2: stemUnder(reverseStem(frame.stem2), -c.s2, throughLength2),
     cant1Start: c.cant1Start, cant1End: c.cant1End,
     cant2Start: c.cant2Start, cant2End: c.cant2End, cantMid: c.cantMid,
     cants1: c.cants1, cants2: c.cants2,
@@ -927,7 +944,9 @@ export function solveSwitchConnection(g1, g2, speed, s = 0, mids = null, seed = 
     allCoords,
     valid, overridable: overridable && !!arc1Coords && !!arc2Coords, reason: c.reason,
     zone,
-    gap, laenge, switchType: c.sw, throughLength,
+    gap, laenge,
+    // The form of each turnout and the length of its through route, WA to WE.
+    switchType: c.sw, switchType2: c.sw2, throughLength, throughLength2,
   }
 }
 

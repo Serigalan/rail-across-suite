@@ -81,9 +81,9 @@ const roundCant = (mm) => Math.sign(mm) * Math.round(Math.abs(mm) / CANT_STEP) *
 const AUTO_CANT_MIN_DEF = 60
 
 /**
- * computeAutoC's figures, for the optimizer service to propose the same cant
+ * computeAutoC's figures, for the optimizer module to propose the same cant
  * for every radius it tries (the splice's search for the largest radius that
- * keeps a track spacing, clearance.py `auto_cant`).
+ * keeps a track spacing, clearance.rs `auto_cant`).
  */
 export const AUTO_CANT_MODEL = {
   coeff: CANT_COEFF, defCoeff: CANT_DEF_COEFF, defMin: AUTO_CANT_MIN_DEF, max: MAX_CANT, step: CANT_STEP,

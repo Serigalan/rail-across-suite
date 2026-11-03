@@ -178,7 +178,7 @@ pub fn transition_shift(length: f64, radius: f64, profile: Profile) -> (f64, f64
 }
 
 /// Steps that keep a transition inside the sagitta budget at its tight end.
-fn transition_steps(length: f64, r1: Option<f64>, r2: Option<f64>) -> usize {
+pub fn transition_steps(length: f64, r1: Option<f64>, r2: Option<f64>) -> usize {
     let tight = [r1, r2].into_iter().flatten().filter(|r| *r != 0.0).map(f64::abs).fold(f64::INFINITY, f64::min);
     if !tight.is_finite() || length <= 0.0 {
         return 1; // no curvature: the chord is the curve
@@ -460,7 +460,7 @@ pub struct GroupFit {
 }
 
 /// March along an arc: end point and end bearing after |sweep| radians.
-fn arc_forward(e: f64, n: f64, bearing: f64, signed_r: f64, sweep_mag: f64) -> (Pt, f64) {
+pub fn arc_forward(e: f64, n: f64, bearing: f64, signed_r: f64, sweep_mag: f64) -> (Pt, f64) {
     let side = if signed_r >= 0.0 { 1.0 } else { -1.0 }; // +1 = right-hand curve
     let d = dir_of(bearing);
     let abs_r = signed_r.abs();

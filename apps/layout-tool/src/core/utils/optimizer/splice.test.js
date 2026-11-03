@@ -1,19 +1,17 @@
 import { describe, it, expect } from 'vitest'
-import { solveSplice } from './solveSplice'
 import { buildSplice, picksAtSpeed, spliceFromAnswer, splicePick, spliceRequest } from '@rail-across/core/src/commands/splice.js'
 import { straightElement, straightFrom, arcFrom, transitionElement } from '@rail-across/core/src/geometry/elementFactory.js'
 import { bearingAfterUtm, endPointCurvedUtm, endPointStraightUtm } from '@rail-across/core/src/geometry/elementUtils.js'
 import { rebuildCoords } from '@rail-across/core/src/track/trackModel.js'
 import { expectValidTrack } from '@rail-across/core/test/chainInvariants.js'
-import serviceAnswers from './serviceAnswers.json'
 import coreAnswers from '@rail-across/core/test/fixtures/splice_answers.json'
+import { built, solveSplice } from '../../test/optimizerModule'
 
-// The splice is computed in the browser (decision 294), ported from the
-// optimizer service's splice.py. It is held against what the service answers
-// for the very same requests — random geometries asked in every way a user
-// can ask them, with and without transitions, at the Regellänge — written by
-// services/optimizer/tests/splice_answers_fixture.py; the merged track it leads
-// to is checked like any other.
+// The splice as the dialog runs it: the optimizer module (optimizer/ of the
+// repository, decision 0019), as cargo built it — skipped where it has not
+// been. The module itself is held against the 243 answers the Python service
+// gave (optimizer/crates/optimizer/tests/splice.rs); here are the app's own
+// cases and the merged track the answers lead to, checked like any other.
 
 const NODE_TOL = 1e-6   // m
 
@@ -31,45 +29,7 @@ function expectSameSides(got, want) {
   })
 }
 
-function expectSameAnswer(local, service) {
-  if (service.error) {
-    expect(local.error).toBe(service.error)
-    for (const [k, tol] of [['rMax', 1], ['rMin', 1], ['lMax', 0.1]]) {
-      if (service.params[k] == null) expect(local.params[k]).toBeUndefined()
-      else expect(Math.abs(local.params[k] - service.params[k])).toBeLessThanOrEqual(tol + 1e-9)
-    }
-    if (service.lengths) expectSameSides(local.lengths, service.lengths)
-    return
-  }
-  expect(local.error).toBeUndefined()
-  expect(local.solutions.map(s => [s.ends.join(), s.alternative, s.arcJoin ?? null]))
-    .toEqual(service.solutions.map(s => [s.ends.join(), s.alternative, s.arcJoin ?? null]))
-  if (service.requested) expect(local.requested?.error).toBe(service.requested.error)
-  else expect(local.requested).toBeUndefined()
-  service.solutions.forEach((want, i) => {
-    const got = local.solutions[i]
-    expect(got).toMatchObject({ depPick: want.depPick, reverseDep: want.reverseDep, reverseArr: want.reverseArr })
-    expect(got.rebuilt).toBeCloseTo(want.rebuilt, 4)
-    expect(got.findings.map(f => [f.at, f.id, f.severity])).toEqual(want.findings)
-    expect([got.worst, got.judged]).toEqual([want.worst, want.judged])
-    if (want.lengths) expectSameSides(got.lengths, want.lengths)
-    expect(got.elements.map(el => [el.elementType, el.role])).toEqual(want.elements.map(el => [el.elementType, el.role]))
-    got.elements.forEach((el, k) => {
-      const w = want.elements[k]
-      for (const node of ['startNode', 'endNode']) {
-        expect(Math.hypot(el[node][0] - w[node][0], el[node][1] - w[node][1])).toBeLessThan(NODE_TOL)
-      }
-      for (const r of ['radius', 'r1', 'r2']) if (w[r] != null) expect(el[r]).toBeCloseTo(w[r], 6)
-      if (w.length != null) expect(el.length).toBeCloseTo(w.length, 6)
-    })
-  })
-}
-
-describe('the splice finds what the service finds', () => {
-  it.each(serviceAnswers.map(c => [c.name, c]))('%s', (_name, c) => {
-    expectSameAnswer(solveSplice(c.request), c.answer)
-  })
-
+describe.skipIf(!built)('the splice answers the app\'s cases', () => {
   it.each(Object.keys(coreAnswers))('the app\'s case %s', (name) => {
     const { request, answer } = coreAnswers[name]
     const local = solveSplice(request)
@@ -102,7 +62,7 @@ describe('the splice finds what the service finds', () => {
   })
 })
 
-describe('the merged track', () => {
+describe.skipIf(!built)('the merged track', () => {
   const EPSG = 25832
   const P = (x, y) => ({ easting: 500000 + x, northing: 5700000 + y, zone: EPSG })
   const at = ([e, n]) => ({ easting: e, northing: n, zone: EPSG })
@@ -167,7 +127,7 @@ describe('the merged track', () => {
   })
 })
 
-describe('the speed the dialog asks for', () => {
+describe.skipIf(!built)('the speed the dialog asks for', () => {
   // Track a runs east to x = 200 from x = 90, track b north from y = 100 at
   // x = 400, both at 80 km/h. An R 300 between them leaves 10 m of track a
   // before it: short of l_min at 80 km/h (12 m), enough at 60 (6 m).
@@ -203,7 +163,7 @@ describe('the speed the dialog asks for', () => {
   })
 })
 
-describe('what stays of a pick runs on into its track (Entscheidung 363)', () => {
+describe.skipIf(!built)('what stays of a pick runs on into its track (Entscheidung 363)', () => {
   // Test_Achsen 55501R in small: two straights of 10.25 m with different
   // cant, the second picked; an R 300 from x = 100 leaves it 10.25 m long,
   // short of l_min at 80 km/h (12 m) alone, one straight of 20.5 m with the

@@ -1,8 +1,8 @@
 import { extend, provide } from '../core/extensions'
 import {
-  ReconnectIcon, OptimizeTrackModeIcon, OptimizeElementModeIcon, AxisFitModeIcon,
+  OptimizeTrackModeIcon, OptimizeElementModeIcon, AxisFitModeIcon,
 } from '../core/components/icons'
-import { fetchRegelwerk, fetchRegelwerke, spliceOnServer } from './optimizerService'
+import { fetchRegelwerk, fetchRegelwerke } from './optimizerService'
 import ServiceStatus from './ServiceStatus'
 import { dgm1Relief, dgm1Source } from './terrainDgm1'
 import { serverClouds } from './cloudsOnServer'
@@ -14,7 +14,7 @@ import Cloud3dLink from './cloud3d/Cloud3dLink'
 import { legacySection, workingCopiesSection } from './localStoreSections'
 import { saveProjectMeta } from './projectMeta'
 import {
-  AxisFitTool, MdbDbrefImport, MdbImport, OptimizeElementTool, OptimizeTrackTool, ReconnectTool,
+  AxisFitTool, MdbDbrefImport, MdbImport, OptimizeElementTool, OptimizeTrackTool,
 } from './panels/tools'
 
 /**
@@ -23,12 +23,6 @@ import {
  * once, when the main build starts — before the first render. The local
  * build never imports this file.
  */
-
-// Reconnecting (the optimizer service) in the panel that connects elements,
-// beside splicing, which core computes itself (decision 294) — but for a
-// splice held to a spacing to another track, which the service computes (decision 295).
-provide('spliceWithClearance', spliceOnServer)
-extend('panelTools', { panel: 'splice', id: 'reconnect', icon: ReconnectIcon, titleKey: 'reconnect_title', Component: ReconnectTool })
 
 // The optimizer and the alignment fit in the check panel.
 extend('panelTools', { panel: 'check', id: 'track', section: 'check_optimize', icon: OptimizeTrackModeIcon, titleKey: 'optimize_mode_track', Component: OptimizeTrackTool })

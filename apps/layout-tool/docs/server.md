@@ -49,7 +49,6 @@ anything renders:
 | `basemaps` | "DGM1 der Länder": DGM5 with the service's 1 m relief tiles over it from map zoom 15 |
 | `cloudProviders`, `useCloudServer`, `useServerRun`, `useCloudRegistration`, `crossSectionTools`, `workspaceAddons` | point clouds on the server, long runs, re-referencing, the 3D window link |
 | `regelwerkService` | the rule catalogues as the service has them (with drift check) |
-| `spliceWithClearance` | splice with a spacing to a neighbouring track, computed by the service |
 | `saveProjectMeta` | title and description written to the server's project list too |
 | `localStoreSections` | the working copies in the storage dialog |
 

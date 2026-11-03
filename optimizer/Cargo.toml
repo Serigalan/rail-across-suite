@@ -3,7 +3,7 @@
 
 [workspace]
 resolver = "2"
-members = ["crates/optimizer"]
+members = ["crates/optimizer", "crates/wasm"]
 
 [workspace.package]
 version = "0.1.0"

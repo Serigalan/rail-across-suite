@@ -10,6 +10,8 @@ public/data/km
 public/data/km_linie.pmtiles
 # The crossover search module, built by tools/crossover.mjs
 public/crossover/
+# The track optimizer module, built by tools/optimizer.mjs
+public/optimizer-module/
 
 # Build output
 dist/

@@ -57,7 +57,7 @@ export default defineConfig(({ mode }) => ({
   server: mode === LOCAL ? {} : {
     proxy: {
       '/api': { target: process.env.OLT_API_TARGET ?? 'http://127.0.0.1:8787' },
-      '/optimizer': {
+      '/optimizer/': {
         target: process.env.OLT_OPTIMIZER_TARGET ?? 'http://127.0.0.1:8099',
         rewrite: path => path.replace(/^\/optimizer/, ''),
       },

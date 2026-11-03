@@ -301,6 +301,11 @@ jobs:
       - run: node tools/boundary.mjs --core
       - run: node tools/modules.mjs
       - run: node tools/docs.mjs
+      # The Rust modules beside the page (decisions 0018, 0019), so the tests
+      # that run them run too and the builds carry them.
+      - run: rustup target add wasm32-unknown-unknown
+      - run: npm run crossover
+      - run: npm run optimizer
       - run: npm test
       - run: npx vite build --outDir /tmp/olt-dist
       - run: npx vite build --mode standalone --outDir /tmp/olt-dist-local
@@ -329,8 +334,6 @@ jobs:
       - run: python tests/verify_reconnect.py
       - run: python tests/verify_clearance.py
       - run: python tests/verify_splice_props.py
-      # The app's splice (apps/layout-tool/src/core/utils/splice) is held against these answers (decision 294).
-      - run: python tests/splice_answers_fixture.py --check
       - run: python tests/verify.py
 
   # The suite's deployment (deploy/) and the Layout-Tool's check script.

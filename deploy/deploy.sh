@@ -116,6 +116,14 @@ if [ "$build" = 1 ]; then
     echo "WARNING: no crossover module — the extended switch connection cannot search" >&2
   fi
 
+  step "Optimizer module (optimizer/)"
+  # The Layout-Tool's track optimizer in Rust (decision 0019): splicing,
+  # reconnecting, optimizing, the alignment fit — built to WebAssembly and put
+  # beside its page. Without it those dialogs say the module is missing.
+  if ! (cd apps/layout-tool && node tools/optimizer.mjs); then
+    echo "WARNING: no optimizer module — splicing and optimizing cannot compute" >&2
+  fi
+
   step "Build"
   # Built beside the site directory and then synced into it: the directory
   # itself stays (a Caddy in a container may have it bind-mounted), and the

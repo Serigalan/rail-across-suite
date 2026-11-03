@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { loadTracks, commitReconnect, currentProject } from '../../../core/storage'
+import { loadTracks, commitReconnect, currentProject } from '../../../storage'
 import {
   axisPoints, buildReconnect, reconnectFromAnswer, reconnectPick, reconnectRange, reconnectRequest,
   replacedSpan, stretchDefaults, neighbourAxisNear,
@@ -7,23 +7,23 @@ import {
 import { gaugeProfile } from '@rail-across/core/crossSection'
 import { utmToWgs84 } from '@rail-across/core/geometry'
 import { trackLabel } from '@rail-across/core/track'
-import { reconnectOnServer } from '../../optimizerService'
+import { runOptimizer } from '../../../utils/optimizer'
 import { severityRank } from '@rail-across/core/rules'
-import { ZOOM_LINE_WIDTH } from '../../../core/map/style'
-import { TRACKS_HOVER_LAYER } from '../../../core/map/layerIds'
-import usePreview from '../../../core/map/usePreview'
-import useMapPick, { useSelectedOnMap } from '../../../core/map/useMapPick'
-import { useI18n } from '../../../core/locales/i18nContext'
-import { PALETTE } from '../../../core/styles/palette'
-import CommitBar from '../../../core/components/form/CommitBar'
-import CancelButton from '../../../core/components/form/CancelButton'
-import NumberInput from '../../../core/components/form/NumberInput'
-import ReadOnlyField from '../../../core/components/form/ReadOnlyField'
-import AdvancedInfo from '../../../core/components/form/AdvancedInfo'
-import SpliceFindings from '../../../core/components/panels/splice/SpliceFindings'
-import DeviationBand from '../../../core/components/chart/DeviationBand'
-import ClearanceFields from '../../../core/components/panels/splice/ClearanceFields'
-import { spacingMessage } from '../../../core/components/panels/splice/spacingMessage'
+import { ZOOM_LINE_WIDTH } from '../../../map/style'
+import { TRACKS_HOVER_LAYER } from '../../../map/layerIds'
+import usePreview from '../../../map/usePreview'
+import useMapPick, { useSelectedOnMap } from '../../../map/useMapPick'
+import { useI18n } from '../../../locales/i18nContext'
+import { PALETTE } from '../../../styles/palette'
+import CommitBar from '../../form/CommitBar'
+import CancelButton from '../../form/CancelButton'
+import NumberInput from '../../form/NumberInput'
+import ReadOnlyField from '../../form/ReadOnlyField'
+import AdvancedInfo from '../../form/AdvancedInfo'
+import SpliceFindings from './SpliceFindings'
+import DeviationBand from '../../chart/DeviationBand'
+import ClearanceFields from './ClearanceFields'
+import { spacingMessage } from './spacingMessage'
 
 const OLD_AXIS_SOURCE = 'reconnect-old-source'
 const NEW_AXIS_SOURCE = 'reconnect-new-source'
@@ -50,7 +50,7 @@ const PREVIEW_LAYERS = [{
   },
 }]
 
-/** How long the settings must rest before the service is asked [ms] — a search takes a second or two. */
+/** How long the settings must rest before the optimizer module is asked [ms] — a search takes a second or two. */
 const DEBOUNCE = 400
 /** The old axis on the map: one vertex in this many of the centimetre points. */
 const MAP_STRIDE = 50
@@ -75,9 +75,9 @@ function variantText(t, variant) {
 /**
  * "Bestehende Elemente neu verbinden" (Paket N): the first and the last
  * element of a stretch are clicked on one track, everything between is
- * chosen; its axis is held every centimetre, and the service joins the two
+ * chosen; its axis is held every centimetre, and the optimizer module joins the two
  * neighbours again by the splice construction — the best chain within the
- * tolerance at the speed asked for (olt_optimizer/reconnect.py). Taking it
+ * tolerance at the speed asked for (optimizer/…/reconnect.rs). Taking it
  * out and joining again is one commit (commands/reconnect buildReconnect).
  */
 export default function ReconnectPanel() {
@@ -162,11 +162,11 @@ export default function ReconnectPanel() {
           ? { ref: axis, dMin: Number(s.clearanceDMin), profile: gaugeProfile(currentProject()?.gaugeProfile).points }
           : null
         const req = reconnectRequest(picks, points, { ...s, radius }, clearance)
-        const a = await reconnectOnServer(req, { signal: ctl.signal })
+        const a = await runOptimizer('reconnect', req, { signal: ctl.signal })
         setAnswer({ key: requestKey, read: reconnectFromAnswer(a, picks, req) })
         setChosen(0)
       } catch (err) {
-        if (err?.name !== 'AbortError') setAnswer({ key: requestKey, read: { error: 'splice_service_unavailable' } })
+        if (err?.name !== 'AbortError') setAnswer({ key: requestKey, read: { error: err?.code === 'optimizer_missing' ? 'optimizer_missing' : 'splice_error_failed' } })
       }
     }, DEBOUNCE)
     return () => { clearTimeout(timer); ctl.abort() }

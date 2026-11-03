@@ -31,7 +31,6 @@
  *   useServerRun            long runs over the clouds on the server
  *   useCloudRegistration    a re-referencing the 3D window runs, seen in the section
  *   regelwerkService        the rule catalogues as the optimizer service has them
- *   spliceWithClearance     a splice held to a spacing to another track, (request, { signal }) → answer
  *   saveProjectMeta         the project's title and description stored elsewhere too, ({ title, description }, { t }) → Promise
  */
 

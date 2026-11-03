@@ -176,6 +176,17 @@ export const SwitchConnectionIcon = () => (
   </MenuIcon>
 )
 
+// The extended one: elements of their own between the branches.
+export const SwitchConnectionExtendedIcon = () => (
+  <MenuIcon>
+    <path d="M2 13 A5 5 0 0 1 6 10 L10 6 A5 5 0 0 0 14 3" />
+    <IconNode cx={2} cy={13} />
+    <IconNode cx={6} cy={10} />
+    <IconNode cx={10} cy={6} />
+    <IconNode cx={14} cy={3} />
+  </MenuIcon>
+)
+
 // Edit element panel
 export const EditLengthIcon = () => (
   <MenuIcon>

@@ -75,6 +75,15 @@ WE and ldS as dots; the wheel zooms about the pointer, a drag moves, a sleeper u
 and its stations. Around a laid turnout the partners of a switch connection, the turnouts close by and the
 tracks there are drawn with it (switch "Surroundings" in the header).
 
+**Switch connections** (`ConnectSwitchPanel/SCurveForm.jsx`, `ExtendedConnectionForm.jsx`, decision 0018 of the
+suite): the switch connection is two turnouts and one element between them, on a slider of the first toe that
+lays it on a straight between the turnouts first. The extended one takes each turnout of its own form, one to
+three elements between them — every sequence, or the ones set with their lengths and radii given or left to it
+— and lists what its search finds, nearest to the click first; the search runs in a worker
+(`utils/crossover/`) through the module beside the page (`public/crossover/`, built by `npm run crossover`
+from `crossover/` of the repository). Both share the picking (`useConnectionPicks`) and the preview
+(`connectionPreview.js`); editing a connection opens the one it needs.
+
 **Step notice** (`shell/StepNotice.jsx`): what the last step did, said once over the map ("Track 6340.12393
 created") with the way back, and the tracks it touched lit for a moment.
 

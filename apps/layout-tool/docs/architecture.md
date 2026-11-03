@@ -56,6 +56,7 @@ order — each needs only modules above it:
 | [km](modules/km.md) | geometry | kilometrage lines, line names |
 | [rules](../../../packages/core/docs/rules.md) *core* | geometry | rule catalogue DB Ril 800.0110, expression language, alignment checks, cant/speed/length limits |
 | [splice](modules/splice.md) | geometry, rules | joining two track ends (port of the service's splice) |
+| [crossover](modules/crossover.md) | — | the search of the extended switch connection (the Rust module beside the page) |
 | [track](../../../packages/core/docs/track.md) *core* | geometry, rules | tracks, switch records and ports, heights, links, track ends, platforms, routes |
 | [crossSection](../../../packages/core/docs/crossSection.md) *core* | geometry, track | cross section, superstructure, clearance contours |
 | [switch](../../../packages/core/docs/switch.md) *core* | geometry, rules, track | switch forms, routes, symbols, crossings, switch connections, deletion |
@@ -105,6 +106,7 @@ own module, and a worker only the server build needs lives in `src/server` (the 
 |---|---|
 | `utils/splice/spliceWorker.js` | the largest-radius search builds the splice many times (a second or two) |
 | `utils/pointCloud/pointCloudWorker.js` | importing gigabytes of LAS/LAZ/E57 into OPFS |
+| `utils/crossover/crossoverWorker.js` | the search of the extended switch connection (a few hundred milliseconds to seconds) |
 | `src/server/mdb/mdbWorker.js` | building, placing and transforming a whole MDB takes seconds |
 | `src/server/cloud3d/tileWorker.js` | decoding and transforming point tiles for the 3D view |
 

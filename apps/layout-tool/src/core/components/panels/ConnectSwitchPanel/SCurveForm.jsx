@@ -1,93 +1,29 @@
-import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
+import { useDeferredValue, useEffect, useMemo, useState } from 'react'
 import { loadTracks, loadSwitches, commitSwitchConnection, commitSwitchConnectionEdit } from '../../../storage'
-import { elementStations, stationFromClick } from '@rail-across/core/track'
-import { wgs84ToUTM } from '@rail-across/core/geometry'
+import { elementStations } from '@rail-across/core/track'
 import { SWITCH_TYPES, CONNECTION_SPEEDS, computeSwitchConnections, DEFAULT_MIDS, formPair } from '@rail-across/core/switch'
-import { ZOOM_LINE_WIDTH } from '../../../map/style'
 import { useI18n } from '../../../locales/i18nContext'
 import {
-  REASON_MSG, buildSCurve, computeShiftBounds, connectionPick, editCommit, hasStraightMid, isUsableStem, preferredShift,
+  REASON_MSG, buildSCurve, computeShiftBounds, editCommit, hasStraightMid, preferredShift,
   settleConnection, shiftSnaps, stems, straightShifts, waOffset, SLIDER_REACH,
 } from '@rail-across/core/commands'
 import StationSlider from '../../form/StationSlider'
 import { splitUnit } from '../../../locales/i18n'
 import { TRACKS_HOVER_LAYER } from '../../../map/layerIds'
 import usePreview from '../../../map/usePreview'
-import useMapPick from '../../../map/useMapPick'
-import { PALETTE } from '../../../styles/palette'
 import ReadOnlyField from '../../form/ReadOnlyField'
 import AdvancedInfo from '../../form/AdvancedInfo'
 import CommitBar from '../../form/CommitBar'
-import CancelButton from '../../form/CancelButton'
 import MidChainFields from './MidChainFields'
 import CrossoverSolver from './CrossoverSolver'
-
-// ── Preview layers (managed by usePreview) ────────────────────────────
-const SCURVE_PREVIEW_SOURCE = 'scurve-preview-source'
-const SCURVE_PREVIEW_LAYER  = 'scurve-preview-layer'
-const SCURVE_POINTS_SOURCE  = 'scurve-points-source'
-const SCURVE_POINTS_LAYER   = 'scurve-points-layer'
-
-const SCURVE_PREVIEW_LAYERS = [
-  {
-    sourceId: SCURVE_PREVIEW_SOURCE,
-    layer: {
-      id: SCURVE_PREVIEW_LAYER, type: 'line',
-      layout: { 'line-cap': 'round', 'line-join': 'round' },
-      paint: { 'line-color': ['get', 'colour'], 'line-width': ZOOM_LINE_WIDTH },
-    },
-  },
-  {
-    sourceId: SCURVE_POINTS_SOURCE,
-    layer: {
-      id: SCURVE_POINTS_LAYER, type: 'circle', source: SCURVE_POINTS_SOURCE,
-      paint: {
-        'circle-radius': 4, 'circle-color': PALETTE.previewPoint,
-        'circle-stroke-color': PALETTE.white, 'circle-stroke-width': 1.5,
-      },
-    },
-  },
-]
+import useConnectionPicks from './useConnectionPicks'
+import PickPhase from './PickPhase'
+import { PREVIEW_LAYERS, PREVIEW_SOURCE, POINTS_SOURCE, ldsCants, pointsGeoJSON, previewGeoJSON } from './connectionPreview'
 
 const RAD2DEG = 180 / Math.PI
 // Default speed — the one the R = 1200 form is built for, if it is in the table.
 const DEFAULT_TYPE = Math.max(0,
   CONNECTION_SPEEDS.indexOf(SWITCH_TYPES.find(s => s.R === 1200)?.speed))
-
-// Build the green/red preview: branch arc + middle element + branch arc
-function buildPreviewGeoJSON(result) {
-  const colour = result.valid ? PALETTE.valid : PALETTE.invalid
-  return {
-    type: 'FeatureCollection',
-    features: [
-      { type: 'Feature', properties: { colour },
-        geometry: { type: 'LineString', coordinates: result.arc1Coords ?? [] } },
-      { type: 'Feature', properties: { colour: PALETTE.previewLine },
-        geometry: { type: 'LineString', coordinates: result.midCoords } },
-      { type: 'Feature', properties: { colour },
-        geometry: { type: 'LineString', coordinates: result.arc2Coords ?? [] } },
-    ],
-  }
-}
-
-/**
- * The two cants at the ldS, for the message that they differ: as magnitudes,
- * signed only where they lean to different sides.
- */
-function ldsCants({ cantLds1: a = 0, cantLds2: b = 0 }) {
-  const opposite = a * b < 0
-  const show = (u) => String(opposite ? Math.round(u) : Math.abs(Math.round(u)))
-  return { u1: show(a), u2: show(b) }
-}
-
-function buildPointsGeoJSON(result) {
-  return {
-    type: 'FeatureCollection',
-    features: [result.tp1Wgs, result.b1eWgs, result.b2aWgs, result.tp2Wgs].map(c => ({
-      type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: c },
-    })),
-  }
-}
 
 /**
  * The switch connection dialog. `edit` ({ found, apart, start } of
@@ -98,11 +34,9 @@ function buildPointsGeoJSON(result) {
  */
 export default function SCurveForm({ onCommitted, edit = null }) {
   const { t, fill } = useI18n()
-  const [phase, setPhase]   = useState(edit ? 'config' : 'select_first')  // select_first | select_second | config
-  const [picks, setPicks]   = useState(edit?.apart.picks ?? [])
+  const { phase, picks, pickStatus, reset: resetPicks } = useConnectionPicks({ initial: edit?.apart.picks ?? null })
   const [speedIdx, setSpeedIdx] = useState(DEFAULT_TYPE)   // selected design speed (index into CONNECTION_SPEEDS)
   const [shiftRaw, setShift] = useState(edit?.start.shift ?? null)   // start-point offset along line 1 [m]; null: the preferred one
-  const [pickStatus, setPickStatus] = useState(null)    // { msg, error } — selection phases only
   // Straight the turnouts' through routes need beside the junction [m], set
   // when the commit found too little of it (see carveThrough).
   const [carveError, setCarveError] = useState(null)
@@ -117,55 +51,13 @@ export default function SCurveForm({ onCommitted, edit = null }) {
   const [seed, setSeed] = useState(edit?.start.seed ?? null)
   const [adoptAt, setAdoptAt] = useState(null)
 
-  const picksRef = useRef(picks)
   // An edited connection keeps its form and its speed.
   const form     = edit?.found.form ?? null
   const speed    = edit ? edit.found.speed : CONNECTION_SPEEDS[speedIdx] ?? 0
   // The tracks the dialog works on: an edited connection's taken apart.
   const tracksNow = () => edit?.apart.tracks ?? loadTracks()
 
-  useEffect(() => { picksRef.current = picks }, [picks])
-
-  // Hover highlight while selecting
-
-  // Setup / cleanup preview layers
-  const preview = usePreview(SCURVE_PREVIEW_LAYERS, { resetFilters: [TRACKS_HOVER_LAYER], resetCursor: true })
-
-
-  // ── Click handler for the two selection phases ────────────────────────────
-  useMapPick({
-    active: phase === 'select_first' || phase === 'select_second', hover: 'element',
-    onPick: ({ trackId, elementIndex }, e) => {
-      const elIdx = elementIndex
-      const track  = loadTracks().find(tr => tr.id === trackId)
-      const el     = track?.elements?.[elIdx]
-      if (!el) return
-
-      if (!isUsableStem(el)) {
-        setPickStatus({ msg: t('scurve_hint_no_bloss'), error: true })
-        return
-      }
-
-      // The clicked point as a station along the element — along its own curve,
-      // whatever kind it is. stationFromClick counts along the whole track.
-      const clickUtm = wgs84ToUTM([e.lngLat.lng, e.lngLat.lat], track.epsg)
-      const elStart  = elementStations(track)[elIdx]?.start ?? 0
-      const along    = Math.min(el.length, Math.max(0, (stationFromClick(track, elIdx, clickUtm) ?? elStart) - elStart))
-      const pick     = connectionPick(track, elIdx, along)
-
-      if (phase === 'select_first') {
-        setPicks([pick])
-        setPickStatus(null)
-        setPhase('select_second')
-      } else {
-        const first = picksRef.current[0]
-        if (first && first.trackId === trackId && first.elIdx === elIdx) return
-        setPicks([first, pick])
-        setPickStatus(null)
-        setPhase('config')
-      }
-    },
-  })
+  const preview = usePreview(PREVIEW_LAYERS, { resetFilters: [TRACKS_HOVER_LAYER], resetCursor: true })
 
   // ── Where the slider may stand: both turnouts on the elements they were
   // picked on, the connection valid throughout — or, where it is valid
@@ -234,8 +126,8 @@ export default function SCurveForm({ onCommitted, edit = null }) {
   // ── Preview (the map is the only thing outside React here) ────────────────
   useEffect(() => {
     if (stands) {
-      preview.set(SCURVE_PREVIEW_SOURCE, buildPreviewGeoJSON(result))
-      preview.set(SCURVE_POINTS_SOURCE, buildPointsGeoJSON(result))
+      preview.set(PREVIEW_SOURCE, previewGeoJSON(result))
+      preview.set(POINTS_SOURCE, pointsGeoJSON(result))
     } else {
       preview.clear()
     }
@@ -263,10 +155,8 @@ export default function SCurveForm({ onCommitted, edit = null }) {
 
   const reset = () => {
     preview.clear()
-    setPhase('select_first')
-    setPicks([])
+    resetPicks()
     setShift(null)
-    setPickStatus(null)
     setCarveError(null)
     setMids(DEFAULT_MIDS)
     setSeed(null)
@@ -443,22 +333,5 @@ export default function SCurveForm({ onCommitted, edit = null }) {
   }
 
   // select_first / select_second
-  return (
-    <>
-      <p>{phase === 'select_first' ? t('scurve_hint_first') : t('scurve_hint_second')}</p>
-      {picks.length > 0 && (
-        <p className="msg-info">
-          {t('scurve_line1')}: {picks[0].name}
-        </p>
-      )}
-      {pickStatus && (
-        <p className={pickStatus.error ? 'msg-error' : 'msg-hint'}>
-          {pickStatus.msg}
-        </p>
-      )}
-      {phase === 'select_second' && (
-        <CancelButton className="ui-btn ui-btn-block mt-8" onClick={handleCancel} />
-      )}
-    </>
-  )
+  return <PickPhase phase={phase} picks={picks} pickStatus={pickStatus} onCancel={handleCancel} />
 }

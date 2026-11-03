@@ -15,8 +15,10 @@ import { useI18n } from '../../../locales/i18nContext'
  * the branch take the sum of both. A symmetrical turnout has no such stem: its
  * two routes are already the form's own mirror arcs, so there is no through
  * route left to bend one further onto.
+ *
+ * `label` names the field where a dialog has more than one form to pick.
  */
-export default function SwitchFormField({ value, onChange, hideSymmetric = false }) {
+export default function SwitchFormField({ value, onChange, hideSymmetric = false, label = null }) {
   const { t } = useI18n()
   const optionen = (klasse) => SWITCH_PICK_TYPES
     .map((form, i) => ({ form, i }))
@@ -26,7 +28,7 @@ export default function SwitchFormField({ value, onChange, hideSymmetric = false
 
   return (
     <div className="form-field">
-      <label>{t('switch_form')}</label>
+      <label>{label ?? t('switch_form')}</label>
       <select value={value} onChange={e => onChange(Number(e.target.value))}>
         <optgroup label={t('switch_form_regel')}>{optionen('regel')}</optgroup>
         <optgroup label={t('switch_form_sonder')}>{optionen('sonderbauform')}</optgroup>

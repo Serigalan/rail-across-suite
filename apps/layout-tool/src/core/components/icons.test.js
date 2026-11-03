@@ -18,7 +18,7 @@ const MENU_ICONS = [
   'BackIcon', 'SearchIcon', 'ConfirmIcon', 'CancelIcon',
   'CreateLineIcon', 'CreateArcIcon', 'CreateParallelIcon', 'CreateParallelTrackIcon',
   'ConnectStraightIcon', 'ConnectCurvedIcon',
-  'SwitchOnTrackIcon', 'SwitchConnectTrackIcon', 'SwitchConnectionIcon',
+  'SwitchOnTrackIcon', 'SwitchConnectTrackIcon', 'SwitchConnectionIcon', 'SwitchConnectionExtendedIcon',
   'EditLengthIcon', 'DeleteElementIcon', 'EditTracksIcon', 'EditPropertiesIcon',
   'ChangeDirectionIcon', 'AssignTracksIcon', 'DeleteTrackIcon', 'DeleteSwitchIcon', 'TrackVisibilityIcon', 'RouteIcon',
   'OptimizeTrackModeIcon', 'OptimizeElementModeIcon', 'AxisFitModeIcon', 'BandsIcon',

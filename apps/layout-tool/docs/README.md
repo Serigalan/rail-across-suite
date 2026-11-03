@@ -28,6 +28,7 @@ whoever maintains or reviews the tool. User guidance is in the app (*Leitfaden*,
 | [crossSection](../../../packages/core/docs/crossSection.md) | cross section, superstructure, clearance contours |
 | [commands](../../../packages/core/docs/commands.md) | what the dialogs commit |
 | [splice](modules/splice.md) | joining two track ends |
+| [crossover](modules/crossover.md) | the search of the extended switch connection |
 | [survey](../../../packages/core/docs/survey.md) | measured axes, reference axes, shift values, alignment fit |
 | [exchange](modules/exchange.md) | RailJSON/OSRD, Verm.ESN, ProVI, Gleislage CSV, MDB |
 | [plan](modules/plan.md) | plan export |

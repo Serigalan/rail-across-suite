@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { Suspense, lazy, useState } from 'react'
 import ShiftValuesPage from './shift/ShiftValuesPage'
 import GroupedTrackList from './GroupedTrackList'
 import {
-  PhysicsIcon, RegelwerkIcon, BandsIcon, ShiftValuesIcon,
+  PhysicsIcon, RegelwerkIcon, BandsIcon, ShiftValuesIcon, OptimizeTrackModeIcon, OptimizeElementModeIcon, AxisFitModeIcon,
 } from '../icons'
 import { useTracks } from '../../hooks/useStore'
 import { useI18n } from '../../locales/i18nContext'
@@ -11,6 +11,16 @@ import BackButton from './BackButton'
 import PanelToolButtons from './PanelTools'
 import { extensionsOf } from '../../extensions'
 import InfoTip from '../form/InfoTip'
+
+// The optimizer is its own chunk, loaded the first time it is opened.
+const OptimizeTrackPanel = lazy(() => import('./optimize/OptimizeTrackPanel'))
+
+// The optimizer's three ways in: a track, an element, the alignment fit.
+const OPTIMIZE_MODES = [
+  { id: 'track', icon: OptimizeTrackModeIcon, titleKey: 'optimize_mode_track' },
+  { id: 'element', icon: OptimizeElementModeIcon, titleKey: 'optimize_mode_element' },
+  { id: 'axis', icon: AxisFitModeIcon, titleKey: 'optimize_mode_axis' },
+]
 
 /**
  * The bands of a track: pick one from the list or on the map, and its
@@ -41,8 +51,8 @@ function BandsPage({ trackId, onShow, onExit }) {
  * the alignment fit from a measured axis (AP 12.5). Last the bands of a track,
  * to read its alignment along it at one glance, and the shift values of a
  * track against a reference axis (Paket V). The optimizer and the alignment
- * fit run on the optimizer service: the server puts them in (`panelTools` of
- * 'check', Paket L).
+ * fit run in the browser, in the optimizer module (decision 0019 of the
+ * suite); a server may put more tools in (`panelTools` of 'check', Paket L).
  */
 export default function CheckPanel({ onShowPhysics, onShowRegelwerk, bandsTrackId, onShowBands }) {
   const { t } = useI18n()
@@ -64,6 +74,14 @@ export default function CheckPanel({ onShowPhysics, onShowRegelwerk, bandsTrackI
       </>
     )
   }
+  const mode = OPTIMIZE_MODES.find(m => `optimize-${m.id}` === page)
+  if (mode) {
+    return (
+      <Suspense fallback={<p className="selecting-hint">…</p>}>
+        <OptimizeTrackPanel initialPage={mode.id} onExit={() => setPage('menu')} onShowRegelwerk={onShowRegelwerk} />
+      </Suspense>
+    )
+  }
   const tools = extensionsOf('panelTools').filter(x => x.panel === 'check')
   const tool = tools.find(x => x.id === page)
   if (tool) {
@@ -82,6 +100,13 @@ export default function CheckPanel({ onShowPhysics, onShowRegelwerk, bandsTrackI
           <RegelwerkIcon />
           {t('constraints_regelwerk')}
         </button>
+        <span className="create-element-section">{t('check_optimize')}</span>
+        {OPTIMIZE_MODES.map(({ id, icon: Icon, titleKey }) => (
+          <button key={id} className="ui-btn ui-btn-option" onClick={() => setPage(`optimize-${id}`)}>
+            <Icon />
+            {t(titleKey)}
+          </button>
+        ))}
         <PanelToolButtons panel="check" onPick={setPage} />
         <span className="create-element-section">{t('check_bands')}</span>
         <button className="ui-btn ui-btn-option" onClick={() => setPage('bands')}>

@@ -1,28 +1,28 @@
 import { useEffect, useMemo, useState } from 'react'
 import maplibregl from 'maplibre-gl'
-import { commitImport } from '../../../core/storage'
+import { commitImport } from '../../../storage'
 import {
   ALIGN_DEFAULTS, alignRequest, deleteStraight, elementReport, fittedCurvature, gradientReport,
   parseAxisPointFile, straightRanges, surveyAxis, trackFromFit,
 } from '@rail-across/core/survey'
-import { alignOnServer, optimizerReachable, OptimizerError } from '../../optimizerService'
-import { optimizeErrorText } from '@rail-across/core/commands'
+import { runOptimizer } from '../../../utils/optimizer'
+import { moduleErrorText } from './moduleErrorText'
 import {
   reconstructElements, FILE_CRS_OPTIONS, crsLabel, projectCrsOptions, utmToWgs84,
 } from '@rail-across/core/geometry'
-import { useI18n } from '../../../core/locales/i18nContext'
-import { useAxisSurveys, useTracks } from '../../../core/hooks/useStore'
-import { useMap } from '../../../core/map/MapContext'
-import usePreview from '../../../core/map/usePreview'
-import { ZOOM_LINE_WIDTH } from '../../../core/map/style'
-import { PALETTE } from '../../../core/styles/palette'
-import useElapsed from '../../../core/hooks/useElapsed'
-import CommitBar from '../../../core/components/form/CommitBar'
-import FilePickButton from '../../../core/components/form/FilePickButton'
-import NumberInput from '../../../core/components/form/NumberInput'
-import CurvatureChart from '../../../core/components/chart/CurvatureChart'
-import useAxisPointEraser from '../../../core/components/panels/pointCloud/useAxisPointEraser'
-import InfoTip from '../../../core/components/form/InfoTip'
+import { useI18n } from '../../../locales/i18nContext'
+import { useAxisSurveys, useTracks } from '../../../hooks/useStore'
+import { useMap } from '../../../map/MapContext'
+import usePreview from '../../../map/usePreview'
+import { ZOOM_LINE_WIDTH } from '../../../map/style'
+import { PALETTE } from '../../../styles/palette'
+import useElapsed from '../../../hooks/useElapsed'
+import CommitBar from '../../form/CommitBar'
+import FilePickButton from '../../form/FilePickButton'
+import NumberInput from '../../form/NumberInput'
+import CurvatureChart from '../../chart/CurvatureChart'
+import useAxisPointEraser from '../../panels/pointCloud/useAxisPointEraser'
+import InfoTip from '../../form/InfoTip'
 
 /** How long edits must rest before the service is asked again [ms]. */
 const ALIGN_DEBOUNCE = 300
@@ -100,16 +100,9 @@ export default function AxisFitPanel({ backButton }) {
   const [answer, setAnswer] = useState(null)       // { key, data } | { key, error }
   const [selected, setSelected] = useState(null)
   const [inserting, setInserting] = useState(false)
-  const [reachable, setReachable] = useState(null)
   const [hover, setHover] = useState(null)
   const [done, setDone] = useState(null)
   const [erasing, setErasing] = useState(false)    // taking single points out of the survey on the map
-
-  useEffect(() => {
-    let cancelled = false
-    optimizerReachable().then(ok => { if (!cancelled) setReachable(ok) })
-    return () => { cancelled = true }
-  }, [])
 
   // The points in use: a survey's, or the file's in the plane chosen for it.
   // `id` is which points they are, `key` which state of them.
@@ -136,14 +129,11 @@ export default function AxisFitPanel({ backButton }) {
     const timer = setTimeout(async () => {
       try {
         const body = alignRequest(source.points, { straights: straights && straightRanges(straights), settings })
-        const data = await alignOnServer(body, { signal: ctl.signal })
+        const data = await runOptimizer('align', body, { signal: ctl.signal })
         setAnswer({ key: requestKey, data, sourceId: source.id })
-        setReachable(true)
       } catch (err) {
         if (err?.name === 'AbortError') return
-        const code = err instanceof OptimizerError ? err.code : 'unavailable'
-        setAnswer({ key: requestKey, error: optimizeErrorText(t, code, err.detail), sourceId: source.id })
-        if (code === 'unavailable') setReachable(false)
+        setAnswer({ key: requestKey, error: moduleErrorText(t, err), sourceId: source.id })
       }
     }, ALIGN_DEBOUNCE)
     return () => { clearTimeout(timer); ctl.abort() }
@@ -291,13 +281,11 @@ export default function AxisFitPanel({ backButton }) {
             {t('align_settings_reset')}
           </button>
         </details>
-        {reachable === false
-          ? <p className="msg-error">{t('align_err_unavailable')}</p>
-          : !started && (
-            <button className="ui-btn ui-btn-primary ui-btn-block" disabled={!source} onClick={() => { setDone(null); setStarted(true) }}>
-              {t('align_run')}
-            </button>
-          )}
+        {!started && (
+          <button className="ui-btn ui-btn-primary ui-btn-block" disabled={!source} onClick={() => { setDone(null); setStarted(true) }}>
+            {t('align_run')}
+          </button>
+        )}
         {running && <div className="run-status"><span>{t('optimize_running')} {fill('run_elapsed', { s: elapsed })}</span></div>}
         {failure && <p className="msg-error">{failure}</p>}
         {done && <p className="msg-info">{done}</p>}

@@ -13,18 +13,22 @@
 //! packages/core/constraints/tests/ hold the expression language, the check
 //! and the shortest transition lengths to the app's own (tests/vectors.rs).
 
+pub mod alignment;
 pub mod clearance;
 pub mod element;
 pub mod expr;
 pub mod geometry;
+pub mod gradient;
 pub mod grenzen;
 pub mod katalog;
 pub mod numerics;
+pub mod optimize;
 pub mod poly;
 pub mod pruefung;
 pub mod reconnect;
 pub mod rules;
 pub mod splice;
+pub mod track;
 
 use std::collections::HashMap;
 
@@ -59,6 +63,9 @@ fn load_rules(catalogue: &Value) -> Result<&'static rules::Rules<'static>, Strin
 ///
 /// * `splice` — "Zwei Gleise zusammenfügen", with or without a spacing ([`splice::splice_payload`])
 /// * `reconnect` — "Bestehende Elemente neu verbinden" ([`reconnect::reconnect_payload`])
+/// * `optimize` — a track or one curve of it at a higher speed ([`optimize::optimize_payload`])
+/// * `align` — an alignment and its gradient from measured axis points ([`alignment::align_payload`])
+/// * `limits` — what a run is held to at both levels, for the regelwerk popup
 ///
 /// A request that is not one answers `{"error": "invalid_request", "detail"}`.
 pub fn run_json(text: &str) -> String {
@@ -73,6 +80,12 @@ pub fn run_json(text: &str) -> String {
         match message.get("op").and_then(Value::as_str) {
             Some("splice") => splice::splice_payload(rules, request),
             Some("reconnect") => reconnect::reconnect_payload(rules, request),
+            Some("optimize") => optimize::optimize_payload(rules, request),
+            Some("align") => alignment::align_payload(request),
+            Some("limits") => Ok(json!({
+                "id": rules.katalog.id, "name": rules.katalog.title, "version": rules.katalog.version,
+                "grenzwerte": {"reg": rules.reg.describe(), "discretion": rules.discretion.describe()},
+            })),
             other => Err(format!("invalid request: unknown op {other:?}")),
         }
     })();

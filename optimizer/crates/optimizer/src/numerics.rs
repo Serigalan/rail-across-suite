@@ -240,6 +240,141 @@ pub fn fminbound(mut f: impl FnMut(f64) -> f64, x1: f64, x2: f64, xatol: f64, ma
     xf
 }
 
+/// A small generator of its own (SplitMix64), seeded, so that a run gives the
+/// same answer every time — not numpy's Mersenne Twister, so not scipy's
+/// numbers, but the same kind of search.
+#[derive(Debug, Clone)]
+pub struct Rng(u64);
+
+impl Rng {
+    pub fn new(seed: u64) -> Rng {
+        Rng(seed.wrapping_mul(0x9E37_79B9_7F4A_7C15) ^ 0xD1B5_4A32_D192_ED03)
+    }
+
+    fn next_u64(&mut self) -> u64 {
+        self.0 = self.0.wrapping_add(0x9E37_79B9_7F4A_7C15);
+        let mut z = self.0;
+        z = (z ^ (z >> 30)).wrapping_mul(0xBF58_476D_1CE4_E5B9);
+        z = (z ^ (z >> 27)).wrapping_mul(0x94D0_49BB_1331_11EB);
+        z ^ (z >> 31)
+    }
+
+    /// Uniform on [0, 1).
+    pub fn uniform(&mut self) -> f64 {
+        (self.next_u64() >> 11) as f64 / (1u64 << 53) as f64
+    }
+
+    /// Uniform on 0..n.
+    pub fn below(&mut self, n: usize) -> usize {
+        ((self.uniform() * n as f64) as usize).min(n - 1)
+    }
+}
+
+/// What Differential Evolution is asked for — scipy's
+/// `differential_evolution` with `strategy="best1bin"`, `mutation=(0.5, 1)`,
+/// `recombination=0.7`, `init="latinhypercube"`, `polish=False`,
+/// `updating="immediate"`.
+#[derive(Debug, Clone)]
+pub struct Evolution {
+    pub maxiter: usize,
+    pub popsize: usize,
+    pub tol: f64,
+    pub seed: u64,
+    /// A vector to start from: it replaces the first member of the population.
+    pub x0: Option<Vec<f64>>,
+}
+
+/// Minimize `f` within `bounds` by Differential Evolution; the best vector found.
+pub fn differential_evolution(mut f: impl FnMut(&[f64]) -> f64, bounds: &[(f64, f64)], opts: &Evolution) -> Vec<f64> {
+    let n = bounds.len();
+    let mut rng = Rng::new(opts.seed);
+    let size = (opts.popsize * n).max(5);
+    let scale = |unit: &[f64]| -> Vec<f64> { unit.iter().zip(bounds).map(|(u, (lo, hi))| lo + u * (hi - lo)).collect() };
+    let unscale = |x: &[f64]| -> Vec<f64> {
+        x.iter()
+            .zip(bounds)
+            .map(|(v, (lo, hi))| if hi > lo { (v - lo) / (hi - lo) } else { 0.0 })
+            .collect()
+    };
+    if n == 0 {
+        return Vec::new();
+    }
+
+    // Latin hypercube: one sample in each of `size` segments, per coordinate,
+    // the segments shuffled column by column.
+    let segment = 1.0 / size as f64;
+    let mut pop: Vec<Vec<f64>> = (0..size)
+        .map(|i| (0..n).map(|_| segment * rng.uniform() + i as f64 * segment).collect())
+        .collect();
+    #[allow(clippy::needless_range_loop)]
+    for j in 0..n {
+        for i in (1..size).rev() {
+            let k = rng.below(i + 1);
+            let (a, b) = (pop[i][j], pop[k][j]);
+            pop[i][j] = b;
+            pop[k][j] = a;
+        }
+    }
+    if let Some(x0) = &opts.x0 {
+        pop[0] = unscale(x0).into_iter().map(|u| u.clamp(0.0, 1.0)).collect();
+    }
+    let mut energies: Vec<f64> = pop.iter().map(|u| f(&scale(u))).collect();
+    // The best to the front.
+    let best = (0..size).min_by(|&a, &b| energies[a].total_cmp(&energies[b])).unwrap();
+    pop.swap(0, best);
+    energies.swap(0, best);
+
+    let converged = |e: &[f64]| {
+        let mean = e.iter().sum::<f64>() / e.len() as f64;
+        let var = e.iter().map(|v| (v - mean).powi(2)).sum::<f64>() / e.len() as f64;
+        var.is_finite() && var.sqrt() <= opts.tol * mean.abs()
+    };
+    for _ in 0..opts.maxiter {
+        let mutation = 0.5 + 0.5 * rng.uniform(); // dithered, once per generation
+        for candidate in 0..size {
+            // Two members other than the candidate, distinct.
+            let mut pick = || loop {
+                let r = rng.below(size);
+                if r != candidate {
+                    return r;
+                }
+            };
+            let r0 = pick();
+            let r1 = loop {
+                let r = pick();
+                if r != r0 {
+                    break r;
+                }
+            };
+            let fill = rng.below(n);
+            let mut trial = pop[candidate].clone();
+            for j in 0..n {
+                if j == fill || rng.uniform() < 0.7 {
+                    trial[j] = pop[0][j] + mutation * (pop[r0][j] - pop[r1][j]);
+                }
+            }
+            for v in trial.iter_mut() {
+                if !(0.0..=1.0).contains(v) {
+                    *v = rng.uniform();
+                }
+            }
+            let energy = f(&scale(&trial));
+            if energy <= energies[candidate] {
+                pop[candidate] = trial.clone();
+                energies[candidate] = energy;
+                if energy < energies[0] {
+                    energies[0] = energy;
+                    pop[0] = trial;
+                }
+            }
+        }
+        if converged(&energies) {
+            break;
+        }
+    }
+    scale(&pop[0])
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -257,6 +392,35 @@ mod tests {
             },
         );
         assert!((m.x[0] - 1.0).abs() < 1e-4 && (m.x[1] - 1.0).abs() < 1e-4, "{:?}", m.x);
+    }
+
+    #[test]
+    fn evolution_finds_a_minimum_in_its_box() {
+        let f = |x: &[f64]| (x[0] - 3.0).powi(2) + (x[1] + 1.0).powi(2) + (3.0 * x[0]).sin().abs();
+        let x = differential_evolution(
+            f,
+            &[(-5.0, 5.0), (-5.0, 5.0)],
+            &Evolution {
+                maxiter: 200,
+                popsize: 15,
+                tol: 1e-8,
+                seed: 1,
+                x0: None,
+            },
+        );
+        let again = differential_evolution(
+            f,
+            &[(-5.0, 5.0), (-5.0, 5.0)],
+            &Evolution {
+                maxiter: 200,
+                popsize: 15,
+                tol: 1e-8,
+                seed: 1,
+                x0: None,
+            },
+        );
+        assert_eq!(x, again);
+        assert!(f(&x) < f(&[3.0, -1.0]) + 1e-6, "{x:?}");
     }
 
     #[test]

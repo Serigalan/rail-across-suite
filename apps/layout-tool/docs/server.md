@@ -22,15 +22,16 @@ Operation (setup, deploy, backups, several instances, production releases) is de
 ## Architecture rule
 
 **Edited and computed in the browser wherever it works without a server; the server stores, versions and checks.**
-No computation is held twice: where Python computes, there is no JavaScript copy (the splice is the one exception —
-see [splice](modules/splice.md) — held together by a fixture in CI), and the Node server runs the browser's own
-JavaScript for parsing, validation and point-cloud jobs. A panel that needs the server says so when it is not
+No computation is held twice: what builds an alignment against the rules — splicing, reconnecting, optimizing,
+the alignment fit — is the optimizer module in Rust, run in the browser in both builds ([optimizer](modules/optimizer.md),
+decision 0019 of the suite), and the Node server runs the browser's own JavaScript for parsing, validation and
+point-cloud jobs. A panel that needs the server says so when it is not
 there instead of silently doing nothing.
 
 | In the browser | On the server |
 |---|---|
-| creating and editing tracks, elements, switches, crossings, heights, platforms, cross sections | optimizing a track, reconnecting, alignment fit from axis points, splice with track spacing (Python) |
-| joining two tracks (splice), rule checks, plan/OSRD/exchange/Verm.ESN export | MDB conversion, DGM1 terrain and relief tiles (Python) |
+| creating and editing tracks, elements, switches, crossings, heights, platforms, cross sections | MDB conversion, DGM1 terrain and relief tiles (Python) |
+| joining two tracks (splice, with a track spacing), reconnecting, optimizing, the alignment fit (the optimizer module), rule checks, plan/OSRD/exchange/Verm.ESN export | |
 | merging and resolving conflicts | sign-in, projects, variants, revisions, images, members (Node) |
 | point clouds read on this device | checking every revision; preparing uploaded clouds, long runs over them (Node) |
 
@@ -42,13 +43,11 @@ anything renders:
 
 | Extension point | Filled with |
 |---|---|
-| `panelTools` | Reconnect (splice panel); optimize track, optimize element, alignment fit (check panel) — each a lazy chunk |
 | `importSections` | MDB import and MDB import into DB_REF |
 | `sidebarFoot` | service status (are project server and Python service there?) |
 | `terrainSources` | the Länder's DGM1 via the Python service |
 | `basemaps` | "DGM1 der Länder": DGM5 with the service's 1 m relief tiles over it from map zoom 15 |
 | `cloudProviders`, `useCloudServer`, `useServerRun`, `useCloudRegistration`, `crossSectionTools`, `workspaceAddons` | point clouds on the server, long runs, re-referencing, the 3D window link |
-| `regelwerkService` | the rule catalogues as the service has them (with drift check) |
 | `saveProjectMeta` | title and description written to the server's project list too |
 | `localStoreSections` | the working copies in the storage dialog |
 
@@ -63,7 +62,7 @@ Main pieces:
   update; the app polls whether the head moved on.
 - `variantMerge.js` — merging one variant into another against their youngest common revision.
 - `optimizerService.js` — the client of the Python service; every failure is named so the panel can say it.
-- `panels/` — optimize, alignment fit, reconnect, MDB import; `mdb/` — the MDB import job and its worker.
+- `panels/` — MDB import; `mdb/` — the MDB import job and its worker.
 - `cloud3d/` — the 3D window (`#/cloud3d`, its own bundle with three.js), re-referencing, share links.
 
 ### Check-in and merge

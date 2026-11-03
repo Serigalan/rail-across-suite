@@ -810,7 +810,6 @@
   "align_gradient_failed": "Aus den Höhen der Achspunkte ließ sich keine Gradiente ableiten – das Gleis bekommt keine.",
   "align_cant_none": "Die Achspunkte tragen keine Überhöhung – die Elemente bekommen keine.",
   "align_cant_failed": "Aus den Achspunkten ließ sich keine Überhöhung ablesen – die Elemente bekommen keine.",
-  "align_err_unavailable": "Der Rechendienst ist nicht erreichbar – Trassieren aus Achspunkten rechnet nur dort.",
   "align_run": "Trassieren",
   "align_insert": "Gerade einfügen",
   "align_delete": "Gerade löschen",

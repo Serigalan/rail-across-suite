@@ -7,8 +7,6 @@
 // the panel has to say out loud, which is what `code` is for: the service names
 // what went wrong, the UI translates the name.
 
-import { bundledCatalogHash } from './catalogHash'
-
 // The service sits on the app's own origin under /optimizer/ (behind the
 // sign-in, see deploy/Caddyfile.template); `npm run dev` proxies the same path.
 const SERVICE = import.meta.env.VITE_OLT_OPTIMIZER ?? '/optimizer'
@@ -32,106 +30,6 @@ export async function optimizerReachable() {
   } catch {
     return false
   }
-}
-
-/**
- * The rule catalogues the service can hold a run to (AP R.3), as
- * { regelwerke: [{ id, name, version }, ...], drift } — `version` the
- * catalogue's own katalog_version — not their limits, only enough to fill a
- * selector. `drift` is true when the service reads other catalogue files than
- * this bundle carries (R0.1: its `catalogHash` differs from ours), false when
- * they agree, null when the service did not say.
- * Resolves with an empty list where the service cannot be asked, same as
- * `optimizerReachable`'s false: a panel offering a run at all has already
- * found the service, so this failing too is nothing new to say twice.
- */
-export async function fetchRegelwerke() {
-  const none = { regelwerke: [], drift: null }
-  try {
-    const res = await fetch(`${SERVICE}/regelwerke`, { method: 'GET' })
-    if (!res.ok) return none
-    const data = await res.json()
-    const regelwerke = Array.isArray(data?.regelwerke) ? data.regelwerke : []
-    const drift = typeof data?.catalogHash === 'string'
-      ? data.catalogHash !== await bundledCatalogHash()
-      : null
-    return { regelwerke, drift }
-  } catch {
-    return none
-  }
-}
-
-/**
- * What a run under one catalogue is held to, per level: { id, name, version,
- * grenzwerte: { reg, discretion } } — the numbers the regelwerk popup sets
- * beside the app's own. Resolves with null where the id is unknown or the
- * service cannot be asked, for the same reason `fetchRegelwerke` resolves
- * with [].
- */
-export async function fetchRegelwerk(id) {
-  try {
-    const res = await fetch(`${SERVICE}/regelwerke/${encodeURIComponent(id)}`, { method: 'GET' })
-    if (!res.ok) return null
-    return await res.json()
-  } catch {
-    return null
-  }
-}
-
-/**
- * Optimize one track.
- * payload: { track, corridorCm, grenzwert?, uebergang?, maxiter?, seed?,
- *            targetElementIdx?, vMax?, regelwerk? } — grenzwert is the level
- *            of the rulebook the run is held to, 'reg' (Regelwert, the
- *            default) or 'discretion' (Ermessensgrenze). vMax is the line's
- *            design speed; above it there is nothing to optimize, so the run
- *            neither pushes past it nor moves the alignment for speed nobody
- *            asked for. regelwerk is an id from fetchRegelwerke(); omitted,
- *            the service uses its default.
- * Resolves with { elements, report, variant, vBestand, vBaseline, vNeu, shifts,
- * skipped, regelwerk, regelwerkVersion, grenzwert }, `skipped` naming the
- * stretches the parser could not read and the last three what the run was
- * actually held to.
- */
-export async function optimizeOnServer(payload, { signal } = {}) {
-  return postJson('/optimize', payload, { signal })
-}
-
-/**
- * "Aus Messachse trassieren" (AP 12.5): an alignment from axis points, fitted
- * by the service — curvature, straights, curves, the chain and every point's
- * offset from it. See alignmentFit.alignRequest for the payload. A fit that
- * cannot be made is an answer with `error` (and `errorParams`), the curvature
- * and the straights still in it; throws an OptimizerError where the service
- * cannot be asked.
- */
-export async function alignOnServer(payload, { signal } = {}) {
-  return postJson('/align', payload, { signal })
-}
-
-/** A JSON request to the service and its answer; every failure an OptimizerError. */
-async function postJson(path, payload, { signal } = {}) {
-  let res
-  try {
-    res = await fetch(`${SERVICE}${path}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-      signal,
-    })
-  } catch (err) {
-    if (err?.name === 'AbortError') throw err
-    throw new OptimizerError('unavailable')   // offline, DNS, TLS, blocked by CORS
-  }
-  let data = null
-  try {
-    data = await res.json()
-  } catch {
-    data = null                               // not JSON — the host's own error page
-  }
-  if (!res.ok) throw new OptimizerError(data?.error ?? 'unavailable', data?.message)
-  if (data === null) throw new OptimizerError('unavailable')
-  return data
 }
 
 /**

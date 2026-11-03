@@ -810,7 +810,6 @@
   "align_gradient_failed": "No gradient could be derived from the heights of the axis points – the track gets none.",
   "align_cant_none": "The axis points carry no cant – the elements get none.",
   "align_cant_failed": "No cant could be read off the axis points – the elements get none.",
-  "align_err_unavailable": "The computation service is unreachable – fitting from axis points only runs there.",
   "align_run": "Fit alignment",
   "align_insert": "Insert straight",
   "align_delete": "Delete straight",

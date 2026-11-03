@@ -57,7 +57,7 @@ order — each needs only modules above it:
 | [rules](../../../packages/core/docs/rules.md) *core* | geometry | rule catalogue DB Ril 800.0110, expression language, alignment checks, cant/speed/length limits |
 | [splice](modules/splice.md) | rules | what a splice can change where the rules reject a curvature jump |
 | [crossover](modules/crossover.md) | — | the search of the extended switch connection (the Rust module beside the page) |
-| [optimizer](modules/optimizer.md) | — | splicing, its spacing, reconnecting (the Rust module beside the page) |
+| [optimizer](modules/optimizer.md) | — | splicing, its spacing, reconnecting, optimizing, the alignment fit (the Rust module beside the page) |
 | [track](../../../packages/core/docs/track.md) *core* | geometry, rules | tracks, switch records and ports, heights, links, track ends, platforms, routes |
 | [crossSection](../../../packages/core/docs/crossSection.md) *core* | geometry, track | cross section, superstructure, clearance contours |
 | [switch](../../../packages/core/docs/switch.md) *core* | geometry, rules, track | switch forms, routes, symbols, crossings, switch connections, deletion |
@@ -105,7 +105,7 @@ own module, and a worker only the server build needs lives in `src/server` (the 
 
 | Worker | Why |
 |---|---|
-| `utils/optimizer/optimizerWorker.js` | splicing and reconnecting: the largest-radius search builds the splice many times, reconnecting searches radii and lengths (a second or two) |
+| `utils/optimizer/optimizerWorker.js` | splicing, reconnecting, optimizing, the alignment fit: searches that build a chain many times (up to seconds) |
 | `utils/pointCloud/pointCloudWorker.js` | importing gigabytes of LAS/LAZ/E57 into OPFS |
 | `utils/crossover/crossoverWorker.js` | the search of the extended switch connection (a few hundred milliseconds to seconds) |
 | `src/server/mdb/mdbWorker.js` | building, placing and transforming a whole MDB takes seconds |

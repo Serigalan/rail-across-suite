@@ -1,8 +1,4 @@
 import { extend, provide } from '../core/extensions'
-import {
-  OptimizeTrackModeIcon, OptimizeElementModeIcon, AxisFitModeIcon,
-} from '../core/components/icons'
-import { fetchRegelwerk, fetchRegelwerke } from './optimizerService'
 import ServiceStatus from './ServiceStatus'
 import { dgm1Relief, dgm1Source } from './terrainDgm1'
 import { serverClouds } from './cloudsOnServer'
@@ -13,9 +9,7 @@ import CrossSectionCloudTools from './cloud3d/CrossSectionCloudTools'
 import Cloud3dLink from './cloud3d/Cloud3dLink'
 import { legacySection, workingCopiesSection } from './localStoreSections'
 import { saveProjectMeta } from './projectMeta'
-import {
-  AxisFitTool, MdbDbrefImport, MdbImport, OptimizeElementTool, OptimizeTrackTool,
-} from './panels/tools'
+import { MdbDbrefImport, MdbImport } from './panels/tools'
 
 /**
  * The server components dock onto core (Paket L, decision 277): everything
@@ -23,11 +17,6 @@ import {
  * once, when the main build starts — before the first render. The local
  * build never imports this file.
  */
-
-// The optimizer and the alignment fit in the check panel.
-extend('panelTools', { panel: 'check', id: 'track', section: 'check_optimize', icon: OptimizeTrackModeIcon, titleKey: 'optimize_mode_track', Component: OptimizeTrackTool })
-extend('panelTools', { panel: 'check', id: 'element', section: 'check_optimize', icon: OptimizeElementModeIcon, titleKey: 'optimize_mode_element', Component: OptimizeElementTool })
-extend('panelTools', { panel: 'check', id: 'axis', section: 'check_optimize', icon: AxisFitModeIcon, titleKey: 'optimize_mode_axis', Component: AxisFitTool })
 
 // The two MDB importers (the service converts the database).
 extend('importSections', { id: 'mdb', Component: MdbImport })
@@ -40,9 +29,6 @@ extend('sidebarFoot', ServiceStatus)
 // basemap from the service's relief tiles.
 extend('terrainSources', dgm1Source)
 extend('basemaps', dgm1Relief)
-
-// The rule catalogues as the service has them (the regelwerk popup).
-provide('regelwerkService', { list: fetchRegelwerke, get: fetchRegelwerk })
 
 // Point clouds on the server: read, listed and uploaded in the panel, long
 // runs there, and the 3D window — its link from the map view, its button

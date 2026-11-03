@@ -1,25 +1,29 @@
 import { useEffect, useRef, useState } from 'react'
-import { loadTracks, updateTrack } from '../../core/storage'
+import { loadTracks, updateTrack } from '../../../storage'
 import { trackLabel } from '@rail-across/core/track'
-import {
-  optimizeOnServer, optimizerReachable, fetchRegelwerke, OptimizerError,
-} from '../optimizerService'
+import { KATALOG } from '@rail-across/core/rules'
+import { runOptimizer } from '../../../utils/optimizer'
+import { moduleErrorText } from './moduleErrorText'
 import { reconstructElements } from '@rail-across/core/geometry'
-import { ZOOM_LINE_WIDTH } from '../../core/map/style'
+import { ZOOM_LINE_WIDTH } from '../../../map/style'
 import { optimizeRequest, optimizedTrack, optimizeErrorText } from '@rail-across/core/commands'
-import { OptimizeTrackModeIcon, OptimizeElementModeIcon, AxisFitModeIcon } from '../../core/components/icons'
-import { useI18n } from '../../core/locales/i18nContext'
-import { useMap } from '../../core/map/MapContext'
-import { TRACKS_HOVER_LAYER } from '../../core/map/layerIds'
-import usePreview from '../../core/map/usePreview'
-import useMapPick from '../../core/map/useMapPick'
-import { PALETTE } from '../../core/styles/palette'
-import CommitBar from '../../core/components/form/CommitBar'
-import useElapsed from '../../core/hooks/useElapsed'
-import OptimizeSettings from './optimize/OptimizeSettings'
-import OptimizeResult from './optimize/OptimizeResult'
-import AxisFitPanel from './optimize/AxisFitPanel'
-import BackButton from '../../core/components/panels/BackButton'
+import { OptimizeTrackModeIcon, OptimizeElementModeIcon, AxisFitModeIcon } from '../../icons'
+import { useI18n } from '../../../locales/i18nContext'
+import { useMap } from '../../../map/MapContext'
+import { TRACKS_HOVER_LAYER } from '../../../map/layerIds'
+import usePreview from '../../../map/usePreview'
+import useMapPick from '../../../map/useMapPick'
+import { PALETTE } from '../../../styles/palette'
+import CommitBar from '../../form/CommitBar'
+import useElapsed from '../../../hooks/useElapsed'
+import OptimizeSettings from './OptimizeSettings'
+import OptimizeResult from './OptimizeResult'
+import AxisFitPanel from './AxisFitPanel'
+import BackButton from '../BackButton'
+
+// The rulebook a run is held to: the one this bundle carries, which the
+// optimizer module is handed (decision 0019 of the suite).
+const REGELWERKE = [{ id: KATALOG.catalog.id, name: KATALOG.catalog.title, version: KATALOG.catalog.katalog_version }]
 
 const OPTIMIZE_PREVIEW_SOURCE = 'optimize-preview-source'
 const OPTIMIZE_PREVIEW_LAYER  = 'optimize-preview-layer'
@@ -60,21 +64,18 @@ export default function OptimizeTrackPanel({ initialPage = 'menu', onExit, onSho
   const [elementIdx, setElementIdx] = useState(null)    // nur im Element-Modus
   const [label, setLabel]         = useState('')
   // What the run is held to (OptimizeSettings). vMax '' sets no target, open
-  // upwards; regelwerkId '' leaves the choice to the service's default.
-  const [settings, setSettings]   = useState({ corridorCm: 50, grenzwert: 'reg', vMax: '', regelwerkId: '' })
+  // upwards. The rulebook is the one this bundle carries — the module runs on it.
+  const [settings, setSettings]   = useState({ corridorCm: 50, grenzwert: 'reg', vMax: '' })
   const setSetting = (key, value) => setSettings(prev => ({ ...prev, [key]: value }))
-  const [regelwerke, setRegelwerke] = useState([])   // [{id,name,version}], AP R.3
-  const [catalogDrift, setCatalogDrift] = useState(null)   // R0.1
   const [selectHint, setSelectHint] = useState(null)
   const [running, setRunning]     = useState(false)
   const [run, setRun]             = useState(null)    // { key, result? , error? }
-  const [reachable, setReachable] = useState(null)    // null → not asked yet
   const abortRef = useRef(null)   // the run under way, to stop it (R10.12)
   const elapsed = useElapsed(running)
 
   // A result only counts for the parameters it was computed with — derived
   // from the parameter key rather than through an invalidation effect.
-  const runKey = [mode, trackId, elementIdx, settings.corridorCm, settings.grenzwert, settings.vMax, settings.regelwerkId, phase].join('|')
+  const runKey = [mode, trackId, elementIdx, settings.corridorCm, settings.grenzwert, settings.vMax, phase].join('|')
   const result = run?.key === runKey ? run.result ?? null : null
   const runError = run?.key === runKey ? run.error ?? null : null
 
@@ -104,23 +105,6 @@ export default function OptimizeTrackPanel({ initialPage = 'menu', onExit, onSho
     },
   })
 
-  // The service is asked once when the panel opens, so the panel can say there
-  // is no server instead of offering a run that cannot happen. The regelwerke
-  // it knows come along the same trip (AP R.3) — an empty list is not an
-  // error here, `reachable` already says so; the panel just falls back to
-  // sending no id, which the service reads as its own default.
-  useEffect(() => {
-    if (page !== 'track' && page !== 'element') return
-    let cancelled = false
-    optimizerReachable().then(ok => { if (!cancelled) setReachable(ok) })
-    fetchRegelwerke().then(({ regelwerke: list, drift }) => {
-      if (cancelled) return
-      setRegelwerke(list)
-      setCatalogDrift(drift)
-    })
-    return () => { cancelled = true }
-  }, [page])
-
   // Sync the map preview (external system) with the current result.
   useEffect(() => {
     preview.set(OPTIMIZE_PREVIEW_SOURCE, result ? previewGeoJSON(result.elements) : null)
@@ -145,16 +129,14 @@ export default function OptimizeTrackPanel({ initialPage = 'menu', onExit, onSho
     setRun(null)
     setRunning(true)
     abortRef.current = new AbortController()
-    optimizeOnServer(optimizeRequest(track, { ...settings, elementIdx: mode === 'element' ? elementIdx : null }), { signal: abortRef.current.signal })
+    runOptimizer('optimize', optimizeRequest(track, { ...settings, elementIdx: mode === 'element' ? elementIdx : null }), { signal: abortRef.current.signal })
       .then(res => {
-        setRun({ key, result: { ...res, elements: reconstructElements(res.elements, track.epsg) } })
-        setReachable(true)
+        if (res.error) setRun({ key, error: optimizeErrorText(t, res.error, res.message) })
+        else setRun({ key, result: { ...res, elements: reconstructElements(res.elements, track.epsg) } })
       })
       .catch(err => {
         if (err?.name === 'AbortError') { setRun({ key, error: t('run_aborted') }); return }
-        const code = err instanceof OptimizerError ? err.code : 'unavailable'
-        setRun({ key, error: optimizeErrorText(t, code, err.detail) })
-        if (code === 'unavailable') setReachable(false)
+        setRun({ key, error: moduleErrorText(t, err) })
       })
       .finally(() => setRunning(false))
   }
@@ -212,14 +194,9 @@ export default function OptimizeTrackPanel({ initialPage = 'menu', onExit, onSho
       {backButton}
       <h2>{title}</h2>
       <OptimizeSettings label={label} what={mode === 'element' ? t('optimize_mode_element') : 'Track'}
-        s={settings} set={setSetting} regelwerke={regelwerke} onShowRegelwerk={onShowRegelwerk} />
+        s={settings} set={setSetting} regelwerke={REGELWERKE} onShowRegelwerk={onShowRegelwerk} />
       <div className="element-form mt-8">
-        {catalogDrift && <p className="msg-error">{t('optimizer_catalog_drift')}</p>}
-        {/* The run happens on the server and nowhere else; without one the
-            panel says so rather than offering a button that cannot work. */}
-        {reachable === false
-          ? <p className="msg-error">{t('optimize_err_unavailable')}</p>
-          : <button className="ui-btn ui-btn-primary ui-btn-block" onClick={handleRun} disabled={running || !trackId}>{t('optimize_run')}</button>}
+        <button className="ui-btn ui-btn-primary ui-btn-block" onClick={handleRun} disabled={running || !trackId}>{t('optimize_run')}</button>
         {running && (
           <div className="run-status">
             <span>{t('optimize_running')} {fill('run_elapsed', { s: elapsed })}</span>

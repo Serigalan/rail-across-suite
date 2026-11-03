@@ -1,8 +1,8 @@
-import { useI18n } from '../../../core/locales/i18nContext'
-import ReadOnlyField from '../../../core/components/form/ReadOnlyField'
-import AdvancedInfo from '../../../core/components/form/AdvancedInfo'
-import NumberInput from '../../../core/components/form/NumberInput'
-import { splitUnit } from '../../../core/locales/i18n'
+import { useI18n } from '../../../locales/i18nContext'
+import ReadOnlyField from '../../form/ReadOnlyField'
+import AdvancedInfo from '../../form/AdvancedInfo'
+import NumberInput from '../../form/NumberInput'
+import { splitUnit } from '../../../locales/i18n'
 
 /**
  * What a run is held to: the corridor the track may move in, a target speed,

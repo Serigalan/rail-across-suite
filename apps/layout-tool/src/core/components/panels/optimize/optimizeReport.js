@@ -1,4 +1,4 @@
-import { fill } from '../../../core/locales/i18n'
+import { fill } from '../../../locales/i18n'
 // Formats the "grund" the optimizer attaches to a changed report row (AP R.4,
 // olt_optimizer/optimize.py: binding_reason) into a translation key plus the
 // numbers to fill its placeholders with. A pure function, not JSX, so it runs

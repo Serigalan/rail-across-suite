@@ -19,7 +19,7 @@ if (built) {
   exports = instance.exports
 }
 
-const optimizer = (op, request) => runWith(exports, { op, request, catalogue: KATALOG })
+export const optimizer = (op, request) => runWith(exports, { op, request, catalogue: KATALOG })
 
 /** The splice of `request`, as the dialog's worker answers it. */
 export const solveSplice = (request) => optimizer('splice', request)

@@ -1,0 +1,1932 @@
+{
+ "tracks": {
+  "track": {
+   "id": "py1",
+   "name": "test.001",
+   "epsg": 25832,
+   "elements": [
+    {
+     "elementType": 0,
+     "epsg": 25832,
+     "startNode": [
+      500000.0,
+      5600000.0
+     ],
+     "endNode": [
+      500266.6077762307,
+      5600317.7307751365
+     ],
+     "bearing": 40.0000000000017,
+     "length": 414.76806990839333,
+     "speed": 100
+    },
+    {
+     "elementType": 2,
+     "transitionType": "clothoid",
+     "r1": null,
+     "r2": 700.0,
+     "epsg": 25832,
+     "startNode": [
+      500266.6077762307,
+      5600317.7307751365
+     ],
+     "endNode": [
+      500305.824473016,
+      5600363.13411179
+     ],
+     "bearing": 40.0,
+     "endBearing": 42.45553340770353,
+     "length": 60,
+     "speed": 100
+    },
+    {
+     "elementType": 1,
+     "epsg": 25832,
+     "radius": 700.0,
+     "startNode": [
+      500305.824473016,
+      5600363.13411179
+     ],
+     "endNode": [
+      500499.5434229751,
+      5600511.779890177
+     ],
+     "bearing": 42.45553340770353,
+     "endBearing": 62.54446659229647,
+     "length": 245.4326190990077,
+     "speed": 100,
+     "cant": 80.0
+    },
+    {
+     "elementType": 2,
+     "transitionType": "clothoid",
+     "r1": 700.0,
+     "r2": null,
+     "epsg": 25832,
+     "startNode": [
+      500499.5434229751,
+      5600511.779890177
+     ],
+     "endNode": [
+      500553.5497064625,
+      5600537.909062186
+     ],
+     "bearing": 62.54446659229647,
+     "endBearing": 65.0,
+     "length": 60,
+     "speed": 100
+    },
+    {
+     "elementType": 0,
+     "epsg": 25832,
+     "startNode": [
+      500553.5497064625,
+      5600537.909062186
+     ],
+     "endNode": [
+      500852.210876087,
+      5600677.177052775
+     ],
+     "bearing": 65.00000000004876,
+     "length": 329.53613981509596,
+     "speed": 100
+    },
+    {
+     "elementType": 2,
+     "transitionType": "clothoid",
+     "r1": null,
+     "r2": -700.0,
+     "epsg": 25832,
+     "startNode": [
+      500852.210876087,
+      5600677.177052775
+     ],
+     "endNode": [
+      500906.2171595744,
+      5600703.306224785
+     ],
+     "bearing": 65.0,
+     "endBearing": 62.54446659229647,
+     "length": 60,
+     "speed": 100
+    },
+    {
+     "elementType": 1,
+     "epsg": 25832,
+     "radius": -700.0,
+     "startNode": [
+      500906.2171595744,
+      5600703.306224785
+     ],
+     "endNode": [
+      501099.9361095335,
+      5600851.952003172
+     ],
+     "bearing": 62.54446659229647,
+     "endBearing": 42.45553340770353,
+     "length": 245.4326190990077,
+     "speed": 100,
+     "cant": -80.0
+    },
+    {
+     "elementType": 2,
+     "transitionType": "clothoid",
+     "r1": -700.0,
+     "r2": null,
+     "epsg": 25832,
+     "startNode": [
+      501099.9361095335,
+      5600851.952003172
+     ],
+     "endNode": [
+      501139.1528063188,
+      5600897.355339825
+     ],
+     "bearing": 42.45553340770353,
+     "endBearing": 40.0,
+     "length": 60,
+     "speed": 100
+    },
+    {
+     "elementType": 0,
+     "epsg": 25832,
+     "startNode": [
+      501139.1528063188,
+      5600897.355339825
+     ],
+     "endNode": [
+      501341.4818215808,
+      5601138.48167065
+     ],
+     "bearing": 39.99999999999874,
+     "length": 314.7680699083329,
+     "speed": 100
+    }
+   ]
+  },
+  "k_track": {
+   "id": "py2",
+   "name": "korb.001",
+   "epsg": 25832,
+   "elements": [
+    {
+     "elementType": 0,
+     "epsg": 25832,
+     "startNode": [
+      500000.0,
+      5600000.0
+     ],
+     "endNode": [
+      500267.2076579381,
+      5600318.445686316
+     ],
+     "bearing": 40.00000000002898,
+     "length": 415.70132017365665,
+     "speed": 100
+    },
+    {
+     "elementType": 2,
+     "transitionType": "clothoid",
+     "r1": null,
+     "r2": 900.0,
+     "epsg": 25832,
+     "startNode": [
+      500267.2076579381,
+      5600318.445686316
+     ],
+     "endNode": [
+      500306.2812852544,
+      5600363.974755138
+     ],
+     "bearing": 40.0,
+     "endBearing": 41.90985931710274,
+     "length": 60,
+     "speed": 100
+    },
+    {
+     "elementType": 1,
+     "epsg": 25832,
+     "radius": 900.0,
+     "startNode": [
+      500306.2812852544,
+      5600363.974755138
+     ],
+     "endNode": [
+      500369.6436924514,
+      5600427.837558113
+     ],
+     "bearing": 41.90985931710274,
+     "endBearing": 47.63943726841097,
+     "length": 90.0,
+     "speed": 100,
+     "cant": 60.0
+    },
+    {
+     "elementType": 2,
+     "transitionType": "clothoid",
+     "r1": 900.0,
+     "r2": 600.0,
+     "epsg": 25832,
+     "startNode": [
+      500369.6436924514,
+      5600427.837558113
+     ],
+     "endNode": [
+      500399.8853001413,
+      5600454.010685305
+     ],
+     "bearing": 47.63943726841097,
+     "endBearing": 50.82253613024888,
+     "length": 40,
+     "speed": 100
+    },
+    {
+     "elementType": 1,
+     "epsg": 25832,
+     "radius": 600.0,
+     "startNode": [
+      500399.8853001413,
+      5600454.010685305
+     ],
+     "endNode": [
+      500471.1116675446,
+      5600503.923074273
+     ],
+     "bearing": 50.82253613024888,
+     "endBearing": 59.13521102434587,
+     "length": 87.05012792991809,
+     "speed": 100,
+     "cant": 100.0
+    },
+    {
+     "elementType": 2,
+     "transitionType": "clothoid",
+     "r1": 600.0,
+     "r2": null,
+     "epsg": 25832,
+     "startNode": [
+      500471.1116675446,
+      5600503.923074273
+     ],
+     "endNode": [
+      500523.6058926998,
+      5600532.967116718
+     ],
+     "bearing": 59.13521102434587,
+     "endBearing": 61.999999999999986,
+     "length": 60,
+     "speed": 100
+    },
+    {
+     "elementType": 0,
+     "epsg": 25832,
+     "startNode": [
+      500523.6058926998,
+      5600532.967116718
+     ],
+     "endNode": [
+      501180.32539938495,
+      5600882.151072379
+     ],
+     "bearing": 61.999999999969404,
+     "length": 743.7808449750996,
+     "speed": 100
+    }
+   ]
+  },
+  "n_track": {
+   "id": "py2b",
+   "name": "korb_direkt.001",
+   "epsg": 25832,
+   "elements": [
+    {
+     "elementType": 0,
+     "epsg": 25832,
+     "startNode": [
+      500000.0,
+      5600000.0
+     ],
+     "endNode": [
+      500269.85958673374,
+      5600321.606131986
+     ],
+     "bearing": 40.00000000001254,
+     "length": 419.8269889882779,
+     "speed": 100
+    },
+    {
+     "elementType": 2,
+     "transitionType": "clothoid",
+     "r1": null,
+     "r2": 900.0,
+     "epsg": 25832,
+     "startNode": [
+      500269.85958673374,
+      5600321.606131986
+     ],
+     "endNode": [
+      500308.93321405,
+      5600367.135200808
+     ],
+     "bearing": 40.0,
+     "endBearing": 41.90985931710274,
+     "length": 60,
+     "speed": 100
+    },
+    {
+     "elementType": 1,
+     "epsg": 25832,
+     "radius": 900.0,
+     "startNode": [
+      500308.93321405,
+      5600367.135200808
+     ],
+     "endNode": [
+      500372.29562124703,
+      5600430.998003783
+     ],
+     "bearing": 41.90985931710274,
+     "endBearing": 47.63943726841097,
+     "length": 90.0,
+     "speed": 100,
+     "cant": 80.0
+    },
+    {
+     "elementType": 1,
+     "epsg": 25832,
+     "radius": 600.0,
+     "startNode": [
+      500372.29562124703,
+      5600430.998003783
+     ],
+     "endNode": [
+      500468.7636865154,
+      5600502.674630615
+     ],
+     "bearing": 47.63943726841097,
+     "endBearing": 59.13521102434587,
+     "length": 120.38346126325143,
+     "speed": 100,
+     "cant": 80.0
+    },
+    {
+     "elementType": 2,
+     "transitionType": "clothoid",
+     "r1": 600.0,
+     "r2": null,
+     "epsg": 25832,
+     "startNode": [
+      500468.7636865154,
+      5600502.674630615
+     ],
+     "endNode": [
+      500521.2579116706,
+      5600531.71867306
+     ],
+     "bearing": 59.13521102434587,
+     "endBearing": 61.999999999999986,
+     "length": 60,
+     "speed": 100
+    },
+    {
+     "elementType": 0,
+     "epsg": 25832,
+     "startNode": [
+      500521.2579116706,
+      5600531.71867306
+     ],
+     "endNode": [
+      501180.32539938495,
+      5600882.151072379
+     ],
+     "bearing": 61.99999999997757,
+     "length": 746.4400979682905,
+     "speed": 100
+    }
+   ]
+  },
+  "t_track": {
+   "id": "py2c",
+   "name": "korb3.001",
+   "epsg": 25832,
+   "elements": [
+    {
+     "elementType": 0,
+     "epsg": 25832,
+     "startNode": [
+      500000.0,
+      5600000.0
+     ],
+     "endNode": [
+      500207.627822151,
+      5600247.441202971
+     ],
+     "bearing": 39.9999999999787,
+     "length": 323.0115500395902,
+     "speed": 100
+    },
+    {
+     "elementType": 2,
+     "transitionType": "clothoid",
+     "r1": null,
+     "r2": 1000.0,
+     "epsg": 25832,
+     "startNode": [
+      500207.627822151,
+      5600247.441202971
+     ],
+     "endNode": [
+      500246.651204943,
+      5600293.014085317
+     ],
+     "bearing": 40.0,
+     "endBearing": 41.71887338539247,
+     "length": 60,
+     "speed": 100
+    },
+    {
+     "elementType": 1,
+     "epsg": 25832,
+     "radius": 1000.0,
+     "startNode": [
+      500246.651204943,
+      5600293.014085317
+     ],
+     "endNode": [
+      500316.8169600188,
+      5600364.207036222
+     ],
+     "bearing": 41.71887338539247,
+     "endBearing": 47.4484513367007,
+     "length": 100.0,
+     "speed": 100,
+     "cant": 50.0
+    },
+    {
+     "elementType": 2,
+     "transitionType": "clothoid",
+     "r1": 1000.0,
+     "r2": 700.0,
+     "epsg": 25832,
+     "startNode": [
+      500316.8169600188,
+      5600364.207036222
+     ],
+     "endNode": [
+      500346.8913022231,
+      5600390.574037474
+     ],
+     "bearing": 47.4484513367007,
+     "endBearing": 50.231389198764695,
+     "length": 40,
+     "speed": 100
+    },
+    {
+     "elementType": 1,
+     "epsg": 25832,
+     "radius": 700.0,
+     "startNode": [
+      500346.8913022231,
+      5600390.574037474
+     ],
+     "endNode": [
+      500414.52188468905,
+      5600440.309750785
+     ],
+     "bearing": 50.231389198764695,
+     "endBearing": 57.10688274033458,
+     "length": 84.0,
+     "speed": 100,
+     "cant": 70.0
+    },
+    {
+     "elementType": 2,
+     "transitionType": "clothoid",
+     "r1": 700.0,
+     "r2": 500.0,
+     "epsg": 25832,
+     "startNode": [
+      500414.52188468905,
+      5600440.309750785
+     ],
+     "endNode": [
+      500448.7882387538,
+      5600460.929861798
+     ],
+     "bearing": 57.10688274033458,
+     "endBearing": 61.035736192660224,
+     "length": 40,
+     "speed": 100
+    },
+    {
+     "elementType": 1,
+     "epsg": 25832,
+     "radius": 500.0,
+     "startNode": [
+      500448.7882387538,
+      5600460.929861798
+     ],
+     "endNode": [
+      500532.783198832,
+      5600497.802829191
+     ],
+     "bearing": 61.035736192660224,
+     "endBearing": 71.56225322921506,
+     "length": 91.86119052757915,
+     "speed": 100,
+     "cant": 100.0
+    },
+    {
+     "elementType": 2,
+     "transitionType": "clothoid",
+     "r1": 500.0,
+     "r2": null,
+     "epsg": 25832,
+     "startNode": [
+      500532.783198832,
+      5600497.802829191
+     ],
+     "endNode": [
+      500590.40738488943,
+      5600514.485195306
+     ],
+     "bearing": 71.56225322921506,
+     "endBearing": 75.0,
+     "length": 60,
+     "speed": 100
+    },
+    {
+     "elementType": 0,
+     "epsg": 25832,
+     "startNode": [
+      500590.40738488943,
+      5600514.485195306
+     ],
+     "endNode": [
+      501448.1909747299,
+      5600744.327615485
+     ],
+     "bearing": 74.99999999999719,
+     "length": 888.0429185084915,
+     "speed": 100
+    }
+   ]
+  },
+  "track3": {
+   "id": "py3",
+   "name": "fenster.001",
+   "epsg": 25832,
+   "elements": [
+    {
+     "elementType": 0,
+     "epsg": 25832,
+     "startNode": [
+      500000.0,
+      5600000.0
+     ],
+     "endNode": [
+      500266.6077762307,
+      5600317.7307751365
+     ],
+     "bearing": 40.0000000000017,
+     "length": 414.76806990839333,
+     "speed": 100
+    },
+    {
+     "elementType": 2,
+     "transitionType": "clothoid",
+     "r1": null,
+     "r2": 700.0,
+     "epsg": 25832,
+     "startNode": [
+      500266.6077762307,
+      5600317.7307751365
+     ],
+     "endNode": [
+      500305.824473016,
+      5600363.13411179
+     ],
+     "bearing": 40.0,
+     "endBearing": 42.45553340770353,
+     "length": 60,
+     "speed": 100
+    },
+    {
+     "elementType": 1,
+     "epsg": 25832,
+     "radius": 700.0,
+     "startNode": [
+      500305.824473016,
+      5600363.13411179
+     ],
+     "endNode": [
+      500499.5434229751,
+      5600511.779890177
+     ],
+     "bearing": 42.45553340770353,
+     "endBearing": 62.54446659229647,
+     "length": 245.4326190990077,
+     "speed": 100,
+     "cant": 80.0
+    },
+    {
+     "elementType": 2,
+     "transitionType": "clothoid",
+     "r1": 700.0,
+     "r2": null,
+     "epsg": 25832,
+     "startNode": [
+      500499.5434229751,
+      5600511.779890177
+     ],
+     "endNode": [
+      500553.5497064625,
+      5600537.909062186
+     ],
+     "bearing": 62.54446659229647,
+     "endBearing": 65.0,
+     "length": 60,
+     "speed": 100
+    },
+    {
+     "elementType": 0,
+     "epsg": 25832,
+     "startNode": [
+      500553.5497064625,
+      5600537.909062186
+     ],
+     "endNode": [
+      500852.210876087,
+      5600677.177052775
+     ],
+     "bearing": 65.00000000004876,
+     "length": 329.53613981509596,
+     "speed": 100
+    },
+    {
+     "elementType": 2,
+     "transitionType": "clothoid",
+     "r1": null,
+     "r2": -700.0,
+     "epsg": 25832,
+     "startNode": [
+      500852.210876087,
+      5600677.177052775
+     ],
+     "endNode": [
+      500906.2171595744,
+      5600703.306224785
+     ],
+     "bearing": 65.0,
+     "endBearing": 62.54446659229647,
+     "length": 60,
+     "speed": 100
+    },
+    {
+     "elementType": 1,
+     "epsg": 25832,
+     "radius": -700.0,
+     "startNode": [
+      500906.2171595744,
+      5600703.306224785
+     ],
+     "endNode": [
+      501099.9361095335,
+      5600851.952003172
+     ],
+     "bearing": 62.54446659229647,
+     "endBearing": 42.45553340770353,
+     "length": 245.4326190990077,
+     "speed": 100,
+     "cant": -80.0
+    },
+    {
+     "elementType": 2,
+     "transitionType": "clothoid",
+     "r1": -700.0,
+     "r2": null,
+     "epsg": 25832,
+     "startNode": [
+      501099.9361095335,
+      5600851.952003172
+     ],
+     "endNode": [
+      501139.1528063188,
+      5600897.355339825
+     ],
+     "bearing": 42.45553340770353,
+     "endBearing": 40.0,
+     "length": 60,
+     "speed": 100
+    },
+    {
+     "elementType": 0,
+     "epsg": 25832,
+     "startNode": [
+      501139.1528063188,
+      5600897.355339825
+     ],
+     "endNode": [
+      501458.7134181365,
+      5601278.192847011
+     ],
+     "bearing": 39.99999999999146,
+     "length": 497.1480579310577,
+     "speed": 100
+    },
+    {
+     "elementType": 2,
+     "transitionType": "clothoid",
+     "r1": null,
+     "r2": 700.0,
+     "epsg": 25832,
+     "startNode": [
+      501458.7134181365,
+      5601278.192847011
+     ],
+     "endNode": [
+      501497.9301149218,
+      5601323.596183664
+     ],
+     "bearing": 40.0,
+     "endBearing": 42.45553340770353,
+     "length": 60,
+     "speed": 100
+    },
+    {
+     "elementType": 1,
+     "epsg": 25832,
+     "radius": 700.0,
+     "startNode": [
+      501497.9301149218,
+      5601323.596183664
+     ],
+     "endNode": [
+      501747.0147041802,
+      5601498.007090715
+     ],
+     "bearing": 42.45553340770353,
+     "endBearing": 67.54446659229646,
+     "length": 306.51914291880917,
+     "speed": 100,
+     "cant": 80.0
+    },
+    {
+     "elementType": 2,
+     "transitionType": "clothoid",
+     "r1": 700.0,
+     "r2": null,
+     "epsg": 25832,
+     "startNode": [
+      501747.0147041802,
+      5601498.007090715
+     ],
+     "endNode": [
+      501803.09278484783,
+      5601519.329875586
+     ],
+     "bearing": 67.54446659229646,
+     "endBearing": 69.99999999999999,
+     "length": 60,
+     "speed": 100
+    },
+    {
+     "elementType": 0,
+     "epsg": 25832,
+     "startNode": [
+      501803.0927848478,
+      5601519.329875586
+     ],
+     "endNode": [
+      502068.4431758484,
+      5601615.909519561
+     ],
+     "bearing": 70.00000000002177,
+     "length": 282.3799880206191,
+     "speed": 100
+    }
+   ]
+  },
+  "odd_track": {
+   "id": "py-raster",
+   "name": "raster.001",
+   "epsg": 25832,
+   "elements": [
+    {
+     "elementType": 0,
+     "epsg": 25832,
+     "startNode": [
+      500000.0,
+      5600000.0
+     ],
+     "endNode": [
+      500263.79566221667,
+      5600314.379428158
+     ],
+     "bearing": 39.999999999990976,
+     "length": 410.3931971329678,
+     "speed": 100
+    },
+    {
+     "elementType": 2,
+     "transitionType": "clothoid",
+     "r1": null,
+     "r2": 712.34,
+     "epsg": 25832,
+     "startNode": [
+      500263.79566221667,
+      5600314.379428158
+     ],
+     "endNode": [
+      500305.1741950564,
+      5600362.235547804
+     ],
+     "bearing": 40.0,
+     "endBearing": 42.544504007772076,
+     "length": 63.27,
+     "speed": 100
+    },
+    {
+     "elementType": 1,
+     "epsg": 25832,
+     "radius": 712.34,
+     "startNode": [
+      500305.1741950564,
+      5600362.235547804
+     ],
+     "endNode": [
+      500500.5796734562,
+      5600512.175444979
+     ],
+     "bearing": 42.544504007772076,
+     "endBearing": 62.45549599222793,
+     "length": 247.54695984141023,
+     "speed": 100,
+     "cant": 77.0
+    },
+    {
+     "elementType": 2,
+     "transitionType": "clothoid",
+     "r1": 712.34,
+     "r2": null,
+     "epsg": 25832,
+     "startNode": [
+      500500.5796734562,
+      5600512.175444979
+     ],
+     "endNode": [
+      500557.51468772616,
+      5600539.757963314
+     ],
+     "bearing": 62.45549599222793,
+     "endBearing": 65.0,
+     "length": 63.27,
+     "speed": 100
+    },
+    {
+     "elementType": 0,
+     "epsg": 25832,
+     "startNode": [
+      500557.51468772616,
+      5600539.757963314
+     ],
+     "endNode": [
+      500920.0378025408,
+      5600708.80526801
+     ],
+     "bearing": 64.99999999998369,
+     "length": 400.00000000004854,
+     "speed": 100
+    }
+   ]
+  },
+  "u_track": {
+   "id": "py-ueberhoehung",
+   "name": "u.001",
+   "epsg": 25832,
+   "elements": [
+    {
+     "elementType": 0,
+     "epsg": 25832,
+     "startNode": [
+      500000.0,
+      5600000.0
+     ],
+     "endNode": [
+      500089.33304802695,
+      5600106.462980923
+     ],
+     "bearing": 40.00000000007064,
+     "length": 138.97755134138833,
+     "speed": 100
+    },
+    {
+     "elementType": 2,
+     "transitionType": "clothoid",
+     "r1": null,
+     "r2": 2500.0,
+     "epsg": 25832,
+     "startNode": [
+      500089.33304802695,
+      5600106.462980923
+     ],
+     "endNode": [
+      500128.0835980187,
+      5600152.270718213
+     ],
+     "bearing": 40.0,
+     "endBearing": 40.687549354156985,
+     "length": 60.0,
+     "speed": 100
+    },
+    {
+     "elementType": 1,
+     "epsg": 25832,
+     "radius": 2500.0,
+     "startNode": [
+      500128.0835980187,
+      5600152.270718213
+     ],
+     "endNode": [
+      500265.67308875365,
+      5600299.817382906
+     ],
+     "bearing": 40.687549354156985,
+     "endBearing": 45.31245064584301,
+     "length": 201.79938779914932,
+     "speed": 100,
+     "cant": 110.0
+    },
+    {
+     "elementType": 2,
+     "transitionType": "clothoid",
+     "r1": 2500.0,
+     "r2": null,
+     "epsg": 25832,
+     "startNode": [
+      500265.67308875365,
+      5600299.817382906
+     ],
+     "endNode": [
+      500308.6661389744,
+      5600341.668924728
+     ],
+     "bearing": 45.31245064584301,
+     "endBearing": 45.99999999999999,
+     "length": 60.0,
+     "speed": 100
+    },
+    {
+     "elementType": 0,
+     "epsg": 25832,
+     "startNode": [
+      500308.6661389744,
+      5600341.668924728
+     ],
+     "endNode": [
+      500408.63822300755,
+      5600438.210844073
+     ],
+     "bearing": 45.99999999994822,
+     "length": 138.97755134103616,
+     "speed": 100
+    }
+   ]
+  },
+  "s_track": {
+   "id": "py-kurzrampe",
+   "name": "k.001",
+   "epsg": 25832,
+   "elements": [
+    {
+     "elementType": 0,
+     "epsg": 25832,
+     "startNode": [
+      500000.0,
+      5600000.0
+     ],
+     "endNode": [
+      500016.8714716438,
+      5600020.106636944
+     ],
+     "bearing": 39.999999999466304,
+     "length": 26.247350430746362,
+     "speed": 100
+    },
+    {
+     "elementType": 2,
+     "transitionType": "clothoid",
+     "r1": null,
+     "r2": 600.0,
+     "epsg": 25832,
+     "startNode": [
+      500016.8714716438,
+      5600020.106636944
+     ],
+     "endNode": [
+      500076.4127314691,
+      5600087.566174788
+     ],
+     "bearing": 40.0,
+     "endBearing": 44.297183463481176,
+     "length": 90.0,
+     "speed": 100
+    },
+    {
+     "elementType": 1,
+     "epsg": 25832,
+     "radius": 600.0,
+     "startNode": [
+      500076.4127314691,
+      5600087.566174788
+     ],
+     "endNode": [
+      500408.9157851927,
+      5600260.656308765
+     ],
+     "bearing": 44.297183463481176,
+     "endBearing": 80.70281653651884,
+     "length": 381.238898038469,
+     "speed": 100,
+     "cant": 140.0
+    },
+    {
+     "elementType": 2,
+     "transitionType": "clothoid",
+     "r1": 600.0,
+     "r2": null,
+     "epsg": 25832,
+     "startNode": [
+      500408.9157851927,
+      5600260.656308765
+     ],
+     "endNode": [
+      500498.32686715113,
+      5600270.736452156
+     ],
+     "bearing": 80.70281653651884,
+     "endBearing": 85.00000000000001,
+     "length": 90.0,
+     "speed": 100
+    },
+    {
+     "elementType": 0,
+     "epsg": 25832,
+     "startNode": [
+      500498.32686715113,
+      5600270.736452156
+     ],
+     "endNode": [
+      500524.474338489,
+      5600273.024059477
+     ],
+     "bearing": 85.0000000009068,
+     "length": 26.247350430513883,
+     "speed": 100
+    }
+   ]
+  },
+  "s_track2": {
+   "id": "py-sbogen",
+   "name": "s.001",
+   "epsg": 25832,
+   "elements": [
+    {
+     "elementType": 0,
+     "epsg": 25832,
+     "startNode": [
+      500000.0,
+      5600000.0
+     ],
+     "endNode": [
+      500192.83628290595,
+      5600229.813332936
+     ],
+     "bearing": 39.99999999998547,
+     "length": 300.000000000069,
+     "speed": 100
+    },
+    {
+     "elementType": 2,
+     "transitionType": "clothoid",
+     "r1": null,
+     "r2": -1200.0,
+     "epsg": 25832,
+     "startNode": [
+      500192.83628290595,
+      5600229.813332936
+     ],
+     "endNode": [
+      500237.30628389976,
+      5600283.869308543
+     ],
+     "bearing": 40.0,
+     "endBearing": 38.3288730975351,
+     "length": 70.0,
+     "speed": 100
+    },
+    {
+     "elementType": 1,
+     "epsg": 25832,
+     "radius": -1200.0,
+     "startNode": [
+      500237.30628389976,
+      5600283.869308543
+     ],
+     "endNode": [
+      500267.9565143212,
+      5600324.372387987
+     ],
+     "bearing": 38.3288730975351,
+     "endBearing": 35.90350151736176,
+     "length": 50.79686358998686,
+     "speed": 100,
+     "cant": -40.0
+    },
+    {
+     "elementType": 2,
+     "transitionType": "clothoid",
+     "r1": -1200.0,
+     "r2": 1200.0,
+     "epsg": 25832,
+     "startNode": [
+      500267.9565143212,
+      5600324.372387987
+     ],
+     "endNode": [
+      500325.46696093224,
+      5600406.178027979
+     ],
+     "bearing": 35.90350151736176,
+     "endBearing": 35.90350151736176,
+     "length": 100.0,
+     "speed": 100
+    },
+    {
+     "elementType": 1,
+     "epsg": 25832,
+     "radius": 1200.0,
+     "startNode": [
+      500325.46696093224,
+      5600406.178027979
+     ],
+     "endNode": [
+      500356.11719135364,
+      5600446.681107422
+     ],
+     "bearing": 35.90350151736176,
+     "endBearing": 38.3288730975351,
+     "length": 50.79686358998686,
+     "speed": 100,
+     "cant": 40.0
+    },
+    {
+     "elementType": 2,
+     "transitionType": "clothoid",
+     "r1": 1200.0,
+     "r2": null,
+     "epsg": 25832,
+     "startNode": [
+      500356.11719135364,
+      5600446.681107422
+     ],
+     "endNode": [
+      500400.58719234745,
+      5600500.73708303
+     ],
+     "bearing": 38.3288730975351,
+     "endBearing": 40.0,
+     "length": 70.0,
+     "speed": 100
+    },
+    {
+     "elementType": 0,
+     "epsg": 25832,
+     "startNode": [
+      500400.58719234745,
+      5600500.73708303
+     ],
+     "endNode": [
+      500759.85446497705,
+      5600928.895145888
+     ],
+     "bearing": 39.9999999999567,
+     "length": 558.9206562415286,
+     "speed": 100
+    }
+   ]
+  },
+  "j_track": {
+   "id": "py-sprung",
+   "name": "sprung.001",
+   "epsg": 25832,
+   "elements": [
+    {
+     "elementType": 0,
+     "epsg": 25832,
+     "startNode": [
+      500000.0,
+      5600000.0
+     ],
+     "endNode": [
+      500285.9207582158,
+      5600340.747090801
+     ],
+     "bearing": 40.00000000002541,
+     "length": 444.8137361501218,
+     "speed": 60
+    },
+    {
+     "elementType": 1,
+     "epsg": 25832,
+     "radius": 700.0,
+     "startNode": [
+      500285.9207582158,
+      5600340.747090801
+     ],
+     "endNode": [
+      500526.31908518064,
+      5600525.211214946
+     ],
+     "bearing": 40.0,
+     "endBearing": 65.0,
+     "length": 305.4326190990077,
+     "speed": 100,
+     "cant": 0.0
+    },
+    {
+     "elementType": 0,
+     "epsg": 25832,
+     "startNode": [
+      500526.31908518064,
+      5600525.211214946
+     ],
+     "endNode": [
+      500888.8421999953,
+      5600694.258519642
+     ],
+     "bearing": 64.99999999998369,
+     "length": 400.00000000004854,
+     "speed": 60
+    }
+   ]
+  },
+  "gap_track": {
+   "id": "py-luecke",
+   "name": "fenster.001",
+   "epsg": 25832,
+   "elements": [
+    {
+     "elementType": 0,
+     "epsg": 25832,
+     "startNode": [
+      500000.0,
+      5600000.0
+     ],
+     "endNode": [
+      500266.6077762307,
+      5600317.7307751365
+     ],
+     "bearing": 40.0000000000017,
+     "length": 414.76806990839333,
+     "speed": 100
+    },
+    {
+     "elementType": 2,
+     "transitionType": "clothoid",
+     "r1": null,
+     "r2": 700.0,
+     "epsg": 25832,
+     "startNode": [
+      500266.6077762307,
+      5600317.7307751365
+     ],
+     "endNode": [
+      500305.824473016,
+      5600363.13411179
+     ],
+     "bearing": 40.0,
+     "endBearing": 42.45553340770353,
+     "length": 60,
+     "speed": 100
+    },
+    {
+     "elementType": 1,
+     "epsg": 25832,
+     "radius": 700.0,
+     "startNode": [
+      500305.824473016,
+      5600363.13411179
+     ],
+     "endNode": [
+      500499.5434229751,
+      5600511.779890177
+     ],
+     "bearing": 42.45553340770353,
+     "endBearing": 62.54446659229647,
+     "length": 245.4326190990077,
+     "speed": 100,
+     "cant": 80.0
+    },
+    {
+     "elementType": 2,
+     "transitionType": "clothoid",
+     "r1": 700.0,
+     "r2": null,
+     "epsg": 25832,
+     "startNode": [
+      500499.5434229751,
+      5600511.779890177
+     ],
+     "endNode": [
+      500553.5497064625,
+      5600537.909062186
+     ],
+     "bearing": 62.54446659229647,
+     "endBearing": 65.0,
+     "length": 60,
+     "speed": 100
+    },
+    {
+     "elementType": 0,
+     "epsg": 25832,
+     "startNode": [
+      500553.5497064625,
+      5600537.909062186
+     ],
+     "endNode": [
+      500653.1034296707,
+      5600584.331725716
+     ],
+     "bearing": 65.00000000019978,
+     "length": 109.8453799382517,
+     "speed": 100
+    },
+    {
+     "elementType": 2,
+     "transitionType": "clothoid",
+     "r1": null,
+     "r2": null,
+     "epsg": 25832,
+     "startNode": [
+      500653.1034296707,
+      5600584.331725716
+     ],
+     "endNode": [
+      500752.6571528789,
+      5600630.754389245
+     ],
+     "bearing": 65.00000000004876,
+     "endBearing": 65.00000000004876,
+     "length": 109.84537993836533,
+     "speed": 100
+    },
+    {
+     "elementType": 0,
+     "epsg": 25832,
+     "startNode": [
+      500752.6571528788,
+      5600630.754389246
+     ],
+     "endNode": [
+      500852.210876087,
+      5600677.177052775
+     ],
+     "bearing": 65.00000000019978,
+     "length": 109.8453799382517,
+     "speed": 100
+    },
+    {
+     "elementType": 2,
+     "transitionType": "clothoid",
+     "r1": null,
+     "r2": -700.0,
+     "epsg": 25832,
+     "startNode": [
+      500852.210876087,
+      5600677.177052775
+     ],
+     "endNode": [
+      500906.2171595744,
+      5600703.306224785
+     ],
+     "bearing": 65.0,
+     "endBearing": 62.54446659229647,
+     "length": 60,
+     "speed": 100
+    },
+    {
+     "elementType": 1,
+     "epsg": 25832,
+     "radius": -700.0,
+     "startNode": [
+      500906.2171595744,
+      5600703.306224785
+     ],
+     "endNode": [
+      501099.9361095335,
+      5600851.952003172
+     ],
+     "bearing": 62.54446659229647,
+     "endBearing": 42.45553340770353,
+     "length": 245.4326190990077,
+     "speed": 100,
+     "cant": -80.0
+    },
+    {
+     "elementType": 2,
+     "transitionType": "clothoid",
+     "r1": -700.0,
+     "r2": null,
+     "epsg": 25832,
+     "startNode": [
+      501099.9361095335,
+      5600851.952003172
+     ],
+     "endNode": [
+      501139.1528063188,
+      5600897.355339825
+     ],
+     "bearing": 42.45553340770353,
+     "endBearing": 40.0,
+     "length": 60,
+     "speed": 100
+    },
+    {
+     "elementType": 0,
+     "epsg": 25832,
+     "startNode": [
+      501139.1528063188,
+      5600897.355339825
+     ],
+     "endNode": [
+      501458.7134181365,
+      5601278.192847011
+     ],
+     "bearing": 39.99999999999146,
+     "length": 497.1480579310577,
+     "speed": 100
+    },
+    {
+     "elementType": 2,
+     "transitionType": "clothoid",
+     "r1": null,
+     "r2": 700.0,
+     "epsg": 25832,
+     "startNode": [
+      501458.7134181365,
+      5601278.192847011
+     ],
+     "endNode": [
+      501497.9301149218,
+      5601323.596183664
+     ],
+     "bearing": 40.0,
+     "endBearing": 42.45553340770353,
+     "length": 60,
+     "speed": 100
+    },
+    {
+     "elementType": 1,
+     "epsg": 25832,
+     "radius": 700.0,
+     "startNode": [
+      501497.9301149218,
+      5601323.596183664
+     ],
+     "endNode": [
+      501747.0147041802,
+      5601498.007090715
+     ],
+     "bearing": 42.45553340770353,
+     "endBearing": 67.54446659229646,
+     "length": 306.51914291880917,
+     "speed": 100,
+     "cant": 80.0
+    },
+    {
+     "elementType": 2,
+     "transitionType": "clothoid",
+     "r1": 700.0,
+     "r2": null,
+     "epsg": 25832,
+     "startNode": [
+      501747.0147041802,
+      5601498.007090715
+     ],
+     "endNode": [
+      501803.09278484783,
+      5601519.329875586
+     ],
+     "bearing": 67.54446659229646,
+     "endBearing": 69.99999999999999,
+     "length": 60,
+     "speed": 100
+    },
+    {
+     "elementType": 0,
+     "epsg": 25832,
+     "startNode": [
+      501803.0927848478,
+      5601519.329875586
+     ],
+     "endNode": [
+      502068.4431758484,
+      5601615.909519561
+     ],
+     "bearing": 70.00000000002177,
+     "length": 282.3799880206191,
+     "speed": 100
+    }
+   ]
+  }
+ },
+ "runs": [
+  {
+   "request": {
+    "track": "track",
+    "corridorCm": 50.0,
+    "grenzwert": "reg",
+    "uebergang": "bestand",
+    "maxiter": 40,
+    "seed": 1
+   },
+   "python": {
+    "variant": "Bestand",
+    "vBestand": 111.61374072507411,
+    "vBaseline": 114.64758085808077,
+    "vNeu": 114.64758085808077,
+    "skipped": [],
+    "changed": [
+     true,
+     true
+    ],
+    "grund": [
+     "korridor",
+     "korridor"
+    ],
+    "elements": 9
+   },
+   "seconds": 2.5
+  },
+  {
+   "request": {
+    "track": "track",
+    "corridorCm": 50.0,
+    "grenzwert": "reg",
+    "uebergang": "bestand",
+    "maxiter": 40,
+    "seed": 1,
+    "vMax": 113.0
+   },
+   "python": {
+    "variant": "Bestand",
+    "vBestand": 111.61374072507411,
+    "vBaseline": 114.24030574900927,
+    "vNeu": 114.24030574900927,
+    "skipped": [],
+    "changed": [
+     true,
+     true
+    ],
+    "grund": [
+     "zielgeschwindigkeit",
+     "zielgeschwindigkeit"
+    ],
+    "elements": 9
+   },
+   "seconds": 0.4
+  },
+  {
+   "request": {
+    "track": "k_track",
+    "corridorCm": 50.0,
+    "grenzwert": "reg",
+    "uebergang": "bestand",
+    "maxiter": 60,
+    "seed": 1
+   },
+   "python": {
+    "variant": "Bestand",
+    "vBestand": 108.14303146406284,
+    "vBaseline": 108.14303146406284,
+    "vNeu": 110.79068675293261,
+    "skipped": [],
+    "changed": [
+     true,
+     true
+    ],
+    "grund": [
+     "korridor",
+     "korridor"
+    ],
+    "elements": 7
+   },
+   "seconds": 3.4
+  },
+  {
+   "request": {
+    "track": "n_track",
+    "corridorCm": 50.0,
+    "grenzwert": "reg",
+    "uebergang": "bestand",
+    "maxiter": 25,
+    "seed": 1
+   },
+   "python": {
+    "variant": "Bestand",
+    "vBestand": 103.3342445740758,
+    "vBaseline": 103.3342445740758,
+    "vNeu": 108.62390410205703,
+    "skipped": [],
+    "changed": [
+     true,
+     true
+    ],
+    "grund": [
+     "korridor",
+     "korridor"
+    ],
+    "elements": 6
+   },
+   "seconds": 2.2
+  },
+  {
+   "request": {
+    "track": "t_track",
+    "corridorCm": 500.0,
+    "grenzwert": "reg",
+    "uebergang": "bestand",
+    "maxiter": 40,
+    "seed": 1
+   },
+   "python": {
+    "variant": "Bestand",
+    "vBestand": 98.72062961643026,
+    "vBaseline": 98.72062961643026,
+    "vNeu": 119.33608714431378,
+    "skipped": [],
+    "changed": [
+     true,
+     true,
+     true
+    ],
+    "grund": [
+     "korridor",
+     "korridor",
+     "korridor"
+    ],
+    "elements": 9
+   },
+   "seconds": 4.0
+  },
+  {
+   "request": {
+    "track": "track3",
+    "corridorCm": 50.0,
+    "grenzwert": "reg",
+    "uebergang": "bestand",
+    "maxiter": 25,
+    "seed": 1
+   },
+   "python": {
+    "variant": "Bestand",
+    "vBestand": 111.61374072507411,
+    "vBaseline": 114.4848446783108,
+    "vNeu": 114.4848446783108,
+    "skipped": [],
+    "changed": [
+     true,
+     true,
+     true
+    ],
+    "grund": [
+     "korridor",
+     "korridor",
+     "korridor"
+    ],
+    "elements": 13
+   },
+   "seconds": 3.0
+  },
+  {
+   "request": {
+    "track": "track3",
+    "corridorCm": 50.0,
+    "grenzwert": "discretion",
+    "uebergang": "auto",
+    "maxiter": 25,
+    "seed": 1
+   },
+   "python": {
+    "variant": "Bloss",
+    "vBestand": 111.61374072507411,
+    "vBaseline": 131.53590732288365,
+    "vNeu": 131.53590732288365,
+    "skipped": [],
+    "changed": [
+     true,
+     true,
+     true
+    ],
+    "grund": [
+     "ueberhoehung",
+     "ueberhoehung",
+     "ueberhoehung"
+    ],
+    "elements": 13
+   },
+   "seconds": 8.4
+  },
+  {
+   "request": {
+    "track": "track3",
+    "corridorCm": 50.0,
+    "grenzwert": "reg",
+    "uebergang": "bestand",
+    "maxiter": 40,
+    "seed": 1,
+    "targetElementIdx": 2
+   },
+   "python": {
+    "variant": "Bestand",
+    "vBestand": 111.61374072507411,
+    "vBaseline": 114.64758085808077,
+    "vNeu": 115.448645858271,
+    "skipped": [],
+    "changed": [
+     true,
+     true
+    ],
+    "grund": [
+     "korridor",
+     "rampenregel"
+    ],
+    "elements": 13
+   },
+   "seconds": 3.8
+  },
+  {
+   "request": {
+    "track": "odd_track",
+    "corridorCm": 50.0,
+    "grenzwert": "reg",
+    "uebergang": "bestand",
+    "maxiter": 25,
+    "seed": 1
+   },
+   "python": {
+    "variant": "Bestand",
+    "vBestand": 111.78610780550991,
+    "vBaseline": 116.59905223907631,
+    "vNeu": 119.98057752424283,
+    "skipped": [],
+    "changed": [
+     true
+    ],
+    "grund": [
+     "rampenregel"
+    ],
+    "elements": 5
+   },
+   "seconds": 1.8
+  },
+  {
+   "request": {
+    "track": "u_track",
+    "corridorCm": 200.0,
+    "grenzwert": "discretion",
+    "uebergang": "bestand",
+    "maxiter": 40,
+    "seed": 1
+   },
+   "python": {
+    "variant": "Bestand",
+    "vBestand": 234.70139701908863,
+    "vBaseline": 252.28615714054894,
+    "vNeu": 252.28615714054894,
+    "skipped": [],
+    "changed": [
+     true
+    ],
+    "grund": [
+     "rampenregel"
+    ],
+    "elements": 5
+   },
+   "seconds": 0.6
+  },
+  {
+   "request": {
+    "track": "s_track",
+    "corridorCm": 50.0,
+    "grenzwert": "reg",
+    "uebergang": "bestand",
+    "maxiter": 25,
+    "seed": 1
+   },
+   "python": {
+    "variant": "Bestand",
+    "vBestand": 117.17001988274147,
+    "vBaseline": 117.17001988274147,
+    "vNeu": 117.17001988274147,
+    "skipped": [],
+    "changed": [
+     false
+    ],
+    "grund": [
+     null
+    ],
+    "elements": 5
+   },
+   "seconds": 0.3
+  },
+  {
+   "request": {
+    "track": "s_track2",
+    "corridorCm": 50.0,
+    "grenzwert": "reg",
+    "uebergang": "bestand",
+    "maxiter": 25,
+    "seed": 1
+   },
+   "python": {
+    "variant": "Bestand",
+    "vBestand": 131.48435493708115,
+    "vBaseline": 137.80974357326411,
+    "vNeu": 137.80974357326411,
+    "skipped": [],
+    "changed": [
+     true,
+     true
+    ],
+    "grund": [
+     "korridor",
+     "korridor"
+    ],
+    "elements": 7
+   },
+   "seconds": 3.4
+  },
+  {
+   "request": {
+    "track": "j_track",
+    "corridorCm": 500.0,
+    "grenzwert": "reg",
+    "uebergang": "bestand",
+    "maxiter": 25,
+    "seed": 1
+   },
+   "python": {
+    "variant": "Bestand",
+    "vBestand": 70.0,
+    "vBaseline": 80.0,
+    "vNeu": 80.0,
+    "skipped": [],
+    "changed": [
+     true
+    ],
+    "grund": [
+     "kruemmungssprung"
+    ],
+    "elements": 3
+   },
+   "seconds": 0.2
+  },
+  {
+   "request": {
+    "track": "gap_track",
+    "corridorCm": 50.0,
+    "grenzwert": "reg",
+    "uebergang": "bestand",
+    "maxiter": 25,
+    "seed": 1
+   },
+   "python": {
+    "variant": "Bestand",
+    "vBestand": 111.61374072507411,
+    "vBaseline": 114.4848446783108,
+    "vNeu": 114.4848446783108,
+    "skipped": [
+     {
+      "from": 5,
+      "to": 5,
+      "why": "Ein \u00dcbergangsbogen muss in einen Bogen laufen."
+     }
+    ],
+    "changed": [
+     true,
+     true,
+     true
+    ],
+    "grund": [
+     "korridor",
+     "korridor",
+     "korridor"
+    ],
+    "elements": 15
+   },
+   "seconds": 2.7
+  }
+ ]
+}

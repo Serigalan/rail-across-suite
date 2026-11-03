@@ -29,9 +29,11 @@ describe('the optimized track', () => {
     expect(reshapedHeights(track, [s, longer])).toEqual([{ station: 0, z: 100 }, { station: 100, z: 101 }])
   })
 
-  it('carries the new elements and the regelwerk it was drawn under', () => {
+  it('carries the new elements and nothing the core format has no place for', () => {
     const out = optimizedTrack(track, { elements: [s, a], regelwerk: 'db-ril-800-0110', grenzwert: 'reg' })
-    expect(out).toMatchObject({ id: 't', regelwerk: 'db-ril-800-0110', regelwerkGrenzwert: 'reg' })
+    expect(out.id).toBe('t')
+    expect(out).not.toHaveProperty('regelwerk')
+    expect(out).not.toHaveProperty('regelwerkGrenzwert')
     expect(out.elements.map(el => el.length).reduce((x, y) => x + y)).toBeCloseTo(200, 9)
     expect(out.coordinates.length).toBeGreaterThan(2)
   })

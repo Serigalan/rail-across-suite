@@ -253,7 +253,10 @@ export function dehydrateProjects(projects) {
     return {
       ...p,
       ...(p.tracks ? {
-        tracks: p.tracks.map(({ coordinates: _coords, ...track }) => ({
+        // `regelwerk` and `regelwerkGrenzwert`: what the optimize dialog wrote
+        // onto a track it changed until 2026-11; the format never held them,
+        // and a working copy carrying them could not be checked in.
+        tracks: p.tracks.map(({ coordinates: _coords, regelwerk: _rw, regelwerkGrenzwert: _rg, ...track }) => ({
           ...track,
           // `cant` or `cantStart` + `cantEnd`, never both (Entscheidung 369).
           elements: storedTrackCants(track.elements ?? []).map(keptElement),

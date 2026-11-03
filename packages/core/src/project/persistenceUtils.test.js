@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import {
-  FORMAT_NAME, dehydrateProjects, hydrateProjects, parseProjectsPayload, parseTracksPayload, PayloadError, projectsPayload,
+  FORMAT_NAME, dehydrateProjects, hydrateProjects, parseProjectsPayload, parseTracksPayload, PayloadError, projectDocument, projectsPayload,
 } from './persistenceUtils.js'
 import { SWITCH_TYPES, switchArcLength, switchStraightLength } from '../switch/catalogue.js'
 import { computeSwitchGeometryUtm } from '../switch/symbol.js'
@@ -39,6 +39,17 @@ describe('hydrateProjects / dehydrateProjects round trip', () => {
       if (a.radius != null) expect(b.radius).toBeCloseTo(a.radius, 6)
       if (a.endBearing != null) expect(b.endBearing).toBeCloseTo(a.endBearing, 6)
     }
+  })
+
+  // The optimize dialog wrote these onto a track it changed; a working copy
+  // that has them must still make a document the door takes (a check-in).
+  it('leaves out the regelwerk an earlier optimize dialog wrote onto a track', () => {
+    const [p] = hydrateProjects(project())
+    p.tracks[0] = { ...p.tracks[0], regelwerk: 'db-ril-800-0110', regelwerkGrenzwert: 'reg' }
+    const [track] = dehydrateProjects([p])[0].tracks
+    expect(track).not.toHaveProperty('regelwerk')
+    expect(track).not.toHaveProperty('regelwerkGrenzwert')
+    expect(() => projectDocument(p)).not.toThrow()
   })
 
   it('dehydrate strips derived geometry, hydrate rebuilds it', () => {

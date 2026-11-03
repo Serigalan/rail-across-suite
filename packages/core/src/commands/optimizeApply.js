@@ -29,17 +29,15 @@ export function reshapedHeights(track, elements) {
 }
 
 /**
- * The track as the result has it: the optimized elements, the heights that
- * still hold, and the regelwerk it was drawn under and at which level —
- * without them a design a few years old is not reproducible.
+ * The track as the result has it: the optimized elements and the heights that
+ * still hold. The regelwerk and the level it was drawn under stay the run's:
+ * the core format has no place for them on a track.
  */
 export function optimizedTrack(track, result) {
   const elements = result.elements
   return {
     ...track, elements, coordinates: rebuildCoords(elements),
     heights: reshapedHeights(track, elements),
-    regelwerk: result.regelwerk,
-    regelwerkGrenzwert: result.grenzwert,
   }
 }
 

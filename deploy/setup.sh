@@ -58,7 +58,9 @@ if [ "$(node_major)" -lt 22 ]; then
   apt-get install -y -q nodejs
 fi
 [ "$(node_major)" -ge 22 ] || die "Node.js 22 or newer is needed"
-RA_NODE=$(command -v node); export RA_NODE
+# The services run the configured RA_NODE (default: the node on the PATH);
+# checked below, once the service user exists.
+export RA_NODE
 
 if [ "$RA_CADDY" = system ] && ! command -v caddy >/dev/null; then
   step "Caddy"
@@ -92,6 +94,10 @@ done
 if ! as_user test -r "$RA_REPO/server/bin/rail-across-server.mjs"; then
   die "$RA_USER cannot read $RA_REPO — make the checkout readable (chmod -R a+rX)"
 fi
+# A node under root's home (nvm) is closed to the service user: the units
+# would not start. RA_NODE names one it can run.
+major=$(as_user "$RA_NODE" -p 'process.versions.node.split(".")[0]' 2>/dev/null || echo 0)
+[ "$major" -ge 22 ] || die "$RA_USER cannot run Node.js 22 or newer at $RA_NODE — set RA_NODE in $RA_CONFIG"
 
 step "NTv2 grids for PROJ"
 (cd apps/layout-tool && node tools/data.mjs)

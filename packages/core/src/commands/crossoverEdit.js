@@ -162,8 +162,8 @@ export function takeApart(found, { tracks, switches }) {
  * A connection the construction does not lay as it is — cants that disagree
  * at the ldS, a chain that does not close at the toes — still opens (`closes` false): its elements as
  * they are, the first two lengths open, the old values where the iteration
- * starts; the dialog says why, and the slider, the elements and the Python
- * solver find where it does.
+ * starts; the dialog says why, and the slider or the search of the extended
+ * switch connection find where it does.
  *
  * Returns { shift, mids, seed, closes }.
  */
@@ -174,8 +174,8 @@ export function editStart(found, apart) {
     const closes = !!(result?.valid || result?.overridable)
     return { shift: closes ? shift : 0, mids: DEFAULT_MIDS, seed: null, closes }
   }
-  // The middle elements as an answer of the Python solver states them; the
-  // toes stand where the picks are. Exact first: the connection as it is.
+  // The middle elements as an answer of the search states them; the toes
+  // stand where the picks are. Exact first: the connection as it is.
   const pieces = found.mids.map(el => (el.elementType === 2
     ? { type: 'transition', length: el.length }
     : el.radius == null

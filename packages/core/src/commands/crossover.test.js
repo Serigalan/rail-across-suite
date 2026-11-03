@@ -18,7 +18,7 @@ const pick = (startUtm, bearing, length, along, radius = null) => ({
 const picks = [pick(P(500000, 5600000), 0, 300, 150), pick(P(499995.5, 5599900), 1, 300, 140, -800)]
 const SPEED = 80
 
-// What the service answered for it (Python solver, 2026-10-21): a
+// What the Python solver the search replaces answered for it (2026-10-21): a
 // transition from the branch's curvature and an arc.
 const ANSWER = {
   form: 0, label: '760 – 1:14', template: ['transition', 'arc'],
@@ -30,7 +30,7 @@ const ANSWER = {
   hints: [], rwMin: 1163.076122936535, score: 0.2,
 }
 
-describe('the Python solver of a switch connection (Entscheidungen 357–358)', () => {
+describe('the request and the answers of the extended switch connection (decision 0018)', () => {
   it('is asked where the slider finds nothing', () => {
     const bounds = computeShiftBounds({ picks, speed: SPEED })
     expect(bounds.max > bounds.min).toBe(false)
@@ -92,13 +92,6 @@ describe('the Python solver of a switch connection (Entscheidungen 357–358)', 
     const errors = [...out.elements, ...out.boundaries].flatMap(e => e.results ?? [])
       .filter(r => r.severity === 'error' && ['LP.EL.01', 'LP.KS.01'].includes(r.id))
     expect(errors).toEqual([])
-  })
-
-  it('gives the slider the stretch around the adopted shift', () => {
-    const adopted = adoptCrossover({ picks, speed: SPEED, solution: ANSWER })
-    const bounds = computeShiftBounds({ picks, speed: SPEED, mids: adopted.mids, seed: adopted.seed, around: adopted.shift })
-    expect(bounds.min).toBeLessThanOrEqual(adopted.shift)
-    expect(bounds.max).toBeGreaterThanOrEqual(adopted.shift)
   })
 
   it('says so where an answer does not close here', () => {

@@ -4,13 +4,14 @@ import {
 } from '../rules/index.js'
 import { connectionRemnants, settleConnection, stems } from './sCurve.js'
 
-// The Python solver of a switch connection (Entscheidungen 357–358): where no
-// shift of the slider gives a connection, the optimizer service searches the
-// toe of both turnouts and one to three elements between them. The turnout
-// geometry stays here — the request carries both branch ends sampled over the
-// elements the turnouts were picked on, for every form the speed falls back
-// through, and the limits the dialog holds the middle to. An answer comes back
-// as a shift and a spec of the middle elements, which the dialog solves again.
+// The search of the extended switch connection (decision 0018): the module
+// of crossover/ (Rust, WebAssembly) searches the toes of both turnouts and one
+// to three elements between them. The turnout geometry stays here — the
+// request carries both branch ends sampled over the elements the turnouts
+// were picked on, for every form the speed falls back through or the pair of
+// forms named, and the limits the dialog holds the middle to (Entscheidung
+// 358). An answer comes back as a shift and a spec of the middle elements,
+// which the dialog solves again.
 
 /** Between two samples of a branch end [m]. */
 const SAMPLE_STEP = 0.5
@@ -22,12 +23,13 @@ const SEARCH_REACH = 300
 const CANT_TOL = 1
 
 /**
- * The request for `/crossover`: the two picks of the dialog and its speed.
- * Coordinates relative to the first branch end at the pick, so the service
+ * The request of the search: the two picks of the dialog and its speed.
+ * Coordinates relative to the first branch end at the pick, so the search
  * works with metres, not UTM eastings. A sample is `ok` where its turnout
  * keeps its own checks and leaves no piece of its element shorter than l_min
  * (connectionRemnants). `form`: the one form to sample (a connection edited,
- * Entscheidung 364), else the speed's fallback chain.
+ * Entscheidung 364), or a pair [first turnout's, second turnout's], else the
+ * speed's fallback chain.
  */
 export function crossoverRequest({ picks, speed, form = null }) {
   const { g1, g2 } = stems(picks)

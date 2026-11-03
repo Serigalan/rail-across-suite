@@ -217,8 +217,8 @@ the intermediate element breaks LP.EL.01 or LP.KS.01 (below), when a curve or be
 permitted cant deficiency, or when the cant at the two ends of the middle element differs — the middle
 element carries one value, a step would be a ramp of no length.
 
-**Up to three intermediate elements** (`midChain.js`). Instead of one arc the dialog may ask for one to
-three elements, each a straight, an arc or a transition, each with length (and an arc's radius) given or
+**Up to three intermediate elements** (`midChain.js`). Instead of one arc the extended switch connection
+(decision 0018) may lay one to three elements, each a straight, an arc or a transition, each with length (and an arc's radius) given or
 left open. A radius is given with its sign, as the element table shows one — + right, − left, in the
 direction the connection runs from the first turnout to the second — and that fixes the side it bends to
 (`side` in the spec, Entscheidung 368); an open radius finds its side. Exactly two values are sought; the third unknown is s₂. Transitions run between the curvatures
@@ -245,15 +245,15 @@ one. They are snaps of the slider, and `preferredShift` lays the connection on a
 element change where one gives it, else the straight nearest to the click) and only then on the element
 change behind the toe; a straight a toe would be pushed off (`settleConnection`) does not count.
 
-**Python solver** (Entscheidungen 357–358). Where no shift of the slider gives a connection, the server
-build offers a search in the optimizer service (`/crossover`, `crossover.py`): both toes free on their
-elements and one to three middle elements. The geometry stays here — `connectionBranchEnds` samples
-both branch ends (point, tangent, curvature, end run, cant at the ldS, the turnout's own checks) every
-0.5 m within 300 m of the picks, for every form of the fallback chain; the service interpolates them and
-closes element sequences with least squares and SLSQP under the dialog's limits. An answer is adopted as
-a shift and a spec with two values open, a `side` for each given radius and a `seed` (second toe and
-open values) the iteration starts from (`commands/crossover.js`); the slider's range is then the stretch
-around the adopted shift (`computeShiftBounds({ around })`).
+**The search of the extended switch connection** (decision 0018, Entscheidung 358). The switch
+connection's dialog lays one element; every other configuration — each turnout of its own form, one to three
+elements, values given or sought — is searched by the module of `crossover/` (Rust, WebAssembly, in the
+browser): both toes free on their elements, the elements between closed by least squares and SLSQP under
+the dialog's limits. The geometry stays here — `connectionBranchEnds` samples both branch ends (point,
+tangent, curvature, end run, cant at the ldS, the turnout's own checks) every 0.5 m within 300 m of the
+picks, for every form of the fallback chain or the pair named (`crossoverRequest`). An answer is adopted
+as a shift and a spec with two values open, a `side` for each given radius and a `seed` (second toe and
+open values) the iteration starts from (`adoptCrossover`), and solved again here before it is built.
 
 **Committed anyway** (Entscheidung 361). A form refused only by the rules above — middle element
 (LP.EL.01, LP.KS.01), cant, cant deficiency, the pieces before WA and behind WE — still has a geometry:

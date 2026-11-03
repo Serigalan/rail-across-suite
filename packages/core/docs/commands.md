@@ -15,7 +15,7 @@ input, show previews and findings, and claim names and numbers.
 | `tracks.js` | Create element, connect straight/curve, parallels | New tracks; straights, arcs and transitions appended at a track end; parallel tracks |
 | `switches.js` | Switch on track, crossing on track | A turnout or crossing laid into a track at a station: split track, carved through route, new branch tracks, switch record |
 | `sCurve.js` | Switch connection (Weichenverbindung) | Both turnouts and the connecting track between two tracks, for a toe position (shift) on track 1; the range of valid shifts and the snaps |
-| `crossover.js` | Switch connection, Python solver | The request for `/crossover` (both branch ends sampled, the limits) and an answer adopted as shift, middle elements and seed |
+| `crossover.js` | Extended switch connection | The request of its search (both branch ends sampled, the limits; decision 0018) and an answer adopted as shift, middle elements and seed |
 | `crossoverEdit.js` | Edit switch connection | Which track is a switch connection, the connection taken apart in memory (the turnouts deleted, their lines joined), where the dialog starts on it, and the commit that replaces it |
 | `connectSwitch.js` | Connect a turnout to a track | The turnout on the host and the refitted connecting element (see `switch/connectToTrack.js`) |
 | `connectCrossing.js` | Connect a crossing to a track | The same for one end of a crossing's cross route |
@@ -54,8 +54,8 @@ connecting track is the branch of both turnouts. Its heights follow both main ro
 (`elevation`, decisions 384–385).
 
 **Editing a switch connection** (`crossoverEdit.js`, Entscheidung 364; in the Edit panel): a track that
-begins and ends at a route (B1/B2) of two turnouts of one form a turnout can be laid in with
-(`SWITCH_PICK_TYPES`), with one to three elements of its own between their routes, is one
+begins and ends at a route (B1/B2) of two turnouts of forms a turnout can be laid in with
+(`SWITCH_PICK_TYPES`; two different ones as a pair), with one to three elements of its own between their routes, is one
 (`switchConnectionOf`). `takeApart` removes it in memory and deletes both turnouts as the
 delete dialog does (`planSwitchDeletion`, each line joined back into its track), and puts the picks where
 the toes stood — toe and switch end projected onto the joined tracks, the pick on the element of the toe, from
@@ -64,7 +64,8 @@ middle elements as they are, two values open so that they close at shift 0 (`ado
 exactFirst })`; one element alone is the closed-form arc). Where the construction does not lay it as it
 lies — cants that disagree at the ldS, a connection made by "Weiche an Gleis anschließen" that does not
 close — it opens all the same (`closes` false): elements as they are,
-the first two lengths open, the old values as seed; the dialog names the reason. The dialog then runs on those tracks with the form fixed
+the first two lengths open, the old values as seed; the dialog names the reason. One element of one form
+opens in the switch connection, anything else in the extended one. The dialog then runs on those tracks with the form fixed
 (`form` through every solve, `crossoverRequest({ form })`); `buildSCurve({ identities, connTrack })` keeps
 the switch ids, names and numbers and the connecting track, `editCommit` puts the two deletions before it,
 and `storage.commitSwitchConnectionEdit` runs all of it as one undo step.

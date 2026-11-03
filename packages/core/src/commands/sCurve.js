@@ -470,15 +470,11 @@ export function settleConnection({ picks, speed, shift, mids = null, seed = null
  * the edge of what holds, found to a micron — so a toe can be
  * put right onto its element's node.
  *
- * Where `around` holds, the stretch is the one around it, however narrow —
- * the shift an answer of the Python solver was adopted at (Entscheidung 357),
- * which the scan may step over.
- *
  * `lenient` counts a connection only the rulebook refuses as standing too: the
  * range the slider gets where no valid one stands, to commit one anyway
  * (Entscheidung 361). shiftSnaps and preferredShift take it alike.
  */
-export function computeShiftBounds({ picks, speed, mids = null, seed = null, form = null, around = null, lenient = false }) {
+export function computeShiftBounds({ picks, speed, mids = null, seed = null, form = null, lenient = false }) {
   const [p1] = picks
   const dir1 = stems(picks).g1.dir ?? 1
   // The shifts that put the first toe on either end of its element.
@@ -497,20 +493,6 @@ export function computeShiftBounds({ picks, speed, mids = null, seed = null, for
       if (probe(m)) good = m; else bad = m
     }
     return good
-  }
-
-  if (around != null && around >= lo1 && around <= hi1 && probe(around)) {
-    const step = span / n
-    const reach = (dir, end) => {
-      let good = around
-      for (;;) {
-        const next = dir > 0 ? Math.min(end, good + step) : Math.max(end, good - step)
-        if (next === good) return good
-        if (!probe(next)) return edge(next, good)
-        good = next
-      }
-    }
-    return { min: reach(-1, lo1), max: reach(1, hi1) }
   }
 
   const c = Math.min(hi1, Math.max(lo1, 0))

@@ -178,6 +178,19 @@ jobs:
       - run: cargo clippy --all-targets -- -D warnings
       - run: cargo test
 
+  # The extended switch connection's search in Rust (decision 0018): its
+  # cases, clippy, the format.
+  crossover:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: crossover
+    steps:
+      - uses: actions/checkout@v5
+      - run: cargo fmt --check
+      - run: cargo clippy --all-targets -- -D warnings
+      - run: cargo test --release
+
   # The Simulation-Tool, with its simulation module built from sim/, so the
   # tests that run it (OSRD's example vehicles among them) run too.
   simulation-tool:
@@ -301,7 +314,6 @@ jobs:
       - run: python tests/verify_splice.py
       - run: python tests/verify_align.py
       - run: python tests/verify_reconnect.py
-      - run: python tests/verify_crossover.py
       - run: python tests/verify_clearance.py
       - run: python tests/verify_splice_props.py
       # The app's splice (apps/layout-tool/src/core/utils/splice) is held against these answers (decision 294).

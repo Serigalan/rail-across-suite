@@ -237,6 +237,14 @@ the run of the element's curvature beyond the node they end in (`connectionPick`
 the toe is put on the element change behind it where it can be. "Weiche auf Gleis" measures its pieces
 the same way (`switchOnTrackRemnant` `run`, `runAhead`).
 
+**A straight between the turnouts** is the connection one wants. On two parallel tracks the middle
+element is one wherever the slider stands; where either track bends, its turn δ follows the toes and it
+is a straight only where δ passes through nought. `straightShifts` finds those shifts — one pass over the
+slider's range, each change of sign halved down; `hasStraightMid` says whether a solved connection has
+one. They are snaps of the slider, and `preferredShift` lays the connection on a straight first (on an
+element change where one gives it, else the straight nearest to the click) and only then on the element
+change behind the toe; a straight a toe would be pushed off (`settleConnection`) does not count.
+
 **Python solver** (Entscheidungen 357–358). Where no shift of the slider gives a connection, the server
 build offers a search in the optimizer service (`/crossover`, `crossover.py`): both toes free on their
 elements and one to three middle elements. The geometry stays here — `connectionBranchEnds` samples

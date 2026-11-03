@@ -1120,6 +1120,8 @@
   "scurve_min_element_short": "Reststück {side} auf {track}: {l} m, gefordert {lmin} m bei {v} km/h.",
   "scurve_side_before_wa": "vor WA",
   "scurve_side_after_we": "hinter WE",
+  "scurve_straight_possible": "Eine Zwischengerade ist bei WA-Station {st} m möglich.",
+  "scurve_straight_go": "Zur Zwischengeraden",
   "scurve_min_element_moved": "WA auf den Elementpunkt geschoben, sonst bliebe ein Element unter der Mindestelementlänge: {tracks}.",
   "scurve_min_element_unchecked": "Mindestelementlänge auf {tracks} nicht geprüft: das Element hat keine Entwurfsgeschwindigkeit ab 40 km/h.",
   "scurve_branch_swapped": "{r} m (EW, Stamm- und Zweiggleis getauscht)",

@@ -6,8 +6,8 @@ import { SWITCH_TYPES, CONNECTION_SPEEDS, computeSwitchConnections, DEFAULT_MIDS
 import { ZOOM_LINE_WIDTH } from '../../../map/style'
 import { useI18n } from '../../../locales/i18nContext'
 import {
-  REASON_MSG, buildSCurve, computeShiftBounds, connectionPick, editCommit, isUsableStem, preferredShift,
-  settleConnection, shiftSnaps, stems, waOffset, SLIDER_REACH,
+  REASON_MSG, buildSCurve, computeShiftBounds, connectionPick, editCommit, hasStraightMid, isUsableStem, preferredShift,
+  settleConnection, shiftSnaps, stems, straightShifts, waOffset, SLIDER_REACH,
 } from '@rail-across/core/commands'
 import StationSlider from '../../form/StationSlider'
 import { splitUnit } from '../../../locales/i18n'
@@ -193,6 +193,8 @@ export default function SCurveForm({ onCommitted, edit = null }) {
       bounds, lenient,
       snaps: shiftSnaps({ picks, speed, mids: solvedMids, seed, form, lenient }, bounds),
       preferred: preferredShift({ picks, speed, mids: solvedMids, seed, form, lenient }, bounds),
+      // Where the element between the branches is a straight, the connection one wants.
+      straights: straightShifts({ picks, speed, mids: solvedMids, seed, form, lenient }, bounds),
       offset: waOffset(picks),
       toStation: (sh) => elStart + picks[0].along + dir1 * sh,
       toShift: (st) => (st - elStart - picks[0].along) * dir1,
@@ -393,6 +395,17 @@ export default function SCurveForm({ onCommitted, edit = null }) {
         {slider && !result?.valid && slider.lenient && (
           <CrossoverSolver picks={picks} speed={speed} form={form} stationOf={slider.toStation} onAdopt={adoptSolution} />
         )}
+        {stands && !hasStraightMid(result) && slider?.straights.length > 0 && (() => {
+          const near = [...slider.straights].sort((a, b) => Math.abs(a - shift) - Math.abs(b - shift))[0]
+          return (
+            <div className="msg-hint">
+              <p>{fill('scurve_straight_possible', { st: slider.toStation(near).toFixed(2) })}</p>
+              <button type="button" className="ui-btn ui-btn-block" onClick={() => { setCarveError(null); setShift(near) }}>
+                {t('scurve_straight_go')}
+              </button>
+            </div>
+          )
+        })()}
         {settled?.moved.length > 0 && (
           <p className="msg-hint">
             {fill('scurve_min_element_moved', { tracks: settled.moved.map(k => picks[k]?.name ?? '').join(', ') })}

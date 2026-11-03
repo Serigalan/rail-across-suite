@@ -1120,6 +1120,8 @@
   "scurve_min_element_short": "Piece {side} on {track}: {l} m, {lmin} m required at {v} km/h.",
   "scurve_side_before_wa": "before the toe",
   "scurve_side_after_we": "behind the switch end",
+  "scurve_straight_possible": "A straight between the turnouts is possible with the toe at station {st} m.",
+  "scurve_straight_go": "Go to the straight",
   "scurve_min_element_moved": "Toe pushed onto the element's node, an element would otherwise stay below the minimum length: {tracks}.",
   "scurve_min_element_unchecked": "Minimum element length not checked on {tracks}: the element has no design speed of 40 km/h or more.",
   "scurve_branch_swapped": "{r} m (plain turnout, routes swapped)",

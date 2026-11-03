@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { SWITCH_TYPES } from '../switch/switchConnectionUtils.js'
-import { stems, solveConnection, computeShiftBounds, settleConnection, connectionRemnants, connectionPick, buildSCurve, shiftSnaps, preferredShift, waOffset } from './sCurve.js'
+import { stems, solveConnection, computeShiftBounds, settleConnection, connectionRemnants, connectionPick, buildSCurve, shiftSnaps, preferredShift, waOffset, hasStraightMid, straightShifts } from './sCurve.js'
 import { minElementLength } from '../rules/elementLength.js'
 import { hasPekBestand, loadPekBestand } from '../../test/pekFixture.js'
 import { hydrateProjects, dehydrateProjects } from '../project/persistenceUtils.js'
@@ -116,6 +116,45 @@ describe('where the slider may stand', () => {
     const s = preferredShift({ picks, speed: SPEED_60 }, bounds)
     expect(s).not.toBe(-100)
     expect(solveConnection({ picks, speed: SPEED_60, shift: s }).TP2.northing).toBeCloseTo(5600230, 4)
+  })
+})
+
+describe('a straight between the turnouts', () => {
+  const bare = (startUtm, bearing, length, along, radius = null) => {
+    const { elLength: _l, ...p } = pick(startUtm, bearing, length, along, radius)
+    return p
+  }
+
+  it('is there wherever the slider stands on two parallel tracks, and nothing to snap to', () => {
+    const picks = [bare(P(500000, 5600000), 0, 400, 100), bare(P(499995.5, 5599700), 0, 2000, 460)]
+    const bounds = computeShiftBounds({ picks, speed: SPEED })
+    expect(hasStraightMid(solveConnection({ picks, speed: SPEED, shift: 0 }))).toBe(true)
+    expect(straightShifts({ picks, speed: SPEED }, bounds)).toEqual([])
+    // The element change stays where the dialog begins.
+    expect(preferredShift({ picks, speed: SPEED }, bounds)).toBe(-100)
+  })
+
+  // Track 1 straight, track 2 an arc whose tangent turns through track 1's
+  // direction near the click: a straight where the turn of the middle passes nought.
+  const picks = [bare(P(500000, 5600000), 0, 2000, 300), bare(P(499988.75, 5599800), 1.4324, 1000, 560, -20000)]
+  const bounds = computeShiftBounds({ picks, speed: SPEED })
+
+  it('is found where the middle element\'s turn passes nought', () => {
+    const at = straightShifts({ picks, speed: SPEED }, bounds)
+    expect(at).toHaveLength(1)
+    expect(at[0]).toBeGreaterThan(-100)
+    expect(at[0]).toBeLessThan(0)
+    const res = solveConnection({ picks, speed: SPEED, shift: at[0] })
+    expect(res.valid).toBe(true)
+    expect(hasStraightMid(res)).toBe(true)
+    // A metre off it the middle is an arc.
+    expect(hasStraightMid(solveConnection({ picks, speed: SPEED, shift: at[0] + 1 }))).toBe(false)
+    expect(shiftSnaps({ picks, speed: SPEED }, bounds).some(s => Math.abs(s - at[0]) < 1e-3)).toBe(true)
+  })
+
+  it('is where the dialog begins, before the element change', () => {
+    const [s] = straightShifts({ picks, speed: SPEED }, bounds)
+    expect(preferredShift({ picks, speed: SPEED }, bounds)).toBe(s)
   })
 })
 

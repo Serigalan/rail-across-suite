@@ -191,6 +191,19 @@ jobs:
       - run: cargo clippy --all-targets -- -D warnings
       - run: cargo test --release
 
+  # The track optimizer in Rust (decision 0019): the shared rule vectors, the
+  # cases the Python service was held to, clippy, the format.
+  optimizer-rs:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: optimizer
+    steps:
+      - uses: actions/checkout@v5
+      - run: cargo fmt --check
+      - run: cargo clippy --all-targets -- -D warnings
+      - run: cargo test --release
+
   # The Simulation-Tool, with its simulation module built from sim/, so the
   # tests that run it (OSRD's example vehicles among them) run too.
   simulation-tool:

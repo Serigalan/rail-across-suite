@@ -17,7 +17,7 @@ One repository holds the core, every module and the services
 | `apps/` | the modules: the suite's start page, the Layout-Tool, the Signalling-Tool, the Simulation-Tool, the Fahrzeug-Editor, the Fahrplan-Editor |
 | `server/` | the project server for all modules |
 | `services/` | the Python services |
-| `sim/`, `crossover/` | Rust, built to WebAssembly for the browser: the running time simulation, the search of the extended switch connection |
+| `sim/`, `crossover/`, `optimizer/` | Rust, built to WebAssembly for the browser: the running time simulation, the search of the extended switch connection, the track optimizer (in progress, [decision 0019](docs/decisions/0019-optimizer-in-rust.md)) |
 | `docs/` | data model, decisions, glossary, conventions |
 | `tools/` | repository checks (`npm run check`) |
 

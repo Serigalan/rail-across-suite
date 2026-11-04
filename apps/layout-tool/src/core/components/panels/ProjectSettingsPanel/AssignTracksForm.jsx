@@ -120,7 +120,8 @@ export default function AssignTracksForm({ onCommitted }) {
   const renaming = rename && to.kind != null && ids.length > 0
 
   // Where on the line each track lies — what its name is built from — asked
-  // for once the selection and the line number hold still.
+  // for once the selection and the line number hold still; the project's own
+  // kilometrage line of that number before the shipped one.
   const kmLine = renaming && to.kind === 'line' ? String(to.lineNumber ?? '').trim() : ''
   const kmKey = kmLine ? `${kmLine}|${selectedKey}` : null
   useEffect(() => {
@@ -128,10 +129,11 @@ export default function AssignTracksForm({ onCommitted }) {
     let live = true
     const timer = setTimeout(() => {
       const all = loadTracks()
+      const localLines = currentProject()?.kmLines
       Promise.all(selectedKey.split('|').map(async (id) => {
         const track = all.find(tr => tr.id === id)
         const geometry = track ? elementsPath(track.elements, track.epsg) : null
-        const hit = geometry ? await identifyTrackLine(geometry, kmLine).catch(() => null) : null
+        const hit = geometry ? await identifyTrackLine(geometry, kmLine, { localLines }).catch(() => null) : null
         return [id, hit?.km ?? null]
       })).then((entries) => {
         if (live) setKmLookup({ key: `${kmLine}|${selectedKey}`, km: Object.fromEntries(entries) })

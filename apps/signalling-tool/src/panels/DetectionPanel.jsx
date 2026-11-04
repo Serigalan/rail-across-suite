@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { Button, Option, Options, SelectField, TextField } from '@rail-across/ui'
+import { Button, NumberField, Option, Options, OptionsDivider, SelectField, TextField } from '@rail-across/ui'
 import { Panel } from './draft.jsx'
-import { labelOf, newId } from '../model/domain.js'
+import { deleted, labelOf, newId } from '../model/domain.js'
+import { LAYOUT, detectionLayout } from '../model/detectionLayout.js'
 import { POINT_KIND, SECTION_KIND, optionsOf } from '../labels.js'
-import { DetectionIcon, SectionIcon } from '../icons.jsx'
+import { DetectionIcon, SectionIcon, SwitchIcon } from '../icons.jsx'
 import { Created } from './common.jsx'
 import { kmNameAt, locationFrom, pickingPoints } from '../model/places.js'
 import { useFields, useSetting } from './useSetting.js'
@@ -14,7 +15,8 @@ import { useFields, useSetting } from './useSetting.js'
  * (useSetting), named by its kilometrage (6344-5+231, the next metre free)
  * unless it is given a name; a track section, of a
  * kind, whose points are then clicked on the plan — it opens in its editor
- * (Bearbeiten) for that.
+ * (Bearbeiten) for that; or the points and sections of the whole net
+ * determined at once (detectionLayout.js), as a draft to confirm.
  */
 export default function DetectionPanel({ domain, net, record, ops, select, mode, setMode, pending, t, language }) {
   const [page, setPage] = useState('menu')
@@ -60,14 +62,69 @@ export default function DetectionPanel({ domain, net, record, ops, select, mode,
     )
   }
 
+  if (page === 'layout') {
+    return (
+      <Panel title={t('detection_layout')} intro={t('detection_layout_intro')} back={back}>
+        <LayoutPage domain={domain} net={net} kmLines={record?.kmLines} ops={ops} t={t} />
+      </Panel>
+    )
+  }
+
   return (
     <Panel title={t('section_detection')} intro={t('section_detection_intro')}>
       <Options>
         <Option icon={<DetectionIcon />} onClick={() => go('point')}>{t('create_point')}</Option>
         <Option icon={<SectionIcon />} onClick={() => go('section')}>{t('create_section')}</Option>
       </Options>
+      <OptionsDivider />
+      <Options>
+        <Option icon={<SwitchIcon />} disabled={!net.tracks.length} onClick={() => go('layout')}>{t('detection_layout')}</Option>
+      </Options>
     </Panel>
   )
+}
+
+/**
+ * Determining the points and sections of the whole net: the distances it
+ * lays out by, then the points and sections put in the draft at once — drawn
+ * on the plan till they are confirmed —, and what was done said.
+ */
+function LayoutPage({ domain, net, kmLines, ops, t }) {
+  const [layout, setLayout] = useState(LAYOUT)
+  const [done, setDone] = useState(null)
+  const set = (key) => (v) => setLayout(l => ({ ...l, [key]: v ?? LAYOUT[key] }))
+  const run = () => {
+    const found = detectionLayout(net, domain, { kmLines, layout, t })
+    let next = domain
+    for (const id of found.removed) next = deleted(next, 'trackSections', id)
+    next = {
+      ...next,
+      collections: {
+        ...next.collections,
+        detectionPoints: [...next.collections.detectionPoints, ...found.points],
+        trackSections: [...next.collections.trackSections, ...found.sections],
+      },
+    }
+    ops.replaceAll(next)
+    setDone(found)
+  }
+  return <>
+    <div className="ui-fields">
+      <NumberField compact label={t('layout_before')} value={layout.before} min={0} onChange={set('before')} />
+      <NumberField compact label={t('layout_behind')} value={layout.behind} min={0} onChange={set('behind')} />
+      <NumberField compact label={t('layout_clearance')} value={layout.clearance} min={0.5} step={0.1} onChange={set('clearance')} />
+      <NumberField compact label={t('layout_merge')} value={layout.merge} min={0} onChange={set('merge')} />
+    </div>
+    <p className="ui-muted">{t('detection_layout_hint')}</p>
+    <div className="ui-row">
+      <Button variant="primary" onClick={run}>{t('detection_layout_run')}</Button>
+    </div>
+    {done && (
+      <p className="tool-created" role="status">
+        {t('detection_layout_done', { points: done.points.length, merged: done.merged, sections: done.sections.length, kept: done.kept.length, removed: done.removed.length })}
+      </p>
+    )}
+  </>
 }
 
 /** What a detection point set is called, and the way to its editor. */

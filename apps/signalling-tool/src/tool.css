@@ -83,6 +83,10 @@ html, body { margin: 0; background: var(--ui-surface); }
   display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 8px; font-size: var(--ui-fs-m);
   background: var(--ui-selected); border: 1px solid var(--color-primary);
 }
+/* A route found from a signal: its target and speed, under it the sections it runs through. */
+.tool-found-route { display: flex; flex-direction: column; gap: 2px; padding: 6px 0; border-bottom: 1px solid var(--ui-border); }
+.tool-found-route .ui-field { width: 110px; }
+.tool-found-route p { margin: 0; font-size: var(--ui-fs-s); }
 /* Cancel and Commit at a panel's foot, what would be committed above them. */
 .tool-commit { display: flex; flex-direction: column; gap: 8px; width: 100%; }
 .tool-commit-what { margin: 0; font-size: var(--ui-fs-m); overflow-wrap: anywhere; }

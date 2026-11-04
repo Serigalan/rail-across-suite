@@ -24,7 +24,10 @@ where there is one, else its head, and only read; the timetables are the project
   — a row for every station along its way, the stations it passes among them (*Hier halten* makes it stop there),
   its running time, length, speed and energy, its way on the map.
 - **Blockbelegung**: a train runs only into a free block — from main signal to main signal of the variant's
-  signalling, the overlap beyond with it; without main signals the whole way is one block. The timetable says what
+  signalling, the overlap beyond with it; without main signals the whole way is one block. Where the variant has
+  track sections (the Signalling-Tool's Freimeldeabschnitte), a block is held section by section, and each section is
+  free again as soon as the train has left it: a route over a section another train holds waits for that section
+  alone, and a conflict names it. The timetable says what
   happens where two trains need one block: *Konflikte nur anzeigen*, each train run for itself; or *Züge warten
   automatisch*, the trains given the net by departure or by kind in an order set (*Vorrang*), each waiting —
   later from its start, longer at a stop, else before the signal — until the block is free. A train's page says

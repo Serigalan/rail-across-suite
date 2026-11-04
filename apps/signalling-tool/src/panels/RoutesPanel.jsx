@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   Badge, Button, Checkbox, GroupedList, NumberField, Option, Options, OptionsDivider, OptionsHeading, PlusIcon, Section, SelectField, TextField,
 } from '@rail-across/ui'
@@ -14,7 +14,9 @@ import { ItineraryIcon, OverlapIcon, RouteIcon } from '../icons.jsx'
 import { stationName } from '../model/stations.js'
 import { ItineraryEditor, ItineraryList, ItinerarySearch } from './Itineraries.jsx'
 import { CheckList, EditorHead, ObjectFindings } from './common.jsx'
-import { aspectText, signalOptions as signalChoices, trackName } from '../model/places.js'
+import { aspectText, pickingSignal, signalOptions as signalChoices, trackName } from '../model/places.js'
+import { isMainSignal } from '../model/itineraries.js'
+import { nextSignals, routeSections } from '../model/routeSearch.js'
 
 /** The kinds of route, each with the type it starts with. */
 const KINDS = { train: { trainType: 'ZZ' }, shunting: { shuntingType: 'RR' }, middle: { middleType: 'ZM' } }
@@ -30,6 +32,10 @@ const KINDS = { train: { trainType: 'ZZ' }, shunting: { shuntingType: 'RR' }, mi
  * speed and the gradient over it, which the heights of the tracks give. A new
  * overlap runs its length ahead of its signal, straight on at every switch;
  * its danger point lies at its end.
+ *
+ * Routes are found from a signal too: to every next main signal ahead of it,
+ * one route per way, with the speed they are run at; a route names the track
+ * sections it runs through, as they stand.
  *
  * Routes are a station's: the station of their start signal, under which
  * they are listed; the open line has none, the block has its signals. The
@@ -73,7 +79,7 @@ export default function RoutesPanel({
   if (chosenRoute) {
     return (
       <Panel title={t('object_routes')} back={toPage}>
-        <RouteEditor key={chosenRoute.id} route={chosenRoute} name={routeName(chosenRoute)} domain={domain} net={net} findings={findings}
+        <RouteEditor key={chosenRoute.id} route={chosenRoute} name={routeName(chosenRoute)} domain={domain} net={net} findings={findings} extents={extents}
           signalOptions={signalOptions} readOnly={readOnly} t={t} language={language} select={select}
           onChange={(r) => ops.update('routes', r)} onDelete={() => ops.remove('routes', chosenRoute.id)} onNewOverlap={newOverlap}
           onSignal={(speed) => ops.replaceAll(withRouteSpeed(domain, chosenRoute, speed))}
@@ -133,6 +139,13 @@ export default function RoutesPanel({
       </Panel>
     )
   }
+  if (page === 'find_routes') {
+    return (
+      <Panel title={t('find_routes')} intro={t('find_routes_intro')} back={back}>
+        <FindRoutes domain={domain} net={net} extents={extents} ops={ops} setMode={setMode} setSketch={setSketch} t={t} />
+      </Panel>
+    )
+  }
   if (page === 'new_overlap') {
     return (
       <Panel title={t('create_overlap')} intro={t('create_overlap_intro')} back={back}>
@@ -189,6 +202,7 @@ export default function RoutesPanel({
         <Options>
           <OptionsHeading>{t('menu_create')}</OptionsHeading>
           <Option icon={<ItineraryIcon />} disabled={stoppingPlaces.length < 2} onClick={() => setPage('search')}>{t('itinerary_search_title')}</Option>
+          <Option icon={<RouteIcon />} disabled={real.length < 2} onClick={() => setPage('find_routes')}>{t('find_routes')}</Option>
           <Option icon={<RouteIcon />} disabled={real.length < 2} onClick={() => setPage('new_route')}>{t('create_route')}</Option>
           <Option icon={<OverlapIcon />} disabled={!real.length} onClick={() => setPage('new_overlap')}>{t('create_overlap')}</Option>
         </Options>
@@ -245,7 +259,7 @@ function NewOverlap({ signalOptions, onCreate, t }) {
   </>
 }
 
-function RouteEditor({ route, name, domain, net, findings, signalOptions, onChange, onDelete, onNewOverlap, onMeasure, onSignal, select, readOnly, t, language }) {
+function RouteEditor({ route, name, domain, net, findings, extents, signalOptions, onChange, onDelete, onNewOverlap, onMeasure, onSignal, select, readOnly, t, language }) {
   const { signals, overlaps } = domain.collections
   const set = (patch) => onChange({ ...route, ...patch })
   const start = signals.find(s => s.id === route.startSignalId)
@@ -291,7 +305,9 @@ function RouteEditor({ route, name, domain, net, findings, signalOptions, onChan
       </div>
       <Section title={t('route_speed')}>
         <div className="ui-row">
-          <span className="ui-grow">{speed != null ? `${speed} km/h` : t('speed_not_signalled')}</span>
+          {setter && !readOnly
+            ? <div className="ui-grow"><NumberField compact label={t('route_speed_kmh')} value={speed ?? null} min={0} step={10} onChange={(v) => onSignal(v ?? null)} /></div>
+            : <span className="ui-grow">{speed != null ? `${speed} km/h` : t('speed_not_signalled')}</span>}
           {setter && (
             <Button size="small" onClick={() => select({ collection: 'logicalSignals', id: logicalId(start.id, setter.system) })}>
               {t('set_at_signal')}
@@ -311,6 +327,9 @@ function RouteEditor({ route, name, domain, net, findings, signalOptions, onChan
         {route.path.trackIds.length
           ? <p className="ui-muted">{route.path.trackIds.map(id => trackName(net, id)).join(' → ')}{elements.length ? ` · ${elements.length} × ${t('switch')}` : ''}</p>
           : <p className="ui-message ui-message-warn">{t('path_none')}</p>}
+      </Section>
+      <Section title={t('route_sections')}>
+        <RouteSectionList sections={routeSections(net, route, domain, extents)} t={t} />
       </Section>
       <Section title={`${t('shows')} — ${start ? labelOf('signals', start, t) : ''}`}>
         <div className="tool-checklist">
@@ -343,6 +362,110 @@ function RouteEditor({ route, name, domain, net, findings, signalOptions, onChan
       )}
     </div>
   )
+}
+
+/** The track sections a route runs through, by name, in the order it meets them. */
+function RouteSectionList({ sections, t }) {
+  return sections.length
+    ? <p className="ui-muted">{sections.map(x => labelOf('trackSections', x, t)).join(' → ')}</p>
+    : <p className="ui-muted">{t('route_sections_none')}</p>
+}
+
+/**
+ * Finding routes from a signal — chosen in the list or on the plan —: every
+ * next main signal ahead of it on every way, each a route, with the track
+ * sections it runs through and the speed it is run at; those there are
+ * already marked. The ways are drawn on the plan. Or the routes of every main
+ * signal at once, without speeds.
+ */
+function FindRoutes({ domain, net, extents, ops, setMode, setSketch, t }) {
+  const { signals, routes } = domain.collections
+  const mains = signals.filter(s => isMainSignal(s) && s.at?.anchor === 'station')
+  const options = signalChoices(net, mains, t)
+  const [startId, setStartId] = useState(options[0]?.value ?? null)
+  const [speeds, setSpeeds] = useState({})
+  const [skipped, setSkipped] = useState(() => new Set())
+  const [done, setDone] = useState(null)
+  const start = mains.find(s => s.id === startId) ?? null
+  const keyOf = (f) => `${f.target.id}|${f.trackIds.join()}`
+  const found = useMemo(() => (start ? nextSignals(net, signals, start) : []), [net, signals, start])
+  const exists = (startSig, f) => routes.some(r => r.startSignalId === startSig.id && r.targetSignalId === f.target.id && r.path.trackIds.join() === f.trackIds.join())
+  const fresh = found.filter(f => !exists(start, f))
+  const chosen = fresh.filter(f => !skipped.has(keyOf(f)))
+
+  // The ways found on the plan, and the signals at their ends.
+  useEffect(() => {
+    setSketch?.(found.length ? { runs: [...new Set(found.flatMap(f => f.trackIds))], ids: [start.id, ...found.map(f => f.target.id)] } : null)
+  }, [found, start, setSketch])
+  useEffect(() => () => setSketch?.(null), [setSketch])
+
+  /** The routes of `ways` from their signals put in the draft, the speeds given signalled, a turnout's elsewhere. */
+  const make = (ways) => {
+    let next = domain
+    const made = []
+    for (const { start: from, way, speed } of ways) {
+      const rank = next.collections.routes.filter(r => r.startSignalId === from.id && r.targetSignalId === way.target.id).length
+      const route = {
+        id: newId(), kind: 'train', trainType: 'ZZ', startSignalId: from.id, targetSignalId: way.target.id,
+        path: { trackIds: way.trackIds }, ...(rank ? { rank } : {}),
+      }
+      next = added(next, 'routes', route)
+      if (speed != null) next = withRouteSpeed(next, route, speed)
+      made.push({ route, speed })
+    }
+    next = withSwitchSpeeds(next, net.switches, made.filter(m => m.speed == null).map(m => m.route.id)).domain
+    ops.replaceAll(next)
+    return made.length
+  }
+  const takeChosen = () => {
+    const n = make(chosen.map(way => ({ start, way, speed: speeds[keyOf(way)] ?? null })))
+    setDone(t('find_routes_done', { n }))
+    setSpeeds({})
+  }
+  const takeAll = () => {
+    const ways = mains.flatMap(s => nextSignals(net, signals, s).filter(f => !exists(s, f)).map(way => ({ start: s, way, speed: null })))
+    setDone(t('find_routes_done_all', { n: make(ways), signals: mains.length }))
+  }
+  const km = (m) => (m >= 1000 ? `${(m / 1000).toLocaleString('de', { maximumFractionDigits: 2 })} km` : `${Math.round(m)} m`)
+
+  return <>
+    <div className="ui-fields">
+      <SelectField compact wide label={t('start_signal')} value={startId} options={options} onChange={(v) => { setStartId(v); setSkipped(new Set()); setDone(null) }} />
+      <div className="ui-wide ui-row">
+        <Button size="small" disabled={!mains.length} onClick={() => setMode(pickingSignal(mains, t, (id) => { setStartId(id); setSkipped(new Set()); setDone(null); setMode(null) }))}>
+          {t('pick_signal_on_plan')}
+        </Button>
+      </div>
+    </div>
+    {done && <p className="tool-created" role="status">{done}</p>}
+    {start && !found.length && <p className="ui-muted">{t('find_routes_none')}</p>}
+    {found.map(f => {
+      const key = keyOf(f)
+      const there = exists(start, f)
+      const route = { startSignalId: start.id, targetSignalId: f.target.id, path: { trackIds: f.trackIds } }
+      return (
+        <div key={key} className="tool-found-route">
+          <div className="ui-row">
+            <span className="ui-grow">
+              <Checkbox label={`→ ${signalDesignation(f.target, t)} · ${km(f.length)}${there ? ` · ${t('find_routes_there')}` : ''}`}
+                checked={!there && !skipped.has(key)} disabled={there}
+                onChange={(on) => setSkipped(prev => { const n = new Set(prev); if (on) n.delete(key); else n.add(key); return n })} />
+            </span>
+            {!there && (
+              <NumberField compact label={t('route_speed_kmh')} value={speeds[key] ?? null} min={0} step={10}
+                onChange={(v) => setSpeeds(prev => ({ ...prev, [key]: v ?? undefined }))} />
+            )}
+          </div>
+          <RouteSectionList sections={routeSections(net, route, domain, extents)} t={t} />
+        </div>
+      )
+    })}
+    <div className="ui-row">
+      <Button variant="primary" disabled={!chosen.length} onClick={takeChosen}>{t('find_routes_make', { n: chosen.length })}</Button>
+      <Button disabled={!mains.length} onClick={takeAll}>{t('find_routes_all')}</Button>
+    </div>
+    <p className="ui-muted">{t('find_routes_hint')}</p>
+  </>
 }
 
 function OverlapEditor({ overlap, domain, net, findings, extents, signalOptions, onChange, onDelete, setNotice, readOnly, t }) {

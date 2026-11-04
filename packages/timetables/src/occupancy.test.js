@@ -4,7 +4,7 @@ import { newVehicle } from '@rail-across/vehicles'
 import { runWith, stationsOf } from '@rail-across/running-times'
 import { net, WASM } from '../../running-times/test/net.js'
 import { newPoint, newTrain, parseClock, runTrain } from './timetable.js'
-import { blocksAlong, byPriority, DISPATCH, dispatchOf, occupancy } from './occupancy.js'
+import { blockingTimes, blocksAlong, byPriority, conflictsOf, DISPATCH, dispatchOf, occupancy } from './occupancy.js'
 
 // The test net with main signals the way A-Dorf → C-Stadt runs: A-Dorf's exit, a block signal on the line, C-Stadt's entry.
 const ks = [{ system: 'ks', type: 'multiSection', function: 'exit', frames: [] }]
@@ -25,6 +25,32 @@ describe('the blocks of a way', () => {
     expect(blocks[1].stretches).toEqual([{ trackId: 'A1', lo: 450, hi: 500 }, { trackId: 'L', lo: 0, hi: 1100 }])
     // The other way none of them acts: the whole way is one block.
     expect(blocksAlong(signalled, [{ trackId: 'L', start: 2500, end: 0 }]).map(b => [b.from, b.to])).toEqual([[0, 2500]])
+  })
+
+  it('holds its track sections each until the train has left it, those of the overlap with the block', () => {
+    const point = (id, station) => ({ id, kind: 'axleCounter', at: { anchor: 'station', trackId: 'L', station } })
+    const sectioned = {
+      ...signalled,
+      signalling: {
+        ...signalled.signalling,
+        collections: { ...signalled.signalling.collections, detectionPoints: [point('p1', 300), point('p2', 700)], trackSections: [{ id: 'S1', kind: 'axleCounting', boundedBy: ['p1', 'p2'] }] },
+      },
+    }
+    const path = [{ trackId: 'A1', start: 200, end: 500 }, { trackId: 'L', start: 0, end: 2500 }, { trackId: 'C1', start: 0, end: 400 }]
+    const blocks = blocksAlong(sectioned, path)
+    // L 300…700 lies 600…1000 along the way, in the block from N1 to B.
+    expect(blocks[1].sections).toEqual([{ id: 'S1', to: 1000 }])
+    expect(blocks[1].free).toEqual([{ trackId: 'A1', lo: 450, hi: 500 }, { trackId: 'L', lo: 0, hi: 300 }, { trackId: 'L', lo: 700, hi: 1100 }])
+    expect(blocks[0].sections).toEqual([])
+    // At 10 m/s, 100 m long: S1 is free once the tail has left it at 1100 m, the block once it has passed B at 1300 m.
+    const clock = { at0: 0, first: (x) => x / 10, standstills: [], length: 3200, end: 400 }
+    const [, timed] = blockingTimes(blocks, clock, 100, { setup: 12, approach: 1000, release: 6 })
+    expect(timed.end).toBe(146)
+    expect(timed.sections[0].end).toBe(116)
+    // Another train's block over S1 alone meets this one there only, and is let go when S1 is.
+    const other = { index: 0, begin: 100, end: 300, stretches: [{ trackId: 'L', lo: 300, hi: 700 }], sections: [{ id: 'S1', to: 0, end: 300 }], free: [] }
+    expect(conflictsOf([timed], [{ id: 'x', blocks: [other], begin: 100, end: 300 }])).toEqual([{ block: 1, other: 'x', otherBlock: 0, section: 'S1', begin: 100, end: 116, until: 300 }])
+    expect(conflictsOf([timed], [{ id: 'x', blocks: [{ ...other, begin: 120 }], begin: 120, end: 300 }])).toEqual([])
   })
 
   it('gives the net to trains by departure, or by their kinds', () => {

@@ -335,10 +335,11 @@ function OccupancyCard({ t, train, run, record, stations, titles }) {
     return t('wait_signal', { ...of, signal: signalName(record, w.signalId) ?? '?' })
   }
   const blockName = (i) => (blocks[i]?.signalId ? t('block_from', { signal: signalName(record, blocks[i].signalId) }) : t('block_start'))
-  // one line for each other train and block, the times they share
+  const sectionName = (id) => record?.signalling?.collections?.trackSections?.find(x => x.id === id)?.name ?? '?'
+  // one line for each other train, block and track section, the times they share
   const seen = new Map()
   for (const c of conflicts) {
-    const key = `${c.other}|${c.block}`
+    const key = `${c.other}|${c.block}|${c.section ?? ''}`
     const was = seen.get(key)
     seen.set(key, was ? { ...was, begin: Math.min(was.begin, c.begin), end: Math.max(was.end, c.end) } : c)
   }
@@ -358,7 +359,7 @@ function OccupancyCard({ t, train, run, record, stations, titles }) {
           <Message tone="warn">{t('conflicts_n', { n: shown.length })}</Message>
           <ul className="tt-waits tt-conflicts">
             {shown.slice(0, 8).map((c, i) => (
-              <li key={i}>{t('conflict_line', { train: names([c.other]), block: blockName(c.block), from: formatClock(c.begin, { seconds: true }), to: formatClock(c.end, { seconds: true }) })}</li>
+              <li key={i}>{t(c.section ? 'conflict_line_section' : 'conflict_line', { train: names([c.other]), block: blockName(c.block), section: c.section ? sectionName(c.section) : '', from: formatClock(c.begin, { seconds: true }), to: formatClock(c.end, { seconds: true }) })}</li>
             ))}
           </ul>
         </>

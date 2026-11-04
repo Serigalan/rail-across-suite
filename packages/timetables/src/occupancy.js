@@ -1,3 +1,4 @@
+import { trackSectionExtents } from '@rail-across/core/signalling'
 import { directionOf, pathLength } from '@rail-across/running-times'
 
 /**
@@ -12,8 +13,13 @@ import { directionOf, pathLength } from '@rail-across/running-times'
  * it passes the distant signal `approach` metres before the block's signal,
  * or leaves where it stood within them, less the time to set the route
  * (`setup`) — until its tail has left the block and the block is released
- * (`release`); at its end, until it arrives. Two trains conflict where they
- * hold a stretch of the same track at the same time.
+ * (`release`); at its end, until it arrives. Where the variant has track
+ * sections (Freimeldeabschnitte), a block is held section by section, and
+ * each section is released as soon as the train's tail has left it (or the
+ * block, for the sections of its overlap) — Teilfahrstraßenauflösung: a
+ * route over a section another holds waits for that section alone. Two
+ * trains conflict where they hold the same section, or a stretch of the
+ * same track no section covers, at the same time.
  *
  * A timetable's `dispatch` says what is done about it: `mode` 'show' runs
  * every train for itself and says where they conflict, as OSRD does; 'wait'
@@ -79,23 +85,80 @@ export function stretchesOf(path, from, to) {
   return out
 }
 
+// The extents of a record's track sections, kept as long as the record is.
+const extentsCache = new WeakMap()
+function extentsOf(record) {
+  if (!record) return new Map()
+  if (!extentsCache.has(record)) {
+    const sections = record.signalling?.collections?.trackSections ?? []
+    extentsCache.set(record, sections.length
+      ? trackSectionExtents({ core: { collections: { tracks: record.tracks ?? [], switches: record.switches ?? [] } }, signalling: record.signalling })
+      : new Map())
+  }
+  return extentsCache.get(record)
+}
+
+/** Where along a path each track section lies: [{ id, from, to }] — from its first metre run to its last. */
+export function sectionsAlong(record, path) {
+  const spans = new Map()
+  for (const [id, extent] of extentsOf(record)) {
+    let at = 0
+    for (const p of path) {
+      const lo = Math.min(p.start, p.end), hi = Math.max(p.start, p.end)
+      for (const part of extent.parts) {
+        if (part.trackId !== p.trackId) continue
+        const a = Math.max(lo, part.from), b = Math.min(hi, part.to)
+        if (b - a <= 0.5) continue
+        const [o1, o2] = [at + Math.abs(a - p.start), at + Math.abs(b - p.start)].sort((x, y) => x - y)
+        const was = spans.get(id)
+        spans.set(id, { id, from: Math.min(was?.from ?? Infinity, o1), to: Math.max(was?.to ?? -Infinity, o2) })
+      }
+      at += hi - lo
+    }
+  }
+  return [...spans.values()].sort((a, b) => a.from - b.from)
+}
+
+/** The offset ranges between `from` and `to` that none of `spans` covers. */
+function uncovered(spans, from, to) {
+  const out = []
+  let at = from
+  for (const s of [...spans].sort((a, b) => a.from - b.from)) {
+    if (s.to <= at || s.from >= to) continue
+    if (s.from > at + 0.5) out.push([at, Math.min(s.from, to)])
+    at = Math.max(at, s.to)
+  }
+  if (to > at + 0.5) out.push([at, to])
+  return out
+}
+
 /**
  * The blocks along a path: [{ index, signalId, targetId, from, to, reach,
- * stretches }] — `signalId` the signal it begins at (null for the first,
- * where the train starts), `targetId` the one it ends at (null for the last);
- * `from`, `to` its offsets along the path, `reach` the end of the overlap
- * beyond `to`; `stretches` what it covers of the tracks, the overlap with it.
+ * stretches, sections, free }] — `signalId` the signal it begins at (null for
+ * the first, where the train starts), `targetId` the one it ends at (null for
+ * the last); `from`, `to` its offsets along the path, `reach` the end of the
+ * overlap beyond `to`; `stretches` what it covers of the tracks, the overlap
+ * with it; `sections` the track sections it holds [{ id, to }], `to` where
+ * along the path the train has run through it; `free` the stretches of it no
+ * section covers.
  */
 export function blocksAlong(record, path) {
   const length = pathLength(path)
   const overlaps = record?.signalling?.collections?.overlaps ?? []
   const overlapOf = (signalId) => Math.max(0, ...overlaps.filter(o => o.signalId === signalId).map(o => o.length ?? 0))
   const cuts = [{ offset: 0, signal: null }, ...signalsAlong(record, path).filter(s => s.offset > 1 && s.offset < length - 1)]
+  const spans = sectionsAlong(record, path)
   return cuts.map((c, i) => {
     const next = cuts[i + 1]
     const to = next ? next.offset : length
     const reach = next ? Math.min(length, to + overlapOf(next.signal.id)) : length
-    return { index: i, signalId: c.signal?.id ?? null, targetId: next?.signal.id ?? null, from: c.offset, to, reach, stretches: stretchesOf(path, c.offset, reach) }
+    const held = spans.filter(s => Math.min(s.to, reach) - Math.max(s.from, c.offset) > 0.5)
+    return {
+      index: i, signalId: c.signal?.id ?? null, targetId: next?.signal.id ?? null, from: c.offset, to, reach,
+      stretches: stretchesOf(path, c.offset, reach),
+      sections: held.map(s => ({ id: s.id, to: Math.min(s.to, reach) })),
+      free: uncovered(held, c.offset, reach).flatMap(([a, b]) => stretchesOf(path, a, b)),
+    }
   })
 }
 
@@ -109,20 +172,47 @@ export function blockingTimes(blocks, clock, trainLength, times = BLOCKING) {
     let begin = b.from <= 1e-6 ? clock.at0 : clock.first(approach)
     // where it stands within the approach, the block is asked for as it leaves
     for (const s of clock.standstills) if (s.offset >= approach - 1e-6 && s.offset < b.from - 1e-6) begin = Math.max(begin, s.leave)
-    const clear = b.to + trainLength
-    const end = b.targetId == null || clear >= clock.length - 1e-6 ? clock.end : clock.first(clear)
-    return { ...b, begin: begin - times.setup, end: end + times.release }
+    // Until the train has run through `at` with its whole length: the block's end, else that moment.
+    const leftAt = (at) => {
+      const clear = at + trainLength
+      return (b.targetId == null || clear >= clock.length - 1e-6 ? clock.end : clock.first(clear)) + times.release
+    }
+    const end = leftAt(b.to)
+    // A section is released once the train has left it; one of the overlap, with the block.
+    const sections = (b.sections ?? []).map(s => ({ ...s, end: Math.min(end, leftAt(Math.min(s.to, b.to))) }))
+    return { ...b, begin: begin - times.setup, end, sections }
   })
 }
 
-/** Whether two blocks hold a stretch of the same track at the same time. */
-const overlap = (a, b) => a.begin < b.end && b.begin < a.end
-  && a.stretches.some(x => b.stretches.some(y => x.trackId === y.trackId && Math.min(x.hi, y.hi) - Math.max(x.lo, y.lo) > 0.5))
+/** Whether two lists of stretches share more than half a metre of a track. */
+const shareTrack = (xs, ys) => xs.some(x => ys.some(y => x.trackId === y.trackId && Math.min(x.hi, y.hi) - Math.max(x.lo, y.lo) > 0.5))
+
+/**
+ * What two blocks hold at the same time: [{ section, begin, end, until }] —
+ * `section` the track section both hold (null for a stretch no section
+ * covers), `begin`, `end` the time both hold it, `until` when the other
+ * releases it. A block without sections is held as a whole.
+ */
+function shared(a, b) {
+  const out = []
+  const both = (end, otherEnd, section) => {
+    const begin = Math.max(a.begin, b.begin)
+    const stop = Math.min(end, otherEnd)
+    if (begin < stop) out.push({ section, begin, end: stop, until: otherEnd })
+  }
+  if (a.free && b.free) {
+    for (const x of a.sections ?? []) for (const y of b.sections ?? []) if (x.id === y.id) both(x.end, y.end, x.id)
+    if (shareTrack(a.free, b.free)) both(a.end, b.end, null)
+  } else if (shareTrack(a.stretches, b.stretches)) both(a.end, b.end, null)
+  return out
+}
 
 /**
  * Where a train's blocks conflict with those of others: [{ block, other,
- * otherBlock, begin, end }] — `other` the other train's id, `begin`, `end`
- * the time both hold it —, in the order of the train's blocks.
+ * otherBlock, section, begin, end, until }] — `other` the other train's id,
+ * `section` the track section both hold (null for a stretch of track),
+ * `begin`, `end` the time both hold it, `until` when the other lets it go —,
+ * in the order of the train's blocks.
  */
 export function conflictsOf(blocks, others) {
   const out = []
@@ -131,7 +221,7 @@ export function conflictsOf(blocks, others) {
     if (!o.blocks.length || o.end <= lo || o.begin >= hi) continue
     for (const b of blocks) {
       for (const ob of o.blocks) {
-        if (overlap(b, ob)) out.push({ block: b.index, other: o.id, otherBlock: ob.index, begin: Math.max(b.begin, ob.begin), end: Math.min(b.end, ob.end) })
+        for (const c of shared(b, ob)) out.push({ block: b.index, other: o.id, otherBlock: ob.index, ...c })
       }
     }
   }
@@ -210,7 +300,7 @@ export async function occupancy(record, trains, runOf, dispatch = DISPATCH) {
       // The first block held: wait until every train holding it then has left it.
       const block = run.blocks[found[0].block]
       const holding = found.filter(c => c.block === block.index)
-      const until = Math.max(...holding.map(c => placed.find(p => p.id === c.other).blocks[c.otherBlock].end))
+      const until = Math.max(...holding.map(c => c.until))
       const hold = holdBefore(run, block, run.blocks, times.approach)
       const leaves = hold.point === 0 ? run.clock.at0 : run.clock.last(hold.offset)
       const more = Math.max(1, Math.ceil(until + times.setup - leaves))

@@ -194,6 +194,7 @@ describe('the Signalling-Tool', () => {
       </I18n.Provider>,
     )
     expect(menu).toContain('Fahrstraße erstellen')
+    expect(menu).toContain('Fahrstraßen ermitteln')
     expect(menu).toContain('Fahrwege suchen')
     expect(menu).toContain('<span class="ui-grow">Fahrwege</span><span class="ui-option-end">0</span>')
     expect(menu).toContain('Durchrutschweg erstellen')
@@ -204,7 +205,8 @@ describe('the Signalling-Tool', () => {
           selection={{ collection: 'routes', id: 'r-a-n' }} select={() => {}} ops={{}} setMode={() => {}} readOnly={false} {...textsFor('de')} />
       </I18n.Provider>,
     )
-    expect(html).toContain('80 km/h')
+    expect(html).toContain('<span>Geschwindigkeit [km/h]</span><input type="number" step="10" min="0" value="80"/>')
+    expect(html).toContain('<span class="ui-grow">Freimeldeabschnitte</span>')
     expect(html).toContain('Durchrutschweg ermitteln')
     expect(html).toContain('Am Signal einstellen')
   })

@@ -9,6 +9,9 @@ import {
 import { measuredOverlap, withMeasuredOverlap } from './overlaps.js'
 import { OFFSET, foundationPoint, kmName, kmNameAt, locationFrom, mountedFrom, planePoint, signalOptions, trackName } from './places.js'
 import { magnetFrequency, magnetName, magnetsDue, signalMagnet, withSignal } from './magnets.js'
+import { detectionLayout, wantedPoints } from './detectionLayout.js'
+import { nextSignals, routeSections, routeStretches } from './routeSearch.js'
+import { trackSectionExtents } from '@rail-across/core/signalling'
 import { changedIds, redo, startHistory, step, stepOf, stepsOf, travel, undo } from './history.js'
 
 const EPSG = 25832
@@ -249,6 +252,52 @@ describe('editing the domain', () => {
     expect(withSignal(m, undefined, a)).not.toHaveProperty('name')
     expect(withSignal(m, undefined, a)).not.toHaveProperty('signalId')
     expect(withSignal({ ...m, system: 'etcs', name: undefined }, n, a).name).toBeUndefined()
+  })
+
+  it('lays out detection at the signals, ahead of a switch and past its clearance point, near ones made one', () => {
+    const main = (id, at) => ({ id, kind: 'real', name: id, at, logicalSignals: [{ system: 'ks', type: 'main' }] })
+    const distant = { id: 'v', kind: 'real', at: on('t1', 60), logicalSignals: [{ system: 'ks', type: 'distant' }] }
+    const wanted = wantedPoints(net, [main('a', on('t1', 150)), distant])
+    const at = (why) => wanted.filter(w => w.why === why).map(w => [w.trackId, Math.round(w.station)])
+    expect(at('signal')).toEqual([['t1', 150]])
+    expect(at('switch')).toEqual([['t1', 190]])
+    // t3 leaves at about 12.5°: 3.5 m apart some 16 m on, the point 10 m past that.
+    expect(at('clearance').sort()).toEqual([['t2', 26], ['t3', 26]])
+
+    let d = emptyDomain()
+    d = added(d, 'signals', main('a', on('t1', 175)))
+    const laid = detectionLayout(net, d, { t: (k) => k })
+    expect(laid.merged).toBe(1)
+    expect(laid.points.map(p => [p.at.trackId, Math.round(p.at.station * 10) / 10]).sort()).toEqual([['t1', 182.5], ['t2', 26], ['t3', 26]])
+    expect(laid.sections).toHaveLength(4)
+    const atSwitch = laid.sections.find(x => x.boundedBy.length === 3)
+    expect(atSwitch.name).toBe('W')
+    expect(laid.sections.filter(x => x.name.startsWith('t')).map(x => x.name).sort()).toEqual(['t1', 't2', 't3'])
+
+    // Again over what it laid: a point there takes the new ones near it, a section with the same bounds stays.
+    const again = { ...d, collections: { ...d.collections, detectionPoints: laid.points, trackSections: laid.sections } }
+    const second = detectionLayout(net, again, { t: (k) => k })
+    expect(second.points).toEqual([])
+    expect(second.sections).toEqual([])
+    expect(second.kept).toHaveLength(4)
+    expect(second.removed).toEqual([])
+  })
+
+  it('finds the routes from a signal to the next main signals on every way, and the sections they run through', () => {
+    const main = (id, at, type = 'main') => ({ id, kind: 'real', name: id, at, logicalSignals: [{ system: 'ks', type }] })
+    let d = emptyDomain()
+    for (const s of [main('a', on('t1', 20)), main('sh', on('t1', 100), 'shunting'), main('n', on('t2', 80)), main('m', on('t3', 100)), main('back', on('t2', 150, 'down'))]) d = added(d, 'signals', s)
+    const found = nextSignals(net, d.collections.signals, d.collections.signals[0])
+    expect(found.map(f => [f.target.id, f.trackIds, Math.round(f.length)])).toEqual([['n', ['t1', 't2'], 260], ['m', ['t1', 't3'], 280]])
+    expect(nextSignals(net, d.collections.signals, d.collections.signals[2])).toEqual([])
+
+    const route = { startSignalId: 'a', targetSignalId: 'n', path: { trackIds: ['t1', 't2'] } }
+    expect(routeStretches(net, route, d.collections.signals)).toEqual([{ trackId: 't1', lo: 20, hi: 200, direction: 'up' }, { trackId: 't2', lo: 0, hi: 80, direction: 'up' }])
+    const laid = detectionLayout(net, d, { t: (k) => k })
+    d = { ...d, collections: { ...d.collections, detectionPoints: laid.points, trackSections: laid.sections } }
+    const extents = trackSectionExtents({ core: { collections: net }, signalling: d })
+    // The shunting signal on t1 has a point too: the route runs through two sections of t1, the switch's and one of t2.
+    expect(routeSections(net, route, d, extents).map(x => x.name)).toEqual(['t1-2', 't1-3', 'W', 't2-1'])
   })
 
   it('keeps its steps for undo and redo', () => {

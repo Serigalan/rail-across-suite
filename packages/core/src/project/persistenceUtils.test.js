@@ -60,6 +60,13 @@ describe('hydrateProjects / dehydrateProjects round trip', () => {
     expect(() => projectDocument(p)).not.toThrow()
   })
 
+  it('writes a document the schemas refuse when asked not to check it', () => {
+    const [p] = hydrateProjects(project())
+    p.tracks[0] = { ...p.tracks[0], unknownField: 1 }
+    expect(() => projectDocument(p)).toThrow(PayloadError)
+    expect(projectDocument(p, { check: false }).domains.core.collections.tracks[0].unknownField).toBe(1)
+  })
+
   it('dehydrate strips derived geometry, hydrate rebuilds it', () => {
     const hydrated = hydrateProjects(project())
     const dehydrated = dehydrateProjects(structuredClone(hydrated))

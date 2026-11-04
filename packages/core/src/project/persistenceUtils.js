@@ -126,10 +126,11 @@ export function parseProjectsPayload(data) {
 /**
  * The core 1.0 document of a project record — what a file and the project
  * server hold. Derived data is stripped first; `carrySchemas` puts the
- * domains' schemas in, as a file that travels carries them.
+ * domains' schemas in, as a file that travels carries them; `check: false`
+ * writes it although the schemas refuse it (toDocument).
  */
-export const projectDocument = (record, { carrySchemas = false } = {}) =>
-  toDocument(dehydrateProjects([record])[0], { carrySchemas })
+export const projectDocument = (record, { carrySchemas = false, check = true } = {}) =>
+  toDocument(dehydrateProjects([record])[0], { carrySchemas, check })
 
 const isPoint = (p) => Array.isArray(p) && p.length >= 2 && p.every(Number.isFinite)
 

@@ -191,12 +191,13 @@ export function checkDocument(given) {
  * The core 1.0 document of a record (dehydrated), checked as the door checks
  * what comes in. `carrySchemas` puts the domains' schemas into it, as a file
  * that travels carries them (R3); a device or the server that has them
- * leaves them out.
+ * leaves them out. `check: false` leaves the check out — for a file the user
+ * takes although the schemas refuse it, which the door will refuse in turn.
  */
-export function toDocument(record, { carrySchemas = false } = {}) {
+export function toDocument(record, { carrySchemas = false, check = true } = {}) {
   const doc = recordToDocument(record, SCHEMA_HASHES)
   if (carrySchemas) doc.schemas = Object.fromEntries(Object.keys(doc.domains).map(d => [SCHEMA_HASHES[d], DOMAIN_SCHEMAS[d]]))
-  return checkDocument(doc)
+  return check ? checkDocument(doc) : doc
 }
 
 /** The record a core 1.0 document holds, once the door has checked it. */

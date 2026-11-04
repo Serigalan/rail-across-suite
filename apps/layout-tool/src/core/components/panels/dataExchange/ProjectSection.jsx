@@ -9,8 +9,10 @@ import ExchangeSection from './ExchangeSection'
 
 /**
  * The whole project as a file: its core 1.0 document (.railacross.json). A
- * project the document's schemas refuse is not written, and what they found
- * is shown — a click that does nothing would leave the user guessing.
+ * project the document's schemas refuse is not written at first, and what
+ * they found is shown — a click that does nothing would leave the user
+ * guessing. It can then be written anyway, to be looked at or mended
+ * elsewhere; the import will refuse it as it stands.
  */
 export default function ProjectSection() {
   const { t, fill } = useI18n()
@@ -18,10 +20,10 @@ export default function ProjectSection() {
   const tracks = useTracks()
   const [errors, setErrors] = useState([])
 
-  const exportIt = () => {
+  const exportIt = ({ check = true } = {}) => {
     setErrors([])
     try {
-      downloadJSON(exportProjectDocument(), `${project.title || 'project'}.railacross.json`)
+      downloadJSON(exportProjectDocument({ check }), `${project.title || 'project'}.railacross.json`)
     } catch (err) {
       setErrors([t('data_exchange_export_failed'), ...(err instanceof PayloadError ? err.details.slice(0, 5) : [err.message])])
     }
@@ -30,10 +32,15 @@ export default function ProjectSection() {
   return (
     <ExchangeSection title={t('data_exchange_project')}
       description={fill('data_exchange_project_desc', { tracks: tracks.length })}>
-      <button className="ui-btn ui-btn-primary ui-btn-block" disabled={!project} onClick={exportIt}>
+      <button className="ui-btn ui-btn-primary ui-btn-block" disabled={!project} onClick={() => exportIt()}>
         {t('data_exchange_export')}
       </button>
       <MessageList items={errors} />
+      {errors.length > 0 && (
+        <button className="ui-btn ui-btn-block mt-2" onClick={() => exportIt({ check: false })}>
+          {t('data_exchange_export_anyway')}
+        </button>
+      )}
     </ExchangeSection>
   )
 }

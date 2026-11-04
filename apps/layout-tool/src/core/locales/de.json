@@ -607,6 +607,7 @@
   "data_exchange_import": "Importieren",
   "data_exchange_export": "Exportieren",
   "data_exchange_export_failed": "Das Projekt lässt sich nicht exportieren, es passt nicht zum Datenformat:",
+  "data_exchange_export_anyway": "Trotzdem exportieren",
   "data_exchange_import_err_invalid_payload": "Datei ist keine gültige Projektdatei",
   "data_exchange_import_err_unsupported_version": "Die Datei ist kein Projekt im Format oltjson-1.1 und kann nicht geladen werden",
   "import_track_conflict_message": "Track '{name}' existiert bereits. Welche Version möchten Sie behalten?",

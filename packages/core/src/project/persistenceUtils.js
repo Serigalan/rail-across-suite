@@ -198,7 +198,11 @@ function keptReasons(el) {
  */
 function keptElement({ renderCoords: _rc, geometry: _g, ...el }) {
   const out = keptReasons(el)
-  if (out.endBearing != null) {
+  // An end bearing that is no number — left undefined or NaN by an edit —
+  // says nothing; the design values give it again on load. Kept, it would
+  // hold up the check-in and the export.
+  if (!Number.isFinite(out.endBearing)) delete out.endBearing
+  else {
     const derived = derivedEndBearing(out) ?? out.bearing
     if (derived != null && turnBetween(out.endBearing, derived) < SAME_END_BEARING) delete out.endBearing
   }

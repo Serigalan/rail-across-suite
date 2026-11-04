@@ -52,6 +52,14 @@ describe('hydrateProjects / dehydrateProjects round trip', () => {
     expect(() => projectDocument(p)).not.toThrow()
   })
 
+  it.each([undefined, null, NaN])('leaves out an end bearing of %s', (endBearing) => {
+    const [p] = hydrateProjects(project())
+    p.tracks[0].elements[0] = { ...p.tracks[0].elements[0], endBearing }
+    const [el] = dehydrateProjects([p])[0].tracks[0].elements
+    expect(el).not.toHaveProperty('endBearing')
+    expect(() => projectDocument(p)).not.toThrow()
+  })
+
   it('dehydrate strips derived geometry, hydrate rebuilds it', () => {
     const hydrated = hydrateProjects(project())
     const dehydrated = dehydrateProjects(structuredClone(hydrated))

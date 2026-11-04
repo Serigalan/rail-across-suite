@@ -6,8 +6,8 @@ import { splitProjects, variantTree } from '../projects'
 /**
  * The page of a module that works on a variant — the Fahrplan-Sim —: what it
  * does, and the projects with their variants, each opening in its apps: the
- * timetables in the Fahrplan-Editor, a train's running times in the
- * Simulation-Tool. Neither changes the infrastructure: the projects are managed
+ * Fahrplan-Editor, the timetables and a single train's running time in one
+ * interface. It changes no infrastructure: the projects are managed
  * in the infrastructure editor, not here.
  */
 export default function Simulation({ route, projects }) {

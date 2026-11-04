@@ -1,10 +1,11 @@
-import { Fragment, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import { Badge, Button, Checkbox, IconButton, Message, NumberField, PlusIcon, SelectField, TextField, TrashIcon } from '@rail-across/ui'
 import { atPlace, CATEGORIES, categoryColor, formatClock, itineraryOptions, newPoint, parseClock, trainProblems, trainTitle, withPlaces } from '@rail-across/timetables'
-import { formatDistance, lngLatAt, marginValue, placeOf, stationById } from '@rail-across/running-times'
+import { formatDistance, heightProfile, lngLatAt, marginValue, placeOf, stationById } from '@rail-across/running-times'
 import { comfortsOf, curveFor, modeLabel, powerOf } from '@rail-across/vehicles'
 import { CopyIcon, DownIcon, TaktIcon, UpIcon } from './icons.jsx'
 import MapView from './map/MapView.jsx'
+import RunChart from './runtime/RunChart.jsx'
 import { insertionIndex } from './rows.js'
 import { keepVehicle, vehicleUrl } from './suite.js'
 
@@ -12,7 +13,8 @@ import { keepVehicle, vehicleUrl } from './suite.js'
  * A train on its page: what it is — number, kind, name, vehicle, departure,
  * margin —, its way — the station it begins at, the stations and halts on the
  * way where it stops or passes, the station it ends at —, its times as it
- * runs, a row for every station it passes, and its way on the map. A train
+ * runs, a row for every station it passes, its way on the map, and its speed
+ * and the height along its way, as computing a running time shows them. A train
  * begins and ends at a station (Bahnhof) only: the choice for its first and
  * last point offers no other.
  */
@@ -39,7 +41,7 @@ export default function TrainSheet(props) {
   return <Sheet {...props} />
 }
 
-function Sheet({ t, language, train, run, timetables, stations, catalogue, record, net, mayEdit, titles, update, onCopy, onTakt, onDelete }) {
+function Sheet({ t, language, train, run, timetables, stations, catalogue, record, net, mayEdit, titles, chartT, update, onCopy, onTakt, onDelete }) {
   const entry = catalogue.entries.find(e => e.key === train.vehicle) ?? null
   const problems = trainProblems(train, stations, { vehicle: catalogue.loading || Boolean(entry) })
   const set = (patch) => update(tr => ({ ...tr, ...patch }))
@@ -104,8 +106,21 @@ function Sheet({ t, language, train, run, timetables, stations, catalogue, recor
             </section>
           </div>
         </div>
+        {run?.result && chartT && <RunCard t={t} chartT={chartT} language={language} run={run} record={record} />}
       </div>
     </div>
+  )
+}
+
+/** The train's speed over its way — allowed, fastest, with its margin — and under it the height, the stations it passes marked. */
+function RunCard({ t, chartT, language, run, record }) {
+  const profile = useMemo(() => heightProfile(record, run.route.path), [record, run.route.path])
+  const rows = (run.rows ?? []).filter(r => r.offset != null)
+  return (
+    <section className="tt-card tt-run-card">
+      <h2>{t('card_run')}</h2>
+      <RunChart run={run} profile={profile} length={run.request.path.length} offsets={rows.map(r => r.offset)} labels={rows.map(r => r.name)} at={null} t={chartT} language={language} />
+    </section>
   )
 }
 

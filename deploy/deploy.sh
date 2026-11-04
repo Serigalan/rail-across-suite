@@ -88,11 +88,11 @@ if [ "$build" = 1 ]; then
   (cd apps/layout-tool && node tools/data.mjs)
 
   step "Simulation module (sim/)"
-  # OSRD's simulation core in Rust: built to WebAssembly with cargo (once; the
-  # second app takes the same build) and put beside the page of each app that
-  # runs trains. Without it the suite deploys all the same, and the tools say
-  # the module is missing.
-  for app in simulation-tool timetable-editor; do
+  # OSRD's simulation core in Rust: built to WebAssembly with cargo (once) and
+  # put beside the page of the app that runs trains — the Fahrplan-Editor, which
+  # computes a single train's running time too. Without it the suite deploys
+  # all the same, and the tool says the module is missing.
+  for app in timetable-editor; do
     if ! (cd "apps/$app" && node ../../packages/running-times/scripts/sim.mjs); then
       echo "WARNING: no simulation module — $app cannot compute running times" >&2
     fi

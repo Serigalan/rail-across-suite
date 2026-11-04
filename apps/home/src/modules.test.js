@@ -96,13 +96,14 @@ describe('the projects listed', () => {
 
 describe('a simulation that is there', () => {
   it('opens a variant by its address, and one still to come nowhere', () => {
-    const [timetables, runs] = SIMULATIONS[0].apps
+    // One app: the timetables and computing a running time in one interface.
+    const [timetables, ...others] = SIMULATIONS[0].apps
+    expect(others).toEqual([])
     expect(simulationUrl(SIMULATIONS[0], timetables, 'p1', 'v1')).toBe('timetable/?project=p1&variant=v1')
-    expect(simulationUrl(SIMULATIONS[0], runs, 'p1', 'v1')).toBe('simulation/?project=p1&variant=v1')
-    expect(simulationUrl(SIMULATIONS[1], runs, 'p1', 'v1')).toBeNull()
+    expect(simulationUrl(SIMULATIONS[1], timetables, 'p1', 'v1')).toBeNull()
     expect(tileUrl(EDITORS[1])).toBe('vehicles/')   // the Fahrzeug-Editor needs no project
     expect(tileUrl(EDITORS[0])).toBe('#/infrastructure')
     expect(tileUrl(SIMULATIONS[0])).toBe('#/timetable')
-    expect(simulationUrl(EDITORS[1], runs, 'p1', 'v1')).toBeNull()
+    expect(simulationUrl(EDITORS[1], timetables, 'p1', 'v1')).toBeNull()
   })
 })

@@ -46,7 +46,7 @@ function Loader() {
 
   if (state.status === 'ready') {
     return <Editor project={state.project} variant={state.variant} revision={state.revision} record={state.record} local={state.local}
-      initial={{ timetable: linked.timetable, train: linked.train }} />
+      initial={{ timetable: linked.timetable, train: linked.train, section: linked.section }} />
   }
   return (
     <div className="ui-page tool-center">

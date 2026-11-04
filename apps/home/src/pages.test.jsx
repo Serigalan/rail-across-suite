@@ -59,14 +59,13 @@ describe('the infrastructure editor', () => {
 })
 
 describe('the Fahrplan-Sim', () => {
-  it('lists the projects, each variant opening in the Fahrplan-Editor and the simulation', () => {
+  it('lists the projects, each variant opening in the Fahrplan-Editor, timetables and running times in one', () => {
     const html = de(<Simulation route="timetable" projects={projects} />)
     expect(html).toContain('PEK Halle–Könnern')
     expect(html).toContain('Rev. 3')
     expect(html).toContain('href="timetable/?project=p1&amp;variant=v1"')
-    expect(html).toContain('>Fahrpläne</a>')
-    expect(html).toContain('href="simulation/?project=p1&amp;variant=v1"')
-    expect(html).toContain('>Fahrzeit rechnen</a>')
+    expect(html).toContain('>Fahrpläne und Fahrzeiten</a>')
+    expect(html).not.toContain('simulation/?project=')
     expect(html).toContain('beginnt und endet in einem Bahnhof')
   })
 })

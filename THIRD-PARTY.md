@@ -60,7 +60,7 @@ Under OSRD's licence, LGPL-3.0, which is the suite's ([decision 0015](docs/decis
 
 | What | Where | From OSRD |
 |---|---|---|
-| The envelope simulation, ported from Kotlin/Java to Rust — every file names the OSRD files it comes from | `sim/`; its WebAssembly module is built by `packages/running-times/scripts/sim.mjs` into `public/sim/` of the Simulation-Tool and the Fahrplan-Editor and goes with each build beside its `NOTICE.txt` and the licence texts, a file of its own that can be replaced ([decision 0013](docs/decisions/0013-running-times-in-rust.md)) | `core/` at commit `fda69ee1`, © 2022 The OSRD Contributors |
+| The envelope simulation, ported from Kotlin/Java to Rust — every file names the OSRD files it comes from | `sim/`; its WebAssembly module is built by `packages/running-times/scripts/sim.mjs` into `public/sim/` of the Fahrplan-Editor (which computes a single train's running time too, what the Simulation-Tool did) and goes with each build beside its `NOTICE.txt` and the licence texts, a file of its own that can be replaced ([decision 0013](docs/decisions/0013-running-times-in-rust.md)) | `core/` at commit `fda69ee1`, © 2022 The OSRD Contributors |
 | The eleven example vehicles, unchanged | `packages/vehicles/data/osrd/`, the suite's built-in vehicles ([decision 0014](docs/decisions/0014-vehicles-in-osrds-form.md)) | `tests/data/rolling_stocks/realistic/` at the same commit |
 
 ## Project pictures

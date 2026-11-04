@@ -192,7 +192,7 @@ generalised core most. Catenary follows.
   every station passed; copies at an interval (Takt); the graphical timetable along a train's way. *Next:* times
   typed in and checked against the running times, connections, conflicts from blocking times, the exchange with
   OSRD's timetables.
-- **Running times** in the Fahrplan-Sim (`apps/simulation-tool/`, [decision 0013](docs/decisions/0013-running-times-in-rust.md)):
+- **Running times** in the Fahrplan-Sim (*Fahrzeit rechnen* of the Fahrplan-Editor, `apps/timetable-editor/src/runtime/` — once `apps/simulation-tool/` —, [decision 0013](docs/decisions/0013-running-times-in-rust.md)):
   *done:* OSRD's envelope simulation ported to Rust (`sim/`, [decision 0015](docs/decisions/0015-lgpl.md)) and
   held to OSRD's own test cases; a train over the net of a variant — its path over switches, the grades of the
   heights and curves, the design speeds and the speeds the signals signal, stops at signals, platforms and points

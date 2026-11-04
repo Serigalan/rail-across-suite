@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { newTimetable, timetableApi } from '@rail-across/timetables'
 
+/** No trains, one and the same list every time: the runs are made again only when the trains are others. */
+const NO_TRAINS = []
+
 /**
  * The timetables of a project and the one being edited: the list from the
  * server, the one chosen, and its draft — what is changed and not saved yet.
@@ -76,7 +79,7 @@ export function useTimetables(projectId, initial = null) {
   return {
     list: list ?? [], loading: list == null, mayAdd, error, selected, current, draft, dirty, busy, conflict, ask,
     mayEdit: Boolean(current?.mayEdit),
-    trains: draft?.data.trains ?? [],
+    trains: draft?.data.trains ?? NO_TRAINS,
     guard,
     confirm: () => { const then = ask?.then; dropped.current = true; setAsk(null); open(current); then?.() },
     dismiss: () => setAsk(null),

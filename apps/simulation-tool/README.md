@@ -23,6 +23,10 @@ vehicles on their own.
   design speeds are missing it says so: flat there, only the vehicle limiting.
 - **The result**: the fastest run, the run with its margin, arrival and departure at every stop, the energy at
   the wheels; the speed and the time over the distance with the speed allowed; the run played on the map.
+- **The way's profile**: under the map, on one axis of distance, the speed over the way (or the time) and under
+  it the height of the tracks along the same stretch, from their height points (`heightProfile` of
+  `@rail-across/running-times`), shaded where a track has none; the stops marked, the moment played, and where
+  the mouse is its distance, speed and height. The height is shown as soon as the way is found, before the run.
 
 ## The vehicles
 

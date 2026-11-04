@@ -7,7 +7,7 @@ import RunChart from './charts/RunChart.jsx'
 import TrainPanel from './panels/TrainPanel.jsx'
 import ResultPanel from './panels/ResultPanel.jsx'
 import SettingsPanel from './panels/SettingsPanel.jsx'
-import { lngLatAt, locationAt, marginValue, nearestLocation, netLines, placesOf, pointAt, routeThrough, simulate, simulationRequest } from '@rail-across/running-times'
+import { heightProfile, lngLatAt, locationAt, marginValue, nearestLocation, netLines, pathLength, placesOf, pointAt, routeThrough, simulate, simulationRequest } from '@rail-across/running-times'
 import { comfortsOf, useCatalogue } from '@rail-across/vehicles'
 import { projectsUrl } from './suite.js'
 
@@ -26,7 +26,7 @@ const FIRST_VEHICLE = 'osrd:emu-regional-train'
  * its path found over the net, and the run simulated by rail-across-sim (OSRD's
  * simulation core in Rust): the fastest run, the run with its margin, the
  * times at its stops, the speed and the time over the distance, played on
- * the map.
+ * the map; under them the height along the way, shown as soon as there is one.
  */
 export default function Simulator({ project, variant, revision, record, local }) {
   const { t, language, setLanguage } = useTexts()
@@ -100,6 +100,9 @@ export default function Simulator({ project, variant, revision, record, local })
   const ok = run?.result ? run : null
   const at = ok ? pointAt(ok.result.final, moment) : null
   const train = at ? lngLatAt(record, locationAt(ok.path, at.position)) : null
+  // The way the chart shows: the run's, else the one found; its heights along it.
+  const way = ok ? { path: ok.path, offsets: ok.offsets, labels: ok.labels } : route?.path ? { path: route.path, offsets: route.offsets, labels: chosen.map(p => p?.label) } : null
+  const profile = useMemo(() => (way ? heightProfile(record, way.path) : null), [record, way?.path]) // eslint-disable-line react-hooks/exhaustive-deps
   const mapPoints = chosen.map((p, i) => p && { kind: i === 0 ? 'start' : i === chosen.length - 1 ? 'end' : 'stop', lngLat: lngLatAt(record, p.loc) }).filter(Boolean)
   const panelProps = { t, language, record, places, catalogue, entry, vehicle, chooseVehicle, modes, mode, comforts, comfort, setTraction, start, setStart, end, setEnd, stops, setStops, margin, setMargin, marginText, distribution, setDistribution, picking, setPicking, route, run, stale, busy, go, moment, setMoment, at }
 
@@ -135,7 +138,7 @@ export default function Simulator({ project, variant, revision, record, local })
             {!record.tracks?.length && <div className="tool-notice"><Message tone="info">{t('empty_net')}</Message></div>}
             <MapView record={record} net={net} path={route?.path ?? null} points={mapPoints} train={train} picking={picking} onPick={pickOnMap} fitKey={fitKey} t={t} />
           </div>
-          {ok && <RunChart run={ok} at={at} t={t} />}
+          {way && <RunChart run={ok} profile={profile} length={ok ? ok.request.path.length : pathLength(way.path)} offsets={way.offsets} labels={way.labels} at={at} t={t} language={language} />}
         </div>
       </Workspace>
     </Shell>

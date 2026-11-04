@@ -39,6 +39,13 @@ html, body { margin: 0; background: var(--ui-surface); }
 .sim-line-base { stroke: #d68910; stroke-width: 1.5; stroke-dasharray: 5 3; }
 .sim-line-final { stroke: var(--color-primary); stroke-width: 2.2; }
 .sim-at { fill: var(--color-primary); stroke: #fff; stroke-width: 2; }
+.sim-hover { stroke: var(--ui-text, #222); stroke-width: 1; stroke-opacity: 0.45; }
+.sim-chart-title { font-weight: 600; font-size: var(--ui-fs-m); }
+.sim-readout { margin-left: auto; font-size: var(--ui-fs-s); font-variant-numeric: tabular-nums; }
+/* The height along the way: a line over a light fill, a gap hatched grey where a track has no heights. */
+.sim-profile-line { stroke: #6b7a5a; stroke-width: 1.8; }
+.sim-profile-fill { fill: #6b7a5a; fill-opacity: 0.16; }
+.sim-profile-gap { fill: var(--ui-muted); fill-opacity: 0.08; }
 
 /* ── the panels ──────────────────────────────────────────────────────── */
 

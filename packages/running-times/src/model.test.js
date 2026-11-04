@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { curveResistance, findPath, locationAt, offsetOnPath, pathAlong, pathLength, pathProperties } from './path.js'
+import { curveResistance, findPath, heightProfile, locationAt, offsetOnPath, pathAlong, pathLength, pathProperties } from './path.js'
 import { routeThrough, routeVia, signalledSpeeds } from './route.js'
 import { marginValue, simulationRequest } from './request.js'
 import { newVehicle } from '@rail-across/vehicles'
@@ -88,6 +88,17 @@ describe('what the physics needs of it', () => {
     const curve = props.gradients.find(g => g.begin > 1000)
     expect(curve.value).toBeCloseTo(curveResistance(1000), 3)
     expect(curve.begin).toBeCloseTo(1500, 6)
+  })
+
+  it('has the heights along it for its profile, open where a track has none', () => {
+    const profile = heightProfile(record, path)
+    expect(profile[0]).toEqual({ position: 0, height: 100 })
+    expect(profile[1].position).toBeCloseTo(1000, 6)
+    expect(profile[1].height).toBe(110)
+    expect(profile.slice(2).every(p => p.height === null)).toBe(true)
+    expect(profile.at(-1).position).toBeCloseTo(3000, 6)
+    const down = heightProfile(record, findPath(record, { trackId: 'T1', station: 1000, direction: 'down' }, { trackId: 'T1', station: 400 }))
+    expect(down.map(p => [Math.round(p.position), p.height])).toEqual([[0, 110], [600, 104]])
   })
 
   it('falls the other way', () => {

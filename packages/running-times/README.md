@@ -7,7 +7,7 @@ shared by the Simulation-Tool and the Fahrplan-Editor:
   and joints —, through a train's points without turning back; a point may be one of several places (the tracks of
   a station, `routeVia`), the others tried where the nearest leads nowhere further on; a leg may be given its run
   of tracks (`pathAlong`, `routeVia`'s `legPath`), the way a timetable prefers;
-- **what the physics needs of it** (`path.js`, `request.js`): its length, its grades from the tracks' heights and
+- **what the physics needs of it** (`path.js`, `request.js`): its length, its heights along it for a profile (`heightProfile`), its grades from the tracks' heights and
   the curves' resistance (Röckl), the layout's design speeds and the speeds the signals signal, and the request
   the simulation takes;
 - **the stations** (`stations.js`), each by its id — its point of the core's register (`stationRegister`), an end's mark —, found by it (`stationById`, `placeOf`), the name only shown: a station is the station tracks of one point, as the Layout-Tool groups them, or

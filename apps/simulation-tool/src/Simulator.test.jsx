@@ -46,10 +46,19 @@ describe('the simulator', () => {
     expect(html).toContain('1 kWh')
   })
 
-  it('draws the run over the distance', () => {
-    const html = de(<RunChart run={run} at={null} t={t} />)
+  it('draws the run over the distance, and under it the height along the same stretch', () => {
+    const profile = [{ position: 0, height: 100 }, { position: 600, height: 106 }, { position: 600, height: null }, { position: 1000, height: null }]
+    const chart = (r) => de(<RunChart run={r} profile={profile} length={1000} offsets={run.offsets} labels={run.labels} at={null} t={t} language="de" />)
+    const html = chart(run)
     expect(html).toContain('polyline')
     expect(html).toContain('zulässig')
+    expect(html).toContain('aria-label="Höhe"')
+    expect(html).toContain('class="sim-profile-line"')
+    expect(html).toContain('class="sim-profile-gap"')
+    // Before the run is simulated, the height alone.
+    const before = chart(null)
+    expect(before).not.toContain('zulässig')
+    expect(before).toContain('<span class="sim-chart-title">Höhe</span>')
   })
 })
 

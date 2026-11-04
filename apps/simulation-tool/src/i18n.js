@@ -105,6 +105,9 @@ const de = {
   chart_mrsp: 'zulässig',
   chart_base: 'kürzeste Fahrt',
   chart_final: 'mit Zuschlag',
+  chart_profile: 'Höhe',
+  chart_height_axis: 'm ü. NHN',
+  chart_no_heights: 'Ohne Höhen',
   time_axis: 'min:s',
 }
 
@@ -210,6 +213,9 @@ const en = {
   chart_mrsp: 'allowed',
   chart_base: 'fastest run',
   chart_final: 'with margin',
+  chart_profile: 'Height',
+  chart_height_axis: 'm a.s.l.',
+  chart_no_heights: 'No heights',
   time_axis: 'min:s',
 }
 

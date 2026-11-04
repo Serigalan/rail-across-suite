@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { newTimetable, timetableApi } from '@rail-across/timetables'
 
 /**
@@ -18,6 +18,10 @@ export function useTimetables(projectId, initial = null) {
   const [busy, setBusy] = useState(false)
   const [conflict, setConflict] = useState(null)   // the timetable as someone else saved it
   const [ask, setAsk] = useState(null)   // { then } — changes not saved, to leave?
+  // Set once the user agreed to drop the changes: leaving the page right after
+  // (back, start page) asks nothing more — the changes count as unsaved until
+  // the next render, and the browser would ask a second time.
+  const dropped = useRef(false)
 
   const current = list?.find(tt => tt.id === selected) ?? null
   const dirty = Boolean(draft && current && (draft.name !== current.name || JSON.stringify(draft.data) !== JSON.stringify(current.data) || draft.version !== current.version))
@@ -44,10 +48,12 @@ export function useTimetables(projectId, initial = null) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId, open])
 
-  // Leaving the page with changes not saved: the browser asks.
+  // Leaving the page with changes not saved: the browser asks — unless the
+  // editor's own question just had them dropped.
   useEffect(() => {
     if (!dirty) return undefined
-    const stay = (e) => { e.preventDefault(); e.returnValue = '' }
+    dropped.current = false
+    const stay = (e) => { if (dropped.current) return; e.preventDefault(); e.returnValue = '' }
     addEventListener('beforeunload', stay)
     return () => removeEventListener('beforeunload', stay)
   }, [dirty])
@@ -72,7 +78,7 @@ export function useTimetables(projectId, initial = null) {
     mayEdit: Boolean(current?.mayEdit),
     trains: draft?.data.trains ?? [],
     guard,
-    confirm: () => { const then = ask?.then; setAsk(null); open(current); then?.() },
+    confirm: () => { const then = ask?.then; dropped.current = true; setAsk(null); open(current); then?.() },
     dismiss: () => setAsk(null),
     select: (id) => guard(() => open(list.find(tt => tt.id === id) ?? null)),
     /** The trains changed: `fn(trains)` gives them as they are to be. */

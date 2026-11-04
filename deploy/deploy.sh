@@ -92,11 +92,9 @@ if [ "$build" = 1 ]; then
   # put beside the page of the app that runs trains — the Fahrplan-Editor, which
   # computes a single train's running time too. Without it the suite deploys
   # all the same, and the tool says the module is missing.
-  for app in timetable-editor; do
-    if ! (cd "apps/$app" && node ../../packages/running-times/scripts/sim.mjs); then
-      echo "WARNING: no simulation module — $app cannot compute running times" >&2
-    fi
-  done
+  if ! (cd apps/timetable-editor && node ../../packages/running-times/scripts/sim.mjs); then
+    echo "WARNING: no simulation module — the Fahrplan-Editor cannot compute running times" >&2
+  fi
 
   step "Crossover module (crossover/)"
   # The search of the Layout-Tool's extended switch connection in Rust, built

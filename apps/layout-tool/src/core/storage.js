@@ -7,6 +7,7 @@ import {
   reverseTrack, generateId, remapEndMarks, flipEndMarks, pruneEndMarks, endKey, repairRoutes,
   carryPlatforms, flipPlatforms, trackLength,
 } from '@rail-across/core/track'
+import { translateTracks } from '@rail-across/core/commands'
 import { carryAfterWrite } from '@rail-across/core/merge'
 import { coupleSwitchCants, rebuildSwitchSymbol } from '@rail-across/core/switch'
 import {
@@ -967,6 +968,21 @@ export function addElementToTrack(trackId, element) {
  * points are stationed along the track, so they mirror about its length, and so do
  * its platforms, which change sides with it (data model, case F3).
  */
+/**
+ * Shift a track by `dx` east and `dy` north [m] in its plane, in one undo step
+ * (commands.translateTracks). False where nothing was moved — no shift, no
+ * such track, or a lock that holds it.
+ */
+export function moveTrack(trackId, dx, dy) {
+  let moved = false
+  const done = mutate(p => {
+    const next = translateTracks(p, [trackId], dx, dy)
+    moved = next !== p
+    return next
+  })
+  return done && moved
+}
+
 export function reverseTrackDirection(trackId) {
   return mutate(p => {
     const track = (p.tracks ?? []).find(t => t.id === trackId)

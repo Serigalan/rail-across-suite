@@ -5,6 +5,7 @@ import RouteList from '../RouteList'
 import EditLengthForm from './EditLengthForm'
 import EditPropertiesForm from './EditPropertiesForm'
 import ChangeDirectionForm from './ChangeDirectionForm'
+import MoveTrackForm from './MoveTrackForm'
 import DeleteForm from './DeleteForm'
 import DeleteTrackForm from './DeleteTrackForm'
 import DeleteSwitchForm from './DeleteSwitchForm'
@@ -15,7 +16,7 @@ import { BOUNDARY } from '@rail-across/core/track'
 import SwitchConnectionEdit from '../ConnectSwitchPanel/SwitchConnectionEdit'
 import {
   EditLengthIcon, DeleteElementIcon, EditTracksIcon, EditPropertiesIcon,
-  ChangeDirectionIcon, DeleteTrackIcon, DeleteSwitchIcon,
+  ChangeDirectionIcon, MoveTrackIcon, DeleteTrackIcon, DeleteSwitchIcon,
   BufferStopIcon, BoundaryIcon, RouteIcon, SwitchConnectionIcon,
 } from '../../icons'
 import { useI18n } from '../../../locales/i18nContext'
@@ -157,6 +158,14 @@ export default function EditElementPanel({ trackTableId, trackTableRouteId, onSh
     </>
   )
 
+  if (page === 'move_track') return (
+    <>
+      {backButton()}
+      <h2>{t('edit_track_move')}</h2>
+      <MoveTrackForm onCommitted={() => setPage('menu')} />
+    </>
+  )
+
   return (
     <>
       <h2>{t('edit')}</h2>
@@ -182,6 +191,10 @@ export default function EditElementPanel({ trackTableId, trackTableRouteId, onSh
         <button className="ui-btn ui-btn-option" onClick={() => goto('change_direction')}>
           <ChangeDirectionIcon />
           {t('edit_change_direction')}
+        </button>
+        <button className="ui-btn ui-btn-option" onClick={() => goto('move_track')}>
+          <MoveTrackIcon />
+          {t('edit_track_move')}
         </button>
         <button className="ui-btn ui-btn-option" onClick={() => goto('delete_track')}>
           <DeleteTrackIcon />

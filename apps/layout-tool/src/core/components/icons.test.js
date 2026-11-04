@@ -20,7 +20,7 @@ const MENU_ICONS = [
   'ConnectStraightIcon', 'ConnectCurvedIcon',
   'SwitchOnTrackIcon', 'SwitchConnectTrackIcon', 'SwitchConnectionIcon', 'SwitchConnectionExtendedIcon',
   'EditLengthIcon', 'DeleteElementIcon', 'EditTracksIcon', 'EditPropertiesIcon',
-  'ChangeDirectionIcon', 'AssignTracksIcon', 'DeleteTrackIcon', 'DeleteSwitchIcon', 'TrackVisibilityIcon', 'RouteIcon',
+  'ChangeDirectionIcon', 'MoveTrackIcon', 'AssignTracksIcon', 'DeleteTrackIcon', 'DeleteSwitchIcon', 'TrackVisibilityIcon', 'RouteIcon',
   'OptimizeTrackModeIcon', 'OptimizeElementModeIcon', 'AxisFitModeIcon', 'BandsIcon',
   'CrossingOnTrackIcon', 'CrossingConnectTrackIcon', 'SwitchLinkIcon', 'SwitchDetailIcon',
   'SpliceJoinIcon', 'ReconnectIcon', 'AboutIcon', 'ShiftValuesIcon', 'NewPlatformIcon', 'BufferStopIcon', 'BoundaryIcon', 'PointCloudIcon',

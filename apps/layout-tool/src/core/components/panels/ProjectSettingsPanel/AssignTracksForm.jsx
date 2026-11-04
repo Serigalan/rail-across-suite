@@ -224,15 +224,16 @@ export default function AssignTracksForm({ onCommitted }) {
               <NumberInput value={entry.lineNumber} onChange={(e) => setField('lineNumber', e.target.value)} />
               {lineOptions.length > 0 && (
                 <div className="line-suggestions">
-                  {lineOptions.map(({ lineNumber: number, distance }) => (
+                  {lineOptions.map(({ lineNumber: number, distance, local }) => (
                     <button
                       key={number}
                       type="button"
-                      className={`line-suggestion${String(number) === String(entry.lineNumber) ? ' active' : ''}`}
+                      className={`line-suggestion${local ? ' local' : ''}${String(number) === String(entry.lineNumber) ? ' active' : ''}`}
+                      title={local ? t('line_suggestion_local') : undefined}
                       onClick={() => setField('lineNumber', String(number))}
                     >
                       {number}
-                      <span className="line-suggestion-distance">{distance} m</span>
+                      <span className="line-suggestion-distance">{distance} m{local ? ` · ${t('km_local')}` : ''}</span>
                     </button>
                   ))}
                 </div>

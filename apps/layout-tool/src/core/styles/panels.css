@@ -124,6 +124,11 @@
 
 .line-suggestion.active .line-suggestion-distance { color: var(--color-primary); }
 
+/* A line of the project's own, in the colour its overlay draws it in
+   (PALETTE.kmLineLocal). */
+.line-suggestion.local { border-color: #a21caf; }
+.line-suggestion.local.active { border-color: var(--color-primary); }
+
 .overlay-error {
   font-family: var(--font-ui);
   font-size: var(--fs-xs);

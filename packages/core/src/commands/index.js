@@ -34,5 +34,5 @@ export {
 } from './switches.js'
 export {
   buildConnectCurved, buildConnectStraight, buildCurvedLineTrack, buildLineTrack,
-  buildParallelLineTrack, buildParallelTrack, cantAtTrackEnd, curveCant, trackMeta,
+  buildParallelLineTrack, buildParallelTrack, cantAtTrackEnd, curveCant, trackMeta, translateTracks,
 } from './tracks.js'

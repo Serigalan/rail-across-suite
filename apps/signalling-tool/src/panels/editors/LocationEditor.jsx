@@ -3,16 +3,17 @@ import { SIGNAL_CATALOGUE } from '@rail-across/core/signalling'
 import { labelOf, logicalId, newLogical } from '../../model/domain.js'
 import { FUNCTION, MOUNTING, VIRTUAL_FUNCTION, logicalSignalWord, optionsOf, word } from '../../labels.js'
 import { SignalIcon } from '../../icons.jsx'
-import { EditorHead, LocationFields, ObjectFindings } from '../common.jsx'
+import { EditorHead, LocationFields, ObjectFindings, PlaneLine } from '../common.jsx'
 import FramesEditor from '../frames.jsx'
-import { trackName } from '../../model/places.js'
+import { FOUNDATION_OFFSET, ON_FOUNDATION, foundationPoint, sideAlong, trackName } from '../../model/places.js'
 import { stationName } from '../../model/stations.js'
 
 /**
  * A signal mast — the physical signal: where it stands, on what mounting,
  * from how far it is seen, the station it belongs to or the open line, the
  * boards it carries of no system, and its logical signals, each opened in an
- * editor of its own; a virtual signal has its function instead.
+ * editor of its own; a virtual signal has its function instead. On a gantry
+ * or a bracket its location is its screen's, and its foundation has its own.
  */
 export default function LocationEditor({ signal, net, core, findings, onChange, onDelete, onPlace, select, readOnly, t, language }) {
   const set = (patch) => onChange({ ...signal, ...patch })
@@ -44,7 +45,11 @@ export default function LocationEditor({ signal, net, core, findings, onChange, 
               options={optionsOf(FUNCTION, language)} onChange={(v) => set({ function: v ?? undefined })} />
           )}
           <SelectField compact label={t('mounting')} value={signal.mounting ?? null} empty={t('none')} disabled={readOnly}
-            options={optionsOf(MOUNTING, language)} onChange={(v) => set({ mounting: v ?? undefined })} />
+            options={optionsOf(MOUNTING, language)} onChange={(v) => set({
+              mounting: v ?? undefined,
+              // A gantry or a bracket stands on a foundation, on the side the signal stood; nothing else has one.
+              foundation: ON_FOUNDATION.has(v) ? signal.foundation ?? { side: sideAlong(signal.at, signal.at?.side) ?? 'right', offset: FOUNDATION_OFFSET } : undefined,
+            })} />
           <SelectField compact wide label={t('station_of_signal')} value={signal.operationalPointId ?? null} empty={t('open_line')} disabled={readOnly}
             options={(core?.collections.operationalPoints ?? []).map(p => ({ value: p.id, label: stationName(p) }))
               .sort((a, b) => a.label.localeCompare(b.label, 'de', { numeric: true }))}
@@ -74,12 +79,25 @@ export default function LocationEditor({ signal, net, core, findings, onChange, 
         </Section>
       )}
 
-      <Section title={t('location')}>
+      <Section title={signal.foundation ? t('screen_location') : t('location')}>
         <LocationFields loc={signal.at} net={net} t={t} readOnly={readOnly} onPlace={onPlace} onChange={(at) => set({ at })} />
         {(signal.alsoAt ?? []).map((also, i) => (
           <p key={i} className="ui-muted">+ {trackName(net, also.trackId)} · {Math.round(also.station)} m</p>
         ))}
       </Section>
+
+      {signal.foundation && (
+        <Section title={t('foundation_location')}>
+          <div className="ui-fields">
+            <SelectField compact label={t('side_along')} value={signal.foundation.side ?? 'right'} disabled={readOnly}
+              options={[{ value: 'left', label: t('left') }, { value: 'right', label: t('right') }]}
+              onChange={(v) => set({ foundation: { ...signal.foundation, side: v ?? 'right' } })} />
+            <NumberField compact label={t('offset')} value={signal.foundation.offset} min={0} disabled={readOnly}
+              onChange={(v) => set({ foundation: { ...signal.foundation, offset: v ?? FOUNDATION_OFFSET } })} />
+            <PlaneLine point={foundationPoint(net, signal)} t={t} />
+          </div>
+        </Section>
+      )}
 
       {signal.kind === 'real' && <>
         <Section title={t('sight')}>

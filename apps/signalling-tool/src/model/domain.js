@@ -175,10 +175,10 @@ export function newLogical({ system = 'ks', type = 'multiSection', fn = 'entry' 
   return withoutEmpty({ system, type, function: fn, frames: shows.length ? [{ kind: 'screen', aspects: shows.map(aspect => ({ aspect })) }] : undefined })
 }
 
-/** A new place at a location, with what it is in one system (a Ks signal unless said otherwise), or bare. */
-export function newSignal({ at, system = 'ks', type = 'multiSection', fn = 'entry', name, mounting = 'mast', bare = false }) {
+/** A new place at a location, with what it is in one system (a Ks signal unless said otherwise), or bare; on a gantry or bracket its foundation. */
+export function newSignal({ at, system = 'ks', type = 'multiSection', fn = 'entry', name, mounting = 'mast', foundation, bare = false }) {
   return withoutEmpty({
-    id: newId(), name, kind: 'real', mounting, at,
+    id: newId(), name, kind: 'real', mounting, at, foundation,
     logicalSignals: bare ? undefined : [newLogical({ system, type, fn })],
   })
 }
@@ -272,15 +272,15 @@ export function newBalise({ at, system = 'pzb', kind = Object.keys(protectionSys
   }
 }
 
-/** A signal's full designation, its area's number leading (60A): names repeat from area to area. */
-export const designationOf = (s, t) => `${s?.areaNumber ?? ''}${labelOf('signals', s, t)}`
+/** A signal's full designation, its area's number leading (60-A): names repeat from area to area. */
+export const designationOf = (s, t) => labelOf('signals', s, t)
 
-/** A short label of an object for lists and findings. */
+/** A short label of an object for lists and findings; a signal's with its area's number (designationOf). */
 export function labelOf(collection, obj, t) {
   if (!obj) return '—'
   const name = obj.name != null && obj.name !== '' ? String(obj.name) : null
   switch (collection) {
-    case 'signals': return name ?? (hasScreen(obj) ? null : boardName(obj)) ?? t('unnamed')
+    case 'signals': return (name && obj.areaNumber ? `${obj.areaNumber}-${name}` : name) ?? (hasScreen(obj) ? null : boardName(obj)) ?? t('unnamed')
     case 'routes': return name ?? null
     case 'operationalPoints': return name ?? obj.rl100 ?? t('unnamed')
     case 'platforms': return [obj.stationName, obj.code].filter(Boolean).join(' ') || t('unnamed')

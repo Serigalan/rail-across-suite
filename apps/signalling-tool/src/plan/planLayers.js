@@ -1,5 +1,6 @@
 import { placeOf, stretchLine } from '../model/net.js'
 import { labelOf } from '../model/domain.js'
+import { sideAlong } from '../model/places.js'
 import { signalTone, TONE_FILL } from './symbols.js'
 
 /**
@@ -8,7 +9,8 @@ import { signalTone, TONE_FILL } from './symbols.js'
  * when it moves. Tracks, runs and stretches are lines, switches circles;
  * every object stands where it is in the plane — a foot on its track, a stem
  * out to its symbol at its offset on its side, the symbol an icon turned the
- * way it acts. Zoomed out, a symbol keeps a few pixels from its track: what
+ * way it acts; a signal on a gantry or a bracket with the bridge from its
+ * foundation out to its screen, to scale. Zoomed out, a symbol keeps a few pixels from its track: what
  * its offset lacks of them is added in pixels (icon-offset), evaluated per
  * whole zoom level as MapLibre lays symbols out. The icons and the names are
  * drawn here on a canvas, in the plan's colours.
@@ -38,7 +40,8 @@ export const extraPx = (offset, lat, zoom) => Math.max(0, SIDE_PX - offset * pix
 /**
  * An object to draw: where it is on its track, where its symbol stands in the
  * plane, and how it is turned. `side` is -1 left, 1 right of the stationing, 0
- * on the track; `along` 1 when it acts in the stationing's direction, else -1.
+ * on the track; `along` 1 when it acts in the stationing's direction, else -1;
+ * `foundation` where a signal's foundation stands, for one on a gantry or bracket.
  */
 export function placedMark(drawing, collection, obj, loc) {
   const p = placeOf(drawing, loc)
@@ -51,7 +54,10 @@ export function placedMark(drawing, collection, obj, loc) {
   const at = side ? drawing.frame.toLngLat([p.xy[0] + Math.cos(b) * offset * side, p.xy[1] - Math.sin(b) * offset * side]) : on
   const angle = p.angle ?? 0
   const along = Math.abs((((angle - (p.bearing ?? angle)) % 360) + 540) % 360 - 180) < 90 ? 1 : -1
-  return { collection, obj, on, at, angle, bearing: b, side, along, offset, orphan: !!p.orphan }
+  const f = collection === 'signals' && !p.orphan ? obj.foundation : null
+  const fs = f ? (sideAlong(loc, f.side) === 'left' ? -1 : 1) * (f.offset ?? 0) : 0
+  const foundation = f ? drawing.frame.toLngLat([p.xy[0] + Math.cos(b) * fs, p.xy[1] - Math.sin(b) * fs]) : null
+  return { collection, obj, on, at, angle, bearing: b, side, along, offset, orphan: !!p.orphan, foundation }
 }
 
 /** Where a mark's symbol is on the screen of a map now: [x, y]. */
@@ -133,6 +139,10 @@ function markFeatures(marks, { isSelected, names, t }) {
       props[`i${z}`] = [extra[z] * mk.along, 0]
       props[`s${z}`] = [(extra[z] - (SIDE_PX / 2) * mk.side) * mk.along, 0]
     }
+    if (mk.foundation) {
+      out.push(feature(line([mk.foundation, mk.at]), { kind: 'bridge', sel }))
+      out.push(feature(point(mk.foundation), { kind: 'foundation', rotate: mk.angle, icon: `ra-foundation${sel ? '-sel' : ''}` }))
+    }
     if (mk.side) {
       out.push(feature(line([mk.on, mk.at]), { kind: 'stem' }))
       out.push(feature(point(mk.on), { kind: 'foot' }))
@@ -207,7 +217,7 @@ const ICON_PX = 32
 const RATIO = 2
 const DP_BLUE = '#1f6fb5'
 const BALISE = { 'pzb-500': '#d0308f', 'pzb-1000': '#7b3fbf', 'pzb-2000': '#0f9fb5', 'pzb-1000-2000': '#0f9fb5', 'pzb-other': '#7b3fbf' }
-const SYMBOLS = ['sig-main', 'sig-distant', 'sig-shunting', 'sig-board', 'sig-marker', 'sig-virtual', 'dp', 'etcs', ...Object.keys(BALISE), 'derailer']
+const SYMBOLS = ['sig-main', 'sig-distant', 'sig-shunting', 'sig-board', 'sig-marker', 'sig-virtual', 'dp', 'etcs', ...Object.keys(BALISE), 'derailer', 'foundation']
 
 /** A canvas of the icon's size, its origin in the middle and +x the way the object acts — up in the icon, as icon-rotate turns it. */
 function iconCanvas(size = ICON_PX) {
@@ -234,6 +244,8 @@ function drawSymbol(name, sel, pal) {
   if (name === 'dp') {
     stroke('M0,-6 L0,6', sel ? pal.primary : DP_BLUE, edgeWidth(2))
     fill('M2.2,0 A2.2,2.2 0 1 0 -2.2,0 A2.2,2.2 0 1 0 2.2,0 Z', DP_BLUE)
+  } else if (name === 'foundation') {
+    fill('M-3,-3 L3,-3 L3,3 L-3,3 Z', edge)
   } else if (name === 'derailer') {
     stroke('M-4,-4 L4,4 M-4,4 L4,-4', '#c0392b', 2)
   } else if (name === 'etcs') {
@@ -332,9 +344,16 @@ const offsetBy = (prefix) => ['interpolate', ['linear'], ['zoom'], ...ZOOMS.flat
 const kind = (k) => ['==', ['get', 'kind'], k]
 const SYMBOL = { 'icon-allow-overlap': true, 'icon-ignore-placement': true, 'icon-rotation-alignment': 'map', 'icon-pitch-alignment': 'map' }
 
-/** The layers of marks from one source: stems, feet, stubs, symbols, labels. */
+/** The colour of a gantry or bracket: the marks', the primary where it is chosen. */
+const bridgeColor = (pal) => ['case', ['get', 'sel'], pal.primary, pal.mark]
+
+/** The layers of marks from one source: gantries and their foundations, stems, feet, stubs, symbols, labels. */
 function markLayers(prefix, source, pal, opacity) {
   return [
+    { id: `${prefix}-bridges`, type: 'line', source, filter: kind('bridge'), layout: { 'line-cap': 'butt' },
+      paint: { 'line-color': bridgeColor(pal), 'line-width': 3, 'line-opacity': opacity } },
+    { id: `${prefix}-foundations`, type: 'symbol', source, filter: kind('foundation'),
+      layout: { ...SYMBOL, 'icon-image': ['get', 'icon'], 'icon-rotate': ['get', 'rotate'] }, paint: { 'icon-opacity': opacity } },
     { id: `${prefix}-stems`, type: 'line', source, filter: kind('stem'), paint: { 'line-color': pal.track, 'line-width': 1, 'line-opacity': 0.6 * opacity } },
     { id: `${prefix}-feet`, type: 'circle', source, filter: kind('foot'), paint: { 'circle-color': pal.track, 'circle-radius': 1.6, 'circle-opacity': opacity } },
     { id: `${prefix}-stubs`, type: 'symbol', source, filter: kind('stub'),
@@ -404,6 +423,7 @@ export function setPlanData(map, pal, data, nameZoom) {
   map.setPaintProperty('plan-switches', 'circle-color', ['case', ['get', 'sel'], pal.primary, pal.bg])
   map.setPaintProperty('plan-switches', 'circle-stroke-color', ['case', ['get', 'sel'], pal.primary, pal.track])
   for (const p of ['plan-marks', 'plan-preview']) {
+    map.setPaintProperty(`${p}-bridges`, 'line-color', bridgeColor(pal))
     map.setPaintProperty(`${p}-stems`, 'line-color', pal.track)
     map.setPaintProperty(`${p}-feet`, 'circle-color', pal.track)
   }

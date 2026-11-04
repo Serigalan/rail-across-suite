@@ -1,6 +1,7 @@
 import { NumberField, Section, SelectField } from '@rail-across/ui'
 import { SIGNAL_CATALOGUE, signalKindOf } from '@rail-across/core/signalling'
 import { labelOf, logicalId, withKind, withLogical, withSignallingSpeed } from '../../model/domain.js'
+import { signalOptions } from '../../model/places.js'
 import { FUNCTION, logicalSignalWord, optionsOf, signalSystemOptions, signalTypeOptions } from '../../labels.js'
 import { CheckList, EditorHead, ObjectFindings } from '../common.jsx'
 import FramesEditor from '../frames.jsx'
@@ -12,7 +13,7 @@ import FramesEditor from '../frames.jsx'
  * signals for each route that starts at its mast (signallingSpeed; the design
  * speed of the track is the Layout-Tool's).
  */
-export default function LogicalEditor({ id, found, domain, findings, select, ops, readOnly, t, language }) {
+export default function LogicalEditor({ id, found, domain, net, findings, select, ops, readOnly, t, language }) {
   const { signal, logical, index } = found
   const { signals, routes } = domain.collections
   const change = (next) => {
@@ -51,7 +52,7 @@ export default function LogicalEditor({ id, found, domain, findings, select, ops
       <ObjectFindings findings={findings} collection="signals" id={signal.id} t={t} only={(f) => f.key.includes(`:logicalSignals.${index}`)} />
       <div className="ui-fields">
         <SelectField compact wide label={t('location_of_signal')} value={signal.id} disabled={readOnly}
-          options={places.map(s => ({ value: s.id, label: labelOf('signals', s, t) }))} onChange={moveTo} />
+          options={signalOptions(net, places, t)} onChange={moveTo} />
         <SelectField compact wide label={t('system')} value={logical.system} disabled={readOnly}
           options={systems.filter(o => o.value === logical.system || !taken.has(o.value))}
           onChange={(v) => change(withKind(logical, v, firstType(v)))} />

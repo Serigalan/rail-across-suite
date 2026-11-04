@@ -3,7 +3,7 @@ import { protectionSystemOf, titleIn } from '@rail-across/core/signalling'
 import { findLogical, hasScreen, labelOf } from '../model/domain.js'
 import { POINT_KIND, SECTION_KIND, VIRTUAL_FUNCTION, baliseWord, logicalSignalWord, word } from '../labels.js'
 import { signalTone } from '../plan/symbols.js'
-import { OFFSET, locationFrom, placing, trackName } from '../model/places.js'
+import { OFFSET, locationFrom, mountedFrom, placing, sideAlong, trackName } from '../model/places.js'
 import LocationEditor from './editors/LocationEditor.jsx'
 import LogicalEditor from './editors/LogicalEditor.jsx'
 import { PointEditor, SectionEditor } from './editors/DetectionEditors.jsx'
@@ -42,7 +42,13 @@ export default function EditPanel({ domain, net, core, findings, extents, select
         <Panel title={t(signal.kind === 'virtual' ? 'object_virtual' : 'object_signals')} back={toOverview}>
           <LocationEditor key={signal.id} signal={signal} {...editorProps}
             onChange={(s) => ops.update('signals', s)} onDelete={() => ops.remove('signals', signal.id)}
-            onPlace={() => setMode(placing('signals', (hit) => ({ ...signal, at: locationFrom(hit, { offset: signal.at?.offset ?? OFFSET.signals }) }), (s) => ops.update('signals', s)))} />
+            onPlace={() => setMode(placing('signals', (hit) => ({
+              ...signal,
+              // A gantry's screen keeps where it stands to the track, seen the way it acts.
+              at: signal.foundation
+                ? mountedFrom(hit, { screen: { side: sideAlong(signal.at, signal.at?.side) ?? null, offset: signal.at?.offset }, foundation: signal.foundation }).at
+                : locationFrom(hit, { offset: signal.at?.offset ?? OFFSET.signals }),
+            }), (s) => ops.update('signals', s)))} />
         </Panel>
       )
     }

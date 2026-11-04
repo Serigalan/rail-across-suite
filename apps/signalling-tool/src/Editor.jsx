@@ -369,7 +369,7 @@ export default function Editor({ project, variant, head, copy: opened, readOnly 
         <PlanView hidden={view === 'schema'} drawing={drawing} net={net} domain={domain} selection={selection} highlight={highlight} mode={mode} fitKey={fitKey} focus={focus} basemap={basemap} t={t}
           onPick={select}
           onPlace={(hit) => { const m = mode; setMode(null); m?.apply?.(m.make(hit)) }}
-          onPickPoint={(id) => mode?.toggle?.(id)} onPickStretch={(s) => mode?.apply?.(s)} onPickPlace={(id) => mode?.apply?.(id)} />
+          onPickPoint={(id) => mode?.toggle?.(id)} onPickStretch={(s) => mode?.apply?.(s)} onPickPlace={(id) => mode?.apply?.(id)} onPickSignal={(id) => mode?.apply?.(id)} />
       </Workspace>
 
       {dialog?.kind === 'checkin' && <CheckInDialog t={t} onCancel={() => setDialog(null)} onSubmit={checkIn} />}

@@ -21,7 +21,7 @@ export function boundsOn(domain, trackId, t) {
   for (const s of signals) {
     if (s.kind !== 'real' || !hasScreen(s)) continue
     for (const loc of [s.at, ...(s.alsoAt ?? [])]) {
-      if (loc?.anchor === 'station' && loc.trackId === trackId) out.push({ station: loc.station, label: `${s.areaNumber ?? ''}${labelOf('signals', s, t)}`, signal: true })
+      if (loc?.anchor === 'station' && loc.trackId === trackId) out.push({ station: loc.station, label: labelOf('signals', s, t), signal: true })
     }
   }
   for (const d of detectionPoints) {

@@ -225,7 +225,7 @@ describe('the Signalling-Tool', () => {
     expect(station).toContain('<h2>Bahnhof</h2>')
     expect(station).toContain('Bahnsteig an t2, 10–150 m')
     expect(station).toMatch(/checked=""\/><span>Bahnsteig an t2/)
-    expect(station).toMatch(/type="checkbox"\/><span>A · Einfahrsignal<\/span>/)
+    expect(station).toMatch(/type="checkbox"\/><span>A · t1 · Einfahrsignal<\/span>/)
     expect(station).toContain('Grenze zur freien Strecke')
     expect(station).toContain('Einfahrsignale und Trapeztafeln übernehmen (0)')
     // Its stopping places, on its tracks or at its platform.

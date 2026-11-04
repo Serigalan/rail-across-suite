@@ -13,7 +13,7 @@ import { ItineraryIcon, OverlapIcon, RouteIcon } from '../icons.jsx'
 import { stationName } from '../model/stations.js'
 import { ItineraryEditor, ItineraryList, ItinerarySearch } from './Itineraries.jsx'
 import { CheckList, EditorHead, ObjectFindings } from './common.jsx'
-import { aspectText, trackName } from '../model/places.js'
+import { aspectText, signalOptions as signalChoices, trackName } from '../model/places.js'
 
 /** The kinds of route, each with the type it starts with. */
 const KINDS = { train: { trainType: 'ZZ' }, shunting: { shuntingType: 'RR' }, middle: { middleType: 'ZM' } }
@@ -51,7 +51,7 @@ export default function RoutesPanel({
   const toPage = { label: t('back'), onClick: () => select(null) }
 
   const real = signals.filter(s => s.at?.anchor === 'station')
-  const signalOptions = real.map(s => ({ value: s.id, label: signalDesignation(s, t) })).sort((a, b) => String(a.label).localeCompare(String(b.label), 'de', { numeric: true }))
+  const signalOptions = signalChoices(net, real, t)
 
   const newOverlap = (signalId, length = 100) => {
     const s = sig(signalId)

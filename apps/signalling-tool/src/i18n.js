@@ -228,6 +228,11 @@ const de = {
   real: 'reales Signal',
   virtual: 'fiktives Signal',
   location: 'Lage',
+  screen_location: 'Lage Signalschirm',
+  foundation_location: 'Lage Signalfundament',
+  side_along: 'Seite in Fahrtrichtung',
+  over_track: 'über dem Gleis',
+  mounted_hint: 'Abstände von der Gleisachse, die Seiten in Fahrtrichtung des Signals. Der Plan zeichnet die Brücke vom Fundament zum Schirm.',
   track: 'Gleis',
   station: 'Station [m]',
   side: 'Seite',
@@ -322,6 +327,8 @@ const de = {
   effect: 'Wirksamkeit',
   other: 'sonstige',
   belongs_to: 'Bezugssignal',
+  pick_signal_on_plan: 'In der Karte wählen',
+  pick_signal_hint: 'Bezugssignal in der Karte anklicken. Esc bricht ab.',
   settings: 'Einstellungen',
 
 
@@ -714,6 +721,11 @@ const en = {
   real: 'real signal',
   virtual: 'virtual signal',
   location: 'Location',
+  screen_location: 'Location of the screen',
+  foundation_location: 'Location of the foundation',
+  side_along: 'Side, in the direction it acts',
+  over_track: 'over the track',
+  mounted_hint: 'Offsets from the track axis, sides in the direction the signal acts. The plan draws the gantry from the foundation to the screen.',
   track: 'Track',
   station: 'Station [m]',
   side: 'Side',
@@ -808,6 +820,8 @@ const en = {
   effect: 'Effect',
   other: 'other',
   belongs_to: 'Reference signal',
+  pick_signal_on_plan: 'Pick on the plan',
+  pick_signal_hint: 'Click the reference signal on the plan. Esc cancels.',
   settings: 'Settings',
 
 

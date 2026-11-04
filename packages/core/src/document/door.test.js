@@ -196,10 +196,12 @@ describe('the door', () => {
     expect(Object.keys(toDocument(record(), { carrySchemas: true }).schemas)).not.toContain(SCHEMA_HASHES.signalling)
   })
 
-  // The station as signalling 1.0 was written before: fifth (no stopping places and itineraries), fourth (no
+  // The station as signalling 1.0 was written before: sixth (no foundation of a gantry), fifth (no stopping
+  // places and itineraries), fourth (no
   // station of a signal), third (speed sections, a route's own speed, frames and function on the signal),
   // second (no speed sections yet), first (no logical signals, PZB elements). Each before the fifth reads
   // without stopping places, each before the fourth as of the open line.
+  const SIXTH = 'sha256:aeb06433b03125995823095d7ab89567311237560cbc3b9e6a954385305f0134'
   const FIFTH = 'sha256:d5c61938fb3da1cc80f638c051cac562c19ad207507373ac3381f3a97922d83c'
   const FOURTH = 'sha256:cee619f2ae1b256a81ca5536e3851602cce96841d16bb2fe5f11ffe1a5e1f64c'
   const THIRD = 'sha256:0194c1e7fe2a63741270025beb48929d106d74a80bf5b33ed4305965a5303487'
@@ -211,8 +213,14 @@ describe('the door', () => {
     // A logical signal of its own in each system, as the first schema could say it: one per signal.
     return toDocument(record({ signalling }))
   }
-  const asFifth = (doc) => {
+  const asSixth = (doc) => {
     const d = structuredClone(doc)
+    d.domains.signalling.schema = SIXTH
+    d.domains.signalling.collections.signals = d.domains.signalling.collections.signals.map(({ foundation: _f, ...s }) => s)
+    return d
+  }
+  const asFifth = (doc) => {
+    const d = asSixth(doc)
     d.domains.signalling.schema = FIFTH
     delete d.domains.signalling.collections.stoppingPlaces
     delete d.domains.signalling.collections.itineraries
@@ -265,6 +273,9 @@ describe('the door', () => {
       Object.assign(d.domains.signalling.collections, { stoppingPlaces: [], itineraries: [] })
       return d
     }
+    const bare = asSixth(now)
+    bare.domains.signalling.schema = now.domains.signalling.schema
+    expect(checkDocument(asSixth(now))).toEqual(bare)
     expect(checkDocument(asFifth(now))).toEqual(without(asFifth(now)))
     const open = without(asFourth(now))
     expect(checkDocument(asFourth(now))).toEqual(open)

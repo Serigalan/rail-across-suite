@@ -24,7 +24,8 @@ import {
  * drawn there before the click sets it. Picking a stretch — a stopping place
  * where the signals bound it, or its two ends —, the mouse snaps to a track
  * the same way and what the click would take is drawn dashed; picking a
- * stopping place takes the one clicked.
+ * stopping place takes the one clicked, picking a signal — a magnet's — the
+ * signal nearest the click.
  */
 
 const PICK_PX = 12
@@ -35,7 +36,7 @@ export const NO_BASEMAP = 'none'
 const styleOf = (basemapId) => (basemapId === NO_BASEMAP ? PLAIN : findBasemap(basemapId)?.style ?? PLAIN)
 
 export default function PlanView({
-  hidden, drawing, net, domain, selection, highlight, mode, onPick, onPlace, onPickPoint, onPickStretch, onPickPlace, fitKey, focus, basemap, t,
+  hidden, drawing, net, domain, selection, highlight, mode, onPick, onPlace, onPickPoint, onPickStretch, onPickPlace, onPickSignal, fitKey, focus, basemap, t,
 }) {
   const box = useRef(null)
   const mapBox = useRef(null)
@@ -139,10 +140,11 @@ export default function PlanView({
   const places = useMemo(() => placeLines(drawing, domain.collections.stoppingPlaces), [domain, drawing])
 
   const m = ready ? map.current : null
-  /** The mark of each object's symbol nearest a point of the screen, within reach. */
-  const pickAt = (px, py) => {
+  /** The mark of each object's symbol nearest a point of the screen, within reach — of `only` a collection, where it is given. */
+  const pickAt = (px, py, only) => {
     let best = null
     for (const mk of marks) {
+      if (only && mk.collection !== only) continue
       const [sx, sy] = symbolOnScreen(m, mk)
       const d = Math.hypot(sx - px, sy - py)
       if (d < PICK_PX && (!best || d < best.d)) best = { d, collection: mk.collection, id: mk.obj.id }
@@ -153,6 +155,7 @@ export default function PlanView({
       const d = Math.hypot(q.x - px, q.y - py)
       if (d < PICK_PX && (!best || d < best.d)) best = { d, collection: 'switches', id: s.id }
     }
+    if (only) return best
     return best ?? placeAt(px, py)
   }
   /** The stopping place whose band is nearest a point of the screen, within reach. */
@@ -201,6 +204,11 @@ export default function PlanView({
     if (mode?.kind === 'pick-place') {
       const place = placeAt(px, py)
       if (place) onPickPlace?.(place.id)
+      return
+    }
+    if (mode?.kind === 'pick-signal') {
+      const hit = pickAt(px, py, 'signals')
+      if (hit && (mode.accepts?.(hit.id) ?? true)) onPickSignal?.(hit.id)
       return
     }
     const hit = pickAt(px, py)

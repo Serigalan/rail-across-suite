@@ -1,11 +1,11 @@
 import { useState } from 'react'
-import { Button, Checkbox, Option, Options, OptionsDivider, OptionsHeading, Panel, SelectField, TextField } from '@rail-across/ui'
+import { Button, Checkbox, NumberField, Option, Options, OptionsDivider, OptionsHeading, Panel, Section, SelectField, TextField } from '@rail-across/ui'
 import { SIGNAL_CATALOGUE, titleIn } from '@rail-across/core/signalling'
 import { labelOf, logicalId, newId, newLogical, newSignal } from '../model/domain.js'
 import { FUNCTION, MOUNTING, VIRTUAL_FUNCTION, logicalSignalWord, optionsOf, signalSystemOptions, signalTypeOptions } from '../labels.js'
 import { BoardIcon, LocationIcon, SignalIcon, VirtualIcon } from '../icons.jsx'
 import { Created } from './common.jsx'
-import { OFFSET, locationFrom, placing } from '../model/places.js'
+import { FOUNDATION_OFFSET, OFFSET, ON_FOUNDATION, locationFrom, mountedFrom, placing, signalOptions } from '../model/places.js'
 
 /** The boards that can be set on their own: every aspect a plate may show. */
 const BOARDS = SIGNAL_CATALOGUE.begriffe.filter(b => !b.nur_dv && b.rahmen?.includes('plate'))
@@ -31,7 +31,7 @@ export default function SignalsPanel({ domain, net, ops, select, setMode, t, lan
     setMade(madeOf(s))
   }))
   const created = <Created what={made?.what} t={t} onEdit={() => select({ collection: made.collection, id: made.id })} />
-  const props = { domain, place, noNet, created, t, language }
+  const props = { domain, net, place, noNet, created, t, language }
 
   if (page === 'mast') return <Panel title={t('create_mast')} intro={t('create_mast_intro')} back={back}><MastPage {...props} /></Panel>
   if (page === 'board') return <Panel title={t('create_board')} intro={t('create_board_intro')} back={back}><BoardPage {...props} /></Panel>
@@ -73,9 +73,42 @@ const PlaceButton = ({ onClick, disabled, t }) => (
   <div className="ui-row"><Button variant="primary" disabled={disabled} onClick={onClick}>{t('place_on_map')}</Button></div>
 )
 
+/** Where a gantry's or a bracket's screen and foundation stand until they are told: the screen over the track, the foundation on the right. */
+const MOUNTED = { screen: { side: null, offset: 0 }, foundation: { side: 'right', offset: FOUNDATION_OFFSET } }
+
+/** Where a signal on that mounting is set, from where the plan was hit: its screen and its foundation where asked, else the plain offset. */
+const whereOf = (hit, mounting, mounted) => (ON_FOUNDATION.has(mounting) ? mountedFrom(hit, mounted) : { at: locationFrom(hit, { offset: OFFSET.signals }) })
+
+/**
+ * Where a gantry's or a bracket's screen stands — over the track or on a
+ * side, at an offset from its axis — and where its foundation does, each
+ * side seen in the direction the signal acts.
+ */
+function MountedFields({ value, onChange, t }) {
+  const set = (part, patch) => onChange({ ...value, [part]: { ...value[part], ...patch } })
+  const sides = [{ value: 'left', label: t('left') }, { value: 'right', label: t('right') }]
+  return <>
+    <Section title={t('screen_location')}>
+      <div className="ui-fields">
+        <SelectField compact label={t('side_along')} value={value.screen.side} empty={t('over_track')} options={sides} onChange={(v) => set('screen', { side: v ?? null })} />
+        <NumberField compact label={t('offset')} value={value.screen.side ? value.screen.offset : 0} min={0} disabled={!value.screen.side}
+          onChange={(v) => set('screen', { offset: v ?? 0 })} />
+      </div>
+    </Section>
+    <Section title={t('foundation_location')}>
+      <div className="ui-fields">
+        <SelectField compact label={t('side_along')} value={value.foundation.side} options={sides} onChange={(v) => set('foundation', { side: v ?? 'right' })} />
+        <NumberField compact label={t('offset')} value={value.foundation.offset} min={0} onChange={(v) => set('foundation', { offset: v ?? FOUNDATION_OFFSET })} />
+      </div>
+    </Section>
+    <p className="ui-muted">{t('mounted_hint')}</p>
+  </>
+}
+
 function MastPage({ place, noNet, created, t, language }) {
   const [name, setName] = useState('')
   const [mounting, setMounting] = useState('mast')
+  const [mounted, setMounted] = useState(MOUNTED)
   const [both, setBoth] = useState(false)
   return <>
     <div className="ui-fields">
@@ -83,8 +116,9 @@ function MastPage({ place, noNet, created, t, language }) {
       <SelectField compact label={t('mounting')} value={mounting} options={optionsOf(MOUNTING, language)} onChange={(v) => setMounting(v ?? 'mast')} />
       <div className="ui-wide"><Checkbox label={t('both_directions')} checked={both} onChange={setBoth} /></div>
     </div>
+    {ON_FOUNDATION.has(mounting) && <MountedFields value={mounted} onChange={setMounted} t={t} />}
     <PlaceButton t={t} disabled={noNet} onClick={() => place((hit) => ({
-      ...newSignal({ at: locationFrom(hit, { offset: OFFSET.signals }), name: name || undefined, mounting, bare: true }),
+      ...newSignal({ ...whereOf(hit, mounting, mounted), name: name || undefined, mounting, bare: true }),
       ...(both ? { bothDirections: true } : {}),
     }))} />
     {created}
@@ -129,16 +163,16 @@ function VirtualPage({ place, noNet, created, t, language }) {
  * mast set on the plan, or on a mast there is that shows nothing of that
  * system yet.
  */
-function LogicalPage({ domain, place, noNet, created, onAdded, t, language }) {
+function LogicalPage({ domain, net, place, noNet, created, onAdded, t, language }) {
   const [system, setSystem] = useState('ks')
   const firstType = (sys) => Object.keys(SIGNAL_CATALOGUE.systeme[sys]?.signalarten ?? {})[0]
   const [type, setType] = useState(firstType('ks'))
   const [fn, setFn] = useState('entry')
   const [where, setWhere] = useState('new')
-  const masts = domain.collections.signals
-    .filter(s => s.kind === 'real' && !(s.logicalSignals ?? []).some(l => l.system === system))
-    .map(s => ({ value: s.id, label: labelOf('signals', s, t) }))
-    .sort((a, b) => String(a.label).localeCompare(String(b.label), 'de', { numeric: true }))
+  const [mounting, setMounting] = useState('mast')
+  const [mounted, setMounted] = useState(MOUNTED)
+  const masts = signalOptions(net, domain.collections.signals
+    .filter(s => s.kind === 'real' && !(s.logicalSignals ?? []).some(l => l.system === system)), t)
   const [mastId, setMastId] = useState(null)
   const mast = masts.some(m => m.value === mastId) ? mastId : masts[0]?.value ?? null
   const make = () => newLogical({ system, type, fn })
@@ -153,10 +187,14 @@ function LogicalPage({ domain, place, noNet, created, onAdded, t, language }) {
       {where === 'mast' && (
         <SelectField compact wide label={t('location_of_signal')} value={mast} options={masts} onChange={setMastId} />
       )}
+      {where === 'new' && (
+        <SelectField compact wide label={t('mounting')} value={mounting} options={optionsOf(MOUNTING, language)} onChange={(v) => setMounting(v ?? 'mast')} />
+      )}
     </div>
+    {where === 'new' && ON_FOUNDATION.has(mounting) && <MountedFields value={mounted} onChange={setMounted} t={t} />}
     {where === 'new' ? (
       <PlaceButton t={t} disabled={noNet} onClick={() => place(
-        (hit) => ({ ...newSignal({ at: locationFrom(hit, { offset: OFFSET.signals }), bare: true }), logicalSignals: [make()] }),
+        (hit) => ({ ...newSignal({ ...whereOf(hit, mounting, mounted), mounting, bare: true }), logicalSignals: [make()] }),
         (s) => ({ collection: 'logicalSignals', id: logicalId(s.id, system), what: `${labelOf('signals', s, t)} · ${logicalSignalWord(s.logicalSignals[0], language)}` }),
       )} />
     ) : (

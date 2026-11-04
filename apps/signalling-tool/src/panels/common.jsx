@@ -45,7 +45,7 @@ export function LocationFields({ loc, onChange, net, t, directed = true, readOnl
 }
 
 /** The point in the plane a location gives, to the centimetre: easting, northing and the system. */
-function PlaneLine({ point, t }) {
+export function PlaneLine({ point, t }) {
   if (!point) return null
   const m = (v) => v.toFixed(2)
   return <p className="ui-wide ui-muted tool-plane">{t('plane_point', { e: m(point.easting), n: m(point.northing), epsg: point.epsg })}</p>

@@ -7,7 +7,7 @@ import {
   withLogical, withSignallingSpeed, withSwitchSpeeds,
 } from './domain.js'
 import { measuredOverlap, withMeasuredOverlap } from './overlaps.js'
-import { OFFSET, locationFrom, planePoint } from './places.js'
+import { OFFSET, foundationPoint, locationFrom, mountedFrom, planePoint, signalOptions, trackName } from './places.js'
 import { redo, startHistory, step, stepOf, stepsOf, travel, undo } from './history.js'
 
 const EPSG = 25832
@@ -59,6 +59,37 @@ describe('setting objects beside the track', () => {
     expect(p.epsg).toBe(EPSG)
     expect(planePoint(net, { anchor: 'station', trackId: 't1', station: 50, side: 'left', offset: 2 }).northing).toBeCloseTo(5700002, 6)
     expect(planePoint(net, { anchor: 'station', trackId: 'gone', station: 1 })).toBeNull()
+  })
+
+  it('sets a gantry\'s screen and foundation where they were asked, sides seen the way it acts', () => {
+    const asked = { screen: { side: null, offset: 0 }, foundation: { side: 'right', offset: 3.8 } }
+    // Hit on the right, it acts up: the screen over the track, the foundation on the right of the stationing.
+    expect(mountedFrom({ trackId: 't1', station: 50, side: 'right' }, asked))
+      .toEqual({ at: { anchor: 'station', trackId: 't1', station: 50, direction: 'up' }, foundation: { side: 'right', offset: 3.8 } })
+    // Hit on the left, it acts down: a screen on its right stands on the left of the stationing.
+    const down = mountedFrom({ trackId: 't1', station: 50, side: 'left' }, { ...asked, screen: { side: 'right', offset: 1.5 } })
+    expect(down.at).toEqual({ anchor: 'station', trackId: 't1', station: 50, direction: 'down', side: 'left', offset: 1.5 })
+    // Its foundation on its right, seen the way it acts, is north of t1 — left of the stationing.
+    const p = foundationPoint(net, { at: down.at, foundation: down.foundation })
+    expect(p.northing).toBeCloseTo(5700003.8, 6)
+    expect(foundationPoint(net, { at: down.at })).toBeNull()
+  })
+})
+
+describe('names', () => {
+  const named = { tracks: [{ ...track('t9', [0, 0], [10, 0]), name: 'koennern.1', lineNumber: '6344', trackNumber: '1' }, track('t8', [0, 0], [10, 0])] }
+  it('names a track as the Layout-Tool does, else by its line and number', () => {
+    expect(trackName(named, 't9')).toBe('koennern.1')
+    expect(trackName({ tracks: [{ ...named.tracks[0], name: undefined }] }, 't9')).toBe('6344 / 1')
+  })
+
+  it('leads a signal\'s name with its area\'s number, and offers it with its track', () => {
+    const t = (k) => k
+    const signals = [
+      { id: 'b', name: 'B', areaNumber: '21', kind: 'real', at: on('t9', 5) },
+      { id: 'a', name: 'A', kind: 'real', at: { anchor: 'plane', easting: 0, northing: 0, epsg: EPSG } },
+    ]
+    expect(signalOptions(named, signals, t)).toEqual([{ value: 'b', label: '21-B · koennern.1' }, { value: 'a', label: 'A' }])
   })
 })
 

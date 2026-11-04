@@ -56,7 +56,7 @@
       "enum": ["left", "right"]
     },
     "Signal": {
-      "description": "A signal's place at the track, the physical signal (PlanPro: Signal; OSRD: Signal), real or virtual. A real one stands at `at` and acts in its direction — or in both (`bothDirections`), on its mounting, seen from its sighting distances; what it is in each signalling system it shows are its logical signals, each with the frames it shows; the boards it carries of no system (Ne 1, Ra 12, mast plates, its name plate) are its own frames. A virtual one (PlanPro: Signal_Fiktiv) has neither: it marks where a route starts or ends without a signal there.",
+      "description": "A signal's place at the track, the physical signal (PlanPro: Signal; OSRD: Signal), real or virtual. A real one stands at `at` and acts in its direction — or in both (`bothDirections`), on its mounting — a gantry or a bracket on its `foundation` beside the track —, seen from its sighting distances; what it is in each signalling system it shows are its logical signals, each with the frames it shows; the boards it carries of no system (Ne 1, Ra 12, mast plates, its name plate) are its own frames. A virtual one (PlanPro: Signal_Fiktiv) has neither: it marks where a route starts or ends without a signal there.",
       "type": "object",
       "required": ["id", "kind", "at"],
       "additionalProperties": false,
@@ -97,6 +97,16 @@
         "mounting": {
           "description": "PlanPro Signal_Befestigungsart.",
           "enum": ["mast", "bracket", "gantry", "foundation", "special", "other"]
+        },
+        "foundation": {
+          "description": "Where the foundation of a signal on a gantry or a bracket stands, at the signal's station: its offset from the axis of the track the signal stands at and its side, seen in the direction the signal acts — so a track turned round, which turns the signal's direction, leaves it as it is (PlanPro Signal_Befestigung, its Fundament). The signal's own side and offset are its screen's, which the gantry or the bracket carries out over the track.",
+          "type": "object",
+          "required": ["offset"],
+          "additionalProperties": false,
+          "properties": {
+            "side": { "$ref": "core#/$defs/Side" },
+            "offset": { "type": "number", "minimum": 0 }
+          }
         },
         "sight": {
           "description": "The distances from which the signal must, at least, and can be seen [m] (PlanPro Signalsicht_Soll, _Mindest, _Erreichbar).",

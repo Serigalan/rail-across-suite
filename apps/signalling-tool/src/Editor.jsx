@@ -231,7 +231,8 @@ export default function Editor({ project, variant, head, copy: opened, readOnly 
   }, [selection, readOnly])
   // What the keys do, as it is now.
   const keys = useRef(null)
-  keys.current = { undo: undoNow, redo: redoNow, escape: () => (mode ? setMode(null) : draft && cancel()) }
+  // A mode a page holds while it is open (sticky) is not ended by Esc: Esc drops the draft there.
+  keys.current = { undo: undoNow, redo: redoNow, escape: () => (mode && !mode.sticky ? setMode(null) : draft && cancel()) }
 
   // Placing or picking points is done on the site plan.
   useEffect(() => { if (mode) chooseView('plan') }, [mode])
@@ -407,7 +408,7 @@ export default function Editor({ project, variant, head, copy: opened, readOnly 
         {mode && (
           <div className="tool-mode" role="status">
             <span>{mode.hint ?? t(mode.kind === 'pick-points' ? 'picking_points' : 'placing')}</span>
-            <Button size="small" onClick={() => setMode(null)}>{mode.kind === 'pick-points' ? t('close') : t('cancel')}</Button>
+            {!mode.sticky && <Button size="small" onClick={() => setMode(null)}>{mode.kind === 'pick-points' ? t('close') : t('cancel')}</Button>}
           </div>
         )}
         {view === 'schema' && (

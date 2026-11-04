@@ -7,19 +7,23 @@ import { baliseKindOptions, baliseWord, effectOptions } from '../labels.js'
 import { BaliseIcon, SignalIcon } from '../icons.jsx'
 import { CheckList, Created } from './common.jsx'
 import { magnetsDue, signalMagnet } from '../model/magnets.js'
-import { OFFSET, locationFrom, pickingSignal, placing, signalOptions as signalChoices } from '../model/places.js'
+import { OFFSET, locationFrom, pickingSignal, signalOptions as signalChoices } from '../model/places.js'
+import { useFields, useSetting } from './useSetting.js'
 
 /**
  * Creating balises and magnets: a page per train protection system the
  * catalogue declares (PZB, ETCS), which takes the kind, how it acts and the
- * signal it belongs to, then a click on the plan sets it — with the settings
- * its kind asks, to be told in its editor (Bearbeiten). The page stays, for
- * the next one. Signals can be equipped with magnets all at once, each its
+ * signal it belongs to; while it is open a click on the plan sets it, as a
+ * preview till it is committed (useSetting) — with the settings its kind
+ * asks, to be told in its editor (Bearbeiten). Signals can be equipped with magnets all at once, each its
  * own at its place (magnets.js).
  */
-export default function BalisesPanel({ domain, net, ops, select, setMode, t, language }) {
+export default function BalisesPanel({ domain, net, ops, select, mode, setMode, pending, t, language }) {
   const [system, setSystem] = useState(null)
-  const [made, setMade] = useState(null)
+  const { made, setMade, offer, remake } = useSetting({
+    collection: 'balises', active: !!system && system !== 'equip' && net.tracks.length > 0,
+    mode, setMode, ops, pending, hints: ['place_balise', 'place_balise_move'], t,
+  })
   const go = (next) => { setMade(null); setSystem(next) }
   const systems = Object.keys(SIGNAL_CATALOGUE.zugbeeinflussung.systeme)
   const back = { label: t('back'), onClick: () => go(null) }
@@ -35,11 +39,7 @@ export default function BalisesPanel({ domain, net, ops, select, setMode, t, lan
   if (system) {
     return (
       <Panel title={t('create_balise', { system: protectionSystemOf(system).name })} intro={t('create_balise_intro')} back={back}>
-        <BalisePage key={system} system={system} domain={domain} net={net} setMode={setMode} t={t} language={language}
-          onPlace={(make) => setMode(placing('balises', make, (b) => {
-            ops.add('balises', b)
-            setMade({ id: b.id, what: [b.name, baliseWord(b, language, t)].filter(Boolean).join(' · ') })
-          }))} />
+        <BalisePage key={system} system={system} domain={domain} net={net} setMode={setMode} offer={offer} remake={remake} t={t} language={language} />
         <Created what={made?.what} t={t} onEdit={() => select({ collection: 'balises', id: made.id })} />
       </Panel>
     )
@@ -60,36 +60,34 @@ export default function BalisesPanel({ domain, net, ops, select, setMode, t, lan
   )
 }
 
-function BalisePage({ system, domain, net, setMode, onPlace, t, language }) {
+/** The kind of a balise or magnet, how it acts, the signal it belongs to and its name; the signal picked in the list or on the plan. */
+function BalisePage({ system, domain, net, setMode, offer, remake, t, language }) {
   const kinds = baliseKindOptions(system, language)
-  const [kind, setKind] = useState(kinds[0]?.value)
-  const [effect, setEffect] = useState(system === 'pzb' ? 'switchedBySignal' : 'permanent')
-  const [signalId, setSignalId] = useState(null)
-  const [name, setName] = useState('')
+  const makeOf = ({ kind, effect, signalId, name }) => (hit) => ({
+    ...newBalise({ at: locationFrom(hit, { offset: OFFSET.balises }), system, kind, effect, signalId: signalId ?? undefined }),
+    ...(name ? { name } : {}),
+  })
+  const [f, set] = useFields({ kind: kinds[0]?.value, effect: system === 'pzb' ? 'switchedBySignal' : 'permanent', signalId: null, name: '' }, remake, makeOf)
+  offer(makeOf(f), baliseMade(t, language))
   const real = domain.collections.signals.filter(s => s.kind === 'real')
   const signalOptions = signalChoices(net, real, t)
   return <>
     <div className="ui-fields">
-      <SelectField compact wide label={t('kind')} value={kind} options={kinds} onChange={setKind} />
-      <SelectField compact wide label={t('effect')} value={effect} options={effectOptions(language)} onChange={setEffect} />
-      <SelectField compact wide label={t('belongs_to')} value={signalId} empty={t('none')} options={signalOptions} onChange={setSignalId} />
+      <SelectField compact wide label={t('kind')} value={f.kind} options={kinds} onChange={(kind) => set({ kind })} />
+      <SelectField compact wide label={t('effect')} value={f.effect} options={effectOptions(language)} onChange={(effect) => set({ effect })} />
+      <SelectField compact wide label={t('belongs_to')} value={f.signalId} empty={t('none')} options={signalOptions} onChange={(signalId) => set({ signalId })} />
       <div className="ui-wide ui-row">
         <Button size="small" disabled={!real.length}
-          onClick={() => setMode(pickingSignal(real, t, (id) => { setSignalId(id); setMode(null) }))}>{t('pick_signal_on_plan')}</Button>
+          onClick={() => setMode(pickingSignal(real, t, (id) => { set({ signalId: id }); setMode(null) }))}>{t('pick_signal_on_plan')}</Button>
       </div>
-      <TextField compact wide label={t('name')} value={name} onChange={setName} />
+      <TextField compact wide label={t('name')} value={f.name} onChange={(name) => set({ name })} />
     </div>
-    <div className="ui-row">
-      <Button variant="primary" disabled={!net.tracks.length}
-        onClick={() => onPlace((hit) => ({
-          ...newBalise({ at: locationFrom(hit, { offset: OFFSET.balises }), system, kind, effect, signalId: signalId ?? undefined }),
-          ...(name ? { name } : {}),
-        }))}>
-        {t('place_on_map')}
-      </Button>
-    </div>
+    {!net.tracks.length && <p className="ui-muted">{t('empty_net')}</p>}
   </>
 }
+
+/** What a balise or magnet set is called, and the way to its editor. */
+const baliseMade = (t, language) => (b) => ({ collection: 'balises', id: b.id, what: [b.name, baliseWord(b, language, t)].filter(Boolean).join(' · ') })
 
 /**
  * Equipping the signals with magnets: those that ask for one and have none,

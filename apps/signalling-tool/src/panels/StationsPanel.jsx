@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
-import { Button, ConfirmDialog, GroupedList, Option, Options, OptionsHeading, Panel, PlusIcon, Section, SelectField, TextField } from '@rail-across/ui'
+import { Button, ConfirmDialog, GroupedList, Option, Options, OptionsHeading, PlusIcon, Section, SelectField, TextField } from '@rail-across/ui'
+import { Panel } from './draft.jsx'
 import { designationOf } from '../model/domain.js'
 import {
   boundaryOf, entryMarks, nameTaken, newStation, stationName, stationsOf, withBoundary, withPlatforms, withSignals, withStation, withoutStation,

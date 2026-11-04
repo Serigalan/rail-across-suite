@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import {
-  Badge, Button, Checkbox, GroupedList, NumberField, Option, Options, OptionsDivider, OptionsHeading, Panel, PlusIcon, Section, SelectField, TextField,
+  Badge, Button, Checkbox, GroupedList, NumberField, Option, Options, OptionsDivider, OptionsHeading, PlusIcon, Section, SelectField, TextField,
 } from '@rail-across/ui'
+import { Panel } from './draft.jsx'
 import { branchSpeedOnRun, signallingSpeedOf } from '@rail-across/core/signalling'
 import {
   added, designationOf as signalDesignation, newId, labelOf, logicalId, withRouteSpeed, withSwitchSpeeds,

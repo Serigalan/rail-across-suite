@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import {
-  Badge, Button, Checkbox, GroupedList, Option, Options, OptionsDivider, OptionsHeading, Panel, PlusIcon, Section, SelectField, TextField,
+  Badge, Button, Checkbox, GroupedList, Option, Options, OptionsDivider, OptionsHeading, PlusIcon, Section, SelectField, TextField,
 } from '@rail-across/ui'
+import { Panel } from './draft.jsx'
 import { newId, labelOf, hasScreen } from '../model/domain.js'
 import { OPERATION, optionsOf, word } from '../labels.js'
 import { DerailerIcon, SwitchIcon } from '../icons.jsx'

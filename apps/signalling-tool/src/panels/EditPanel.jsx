@@ -1,4 +1,5 @@
-import { Badge, GroupedList, Panel } from '@rail-across/ui'
+import { Badge, GroupedList } from '@rail-across/ui'
+import { Panel } from './draft.jsx'
 import { protectionSystemOf, titleIn } from '@rail-across/core/signalling'
 import { findLogical, hasScreen, labelOf } from '../model/domain.js'
 import { POINT_KIND, SECTION_KIND, VIRTUAL_FUNCTION, baliseWord, logicalSignalWord, word } from '../labels.js'

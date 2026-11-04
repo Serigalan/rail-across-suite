@@ -1,4 +1,5 @@
-import { Badge, Message, Panel, Section } from '@rail-across/ui'
+import { Badge, Message, Section } from '@rail-across/ui'
+import { Panel } from './draft.jsx'
 import { labelOf, logicalId } from '../model/domain.js'
 import { findingText } from '../labels.js'
 

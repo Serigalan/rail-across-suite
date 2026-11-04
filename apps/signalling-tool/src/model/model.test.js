@@ -8,7 +8,7 @@ import {
 } from './domain.js'
 import { measuredOverlap, withMeasuredOverlap } from './overlaps.js'
 import { OFFSET, foundationPoint, locationFrom, mountedFrom, planePoint, signalOptions, trackName } from './places.js'
-import { redo, startHistory, step, stepOf, stepsOf, travel, undo } from './history.js'
+import { changedIds, redo, startHistory, step, stepOf, stepsOf, travel, undo } from './history.js'
 
 const EPSG = 25832
 const P = (x, y = 0) => ({ easting: 500000 + x, northing: 5700000 + y, zone: EPSG })
@@ -230,5 +230,15 @@ describe('editing the domain', () => {
     h = travel(h, 1)
     expect(h.now).toBe(d)
     expect(travel(h, 5).now).toBe(states[2])
+  })
+
+  it('says what a draft holds new or changed, for the plan to draw as a preview', () => {
+    let d = emptyDomain()
+    d = added(d, 'signals', { id: 'a', kind: 'real', name: 'A', at: on('t1', 20) })
+    d = added(d, 'signals', { id: 'n', kind: 'real', name: 'N1', at: on('t2', 80) })
+    const draft = added({ ...d, collections: { ...d.collections, signals: [{ ...d.collections.signals[0], name: 'B' }, d.collections.signals[1]] } },
+      'balises', { id: 'p', at: on('t1', 20), system: 'pzb', kind: 'magnet' })
+    expect([...changedIds(d, draft)]).toEqual(['a', 'p'])
+    expect(changedIds(d, deleted(d, 'signals', 'n')).size).toBe(0)
   })
 })

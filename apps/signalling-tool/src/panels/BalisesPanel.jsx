@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Button, Option, Options, Panel, SelectField, TextField } from '@rail-across/ui'
+import { Button, Option, Options, SelectField, TextField } from '@rail-across/ui'
+import { Panel } from './draft.jsx'
 import { SIGNAL_CATALOGUE, protectionSystemOf, titleIn } from '@rail-across/core/signalling'
 import { newBalise } from '../model/domain.js'
 import { baliseKindOptions, baliseWord, effectOptions } from '../labels.js'

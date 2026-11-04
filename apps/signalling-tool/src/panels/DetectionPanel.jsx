@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Button, Option, Options, Panel, SelectField, TextField } from '@rail-across/ui'
+import { Button, Option, Options, SelectField, TextField } from '@rail-across/ui'
+import { Panel } from './draft.jsx'
 import { labelOf, newId } from '../model/domain.js'
 import { POINT_KIND, SECTION_KIND, optionsOf } from '../labels.js'
 import { DetectionIcon, SectionIcon } from '../icons.jsx'

@@ -40,7 +40,7 @@ const zoomed = (z) => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, z))
 /** Which way, on the screen, a side of a track lies: 1 below, -1 above, 0 on it. */
 const sideY = (side, dir) => (side === 'left' ? -dir : side === 'right' ? dir : 0)
 
-export default function SchematicView({ net, platforms, domain, selection, highlight, onPick, fitKey, focus, t }) {
+export default function SchematicView({ net, platforms, domain, selection, highlight, pending, onPick, fitKey, focus, t }) {
   const box = useRef(null)
   const [size, setSize] = useState(null)   // the box's, once measured
   const [view, setView] = useState(null)   // { z: the zoom [px/unit], tx, ty: where the drawing's origin is [px] }
@@ -261,7 +261,7 @@ export default function SchematicView({ net, platforms, domain, selection, highl
           </g>
           <g className="schema-marks">
             {marks.map(mk => (
-              <Mark key={`${mk.collection}:${mk.obj.id}`} mk={mk} at={symbolAt(mk)} sel={isSel(mk.collection, mk.obj.id)} t={t} />
+              <Mark key={`${mk.collection}:${mk.obj.id}`} mk={mk} at={symbolAt(mk)} sel={isSel(mk.collection, mk.obj.id)} drafted={!!pending?.has(mk.obj.id)} t={t} />
             ))}
           </g>
         </g>
@@ -302,11 +302,11 @@ function Highlight({ highlight, strip, place, pts }) {
   )
 }
 
-/** One object in its symbol, in the primary colour when chosen; a signal's name beyond its screen. */
-function Mark({ mk, at: [x, y], sel, t }) {
-  const fg = sel ? 'var(--color-primary)' : 'var(--plan-mark)'
+/** One object in its symbol, in the primary colour when chosen or drafted (a preview); a signal's name beyond its screen. */
+function Mark({ mk, at: [x, y], sel, drafted, t }) {
+  const fg = sel || drafted ? 'var(--color-primary)' : 'var(--plan-mark)'
   const bg = 'var(--ui-surface)'
-  const cls = `schema-mark${sel ? ' is-selected' : ''}`
+  const cls = `schema-mark${sel || drafted ? ' is-selected' : ''}${drafted ? ' is-pending' : ''}`
   if (mk.collection === 'signals') {
     const name = mk.obj.name ? labelOf('signals', mk.obj, t) : null
     const len = symbolLength(mk.symbol)

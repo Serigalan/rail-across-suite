@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Button, Field, Message, Option, Options, OptionsHeading, Panel, Section, UploadIcon } from '@rail-across/ui'
+import { Button, Field, Message, Option, Options, OptionsHeading, Section, UploadIcon } from '@rail-across/ui'
+import { Panel } from './draft.jsx'
 import { ImportIcon } from '../icons.jsx'
 
 /**

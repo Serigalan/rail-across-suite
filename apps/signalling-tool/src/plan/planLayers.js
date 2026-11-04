@@ -165,9 +165,10 @@ function markFeatures(marks, { isSelected, names, t }) {
  * The plan's data, one FeatureCollection per source: { tracks, places,
  * marked, switches, marks, preview }, and the labels' texts whose icons it
  * needs. `highlight.ways` are ways found, along the tracks the way they run,
- * the strong one with arrows; `stretch` is the stretch a pick would take.
+ * the strong one with arrows; `stretch` is the stretch a pick would take;
+ * `pending` the ids of what is drafted and not committed, drawn as a preview.
  */
-export function planData({ drawing, places, marks, switches, selection, highlight, preview, stretch, snap, t }) {
+export function planData({ drawing, places, marks, switches, selection, highlight, pending, preview, stretch, snap, t }) {
   const isSel = (collection, id) => selection?.collection === collection && selection.id === id
   const lineOf = (pts) => pts.map(p => drawing.frame.toLngLat(p))
   const tracks = [...drawing.tracks.values()].map(tr => feature(line(lineOf(tr.line)), { id: tr.id }))
@@ -179,6 +180,7 @@ export function planData({ drawing, places, marks, switches, selection, highligh
       return feature(line(p.from > p.to ? lls.reverse() : lls), { kind: 'way', strong: !!w.strong })
     })),
   ].filter(f => f.geometry.coordinates.length > 1)
+  const drafted = (mk) => !!pending?.has(mk.obj.id)
   const shown = marks.filter(mk => !(preview && mk.obj.id === preview.obj.id))
   const markSel = (mk) => isSel(mk.collection, mk.obj.id) || !!highlight?.ids?.includes(mk.obj.id)
   const data = {
@@ -189,15 +191,16 @@ export function planData({ drawing, places, marks, switches, selection, highligh
     ])),
     marked: collection(marked),
     switches: collection(switches.map(s => feature(point(s.ll), { id: s.id, sel: isSel('switches', s.id) }))),
-    marks: collection(markFeatures(shown, { isSelected: markSel, names: true, t })),
+    marks: collection(markFeatures(shown.filter(mk => !drafted(mk)), { isSelected: markSel, names: true, t })),
     preview: collection([
       ...(snap ? [feature(point(snap), { kind: 'snap' })] : []),
       ...(stretch ? [feature(line(lineOf(stretchLine(drawing, stretch.trackId, stretch.from, stretch.to))), { kind: 'stretch' })]
         .filter(f => f.geometry.coordinates.length > 1) : []),
+      ...markFeatures(shown.filter(drafted), { isSelected: () => true, names: true, t }),
       ...(preview ? markFeatures([preview], { isSelected: () => true, names: false, t }) : []),
     ]),
   }
-  const labels = [...data.marks.features, ...data.places.features].filter(f => f.properties.kind === 'label').map(f => f.properties.icon)
+  const labels = [...data.marks.features, ...data.places.features, ...data.preview.features].filter(f => f.properties.kind === 'label').map(f => f.properties.icon)
   return { data, labels }
 }
 
@@ -404,16 +407,14 @@ export function addPlanLayers(map, pal, data, nameZoom) {
       paint: { 'circle-radius': 4, 'circle-color': 'rgba(0,0,0,0)', 'circle-stroke-color': pal.primary, 'circle-stroke-width': 2 } },
   ]
   for (const layer of layers) map.addLayer(layer)
-  map.setLayerZoomRange('plan-marks-labels', nameZoom, 24)
-  map.setLayerZoomRange('plan-place-labels', nameZoom, 24)
+  for (const id of ['plan-marks-labels', 'plan-preview-labels', 'plan-place-labels']) map.setLayerZoomRange(id, nameZoom, 24)
 }
 
 /** The plan's data on its sources, the names' zoom on their layer, the colours on the layers' paint. */
 export function setPlanData(map, pal, data, nameZoom) {
   if (!map.getSource(SRC.tracks)) return
   for (const [k, id] of Object.entries(SRC)) map.getSource(id).setData(data[k])
-  map.setLayerZoomRange('plan-marks-labels', nameZoom, 24)
-  map.setLayerZoomRange('plan-place-labels', nameZoom, 24)
+  for (const id of ['plan-marks-labels', 'plan-preview-labels', 'plan-place-labels']) map.setLayerZoomRange(id, nameZoom, 24)
   map.setPaintProperty('plan-tracks', 'line-color', pal.track)
   map.setPaintProperty('plan-runs', 'line-color', pal.primary)
   map.setPaintProperty('plan-ways', 'line-color', pal.primary)

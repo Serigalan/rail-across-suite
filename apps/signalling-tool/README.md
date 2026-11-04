@@ -21,7 +21,7 @@ The rail, from the top, in groups the gray line parts:
 | Section | Its menu and pages |
 |---|---|
 | Kartenebenen | the map under the plan, first in the rail as in the Layout-Tool: the suite's basemaps as the Layout-Tool offers them ([`@rail-across/basemaps`](../../packages/basemaps/README.md)) — OpenStreetMap, satellite, relief, basemap.de, DGM5, the states' orthophotos — or the plan alone; the choice is kept in the browser |
-| **Signale** | creating signals: *Signalmast erstellen* — the physical signal, its name, mounting, both directions; on a gantry or a bracket where its screen and its foundation stand (*Lage Signalschirm*, *Lage Signalfundament*: a side seen the way it acts, an offset from the axis); bare, its logical signals come after —, *Tafel erstellen* — a board of no system on a post of its own (Ne 1, Lf 7, Ra 10 …) —, *Logisches Signal erstellen* — system, kind, function, on a new mast set on the plan or added to a mast there is, its screen showing what the kind asks —, *Fiktives Signal erstellen* |
+| **Signale** | creating signals: *Signalmast erstellen* — the physical signal, its name, mounting, both directions; on a gantry or a bracket where its screen and its foundation stand (*Lage Signalschirm*, *Lage Signalfundament*: a side seen the way it acts, an offset from the axis); bare, its logical signals come after —, *Tafel erstellen* — a board of no system on a post of its own (Ne 1, Lf 7, Ra 10 …) —, *Logisches Signal erstellen* — system, kind, function, on a new mast set on the plan, whose fields (*Neuer Signalmast*) the page asks as the mast's page does, or added to a mast there is, its screen showing what the kind asks —, *Fiktives Signal erstellen* |
 | **Gleisfreimeldung** | creating train detection: *Freimeldepunkt setzen* of a kind; *Freimeldeabschnitt erstellen*, which opens it in its editor with its points to be clicked on the plan |
 | **Balisen/Magnete** | creating balises and magnets: a page per system the catalogue declares (PZB, ETCS) with kind, effect and the signal it belongs to — chosen in the list, or clicked on the plan (*In der Karte wählen*), as in its editor |
 | **Bearbeiten** | editing all that the three create: an overview as the Layout-Tool lists its tracks — the signal masts under main, distant and shunting signals, boards, masts without a signal and virtual signals; track sections and detection points; balises and magnets per system — each group folding away with its count, a search over all. A click, here or on the plan, opens the object in its editor: a signal mast — where it stands, its mounting and sighting, the boards it carries, its logical signals, each opened from it —; a logical signal, as OSRD has it — its mast, kind and function, its screen (what its kind may show, what it must marked) and indicators from the catalogue of Ril 301, the systems it announces, the speed it signals for each route from its mast (signallingSpeed; the design speed, designSpeed, is set on the track in the Layout-Tool) —; a detection point; a track section, bounded by its points, its extent derived over the net and drawn; a balise or magnet with the settings the catalogue declares for its kind — frequency, test speed, place in the group … |
@@ -34,6 +34,14 @@ The rail, from the top, in groups the gray line parts:
 
 A page that creates stays when the thing is set, for the next one, and offers to edit the one set
 (*Bearbeiten*). Where it only looks, the tool opens at *Bearbeiten* and offers nothing to create.
+
+Every change is first a draft, as in the Layout-Tool's dialogs: every panel that changes something has
+*Abbrechen* and *Bestätigen* at its foot, with what is not confirmed yet said above them. Till then the plan and
+the schematic view draw what the draft sets or changes as a preview — faint, in the primary colour —, the check
+runs on it, and nothing of it is in the working copy. A signal just set on the plan follows the fields of its
+page while it is a preview: a name, a mounting, where its foundation stands, changed there, change it.
+*Bestätigen* makes the draft one step; *Abbrechen*, undo or Esc drop it. Updating and checking in wait until
+the draft is confirmed or dropped, and leaving the page with one asks first.
 
 Setting an object works as in OSRD's editor: the mouse snaps to the nearest track within reach, and what would
 be set is drawn there before the click — a signal two metres off the track on the side the mouse is, acting so
@@ -68,11 +76,12 @@ sight. A drag moves.
 
 Every text is German or English, the catalogue's titles too, in the language of the suite (*Einstellungen*).
 
-Every edit is a step (Ctrl+Z, Ctrl+Y); Delete asks before it deletes, and names what goes with it.
+Every confirmed draft is a step (Ctrl+Z, Ctrl+Y); Delete asks before it deletes, and names what goes with it —
+the deletion is a draft too.
 
 ## The working copy
 
-What is changed is kept at once in the variant's working copy in this browser — the one the Layout-Tool works
+What is confirmed is kept at once in the variant's working copy in this browser — the one the Layout-Tool works
 on too ([`@rail-across/working-copy`](../../packages/working-copy/README.md)) —, never only in the page. Leaving
 the tool asks nothing: the changes stay in the copy, the top bar says how many there are, and the suite's start
 page says so at the variant. Opening the variant again, in this tool or the Layout-Tool, opens the copy. Its bar
@@ -99,7 +108,7 @@ the whole project with its signalling: the tool hands those addresses on to it. 
 | `src/Editor.jsx` | the shell: sections, selection, steps, the check, the working copy, checking in, updating, discarding |
 | `src/plan/` | the site plan: the net in its true position on a MapLibre map (north up), drawn as its layers; the symbols, picking and placing |
 | `src/schema/` | the schematic view: the core's strip with the symbols of a signalling plan (`planzeichen.jsx`, which symbol an object takes in `symbols.js`), picking |
-| `src/panels/` | one panel per section, its menu and pages; `editors/` the editors of what *Bearbeiten* edits |
+| `src/panels/` | one panel per section, its menu and pages; `editors/` the editors of what *Bearbeiten* edits; `draft.jsx` the panel with *Abbrechen* and *Bestätigen* at its foot |
 | `src/model/` | the drawing of the net and finding a place on it (`net.js`), runs over it (`runs.js`), editing the domain — places and their logical signals (`domain.js`), measuring overlaps (`overlaps.js`), steps (`history.js`), reading a PlanPro file (`planproFile.js`) |
 | `src/i18n.js`, `src/labels.js` | texts in German and English, the words for the domain's values and the check's findings |
 

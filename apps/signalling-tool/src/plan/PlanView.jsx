@@ -21,7 +21,8 @@ import {
  * draws the basemap in; a symbol keeps its size in pixels, so it stays
  * readable at every zoom. A click picks what is nearest. While placing, as in OSRD's
  * editor, the mouse snaps to the nearest track within reach and the object is
- * drawn there before the click sets it. Picking a stretch — a stopping place
+ * drawn there before the click sets it; once set it stays a preview, faint
+ * in the primary colour, until it is committed. Picking a stretch — a stopping place
  * where the signals bound it, or its two ends —, the mouse snaps to a track
  * the same way and what the click would take is drawn dashed; picking a
  * stopping place takes the one clicked, picking a signal — a magnet's — the
@@ -36,7 +37,7 @@ export const NO_BASEMAP = 'none'
 const styleOf = (basemapId) => (basemapId === NO_BASEMAP ? PLAIN : findBasemap(basemapId)?.style ?? PLAIN)
 
 export default function PlanView({
-  hidden, drawing, net, domain, selection, highlight, mode, onPick, onPlace, onPickPoint, onPickStretch, onPickPlace, onPickSignal, fitKey, focus, basemap, t,
+  hidden, drawing, net, domain, selection, highlight, pending, mode, onPick, onPlace, onPickPoint, onPickStretch, onPickPlace, onPickSignal, fitKey, focus, basemap, t,
 }) {
   const box = useRef(null)
   const mapBox = useRef(null)
@@ -239,14 +240,14 @@ export default function PlanView({
     if (!m || !box.current) return
     const pal = paletteOf(box.current)
     const snap = preview?.on ?? (stretch && hover ? drawing.frame.toLngLat(placeOf(drawing, hover).xy) : null)
-    const { data, labels } = planData({ drawing, places, marks, switches, selection, highlight, preview, stretch, snap, t })
+    const { data, labels } = planData({ drawing, places, marks, switches, selection, highlight, pending, preview, stretch, snap, t })
     const nameZoom = nameZoomAt(drawing.frame.toLngLat([0, 0])[1])
     plan.current = { pal, data, labels, nameZoom }
     if (!styled.current) return   // style.load puts them on
     ensureImages(m, pal, labels)
     if (m.getSource('plan-tracks')) setPlanData(m, pal, data, nameZoom)
     else addPlanLayers(m, pal, data, nameZoom)
-  }, [m, drawing, places, marks, switches, selection, highlight, preview, stretch, hover, t, scheme])
+  }, [m, drawing, places, marks, switches, selection, highlight, pending, preview, stretch, hover, t, scheme])
 
   return (
     <div ref={box} className={`plan${hidden ? ' is-hidden' : ''}`}>

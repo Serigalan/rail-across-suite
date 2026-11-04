@@ -66,6 +66,14 @@ describe('the Signalling-Tool', () => {
     expect(html).toContain('Einchecken')
   })
 
+  it('has Cancel and Commit at the foot of a panel that changes something, locked while nothing is drafted', () => {
+    const html = render()
+    expect(html).toContain('<div class="ui-panel-foot"><div class="tool-commit">')
+    expect(html).toContain('Keine offenen Änderungen')
+    expect(html).toMatch(/<button type="button" class="ui-btn ui-btn-primary" disabled="" title="Keine offenen Änderungen">Bestätigen<\/button>/)
+    expect(render({ readOnly: true })).not.toContain('tool-commit')
+  })
+
   it('names its rail as the Layout-Tool does: the signal and the tool, the history, the way to the infrastructure editor', () => {
     const html = render()
     expect(html).toContain('<span class="ui-rail-brand-name">Signalling-Tool</span>')

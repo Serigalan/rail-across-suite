@@ -35,7 +35,11 @@ html, body { margin: 0; background: var(--ui-surface); }
 }
 .schema:active { cursor: grabbing; }
 .schema-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-.schema-track { fill: none; stroke: var(--plan-track); stroke-width: 2; stroke-linecap: round; }
+/* The schema zooms as a whole, its lines with it; a track only down to a hairline, so the net stays in sight. */
+.schema-track {
+  fill: none; stroke: var(--plan-track); stroke-linecap: round;
+  vector-effect: non-scaling-stroke; stroke-width: max(0.8px, calc(2px * var(--schema-zoom, 1)));
+}
 .schema-wedge { fill: var(--plan-track); }
 .schema-platform { fill: var(--ui-bg); stroke: var(--plan-track); stroke-width: 0.8; }
 .schema-switch { fill: var(--plan-track); }

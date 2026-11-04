@@ -61,7 +61,10 @@ acts, its top towards the mast; axle counters and joints on the track,
 PZB magnets beside the rail with their frequency, ETCS data points on it, filled where they are switched.
 
 The schematic view shows, picks, highlights and is edited from as the site plan is; setting anew is the site
-plan's, which it switches to. The wheel zooms along the lanes, which keep their spacing; a drag moves.
+plan's, which it switches to. It has one scale both ways — a metre along the lanes a pixel at 100 %, the lanes
+52 apart, every symbol and text its size — and the wheel zooms it as a whole: zoomed out, all of it is smaller
+together, the lanes, the symbols and the names with the length; only a track keeps a hairline, so the net stays in
+sight. A drag moves.
 
 Every text is German or English, the catalogue's titles too, in the language of the suite (*Einstellungen*).
 

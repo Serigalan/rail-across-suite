@@ -10,7 +10,7 @@ import { measuredOverlap, withMeasuredOverlap } from './overlaps.js'
 import { OFFSET, foundationPoint, kmName, kmNameAt, locationFrom, mountedFrom, planePoint, signalOptions, trackName } from './places.js'
 import { magnetFrequency, magnetName, magnetsDue, signalMagnet, withSignal } from './magnets.js'
 import { detectionLayout, wantedPoints } from './detectionLayout.js'
-import { nextSignals, routeSections, routeStretches } from './routeSearch.js'
+import { nextSignals, routeSections, routeStretches, runStretches, wayPieces } from './routeSearch.js'
 import { trackSectionExtents } from '@rail-across/core/signalling'
 import { changedIds, redo, startHistory, step, stepOf, stepsOf, travel, undo } from './history.js'
 
@@ -293,6 +293,9 @@ describe('editing the domain', () => {
 
     const route = { startSignalId: 'a', targetSignalId: 'n', path: { trackIds: ['t1', 't2'] } }
     expect(routeStretches(net, route, d.collections.signals)).toEqual([{ trackId: 't1', lo: 20, hi: 200, direction: 'up' }, { trackId: 't2', lo: 0, hi: 80, direction: 'up' }])
+    // Drawn from signal to signal, each piece the way it is run: the other way too.
+    expect(wayPieces(routeStretches(net, route, d.collections.signals))).toEqual([{ trackId: 't1', from: 20, to: 200 }, { trackId: 't2', from: 0, to: 80 }])
+    expect(wayPieces(runStretches(net, on('t2', 80, 'down'), ['t2', 't1'], on('t1', 20, 'down')))).toEqual([{ trackId: 't2', from: 80, to: 0 }, { trackId: 't1', from: 200, to: 20 }])
     const laid = detectionLayout(net, d, { t: (k) => k })
     d = { ...d, collections: { ...d.collections, detectionPoints: laid.points, trackSections: laid.sections } }
     const extents = trackSectionExtents({ core: { collections: net }, signalling: d })

@@ -14,6 +14,7 @@ import { freshCopy, keepCopy } from './workingCopy.js'
 import { netDrawing } from './model/net.js'
 import { added, cascadeOf, deleted, domainOf, findLogical, labelOf, recordOf, replaced, signallingOf, withSignalling } from './model/domain.js'
 import { waysBetween } from './model/itineraries.js'
+import { routeStretches, runStretches, wayPieces } from './model/routeSearch.js'
 import { logicalSignalWord } from './labels.js'
 import { changedIds, redo, startHistory, step, stepOf, stepText, travel, undo } from './model/history.js'
 import { DraftContext } from './panels/draftContext.js'
@@ -510,12 +511,14 @@ function highlightOf(domain, net, selection, extents) {
     case 'routes': {
       const r = find('routes')
       if (!r) return null
-      const overlapRuns = (r.overlaps ?? []).flatMap(o => c.overlaps.find(x => x.id === o.overlapId)?.path.trackIds ?? [])
-      return { runs: r.path.trackIds, stretches: [], ids: [r.startSignalId, r.targetSignalId], overlapRuns }
+      // From signal to signal, the way it runs; its overlaps beyond, fainter.
+      const overlapWays = (r.overlaps ?? []).map(o => c.overlaps.find(x => x.id === o.overlapId)).filter(Boolean)
+        .map(o => ({ pieces: wayPieces(runStretches(net, c.signals.find(s => s.id === o.signalId)?.at, o.path.trackIds, o.end)) }))
+      return { ways: [{ pieces: wayPieces(routeStretches(net, r, c.signals)), strong: true }, ...overlapWays], ids: [r.startSignalId, r.targetSignalId] }
     }
     case 'overlaps': {
       const o = find('overlaps')
-      return o ? { runs: o.path.trackIds, ids: [o.signalId] } : null
+      return o ? { ways: [{ pieces: wayPieces(runStretches(net, c.signals.find(s => s.id === o.signalId)?.at, o.path.trackIds, o.end)), strong: true }], ids: [o.signalId] } : null
     }
     case 'trackSections': {
       const s = find('trackSections')

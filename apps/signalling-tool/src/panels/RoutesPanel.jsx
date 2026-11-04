@@ -16,7 +16,7 @@ import { ItineraryEditor, ItineraryList, ItinerarySearch } from './Itineraries.j
 import { CheckList, EditorHead, ObjectFindings } from './common.jsx'
 import { aspectText, pickingSignal, signalOptions as signalChoices, trackName } from '../model/places.js'
 import { isMainSignal } from '../model/itineraries.js'
-import { nextSignals, routeSections } from '../model/routeSearch.js'
+import { nextSignals, routeSections, routeStretches, runStretches, wayPieces } from '../model/routeSearch.js'
 
 /** The kinds of route, each with the type it starts with. */
 const KINDS = { train: { trainType: 'ZZ' }, shunting: { shuntingType: 'RR' }, middle: { middleType: 'ZM' } }
@@ -325,7 +325,8 @@ function RouteEditor({ route, name, domain, net, findings, extents, signalOption
       </Section>
       <Section title={t('path')} actions={!readOnly && <Button size="small" onClick={() => rerun()}>{t('find_path')}</Button>}>
         {route.path.trackIds.length
-          ? <p className="ui-muted">{route.path.trackIds.map(id => trackName(net, id)).join(' → ')}{elements.length ? ` · ${elements.length} × ${t('switch')}` : ''}</p>
+          ? <p className="ui-muted">{route.path.trackIds.map(id => trackName(net, id)).join(' → ')}{elements.length ? ` · ${elements.length} × ${t('switch')}` : ''}
+            {start && target && ` · ${t('route_length', { length: Math.round(routeStretches(net, route, signals).reduce((sum, x) => sum + x.hi - x.lo, 0)), from: labelOf('signals', start, t), to: labelOf('signals', target, t) })}`}</p>
           : <p className="ui-message ui-message-warn">{t('path_none')}</p>}
       </Section>
       <Section title={t('route_sections')}>
@@ -393,10 +394,13 @@ function FindRoutes({ domain, net, extents, ops, setMode, setSketch, t }) {
   const fresh = found.filter(f => !exists(start, f))
   const chosen = fresh.filter(f => !skipped.has(keyOf(f)))
 
-  // The ways found on the plan, and the signals at their ends.
+  // The ways found on the plan, each from the signal to the next, and the signals at their ends.
   useEffect(() => {
-    setSketch?.(found.length ? { runs: [...new Set(found.flatMap(f => f.trackIds))], ids: [start.id, ...found.map(f => f.target.id)] } : null)
-  }, [found, start, setSketch])
+    setSketch?.(found.length ? {
+      ways: found.map(f => ({ pieces: wayPieces(runStretches(net, start.at, f.trackIds, f.target.at)), strong: true })),
+      ids: [start.id, ...found.map(f => f.target.id)],
+    } : null)
+  }, [found, start, net, setSketch])
   useEffect(() => () => setSketch?.(null), [setSketch])
 
   /** The routes of `ways` from their signals put in the draft, the speeds given signalled, a turnout's elsewhere. */

@@ -57,33 +57,42 @@ export function nextSignals(net, signals, start) {
 }
 
 /**
- * The stretches of track a route runs over, from its start signal to its
- * target: [{ trackId, lo, hi, direction }] in running order. Its tracks are run the way
- * the start signal acts, each entered where the one before leaves it.
+ * The stretches of track a run covers from a location, the way it acts,
+ * over its tracks to `end` ({ trackId, station }, else the last track's far
+ * end): [{ trackId, lo, hi, direction }] in running order. Each track is
+ * entered where the one before leaves it.
  */
-export function routeStretches(net, route, signals) {
-  const start = signals.find(s => s.id === route.startSignalId)
-  const target = signals.find(s => s.id === route.targetSignalId)
-  const ids = route.path?.trackIds ?? []
-  if (start?.at?.anchor !== 'station' || !ids.length) return []
+export function runStretches(net, at, trackIds, end) {
+  if (at?.anchor !== 'station' || !trackIds?.length) return []
   const lengths = new Map(net.tracks.map(t => [t.id, trackLength(t)]))
   const out = []
-  let direction = start.at.direction ?? 'up'
-  let from = start.at.station
-  for (let i = 0; i < ids.length; i++) {
-    const id = ids[i]
+  let direction = at.direction ?? 'up'
+  let from = at.station
+  for (let i = 0; i < trackIds.length; i++) {
+    const id = trackIds[i]
     const len = lengths.get(id) ?? 0
-    const last = i === ids.length - 1
-    const to = last && target?.at?.trackId === id ? target.at.station : direction === 'up' ? len : 0
+    const last = i === trackIds.length - 1
+    const to = last && end?.trackId === id ? end.station : direction === 'up' ? len : 0
     out.push({ trackId: id, lo: Math.min(from, to), hi: Math.max(from, to), direction })
     if (last) break
-    const next = tracksOnFrom(id, away(direction), net.tracks, net.switches).find(n => n.trackId === ids[i + 1])
+    const next = tracksOnFrom(id, away(direction), net.tracks, net.switches).find(n => n.trackId === trackIds[i + 1])
     if (!next) break
     direction = next.endpoint === 'BEGIN' ? 'up' : 'down'
     from = direction === 'up' ? 0 : lengths.get(next.trackId) ?? 0
   }
   return out
 }
+
+/** The stretches of track a route runs over, from its start signal to its target. */
+export function routeStretches(net, route, signals) {
+  const start = signals.find(s => s.id === route.startSignalId)
+  const target = signals.find(s => s.id === route.targetSignalId)
+  return runStretches(net, start?.at, route.path?.trackIds, target?.at)
+}
+
+/** Stretches as the pieces of a way the plan draws, each from where it is entered to where it is left. */
+export const wayPieces = (stretches) => stretches.map(s => (s.direction === 'down'
+  ? { trackId: s.trackId, from: s.hi, to: s.lo } : { trackId: s.trackId, from: s.lo, to: s.hi }))
 
 /**
  * The track sections a route runs through, in the order it meets them: those

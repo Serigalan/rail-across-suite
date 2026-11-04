@@ -1,4 +1,4 @@
-import { trackLabel, pointAtStation } from '@rail-across/core/track'
+import { kmForTrackPoint, trackLabel, pointAtStation } from '@rail-across/core/track'
 import { aspectOf } from '@rail-across/core/signalling'
 import { labelOf } from './domain.js'
 
@@ -109,3 +109,28 @@ export const foundationPoint = (net, signal) => (signal?.foundation && signal.at
 
 /** The aspect's name as people write it, with its symbol: "Zs 3 (6)". */
 export const aspectText = (a) => `${aspectOf(a.aspect)?.name ?? a.aspect.replace(/_/g, ' ')}${a.symbol ? ` (${a.symbol})` : ''}`
+
+/** A kilometrage as a name: the line, the kilometre and the metre — 6344-5+231. */
+export function kmName(lineNumber, metres) {
+  const whole = Math.round(metres)
+  const total = Math.abs(whole)
+  return `${lineNumber}-${whole < 0 ? '-' : ''}${Math.floor(total / 1000)}+${String(total % 1000).padStart(3, '0')}`
+}
+
+/** How far from its line a point may lie and still be stationed against it [m]. */
+const KM_REACH = 500
+
+/**
+ * The name a location takes from its kilometrage, read off the project's
+ * kilometrage lines (`kmLines`): 6344-5+231 — the next metre free where
+ * `taken` has that name already. Null where no line runs near.
+ */
+export function kmNameAt(net, kmLines, loc, taken = new Set()) {
+  const track = net.tracks.find(tr => tr.id === loc?.trackId)
+  const p = track && planePoint(net, { ...loc, offset: 0 })
+  const hit = p && kmForTrackPoint(kmLines, track, [p.easting, p.northing])
+  if (!hit || hit.offset > KM_REACH) return null
+  let metres = Math.round(hit.km)
+  while (taken.has(kmName(hit.lineNumber, metres))) metres++
+  return kmName(hit.lineNumber, metres)
+}

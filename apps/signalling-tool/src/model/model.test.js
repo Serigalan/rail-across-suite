@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { straightElement } from '@rail-across/core/geometry'
+import { straightElement, utmToWgs84 } from '@rail-across/core/geometry'
 import { netDrawing, placeOf, locate, stretchLine } from './net.js'
 import { findRun, runAhead, switchesOnRun } from './runs.js'
 import {
@@ -7,7 +7,8 @@ import {
   withLogical, withSignallingSpeed, withSwitchSpeeds,
 } from './domain.js'
 import { measuredOverlap, withMeasuredOverlap } from './overlaps.js'
-import { OFFSET, foundationPoint, locationFrom, mountedFrom, planePoint, signalOptions, trackName } from './places.js'
+import { OFFSET, foundationPoint, kmName, kmNameAt, locationFrom, mountedFrom, planePoint, signalOptions, trackName } from './places.js'
+import { magnetFrequency, magnetsDue, signalMagnet } from './magnets.js'
 import { changedIds, redo, startHistory, step, stepOf, stepsOf, travel, undo } from './history.js'
 
 const EPSG = 25832
@@ -200,6 +201,39 @@ describe('editing the domain', () => {
     expect(out.collections.routes).toEqual([])
     expect(out.collections.balises[0].signalId).toBeUndefined()
     expect(domainOf({ signalling: { fields: {}, collections: { signals: [] } } }).collections.routes).toEqual([])
+  })
+
+  it('names a place by its kilometrage, the next metre free where that one is taken', () => {
+    expect(kmName(6344, 5231)).toBe('6344-5+231')
+    expect(kmName(6344, 5031.4)).toBe('6344-5+031')
+    expect(kmName(6344, -1687)).toBe('6344--1+687')
+    // Line 6344 along t1, km 5.000 at its begin, rising eastwards.
+    const lonLat = (x) => utmToWgs84(500000 + x, 5700000, EPSG)
+    const kmLines = [{ id: 'km-6344', lineNumber: '6344', runs: [[[...lonLat(-50), 4950], [...lonLat(250), 5250]]] }]
+    expect(kmNameAt(net, kmLines, on('t1', 31))).toBe('6344-5+031')
+    expect(kmNameAt(net, kmLines, on('t1', 31), new Set(['6344-5+031', '6344-5+032']))).toBe('6344-5+033')
+    expect(kmNameAt(net, [], on('t1', 31))).toBeNull()
+  })
+
+  it('equips each signal with the magnet its kind asks for, at its place, once', () => {
+    const ks = (id, type, at = on('t1', 50)) => ({ id, kind: 'real', at, logicalSignals: [{ system: 'ks', type }] })
+    expect(magnetFrequency(ks('a', 'main'))).toBe('2000')
+    expect(magnetFrequency(ks('a', 'distant'))).toBe('1000')
+    expect(magnetFrequency(ks('a', 'multiSection'))).toBe('1000+2000')
+    expect(magnetFrequency({ ...ks('a', 'main'), logicalSignals: [{ type: 'main' }, { type: 'distant' }] })).toBe('1000+2000')
+    expect(magnetFrequency(ks('a', 'shunting'))).toBeNull()
+    expect(magnetFrequency({ id: 'b', kind: 'real', at: on('t1', 5), frames: [{ kind: 'plate', aspects: [{ aspect: 'Ne_1' }] }] })).toBeNull()
+    const down = ks('n', 'main', { ...on('t2', 80, 'down'), side: 'left', offset: 2 })
+    expect(signalMagnet(down)).toMatchObject({
+      system: 'pzb', kind: 'magnet', effect: 'switchedBySignal', signalId: 'n', settings: { frequency: '2000' },
+      at: { anchor: 'station', trackId: 't2', station: 80, side: 'left', offset: OFFSET.balises, direction: 'down' },
+    })
+    let d = emptyDomain()
+    for (const s of [ks('a', 'main'), down, ks('v', 'distant'), ks('r', 'shunting')]) d = added(d, 'signals', s)
+    d = added(d, 'balises', signalMagnet(d.collections.signals[0]))
+    const { due, equipped } = magnetsDue(d)
+    expect(equipped).toBe(1)
+    expect(due.map(x => [x.signal.id, x.frequency])).toEqual([['n', '2000'], ['v', '1000']])
   })
 
   it('keeps its steps for undo and redo', () => {

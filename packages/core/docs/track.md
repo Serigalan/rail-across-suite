@@ -25,6 +25,7 @@ the importers, the merge and the Node project server use the same code.
 | `platformUtils.js` | Platforms anchored to a track by two stations; stationing helpers (`pointAtStation`, `stationOnTrack`, `pointOnElement`); carrying platforms when their track turns round or goes into another (`carryPlatforms`, `flipPlatforms`) |
 | `platformForm.js` | The platform dialog's fields and the record they make |
 | `routes.js` | Routes: named runs of connected tracks with their own stationing |
+| `kmLines.js` | The kilometrage of a track point against the project's kilometrage lines (`project.kmLines`), measured in the track's plane |
 | `trackGroups.js` | Grouping tracks by line or station for lists and assignment; the name of a line track from its kilometrage |
 | `planStatus.js` | Planning status (existing / new / removal) of tracks and switches |
 | `alignmentBands.js` | Curvature, cant and speed bands over the station |

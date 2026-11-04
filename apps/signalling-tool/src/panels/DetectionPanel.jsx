@@ -5,15 +5,16 @@ import { labelOf, newId } from '../model/domain.js'
 import { POINT_KIND, SECTION_KIND, optionsOf } from '../labels.js'
 import { DetectionIcon, SectionIcon } from '../icons.jsx'
 import { Created } from './common.jsx'
-import { locationFrom, pickingPoints, placing } from '../model/places.js'
+import { kmNameAt, locationFrom, pickingPoints, placing } from '../model/places.js'
 
 /**
  * Creating train detection: a detection point — an axle counter, a joint —
- * set on the plan, its page staying for the next one; a track section, of a
+ * set on the plan, its page staying for the next one, named by its
+ * kilometrage (6344-5+231, the next metre free) unless it is given a name; a track section, of a
  * kind, whose points are then clicked on the plan — it opens in its editor
  * (Bearbeiten) for that.
  */
-export default function DetectionPanel({ domain, net, ops, select, setMode, t, language }) {
+export default function DetectionPanel({ domain, net, record, ops, select, setMode, t, language }) {
   const [page, setPage] = useState('menu')
   const [made, setMade] = useState(null)
   const [pointKind, setPointKind] = useState('axleCounter')
@@ -22,6 +23,8 @@ export default function DetectionPanel({ domain, net, ops, select, setMode, t, l
   const go = (next) => { setMade(null); setName(''); setPage(next) }
   const back = { label: t('back'), onClick: () => go('menu') }
   const points = domain.collections.detectionPoints
+  /** A point's name: the one given, else its kilometrage — a metre on where another point has that one. */
+  const nameAt = (at) => name || kmNameAt(net, record?.kmLines, at, new Set(points.map(p => p.name))) || undefined
 
   if (page === 'point') {
     return (
@@ -30,9 +33,13 @@ export default function DetectionPanel({ domain, net, ops, select, setMode, t, l
           <SelectField compact label={t('kind')} value={pointKind} options={optionsOf(POINT_KIND, language)} onChange={(v) => setPointKind(v ?? 'axleCounter')} />
           <TextField compact label={t('name')} value={name} onChange={setName} />
         </div>
+        <p className="ui-muted">{t(record?.kmLines?.length ? 'point_km_name' : 'point_km_none')}</p>
         <div className="ui-row">
           <Button variant="primary" disabled={!net.tracks.length}
-            onClick={() => setMode(placing('detectionPoints', (hit) => ({ id: newId(), name: name || undefined, kind: pointKind, at: locationFrom(hit, { directed: false }) }), (p) => {
+            onClick={() => setMode(placing('detectionPoints', (hit) => {
+              const at = locationFrom(hit, { directed: false })
+              return { id: newId(), name: nameAt(at), kind: pointKind, at }
+            }, (p) => {
               ops.add('detectionPoints', p)
               setMade({ id: p.id, what: labelOf('detectionPoints', p, t) })
             }))}>

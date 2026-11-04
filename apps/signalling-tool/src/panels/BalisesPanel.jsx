@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import { Button, Option, Options, SelectField, TextField } from '@rail-across/ui'
+import { Button, Option, Options, OptionsDivider, SelectField, TextField } from '@rail-across/ui'
 import { Panel } from './draft.jsx'
 import { SIGNAL_CATALOGUE, protectionSystemOf, titleIn } from '@rail-across/core/signalling'
 import { newBalise } from '../model/domain.js'
 import { baliseKindOptions, baliseWord, effectOptions } from '../labels.js'
-import { BaliseIcon } from '../icons.jsx'
-import { Created } from './common.jsx'
+import { BaliseIcon, SignalIcon } from '../icons.jsx'
+import { CheckList, Created } from './common.jsx'
+import { magnetsDue, signalMagnet } from '../model/magnets.js'
 import { OFFSET, locationFrom, pickingSignal, placing, signalOptions as signalChoices } from '../model/places.js'
 
 /**
@@ -13,17 +14,27 @@ import { OFFSET, locationFrom, pickingSignal, placing, signalOptions as signalCh
  * catalogue declares (PZB, ETCS), which takes the kind, how it acts and the
  * signal it belongs to, then a click on the plan sets it — with the settings
  * its kind asks, to be told in its editor (Bearbeiten). The page stays, for
- * the next one.
+ * the next one. Signals can be equipped with magnets all at once, each its
+ * own at its place (magnets.js).
  */
 export default function BalisesPanel({ domain, net, ops, select, setMode, t, language }) {
   const [system, setSystem] = useState(null)
   const [made, setMade] = useState(null)
   const go = (next) => { setMade(null); setSystem(next) }
   const systems = Object.keys(SIGNAL_CATALOGUE.zugbeeinflussung.systeme)
+  const back = { label: t('back'), onClick: () => go(null) }
+
+  if (system === 'equip') {
+    return (
+      <Panel title={t('equip_magnets')} intro={t('equip_magnets_intro')} back={back}>
+        <EquipPage domain={domain} net={net} ops={ops} t={t} />
+      </Panel>
+    )
+  }
 
   if (system) {
     return (
-      <Panel title={t('create_balise', { system: protectionSystemOf(system).name })} intro={t('create_balise_intro')} back={{ label: t('back'), onClick: () => go(null) }}>
+      <Panel title={t('create_balise', { system: protectionSystemOf(system).name })} intro={t('create_balise_intro')} back={back}>
         <BalisePage key={system} system={system} domain={domain} net={net} setMode={setMode} t={t} language={language}
           onPlace={(make) => setMode(placing('balises', make, (b) => {
             ops.add('balises', b)
@@ -40,6 +51,10 @@ export default function BalisesPanel({ domain, net, ops, select, setMode, t, lan
         {systems.map(s => (
           <Option key={s} icon={<BaliseIcon />} onClick={() => go(s)}>{t('create_balise', { system: titleIn(protectionSystemOf(s), language) })}</Option>
         ))}
+      </Options>
+      <OptionsDivider />
+      <Options>
+        <Option icon={<SignalIcon />} onClick={() => go('equip')}>{t('equip_magnets')}</Option>
       </Options>
     </Panel>
   )
@@ -73,5 +88,36 @@ function BalisePage({ system, domain, net, setMode, onPlace, t, language }) {
         {t('place_on_map')}
       </Button>
     </div>
+  </>
+}
+
+/**
+ * Equipping the signals with magnets: those that ask for one and have none,
+ * each with the frequency it gets, all ticked; the ones ticked get theirs at
+ * once — a draft, drawn on the plan till it is confirmed.
+ */
+function EquipPage({ domain, net, ops, t }) {
+  const { due, equipped } = magnetsDue(domain)
+  const [skipped, setSkipped] = useState(() => new Set())
+  const [done, setDone] = useState(0)
+  const frequencyOf = new Map(due.map(d => [d.signal.id, d.frequency]))
+  const options = signalChoices(net, due.map(d => d.signal), t)
+    .map(o => ({ ...o, label: `${o.label} — ${frequencyOf.get(o.value).replace('+', '/')} Hz` }))
+  const chosen = due.filter(d => !skipped.has(d.signal.id))
+  const equip = () => {
+    const magnets = chosen.map(d => signalMagnet(d.signal, d.frequency))
+    ops.replaceAll({ fields: domain.fields, collections: { balises: [...domain.collections.balises, ...magnets] } })
+    setDone(magnets.length)
+  }
+  return <>
+    {done > 0 && <p className="tool-created" role="status">{t('equip_done', { n: done })}</p>}
+    {equipped > 0 && <p className="ui-muted">{t('equip_have', { n: equipped })}</p>}
+    {due.length ? <>
+      <CheckList options={options} value={chosen.map(d => d.signal.id)}
+        onChange={(ids) => setSkipped(new Set(due.map(d => d.signal.id).filter(id => !ids.includes(id))))} />
+      <div className="ui-row">
+        <Button variant="primary" disabled={!chosen.length} onClick={equip}>{t('equip_set', { n: chosen.length })}</Button>
+      </div>
+    </> : <p className="ui-muted">{t('equip_none_due')}</p>}
   </>
 }

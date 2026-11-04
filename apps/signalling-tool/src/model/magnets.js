@@ -5,7 +5,8 @@ import { OFFSET, sideAlong } from './places.js'
  * Equipping signals with PZB magnets: each signal its one magnet at its
  * place, of the frequency its kind asks — a main signal 2000 Hz, a distant
  * signal 1000 Hz, a multi-section signal, which is both, 1000/2000 Hz.
- * Shunting signals, boards and virtual signals get none.
+ * Shunting signals, boards and virtual signals get none. A magnet is named
+ * after its signal: M, the area's number and the signal's name (21-A: M21A).
  */
 
 /** The frequency a kind of logical signal asks of its magnet. */
@@ -22,14 +23,31 @@ export function magnetFrequency(signal) {
   return [...asked][0]
 }
 
-/** The magnet of a signal: at its station, at the rail on the right of the way it acts, the signal its own. */
+/** The name a magnet takes from its signal: M, the area's number and the signal's name, without spaces — 21-A gives M21A; none where the signal has no name. */
+export const magnetName = (signal) => (signal?.name ? `M${signal.areaNumber ?? ''}${signal.name}`.replace(/\s+/g, '') : undefined)
+
+/**
+ * A balise or magnet given to another signal (or to none): a PZB magnet
+ * named after its signal, or not named at all, takes the new one's name.
+ */
+export function withSignal(balise, signal, before) {
+  const { signalId: _old, ...rest } = balise
+  const out = signal ? { ...rest, signalId: signal.id } : rest
+  if (balise.system !== 'pzb' || (balise.name && balise.name !== magnetName(before))) return out
+  const { name: _name, ...bare } = out
+  const name = magnetName(signal)
+  return name ? { ...bare, name } : bare
+}
+
+/** The magnet of a signal: at its station, at the rail on the right of the way it acts, the signal its own, named after it. */
 export function signalMagnet(signal, frequency = magnetFrequency(signal)) {
   const at = {
     anchor: 'station', trackId: signal.at.trackId, station: signal.at.station,
     side: sideAlong(signal.at, 'right'), offset: OFFSET.balises, direction: signal.at.direction ?? 'up',
   }
   const magnet = newBalise({ at, system: 'pzb', kind: 'magnet', effect: 'switchedBySignal', signalId: signal.id })
-  return { ...magnet, settings: { ...magnet.settings, frequency } }
+  const name = magnetName(signal)
+  return { ...magnet, ...(name ? { name } : {}), settings: { ...magnet.settings, frequency } }
 }
 
 /**

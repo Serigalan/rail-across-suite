@@ -6,7 +6,7 @@ import { newBalise } from '../model/domain.js'
 import { baliseKindOptions, baliseWord, effectOptions } from '../labels.js'
 import { BaliseIcon, SignalIcon } from '../icons.jsx'
 import { CheckList, Created } from './common.jsx'
-import { magnetsDue, signalMagnet } from '../model/magnets.js'
+import { magnetName, magnetsDue, signalMagnet } from '../model/magnets.js'
 import { OFFSET, locationFrom, pickingSignal, signalOptions as signalChoices } from '../model/places.js'
 import { useFields, useSetting } from './useSetting.js'
 
@@ -63,10 +63,14 @@ export default function BalisesPanel({ domain, net, ops, select, mode, setMode, 
 /** The kind of a balise or magnet, how it acts, the signal it belongs to and its name; the signal picked in the list or on the plan. */
 function BalisePage({ system, domain, net, setMode, offer, remake, t, language }) {
   const kinds = baliseKindOptions(system, language)
-  const makeOf = ({ kind, effect, signalId, name }) => (hit) => ({
-    ...newBalise({ at: locationFrom(hit, { offset: OFFSET.balises }), system, kind, effect, signalId: signalId ?? undefined }),
-    ...(name ? { name } : {}),
-  })
+  // A magnet without a name of its own is named after its signal (M21A).
+  const makeOf = ({ kind, effect, signalId, name }) => (hit) => {
+    const given = name || (system === 'pzb' ? magnetName(domain.collections.signals.find(s => s.id === signalId)) : undefined)
+    return {
+      ...newBalise({ at: locationFrom(hit, { offset: OFFSET.balises }), system, kind, effect, signalId: signalId ?? undefined }),
+      ...(given ? { name: given } : {}),
+    }
+  }
   const [f, set] = useFields({ kind: kinds[0]?.value, effect: system === 'pzb' ? 'switchedBySignal' : 'permanent', signalId: null, name: '' }, remake, makeOf)
   offer(makeOf(f), baliseMade(t, language))
   const real = domain.collections.signals.filter(s => s.kind === 'real')
@@ -82,6 +86,7 @@ function BalisePage({ system, domain, net, setMode, offer, remake, t, language }
       </div>
       <TextField compact wide label={t('name')} value={f.name} onChange={(name) => set({ name })} />
     </div>
+    {system === 'pzb' && <p className="ui-muted">{t('magnet_name_hint')}</p>}
     {!net.tracks.length && <p className="ui-muted">{t('empty_net')}</p>}
   </>
 }

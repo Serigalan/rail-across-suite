@@ -3,18 +3,23 @@ import { baliseKindOf, protectionSystemOf, titleIn } from '@rail-across/core/sig
 import { baliseSettings } from '../../model/domain.js'
 import { baliseKindOptions, baliseWord, effectOptions, protectionSystemOptions } from '../../labels.js'
 import { EditorHead, LocationFields, ObjectFindings } from '../common.jsx'
+import { withSignal } from '../../model/magnets.js'
 import { OFFSET, locationFrom, pickingSignal, placing, signalOptions as signalChoices } from '../../model/places.js'
 
 /**
  * A balise or magnet of train protection: its system and kind, with the
  * settings the catalogue declares for them; where it acts, the signal it
- * belongs to, how it acts. Where it must lie to its signal is not checked yet.
+ * belongs to, how it acts — a magnet named after its signal (M21A) takes the
+ * name of the one it is given. Where it must lie to its signal is not checked yet.
  */
 export default function BaliseEditor({ balise: chosen, domain, net, findings, ops, setMode, readOnly, t, language }) {
   const signals = domain.collections.signals
   const real = signals.filter(s => s.kind === 'real')
   const signalOptions = signalChoices(net, real, t)
   const set = (patch) => ops.update('balises', { ...chosen, ...patch })
+  const signalOf = (id) => signals.find(s => s.id === id)
+  /** The signal it belongs to, and with it its name, as it is now. */
+  const belong = (id) => ops.modify('balises', chosen.id, (now) => withSignal(now, signalOf(id), signalOf(now.signalId)))
   /** A system or kind changed: the settings follow what the new kind asks and allows. */
   const retype = (system, kind) => {
     const settings = baliseSettings(system, kind, chosen.settings)
@@ -30,11 +35,11 @@ export default function BaliseEditor({ balise: chosen, domain, net, findings, op
           onChange={(v) => retype(v, Object.keys(protectionSystemOf(v)?.arten ?? {})[0])} />
         <SelectField compact label={t('kind')} value={chosen.kind} options={baliseKindOptions(chosen.system, language)} disabled={readOnly}
           onChange={(v) => retype(chosen.system, v)} />
-        <SelectField compact wide label={t('belongs_to')} value={chosen.signalId ?? null} empty={t('none')} options={signalOptions} disabled={readOnly} onChange={(v) => set({ signalId: v ?? undefined })} />
+        <SelectField compact wide label={t('belongs_to')} value={chosen.signalId ?? null} empty={t('none')} options={signalOptions} disabled={readOnly} onChange={belong} />
         {!readOnly && (
           <div className="ui-wide ui-row">
             <Button size="small" disabled={!real.length} onClick={() => setMode(pickingSignal(real, t, (id) => {
-              ops.modify('balises', chosen.id, (now) => ({ ...now, signalId: id }))
+              belong(id)
               setMode(null)
             }))}>{t('pick_signal_on_plan')}</Button>
           </div>

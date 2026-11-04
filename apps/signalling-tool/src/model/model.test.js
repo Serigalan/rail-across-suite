@@ -8,7 +8,7 @@ import {
 } from './domain.js'
 import { measuredOverlap, withMeasuredOverlap } from './overlaps.js'
 import { OFFSET, foundationPoint, kmName, kmNameAt, locationFrom, mountedFrom, planePoint, signalOptions, trackName } from './places.js'
-import { magnetFrequency, magnetsDue, signalMagnet } from './magnets.js'
+import { magnetFrequency, magnetName, magnetsDue, signalMagnet, withSignal } from './magnets.js'
 import { changedIds, redo, startHistory, step, stepOf, stepsOf, travel, undo } from './history.js'
 
 const EPSG = 25832
@@ -234,6 +234,21 @@ describe('editing the domain', () => {
     const { due, equipped } = magnetsDue(d)
     expect(equipped).toBe(1)
     expect(due.map(x => [x.signal.id, x.frequency])).toEqual([['n', '2000'], ['v', '1000']])
+  })
+
+  it('names a magnet after its signal, and anew when it is given another', () => {
+    const a = { id: 'a', kind: 'real', name: 'A', areaNumber: '21', at: on('t1', 50), logicalSignals: [{ system: 'ks', type: 'main' }] }
+    const n = { id: 'n', kind: 'real', name: 'N 1', at: on('t2', 80), logicalSignals: [{ system: 'ks', type: 'main' }] }
+    expect(magnetName(a)).toBe('M21A')
+    expect(magnetName(n)).toBe('MN1')
+    expect(magnetName({ id: 'x', kind: 'real' })).toBeUndefined()
+    const m = signalMagnet(a)
+    expect(m.name).toBe('M21A')
+    expect(withSignal(m, n, a)).toMatchObject({ signalId: 'n', name: 'MN1' })
+    expect(withSignal({ ...m, name: 'Eigener' }, n, a)).toMatchObject({ signalId: 'n', name: 'Eigener' })
+    expect(withSignal(m, undefined, a)).not.toHaveProperty('name')
+    expect(withSignal(m, undefined, a)).not.toHaveProperty('signalId')
+    expect(withSignal({ ...m, system: 'etcs', name: undefined }, n, a).name).toBeUndefined()
   })
 
   it('keeps its steps for undo and redo', () => {

@@ -99,7 +99,7 @@ export default function App() {
           <PasswordPage forced={forced} onDone={passwordChanged} onCancel={() => goOn(route.next)} />
         )}
         {user && page === 'admin' && (user.role === 'admin' ? <Admin me={user} /> : <Home />)}
-        {user && simulation && <Simulation route={page} projects={projects} />}
+        {user && simulation && <Simulation route={page} projects={projects} onReload={loadProjects} />}
         {user && !simulation && !direct && !['', 'infrastructure', 'password', 'admin'].includes(page) && <Planned route={page} />}
       </div>
     </I18n.Provider>

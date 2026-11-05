@@ -139,6 +139,30 @@ export function BranchDialog({ project, onCancel, onDone }) {
   )
 }
 
+/**
+ * A template copied as a project of one's own: its name — the template's
+ * until changed —, and the variant whose head it starts with where the
+ * template has more than one. Its timetables come with it.
+ */
+export function CopyTemplateDialog({ project, onCancel, onDone }) {
+  const { t } = useTexts()
+  const variants = liveVariants(project).filter(v => !v.parentVariantId)
+  const [title, setTitle] = useState(project.title)
+  const [from, setFrom] = useState(variants[0]?.id ?? '')
+  const { busy, error, run } = useAction()
+  return (
+    <FormDialog title={t('template_copy_title')} submitLabel={t('template_copy')} busy={busy} canSubmit={Boolean(title.trim() && from)} error={error} onCancel={onCancel}
+      onSubmit={() => run(async () => { const made = await api.copyProject(project.id, { title: title.trim(), variant: from }); await onDone(made) })}>
+      <p className="ui-muted">{t('template_copy_text')}</p>
+      <label className="ui-field">
+        <span>{t('project_field_title')} *</span>
+        <input value={title} onChange={e => setTitle(e.target.value)} required />
+      </label>
+      {variants.length > 1 && <VariantSelect label={t('variant')} variants={variants} value={from} onChange={setFrom} />}
+    </FormDialog>
+  )
+}
+
 /** A variant renamed, or archived (and taken back). */
 export function VariantDialog({ variant, onCancel, onDone }) {
   const { t } = useTexts()

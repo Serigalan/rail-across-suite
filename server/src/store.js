@@ -68,6 +68,9 @@ export function createStore(db, { now = () => Date.now() } = {}) {
     addMember:     db.prepare('INSERT OR IGNORE INTO project_member (project_id, user_id, added_by, added_at) VALUES (?, ?, ?, ?)'),
     removeMember:  db.prepare('DELETE FROM project_member WHERE project_id = ? AND user_id = ?'),
     blob:          db.prepare('SELECT * FROM blob WHERE hash = ?'),
+    timetablesOf: db.prepare('SELECT name, data FROM timetable WHERE project_id = ? AND deleted_at IS NULL ORDER BY created_at, rowid'),
+    insertTimetable: db.prepare(`INSERT INTO timetable (id, project_id, name, data, created_by, created_at, updated_by, updated_at)
+                                 VALUES (@id, @project, @name, @data, @user, @at, @user, @at)`),
     insertBlob:    db.prepare('INSERT OR IGNORE INTO blob (hash, mime, size, data, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?)'),
   }
 
@@ -144,6 +147,14 @@ export function createStore(db, { now = () => Date.now() } = {}) {
 
     project: (id) => q.project.get(id),
     variant: (id) => q.variant.get(id),
+    /** A project's variants, in the order they were made. */
+    variants: (projectId) => q.variants.all(projectId),
+    /** The timetables of one project copied to another, as `userId`'s. */
+    copyTimetables(from, to, userId) {
+      const rows = q.timetablesOf.all(from)
+      for (const r of rows) q.insertTimetable.run({ id: randomUUID(), project: to, name: r.name, data: r.data, user: userId, at: iso() })
+      return rows.length
+    },
 
     /** A revision with its document, or null. */
     revision(id) {

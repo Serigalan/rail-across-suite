@@ -98,22 +98,39 @@ describe('projects', () => {
     expect((await ada('GET', '/api/projects')).json().projects).toEqual([])
   })
 
-  it('a template is the admin\'s; everyone branches a variant of their own off it', async () => {
+  it('a template is the admin\'s to import, name and delete, and read-only for everyone', async () => {
     const { max, ada } = await start()
     expect((await max('POST', '/api/projects', { title: 'Vorlage', template: true })).statusCode).toBe(403)
     const { project, variantId, revisionId } = (await ada('POST', '/api/projects', { title: 'Vorlage', template: true })).json()
     expect(project).toMatchObject({ template: true, variants: [expect.objectContaining({ name: 'Vorlage' })] })
     const h = await head(max, variantId)
     const edit = { base: revisionId, payload: { ...h.payload, title: 'x' }, remaps: [] }
-    expect((await max('POST', `/api/variants/${variantId}/revisions`, edit)).json()).toEqual({ error: 'template_admin' })
+    // Nobody checks in on it, the admin neither, and nobody branches off it.
+    expect((await max('POST', `/api/variants/${variantId}/revisions`, edit)).json()).toEqual({ error: 'template_read_only' })
+    expect((await ada('POST', `/api/variants/${variantId}/revisions`, edit)).json()).toEqual({ error: 'template_read_only' })
+    expect((await max('POST', `/api/projects/${project.id}/variants`, { name: 'Meine', fromVariant: variantId })).json()).toEqual({ error: 'template_read_only' })
     expect((await max('PATCH', `/api/variants/${variantId}`, { name: 'x' })).statusCode).toBe(403)
     expect((await max('PATCH', `/api/projects/${project.id}`, { title: 'x' })).statusCode).toBe(403)
     expect((await max('DELETE', `/api/projects/${project.id}`)).statusCode).toBe(403)
+    expect((await ada('PATCH', `/api/projects/${project.id}`, { title: 'Muster' })).statusCode).toBe(200)
+  })
 
-    const own = (await max('POST', `/api/projects/${project.id}/variants`, { name: 'Meine', fromVariant: variantId })).json().variant
-    expect((await max('POST', `/api/variants/${own.id}/revisions`, edit)).statusCode).toBe(201)
-    expect((await max('PATCH', `/api/variants/${own.id}`, { name: 'Meine 2' })).statusCode).toBe(200)
-    expect((await ada('POST', `/api/variants/${variantId}/revisions`, edit)).statusCode).toBe(201)
+  it('copies a template as a project of one\'s own, its record and its timetables', async () => {
+    const { max, ada } = await start()
+    const made = (await ada('POST', '/api/projects', { title: 'Muster', description: 'eine Strecke', template: true, payload: { tracks: [straight('t1')], switches: [], platforms: [] } })).json()
+    await ada('POST', `/api/projects/${made.project.id}/timetables`, { name: 'Takt' })
+    const res = await max('POST', `/api/projects/${made.project.id}/copy`, { title: 'Meine Strecke' })
+    expect(res.statusCode).toBe(201)
+    const copy = res.json()
+    expect(copy.project).toMatchObject({ title: 'Meine Strecke', description: 'eine Strecke', template: false, createdBy: expect.objectContaining({ name: expect.any(String) }) })
+    expect(copy.timetables).toBe(1)
+    const h = await head(max, copy.variantId)
+    expect(h.payload.tracks.map(t => t.id)).toEqual(['t1'])
+    // Max's own: he checks in on it, and sees its timetable as his.
+    expect((await max('POST', `/api/variants/${copy.variantId}/revisions`, { base: copy.revisionId, payload: { ...h.payload, title: 'x' }, remaps: [] })).statusCode).toBe(201)
+    expect((await max('GET', `/api/projects/${copy.project.id}/timetables`)).json()).toMatchObject({ mayEdit: true, timetables: [{ name: 'Takt' }] })
+    // Only a template is copied so.
+    expect((await max('POST', `/api/projects/${copy.project.id}/copy`, {})).json()).toEqual({ error: 'not_template' })
   })
 
   it('needs a session', async () => {

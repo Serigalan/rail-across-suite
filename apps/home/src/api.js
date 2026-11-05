@@ -62,6 +62,8 @@ export const api = {
   createProject: (body) => request('POST', '/projects', withDocument(body)),
   patchProject: (id, body) => request('PATCH', `/projects/${enc(id)}`, body),
   deleteProject: (id) => request('DELETE', `/projects/${enc(id)}`),
+  /** A template copied as a project of one's own: { project, projectId, variantId, revisionId, timetables }. */
+  copyProject: (id, body) => request('POST', `/projects/${enc(id)}/copy`, body),
   branch: (projectId, body) => request('POST', `/projects/${enc(projectId)}/variants`, body),
   patchVariant: (id, body) => request('PATCH', `/variants/${enc(id)}`, body),
   /** A variant's head: { variant, revision, payload } — the payload as the record it holds. */

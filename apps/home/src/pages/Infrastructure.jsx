@@ -10,7 +10,7 @@ import ProjectCard from './projects/ProjectCard'
 import { useLocalChanges } from '../localChanges'
 import MembersDialog from './projects/MembersDialog'
 import {
-  BranchDialog, DeleteProjectDialog, ExportDialog, NewProjectDialog, PairDialog, RenameProjectDialog, VariantDialog,
+  BranchDialog, CopyTemplateDialog, DeleteProjectDialog, ExportDialog, NewProjectDialog, PairDialog, RenameProjectDialog, VariantDialog,
 } from './projects/dialogs'
 
 /**
@@ -48,9 +48,9 @@ function ToolTabs({ current }) {
  * tool's: they open in it (toolUrl), and the tool sends one back here.
  *
  * Each user sees the projects they created or were added to, an admin sees
- * all (decision 127). Below them the templates: everyone branches a variant
- * of their own off one; the template itself only an admin edits, everyone
- * else looks at it read-only. Signed in one always is here: the server shows
+ * all (decision 127). Below them the templates, read-only for everyone: an
+ * admin imports them from a backup file, everyone looks at one and copies it
+ * as a project of their own, its timetables with it. Signed in one always is here: the server shows
  * the sign-in page before the suite.
  */
 export default function Infrastructure({ toolId, user, projects, onReload = async () => {} }) {
@@ -62,6 +62,7 @@ export default function Infrastructure({ toolId, user, projects, onReload = asyn
   const [notice, setNotice] = useState(null)
   const [showArchived, setShowArchived] = useState(false)
   const importRef = useRef(null)
+  const templateRef = useRef(null)
   const { regular, templates } = splitProjects(projects.list)
   const isAdmin = user?.role === 'admin'
   const storage = toolUrl(tool, { action: 'storage' })
@@ -70,9 +71,10 @@ export default function Infrastructure({ toolId, user, projects, onReload = asyn
   const done = async () => { setDialog(null); await onReload() }
   const say = (text) => { setError(null); setNotice(text) }
 
-  // A backup file: every project in it becomes a server project of its own,
-  // its picture uploaded on the way.
-  const handleImport = async (e) => {
+  // A backup file: every project in it becomes a server project of its own —
+  // for an admin, from the templates' button, a template —, its picture
+  // uploaded on the way.
+  const handleImport = (template) => async (e) => {
     const file = e.target.files?.[0]
     e.target.value = ''
     if (!file) return
@@ -89,9 +91,9 @@ export default function Infrastructure({ toolId, user, projects, onReload = asyn
         const record = { ...p.record }
         const picture = splitDataUrl(p.image)
         if (picture) record.imageHash = (await api.uploadImage(picture.mime, picture.data)).hash
-        await api.createProject({ title: p.title, description: p.description, payload: record })
+        await api.createProject({ title: p.title, description: p.description, payload: record, ...(template ? { template: true } : {}) })
       }
-      say(fill('projects_imported', { n: incoming.length }))
+      say(fill(template ? 'templates_imported' : 'projects_imported', { n: incoming.length }))
     } catch (err) {
       setError(errorText(t, err.code))
     }
@@ -113,7 +115,7 @@ export default function Infrastructure({ toolId, user, projects, onReload = asyn
       <div className="home-section-head">
         <h2>{t('projects')}</h2>
         <div className="home-section-actions">
-          <input ref={importRef} type="file" accept=".json,application/json" hidden onChange={handleImport} />
+          <input ref={importRef} type="file" accept=".json,application/json" hidden onChange={handleImport(false)} />
           <button type="button" className="ui-btn ui-btn-primary" onClick={() => { say(null); setDialog({ kind: 'new' }) }}>{t('project_new')}</button>
           <button type="button" className="ui-btn" onClick={() => importRef.current?.click()}>{t('project_import')}</button>
         </div>
@@ -144,10 +146,12 @@ export default function Infrastructure({ toolId, user, projects, onReload = asyn
           <h2>{t('templates')}</h2>
           {isAdmin && (
             <div className="home-section-actions">
-              <button type="button" className="ui-btn ui-btn-primary" onClick={() => { say(null); setDialog({ kind: 'new', template: true }) }}>{t('project_new')}</button>
+              <input ref={templateRef} type="file" accept=".json,application/json" hidden onChange={handleImport(true)} />
+              <button type="button" className="ui-btn ui-btn-primary" onClick={() => templateRef.current?.click()}>{t('template_import')}</button>
             </div>
           )}
         </div>
+        <p className="ui-muted">{t('templates_intro')}</p>
         {projects.list && templates.length === 0 && <p className="ui-muted">{t('templates_empty')}</p>}
         <ul className="home-projects">
           {templates.map(card)}
@@ -160,6 +164,10 @@ export default function Infrastructure({ toolId, user, projects, onReload = asyn
       {dialog?.kind === 'delete' && <DeleteProjectDialog project={dialog.project} onCancel={() => setDialog(null)} onDone={done} />}
       {dialog?.kind === 'members' && (
         <MembersDialog project={dialog.project} onClose={async (changed) => { setDialog(null); if (changed) await onReload() }} />
+      )}
+      {dialog?.kind === 'copy' && (
+        <CopyTemplateDialog project={dialog.project} onCancel={() => setDialog(null)}
+          onDone={async (made) => { await done(); say(fill(made.timetables ? 'template_copied' : 'template_copied_alone', { title: made.project?.title ?? '', n: made.timetables })) }} />
       )}
       {dialog?.kind === 'branch' && <BranchDialog project={dialog.project} onCancel={() => setDialog(null)} onDone={done} />}
       {dialog?.kind === 'variant' && <VariantDialog variant={dialog.variant} onCancel={() => setDialog(null)} onDone={done} />}

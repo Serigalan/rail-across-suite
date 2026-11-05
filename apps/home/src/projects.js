@@ -38,18 +38,19 @@ export function variantTree(variants) {
 /**
  * What a user may do with a project (decision 127): its admin edits
  * everything, and deletes it; its creator deletes a project that is no
- * template; a template — its root variants — only an admin edits, everyone
- * else looks at it and branches a variant of their own off it.
+ * template. A template is read-only for everyone: an admin names and deletes
+ * it, everyone looks at it and copies it as a project of their own.
  */
 export function rightsOf(project, user) {
   const admin = user?.role === 'admin'
   return {
-    canEdit: admin || !project.template,
+    canEdit: !project.template,
+    canRename: admin || !project.template,
     canDelete: admin || (!project.template && project.createdBy?.id === user?.id),
   }
 }
 
-/** Whether a variant is only looked at — a template's own, for anyone but an admin. */
+/** Whether a variant is only looked at — a template's own, for everyone. */
 export const readOnlyVariant = (variant, rights) => !rights.canEdit && !variant.parentVariantId
 
 /**

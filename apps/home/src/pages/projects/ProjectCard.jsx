@@ -80,7 +80,8 @@ export function VariantLine({ variant: v, depth, changes }) {
  * here; what a tool does with a variant — working on it, looking at it, its
  * history, comparing and merging two — opens in the tool chosen above. A
  * variant whose working copy in this browser holds changes not checked in
- * says how many (`localChanges`, from any tool).
+ * says how many (`localChanges`, from any tool). A template is only looked
+ * at, and copied as a project of one's own.
  */
 export default function ProjectCard({ project, user, tool, showArchived, localChanges = {}, onDialog }) {
   const { t, fill } = useTexts()
@@ -104,7 +105,7 @@ export default function ProjectCard({ project, user, tool, showArchived, localCh
             aria-haspopup="menu" aria-expanded={menuOpen} onClick={toggleMenu}>⋯</button>
           {menuOpen && (
             <div className="ui-menu-list" role="menu">
-              {rights.canEdit && item(t('project_rename'), 'rename')}
+              {rights.canRename && item(t('project_rename'), 'rename')}
               {item(t('project_export'), 'export')}
               {!project.template && item(t('members'), 'members')}
               {rights.canDelete && item(t('project_delete'), 'delete', true)}
@@ -143,13 +144,21 @@ export default function ProjectCard({ project, user, tool, showArchived, localCh
         })}
       </ul>
 
-      <div className="ra-project-actions">
-        <button type="button" className="ui-btn" onClick={() => onDialog({ kind: 'branch', project })}>{t('branch')}</button>
-        <button type="button" className="ui-btn" disabled={!many || !tool.available}
-          onClick={() => onDialog({ kind: 'compare', project })}>{t('compare')}</button>
-        <button type="button" className="ui-btn" disabled={!many || !tool.available}
-          onClick={() => onDialog({ kind: 'merge', project })}>{t('merge')}</button>
-      </div>
+      {project.template
+        ? (
+          <div className="ra-project-actions">
+            <button type="button" className="ui-btn ui-btn-primary" onClick={() => onDialog({ kind: 'copy', project })}>{t('template_copy')}</button>
+          </div>
+        )
+        : (
+          <div className="ra-project-actions">
+            <button type="button" className="ui-btn" onClick={() => onDialog({ kind: 'branch', project })}>{t('branch')}</button>
+            <button type="button" className="ui-btn" disabled={!many || !tool.available}
+              onClick={() => onDialog({ kind: 'compare', project })}>{t('compare')}</button>
+            <button type="button" className="ui-btn" disabled={!many || !tool.available}
+              onClick={() => onDialog({ kind: 'merge', project })}>{t('merge')}</button>
+          </div>
+        )}
     </li>
   )
 }

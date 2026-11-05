@@ -161,7 +161,7 @@ describe('what it shows of runs', () => {
   it('sets what happens where two trains need one block: they wait, the kinds first in the order set, or only the conflicts are said', () => {
     const tt = (dispatch) => timetables({ trains: [train, { ...train, id: 'x', category: 'Sonder' }], draft: { id: 'tt', name: 'F', data: { trains: [], dispatch }, version: 1 } })
     const waiting = de(<DispatchSection t={t} timetables={tt({ mode: 'wait', priority: 'category' })} mayEdit />)
-    expect(waiting).toContain('Züge warten automatisch')
+    expect(waiting).toContain('Fahrstraßen stellen: Züge kreuzen, weichen aus oder warten')
     expect(waiting).toContain('Nach Zuggattung')
     // the kinds set first, then the trains' own
     expect(waiting.indexOf('>ICE<')).toBeLessThan(waiting.indexOf('>RB<'))

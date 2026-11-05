@@ -7,6 +7,7 @@ import {
 } from './routeSpeeds.js'
 import { whereStretch } from './places.js'
 import { speedRanges } from './speedRanges.js'
+import { boundaryTarget, newBoundaryTarget, nextSignals } from './routeSearch.js'
 
 const EPSG = 25832
 const P = (x, y = 0) => ({ easting: 500000 + x, northing: 5700000 + y, zone: EPSG })
@@ -103,5 +104,18 @@ describe('the speeds the elements give', () => {
     expect(ranges[0].color).not.toBe(ranges[1].color)
     // Without a speed signalled there is no range.
     expect(speedRanges(d, net)).toEqual([expect.objectContaining({ id: 'v|120' })])
+  })
+
+  it('leads a route to a boundary of the planning area, ending at a virtual signal there', () => {
+    const marked = { ...net, endMarks: [{ id: 'g', kind: 'boundary', trackId: 't2', endpoint: 'END' }] }
+    const d = domainOf([main('a', on('t1', 20)), main('m', on('t3', 100))])
+    const ways = nextSignals(marked, d.collections.signals, d.collections.signals[0], { boundaries: true })
+    const to = ways.find(w => w.boundary)
+    expect(to).toMatchObject({ target: null, trackIds: ['t1', 't2'], boundary: { mark: { id: 'g' }, at: { trackId: 't2', station: 200, direction: 'up' } } })
+    // A buffer stop or a bare end is no boundary.
+    expect(nextSignals(net, d.collections.signals, d.collections.signals[0], { boundaries: true }).some(w => w.boundary)).toBe(false)
+    const target = newBoundaryTarget(marked, to)
+    expect(target).toMatchObject({ kind: 'virtual', virtualFunction: 'trainTargetLine', at: { trackId: 't2', station: 200, direction: 'up' } })
+    expect(boundaryTarget([...d.collections.signals, target], to)).toBe(target)
   })
 })

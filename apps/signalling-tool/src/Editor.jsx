@@ -130,7 +130,7 @@ export default function Editor({ project, variant, head, copy: opened, readOnly 
   const current = useMemo(() => recordOf(record, committed), [record, committed])
   const shown = useMemo(() => (draft ? recordOf(record, draft) : current), [record, draft, current])
   const pending = useMemo(() => (draft ? changedIds(committed, draft) : NONE), [committed, draft])
-  const net = useMemo(() => ({ tracks: record.tracks ?? [], switches: record.switches ?? [] }), [record])
+  const net = useMemo(() => ({ tracks: record.tracks ?? [], switches: record.switches ?? [], endMarks: record.endMarks ?? [] }), [record])
   const drawing = useMemo(() => netDrawing(net.tracks), [net])
   const coreDomain = useMemo(() => projectDocument({ ...shown, signalling: undefined }).domains.core, [shown])
   const findings = useMemo(() => checkSignalling({ core: coreDomain, signalling }), [coreDomain, signalling])

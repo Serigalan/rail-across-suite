@@ -19,7 +19,7 @@ import { CheckList, EditorHead, ObjectFindings } from './common.jsx'
 import { aspectText, pickingSignal, signalOptions as signalChoices, trackName } from '../model/places.js'
 import { ElementLink } from './speedReach.jsx'
 import { isMainSignal } from '../model/itineraries.js'
-import { nextSignals, routeSections, routeStretches, runStretches, wayPieces } from '../model/routeSearch.js'
+import { boundaryTarget, newBoundaryTarget, nextSignals, routeSections, routeStretches, runStretches, wayPieces } from '../model/routeSearch.js'
 
 /** The kinds of route, each with the type it starts with. */
 const KINDS = { train: { trainType: 'ZZ' }, shunting: { shuntingType: 'RR' }, middle: { middleType: 'ZM' } }
@@ -400,6 +400,10 @@ function RouteSectionList({ sections, t }) {
     : <p className="ui-muted">{t('route_sections_none')}</p>
 }
 
+/** The ways from a signal to the next main signals, and to a boundary of the planning area: there to the virtual signal that ends it, or one to come. */
+const waysFrom = (net, signals, start) => nextSignals(net, signals, start, { boundaries: true })
+  .map(f => (f.boundary ? { ...f, target: boundaryTarget(signals, f) } : f))
+
 /**
  * Finding routes from a signal — chosen in the list or on the plan —: every
  * next main signal ahead of it on every way, each a route, with the track
@@ -416,29 +420,35 @@ function FindRoutes({ domain, net, extents, ops, setMode, setSketch, t }) {
   const [skipped, setSkipped] = useState(() => new Set())
   const [done, setDone] = useState(null)
   const start = mains.find(s => s.id === startId) ?? null
-  const keyOf = (f) => `${f.target.id}|${f.trackIds.join()}`
-  const found = useMemo(() => (start ? nextSignals(net, signals, start) : []), [net, signals, start])
-  const exists = (startSig, f) => routes.some(r => r.startSignalId === startSig.id && r.targetSignalId === f.target.id && r.path.trackIds.join() === f.trackIds.join())
+  const keyOf = (f) => `${f.target?.id ?? f.boundary.mark.id}|${f.trackIds.join()}`
+  const found = useMemo(() => (start ? waysFrom(net, signals, start) : []), [net, signals, start])
+  const exists = (startSig, f) => !!f.target && routes.some(r => r.startSignalId === startSig.id && r.targetSignalId === f.target.id && r.path.trackIds.join() === f.trackIds.join())
   const fresh = found.filter(f => !exists(start, f))
   const chosen = fresh.filter(f => !skipped.has(keyOf(f)))
+  const endOf = (f) => f.target?.at ?? f.boundary.at
 
   // The ways found on the plan, each from the signal to the next, and the signals at their ends.
   useEffect(() => {
     setSketch?.(found.length ? {
-      ways: found.map(f => ({ pieces: wayPieces(runStretches(net, start.at, f.trackIds, f.target.at)), strong: true })),
-      ids: [start.id, ...found.map(f => f.target.id)],
+      ways: found.map(f => ({ pieces: wayPieces(runStretches(net, start.at, f.trackIds, endOf(f))), strong: true })),
+      ids: [start.id, ...found.map(f => f.target?.id).filter(Boolean)],
     } : null)
   }, [found, start, net, setSketch])
   useEffect(() => () => setSketch?.(null), [setSketch])
 
-  /** The routes of `ways` from their signals put in the draft, the speeds given signalled, the elements' elsewhere. */
+  /** The routes of `ways` from their signals put in the draft, the speeds given signalled, the elements' elsewhere; a boundary given its virtual signal. */
   const make = (ways) => {
     let next = domain
     const made = []
     for (const { start: from, way, speed } of ways) {
-      const rank = next.collections.routes.filter(r => r.startSignalId === from.id && r.targetSignalId === way.target.id).length
+      let target = way.target ?? boundaryTarget(next.collections.signals, way)
+      if (!target) {
+        target = newBoundaryTarget(net, way)
+        next = added(next, 'signals', target)
+      }
+      const rank = next.collections.routes.filter(r => r.startSignalId === from.id && r.targetSignalId === target.id).length
       const route = {
-        id: newId(), kind: 'train', trainType: 'ZZ', startSignalId: from.id, targetSignalId: way.target.id,
+        id: newId(), kind: 'train', trainType: 'ZZ', startSignalId: from.id, targetSignalId: target.id,
         path: { trackIds: way.trackIds }, ...(rank ? { rank } : {}),
       }
       next = added(next, 'routes', route)
@@ -455,7 +465,7 @@ function FindRoutes({ domain, net, extents, ops, setMode, setSketch, t }) {
     setSpeeds({})
   }
   const takeAll = () => {
-    const ways = mains.flatMap(s => nextSignals(net, signals, s).filter(f => !exists(s, f)).map(way => ({ start: s, way, speed: null })))
+    const ways = mains.flatMap(s => waysFrom(net, signals, s).filter(f => !exists(s, f)).map(way => ({ start: s, way, speed: null })))
     setDone(t('find_routes_done_all', { n: make(ways), signals: mains.length }))
   }
   const km = (m) => (m >= 1000 ? `${(m / 1000).toLocaleString('de', { maximumFractionDigits: 2 })} km` : `${Math.round(m)} m`)
@@ -474,13 +484,16 @@ function FindRoutes({ domain, net, extents, ops, setMode, setSketch, t }) {
     {found.map(f => {
       const key = keyOf(f)
       const there = exists(start, f)
-      const route = { startSignalId: start.id, targetSignalId: f.target.id, path: { trackIds: f.trackIds } }
-      const derived = shownSpeed(routeElementSpeed(net, route, signals)?.speed)
+      // A boundary without its signal yet is reckoned to the track's end.
+      const target = f.target ?? { id: '', at: f.boundary.at }
+      const route = { startSignalId: start.id, targetSignalId: target.id, path: { trackIds: f.trackIds } }
+      const derived = shownSpeed(routeElementSpeed(net, route, f.target ? signals : [...signals, target])?.speed)
+      const name = f.target ? signalDesignation(f.target, t) : t('find_routes_boundary', { name: newBoundaryTarget(net, f).name })
       return (
         <div key={key} className="tool-found-route">
           <div className="ui-row">
             <span className="ui-grow">
-              <Checkbox label={`→ ${signalDesignation(f.target, t)} · ${km(f.length)}${there ? ` · ${t('find_routes_there')}` : ''}`}
+              <Checkbox label={`→ ${name} · ${km(f.length)}${there ? ` · ${t('find_routes_there')}` : ''}`}
                 checked={!there && !skipped.has(key)} disabled={there}
                 onChange={(on) => setSkipped(prev => { const n = new Set(prev); if (on) n.delete(key); else n.add(key); return n })} />
             </span>

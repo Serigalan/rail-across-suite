@@ -1,5 +1,5 @@
 import { aspectOf, aspectSpeed } from '@rail-across/core/signalling'
-import { directionOf, findPath, offsetOnPath, pathLength } from './path.js'
+import { directionOf, findPath, offsetOnPath, pathAlong, pathLength } from './path.js'
 
 const LF7 = aspectOf('Lf_7')
 
@@ -37,7 +37,8 @@ export function routeThrough(record, points) {
  * it found no way to (0 where the start has no place).
  *
  * `legPath(i, from, direction, to)`, where given, is asked first for the leg
- * to point `i`: a path, or nothing where that leg takes the shortest way.
+ * to point `i`: a path, nothing where that leg takes the shortest way, or
+ * false where it has no way there.
  */
 export function routeVia(record, points, { tries = 200, legPath = null } = {}) {
   let failedAt = 1
@@ -69,6 +70,35 @@ export function routeVia(record, points, { tries = 200, legPath = null } = {}) {
     if (left <= 0) break
   }
   return { failedAt: points[0]?.length ? failedAt : 0 }
+}
+
+/**
+ * A leg over the routes it is told to take (a dispatcher's choice, where the
+ * route it would run is held): from `from`, left the way `direction` says, to
+ * each route's start signal the shortest way, along the route's tracks to its
+ * target, and on to `to` the shortest way — or, where `to` lies on the last
+ * route, along it there. `routes` [{ at, trackIds, target }] in running
+ * order — `at` the start signal's location, `target` the target's, each with
+ * the way it acts. A path, or null where it does not lead there.
+ */
+export function legThrough(record, from, direction, routes, to) {
+  let path = []
+  let at = { ...from, direction: direction ?? from.direction ?? null }
+  for (const [i, r] of routes.entries()) {
+    const head = findPath(record, at, r.at)
+    if (!head) return null
+    const k = r.trackIds.indexOf(to.trackId)
+    if (i === routes.length - 1 && k >= 0) {
+      const along = pathAlong(record, r.trackIds.slice(0, k + 1), r.at, to, r.at.direction)
+      if (along) return joined(joined(path, head), along)
+    }
+    const run = pathAlong(record, r.trackIds, r.at, r.target, r.at.direction)
+    if (!run) return null
+    path = joined(joined(path, head), run)
+    at = { ...r.target, direction: run.length ? directionOf(run[run.length - 1]) : r.target.direction }
+  }
+  const tail = findPath(record, at, to)
+  return tail ? joined(path, tail) : null
 }
 
 /**

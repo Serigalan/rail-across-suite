@@ -1,4 +1,4 @@
-import { crossingSpeed, marginValue, pathAlong, pathLength, placeOf, routeVia, simulationRequest, stationTargets, stationsAlong, timeAtPosition } from '@rail-across/running-times'
+import { crossingSpeed, legThrough, marginValue, pathAlong, pathLength, placeOf, routeVia, simulationRequest, stationTargets, stationsAlong, timeAtPosition } from '@rail-across/running-times'
 
 /**
  * The timetables of the suite (decision 0016): a project's trains, each with
@@ -206,9 +206,12 @@ export function routePoints(train, stations) {
  * `holds` are where it waits for a block to be free (occupancy.js), [{
  * offset, wait, point }]: at a point it stops at, longer — at its first, it
  * leaves later (`startWait`) —; with `point` null, at a stop of its own on
- * the way, before a signal.
+ * the way, before a signal. `routes` are the routes it is sent over where
+ * the one it would run is held (occupancy.js), [{ leg, signalId, routeId,
+ * at, trackIds, target }] — `leg` the index of the point it runs from there
+ * (legThrough); they come before a way it prefers.
  */
-export function trainRequest(record, stations, train, vehicle, holds = []) {
+export function trainRequest(record, stations, train, vehicle, holds = [], routes = []) {
   const points = routePoints(train, stations)
   // A leg with a way preferred runs from its start's stopping place to its target's, along it where it leads there.
   const { legs, missing } = preferredLegs(record, stations, train)
@@ -220,6 +223,8 @@ export function trainRequest(record, stations, train, vehicle, holds = []) {
   const taken = new Map()
   const route = routeVia(record, points, {
     legPath: (i, from, direction, to) => {
+      const sent = routes.filter(r => r.leg === i - 1)
+      if (sent.length) return legThrough(record, from, direction, sent, to) ?? false
       const leg = legs[i - 1]
       if (!leg) return null
       const path = pathAlong(record, leg.trackIds, from, to, direction)
@@ -335,17 +340,18 @@ export function trainTimes(train, stations, made, result) {
  * A train run: its way and request, simulated with `simulate` (the module's,
  * async), and its times. { route, request, properties, result, rows, clock }
  * — or { problems }, { failedAt } or { error } where it cannot be run.
- * `holds` where it waits for a block (trainRequest).
+ * `holds` where it waits for a block, `routes` the routes it is sent over
+ * (trainRequest).
  */
-export async function runTrain(record, stations, train, vehicle, simulate, holds = []) {
+export async function runTrain(record, stations, train, vehicle, simulate, holds = [], routes = []) {
   const problems = trainProblems(train, stations, { vehicle: Boolean(vehicle) })
   if (problems.length) return { problems }
-  const made = trainRequest(record, stations, train, vehicle, holds)
+  const made = trainRequest(record, stations, train, vehicle, holds, routes)
   if (made.failedAt != null) return { failedAt: made.failedAt }
   const result = await simulate(made.request)
   if (result.error) return { error: result.error }
   const late = { ...train, departure: train.departure + made.startWait }
-  return { ...made, holds, result, rows: trainTimes(late, stations, made, result), clock: runClock(late, made, result) }
+  return { ...made, holds, routes, result, rows: trainTimes(late, stations, made, result), clock: runClock(late, made, result) }
 }
 
 /** The key a train's run is known by: what it is run with, so a run is only made again when that changes. */

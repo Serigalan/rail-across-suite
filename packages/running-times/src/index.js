@@ -3,7 +3,7 @@
 // simulation core in Rust, sim/), the stations along the way — for the
 // Simulation-Tool and the Fahrplan-Editor.
 export { curveResistance, directionOf, findPath, heightProfile, locationAt, offsetOnPath, pathAlong, pathLength, pathProperties } from './path.js'
-export { routeThrough, routeVia, signalledSpeeds } from './route.js'
+export { legThrough, routeThrough, routeVia, signalledSpeeds } from './route.js'
 export { governedLimits, marginValue, simulationRequest } from './request.js'
 export { runWith, simulate } from './engine.js'
 export { lngLatAt, nearestLocation, netGeoJSON, netLines, pathGeoJSON, placesOf } from './places.js'

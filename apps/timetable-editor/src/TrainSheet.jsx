@@ -336,18 +336,23 @@ const signalName = (record, id) => {
 }
 
 /**
- * The blocks the train holds: where it waits for one another holds — at its
- * start, at a stop, before a signal — and for which trains; where it holds
+ * The blocks the train holds: where it takes another route from a signal
+ * than its own, as another train holds that; where it waits for one another
+ * holds — at its start, at a stop, before a signal — and for which trains; where it holds
  * one another holds at the same time, a conflict, with the time both hold it.
  */
 function OccupancyCard({ t, train, run, record, stations, titles }) {
-  const { blocks, waits = [], conflicts = [] } = run
+  const { blocks, waits = [], detours = [], conflicts = [] } = run
   const names = (ids) => ids.map(id => titles.get(id) ?? '?').join(', ')
   const waitLine = (w) => {
     const of = { wait: duration(t, w.wait), trains: names(w.because) }
     if (w.point === 0) return t('wait_start', of)
     if (w.point != null) return t('wait_stop', { ...of, station: shown(stations, train.points[w.point]) })
     return t('wait_signal', { ...of, signal: signalName(record, w.signalId) ?? '?' })
+  }
+  const detourLine = (d) => {
+    const route = record?.signalling?.collections?.routes?.find(r => r.id === d.routeId)
+    return t('detour_signal', { signal: signalName(record, d.signalId) ?? '?', target: signalName(record, route?.targetSignalId) ?? '?', trains: names(d.because) })
   }
   const blockName = (i) => (blocks[i]?.signalId ? t('block_from', { signal: signalName(record, blocks[i].signalId) }) : t('block_start'))
   const sectionName = (id) => record?.signalling?.collections?.trackSections?.find(x => x.id === id)?.name ?? '?'
@@ -363,8 +368,9 @@ function OccupancyCard({ t, train, run, record, stations, titles }) {
     <section className="tt-card">
       <h2>{t('card_occupancy')}</h2>
       <p className="ui-muted">{t(blocks.length > 1 ? 'blocks_n' : 'blocks_one', { n: blocks.length })}</p>
-      {waits.length > 0 && (
+      {(waits.length > 0 || detours.length > 0) && (
         <ul className="tt-waits">
+          {detours.map((d, i) => <li key={`d${i}`}>{detourLine(d)}</li>)}
           {waits.map((w, i) => <li key={i}>{waitLine(w)}</li>)}
           {run.delay > 0.5 && <li><strong>{t('wait_delay', { delay: duration(t, run.delay) })}</strong></li>}
         </ul>
@@ -379,7 +385,7 @@ function OccupancyCard({ t, train, run, record, stations, titles }) {
           </ul>
         </>
       )}
-      {!waits.length && !shown.length && <p className="ui-muted">{t('blocks_free')}</p>}
+      {!waits.length && !detours.length && !shown.length && <p className="ui-muted">{t('blocks_free')}</p>}
     </section>
   )
 }

@@ -21,16 +21,34 @@ import { directionOf, pathLength } from '@rail-across/running-times'
  * trains conflict where they hold the same section, or a stretch of the
  * same track no section covers, at the same time.
  *
+ * An overlap is released with its block, or, where the train comes to a
+ * stand before the block's end signal, once it has stood there a while
+ * (`overlap`): the train behind the signal cannot run into it any more.
+ *
  * A timetable's `dispatch` says what is done about it: `mode` 'show' runs
  * every train for itself and says where they conflict, as OSRD does; 'wait'
- * runs them one after the other — by departure, or by the order of their
- * kinds (`priority` 'category', `categories` first first) — and a train
- * whose block is held waits for it: longer at its last stop before the
- * block, else before the block's signal, else at its start.
+ * sets the trains' routes one after the other in time, as an interlocking
+ * does — the train that asks first first; at the same moment the one first
+ * by departure, or by the order of their kinds (`priority` 'category',
+ * `categories` first first). A train asks for its next block as it nears the
+ * block's signal, and gets it where none of its track sections is held then
+ * by another train — by the blocks the other has been given, as far as it
+ * has got. Where one is held, the train takes another route from that
+ * signal (one of the signalling's) that is free and still leads to where it
+ * runs — into the other track of a station to cross a train there —, else
+ * it waits for the route that is freed first: longer at its last stop
+ * before the block, else before the block's signal, else at its start.
  */
 
-/** How long a block is held beyond the train's own running in it: [s], the distant signal's distance [m]. */
-export const BLOCKING = { setup: 12, approach: 1000, release: 6 }
+/**
+ * How long a block is held beyond the train's own running in it: [s], the
+ * distant signal's distance [m]; how long a train stands before a signal
+ * before its overlap is released [s].
+ */
+export const BLOCKING = { setup: 12, approach: 1000, release: 6, overlap: 60 }
+
+/** How far before a block's end signal a train stands for its overlap to be released [m]. */
+const BEFORE_SIGNAL = 200
 
 /** The way conflicts are dealt with where a timetable says nothing. */
 export const DISPATCH = { mode: 'wait', priority: 'departure', categories: ['ICE', 'EC', 'IC', 'IRE', 'RE', 'RB', 'S', 'Dz', 'Gz', 'Lz'], times: BLOCKING }
@@ -138,8 +156,8 @@ function uncovered(spans, from, to) {
  * the first, where the train starts), `targetId` the one it ends at (null for
  * the last); `from`, `to` its offsets along the path, `reach` the end of the
  * overlap beyond `to`; `stretches` what it covers of the tracks, the overlap
- * with it; `sections` the track sections it holds [{ id, to }], `to` where
- * along the path the train has run through it; `free` the stretches of it no
+ * with it; `sections` the track sections it holds [{ id, from, to }], where
+ * along the path the train runs into it and has run through it; `free` the stretches of it no
  * section covers.
  */
 export function blocksAlong(record, path) {
@@ -156,7 +174,7 @@ export function blocksAlong(record, path) {
     return {
       index: i, signalId: c.signal?.id ?? null, targetId: next?.signal.id ?? null, from: c.offset, to, reach,
       stretches: stretchesOf(path, c.offset, reach),
-      sections: held.map(s => ({ id: s.id, to: Math.min(s.to, reach) })),
+      sections: held.map(s => ({ id: s.id, from: Math.max(s.from, c.offset), to: Math.min(s.to, reach) })),
       free: uncovered(held, c.offset, reach).flatMap(([a, b]) => stretchesOf(path, a, b)),
     }
   })
@@ -178,8 +196,11 @@ export function blockingTimes(blocks, clock, trainLength, times = BLOCKING) {
       return (b.targetId == null || clear >= clock.length - 1e-6 ? clock.end : clock.first(clear)) + times.release
     }
     const end = leftAt(b.to)
-    // A section is released once the train has left it; one of the overlap, with the block.
-    const sections = (b.sections ?? []).map(s => ({ ...s, end: Math.min(end, leftAt(Math.min(s.to, b.to))) }))
+    // Where it comes to a stand before the block's end signal, its overlap is released a while after.
+    const stand = b.targetId == null ? null : clock.standstills.find(s => s.offset <= b.to + 1e-6 && s.offset >= b.to - BEFORE_SIGNAL)
+    const overlapEnd = stand ? Math.min(end, clock.first(stand.offset) + (times.overlap ?? BLOCKING.overlap)) : end
+    // A section is released once the train has left it; one of the overlap, with the block or once it stands.
+    const sections = (b.sections ?? []).map(s => ({ ...s, end: s.from >= b.to - 0.5 ? overlapEnd : Math.min(end, leftAt(Math.min(s.to, b.to))) }))
     return { ...b, begin: begin - times.setup, end, sections }
   })
 }
@@ -228,12 +249,15 @@ export function conflictsOf(blocks, others) {
   return out.sort((a, b) => a.block - b.block || a.begin - b.begin)
 }
 
+/** A train's class in giving the net: the place of its kind among `categories` where they come first, else all one. */
+function classOf(tr, { priority, categories }) {
+  const i = categories.indexOf(String(tr.category ?? '').trim())
+  return priority === 'category' ? (i < 0 ? categories.length : i) : 0
+}
+
 /** The trains in the order they are given the net: by departure, or by the order of their kinds, then by departure. */
-export function byPriority(trains, { priority, categories }) {
-  const rank = (tr) => {
-    const i = categories.indexOf(String(tr.category ?? '').trim())
-    return priority === 'category' ? (i < 0 ? categories.length : i) : 0
-  }
+export function byPriority(trains, dispatch) {
+  const rank = (tr) => classOf(tr, dispatch)
   return [...trains].sort((a, b) => rank(a) - rank(b) || a.departure - b.departure || String(a.number).localeCompare(String(b.number), 'de', { numeric: true }))
 }
 
@@ -254,20 +278,26 @@ export function holdBefore(run, block, blocks, approach) {
   return { offset: Math.max(block.from - 10, (before?.from ?? 0) + 1), point: null, signalId: block.signalId }
 }
 
-const MAX_STEPS = 40
+/** How many decisions the dispatcher makes for each train at the most, before it lets the rest run as they would. */
+const STEPS_PER_TRAIN = 80
+
+/** How often a train asks again for a block another may yet hold longer, before it waits for it as it stands. */
+const ASKS = 20
 
 /**
- * The runs of a timetable's trains over the net of `record`, with their blocks: Map id → run with {
- * blocks, conflicts, waits, delay } — `waits` [{ offset, point, signalId,
- * wait, because }] where it waits, before which signal's block, for whom;
- * `delay` how much later it arrives than run for itself — for every train
- * `runOf(train, holds)` (async)
- * can run. In mode 'wait' a train waits where a train before it holds a
- * block; what it cannot wait away is a conflict all the same.
+ * The runs of a timetable's trains over the net of `record`, with their
+ * blocks: Map id → run with { blocks, conflicts, waits, detours, delay } —
+ * `waits` [{ offset, point, signalId, wait, because }] where it waits,
+ * before which signal's block, for whom; `detours` [{ signalId, routeId,
+ * because }] the routes it was sent over as the one it would run was held,
+ * by whom; `delay` how much later it arrives than run for itself — for
+ * every train `runOf(train, holds, routes)` (async) can run. In mode 'wait'
+ * the routes are set as the trains ask for them (dispatch); what cannot be
+ * waited away is a conflict all the same.
  */
 export async function occupancy(record, trains, runOf, dispatch = DISPATCH) {
   const times = dispatch.times ?? BLOCKING
-  const timed = (train, run) => {
+  const timed = (run) => {
     if (!run?.rows) return run
     const blocks = blockingTimes(blocksAlong(record, run.route.path), run.clock, run.request.rolling_stock.length, times)
     return { ...run, blocks }
@@ -278,7 +308,7 @@ export async function occupancy(record, trains, runOf, dispatch = DISPATCH) {
 
   if (dispatch.mode !== 'wait') {
     for (const train of trains) {
-      const run = timed(train, await runOf(train, []))
+      const run = timed(await runOf(train, []))
       out.set(train.id, run)
       if (run?.blocks) place(train.id, run.blocks)
     }
@@ -289,33 +319,163 @@ export async function occupancy(record, trains, runOf, dispatch = DISPATCH) {
     return out
   }
 
-  for (const train of byPriority(trains, dispatch)) {
-    let holds = []
-    let run = timed(train, await runOf(train, holds))
-    const free = run?.clock?.end
-    const because = new Map()   // hold offset → ids of the trains it waits for
-    for (let step = 0; run?.blocks && step < MAX_STEPS; step++) {
-      const found = conflictsOf(run.blocks, placed)
-      if (!found.length) break
-      // The first block held: wait until every train holding it then has left it.
-      const block = run.blocks[found[0].block]
-      const holding = found.filter(c => c.block === block.index)
-      const until = Math.max(...holding.map(c => c.until))
-      const hold = holdBefore(run, block, run.blocks, times.approach)
-      const leaves = hold.point === 0 ? run.clock.at0 : run.clock.last(hold.offset)
-      const more = Math.max(1, Math.ceil(until + times.setup - leaves))
-      const same = holds.find(h => Math.abs(h.offset - hold.offset) < 1e-6 && h.point === hold.point)
-      // a wait further back makes those after it start anew
-      holds = [...holds.filter(h => h.offset < hold.offset - 1e-6), { ...hold, wait: (same?.wait ?? 0) + more }]
-      because.set(hold.offset, [...new Set([...(because.get(hold.offset) ?? []), ...holding.map(c => c.other)])])
-      run = timed(train, await runOf(train, holds))
-    }
-    if (run?.blocks) {
-      out.set(train.id, {
-        ...run, conflicts: conflictsOf(run.blocks, placed), waits: holds.map(h => ({ ...h, because: because.get(h.offset) ?? [] })), delay: run.clock.end - free,
-      })
-      place(train.id, run.blocks)
-    } else out.set(train.id, run)
+  // Kind by kind where the kinds come first, the trains of each as they ask, around those of the kinds before.
+  let states = []
+  const ordered = byPriority(trains, dispatch)
+  for (const c of [...new Set(ordered.map(tr => classOf(tr, dispatch)))]) {
+    states = await dispatched(record, ordered.filter(tr => classOf(tr, dispatch) === c), runOf, timed, times, states)
+  }
+  for (const st of states) if (st.run?.blocks) place(st.train.id, st.run.blocks)
+  for (const st of states) {
+    if (!st.run?.blocks) { out.set(st.train.id, st.run); continue }
+    out.set(st.train.id, {
+      ...st.run,
+      conflicts: conflictsOf(st.run.blocks, placed.filter(p => p.id !== st.train.id)),
+      waits: st.holds.map(h => ({ ...h, because: st.because.get(h.offset) ?? [] })),
+      detours: st.routes.map(r => ({ signalId: r.signalId, routeId: r.routeId, because: r.because ?? [] })),
+      delay: st.run.clock.end - st.free,
+    })
   }
   return out
 }
+
+/**
+ * Setting the trains' routes as they ask for them (occupancy, mode 'wait'):
+ * [{ train, run, holds, routes, because, free }] for each train, those dealt
+ * with `before` first — their routes set, as they hold them —, then
+ * `trains`, in the order they come first at the same moment. Each train asks for its
+ * blocks one by one; the one that asks first is dealt with first. A block is
+ * given where none of what it holds is held by the blocks given to the
+ * others; where another may yet hold its last block longer — it has not yet
+ * asked for its next, and may come to a stand before it —, the train asks
+ * again once that one has. Else another route from the block's signal is
+ * taken that is free, or the train waits for the one freed first.
+ */
+async function dispatched(record, trains, runOf, timed, times, before = []) {
+  const collections = record?.signalling?.collections ?? {}
+  const signals = new Map((collections.signals ?? []).map(s => [s.id, s]))
+  const routesFrom = new Map()
+  for (const r of collections.routes ?? []) if (r.kind === 'train') routesFrom.set(r.startSignalId, [...(routesFrom.get(r.startSignalId) ?? []), r])
+  const states = [...before]
+  for (const [rank, train] of trains.entries()) {
+    const run = timed(await runOf(train, [], []))
+    states.push({ train, rank, run, holds: [], routes: [], because: new Map(), free: run?.clock?.end, granted: 0, again: -Infinity, asks: 0 })
+  }
+  const live = states.filter(st => st.run?.blocks?.length)
+  // When a train asks for its next block: as it nears its signal, or again later.
+  const askAt = (st) => Math.max(st.run.blocks[st.granted].begin, st.again)
+  const asking = (st) => st.granted < st.run.blocks.length
+  // Waiting to ask again: for another's next step, not for its block.
+  const waiting = (st) => st.again > st.run.blocks[st.granted].begin
+  // What a train holds as others see it at `now`: the blocks it has been given. Of its last one, while it has not
+  // got its next, what it would not have left standing before that block's signal is held until it goes on — its
+  // overlap only until a while after it would stand there; a block without track sections as a whole.
+  const heldBy = (st, now) => {
+    const given = st.run.blocks.slice(0, st.granted)
+    if (!given.length || !asking(st)) return given
+    const at = askAt(st)
+    if (at <= now && !waiting(st)) return given
+    const last = given[given.length - 1]
+    const stand = holdBefore(st.run, st.run.blocks[st.granted], st.run.blocks, times.approach).offset
+    const length = st.run.request.rolling_stock.length
+    const stood = st.run.clock.first(stand) + (times.overlap ?? BLOCKING.overlap)
+    const sections = (last.sections ?? []).map(x => {
+      if (x.from >= last.to - 0.5) return { ...x, end: Math.min(x.end, stood) }
+      return x.to + length > stand - 1e-6 ? { ...x, end: Infinity } : x
+    })
+    return [...given.slice(0, -1), { ...last, end: last.end > at ? Infinity : last.end, sections }]
+  }
+  /** Whether a block is free for a train at `now`: { free, until, again, by } — held until `until`, or to be asked for again at `again`. */
+  const verdict = (st, block, now) => {
+    let until = -Infinity, again = null
+    const by = new Set()
+    for (const o of live) {
+      if (o === st) continue
+      for (const ob of heldBy(o, now)) {
+        for (const c of shared(block, ob)) {
+          by.add(o.train.id)
+          if (c.until === Infinity) again = Math.min(again ?? Infinity, askAt(o))
+          else until = Math.max(until, c.until)
+        }
+      }
+    }
+    return { free: !by.size, until, again, by: [...by] }
+  }
+  /** The other routes from a block's signal a train may take there: [{ run, routes, route }] — those that still lead to where it runs. */
+  const otherRoutes = async (st, block) => {
+    const signal = signals.get(block.signalId)
+    if (signal?.at?.anchor !== 'station') return []
+    const leg = st.run.route.offsets.findLastIndex(o => o <= block.from + 1e-6)
+    const runs = []
+    for (const route of routesFrom.get(signal.id) ?? []) {
+      const target = signals.get(route.targetSignalId)
+      if (target?.at?.anchor !== 'station' || !route.path?.trackIds?.length) continue
+      const sent = { leg, signalId: signal.id, routeId: route.id, at: signal.at, trackIds: route.path.trackIds, target: target.at }
+      const routes = [...st.routes.filter(r => r.signalId !== signal.id), sent]
+      const run = timed(await runOf(st.train, st.holds, routes.map(({ because: _b, ...r }) => r)))
+      const b = run?.blocks?.[block.index]
+      if (!b || b.signalId !== signal.id || Math.abs(b.from - block.from) > 1) continue
+      // the way it runs already
+      if (sameWay(b.stretches, block.stretches)) continue
+      runs.push({ run, routes, route: sent })
+    }
+    return runs
+  }
+  const rerun = async (st) => {
+    st.run = timed(await runOf(st.train, st.holds, st.routes.map(({ because: _b, ...r }) => r)))
+    return st.run?.blocks
+  }
+
+  let steps = STEPS_PER_TRAIN * trains.length + 50
+  while (steps-- > 0) {
+    const open = live.filter(asking)
+    if (!open.length) break
+    const now = Math.min(...open.map(askAt))
+    const st = open.filter(x => askAt(x) === now).sort((a, b) => a.rank - b.rank)[0]
+    const block = st.run.blocks[st.granted]
+    const mine = verdict(st, block, now)
+    if (mine.free) { st.granted++; st.again = -Infinity; st.asks = 0; continue }
+    // Another route from the same signal, free now.
+    const options = [{ run: st.run, routes: st.routes, v: mine }]
+    if (block.signalId) {
+      for (const o of await otherRoutes(st, block)) options.push({ ...o, v: verdict(st, o.run.blocks[block.index], now) })
+    }
+    const free = options.find(o => o.v.free)
+    if (free) {
+      if (free.route) {
+        free.route.because = mine.by
+        st.run = free.run
+        st.routes = free.routes
+      }
+      st.granted++; st.again = -Infinity; st.asks = 0
+      continue
+    }
+    // Held only as long as another may yet hold it: ask again once it has gone on.
+    const later = options.map(o => o.v.again).filter(a => a != null)
+    if (later.length && st.asks++ < ASKS) { st.again = Math.min(...later) + 1e-3; continue }
+    // Held: wait for the route freed first.
+    const until = (o) => (o.v.again != null ? Math.max(o.v.until, o.v.again) : o.v.until)
+    const best = options.reduce((a, b) => (until(b) < until(a) ? b : a))
+    if (best.route) {
+      best.route.because = mine.by
+      st.run = best.run
+      st.routes = best.routes
+    }
+    const held = st.run.blocks[block.index]
+    const hold = holdBefore(st.run, held, st.run.blocks, times.approach)
+    const leaves = hold.point === 0 ? st.run.clock.at0 : st.run.clock.last(hold.offset)
+    const more = Math.max(1, Math.ceil(until(best) + times.setup - leaves))
+    const same = st.holds.find(h => Math.abs(h.offset - hold.offset) < 1e-6 && h.point === hold.point)
+    // a wait further back makes those after it start anew
+    st.holds = [...st.holds.filter(h => h.offset < hold.offset - 1e-6), { ...hold, wait: (same?.wait ?? 0) + more }]
+    st.because.set(hold.offset, [...new Set([...(st.because.get(hold.offset) ?? []), ...best.v.by])])
+    st.again = -Infinity
+    st.asks = 0
+    // a train that cannot be run so any more drops out
+    if (!await rerun(st)) live.splice(live.indexOf(st), 1)
+  }
+  return states
+}
+
+/** Whether two lists of stretches cover the same track. */
+const sameWay = (xs, ys) => xs.length === ys.length && xs.every((x, i) => x.trackId === ys[i].trackId && Math.abs(x.lo - ys[i].lo) < 1 && Math.abs(x.hi - ys[i].hi) < 1)

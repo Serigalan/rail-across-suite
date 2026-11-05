@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { identifyTrackLine } from '../utils/km'
+import { currentProject } from '../storage'
 
 /** How long the geometry has to hold still before the lines are looked up. */
 const SETTLE_MS = 300
@@ -12,6 +13,9 @@ const SETTLE_MS = 300
  * `geometry` is the track as it would be saved, `{ epsg, path }` in its plane,
  * or null while there is none yet. It is compared by content, so a caller may
  * build it afresh on every render.
+ *
+ * The project's own kilometrage lines take part (identifyTrackLine), so a track
+ * beside an imported line is named after it too.
  *
  * Once the geometry settles, the nearest line's number is written into the
  * fields through `setField` — its name follows from the number where the
@@ -45,7 +49,7 @@ export default function useLineStation(fields, geometry, setField) {
     if (!geometryKey) return
     let live = true
     const timer = setTimeout(() => {
-      identifyTrackLine(geometryRef.current, chosen)
+      identifyTrackLine(geometryRef.current, chosen, { localLines: currentProject()?.kmLines })
         .then((hit) => {
           if (!live) return
           // Nothing near: a number filled in for an earlier position is no

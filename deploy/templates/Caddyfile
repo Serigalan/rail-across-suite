@@ -43,6 +43,10 @@
 			}
 		}
 		root * @RA_SITE_ROOT@
+		# A page names the hashed files of its build: asked for again each
+		# time (an unchanged one answers 304), so a deploy reaches an open
+		# browser on its next load instead of when its cache gives up.
+		header Cache-Control no-cache
 		file_server
 	}
 

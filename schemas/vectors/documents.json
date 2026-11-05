@@ -6735,7 +6735,7 @@
     },
     "signalling": {
      "version": "1.0",
-     "schema": "sha256:aeb06433b03125995823095d7ab89567311237560cbc3b9e6a954385305f0134",
+     "schema": "sha256:b28ada7513c555fa4696ff2b41c73bb7565143854c08e2e9bfb067e99018910c",
      "dependsOn": [
       "core"
      ],
@@ -6831,15 +6831,17 @@
         "id": "sig-n1",
         "name": "N1",
         "kind": "real",
-        "mounting": "mast",
+        "mounting": "gantry",
         "operationalPointId": "Halle-Trotha",
         "at": {
          "anchor": "station",
          "trackId": "t1",
          "station": 230,
-         "side": "right",
-         "offset": 3.1,
          "direction": "up"
+        },
+        "foundation": {
+         "side": "right",
+         "offset": 3.8
         },
         "logicalSignals": [
          {
@@ -7315,7 +7317,7 @@
     },
     "signalling": {
      "version": "1.0",
-     "schema": "sha256:aeb06433b03125995823095d7ab89567311237560cbc3b9e6a954385305f0134",
+     "schema": "sha256:b28ada7513c555fa4696ff2b41c73bb7565143854c08e2e9bfb067e99018910c",
      "dependsOn": [
       "core"
      ],
@@ -7327,7 +7329,7 @@
       "itineraries": "sha256:48fa57878f19759e28d9bc188310030a7bd27e244d1e2f4726e27ce637de77ce",
       "overlaps": "sha256:3dc90110fb0c0f878b841fd5d497829f036e5627d4099479d1726c8905b62e3e",
       "routes": "sha256:8460ec8eb8679ccbafe0fd56878bbaf049e8c8562d45d2c675607f5a48784be2",
-      "signals": "sha256:1dd74c06b897b1b9f01f33432da145754ca9c51d2915dc35ef4182da1c830da8",
+      "signals": "sha256:3624a073869c27efacceb6c1be05daca17f3d8419dc9e3f073feea432bfe5ef3",
       "stationBoundaries": "sha256:54556f1e20a2e22fd145c8d0f66b92640b25f50b66da610ebd8ae7126412d496",
       "stoppingPlaces": "sha256:74d0ecd0dd5493c8be6f74e74b225c3257e97d820fb734a8bfecffab6917aad3",
       "switchElements": "sha256:fe471ee1c255021503a7e8f6862566e6d5aeb76a76cad3782b7ce37c87adb591",
@@ -7336,7 +7338,7 @@
     }
    }
   },
-  "hash": "sha256:ba2d9e20c1186d86a5abb9cc9248db76eb460f33ad32b0baf6da6413b1b20c71"
+  "hash": "sha256:912bf6b1bdec2a029e1e6b5a10d5e2efd795df019ca093c2e15920439a8602fa"
  },
  {
   "name": "the sample with its signalling, carrying its schemas",
@@ -7610,7 +7612,7 @@
     },
     "signalling": {
      "version": "1.0",
-     "schema": "sha256:aeb06433b03125995823095d7ab89567311237560cbc3b9e6a954385305f0134",
+     "schema": "sha256:b28ada7513c555fa4696ff2b41c73bb7565143854c08e2e9bfb067e99018910c",
      "dependsOn": [
       "core"
      ],
@@ -7706,15 +7708,17 @@
         "id": "sig-n1",
         "name": "N1",
         "kind": "real",
-        "mounting": "mast",
+        "mounting": "gantry",
         "operationalPointId": "Halle-Trotha",
         "at": {
          "anchor": "station",
          "trackId": "t1",
          "station": 230,
-         "side": "right",
-         "offset": 3.1,
          "direction": "up"
+        },
+        "foundation": {
+         "side": "right",
+         "offset": 3.8
         },
         "logicalSignals": [
          {
@@ -9223,7 +9227,7 @@
       }
      }
     },
-    "sha256:aeb06433b03125995823095d7ab89567311237560cbc3b9e6a954385305f0134": {
+    "sha256:b28ada7513c555fa4696ff2b41c73bb7565143854c08e2e9bfb067e99018910c": {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
      "$id": "signalling",
      "title": "Rail-Data-Core, domain signalling 1.0",
@@ -9380,7 +9384,7 @@
        ]
       },
       "Signal": {
-       "description": "A signal's place at the track, the physical signal (PlanPro: Signal; OSRD: Signal), real or virtual. A real one stands at `at` and acts in its direction — or in both (`bothDirections`), on its mounting, seen from its sighting distances; what it is in each signalling system it shows are its logical signals, each with the frames it shows; the boards it carries of no system (Ne 1, Ra 12, mast plates, its name plate) are its own frames. A virtual one (PlanPro: Signal_Fiktiv) has neither: it marks where a route starts or ends without a signal there.",
+       "description": "A signal's place at the track, the physical signal (PlanPro: Signal; OSRD: Signal), real or virtual. A real one stands at `at` and acts in its direction — or in both (`bothDirections`), on its mounting — a gantry or a bracket on its `foundation` beside the track —, seen from its sighting distances; what it is in each signalling system it shows are its logical signals, each with the frames it shows; the boards it carries of no system (Ne 1, Ra 12, mast plates, its name plate) are its own frames. A virtual one (PlanPro: Signal_Fiktiv) has neither: it marks where a route starts or ends without a signal there.",
        "type": "object",
        "required": [
         "id",
@@ -9480,6 +9484,23 @@
           "special",
           "other"
          ]
+        },
+        "foundation": {
+         "description": "Where the foundation of a signal on a gantry or a bracket stands, at the signal's station: its offset from the axis of the track the signal stands at and its side, seen in the direction the signal acts — so a track turned round, which turns the signal's direction, leaves it as it is (PlanPro Signal_Befestigung, its Fundament). The signal's own side and offset are its screen's, which the gantry or the bracket carries out over the track.",
+         "type": "object",
+         "required": [
+          "offset"
+         ],
+         "additionalProperties": false,
+         "properties": {
+          "side": {
+           "$ref": "core#/$defs/Side"
+          },
+          "offset": {
+           "type": "number",
+           "minimum": 0
+          }
+         }
         },
         "sight": {
          "description": "The distances from which the signal must, at least, and can be seen [m] (PlanPro Signalsicht_Soll, _Mindest, _Erreichbar).",
@@ -10462,7 +10483,7 @@
     },
     "signalling": {
      "version": "1.0",
-     "schema": "sha256:aeb06433b03125995823095d7ab89567311237560cbc3b9e6a954385305f0134",
+     "schema": "sha256:b28ada7513c555fa4696ff2b41c73bb7565143854c08e2e9bfb067e99018910c",
      "dependsOn": [
       "core"
      ],
@@ -10474,7 +10495,7 @@
       "itineraries": "sha256:48fa57878f19759e28d9bc188310030a7bd27e244d1e2f4726e27ce637de77ce",
       "overlaps": "sha256:3dc90110fb0c0f878b841fd5d497829f036e5627d4099479d1726c8905b62e3e",
       "routes": "sha256:8460ec8eb8679ccbafe0fd56878bbaf049e8c8562d45d2c675607f5a48784be2",
-      "signals": "sha256:1dd74c06b897b1b9f01f33432da145754ca9c51d2915dc35ef4182da1c830da8",
+      "signals": "sha256:3624a073869c27efacceb6c1be05daca17f3d8419dc9e3f073feea432bfe5ef3",
       "stationBoundaries": "sha256:54556f1e20a2e22fd145c8d0f66b92640b25f50b66da610ebd8ae7126412d496",
       "stoppingPlaces": "sha256:74d0ecd0dd5493c8be6f74e74b225c3257e97d820fb734a8bfecffab6917aad3",
       "switchElements": "sha256:fe471ee1c255021503a7e8f6862566e6d5aeb76a76cad3782b7ce37c87adb591",
@@ -10483,7 +10504,7 @@
     }
    }
   },
-  "hash": "sha256:ba2d9e20c1186d86a5abb9cc9248db76eb460f33ad32b0baf6da6413b1b20c71"
+  "hash": "sha256:912bf6b1bdec2a029e1e6b5a10d5e2efd795df019ca093c2e15920439a8602fa"
  },
  {
   "name": "signalling depending on nothing",
@@ -10757,7 +10778,7 @@
     },
     "signalling": {
      "version": "1.0",
-     "schema": "sha256:aeb06433b03125995823095d7ab89567311237560cbc3b9e6a954385305f0134",
+     "schema": "sha256:b28ada7513c555fa4696ff2b41c73bb7565143854c08e2e9bfb067e99018910c",
      "fields": {
       "catalogue": {
        "id": "db-ril-301",
@@ -10850,15 +10871,17 @@
         "id": "sig-n1",
         "name": "N1",
         "kind": "real",
-        "mounting": "mast",
+        "mounting": "gantry",
         "operationalPointId": "Halle-Trotha",
         "at": {
          "anchor": "station",
          "trackId": "t1",
          "station": 230,
-         "side": "right",
-         "offset": 3.1,
          "direction": "up"
+        },
+        "foundation": {
+         "side": "right",
+         "offset": 3.8
         },
         "logicalSignals": [
          {
@@ -11578,7 +11601,7 @@
     },
     "signalling": {
      "version": "1.0",
-     "schema": "sha256:aeb06433b03125995823095d7ab89567311237560cbc3b9e6a954385305f0134",
+     "schema": "sha256:b28ada7513c555fa4696ff2b41c73bb7565143854c08e2e9bfb067e99018910c",
      "dependsOn": [
       "core"
      ],
@@ -11673,15 +11696,17 @@
         "id": "sig-n1",
         "name": "N1",
         "kind": "real",
-        "mounting": "mast",
+        "mounting": "gantry",
         "operationalPointId": "Halle-Trotha",
         "at": {
          "anchor": "station",
          "trackId": "t1",
          "station": 230,
-         "side": "right",
-         "offset": 3.1,
          "direction": "up"
+        },
+        "foundation": {
+         "side": "right",
+         "offset": 3.8
         },
         "logicalSignals": [
          {
@@ -12401,7 +12426,7 @@
     },
     "signalling": {
      "version": "1.0",
-     "schema": "sha256:aeb06433b03125995823095d7ab89567311237560cbc3b9e6a954385305f0134",
+     "schema": "sha256:b28ada7513c555fa4696ff2b41c73bb7565143854c08e2e9bfb067e99018910c",
      "dependsOn": [
       "core"
      ],
@@ -12497,15 +12522,17 @@
         "id": "sig-n1",
         "name": "N1",
         "kind": "real",
-        "mounting": "mast",
+        "mounting": "gantry",
         "operationalPointId": "Halle-Trotha",
         "at": {
          "anchor": "station",
          "trackId": "t1",
          "station": 230,
-         "side": "right",
-         "offset": 3.1,
          "direction": "up"
+        },
+        "foundation": {
+         "side": "right",
+         "offset": 3.8
         },
         "logicalSignals": [
          {
@@ -12981,7 +13008,7 @@
     },
     "signalling": {
      "version": "1.0",
-     "schema": "sha256:aeb06433b03125995823095d7ab89567311237560cbc3b9e6a954385305f0134",
+     "schema": "sha256:b28ada7513c555fa4696ff2b41c73bb7565143854c08e2e9bfb067e99018910c",
      "dependsOn": [
       "core"
      ],
@@ -12993,7 +13020,7 @@
       "itineraries": "sha256:48fa57878f19759e28d9bc188310030a7bd27e244d1e2f4726e27ce637de77ce",
       "overlaps": "sha256:3dc90110fb0c0f878b841fd5d497829f036e5627d4099479d1726c8905b62e3e",
       "routes": "sha256:8460ec8eb8679ccbafe0fd56878bbaf049e8c8562d45d2c675607f5a48784be2",
-      "signals": "sha256:1dd74c06b897b1b9f01f33432da145754ca9c51d2915dc35ef4182da1c830da8",
+      "signals": "sha256:3624a073869c27efacceb6c1be05daca17f3d8419dc9e3f073feea432bfe5ef3",
       "stationBoundaries": "sha256:54556f1e20a2e22fd145c8d0f66b92640b25f50b66da610ebd8ae7126412d496",
       "stoppingPlaces": "sha256:74d0ecd0dd5493c8be6f74e74b225c3257e97d820fb734a8bfecffab6917aad3",
       "switchElements": "sha256:fe471ee1c255021503a7e8f6862566e6d5aeb76a76cad3782b7ce37c87adb591",
@@ -13002,7 +13029,7 @@
     }
    }
   },
-  "hash": "sha256:ba2d9e20c1186d86a5abb9cc9248db76eb460f33ad32b0baf6da6413b1b20c71"
+  "hash": "sha256:912bf6b1bdec2a029e1e6b5a10d5e2efd795df019ca093c2e15920439a8602fa"
  },
  {
   "name": "signalling without its overlaps",
@@ -13276,7 +13303,7 @@
     },
     "signalling": {
      "version": "1.0",
-     "schema": "sha256:aeb06433b03125995823095d7ab89567311237560cbc3b9e6a954385305f0134",
+     "schema": "sha256:b28ada7513c555fa4696ff2b41c73bb7565143854c08e2e9bfb067e99018910c",
      "dependsOn": [
       "core"
      ],
@@ -13372,15 +13399,17 @@
         "id": "sig-n1",
         "name": "N1",
         "kind": "real",
-        "mounting": "mast",
+        "mounting": "gantry",
         "operationalPointId": "Halle-Trotha",
         "at": {
          "anchor": "station",
          "trackId": "t1",
          "station": 230,
-         "side": "right",
-         "offset": 3.1,
          "direction": "up"
+        },
+        "foundation": {
+         "side": "right",
+         "offset": 3.8
         },
         "logicalSignals": [
          {

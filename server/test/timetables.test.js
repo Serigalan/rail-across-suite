@@ -61,6 +61,39 @@ describe('timetables', () => {
     expect((await max('DELETE', `/api/timetables/${tt.id}`)).statusCode).toBe(403)
   })
 
+  it('come in from a file — all of them or none —, with a project imported or into one there is', async () => {
+    ctx = await setup()
+    const max = await signIn(ctx.app, 'max')
+    const ada = await signIn(ctx.app, 'ada')
+    const file = [{ name: 'Takt', data: { trains: [train()] } }, { name: 'Nacht', data: { trains: [] } }]
+
+    const made = (await max('POST', '/api/projects', { title: 'Strecke', timetables: file })).json()
+    expect(made.timetables).toBe(2)
+    expect((await max('GET', `/api/projects/${made.project.id}/timetables`)).json().timetables.map(t => t.name)).toEqual(['Nacht', 'Takt'])
+    // a file with one timetable that is not one brings no project either
+    const before = (await max('GET', '/api/projects')).json().projects.length
+    const bad = await max('POST', '/api/projects', { title: 'Strecke', timetables: [...file, { name: 'F', data: { trains: [train({ departure: -1 })] } }] })
+    expect(bad.json()).toEqual({ error: 'train_invalid' })
+    expect((await max('GET', '/api/projects')).json().projects).toHaveLength(before)
+
+    const into = await max('POST', `/api/projects/${made.project.id}/timetables/import`, { timetables: file })
+    expect(into.statusCode).toBe(201)
+    expect(into.json().timetables).toMatchObject([{ name: 'Takt', version: 1, data: { trains: [{ number: '16001' }] } }, { name: 'Nacht' }])
+    expect((await max('POST', `/api/projects/${made.project.id}/timetables/import`, { timetables: [{ name: ' ' }] })).json()).toEqual({ error: 'name_required' })
+    expect((await max('POST', `/api/projects/${made.project.id}/timetables/import`, {})).json()).toEqual({ error: 'timetable_invalid' })
+    expect((await max('GET', `/api/projects/${made.project.id}/timetables`)).json().timetables).toHaveLength(4)
+
+    // a template's, the admin's alone — with the template, or into it
+    const template = (await ada('POST', '/api/projects', { title: 'Vorlage', template: true, timetables: file })).json()
+    expect(template.timetables).toBe(2)
+    expect((await max('POST', `/api/projects/${template.project.id}/timetables/import`, { timetables: file })).statusCode).toBe(403)
+    expect((await ada('POST', `/api/projects/${template.project.id}/timetables/import`, { timetables: file })).statusCode).toBe(201)
+    expect((await max('POST', `/api/projects/${template.project.id}/copy`, {})).json().timetables).toBe(4)
+    // and into no project one does not see
+    const adas = (await ada('POST', '/api/projects', { title: 'Adas' })).json().project
+    expect((await max('POST', `/api/projects/${adas.id}/timetables/import`, { timetables: file })).statusCode).toBe(404)
+  })
+
   it('need a session, a name and trains in their shape', async () => {
     ctx = await setup()
     const max = await signIn(ctx.app, 'max')

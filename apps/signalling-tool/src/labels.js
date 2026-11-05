@@ -17,6 +17,47 @@ export const FUNCTION = {
   other: L('andere', 'other'),
 }
 
+/**
+ * The functions a signal is given here, in this order. The schema knows a
+ * distant signal and its repeater as one function (PlanPro's): the repeater
+ * is a distant signal of the kind distantRepeater, chosen here as one.
+ */
+const FUNCTION_CHOICES = {
+  entry: FUNCTION.entry, exit: FUNCTION.exit, intermediate: FUNCTION.intermediate, block: FUNCTION.block,
+  distant: L('Vorsignal', 'Distant signal'), distantRepeater: L('Vorsignalwiederholer', 'Distant signal repeater'),
+  standaloneIndicator: FUNCTION.standaloneIndicator,
+}
+
+/** The function chosen of a signal's function and kind: a distant signal of the kind distantRepeater is a repeater. */
+export const functionChoiceOf = (fn, type) => (fn === 'distant' && type === 'distantRepeater' ? 'distantRepeater' : fn)
+
+/** The function a choice stands for in the domain. */
+export const functionOfChoice = (choice) => (choice === 'distantRepeater' ? 'distant' : choice)
+
+/**
+ * The kind a logical signal of a system takes with a function chosen: a
+ * distant signal or its repeater its own where the system has it, else the
+ * one it had.
+ */
+export const typeForChoice = (system, choice, type) => ((choice === 'distant' || choice === 'distantRepeater')
+  && SIGNAL_CATALOGUE.systeme[system]?.signalarten[choice] ? choice : type)
+
+/** A function in words, a distant signal's repeater as one (functionChoiceOf). */
+export function functionWord(fn, type, language) {
+  const choice = functionChoiceOf(fn, type)
+  return FUNCTION_CHOICES[choice] ? word(FUNCTION_CHOICES, choice, language) : word(FUNCTION, fn, language)
+}
+
+/**
+ * The functions to choose from: those a signal is given here, and the one it
+ * has where that is another (read in). Without `repeater`, for a mast with no
+ * logical signal, no repeater — a kind of logical signal.
+ */
+export const functionOptions = (language, current, { repeater = true } = {}) => [
+  ...Object.entries(FUNCTION_CHOICES).filter(([value]) => repeater || value !== 'distantRepeater').map(([value, l]) => ({ value, label: l[language] ?? l.de })),
+  ...(current && !FUNCTION_CHOICES[current] ? [{ value: current, label: FUNCTION[current]?.[language] ?? FUNCTION[current]?.de ?? current }] : []),
+]
+
 export const VIRTUAL_FUNCTION = {
   trainStartWithoutSignal: L('Zugstart ohne Signal', 'Train start without signal'), trainTargetWithoutSignal: L('Zugziel ohne Signal', 'Train target without signal'),
   trainTargetLine: L('Zugziel Strecke', 'Train target on the line'), trainStartSiding: L('Zugstart Awanst', 'Train start siding'),
@@ -30,6 +71,13 @@ export const MOUNTING = {
   mast: L('Mast', 'Mast'), bracket: L('Signalausleger', 'Bracket'), gantry: L('Signalbrücke', 'Gantry'), foundation: L('Fundament', 'Foundation'),
   special: L('Sonderkonstruktion', 'Special'), other: L('andere', 'other'),
 }
+
+/** The mountings a signal is set on: a plain mast, a bracket, a gantry. */
+const MOUNTINGS_SET = ['mast', 'bracket', 'gantry']
+
+/** The mountings to choose from: those a signal is set on, and the one it has where that is another (read in). */
+export const mountingOptions = (language, current) => optionsOf(MOUNTING, language)
+  .filter(o => MOUNTINGS_SET.includes(o.value) || o.value === current)
 
 export const POINT_KIND = {
   axleCounter: L('Achszählpunkt', 'Axle counter'), insulatedJointOneRail: L('Isolierstoß einschienig', 'Insulated joint, one rail'),

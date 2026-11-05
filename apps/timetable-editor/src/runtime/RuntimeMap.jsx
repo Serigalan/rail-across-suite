@@ -18,7 +18,7 @@ const pointsGeoJSON = (points) => ({
   features: points.filter(p => p.lngLat).map(p => ({ type: 'Feature', properties: { kind: p.kind }, geometry: { type: 'Point', coordinates: p.lngLat } })),
 })
 
-export default function MapView({ record, net, path, points, train, picking, onPick, fitKey, t }) {
+export default function RuntimeMap({ record, net, path, points, train, picking, onPick, fitKey, t }) {
   const box = useRef(null)
   const map = useRef(null)
   const [ready, setReady] = useState(false)
@@ -27,7 +27,7 @@ export default function MapView({ record, net, path, points, train, picking, onP
 
   useEffect(() => {
     let gone = false
-    import('./maplibre.js').then(({ default: maplibregl }) => {
+    import('../map/maplibre.js').then(({ default: maplibregl }) => {
       if (gone || !box.current) return
       const m = new maplibregl.Map({
         container: box.current, style: findBasemap(DEFAULT_BASEMAP)?.style, attributionControl: { compact: true },

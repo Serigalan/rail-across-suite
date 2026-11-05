@@ -1,8 +1,8 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { curveResistance, findPath, locationAt, offsetOnPath, pathAlong, pathLength, pathProperties } from './path.js'
+import { curveResistance, findPath, heightProfile, locationAt, offsetOnPath, pathAlong, pathLength, pathProperties } from './path.js'
 import { routeThrough, routeVia, signalledSpeeds } from './route.js'
-import { marginValue, simulationRequest } from './request.js'
+import { governedLimits, marginValue, simulationRequest } from './request.js'
 import { newVehicle } from '@rail-across/vehicles'
 import { runWith } from './engine.js'
 
@@ -90,6 +90,17 @@ describe('what the physics needs of it', () => {
     expect(curve.begin).toBeCloseTo(1500, 6)
   })
 
+  it('has the heights along it for its profile, open where a track has none', () => {
+    const profile = heightProfile(record, path)
+    expect(profile[0]).toEqual({ position: 0, height: 100 })
+    expect(profile[1].position).toBeCloseTo(1000, 6)
+    expect(profile[1].height).toBe(110)
+    expect(profile.slice(2).every(p => p.height === null)).toBe(true)
+    expect(profile.at(-1).position).toBeCloseTo(3000, 6)
+    const down = heightProfile(record, findPath(record, { trackId: 'T1', station: 1000, direction: 'down' }, { trackId: 'T1', station: 400 }))
+    expect(down.map(p => [Math.round(p.position), p.height])).toEqual([[0, 110], [600, 104]])
+  })
+
   it('falls the other way', () => {
     const down = pathProperties(record, findPath(record, { trackId: 'T1', station: 1000, direction: 'down' }, { trackId: 'T1', station: 0 }))
     expect(down.gradients).toEqual([{ begin: 0, end: 1000, value: -10 }])
@@ -110,6 +121,14 @@ describe('what the physics needs of it', () => {
     expect(speeds[0].end).toBeCloseTo(1900, 6)
     expect(speeds[0].speed * 3.6).toBeCloseTo(60, 6)
   })
+
+  it('holds a route\'s speed up to an Lf 7 on it, and what the Lf 7 shows from there', () => {
+    const lf7 = (id, at, symbol) => ({ id, kind: 'real', at: { anchor: 'station', ...at }, frames: [{ kind: 'plate', aspects: [{ aspect: 'Lf_7', symbol }] }] })
+    const c = record.signalling.collections
+    const withBoards = { ...record, signalling: { collections: { ...c, signals: [...c.signals,
+      lf7('V', { trackId: 'T2', station: 300, direction: 'up' }, '9'), lf7('back', { trackId: 'T2', station: 600, direction: 'down' }, '3')] } } }
+    expect(signalledSpeeds(withBoards, path).map(s => [Math.round(s.begin), Math.round(s.end), Math.round(s.speed * 3.6)])).toEqual([[200, 1300, 60], [1300, 1900, 90]])
+  })
 })
 
 describe('a train through its stops', () => {
@@ -126,10 +145,20 @@ describe('a train through its stops', () => {
     const { path, offsets } = routeThrough(record, [{ trackId: 'T1', station: 0, direction: 'up' }, { trackId: 'T4', station: 900 }])
     const { request } = simulationRequest(record, path, { vehicle: newVehicle('Triebzug'), stops: [{ offset: offsets[1], duration: 0 }], margin: { value: '5%', distribution: 'mareco' } })
     expect(request.path.length).toBeCloseTo(2900, 6)
-    expect(request.path.speed_limits.map(s => s.source)).toEqual(['design', 'design', 'signal'])
+    // The signal's 60 km/h from A to N, the design speeds only before and after it.
+    expect(request.path.speed_limits.map(s => [s.source, Math.round(s.begin), Math.round(s.end)])).toEqual([['design', 0, 200], ['signal', 200, 1900], ['design', 1900, 2000]])
     expect(request.schedule).toEqual([{ path_offset: request.path.length, stop_duration: 0 }])
     expect(request.margins).toEqual({ boundaries: [], values: ['5%'] })
     expect(request.rolling_stock.effort_curve[0]).toEqual({ speed: 0, max_effort: 160000 })
+  })
+
+  it('runs at what the signals signal where they signal one, faster or slower than the design speed', () => {
+    const design = [{ begin: 0, end: 100, speed: 20, source: 'design' }, { begin: 100, end: 300, speed: 10, source: 'design' }]
+    const signalled = [{ begin: 50, end: 150, speed: 30, source: 'signal' }, { begin: 200, end: 250, speed: 5, source: 'signal' }]
+    expect(governedLimits(design, signalled).map(l => [l.source, l.begin, l.end, l.speed])).toEqual([
+      ['design', 0, 50, 20], ['signal', 50, 150, 30], ['design', 150, 200, 10], ['signal', 200, 250, 5], ['design', 250, 300, 10],
+    ])
+    expect(governedLimits(design, [])).toEqual(design)
   })
 
   it('reads margins as they are written', () => {

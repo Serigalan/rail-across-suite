@@ -6,7 +6,7 @@ import { formatDistance, formatTime } from '@rail-across/running-times'
  * arrives and leaves at every point, its energy at the wheels; and the run
  * played on the map and the chart, moment by moment.
  */
-export default function ResultPanel({ t, language, run, stale, moment, setMoment, at }) {
+export default function RuntimeResult({ t, language, run, stale, moment, setMoment, at }) {
   if (!run?.result) {
     return <Panel title={t('section_result')} intro={t('section_result_intro')}><p className="ui-muted">{t('no_result')}</p></Panel>
   }

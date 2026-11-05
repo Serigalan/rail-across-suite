@@ -35,6 +35,8 @@ export const SectionIcon = () => <Svg><path d="M2 15h20" /><path d="M5 11v8M19 1
 /** A derailer on its rail. */
 export const DerailerIcon = () => <Svg><path d="M2 16h20" /><path d="M8 16l4-6h4l-2 6" /></Svg>
 /** An overlap: the run on past the signal to its danger point. */
+export const SpeedIcon = () => <Svg><path d="M3.5 17a8.5 8.5 0 1 1 17 0" /><path d="M12 17l4-6" /><circle cx="12" cy="17" r="1.4" /><path d="M6 13.5l1.2.7M18 13.5l-1.2.7M12 8.5v1.4" /></Svg>
+
 export const OverlapIcon = () => <Svg><path d="M3 16h14" strokeDasharray="0" /><path d="M17 16h4" strokeDasharray="1.5 2" /><path d="M5 16V6" /><rect x="3" y="3" width="4" height="6" rx="1.5" /><path d="M21 12v8" /></Svg>
 /** Editing: a pencil. */
 export const EditIcon = () => <Svg><path d="M4 20l1-4L16 5l3 3L8 19z" /><path d="M14 7l3 3" /></Svg>

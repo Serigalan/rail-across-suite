@@ -17,6 +17,13 @@ import { utmToWgs84, arcPlanePoints } from '@rail-across/core/geometry'
  * so naming a track costs nothing beyond the fetch its kilometrage already
  * needed.
  *
+ * The project's own kilometrage lines (`project.kmLines`, passed as
+ * `localLines`) take part as well: a line an import brought (`source`, MDB or
+ * Verm.ESN) is what the project's kilometrage is read off (decision 354), so
+ * it stands in for the shipped line of its number — and names tracks where no
+ * file of that number exists at all. A kept stretch of a shipped line answers
+ * only where its file does not.
+ *
  * Everything measured is measured in the track's own plane, against the line
  * converted into it (see kmLineUtils). Degrees only ever select — the grid
  * cells and the box a line is clipped to.
@@ -145,11 +152,29 @@ async function lineNumbersIn(box) {
   return [...found]
 }
 
-/** The runs of a line inside `box`, in the plane of `epsg`, and its name. */
-async function lineDataIn(lineNumber, box, epsg) {
+/** The project's lines by number, an imported one before a kept stretch of a shipped one. */
+function localByNumber(localLines) {
+  const byNumber = new Map()
+  for (const line of localLines ?? []) {
+    if (!(line?.runs?.length)) continue
+    const key = String(line.lineNumber)
+    if (!byNumber.has(key) || (line.source && !byNumber.get(key).source)) byNumber.set(key, line)
+  }
+  return byNumber
+}
+
+/**
+ * The runs of a line inside `box`, in the plane of `epsg`, and its name — the
+ * project's own line `local` in place of the file where it was imported, or
+ * where the file has nothing there.
+ */
+async function lineDataIn(lineNumber, box, epsg, local = null) {
   const file = await loadLineFile(lineNumber)
-  const clipped = clipRuns(file?.chainage, box)
-  return { runs: clipped.length ? planeRuns({ runs: clipped }, epsg) : null, lineName: file?.lineName ?? null }
+  const lineName = file?.lineName ?? local?.lineName ?? null
+  const clipped = local?.source ? [] : clipRuns(file?.chainage, box)
+  if (clipped.length) return { runs: planeRuns({ runs: clipped }, epsg), lineName }
+  const own = local ? clipRuns(local.runs, box) : []
+  return { runs: own.length ? planeRuns({ runs: own }, epsg) : null, lineName }
 }
 
 /**
@@ -165,15 +190,18 @@ async function lineDataIn(lineNumber, box, epsg) {
  * Given `lineNumber`, there is no choosing: that line is measured against, and
  * the answer comes back even where the line does not reach the track, with
  * `km` null — the number and its name are still what the user asked for.
+ *
+ * `localLines` are the project's own lines (see above).
  */
-export async function identifyTrackLine(geometry, lineNumber = null) {
+export async function identifyTrackLine(geometry, lineNumber = null, { localLines = null } = {}) {
   const { epsg, path } = geometry ?? {}
   if (!epsg || !(path?.length >= 2)) return null
   const chosen = lineNumber != null && String(lineNumber) !== '' ? String(lineNumber) : null
 
   const box = lookupBox(path, epsg, REACH_M)
-  const numbers = chosen ? [chosen] : await lineNumbersIn(box)
-  const lineData = await Promise.all(numbers.map((number) => lineDataIn(number, box, epsg)))
+  const local = localByNumber(localLines)
+  const numbers = chosen ? [chosen] : [...new Set([...local.keys(), ...await lineNumbersIn(box)])]
+  const lineData = await Promise.all(numbers.map((number) => lineDataIn(number, box, epsg, local.get(number))))
 
   const lengths = cumulativeLengths(path)
   const total = lengths[lengths.length - 1]

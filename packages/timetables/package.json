@@ -9,12 +9,14 @@
     "node": ">=22"
   },
   "exports": {
-    ".": "./src/index.js"
+    ".": "./src/index.js",
+    "./exchange": "./src/exchange.js"
   },
   "scripts": {
     "test": "vitest run"
   },
   "dependencies": {
+    "@rail-across/core": "*",
     "@rail-across/running-times": "*"
   },
   "devDependencies": {

@@ -15,7 +15,9 @@ Fahrplan-Editor:
   for a block, and its run in time (`runClock`);
 - **the occupancy of the blocks** (`occupancy.js`): a train's blocks from main signal to main signal along its way,
   the overlap beyond with each (`blocksAlong`), the time it holds each (`blockingTimes`, after Ril 405 and OSRD's
-  spacing requirements), where two trains hold a stretch of track at once (`conflictsOf`); and the timetable's
+  spacing requirements) — where the variant has track sections, section by section, each released once the train's
+  tail has left it (Teilfahrstraßenauflösung, `sectionsAlong`) —, where two trains hold one section or a stretch of
+  track no section covers at once (`conflictsOf`); and the timetable's
   trains run as its `dispatch` says (`occupancy`): each for itself with the conflicts said, or one after the other —
   by departure or by kind — each waiting for a free block, longer at a stop or before a signal;
 - **the server** (`api.js`): `/api/projects/<id>/timetables`, `/api/timetables/<id>`; a save names the version it

@@ -12,10 +12,13 @@ import { api } from './api.js'
 import { projectsUrl } from './suite.js'
 import { freshCopy, keepCopy } from './workingCopy.js'
 import { netDrawing } from './model/net.js'
-import { added, cascadeOf, deleted, domainOf, findLogical, labelOf, recordOf, replaced, signallingOf, withSignalling } from './model/domain.js'
+import { added, cascadeOf, deleted, domainOf, findLogical, labelOf, recordOf, replaced, signallingOf, withSignalling, withSpeedsShown } from './model/domain.js'
 import { waysBetween } from './model/itineraries.js'
+import { routeStretches, runStretches, wayPieces } from './model/routeSearch.js'
 import { logicalSignalWord } from './labels.js'
-import { redo, startHistory, step, stepOf, stepText, travel, undo } from './model/history.js'
+import { changedIds, redo, startHistory, step, stepOf, stepText, travel, undo } from './model/history.js'
+import { withClearanceMarkers } from './model/clearanceMarkers.js'
+import { DraftContext } from './panels/draftContext.js'
 import PlanView from './plan/PlanView.jsx'
 import SchematicView from './schema/SchematicView.jsx'
 import {
@@ -81,7 +84,10 @@ const KEEP_AFTER = 250
  * plan of the net with what the domain holds. What is chosen, on the plan,
  * in the check or after creating it, opens in the panel that edits it.
  *
- * Every edit is a step (undo, redo, the history), and is kept at once in the
+ * Every edit is first a draft: the plan and the schematic view draw what it
+ * changes as a preview, the check runs on it, and Cancel and Commit at the
+ * foot of every panel that changes something drop it or make it hold. What
+ * is committed is a step (undo, redo, the history), and is kept at once in the
  * variant's working copy in this browser — the one the Layout-Tool works on
  * too —, never only in the page: leaving the tool asks nothing, the start
  * page says the variant holds changes. Checking in sends the copy, tracks and
@@ -96,6 +102,8 @@ export default function Editor({ project, variant, head, copy: opened, readOnly 
   const { t, language, setLanguage } = useTexts()
   const [copy, setCopy] = useState(() => opened ?? freshCopy(head))
   const [history, setHistory] = useState(() => startHistory(domainOf(copy.project)))
+  // What is edited and not committed yet: the domain as it would be, or null.
+  const [draft, setDraft] = useState(null)
   const [section, setSection] = useState(readOnly ? 'edit' : 'signals')
   // Each time a section is chosen in the rail its panel starts at its menu again.
   const [visit, setVisit] = useState(0)
@@ -114,28 +122,40 @@ export default function Editor({ project, variant, head, copy: opened, readOnly 
   const setView = (v) => { chooseView(v); keepView(v) }
 
   // The state: the domain, and the parts of the core the tool writes (the stations).
-  const domain = history.now
+  // What is shown, checked and edited is the draft where there is one; what is kept and checked in, what is committed.
+  const committed = history.now
+  const domain = draft ?? committed
   const record = copy.project
   const signalling = useMemo(() => signallingOf(domain), [domain])
-  const current = useMemo(() => recordOf(record, domain), [record, domain])
-  const net = useMemo(() => ({ tracks: record.tracks ?? [], switches: record.switches ?? [] }), [record])
+  const current = useMemo(() => recordOf(record, committed), [record, committed])
+  const shown = useMemo(() => (draft ? recordOf(record, draft) : current), [record, draft, current])
+  const pending = useMemo(() => (draft ? changedIds(committed, draft) : NONE), [committed, draft])
+  const net = useMemo(() => ({ tracks: record.tracks ?? [], switches: record.switches ?? [], endMarks: record.endMarks ?? [], kmLines: record.kmLines ?? [] }), [record])
   const drawing = useMemo(() => netDrawing(net.tracks), [net])
-  const coreDomain = useMemo(() => projectDocument({ ...current, signalling: undefined }).domains.core, [current])
+  const coreDomain = useMemo(() => projectDocument({ ...shown, signalling: undefined }).domains.core, [shown])
   const findings = useMemo(() => checkSignalling({ core: coreDomain, signalling }), [coreDomain, signalling])
   const extents = useMemo(() => trackSectionExtents({ core: { collections: net }, signalling }), [net, signalling])
   const changes = useMemo(() => (readOnly ? 0 : localChangeCount({ basePayload: copy.basePayload, project: current })), [readOnly, copy, current])
 
-  // Every edit into the working copy, once the edits come to rest; what was
-  // opened is not written again.
+  // Every step into the working copy, once the steps come to rest; what was
+  // opened is not written again, a draft never.
   const written = useRef(history.now)
   useEffect(() => {
-    if (readOnly || domain === written.current) return undefined
+    if (readOnly || committed === written.current) return undefined
     const timer = setTimeout(() => {
-      written.current = domain
+      written.current = committed
       keepCopy(variant.id, { ...copy, project: current })
     }, KEEP_AFTER)
     return () => clearTimeout(timer)
-  }, [readOnly, domain, copy, current, variant.id])
+  }, [readOnly, committed, copy, current, variant.id])
+
+  // Leaving the page with a draft asks first: it is in no working copy yet.
+  useEffect(() => {
+    if (!draft) return undefined
+    const onLeave = (e) => { e.preventDefault(); e.returnValue = '' }
+    window.addEventListener('beforeunload', onLeave)
+    return () => window.removeEventListener('beforeunload', onLeave)
+  }, [draft])
 
   /** The copy from now on, kept at once; `nextDomain` the domain worked on, as a step. */
   const adopt = (next, nextDomain = domainOf(next.project)) => {
@@ -143,10 +163,17 @@ export default function Editor({ project, variant, head, copy: opened, readOnly 
     setCopy({ ...next, project })
     written.current = nextDomain
     keepCopy(variant.id, { ...next, project })
+    setDraft(null)
     setHistory(h => step(h, nextDomain))
   }
 
-  const edit = useCallback((fn) => setHistory(h => (readOnly ? h : step(h, fn(h.now)))), [readOnly])
+  // An edit changes the draft — begun from what is committed; one that comes back to it leaves none.
+  const now = useRef(committed)
+  now.current = committed
+  const edit = useCallback((fn) => {
+    if (readOnly) return
+    setDraft(d => { const next = fn(d ?? now.current); return next === now.current ? null : next })
+  }, [readOnly])
   const ops = useMemo(() => ({
     add: (collection, obj) => { edit(d => added(d, collection, obj)); setSelection({ collection, id: obj.id }) },
     update: (collection, obj) => edit(d => replaced(d, collection, obj)),
@@ -160,6 +187,18 @@ export default function Editor({ project, variant, head, copy: opened, readOnly 
     remove: (collection, id) => setDialog({ kind: 'delete', collection, id }),
   }), [edit])
 
+  // Every switch has its clearance markers Ra 12, every route's speed its Zs 3 at the start signal: what is lacking
+  // is set as the tool opens, or the net brings new switches — a step of its own.
+  useEffect(() => {
+    if (readOnly) return
+    const { domain: marked, added: n } = withClearanceMarkers(now.current, net)
+    const { domain: next, changed: m } = withSpeedsShown(marked)
+    if (!n && !m) return
+    setHistory(h => step(h, next))
+    setNotice({ tone: 'info', text: [n ? t('clearance_markers_set', { n }) : null, m ? t('speeds_shown_set', { n: m }) : null].filter(Boolean).join(' ') })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [net, readOnly])
+
   const [focus, setFocus] = useState(null)
   const select = useCallback((sel) => {
     setSelection(sel)
@@ -168,18 +207,35 @@ export default function Editor({ project, variant, head, copy: opened, readOnly 
   /** Choose from a list: the plan brings the object into view where it has a place. */
   const chooseFromList = useCallback((sel) => {
     select(sel)
-    const at = placeToShow(history.now, sel)
+    const at = placeToShow(domain, sel)
     if (at) setFocus(f => ({ at, n: (f?.n ?? 0) + 1 }))
-  }, [select, history])
+  }, [select, domain])
 
-  // Keys: undo, redo, Esc ends placing, Delete asks to delete the chosen.
+  /** The draft made to hold: one step. */
+  const commit = () => {
+    if (draft) setHistory(h => step(h, draft))
+    setDraft(null)
+    setMode(null)
+  }
+  /** The draft dropped: what it set is gone, and with it the choice of it. */
+  const cancel = () => {
+    setDraft(null)
+    setMode(null)
+    setSelection(sel => (sel && !isIn(committed, sel) ? null : sel))
+  }
+  /** Undo: the draft first, where there is one; else the last step. */
+  const undoNow = () => (draft ? cancel() : setHistory(undo))
+  const redoNow = () => { if (!draft) setHistory(redo) }
+  const draftApi = readOnly ? null : { open: !!draft, what: draft ? stepText(stepOf(committed, draft), t) : null, commit, cancel, t }
+
+  // Keys: undo, redo, Esc ends placing — else drops the draft —, Delete asks to delete the chosen.
   useEffect(() => {
     const onKey = (e) => {
       if (e.target.closest?.('input, select, textarea, [role="dialog"]')) return
       const mod = e.ctrlKey || e.metaKey
-      if (mod && e.key.toLowerCase() === 'z' && !e.shiftKey) { e.preventDefault(); setHistory(undo) }
-      else if (mod && (e.key.toLowerCase() === 'y' || (e.key.toLowerCase() === 'z' && e.shiftKey))) { e.preventDefault(); setHistory(redo) }
-      else if (e.key === 'Escape') setMode(null)
+      if (mod && e.key.toLowerCase() === 'z' && !e.shiftKey) { e.preventDefault(); keys.current.undo() }
+      else if (mod && (e.key.toLowerCase() === 'y' || (e.key.toLowerCase() === 'z' && e.shiftKey))) { e.preventDefault(); keys.current.redo() }
+      else if (e.key === 'Escape') keys.current.escape()
       else if ((e.key === 'Delete' || e.key === 'Backspace') && selection && !readOnly && !['switches', 'operationalPoints'].includes(selection.collection)) {
         e.preventDefault(); setDialog({ kind: 'delete', ...selection })
       }
@@ -187,6 +243,10 @@ export default function Editor({ project, variant, head, copy: opened, readOnly 
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [selection, readOnly])
+  // What the keys do, as it is now.
+  const keys = useRef(null)
+  // A mode a page holds while it is open (sticky) is not ended by Esc: Esc drops the draft there.
+  keys.current = { undo: undoNow, redo: redoNow, escape: () => (mode && !mode.sticky ? setMode(null) : draft && cancel()) }
 
   // Placing or picking points is done on the site plan.
   useEffect(() => { if (mode) chooseView('plan') }, [mode])
@@ -225,7 +285,7 @@ export default function Editor({ project, variant, head, copy: opened, readOnly 
   const checkIn = async (message) => {
     const res = await api.checkIn(variant.id, { base: copy.base.id, message, record: current, remaps: copy.idLog })
     if (res.revision) {
-      adopt({ base: res.revision, basePayload: current, project: current, idLog: [] }, domain)
+      adopt({ base: res.revision, basePayload: current, project: current, idLog: [] }, committed)
       setDialog(null)
       setNotice({ tone: 'ok', text: t('check_in_done', { n: res.revision.number }) })
       return
@@ -273,7 +333,7 @@ export default function Editor({ project, variant, head, copy: opened, readOnly 
     const before = new Map((record.tracks ?? []).map(tr => [tr.id, tr]))
     const now = next.project.tracks ?? []
     const present = new Set(now.map(tr => tr.id))
-    const { domain: carried } = carryDomain(signalling, {
+    const { domain: carried } = carryDomain(signallingOf(committed), {
       present, changed: (id) => before.has(id) && (!present.has(id) || now.find(tr => tr.id === id) !== before.get(id)),
       oldTrack: (id) => before.get(id) ?? null, candidates: () => now, tracks: now, switches: next.project.switches ?? [],
     })
@@ -282,8 +342,9 @@ export default function Editor({ project, variant, head, copy: opened, readOnly 
   }
 
   // What the two arrows would do, said on them.
-  const undoTitle = history.past.length ? t('undo_step', { step: stepText(stepOf(history.past.at(-1), history.now), t) }) : t('undo')
-  const redoTitle = history.future.length ? t('redo_step', { step: stepText(stepOf(history.now, history.future[0]), t) }) : t('redo')
+  const undoTitle = draft ? t('undo_draft')
+    : history.past.length ? t('undo_step', { step: stepText(stepOf(history.past.at(-1), history.now), t) }) : t('undo')
+  const redoTitle = !draft && history.future.length ? t('redo_step', { step: stepText(stepOf(history.now, history.future[0]), t) }) : t('redo')
 
   const counts = { errors: findings.errors.length, warnings: findings.warnings.length }
   const active = SECTIONS.flat().find(s => s.id === section)
@@ -295,7 +356,7 @@ export default function Editor({ project, variant, head, copy: opened, readOnly 
     if (selection && SECTION_OF[selection.collection] === id) setSelection(null)
   }
   const panelProps = {
-    domain, net, drawing, findings, extents, selection, select: chooseFromList, ops, mode, setMode, readOnly, t, language,
+    domain, net, drawing, findings, extents, selection, select: chooseFromList, ops, mode, setMode, readOnly, t, language, pending,
     record, core: coreDomain, setNotice, setSection, basemap, setBasemap, setSketch, showOnPlan,
   }
 
@@ -318,9 +379,9 @@ export default function Editor({ project, variant, head, copy: opened, readOnly 
         bottom={<>
           {!readOnly && <>
             <RailRow>
-              <RailButton bare icon={<UndoIcon />} label={undoTitle} disabled={!history.past.length} onClick={() => setHistory(undo)} />
+              <RailButton bare icon={<UndoIcon />} label={undoTitle} disabled={!draft && !history.past.length} onClick={undoNow} />
               <RailButton bare icon={<HistoryIcon />} label={t('step_history_title')} pressed={section === 'history'} onClick={() => open('history')} />
-              <RailButton bare icon={<RedoIcon />} label={redoTitle} disabled={!history.future.length} onClick={() => setHistory(redo)} />
+              <RailButton bare icon={<RedoIcon />} label={redoTitle} disabled={!!draft || !history.future.length} onClick={redoNow} />
             </RailRow>
             <RailDivider />
           </>}
@@ -328,9 +389,10 @@ export default function Editor({ project, variant, head, copy: opened, readOnly 
           <RailButton icon={<SettingsIcon />} label={t('section_settings')} pressed={section === 'settings'} onClick={() => open('settings')} />
         </>}
       />
-      {section === 'history' ? <HistoryPanel history={history} travel={(n) => setHistory(h => travel(h, n))} t={t} />
+      {section === 'history' ? <HistoryPanel history={history} travel={(n) => { setDraft(null); setHistory(h => travel(h, n)) }} t={t} />
         : section === 'layers' ? <LayersPanel {...panelProps} />
-        : section === 'settings' ? <SettingsPanel t={t} language={language} setLanguage={setLanguage} /> : <active.Panel key={`${section}-${visit}`} {...panelProps} />}
+        : section === 'settings' ? <SettingsPanel t={t} language={language} setLanguage={setLanguage} />
+          : <DraftContext.Provider value={draftApi}><active.Panel key={`${section}-${visit}`} {...panelProps} /></DraftContext.Provider>}
       <Workspace>
         <WorkingCopyBar title={project.title} subtitle={variant.name} revision={t('revision_n', { n: copy.base.number })}
           {...(readOnly
@@ -339,9 +401,10 @@ export default function Editor({ project, variant, head, copy: opened, readOnly 
               state: changes ? 'local' : 'clean', stateLabel: changes ? t('local_changes', { n: changes }) : t('saved'),
               stateTitle: changes ? t('local_changes_hint') : undefined,
               actions: [
-                { label: t('update'), onClick: update, disabled: busy },
+                // Updating and checking in wait for the draft: committed or dropped first.
+                { label: t('update'), onClick: update, disabled: busy || !!draft },
                 { label: t('discard'), onClick: () => setDialog({ kind: 'discard' }), disabled: busy || !changes },
-                { label: t('check_in'), onClick: () => setDialog({ kind: 'checkin' }), disabled: busy || !changes, primary: true },
+                { label: t('check_in'), onClick: () => setDialog({ kind: 'checkin' }), disabled: busy || !changes || !!draft, primary: true },
               ],
             })} />
         <div className="tool-view">
@@ -359,17 +422,17 @@ export default function Editor({ project, variant, head, copy: opened, readOnly 
         {mode && (
           <div className="tool-mode" role="status">
             <span>{mode.hint ?? t(mode.kind === 'pick-points' ? 'picking_points' : 'placing')}</span>
-            <Button size="small" onClick={() => setMode(null)}>{mode.kind === 'pick-points' ? t('close') : t('cancel')}</Button>
+            {!mode.sticky && <Button size="small" onClick={() => setMode(null)}>{mode.kind === 'pick-points' ? t('close') : t('cancel')}</Button>}
           </div>
         )}
         {view === 'schema' && (
-          <SchematicView net={net} platforms={domain.collections.platforms} domain={domain} selection={selection} highlight={highlight}
+          <SchematicView net={net} platforms={domain.collections.platforms} domain={domain} selection={selection} highlight={highlight} pending={pending}
             fitKey={fitKey} focus={focus} t={t} onPick={select} />
         )}
-        <PlanView hidden={view === 'schema'} drawing={drawing} net={net} domain={domain} selection={selection} highlight={highlight} mode={mode} fitKey={fitKey} focus={focus} basemap={basemap} t={t}
+        <PlanView hidden={view === 'schema'} drawing={drawing} net={net} domain={domain} selection={selection} highlight={highlight} pending={pending} mode={mode} fitKey={fitKey} focus={focus} basemap={basemap} t={t}
           onPick={select}
-          onPlace={(hit) => { const m = mode; setMode(null); m?.apply?.(m.make(hit)) }}
-          onPickPoint={(id) => mode?.toggle?.(id)} onPickStretch={(s) => mode?.apply?.(s)} onPickPlace={(id) => mode?.apply?.(id)} />
+          onPlace={(hit) => { const m = mode; setMode(null); m?.apply?.(m.make(hit), hit) }}
+          onPickPoint={(id) => mode?.toggle?.(id)} onPickStretch={(s) => mode?.apply?.(s)} onPickPlace={(id) => mode?.apply?.(id)} onPickSignal={(id) => mode?.apply?.(id)} />
       </Workspace>
 
       {dialog?.kind === 'checkin' && <CheckInDialog t={t} onCancel={() => setDialog(null)} onSubmit={checkIn} />}
@@ -392,6 +455,14 @@ export default function Editor({ project, variant, head, copy: opened, readOnly 
     </Shell>
   )
 }
+
+/** No ids: nothing drafted. */
+const NONE = new Set()
+
+/** Whether the domain holds what is chosen: the object, or a logical signal's place with it. */
+const isIn = (domain, sel) => (sel.collection === 'logicalSignals'
+  ? !!findLogical(domain, sel.id).logical
+  : !!domain.collections[sel.collection]?.some(o => o.id === sel.id))
 
 const BASEMAP_KEY = 'rail-across-signalling-basemap'
 const VIEW_KEY = 'rail-across-signalling-view'
@@ -453,12 +524,14 @@ function highlightOf(domain, net, selection, extents) {
     case 'routes': {
       const r = find('routes')
       if (!r) return null
-      const overlapRuns = (r.overlaps ?? []).flatMap(o => c.overlaps.find(x => x.id === o.overlapId)?.path.trackIds ?? [])
-      return { runs: r.path.trackIds, stretches: [], ids: [r.startSignalId, r.targetSignalId], overlapRuns }
+      // From signal to signal, the way it runs; its overlaps beyond, fainter.
+      const overlapWays = (r.overlaps ?? []).map(o => c.overlaps.find(x => x.id === o.overlapId)).filter(Boolean)
+        .map(o => ({ pieces: wayPieces(runStretches(net, c.signals.find(s => s.id === o.signalId)?.at, o.path.trackIds, o.end)) }))
+      return { ways: [{ pieces: wayPieces(routeStretches(net, r, c.signals)), strong: true }, ...overlapWays], ids: [r.startSignalId, r.targetSignalId] }
     }
     case 'overlaps': {
       const o = find('overlaps')
-      return o ? { runs: o.path.trackIds, ids: [o.signalId] } : null
+      return o ? { ways: [{ pieces: wayPieces(runStretches(net, c.signals.find(s => s.id === o.signalId)?.at, o.path.trackIds, o.end)), strong: true }], ids: [o.signalId] } : null
     }
     case 'trackSections': {
       const s = find('trackSections')

@@ -1,5 +1,5 @@
 import { stationRegister } from '@rail-across/core/document'
-import { CATALOGUE_REF, baliseKindOf, branchSpeedOnRun, protectionSystemOf, signalKindOf, signallingSpeedOf } from '@rail-across/core/signalling'
+import { CATALOGUE_REF, baliseKindOf, protectionSystemOf, signalKindOf, signallingSpeedOf } from '@rail-across/core/signalling'
 
 /**
  * The signalling domain as the tool edits it: pure functions from one state
@@ -175,10 +175,10 @@ export function newLogical({ system = 'ks', type = 'multiSection', fn = 'entry' 
   return withoutEmpty({ system, type, function: fn, frames: shows.length ? [{ kind: 'screen', aspects: shows.map(aspect => ({ aspect })) }] : undefined })
 }
 
-/** A new place at a location, with what it is in one system (a Ks signal unless said otherwise), or bare. */
-export function newSignal({ at, system = 'ks', type = 'multiSection', fn = 'entry', name, mounting = 'mast', bare = false }) {
+/** A new place at a location, with what it is in one system (a Ks signal unless said otherwise), or bare; on a gantry or bracket its foundation. */
+export function newSignal({ at, system = 'ks', type = 'multiSection', fn = 'entry', name, mounting = 'mast', foundation, bare = false }) {
   return withoutEmpty({
-    id: newId(), name, kind: 'real', mounting, at,
+    id: newId(), name, kind: 'real', mounting, at, foundation,
     logicalSignals: bare ? undefined : [newLogical({ system, type, fn })],
   })
 }
@@ -213,33 +213,82 @@ export function withSignallingSpeed(logical, routeId, speed) {
   return withoutEmpty({ ...logical, signallingSpeeds: speed == null ? rest : [...rest, { routeId, speed }] })
 }
 
-/**
- * The domain with the speed a route's start signal signals for it set: at
- * the logical signal that signals it already, else the first of the place —
- * unchanged where the place has none.
- */
-export function withRouteSpeed(domain, route, speed) {
-  const start = domain.collections.signals.find(s => s.id === route.startSignalId)
-  const setter = start?.logicalSignals?.find(l => l.signallingSpeeds?.some(v => v.routeId === route.id)) ?? start?.logicalSignals?.[0]
-  if (!setter) return domain
-  return withLogical(domain, logicalId(start.id, setter.system), withSignallingSpeed(setter, route.id, speed))
+/** A speed as a signal shows it: in tens, rounded down — Zs 3 and Lf 7 show no other; null for none. */
+export const shownSpeed = (speed) => (speed > 0 ? Math.max(10, Math.floor(speed / 10) * 10) : null)
+
+/** The highest speed a Zs 3 shows [km/h]. */
+const ZS3_TOP = 160
+
+/** A logical signal's frames with a Zs 3 of that symbol among its indicators, or, `drop`, without it. */
+function withZs3(frames = [], symbol, drop = false) {
+  const has = (f) => f.kind === 'indicator' && f.aspects.some(a => a.aspect === 'Zs_3' && a.symbol === symbol)
+  if (drop) {
+    return frames.map(f => (has(f) ? { ...f, aspects: f.aspects.filter(a => !(a.aspect === 'Zs_3' && a.symbol === symbol)) } : f))
+      .filter(f => f.kind !== 'indicator' || f.aspects.length)
+  }
+  if (frames.some(has)) return frames
+  const at = frames.findIndex(f => f.kind === 'indicator' && f.aspects.some(a => a.aspect === 'Zs_3'))
+  const zs3 = { aspect: 'Zs_3', symbol }
+  if (at < 0) return [...frames, { kind: 'indicator', aspects: [zs3] }]
+  return frames.map((f, i) => (i === at ? { ...f, aspects: [...f.aspects, zs3].sort((x, y) => Number(x.symbol ?? 0) - Number(y.symbol ?? 0)) } : f))
 }
 
 /**
- * The domain with every train route over the branch of a turnout (of
- * `routeIds`, or all) signalling the speed the turnout allows there where it
- * signals none or a higher one: { domain, changed } — the routes it set.
+ * The domain with the speed a route's start signal signals for it set, in
+ * tens: at the logical signal that signals it already, else the first of
+ * the place — unchanged where the place has none. A speed is shown by a
+ * Zs 3 at the same signal: the logical signal gets one of that figure among
+ * its indicators, the route shows it; the one it showed before goes where
+ * no other route shows it. A speed above what a Zs 3 shows has none.
+ * `system` names the logical signal that is to signal it, where one is asked.
  */
-export function withSwitchSpeeds(domain, switches, routeIds = null) {
+export function withRouteSpeed(domain, route, speed, system = null) {
+  const start = domain.collections.signals.find(s => s.id === route.startSignalId)
+  const setter = system ? start?.logicalSignals?.find(l => l.system === system)
+    : start?.logicalSignals?.find(l => l.signallingSpeeds?.some(v => v.routeId === route.id)) ?? start?.logicalSignals?.[0]
+  if (!setter) return domain
+  const shown = shownSpeed(speed)
+  const symbol = shown != null && shown <= ZS3_TOP ? String(shown / 10) : null
+  const current = domain.collections.routes.find(r => r.id === route.id) ?? route
+  const isZs3 = (a) => a.signalId === start.id && a.aspect === 'Zs_3'
+  const before = (current.aspects ?? []).find(isZs3)?.symbol
+  // The figure shown before stays where another route from the signal shows it.
+  const othersShow = before != null && domain.collections.routes.some(r => r.id !== route.id && (r.aspects ?? []).some(a => isZs3(a) && a.symbol === before))
+  let frames = setter.frames
+  if (before != null && before !== symbol && !othersShow) frames = withZs3(frames, before, true)
+  if (symbol) frames = withZs3(frames, symbol)
+  const logical = withSignallingSpeed({ ...setter, frames: frames?.length ? frames : undefined }, route.id, shown)
+  const aspects = [...(current.aspects ?? []).filter(a => !isZs3(a)), ...(symbol ? [{ signalId: start.id, aspect: 'Zs_3', symbol }] : [])]
+  const next = withLogical(domain, logicalId(start.id, setter.system), logical)
+  return replaced(next, 'routes', withoutEmpty({ ...current, aspects }))
+}
+
+/** Whether a route's speed is signalled as asked: that speed in tens, and its Zs 3 at its start signal. */
+export function signalsSpeed(domain, route, speed) {
+  const shown = shownSpeed(speed)
+  const start = domain.collections.signals.find(s => s.id === route.startSignalId)
+  const signalled = (start?.logicalSignals ?? []).flatMap(l => l.signallingSpeeds ?? []).find(v => v.routeId === route.id)?.speed ?? null
+  if (signalled !== shown) return false
+  if (shown == null || shown > ZS3_TOP) return true
+  const symbol = String(shown / 10)
+  const current = domain.collections.routes.find(r => r.id === route.id) ?? route
+  return (current.aspects ?? []).some(a => a.signalId === start.id && a.aspect === 'Zs_3' && a.symbol === symbol)
+    && (start.logicalSignals ?? []).some(l => (l.frames ?? []).some(f => f.kind === 'indicator' && f.aspects.some(a => a.aspect === 'Zs_3' && a.symbol === symbol)))
+}
+
+/**
+ * The domain with every route's speed shown as withRouteSpeed shows it: in
+ * tens, by a Zs 3 at its start signal — for the speeds signalled before
+ * that was so. { domain, changed } — how many routes it changed.
+ */
+export function withSpeedsShown(domain) {
   let next = domain
-  const changed = []
+  let changed = 0
   for (const route of domain.collections.routes) {
-    if (route.kind !== 'train' || (routeIds && !routeIds.includes(route.id))) continue
-    const allowed = branchSpeedOnRun(switches, route.path?.trackIds)?.speed
     const speed = signallingSpeedOf(next, route)
-    if (allowed == null || (speed != null && speed <= allowed)) continue
-    const set = withRouteSpeed(next, route, allowed)
-    if (set !== next) { next = set; changed.push(route.id) }
+    if (speed == null || signalsSpeed(next, route, speed)) continue
+    const set = withRouteSpeed(next, route, speed)
+    if (set !== next) { next = set; changed++ }
   }
   return { domain: next, changed }
 }
@@ -272,15 +321,15 @@ export function newBalise({ at, system = 'pzb', kind = Object.keys(protectionSys
   }
 }
 
-/** A signal's full designation, its area's number leading (60A): names repeat from area to area. */
-export const designationOf = (s, t) => `${s?.areaNumber ?? ''}${labelOf('signals', s, t)}`
+/** A signal's full designation, its area's number leading (60-A): names repeat from area to area. */
+export const designationOf = (s, t) => labelOf('signals', s, t)
 
-/** A short label of an object for lists and findings. */
+/** A short label of an object for lists and findings; a signal's with its area's number (designationOf). */
 export function labelOf(collection, obj, t) {
   if (!obj) return '—'
   const name = obj.name != null && obj.name !== '' ? String(obj.name) : null
   switch (collection) {
-    case 'signals': return name ?? (hasScreen(obj) ? null : boardName(obj)) ?? t('unnamed')
+    case 'signals': return (name && obj.areaNumber ? `${obj.areaNumber}-${name}` : name) ?? (hasScreen(obj) ? null : boardName(obj)) ?? t('unnamed')
     case 'routes': return name ?? null
     case 'operationalPoints': return name ?? obj.rl100 ?? t('unnamed')
     case 'platforms': return [obj.stationName, obj.code].filter(Boolean).join(' ') || t('unnamed')

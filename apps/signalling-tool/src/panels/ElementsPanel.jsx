@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import {
-  Badge, Button, Checkbox, GroupedList, Option, Options, OptionsDivider, OptionsHeading, Panel, PlusIcon, Section, SelectField, TextField,
+  Badge, Button, Checkbox, GroupedList, Option, Options, OptionsDivider, OptionsHeading, PlusIcon, Section, SelectField, TextField,
 } from '@rail-across/ui'
+import { Panel } from './draft.jsx'
 import { newId, labelOf, hasScreen } from '../model/domain.js'
 import { OPERATION, optionsOf, word } from '../labels.js'
 import { DerailerIcon, SwitchIcon } from '../icons.jsx'
 import { CheckList, Created, EditorHead, LocationFields, ObjectFindings } from './common.jsx'
-import { locationFrom, placing } from '../model/places.js'
+import { locationFrom, placing, signalOptions as signalChoices } from '../model/places.js'
 
 /**
  * The switches, with a menu as the Layout-Tool's panels: the switch elements
@@ -162,11 +163,11 @@ function ElementEditor({ element: chosen, domain, net, findings, ops, setMode, s
           <SelectField compact label={t('preferred')} value={chosen.preferredPosition ?? null} empty={t('none')} disabled={readOnly}
             options={[{ value: 'left', label: t('left') }, { value: 'right', label: t('right') }]} onChange={(v) => set({ preferredPosition: v ?? undefined })} />
           <SelectField compact wide label={t('clearance_marker')} value={chosen.clearanceMarkerId ?? null} empty={t('none')} disabled={readOnly}
-            options={markers.map(s => ({ value: s.id, label: labelOf('signals', s, t) }))} onChange={(v) => set({ clearanceMarkerId: v ?? undefined })} />
+            options={signalChoices(net, markers, t)} onChange={(v) => set({ clearanceMarkerId: v ?? undefined })} />
           <div className="ui-wide"><Checkbox label={t('trailable')} checked={chosen.trailable} disabled={readOnly} onChange={(v) => set({ trailable: v || undefined })} /></div>
         </>}
       </div>
-      <FlankSection element={chosen} domain={domain} findings={findings} ops={ops} readOnly={readOnly} t={t} selected={selected} />
+      <FlankSection element={chosen} domain={domain} net={net} findings={findings} ops={ops} readOnly={readOnly} t={t} selected={selected} />
       {chosen.derailer && (
         <Section title={t('location')}>
           <LocationFields loc={chosen.derailer.at} net={net} t={t} readOnly={readOnly}
@@ -183,15 +184,14 @@ function ElementEditor({ element: chosen, domain, net, findings, ops, setMode, s
  * what gives it, and the sections that must be clear for it. A way without
  * one is offered to get one.
  */
-function FlankSection({ element, domain, findings, ops, readOnly, t, selected }) {
+function FlankSection({ element, domain, net, findings, ops, readOnly, t, selected }) {
   const { flankProtection, switchElements, signals, trackSections } = domain.collections
   const mine = flankProtection.filter(f => f.requester.switchElementId === element.id)
   const ways = element.derailer ? ['tip'] : ['left', 'right', 'tip']
   const missing = ways.filter(v => !mine.some(f => f.requester.via === v))
   const viaText = (v) => (v === 'tip' ? t('tip') : t(v))
   const others = switchElements.filter(e => e.id !== element.id).map(e => ({ value: e.id, label: labelOf('switchElements', e, t) }))
-  const signalOptions = signals.filter(s => s.kind === 'real' && hasScreen(s)).map(s => ({ value: s.id, label: labelOf('signals', s, t) }))
-    .sort((a, b) => String(a.label).localeCompare(String(b.label), 'de', { numeric: true }))
+  const signalOptions = signalChoices(net, signals.filter(s => s.kind === 'real' && hasScreen(s)), t)
   return (
     <Section title={t('section_flank')}>
       <p className="ui-muted">{t('section_flank_intro')}</p>

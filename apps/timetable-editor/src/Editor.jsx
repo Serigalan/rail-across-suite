@@ -1,12 +1,17 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ConfirmDialog, FormDialog, NumberField, Rail, RailBrand, RailButton, RailDivider, Shell, TextField, Workspace, WorkingCopyBar } from '@rail-across/ui'
 import { netLines, stationsOf } from '@rail-across/running-times'
-import { copyTrain, dispatchOf, newTrain, numberAfter, taktCopies, trainTitle } from '@rail-across/timetables'
+import { copyTrain, dispatchOf, newTrain, numberAfter, playSpan, taktCopies, trainTitle, TRAIN_COLORS } from '@rail-across/timetables'
 import { useCatalogue } from '@rail-across/vehicles'
 import { useTexts } from './i18n.js'
-import { GraphIcon, HomeIcon, LogoIcon, SettingsIcon, TrainIcon } from './icons.jsx'
+import { ChartIcon, GraphIcon, HomeIcon, LiveIcon, LogoIcon, SettingsIcon, TimeIcon, TrainIcon } from './icons.jsx'
+import { RuntimePanel, RuntimeView } from './runtime/Runtime.jsx'
+import { useRuntime } from './runtime/useRuntime.js'
+import { runtimeTexts } from './runtime/texts.js'
 import TrainsPanel from './panels/TrainsPanel.jsx'
 import GraphPanel from './panels/GraphPanel.jsx'
+import LivePanel from './live/LivePanel.jsx'
+import LiveMap from './live/LiveMap.jsx'
 import SettingsPanel from './panels/SettingsPanel.jsx'
 import TrainSheet from './TrainSheet.jsx'
 import Graph from './Graph.jsx'
@@ -33,12 +38,16 @@ function nextNumber(trains) {
  * it begins (a station), the stations and halts it stops at or passes, where
  * it ends (a station) — with its times as the simulation module runs it, the
  * stations it passes among them, and its way on the map; or the graphical
- * timetable of all trains along the way of one. Changes are saved for the
- * project on the server; leaving with changes not saved asks first.
+ * timetable of all trains along the way of one; or the timetable played on
+ * the map, every train in its colour (Zugfahrten, live/). Beside them, in the same
+ * rail, computing the running time of one train on its own (Fahrzeit
+ * rechnen, runtime/), with its result; the address opens it with
+ * `section=runtime`. Changes are saved for the project on the server;
+ * leaving with changes not saved asks first.
  */
 export default function Editor({ project, variant, revision, record, local, initial = {} }) {
   const { t, language, setLanguage } = useTexts()
-  const [section, setSection] = useState('trains')
+  const [section, setSection] = useState(initial.section === 'runtime' ? 'runtime' : 'trains')
   const timetables = useTimetables(project.id, initial.timetable ?? null)
   // a vehicle changed in the Fahrzeug-Editor's tab is there when this one is shown again
   const catalogue = useCatalogue({ refreshOnShow: true })
@@ -51,8 +60,35 @@ export default function Editor({ project, variant, revision, record, local, init
   const [dialog, setDialog] = useState(null)   // { kind: 'new' | 'rename' | 'delete' | 'deleteTrain' | 'takt', ... }
   const [axisId, setAxisId] = useState(null)
   const [view, setView] = useState({ from: null, to: null, scale: 4, blocks: true })
+  // Computing a running time on its own: its state kept while the timetables are shown, its texts its own.
+  const rt = useMemo(() => runtimeTexts(language), [language])
+  const runtime = useRuntime({ record, catalogue, t: rt.t, language, onResult: () => setSection('runtime_result') })
+  const computing = section === 'runtime' || section === 'runtime_result'
+  // The timetable played: the moment shown, whether it runs on and how fast, which track sections are shown.
+  const [play, setPlay] = useState({ time: null, playing: false, speed: 60, sections: 'occupied' })
+  const [focus, setFocus] = useState(null)
+  const span = useMemo(() => playSpan(runs), [runs])
+  const playing = section === 'live' && play.playing && span
+  useEffect(() => {
+    if (!playing) return undefined
+    // ten steps a second are enough for the map, and spare the panel
+    let frame, last = performance.now()
+    const tick = (now) => {
+      frame = requestAnimationFrame(tick)
+      if (now - last < 100) return
+      const dt = Math.min(1, (now - last) / 1000)
+      last = now
+      setPlay(p => {
+        const time = Math.min(span.to, (p.time ?? span.from) + dt * p.speed)
+        return { ...p, time, playing: time < span.to }
+      })
+    }
+    frame = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(frame)
+  }, [playing, span])
 
   const sorted = useMemo(() => byDeparture(timetables.trains), [timetables.trains])
+  const colors = useMemo(() => new Map(sorted.map((tr, i) => [tr.id, TRAIN_COLORS[i % TRAIN_COLORS.length]])), [sorted])
   const train = timetables.trains.find(tr => tr.id === trainId) ?? sorted[0] ?? null
   useEffect(() => { keepInAddress({ timetable: timetables.selected, train: train?.id ?? null }) }, [timetables.selected, train?.id])
   const { mayEdit, dirty } = timetables
@@ -97,6 +133,10 @@ export default function Editor({ project, variant, revision, record, local, init
         top={<>
           <RailButton icon={<TrainIcon />} label={t('section_trains')} pressed={section === 'trains'} onClick={() => show('trains')} />
           <RailButton icon={<GraphIcon />} label={t('section_graph')} pressed={section === 'graph'} onClick={() => show('graph')} />
+          <RailButton icon={<LiveIcon />} label={t('section_live')} pressed={section === 'live'} onClick={() => show('live')} />
+          <RailDivider />
+          <RailButton icon={<ChartIcon />} label={rt.t('section_train')} pressed={section === 'runtime'} onClick={() => show('runtime')} />
+          <RailButton icon={<TimeIcon />} label={rt.t('section_result')} pressed={section === 'runtime_result'} onClick={() => show('runtime_result')} />
         </>}
         bottom={<>
           <RailDivider />
@@ -106,14 +146,26 @@ export default function Editor({ project, variant, revision, record, local, init
       />
       {section === 'trains' && <TrainsPanel {...panelProps} />}
       {section === 'graph' && <GraphPanel {...panelProps} axisId={axisId} setAxisId={setAxisId} view={view} setView={setView} />}
+      {section === 'live' && <LivePanel t={t} record={record} sorted={sorted} runs={runs} colors={colors} play={play} setPlay={setPlay} span={span}
+        onFocus={(id) => setFocus(f => ({ id, n: (f?.n ?? 0) + 1 }))} />}
       {section === 'settings' && <SettingsPanel t={t} language={language} setLanguage={setLanguage} />}
+      {computing && <RuntimePanel section={section === 'runtime_result' ? 'result' : 'train'} panelProps={runtime.panelProps} />}
       <Workspace>
-        {bar}
-        {section === 'graph'
+        {computing ? <RuntimeView bar={bar} viewProps={runtime.viewProps} /> : section === 'live' ? null : bar}
+        {section === 'live' && (
+          <div className="sim-stack">
+            <div className="sim-map-wrap">
+              {bar}
+              <LiveMap record={record} net={net} trains={sorted} runs={runs} colors={colors} time={play.time ?? span?.from ?? 0}
+                sections={play.sections} focus={focus} t={t} />
+            </div>
+          </div>
+        )}
+        {computing || section === 'live' ? null : section === 'graph'
           ? <Graph t={t} trains={sorted} runs={runs} axisTrain={timetables.trains.find(tr => tr.id === axisId) ?? train} view={view}
               selected={train?.id} onSelect={(id) => { setTrainId(id); setSection('trains') }} />
           : <TrainSheet key={train?.id ?? 'none'} t={t} language={language} train={train} run={train ? runs.get(train.id) : null}
-              timetables={timetables} stations={stations} catalogue={catalogue} record={record} net={net} mayEdit={mayEdit} titles={titles}
+              timetables={timetables} stations={stations} catalogue={catalogue} record={record} net={net} mayEdit={mayEdit} titles={titles} chartT={rt.t}
               update={(fn) => train && update(train.id, fn)} onCopy={() => copy(train)} onTakt={() => setDialog({ kind: 'takt' })}
               onDelete={() => setDialog({ kind: 'deleteTrain' })} onNewTimetable={() => setDialog({ kind: 'new' })} onAddTrain={addTrain} />}
       </Workspace>

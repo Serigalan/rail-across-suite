@@ -1,5 +1,6 @@
-import { generateId, buildTypeFields, rebuildCoords } from '../track/index.js'
-import { arcElement, arcFrom, straightElement, straightFrom, transitionElement } from '../geometry/index.js'
+import { generateId, buildTypeFields, portTracks, rebuildCoords, rebuildPlatformSymbol } from '../track/index.js'
+import { arcElement, arcFrom, reconstructElements, straightElement, straightFrom, transitionElement } from '../geometry/index.js'
+import { rebuildSwitchSymbol } from '../switch/index.js'
 import { cantSign } from '../rules/index.js'
 
 // What the create and connect dialogs commit (R4.2), as pure functions: the
@@ -98,4 +99,38 @@ export function buildConnectCurved({ start, bearing, arcLength, signedR, speed, 
   // The arc keeps the bearing and length it was asked for; the factory derives the rest.
   const arc  = arcFrom(from, b, arcLength, signedR, { speed, cant: curveCant(signedR, cant) })
   return [...(lead ? [lead.element] : []), { ...arc, bearing: b, length: arcLength }]
+}
+
+/**
+ * MoveTrackForm: the project with the tracks `trackIds` shifted by `dx` east
+ * and `dy` north [m] in their own plane — every node by the same, so bearings,
+ * lengths and radii stay and only the drawing is derived anew. The symbols of
+ * the switches and the platforms on a moved track are drawn again; what is
+ * stationed along a track (heights, platforms, end marks) goes with it as it
+ * is. A track joined to one that stays is parted from it. Pure; the project
+ * itself where there is nothing to move.
+ */
+export function translateTracks(project, trackIds, dx, dy) {
+  const ids = new Set(trackIds)
+  if (!project || !ids.size || !Number.isFinite(dx) || !Number.isFinite(dy) || (dx === 0 && dy === 0)) return project
+  const shift = (node) => (Array.isArray(node) ? [node[0] + dx, node[1] + dy] : node)
+  let moved = false
+  const tracks = (project.tracks ?? []).map(track => {
+    if (!ids.has(track.id)) return track
+    moved = true
+    const elements = reconstructElements((track.elements ?? []).map(el => ({
+      ...el, startNode: shift(el.startNode), endNode: shift(el.endNode),
+    })), track.epsg)
+    return { ...track, elements, coordinates: rebuildCoords(elements) }
+  })
+  if (!moved) return project
+  const byId = Object.fromEntries(tracks.map(t => [t.id, t]))
+  const switches = project.switches?.map(sw => (portTracks(sw).some(id => ids.has(id)) ? rebuildSwitchSymbol(sw, byId) : sw))
+  const platforms = project.platforms?.map(pf => (ids.has(pf.trackId) ? rebuildPlatformSymbol(pf, byId) : pf))
+  return {
+    ...project,
+    tracks,
+    ...(switches ? { switches } : {}),
+    ...(platforms ? { platforms } : {}),
+  }
 }

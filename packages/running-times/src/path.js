@@ -163,6 +163,28 @@ function merged(ranges, same = (a, b) => a.value === b.value) {
 }
 
 /**
+ * The heights along a path, for its profile: [{ position, height }] in
+ * running order at the ends of its pieces and the height points between —
+ * the heights between them straight, as the grades are taken. A track
+ * without heights gives null there: a gap the profile leaves open.
+ */
+export function heightProfile(record, path) {
+  const tracks = new Map((record?.tracks ?? []).map(t => [t.id, t]))
+  const out = []
+  let at = 0
+  for (const p of path ?? []) {
+    const track = tracks.get(p.trackId)
+    const heights = track?.heights?.length >= 2 ? track.heights : null
+    const lo = Math.min(p.start, p.end), hi = Math.max(p.start, p.end)
+    const stations = [lo, ...(heights ?? []).map(h => h.station).filter(s => s > lo && s < hi), hi]
+    if (p.end < p.start) stations.reverse()
+    for (const s of stations) out.push({ position: at + Math.abs(s - p.start), height: heights ? heightAt(heights, s) : null })
+    at += pieceLength(p)
+  }
+  return out
+}
+
+/**
  * What the physics needs of a path: { length, gradients, speedLimits, gaps }
  * — `gradients` [{ begin, end, value }] in ‰ along the path, rising
  * positive, the curves' resistance counted in; `speedLimits` [{ begin, end,

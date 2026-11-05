@@ -22,12 +22,12 @@ export function toProjects(note = null) {
   location.assign(projectsUrl())
 }
 
-/** What the address asks: { action, project, variant, timetable, train }, null without a project. */
+/** What the address asks: { action, project, variant, timetable, train, section }, null without a project — `section` runtime opens computing a running time. */
 export function linkedRequest(search = globalThis.location?.search ?? '') {
   const q = new URLSearchParams(search)
   const action = q.get('action') ?? 'open'
   if (!['open', 'view'].includes(action) || !q.get('project')) return null
-  return { action, project: q.get('project'), variant: q.get('variant'), timetable: q.get('timetable'), train: q.get('train') }
+  return { action, project: q.get('project'), variant: q.get('variant'), timetable: q.get('timetable'), train: q.get('train'), section: q.get('section') }
 }
 
 /** The timetable and train shown, kept in the address — a reload or a link shows them again. */

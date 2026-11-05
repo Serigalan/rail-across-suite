@@ -3,29 +3,33 @@ import { deleteTrack, loadTracks, switchesOnTrack } from '../../../storage'
 import { useI18n } from '../../../locales/i18nContext'
 import CommitBar from '../../form/CommitBar'
 import useMapPick, { useSelectedOnMap } from '../../../map/useMapPick'
+import { useProject } from '../../../hooks/useStore'
 import CancelButton from '../../form/CancelButton'
+import GroupedTrackList from '../GroupedTrackList'
+import { pickableTracks, trackTitle } from './trackPick'
 
 export default function DeleteTrackForm({ onCommitted }) {
   const { t, fill } = useI18n()
+  useProject()   // the list follows every write, the delete and its undo
   // { id, name, elements, switchNames } – switch branches are not offered: their
   // geometry belongs to a switch and goes with it, not on its own.
   const [selected, setSelected] = useState(null)
+  const tracks = pickableTracks(loadTracks())
 
-  // Click to pick the track — the whole track is highlighted, since the whole
-  // track is what gets deleted.
-  useMapPick({
-    active: selected === null, noSwitchBranch: true, hover: 'element',
-    onPick: ({ trackId }) => {
-      const track = loadTracks().find(tr => tr.id === trackId)
-      if (!track) return
-      setSelected({
-        id:          trackId,
-        name:        track.name || trackId.slice(0, 8),
-        elements:    (track.elements ?? []).length,
-        switchNames: switchesOnTrack(trackId).map((sw, i) => sw.name || `#${i + 1}`),
-      })
-    },
-  })
+  const select = (trackId) => {
+    const track = tracks.find(tr => tr.id === trackId)
+    if (!track) return
+    setSelected({
+      id:          trackId,
+      name:        trackTitle(track),
+      elements:    (track.elements ?? []).length,
+      switchNames: switchesOnTrack(trackId).map((sw, i) => sw.name || `#${i + 1}`),
+    })
+  }
+
+  // Click to pick the track — on the map or in the list; the whole track is
+  // highlighted, since the whole track is what gets deleted.
+  useMapPick({ noSwitchBranch: true, hover: 'element', onPick: ({ trackId }) => select(trackId) })
   useSelectedOnMap(selected ? { trackId: selected.id } : null)
 
   // No question first (R10.5): the step notice offers the way back.
@@ -36,9 +40,11 @@ export default function DeleteTrackForm({ onCommitted }) {
 
   return (
     <>
-      {!selected ? (
-        <p>{t('edit_element_hint')}</p>
-      ) : (
+      <p>{t('edit_track_pick_hint')}</p>
+      <GroupedTrackList tracks={tracks}
+        isActive={(tr) => tr.id === selected?.id}
+        onPick={(tr) => select(tr.id)} />
+      {selected && (
         <>
           <p>{fill('edit_track_delete_selected', { name: selected.name, elements: selected.elements })}</p>
           {selected.switchNames.length > 0 && (

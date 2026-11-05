@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { Button, Checkbox, PlusIcon, Section } from '@rail-across/ui'
 import { SIGNAL_CATALOGUE, aspectOf, titleIn } from '@rail-across/core/signalling'
+import { BOARD_ASPECTS } from '../model/places.js'
 
-/** The aspects that may stand on a frame of that kind, for a signal of that kind (indicators: those it carries). */
+/** The aspects that may stand on a frame of that kind, for a signal of that kind (indicators: those it carries; plates: the boards needed). */
 function choicesFor(frameKind, kind) {
   const all = SIGNAL_CATALOGUE.begriffe.filter(b => !b.nur_dv && (!b.rahmen || b.rahmen.includes(frameKind)))
   if (frameKind === 'indicator' && kind) return all.filter(b => kind.zusatz.includes(b.id))
+  if (frameKind === 'plate') return BOARD_ASPECTS.map(id => all.find(b => b.id === id)).filter(Boolean)
   return all
 }
 

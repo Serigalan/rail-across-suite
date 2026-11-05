@@ -64,20 +64,21 @@ export default function TrackFields({ fields, setField, name, onNameChange, name
                 {t(lineErr === 'db' ? 'line_number_error_db' : 'line_number_error_sncf')}
               </span>
             )}
-            {/* The lines the kilometrage overlay shows around the view, as
-                something to pick instead of type. Absent where the overlay is
-                off, which is why the field itself stays an input. */}
+            {/* The lines the kilometrage overlay shows around the view and
+                the project's own, as something to pick instead of type. Absent
+                where there is none, which is why the field itself stays an input. */}
             {(lineOptions?.length ?? 0) > 0 && (
               <div className="line-suggestions">
-                {lineOptions.map(({ lineNumber: number, distance }) => (
+                {lineOptions.map(({ lineNumber: number, distance, local }) => (
                   <button
                     key={number}
                     type="button"
-                    className={`line-suggestion${String(number) === String(lineNumber) ? ' active' : ''}`}
+                    className={`line-suggestion${local ? ' local' : ''}${String(number) === String(lineNumber) ? ' active' : ''}`}
+                    title={local ? t('line_suggestion_local') : undefined}
                     onClick={() => setField('lineNumber', String(number))}
                   >
                     {number}
-                    <span className="line-suggestion-distance">{distance} m</span>
+                    <span className="line-suggestion-distance">{distance} m{local ? ` · ${t('km_local')}` : ''}</span>
                   </button>
                 ))}
               </div>

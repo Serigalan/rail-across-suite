@@ -126,10 +126,11 @@ export function parseProjectsPayload(data) {
 /**
  * The core 1.0 document of a project record — what a file and the project
  * server hold. Derived data is stripped first; `carrySchemas` puts the
- * domains' schemas in, as a file that travels carries them.
+ * domains' schemas in, as a file that travels carries them; `check: false`
+ * writes it although the schemas refuse it (toDocument).
  */
-export const projectDocument = (record, { carrySchemas = false } = {}) =>
-  toDocument(dehydrateProjects([record])[0], { carrySchemas })
+export const projectDocument = (record, { carrySchemas = false, check = true } = {}) =>
+  toDocument(dehydrateProjects([record])[0], { carrySchemas, check })
 
 const isPoint = (p) => Array.isArray(p) && p.length >= 2 && p.every(Number.isFinite)
 
@@ -198,7 +199,11 @@ function keptReasons(el) {
  */
 function keptElement({ renderCoords: _rc, geometry: _g, ...el }) {
   const out = keptReasons(el)
-  if (out.endBearing != null) {
+  // An end bearing that is no number — left undefined or NaN by an edit —
+  // says nothing; the design values give it again on load. Kept, it would
+  // hold up the check-in and the export.
+  if (!Number.isFinite(out.endBearing)) delete out.endBearing
+  else {
     const derived = derivedEndBearing(out) ?? out.bearing
     if (derived != null && turnBetween(out.endBearing, derived) < SAME_END_BEARING) delete out.endBearing
   }
@@ -253,7 +258,10 @@ export function dehydrateProjects(projects) {
     return {
       ...p,
       ...(p.tracks ? {
-        tracks: p.tracks.map(({ coordinates: _coords, ...track }) => ({
+        // `regelwerk` and `regelwerkGrenzwert`: what the optimize dialog wrote
+        // onto a track it changed until 2026-11; the format never held them,
+        // and a working copy carrying them could not be checked in.
+        tracks: p.tracks.map(({ coordinates: _coords, regelwerk: _rw, regelwerkGrenzwert: _rg, ...track }) => ({
           ...track,
           // `cant` or `cantStart` + `cantEnd`, never both (Entscheidung 369).
           elements: storedTrackCants(track.elements ?? []).map(keptElement),

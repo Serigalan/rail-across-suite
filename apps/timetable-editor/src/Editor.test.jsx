@@ -10,6 +10,7 @@ import Graph from './Graph.jsx'
 import DispatchSection from './panels/DispatchSection.jsx'
 import { axisOf, blocksOn, insertionIndex, linesOn, trainLine } from './rows.js'
 import { linkedRequest } from './suite.js'
+import { runtimeTexts } from './runtime/texts.js'
 import { marked, net } from '../../../packages/running-times/test/net.js'
 
 const de = (node) => renderToStaticMarkup(<I18n.Provider value={textsFor('de')}>{node}</I18n.Provider>)
@@ -41,6 +42,25 @@ describe('the Fahrplan-Editor', () => {
     expect(html).toContain('Fahrplan-Editor')
     expect(html).toContain('Wird geladen')
     expect(html).toContain('liest den eingecheckten Stand')
+  })
+
+  it('computes a running time in the same interface: in its rail, and opened by the address', () => {
+    const editor = (initial) => de(<Editor project={{ id: 'p', title: 'Strecke' }} variant={{ name: 'Bestand' }} revision={{ number: 3 }} record={net} local={false} initial={initial} />)
+    const trains = editor({})
+    expect(trains).toContain('aria-label="Fahrzeit rechnen"')
+    expect(trains).toContain('aria-label="Fahrzeit-Ergebnis"')
+    const computing = editor({ section: 'runtime' })
+    expect(computing).toContain('<h2>Fahrzeit rechnen</h2>')
+    expect(computing).toContain('class="sim-stack"')
+  })
+
+  it('shows a train\'s speed and the height along its way', () => {
+    const rep = { positions: [0, 3200], times: [0, 195], speeds: [0, 0], total_time: 195, energy_consumption: 7.2e6, scheduled_points: [] }
+    const full = { ...run, result: { base: rep, provisional: rep, final: rep, mrsp: [{ begin: 0, end: 3200, speed: 25 }], warnings: [] } }
+    const html = sheet({ run: full, chartT: runtimeTexts('de').t })
+    expect(html).toContain('<h2>Geschwindigkeit und Höhe</h2>')
+    expect(html).toContain('aria-label="Höhe"')
+    expect(sheet()).not.toContain('Geschwindigkeit und Höhe')
   })
 
   it('shows a train: what it is, its way from a station to a station, its times with the stations it passes', () => {
@@ -134,14 +154,14 @@ describe('what it shows of runs', () => {
   })
 
   it('reads its address', () => {
-    expect(linkedRequest('?project=p&variant=v&timetable=tt&train=x')).toEqual({ action: 'open', project: 'p', variant: 'v', timetable: 'tt', train: 'x' })
+    expect(linkedRequest('?project=p&variant=v&timetable=tt&train=x')).toEqual({ action: 'open', project: 'p', variant: 'v', timetable: 'tt', train: 'x', section: null })
     expect(linkedRequest('?variant=v')).toBeNull()
   })
 
   it('sets what happens where two trains need one block: they wait, the kinds first in the order set, or only the conflicts are said', () => {
     const tt = (dispatch) => timetables({ trains: [train, { ...train, id: 'x', category: 'Sonder' }], draft: { id: 'tt', name: 'F', data: { trains: [], dispatch }, version: 1 } })
     const waiting = de(<DispatchSection t={t} timetables={tt({ mode: 'wait', priority: 'category' })} mayEdit />)
-    expect(waiting).toContain('Züge warten automatisch')
+    expect(waiting).toContain('Fahrstraßen stellen: Züge kreuzen, weichen aus oder warten')
     expect(waiting).toContain('Nach Zuggattung')
     // the kinds set first, then the trains' own
     expect(waiting.indexOf('>ICE<')).toBeLessThan(waiting.indexOf('>RB<'))

@@ -52,6 +52,7 @@ export {
   assignmentFields, assignTracks, groupHeading, groupTitle, groupTracks, kmTrackName, plannedNames, stationTrackStem,
   trackGroupKey, trackKind, trackListLabel, trackTypeName,
 } from './trackGroups.js'
+export { kmForTrackPoint, kmOnRuns, planeRuns } from './kmLines.js'
 export { existingLinks, findTrackJoints, JOINT_TOL, linkAllJoints, linksForJoints, linkSymbol } from './trackLinkUtils.js'
 export {
   flipSwitchEndpoints, inheritedSpeed, joinTracks, makeTrack, nextTrackName, portTracks,

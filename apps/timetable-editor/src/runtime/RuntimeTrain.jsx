@@ -12,7 +12,7 @@ import { formatDistance } from '@rail-across/running-times'
  * point picked on the map —, its margin and how it is spread; the path
  * found over the net, what the net lacks along it, and the button that runs it.
  */
-export default function TrainPanel(props) {
+export default function RuntimeTrain(props) {
   const { t, language, places, catalogue, entry, vehicle, chooseVehicle, modes, mode, comforts, comfort, setTraction, start, setStart, end, setEnd, stops, setStops, margin, setMargin, marginText, distribution, setDistribution, picking, setPicking, route, run, stale, busy, go } = props
   const length = route?.path ? route.offsets.at(-1) : null
   const gaps = run?.properties?.gaps

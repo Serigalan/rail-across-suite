@@ -83,9 +83,12 @@ function lineBetween(net, record, trackId, a, b) {
   return b < a ? line.reverse() : line
 }
 
+/** A path's line on the map: its points [lng, lat], in running order. */
+export const pathLine = (net, record, path) => (path ?? []).flatMap(p => lineBetween(net, record, p.trackId, p.start, p.end))
+
 /** A path as one line on the map. */
 export function pathGeoJSON(net, record, path) {
-  const coordinates = (path ?? []).flatMap(p => lineBetween(net, record, p.trackId, p.start, p.end))
+  const coordinates = pathLine(net, record, path)
   return { type: 'FeatureCollection', features: coordinates.length >= 2 ? [{ type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates } }] : [] }
 }
 

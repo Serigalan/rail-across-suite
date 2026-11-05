@@ -1,13 +1,23 @@
-import { Badge, GroupedList, Panel } from '@rail-across/ui'
+import { useEffect, useMemo, useState } from 'react'
+import { Badge, GroupedList, Option, Options, OptionsDivider, OptionsHeading } from '@rail-across/ui'
+import { Panel } from './draft.jsx'
 import { protectionSystemOf, titleIn } from '@rail-across/core/signalling'
 import { findLogical, hasScreen, labelOf } from '../model/domain.js'
 import { POINT_KIND, SECTION_KIND, VIRTUAL_FUNCTION, baliseWord, logicalSignalWord, word } from '../labels.js'
 import { signalTone } from '../plan/symbols.js'
-import { OFFSET, locationFrom, placing, trackName } from '../model/places.js'
+import { OFFSET, locationFrom, mountedFrom, placing, sideAlong, trackName } from '../model/places.js'
 import LocationEditor from './editors/LocationEditor.jsx'
 import LogicalEditor from './editors/LogicalEditor.jsx'
 import { PointEditor, SectionEditor } from './editors/DetectionEditors.jsx'
 import BaliseEditor from './editors/BaliseEditor.jsx'
+import { sectionColors } from '../model/sectionColors.js'
+import { BaliseIcon, BoardIcon, DetectionIcon, LocationIcon, SectionIcon, SignalIcon, VirtualIcon } from '../icons.jsx'
+
+/** The icon of each kind in the menu. */
+const ICONS = {
+  'signals-main': <SignalIcon />, 'signals-distant': <SignalIcon />, 'signals-shunting': <SignalIcon />, 'signals-board': <BoardIcon />,
+  'signals-bare': <LocationIcon />, 'signals-virtual': <VirtualIcon />, trackSections: <SectionIcon />, detectionPoints: <DetectionIcon />,
+}
 
 /** The groups of signal masts in the overview, in their order. */
 const SIGNAL_GROUPS = ['main', 'distant', 'shunting', 'board', 'bare', 'virtual']
@@ -22,16 +32,34 @@ function signalGroup(s) {
 
 /**
  * Editing what the three panels before it create — signals, train detection,
- * balises and magnets: an overview of them all under their kinds, each group
- * folding away, a search over all (as the Layout-Tool lists a project's
- * tracks), and a click on one, in the overview or on the plan, opens it in
- * its editor; a logical signal is opened from its mast. The way back leads to
- * the overview, from a logical signal to its mast.
+ * balises and magnets: a menu of their kinds — main signals, distant signals,
+ * …, track sections, detection points, the balises of each system —, each
+ * opening the list of its objects with a search over them, and a click on
+ * one, in the list or on the plan, opens it in its editor; a logical signal
+ * is opened from its mast. The way back leads to the list, from a logical
+ * signal to its mast. While the track sections are listed, the plan draws
+ * each in a colour of its own, none in its neighbour's, and the list names
+ * each in it.
  */
-export default function EditPanel({ domain, net, core, findings, extents, selection, select, ops, mode, setMode, readOnly, t, language }) {
+export default function EditPanel({ domain, net, core, findings, extents, selection, select, ops, mode, setMode, setSketch, showOnPlan, readOnly, t, language }) {
   const { signals, detectionPoints, trackSections, balises } = domain.collections
+  // The kind listed, or null for the menu of them.
+  const [listed, setListed] = useState(null)
+  const colors = useMemo(() => sectionColors(trackSections), [trackSections])
+  // The track sections listed: each on the plan in its colour, its name on it in that colour.
+  const colouring = listed === 'trackSections' && !selection
+  useEffect(() => {
+    if (!colouring) return undefined
+    const parts = trackSections.flatMap(s => (extents.get(s.id)?.parts ?? []).map(p => ({ ...p, color: colors.get(s.id), id: s.id })))
+    const longest = trackSections.map(s => {
+      const p = [...(extents.get(s.id)?.parts ?? [])].sort((a, b) => (b.to - b.from) - (a.to - a.from))[0]
+      return p ? { ...p, text: labelOf('trackSections', s, t), color: colors.get(s.id) } : null
+    }).filter(Boolean)
+    setSketch?.({ stretches: parts, labels: longest })
+    return () => setSketch?.(null)
+  }, [colouring, trackSections, extents, colors, setSketch, t])
   const toOverview = { label: t('back'), onClick: () => select(null) }
-  const editorProps = { domain, net, core, findings, extents, ops, mode, setMode, select, readOnly, t, language }
+  const editorProps = { domain, net, core, findings, extents, ops, mode, setMode, setSketch, showOnPlan, select, readOnly, t, language }
   const find = (name) => domain.collections[name].find(o => o.id === selection?.id)
 
   switch (selection?.collection) {
@@ -42,7 +70,13 @@ export default function EditPanel({ domain, net, core, findings, extents, select
         <Panel title={t(signal.kind === 'virtual' ? 'object_virtual' : 'object_signals')} back={toOverview}>
           <LocationEditor key={signal.id} signal={signal} {...editorProps}
             onChange={(s) => ops.update('signals', s)} onDelete={() => ops.remove('signals', signal.id)}
-            onPlace={() => setMode(placing('signals', (hit) => ({ ...signal, at: locationFrom(hit, { offset: signal.at?.offset ?? OFFSET.signals }) }), (s) => ops.update('signals', s)))} />
+            onPlace={() => setMode(placing('signals', (hit) => ({
+              ...signal,
+              // A gantry's screen keeps where it stands to the track, seen the way it acts.
+              at: signal.foundation
+                ? mountedFrom(hit, { screen: { side: sideAlong(signal.at, signal.at?.side) ?? null, offset: signal.at?.offset }, foundation: signal.foundation }).at
+                : locationFrom(hit, { offset: signal.at?.offset ?? OFFSET.signals }),
+            }), (s) => ops.update('signals', s)))} />
         </Panel>
       )
     }
@@ -93,7 +127,10 @@ export default function EditPanel({ domain, net, core, findings, extents, select
       items: trackSections.map(s => {
         const ext = extents.get(s.id)
         const m = ext ? Math.round(ext.parts.reduce((sum, p) => sum + (p.to - p.from), 0)) : 0
-        return { id: `trackSections:${s.id}`, label: labelOf('trackSections', s, t), sub: `${word(SECTION_KIND, s.kind, language)} · ${s.boundedBy.length} × · ${m} m`, end: bad.sections.has(s.id) ? <Badge tone="warn">!</Badge> : null }
+        return {
+          id: `trackSections:${s.id}`, label: labelOf('trackSections', s, t), color: colors.get(s.id),
+          sub: `${word(SECTION_KIND, s.kind, language)} · ${s.boundedBy.length} × · ${m} m`, end: bad.sections.has(s.id) ? <Badge tone="warn">!</Badge> : null,
+        }
       }).sort(byName),
     },
     {
@@ -112,13 +149,33 @@ export default function EditPanel({ domain, net, core, findings, extents, select
   // What is chosen elsewhere — a logical signal's mast — is marked here.
   const chosen = selection?.collection === 'logicalSignals' ? `signals:${findLogical(domain, selection.id).signal?.id}` : selection ? `${selection.collection}:${selection.id}` : null
 
+  const group = groups.find(g => g.key === listed)
+  if (group) {
+    return (
+      <Panel title={group.title} back={{ label: t('back'), onClick: () => setListed(null) }}>
+        <GroupedList label={group.title} groups={[group]} open selected={chosen} empty={t('edit_empty')} searchLabel={t('search_objects')} noneFound={t('search_none')}
+          onSelect={(key) => {
+            const at = key.indexOf(':')
+            select({ collection: key.slice(0, at), id: key.slice(at + 1) })
+          }} />
+      </Panel>
+    )
+  }
+  const option = (g, icon) => (
+    <Option key={g.key} icon={icon} end={g.items.length} disabled={!g.items.length} onClick={() => setListed(g.key)}>{g.title}</Option>
+  )
+  const headed = [...new Set(groups.map(g => g.heading))]
   return (
     <Panel title={t('section_edit')} intro={t('section_edit_intro')}>
-      <GroupedList label={t('section_edit')} groups={groups} selected={chosen} empty={t('edit_empty')} searchLabel={t('search_objects')} noneFound={t('search_none')}
-        onSelect={(key) => {
-          const at = key.indexOf(':')
-          select({ collection: key.slice(0, at), id: key.slice(at + 1) })
-        }} />
+      {headed.map((heading, i) => (
+        <div key={heading}>
+          {i > 0 && <OptionsDivider />}
+          <Options>
+            <OptionsHeading>{heading}</OptionsHeading>
+            {groups.filter(g => g.heading === heading).map(g => option(g, ICONS[g.key] ?? <BaliseIcon />))}
+          </Options>
+        </div>
+      ))}
     </Panel>
   )
 }

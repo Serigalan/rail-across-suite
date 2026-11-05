@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Badge, Button, GroupedList, Message, Option, Options, Section, SelectField, TextField } from '@rail-across/ui'
-import { designationOf as signalDesignation, withSwitchSpeeds } from '../model/domain.js'
+import { designationOf as signalDesignation } from '../model/domain.js'
+import { withElementSpeeds } from '../model/routeSpeeds.js'
 import { searchItineraries, withItinerary } from '../model/itineraries.js'
 import { stoppingPlaceLabel } from '../model/stoppingPlaces.js'
 import { stationName } from '../model/stations.js'
@@ -74,9 +75,9 @@ export function ItinerarySearch({ domain, net, core, ops, select, mode, setMode,
     const via = found.length > 1 && r.switches.length ? ` · ${t('via_switches', { list: r.switches.map(switchName).join(', ') })}` : ''
     const name = `${stoppingPlaceLabel(core, from, t)} → ${stoppingPlaceLabel(core, to, t)}`
     const { state, id } = withItinerary(domain, r, from, to, `${name}${via || (found.length > 1 ? ` (${i + 1})` : '')}`)
-    // The routes it made over the branch of a turnout signal the turnout's speed.
+    // The routes it made signal the speed their elements give.
     const made = state.collections.routes.filter(x => !domain.collections.routes.some(y => y.id === x.id)).map(x => x.id)
-    ops.replaceAll(withSwitchSpeeds(state, net.switches, made).domain)
+    ops.replaceAll(withElementSpeeds(state, net, { routeIds: made, boards: false }).domain)
     select({ collection: 'itineraries', id })
   }
   return <>

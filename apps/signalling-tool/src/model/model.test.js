@@ -1,14 +1,19 @@
 import { describe, it, expect } from 'vitest'
-import { straightElement } from '@rail-across/core/geometry'
+import { straightElement, utmToWgs84 } from '@rail-across/core/geometry'
 import { netDrawing, placeOf, locate, stretchLine } from './net.js'
 import { findRun, runAhead, switchesOnRun } from './runs.js'
 import {
   added, allLogical, baliseSettings, cascadeOf, deleted, domainOf, emptyDomain, findLogical, logicalId, newBalise, newLogical, newSignal, withKind,
-  withLogical, withSignallingSpeed, withSwitchSpeeds,
+  withLogical, withSignallingSpeed,
 } from './domain.js'
 import { measuredOverlap, withMeasuredOverlap } from './overlaps.js'
-import { OFFSET, locationFrom, planePoint } from './places.js'
-import { redo, startHistory, step, stepOf, stepsOf, travel, undo } from './history.js'
+import { OFFSET, bracketScreen, farMastPoint, foundationPoint, gantryFarOffset, kmName, kmNameAt, locationFrom, mountedFrom, planePoint, signalOptions, trackName } from './places.js'
+import { magnetFrequency, magnetName, magnetsDue, signalMagnet, withSignal } from './magnets.js'
+import { LAYOUT, detectionLayout, wantedPoints } from './detectionLayout.js'
+import { nextSignals, routeSections, routeStretches, runStretches, wayPieces } from './routeSearch.js'
+import { trackSectionExtents } from '@rail-across/core/signalling'
+import { functionChoiceOf, functionOfChoice, functionOptions, functionWord, mountingOptions, typeForChoice } from '../labels.js'
+import { changedIds, redo, startHistory, step, stepOf, stepsOf, travel, undo } from './history.js'
 
 const EPSG = 25832
 const P = (x, y = 0) => ({ easting: 500000 + x, northing: 5700000 + y, zone: EPSG })
@@ -51,6 +56,25 @@ describe('setting objects beside the track', () => {
     expect(locationFrom({ trackId: 't1', station: 50, side: 'left' }, { directed: false })).not.toHaveProperty('direction')
   })
 
+  it('sets a bracket\'s signal across from its mast, and a gantry\'s second mast across from the first', () => {
+    expect(bracketScreen({ side: 'right', offset: 3.5 })).toEqual({ side: 'left', offset: 2 })
+    expect(bracketScreen({ side: 'left', offset: 3.5 }, 0)).toEqual({ side: null, offset: 0 })
+    // Over the track, the foundation 3.5 m right: the other mast 3.5 m left.
+    expect(gantryFarOffset({ at: on('t1', 50), foundation: { side: 'right', offset: 3.5 } })).toBe(-3.5)
+    // Over the track on its left 4.5 m, the foundation right 3.5 m, seen against the stationing: as far beyond the screen.
+    expect(gantryFarOffset({ at: { ...on('t1', 50, 'down'), side: 'right', offset: 4.5 }, foundation: { side: 'right', offset: 3.5 } })).toBe(12.5)
+    expect(farMastPoint(net, { mounting: 'gantry', at: on('t1', 50), foundation: { side: 'right', offset: 3.5 } }).northing).toBeCloseTo(5700003.5, 6)
+    expect(farMastPoint(net, { mounting: 'bracket', at: on('t1', 50), foundation: { side: 'right', offset: 3.5 } })).toBeNull()
+    expect(mountingOptions('de').map(o => o.value)).toEqual(['mast', 'bracket', 'gantry'])
+    expect(functionOptions('de').map(o => o.label)).toEqual(['Einfahrsignal', 'Ausfahrsignal', 'Zwischensignal', 'Blocksignal', 'Vorsignal', 'Vorsignalwiederholer', 'Alleinstehendes Zusatzsignal'])
+    expect(functionOptions('de', 'entryExit').map(o => o.value).at(-1)).toBe('entryExit')
+    expect(functionOptions('de', null, { repeater: false }).map(o => o.value)).not.toContain('distantRepeater')
+    // A repeater is a distant signal of the kind distantRepeater, where the system has that kind.
+    expect([functionOfChoice('distantRepeater'), typeForChoice('ks', 'distantRepeater', 'main'), typeForChoice('sh', 'distantRepeater', 'shunting')]).toEqual(['distant', 'distantRepeater', 'shunting'])
+    expect([functionChoiceOf('distant', 'distantRepeater'), functionWord('distant', 'distantRepeater', 'de'), functionWord('entryExit', 'main', 'de')]).toEqual(['distantRepeater', 'Vorsignalwiederholer', 'Ein- und Ausfahrsignal'])
+    expect(mountingOptions('de', 'special').map(o => o.value)).toEqual(['mast', 'bracket', 'gantry', 'special'])
+  })
+
   it('gives the point in the plane its location stands at, square to the track', () => {
     // t1 runs east from (0, 0): right of it is south.
     const p = planePoint(net, { anchor: 'station', trackId: 't1', station: 50, side: 'right', offset: 2 })
@@ -59,6 +83,37 @@ describe('setting objects beside the track', () => {
     expect(p.epsg).toBe(EPSG)
     expect(planePoint(net, { anchor: 'station', trackId: 't1', station: 50, side: 'left', offset: 2 }).northing).toBeCloseTo(5700002, 6)
     expect(planePoint(net, { anchor: 'station', trackId: 'gone', station: 1 })).toBeNull()
+  })
+
+  it('sets a gantry\'s screen and foundation where they were asked, sides seen the way it acts', () => {
+    const asked = { screen: { side: null, offset: 0 }, foundation: { side: 'right', offset: 3.8 } }
+    // Hit on the right, it acts up: the screen over the track, the foundation on the right of the stationing.
+    expect(mountedFrom({ trackId: 't1', station: 50, side: 'right' }, asked))
+      .toEqual({ at: { anchor: 'station', trackId: 't1', station: 50, direction: 'up' }, foundation: { side: 'right', offset: 3.8 } })
+    // Hit on the left, it acts down: a screen on its right stands on the left of the stationing.
+    const down = mountedFrom({ trackId: 't1', station: 50, side: 'left' }, { ...asked, screen: { side: 'right', offset: 1.5 } })
+    expect(down.at).toEqual({ anchor: 'station', trackId: 't1', station: 50, direction: 'down', side: 'left', offset: 1.5 })
+    // Its foundation on its right, seen the way it acts, is north of t1 — left of the stationing.
+    const p = foundationPoint(net, { at: down.at, foundation: down.foundation })
+    expect(p.northing).toBeCloseTo(5700003.8, 6)
+    expect(foundationPoint(net, { at: down.at })).toBeNull()
+  })
+})
+
+describe('names', () => {
+  const named = { tracks: [{ ...track('t9', [0, 0], [10, 0]), name: 'koennern.1', lineNumber: '6344', trackNumber: '1' }, track('t8', [0, 0], [10, 0])] }
+  it('names a track as the Layout-Tool does, else by its line and number', () => {
+    expect(trackName(named, 't9')).toBe('koennern.1')
+    expect(trackName({ tracks: [{ ...named.tracks[0], name: undefined }] }, 't9')).toBe('6344 / 1')
+  })
+
+  it('leads a signal\'s name with its area\'s number, and offers it with its track', () => {
+    const t = (k) => k
+    const signals = [
+      { id: 'b', name: 'B', areaNumber: '21', kind: 'real', at: on('t9', 5) },
+      { id: 'a', name: 'A', kind: 'real', at: { anchor: 'plane', easting: 0, northing: 0, epsg: EPSG } },
+    ]
+    expect(signalOptions(named, signals, t)).toEqual([{ value: 'b', label: '21-B · koennern.1' }, { value: 'a', label: 'A' }])
   })
 })
 
@@ -74,33 +129,6 @@ describe('runs over the net', () => {
   it('runs an overlap ahead of its signal, straight on at a switch', () => {
     expect(runAhead(net, on('t1', 150), 100)).toEqual({ trackIds: ['t1', 't2'], end: { trackId: 't2', station: 50 } })
     expect(runAhead(net, on('t1', 150, 'down'), 100)).toEqual({ trackIds: ['t1'], end: { trackId: 't1', station: 50 } })
-  })
-})
-
-describe('the speed of a route over a turnout\'s branch', () => {
-  const switches = [{ ...net.switches[0], speed: 60 }]
-  const route = (id, trackIds, kind = 'train') => ({ id, kind, startSignalId: 'a', targetSignalId: 'b', path: { trackIds } })
-  const domain = (speeds) => ({
-    ...emptyDomain(),
-    collections: {
-      ...emptyDomain().collections,
-      signals: [{ id: 'a', kind: 'real', at: on('t1', 20), logicalSignals: [{ system: 'ks', type: 'multiSection', signallingSpeeds: speeds }] },
-        { id: 'b', kind: 'real', at: on('t3', 150) }],
-      routes: [route('branch', ['t1', 't3']), route('straight', ['t1', 't2']), route('shunt', ['t1', 't3'], 'shunting')],
-    },
-  })
-  const signalled = (d) => d.collections.signals[0].logicalSignals[0].signallingSpeeds
-
-  it('is the turnout\'s where the route signals none or a higher one', () => {
-    const { domain: d, changed } = withSwitchSpeeds(domain(undefined), switches)
-    expect(changed).toEqual(['branch'])
-    expect(signalled(d)).toEqual([{ routeId: 'branch', speed: 60 }])
-    expect(signalled(withSwitchSpeeds(domain([{ routeId: 'branch', speed: 100 }]), switches).domain)).toEqual([{ routeId: 'branch', speed: 60 }])
-  })
-
-  it('keeps a lower one, and leaves the routes it is not asked for', () => {
-    expect(withSwitchSpeeds(domain([{ routeId: 'branch', speed: 40 }]), switches).changed).toEqual([])
-    expect(withSwitchSpeeds(domain(undefined), switches, ['straight']).changed).toEqual([])
   })
 })
 
@@ -171,6 +199,104 @@ describe('editing the domain', () => {
     expect(domainOf({ signalling: { fields: {}, collections: { signals: [] } } }).collections.routes).toEqual([])
   })
 
+  it('names a place by its kilometrage, the next metre free where that one is taken', () => {
+    expect(kmName(6344, 5231)).toBe('6344-5+231')
+    expect(kmName(6344, 5031.4)).toBe('6344-5+031')
+    expect(kmName(6344, -1687)).toBe('6344--1+687')
+    // Line 6344 along t1, km 5.000 at its begin, rising eastwards.
+    const lonLat = (x) => utmToWgs84(500000 + x, 5700000, EPSG)
+    const kmLines = [{ id: 'km-6344', lineNumber: '6344', runs: [[[...lonLat(-50), 4950], [...lonLat(250), 5250]]] }]
+    expect(kmNameAt(net, kmLines, on('t1', 31))).toBe('6344-5+031')
+    expect(kmNameAt(net, kmLines, on('t1', 31), new Set(['6344-5+031', '6344-5+032']))).toBe('6344-5+033')
+    expect(kmNameAt(net, [], on('t1', 31))).toBeNull()
+  })
+
+  it('equips each signal with the magnet its kind asks for, at its place, once', () => {
+    const ks = (id, type, at = on('t1', 50)) => ({ id, kind: 'real', at, logicalSignals: [{ system: 'ks', type }] })
+    expect(magnetFrequency(ks('a', 'main'))).toBe('2000')
+    expect(magnetFrequency(ks('a', 'distant'))).toBe('1000')
+    expect(magnetFrequency(ks('a', 'multiSection'))).toBe('1000+2000')
+    expect(magnetFrequency({ ...ks('a', 'main'), logicalSignals: [{ type: 'main' }, { type: 'distant' }] })).toBe('1000+2000')
+    expect(magnetFrequency(ks('a', 'shunting'))).toBeNull()
+    expect(magnetFrequency({ id: 'b', kind: 'real', at: on('t1', 5), frames: [{ kind: 'plate', aspects: [{ aspect: 'Ne_1' }] }] })).toBeNull()
+    const down = ks('n', 'main', { ...on('t2', 80, 'down'), side: 'left', offset: 2 })
+    expect(signalMagnet(down)).toMatchObject({
+      system: 'pzb', kind: 'magnet', effect: 'switchedBySignal', signalId: 'n', settings: { frequency: '2000' },
+      at: { anchor: 'station', trackId: 't2', station: 80, side: 'left', offset: OFFSET.balises, direction: 'down' },
+    })
+    let d = emptyDomain()
+    for (const s of [ks('a', 'main'), down, ks('v', 'distant'), ks('r', 'shunting')]) d = added(d, 'signals', s)
+    d = added(d, 'balises', signalMagnet(d.collections.signals[0]))
+    const { due, equipped } = magnetsDue(d)
+    expect(equipped).toBe(1)
+    expect(due.map(x => [x.signal.id, x.frequency])).toEqual([['n', '2000'], ['v', '1000']])
+  })
+
+  it('names a magnet after its signal, and anew when it is given another', () => {
+    const a = { id: 'a', kind: 'real', name: 'A', areaNumber: '21', at: on('t1', 50), logicalSignals: [{ system: 'ks', type: 'main' }] }
+    const n = { id: 'n', kind: 'real', name: 'N 1', at: on('t2', 80), logicalSignals: [{ system: 'ks', type: 'main' }] }
+    expect(magnetName(a)).toBe('M21A')
+    expect(magnetName(n)).toBe('MN1')
+    expect(magnetName({ id: 'x', kind: 'real' })).toBeUndefined()
+    const m = signalMagnet(a)
+    expect(m.name).toBe('M21A')
+    expect(withSignal(m, n, a)).toMatchObject({ signalId: 'n', name: 'MN1' })
+    expect(withSignal({ ...m, name: 'Eigener' }, n, a)).toMatchObject({ signalId: 'n', name: 'Eigener' })
+    expect(withSignal(m, undefined, a)).not.toHaveProperty('name')
+    expect(withSignal(m, undefined, a)).not.toHaveProperty('signalId')
+    expect(withSignal({ ...m, system: 'etcs', name: undefined }, n, a).name).toBeUndefined()
+  })
+
+  it('lays out detection at the signals, ahead of a switch and past its clearance point, near ones made one', () => {
+    const main = (id, at) => ({ id, kind: 'real', name: id, at, logicalSignals: [{ system: 'ks', type: 'main' }] })
+    const distant = { id: 'v', kind: 'real', at: on('t1', 60), logicalSignals: [{ system: 'ks', type: 'distant' }] }
+    const wanted = wantedPoints(net, [main('a', on('t1', 150)), distant])
+    const at = (why) => wanted.filter(w => w.why === why).map(w => [w.trackId, Math.round(w.station)])
+    expect(at('signal')).toEqual([['t1', 150]])
+    expect(at('switch')).toEqual([['t1', 190]])
+    // t3 leaves at about 12.5°: 3.5 m apart some 16 m on, the point there, at the clearance marker.
+    expect(at('clearance').sort()).toEqual([['t2', 16], ['t3', 16]])
+    expect(wantedPoints(net, [], { ...LAYOUT, behind: 10 }).filter(w => w.why === 'clearance').map(w => Math.round(w.station))).toEqual([26, 26])
+
+    let d = emptyDomain()
+    d = added(d, 'signals', main('a', on('t1', 175)))
+    const laid = detectionLayout(net, d, { t: (k) => k })
+    expect(laid.merged).toBe(1)
+    expect(laid.points.map(p => [p.at.trackId, Math.round(p.at.station * 10) / 10]).sort()).toEqual([['t1', 182.5], ['t2', 16], ['t3', 16]])
+    expect(laid.sections).toHaveLength(4)
+    const atSwitch = laid.sections.find(x => x.boundedBy.length === 3)
+    expect(atSwitch.name).toBe('W')
+    expect(laid.sections.filter(x => x.name.startsWith('t')).map(x => x.name).sort()).toEqual(['t1', 't2', 't3'])
+
+    // Again over what it laid: a point there takes the new ones near it, a section with the same bounds stays.
+    const again = { ...d, collections: { ...d.collections, detectionPoints: laid.points, trackSections: laid.sections } }
+    const second = detectionLayout(net, again, { t: (k) => k })
+    expect(second.points).toEqual([])
+    expect(second.sections).toEqual([])
+    expect(second.kept).toHaveLength(4)
+    expect(second.removed).toEqual([])
+  })
+
+  it('finds the routes from a signal to the next main signals on every way, and the sections they run through', () => {
+    const main = (id, at, type = 'main') => ({ id, kind: 'real', name: id, at, logicalSignals: [{ system: 'ks', type }] })
+    let d = emptyDomain()
+    for (const s of [main('a', on('t1', 20)), main('sh', on('t1', 100), 'shunting'), main('n', on('t2', 80)), main('m', on('t3', 100)), main('back', on('t2', 150, 'down'))]) d = added(d, 'signals', s)
+    const found = nextSignals(net, d.collections.signals, d.collections.signals[0])
+    expect(found.map(f => [f.target.id, f.trackIds, Math.round(f.length)])).toEqual([['n', ['t1', 't2'], 260], ['m', ['t1', 't3'], 280]])
+    expect(nextSignals(net, d.collections.signals, d.collections.signals[2])).toEqual([])
+
+    const route = { startSignalId: 'a', targetSignalId: 'n', path: { trackIds: ['t1', 't2'] } }
+    expect(routeStretches(net, route, d.collections.signals)).toEqual([{ trackId: 't1', lo: 20, hi: 200, direction: 'up' }, { trackId: 't2', lo: 0, hi: 80, direction: 'up' }])
+    // Drawn from signal to signal, each piece the way it is run: the other way too.
+    expect(wayPieces(routeStretches(net, route, d.collections.signals))).toEqual([{ trackId: 't1', from: 20, to: 200 }, { trackId: 't2', from: 0, to: 80 }])
+    expect(wayPieces(runStretches(net, on('t2', 80, 'down'), ['t2', 't1'], on('t1', 20, 'down')))).toEqual([{ trackId: 't2', from: 80, to: 0 }, { trackId: 't1', from: 200, to: 20 }])
+    const laid = detectionLayout(net, d, { t: (k) => k })
+    d = { ...d, collections: { ...d.collections, detectionPoints: laid.points, trackSections: laid.sections } }
+    const extents = trackSectionExtents({ core: { collections: net }, signalling: d })
+    // The shunting signal on t1 has a point too: the route runs through two sections of t1, the switch's and one of t2.
+    expect(routeSections(net, route, d, extents).map(x => x.name)).toEqual(['t1-2', 't1-3', 'W', 't2-1'])
+  })
+
   it('keeps its steps for undo and redo', () => {
     const a = emptyDomain(), b = added(a, 'signals', { id: 'x' })
     let h = step(startHistory(a), b)
@@ -199,5 +325,15 @@ describe('editing the domain', () => {
     h = travel(h, 1)
     expect(h.now).toBe(d)
     expect(travel(h, 5).now).toBe(states[2])
+  })
+
+  it('says what a draft holds new or changed, for the plan to draw as a preview', () => {
+    let d = emptyDomain()
+    d = added(d, 'signals', { id: 'a', kind: 'real', name: 'A', at: on('t1', 20) })
+    d = added(d, 'signals', { id: 'n', kind: 'real', name: 'N1', at: on('t2', 80) })
+    const draft = added({ ...d, collections: { ...d.collections, signals: [{ ...d.collections.signals[0], name: 'B' }, d.collections.signals[1]] } },
+      'balises', { id: 'p', at: on('t1', 20), system: 'pzb', kind: 'magnet' })
+    expect([...changedIds(d, draft)]).toEqual(['a', 'p'])
+    expect(changedIds(d, deleted(d, 'signals', 'n')).size).toBe(0)
   })
 })

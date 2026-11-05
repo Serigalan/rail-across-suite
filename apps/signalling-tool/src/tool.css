@@ -35,7 +35,11 @@ html, body { margin: 0; background: var(--ui-surface); }
 }
 .schema:active { cursor: grabbing; }
 .schema-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-.schema-track { fill: none; stroke: var(--plan-track); stroke-width: 2; stroke-linecap: round; }
+/* The schema zooms as a whole, its lines with it; a track only down to a hairline, so the net stays in sight. */
+.schema-track {
+  fill: none; stroke: var(--plan-track); stroke-linecap: round;
+  vector-effect: non-scaling-stroke; stroke-width: max(0.8px, calc(2px * var(--schema-zoom, 1)));
+}
 .schema-wedge { fill: var(--plan-track); }
 .schema-platform { fill: var(--ui-bg); stroke: var(--plan-track); stroke-width: 0.8; }
 .schema-switch { fill: var(--plan-track); }
@@ -45,6 +49,8 @@ html, body { margin: 0; background: var(--ui-surface); }
 .schema-track-label { font: 500 10px var(--ui-font); fill: var(--ui-muted); }
 .schema-name { font: 700 10px var(--ui-font), sans-serif; fill: var(--plan-mark); paint-order: stroke; stroke: var(--ui-surface); stroke-width: 3px; }
 .schema-mark.is-selected .schema-name { fill: var(--color-primary); }
+/* What is not committed yet: a preview, in the primary colour and a little faint. */
+.schema-mark.is-pending { opacity: 0.75; }
 .schema-text { font-family: var(--ui-font), sans-serif; }
 .schema-run { fill: none; stroke: var(--color-primary); stroke-width: 8; stroke-opacity: 0.35; stroke-linecap: round; }
 .schema-stretch { fill: none; stroke: #1f9e3a; stroke-width: 9; stroke-opacity: 0.45; }
@@ -77,6 +83,19 @@ html, body { margin: 0; background: var(--ui-surface); }
   display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 8px; font-size: var(--ui-fs-m);
   background: var(--ui-selected); border: 1px solid var(--color-primary);
 }
+/* A route found from a signal: its target and speed, under it the sections it runs through. */
+.tool-found-route { display: flex; flex-direction: column; gap: 2px; padding: 6px 0; border-bottom: 1px solid var(--ui-border); }
+.tool-found-route .ui-field { width: 110px; }
+.tool-found-route p { margin: 0; font-size: var(--ui-fs-s); }
+/* A route's speed sections between the Lf 7 on it: from where, what is shown, what the elements allow. */
+.tool-speed-sections { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; gap: 2px; font-size: var(--ui-fs-s); }
+.tool-speed-sections li { display: flex; gap: 8px; align-items: baseline; }
+/* A Zs 3 at a signal: its figure and speed, the routes it is shown for. */
+.tool-zs3-row { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; padding: 3px 0; font-size: var(--ui-fs-s); }
+/* Cancel and Commit at a panel's foot, what would be committed above them. */
+.tool-commit { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+.tool-commit-what { margin: 0; font-size: var(--ui-fs-m); overflow-wrap: anywhere; }
+.tool-commit-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .tool-editor-head { display: flex; align-items: center; gap: 8px; }
 .tool-editor-title { margin: 0; font-size: 16px; flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .tool-fields-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }

@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react'
-import { Button, ConfirmDialog, GroupedList, Option, Options, OptionsHeading, Panel, PlusIcon, Section, SelectField, TextField } from '@rail-across/ui'
+import { Button, ConfirmDialog, GroupedList, Option, Options, OptionsHeading, PlusIcon, Section, SelectField, TextField } from '@rail-across/ui'
+import { Panel } from './draft.jsx'
 import { designationOf } from '../model/domain.js'
 import {
   boundaryOf, entryMarks, nameTaken, newStation, stationName, stationsOf, withBoundary, withPlatforms, withSignals, withStation, withoutStation,
 } from '../model/stations.js'
-import { trackName } from '../model/places.js'
+import { signalOptions as signalChoices, trackName } from '../model/places.js'
 import { FUNCTION, word } from '../labels.js'
 import { StationIcon, StopIcon } from '../icons.jsx'
 import { CheckList, EditorHead, ObjectFindings } from './common.jsx'
@@ -150,7 +151,7 @@ function StationEditor({ entry, stations, register, domain, net, core, findings,
   const signalOptions = signals.filter(s => s.kind === 'real').map(s => {
     const other = stationOf(s.operationalPointId)
     const fn = s.logicalSignals?.[0]?.function ?? s.function
-    return { value: s.id, label: [designation(s, t), fn ? word(FUNCTION, fn, language) : null, other ? `(${stationName(other)})` : null].filter(Boolean).join(' · ') }
+    return { value: s.id, label: [designation(s, t), s.at?.anchor === 'station' ? trackName(net, s.at.trackId) : null, fn ? word(FUNCTION, fn, language) : null, other ? `(${stationName(other)})` : null].filter(Boolean).join(' · ') }
   }).sort(byLabel)
   const mine = signals.filter(s => s.operationalPointId === point.id)
 
@@ -220,7 +221,7 @@ function StationEditor({ entry, stations, register, domain, net, core, findings,
           </div>
           <div className="ui-fields">
             <SelectField compact wide label={t('boundary_add_signal')} value={null} empty={t('none')}
-              options={mine.map(s => ({ value: s.id, label: designation(s, t) })).filter(unmarked('signalId')).sort(byLabel)}
+              options={signalChoices(net, mine, t).filter(unmarked('signalId'))}
               onChange={(v) => v && setMarks([...marks, { signalId: v }])} />
             <SelectField compact wide label={t('boundary_add_switch')} value={null} empty={t('none')}
               options={net.switches.filter(sw => sw.kind !== 'link').map(sw => ({ value: sw.switchId, label: sw.name ?? sw.label ?? sw.switchId.slice(0, 8) })).filter(unmarked('switchId')).sort(byLabel)}

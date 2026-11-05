@@ -1,7 +1,8 @@
 import { NumberField, Section, SelectField } from '@rail-across/ui'
 import { SIGNAL_CATALOGUE, signalKindOf } from '@rail-across/core/signalling'
-import { labelOf, logicalId, withKind, withLogical, withSignallingSpeed } from '../../model/domain.js'
-import { FUNCTION, logicalSignalWord, optionsOf, signalSystemOptions, signalTypeOptions } from '../../labels.js'
+import { labelOf, logicalId, withKind, withLogical, withRouteSpeed } from '../../model/domain.js'
+import { signalOptions } from '../../model/places.js'
+import { functionChoiceOf, functionOfChoice, functionOptions, logicalSignalWord, signalSystemOptions, signalTypeOptions, typeForChoice } from '../../labels.js'
 import { CheckList, EditorHead, ObjectFindings } from '../common.jsx'
 import FramesEditor from '../frames.jsx'
 
@@ -12,7 +13,7 @@ import FramesEditor from '../frames.jsx'
  * signals for each route that starts at its mast (signallingSpeed; the design
  * speed of the track is the Layout-Tool's).
  */
-export default function LogicalEditor({ id, found, domain, findings, select, ops, readOnly, t, language }) {
+export default function LogicalEditor({ id, found, domain, net, findings, select, ops, readOnly, t, language }) {
   const { signal, logical, index } = found
   const { signals, routes } = domain.collections
   const change = (next) => {
@@ -51,14 +52,18 @@ export default function LogicalEditor({ id, found, domain, findings, select, ops
       <ObjectFindings findings={findings} collection="signals" id={signal.id} t={t} only={(f) => f.key.includes(`:logicalSignals.${index}`)} />
       <div className="ui-fields">
         <SelectField compact wide label={t('location_of_signal')} value={signal.id} disabled={readOnly}
-          options={places.map(s => ({ value: s.id, label: labelOf('signals', s, t) }))} onChange={moveTo} />
+          options={signalOptions(net, places, t)} onChange={moveTo} />
         <SelectField compact wide label={t('system')} value={logical.system} disabled={readOnly}
           options={systems.filter(o => o.value === logical.system || !taken.has(o.value))}
           onChange={(v) => change(withKind(logical, v, firstType(v)))} />
         <SelectField compact wide label={t('type')} value={logical.type ?? null} empty={t('none')} disabled={readOnly}
           options={signalTypeOptions(logical.system, language, t)} onChange={(v) => change(withKind(logical, logical.system, v ?? undefined))} />
-        <SelectField compact wide label={t('function')} value={logical.function ?? null} empty={t('none')} disabled={readOnly}
-          options={optionsOf(FUNCTION, language)} onChange={(v) => set({ function: v ?? undefined })} />
+        <SelectField compact wide label={t('function')} value={functionChoiceOf(logical.function, logical.type) ?? null} empty={t('none')} disabled={readOnly}
+          options={functionOptions(language, logical.function)} onChange={(v) => {
+            // A distant signal or its repeater is of its own kind as well.
+            const type = typeForChoice(logical.system, v, logical.type)
+            change({ ...(type !== logical.type ? withKind(logical, logical.system, type) : logical), function: functionOfChoice(v) ?? undefined })
+          }} />
       </div>
 
       <Section title={t('signalling_speeds')}>
@@ -66,8 +71,8 @@ export default function LogicalEditor({ id, found, domain, findings, select, ops
         {fromHere.length ? fromHere.map(r => (
           <div key={r.id} className="ui-row tool-speed-row">
             <button type="button" className="ui-link ui-grow" onClick={() => select({ collection: 'routes', id: r.id })}>{routeName(r)}</button>
-            <NumberField compact label={t('signalling_speed')} value={speedOf(r.id)} min={0} step={5} disabled={readOnly}
-              onChange={(v) => change(withSignallingSpeed(logical, r.id, v))} />
+            <NumberField compact label={t('signalling_speed')} value={speedOf(r.id)} min={0} step={10} disabled={readOnly}
+              onChange={(v) => ops.replaceAll(withRouteSpeed(domain, r, v, logical.system))} />
           </div>
         )) : <p className="ui-muted">{t('no_routes_from_here')}</p>}
       </Section>

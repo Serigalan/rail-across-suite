@@ -59,15 +59,26 @@ describe('the infrastructure editor', () => {
 })
 
 describe('the Fahrplan-Sim', () => {
-  it('lists the projects, each variant opening in the Fahrplan-Editor and the simulation', () => {
-    const html = de(<Simulation route="timetable" projects={projects} />)
+  it('lists the projects, each variant opening in the Fahrplan-Editor, timetables and running times in one', () => {
+    const described = { ...projects, list: [{ ...projects.list[0], description: 'Ausbau der Strecke 6344', members: [{ name: 'Erika' }] }] }
+    const html = de(<Simulation route="timetable" projects={described} />)
+    // As the infrastructure editor lists them — picture, title, description, who works on it —, without managing them.
+    expect(html).toContain('class="ra-project-image"')
+    expect(html).toContain('Ausbau der Strecke 6344')
+    expect(html).toContain('Erika')
+    expect(html).toContain('class="ra-variant-meta"')
+    expect(html).toContain('<h2>Vorlagen</h2>')
+    expect(html).not.toContain('Variante abzweigen')
+    expect(html).not.toContain('aria-label="Projektmenü"')
     expect(html).toContain('PEK Halle–Könnern')
     expect(html).toContain('Rev. 3')
     expect(html).toContain('href="timetable/?project=p1&amp;variant=v1"')
-    expect(html).toContain('>Fahrpläne</a>')
-    expect(html).toContain('href="simulation/?project=p1&amp;variant=v1"')
-    expect(html).toContain('>Fahrzeit rechnen</a>')
-    expect(html).toContain('beginnt und endet in einem Bahnhof')
+    expect(html).toContain('>Fahrpläne und Fahrzeiten</a>')
+    expect(html).not.toContain('simulation/?project=')
+    expect(html).toContain('Projekte öffnen im Fahrplan-Editor — Fahrpläne und Fahrzeiten')
+    // Its timetables go out as a file and come in from one — where one may change them.
+    expect(html).toContain('>Fahrpläne exportieren</button>')
+    expect(html).toContain('>Fahrpläne importieren</button>')
   })
 })
 

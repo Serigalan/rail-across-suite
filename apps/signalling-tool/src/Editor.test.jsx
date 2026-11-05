@@ -66,6 +66,14 @@ describe('the Signalling-Tool', () => {
     expect(html).toContain('Einchecken')
   })
 
+  it('has Cancel and Commit at the foot of a panel that changes something, locked while nothing is drafted', () => {
+    const html = render()
+    expect(html).toContain('<div class="ui-panel-foot"><div class="tool-commit">')
+    expect(html).toContain('Keine offenen Änderungen')
+    expect(html).toMatch(/<button type="button" class="ui-btn ui-btn-primary" disabled="" title="Keine offenen Änderungen">Bestätigen<\/button>/)
+    expect(render({ readOnly: true })).not.toContain('tool-commit')
+  })
+
   it('names its rail as the Layout-Tool does: the signal and the tool, the history, the way to the infrastructure editor', () => {
     const html = render()
     expect(html).toContain('<span class="ui-rail-brand-name">Signalling-Tool</span>')
@@ -84,7 +92,7 @@ describe('the Signalling-Tool', () => {
     expect(html).not.toContain('<span class="ui-rail-label">Gleisfreimeldung</span>')
     expect(html).not.toContain('<span class="ui-rail-label">Datenaustausch</span>')
     expect(html).toContain('<h2>Bearbeiten</h2>')
-    expect(html).toContain('<span class="ui-group-title">Hauptsignale</span><span class="ui-group-count">2</span>')
+    expect(html).toMatch(/Hauptsignale<\/span><span class="[^"]*">2<\/span>/)
     expect(html).not.toContain('Einchecken')
   })
 
@@ -136,12 +144,13 @@ describe('the Signalling-Tool', () => {
     expect(rail).not.toContain('>Flankenschutz<')
   })
 
-  it('edits signals, train detection and balises in one overview under their kinds', () => {
+  it('edits signals, train detection and balises from a menu of their kinds', () => {
     const html = edit(null)
     expect(html).toContain('<h2>Bearbeiten</h2>')
     expect(html).toContain('<span class="ui-options-heading">Signale</span>')
-    expect(html).toContain('aria-label="Suchen: Name, Gleis, Art …"')
-    expect(html).toContain('<span class="ui-group-title">Hauptsignale</span><span class="ui-group-count">2</span>')
+    expect(html).toContain('<span class="ui-options-heading">Gleisfreimeldung</span>')
+    // Each kind with how many there are, opening its list.
+    expect(html).toMatch(/Hauptsignale<\/span><span class="[^"]*">2<\/span>/)
     // A signal mast opens in its editor, the way back leading to the overview; its logical signals open from it.
     const mast = edit({ collection: 'signals', id: 's-a' })
     expect(mast).toContain('<h2>Signalmast</h2>')
@@ -186,6 +195,7 @@ describe('the Signalling-Tool', () => {
       </I18n.Provider>,
     )
     expect(menu).toContain('Fahrstraße erstellen')
+    expect(menu).toContain('Fahrstraßen ermitteln')
     expect(menu).toContain('Fahrwege suchen')
     expect(menu).toContain('<span class="ui-grow">Fahrwege</span><span class="ui-option-end">0</span>')
     expect(menu).toContain('Durchrutschweg erstellen')
@@ -196,7 +206,8 @@ describe('the Signalling-Tool', () => {
           selection={{ collection: 'routes', id: 'r-a-n' }} select={() => {}} ops={{}} setMode={() => {}} readOnly={false} {...textsFor('de')} />
       </I18n.Provider>,
     )
-    expect(html).toContain('80 km/h')
+    expect(html).toContain('<span>Geschwindigkeit [km/h]</span><input type="number" step="10" min="0" value="80"/>')
+    expect(html).toContain('<span class="ui-grow">Freimeldeabschnitte</span>')
     expect(html).toContain('Durchrutschweg ermitteln')
     expect(html).toContain('Am Signal einstellen')
   })
@@ -225,7 +236,7 @@ describe('the Signalling-Tool', () => {
     expect(station).toContain('<h2>Bahnhof</h2>')
     expect(station).toContain('Bahnsteig an t2, 10–150 m')
     expect(station).toMatch(/checked=""\/><span>Bahnsteig an t2/)
-    expect(station).toMatch(/type="checkbox"\/><span>A · Einfahrsignal<\/span>/)
+    expect(station).toMatch(/type="checkbox"\/><span>A · t1 · Einfahrsignal<\/span>/)
     expect(station).toContain('Grenze zur freien Strecke')
     expect(station).toContain('Einfahrsignale und Trapeztafeln übernehmen (0)')
     // Its stopping places, on its tracks or at its platform.

@@ -74,3 +74,13 @@ export function stepText(step, t) {
   if (step.kind === 'removed' && step.more) return t('step_removed_more', { what, n: step.more })
   return t(`step_${step.kind}`, { what })
 }
+
+/** The ids of what `after` holds new or changed against `before`: what a draft would commit, for the plan to draw as a preview. */
+export function changedIds(before, after) {
+  const out = new Set()
+  for (const [collection, list] of Object.entries(after.collections)) {
+    const was = new Map((before.collections[collection] ?? []).map(o => [o.id, o]))
+    for (const obj of list) if (was.get(obj.id) !== obj) out.add(obj.id)
+  }
+  return out
+}

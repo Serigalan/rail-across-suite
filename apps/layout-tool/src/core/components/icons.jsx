@@ -258,6 +258,14 @@ export const TrackVisibilityIcon = () => (
   </MenuIcon>
 )
 
+// A track shifted as a whole: the track, and the arrow it is moved along.
+export const MoveTrackIcon = () => (
+  <MenuIcon>
+    <path d="M2 13 H9" />
+    <path d="M6 10 L13 3 M9 3 H13 V7" />
+  </MenuIcon>
+)
+
 export const DeleteTrackIcon = () => (
   <MenuIcon>
     <path d="M3 4 H13 M6 4 V2 H10 V4 M5 4 V13 H11 V4" />

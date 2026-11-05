@@ -12,7 +12,7 @@ any point. The map overlay that draws the lines is `src/core/map/kmLineLayer.js`
 | File | What it does |
 |---|---|
 | `kmLineSource.js` | Fetches the line files a project's tracks name and keeps the stretch around the project in `project.kmLines` |
-| `kmLineUtils.js` | The kilometrage of a track point against a line, measured in the track's plane |
+| `kmLineUtils.js` | The kilometrage of a track point against a line, measured in the track's plane — the core's (`track/kmLines.js`), handed on |
 | `kmLineMath.js` | Where along a 100 m piece of the overlay a point lies — the arithmetic of the map readout, free of MapLibre |
 | `kmTileSource.js` | The PMTiles byte source of the overlay, retrying a refused range past the browser cache |
 | `lineLookup.js` | Which line is nearest to a track as a whole, its name, and the kilometrage of the middle |
@@ -37,7 +37,7 @@ built outside this repository:
 kilometrage of the track's middle gives the name (`kmTrackName` in the track module) — a track beside line 6340
 whose middle lies at km 123.93 is `6340.12393`.
 
-**Kilometrage of a point** (`kmLineUtils.js`): the line is converted into the track's plane once (and kept so
+**Kilometrage of a point** (`kmLineUtils.js`, the core's `kmLines.js`): the line is converted into the track's plane once (and kept so
 while the project is open), then the point is projected onto it. The source states kilometrage in whole
 metres, so every answer is ±0.5 m — four orders above the millimetre a datum conversion moves things.
 

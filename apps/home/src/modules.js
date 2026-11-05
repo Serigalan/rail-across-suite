@@ -7,9 +7,9 @@
  * The tiles of the start page, in two rows. `route` is the page a tile
  * opens; `available` whether there is anything to work with yet; `phase` the
  * phase of the roadmap that brings it. A module with `apps` lists the projects
- * on its page and opens a variant in each of its apps there — the Fahrplan-Sim its
- * timetables in the Fahrplan-Editor, a train's running times in the
- * Simulation-Tool; one with `direct` needs no project: its tile opens its app
+ * on its page and opens a variant in each of its apps there — the Fahrplan-Sim in
+ * the Fahrplan-Editor, its timetables and a single train's running time in
+ * one interface; one with `direct` needs no project: its tile opens its app
  * at `path` itself.
  */
 export const EDITORS = [
@@ -20,7 +20,7 @@ export const EDITORS = [
 export const SIMULATIONS = [
   {
     id: 'timetable', route: 'timetable', available: true, phase: 4,
-    apps: [{ id: 'timetables', path: 'timetable/' }, { id: 'runs', path: 'simulation/' }],
+    apps: [{ id: 'timetables', path: 'timetable/' }],
   },
   { id: 'capacitySim', route: 'capacity-sim', available: false, phase: 4 },
   { id: 'constructionSim', route: 'construction-sim', available: false, phase: 5 },
@@ -81,7 +81,7 @@ export function toolUrl(tool, { project, variant, action, from, to } = {}) {
 /** Where a variant of a project opens in a tool to be worked on. */
 export const openUrl = (tool, projectId, variantId) => toolUrl(tool, { project: projectId, variant: variantId })
 
-/** Where a variant of a project opens in an app of a module that works on one — the Fahrplan-Sim's two —, or null. */
+/** Where a variant of a project opens in an app of a module that works on one — the Fahrplan-Sim's —, or null. */
 export function simulationUrl(module, app, projectId, variantId) {
   if (!module?.available || !module.apps?.includes(app)) return null
   return `${app.path}?${new URLSearchParams({ project: projectId, variant: variantId })}`

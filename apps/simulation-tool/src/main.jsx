@@ -1,7 +1,4 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import '@rail-across/ui/ui.css'
-import './tool.css'
-import App from './App.jsx'
+import { forwardUrl } from './suite.js'
 
-createRoot(document.getElementById('root')).render(<StrictMode><App /></StrictMode>)
+// Computing a running time is the Fahrplan-Editor's now: on to it.
+location.replace(forwardUrl())

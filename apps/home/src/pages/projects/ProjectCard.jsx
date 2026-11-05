@@ -35,6 +35,44 @@ function ToolLink({ href, className, title, children }) {
 }
 
 /**
+ * A project's head, as every list of projects shows it: its picture, its
+ * title and description, who works on it; `children` beside them (a menu).
+ */
+export function ProjectHead({ project, children }) {
+  const { fill } = useTexts()
+  const picture = blobUrl(project.imageHash)
+  return (
+    <div className="ra-project">
+      {picture ? <img className="ra-project-image" src={picture} alt="" /> : <span className="ra-project-image" />}
+      <div className="ra-project-body">
+        <h3>{project.title}</h3>
+        {project.description && <p className="ui-muted">{project.description}</p>}
+        {project.members?.length > 0 && (
+          <p className="ui-muted">{fill('members_line', { names: project.members.map(m => m.name).join(', ') })}</p>
+        )}
+      </div>
+      {children}
+    </div>
+  )
+}
+
+/** A variant's name in its tree, its head (revision, author, date), and the changes this browser's working copy holds. */
+export function VariantLine({ variant: v, depth, changes }) {
+  const { t, fill, language } = useTexts()
+  return <>
+    <span className="ra-variant-name">{depth > 0 && <span className="ra-branch">└</span>}{v.name}</span>
+    {v.head && (
+      <span className="ra-variant-meta">
+        {fill('revision', { n: v.head.number })} · {v.head.author?.name} · {dateText(v.head.createdAt, language)}
+      </span>
+    )}
+    {changes > 0 && (
+      <span className="ui-badge ui-badge-warn" title={t('local_changes_hint')}>{fill('local_changes', { n: changes })}</span>
+    )}
+  </>
+}
+
+/**
  * One project: its picture, title, description and who works on it, its
  * menu (title and description, export, editors, delete), and its variants as
  * a tree — each indented under the variant it was branched off, with its
@@ -42,14 +80,14 @@ function ToolLink({ href, className, title, children }) {
  * here; what a tool does with a variant — working on it, looking at it, its
  * history, comparing and merging two — opens in the tool chosen above. A
  * variant whose working copy in this browser holds changes not checked in
- * says how many (`localChanges`, from any tool).
+ * says how many (`localChanges`, from any tool). A template is only looked
+ * at, and copied as a project of one's own.
  */
 export default function ProjectCard({ project, user, tool, showArchived, localChanges = {}, onDialog }) {
-  const { t, fill, language } = useTexts()
+  const { t, fill } = useTexts()
   const rights = rightsOf(project, user)
   const rows = useMemo(() => variantTree(project.variants.filter(v => showArchived || !v.archived)), [project, showArchived])
   const { open: menuOpen, rootRef: menuRootRef, toggle: toggleMenu, close: closeMenu } = useMenu()
-  const picture = blobUrl(project.imageHash)
   const byId = new Map(project.variants.map(v => [v.id, v]))
   const many = project.variants.filter(v => !v.archived).length > 1
   const toolName = t(`tool_${tool.id}`)
@@ -61,28 +99,20 @@ export default function ProjectCard({ project, user, tool, showArchived, localCh
 
   return (
     <li className="home-project">
-      <div className="ra-project">
-        {picture ? <img className="ra-project-image" src={picture} alt="" /> : <span className="ra-project-image" />}
-        <div className="ra-project-body">
-          <h3>{project.title}</h3>
-          {project.description && <p className="ui-muted">{project.description}</p>}
-          {project.members?.length > 0 && (
-            <p className="ui-muted">{fill('members_line', { names: project.members.map(m => m.name).join(', ') })}</p>
-          )}
-        </div>
+      <ProjectHead project={project}>
         <div className="ui-menu" ref={menuRootRef}>
           <button type="button" className="ui-btn ui-btn-small" aria-label={t('project_menu')} title={t('project_menu')}
             aria-haspopup="menu" aria-expanded={menuOpen} onClick={toggleMenu}>⋯</button>
           {menuOpen && (
             <div className="ui-menu-list" role="menu">
-              {rights.canEdit && item(t('project_rename'), 'rename')}
+              {rights.canRename && item(t('project_rename'), 'rename')}
               {item(t('project_export'), 'export')}
               {!project.template && item(t('members'), 'members')}
               {rights.canDelete && item(t('project_delete'), 'delete', true)}
             </div>
           )}
         </div>
-      </div>
+      </ProjectHead>
 
       <ul className="ra-variant-tree">
         {rows.map(({ variant: v, depth }) => {
@@ -91,15 +121,7 @@ export default function ProjectCard({ project, user, tool, showArchived, localCh
           return (
             <li key={v.id} className={`ra-variant-row${v.archived ? ' ra-variant-archived' : ''}`} style={{ '--depth': depth }}>
               <div className="ra-variant-main">
-                <span className="ra-variant-name">{depth > 0 && <span className="ra-branch">└</span>}{v.name}</span>
-                {v.head && (
-                  <span className="ra-variant-meta">
-                    {fill('revision', { n: v.head.number })} · {v.head.author?.name} · {dateText(v.head.createdAt, language)}
-                  </span>
-                )}
-                {localChanges[v.id] > 0 && (
-                  <span className="ui-badge ui-badge-warn" title={t('local_changes_hint')}>{fill('local_changes', { n: localChanges[v.id] })}</span>
-                )}
+                <VariantLine variant={v} depth={depth} changes={localChanges[v.id]} />
                 <span className="ra-variant-buttons">
                   <ToolLink className="ui-btn ui-btn-small" href={at({ variant: v.id, action: 'history' })}
                     title={fill('in_tool', { action: t('history'), tool: toolName })}>{t('history')}</ToolLink>
@@ -122,13 +144,21 @@ export default function ProjectCard({ project, user, tool, showArchived, localCh
         })}
       </ul>
 
-      <div className="ra-project-actions">
-        <button type="button" className="ui-btn" onClick={() => onDialog({ kind: 'branch', project })}>{t('branch')}</button>
-        <button type="button" className="ui-btn" disabled={!many || !tool.available}
-          onClick={() => onDialog({ kind: 'compare', project })}>{t('compare')}</button>
-        <button type="button" className="ui-btn" disabled={!many || !tool.available}
-          onClick={() => onDialog({ kind: 'merge', project })}>{t('merge')}</button>
-      </div>
+      {project.template
+        ? (
+          <div className="ra-project-actions">
+            <button type="button" className="ui-btn ui-btn-primary" onClick={() => onDialog({ kind: 'copy', project })}>{t('template_copy')}</button>
+          </div>
+        )
+        : (
+          <div className="ra-project-actions">
+            <button type="button" className="ui-btn" onClick={() => onDialog({ kind: 'branch', project })}>{t('branch')}</button>
+            <button type="button" className="ui-btn" disabled={!many || !tool.available}
+              onClick={() => onDialog({ kind: 'compare', project })}>{t('compare')}</button>
+            <button type="button" className="ui-btn" disabled={!many || !tool.available}
+              onClick={() => onDialog({ kind: 'merge', project })}>{t('merge')}</button>
+          </div>
+        )}
     </li>
   )
 }

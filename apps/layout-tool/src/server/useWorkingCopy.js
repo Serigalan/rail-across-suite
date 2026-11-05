@@ -147,7 +147,8 @@ export default function useWorkingCopy({ t }) {
       setNote(t('wc_checked_in'))
     } catch (err) {
       setSyncDialog({ kind: 'checkin', errors: err.body?.errors ?? [] })
-      if (!err.body?.errors) setNote(errorText(t, err.code))
+      // A working copy the format refuses says where, so it can be found.
+      if (!err.body?.errors) setNote([errorText(t, err.code), ...(err.details ?? []).slice(0, 3)].join(' '))
     } finally {
       setBusy(false)
     }

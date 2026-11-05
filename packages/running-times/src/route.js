@@ -1,4 +1,11 @@
-import { directionOf, findPath, offsetOnPath, pathLength } from './path.js'
+import { aspectOf, aspectSpeed } from '@rail-across/core/signalling'
+import { directionOf, findPath, offsetOnPath, pathAlong, pathLength } from './path.js'
+
+const LF7 = aspectOf('Lf_7')
+
+/** The speed an Lf 7 shows [km/h] — on a signal's plate, or as one of its logical signals' —, or null. */
+const boardSpeed = (s) => aspectSpeed(LF7, [...(s.frames ?? []), ...(s.logicalSignals ?? []).flatMap(l => l.frames ?? [])]
+  .flatMap(f => f.aspects ?? []).find(a => a.aspect === 'Lf_7')?.symbol)
 
 /** A path with a leg run on: the leg's pieces after it, a piece that goes on the last one's track merged into it. */
 function joined(path, leg) {
@@ -31,7 +38,8 @@ export function routeThrough(record, points) {
  * it found no way to (0 where the start has no place).
  *
  * `legPath(i, from, direction, to)`, where given, is asked first for the leg
- * to point `i`: a path, or nothing where that leg takes the shortest way.
+ * to point `i`: a path, nothing where that leg takes the shortest way, or
+ * false where it has no way there.
  */
 export function routeVia(record, points, { tries = 200, legPath = null } = {}) {
   let failedAt = 1
@@ -66,11 +74,42 @@ export function routeVia(record, points, { tries = 200, legPath = null } = {}) {
 }
 
 /**
+ * A leg over the routes it is told to take (a dispatcher's choice, where the
+ * route it would run is held): from `from`, left the way `direction` says, to
+ * each route's start signal the shortest way, along the route's tracks to its
+ * target, and on to `to` the shortest way — or, where `to` lies on the last
+ * route, along it there. `routes` [{ at, trackIds, target }] in running
+ * order — `at` the start signal's location, `target` the target's, each with
+ * the way it acts. A path, or null where it does not lead there.
+ */
+export function legThrough(record, from, direction, routes, to) {
+  let path = []
+  let at = { ...from, direction: direction ?? from.direction ?? null }
+  for (const [i, r] of routes.entries()) {
+    const head = findPath(record, at, r.at)
+    if (!head) return null
+    const k = r.trackIds.indexOf(to.trackId)
+    if (i === routes.length - 1 && k >= 0) {
+      const along = pathAlong(record, r.trackIds.slice(0, k + 1), r.at, to, r.at.direction)
+      if (along) return joined(joined(path, head), along)
+    }
+    const run = pathAlong(record, r.trackIds, r.at, r.target, r.at.direction)
+    if (!run) return null
+    path = joined(joined(path, head), run)
+    at = { ...r.target, direction: run.length ? directionOf(run[run.length - 1]) : r.target.direction }
+  }
+  const tail = findPath(record, at, to)
+  return tail ? joined(path, tail) : null
+}
+
+/**
  * The speeds the signals signal along a path, as speed limits: for each
  * route of the signalling domain that the path runs along — its start
  * signal passed in the way it acts, its tracks those of the path —, the
  * speed its start signal states for it (a logical signal's
- * signallingSpeeds), from the start signal to the target signal.
+ * signallingSpeeds), from the start signal to the target signal; where a
+ * speed signal Lf 7 stands on it in the way it runs, the route's speed
+ * holds up to it, and what the Lf 7 shows from there on.
  */
 export function signalledSpeeds(record, path) {
   const c = record?.signalling?.collections
@@ -83,7 +122,6 @@ export function signalledSpeeds(record, path) {
     const start = signals.get(route.startSignalId), target = signals.get(route.targetSignalId)
     if (start?.at?.anchor !== 'station' || target?.at?.anchor !== 'station') continue
     const speed = (start.logicalSignals ?? []).flatMap(l => l.signallingSpeeds ?? []).find(s => s.routeId === route.id)?.speed
-    if (!(speed > 0)) continue
     const ids = route.path?.trackIds ?? []
     const first = trackIds.indexOf(ids[0])
     if (first < 0 || !ids.every((id, i) => trackIds[first + i] === id)) continue
@@ -92,7 +130,21 @@ export function signalledSpeeds(record, path) {
     // the signal acts in the way the path runs there
     const piece = path.find(p => p.trackId === start.at.trackId)
     if (piece && start.at.direction && directionOf(piece) !== start.at.direction) continue
-    out.push({ begin, end, speed: speed / 3.6, source: 'signal' })
+    // The Lf 7 on the route, the way it runs, cut it into sections.
+    const marks = [{ at: begin, speed }]
+    for (const s of signals.values()) {
+      const v = s.kind === 'real' && s.at?.anchor === 'station' && ids.includes(s.at.trackId) ? boardSpeed(s) : null
+      if (!(v > 0)) continue
+      const at = offsetOnPath(path, s.at)
+      if (at == null || at <= begin + 0.5 || at >= end - 0.5) continue
+      const on = path.find(p => p.trackId === s.at.trackId)
+      if (!s.bothDirections && s.at.direction && on && directionOf(on) !== s.at.direction) continue
+      marks.push({ at, speed: v })
+    }
+    marks.sort((a, b) => a.at - b.at)
+    marks.forEach((m, i) => {
+      if (m.speed > 0) out.push({ begin: m.at, end: marks[i + 1]?.at ?? end, speed: m.speed / 3.6, source: 'signal' })
+    })
   }
   return out
 }

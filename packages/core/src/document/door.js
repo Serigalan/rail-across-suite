@@ -40,12 +40,15 @@ export const SCHEMA_HASHES = Object.fromEntries(Object.entries(DOMAIN_SCHEMAS).m
  * - Fourth: a signal may name the station it belongs to; none does yet, each
  *   is of the open line.
  * - Fifth: the stopping places and the itineraries come, none yet.
+ * - Sixth: a signal on a gantry or a bracket may say where its foundation
+ *   stands; none does yet.
  */
 const SIGNALLING_FIRST = 'sha256:8e4fdf8b8d487f61be93b473521515fe2e5510ef3cdc21d994cd8a405aeb74a0'
 const SIGNALLING_SECOND = 'sha256:72fccdfdcac3f5ce42d7f49d10fb9134e1c4ed792f7365ec9f01d997f0049724'
 const SIGNALLING_THIRD = 'sha256:0194c1e7fe2a63741270025beb48929d106d74a80bf5b33ed4305965a5303487'
 const SIGNALLING_FOURTH = 'sha256:cee619f2ae1b256a81ca5536e3851602cce96841d16bb2fe5f11ffe1a5e1f64c'
 const SIGNALLING_FIFTH = 'sha256:d5c61938fb3da1cc80f638c051cac562c19ad207507373ac3381f3a97922d83c'
+const SIGNALLING_SIXTH = 'sha256:aeb06433b03125995823095d7ab89567311237560cbc3b9e6a954385305f0134'
 
 /** The frames a logical signal shows; the rest stay its place's. */
 const OF_LOGICAL = new Set(['screen', 'indicator'])
@@ -104,8 +107,9 @@ const SIGNALLING_STEPS = {
   },
   [SIGNALLING_FOURTH]: (domain) => ({ ...domain, schema: SIGNALLING_FIFTH }),
   [SIGNALLING_FIFTH]: (domain) => ({
-    ...domain, schema: SCHEMA_HASHES.signalling, collections: { ...domain.collections, stoppingPlaces: [], itineraries: [] },
+    ...domain, schema: SIGNALLING_SIXTH, collections: { ...domain.collections, stoppingPlaces: [], itineraries: [] },
   }),
+  [SIGNALLING_SIXTH]: (domain) => ({ ...domain, schema: SCHEMA_HASHES.signalling }),
 }
 
 /**
@@ -191,12 +195,13 @@ export function checkDocument(given) {
  * The core 1.0 document of a record (dehydrated), checked as the door checks
  * what comes in. `carrySchemas` puts the domains' schemas into it, as a file
  * that travels carries them (R3); a device or the server that has them
- * leaves them out.
+ * leaves them out. `check: false` leaves the check out — for a file the user
+ * takes although the schemas refuse it, which the door will refuse in turn.
  */
-export function toDocument(record, { carrySchemas = false } = {}) {
+export function toDocument(record, { carrySchemas = false, check = true } = {}) {
   const doc = recordToDocument(record, SCHEMA_HASHES)
   if (carrySchemas) doc.schemas = Object.fromEntries(Object.keys(doc.domains).map(d => [SCHEMA_HASHES[d], DOMAIN_SCHEMAS[d]]))
-  return checkDocument(doc)
+  return check ? checkDocument(doc) : doc
 }
 
 /** The record a core 1.0 document holds, once the door has checked it. */

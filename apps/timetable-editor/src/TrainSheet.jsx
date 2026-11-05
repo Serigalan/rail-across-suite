@@ -1,10 +1,11 @@
-import { Fragment, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import { Badge, Button, Checkbox, IconButton, Message, NumberField, PlusIcon, SelectField, TextField, TrashIcon } from '@rail-across/ui'
 import { atPlace, CATEGORIES, categoryColor, formatClock, itineraryOptions, newPoint, parseClock, trainProblems, trainTitle, withPlaces } from '@rail-across/timetables'
-import { formatDistance, lngLatAt, marginValue, placeOf, stationById } from '@rail-across/running-times'
+import { formatDistance, heightProfile, lngLatAt, marginValue, placeOf, stationById } from '@rail-across/running-times'
 import { comfortsOf, curveFor, modeLabel, powerOf } from '@rail-across/vehicles'
 import { CopyIcon, DownIcon, TaktIcon, UpIcon } from './icons.jsx'
 import MapView from './map/MapView.jsx'
+import RunChart from './runtime/RunChart.jsx'
 import { insertionIndex } from './rows.js'
 import { keepVehicle, vehicleUrl } from './suite.js'
 
@@ -12,7 +13,8 @@ import { keepVehicle, vehicleUrl } from './suite.js'
  * A train on its page: what it is — number, kind, name, vehicle, departure,
  * margin —, its way — the station it begins at, the stations and halts on the
  * way where it stops or passes, the station it ends at —, its times as it
- * runs, a row for every station it passes, and its way on the map. A train
+ * runs, a row for every station it passes, its way on the map, and its speed
+ * and the height along its way, as computing a running time shows them. A train
  * begins and ends at a station (Bahnhof) only: the choice for its first and
  * last point offers no other.
  */
@@ -39,7 +41,7 @@ export default function TrainSheet(props) {
   return <Sheet {...props} />
 }
 
-function Sheet({ t, language, train, run, timetables, stations, catalogue, record, net, mayEdit, titles, update, onCopy, onTakt, onDelete }) {
+function Sheet({ t, language, train, run, timetables, stations, catalogue, record, net, mayEdit, titles, chartT, update, onCopy, onTakt, onDelete }) {
   const entry = catalogue.entries.find(e => e.key === train.vehicle) ?? null
   const problems = trainProblems(train, stations, { vehicle: catalogue.loading || Boolean(entry) })
   const set = (patch) => update(tr => ({ ...tr, ...patch }))
@@ -104,8 +106,21 @@ function Sheet({ t, language, train, run, timetables, stations, catalogue, recor
             </section>
           </div>
         </div>
+        {run?.result && chartT && <RunCard t={t} chartT={chartT} language={language} run={run} record={record} />}
       </div>
     </div>
+  )
+}
+
+/** The train's speed over its way — allowed, fastest, with its margin — and under it the height, the stations it passes marked. */
+function RunCard({ t, chartT, language, run, record }) {
+  const profile = useMemo(() => heightProfile(record, run.route.path), [record, run.route.path])
+  const rows = (run.rows ?? []).filter(r => r.offset != null)
+  return (
+    <section className="tt-card tt-run-card">
+      <h2>{t('card_run')}</h2>
+      <RunChart run={run} profile={profile} length={run.request.path.length} offsets={rows.map(r => r.offset)} labels={rows.map(r => r.name)} at={null} t={chartT} language={language} />
+    </section>
   )
 }
 
@@ -321,12 +336,13 @@ const signalName = (record, id) => {
 }
 
 /**
- * The blocks the train holds: where it waits for one another holds — at its
- * start, at a stop, before a signal — and for which trains; where it holds
+ * The blocks the train holds: where it takes another route from a signal
+ * than its own, as another train holds that; where it waits for one another
+ * holds — at its start, at a stop, before a signal — and for which trains; where it holds
  * one another holds at the same time, a conflict, with the time both hold it.
  */
 function OccupancyCard({ t, train, run, record, stations, titles }) {
-  const { blocks, waits = [], conflicts = [] } = run
+  const { blocks, waits = [], detours = [], conflicts = [] } = run
   const names = (ids) => ids.map(id => titles.get(id) ?? '?').join(', ')
   const waitLine = (w) => {
     const of = { wait: duration(t, w.wait), trains: names(w.because) }
@@ -334,11 +350,16 @@ function OccupancyCard({ t, train, run, record, stations, titles }) {
     if (w.point != null) return t('wait_stop', { ...of, station: shown(stations, train.points[w.point]) })
     return t('wait_signal', { ...of, signal: signalName(record, w.signalId) ?? '?' })
   }
+  const detourLine = (d) => {
+    const route = record?.signalling?.collections?.routes?.find(r => r.id === d.routeId)
+    return t('detour_signal', { signal: signalName(record, d.signalId) ?? '?', target: signalName(record, route?.targetSignalId) ?? '?', trains: names(d.because) })
+  }
   const blockName = (i) => (blocks[i]?.signalId ? t('block_from', { signal: signalName(record, blocks[i].signalId) }) : t('block_start'))
-  // one line for each other train and block, the times they share
+  const sectionName = (id) => record?.signalling?.collections?.trackSections?.find(x => x.id === id)?.name ?? '?'
+  // one line for each other train, block and track section, the times they share
   const seen = new Map()
   for (const c of conflicts) {
-    const key = `${c.other}|${c.block}`
+    const key = `${c.other}|${c.block}|${c.section ?? ''}`
     const was = seen.get(key)
     seen.set(key, was ? { ...was, begin: Math.min(was.begin, c.begin), end: Math.max(was.end, c.end) } : c)
   }
@@ -347,8 +368,9 @@ function OccupancyCard({ t, train, run, record, stations, titles }) {
     <section className="tt-card">
       <h2>{t('card_occupancy')}</h2>
       <p className="ui-muted">{t(blocks.length > 1 ? 'blocks_n' : 'blocks_one', { n: blocks.length })}</p>
-      {waits.length > 0 && (
+      {(waits.length > 0 || detours.length > 0) && (
         <ul className="tt-waits">
+          {detours.map((d, i) => <li key={`d${i}`}>{detourLine(d)}</li>)}
           {waits.map((w, i) => <li key={i}>{waitLine(w)}</li>)}
           {run.delay > 0.5 && <li><strong>{t('wait_delay', { delay: duration(t, run.delay) })}</strong></li>}
         </ul>
@@ -358,12 +380,12 @@ function OccupancyCard({ t, train, run, record, stations, titles }) {
           <Message tone="warn">{t('conflicts_n', { n: shown.length })}</Message>
           <ul className="tt-waits tt-conflicts">
             {shown.slice(0, 8).map((c, i) => (
-              <li key={i}>{t('conflict_line', { train: names([c.other]), block: blockName(c.block), from: formatClock(c.begin, { seconds: true }), to: formatClock(c.end, { seconds: true }) })}</li>
+              <li key={i}>{t(c.section ? 'conflict_line_section' : 'conflict_line', { train: names([c.other]), block: blockName(c.block), section: c.section ? sectionName(c.section) : '', from: formatClock(c.begin, { seconds: true }), to: formatClock(c.end, { seconds: true }) })}</li>
             ))}
           </ul>
         </>
       )}
-      {!waits.length && !shown.length && <p className="ui-muted">{t('blocks_free')}</p>}
+      {!waits.length && !detours.length && !shown.length && <p className="ui-muted">{t('blocks_free')}</p>}
     </section>
   )
 }

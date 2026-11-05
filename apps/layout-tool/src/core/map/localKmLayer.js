@@ -164,3 +164,31 @@ export function localKmAt(map, event, kmLines, tolerance = 8) {
   }
   return best && { lineNumber: best.lineNumber, km: best.km, lngLat: best.lngLat }
 }
+
+/**
+ * How far each of the project's lines `kmLines` runs from `centre` ({ lng,
+ * lat }), in metres on the ground: [{ lineNumber, distance }], one per line.
+ * Read off the data rather than the drawing, so it answers with the overlay
+ * off and wherever the view is.
+ */
+export function localLineDistances(kmLines, centre) {
+  const [cx, cy] = toMercator(centre.lng, centre.lat)
+  // One Mercator unit is the equator; at this latitude the ground is shorter.
+  const perUnit = 40075017 * Math.cos((centre.lat * Math.PI) / 180)
+  const nearest = new Map()
+  for (const kmLine of kmLines ?? []) {
+    const lineNumber = String(kmLine.lineNumber)
+    for (const run of kmLine.runs ?? []) {
+      for (let i = 0; i < run.length; i++) {
+        const [ax, ay] = toMercator(run[i][0], run[i][1])
+        const [bx, by] = i + 1 < run.length ? toMercator(run[i + 1][0], run[i + 1][1]) : [ax, ay]
+        const dx = bx - ax, dy = by - ay
+        const squared = dx * dx + dy * dy
+        const t = squared ? Math.min(1, Math.max(0, ((cx - ax) * dx + (cy - ay) * dy) / squared)) : 0
+        const distance = Math.hypot(cx - (ax + t * dx), cy - (ay + t * dy)) * perUnit
+        if (distance < (nearest.get(lineNumber) ?? Infinity)) nearest.set(lineNumber, distance)
+      }
+    }
+  }
+  return [...nearest].map(([lineNumber, distance]) => ({ lineNumber, distance: Math.round(distance) }))
+}

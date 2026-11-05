@@ -2,7 +2,7 @@
   "name": "rail-across-simulation-tool",
   "private": true,
   "version": "0.1.0",
-  "description": "The running time simulation of Rail-Across-Suite: a train over the project's net, simulated with OSRD's simulation core ported to Rust (sim/)",
+  "description": "The former running time simulation of Rail-Across-Suite: its address leads on to computing a running time in the Fahrplan-Editor (../timetable-editor)",
   "license": "LGPL-3.0-only",
   "type": "module",
   "engines": {
@@ -13,20 +13,9 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "lint": "eslint .",
-    "sim": "node ../../packages/running-times/scripts/sim.mjs"
+    "lint": "eslint ."
   },
-  "dependencies": {
-    "@rail-across/basemaps": "*",
-    "@rail-across/core": "*",
-    "@rail-across/running-times": "*",
-    "@rail-across/ui": "*",
-    "@rail-across/vehicles": "*",
-    "@rail-across/working-copy": "*",
-    "maplibre-gl": "^5.21.0",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@eslint/js": "^9.39.4",
     "@vitejs/plugin-react": "^6.0.1",

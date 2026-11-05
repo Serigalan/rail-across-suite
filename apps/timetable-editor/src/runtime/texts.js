@@ -1,7 +1,7 @@
-import { createContext, useContext } from 'react'
-
-// The Simulation-Tool's texts, German and English. Which one is the suite's
-// choice, the same for the start page and every module (@rail-across/ui).
+// The texts of computing a running time on its own (Fahrzeit rechnen, what
+// the Simulation-Tool was), German and English, kept apart from the
+// Fahrplan-Editor's: the two say some words differently. The language is the
+// suite's (@rail-across/ui).
 
 const de = {
   tool: 'Fahrzeiten',
@@ -18,9 +18,9 @@ const de = {
   reads_copy: 'liest die Arbeitskopie dieses Browsers',
   reads_head: 'liest den eingecheckten Stand',
   empty_net: 'Diese Variante hat noch keine Gleise.',
-  section_train: 'Zugfahrt',
+  section_train: 'Fahrzeit rechnen',
   section_train_intro: 'Ein Zug über das Netz der Variante: wo er beginnt, hält und endet, und mit welchem Zuschlag er fährt. Der Weg wird über Weichen und Gleisstöße gesucht.',
-  section_result: 'Ergebnis',
+  section_result: 'Fahrzeit-Ergebnis',
   section_result_intro: 'Fahrzeiten, Ankunft und Abfahrt an jedem Halt, und die Fahrt Moment für Moment.',
   section_settings: 'Einstellungen',
   section_settings_intro: 'Die Sprache gilt für die ganze Suite.',
@@ -102,9 +102,13 @@ const de = {
   chart: 'Diagramm',
   chart_speed: 'Geschwindigkeit',
   chart_time: 'Zeit-Weg',
-  chart_mrsp: 'zulässig',
+  chart_design: 'Elementgeschwindigkeit',
+  chart_signalled: 'signalisiert',
   chart_base: 'kürzeste Fahrt',
   chart_final: 'mit Zuschlag',
+  chart_profile: 'Höhe',
+  chart_height_axis: 'm ü. NHN',
+  chart_no_heights: 'Ohne Höhen',
   time_axis: 'min:s',
 }
 
@@ -123,9 +127,9 @@ const en = {
   reads_copy: 'reads this browser\'s working copy',
   reads_head: 'reads the checked-in state',
   empty_net: 'This variant has no tracks yet.',
-  section_train: 'Train run',
+  section_train: 'Compute running time',
   section_train_intro: 'A train over the variant\'s net: where it starts, stops and ends, and the margin it runs with. Its path is found over switches and joints.',
-  section_result: 'Result',
+  section_result: 'Running time result',
   section_result_intro: 'Running times, arrival and departure at every stop, and the run moment by moment.',
   section_settings: 'Settings',
   section_settings_intro: 'The language holds for the whole suite.',
@@ -207,16 +211,20 @@ const en = {
   chart: 'Chart',
   chart_speed: 'Speed',
   chart_time: 'Time-distance',
-  chart_mrsp: 'allowed',
+  chart_design: 'element speed',
+  chart_signalled: 'signalled',
   chart_base: 'fastest run',
   chart_final: 'with margin',
+  chart_profile: 'Height',
+  chart_height_axis: 'm a.s.l.',
+  chart_no_heights: 'No heights',
   time_axis: 'min:s',
 }
 
 const TEXTS = { de, en }
 
 /** { t, language }: t(key, params) the text, with {name} filled from params; the key itself where there is none. */
-export function textsFor(language) {
+export function runtimeTexts(language) {
   const table = TEXTS[language] ?? TEXTS.de
   const t = (key, params) => {
     const text = table[key] ?? TEXTS.de[key] ?? key
@@ -224,6 +232,3 @@ export function textsFor(language) {
   }
   return { t, language }
 }
-
-export const I18n = createContext(textsFor('de'))
-export const useTexts = () => useContext(I18n)

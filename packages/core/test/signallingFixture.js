@@ -1,6 +1,7 @@
 // A small station signalled with Ks, PZB and ETCS, as the signalling domain holds
 // it: on track t1 (250 m) an entry signal A — a Ks multi-section signal with
-// Zs 3 and Zs 2 — and an exit signal N1, a Ks main shunting signal; beyond N1
+// Zs 3 and Zs 2 — and an exit signal N1, a Ks main shunting signal on a gantry
+// over the track, its foundation right of it; beyond N1
 // an overlap over switch w1 onto track t2 (150 m), where a route ends at a
 // virtual signal (target on the line). Train detection over t1, flank
 // protection for the switch, the PZB magnets of A and N1, an ETCS balise
@@ -32,8 +33,8 @@ export function ksStation({ operationalPoint = 'op1' } = {}) {
           frames: [{ kind: 'nameplate', aspects: [] }],
         },
         {
-          id: 'sig-n1', name: 'N1', kind: 'real', mounting: 'mast', operationalPointId: operationalPoint,
-          at: on('t1', 230),
+          id: 'sig-n1', name: 'N1', kind: 'real', mounting: 'gantry', operationalPointId: operationalPoint,
+          at: { anchor: 'station', trackId: 't1', station: 230, direction: 'up' }, foundation: { side: 'right', offset: 3.8 },
           logicalSignals: [{
             system: 'ks', type: 'mainShunting', function: 'exit',
             frames: [

@@ -3,6 +3,7 @@ import { ApiError } from '../errors.js'
 import { axisSurveysChanged, checkRecord, freshErrors, normalizedRecord } from '../checks.js'
 import { mayEditClouds } from '../auth.js'
 import { createStore, publicVariant } from '../store.js'
+import { checkedTimetables } from './timetables.js'
 
 /** Largest image [bytes]. */
 const IMAGE_LIMIT = 5 * 1024 * 1024
@@ -12,8 +13,10 @@ const text = (v, max = 500) => (v == null ? undefined : String(v).trim().slice(0
 /**
  * Projects, variants, revisions and images (AP 10.5). A project is seen and
  * edited by its creator, its members and the admins (decision 127); deleting
- * one is the admin's or its creator's. A template is the admin's alone — the project and its root
- * variants; everyone branches variants of their own off it and edits those.
+ * one is the admin's or its creator's. A template is seen by everyone and
+ * read-only for everyone: an admin imports it, names and deletes it; nobody
+ * checks in on its variants or branches one off it. Everyone copies it as a
+ * project of their own — its record and its timetables.
  */
 export default async function projectRoutes(api) {
   const store = createStore(api.db, { now: api.now })
@@ -39,6 +42,10 @@ export default async function projectRoutes(api) {
       throw new ApiError(403, 'template_admin')
     }
   }
+  // A template's variants are only looked at — those branched off it before templates were, still their own.
+  const notTemplate = (project, variant = null) => {
+    if (project.template && (!variant || !variant.parent_variant_id)) throw new ApiError(403, 'template_read_only')
+  }
   const revisionOr404 = (id, user) => {
     const r = store.revisionMeta(Number(id))
     if (!r) throw new ApiError(404, 'not_found')
@@ -52,22 +59,29 @@ export default async function projectRoutes(api) {
   // A new project, empty or with a record (an import): its first variant
   // "Bestand" at revision 1. An imported record may bring errors along — it
   // is what there is — and they are reported, not refused; what a later
-  // check-in adds to them is.
+  // check-in adds to them is. An import may bring the project's timetables
+  // too (`timetables`, a file of them beside the backup file): all of them
+  // come with the project, or neither does.
   api.post('/projects', opts, async (req, reply) => {
     const title = text(req.body?.title, 200)
     if (!title) throw new ApiError(422, 'title_required')
     const description = text(req.body?.description, 4000) ?? ''
     const template = Boolean(req.body?.template)
     if (template && req.user.role !== 'admin') throw new ApiError(403, 'template_admin')
+    const timetables = checkedTimetables(req.body?.timetables ?? [])
     const given = req.body?.payload
     // The store gives the project its id; until then the door checks the record under a stand-in.
     const { record, errors, warnings } = checkRecord(given ?? { tracks: [], switches: [], platforms: [] }, { id: 'new' })
-    const ids = store.createProject({
-      title, description, payload: record, authorId: req.user.id, errorKeys: errors.map(e => e.key),
-      variantName: text(req.body?.variantName, 100) || (template ? 'Vorlage' : 'Bestand'), template,
-    })
+    const ids = api.db.transaction(() => {
+      const made = store.createProject({
+        title, description, payload: record, authorId: req.user.id, errorKeys: errors.map(e => e.key),
+        variantName: text(req.body?.variantName, 100) || (template ? 'Vorlage' : 'Bestand'), template,
+      })
+      store.addTimetables(made.projectId, timetables, req.user.id)
+      return made
+    })()
     const project = listed(req.user, ids.projectId)
-    return reply.code(201).send({ project, ...ids, errors, warnings })
+    return reply.code(201).send({ project, ...ids, errors, warnings, timetables: timetables.length })
   })
 
   api.patch('/projects/:id', opts, async (req) => {
@@ -139,8 +153,29 @@ export default async function projectRoutes(api) {
     return reply.type(b.mime).send(b.data)
   })
 
+  // A template copied as a project of one's own: the head of one of its variants
+  // (`variant`, else its first), its picture with it, and its timetables.
+  api.post('/projects/:id/copy', opts, async (req, reply) => {
+    const p = projectOr404(req.params.id, req.user)
+    if (!p.template) throw new ApiError(422, 'not_template')
+    const variants = store.variants(p.id).filter(v => !v.archived && !v.parent_variant_id)
+    const from = req.body?.variant != null ? variants.find(v => v.id === req.body.variant) : variants[0]
+    if (!from) throw new ApiError(422, 'variant_mismatch')
+    const title = text(req.body?.title, 200) || p.title
+    // The head as the door reads it, under a stand-in id until the store gives the copy its own.
+    const { record, errors } = checkRecord(store.revision(from.head_revision_id).payload, { id: 'new' })
+    const { ids, timetables } = api.db.transaction(() => {
+      const made = store.createProject({
+        title, description: p.description ?? '', payload: record, authorId: req.user.id, errorKeys: errors.map(e => e.key),
+      })
+      return { ids: made, timetables: store.copyTimetables(p.id, made.projectId, req.user.id) }
+    })()
+    return reply.code(201).send({ project: listed(req.user, ids.projectId), ...ids, timetables })
+  })
+
   api.post('/projects/:id/variants', opts, async (req, reply) => {
     const p = projectOr404(req.params.id, req.user)
+    notTemplate(p)
     const name = text(req.body?.name, 100)
     if (!name) throw new ApiError(422, 'name_required')
     const from = variantOr404(req.body?.fromVariant, req.user)
@@ -212,7 +247,7 @@ export default async function projectRoutes(api) {
   // already had is refused with them (422).
   api.post('/variants/:id/revisions', opts, async (req, reply) => {
     const v = variantOr404(req.params.id, req.user)
-    adminForTemplate(req.user, store.project(v.project_id), v)
+    notTemplate(store.project(v.project_id), v)
     const { base, mergeParent, message, payload, remaps } = req.body ?? {}
     if (!Number.isInteger(base)) throw new ApiError(422, 'base_required')
     if (base !== v.head_revision_id) return reply.code(409).send({ error: 'stale_base', head: store.revisionMeta(v.head_revision_id) })

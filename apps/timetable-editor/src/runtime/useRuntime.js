@@ -1,38 +1,24 @@
 import { useMemo, useState } from 'react'
-import { IconButton, FitIcon, Message, Rail, RailBrand, RailButton, RailDivider, Shell, WorkingCopyBar, Workspace } from '@rail-across/ui'
-import { useTexts } from './i18n.js'
-import { ChartIcon, HomeIcon, LogoIcon, SettingsIcon, TrainIcon } from './icons.jsx'
-import MapView from './map/MapView.jsx'
-import RunChart from './charts/RunChart.jsx'
-import TrainPanel from './panels/TrainPanel.jsx'
-import ResultPanel from './panels/ResultPanel.jsx'
-import SettingsPanel from './panels/SettingsPanel.jsx'
-import { lngLatAt, locationAt, marginValue, nearestLocation, netLines, placesOf, pointAt, routeThrough, simulate, simulationRequest } from '@rail-across/running-times'
-import { comfortsOf, useCatalogue } from '@rail-across/vehicles'
-import { projectsUrl } from './suite.js'
-
-const KEPT_VEHICLE = 'rail-across-sim-vehicle'
-const keptVehicle = () => { try { return localStorage.getItem(KEPT_VEHICLE) } catch { return null } }
-const keepVehicle = (key) => { try { localStorage.setItem(KEPT_VEHICLE, key) } catch { /* not kept */ } }
+import { heightProfile, lngLatAt, locationAt, marginValue, nearestLocation, netLines, placesOf, pointAt, routeThrough, simulate, simulationRequest } from '@rail-across/running-times'
+import { comfortsOf } from '@rail-across/vehicles'
+import { keepVehicle, keptVehicle } from '../suite.js'
 
 /** The vehicle a train starts with: the one chosen last in this browser, else OSRD's regional multiple unit. */
 const FIRST_VEHICLE = 'osrd:emu-regional-train'
 
 /**
- * The simulation of one train over the net of a variant, which it only
- * reads: a train — a vehicle of the suite's catalogue (the Fahrzeug-Editor's),
- * in a traction mode and comfort —, where it starts, stops and ends —
- * signals, platforms or points picked on the map —, the margin it runs with;
- * its path found over the net, and the run simulated by rail-across-sim (OSRD's
- * simulation core in Rust): the fastest run, the run with its margin, the
- * times at its stops, the speed and the time over the distance, played on
- * the map.
+ * Computing the running time of one train on its own, beside the timetables
+ * (Fahrzeit rechnen, what the Simulation-Tool was): a train — a vehicle of
+ * the suite's catalogue (the Fahrzeug-Editor's), in a traction mode and
+ * comfort —, where it starts, stops and ends — signals, platforms or points
+ * picked on the map —, the margin it runs with; its path found over the net,
+ * and the run simulated by rail-across-sim (OSRD's simulation core in Rust):
+ * the fastest run, the run with its margin, the times at its stops, the speed
+ * and the height over the distance, played on the map. Its state is the
+ * editor's, kept while other sections are shown; `onResult` is called when a
+ * run has been computed. Its texts are its own (texts.js), `t` here.
  */
-export default function Simulator({ project, variant, revision, record, local }) {
-  const { t, language, setLanguage } = useTexts()
-  const [section, setSection] = useState('train')
-  // a vehicle changed in the Fahrzeug-Editor's tab is there when this one is shown again
-  const catalogue = useCatalogue({ refreshOnShow: true })
+export function useRuntime({ record, catalogue, t, language, onResult }) {
   const [vehicleKey, setVehicleKey] = useState(() => keptVehicle() ?? FIRST_VEHICLE)
   const [traction, setTraction] = useState({ mode: null, comfort: 'STANDARD' })
   const [start, setStart] = useState(null)
@@ -88,7 +74,7 @@ export default function Simulator({ project, variant, revision, record, local })
       else {
         setRun({ result, request, properties, path: route.path, offsets: route.offsets, labels: chosen.map(p => p.label), key })
         setMoment(0)
-        setSection('result')
+        onResult?.()
       }
     } catch (err) {
       setRun({ error: { code: err.code ?? 'internal', message: String(err.message ?? err) }, key })
@@ -100,44 +86,13 @@ export default function Simulator({ project, variant, revision, record, local })
   const ok = run?.result ? run : null
   const at = ok ? pointAt(ok.result.final, moment) : null
   const train = at ? lngLatAt(record, locationAt(ok.path, at.position)) : null
+  // The way the chart shows: the run's, else the one found; its heights along it.
+  const way = ok ? { path: ok.path, offsets: ok.offsets, labels: ok.labels } : route?.path ? { path: route.path, offsets: route.offsets, labels: chosen.map(p => p?.label) } : null
+  const profile = useMemo(() => (way ? heightProfile(record, way.path) : null), [record, way?.path]) // eslint-disable-line react-hooks/exhaustive-deps
   const mapPoints = chosen.map((p, i) => p && { kind: i === 0 ? 'start' : i === chosen.length - 1 ? 'end' : 'stop', lngLat: lngLatAt(record, p.loc) }).filter(Boolean)
   const panelProps = { t, language, record, places, catalogue, entry, vehicle, chooseVehicle, modes, mode, comforts, comfort, setTraction, start, setStart, end, setEnd, stops, setStops, margin, setMargin, marginText, distribution, setDistribution, picking, setPicking, route, run, stale, busy, go, moment, setMoment, at }
+  const viewProps = { t, language, record, net, route, mapPoints, train, picking, setPicking, pickOnMap, fitKey, setFitKey, way, ok, profile, at }
+  return { panelProps, viewProps }
 
-  return (
-    <Shell>
-      <Rail label={t('tool')}
-        brand={<RailBrand href={projectsUrl()} label={t('suite_sims')} name={t('suite_sims')}><LogoIcon /></RailBrand>}
-        top={<>
-          <RailButton icon={<TrainIcon />} label={t('section_train')} pressed={section === 'train'} onClick={() => setSection('train')} />
-          <RailButton icon={<ChartIcon />} label={t('section_result')} pressed={section === 'result'} onClick={() => setSection('result')} />
-        </>}
-        bottom={<>
-          <RailDivider />
-          <RailButton icon={<HomeIcon />} label={t('suite_sims')} onClick={() => location.assign(projectsUrl())} />
-          <RailButton icon={<SettingsIcon />} label={t('section_settings')} pressed={section === 'settings'} onClick={() => setSection('settings')} />
-        </>}
-      />
-      {section === 'train' ? <TrainPanel {...panelProps} />
-        : section === 'result' ? <ResultPanel {...panelProps} />
-        : <SettingsPanel t={t} language={language} setLanguage={setLanguage} />}
-      <Workspace>
-        <div className="sim-stack">
-          <div className="sim-map-wrap">
-            <WorkingCopyBar title={project.title} subtitle={variant.name} revision={revision?.number != null ? t('revision_n', { n: revision.number }) : undefined}
-              note={t(local ? 'reads_copy' : 'reads_head')} actions={[{ label: t('back'), onClick: () => location.assign(projectsUrl()) }]} />
-            <div className="tool-fit"><IconButton label={t('fit')} icon={<FitIcon />} onClick={() => setFitKey(k => k + 1)} /></div>
-            {picking && (
-              <div className="tool-mode" role="status">
-                <span>{t(`picking_${picking}`)}</span>
-                <button type="button" className="ui-btn ui-btn-small" onClick={() => setPicking(null)}>{t('cancel')}</button>
-              </div>
-            )}
-            {!record.tracks?.length && <div className="tool-notice"><Message tone="info">{t('empty_net')}</Message></div>}
-            <MapView record={record} net={net} path={route?.path ?? null} points={mapPoints} train={train} picking={picking} onPick={pickOnMap} fitKey={fitKey} t={t} />
-          </div>
-          {ok && <RunChart run={ok} at={at} t={t} />}
-        </div>
-      </Workspace>
-    </Shell>
-  )
 }
+

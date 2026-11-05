@@ -3,7 +3,8 @@
 // it carries JSON (the server refuses it otherwise). The start page holds what
 // is the suite's — signing in and out, the password, the users and their
 // rights — and the projects of the infrastructure: creating, importing and
-// exporting them, who works on them, their variants. What a tool does with a
+// exporting them — their timetables in a file beside —, who works on them,
+// their variants. What a tool does with a
 // variant — working on it, its history, comparing, merging — is the tool's.
 //
 // Revisions travel as core 1.0 documents; a project's record goes out as one
@@ -62,6 +63,8 @@ export const api = {
   createProject: (body) => request('POST', '/projects', withDocument(body)),
   patchProject: (id, body) => request('PATCH', `/projects/${enc(id)}`, body),
   deleteProject: (id) => request('DELETE', `/projects/${enc(id)}`),
+  /** A template copied as a project of one's own: { project, projectId, variantId, revisionId, timetables }. */
+  copyProject: (id, body) => request('POST', `/projects/${enc(id)}/copy`, body),
   branch: (projectId, body) => request('POST', `/projects/${enc(projectId)}/variants`, body),
   patchVariant: (id, body) => request('PATCH', `/variants/${enc(id)}`, body),
   /** A variant's head: { variant, revision, payload } — the payload as the record it holds. */
@@ -72,6 +75,10 @@ export const api = {
   removeMember: (projectId, userId) => request('DELETE', `/projects/${enc(projectId)}/members/${enc(userId)}`),
   searchUsers: (q) => request('GET', `/users?q=${enc(q)}`),
   uploadImage: (mime, data) => request('PUT', '/blobs', { mime, data }),
+  /** A project's timetables, for its file of them: { timetables, mayEdit }. */
+  timetables: (projectId) => request('GET', `/projects/${enc(projectId)}/timetables`),
+  /** Timetables ({ name, data }) of a file added to a project, all or none: { timetables }. */
+  importTimetables: (projectId, timetables) => request('POST', `/projects/${enc(projectId)}/timetables/import`, { timetables }),
 
   // The user administration (admins only).
   users: () => request('GET', '/admin/users').then(r => r.users ?? []),

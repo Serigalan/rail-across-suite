@@ -1,5 +1,7 @@
 import { placeOf, stretchLine } from '../model/net.js'
 import { labelOf } from '../model/domain.js'
+import { gantryFarOffset, sideAlong } from '../model/places.js'
+import { isClearanceMarker } from '../model/clearanceMarkers.js'
 import { signalTone, TONE_FILL } from './symbols.js'
 
 /**
@@ -8,7 +10,10 @@ import { signalTone, TONE_FILL } from './symbols.js'
  * when it moves. Tracks, runs and stretches are lines, switches circles;
  * every object stands where it is in the plane — a foot on its track, a stem
  * out to its symbol at its offset on its side, the symbol an icon turned the
- * way it acts. Zoomed out, a symbol keeps a few pixels from its track: what
+ * way it acts; a signal on a bracket with the arm from its foundation out
+ * to its screen, one on a gantry with the bridge between its two masts over
+ * its screen, to scale; a clearance marker with a stroke to either of its
+ * two tracks. Zoomed out, a symbol keeps a few pixels from its track: what
  * its offset lacks of them is added in pixels (icon-offset), evaluated per
  * whole zoom level as MapLibre lays symbols out. The icons and the names are
  * drawn here on a canvas, in the plan's colours.
@@ -38,7 +43,10 @@ export const extraPx = (offset, lat, zoom) => Math.max(0, SIDE_PX - offset * pix
 /**
  * An object to draw: where it is on its track, where its symbol stands in the
  * plane, and how it is turned. `side` is -1 left, 1 right of the stationing, 0
- * on the track; `along` 1 when it acts in the stationing's direction, else -1.
+ * on the track; `along` 1 when it acts in the stationing's direction, else -1;
+ * `foundation` where a signal's foundation stands, for one on a gantry or
+ * bracket, `far` a gantry's second mast; `across` where a clearance marker's
+ * stroke to the other track ends, as far beyond it as its own track lies before.
  */
 export function placedMark(drawing, collection, obj, loc) {
   const p = placeOf(drawing, loc)
@@ -51,7 +59,13 @@ export function placedMark(drawing, collection, obj, loc) {
   const at = side ? drawing.frame.toLngLat([p.xy[0] + Math.cos(b) * offset * side, p.xy[1] - Math.sin(b) * offset * side]) : on
   const angle = p.angle ?? 0
   const along = Math.abs((((angle - (p.bearing ?? angle)) % 360) + 540) % 360 - 180) < 90 ? 1 : -1
-  return { collection, obj, on, at, angle, bearing: b, side, along, offset, orphan: !!p.orphan }
+  const f = collection === 'signals' && !p.orphan ? obj.foundation : null
+  const fs = f ? (sideAlong(loc, f.side) === 'left' ? -1 : 1) * (f.offset ?? 0) : 0
+  const off = (d) => drawing.frame.toLngLat([p.xy[0] + Math.cos(b) * d, p.xy[1] - Math.sin(b) * d])
+  const foundation = f ? off(fs) : null
+  const far = f && obj.mounting === 'gantry' ? off(gantryFarOffset({ ...obj, at: loc })) : null
+  const across = collection === 'signals' && side && isClearanceMarker(obj) ? off(2 * offset * side) : null
+  return { collection, obj, on, at, angle, bearing: b, side, along, offset, orphan: !!p.orphan, foundation, far, across }
 }
 
 /** Where a mark's symbol is on the screen of a map now: [x, y]. */
@@ -127,13 +141,22 @@ function markFeatures(marks, { isSelected, names, t }) {
   for (const mk of marks) {
     const sel = isSelected(mk)
     // The pixels added zoomed out: along the icon's x when it is turned, on the screen for the label.
-    const extra = Object.fromEntries(ZOOMS.map(z => [z, extraPx(mk.offset, mk.at[1], z) * mk.side]))
+    // A clearance marker stays between its tracks, where its strokes meet.
+    const extra = Object.fromEntries(ZOOMS.map(z => [z, mk.across ? 0 : extraPx(mk.offset, mk.at[1], z) * mk.side]))
     const props = { kind: 'mark', collection: mk.collection, id: mk.obj.id, rotate: mk.angle, orphan: mk.orphan, icon: `ra-${symbolOf(mk.collection, mk.obj)}${sel ? '-sel' : ''}` }
     for (const z of ZOOMS) {
       props[`i${z}`] = [extra[z] * mk.along, 0]
       props[`s${z}`] = [(extra[z] - (SIDE_PX / 2) * mk.side) * mk.along, 0]
     }
-    if (mk.side) {
+    if (mk.foundation) {
+      out.push(feature(line([mk.foundation, mk.far ?? mk.at]), { kind: 'bridge', sel }))
+      for (const f of [mk.foundation, mk.far].filter(Boolean)) out.push(feature(point(f), { kind: 'foundation', rotate: mk.angle, icon: `ra-foundation${sel ? '-sel' : ''}` }))
+    }
+    if (mk.across) {
+      // A clearance marker: a stroke from either track to it.
+      out.push(feature(line([mk.on, mk.at, mk.across]), { kind: 'tie', sel }))
+      out.push(feature(point(mk.on), { kind: 'foot' }), feature(point(mk.across), { kind: 'foot' }))
+    } else if (mk.side) {
       out.push(feature(line([mk.on, mk.at]), { kind: 'stem' }))
       out.push(feature(point(mk.on), { kind: 'foot' }))
       out.push(feature(point(mk.at), { ...props, kind: 'stub' }))
@@ -155,20 +178,27 @@ function markFeatures(marks, { isSelected, names, t }) {
  * The plan's data, one FeatureCollection per source: { tracks, places,
  * marked, switches, marks, preview }, and the labels' texts whose icons it
  * needs. `highlight.ways` are ways found, along the tracks the way they run,
- * the strong one with arrows; `stretch` is the stretch a pick would take.
+ * the strong one with arrows; `stretch` is the stretch a pick would take;
+ * `pending` the ids of what is drafted and not committed, drawn as a preview.
  */
-export function planData({ drawing, places, marks, switches, selection, highlight, preview, stretch, snap, t }) {
+export function planData({ drawing, places, marks, switches, selection, highlight, pending, preview, stretch, snap, t }) {
   const isSel = (collection, id) => selection?.collection === collection && selection.id === id
   const lineOf = (pts) => pts.map(p => drawing.frame.toLngLat(p))
   const tracks = [...drawing.tracks.values()].map(tr => feature(line(lineOf(tr.line)), { id: tr.id }))
   const marked = [
     ...(highlight?.runs ?? []).flatMap(id => { const tr = drawing.tracks.get(id); return tr ? [feature(line(lineOf(tr.line)), { kind: 'run' })] : [] }),
-    ...(highlight?.stretches ?? []).map(s => feature(line(lineOf(stretchLine(drawing, s.trackId, s.from, s.to))), { kind: 'stretch', tone: s.tone ?? '' })),
+    ...(highlight?.stretches ?? []).map(s => feature(line(lineOf(stretchLine(drawing, s.trackId, s.from, s.to))), { kind: 'stretch', tone: s.tone ?? '', color: s.color ?? '' })),
+    // A name in a colour, in the middle of its stretch (the track sections, each in its own).
+    ...(highlight?.labels ?? []).flatMap(l => {
+      const lls = lineOf(stretchLine(drawing, l.trackId, l.from, l.to))
+      return lls.length > 1 ? [feature(point(middleOfLine(lls)), { kind: 'label', icon: `ra-clabel:${l.color}:${l.text}` })] : []
+    }),
     ...(highlight?.ways ?? []).flatMap(w => w.pieces.map(p => {
       const lls = lineOf(stretchLine(drawing, p.trackId, p.from, p.to))
       return feature(line(p.from > p.to ? lls.reverse() : lls), { kind: 'way', strong: !!w.strong })
     })),
-  ].filter(f => f.geometry.coordinates.length > 1)
+  ].filter(f => f.geometry.type === 'Point' || f.geometry.coordinates.length > 1)
+  const drafted = (mk) => !!pending?.has(mk.obj.id)
   const shown = marks.filter(mk => !(preview && mk.obj.id === preview.obj.id))
   const markSel = (mk) => isSel(mk.collection, mk.obj.id) || !!highlight?.ids?.includes(mk.obj.id)
   const data = {
@@ -179,15 +209,16 @@ export function planData({ drawing, places, marks, switches, selection, highligh
     ])),
     marked: collection(marked),
     switches: collection(switches.map(s => feature(point(s.ll), { id: s.id, sel: isSel('switches', s.id) }))),
-    marks: collection(markFeatures(shown, { isSelected: markSel, names: true, t })),
+    marks: collection(markFeatures(shown.filter(mk => !drafted(mk)), { isSelected: markSel, names: true, t })),
     preview: collection([
       ...(snap ? [feature(point(snap), { kind: 'snap' })] : []),
       ...(stretch ? [feature(line(lineOf(stretchLine(drawing, stretch.trackId, stretch.from, stretch.to))), { kind: 'stretch' })]
         .filter(f => f.geometry.coordinates.length > 1) : []),
+      ...markFeatures(shown.filter(drafted), { isSelected: () => true, names: true, t }),
       ...(preview ? markFeatures([preview], { isSelected: () => true, names: false, t }) : []),
     ]),
   }
-  const labels = [...data.marks.features, ...data.places.features].filter(f => f.properties.kind === 'label').map(f => f.properties.icon)
+  const labels = [...data.marks.features, ...data.places.features, ...data.preview.features, ...data.marked.features].filter(f => f.properties.kind === 'label').map(f => f.properties.icon)
   return { data, labels }
 }
 
@@ -207,7 +238,7 @@ const ICON_PX = 32
 const RATIO = 2
 const DP_BLUE = '#1f6fb5'
 const BALISE = { 'pzb-500': '#d0308f', 'pzb-1000': '#7b3fbf', 'pzb-2000': '#0f9fb5', 'pzb-1000-2000': '#0f9fb5', 'pzb-other': '#7b3fbf' }
-const SYMBOLS = ['sig-main', 'sig-distant', 'sig-shunting', 'sig-board', 'sig-marker', 'sig-virtual', 'dp', 'etcs', ...Object.keys(BALISE), 'derailer']
+const SYMBOLS = ['sig-main', 'sig-distant', 'sig-shunting', 'sig-board', 'sig-marker', 'sig-virtual', 'dp', 'etcs', ...Object.keys(BALISE), 'derailer', 'foundation']
 
 /** A canvas of the icon's size, its origin in the middle and +x the way the object acts — up in the icon, as icon-rotate turns it. */
 function iconCanvas(size = ICON_PX) {
@@ -223,7 +254,7 @@ function iconCanvas(size = ICON_PX) {
 
 const imageOf = ({ c, g }) => g.getImageData(0, 0, c.width, c.height)
 
-/** One symbol, as the plan drew it in SVG: a signal a short mast with its head ahead, a board a square … */
+/** One symbol, as the plan drew it in SVG: a signal a short mast with its head ahead, a board a square, a clearance marker a circle … */
 function drawSymbol(name, sel, pal) {
   const cv = iconCanvas()
   const { g } = cv
@@ -234,6 +265,8 @@ function drawSymbol(name, sel, pal) {
   if (name === 'dp') {
     stroke('M0,-6 L0,6', sel ? pal.primary : DP_BLUE, edgeWidth(2))
     fill('M2.2,0 A2.2,2.2 0 1 0 -2.2,0 A2.2,2.2 0 1 0 2.2,0 Z', DP_BLUE)
+  } else if (name === 'foundation') {
+    fill('M-3,-3 L3,-3 L3,3 L-3,3 Z', edge)
   } else if (name === 'derailer') {
     stroke('M-4,-4 L4,4 M-4,4 L4,-4', '#c0392b', 2)
   } else if (name === 'etcs') {
@@ -249,7 +282,12 @@ function drawSymbol(name, sel, pal) {
     const tone = name.slice(4)
     if (tone === 'virtual') {
       stroke('M4,0 A4,4 0 1 0 -4,0 A4,4 0 1 0 4,0 Z', edge, edgeWidth(1.2), [2, 2])
-    } else if (tone === 'board' || tone === 'marker') {
+    } else if (tone === 'marker') {
+      // The clearance marker: a circle between its two tracks.
+      const d = 'M3.5,0 A3.5,3.5 0 1 0 -3.5,0 A3.5,3.5 0 1 0 3.5,0 Z'
+      fill(d, TONE_FILL[tone])
+      stroke(d, edge, edgeWidth(1.2))
+    } else if (tone === 'board') {
       const d = 'M-3.5,-3.5 L3.5,-3.5 L3.5,3.5 L-3.5,3.5 Z'
       fill(d, TONE_FILL[tone])
       stroke(d, edge, edgeWidth(1.2))
@@ -289,7 +327,7 @@ function drawArrow(pal) {
 }
 
 /** A signal's name, with a halo of the surface's colour; its baseline LABEL_PAD above the bottom. */
-function drawLabel(text, pal) {
+function drawLabel(text, pal, color = pal.mark) {
   const font = `600 ${LABEL_FONT_PX}px ${pal.font}`
   const probe = document.createElement('canvas').getContext('2d')
   probe.font = font
@@ -303,7 +341,7 @@ function drawLabel(text, pal) {
   g.lineJoin = 'round'
   g.strokeStyle = pal.surface; g.lineWidth = 3
   g.strokeText(text, LABEL_PAD, h - LABEL_PAD)
-  g.fillStyle = pal.mark
+  g.fillStyle = color
   g.fillText(text, LABEL_PAD, h - LABEL_PAD)
   return g.getImageData(0, 0, c.width, c.height)
 }
@@ -322,7 +360,11 @@ export function ensureImages(map, pal, labels) {
   }
   add('ra-stub', () => drawStub(pal))
   add('ra-arrow', () => drawArrow(pal))
-  for (const id of labels) add(id, () => drawLabel(id.slice('ra-label:'.length), pal))
+  for (const id of labels) {
+    // ra-clabel:<colour>:<text> is a name in its own colour.
+    const coloured = id.match(/^ra-clabel:(#[0-9a-fA-F]{3,8}):(.*)$/)
+    add(id, () => (coloured ? drawLabel(coloured[2], pal, coloured[1]) : drawLabel(id.slice('ra-label:'.length), pal)))
+  }
 }
 
 // ── the layers ──────────────────────────────────────────────────────────
@@ -332,10 +374,19 @@ const offsetBy = (prefix) => ['interpolate', ['linear'], ['zoom'], ...ZOOMS.flat
 const kind = (k) => ['==', ['get', 'kind'], k]
 const SYMBOL = { 'icon-allow-overlap': true, 'icon-ignore-placement': true, 'icon-rotation-alignment': 'map', 'icon-pitch-alignment': 'map' }
 
-/** The layers of marks from one source: stems, feet, stubs, symbols, labels. */
+/** The colour of a gantry or bracket: the marks', the primary where it is chosen. */
+const bridgeColor = (pal) => ['case', ['get', 'sel'], pal.primary, pal.mark]
+
+/** The layers of marks from one source: gantries and their foundations, stems, feet, stubs, symbols, labels. */
 function markLayers(prefix, source, pal, opacity) {
   return [
+    { id: `${prefix}-bridges`, type: 'line', source, filter: kind('bridge'), layout: { 'line-cap': 'butt' },
+      paint: { 'line-color': bridgeColor(pal), 'line-width': 3, 'line-opacity': opacity } },
+    { id: `${prefix}-foundations`, type: 'symbol', source, filter: kind('foundation'),
+      layout: { ...SYMBOL, 'icon-image': ['get', 'icon'], 'icon-rotate': ['get', 'rotate'] }, paint: { 'icon-opacity': opacity } },
     { id: `${prefix}-stems`, type: 'line', source, filter: kind('stem'), paint: { 'line-color': pal.track, 'line-width': 1, 'line-opacity': 0.6 * opacity } },
+    { id: `${prefix}-ties`, type: 'line', source, filter: kind('tie'), layout: { 'line-cap': 'round' },
+      paint: { 'line-color': bridgeColor(pal), 'line-width': 2, 'line-opacity': opacity } },
     { id: `${prefix}-feet`, type: 'circle', source, filter: kind('foot'), paint: { 'circle-color': pal.track, 'circle-radius': 1.6, 'circle-opacity': opacity } },
     { id: `${prefix}-stubs`, type: 'symbol', source, filter: kind('stub'),
       layout: { ...SYMBOL, 'icon-image': 'ra-stub', 'icon-rotate': ['get', 'rotate'], 'icon-offset': offsetBy('s') }, paint: { 'icon-opacity': opacity } },
@@ -368,10 +419,12 @@ export function addPlanLayers(map, pal, data, nameZoom) {
       paint: { 'line-color': pal.primary, 'line-width': ['case', ['get', 'strong'], 7, 4], 'line-opacity': ['case', ['get', 'strong'], 0.5, 0.18] } },
     { id: 'plan-runs', type: 'line', source: SRC.marked, filter: kind('run'), layout: round, paint: { 'line-color': pal.primary, 'line-width': 6, 'line-opacity': 0.45 } },
     { id: 'plan-stretches', type: 'line', source: SRC.marked, filter: kind('stretch'),
-      paint: { 'line-color': ['case', ['==', ['get', 'tone'], 'warn'], '#d68910', '#1f9e3a'], 'line-width': 7, 'line-opacity': 0.5 } },
+      paint: { 'line-color': ['case', ['!=', ['get', 'color'], ''], ['get', 'color'], ['==', ['get', 'tone'], 'warn'], '#d68910', '#1f9e3a'], 'line-width': 7, 'line-opacity': 0.5 } },
     { id: 'plan-way-arrows', type: 'symbol', source: SRC.marked, filter: ['all', kind('way'), ['get', 'strong']],
       layout: { 'symbol-placement': 'line', 'symbol-spacing': 90, 'icon-image': 'ra-arrow', 'icon-allow-overlap': true, 'icon-ignore-placement': true,
         'icon-rotation-alignment': 'map' } },
+    { id: 'plan-marked-labels', type: 'symbol', source: SRC.marked, filter: kind('label'),
+      layout: { ...SYMBOL, 'icon-image': ['get', 'icon'], 'icon-rotation-alignment': 'viewport', 'icon-offset': [0, -12] } },
     { id: 'plan-switches', type: 'circle', source: SRC.switches,
       paint: { 'circle-radius': ['case', ['get', 'sel'], 5, 3], 'circle-color': ['case', ['get', 'sel'], pal.primary, pal.bg],
         'circle-stroke-color': ['case', ['get', 'sel'], pal.primary, pal.track], 'circle-stroke-width': 1.5 } },
@@ -385,16 +438,14 @@ export function addPlanLayers(map, pal, data, nameZoom) {
       paint: { 'circle-radius': 4, 'circle-color': 'rgba(0,0,0,0)', 'circle-stroke-color': pal.primary, 'circle-stroke-width': 2 } },
   ]
   for (const layer of layers) map.addLayer(layer)
-  map.setLayerZoomRange('plan-marks-labels', nameZoom, 24)
-  map.setLayerZoomRange('plan-place-labels', nameZoom, 24)
+  for (const id of ['plan-marks-labels', 'plan-preview-labels', 'plan-place-labels']) map.setLayerZoomRange(id, nameZoom, 24)
 }
 
 /** The plan's data on its sources, the names' zoom on their layer, the colours on the layers' paint. */
 export function setPlanData(map, pal, data, nameZoom) {
   if (!map.getSource(SRC.tracks)) return
   for (const [k, id] of Object.entries(SRC)) map.getSource(id).setData(data[k])
-  map.setLayerZoomRange('plan-marks-labels', nameZoom, 24)
-  map.setLayerZoomRange('plan-place-labels', nameZoom, 24)
+  for (const id of ['plan-marks-labels', 'plan-preview-labels', 'plan-place-labels']) map.setLayerZoomRange(id, nameZoom, 24)
   map.setPaintProperty('plan-tracks', 'line-color', pal.track)
   map.setPaintProperty('plan-runs', 'line-color', pal.primary)
   map.setPaintProperty('plan-ways', 'line-color', pal.primary)
@@ -404,6 +455,8 @@ export function setPlanData(map, pal, data, nameZoom) {
   map.setPaintProperty('plan-switches', 'circle-color', ['case', ['get', 'sel'], pal.primary, pal.bg])
   map.setPaintProperty('plan-switches', 'circle-stroke-color', ['case', ['get', 'sel'], pal.primary, pal.track])
   for (const p of ['plan-marks', 'plan-preview']) {
+    map.setPaintProperty(`${p}-bridges`, 'line-color', bridgeColor(pal))
+    map.setPaintProperty(`${p}-ties`, 'line-color', bridgeColor(pal))
     map.setPaintProperty(`${p}-stems`, 'line-color', pal.track)
     map.setPaintProperty(`${p}-feet`, 'circle-color', pal.track)
   }

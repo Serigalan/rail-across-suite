@@ -4,6 +4,8 @@ import { createStore } from '../store.js'
 
 /** Largest timetable [bytes of JSON] — some thousand trains fit. */
 const TIMETABLE_LIMIT = 4 * 1024 * 1024
+/** Most timetables added at once — as many as a file of them brings (@rail-across/timetables, exchange.js). */
+const TIMETABLES_AT_ONCE = 200
 /** A departure lies within two days [s from midnight of the first]: a night's trains run past midnight. */
 const DAY_LIMIT = 2 * 86400
 
@@ -61,6 +63,30 @@ export function timetableFault(data) {
 }
 
 /**
+ * A timetable as it is kept — its name, its data as JSON — from what a
+ * request brings ({ name, data }), or an ApiError where it is not one.
+ */
+export function checkedTimetable(given) {
+  const name = String(given?.name ?? '').trim().slice(0, 200)
+  if (!name) throw new ApiError(422, 'name_required')
+  const data = given?.data ?? { trains: [] }
+  const fault = timetableFault(data)
+  if (fault) throw new ApiError(422, fault)
+  const json = JSON.stringify(data)
+  if (json.length > TIMETABLE_LIMIT) throw new ApiError(413, 'too_large')
+  return { name, data: json }
+}
+
+/**
+ * Timetables a request brings to be added to a project at once — a file of
+ * them imported —, each checked, or an ApiError for the first that is not one.
+ */
+export function checkedTimetables(given) {
+  if (!Array.isArray(given) || given.length > TIMETABLES_AT_ONCE) throw new ApiError(422, 'timetable_invalid')
+  return given.map(checkedTimetable)
+}
+
+/**
  * The timetables of a project, for the Fahrplan-Editor (decision 0016): seen
  * and changed by whoever sees the project — a template's changed by the
  * admins alone —, the project's members working on them together. A save
@@ -101,16 +127,7 @@ export default async function timetableRoutes(api) {
     updatedBy: { id: row.updated_by, name: row.updated_by_name }, updatedAt: row.updated_at,
     mayEdit: mayEdit(user, project),
   })
-  const checked = (req) => {
-    const name = String(req.body?.name ?? '').trim().slice(0, 200)
-    if (!name) throw new ApiError(422, 'name_required')
-    const data = req.body?.data ?? { trains: [] }
-    const fault = timetableFault(data)
-    if (fault) throw new ApiError(422, fault)
-    const json = JSON.stringify(data)
-    if (json.length > TIMETABLE_LIMIT) throw new ApiError(413, 'too_large')
-    return { name, data: json }
-  }
+  const checked = (req) => checkedTimetable(req.body)
 
   api.get('/projects/:id/timetables', opts, async (req) => {
     const project = projectOr404(req.params.id, req.user)
@@ -123,6 +140,15 @@ export default async function timetableRoutes(api) {
     const id = randomUUID()
     q.insert.run({ id, project: project.id, ...checked(req), user: req.user.id, at: iso() })
     return reply.code(201).send({ timetable: publicTimetable(q.get.get(id), req.user, project) })
+  })
+
+  // A file of timetables imported: all of them added, or none.
+  api.post('/projects/:id/timetables/import', opts, async (req, reply) => {
+    const project = projectOr404(req.params.id, req.user)
+    if (!mayEdit(req.user, project)) throw new ApiError(403, 'template_admin')
+    const given = checkedTimetables(req.body?.timetables)
+    const ids = api.db.transaction(() => store.addTimetables(project.id, given, req.user.id))()
+    return reply.code(201).send({ timetables: ids.map(id => publicTimetable(q.get.get(id), req.user, project)) })
   })
 
   api.get('/timetables/:id', opts, async (req) => {

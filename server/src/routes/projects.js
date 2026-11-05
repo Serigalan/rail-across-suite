@@ -3,6 +3,7 @@ import { ApiError } from '../errors.js'
 import { axisSurveysChanged, checkRecord, freshErrors, normalizedRecord } from '../checks.js'
 import { mayEditClouds } from '../auth.js'
 import { createStore, publicVariant } from '../store.js'
+import { checkedTimetables } from './timetables.js'
 
 /** Largest image [bytes]. */
 const IMAGE_LIMIT = 5 * 1024 * 1024
@@ -58,22 +59,29 @@ export default async function projectRoutes(api) {
   // A new project, empty or with a record (an import): its first variant
   // "Bestand" at revision 1. An imported record may bring errors along — it
   // is what there is — and they are reported, not refused; what a later
-  // check-in adds to them is.
+  // check-in adds to them is. An import may bring the project's timetables
+  // too (`timetables`, a file of them beside the backup file): all of them
+  // come with the project, or neither does.
   api.post('/projects', opts, async (req, reply) => {
     const title = text(req.body?.title, 200)
     if (!title) throw new ApiError(422, 'title_required')
     const description = text(req.body?.description, 4000) ?? ''
     const template = Boolean(req.body?.template)
     if (template && req.user.role !== 'admin') throw new ApiError(403, 'template_admin')
+    const timetables = checkedTimetables(req.body?.timetables ?? [])
     const given = req.body?.payload
     // The store gives the project its id; until then the door checks the record under a stand-in.
     const { record, errors, warnings } = checkRecord(given ?? { tracks: [], switches: [], platforms: [] }, { id: 'new' })
-    const ids = store.createProject({
-      title, description, payload: record, authorId: req.user.id, errorKeys: errors.map(e => e.key),
-      variantName: text(req.body?.variantName, 100) || (template ? 'Vorlage' : 'Bestand'), template,
-    })
+    const ids = api.db.transaction(() => {
+      const made = store.createProject({
+        title, description, payload: record, authorId: req.user.id, errorKeys: errors.map(e => e.key),
+        variantName: text(req.body?.variantName, 100) || (template ? 'Vorlage' : 'Bestand'), template,
+      })
+      store.addTimetables(made.projectId, timetables, req.user.id)
+      return made
+    })()
     const project = listed(req.user, ids.projectId)
-    return reply.code(201).send({ project, ...ids, errors, warnings })
+    return reply.code(201).send({ project, ...ids, errors, warnings, timetables: timetables.length })
   })
 
   api.patch('/projects/:id', opts, async (req) => {

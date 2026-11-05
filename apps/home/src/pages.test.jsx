@@ -76,6 +76,9 @@ describe('the Fahrplan-Sim', () => {
     expect(html).toContain('>Fahrpläne und Fahrzeiten</a>')
     expect(html).not.toContain('simulation/?project=')
     expect(html).toContain('Projekte öffnen im Fahrplan-Editor — Fahrpläne und Fahrzeiten')
+    // Its timetables go out as a file and come in from one — where one may change them.
+    expect(html).toContain('>Fahrpläne exportieren</button>')
+    expect(html).toContain('>Fahrpläne importieren</button>')
   })
 })
 

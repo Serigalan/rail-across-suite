@@ -4,7 +4,7 @@ import { ModuleIcon } from '../icons'
 import { api } from '../api'
 import { useTexts } from '../i18n'
 import { errorText } from '../useAction'
-import { importedProjects, splitProjects } from '../projects'
+import { importedFiles, splitProjects } from '../projects'
 import { splitDataUrl } from '../projectImages'
 import ProjectCard from './projects/ProjectCard'
 import { useLocalChanges } from '../localChanges'
@@ -42,7 +42,8 @@ function ToolTabs({ current }) {
  * The infrastructure editor: its three tools, a line, and the projects of the
  * suite's server — managed here for every tool, opened in the one chosen
  * above. A project is made here, or imported from a backup file (the only
- * place whole projects come in), exported, renamed, given its editors and
+ * place whole projects come in) — its timetables from a file beside it —,
+ * exported, the two files again, renamed, given its editors and
  * deleted; its variants are branched, renamed and archived here. Working on
  * a variant, looking at it, its history, comparing and merging two are the
  * tool's: they open in it (toolUrl), and the tool sends one back here.
@@ -73,27 +74,31 @@ export default function Infrastructure({ toolId, user, projects, onReload = asyn
 
   // A backup file: every project in it becomes a server project of its own —
   // for an admin, from the templates' button, a template —, its picture
-  // uploaded on the way.
+  // uploaded on the way. A file of timetables chosen with it brings them
+  // along, into each; alone, it goes into a project from the Fahrplan-Sim.
   const handleImport = (template) => async (e) => {
-    const file = e.target.files?.[0]
+    const files = [...(e.target.files ?? [])]
     e.target.value = ''
-    if (!file) return
+    if (!files.length) return
     say(null)
     let incoming
     try {
-      incoming = importedProjects(await file.text(), file.name)
+      incoming = importedFiles(await Promise.all(files.map(async f => ({ name: f.name, text: await f.text() }))))
     } catch (err) {
       setError(errorText(t, err.code))
       return
     }
+    const { projects: made, timetables } = incoming
+    if (!made.length) { setError(t('import_timetables_alone')); return }
     try {
-      for (const p of incoming) {
+      for (const p of made) {
         const record = { ...p.record }
         const picture = splitDataUrl(p.image)
         if (picture) record.imageHash = (await api.uploadImage(picture.mime, picture.data)).hash
-        await api.createProject({ title: p.title, description: p.description, payload: record, ...(template ? { template: true } : {}) })
+        await api.createProject({ title: p.title, description: p.description, payload: record, timetables, ...(template ? { template: true } : {}) })
       }
-      say(fill(template ? 'templates_imported' : 'projects_imported', { n: incoming.length }))
+      const imported = fill(template ? 'templates_imported' : 'projects_imported', { n: made.length })
+      say(timetables.length ? `${imported} ${fill('imported_timetables', { n: timetables.length })}` : imported)
     } catch (err) {
       setError(errorText(t, err.code))
     }
@@ -115,7 +120,7 @@ export default function Infrastructure({ toolId, user, projects, onReload = asyn
       <div className="home-section-head">
         <h2>{t('projects')}</h2>
         <div className="home-section-actions">
-          <input ref={importRef} type="file" accept=".json,application/json" hidden onChange={handleImport(false)} />
+          <input ref={importRef} type="file" accept=".json,application/json" multiple hidden onChange={handleImport(false)} />
           <button type="button" className="ui-btn ui-btn-primary" onClick={() => { say(null); setDialog({ kind: 'new' }) }}>{t('project_new')}</button>
           <button type="button" className="ui-btn" onClick={() => importRef.current?.click()}>{t('project_import')}</button>
         </div>
@@ -146,7 +151,7 @@ export default function Infrastructure({ toolId, user, projects, onReload = asyn
           <h2>{t('templates')}</h2>
           {isAdmin && (
             <div className="home-section-actions">
-              <input ref={templateRef} type="file" accept=".json,application/json" hidden onChange={handleImport(true)} />
+              <input ref={templateRef} type="file" accept=".json,application/json" multiple hidden onChange={handleImport(true)} />
               <button type="button" className="ui-btn ui-btn-primary" onClick={() => templateRef.current?.click()}>{t('template_import')}</button>
             </div>
           )}

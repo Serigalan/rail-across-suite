@@ -1,9 +1,10 @@
 // The projects of the infrastructure as the suite manages them, whichever
 // tool works on them: the list with its templates, each project's tree of
 // variants, who may change what, and the backup files a project goes out
-// and comes in as. All of it is the server's and the core's; nothing here
-// knows a tool.
+// and comes in as — its timetables in a file beside. All of it is the
+// server's, the core's and the timetables'; nothing here knows a tool.
 import { parseProjectsPayload, PayloadError, projectDocument, withImportSystem } from '@rail-across/core/project'
+import { isTimetablesFile, parseTimetablesFile } from '@rail-across/timetables/exchange'
 
 const byTitle = (a, b) => String(a.title).localeCompare(String(b.title), 'de', { sensitivity: 'base' })
 
@@ -89,6 +90,25 @@ export function importedProjects(text, fileName = '') {
       image: image ?? null,
     }
   })
+}
+
+/**
+ * The files chosen to import ([{ name, text }]), each told by what it holds:
+ * the projects of the backup files, and the timetables of the files of
+ * timetables beside them ([{ name, data }]), which come with those projects.
+ * Throws as importedProjects does, or { code: 'timetables_invalid' |
+ * 'timetables_version' } for a file of timetables that is not one to read.
+ */
+export function importedFiles(files) {
+  const projects = []
+  const timetables = []
+  for (const { name, text } of files) {
+    let data = null
+    try { data = JSON.parse(text) } catch { /* not JSON: importedProjects says so */ }
+    if (isTimetablesFile(data)) timetables.push(...parseTimetablesFile(data))
+    else projects.push(...importedProjects(text, name))
+  }
+  return { projects, timetables }
 }
 
 /**

@@ -142,6 +142,16 @@ export function createStore(db, { now = () => Date.now() } = {}) {
     }
   }
 
+  /** Timetables ({ name, data } — the data as JSON, checked) added to a project as `userId`'s; their ids. */
+  const addTimetables = (projectId, timetables, userId) => {
+    const at = iso()
+    return timetables.map(({ name, data }) => {
+      const id = randomUUID()
+      q.insertTimetable.run({ id, project: projectId, name, data, user: userId, at })
+      return id
+    })
+  }
+
   return {
     revisionMeta,
 
@@ -149,12 +159,9 @@ export function createStore(db, { now = () => Date.now() } = {}) {
     variant: (id) => q.variant.get(id),
     /** A project's variants, in the order they were made. */
     variants: (projectId) => q.variants.all(projectId),
+    addTimetables,
     /** The timetables of one project copied to another, as `userId`'s. */
-    copyTimetables(from, to, userId) {
-      const rows = q.timetablesOf.all(from)
-      for (const r of rows) q.insertTimetable.run({ id: randomUUID(), project: to, name: r.name, data: r.data, user: userId, at: iso() })
-      return rows.length
-    },
+    copyTimetables: (from, to, userId) => addTimetables(to, q.timetablesOf.all(from), userId).length,
 
     /** A revision with its document, or null. */
     revision(id) {

@@ -1,5 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { timetablesFile, timetablesFileName } from '@rail-across/timetables/exchange'
 import { api, blobUrl } from '../../api'
+import { download } from '../../download'
 import { FormDialog } from '../../Dialog'
 import { useAction } from '../../useAction'
 import { useTexts } from '../../i18n'
@@ -8,7 +10,7 @@ import { PROJECT_IMAGES, projectImagePicture, splitDataUrl } from '../../project
 import ImagePicker from './ImagePicker'
 
 // The dialogs of the projects: a new one, its title and description, a
-// backup file of a variant, a variant branched off, renamed or archived, a
+// backup file of a variant and the project's timetables beside it, a variant branched off, renamed or archived, a
 // project deleted — and the two variants a tool compares or merges. Each
 // calls `onDone` once the server has it, so the list is read again.
 
@@ -94,28 +96,40 @@ async function imageAsDataUrl(hash) {
   })
 }
 
-function download(doc, fileName) {
-  const url = URL.createObjectURL(new Blob([JSON.stringify(doc, null, 2)], { type: 'application/json' }))
-  const a = Object.assign(document.createElement('a'), { href: url, download: fileName })
-  a.click()
-  setTimeout(() => URL.revokeObjectURL(url), 0)
-}
-
-/** The head of one variant as a self-contained backup file, its picture embedded. */
+/**
+ * The head of one variant as a self-contained backup file, its picture
+ * embedded — and, where the project has timetables, those of the Fahrplan-Sim
+ * in a file beside it, unless left out.
+ */
 export function ExportDialog({ project, onCancel, onDone }) {
-  const { t } = useTexts()
+  const { t, fill } = useTexts()
   const variants = liveVariants(project)
   const [variantId, setVariantId] = useState(variants[0]?.id ?? '')
+  const [timetables, setTimetables] = useState([])
+  const [withTimetables, setWithTimetables] = useState(true)
   const { busy, error, run } = useAction()
+  useEffect(() => {
+    let live = true
+    // Without them the backup file goes out all the same.
+    api.timetables(project.id).then(r => { if (live) setTimetables(r.timetables ?? []) }, () => {})
+    return () => { live = false }
+  }, [project.id])
   const submit = () => run(async () => {
     const { payload, variant } = await api.head(variantId)
     const image = payload.imageHash ? await imageAsDataUrl(payload.imageHash) : null
     download(exportedDocument(payload, { title: project.title, image }), exportFileName(project, variant))
+    if (withTimetables && timetables.length) download(timetablesFile(timetables, { project: project.title }), timetablesFileName(project.title))
     onDone()
   })
   return (
     <FormDialog title={t('project_export_title')} submitLabel={t('project_export')} busy={busy} error={error} onCancel={onCancel} onSubmit={submit}>
       <VariantSelect label={t('variant')} variants={variants} value={variantId} onChange={setVariantId} />
+      {timetables.length > 0 && (
+        <label className="ui-check">
+          <input type="checkbox" checked={withTimetables} onChange={e => setWithTimetables(e.target.checked)} />
+          {fill('project_export_timetables', { n: timetables.length })}
+        </label>
+      )}
     </FormDialog>
   )
 }

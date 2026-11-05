@@ -56,8 +56,15 @@ export function locationFrom(hit, { directed = true, direction, offset = 0 } = {
   return loc
 }
 
-/** The mountings that stand on a foundation beside the track and carry the screen out over it: a gantry, a bracket. */
+/**
+ * The mountings that stand on a foundation beside the track and carry the
+ * screen out: a bracket — its mast on one side, the screen on the other —
+ * and a gantry, a mast on either side and the screen hung between them.
+ */
 export const ON_FOUNDATION = new Set(['gantry', 'bracket'])
+
+/** Where a bracket's screen stands from the axis until it is told [m]. */
+export const BRACKET_OFFSET = 2
 
 /** How far from its track a foundation is set until it is told [m]. */
 export const FOUNDATION_OFFSET = 3.5
@@ -66,6 +73,25 @@ const OTHER_SIDE = { left: 'right', right: 'left' }
 
 /** A side seen in the direction a location acts, as seen in the stationing's — and back, the same turn. */
 export const sideAlong = (loc, side) => (side && loc?.direction === 'down' ? OTHER_SIDE[side] : side)
+
+/** The other side of the track. */
+export const otherSide = (side) => OTHER_SIDE[side] ?? null
+
+/** A bracket's screen: on the other side of the track than its mast, at its offset. */
+export const bracketScreen = (foundation, offset = BRACKET_OFFSET) => ({ side: offset ? otherSide(foundation.side ?? 'right') : null, offset })
+
+/**
+ * Where a gantry's second mast stands: across from its foundation, as far
+ * from the screen the other way — the gantry spans the track symmetrically
+ * about its signal. As an offset from the axis, signed: right of the
+ * stationing positive.
+ */
+export function gantryFarOffset(signal) {
+  const signed = (side, offset) => (side === 'left' ? -1 : side === 'right' ? 1 : 0) * (offset ?? 0)
+  const screen = signed(signal.at?.side, signal.at?.offset)
+  const near = signed(sideAlong(signal.at, signal.foundation?.side ?? 'right'), signal.foundation?.offset)
+  return 2 * screen - near
+}
 
 /**
  * A signal's location on a gantry or bracket from where the plan was hit: it
@@ -124,6 +150,13 @@ export function planePoint(net, loc) {
 export const foundationPoint = (net, signal) => (signal?.foundation && signal.at?.anchor === 'station'
   ? planePoint(net, { ...signal.at, side: sideAlong(signal.at, signal.foundation.side), offset: signal.foundation.offset })
   : null)
+
+/** Where a gantry's second mast stands in the plane (gantryFarOffset); null for a signal on no gantry. */
+export function farMastPoint(net, signal) {
+  if (signal?.mounting !== 'gantry' || !signal.foundation || signal.at?.anchor !== 'station') return null
+  const far = gantryFarOffset(signal)
+  return planePoint(net, { ...signal.at, side: far < 0 ? 'left' : 'right', offset: Math.abs(far) })
+}
 
 /** The aspect's name as people write it, with its symbol: "Zs 3 (6)". */
 export const aspectText = (a) => `${aspectOf(a.aspect)?.name ?? a.aspect.replace(/_/g, ' ')}${a.symbol ? ` (${a.symbol})` : ''}`

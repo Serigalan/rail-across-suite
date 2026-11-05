@@ -7,11 +7,12 @@ import {
   withLogical, withSignallingSpeed,
 } from './domain.js'
 import { measuredOverlap, withMeasuredOverlap } from './overlaps.js'
-import { OFFSET, foundationPoint, kmName, kmNameAt, locationFrom, mountedFrom, planePoint, signalOptions, trackName } from './places.js'
+import { OFFSET, bracketScreen, farMastPoint, foundationPoint, gantryFarOffset, kmName, kmNameAt, locationFrom, mountedFrom, planePoint, signalOptions, trackName } from './places.js'
 import { magnetFrequency, magnetName, magnetsDue, signalMagnet, withSignal } from './magnets.js'
 import { LAYOUT, detectionLayout, wantedPoints } from './detectionLayout.js'
 import { nextSignals, routeSections, routeStretches, runStretches, wayPieces } from './routeSearch.js'
 import { trackSectionExtents } from '@rail-across/core/signalling'
+import { mountingOptions } from '../labels.js'
 import { changedIds, redo, startHistory, step, stepOf, stepsOf, travel, undo } from './history.js'
 
 const EPSG = 25832
@@ -53,6 +54,19 @@ describe('setting objects beside the track', () => {
     expect(locationFrom({ trackId: 't1', station: 50, side: 'left' }, { offset: OFFSET.signals }).direction).toBe('down')
     expect(locationFrom({ trackId: 't1', station: 50, side: 'left' }, { direction: 'up' }).direction).toBe('up')
     expect(locationFrom({ trackId: 't1', station: 50, side: 'left' }, { directed: false })).not.toHaveProperty('direction')
+  })
+
+  it('sets a bracket\'s signal across from its mast, and a gantry\'s second mast across from the first', () => {
+    expect(bracketScreen({ side: 'right', offset: 3.5 })).toEqual({ side: 'left', offset: 2 })
+    expect(bracketScreen({ side: 'left', offset: 3.5 }, 0)).toEqual({ side: null, offset: 0 })
+    // Over the track, the foundation 3.5 m right: the other mast 3.5 m left.
+    expect(gantryFarOffset({ at: on('t1', 50), foundation: { side: 'right', offset: 3.5 } })).toBe(-3.5)
+    // Over the track on its left 4.5 m, the foundation right 3.5 m, seen against the stationing: as far beyond the screen.
+    expect(gantryFarOffset({ at: { ...on('t1', 50, 'down'), side: 'right', offset: 4.5 }, foundation: { side: 'right', offset: 3.5 } })).toBe(12.5)
+    expect(farMastPoint(net, { mounting: 'gantry', at: on('t1', 50), foundation: { side: 'right', offset: 3.5 } }).northing).toBeCloseTo(5700003.5, 6)
+    expect(farMastPoint(net, { mounting: 'bracket', at: on('t1', 50), foundation: { side: 'right', offset: 3.5 } })).toBeNull()
+    expect(mountingOptions('de').map(o => o.value)).toEqual(['mast', 'bracket', 'gantry'])
+    expect(mountingOptions('de', 'special').map(o => o.value)).toEqual(['mast', 'bracket', 'gantry', 'special'])
   })
 
   it('gives the point in the plane its location stands at, square to the track', () => {

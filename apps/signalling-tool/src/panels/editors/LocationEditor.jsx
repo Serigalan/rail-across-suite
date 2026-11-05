@@ -1,11 +1,11 @@
 import { Button, Checkbox, NumberField, Option, Options, Section, SelectField, TextField } from '@rail-across/ui'
 import { SIGNAL_CATALOGUE } from '@rail-across/core/signalling'
 import { labelOf, logicalId, newLogical } from '../../model/domain.js'
-import { FUNCTION, MOUNTING, VIRTUAL_FUNCTION, logicalSignalWord, optionsOf, word } from '../../labels.js'
+import { FUNCTION, VIRTUAL_FUNCTION, logicalSignalWord, mountingOptions, optionsOf, word } from '../../labels.js'
 import { SignalIcon } from '../../icons.jsx'
 import { EditorHead, LocationFields, ObjectFindings, PlaneLine } from '../common.jsx'
 import FramesEditor from '../frames.jsx'
-import { FOUNDATION_OFFSET, ON_FOUNDATION, foundationPoint, sideAlong, speedWhereText, trackName } from '../../model/places.js'
+import { BRACKET_OFFSET, FOUNDATION_OFFSET, ON_FOUNDATION, bracketScreen, farMastPoint, foundationPoint, gantryFarOffset, sideAlong, speedWhereText, trackName } from '../../model/places.js'
 import { isSpeedSignal, speedSignalElementSpeed, speedSignalSpeed, speedSymbol, withSpeedSignalSpeed } from '../../model/routeSpeeds.js'
 import { stationName } from '../../model/stations.js'
 
@@ -47,11 +47,11 @@ export default function LocationEditor({ signal, domain, net, core, findings, on
               options={optionsOf(FUNCTION, language)} onChange={(v) => set({ function: v ?? undefined })} />
           )}
           <SelectField compact label={t('mounting')} value={signal.mounting ?? null} empty={t('none')} disabled={readOnly}
-            options={optionsOf(MOUNTING, language)} onChange={(v) => set({
-              mounting: v ?? undefined,
+            options={mountingOptions(language, signal.mounting)} onChange={(v) => {
               // A gantry or a bracket stands on a foundation, on the side the signal stood; nothing else has one.
-              foundation: ON_FOUNDATION.has(v) ? signal.foundation ?? { side: sideAlong(signal.at, signal.at?.side) ?? 'right', offset: FOUNDATION_OFFSET } : undefined,
-            })} />
+              const foundation = ON_FOUNDATION.has(v) ? signal.foundation ?? { side: sideAlong(signal.at, signal.at?.side) ?? 'right', offset: FOUNDATION_OFFSET } : undefined
+              set({ mounting: v ?? undefined, foundation, ...(v === 'bracket' ? { at: bracketAt(signal.at, foundation) } : {}) })
+            }} />
           <SelectField compact wide label={t('station_of_signal')} value={signal.operationalPointId ?? null} empty={t('open_line')} disabled={readOnly}
             options={(core?.collections.operationalPoints ?? []).map(p => ({ value: p.id, label: stationName(p) }))
               .sort((a, b) => a.label.localeCompare(b.label, 'de', { numeric: true }))}
@@ -95,11 +95,19 @@ export default function LocationEditor({ signal, domain, net, core, findings, on
           <div className="ui-fields">
             <SelectField compact label={t('side_along')} value={signal.foundation.side ?? 'right'} disabled={readOnly}
               options={[{ value: 'left', label: t('left') }, { value: 'right', label: t('right') }]}
-              onChange={(v) => set({ foundation: { ...signal.foundation, side: v ?? 'right' } })} />
+              onChange={(v) => {
+                const foundation = { ...signal.foundation, side: v ?? 'right' }
+                // A bracket's signal goes with it to the other side.
+                set({ foundation, ...(signal.mounting === 'bracket' ? { at: bracketAt(signal.at, foundation) } : {}) })
+              }} />
             <NumberField compact label={t('offset')} value={signal.foundation.offset} min={0} disabled={readOnly}
               onChange={(v) => set({ foundation: { ...signal.foundation, offset: v ?? FOUNDATION_OFFSET } })} />
             <PlaneLine point={foundationPoint(net, signal)} t={t} />
           </div>
+          {signal.mounting === 'gantry' && <>
+            <p className="ui-muted">{t('far_mast', farText(signal, t))}</p>
+            <PlaneLine point={farMastPoint(net, signal)} t={t} />
+          </>}
         </Section>
       )}
 
@@ -121,6 +129,19 @@ export default function LocationEditor({ signal, domain, net, core, findings, on
       </>}
     </div>
   )
+}
+
+/** A bracket's signal: on the other side of the track than its foundation, at the offset it has there, else the bracket's. */
+function bracketAt(at, foundation) {
+  const screen = bracketScreen(foundation, at?.offset || BRACKET_OFFSET)
+  return { ...at, side: sideAlong(at, screen.side), offset: screen.offset }
+}
+
+/** Where a gantry's second mast stands, for people: its offset and side seen the way the signal acts. */
+function farText(signal, t) {
+  const far = gantryFarOffset(signal)
+  const side = sideAlong(signal.at, far < 0 ? 'left' : 'right')
+  return { offset: Math.round(Math.abs(far) * 100) / 100, side: t(side === 'left' ? 'left_of' : 'right_of') }
 }
 
 /** What an Lf 7 shows, and what the elements from it to the next main signal or Lf 7 allow. */

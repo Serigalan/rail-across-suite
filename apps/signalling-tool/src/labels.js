@@ -31,6 +31,13 @@ export const MOUNTING = {
   special: L('Sonderkonstruktion', 'Special'), other: L('andere', 'other'),
 }
 
+/** The mountings a signal is set on: a plain mast, a bracket, a gantry. */
+const MOUNTINGS_SET = ['mast', 'bracket', 'gantry']
+
+/** The mountings to choose from: those a signal is set on, and the one it has where that is another (read in). */
+export const mountingOptions = (language, current) => optionsOf(MOUNTING, language)
+  .filter(o => MOUNTINGS_SET.includes(o.value) || o.value === current)
+
 export const POINT_KIND = {
   axleCounter: L('Achszählpunkt', 'Axle counter'), insulatedJointOneRail: L('Isolierstoß einschienig', 'Insulated joint, one rail'),
   insulatedJointTwoRail: L('Isolierstoß zweischienig', 'Insulated joint, two rails'), electricalJoint: L('Elektrischer Trennstoß', 'Electrical joint'),

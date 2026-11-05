@@ -8,6 +8,17 @@ export const trackName = (net, id) => {
   return tr ? tr.name || trackLabel(tr) : id?.slice(0, 8) ?? '—'
 }
 
+/** A turnout as people name it: W3, else its name or form. */
+export function switchName(net, id) {
+  const sw = net.switches.find(x => x.switchId === id)
+  return Number.isFinite(sw?.number) ? `W${sw.number}` : sw?.name ?? sw?.label ?? id?.slice(0, 8) ?? '—'
+}
+
+/** What sets a speed the elements give (routeSpeeds' `where`): "W3", "koennern.1 100–150 m". */
+export const speedWhereText = (net, where) => (where?.kind === 'switch'
+  ? switchName(net, where.switchId)
+  : where ? `${trackName(net, where.trackId)} ${Math.round(where.from)}–${Math.round(where.to)} m` : '')
+
 /**
  * Signals to choose from in a list: each by its designation and the track it
  * stands at (21-B · koennern.1), as names repeat from track to track; sorted.

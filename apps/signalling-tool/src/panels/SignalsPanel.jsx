@@ -1,13 +1,14 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Button, Checkbox, NumberField, Option, Options, OptionsDivider, OptionsHeading, Section, SelectField, TextField } from '@rail-across/ui'
 import { Panel } from './draft.jsx'
 import { SIGNAL_CATALOGUE, titleIn } from '@rail-across/core/signalling'
 import { labelOf, logicalId, newId, newLogical, newSignal } from '../model/domain.js'
 import { FUNCTION, MOUNTING, VIRTUAL_FUNCTION, logicalSignalWord, optionsOf, signalSystemOptions, signalTypeOptions } from '../labels.js'
-import { BoardIcon, LocationIcon, SignalIcon, VirtualIcon } from '../icons.jsx'
+import { BoardIcon, LocationIcon, SignalIcon, SpeedIcon, VirtualIcon } from '../icons.jsx'
 import { Created } from './common.jsx'
 import { useFields, useSetting } from './useSetting.js'
 import { FOUNDATION_OFFSET, OFFSET, ON_FOUNDATION, locationFrom, mountedFrom, signalOptions } from '../model/places.js'
+import { SPEED_SIGNAL, speedSignalSpeeds, withSpeedSignalSpeed } from '../model/routeSpeeds.js'
 
 /** The boards that can be set on their own: every aspect a plate may show. */
 const BOARDS = SIGNAL_CATALOGUE.begriffe.filter(b => !b.nur_dv && b.rahmen?.includes('plate'))
@@ -17,7 +18,8 @@ const BOARDS = SIGNAL_CATALOGUE.begriffe.filter(b => !b.nur_dv && b.rahmen?.incl
  * kind of thing — a signal mast (the physical signal, bare: its logical
  * signals come after), a board of no system on its own post, a logical
  * signal (on a new mast set on the plan, with the mast's own fields, or
- * added to a mast there is), a virtual signal. Each page takes what the
+ * added to a mast there is), a speed signal Lf 7 showing what the elements
+ * ahead of it allow, a virtual signal. Each page takes what the
  * thing is; while it is open the plan sets it — the mouse snaps to a track,
  * the signal is drawn there as the fields say, and a click sets it as a
  * preview, which the page's fields go on changing and a further click moves,
@@ -40,6 +42,7 @@ export default function SignalsPanel({ domain, net, ops, select, mode, setMode, 
 
   if (page === 'mast') return <Panel title={t('create_mast')} intro={t('create_mast_intro')} back={back}><MastPage {...props} /></Panel>
   if (page === 'board') return <Panel title={t('create_board')} intro={t('create_board_intro')} back={back}><BoardPage {...props} /></Panel>
+  if (page === 'speed') return <Panel title={t('create_speed_signal')} intro={t('create_speed_signal_intro')} back={back}><SpeedSignalPage {...props} /></Panel>
   if (page === 'virtual') return <Panel title={t('create_virtual')} intro={t('create_virtual_intro')} back={back}><VirtualPage {...props} /></Panel>
   if (page === 'logical') {
     return (
@@ -58,6 +61,7 @@ export default function SignalsPanel({ domain, net, ops, select, mode, setMode, 
         <OptionsHeading>{t('signals_physical')}</OptionsHeading>
         <Option icon={<LocationIcon />} onClick={() => go('mast')}>{t('create_mast')}</Option>
         <Option icon={<BoardIcon />} onClick={() => go('board')}>{t('create_board')}</Option>
+        <Option icon={<SpeedIcon />} onClick={() => go('speed')}>{t('create_speed_signal')}</Option>
       </Options>
       <OptionsDivider />
       <Options>
@@ -159,6 +163,36 @@ function BoardPage({ offer, remake, noNet, created, t, language }) {
       <TextField compact wide label={t('name')} value={f.name} onChange={(name) => set({ name })} />
     </div>
     <p className="ui-muted">{t('create_board_hint')}</p>
+    <NoNet noNet={noNet} t={t} />
+    {created}
+  </>
+}
+
+/**
+ * A speed signal Lf 7 on its own post: it shows, in tens, the lowest speed
+ * the elements allow from where it is set to the next main signal or Lf 7
+ * ahead — as it is drawn under the mouse already —, or a speed given.
+ */
+function SpeedSignalPage({ domain, net, offer, remake, noNet, created, t }) {
+  const signals = domain.collections.signals
+  // The mouse asks for it as it moves.
+  const elementSpeedOf = useMemo(() => speedSignalSpeeds(net, signals), [net, signals])
+  const makeOf = ({ auto, speed, name }) => (hit, id) => {
+    const s = {
+      id: id ?? newId(), name: name || undefined, kind: 'real', function: 'standaloneIndicator', mounting: 'mast',
+      at: locationFrom(hit, { offset: OFFSET.signals }), frames: [{ kind: 'plate', aspects: [{ aspect: SPEED_SIGNAL }] }],
+    }
+    return withSpeedSignalSpeed(s, auto ? elementSpeedOf(s) : speed)
+  }
+  const [f, set] = useFields({ auto: true, speed: null, name: '' }, remake, makeOf)
+  offer(makeOf(f))
+  return <>
+    <div className="ui-fields">
+      <div className="ui-check-cell ui-wide"><Checkbox label={t('speed_from_elements')} checked={f.auto} onChange={(auto) => set({ auto })} /></div>
+      {!f.auto && <NumberField compact label={t('route_speed_kmh')} value={f.speed} min={10} max={160} step={10} onChange={(speed) => set({ speed })} />}
+      <TextField compact wide label={t('name')} value={f.name} onChange={(name) => set({ name })} />
+    </div>
+    <p className="ui-muted">{t('create_speed_signal_hint')}</p>
     <NoNet noNet={noNet} t={t} />
     {created}
   </>

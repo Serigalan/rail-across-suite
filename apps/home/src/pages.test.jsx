@@ -75,7 +75,7 @@ describe('the Fahrplan-Sim', () => {
     expect(html).toContain('href="timetable/?project=p1&amp;variant=v1"')
     expect(html).toContain('>Fahrpläne und Fahrzeiten</a>')
     expect(html).not.toContain('simulation/?project=')
-    expect(html).toContain('beginnt und endet in einem Bahnhof')
+    expect(html).toContain('Projekte öffnen im Fahrplan-Editor — Fahrpläne und Fahrzeiten')
   })
 })
 

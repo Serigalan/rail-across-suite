@@ -17,16 +17,18 @@ const DEEPEST = 80
 const away = (direction) => (direction === 'down' ? 'BEGIN' : 'END')
 
 /** Whether a signal acts the way a run goes on its track. */
-const actsAlong = (s, direction) => s.bothDirections || (s.at.direction ?? 'up') === direction
+export const actsAlong = (s, direction) => s.bothDirections || (s.at.direction ?? 'up') === direction
 
 /**
  * The next main signals ahead of `start`, the way it acts: [{ target,
  * trackIds, length }], nearest first — one for every way that reaches one.
+ * `isTarget` says which signals end a way, other than main signals; with
+ * `ends`, a way that runs to where the net ends is one too, its target null.
  */
-export function nextSignals(net, signals, start) {
+export function nextSignals(net, signals, start, { isTarget = isMainSignal, ends = false } = {}) {
   if (start?.at?.anchor !== 'station') return []
   const lengths = new Map(net.tracks.map(t => [t.id, trackLength(t)]))
-  const targets = signals.filter(s => s.id !== start.id && isMainSignal(s) && s.at?.anchor === 'station')
+  const targets = signals.filter(s => s.id !== start.id && isTarget(s) && s.at?.anchor === 'station')
   const out = []
   const walk = (trackId, direction, from, trackIds, run) => {
     if (run > REACH || trackIds.length > DEEPEST) return
@@ -40,7 +42,9 @@ export function nextSignals(net, signals, start) {
       return
     }
     const room = direction === 'up' ? len - from : from
-    for (const next of tracksOnFrom(trackId, away(direction), net.tracks, net.switches)) {
+    const onward = tracksOnFrom(trackId, away(direction), net.tracks, net.switches)
+    if (!onward.length && ends) out.push({ target: null, trackIds, length: run + room })
+    for (const next of onward) {
       if (trackIds.includes(next.trackId)) continue
       const dir = next.endpoint === 'BEGIN' ? 'up' : 'down'
       walk(next.trackId, dir, dir === 'up' ? 0 : lengths.get(next.trackId) ?? 0, [...trackIds, next.trackId], run + room)
@@ -49,7 +53,7 @@ export function nextSignals(net, signals, start) {
   walk(start.at.trackId, start.at.direction ?? 'up', start.at.station, [start.at.trackId], 0)
   const seen = new Set()
   return out.sort((a, b) => a.length - b.length).filter(r => {
-    const key = `${r.target.id}|${r.trackIds.join()}`
+    const key = `${r.target?.id}|${r.trackIds.join()}`
     if (seen.has(key)) return false
     seen.add(key)
     return true

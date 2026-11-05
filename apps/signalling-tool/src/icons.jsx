@@ -26,6 +26,9 @@ export const SwitchIcon = () => <Svg><path d="M3 16h18" /><path d="M8 16c4 0 7-2
 export const RouteIcon = () => <Svg><path d="M4 18c5 0 5-12 11-12h5" /><path d="M17 3l3 3-3 3" /><circle cx="4" cy="18" r="2" /></Svg>
 /** A balise or track magnet between the rails, sending upwards. */
 export const BaliseIcon = () => <Svg><path d="M3 17h18" /><rect x="8" y="11" width="8" height="4" rx="1" /><path d="M10 8l2-2 2 2M10 5l2-2 2 2" /></Svg>
+/** A speed signal on its post: a plate with a figure. */
+export const SpeedIcon = () => <Svg><rect x="6" y="2" width="12" height="11" rx="1" /><path d="M9.5 5.5h5l-3 5" /><path d="M12 13v9M8 22h8" /></Svg>
+
 /** A board on its post: a plate with a mark. */
 export const BoardIcon = () => <Svg><rect x="6" y="3" width="12" height="9" rx="1" /><path d="M9 7.5h6" /><path d="M12 12v10M8 22h8" /></Svg>
 /** A virtual signal: a place without a mast, dashed. */

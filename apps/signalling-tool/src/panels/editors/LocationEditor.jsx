@@ -1,11 +1,12 @@
-import { Checkbox, NumberField, Option, Options, Section, SelectField, TextField } from '@rail-across/ui'
+import { Button, Checkbox, NumberField, Option, Options, Section, SelectField, TextField } from '@rail-across/ui'
 import { SIGNAL_CATALOGUE } from '@rail-across/core/signalling'
 import { labelOf, logicalId, newLogical } from '../../model/domain.js'
 import { FUNCTION, MOUNTING, VIRTUAL_FUNCTION, logicalSignalWord, optionsOf, word } from '../../labels.js'
 import { SignalIcon } from '../../icons.jsx'
 import { EditorHead, LocationFields, ObjectFindings, PlaneLine } from '../common.jsx'
 import FramesEditor from '../frames.jsx'
-import { FOUNDATION_OFFSET, ON_FOUNDATION, foundationPoint, sideAlong, trackName } from '../../model/places.js'
+import { FOUNDATION_OFFSET, ON_FOUNDATION, foundationPoint, sideAlong, speedWhereText, trackName } from '../../model/places.js'
+import { isSpeedSignal, speedSignalElementSpeed, speedSignalSpeed, speedSymbol, withSpeedSignalSpeed } from '../../model/routeSpeeds.js'
 import { stationName } from '../../model/stations.js'
 
 /**
@@ -14,8 +15,9 @@ import { stationName } from '../../model/stations.js'
  * boards it carries of no system, and its logical signals, each opened in an
  * editor of its own; a virtual signal has its function instead. On a gantry
  * or a bracket its location is its screen's, and its foundation has its own.
+ * A speed signal Lf 7 says what the elements ahead of it allow.
  */
-export default function LocationEditor({ signal, net, core, findings, onChange, onDelete, onPlace, select, readOnly, t, language }) {
+export default function LocationEditor({ signal, domain, net, core, findings, onChange, onDelete, onPlace, select, readOnly, t, language }) {
   const set = (patch) => onChange({ ...signal, ...patch })
   const logical = signal.logicalSignals ?? []
   const free = Object.keys(SIGNAL_CATALOGUE.systeme).filter(sys => !logical.some(l => l.system === sys))
@@ -57,6 +59,8 @@ export default function LocationEditor({ signal, net, core, findings, onChange, 
           <div className="ui-check-cell"><Checkbox label={t('both_directions')} checked={signal.bothDirections} disabled={readOnly} onChange={(v) => set({ bothDirections: v || undefined })} /></div>
         </>}
       </div>
+
+      {isSpeedSignal(signal) && <SpeedSignalSection signal={signal} domain={domain} net={net} set={onChange} readOnly={readOnly} t={t} />}
 
       {signal.kind === 'real' && (
         <Section title={t('logical_signals')}>
@@ -116,5 +120,25 @@ export default function LocationEditor({ signal, net, core, findings, onChange, 
           onChange={(frames) => set({ frames })} />
       </>}
     </div>
+  )
+}
+
+/** What an Lf 7 shows, and what the elements from it to the next main signal or Lf 7 allow. */
+function SpeedSignalSection({ signal, domain, net, set, readOnly, t }) {
+  const shown = speedSignalSpeed(signal)
+  const derived = speedSignalElementSpeed(net, domain.collections.signals, signal)
+  const fits = derived && speedSymbol(derived.speed) === String((shown ?? 0) / 10)
+  return (
+    <Section title={t('speed_signal_section')}>
+      <p>{t('speed_signal_shows', { speed: shown != null ? `${shown} km/h` : '—' })}</p>
+      {derived && (
+        <div className="ui-row">
+          <span className="ui-grow ui-muted">{t('speed_signal_elements', { speed: derived.speed, where: speedWhereText(net, derived.where) })}</span>
+          {!readOnly && !fits && (
+            <Button size="small" onClick={() => set(withSpeedSignalSpeed(signal, derived.speed))}>{t('take_speed', { speed: Number(speedSymbol(derived.speed)) * 10 })}</Button>
+          )}
+        </div>
+      )}
+    </Section>
   )
 }

@@ -4,7 +4,7 @@ import { netDrawing, placeOf, locate, stretchLine } from './net.js'
 import { findRun, runAhead, switchesOnRun } from './runs.js'
 import {
   added, allLogical, baliseSettings, cascadeOf, deleted, domainOf, emptyDomain, findLogical, logicalId, newBalise, newLogical, newSignal, withKind,
-  withLogical, withSignallingSpeed, withSwitchSpeeds,
+  withLogical, withSignallingSpeed,
 } from './domain.js'
 import { measuredOverlap, withMeasuredOverlap } from './overlaps.js'
 import { OFFSET, foundationPoint, kmName, kmNameAt, locationFrom, mountedFrom, planePoint, signalOptions, trackName } from './places.js'
@@ -109,33 +109,6 @@ describe('runs over the net', () => {
   it('runs an overlap ahead of its signal, straight on at a switch', () => {
     expect(runAhead(net, on('t1', 150), 100)).toEqual({ trackIds: ['t1', 't2'], end: { trackId: 't2', station: 50 } })
     expect(runAhead(net, on('t1', 150, 'down'), 100)).toEqual({ trackIds: ['t1'], end: { trackId: 't1', station: 50 } })
-  })
-})
-
-describe('the speed of a route over a turnout\'s branch', () => {
-  const switches = [{ ...net.switches[0], speed: 60 }]
-  const route = (id, trackIds, kind = 'train') => ({ id, kind, startSignalId: 'a', targetSignalId: 'b', path: { trackIds } })
-  const domain = (speeds) => ({
-    ...emptyDomain(),
-    collections: {
-      ...emptyDomain().collections,
-      signals: [{ id: 'a', kind: 'real', at: on('t1', 20), logicalSignals: [{ system: 'ks', type: 'multiSection', signallingSpeeds: speeds }] },
-        { id: 'b', kind: 'real', at: on('t3', 150) }],
-      routes: [route('branch', ['t1', 't3']), route('straight', ['t1', 't2']), route('shunt', ['t1', 't3'], 'shunting')],
-    },
-  })
-  const signalled = (d) => d.collections.signals[0].logicalSignals[0].signallingSpeeds
-
-  it('is the turnout\'s where the route signals none or a higher one', () => {
-    const { domain: d, changed } = withSwitchSpeeds(domain(undefined), switches)
-    expect(changed).toEqual(['branch'])
-    expect(signalled(d)).toEqual([{ routeId: 'branch', speed: 60 }])
-    expect(signalled(withSwitchSpeeds(domain([{ routeId: 'branch', speed: 100 }]), switches).domain)).toEqual([{ routeId: 'branch', speed: 60 }])
-  })
-
-  it('keeps a lower one, and leaves the routes it is not asked for', () => {
-    expect(withSwitchSpeeds(domain([{ routeId: 'branch', speed: 40 }]), switches).changed).toEqual([])
-    expect(withSwitchSpeeds(domain(undefined), switches, ['straight']).changed).toEqual([])
   })
 })
 

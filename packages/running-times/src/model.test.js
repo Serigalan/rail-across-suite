@@ -121,6 +121,14 @@ describe('what the physics needs of it', () => {
     expect(speeds[0].end).toBeCloseTo(1900, 6)
     expect(speeds[0].speed * 3.6).toBeCloseTo(60, 6)
   })
+
+  it('holds a route\'s speed up to an Lf 7 on it, and what the Lf 7 shows from there', () => {
+    const lf7 = (id, at, symbol) => ({ id, kind: 'real', at: { anchor: 'station', ...at }, frames: [{ kind: 'plate', aspects: [{ aspect: 'Lf_7', symbol }] }] })
+    const c = record.signalling.collections
+    const withBoards = { ...record, signalling: { collections: { ...c, signals: [...c.signals,
+      lf7('V', { trackId: 'T2', station: 300, direction: 'up' }, '9'), lf7('back', { trackId: 'T2', station: 600, direction: 'down' }, '3')] } } }
+    expect(signalledSpeeds(withBoards, path).map(s => [Math.round(s.begin), Math.round(s.end), Math.round(s.speed * 3.6)])).toEqual([[200, 1300, 60], [1300, 1900, 90]])
+  })
 })
 
 describe('a train through its stops', () => {

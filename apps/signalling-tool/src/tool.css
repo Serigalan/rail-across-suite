@@ -87,6 +87,9 @@ html, body { margin: 0; background: var(--ui-surface); }
 .tool-found-route { display: flex; flex-direction: column; gap: 2px; padding: 6px 0; border-bottom: 1px solid var(--ui-border); }
 .tool-found-route .ui-field { width: 110px; }
 .tool-found-route p { margin: 0; font-size: var(--ui-fs-s); }
+/* A route's speed sections between the Lf 7 on it: from where, what is shown, what the elements allow. */
+.tool-speed-sections { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; gap: 2px; font-size: var(--ui-fs-s); }
+.tool-speed-sections li { display: flex; gap: 8px; align-items: baseline; }
 /* Cancel and Commit at a panel's foot, what would be committed above them. */
 .tool-commit { display: flex; flex-direction: column; gap: 8px; width: 100%; }
 .tool-commit-what { margin: 0; font-size: var(--ui-fs-m); overflow-wrap: anywhere; }

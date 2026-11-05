@@ -1,5 +1,5 @@
 import { stationRegister } from '@rail-across/core/document'
-import { CATALOGUE_REF, baliseKindOf, branchSpeedOnRun, protectionSystemOf, signalKindOf, signallingSpeedOf } from '@rail-across/core/signalling'
+import { CATALOGUE_REF, baliseKindOf, protectionSystemOf, signalKindOf } from '@rail-across/core/signalling'
 
 /**
  * The signalling domain as the tool edits it: pure functions from one state
@@ -223,25 +223,6 @@ export function withRouteSpeed(domain, route, speed) {
   const setter = start?.logicalSignals?.find(l => l.signallingSpeeds?.some(v => v.routeId === route.id)) ?? start?.logicalSignals?.[0]
   if (!setter) return domain
   return withLogical(domain, logicalId(start.id, setter.system), withSignallingSpeed(setter, route.id, speed))
-}
-
-/**
- * The domain with every train route over the branch of a turnout (of
- * `routeIds`, or all) signalling the speed the turnout allows there where it
- * signals none or a higher one: { domain, changed } — the routes it set.
- */
-export function withSwitchSpeeds(domain, switches, routeIds = null) {
-  let next = domain
-  const changed = []
-  for (const route of domain.collections.routes) {
-    if (route.kind !== 'train' || (routeIds && !routeIds.includes(route.id))) continue
-    const allowed = branchSpeedOnRun(switches, route.path?.trackIds)?.speed
-    const speed = signallingSpeedOf(next, route)
-    if (allowed == null || (speed != null && speed <= allowed)) continue
-    const set = withRouteSpeed(next, route, allowed)
-    if (set !== next) { next = set; changed.push(route.id) }
-  }
-  return { domain: next, changed }
 }
 
 /**

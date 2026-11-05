@@ -3,10 +3,11 @@ import {
   Badge, Button, Checkbox, GroupedList, NumberField, Option, Options, OptionsDivider, OptionsHeading, PlusIcon, Section, SelectField, TextField,
 } from '@rail-across/ui'
 import { Panel } from './draft.jsx'
-import { branchSpeedOnRun, signallingSpeedOf } from '@rail-across/core/signalling'
+import { signallingSpeedOf } from '@rail-across/core/signalling'
 import {
-  added, designationOf as signalDesignation, newId, labelOf, logicalId, withRouteSpeed, withSwitchSpeeds,
+  added, designationOf as signalDesignation, newId, labelOf, logicalId, withRouteSpeed,
 } from '../model/domain.js'
+import { routeElementSpeed, routeSpeedSections, speedSignalSpeed, withElementSpeeds } from '../model/routeSpeeds.js'
 import { measuredOverlap, overlapSpeed, withMeasuredOverlap } from '../model/overlaps.js'
 import { findRun, runAhead, switchesOnRun } from '../model/runs.js'
 import { SHUNTING_TYPE, TRAIN_TYPE, optionsOf } from '../labels.js'
@@ -14,7 +15,7 @@ import { ItineraryIcon, OverlapIcon, RouteIcon } from '../icons.jsx'
 import { stationName } from '../model/stations.js'
 import { ItineraryEditor, ItineraryList, ItinerarySearch } from './Itineraries.jsx'
 import { CheckList, EditorHead, ObjectFindings } from './common.jsx'
-import { aspectText, pickingSignal, signalOptions as signalChoices, trackName } from '../model/places.js'
+import { aspectText, pickingSignal, signalOptions as signalChoices, speedWhereText, trackName } from '../model/places.js'
 import { isMainSignal } from '../model/itineraries.js'
 import { nextSignals, routeSections, routeStretches, runStretches, wayPieces } from '../model/routeSearch.js'
 
@@ -69,11 +70,11 @@ export default function RoutesPanel({
     ops.add('overlaps', { id: newId(), name, signalId, path: { trackIds: run.trackIds }, end: { anchor: 'station', ...run.end }, length })
   }
 
-  // Every train route over a turnout's branch signals at most the turnout's speed there.
-  const takeSwitchSpeeds = () => {
-    const { domain: next, changed } = withSwitchSpeeds(domain, net.switches)
-    if (changed.length) ops.replaceAll(next)
-    setNotice?.({ tone: changed.length ? 'ok' : 'info', text: t('switch_speeds_taken', { n: changed.length }) })
+  // Every train route signals what its elements allow up to its first Lf 7, every Lf 7 shows what lies ahead of it.
+  const takeElementSpeeds = () => {
+    const { domain: next, routes: r, boards } = withElementSpeeds(domain, net)
+    if (r || boards) ops.replaceAll(next)
+    setNotice?.({ tone: r || boards ? 'ok' : 'info', text: t('element_speeds_taken', { routes: r, boards }) })
   }
 
   if (chosenRoute) {
@@ -132,8 +133,8 @@ export default function RoutesPanel({
             const run = a && b ? findRun(net, a.at, b.at) : null
             const route = { ...r, id: newId(), path: { trackIds: run ?? [] } }
             setPage('routes')
-            // Over the branch of a turnout it signals the turnout's speed from the start.
-            ops.replaceAll(withSwitchSpeeds(added(domain, 'routes', route), net.switches, [route.id]).domain)
+            // It signals the speed its elements give.
+            ops.replaceAll(withElementSpeeds(added(domain, 'routes', route), net, { routeIds: [route.id], boards: false }).domain)
             select({ collection: 'routes', id: route.id })
           }} />
       </Panel>
@@ -213,7 +214,7 @@ export default function RoutesPanel({
         <Option icon={<ItineraryIcon />} end={itineraries.length} onClick={() => setPage('itineraries')}>{t('itineraries')}</Option>
         <Option icon={<RouteIcon />} end={routes.length} onClick={() => setPage('routes')}>{t('section_routes')}</Option>
         <Option icon={<OverlapIcon />} end={overlaps.length} onClick={() => setPage('overlaps')}>{t('overlaps')}</Option>
-        {!readOnly && <Option icon={<RouteIcon />} disabled={!routes.length} onClick={takeSwitchSpeeds}>{t('take_switch_speeds')}</Option>}
+        {!readOnly && <Option icon={<RouteIcon />} disabled={!routes.length} onClick={takeElementSpeeds}>{t('take_element_speeds')}</Option>}
       </Options>
     </Panel>
   )
@@ -280,9 +281,9 @@ function RouteEditor({ route, name, domain, net, findings, extents, signalOption
   const speed = signallingSpeedOf(domain, route)
   // Where its speed is set: the logical signal at its start that signals it, else the first.
   const setter = start?.logicalSignals?.find(l => l.signallingSpeeds?.some(v => v.routeId === route.id)) ?? start?.logicalSignals?.[0]
-  // The turnouts it passes on their branch, and the speed they allow there.
-  const branch = route.kind === 'train' ? branchSpeedOnRun(net.switches, route.path.trackIds) : null
-  const switchName = (id) => { const sw = net.switches.find(x => x.switchId === id); return sw?.name ?? sw?.label ?? id.slice(0, 8) }
+  // What its elements allow, section by section between the Lf 7 on it.
+  const sections = route.kind === 'train' && start && target ? routeSpeedSections(net, route, signals) : []
+  const derived = sections[0]?.elements ?? null
 
   return (
     <div className="tool-editor">
@@ -314,13 +315,27 @@ function RouteEditor({ route, name, domain, net, findings, extents, signalOption
             </Button>
           )}
         </div>
-        {branch?.speed != null && (
+        {derived && (
           <div className="ui-row">
-            <span className="ui-grow ui-muted">{t('route_switch_speed', { speed: branch.speed, list: branch.switchIds.map(switchName).join(', ') })}</span>
-            {setter && !readOnly && (speed == null || speed > branch.speed) && (
-              <Button size="small" onClick={() => onSignal(branch.speed)}>{t('take_switch_speed', { speed: branch.speed })}</Button>
+            <span className="ui-grow ui-muted">{t('route_element_speed', { speed: derived.speed, where: speedWhereText(net, derived.where) })}</span>
+            {setter && !readOnly && speed !== derived.speed && (
+              <Button size="small" onClick={() => onSignal(derived.speed)}>{t('take_speed', { speed: derived.speed })}</Button>
             )}
           </div>
+        )}
+        {sections.length > 1 && (
+          <ul className="tool-speed-sections">
+            {sections.map((x, i) => {
+              const shown = i ? speedSignalSpeed(x.signal) : speed
+              return (
+                <li key={x.signal.id}>
+                  <span className="ui-grow">{i ? labelOf('signals', x.signal, t) : labelOf('signals', start, t)} · {Math.round(x.from)}–{Math.round(x.to)} m</span>
+                  <span>{shown != null ? `${shown} km/h` : '—'}</span>
+                  <span className="ui-muted">{x.elements ? t('speed_sections_elements', { speed: x.elements.speed }) : t('speed_sections_none')}</span>
+                </li>
+              )
+            })}
+          </ul>
         )}
       </Section>
       <Section title={t('path')} actions={!readOnly && <Button size="small" onClick={() => rerun()}>{t('find_path')}</Button>}>
@@ -403,7 +418,7 @@ function FindRoutes({ domain, net, extents, ops, setMode, setSketch, t }) {
   }, [found, start, net, setSketch])
   useEffect(() => () => setSketch?.(null), [setSketch])
 
-  /** The routes of `ways` from their signals put in the draft, the speeds given signalled, a turnout's elsewhere. */
+  /** The routes of `ways` from their signals put in the draft, the speeds given signalled, the elements' elsewhere. */
   const make = (ways) => {
     let next = domain
     const made = []
@@ -417,7 +432,7 @@ function FindRoutes({ domain, net, extents, ops, setMode, setSketch, t }) {
       if (speed != null) next = withRouteSpeed(next, route, speed)
       made.push({ route, speed })
     }
-    next = withSwitchSpeeds(next, net.switches, made.filter(m => m.speed == null).map(m => m.route.id)).domain
+    next = withElementSpeeds(next, net, { routeIds: made.filter(m => m.speed == null).map(m => m.route.id), boards: false }).domain
     ops.replaceAll(next)
     return made.length
   }
@@ -447,6 +462,7 @@ function FindRoutes({ domain, net, extents, ops, setMode, setSketch, t }) {
       const key = keyOf(f)
       const there = exists(start, f)
       const route = { startSignalId: start.id, targetSignalId: f.target.id, path: { trackIds: f.trackIds } }
+      const derived = routeElementSpeed(net, route, signals)?.speed ?? null
       return (
         <div key={key} className="tool-found-route">
           <div className="ui-row">
@@ -456,7 +472,7 @@ function FindRoutes({ domain, net, extents, ops, setMode, setSketch, t }) {
                 onChange={(on) => setSkipped(prev => { const n = new Set(prev); if (on) n.delete(key); else n.add(key); return n })} />
             </span>
             {!there && (
-              <NumberField compact label={t('route_speed_kmh')} value={speeds[key] ?? null} min={0} step={10}
+              <NumberField compact label={derived != null && speeds[key] == null ? t('route_speed_from_elements') : t('route_speed_kmh')} value={speeds[key] ?? derived} min={0} step={10}
                 onChange={(v) => setSpeeds(prev => ({ ...prev, [key]: v ?? undefined }))} />
             )}
           </div>

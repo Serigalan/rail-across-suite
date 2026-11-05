@@ -174,12 +174,17 @@ export function planData({ drawing, places, marks, switches, selection, highligh
   const tracks = [...drawing.tracks.values()].map(tr => feature(line(lineOf(tr.line)), { id: tr.id }))
   const marked = [
     ...(highlight?.runs ?? []).flatMap(id => { const tr = drawing.tracks.get(id); return tr ? [feature(line(lineOf(tr.line)), { kind: 'run' })] : [] }),
-    ...(highlight?.stretches ?? []).map(s => feature(line(lineOf(stretchLine(drawing, s.trackId, s.from, s.to))), { kind: 'stretch', tone: s.tone ?? '' })),
+    ...(highlight?.stretches ?? []).map(s => feature(line(lineOf(stretchLine(drawing, s.trackId, s.from, s.to))), { kind: 'stretch', tone: s.tone ?? '', color: s.color ?? '' })),
+    // A name in a colour, in the middle of its stretch (the track sections, each in its own).
+    ...(highlight?.labels ?? []).flatMap(l => {
+      const lls = lineOf(stretchLine(drawing, l.trackId, l.from, l.to))
+      return lls.length > 1 ? [feature(point(middleOfLine(lls)), { kind: 'label', icon: `ra-clabel:${l.color}:${l.text}` })] : []
+    }),
     ...(highlight?.ways ?? []).flatMap(w => w.pieces.map(p => {
       const lls = lineOf(stretchLine(drawing, p.trackId, p.from, p.to))
       return feature(line(p.from > p.to ? lls.reverse() : lls), { kind: 'way', strong: !!w.strong })
     })),
-  ].filter(f => f.geometry.coordinates.length > 1)
+  ].filter(f => f.geometry.type === 'Point' || f.geometry.coordinates.length > 1)
   const drafted = (mk) => !!pending?.has(mk.obj.id)
   const shown = marks.filter(mk => !(preview && mk.obj.id === preview.obj.id))
   const markSel = (mk) => isSel(mk.collection, mk.obj.id) || !!highlight?.ids?.includes(mk.obj.id)
@@ -200,7 +205,7 @@ export function planData({ drawing, places, marks, switches, selection, highligh
       ...(preview ? markFeatures([preview], { isSelected: () => true, names: false, t }) : []),
     ]),
   }
-  const labels = [...data.marks.features, ...data.places.features, ...data.preview.features].filter(f => f.properties.kind === 'label').map(f => f.properties.icon)
+  const labels = [...data.marks.features, ...data.places.features, ...data.preview.features, ...data.marked.features].filter(f => f.properties.kind === 'label').map(f => f.properties.icon)
   return { data, labels }
 }
 
@@ -304,7 +309,7 @@ function drawArrow(pal) {
 }
 
 /** A signal's name, with a halo of the surface's colour; its baseline LABEL_PAD above the bottom. */
-function drawLabel(text, pal) {
+function drawLabel(text, pal, color = pal.mark) {
   const font = `600 ${LABEL_FONT_PX}px ${pal.font}`
   const probe = document.createElement('canvas').getContext('2d')
   probe.font = font
@@ -318,7 +323,7 @@ function drawLabel(text, pal) {
   g.lineJoin = 'round'
   g.strokeStyle = pal.surface; g.lineWidth = 3
   g.strokeText(text, LABEL_PAD, h - LABEL_PAD)
-  g.fillStyle = pal.mark
+  g.fillStyle = color
   g.fillText(text, LABEL_PAD, h - LABEL_PAD)
   return g.getImageData(0, 0, c.width, c.height)
 }
@@ -337,7 +342,11 @@ export function ensureImages(map, pal, labels) {
   }
   add('ra-stub', () => drawStub(pal))
   add('ra-arrow', () => drawArrow(pal))
-  for (const id of labels) add(id, () => drawLabel(id.slice('ra-label:'.length), pal))
+  for (const id of labels) {
+    // ra-clabel:<colour>:<text> is a name in its own colour.
+    const coloured = id.match(/^ra-clabel:(#[0-9a-fA-F]{3,8}):(.*)$/)
+    add(id, () => (coloured ? drawLabel(coloured[2], pal, coloured[1]) : drawLabel(id.slice('ra-label:'.length), pal)))
+  }
 }
 
 // ── the layers ──────────────────────────────────────────────────────────
@@ -390,10 +399,12 @@ export function addPlanLayers(map, pal, data, nameZoom) {
       paint: { 'line-color': pal.primary, 'line-width': ['case', ['get', 'strong'], 7, 4], 'line-opacity': ['case', ['get', 'strong'], 0.5, 0.18] } },
     { id: 'plan-runs', type: 'line', source: SRC.marked, filter: kind('run'), layout: round, paint: { 'line-color': pal.primary, 'line-width': 6, 'line-opacity': 0.45 } },
     { id: 'plan-stretches', type: 'line', source: SRC.marked, filter: kind('stretch'),
-      paint: { 'line-color': ['case', ['==', ['get', 'tone'], 'warn'], '#d68910', '#1f9e3a'], 'line-width': 7, 'line-opacity': 0.5 } },
+      paint: { 'line-color': ['case', ['!=', ['get', 'color'], ''], ['get', 'color'], ['==', ['get', 'tone'], 'warn'], '#d68910', '#1f9e3a'], 'line-width': 7, 'line-opacity': 0.5 } },
     { id: 'plan-way-arrows', type: 'symbol', source: SRC.marked, filter: ['all', kind('way'), ['get', 'strong']],
       layout: { 'symbol-placement': 'line', 'symbol-spacing': 90, 'icon-image': 'ra-arrow', 'icon-allow-overlap': true, 'icon-ignore-placement': true,
         'icon-rotation-alignment': 'map' } },
+    { id: 'plan-marked-labels', type: 'symbol', source: SRC.marked, filter: kind('label'),
+      layout: { ...SYMBOL, 'icon-image': ['get', 'icon'], 'icon-rotation-alignment': 'viewport', 'icon-offset': [0, -12] } },
     { id: 'plan-switches', type: 'circle', source: SRC.switches,
       paint: { 'circle-radius': ['case', ['get', 'sel'], 5, 3], 'circle-color': ['case', ['get', 'sel'], pal.primary, pal.bg],
         'circle-stroke-color': ['case', ['get', 'sel'], pal.primary, pal.track], 'circle-stroke-width': 1.5 } },

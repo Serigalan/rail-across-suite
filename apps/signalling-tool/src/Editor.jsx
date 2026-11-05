@@ -17,6 +17,7 @@ import { waysBetween } from './model/itineraries.js'
 import { routeStretches, runStretches, wayPieces } from './model/routeSearch.js'
 import { logicalSignalWord } from './labels.js'
 import { changedIds, redo, startHistory, step, stepOf, stepText, travel, undo } from './model/history.js'
+import { withClearanceMarkers } from './model/clearanceMarkers.js'
 import { DraftContext } from './panels/draftContext.js'
 import PlanView from './plan/PlanView.jsx'
 import SchematicView from './schema/SchematicView.jsx'
@@ -185,6 +186,16 @@ export default function Editor({ project, variant, head, copy: opened, readOnly 
     replaceAll: (next) => edit(d => ({ fields: next.fields, collections: { ...d.collections, ...next.collections } })),
     remove: (collection, id) => setDialog({ kind: 'delete', collection, id }),
   }), [edit])
+
+  // Every switch has its clearance markers Ra 12: those it lacks are set as the tool opens, or the net brings new switches — a step of their own.
+  useEffect(() => {
+    if (readOnly) return
+    const { domain: next, added: n } = withClearanceMarkers(now.current, net)
+    if (!n) return
+    setHistory(h => step(h, next))
+    setNotice({ tone: 'info', text: t('clearance_markers_set', { n }) })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [net, readOnly])
 
   const [focus, setFocus] = useState(null)
   const select = useCallback((sel) => {

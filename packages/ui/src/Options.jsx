@@ -29,8 +29,8 @@ export function Option({ icon, end, active = false, children, ...rest }) {
  * Objects under the groups they belong to, each group folding away under its
  * header with how many it holds — as the Layout-Tool lists a project's
  * tracks under their lines and stations. `groups` [{ key, title, heading,
- * items: [{ id, label, sub, end }] }] — `heading` a small heading over the
- * groups that share it —; a group without items is left out. `selected` is the
+ * items: [{ id, label, sub, end, color }] }] — `heading` a small heading over
+ * the groups that share it, `color` a label's own colour —; a group without items is left out. `selected` is the
  * id chosen, `onSelect(id)` picks one. The groups start folded but the one
  * holding the chosen; `open` starts them open. With `searchLabel` a search
  * field above finds by any part of the words, and opens every group it finds
@@ -96,7 +96,9 @@ export function GroupedList({ label, groups, selected, onSelect, empty, searchLa
                       className={`ui-btn ui-btn-option ui-btn-small ui-group-item${i.id === selected ? ' ui-btn-active' : ''}`}
                       onClick={() => onSelect?.(i.id)}>
                       <span className="ui-group-item-text">
-                        <span className="ui-group-item-label">{i.label}</span>
+                        <span className="ui-group-item-label" style={i.color ? { color: i.color } : undefined}>
+                          {i.color && <span className="ui-group-item-swatch" style={{ background: i.color }} aria-hidden="true" />}{i.label}
+                        </span>
                         {i.sub && <span className="ui-group-item-sub">{i.sub}</span>}
                       </span>
                       {i.end}

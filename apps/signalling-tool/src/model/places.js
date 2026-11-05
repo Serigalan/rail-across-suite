@@ -8,6 +8,13 @@ export const trackName = (net, id) => {
   return tr ? tr.name || trackLabel(tr) : id?.slice(0, 8) ?? '—'
 }
 
+/**
+ * The boards a plate may show here, in this order: the speed indicator and
+ * speed signals, the station limit, the slow-speed boards, the shunting
+ * limit, the clearance marker, the ETCS stop board — no other are needed.
+ */
+export const BOARD_ASPECTS = ['Zs_3', 'Ne_1', 'Lf_1', 'Lf_2', 'Lf_3', 'Lf_6', 'Lf_7', 'Ra_10', 'Ra_12', 'Ne_14']
+
 /** A turnout as people name it: W3, else its name or form. */
 export function switchName(net, id) {
   const sw = net.switches.find(x => x.switchId === id)

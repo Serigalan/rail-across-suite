@@ -7,16 +7,17 @@ import { kmNameAt, trackName } from './places.js'
  * Laying out train detection over the net: detection points at every main
  * signal, `before` metres ahead of every switch on its toe's side and
  * `behind` metres past its clearance point on each of its branches — the
- * clearance point (Grenzzeichen) where the two tracks lie `clearance` apart —;
- * points nearer to one another than `merge` metres made one, in the middle
- * between them (two switches close together share the point between them),
- * and a point already there taking those near it. The points cut the net into
+ * clearance point (Grenzzeichen, Ra 12) where the two tracks lie `clearance`
+ * apart; at it, unless told otherwise —; points nearer to one another than
+ * `merge` metres made one, in the middle between them, and so are two of two
+ * switches whose sections would overlap — on one track, each past the other
+ * as seen from its switch; a point already there takes those near it. The points cut the net into
  * the track sections, each bounded by the points around it: a section the
  * net already has with those bounds stays, the others are made anew.
  */
 
 /** The distances it lays out by, unless told others [m]. */
-export const LAYOUT = { before: 10, behind: 10, clearance: 3.5, merge: 20 }
+export const LAYOUT = { before: 10, behind: 0, clearance: 3.5, merge: 20 }
 
 /** The kinds of logical signal that bound no detection: distant signals and their repeaters. */
 const NO_POINT = new Set(['distant', 'distantRepeater'])
@@ -30,12 +31,13 @@ const otherEnd = (end) => (end === 'BEGIN' ? 'END' : 'BEGIN')
 
 /**
  * Walking `distance` metres into the net from a track's end, away from it:
- * every place reached [{ trackId, station }] — more than one where a switch
- * on the way leads into several tracks; none where the net ends first.
+ * every place reached [{ trackId, station, away }] — `away` the direction on
+ * its track that leads on from where the walk began —, more than one where a
+ * switch on the way leads into several tracks; none where the net ends first.
  */
 export function walkFrom(net, lengths, trackId, endpoint, distance, depth = 0) {
   const len = lengths.get(trackId) ?? 0
-  if (distance <= len) return [{ trackId, station: endpoint === 'BEGIN' ? distance : len - distance }]
+  if (distance <= len) return [{ trackId, station: endpoint === 'BEGIN' ? distance : len - distance, away: endpoint === 'BEGIN' ? 'up' : 'down' }]
   if (depth > 20) return []
   return tracksOnFrom(trackId, otherEnd(endpoint), net.tracks, net.switches)
     .flatMap(n => walkFrom(net, lengths, n.trackId, n.endpoint, distance - len, depth + 1))
@@ -67,34 +69,65 @@ function clearanceOf(net, lengths, byId, a, b, apart) {
 }
 
 /**
- * The places a detection point is asked for: [{ trackId, station, why }] —
- * at the signals, ahead of the switches, past their clearance points.
+ * The arms of every laid switch and how far each runs before it lies
+ * `apart` metres from the arm beside it: [{ switchId, arms: [{ trackId,
+ * endpoint, near, clear }] }] — `near` that arm, null for the one that has
+ * none beside it (the toe's), `clear` the distance to the clearance point,
+ * null where it is beyond reach.
  */
-export function wantedPoints(net, signals, layout = LAYOUT) {
+export function switchArms(net, apart = LAYOUT.clearance) {
   const lengths = new Map(net.tracks.map(t => [t.id, trackLength(t)]))
   const byId = new Map(net.tracks.map(t => [t.id, t]))
   const out = []
-  for (const s of signals.filter(takesPoint)) {
-    if (lengths.has(s.at.trackId)) out.push({ trackId: s.at.trackId, station: s.at.station, why: 'signal' })
-  }
   for (const sw of net.switches) {
     const arms = portsOf(sw).map(({ port }) => ({ port, trackId: portTrack(sw, port), endpoint: portEnd(sw, port) }))
       .filter(a => lengths.has(a.trackId) && a.endpoint)
     if (arms.length < 3) continue   // a link, or a switch not laid
+    out.push({
+      switchId: sw.switchId,
+      arms: arms.map(arm => {
+        // Its neighbour: the arm that leaves the switch beside it, to the same side.
+        const near = arms.filter(o => o !== arm).map(o => {
+          const p = armPoint(net, lengths, byId, arm, 5), q = armPoint(net, lengths, byId, o, 5)
+          return { o, d: p && q ? Math.hypot(p[0] - q[0], p[1] - q[1]) : Infinity }
+        }).filter(x => x.d < apart).sort((x, y) => x.d - y.d)[0]
+        return { trackId: arm.trackId, endpoint: arm.endpoint, port: arm.port, near: near?.o ?? null, clear: near ? clearanceOf(net, lengths, byId, arm, near.o, apart) : 0 }
+      }),
+    })
+  }
+  return out
+}
+
+/**
+ * The places a detection point is asked for: [{ trackId, station, why,
+ * switchId, toward }] — at the signals, ahead of the switches, past their
+ * clearance points; one of a switch with the switch and the way to it on
+ * its track.
+ */
+export function wantedPoints(net, signals, layout = LAYOUT) {
+  const lengths = new Map(net.tracks.map(t => [t.id, trackLength(t)]))
+  const out = []
+  for (const s of signals.filter(takesPoint)) {
+    if (lengths.has(s.at.trackId)) out.push({ trackId: s.at.trackId, station: s.at.station, why: 'signal' })
+  }
+  for (const { switchId, arms } of switchArms(net, layout.clearance)) {
     for (const arm of arms) {
-      // Its neighbour: the arm that leaves the switch beside it, to the same side.
-      const near = arms.filter(o => o !== arm).map(o => {
-        const p = armPoint(net, lengths, byId, arm, 5), q = armPoint(net, lengths, byId, o, 5)
-        return { o, d: p && q ? Math.hypot(p[0] - q[0], p[1] - q[1]) : Infinity }
-      }).filter(x => x.d < layout.clearance).sort((x, y) => x.d - y.d)[0]
-      const clear = near ? clearanceOf(net, lengths, byId, arm, near.o, layout.clearance) : 0
-      if (clear == null) continue
-      const distance = near ? clear + layout.behind : layout.before
-      for (const at of walkFrom(net, lengths, arm.trackId, arm.endpoint, distance)) out.push({ ...at, why: near ? 'clearance' : 'switch' })
+      if (arm.clear == null) continue
+      const distance = arm.near ? arm.clear + layout.behind : layout.before
+      for (const { away, ...at } of walkFrom(net, lengths, arm.trackId, arm.endpoint, distance)) {
+        out.push({ ...at, why: arm.near ? 'clearance' : 'switch', switchId, toward: away === 'up' ? 'down' : 'up' })
+      }
     }
   }
   return out
 }
+
+/**
+ * Whether two points of two switches on one track lie each past the other,
+ * as seen from its switch: the sections they bound would overlap.
+ */
+const crossed = (p, q) => !!(p.switchId && q.switchId && p.switchId !== q.switchId && p.trackId === q.trackId && p.toward !== q.toward
+  && (p.toward === 'down' ? q.station < p.station : q.station > p.station))
 
 /** Union-find over indices. */
 function groups(n, joined) {
@@ -140,7 +173,7 @@ export function detectionLayout(net, domain, { kmLines, layout = LAYOUT, t } = {
   const there = detectionPoints.filter(d => d.at?.anchor === 'station').map(d => ({ trackId: d.at.trackId, station: d.at.station, id: d.id }))
   const wanted = wantedPoints(net, signals, layout)
   const all = [...there, ...wanted]
-  const clusters = groups(all.length, (i, j) => apartAlong(net, lengths, all[i], all[j]) < layout.merge)
+  const clusters = groups(all.length, (i, j) => crossed(all[i], all[j]) || apartAlong(net, lengths, all[i], all[j]) < layout.merge)
   const taken = new Set(detectionPoints.map(d => d.name).filter(Boolean))
   const points = []
   let merged = 0

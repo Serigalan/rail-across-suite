@@ -327,6 +327,7 @@
 .ui-group-item { align-items: center; }
 .ui-group-item-text { flex: 1; min-width: 0; display: flex; align-items: baseline; gap: 8px; }
 .ui-group-item-label { flex-shrink: 0; max-width: 60%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ui-group-item-swatch { display: inline-block; width: 10px; height: 10px; margin-right: 6px; border-radius: 2px; vertical-align: -1px; }
 .ui-group-item-sub { flex: 1; min-width: 0; color: var(--ui-muted); font-size: var(--ui-fs-s); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .ui-section { display: flex; flex-direction: column; gap: 8px; }

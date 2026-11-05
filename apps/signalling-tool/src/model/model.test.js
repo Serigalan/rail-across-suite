@@ -9,7 +9,7 @@ import {
 import { measuredOverlap, withMeasuredOverlap } from './overlaps.js'
 import { OFFSET, foundationPoint, kmName, kmNameAt, locationFrom, mountedFrom, planePoint, signalOptions, trackName } from './places.js'
 import { magnetFrequency, magnetName, magnetsDue, signalMagnet, withSignal } from './magnets.js'
-import { detectionLayout, wantedPoints } from './detectionLayout.js'
+import { LAYOUT, detectionLayout, wantedPoints } from './detectionLayout.js'
 import { nextSignals, routeSections, routeStretches, runStretches, wayPieces } from './routeSearch.js'
 import { trackSectionExtents } from '@rail-across/core/signalling'
 import { changedIds, redo, startHistory, step, stepOf, stepsOf, travel, undo } from './history.js'
@@ -234,14 +234,15 @@ describe('editing the domain', () => {
     const at = (why) => wanted.filter(w => w.why === why).map(w => [w.trackId, Math.round(w.station)])
     expect(at('signal')).toEqual([['t1', 150]])
     expect(at('switch')).toEqual([['t1', 190]])
-    // t3 leaves at about 12.5°: 3.5 m apart some 16 m on, the point 10 m past that.
-    expect(at('clearance').sort()).toEqual([['t2', 26], ['t3', 26]])
+    // t3 leaves at about 12.5°: 3.5 m apart some 16 m on, the point there, at the clearance marker.
+    expect(at('clearance').sort()).toEqual([['t2', 16], ['t3', 16]])
+    expect(wantedPoints(net, [], { ...LAYOUT, behind: 10 }).filter(w => w.why === 'clearance').map(w => Math.round(w.station))).toEqual([26, 26])
 
     let d = emptyDomain()
     d = added(d, 'signals', main('a', on('t1', 175)))
     const laid = detectionLayout(net, d, { t: (k) => k })
     expect(laid.merged).toBe(1)
-    expect(laid.points.map(p => [p.at.trackId, Math.round(p.at.station * 10) / 10]).sort()).toEqual([['t1', 182.5], ['t2', 26], ['t3', 26]])
+    expect(laid.points.map(p => [p.at.trackId, Math.round(p.at.station * 10) / 10]).sort()).toEqual([['t1', 182.5], ['t2', 16], ['t3', 16]])
     expect(laid.sections).toHaveLength(4)
     const atSwitch = laid.sections.find(x => x.boundedBy.length === 3)
     expect(atSwitch.name).toBe('W')

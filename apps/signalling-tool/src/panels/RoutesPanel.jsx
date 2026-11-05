@@ -5,7 +5,7 @@ import {
 import { Panel } from './draft.jsx'
 import { signallingSpeedOf } from '@rail-across/core/signalling'
 import {
-  added, designationOf as signalDesignation, newId, labelOf, logicalId, withRouteSpeed,
+  added, designationOf as signalDesignation, newId, labelOf, logicalId, shownSpeed, withRouteSpeed,
 } from '../model/domain.js'
 import { routeElementSpeed, routeSpeedSections, speedSignalSpeed, withElementSpeeds } from '../model/routeSpeeds.js'
 import { measuredOverlap, overlapSpeed, withMeasuredOverlap } from '../model/overlaps.js'
@@ -318,8 +318,8 @@ function RouteEditor({ route, name, domain, net, findings, extents, signalOption
         {derived && (
           <div className="ui-row">
             <span className="ui-grow ui-muted">{t('route_element_speed', { speed: derived.speed, where: speedWhereText(net, derived.where) })}</span>
-            {setter && !readOnly && speed !== derived.speed && (
-              <Button size="small" onClick={() => onSignal(derived.speed)}>{t('take_speed', { speed: derived.speed })}</Button>
+            {setter && !readOnly && speed !== shownSpeed(derived.speed) && (
+              <Button size="small" onClick={() => onSignal(derived.speed)}>{t('take_speed', { speed: shownSpeed(derived.speed) })}</Button>
             )}
           </div>
         )}
@@ -462,7 +462,7 @@ function FindRoutes({ domain, net, extents, ops, setMode, setSketch, t }) {
       const key = keyOf(f)
       const there = exists(start, f)
       const route = { startSignalId: start.id, targetSignalId: f.target.id, path: { trackIds: f.trackIds } }
-      const derived = routeElementSpeed(net, route, signals)?.speed ?? null
+      const derived = shownSpeed(routeElementSpeed(net, route, signals)?.speed)
       return (
         <div key={key} className="tool-found-route">
           <div className="ui-row">

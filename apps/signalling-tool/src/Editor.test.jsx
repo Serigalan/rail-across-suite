@@ -92,7 +92,7 @@ describe('the Signalling-Tool', () => {
     expect(html).not.toContain('<span class="ui-rail-label">Gleisfreimeldung</span>')
     expect(html).not.toContain('<span class="ui-rail-label">Datenaustausch</span>')
     expect(html).toContain('<h2>Bearbeiten</h2>')
-    expect(html).toContain('<span class="ui-group-title">Hauptsignale</span><span class="ui-group-count">2</span>')
+    expect(html).toMatch(/Hauptsignale<\/span><span class="[^"]*">2<\/span>/)
     expect(html).not.toContain('Einchecken')
   })
 
@@ -144,12 +144,13 @@ describe('the Signalling-Tool', () => {
     expect(rail).not.toContain('>Flankenschutz<')
   })
 
-  it('edits signals, train detection and balises in one overview under their kinds', () => {
+  it('edits signals, train detection and balises from a menu of their kinds', () => {
     const html = edit(null)
     expect(html).toContain('<h2>Bearbeiten</h2>')
     expect(html).toContain('<span class="ui-options-heading">Signale</span>')
-    expect(html).toContain('aria-label="Suchen: Name, Gleis, Art …"')
-    expect(html).toContain('<span class="ui-group-title">Hauptsignale</span><span class="ui-group-count">2</span>')
+    expect(html).toContain('<span class="ui-options-heading">Gleisfreimeldung</span>')
+    // Each kind with how many there are, opening its list.
+    expect(html).toMatch(/Hauptsignale<\/span><span class="[^"]*">2<\/span>/)
     // A signal mast opens in its editor, the way back leading to the overview; its logical signals open from it.
     const mast = edit({ collection: 'signals', id: 's-a' })
     expect(mast).toContain('<h2>Signalmast</h2>')

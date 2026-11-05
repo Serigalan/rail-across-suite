@@ -1,6 +1,6 @@
-import { aspectOf, aspectSpeed, branchSpeedOnRun, signallingSpeedOf } from '@rail-across/core/signalling'
+import { aspectOf, aspectSpeed, branchSpeedOnRun } from '@rail-across/core/signalling'
 import { isMainSignal } from './itineraries.js'
-import { replaced, withRouteSpeed } from './domain.js'
+import { replaced, signalsSpeed, withRouteSpeed } from './domain.js'
 import { actsAlong, nextSignals, routeStretches, runStretches } from './routeSearch.js'
 
 /**
@@ -9,7 +9,8 @@ import { actsAlong, nextSignals, routeStretches, runStretches } from './routeSea
  * branch, up to the first speed signal (Lf 7) on it that acts its way; each
  * Lf 7 shows the lowest from where it stands to the next main signal or
  * Lf 7 ahead, over every way the net offers there — the board is the same
- * for every route past it. An Lf 7 shows tens: its speed is rounded down.
+ * for every route past it. Zs 3 and Lf 7 show tens: a speed is rounded down,
+ * and a route's start signal gets the Zs 3 that shows it (withRouteSpeed).
  */
 
 /** The aspect of the speed signal. */
@@ -177,7 +178,7 @@ export function withElementSpeeds(domain, net, { routeIds = null, boards: withBo
   for (const route of domain.collections.routes) {
     if (route.kind !== 'train' || (routeIds && !routeIds.includes(route.id))) continue
     const got = routeElementSpeed(net, route, next.collections.signals)
-    if (!got || signallingSpeedOf(next, route) === got.speed) continue
+    if (!got || signalsSpeed(next, route, got.speed)) continue
     const set = withRouteSpeed(next, route, got.speed)
     if (set === next) continue
     next = set

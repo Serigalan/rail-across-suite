@@ -7,11 +7,11 @@ import { FUNCTION, MOUNTING, VIRTUAL_FUNCTION, logicalSignalWord, optionsOf, sig
 import { BoardIcon, LocationIcon, SignalIcon, SpeedIcon, VirtualIcon } from '../icons.jsx'
 import { Created } from './common.jsx'
 import { useFields, useSetting } from './useSetting.js'
-import { FOUNDATION_OFFSET, OFFSET, ON_FOUNDATION, locationFrom, mountedFrom, signalOptions } from '../model/places.js'
+import { BOARD_ASPECTS, FOUNDATION_OFFSET, OFFSET, ON_FOUNDATION, locationFrom, mountedFrom, signalOptions } from '../model/places.js'
 import { SPEED_SIGNAL, speedSignalSpeeds, withSpeedSignalSpeed } from '../model/routeSpeeds.js'
 
-/** The boards that can be set on their own: every aspect a plate may show. */
-const BOARDS = SIGNAL_CATALOGUE.begriffe.filter(b => !b.nur_dv && b.rahmen?.includes('plate'))
+/** The boards that can be set on their own: those needed (BOARD_ASPECTS). */
+const BOARDS = BOARD_ASPECTS.map(id => SIGNAL_CATALOGUE.begriffe.find(b => b.id === id)).filter(Boolean)
 
 /**
  * Creating signals, as the Layout-Tool's create panel: a menu, and a page per
@@ -150,16 +150,22 @@ function MastPage({ offer, remake, noNet, created, t, language }) {
 }
 
 function BoardPage({ offer, remake, noNet, created, t, language }) {
-  const makeOf = ({ aspect, name }) => (hit) => ({
+  const symbolsOf = (aspect) => BOARDS.find(b => b.id === aspect)?.symbole ?? null
+  const makeOf = ({ aspect, symbol, name }) => (hit) => ({
     id: newId(), name: name || undefined, kind: 'real', function: 'standaloneIndicator', mounting: 'mast',
-    at: locationFrom(hit, { offset: OFFSET.signals }), frames: [{ kind: 'plate', aspects: [{ aspect }] }],
+    at: locationFrom(hit, { offset: OFFSET.signals }), frames: [{ kind: 'plate', aspects: [{ aspect, ...(symbolsOf(aspect) && symbol ? { symbol } : {}) }] }],
   })
-  const [f, set] = useFields({ aspect: 'Ne_1', name: '' }, remake, makeOf)
+  const [f, set] = useFields({ aspect: 'Ne_1', symbol: null, name: '' }, remake, makeOf)
   offer(makeOf(f))
+  const symbols = symbolsOf(f.aspect)
+  // A board that shows a speed shows it in tens: Zs 3 (6) is 60 km/h.
+  const symbolLabel = (x) => (BOARDS.find(b => b.id === f.aspect)?.symbol_bedeutung === 'speed' ? `${x} — ${Number(x.replace(',', '.')) * 10} km/h` : x)
   return <>
     <div className="ui-fields">
-      <SelectField compact wide label={t('board_shows')} value={f.aspect} onChange={(v) => set({ aspect: v ?? 'Ne_1' })}
+      <SelectField compact wide label={t('board_shows')} value={f.aspect}
+        onChange={(v) => { const aspect = v ?? 'Ne_1'; set({ aspect, symbol: symbolsOf(aspect)?.[0] ?? null }) }}
         options={BOARDS.map(b => ({ value: b.id, label: b.title ? `${b.name} — ${titleIn(b, language)}` : b.name }))} />
+      {symbols && <SelectField compact wide label={t('board_symbol')} value={f.symbol} options={symbols.map(x => ({ value: x, label: symbolLabel(x) }))} onChange={(symbol) => set({ symbol })} />}
       <TextField compact wide label={t('name')} value={f.name} onChange={(name) => set({ name })} />
     </div>
     <p className="ui-muted">{t('create_board_hint')}</p>

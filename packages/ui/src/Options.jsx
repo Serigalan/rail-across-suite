@@ -31,13 +31,14 @@ export function Option({ icon, end, active = false, children, ...rest }) {
  * tracks under their lines and stations. `groups` [{ key, title, heading,
  * items: [{ id, label, sub, end, color }] }] — `heading` a small heading over
  * the groups that share it, `color` a label's own colour —; a group without items is left out. `selected` is the
- * id chosen, `onSelect(id)` picks one. The groups start folded but the one
+ * id chosen, `onSelect(id)` picks one; `onHover(id)`, where given, is told
+ * the item the pointer or the focus is on, and null as it leaves. The groups start folded but the one
  * holding the chosen; `open` starts them open. With `searchLabel` a search
  * field above finds by any part of the words, and opens every group it finds
  * something in; `noneFound` says when it finds nothing, `empty` when there is
  * nothing at all.
  */
-export function GroupedList({ label, groups, selected, onSelect, empty, searchLabel, noneFound, open: allOpen = false }) {
+export function GroupedList({ label, groups, selected, onSelect, onHover, empty, searchLabel, noneFound, open: allOpen = false }) {
   const [query, setQuery] = useState('')
   const [toggled, setToggled] = useState(() => new Set())
   const holding = (id) => (id == null ? undefined : groups.find(g => g.items.some(i => i.id === id))?.key)
@@ -94,7 +95,10 @@ export function GroupedList({ label, groups, selected, onSelect, empty, searchLa
                   {g.items.map(i => (
                     <button key={i.id} type="button" aria-pressed={i.id === selected}
                       className={`ui-btn ui-btn-option ui-btn-small ui-group-item${i.id === selected ? ' ui-btn-active' : ''}`}
-                      onClick={() => onSelect?.(i.id)}>
+                      onClick={() => onSelect?.(i.id)}
+                      {...(onHover ? {
+                        onMouseEnter: () => onHover(i.id), onMouseLeave: () => onHover(null), onFocus: () => onHover(i.id), onBlur: () => onHover(null),
+                      } : {})}>
                       <span className="ui-group-item-text">
                         <span className="ui-group-item-label" style={i.color ? { color: i.color } : undefined}>
                           {i.color && <span className="ui-group-item-swatch" style={{ background: i.color }} aria-hidden="true" />}{i.label}

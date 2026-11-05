@@ -41,7 +41,7 @@ const KINDS = { train: { trainType: 'ZZ' }, shunting: { shuntingType: 'RR' }, mi
  * sections it runs through, as they stand.
  *
  * Routes are a station's: the station of their start signal, under which
- * they are listed; the open line has none, the block has its signals. The
+ * they are listed — the one the pointer is on drawn on the plan; the open line has none, the block has its signals. The
  * itineraries from one stopping place to another are searched here over the
  * net, and made with the routes they take.
  */
@@ -59,6 +59,14 @@ export default function RoutesPanel({
   const chosenItinerary = selection?.collection === 'itineraries' ? itineraries.find(i => i.id === selection.id) : null
   const back = { label: t('back'), onClick: () => setPage('menu') }
   const toPage = { label: t('back'), onClick: () => select(null) }
+  // The route the pointer is on in the list, drawn on the plan from its start signal to its target.
+  const [hovered, setHovered] = useState(null)
+  const shownRoute = page === 'routes' && !selection ? routes.find(r => r.id === hovered) ?? null : null
+  useEffect(() => {
+    if (!shownRoute) return undefined
+    setSketch?.({ ways: [{ pieces: wayPieces(routeStretches(net, shownRoute, signals)), strong: true }], ids: [shownRoute.startSignalId, shownRoute.targetSignalId] })
+    return () => setSketch?.(null)
+  }, [shownRoute, net, signals, setSketch])
 
   const real = signals.filter(s => s.at?.anchor === 'station')
   const signalOptions = signalChoices(net, real, t)
@@ -179,7 +187,7 @@ export default function RoutesPanel({
     return (
       <Panel title={t('section_routes')} intro={t('routes_list_intro')} back={back}>
         <GroupedList label={t('section_routes')} open searchLabel={t('search_objects')} noneFound={t('search_none')} empty={t('empty_list')}
-          groups={groups} onSelect={(id) => select({ collection: 'routes', id })} />
+          groups={groups} onHover={setHovered} onSelect={(id) => { setHovered(null); select({ collection: 'routes', id }) }} />
       </Panel>
     )
   }

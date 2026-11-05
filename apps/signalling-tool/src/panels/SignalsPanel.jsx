@@ -3,12 +3,13 @@ import { Button, Checkbox, NumberField, Option, Options, OptionsDivider, Options
 import { Panel } from './draft.jsx'
 import { SIGNAL_CATALOGUE, titleIn } from '@rail-across/core/signalling'
 import { labelOf, logicalId, newId, newLogical, newSignal } from '../model/domain.js'
-import { FUNCTION, VIRTUAL_FUNCTION, logicalSignalWord, mountingOptions, optionsOf, signalSystemOptions, signalTypeOptions } from '../labels.js'
+import { VIRTUAL_FUNCTION, functionOfChoice, functionOptions, logicalSignalWord, mountingOptions, optionsOf, signalSystemOptions, signalTypeOptions, typeForChoice } from '../labels.js'
 import { BoardIcon, LocationIcon, SignalIcon, VirtualIcon } from '../icons.jsx'
 import { Created } from './common.jsx'
 import { useFields, useSetting } from './useSetting.js'
 import { BOARD_ASPECTS, BRACKET_OFFSET, FOUNDATION_OFFSET, OFFSET, ON_FOUNDATION, bracketScreen, locationFrom, mountedFrom, signalOptions } from '../model/places.js'
-import { SPEED_SIGNAL, speedSignalSpeeds, withSpeedSignalSpeed } from '../model/routeSpeeds.js'
+import { SPEED_SIGNAL, isSpeedSignal, speedSignalSpeeds, withSpeedSignalSpeed } from '../model/routeSpeeds.js'
+import { SpeedReach } from './speedReach.jsx'
 
 /** The boards that can be set on their own: those needed (BOARD_ASPECTS). */
 const BOARDS = BOARD_ASPECTS.map(id => SIGNAL_CATALOGUE.begriffe.find(b => b.id === id)).filter(Boolean)
@@ -25,7 +26,7 @@ const BOARDS = BOARD_ASPECTS.map(id => SIGNAL_CATALOGUE.begriffe.find(b => b.id 
  * till it is committed at the panel's foot; then a click sets the next one.
  * The page offers to edit the one set (Bearbeiten).
  */
-export default function SignalsPanel({ domain, net, ops, select, mode, setMode, pending, t, language }) {
+export default function SignalsPanel({ domain, net, ops, select, mode, setMode, pending, setSketch, showOnPlan, t, language }) {
   const [page, setPage] = useState('menu')
   const [where, setWhere] = useState('new')
   const noNet = !net.tracks.length
@@ -37,7 +38,7 @@ export default function SignalsPanel({ domain, net, ops, select, mode, setMode, 
   const go = (next) => { setMade(null); setWhere('new'); setPage(next) }
   const back = { label: t('back'), onClick: () => go('menu') }
   const created = <Created what={made?.what} t={t} onEdit={() => select({ collection: made.collection, id: made.id })} />
-  const props = { domain, net, offer, remake, noNet, created, t, language }
+  const props = { domain, net, offer, remake, noNet, created, made, setSketch, showOnPlan, t, language }
 
   if (page === 'mast') return <Panel title={t('create_mast')} intro={t('create_mast_intro')} back={back}><MastPage {...props} /></Panel>
   if (page === 'board') return <Panel title={t('create_board')} intro={t('create_board_intro')} back={back}><BoardPage {...props} /></Panel>
@@ -160,10 +161,11 @@ function MastPage({ offer, remake, noNet, created, t, language }) {
 /**
  * A board of no system on its own post, one of those needed: one with a
  * figure with it — a speed signal Lf 7 by default showing, in tens, the
- * lowest speed the elements allow from where it is set to the next main
- * signal or Lf 7 ahead, as it is drawn under the mouse already.
+ * lowest speed the elements allow from where it is set to the next speed
+ * signal, Zs 3 or Lf 7, ahead, as it is drawn under the mouse already; once
+ * set, how far it holds and the element that sets its speed.
  */
-function BoardPage({ domain, net, offer, remake, noNet, created, t, language }) {
+function BoardPage({ domain, net, offer, remake, noNet, created, made, setSketch, showOnPlan, t, language }) {
   const symbolsOf = (aspect) => BOARDS.find(b => b.id === aspect)?.symbole ?? null
   // The mouse asks for it as it moves.
   const elementSpeedOf = useMemo(() => speedSignalSpeeds(net, domain.collections.signals), [net, domain.collections.signals])
@@ -178,6 +180,8 @@ function BoardPage({ domain, net, offer, remake, noNet, created, t, language }) 
   offer(makeOf(f))
   const symbols = symbolsOf(f.aspect)
   const fromElements = f.aspect === SPEED_SIGNAL && f.auto
+  // The Lf 7 set last, while it is a preview or once committed.
+  const setSpeed = domain.collections.signals.find(s => s.id === (made?.objectId ?? made?.id) && isSpeedSignal(s)) ?? null
   // A board that shows a speed shows it in tens: Zs 3 (6) is 60 km/h.
   const symbolLabel = (x) => (BOARDS.find(b => b.id === f.aspect)?.symbol_bedeutung === 'speed' ? `${x} — ${Number(x.replace(',', '.')) * 10} km/h` : x)
   return <>
@@ -190,6 +194,7 @@ function BoardPage({ domain, net, offer, remake, noNet, created, t, language }) 
       <TextField compact wide label={t('name')} value={f.name} onChange={(name) => set({ name })} />
     </div>
     {f.aspect === SPEED_SIGNAL && <p className="ui-muted">{t('create_speed_signal_hint')}</p>}
+    {setSpeed && <SpeedReach signal={setSpeed} domain={domain} net={net} setSketch={setSketch} showOnPlan={showOnPlan} t={t} />}
     <p className="ui-muted">{t('create_board_hint')}</p>
     <NoNet noNet={noNet} t={t} />
     {created}
@@ -226,7 +231,7 @@ const logicalMade = (t, language) => (s) => ({
  */
 function LogicalPage({ domain, net, offer, remake, noNet, created, onAdded, where, setWhere, t, language }) {
   const firstType = (sys) => Object.keys(SIGNAL_CATALOGUE.systeme[sys]?.signalarten ?? {})[0]
-  const makeOf = ({ system, type, fn, mast }) => (hit) => ({ ...mastAt(hit, mast), logicalSignals: [newLogical({ system, type, fn })] })
+  const makeOf = ({ system, type, fn, mast }) => (hit) => ({ ...mastAt(hit, mast), logicalSignals: [newLogical({ system, type, fn: functionOfChoice(fn) })] })
   const [f, set] = useFields({ system: 'ks', type: firstType('ks'), fn: 'entry', mast: MAST }, remake, makeOf)
   offer(makeOf(f), logicalMade(t, language))
   const masts = signalOptions(net, domain.collections.signals
@@ -238,7 +243,8 @@ function LogicalPage({ domain, net, offer, remake, noNet, created, onAdded, wher
       <SelectField compact wide label={t('system')} value={f.system} options={signalSystemOptions(language)}
         onChange={(v) => set({ system: v, type: firstType(v) })} />
       <SelectField compact wide label={t('type')} value={f.type ?? null} options={signalTypeOptions(f.system, language, t)} onChange={(v) => set({ type: v ?? undefined })} />
-      <SelectField compact wide label={t('function')} value={f.fn} options={optionsOf(FUNCTION, language)} onChange={(v) => set({ fn: v ?? 'entry' })} />
+      <SelectField compact wide label={t('function')} value={f.fn} options={functionOptions(language)}
+        onChange={(v) => { const fn = v ?? 'entry'; set({ fn, type: typeForChoice(f.system, fn, f.type) }) }} />
       <SelectField compact wide label={t('create_where')} value={where} onChange={setWhere}
         options={[{ value: 'new', label: t('create_where_new') }, { value: 'mast', label: t('create_where_mast'), disabled: !masts.length }]} />
       {where === 'mast' && (

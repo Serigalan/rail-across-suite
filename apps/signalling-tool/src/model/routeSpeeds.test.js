@@ -3,8 +3,9 @@ import { straightElement } from '@rail-across/core/geometry'
 import { signallingSpeedOf } from '@rail-across/core/signalling'
 import { added, emptyDomain } from './domain.js'
 import {
-  elementSpeed, routeElementSpeed, routeSpeedSections, speedSignalElementSpeed, speedSignalSpeed, speedSymbol, withElementSpeeds,
+  elementSpeed, routeElementSpeed, routeSpeedSections, speedSignalElementSpeed, speedSignalReach, speedSignalSpeed, speedSymbol, withElementSpeeds,
 } from './routeSpeeds.js'
+import { whereStretch } from './places.js'
 
 const EPSG = 25832
 const P = (x, y = 0) => ({ easting: 500000 + x, northing: 5700000 + y, zone: EPSG })
@@ -74,5 +75,18 @@ describe('the speeds the elements give', () => {
     expect(next.collections.routes.map(r => signallingSpeedOf(next, r))).toEqual([80, 80, null])
     // Once set, again changes nothing.
     expect(withElementSpeeds(next, net)).toMatchObject({ routes: 0, boards: 0 })
+  })
+
+  it('holds an Lf 7 up to the next Zs 3 or Lf 7 on every way, and shows the element that sets it', () => {
+    const zs3 = { ...main('n', on('t2', 80)), logicalSignals: [{ system: 'ks', type: 'main', frames: [{ kind: 'indicator', aspects: [{ aspect: 'Zs_3', symbol: '8' }] }] }] }
+    const d = domainOf([lf7('v', on('t1', 210)), zs3, main('m', on('t3', 100))])
+    const reach = speedSignalReach(net, d.collections.signals, d.collections.signals[0])
+    // Straight on to n's Zs 3; on the branch past m, which shows none, to the end of the track.
+    expect(reach.ways.map(w => [w.target?.id ?? null, w.trackIds])).toEqual([['n', ['t1', 't2']], [null, ['t1', 't3']]])
+    expect(reach.ways.map(w => w.elements.speed)).toEqual([100, 60])
+    expect(reach.elements).toEqual({ speed: 60, where: { kind: 'switch', switchId: 'w1' } })
+    // The turnout is shown by the start of its branch.
+    expect(whereStretch(net, reach.elements.where)).toEqual({ trackId: 't3', from: 0, to: 20 })
+    expect(whereStretch(net, { kind: 'track', trackId: 't1', from: 100, to: 200 })).toEqual({ trackId: 't1', from: 100, to: 200 })
   })
 })

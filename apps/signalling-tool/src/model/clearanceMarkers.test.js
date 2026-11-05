@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { straightElement } from '@rail-across/core/geometry'
 import { checkSignalling } from '@rail-across/core/signalling'
-import { added, emptyDomain, shownSpeed, signalsSpeed, withRouteSpeed } from './domain.js'
+import { added, emptyDomain, shownSpeed, signalsSpeed, withRouteSpeed, withSpeedsShown } from './domain.js'
 import { clearanceMarkersDue, isClearanceMarker, withClearanceMarkers } from './clearanceMarkers.js'
 import { detectionLayout } from './detectionLayout.js'
 
@@ -84,5 +84,14 @@ describe('the speed a route signals', () => {
     two = withRouteSpeed(two, two.collections.routes[1], null)
     expect(zs3(two)).toEqual(['10'])
     expect(two.collections.routes[1].aspects).toBeUndefined()
+  })
+
+  it('gives a speed signalled before without its Zs 3 one, in tens', () => {
+    const before = { ...d, collections: { ...d.collections, signals: d.collections.signals.map((s, i) => (i ? s : { ...s, logicalSignals: [{ ...s.logicalSignals[0], signallingSpeeds: [{ routeId: 'r1', speed: 65 }] }] })) } }
+    const { domain: shown, changed } = withSpeedsShown(before)
+    expect(changed).toBe(1)
+    expect(zs3(shown)).toEqual(['6'])
+    expect(shown.collections.signals[0].logicalSignals[0].signallingSpeeds).toEqual([{ routeId: 'r1', speed: 60 }])
+    expect(withSpeedsShown(shown).changed).toBe(0)
   })
 })

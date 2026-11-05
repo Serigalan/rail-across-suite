@@ -15,7 +15,8 @@ import { ItineraryIcon, OverlapIcon, RouteIcon } from '../icons.jsx'
 import { stationName } from '../model/stations.js'
 import { ItineraryEditor, ItineraryList, ItinerarySearch } from './Itineraries.jsx'
 import { CheckList, EditorHead, ObjectFindings } from './common.jsx'
-import { aspectText, pickingSignal, signalOptions as signalChoices, speedWhereText, trackName } from '../model/places.js'
+import { aspectText, pickingSignal, signalOptions as signalChoices, trackName } from '../model/places.js'
+import { ElementLink } from './speedReach.jsx'
 import { isMainSignal } from '../model/itineraries.js'
 import { nextSignals, routeSections, routeStretches, runStretches, wayPieces } from '../model/routeSearch.js'
 
@@ -81,7 +82,7 @@ export default function RoutesPanel({
     return (
       <Panel title={t('object_routes')} back={toPage}>
         <RouteEditor key={chosenRoute.id} route={chosenRoute} name={routeName(chosenRoute)} domain={domain} net={net} findings={findings} extents={extents}
-          signalOptions={signalOptions} readOnly={readOnly} t={t} language={language} select={select}
+          signalOptions={signalOptions} readOnly={readOnly} t={t} language={language} select={select} setSketch={setSketch} showOnPlan={showOnPlan}
           onChange={(r) => ops.update('routes', r)} onDelete={() => ops.remove('routes', chosenRoute.id)} onNewOverlap={newOverlap}
           onSignal={(speed) => ops.replaceAll(withRouteSpeed(domain, chosenRoute, speed))}
           onMeasure={() => {
@@ -260,7 +261,7 @@ function NewOverlap({ signalOptions, onCreate, t }) {
   </>
 }
 
-function RouteEditor({ route, name, domain, net, findings, extents, signalOptions, onChange, onDelete, onNewOverlap, onMeasure, onSignal, select, readOnly, t, language }) {
+function RouteEditor({ route, name, domain, net, findings, extents, signalOptions, onChange, onDelete, onNewOverlap, onMeasure, onSignal, select, setSketch, showOnPlan, readOnly, t, language }) {
   const { signals, overlaps } = domain.collections
   const set = (patch) => onChange({ ...route, ...patch })
   const start = signals.find(s => s.id === route.startSignalId)
@@ -284,6 +285,9 @@ function RouteEditor({ route, name, domain, net, findings, extents, signalOption
   // What its elements allow, section by section between the Lf 7 on it.
   const sections = route.kind === 'train' && start && target ? routeSpeedSections(net, route, signals) : []
   const derived = sections[0]?.elements ?? null
+  // The element shown on the plan is marked over the route's way, till the route is left.
+  const way = { ways: [{ pieces: wayPieces(routeStretches(net, route, signals)), strong: true }], ids: [route.startSignalId, route.targetSignalId] }
+  useEffect(() => () => setSketch?.(null), [setSketch])
 
   return (
     <div className="tool-editor">
@@ -317,7 +321,7 @@ function RouteEditor({ route, name, domain, net, findings, extents, signalOption
         </div>
         {derived && (
           <div className="ui-row">
-            <span className="ui-grow ui-muted">{t('route_element_speed', { speed: derived.speed, where: speedWhereText(net, derived.where) })}</span>
+            <ElementLink net={net} elements={derived} base={way} setSketch={setSketch} showOnPlan={showOnPlan} t={t} />
             {setter && !readOnly && speed !== shownSpeed(derived.speed) && (
               <Button size="small" onClick={() => onSignal(derived.speed)}>{t('take_speed', { speed: shownSpeed(derived.speed) })}</Button>
             )}

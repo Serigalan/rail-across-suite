@@ -254,7 +254,7 @@ function iconCanvas(size = ICON_PX) {
 
 const imageOf = ({ c, g }) => g.getImageData(0, 0, c.width, c.height)
 
-/** One symbol, as the plan drew it in SVG: a signal a short mast with its head ahead, a board a square … */
+/** One symbol, as the plan drew it in SVG: a signal a short mast with its head ahead, a board a square, a clearance marker a circle … */
 function drawSymbol(name, sel, pal) {
   const cv = iconCanvas()
   const { g } = cv
@@ -282,7 +282,12 @@ function drawSymbol(name, sel, pal) {
     const tone = name.slice(4)
     if (tone === 'virtual') {
       stroke('M4,0 A4,4 0 1 0 -4,0 A4,4 0 1 0 4,0 Z', edge, edgeWidth(1.2), [2, 2])
-    } else if (tone === 'board' || tone === 'marker') {
+    } else if (tone === 'marker') {
+      // The clearance marker: a circle between its two tracks.
+      const d = 'M3.5,0 A3.5,3.5 0 1 0 -3.5,0 A3.5,3.5 0 1 0 3.5,0 Z'
+      fill(d, TONE_FILL[tone])
+      stroke(d, edge, edgeWidth(1.2))
+    } else if (tone === 'board') {
       const d = 'M-3.5,-3.5 L3.5,-3.5 L3.5,3.5 L-3.5,3.5 Z'
       fill(d, TONE_FILL[tone])
       stroke(d, edge, edgeWidth(1.2))

@@ -3,6 +3,7 @@ import { schematicLayout, schematicPlacer, schematicStrip } from '@rail-across/c
 import { STATUS_COLOR } from '@rail-across/core/track'
 import { labelOf } from '../model/domain.js'
 import { BaliseSymbol, DerailerSymbol, DetectionSymbol, SANS, SignalSymbol } from './planzeichen.jsx'
+import { isClearanceMarker } from '../model/clearanceMarkers.js'
 import { signalSymbolOf, symbolLength } from './symbols.js'
 
 /**
@@ -137,7 +138,8 @@ export default function SchematicView({ net, platforms, domain, selection, highl
       const ax = (loc.direction === 'down' ? -1 : 1) * p.dir
       out.push({ collection, obj, x: p.x, y: p.y, sy, ax, ...extra })
     }
-    for (const s of domain.collections.signals) put('signals', s, s.at, { symbol: signalSymbolOf(s) })
+    // A clearance marker is the site plan's alone.
+    for (const s of domain.collections.signals.filter(x => !isClearanceMarker(x))) put('signals', s, s.at, { symbol: signalSymbolOf(s) })
     for (const d of domain.collections.detectionPoints) put('detectionPoints', d, d.at)
     for (const b of domain.collections.balises) put('balises', b, b.at)
     for (const e of domain.collections.switchElements) if (e.derailer) put('switchElements', e, e.derailer.at)
@@ -316,8 +318,8 @@ function Mark({ mk, at: [x, y], sel, drafted, t }) {
           <SignalSymbol symbol={mk.symbol} ax={mk.ax} fg={fg} bg={bg} />
         </g>
         {name && (
-          // Beyond the screen, turned the way the signal acts, as the symbols' texts are.
-          <text transform={`translate(${(x + mk.ax * (len + 7)).toFixed(1)},${y.toFixed(1)}) rotate(${-90 * mk.ax})`} textAnchor="middle"
+          // Beyond the screen, turned the way the signal acts, as the symbols' texts are: upright with the signal, its foot below.
+          <text transform={`translate(${(x + mk.ax * (len + 7)).toFixed(1)},${y.toFixed(1)}) rotate(${90 * mk.ax})`} textAnchor="middle"
             dominantBaseline="central" className="schema-name" style={{ fontFamily: SANS }}>{name}</text>
         )}
       </g>

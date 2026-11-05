@@ -2,7 +2,7 @@ import { NumberField, Section, SelectField } from '@rail-across/ui'
 import { SIGNAL_CATALOGUE, signalKindOf } from '@rail-across/core/signalling'
 import { labelOf, logicalId, withKind, withLogical, withRouteSpeed } from '../../model/domain.js'
 import { signalOptions } from '../../model/places.js'
-import { FUNCTION, logicalSignalWord, optionsOf, signalSystemOptions, signalTypeOptions } from '../../labels.js'
+import { functionChoiceOf, functionOfChoice, functionOptions, logicalSignalWord, signalSystemOptions, signalTypeOptions, typeForChoice } from '../../labels.js'
 import { CheckList, EditorHead, ObjectFindings } from '../common.jsx'
 import FramesEditor from '../frames.jsx'
 
@@ -58,8 +58,12 @@ export default function LogicalEditor({ id, found, domain, net, findings, select
           onChange={(v) => change(withKind(logical, v, firstType(v)))} />
         <SelectField compact wide label={t('type')} value={logical.type ?? null} empty={t('none')} disabled={readOnly}
           options={signalTypeOptions(logical.system, language, t)} onChange={(v) => change(withKind(logical, logical.system, v ?? undefined))} />
-        <SelectField compact wide label={t('function')} value={logical.function ?? null} empty={t('none')} disabled={readOnly}
-          options={optionsOf(FUNCTION, language)} onChange={(v) => set({ function: v ?? undefined })} />
+        <SelectField compact wide label={t('function')} value={functionChoiceOf(logical.function, logical.type) ?? null} empty={t('none')} disabled={readOnly}
+          options={functionOptions(language, logical.function)} onChange={(v) => {
+            // A distant signal or its repeater is of its own kind as well.
+            const type = typeForChoice(logical.system, v, logical.type)
+            change({ ...(type !== logical.type ? withKind(logical, logical.system, type) : logical), function: functionOfChoice(v) ?? undefined })
+          }} />
       </div>
 
       <Section title={t('signalling_speeds')}>

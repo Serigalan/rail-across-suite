@@ -19,13 +19,14 @@ export const SANS = 'var(--ui-font, system-ui), system-ui, sans-serif'
  */
 
 /**
- * A text on a symbol, centred on (x, y) and turned the way the signal acts,
- * as the plans write it: its top towards the mast. In a frame mirrored by
- * `ax` it is turned back, so it is never written mirrored.
+ * A text on a symbol, centred on (x, y) and turned the way the signal acts:
+ * read with the signal upright — its foot below, its screen above —, its top
+ * towards the screen. In a frame mirrored by `ax` it is turned back, so it is
+ * never written mirrored.
  */
 function Label({ x, y, t, size = 7, ax, color }) {
   return (
-    <text transform={`translate(${x},${y}) scale(${ax},1) rotate(${-90 * ax})`} textAnchor="middle" dominantBaseline="central"
+    <text transform={`translate(${x},${y}) scale(${ax},1) rotate(${90 * ax})`} textAnchor="middle" dominantBaseline="central"
       fontSize={size} fontWeight={500} fill={color} stroke="none" className="schema-text" style={{ fontFamily: SANS }}>{t}</text>
   )
 }

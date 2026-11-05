@@ -1,11 +1,12 @@
 import { Button, Checkbox, NumberField, Option, Options, Section, SelectField, TextField } from '@rail-across/ui'
 import { SIGNAL_CATALOGUE } from '@rail-across/core/signalling'
 import { labelOf, logicalId, newLogical } from '../../model/domain.js'
-import { FUNCTION, VIRTUAL_FUNCTION, logicalSignalWord, mountingOptions, optionsOf, word } from '../../labels.js'
+import { VIRTUAL_FUNCTION, functionOptions, functionWord, logicalSignalWord, mountingOptions, optionsOf } from '../../labels.js'
 import { SignalIcon } from '../../icons.jsx'
 import { EditorHead, LocationFields, ObjectFindings, PlaneLine } from '../common.jsx'
 import FramesEditor from '../frames.jsx'
-import { BRACKET_OFFSET, FOUNDATION_OFFSET, ON_FOUNDATION, bracketScreen, farMastPoint, foundationPoint, gantryFarOffset, sideAlong, speedWhereText, trackName } from '../../model/places.js'
+import { SpeedReach } from '../speedReach.jsx'
+import { BRACKET_OFFSET, FOUNDATION_OFFSET, ON_FOUNDATION, bracketScreen, farMastPoint, foundationPoint, gantryFarOffset, sideAlong, trackName } from '../../model/places.js'
 import { isSpeedSignal, speedSignalElementSpeed, speedSignalSpeed, speedSymbol, withSpeedSignalSpeed } from '../../model/routeSpeeds.js'
 import { stationName } from '../../model/stations.js'
 
@@ -15,9 +16,10 @@ import { stationName } from '../../model/stations.js'
  * boards it carries of no system, and its logical signals, each opened in an
  * editor of its own; a virtual signal has its function instead. On a gantry
  * or a bracket its location is its screen's, and its foundation has its own.
- * A speed signal Lf 7 says what the elements ahead of it allow.
+ * A speed signal Lf 7 says how far it holds and what the elements there
+ * allow; a signal with routes from it, the Zs 3 that shows their speeds.
  */
-export default function LocationEditor({ signal, domain, net, core, findings, onChange, onDelete, onPlace, select, readOnly, t, language }) {
+export default function LocationEditor({ signal, domain, net, core, findings, onChange, onDelete, onPlace, select, setSketch, showOnPlan, readOnly, t, language }) {
   const set = (patch) => onChange({ ...signal, ...patch })
   const logical = signal.logicalSignals ?? []
   const free = Object.keys(SIGNAL_CATALOGUE.systeme).filter(sys => !logical.some(l => l.system === sys))
@@ -44,7 +46,7 @@ export default function LocationEditor({ signal, domain, net, core, findings, on
         ) : <>
           {!logical.length && (
             <SelectField compact wide label={t('function')} value={signal.function ?? null} empty={t('none')} disabled={readOnly}
-              options={optionsOf(FUNCTION, language)} onChange={(v) => set({ function: v ?? undefined })} />
+              options={functionOptions(language, signal.function, { repeater: false })} onChange={(v) => set({ function: v ?? undefined })} />
           )}
           <SelectField compact label={t('mounting')} value={signal.mounting ?? null} empty={t('none')} disabled={readOnly}
             options={mountingOptions(language, signal.mounting)} onChange={(v) => {
@@ -60,14 +62,15 @@ export default function LocationEditor({ signal, domain, net, core, findings, on
         </>}
       </div>
 
-      {isSpeedSignal(signal) && <SpeedSignalSection signal={signal} domain={domain} net={net} set={onChange} readOnly={readOnly} t={t} />}
+      {isSpeedSignal(signal) && <SpeedSignalSection signal={signal} domain={domain} net={net} set={onChange} setSketch={setSketch} showOnPlan={showOnPlan} readOnly={readOnly} t={t} />}
+      {logical.length > 0 && <Zs3Section signal={signal} domain={domain} select={select} t={t} />}
 
       {signal.kind === 'real' && (
         <Section title={t('logical_signals')}>
           <p className="ui-muted">{t('logical_signals_hint')}</p>
           <Options>
             {logical.map(l => (
-              <Option key={l.system} icon={<SignalIcon />} end={l.function ? word(FUNCTION, l.function, language) : null}
+              <Option key={l.system} icon={<SignalIcon />} end={l.function ? functionWord(l.function, l.type, language) : null}
                 onClick={() => select({ collection: 'logicalSignals', id: logicalId(signal.id, l.system) })}>
                 {logicalSignalWord(l, language)}
               </Option>
@@ -145,21 +148,40 @@ function farText(signal, t) {
 }
 
 /** What an Lf 7 shows, and what the elements from it to the next main signal or Lf 7 allow. */
-function SpeedSignalSection({ signal, domain, net, set, readOnly, t }) {
+function SpeedSignalSection({ signal, domain, net, set, setSketch, showOnPlan, readOnly, t }) {
   const shown = speedSignalSpeed(signal)
   const derived = speedSignalElementSpeed(net, domain.collections.signals, signal)
   const fits = derived && speedSymbol(derived.speed) === String((shown ?? 0) / 10)
   return (
     <Section title={t('speed_signal_section')}>
       <p>{t('speed_signal_shows', { speed: shown != null ? `${shown} km/h` : '—' })}</p>
-      {derived && (
-        <div className="ui-row">
-          <span className="ui-grow ui-muted">{t('speed_signal_elements', { speed: derived.speed, where: speedWhereText(net, derived.where) })}</span>
-          {!readOnly && !fits && (
-            <Button size="small" onClick={() => set(withSpeedSignalSpeed(signal, derived.speed))}>{t('take_speed', { speed: Number(speedSymbol(derived.speed)) * 10 })}</Button>
-          )}
+      <SpeedReach signal={signal} domain={domain} net={net} setSketch={setSketch} showOnPlan={showOnPlan} t={t}>
+        {!readOnly && derived && !fits && (
+          <Button size="small" onClick={() => set(withSpeedSignalSpeed(signal, derived.speed))}>{t('take_speed', { speed: Number(speedSymbol(derived.speed)) * 10 })}</Button>
+        )}
+      </SpeedReach>
+    </Section>
+  )
+}
+
+/** The Zs 3 a signal shows for the routes from it: each figure, its speed and the routes it is shown for. */
+function Zs3Section({ signal, domain, select, t }) {
+  const { signals, routes } = domain.collections
+  const figures = [...new Set((signal.logicalSignals ?? []).flatMap(l => l.frames ?? []).filter(f => f.kind === 'indicator')
+    .flatMap(f => f.aspects).filter(a => a.aspect === 'Zs_3' && a.symbol).map(a => a.symbol))].sort((a, b) => Number(a) - Number(b))
+  const shownFor = (figure) => routes.filter(r => r.startSignalId === signal.id && (r.aspects ?? []).some(a => a.signalId === signal.id && a.aspect === 'Zs_3' && a.symbol === figure))
+  const routeName = (r) => r.name ?? `${labelOf('signals', signal, t)} → ${labelOf('signals', signals.find(s => s.id === r.targetSignalId), t)}`
+  return (
+    <Section title={t('zs3_at_signal')}>
+      <p className="ui-muted">{t('zs3_at_signal_hint')}</p>
+      {figures.length ? figures.map(figure => (
+        <div key={figure} className="tool-zs3-row">
+          <strong>{t('zs3_figure', { figure, speed: Number(figure) * 10 })}</strong>
+          {shownFor(figure).map(r => (
+            <button key={r.id} type="button" className="ui-link" onClick={() => select({ collection: 'routes', id: r.id })}>{routeName(r)}</button>
+          ))}
         </div>
-      )}
+      )) : <p className="ui-muted">{t('zs3_none')}</p>}
     </Section>
   )
 }

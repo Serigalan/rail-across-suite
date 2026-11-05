@@ -12,7 +12,7 @@ import { magnetFrequency, magnetName, magnetsDue, signalMagnet, withSignal } fro
 import { LAYOUT, detectionLayout, wantedPoints } from './detectionLayout.js'
 import { nextSignals, routeSections, routeStretches, runStretches, wayPieces } from './routeSearch.js'
 import { trackSectionExtents } from '@rail-across/core/signalling'
-import { mountingOptions } from '../labels.js'
+import { functionChoiceOf, functionOfChoice, functionOptions, functionWord, mountingOptions, typeForChoice } from '../labels.js'
 import { changedIds, redo, startHistory, step, stepOf, stepsOf, travel, undo } from './history.js'
 
 const EPSG = 25832
@@ -66,6 +66,12 @@ describe('setting objects beside the track', () => {
     expect(farMastPoint(net, { mounting: 'gantry', at: on('t1', 50), foundation: { side: 'right', offset: 3.5 } }).northing).toBeCloseTo(5700003.5, 6)
     expect(farMastPoint(net, { mounting: 'bracket', at: on('t1', 50), foundation: { side: 'right', offset: 3.5 } })).toBeNull()
     expect(mountingOptions('de').map(o => o.value)).toEqual(['mast', 'bracket', 'gantry'])
+    expect(functionOptions('de').map(o => o.label)).toEqual(['Einfahrsignal', 'Ausfahrsignal', 'Zwischensignal', 'Blocksignal', 'Vorsignal', 'Vorsignalwiederholer', 'Alleinstehendes Zusatzsignal'])
+    expect(functionOptions('de', 'entryExit').map(o => o.value).at(-1)).toBe('entryExit')
+    expect(functionOptions('de', null, { repeater: false }).map(o => o.value)).not.toContain('distantRepeater')
+    // A repeater is a distant signal of the kind distantRepeater, where the system has that kind.
+    expect([functionOfChoice('distantRepeater'), typeForChoice('ks', 'distantRepeater', 'main'), typeForChoice('sh', 'distantRepeater', 'shunting')]).toEqual(['distant', 'distantRepeater', 'shunting'])
+    expect([functionChoiceOf('distant', 'distantRepeater'), functionWord('distant', 'distantRepeater', 'de'), functionWord('entryExit', 'main', 'de')]).toEqual(['distantRepeater', 'Vorsignalwiederholer', 'Ein- und Ausfahrsignal'])
     expect(mountingOptions('de', 'special').map(o => o.value)).toEqual(['mast', 'bracket', 'gantry', 'special'])
   })
 

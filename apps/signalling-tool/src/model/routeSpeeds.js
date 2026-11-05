@@ -1,5 +1,4 @@
 import { aspectOf, aspectSpeed, branchSpeedOnRun } from '@rail-across/core/signalling'
-import { isMainSignal } from './itineraries.js'
 import { replaced, signalsSpeed, withRouteSpeed } from './domain.js'
 import { actsAlong, nextSignals, routeStretches, runStretches } from './routeSearch.js'
 
@@ -7,9 +6,9 @@ import { actsAlong, nextSignals, routeStretches, runStretches } from './routeSea
  * The speeds the elements give: a route is run at the lowest design speed of
  * the track elements it runs over and of the turnouts it passes on their
  * branch, up to the first speed signal (Lf 7) on it that acts its way; each
- * Lf 7 shows the lowest from where it stands to the next main signal or
- * Lf 7 ahead, over every way the net offers there — the board is the same
- * for every route past it. Zs 3 and Lf 7 show tens: a speed is rounded down,
+ * Lf 7 shows the lowest from where it stands to the next speed signal — a
+ * Zs 3 or an Lf 7 — ahead, over every way the net offers there: the board is
+ * the same for every route past it. Zs 3 and Lf 7 show tens: a speed is rounded down,
  * and a route's start signal gets the Zs 3 that shows it (withRouteSpeed).
  */
 
@@ -135,20 +134,28 @@ export function routeSpeedSections(net, route, signals) {
 /** What a route is run at as the elements give it: the lowest speed up to its first Lf 7 — { speed, where } or null. */
 export const routeElementSpeed = (net, route, signals) => routeSpeedSections(net, route, signals)[0]?.elements ?? null
 
+/** Whether a signal shows a speed: an Lf 7, or a Zs 3 — on a plate of its own or among its logical signals' indicators. */
+export const showsSpeed = (s) => s?.kind === 'real' && s.at?.anchor === 'station' && (isSpeedSignal(s)
+  || [...(s.frames ?? []), ...(s.logicalSignals ?? []).flatMap(l => l.frames ?? [])].some(f => (f.aspects ?? []).some(a => a.aspect === 'Zs_3')))
+
 /**
- * What an Lf 7 at a place shows as the elements give it: the lowest speed
- * from there to the next main signal or Lf 7 ahead, over every way the net
- * offers, to where it ends where there is none — { speed, where } or null.
+ * How far an Lf 7's speed holds: over every way the net offers ahead of it
+ * to the next speed signal — a Zs 3 or an Lf 7 —, to where the net ends
+ * where there is none. { ways: [{ target, trackIds, length, stretches,
+ * elements }], elements } — each way with what its elements allow
+ * (elementSpeed), and the lowest of them all, which the Lf 7 shows.
  */
-export function speedSignalElementSpeed(net, signals, signal) {
-  const ways = nextSignals(net, signals, signal, { isTarget: (s) => isMainSignal(s) || isSpeedSignal(s), ends: true })
-  let best = null
-  for (const way of ways) {
-    const got = elementSpeed(net, runStretches(net, signal.at, way.trackIds, way.target?.at))
-    if (got && (!best || got.speed < best.speed)) best = got
-  }
-  return best
+export function speedSignalReach(net, signals, signal) {
+  const ways = nextSignals(net, signals, signal, { isTarget: showsSpeed, ends: true }).map(way => {
+    const stretches = runStretches(net, signal.at, way.trackIds, way.target?.at)
+    return { ...way, stretches, elements: elementSpeed(net, stretches) }
+  })
+  const elements = ways.map(w => w.elements).filter(Boolean).sort((a, b) => a.speed - b.speed)[0] ?? null
+  return { ways, elements }
 }
+
+/** What an Lf 7 at a place shows as the elements give it (speedSignalReach): { speed, where } or null. */
+export const speedSignalElementSpeed = (net, signals, signal) => speedSignalReach(net, signals, signal).elements
 
 /** speedSignalElementSpeed's speed for an Lf 7 anywhere on the net, worked out once a metre. */
 export function speedSignalSpeeds(net, signals) {

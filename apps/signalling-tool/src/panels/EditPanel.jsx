@@ -41,7 +41,7 @@ function signalGroup(s) {
  * each in a colour of its own, none in its neighbour's, and the list names
  * each in it.
  */
-export default function EditPanel({ domain, net, core, findings, extents, selection, select, ops, mode, setMode, setSketch, readOnly, t, language }) {
+export default function EditPanel({ domain, net, core, findings, extents, selection, select, ops, mode, setMode, setSketch, showOnPlan, readOnly, t, language }) {
   const { signals, detectionPoints, trackSections, balises } = domain.collections
   // The kind listed, or null for the menu of them.
   const [listed, setListed] = useState(null)
@@ -59,7 +59,7 @@ export default function EditPanel({ domain, net, core, findings, extents, select
     return () => setSketch?.(null)
   }, [colouring, trackSections, extents, colors, setSketch, t])
   const toOverview = { label: t('back'), onClick: () => select(null) }
-  const editorProps = { domain, net, core, findings, extents, ops, mode, setMode, select, readOnly, t, language }
+  const editorProps = { domain, net, core, findings, extents, ops, mode, setMode, setSketch, showOnPlan, select, readOnly, t, language }
   const find = (name) => domain.collections[name].find(o => o.id === selection?.id)
 
   switch (selection?.collection) {

@@ -12,7 +12,7 @@ import { api } from './api.js'
 import { projectsUrl } from './suite.js'
 import { freshCopy, keepCopy } from './workingCopy.js'
 import { netDrawing } from './model/net.js'
-import { added, cascadeOf, deleted, domainOf, findLogical, labelOf, recordOf, replaced, signallingOf, withSignalling } from './model/domain.js'
+import { added, cascadeOf, deleted, domainOf, findLogical, labelOf, recordOf, replaced, signallingOf, withSignalling, withSpeedsShown } from './model/domain.js'
 import { waysBetween } from './model/itineraries.js'
 import { routeStretches, runStretches, wayPieces } from './model/routeSearch.js'
 import { logicalSignalWord } from './labels.js'
@@ -187,13 +187,15 @@ export default function Editor({ project, variant, head, copy: opened, readOnly 
     remove: (collection, id) => setDialog({ kind: 'delete', collection, id }),
   }), [edit])
 
-  // Every switch has its clearance markers Ra 12: those it lacks are set as the tool opens, or the net brings new switches — a step of their own.
+  // Every switch has its clearance markers Ra 12, every route's speed its Zs 3 at the start signal: what is lacking
+  // is set as the tool opens, or the net brings new switches — a step of its own.
   useEffect(() => {
     if (readOnly) return
-    const { domain: next, added: n } = withClearanceMarkers(now.current, net)
-    if (!n) return
+    const { domain: marked, added: n } = withClearanceMarkers(now.current, net)
+    const { domain: next, changed: m } = withSpeedsShown(marked)
+    if (!n && !m) return
     setHistory(h => step(h, next))
-    setNotice({ tone: 'info', text: t('clearance_markers_set', { n }) })
+    setNotice({ tone: 'info', text: [n ? t('clearance_markers_set', { n }) : null, m ? t('speeds_shown_set', { n: m }) : null].filter(Boolean).join(' ') })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [net, readOnly])
 

@@ -1,4 +1,4 @@
-import { kmForTrackPoint, trackLabel, pointAtStation } from '@rail-across/core/track'
+import { kmForTrackPoint, trackLabel, pointAtStation, portEnd, portTrack, trackLength } from '@rail-across/core/track'
 import { aspectOf } from '@rail-across/core/signalling'
 import { labelOf } from './domain.js'
 
@@ -25,6 +25,24 @@ export function switchName(net, id) {
 export const speedWhereText = (net, where) => (where?.kind === 'switch'
   ? switchName(net, where.switchId)
   : where ? `${trackName(net, where.trackId)} ${Math.round(where.from)}–${Math.round(where.to)} m` : '')
+
+/** How far along its branch a turnout is shown, where it sets a speed [m]. */
+const BRANCH_SHOWN = 20
+
+/**
+ * The stretch of track that sets a speed the elements give (routeSpeeds'
+ * `where`), to show on the plan: the element's, or a turnout's branch as it
+ * leaves it. Null where the net has it no more.
+ */
+export function whereStretch(net, where) {
+  if (where?.kind === 'track') return { trackId: where.trackId, from: where.from, to: where.to }
+  const sw = where?.kind === 'switch' ? net.switches.find(x => x.switchId === where.switchId) : null
+  const trackId = sw && portTrack(sw, 'B1')
+  const track = trackId && net.tracks.find(x => x.id === trackId)
+  if (!track) return null
+  const len = trackLength(track)
+  return portEnd(sw, 'B1') === 'END' ? { trackId, from: Math.max(0, len - BRANCH_SHOWN), to: len } : { trackId, from: 0, to: Math.min(BRANCH_SHOWN, len) }
+}
 
 /**
  * Signals to choose from in a list: each by its designation and the track it

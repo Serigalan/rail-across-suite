@@ -1,5 +1,5 @@
 import { stationRegister } from '@rail-across/core/document'
-import { CATALOGUE_REF, baliseKindOf, protectionSystemOf, signalKindOf } from '@rail-across/core/signalling'
+import { CATALOGUE_REF, baliseKindOf, protectionSystemOf, signalKindOf, signallingSpeedOf } from '@rail-across/core/signalling'
 
 /**
  * The signalling domain as the tool edits it: pure functions from one state
@@ -274,6 +274,23 @@ export function signalsSpeed(domain, route, speed) {
   const current = domain.collections.routes.find(r => r.id === route.id) ?? route
   return (current.aspects ?? []).some(a => a.signalId === start.id && a.aspect === 'Zs_3' && a.symbol === symbol)
     && (start.logicalSignals ?? []).some(l => (l.frames ?? []).some(f => f.kind === 'indicator' && f.aspects.some(a => a.aspect === 'Zs_3' && a.symbol === symbol)))
+}
+
+/**
+ * The domain with every route's speed shown as withRouteSpeed shows it: in
+ * tens, by a Zs 3 at its start signal — for the speeds signalled before
+ * that was so. { domain, changed } — how many routes it changed.
+ */
+export function withSpeedsShown(domain) {
+  let next = domain
+  let changed = 0
+  for (const route of domain.collections.routes) {
+    const speed = signallingSpeedOf(next, route)
+    if (speed == null || signalsSpeed(next, route, speed)) continue
+    const set = withRouteSpeed(next, route, speed)
+    if (set !== next) { next = set; changed++ }
+  }
+  return { domain: next, changed }
 }
 
 /**

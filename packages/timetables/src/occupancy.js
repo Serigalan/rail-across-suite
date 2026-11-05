@@ -105,7 +105,8 @@ export function stretchesOf(path, from, to) {
 
 // The extents of a record's track sections, kept as long as the record is.
 const extentsCache = new WeakMap()
-function extentsOf(record) {
+/** Where a record's track sections lie: Map id → { parts: [{ trackId, from, to }] } (trackSectionExtents), kept as long as the record is. */
+export function extentsOf(record) {
   if (!record) return new Map()
   if (!extentsCache.has(record)) {
     const sections = record.signalling?.collections?.trackSections ?? []

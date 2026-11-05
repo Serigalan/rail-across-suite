@@ -6,6 +6,6 @@ export { curveResistance, directionOf, findPath, heightProfile, locationAt, offs
 export { legThrough, routeThrough, routeVia, signalledSpeeds } from './route.js'
 export { governedLimits, marginValue, simulationRequest } from './request.js'
 export { runWith, simulate } from './engine.js'
-export { lngLatAt, nearestLocation, netGeoJSON, netLines, pathGeoJSON, placesOf } from './places.js'
+export { lngLatAt, nearestLocation, netGeoJSON, netLines, pathGeoJSON, pathLine, placesOf } from './places.js'
 export { formatDistance, formatTime, pointAt, timeAtPosition } from './format.js'
 export { crossingSpeed, lastDirection, placeOf, stationById, stationKey, stationNamed, stationTargets, stationsAlong, stationsOf, trackLabel } from './stations.js'

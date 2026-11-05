@@ -31,6 +31,7 @@ export const ChartIcon = () => <Svg><path d="M3 3v18h18" /><path d="M6 17c2-7 4-
 export const TimeIcon = () => <Svg><circle cx="12" cy="14" r="7" /><path d="M12 10v4l2.5 2M10 3h4M12 3v4" /></Svg>
 /** The graphical timetable: stations across, trains as lines down through time. */
 export const GraphIcon = () => <Svg><path d="M4 3v18M20 3v18" strokeOpacity=".5" /><path d="M4 5l16 7M4 12l16 7M4 20l16-11" /></Svg>
+export const LiveIcon = () => <Svg><path d="M3 20c4-2 5-9 9-9s5 7 9 9" /><circle cx="12" cy="11" r="2.4" /><path d="M12 3v3" /></Svg>
 export const HomeIcon = () => <Svg><path d="M3 11l9-7 9 7" /><path d="M5 10v10h14V10" /></Svg>
 export const SettingsIcon = () => <Svg><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" /></Svg>
 export const UpIcon = () => <Svg><path d="M6 15l6-6 6 6" /></Svg>

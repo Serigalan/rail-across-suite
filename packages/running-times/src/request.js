@@ -5,7 +5,8 @@ import { rollingStockOf } from '@rail-across/vehicles'
 /**
  * The request the simulation takes (rail-across-sim's SimulationRequest),
  * from a train's way over the net: the path's length, grades and speed
- * limits — the layout's design speeds and the speeds the signals signal —,
+ * limits — the speeds the signals signal first, the layout's design speeds
+ * only where no signal signals one (governedLimits) —,
  * the train — a vehicle, its traction `{ mode, comfort }` —, its stops and
  * the margin. Returns { request, properties }.
  *
@@ -21,7 +22,7 @@ export function simulationRequest(record, path, { vehicle, traction = {}, stops 
   const properties = pathProperties(record, path)
   const signalled = signalledSpeeds(record, path)
   const length = properties.length
-  const limits = [...properties.speedLimits, ...signalled]
+  const limits = governedLimits(properties.speedLimits, signalled)
   if (endSpeed != null && Number.isFinite(endSpeed)) limits.push({ begin: Math.max(0, length - 1), end: length, speed: endSpeed, source: 'boundary' })
   const rollingStock = rollingStockOf(vehicle, traction)
   const schedule = stops.map(s => ({
@@ -42,7 +43,34 @@ export function simulationRequest(record, path, { vehicle, traction = {}, stops 
     initial_speed: startSpeed > 0 ? Math.min(startSpeed, startCap(limits, rollingStock)) : 0,
     time_step: timeStep,
   }
-  return { request, properties: { ...properties, signalled } }
+  // A design speed is missed only where no signal signals one either.
+  return { request, properties: { ...properties, signalled, gaps: { ...properties.gaps, speed: uncovered(properties.gaps.speed, signalled) } } }
+}
+
+/**
+ * The speed limits a train runs at: what the signals signal (`signalled`)
+ * where they signal a speed — higher or lower than the design speed there —,
+ * the design speeds (`design`) of the stretches no signal speaks for.
+ */
+export function governedLimits(design, signalled) {
+  return [...uncovered(design, signalled), ...signalled].sort((a, b) => a.begin - b.begin)
+}
+
+/** The parts of spans along the path ([{ begin, end, … }]) that none of `covered` covers. */
+function uncovered(spans, covered) {
+  const by = [...covered].sort((a, b) => a.begin - b.begin)
+  const out = []
+  for (const d of spans) {
+    let at = d.begin
+    for (const c of by) {
+      if (c.end <= at || c.begin >= d.end) continue
+      if (c.begin > at) out.push({ ...d, begin: at, end: c.begin })
+      at = Math.max(at, c.end)
+      if (at >= d.end) break
+    }
+    if (at < d.end) out.push({ ...d, begin: at })
+  }
+  return out
 }
 
 /**

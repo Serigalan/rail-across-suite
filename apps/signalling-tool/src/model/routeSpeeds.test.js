@@ -6,6 +6,7 @@ import {
   elementSpeed, routeElementSpeed, routeSpeedSections, speedSignalElementSpeed, speedSignalReach, speedSignalSpeed, speedSymbol, withElementSpeeds,
 } from './routeSpeeds.js'
 import { whereStretch } from './places.js'
+import { speedRanges } from './speedRanges.js'
 
 const EPSG = 25832
 const P = (x, y = 0) => ({ easting: 500000 + x, northing: 5700000 + y, zone: EPSG })
@@ -88,5 +89,19 @@ describe('the speeds the elements give', () => {
     // The turnout is shown by the start of its branch.
     expect(whereStretch(net, reach.elements.where)).toEqual({ trackId: 't3', from: 0, to: 20 })
     expect(whereStretch(net, { kind: 'track', trackId: 't1', from: 100, to: 200 })).toEqual({ trackId: 't1', from: 100, to: 200 })
+  })
+
+  it('joins where each signal signals a speed into a range, coloured apart from the one it leads to', () => {
+    const d = domainOf([main('a', on('t1', 20)), lf7('v', on('t1', 210), '12'), main('n', on('t2', 80)), main('m', on('t3', 100))],
+      [route('r1', 'n', ['t1', 't2']), route('r2', 'm', ['t1', 't3'])])
+    const ranges = speedRanges(withElementSpeeds(d, net).domain, net)
+    const round = (p) => [p.trackId, Math.round(p.from), Math.round(p.to)]
+    expect(ranges.map(r => [r.id, r.board, r.routeIds, r.parts.map(round)])).toEqual([
+      ['a|80', false, ['r1', 'r2'], [['t1', 20, 210]]],
+      ['v|60', true, ['r1', 'r2'], [['t1', 210, 300], ['t2', 0, 80], ['t3', 0, 100]]],
+    ])
+    expect(ranges[0].color).not.toBe(ranges[1].color)
+    // Without a speed signalled there is no range.
+    expect(speedRanges(d, net)).toEqual([expect.objectContaining({ id: 'v|120' })])
   })
 })

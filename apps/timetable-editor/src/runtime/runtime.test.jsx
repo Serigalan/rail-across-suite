@@ -32,6 +32,7 @@ const report = (scale) => ({
 const run = {
   result: { base: report(1), provisional: report(1.05), final: report(1.05), mrsp: [{ begin: 0, end: 1000, speed: 25 }], warnings: [] },
   request: { path: { length: 1000 }, schedule: [{ path_offset: 500, stop_duration: 30 }, { path_offset: 1000, stop_duration: 0 }] },
+  properties: { speedLimits: [{ begin: 0, end: 1000, speed: 25 }], signalled: [{ begin: 200, end: 800, speed: 20 }] },
   offsets: [0, 500, 1000], labels: ['Signal A', 'Hausen Gl. 1', 'Ende'], key: 'k',
 }
 
@@ -58,13 +59,16 @@ describe('computing a running time', () => {
     const chart = (r) => de(<RunChart run={r} profile={profile} length={1000} offsets={run.offsets} labels={run.labels} at={null} t={t} language="de" />)
     const html = chart(run)
     expect(html).toContain('polyline')
-    expect(html).toContain('zulässig')
+    // The elements' speed dashed and light, the signalled speed solid over it.
+    expect(html).toContain('Elementgeschwindigkeit')
+    expect(html).toMatch(/<path d="M[^"]*" class="sim-line-design"/)
+    expect(html).toMatch(/<path d="M[^"]*" class="sim-line-signalled"/)
     expect(html).toContain('aria-label="Höhe"')
     expect(html).toContain('class="sim-profile-line"')
     expect(html).toContain('class="sim-profile-gap"')
     // Before the run is simulated, the height alone.
     const before = chart(null)
-    expect(before).not.toContain('zulässig')
+    expect(before).not.toContain('Elementgeschwindigkeit')
     expect(before).toContain('<span class="sim-chart-title">Höhe</span>')
   })
 })

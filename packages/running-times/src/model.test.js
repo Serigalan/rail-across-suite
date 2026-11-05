@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { curveResistance, findPath, heightProfile, locationAt, offsetOnPath, pathAlong, pathLength, pathProperties } from './path.js'
 import { routeThrough, routeVia, signalledSpeeds } from './route.js'
-import { marginValue, simulationRequest } from './request.js'
+import { governedLimits, marginValue, simulationRequest } from './request.js'
 import { newVehicle } from '@rail-across/vehicles'
 import { runWith } from './engine.js'
 
@@ -145,10 +145,20 @@ describe('a train through its stops', () => {
     const { path, offsets } = routeThrough(record, [{ trackId: 'T1', station: 0, direction: 'up' }, { trackId: 'T4', station: 900 }])
     const { request } = simulationRequest(record, path, { vehicle: newVehicle('Triebzug'), stops: [{ offset: offsets[1], duration: 0 }], margin: { value: '5%', distribution: 'mareco' } })
     expect(request.path.length).toBeCloseTo(2900, 6)
-    expect(request.path.speed_limits.map(s => s.source)).toEqual(['design', 'design', 'signal'])
+    // The signal's 60 km/h from A to N, the design speeds only before and after it.
+    expect(request.path.speed_limits.map(s => [s.source, Math.round(s.begin), Math.round(s.end)])).toEqual([['design', 0, 200], ['signal', 200, 1900], ['design', 1900, 2000]])
     expect(request.schedule).toEqual([{ path_offset: request.path.length, stop_duration: 0 }])
     expect(request.margins).toEqual({ boundaries: [], values: ['5%'] })
     expect(request.rolling_stock.effort_curve[0]).toEqual({ speed: 0, max_effort: 160000 })
+  })
+
+  it('runs at what the signals signal where they signal one, faster or slower than the design speed', () => {
+    const design = [{ begin: 0, end: 100, speed: 20, source: 'design' }, { begin: 100, end: 300, speed: 10, source: 'design' }]
+    const signalled = [{ begin: 50, end: 150, speed: 30, source: 'signal' }, { begin: 200, end: 250, speed: 5, source: 'signal' }]
+    expect(governedLimits(design, signalled).map(l => [l.source, l.begin, l.end, l.speed])).toEqual([
+      ['design', 0, 50, 20], ['signal', 50, 150, 30], ['design', 150, 200, 10], ['signal', 200, 250, 5], ['design', 250, 300, 10],
+    ])
+    expect(governedLimits(design, [])).toEqual(design)
   })
 
   it('reads margins as they are written', () => {

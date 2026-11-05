@@ -11,7 +11,8 @@ import { routeElementSpeed, routeSpeedSections, speedSignalSpeed, withElementSpe
 import { measuredOverlap, overlapSpeed, withMeasuredOverlap } from '../model/overlaps.js'
 import { findRun, runAhead, switchesOnRun } from '../model/runs.js'
 import { SHUNTING_TYPE, TRAIN_TYPE, optionsOf } from '../labels.js'
-import { ItineraryIcon, OverlapIcon, RouteIcon } from '../icons.jsx'
+import { ItineraryIcon, OverlapIcon, RouteIcon, SpeedIcon } from '../icons.jsx'
+import SpeedRanges from './SpeedRanges.jsx'
 import { stationName } from '../model/stations.js'
 import { ItineraryEditor, ItineraryList, ItinerarySearch } from './Itineraries.jsx'
 import { CheckList, EditorHead, ObjectFindings } from './common.jsx'
@@ -182,6 +183,13 @@ export default function RoutesPanel({
       </Panel>
     )
   }
+  if (page === 'speeds') {
+    return (
+      <Panel title={t('speed_ranges')} intro={t('speed_ranges_intro')} back={back}>
+        <SpeedRanges domain={domain} net={net} routeName={routeName} select={select} setSketch={setSketch} showOnPlan={showOnPlan} t={t} />
+      </Panel>
+    )
+  }
   if (page === 'overlaps') {
     return (
       <Panel title={t('overlaps')} intro={t('overlaps_list_intro')} back={back}>
@@ -215,6 +223,7 @@ export default function RoutesPanel({
         <Option icon={<ItineraryIcon />} end={itineraries.length} onClick={() => setPage('itineraries')}>{t('itineraries')}</Option>
         <Option icon={<RouteIcon />} end={routes.length} onClick={() => setPage('routes')}>{t('section_routes')}</Option>
         <Option icon={<OverlapIcon />} end={overlaps.length} onClick={() => setPage('overlaps')}>{t('overlaps')}</Option>
+        <Option icon={<SpeedIcon />} disabled={!routes.length} onClick={() => setPage('speeds')}>{t('speed_ranges')}</Option>
         {!readOnly && <Option icon={<RouteIcon />} disabled={!routes.length} onClick={takeElementSpeeds}>{t('take_element_speeds')}</Option>}
       </Options>
     </Panel>

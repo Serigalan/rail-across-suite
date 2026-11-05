@@ -4,7 +4,7 @@
 // Simulation-Tool and the Fahrplan-Editor.
 export { curveResistance, directionOf, findPath, heightProfile, locationAt, offsetOnPath, pathAlong, pathLength, pathProperties } from './path.js'
 export { routeThrough, routeVia, signalledSpeeds } from './route.js'
-export { marginValue, simulationRequest } from './request.js'
+export { governedLimits, marginValue, simulationRequest } from './request.js'
 export { runWith, simulate } from './engine.js'
 export { lngLatAt, nearestLocation, netGeoJSON, netLines, pathGeoJSON, placesOf } from './places.js'
 export { formatDistance, formatTime, pointAt, timeAtPosition } from './format.js'

@@ -4,8 +4,10 @@ import { formatTime } from '@rail-across/running-times'
 
 /**
  * The way along the path, on one axis of distance: above, the run — the
- * speed over the distance (the speed allowed, MRSP, the fastest run and the
- * run with its margin) or the time over the distance —, once it is
+ * speed over the distance (the speeds the elements allow, dashed and light,
+ * the speeds the signals signal, solid and darker — what the train runs at
+ * where they signal one —, the fastest run and the run with its margin) or
+ * the time over the distance —, once it is
  * simulated; under it the height of the tracks along the same stretch, from
  * their height points, open where a track has none. The stops marked, the
  * moment played, and where the mouse is its speed and height.
@@ -47,6 +49,20 @@ function along(xs, ys, s) {
   if (a == null || b == null) return null
   const span = xs[i] - xs[i - 1]
   return span > 0 ? a + (b - a) * (s - xs[i - 1]) / span : b
+}
+
+/**
+ * Speed limits ([{ begin, end, speed (m/s) }]) as one path of steps: level
+ * over each, down or up where one follows the next, open where none holds.
+ */
+function steps(limits, x, y) {
+  let d = '', end = null
+  for (const l of [...limits].sort((a, b) => a.begin - b.begin)) {
+    const v = y(l.speed * 3.6).toFixed(1)
+    d += `${end != null && Math.abs(l.begin - end) < 0.5 ? 'L' : 'M'}${x(l.begin).toFixed(1)},${v}H${x(l.end).toFixed(1)}`
+    end = l.end
+  }
+  return d
 }
 
 /** The pieces of a profile where it has heights: [[{ position, height }]]. */
@@ -108,16 +124,16 @@ export default function RunChart({ run, profile, length, offsets, labels, at, t,
         {readout && <span className="sim-readout">{readout}</span>}
       </div>
       <div ref={box} className="sim-chart-box" onPointerMove={onMove} onPointerLeave={() => setHover(null)}>
-        {result && <RunBand result={result} view={view} at={at} x={x} w={w} width={width} across={across} xAxis={xAxis} t={t} />}
+        {result && <RunBand result={result} limits={run.properties} view={view} at={at} x={x} w={w} width={width} across={across} xAxis={xAxis} t={t} />}
         <ProfileBand profile={profile} at={at} heightAt={heightAt} x={x} w={w} width={width} across={across} xAxis={xAxis} t={t} language={language} />
       </div>
     </div>
   )
 }
 
-/** The lines of the run in their words: the speed's three, the time's two. */
+/** The lines of the run in their words: the speed's four, the time's two. */
 function RunLegend({ view, t }) {
-  const lines = view === 'speed' ? ['mrsp', 'base', 'final'] : ['base', 'final']
+  const lines = view === 'speed' ? ['design', 'signalled', 'base', 'final'] : ['base', 'final']
   return (
     <div className="sim-legend">
       {lines.map(k => <span key={k} className="sim-legend-item"><svg width="22" height="8" aria-hidden="true"><line x1="0" y1="4" x2="22" y2="4" className={`sim-line-${k}`} /></svg>{t(`chart_${k}`)}</span>)}
@@ -125,19 +141,24 @@ function RunLegend({ view, t }) {
   )
 }
 
-/** The speed or the time over the distance. */
-function RunBand({ result, view, at, x, w, width, across, xAxis, t }) {
+/**
+ * The speed or the time over the distance; with the speed, the limits of the
+ * request (`limits`: the path's properties) — the elements' design speeds
+ * (speedLimits) and the speeds signalled (signalled).
+ */
+function RunBand({ result, limits, view, at, x, w, width, across, xAxis, t }) {
   const height = RUN_HEIGHT
   const h = height - PAD.top - PAD.bottom
   const final = result.final
-  let yMax, y, lines
+  let yMax, y, lines, limitLines = []
   if (view === 'speed') {
-    const vmax = Math.max(...result.mrsp.map(r => r.speed), ...final.speeds, ...result.base.speeds) * 3.6
+    const design = limits?.speedLimits ?? [], signalled = limits?.signalled ?? []
+    const vmax = Math.max(...[...design, ...signalled].map(r => r.speed), ...final.speeds, ...result.base.speeds) * 3.6
     yMax = Math.ceil(vmax / 20) * 20 || 20
     y = (v) => PAD.top + h - (v / yMax) * h
     const line = (rep) => rep.positions.map((p, i) => `${x(p).toFixed(1)},${y(rep.speeds[i] * 3.6).toFixed(1)}`).join(' ')
-    const mrsp = result.mrsp.flatMap(r => [`${x(r.begin).toFixed(1)},${y(r.speed * 3.6).toFixed(1)}`, `${x(r.end).toFixed(1)},${y(r.speed * 3.6).toFixed(1)}`]).join(' ')
-    lines = [{ key: 'mrsp', points: mrsp }, { key: 'base', points: line(result.base) }, { key: 'final', points: line(final) }]
+    limitLines = [{ key: 'design', d: steps(design, x, y) }, { key: 'signalled', d: steps(signalled, x, y) }].filter(l => l.d)
+    lines = [{ key: 'base', points: line(result.base) }, { key: 'final', points: line(final) }]
   } else {
     yMax = Math.max(final.total_time, 1)
     y = (s) => PAD.top + h - (s / yMax) * h
@@ -155,6 +176,7 @@ function RunBand({ result, view, at, x, w, width, across, xAxis, t }) {
       {across(h)}
       {xAxis(height, h)}
       <text x={4} y={PAD.top - 2} className="sim-axis">{view === 'speed' ? 'km/h' : t('time_axis')}</text>
+      {limitLines.map(l => <path key={l.key} d={l.d} className={`sim-line-${l.key}`} fill="none" />)}
       {lines.map(l => <polyline key={l.key} points={l.points} className={`sim-line-${l.key}`} fill="none" />)}
       {at && <circle cx={x(at.position)} cy={view === 'speed' ? y(at.speed * 3.6) : y(at.time)} r="5" className="sim-at" />}
     </svg>

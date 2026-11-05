@@ -141,7 +141,8 @@ html, body { margin: 0; background: var(--ui-surface); }
 .sim-grid { stroke: var(--ui-border); stroke-width: 1; }
 .sim-axis { font: 11px var(--ui-font); fill: var(--ui-muted); font-variant-numeric: tabular-nums; }
 .sim-stop { stroke: var(--ui-muted); stroke-width: 1; stroke-dasharray: 3 3; }
-.sim-line-mrsp { stroke: #8a8fa3; stroke-width: 1.5; }
+.sim-line-design { stroke: #c4c7d0; stroke-width: 1.5; stroke-dasharray: 5 4; }
+.sim-line-signalled { stroke: #5f6473; stroke-width: 1.8; }
 .sim-line-base { stroke: #d68910; stroke-width: 1.5; stroke-dasharray: 5 3; }
 .sim-line-final { stroke: var(--color-primary); stroke-width: 2.2; }
 .sim-at { fill: var(--color-primary); stroke: #fff; stroke-width: 2; }

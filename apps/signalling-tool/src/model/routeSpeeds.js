@@ -79,7 +79,7 @@ export function elementSpeed(net, stretches) {
 }
 
 /** The part of stretches between two distances along them [m]. */
-function cut(stretches, from, to) {
+export function cut(stretches, from, to) {
   const out = []
   let at = 0
   for (const st of stretches) {

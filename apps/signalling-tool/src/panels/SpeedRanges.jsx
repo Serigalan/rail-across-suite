@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { GroupedList, Section } from '@rail-across/ui'
 import { labelOf } from '../model/domain.js'
 import { speedRanges } from '../model/speedRanges.js'
+import { inDirection } from '../model/directions.js'
 
 /** A range as it is named: its signal and its speed — 21-A · 60 km/h. */
 const rangeName = (r, t) => `${labelOf('signals', r.signal, t)} · ${r.speed} km/h`
@@ -11,10 +12,11 @@ const rangeName = (r, t) => `${labelOf('signals', r.signal, t)} · ${r.speed} km
  * their colours, under the start signals' and the Lf 7's, and drawn on the
  * plan each in its colour, its name on it in that colour. A click on one
  * draws it alone, brings it into view and names the routes it holds in; a
- * second click shows them all again.
+ * second click shows them all again. Only those of `direction` (directions.js).
  */
-export default function SpeedRanges({ domain, net, routeName, select, setSketch, showOnPlan, t }) {
-  const ranges = useMemo(() => speedRanges(domain, net), [domain, net])
+export default function SpeedRanges({ domain, net, direction = 'both', routeName, select, setSketch, showOnPlan, t }) {
+  const all = useMemo(() => speedRanges(domain, net), [domain, net])
+  const ranges = useMemo(() => all.filter(r => inDirection(net, r.signal.at, direction)), [all, net, direction])
   const [chosenId, setChosenId] = useState(null)
   const chosen = ranges.find(r => r.id === chosenId) ?? null
   useEffect(() => {

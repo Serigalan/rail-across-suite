@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { straightElement } from '@rail-across/core/geometry'
+import { straightElement, utmToWgs84 } from '@rail-across/core/geometry'
 import { signallingSpeedOf } from '@rail-across/core/signalling'
 import { added, emptyDomain } from './domain.js'
 import {
@@ -8,6 +8,7 @@ import {
 import { whereStretch } from './places.js'
 import { speedRanges } from './speedRanges.js'
 import { boundaryTarget, newBoundaryTarget, nextSignals } from './routeSearch.js'
+import { inDirection, kmDirection } from './directions.js'
 
 const EPSG = 25832
 const P = (x, y = 0) => ({ easting: 500000 + x, northing: 5700000 + y, zone: EPSG })
@@ -117,5 +118,27 @@ describe('the speeds the elements give', () => {
     const target = newBoundaryTarget(marked, to)
     expect(target).toMatchObject({ kind: 'virtual', virtualFunction: 'trainTargetLine', at: { trackId: 't2', station: 200, direction: 'up' } })
     expect(boundaryTarget([...d.collections.signals, target], to)).toBe(target)
+  })
+
+  it('cuts a route at an Lf 7 a plan brought as a logical signal, as at one on a plate', () => {
+    const imported = { id: 'v', kind: 'real', at: on('t1', 210), logicalSignals: [{ system: 'ks', type: 'other', frames: [{ kind: 'indicator', aspects: [{ aspect: 'Lf_7', symbol: '6' }] }] }] }
+    const d = domainOf([main('a', on('t1', 20)), imported, main('n', on('t2', 80))], [route('r1', 'n', ['t1', 't2'])])
+    const sections = routeSpeedSections(net, route('r1', 'n', ['t1', 't2']), d.collections.signals)
+    expect(sections.map(x => [x.signal.id, Math.round(x.from), Math.round(x.to)])).toEqual([['a', 0, 190], ['v', 190, 360]])
+    expect(speedSignalSpeed(imported)).toBe(60)
+    const ranges = speedRanges(withElementSpeeds(d, net).domain, net)
+    expect(ranges.find(r => r.signal.id === 'a').parts.map(p => [p.trackId, Math.round(p.from), Math.round(p.to)])).toEqual([['t1', 20, 210]])
+  })
+
+  it('tells the direction a signal acts in by the kilometrage, else by the stationing', () => {
+    // A line whose kilometrage falls as t1 runs east.
+    const ll = (x) => utmToWgs84(500000 + x, 5700000, EPSG)
+    const kmLines = [{ lineNumber: '6000', runs: [[[...ll(-100), 5100], [...ll(600), 4400]]] }]
+    expect(kmDirection(net, on('t1', 20))).toBe('rising')
+    expect(kmDirection({ ...net, kmLines }, on('t1', 20))).toBe('falling')
+    expect(kmDirection({ ...net, kmLines }, on('t1', 20, 'down'))).toBe('rising')
+    expect(kmDirection(net, { anchor: 'station', trackId: 't1', station: 20 })).toBeNull()
+    expect(inDirection({ ...net, kmLines }, on('t1', 20), 'both')).toBe(true)
+    expect(inDirection({ ...net, kmLines }, on('t1', 20), 'rising')).toBe(false)
   })
 })

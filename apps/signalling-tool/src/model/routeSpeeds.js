@@ -17,8 +17,11 @@ export const SPEED_SIGNAL = 'Lf_7'
 const LF7 = aspectOf(SPEED_SIGNAL)
 const SYMBOLS = LF7.symbole.map(Number)
 
-/** The Lf 7 a signal shows on a plate of its own, or null. */
-export const speedAspectOf = (s) => (s?.frames ?? []).flatMap(f => f.aspects ?? []).find(a => a.aspect === SPEED_SIGNAL) ?? null
+/** The frames a signal shows: its own and its logical signals' — an Lf 7 a plan brings may be either. */
+const framesOf = (s) => [...(s?.frames ?? []), ...(s?.logicalSignals ?? []).flatMap(l => l.frames ?? [])]
+
+/** The Lf 7 a signal shows — on a plate of its own, or as a logical signal's —, or null. */
+export const speedAspectOf = (s) => framesOf(s).flatMap(f => f.aspects ?? []).find(a => a.aspect === SPEED_SIGNAL) ?? null
 
 /** Whether a signal is a speed signal on a track: a post with a plate Lf 7. */
 export const isSpeedSignal = (s) => s?.kind === 'real' && s.at?.anchor === 'station' && !!speedAspectOf(s)
@@ -36,16 +39,18 @@ export function speedSymbol(speed) {
 /** A speed signal showing `speed`: every Lf 7 on it with that symbol, none where it is null. */
 export function withSpeedSignalSpeed(signal, speed) {
   const symbol = speedSymbol(speed)
+  const shown = (frames) => frames?.map(f => ({
+    ...f,
+    aspects: (f.aspects ?? []).map(a => {
+      if (a.aspect !== SPEED_SIGNAL) return a
+      const { symbol: _old, ...rest } = a
+      return symbol ? { ...rest, symbol } : rest
+    }),
+  }))
   return {
     ...signal,
-    frames: signal.frames.map(f => ({
-      ...f,
-      aspects: f.aspects.map(a => {
-        if (a.aspect !== SPEED_SIGNAL) return a
-        const { symbol: _old, ...rest } = a
-        return symbol ? { ...rest, symbol } : rest
-      }),
-    })),
+    ...(signal.frames ? { frames: shown(signal.frames) } : {}),
+    ...(signal.logicalSignals ? { logicalSignals: signal.logicalSignals.map(l => (l.frames ? { ...l, frames: shown(l.frames) } : l)) } : {}),
   }
 }
 
@@ -136,7 +141,7 @@ export const routeElementSpeed = (net, route, signals) => routeSpeedSections(net
 
 /** Whether a signal shows a speed: an Lf 7, or a Zs 3 — on a plate of its own or among its logical signals' indicators. */
 export const showsSpeed = (s) => s?.kind === 'real' && s.at?.anchor === 'station' && (isSpeedSignal(s)
-  || [...(s.frames ?? []), ...(s.logicalSignals ?? []).flatMap(l => l.frames ?? [])].some(f => (f.aspects ?? []).some(a => a.aspect === 'Zs_3')))
+  || framesOf(s).some(f => (f.aspects ?? []).some(a => a.aspect === 'Zs_3')))
 
 /**
  * How far an Lf 7's speed holds: over every way the net offers ahead of it

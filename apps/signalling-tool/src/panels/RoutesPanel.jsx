@@ -13,6 +13,7 @@ import { findRun, runAhead, switchesOnRun } from '../model/runs.js'
 import { SHUNTING_TYPE, TRAIN_TYPE, optionsOf } from '../labels.js'
 import { ItineraryIcon, OverlapIcon, RouteIcon, SpeedIcon } from '../icons.jsx'
 import SpeedRanges from './SpeedRanges.jsx'
+import { DIRECTIONS, inDirection } from '../model/directions.js'
 import { stationName } from '../model/stations.js'
 import { ItineraryEditor, ItineraryList, ItinerarySearch } from './Itineraries.jsx'
 import { CheckList, EditorHead, ObjectFindings } from './common.jsx'
@@ -41,7 +42,8 @@ const KINDS = { train: { trainType: 'ZZ' }, shunting: { shuntingType: 'RR' }, mi
  * sections it runs through, as they stand.
  *
  * Routes are a station's: the station of their start signal, under which
- * they are listed — the one the pointer is on drawn on the plan; the open line has none, the block has its signals. The
+ * they are listed — the one the pointer is on drawn on the plan —, in both
+ * directions or in one (directions.js), its routes then drawn on the plan; the open line has none, the block has its signals. The
  * itineraries from one stopping place to another are searched here over the
  * net, and made with the routes they take.
  */
@@ -59,14 +61,33 @@ export default function RoutesPanel({
   const chosenItinerary = selection?.collection === 'itineraries' ? itineraries.find(i => i.id === selection.id) : null
   const back = { label: t('back'), onClick: () => setPage('menu') }
   const toPage = { label: t('back'), onClick: () => select(null) }
-  // The route the pointer is on in the list, drawn on the plan from its start signal to its target.
+  // The direction routes and speed ranges are shown in (directions.js): both, or one of the two.
+  const [direction, setDirection] = useState('both')
+  const directed = useMemo(() => {
+    const at = new Map(signals.map(s => [s.id, s.at]))
+    return routes.filter(r => inDirection(net, at.get(r.startSignalId), direction))
+  }, [routes, net, signals, direction])
+  // The route the pointer is on in the list, drawn on the plan from its start signal to its target; with one
+  // direction chosen, all of its routes drawn too.
   const [hovered, setHovered] = useState(null)
-  const shownRoute = page === 'routes' && !selection ? routes.find(r => r.id === hovered) ?? null : null
+  const listing = page === 'routes' && !selection
+  const shownRoute = listing ? directed.find(r => r.id === hovered) ?? null : null
+  const drawAll = listing && direction !== 'both'
   useEffect(() => {
-    if (!shownRoute) return undefined
-    setSketch?.({ ways: [{ pieces: wayPieces(routeStretches(net, shownRoute, signals)), strong: true }], ids: [shownRoute.startSignalId, shownRoute.targetSignalId] })
+    if (!shownRoute && !drawAll) return undefined
+    const way = (r, strong) => ({ pieces: wayPieces(routeStretches(net, r, signals)), strong })
+    setSketch?.({
+      ways: [...(drawAll ? directed.filter(r => r !== shownRoute).map(r => way(r, false)) : []), ...(shownRoute ? [way(shownRoute, true)] : [])],
+      ids: shownRoute ? [shownRoute.startSignalId, shownRoute.targetSignalId] : [],
+    })
     return () => setSketch?.(null)
-  }, [shownRoute, net, signals, setSketch])
+  }, [shownRoute, drawAll, directed, net, signals, setSketch])
+  const directionField = (
+    <div className="ui-fields">
+      <SelectField compact wide label={t('route_direction')} value={direction} onChange={(v) => v && setDirection(v)}
+        options={DIRECTIONS.map(d => ({ value: d, label: t(`direction_${d}`) }))} />
+    </div>
+  )
 
   const real = signals.filter(s => s.at?.anchor === 'station')
   const signalOptions = signalChoices(net, real, t)
@@ -175,7 +196,7 @@ export default function RoutesPanel({
     // Under the station of their start signal; those of a signal of the open line last.
     const points = new Map((core?.collections.operationalPoints ?? []).map(p => [p.id, p]))
     const byStation = new Map()
-    for (const r of routes) {
+    for (const r of directed) {
       const key = sig(r.startSignalId)?.operationalPointId ?? null
       if (!byStation.has(key)) byStation.set(key, [])
       byStation.get(key).push(item(r))
@@ -186,6 +207,7 @@ export default function RoutesPanel({
     })).sort((a, b) => (a.key === 'open') - (b.key === 'open') || a.title.localeCompare(b.title, 'de', { numeric: true }))
     return (
       <Panel title={t('section_routes')} intro={t('routes_list_intro')} back={back}>
+        {directionField}
         <GroupedList label={t('section_routes')} open searchLabel={t('search_objects')} noneFound={t('search_none')} empty={t('empty_list')}
           groups={groups} onHover={setHovered} onSelect={(id) => { setHovered(null); select({ collection: 'routes', id }) }} />
       </Panel>
@@ -194,7 +216,8 @@ export default function RoutesPanel({
   if (page === 'speeds') {
     return (
       <Panel title={t('speed_ranges')} intro={t('speed_ranges_intro')} back={back}>
-        <SpeedRanges domain={domain} net={net} routeName={routeName} select={select} setSketch={setSketch} showOnPlan={showOnPlan} t={t} />
+        {directionField}
+        <SpeedRanges domain={domain} net={net} direction={direction} routeName={routeName} select={select} setSketch={setSketch} showOnPlan={showOnPlan} t={t} />
       </Panel>
     )
   }

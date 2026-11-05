@@ -3,8 +3,9 @@ import { directionOf, findPath, offsetOnPath, pathAlong, pathLength } from './pa
 
 const LF7 = aspectOf('Lf_7')
 
-/** The speed an Lf 7 on a signal's plate shows [km/h], or null. */
-const boardSpeed = (s) => aspectSpeed(LF7, (s.frames ?? []).flatMap(f => f.aspects ?? []).find(a => a.aspect === 'Lf_7')?.symbol)
+/** The speed an Lf 7 shows [km/h] — on a signal's plate, or as one of its logical signals' —, or null. */
+const boardSpeed = (s) => aspectSpeed(LF7, [...(s.frames ?? []), ...(s.logicalSignals ?? []).flatMap(l => l.frames ?? [])]
+  .flatMap(f => f.aspects ?? []).find(a => a.aspect === 'Lf_7')?.symbol)
 
 /** A path with a leg run on: the leg's pieces after it, a piece that goes on the last one's track merged into it. */
 function joined(path, leg) {

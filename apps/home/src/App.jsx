@@ -74,13 +74,16 @@ export default function App() {
     setNotice({ key: 'password_done' })
     goOn(route.next)
   }
-  // Signed out, the start page is the sign-in page again.
+  // Signed out, the start page is the sign-in page again. The local package
+  // has no sign-in to end — its page simply loads again.
   const signOut = async () => {
+    if (user?.local) { location.assign('/'); return }
     await api.logout().catch(() => {})
     location.assign('/')
   }
   const forced = Boolean(user?.mustChangePassword)
-  const page = forced ? 'password' : route.page
+  // The local package has no user management: its pages (password, admin) lead to the overview.
+  const page = forced ? 'password' : (user?.local && (route.page === 'password' || route.page === 'admin') ? '' : route.page)
   // A module that works on a variant — the Fahrplan-Sim — lists the projects to open in it.
   const simulation = MODULES.some(m => m.route === page && m.available && m.apps)
   // a module that needs no project is its app: its old page leads there
@@ -98,7 +101,7 @@ export default function App() {
         {user && page === 'password' && (
           <PasswordPage forced={forced} onDone={passwordChanged} onCancel={() => goOn(route.next)} />
         )}
-        {user && page === 'admin' && (user.role === 'admin' ? <Admin me={user} /> : <Home />)}
+        {user && page === 'admin' && (user.role === 'admin' && !user.local ? <Admin me={user} /> : <Home />)}
         {user && simulation && <Simulation route={page} user={user} projects={projects} onReload={loadProjects} />}
         {user && !simulation && !direct && !['', 'infrastructure', 'password', 'admin'].includes(page) && <Planned route={page} />}
       </div>

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { I18n, LANGUAGES, initialLanguage, keepLanguage, textsFor, useTexts } from './i18n'
 import { Logo } from './icons'
-import SignIn from './SignIn'
+import SignIn from './SignInForm'
 import { PasswordPage } from './pages/Account'
 
 /**

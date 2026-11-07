@@ -1,7 +1,8 @@
 import Fastify from 'fastify'
 import cookie from '@fastify/cookie'
-import { COOKIE, SESSION_IDLE, createAuth } from './auth.js'
+import { COOKIE, SESSION_IDLE, createAuth, ensureLocalUser, publicUser } from './auth.js'
 import { ApiError } from './errors.js'
+import { createStaticHandler } from './static.js'
 import authRoutes from './routes/auth.js'
 import adminRoutes from './routes/admin.js'
 import projectRoutes from './routes/projects.js'
@@ -49,13 +50,21 @@ const TRUSTED_PROXIES = ['127.0.0.1', '::1']
  * `secureCookie` is off only for plain-http tests and local runs.
  * `cloudRoot` is where point clouds are kept (phase 13); without one their
  * routes answer 503.
+ *
+ * `local` is the local package (desktop/, Tauri): no user management — no
+ * sign-in, no sessions, no admin or user routes. Every request carries the
+ * one implicit local user (`ensureLocalUser`), `/api/me` answers it with 200,
+ * so the modules' "signed in?" question passes without a cookie. `staticRoot`
+ * serves the built suite from one directory, as Caddy does in production, so
+ * the page and the API share one origin.
  */
 export function buildApp({
   db, secureCookie = true, now = () => Date.now(), logger = false, routes = [], trustProxy = TRUSTED_PROXIES,
-  cloudRoot = null,
+  cloudRoot = null, local = false, staticRoot = null,
 } = {}) {
-  const app = Fastify({ logger, bodyLimit: BODY_LIMIT, trustProxy })
+  const app = Fastify({ logger, bodyLimit: BODY_LIMIT, trustProxy, ...(staticRoot ? { exposeHeadRoutes: false } : {}) })
   const auth = createAuth(db, { now })
+  const localUser = local ? ensureLocalUser(db, now) : null
   app.decorate('db', db)
   app.decorate('auth', auth)
   app.decorate('now', now)
@@ -76,7 +85,7 @@ export function buildApp({
     if (WRITING.has(req.method) && !String(req.headers['content-type'] ?? '').startsWith('application/json') && !isUpload(req)) {
       throw new ApiError(415, 'json_required')
     }
-    req.user = auth.resolveSession(req.cookies?.[COOKIE])
+    req.user = local ? localUser : auth.resolveSession(req.cookies?.[COOKIE])
   })
 
   app.decorate('sessionCookie', (reply, token) => reply.setCookie(COOKIE, token, {
@@ -86,7 +95,7 @@ export function buildApp({
     path: '/', httpOnly: true, sameSite: 'strict', secure: secureCookie,
   }))
 
-  /** preHandler: a signed-in user who may work (start password already changed). */
+  /** preHandler: a signed-in user who may work (start password already changed). In the local package every request carries the local user, so this passes. */
   app.decorate('requireUser', async (req) => {
     if (!req.user) throw new ApiError(401, 'unauthenticated')
     if (req.user.must_change_password) throw new ApiError(403, 'password_change_required')
@@ -101,12 +110,19 @@ export function buildApp({
     // database can be read. Needs no session.
     api.get('/health', async () => {
       db.prepare('select 1').get()
-      return { status: 'ok' }
+      return local ? { status: 'ok', local: true } : { status: 'ok' }
     })
-    api.register(authRoutes)
-    api.register(adminRoutes)
+    if (local) {
+      // The local package has no user management: no sign-in, no password, no
+      // admin or user routes. /me answers with the one implicit local user,
+      // so the modules' "signed in?" question passes without a cookie.
+      api.get('/me', async () => ({ user: { ...publicUser(localUser), local: true } }))
+    } else {
+      api.register(authRoutes)
+      api.register(adminRoutes)
+      api.register(userRoutes)
+    }
     api.register(projectRoutes)
-    api.register(userRoutes)
     api.register(cloudRoutes)
     api.register(runRoutes)
     api.register(shareRoutes)
@@ -115,6 +131,12 @@ export function buildApp({
     api.register(terrainRoutes)
     for (const r of routes) api.register(r)
   }, { prefix: '/api' })
+
+  // The built suite beside the API, one origin (the local package's window
+  // loads the page from here). Registered last: /api/* wins over the wildcard.
+  if (staticRoot) {
+    app.route({ method: ['GET', 'HEAD'], url: '/*', handler: createStaticHandler(staticRoot) })
+  }
 
   return app
 }

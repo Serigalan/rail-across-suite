@@ -7,7 +7,13 @@ import { createAuth, passwordAcceptable, randomPassword } from './auth.js'
  * rail-across-server — the project server of Rail-Across-Suite: one for the suite
  * and every module in it (phase 10 of the Layout-Tool, where it began).
  *
- *   rail-across-server serve                        run the API (RA_SERVER_HOST, RA_SERVER_PORT)
+ *   rail-across-server serve [--local] [--static <dir>] [--host <h>] [--port <n>]
+ *                                                   run the API (RA_SERVER_HOST, RA_SERVER_PORT).
+ *                                                   --local: the local package (desktop/) — no user
+ *                                                   management, and with --static the built suite
+ *                                                   is served beside the API; the bound address is
+ *                                                   printed as RA_DESKTOP_URL=<address> (port 0 picks
+ *                                                   a free one). RA_SERVER_LOCAL=1 is the same.
  *   rail-across-server create-admin <login> [name]  create an admin; the start password comes
  *                                                   from RA_ADMIN_PASSWORD or is generated and printed
  *   rail-across-server backup <file>                write a consistent copy of the database
@@ -22,22 +28,45 @@ const DB = env.RA_SERVER_DB ?? 'rail-across.sqlite'
 /** Where point clouds are kept (phase 13): beside the database unless said otherwise. */
 const CLOUDS = env.RA_SERVER_CLOUDS ?? join(dirname(resolve(DB)), 'clouds')
 
+/** Options of `serve` out of its arguments: --local, --static <dir>, --host <h>, --port <n>. */
+function serveFlags(args) {
+  const out = {}
+  for (let i = 0; i < args.length; i++) {
+    const a = args[i]
+    if (a === '--local') out.local = true
+    else if (a === '--static') out.static = args[++i]
+    else if (a === '--host') out.host = args[++i]
+    else if (a === '--port') out.port = args[++i]
+    else throw new Error(`unknown option for serve: ${a}`)
+  }
+  return out
+}
+
 async function main([command, ...args]) {
   if (command === 'serve') {
+    const flags = serveFlags(args)
+    const local = Boolean(flags.local) || env.RA_SERVER_LOCAL === '1'
     const db = openDatabase(DB)
     const app = buildApp({
       db,
+      local,
+      staticRoot: flags.static ?? (env.RA_SERVER_STATIC || null),
       secureCookie: env.RA_SERVER_INSECURE_COOKIE !== '1',
       ...(env.RA_SERVER_TRUST_PROXY ? { trustProxy: env.RA_SERVER_TRUST_PROXY.split(',').map(s => s.trim()).filter(Boolean) } : {}),
       logger: { level: env.RA_SERVER_LOG ?? 'info' },
       cloudRoot: CLOUDS,
     })
-    setInterval(() => app.auth.sweep(), 3600 * 1000).unref()
+    if (!local) setInterval(() => app.auth.sweep(), 3600 * 1000).unref()
     const close = async () => { await app.close(); db.close(); process.exit(0) }
     process.on('SIGTERM', close)
     process.on('SIGINT', close)
-    await app.listen({ host: env.RA_SERVER_HOST ?? '127.0.0.1', port: Number(env.RA_SERVER_PORT ?? 8787) })
+    const address = await app.listen({ host: flags.host ?? env.RA_SERVER_HOST ?? '127.0.0.1', port: Number(flags.port ?? env.RA_SERVER_PORT ?? 8787) })
+    // The local package's shell (desktop/) reads this line to open its window.
+    if (local) console.log(`RA_DESKTOP_URL=${address}`)
     return
+  }
+  if (env.RA_SERVER_LOCAL === '1' && (command === 'create-admin' || command === 'user-count')) {
+    throw new Error('the local package has no user management (it runs serve --local)')
   }
   if (command === 'create-admin') {
     const [login, ...nameParts] = args
@@ -69,7 +98,7 @@ async function main([command, ...args]) {
     db.close()
     return
   }
-  throw new Error('usage: rail-across-server serve | create-admin <login> [name] | backup <file> | user-count')
+  throw new Error('usage: rail-across-server serve [--local] [--static <dir>] [--host <h>] [--port <n>] | create-admin <login> [name] | backup <file> | user-count')
 }
 
 main(process.argv.slice(2)).catch(err => {

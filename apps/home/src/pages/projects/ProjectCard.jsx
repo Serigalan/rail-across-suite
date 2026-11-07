@@ -107,7 +107,8 @@ export default function ProjectCard({ project, user, tool, showArchived, localCh
             <div className="ui-menu-list" role="menu">
               {rights.canRename && item(t('project_rename'), 'rename')}
               {item(t('project_export'), 'export')}
-              {!project.template && item(t('members'), 'members')}
+              {/* The local package has one implicit user: no members to manage. */}
+              {!project.template && !user?.local && item(t('members'), 'members')}
               {rights.canDelete && item(t('project_delete'), 'delete', true)}
             </div>
           )}

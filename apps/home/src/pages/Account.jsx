@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { api } from '../api'
 import { useTexts } from '../i18n'
-import SignIn from '../SignIn'
+import SignIn from '../SignInForm'
 
 /** At least as long as the server asks (server/src/auth.js). */
 const MIN = 12

@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Rail-Across-Suite</title>
+<style>
+  /* The suite's look (packages/ui/src/ui.css), as a static start screen. */
+  :root {
+    --color-primary: #303383;
+    --ui-bg: #ffffff;
+    --ui-surface: #f6f7fb;
+    --ui-fg: #1a1a2e;
+    --ui-muted: #5f6475;
+    --ui-border: #dfe2ea;
+    --ui-hover: #eef0f6;
+  }
+  html, body { margin: 0; height: 100%; background: var(--ui-surface); color: var(--ui-fg); font-family: system-ui, sans-serif; }
+  main { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 24px; box-sizing: border-box; text-align: center; }
+  svg.logo { width: 190px; height: auto; }
+  p.q { margin: 0; font-size: 15px; font-weight: 600; max-width: 470px; }
+  p.hint { margin: -8px 0 0; font-size: 12px; color: var(--ui-muted); max-width: 470px; }
+  p.dir { margin: 0; font-size: 12.5px; color: var(--ui-muted); max-width: 470px; overflow-wrap: anywhere; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  button { font: inherit; font-size: 13.5px; padding: 8px 16px; border-radius: 8px; border: 1px solid var(--ui-border); background: var(--ui-bg); color: var(--ui-fg); cursor: pointer; }
+  button:hover { background: var(--ui-hover); }
+  button.primary { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
+  button.primary:hover { background: #2428a0; }
+  button.chosen { border-color: var(--color-primary); color: var(--color-primary); font-weight: 600; }
+  .step { display: none; flex-direction: column; align-items: center; gap: 14px; }
+  .step.on { display: flex; }
+</style>
+</head>
+<body>
+<main>
+  <!-- The suite's logo, as in apps/home/src/icons.jsx (the name from logoWords.js). -->
+  <svg class="logo" viewBox="160 40 320 220" role="img" aria-label="Rail-Across-Suite">
+    <path d="M250 50v200" stroke="#888780" stroke-dasharray="3 4" opacity=".6" fill="none" vector-effect="non-scaling-stroke" />
+    <path d="M250 50h-26.6q-16.9 0-16.9 16.9v39.4l24.5 6.5q8.6 2.2 8.6 10.2v75q0 11-10.6 14.5l-56.7 21.2q-3.5 1.3-3.5 4.9v7.7q0 3.7 3.9 3.7H250"
+      fill="none" stroke="#303383" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" />
+    <circle cx="250" cy="50" r="5" fill="#303383" />
+    <circle cx="250" cy="250" r="5" fill="#303383" />
+    <path id="logo-words" fill="#1a1a2e" />
+  </svg>
+
+  <section class="step on" id="step-lang">
+    <p class="q" data-t="lang_q"></p>
+    <div class="row">
+      <button id="lang-de">Deutsch</button>
+      <button id="lang-en">English</button>
+    </div>
+  </section>
+
+  <section class="step" id="step-work">
+    <p class="q" data-t="work_q"></p>
+    <p class="hint" data-t="work_hint"></p>
+    <p class="dir" id="work-dir"></p>
+    <div class="row">
+      <button id="work-back" data-t="back"></button>
+      <button id="work-pick" data-t="pick"></button>
+      <button id="work-next" class="primary" data-t="next"></button>
+    </div>
+  </section>
+
+  <section class="step" id="step-export">
+    <p class="q" data-t="export_q"></p>
+    <p class="dir" id="export-dir"></p>
+    <div class="row">
+      <button id="export-back" data-t="back"></button>
+      <button id="export-pick" data-t="pick"></button>
+      <button id="go" class="primary" data-t="start"></button>
+    </div>
+  </section>
+</main>
+<script type="module">
+import { LOGO_WORDS } from './logoWords.js'
+document.getElementById('logo-words').setAttribute('d', LOGO_WORDS)
+
+const { invoke } = window.__TAURI__.core
+const { pickFolder } = window.__TAURI__.dialog
+
+const T = {
+  de: {
+    lang_q: 'Welche Sprache soll die Suite verwenden?',
+    work_q: 'Wo sollen die Arbeitsdateien gespeichert werden?',
+    work_hint: 'Datenbank und Punktwolken des Projekts — der Ordner bleibt erhalten, auch wenn die App neu gestartet wird.',
+    export_q: 'In welchem Ordner sollen exportierte Dateien gespeichert werden?',
+    pick: 'Ordner wählen…', next: 'Weiter', back: 'Zurück', start: 'Starten',
+    default: 'Standard', work_default: 'App-Daten', export_default: 'Downloads', current: 'Aktuell',
+  },
+  en: {
+    lang_q: 'Which language should the suite use?',
+    work_q: 'Where should the working files be stored?',
+    work_hint: 'The project database and point clouds — the folder is kept when the app is restarted.',
+    export_q: 'In which folder should exported files be saved?',
+    pick: 'Choose folder…', next: 'Next', back: 'Back', start: 'Start',
+    default: 'Default', work_default: 'app data', export_default: 'Downloads', current: 'Current',
+  },
+}
+
+const prefs = { language: null, workDir: null, exportDir: null }
+let defaults = {}
+const $ = (id) => document.getElementById(id)
+
+function applyLang() {
+  const t = T[prefs.language] ?? T.de
+  document.documentElement.lang = prefs.language ?? 'de'
+  document.querySelectorAll('[data-t]').forEach((el) => { el.textContent = t[el.dataset.t] })
+}
+function showStep(id) {
+  document.querySelectorAll('.step').forEach((s) => s.classList.toggle('on', s.id === id))
+}
+function showDir(el, dir, def, defLabel) {
+  el.textContent = dir ? `${T[prefs.language ?? 'de'].current}: ${dir}` : `${T[prefs.language ?? 'de'].default}: ${defLabel}`
+}
+
+invoke('current_prefs').then((p) => {
+  Object.assign(prefs, { language: p.language, workDir: p.workDir, exportDir: p.exportDir })
+  defaults = p.defaults ?? {}
+  applyLang()
+  showDir($('work-dir'), prefs.workDir, defaults.workDir, T[prefs.language ?? 'de'].work_default)
+  showDir($('export-dir'), prefs.exportDir, defaults.exportDir, T[prefs.language ?? 'de'].export_default)
+  $('lang-de').classList.toggle('chosen', prefs.language === 'de')
+  $('lang-en').classList.toggle('chosen', prefs.language === 'en')
+})
+
+function chooseLang(l) {
+  prefs.language = l
+  $('lang-de').classList.toggle('chosen', l === 'de')
+  $('lang-en').classList.toggle('chosen', l === 'en')
+  applyLang()
+  showDir($('work-dir'), prefs.workDir, defaults.workDir, T[l].work_default)
+  showDir($('export-dir'), prefs.exportDir, defaults.exportDir, T[l].export_default)
+  showStep('step-work')
+}
+$('lang-de').onclick = () => chooseLang('de')
+$('lang-en').onclick = () => chooseLang('en')
+
+async function pick(into, el, def) {
+  const p = await pickFolder({ directory: true, multiple: false, defaultPath: prefs[into] || def || undefined })
+  if (p) { prefs[into] = p; showDir(el, p, def, T[prefs.language].default) }
+}
+$('work-pick').onclick = () => pick('workDir', $('work-dir'), defaults.workDir)
+$('export-pick').onclick = () => pick('exportDir', $('export-dir'), defaults.exportDir)
+$('work-back').onclick = () => showStep('step-lang')
+$('work-next').onclick = () => showStep('step-export')
+$('export-back').onclick = () => showStep('step-work')
+$('go').onclick = () => invoke('start_app', { prefs })
+</script>
+</body>
+</html>

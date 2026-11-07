@@ -1,0 +1,19 @@
+{
+  "name": "rail-across-suite-desktop",
+  "private": true,
+  "version": "0.1.0",
+  "description": "The local package of Rail-Across-Suite: the whole suite in one Tauri window, on a local project server without user management",
+  "license": "LGPL-3.0-only",
+  "type": "module",
+  "scripts": {
+    "build:site": "node scripts/build-site.mjs",
+    "runtime": "node scripts/prepare-runtime.mjs",
+    "pack": "node scripts/pack.mjs",
+    "icons": "node scripts/make-icons.mjs",
+    "dev": "tauri dev",
+    "build": "tauri build"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.0.0"
+  }
+}

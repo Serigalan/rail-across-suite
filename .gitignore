@@ -9,7 +9,16 @@ __pycache__/
 apps/home/dist/
 /.tmp-build-*/
 
+# The local package's built site and staged runtime (desktop/scripts/…)
+/desktop/site/
+/desktop/runtime/
+
 # The simulation core's, the crossover search's and the optimizer's cargo builds
 sim/target/
 crossover/target/
 optimizer/target/
+
+# The desktop app's cargo build, the packed local zip, macOS noise
+/desktop/src-tauri/target/
+/desktop/*.zip
+.DS_Store

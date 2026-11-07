@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "The start screen (splash) may pick the export folder via the dialog plugin; app commands need no permission",
+  "windows": ["splash", "main"],
+  "permissions": ["core:default", "dialog:default"]
+}

@@ -1,4 +1,6 @@
 import { readFileSync, existsSync } from 'node:fs'
+import { dirname, join, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { loadNtv2Grid, nadgridsList } from './ntv2Grid.js'
 import { transformPlanePoint, utmToWgs84, wgs84ToUTM } from './coordinateUtils.js'
@@ -18,15 +20,17 @@ import { loadNativeFile } from '../native/node.js'
 const ulp = (x) => (x === 0 ? Number.MIN_VALUE : 2 ** (Math.floor(Math.log2(Math.abs(x))) - 52))
 const off = (a, b) => (Math.abs(a - b) <= 4 * ulp(Math.max(Math.abs(a), Math.abs(b))) ? 0 : Math.abs(a - b))
 
-const GRIDS = new URL('../../../../apps/layout-tool/grids/', import.meta.url)
-const hasGrids = existsSync(new URL('de_adv_BETA2007.tif', GRIDS))
+// The grid files are data the Layout-Tool fetches (tools/data.mjs), not part of
+// the core: found under RA_NTV2_GRIDS, else where the Layout-Tool keeps them.
+const GRIDS = process.env.RA_NTV2_GRIDS ?? resolve(dirname(fileURLToPath(import.meta.url)), '../../../..', 'apps/layout-tool/grids')
+const hasGrids = existsSync(join(GRIDS, 'de_adv_BETA2007.tif'))
 
 describe.skipIf(!hasGrids || !loadNativeFile())('the proj4 port on the NTv2 grids', () => {
   const fetchBefore = globalThis.fetch
   beforeAll(async () => {
     globalThis.fetch = async (url) => {
       const name = String(url).split('/').pop()
-      const bytes = readFileSync(new URL(name, GRIDS))
+      const bytes = readFileSync(join(GRIDS, name))
       return new Response(bytes)
     }
     await loadNtv2Grid()

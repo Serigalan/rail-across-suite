@@ -16,3 +16,4 @@ crossover/target/
 optimizer/target/
 # The core's WebAssembly module, built by packages/core/scripts/wasm.mjs
 /packages/core/wasm/
+apps/*/public/core-module/

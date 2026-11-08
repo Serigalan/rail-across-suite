@@ -16,3 +16,4 @@ export { checkDocument, FORMAT, fromDocument, SCHEMA_HASHES, schemaOf, toDocumen
 export { PayloadError } from './payloadError.js'
 export { KEYWORDS, SchemaSet, unknownKeywords } from './schemaCheck.js'
 export { sha256Hex, sha256OfText } from './sha256.js'
+export { viaNative } from './viaNative.js'

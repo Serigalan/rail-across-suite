@@ -1,4 +1,5 @@
 import { contentHash } from './canonical.js'
+import { callNative, nativeReady } from '../native/index.js'
 
 /**
  * The manifest of a document: per domain its version, its schema and the hash
@@ -7,6 +8,7 @@ import { contentHash } from './canonical.js'
  * leaves a collection as it was names the same hash for it.
  */
 export function manifestOf(doc) {
+  if (nativeReady()) return callNative('document.manifestOf', doc)
   const domains = {}
   for (const name of Object.keys(doc.domains).sort()) {
     const d = doc.domains[name]
@@ -22,4 +24,4 @@ export function manifestOf(doc) {
 }
 
 /** The hash of a document as a whole: its manifest's. */
-export const documentHash = (doc) => contentHash(manifestOf(doc))
+export const documentHash = (doc) => (nativeReady() ? callNative('document.documentHash', doc) : contentHash(manifestOf(doc)))

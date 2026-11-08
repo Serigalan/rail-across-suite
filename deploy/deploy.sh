@@ -87,6 +87,17 @@ if [ "$build" = 1 ]; then
   step "Data (NTv2 grids, by version and SHA-256)"
   (cd apps/layout-tool && node tools/data.mjs)
 
+  step "Core module (crates/)"
+  # The core's Rust crates as one WebAssembly module (decision 0020): put
+  # beside every page of the suite, which loads it before it renders, and in
+  # packages/core/wasm/ for the project server. Without it the suite deploys
+  # all the same, and the core runs on its JavaScript.
+  core_dirs=(apps/home/public/core-module)
+  for m in "${MODULE_APPS[@]}"; do core_dirs+=("apps/${m%%:*}/public/core-module"); done
+  if ! node packages/core/scripts/wasm.mjs "${core_dirs[@]}"; then
+    echo "WARNING: no core module — the suite runs the core's JavaScript" >&2
+  fi
+
   step "Simulation module (sim/)"
   # OSRD's simulation core in Rust: built to WebAssembly with cargo (once) and
   # put beside the page of the app that runs trains — the Fahrplan-Editor, which

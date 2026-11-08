@@ -3,6 +3,7 @@ import { buildApp } from './app.js'
 import { openDatabase } from './db.js'
 import { runDataMigrations } from './dataMigrations.js'
 import { createStore } from './store.js'
+import { loadNativeFile } from '@rail-across/core/src/native/node.js'
 import { createAuth, passwordAcceptable, randomPassword } from './auth.js'
 
 /**
@@ -26,6 +27,8 @@ const CLOUDS = env.RA_SERVER_CLOUDS ?? join(dirname(resolve(DB)), 'clouds')
 
 async function main([command, ...args]) {
   if (command === 'serve') {
+    // The core's Rust module (decision 0020), where it is built; else its JavaScript.
+    console.log(loadNativeFile() ? 'core module loaded' : 'core module not built — the core runs on its JavaScript')
     const db = openDatabase(DB)
     // The data steps run before anything is served (dataMigrations.js).
     for (const { name, note } of runDataMigrations(db, createStore(db))) console.log(`data step ${name}: ${note}`)

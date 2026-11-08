@@ -13,12 +13,13 @@ let exports_ = null
 const encoder = new TextEncoder()
 const decoder = new TextDecoder()
 
-/** What the module answered instead of a result: its code and what it found. */
+/** What the module answered instead of a result: its code, what it found, and what rebuilds the error. */
 export class NativeError extends Error {
-  constructor(code, detail) {
+  constructor(code, detail, data) {
     super(detail ? `${code}: ${detail}` : code)
     this.code = code
     this.detail = detail ?? null
+    this.data = data ?? null
   }
 }
 
@@ -71,5 +72,5 @@ export function callNative(op, input = null) {
   dealloc(out, len)
   const answer = JSON.parse(text)
   if (answer && 'ok' in answer) return answer.ok
-  throw new NativeError(answer?.error ?? 'invalid_answer', answer?.detail)
+  throw new NativeError(answer?.error ?? 'invalid_answer', answer?.detail, answer?.data)
 }

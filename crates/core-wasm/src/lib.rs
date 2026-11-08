@@ -6,7 +6,7 @@
 //! allocates a buffer in the module's memory, writes the request's JSON
 //! (UTF-8) into it, calls `run`, and reads the answer's JSON from the pointer
 //! and length it is given back. A request is `{"op", "input"}`; the answer is
-//! `{"ok": …}` or `{"error", "detail"?}` (see [`dispatch`]). The core's face,
+//! `{"ok": …}` or `{"error", "detail"?, "data"?}` (see [`dispatch`]). The core's face,
 //! `packages/core/src/native/`, does this for the JavaScript.
 
 use std::cell::Cell;
@@ -27,7 +27,7 @@ pub fn dispatch(request: &str) -> String {
             let input = req.get("input").cloned().unwrap_or(Value::Null);
             match ops::run(op, input) {
                 Ok(value) => json!({ "ok": value }),
-                Err(ops::Failure { error, detail }) => json!({ "error": error, "detail": detail }),
+                Err(ops::Failure { error, detail, data }) => json!({ "error": error, "detail": detail, "data": data }),
             }
         }
         Err(err) => json!({ "error": "invalid_request", "detail": err.to_string() }),

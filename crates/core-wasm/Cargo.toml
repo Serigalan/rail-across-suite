@@ -13,3 +13,4 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 serde_json.workspace = true
 rail-across-doc = { path = "../doc" }
+rail-across-js = { path = "../js" }

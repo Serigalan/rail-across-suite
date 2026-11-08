@@ -1,0 +1,15 @@
+[package]
+name = "rail-across-geom"
+description = "Planes and elements: straights, arcs, transitions, cants, coordinate systems and the one tolerance table"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[lib]
+name = "rail_across_geom"
+
+[dependencies]
+serde_json.workspace = true
+rail-across-js = { path = "../js" }

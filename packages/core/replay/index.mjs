@@ -17,13 +17,14 @@ const CRATES = resolve(here, '../../../crates')
 
 /** The recorders, by crate: each a module whose default export returns { name: cases }. */
 const RECORDERS = {
+  doc: [() => import('./doc.mjs')],
 }
 
-/** Write one vector file: [{ input, output }] as JSON. */
+/** Write one vector file: [{ op, input, output | error }], one case a line. */
 export function writeVectors(crate, name, cases) {
   const file = join(CRATES, crate, 'tests/vectors', `${name}.json`)
   mkdirSync(dirname(file), { recursive: true })
-  writeFileSync(file, JSON.stringify(cases, null, 1) + '\n')
+  writeFileSync(file, `[\n${cases.map(c => JSON.stringify(c)).join(',\n')}\n]\n`)
   return file
 }
 

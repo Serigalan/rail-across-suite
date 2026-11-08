@@ -1,4 +1,5 @@
-import { FORMAT as DOCUMENT_FORMAT, fromDocument, PayloadError, toDocument } from '../document/index.js'
+import { FORMAT as DOCUMENT_FORMAT, fromDocument, PayloadError, toDocument, viaNative } from '../document/index.js'
+import { nativeReady } from '../native/index.js'
 import { reconstructElements, derivedEndBearing, loadedTrackCants, storedTrackCants, POSITION_DIGITS } from '../geometry/index.js'
 import { rebuildSwitchSymbol } from '../switch/index.js'
 import { rebuildPlatformSymbol, isModelledSwitch, rebuildCoords } from '../track/index.js'
@@ -100,6 +101,7 @@ const keptRoleAndReasons = (el) => (el.role == null || ELEMENT_ROLES.includes(el
  * saying what) where it states a format it does not hold.
  */
 export function parseProjectsPayload(data) {
+  if (nativeReady()) return viaNative('project.parseProjectsPayload', data)
   if (data?.format === DOCUMENT_FORMAT) return { projects: [fromDocument(data)] }
   if (!data || typeof data !== 'object' || !Array.isArray(data.projects)) {
     throw new PayloadError('invalid_payload')
@@ -129,8 +131,9 @@ export function parseProjectsPayload(data) {
  * domains' schemas in, as a file that travels carries them; `check: false`
  * writes it although the schemas refuse it (toDocument).
  */
-export const projectDocument = (record, { carrySchemas = false, check = true } = {}) =>
-  toDocument(dehydrateProjects([record])[0], { carrySchemas, check })
+export const projectDocument = (record, { carrySchemas = false, check = true } = {}) => (nativeReady()
+  ? viaNative('project.projectDocument', { record: withoutDerived(record), carrySchemas, check })
+  : toDocument(dehydrateProjects([record])[0], { carrySchemas, check }))
 
 const isPoint = (p) => Array.isArray(p) && p.length >= 2 && p.every(Number.isFinite)
 
@@ -146,6 +149,7 @@ const isPoint = (p) => Array.isArray(p) && p.length >= 2 && p.every(Number.isFin
  * 'tracks_empty', 'switch_missing') otherwise.
  */
 export function parseTracksPayload(data, { switchIds = new Set() } = {}) {
+  if (nativeReady()) return viaNative('project.parseTracksPayload', { data, switchIds: [...switchIds] })
   const tracks = Array.isArray(data) ? data : [data]
   if (tracks.length === 0) throw new PayloadError('tracks_empty')
   for (const track of tracks) {
@@ -251,8 +255,30 @@ export function hydrateProjects(projects) {
   return projects ?? []
 }
 
+/**
+ * A record without the display geometry the load derived — what keeping it
+ * strips anyway, left behind before it is handed to the core's module rather
+ * than written out to it and back.
+ */
+function withoutDerived(p) {
+  if (!p || typeof p !== 'object') return p
+  const out = { ...p }
+  if (Array.isArray(p.tracks)) {
+    out.tracks = p.tracks.map(({ coordinates: _c, ...t }) => (Array.isArray(t.elements)
+      ? { ...t, elements: t.elements.map(el => (el && typeof el === 'object' ? (({ renderCoords: _r, geometry: _g, ...rest }) => rest)(el) : el)) }
+      : t))
+  }
+  if (Array.isArray(p.switches)) {
+    out.switches = p.switches.map(sw => (sw && typeof sw === 'object'
+      ? (({ fillCoords: _f, lcsCoords: _l, labelCoords: _lc, bodyCentre: _bc, ...rest }) => rest)(sw) : sw))
+  }
+  if (Array.isArray(p.platforms)) out.platforms = p.platforms.map(pf => (pf && typeof pf === 'object' ? (({ coords: _c, ...rest }) => rest)(pf) : pf))
+  return out
+}
+
 /** The records as they are kept (oltjson-1.1): derived data stripped, numbers rounded. */
 export function dehydrateProjects(projects) {
+  if (nativeReady()) return viaNative('project.dehydrateProjects', (projects ?? []).map(withoutDerived))
   return (projects ?? []).map((p) => {
     if (!p.tracks && !p.switches && !p.platforms) return p
     return {

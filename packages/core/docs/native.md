@@ -24,3 +24,13 @@ answers the same either way while the port goes on; the tests hold both to the s
 
 `npm run wasm` (`scripts/wasm.mjs`) builds the module with cargo and puts it in `packages/core/wasm/`
 (not in the repository); `RA_CORE_WASM` names a module file to take instead.
+
+## What has moved
+
+| Step | Crate | Functions the face hands to it |
+|---|---|---|
+| 1 | `crates/doc` (with `crates/js`, the JavaScript meaning of JSON values, and the first part of `crates/geom`) | `checkDocument`, `toDocument`, `fromDocument`, `manifestOf`, `documentHash` (document); `parseProjectsPayload`, `projectDocument`, `dehydrateProjects`, `parseTracksPayload` (project) |
+
+The crates are held to the JavaScript three ways: the shared vectors (`schemas/vectors/`), the calls the
+JavaScript records (`npm run replay` → `crates/*/tests/vectors/`, replayed by `crates/core-wasm/tests/replay.rs`),
+and the core's own tests, which run on the module where it is built (and with `RA_NATIVE=0` on the JavaScript).

@@ -1,0 +1,421 @@
+// SPDX-FileCopyrightText: 2026 Serigalan and the Rail-Across-Suite contributors
+// SPDX-License-Identifier: LGPL-3.0-only
+
+//! The one door for core 1.0 documents (`door.js`): what comes in is checked
+//! here — the file's shape, each domain's version and schema, every object
+//! against its domain's schema, the blobs against their hashes — and what is
+//! written is checked the same way before it leaves. A domain of an earlier
+//! schema of its version is brought to this build's first (S-R10).
+
+use std::collections::{HashMap, HashSet};
+use std::sync::OnceLock;
+
+use rail_across_js::{Object, get, js_string, stringify};
+use serde_json::{Value, json};
+
+use crate::canonical::content_hash;
+use crate::core_format::{document_to_record, domain_version, record_to_document};
+use crate::error::{PayloadError, Result};
+use crate::schema::{Breach, SchemaSet};
+
+/// The file format's name, as the envelope states it.
+pub const FORMAT: &str = "rail-across";
+
+const ENVELOPE: &str = include_str!("../../../schemas/rail-across.schema.json");
+const CORE: &str = include_str!("../../../schemas/core/1.0.schema.json");
+const LAYOUT: &str = include_str!("../../../schemas/layout/1.0.schema.json");
+const SIGNALLING: &str = include_str!("../../../schemas/signalling/1.0.schema.json");
+
+struct Schemas {
+    set: SchemaSet,
+    domains: Vec<(&'static str, Value)>,
+    hashes: HashMap<&'static str, String>,
+    envelope: Value,
+}
+
+fn schemas() -> &'static Schemas {
+    static SCHEMAS: OnceLock<Schemas> = OnceLock::new();
+    SCHEMAS.get_or_init(|| {
+        let parse = |text: &str| serde_json::from_str::<Value>(text).expect("a schema of this build");
+        let envelope = parse(ENVELOPE);
+        let domains = vec![("core", parse(CORE)), ("layout", parse(LAYOUT)), ("signalling", parse(SIGNALLING))];
+        let mut set = SchemaSet::new();
+        set.add(envelope.clone()).expect("the envelope's schema");
+        for (_, s) in &domains {
+            set.add(s.clone()).expect("a domain's schema");
+        }
+        let hashes = domains.iter().map(|(d, s)| (*d, content_hash(s))).collect();
+        Schemas {
+            set,
+            domains,
+            hashes,
+            envelope,
+        }
+    })
+}
+
+/// The hash each domain's schema goes by — what a document names it with.
+pub fn schema_hashes() -> &'static HashMap<&'static str, String> {
+    &schemas().hashes
+}
+
+/// The schema of a domain this build reads, by name, and the envelope's ("rail-across").
+pub fn schema_of(name: &str) -> Option<&'static Value> {
+    if name == "rail-across" {
+        return Some(&schemas().envelope);
+    }
+    schemas().domains.iter().find(|(d, _)| *d == name).map(|(_, s)| s)
+}
+
+const SIGNALLING_FIRST: &str = "sha256:8e4fdf8b8d487f61be93b473521515fe2e5510ef3cdc21d994cd8a405aeb74a0";
+const SIGNALLING_SECOND: &str = "sha256:72fccdfdcac3f5ce42d7f49d10fb9134e1c4ed792f7365ec9f01d997f0049724";
+const SIGNALLING_THIRD: &str = "sha256:0194c1e7fe2a63741270025beb48929d106d74a80bf5b33ed4305965a5303487";
+const SIGNALLING_FOURTH: &str = "sha256:cee619f2ae1b256a81ca5536e3851602cce96841d16bb2fe5f11ffe1a5e1f64c";
+const SIGNALLING_FIFTH: &str = "sha256:d5c61938fb3da1cc80f638c051cac562c19ad207507373ac3381f3a97922d83c";
+const SIGNALLING_SIXTH: &str = "sha256:aeb06433b03125995823095d7ab89567311237560cbc3b9e6a954385305f0134";
+const CORE_FIRST: &str = "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6";
+const CORE_SECOND: &str = "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19";
+
+fn obj(v: &Value) -> Object {
+    v.as_object().cloned().unwrap_or_default()
+}
+
+fn list(v: &Value, key: &str) -> Vec<Value> {
+    get(v, key).and_then(Value::as_array).cloned().unwrap_or_default()
+}
+
+/// `defined(o)`: JSON has no `undefined`; members absent stay absent.
+fn set_opt(o: &mut Object, key: &str, v: Option<Value>) {
+    if let Some(v) = v {
+        o.insert(key.into(), v);
+    }
+}
+
+fn with_schema(domain: &Value, schema: &str, collections: Option<Object>) -> Value {
+    let mut d = obj(domain);
+    d.insert("schema".into(), json!(schema));
+    if let Some(c) = collections {
+        d.insert("collections".into(), Value::Object(c));
+    }
+    Value::Object(d)
+}
+
+/// One step of a signalling domain of an earlier schema, where there is one.
+fn signalling_step(domain: &Value) -> Option<Value> {
+    let schema = domain.get("schema").and_then(Value::as_str)?;
+    let cols = domain.get("collections").cloned().unwrap_or(json!({}));
+    match schema {
+        SIGNALLING_FIRST => {
+            let mut rest = obj(&cols);
+            rest.shift_remove("signals");
+            rest.shift_remove("pzbElements");
+            let signals: Vec<Value> = list(&cols, "signals")
+                .iter()
+                .map(|s| {
+                    let system = s.get("system").filter(|v| rail_across_js::truthy(Some(v))).cloned();
+                    let kind = s.get("type").filter(|v| rail_across_js::truthy(Some(v))).cloned();
+                    let mut o = obj(s);
+                    o.shift_remove("system");
+                    o.shift_remove("type");
+                    let logical = match (&system, &kind) {
+                        (Some(sys), Some(t)) => Some(json!([{ "system": sys, "type": t }])),
+                        (Some(sys), None) => Some(json!([{ "system": sys }])),
+                        (None, Some(t)) if t == "shunting" => Some(json!([{ "system": "sh", "type": t }])),
+                        _ => None,
+                    };
+                    set_opt(&mut o, "logicalSignals", logical);
+                    Value::Object(o)
+                })
+                .collect();
+            let balises: Vec<Value> = list(&cols, "pzbElements")
+                .iter()
+                .map(|p| {
+                    let mut o = obj(p);
+                    let frequency = o.shift_remove("frequency");
+                    let ina = o.shift_remove("ina");
+                    let speed_check = o.shift_remove("speedCheck");
+                    o.insert("system".into(), json!("pzb"));
+                    let mut settings = Object::new();
+                    set_opt(&mut settings, "frequency", frequency);
+                    set_opt(&mut settings, "ina", ina);
+                    if let Some(Value::Object(sc)) = speed_check {
+                        for (k, v) in sc {
+                            settings.insert(k, v);
+                        }
+                    }
+                    o.insert("settings".into(), Value::Object(settings));
+                    Value::Object(o)
+                })
+                .collect();
+            rest.insert("signals".into(), Value::Array(signals));
+            rest.insert("balises".into(), Value::Array(balises));
+            Some(with_schema(domain, SIGNALLING_SECOND, Some(rest)))
+        }
+        SIGNALLING_SECOND => {
+            let mut c = obj(&cols);
+            c.insert("speedSections".into(), json!([]));
+            Some(with_schema(domain, SIGNALLING_THIRD, Some(c)))
+        }
+        SIGNALLING_THIRD => {
+            let mut rest = obj(&cols);
+            for k in ["speedSections", "signals", "routes"] {
+                rest.shift_remove(k);
+            }
+            let routes = list(&cols, "routes");
+            let mut speeds: Vec<(String, Vec<Value>)> = Vec::new();
+            for r in &routes {
+                let Some(speed) = get(r, "speed") else { continue };
+                let start = js_string(r.get("startSignalId"));
+                let entry = json!({ "routeId": r.get("id").cloned().unwrap_or(Value::Null), "speed": speed });
+                match speeds.iter_mut().find(|(s, _)| *s == start) {
+                    Some((_, v)) => v.push(entry),
+                    None => speeds.push((start, vec![entry])),
+                }
+            }
+            let of_logical = ["screen", "indicator"];
+            let signals: Vec<Value> = list(&cols, "signals")
+                .iter()
+                .map(|s| {
+                    let logicals = list(s, "logicalSignals");
+                    if logicals.is_empty() {
+                        return s.clone();
+                    }
+                    let frames = list(s, "frames");
+                    let mut place = obj(s);
+                    let function = place.shift_remove("function");
+                    place.shift_remove("frames");
+                    place.shift_remove("logicalSignals");
+                    let kind_of = |f: &Value| f.get("kind").and_then(Value::as_str).map(str::to_string);
+                    let own: Vec<Value> = frames
+                        .iter()
+                        .filter(|f| !kind_of(f).is_some_and(|k| of_logical.contains(&k.as_str())))
+                        .cloned()
+                        .collect();
+                    let shown: Vec<Value> = frames
+                        .iter()
+                        .filter(|f| kind_of(f).is_some_and(|k| of_logical.contains(&k.as_str())))
+                        .cloned()
+                        .collect();
+                    if !own.is_empty() || s.get("kind").and_then(Value::as_str) == Some("real") {
+                        place.insert("frames".into(), Value::Array(own));
+                    }
+                    // `{ ...first, function, frames, signallingSpeeds }`: a member given as
+                    // undefined replaces the logical signal's own, and `defined` drops it.
+                    let mut first = obj(&logicals[0]);
+                    let mut put = |key: &str, v: Option<Value>| match v {
+                        Some(v) => {
+                            first.insert(key.into(), v);
+                        }
+                        None => {
+                            first.shift_remove(key);
+                        }
+                    };
+                    put("function", function);
+                    put("frames", if shown.is_empty() { None } else { Some(Value::Array(shown)) });
+                    let id = js_string(s.get("id"));
+                    put("signallingSpeeds", speeds.iter().find(|(k, _)| *k == id).map(|(_, v)| Value::Array(v.clone())));
+                    let mut all = vec![Value::Object(first)];
+                    all.extend(logicals[1..].iter().cloned());
+                    place.insert("logicalSignals".into(), Value::Array(all));
+                    Value::Object(place)
+                })
+                .collect();
+            let routes: Vec<Value> = routes
+                .iter()
+                .map(|r| {
+                    let mut o = obj(r);
+                    o.shift_remove("speed");
+                    Value::Object(o)
+                })
+                .collect();
+            rest.insert("signals".into(), Value::Array(signals));
+            rest.insert("routes".into(), Value::Array(routes));
+            Some(with_schema(domain, SIGNALLING_FOURTH, Some(rest)))
+        }
+        SIGNALLING_FOURTH => Some(with_schema(domain, SIGNALLING_FIFTH, None)),
+        SIGNALLING_FIFTH => {
+            let mut c = obj(&cols);
+            c.insert("stoppingPlaces".into(), json!([]));
+            c.insert("itineraries".into(), json!([]));
+            Some(with_schema(domain, SIGNALLING_SIXTH, Some(c)))
+        }
+        SIGNALLING_SIXTH => Some(with_schema(domain, &schema_hashes()["signalling"], None)),
+        _ => None,
+    }
+}
+
+/// One step of a core domain of an earlier schema, where there is one.
+fn core_step(domain: &Value) -> Option<Value> {
+    match domain.get("schema").and_then(Value::as_str)? {
+        CORE_FIRST => {
+            let cols = domain.get("collections").cloned().unwrap_or(json!({}));
+            let tracks: Vec<Value> = list(&cols, "tracks")
+                .iter()
+                .map(|t| {
+                    let Some(Value::Array(els)) = t.get("elements").filter(|e| rail_across_js::truthy(Some(e))) else {
+                        return t.clone();
+                    };
+                    let els: Vec<Value> = els
+                        .iter()
+                        .map(|el| {
+                            if !rail_across_js::has(el, "speed") {
+                                return el.clone();
+                            }
+                            let mut o = obj(el);
+                            let speed = o.shift_remove("speed").unwrap_or(Value::Null);
+                            o.insert("designSpeed".into(), speed);
+                            Value::Object(o)
+                        })
+                        .collect();
+                    let mut o = obj(t);
+                    o.insert("elements".into(), Value::Array(els));
+                    Value::Object(o)
+                })
+                .collect();
+            let mut c = obj(&cols);
+            c.insert("tracks".into(), Value::Array(tracks));
+            Some(with_schema(domain, CORE_SECOND, Some(c)))
+        }
+        CORE_SECOND => Some(with_schema(domain, &schema_hashes()["core"], None)),
+        _ => None,
+    }
+}
+
+/// The document with every domain of an earlier schema of its version brought to this build's.
+fn migrated(doc: &Value) -> Value {
+    let domains = &doc["domains"];
+    let mut core = domains.get("core").cloned();
+    let mut signalling = domains.get("signalling").cloned();
+    let mut changed = false;
+    if let Some(c) = core.as_mut().filter(|c| c.get("version").and_then(Value::as_str) == Some("1.0")) {
+        while let Some(next) = core_step(c) {
+            *c = next;
+            changed = true;
+        }
+    }
+    if let Some(s) = signalling.as_mut().filter(|s| s.get("version").and_then(Value::as_str) == Some("1.0")) {
+        while let Some(next) = signalling_step(s) {
+            *s = next;
+            changed = true;
+        }
+    }
+    if !changed {
+        return doc.clone();
+    }
+    let mut d = obj(domains);
+    if let Some(c) = core {
+        d.insert("core".into(), c);
+    }
+    if let Some(s) = signalling {
+        d.insert("signalling".into(), s);
+    }
+    let mut out = obj(doc);
+    out.insert("domains".into(), Value::Object(d));
+    Value::Object(out)
+}
+
+fn breaches(errors: &[Breach], prefix: &str) -> Vec<String> {
+    errors
+        .iter()
+        .map(|e| format!("{prefix}{}: {}", if e.path == "/" { "" } else { &e.path }, e.message))
+        .collect()
+}
+
+fn check(name: &str, value: &Value) -> Vec<Breach> {
+    schemas()
+        .set
+        .check(name, value, 20)
+        .unwrap_or_else(|e| vec![Breach { path: "/".into(), message: e }])
+}
+
+/// Check a core 1.0 document; returns it — a domain of an earlier schema of
+/// its version brought to this build's —, or a PayloadError (`checkDocument`).
+pub fn check_document(given: &Value) -> Result<Value> {
+    if given.get("format").and_then(Value::as_str) != Some(FORMAT) {
+        return Err(PayloadError::with("invalid_payload", vec!["/format: is not rail-across".into()]));
+    }
+    let shape = check("rail-across", given);
+    if !shape.is_empty() {
+        return Err(PayloadError::with("invalid_payload", breaches(&shape, "")));
+    }
+    let doc = migrated(given);
+    if let Some(Value::Object(schemas)) = doc.get("schemas") {
+        for (hash, schema) in schemas {
+            if content_hash(schema) != *hash {
+                return Err(PayloadError::with("invalid_payload", vec![format!("/schemas/{hash}: holds another schema")]));
+            }
+        }
+    }
+    if let Some(Value::Object(blobs)) = doc.get("blobs") {
+        for (hash, value) in blobs {
+            if content_hash(value) != *hash {
+                return Err(PayloadError::with("invalid_payload", vec![format!("/blobs/{hash}: holds other content")]));
+            }
+        }
+    }
+    let mut found = Vec::new();
+    if let Some(Value::Object(domains)) = doc.get("domains") {
+        for (name, domain) in domains {
+            let version = domain.get("version");
+            if domain_version(name).map(|v| Value::String(v.into())).as_ref() != version {
+                return Err(PayloadError::with(
+                    "unsupported_version",
+                    vec![format!("/domains/{name}: {}", js_string(version))],
+                ));
+            }
+            if domain.get("schema").and_then(Value::as_str) != schema_hashes().get(name.as_str()).map(String::as_str) {
+                found.push(format!("/domains/{name}/schema: is not the schema of {name} {}", js_string(version)));
+                continue;
+            }
+            let deps = domain.get("dependsOn").and_then(Value::as_array).cloned().unwrap_or_default();
+            if name != "core" && !(deps.len() == 1 && deps[0] == json!("core")) {
+                found.push(format!("/domains/{name}/dependsOn: is not [\"core\"]"));
+            }
+            let mut part = Object::new();
+            if let Some(f) = domain.get("fields") {
+                part.insert("fields".into(), f.clone());
+            }
+            if let Some(c) = domain.get("collections") {
+                part.insert("collections".into(), c.clone());
+            }
+            found.extend(breaches(&check(name, &Value::Object(part)), &format!("/domains/{name}")));
+            if let Some(Value::Object(cols)) = domain.get("collections") {
+                for (cname, list) in cols {
+                    let mut seen = HashSet::new();
+                    for o in list.as_array().into_iter().flatten() {
+                        let id = o.get("id").map(stringify).unwrap_or_else(|| "undefined".into());
+                        if !seen.insert(id) {
+                            found.push(format!("/domains/{name}/collections/{cname}: holds {} twice", js_string(o.get("id"))));
+                        }
+                    }
+                }
+            }
+        }
+    }
+    if !found.is_empty() {
+        return Err(PayloadError::with("invalid_payload", found));
+    }
+    Ok(doc)
+}
+
+/// The core 1.0 document of a record (dehydrated), checked as the door checks
+/// what comes in; `carry_schemas` puts the domains' schemas into it, `check:
+/// false` leaves the check out (`toDocument`).
+pub fn to_document(record: &Value, carry_schemas: bool, check: bool) -> Result<Value> {
+    let mut doc = record_to_document(record, schema_hashes())?;
+    if carry_schemas {
+        let mut carried = Object::new();
+        for d in doc["domains"].as_object().map(|o| o.keys().cloned().collect::<Vec<_>>()).unwrap_or_default() {
+            if let (Some(h), Some(s)) = (schema_hashes().get(d.as_str()), schema_of(&d)) {
+                carried.insert(h.clone(), s.clone());
+            }
+        }
+        doc.as_object_mut().expect("document").insert("schemas".into(), Value::Object(carried));
+    }
+    if check { check_document(&doc) } else { Ok(doc) }
+}
+
+/// The record a core 1.0 document holds, once the door has checked it (`fromDocument`).
+pub fn from_document(doc: &Value) -> Result<Value> {
+    document_to_record(&check_document(doc)?)
+}

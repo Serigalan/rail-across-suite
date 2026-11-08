@@ -6,6 +6,8 @@ import { contentHash } from './canonical.js'
 import { DOMAIN_VERSIONS, documentToRecord, recordToDocument } from './coreFormat.js'
 import { PayloadError } from './payloadError.js'
 import { SchemaSet } from './schemaCheck.js'
+import { nativeReady } from '../native/index.js'
+import { viaNative } from './viaNative.js'
 
 // The one door for core 1.0 documents: what comes in is checked here — the
 // file's shape, each domain's version and schema, every object against its
@@ -158,6 +160,10 @@ const breaches = (errors, prefix) => errors.map(e => `${prefix}${e.path === '/' 
  * schemas say.
  */
 export function checkDocument(given) {
+  if (nativeReady()) {
+    const checked = viaNative('document.checkDocument', given)
+    return checked.same ? given : checked.doc
+  }
   if (given?.format !== FORMAT) throw new PayloadError('invalid_payload', ['/format: is not rail-across'])
   const shape = SCHEMAS.check('rail-across', given)
   if (shape.length) throw new PayloadError('invalid_payload', breaches(shape, ''))
@@ -199,13 +205,14 @@ export function checkDocument(given) {
  * takes although the schemas refuse it, which the door will refuse in turn.
  */
 export function toDocument(record, { carrySchemas = false, check = true } = {}) {
+  if (nativeReady()) return viaNative('document.toDocument', { record, carrySchemas, check })
   const doc = recordToDocument(record, SCHEMA_HASHES)
   if (carrySchemas) doc.schemas = Object.fromEntries(Object.keys(doc.domains).map(d => [SCHEMA_HASHES[d], DOMAIN_SCHEMAS[d]]))
   return check ? checkDocument(doc) : doc
 }
 
 /** The record a core 1.0 document holds, once the door has checked it. */
-export const fromDocument = (doc) => documentToRecord(checkDocument(doc))
+export const fromDocument = (doc) => (nativeReady() ? viaNative('document.fromDocument', doc) : documentToRecord(checkDocument(doc)))
 
 /** The schema of a domain this build reads, by name ("core", "layout", "signalling"), and the envelope's ("rail-across"). */
 export const schemaOf = (name) => (name === 'rail-across' ? ENVELOPE : DOMAIN_SCHEMAS[name])

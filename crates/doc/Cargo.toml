@@ -11,5 +11,8 @@ rust-version.workspace = true
 name = "rail_across_doc"
 
 [dependencies]
-serde.workspace = true
 serde_json.workspace = true
+regex = "1"
+sha2 = "0.10"
+rail-across-js = { path = "../js" }
+rail-across-geom = { path = "../geom" }

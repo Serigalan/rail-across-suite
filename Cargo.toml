@@ -19,7 +19,8 @@ rust-version = "1.85"
 serde = { version = "1", features = ["derive"] }
 # The catalogue's thresholds and inputs are read in the order the file lists
 # them: a later one may use an earlier (optimizer); records keep their order.
-serde_json = { version = "1", features = ["preserve_order"] }
+# Numbers read back as the double JavaScript reads (float_roundtrip).
+serde_json = { version = "1", features = ["preserve_order", "float_roundtrip"] }
 slsqp = "1.0.2"
 
 [profile.release]

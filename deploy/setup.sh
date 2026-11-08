@@ -66,7 +66,9 @@ if [ ! -x "$RA_CARGO" ]; then
   curl -fsSL https://sh.rustup.rs | sh -s -- -y --profile minimal
   RA_CARGO=$HOME/.cargo/bin/cargo
 fi
-"$(dirname "$RA_CARGO")/rustup" target add wasm32-unknown-unknown
+rustup=$(dirname "$RA_CARGO")/rustup
+if [ -x "$rustup" ]; then "$rustup" target add wasm32-unknown-unknown
+else echo "WARNING: no rustup beside $RA_CARGO — the WebAssembly modules need the target wasm32-unknown-unknown" >&2; fi
 
 if [ "$RA_CADDY" = system ] && ! command -v caddy >/dev/null; then
   step "Caddy"

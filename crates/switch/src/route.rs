@@ -14,6 +14,9 @@ use serde_json::{Value, json};
 
 use crate::catalogue::{STRAIGHT_CURVATURE, as_radius, bauform, branch_radius};
 
+/// A polyline of WGS84 [lng, lat] pairs.
+pub type Polyline = Vec<[f64; 2]>;
+
 /// A route: its length and the signed radius at either end (None straight).
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Route {
@@ -533,7 +536,7 @@ pub fn route_coords(origin: Utm, origin_wgs: [f64; 2], bearing: f64, r: &Route, 
 }
 
 /// Polyline (WGS84) of a chain and its segments with theirs (`chainGeometry`).
-pub fn chain_geometry(origin: Utm, origin_wgs: [f64; 2], bearing: f64, chain: &[Route], end_wgs: [f64; 2]) -> (Vec<[f64; 2]>, Vec<(Segment, Vec<[f64; 2]>)>) {
+pub fn chain_geometry(origin: Utm, origin_wgs: [f64; 2], bearing: f64, chain: &[Route], end_wgs: [f64; 2]) -> (Polyline, Vec<(Segment, Polyline)>) {
     let segs = switch_chain_segments_utm(origin, bearing, chain);
     let mut coords: Vec<[f64; 2]> = Vec::new();
     let mut out = Vec::new();

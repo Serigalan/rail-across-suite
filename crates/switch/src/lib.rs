@@ -9,5 +9,7 @@
 #![allow(clippy::neg_cmp_op_on_partial_ord)]
 
 pub mod catalogue;
+pub mod crossing;
 pub mod regelwerk;
 pub mod route;
+pub mod symbol;

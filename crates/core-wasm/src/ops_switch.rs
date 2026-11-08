@@ -5,8 +5,10 @@
 
 use rail_across_js::number;
 use rail_across_switch::catalogue as cat;
+use rail_across_switch::crossing as cr;
 use rail_across_switch::regelwerk;
 use rail_across_switch::route as rt;
+use rail_across_switch::symbol as sy;
 use serde_json::{Value, json};
 
 use crate::args::{Args, opt_num};
@@ -124,6 +126,97 @@ pub fn run(op: &str, input: &Value) -> Option<Result<Value, Failure>> {
                 .collect();
             ok(json!({ "coords": rt::pts_json(&coords), "segments": segments }))
         }
+        // crossing
+        "switch.crossingAngle" => ok(number(cr::crossing_angle(a.v(0)))),
+        "switch.crossingLegRadius" => ok(opt_num(cr::crossing_leg_radius(a.opt(0)))),
+        "switch.crossingLegSignedRadius" => ok(opt_num(cr::crossing_leg_signed_radius(a.opt(0), a.f(1)))),
+        "switch.crossingEndDistance" => ok(number(cr::crossing_end_distance(a.v(0)))),
+        "switch.crossingWedgeRing" => ok(rt::pts_json(&cr::crossing_wedge_ring(&pts(a.v(0)), &pts(a.v(1))))),
+        "switch.crossingLegFitsTrack" | "switch.piecesOnRadius" => ok(json!(cr::pieces_on_radius(&rt::to_chain(&Value::Array(a.list(0))), s_opt(1)))),
+        "switch.computeCrossingGeometryUtm" => ok(cr::compute_crossing_geometry_utm(
+            a.utm(0),
+            a.f(1),
+            a.v(2),
+            a.f(3),
+            a.opt(4).map(wgs),
+            a.opt(5).map(wgs),
+            a.opt(6).map(|v| rail_across_js::js_number(Some(v)) as i64),
+        )),
+        "switch.computeCrossingGeometryFromPortA" => ok(cr::compute_crossing_geometry_from_port_a(a.utm(0), wgs(a.v(1)), a.f(2), a.v(3), a.f(4))),
+        "switch.crossingElements" => ok(cr::crossing_elements(a.v(0), a.v(1))),
+        // symbol
+        "switch.switchRoutePointsUtm" => {
+            // A single route is read as it is given: its r1 and r2, not a `radius`.
+            let route = a.v(2);
+            let chain = if route.is_array() {
+                rt::to_chain(route)
+            } else {
+                vec![rt::Route {
+                    length: a.v(2)["length"].as_f64().unwrap_or(f64::NAN),
+                    r1: route.get("r1").and_then(Value::as_f64),
+                    r2: route.get("r2").and_then(Value::as_f64),
+                }]
+            };
+            ok(rt::pts_json(&sy::switch_route_points_utm(a.utm(0), a.f(1), &chain, !route.is_array())))
+        }
+        "switch.switchLabelGeometry" => {
+            let (label, centre) = sy::switch_label_geometry(a.utm(0), a.f(1), &rt::to_chain(a.v(2)), &rt::to_chain(a.v(3)), a.i(4));
+            ok(json!({ "labelCoords": rt::pts_json(&label), "bodyCentre": [number(centre[0]), number(centre[1])] }))
+        }
+        "switch.switchFillRing" => ok(rt::pts_json(&sy::switch_fill_ring(&pts(a.v(0)), &pts(a.v(1))))),
+        "switch.lcsLineUtm" => ok(sy::lcs_line_utm(
+            wgs(a.v(0)),
+            wgs(a.v(1)),
+            wgs(a.v(2)),
+            a.opt(3)
+                .map(|v| rail_across_js::js_number(Some(v)))
+                .unwrap_or(if a.0.len() > 3 { 0.0 } else { f64::NAN }),
+        )
+        .map(|l| rt::pts_json(&l))
+        .unwrap_or(Value::Null)),
+        "switch.lcsLine" => ok(sy::lcs_line(
+            wgs(a.v(0)),
+            wgs(a.v(1)),
+            wgs(a.v(2)),
+            a.opt(3).map(|v| rail_across_js::js_number(Some(v))),
+            a.i(4),
+        )
+        .map(|l| rt::pts_json(&l))
+        .unwrap_or(Value::Null)),
+        "switch.crossingRoutesFromTracks" => ok(sy::crossing_routes_from_tracks(a.v(0), &by_id(a.v(1)))
+            .map(|r| r.to_json())
+            .unwrap_or(Value::Null)),
+        "switch.crossingBodyUtm" => {
+            let r = sy::crossing_routes_from_tracks(a.v(0), &by_id(a.v(1)));
+            ok(r.map(|r| Value::Array(sy::crossing_body_utm(&r).iter().map(|x| rt::pts_json(x)).collect()))
+                .unwrap_or(Value::Null))
+        }
+        "switch.switchRoutesFromTracks" => ok(sy::switch_routes_from_tracks(a.v(0), &by_id(a.v(1)))
+            .map(|r| r.to_json())
+            .unwrap_or(Value::Null)),
+        "switch.rebuildSwitchSymbol" => ok(sy::rebuild_switch_symbol(a.v(0), &by_id(a.v(1)))),
+        "switch.computeSwitchGeometryUtm" => ok(sy::compute_switch_geometry_utm(
+            a.utm(0),
+            a.f(1),
+            a.v(2),
+            a.s(3),
+            a.b(4),
+            a.opt(5).map(wgs),
+            &sy::MainR::from_json(a.opt(6)),
+        )),
         _ => None,
+    }
+}
+
+fn pts(v: &Value) -> Vec<[f64; 2]> {
+    v.as_array().map(|x| x.iter().map(wgs).collect()).unwrap_or_default()
+}
+
+/// `trackById` as an object; a list is keyed by its tracks' ids.
+fn by_id(v: &Value) -> serde_json::Map<String, Value> {
+    match v {
+        Value::Object(o) => o.clone(),
+        Value::Array(a) => a.iter().map(|t| (rail_across_js::js_string(t.get("id")), t.clone())).collect(),
+        _ => serde_json::Map::new(),
     }
 }

@@ -136,6 +136,7 @@ dependencies = [
  "rail-across-geom",
  "rail-across-js",
  "rail-across-rules",
+ "rail-across-survey",
  "rail-across-switch",
  "rail-across-track",
  "serde_json",

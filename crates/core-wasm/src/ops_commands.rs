@@ -3,8 +3,9 @@
 
 //! The commands' operations, named and called as the JavaScript's.
 
-use rail_across_commands::{edit, roles, table, tracks as tr};
+use rail_across_commands::{edit, roles, scurve as sc, table, tracks as tr};
 use rail_across_js::number;
+use rail_across_switch::mid_chain as mc;
 use serde_json::{Value, json};
 
 use crate::args::{Args, opt_num};
@@ -60,6 +61,72 @@ pub fn run(op: &str, input: &Value) -> Option<Result<Value, Failure>> {
                 &list("reshaped"),
             )))
         }
+        // sCurve
+        "commands.connectionPick" => ok(sc::connection_pick(a.v(0), a.u(1), a.f(2))),
+        "commands.isUsableStem" => ok(json!(sc::is_usable_stem(a.v(0)))),
+        "commands.runBeside" => {
+            let els = a.list(0);
+            ok(sc::run_beside(&els, a.u(1), a.s(2))
+                .map(|l| {
+                    let el = &els[a.u(1)];
+                    json!({ "elementType": el.get("elementType"), "radius": rail_across_js::get(el, "radius").cloned().unwrap_or(Value::Null), "length": number(l) })
+                })
+                .unwrap_or(Value::Null))
+        }
+        "commands.stems" => {
+            let (g1, g2) = sc::stems(&a.list(0));
+            ok(json!({ "g1": g1.to_json(), "g2": g2.to_json() }))
+        }
+        "commands.REASON_MSG" => ok(sc::reason_msg()),
+        "commands.solveConnection" => with_ask(a.v(0), |ask, shift| ok(sc::solve_connection(ask, shift))),
+        "commands.settleConnection" => with_ask(a.v(0), |ask, shift| ok(sc::settle_connection(ask, shift).to_json())),
+        "commands.connectionRemnants" => ok(Value::Array(
+            sc::connection_remnants(&a.list(0), a.f(1), a.v(2), a.f(3))
+                .iter()
+                .map(|r| r.to_json())
+                .collect(),
+        )),
+        "commands.computeShiftBounds" => with_ask(a.v(0), |ask, _| {
+            let (min, max) = sc::compute_shift_bounds(ask);
+            ok(json!({ "min": number(min), "max": number(max) }))
+        }),
+        "commands.waOffset" => ok(number(sc::wa_offset(&a.list(0)))),
+        "commands.hasStraightMid" => ok(json!(sc::has_straight_mid(a.v(0)))),
+        "commands.straightShifts" => with_ask(a.v(0), |ask, _| {
+            ok(Value::Array(sc::straight_shifts(ask, bounds(a.v(1))).into_iter().map(number).collect()))
+        }),
+        "commands.shiftSnaps" => with_ask(a.v(0), |ask, _| {
+            ok(Value::Array(sc::shift_snaps(ask, bounds(a.v(1))).into_iter().map(number).collect()))
+        }),
+        "commands.preferredShift" => with_ask(a.v(0), |ask, _| ok(number(sc::preferred_shift(ask, bounds(a.v(1)))))),
+        "commands.buildSCurve" => ok(sc::build_s_curve(a.v(0))),
         _ => None,
     }
+}
+
+fn bounds(v: &Value) -> (f64, f64) {
+    (
+        v.get("min").and_then(Value::as_f64).unwrap_or(f64::NAN),
+        v.get("max").and_then(Value::as_f64).unwrap_or(f64::NAN),
+    )
+}
+
+/// Runs `then` with the ask an options object `{ picks, speed, shift, mids, seed, form, lenient }` states.
+fn with_ask<T>(o: &Value, then: impl FnOnce(&sc::Ask, f64) -> T) -> T {
+    let picks: Vec<Value> = o.get("picks").and_then(Value::as_array).cloned().unwrap_or_default();
+    let seed = o.get("seed").and_then(|s| {
+        Some((
+            s.get("ds")?.as_f64()?,
+            s.get("values")?.as_array()?.iter().map(|x| x.as_f64().unwrap_or(f64::NAN)).collect(),
+        ))
+    });
+    let ask = sc::Ask {
+        picks: &picks,
+        speed: rail_across_js::js_number(o.get("speed")),
+        mids: o.get("mids").filter(|m| !m.is_null()).map(mc::mids_from),
+        seed,
+        form: o.get("form").filter(|f| !f.is_null()),
+        lenient: rail_across_js::truthy(o.get("lenient")),
+    };
+    then(&ask, o.get("shift").and_then(Value::as_f64).unwrap_or(0.0))
 }

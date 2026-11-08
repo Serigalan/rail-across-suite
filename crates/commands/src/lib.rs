@@ -5,10 +5,16 @@
 //! dialogs commit, as pure functions of their inputs (`commands/`), and the
 //! three-way merge of project records (`merge/`).
 
-#![allow(clippy::neg_cmp_op_on_partial_ord, clippy::too_many_arguments, clippy::manual_range_contains)]
+#![allow(
+    clippy::neg_cmp_op_on_partial_ord,
+    clippy::too_many_arguments,
+    clippy::manual_range_contains,
+    clippy::needless_range_loop
+)]
 #![recursion_limit = "256"]
 
 pub mod edit;
 pub mod roles;
+pub mod scurve;
 pub mod table;
 pub mod tracks;

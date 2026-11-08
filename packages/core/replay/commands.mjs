@@ -6,6 +6,8 @@ import * as Ro from '../src/commands/elementRoles.js'
 import * as Tv from '../src/commands/tableView.js'
 import * as Eg from '../src/commands/editGeometry.js'
 import { endPointStraightUtm } from '../src/geometry/index.js'
+import * as Sc from '../src/commands/sCurve.js'
+import { switchTypeByLabel } from '../src/switch/index.js'
 import { trackOf, layTurnout } from './switch.mjs'
 import { rec } from './record.mjs'
 
@@ -85,8 +87,64 @@ export default function record() {
   const edited = Eg.planElementChange(tracks, [], 'L', 2, { length: 140 }).tracks
   r('mergeElementEdits', Eg.mergeElementEdits, tracks, edited, { changed: ['L', 'O'], reshaped: ['L'] })
   r('mergeElementEdits', Eg.mergeElementEdits, tracks, edited, {})
+  recordSCurve(r, line)
   return { commands: calls }
 }
+
+function recordSCurve(r, line) {
+  const plain = (v) => JSON.parse(JSON.stringify(v))
+  const t1 = trackOf('P1', A, 90, [['s', 120], ['s', 280]])
+  const t2 = trackOf('P2', { easting: 600000, northing: 5599995.5 }, 90, [['s', 400]])
+  const t3 = trackOf('P3', { easting: 600000, northing: 5599993 }, 90.4, [['s', 400]])
+  const c1 = trackOf('C1', A, 90, [['s', 60], ['t', 50, null, -2000, 30], ['a', 300, -2000, null, 30]])
+  const c2 = trackOf('C2', { easting: 600000, northing: 5599995 }, 90, [['s', 60], ['t', 50, null, -2004.5, 30], ['a', 300, -2004.5, null, 30]])
+  const back = trackOf('PB', { easting: 600400, northing: 5599995.5 }, 270, [['s', 400]])
+  for (const [t, i, a] of [[t1, 0, 30], [t1, 1, 100], [line, 2, 40], [line, 1, 10], [c1, 2, 40]]) r('connectionPick', Sc.connectionPick, t, i, a)
+  for (const el of line.elements) { r('isUsableStem', Sc.isUsableStem, el) }
+  r('isUsableStem', Sc.isUsableStem, { ...line.elements[1], transitionType: 'bloss' })
+  for (let i = 0; i < line.elements.length; i++) for (const side of ['before', 'after']) r('runBeside', (e, k, sd) => { const x = runBesideOf(e, k, sd); return x }, line.elements, i, side)
+  r('REASON_MSG', () => Sc.REASON_MSG)
+  const cases = [
+    [[t1, 0, 60], [t2, 0, 150], 60],
+    [[t1, 1, 100], [t3, 0, 230], 80],
+    [[c1, 2, 40], [c2, 2, 70], 60],
+    [[t2, 0, 250], [t1, 1, 80], 40],
+    [[t1, 0, 60], [back, 0, 250], 60],
+  ]
+  for (const [[ta, ia, aa], [tb, ib, ab], speed] of cases) {
+    const picks = [Sc.connectionPick(ta, ia, aa), Sc.connectionPick(tb, ib, ab)]
+    r('stems', (p) => plain(Sc.stems(p)), picks)
+    r('waOffset', Sc.waOffset, picks)
+    for (const shift of [0, 12.5, -30]) {
+      r('solveConnection', (o) => plain(Sc.solveConnection(o)), { picks, speed, shift })
+      r('settleConnection', (o) => plain(Sc.settleConnection(o)), { picks, speed, shift })
+      const res = Sc.solveConnection({ picks, speed, shift })
+      if (res) {
+        r('connectionRemnants', Sc.connectionRemnants, picks, shift, plain(res), speed)
+        r('hasStraightMid', Sc.hasStraightMid, plain(res))
+      }
+    }
+    const bounds = Sc.computeShiftBounds({ picks, speed })
+    r('computeShiftBounds', (o) => Sc.computeShiftBounds(o), { picks, speed })
+    r('computeShiftBounds', (o) => Sc.computeShiftBounds(o), { picks, speed: 100, lenient: true })
+    r('straightShifts', (o, b) => Sc.straightShifts(o, b), { picks, speed }, bounds)
+    r('shiftSnaps', (o, b) => Sc.shiftSnaps(o, b), { picks, speed }, bounds)
+    r('preferredShift', (o, b) => Sc.preferredShift(o, b), { picks, speed }, bounds)
+    const shift = Sc.preferredShift({ picks, speed }, bounds)
+    const settled = Sc.settleConnection({ picks, speed, shift })
+    const tracks = [ta, tb, line].filter((t, k, all) => all.indexOf(t) === k)
+    r('buildSCurve', (o) => plain(Sc.buildSCurve(o)), { result: plain(settled.result), picks, tracks, switches: [], speed })
+    r('buildSCurve', (o) => plain(Sc.buildSCurve(o)), { result: plain(settled.result), picks, tracks, switches: [{ switchId: 'x', number: 1, name: 'switch.001', ports: {} }], speed,
+      identities: [{ switchId: 'old1', name: 'W 1', number: 7 }, { switchId: 'old2', name: 'W 2', number: 8 }], connTrack: { id: 'oldConn', name: 'Verbindung', heights: [], note: 'x' } })
+  }
+  const mids = [{ type: 'arc', length: 25, radius: null }, { type: 'straight', length: null }]
+  const picks = [Sc.connectionPick(t1, 0, 60), Sc.connectionPick(t2, 0, 150)]
+  r('solveConnection', (o) => plain(Sc.solveConnection(o)), { picks, speed: 60, shift: 0, mids })
+  r('solveConnection', (o) => plain(Sc.solveConnection(o)), { picks, speed: 60, shift: 0, form: switchTypeByLabel('500 – 1:12') })
+  r('solveConnection', (o) => plain(Sc.solveConnection(o)), { picks: [picks[0]], speed: 60, shift: 0 })
+}
+
+import { runBeside as runBesideOf } from '../src/rules/index.js'
 
 function withRolesTrack(track, roles) {
   return { ...track, elements: track.elements.map((el, i) => (roles[i] ? { ...el, role: roles[i] } : el)) }

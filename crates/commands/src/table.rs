@@ -105,7 +105,10 @@ pub fn table_roles(rows: &[Value], tracks: &[Value]) -> Vec<Value> {
 }
 
 /// An edit of a row's track done in the view's direction (`inRun`).
-pub fn in_run(row: &Value, tracks: &[Value], switches: &[Value], edit: &dyn Fn(&[Value], &[Value], usize) -> Value) -> Value {
+/// An edit of the project at an element index, as `inRun` hands it on.
+pub type Edit<'a> = &'a dyn Fn(&[Value], &[Value], usize) -> Value;
+
+pub fn in_run(row: &Value, tracks: &[Value], switches: &[Value], edit: Edit) -> Value {
     let tid = row.get("trackId").cloned().unwrap_or(Value::Null);
     let Some(track) = tracks.iter().find(|t| rail_across_js::strict_eq(t.get("id"), Some(&tid))) else {
         return Value::Null;

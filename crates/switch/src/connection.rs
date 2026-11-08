@@ -148,8 +148,12 @@ impl Stem {
         let piece = |p: &StemPiece| json!({ "startUtm": p.start.to_json(), "bearing": number(p.bearing), "route": p.route.to_json(), "cantStart": p.cant_start.map(number), "cantEnd": p.cant_end.map(number), "s0": number(p.s0) });
         let mut o = json!({
             "startUtm": self.start.to_json(), "bearing": number(self.bearing), "route": self.route.to_json(), "along": number(self.along),
-            "cantStart": self.cant_start.map(number), "cantEnd": self.cant_end.map(number), "dir": number(self.dir),
+            "cantStart": self.cant_start.map(number), "cantEnd": self.cant_end.map(number),
         });
+        // A stem states its direction only where it has been turned round.
+        if self.dir != 1.0 {
+            o["dir"] = number(self.dir);
+        }
         if !self.pieces.is_empty() {
             o["pieces"] = Value::Array(self.pieces.iter().map(piece).collect());
         }

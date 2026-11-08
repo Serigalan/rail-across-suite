@@ -131,9 +131,7 @@ pub fn with_role(elements: &[Value], i: usize, r: &str) -> (Vec<Value>, Option<&
             .map(|(j, e)| {
                 if j == i {
                     with(e, "follow")
-                } else if j > i {
-                    without_role(e)
-                } else if role(e) == Some("intermediate") && intermediate_span(elements, j).map(|s| s.1 as i64).unwrap_or(-1) >= i as i64 {
+                } else if j > i || (role(e) == Some("intermediate") && intermediate_span(elements, j).map(|s| s.1 as i64).unwrap_or(-1) >= i as i64) {
                     without_role(e)
                 } else {
                     e.clone()

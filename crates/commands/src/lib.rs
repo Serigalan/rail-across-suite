@@ -16,5 +16,6 @@
 pub mod edit;
 pub mod roles;
 pub mod scurve;
+pub mod switches;
 pub mod table;
 pub mod tracks;

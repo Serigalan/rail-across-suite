@@ -3,7 +3,7 @@
 
 //! The commands' operations, named and called as the JavaScript's.
 
-use rail_across_commands::{edit, roles, scurve as sc, table, tracks as tr};
+use rail_across_commands::{edit, roles, scurve as sc, switches as swc, table, tracks as tr};
 use rail_across_js::number;
 use rail_across_switch::mid_chain as mc;
 use serde_json::{Value, json};
@@ -100,7 +100,77 @@ pub fn run(op: &str, input: &Value) -> Option<Result<Value, Failure>> {
         }),
         "commands.preferredShift" => with_ask(a.v(0), |ask, _| ok(number(sc::preferred_shift(ask, bounds(a.v(1)))))),
         "commands.buildSCurve" => ok(sc::build_s_curve(a.v(0))),
+        // switches
+        "commands.SLIDER_REACH" => ok(number(swc::SLIDER_REACH)),
+        "commands.switchOnTrackPlacement" => {
+            let o = a.v(0);
+            ok(swc::placement_json(swc::switch_on_track_placement(
+                &swc::OnTrack::from_json(o),
+                o.get("toeStation").and_then(Value::as_f64),
+            )))
+        }
+        "commands.switchOnTrackRouteEnd" => ok(swc::switch_on_track_route_end(&swc::OnTrack::from_json(a.v(0)), a.f(1))
+            .map(|(u, b, k)| json!({ "utm": u.to_json(), "bearing": number(b), "k": number(k) }))
+            .unwrap_or(Value::Null)),
+        "commands.switchOnTrackRemnant" => ok(swc::switch_on_track_remnant(a.v(0), a.f(1), a.b(2), a.of(3))),
+        "commands.switchOnTrackToeValid" => ok(json!(swc::switch_on_track_toe_valid(&swc::OnTrack::from_json(a.v(0)), a.f(1)))),
+        "commands.switchOnTrackSlider" => ok(swc::switch_on_track_slider(&swc::OnTrack::from_json(a.v(0)), a.of(1))),
+        "commands.buildSwitchOnTrack" => {
+            // The placement as the dialog settled on it: laid again from its station.
+            let o = a.v(0);
+            let place = rail_across_switch::placement::place_switch_on_track(
+                &o["track"],
+                rail_across_js::js_number(o.get("toeStation")),
+                rail_across_js::truthy(o.get("reversed")),
+                rail_across_js::js_number(o.get("straightLen")),
+            );
+            ok(match place {
+                Ok(p) => swc::build_switch_on_track(o, &p),
+                Err(_) => Value::Null,
+            })
+        }
+        "commands.buildSwitchAtTrackEnd" => ok(swc::build_switch_at_track_end(a.v(0))),
+        "commands.buildCrossingOnTrack" => {
+            let o = a.v(0);
+            let place = rail_across_switch::placement::place_switch_on_track(
+                &o["track"],
+                rail_across_js::js_number(o.get("pointStation")),
+                false,
+                rail_across_js::js_number(o.get("endDist")),
+            );
+            ok(match place {
+                Ok(p) => swc::build_crossing_on_track(o, &p),
+                Err(_) => Value::Null,
+            })
+        }
+        "commands.crossingOnTrackPlacement" => {
+            let o = a.v(0);
+            let ask = crossing_ask(o);
+            ok(match swc::crossing_on_track_placement(&ask, o.get("pointStation").and_then(Value::as_f64)) {
+                Err(e) => json!({ "error": e }),
+                Ok(None) => json!({ "error": null }),
+                Ok(Some((ahead, back, geom))) => json!({ "error": null, "ahead": ahead.to_json(), "back": back.to_json(), "geom": geom }),
+            })
+        }
+        "commands.crossingOnTrackPort" => {
+            let o = a.v(0);
+            ok(
+                swc::crossing_on_track_port(&crossing_ask(o), rail_across_js::js_number(o.get("pointStation")), a.s(1))
+                    .map(|(u, b)| json!({ "utm": u.to_json(), "bearing": number(b) }))
+                    .unwrap_or(Value::Null),
+            )
+        }
+        "commands.crossingOnTrackSlider" => ok(swc::crossing_on_track_slider(&crossing_ask(a.v(0)), a.of(1))),
         _ => None,
+    }
+}
+
+fn crossing_ask(o: &Value) -> swc::CrossingAsk<'_> {
+    swc::CrossingAsk {
+        track: &o["track"],
+        end_dist: rail_across_js::js_number(o.get("endDist")),
+        form: &o["form"],
+        cross_angle: rail_across_js::js_number(o.get("crossAngle")),
     }
 }
 

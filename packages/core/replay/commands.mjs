@@ -7,6 +7,8 @@ import * as Tv from '../src/commands/tableView.js'
 import * as Eg from '../src/commands/editGeometry.js'
 import { endPointStraightUtm } from '../src/geometry/index.js'
 import * as Sc from '../src/commands/sCurve.js'
+import * as Sw from '../src/commands/switches.js'
+import { switchStraightLength, crossingEndDistance, CROSSING_TYPES } from '../src/switch/index.js'
 import { switchTypeByLabel } from '../src/switch/index.js'
 import { trackOf, layTurnout } from './switch.mjs'
 import { rec } from './record.mjs'
@@ -88,6 +90,7 @@ export default function record() {
   r('mergeElementEdits', Eg.mergeElementEdits, tracks, edited, { changed: ['L', 'O'], reshaped: ['L'] })
   r('mergeElementEdits', Eg.mergeElementEdits, tracks, edited, {})
   recordSCurve(r, line)
+  recordSwitches(r, line)
   return { commands: calls }
 }
 
@@ -145,6 +148,51 @@ function recordSCurve(r, line) {
 }
 
 import { runBeside as runBesideOf } from '../src/rules/index.js'
+
+function recordSwitches(r, line) {
+  const plain = (v) => JSON.parse(JSON.stringify(v))
+  const t1 = trackOf('P1', A, 90, [['s', 120], ['s', 280]])
+  const c1 = trackOf('C1', A, 90, [['s', 60], ['t', 50, null, -2000, 30], ['a', 300, -2000, null, 30]])
+  r('SLIDER_REACH', () => Sw.SLIDER_REACH)
+  const forms = ['300 – 1:9', '500 – 1:12', '190 – 1:9'].map(switchTypeByLabel)
+  for (const [track, toe, reversed, side, sw] of [[t1, 50, false, 'left', forms[0]], [t1, 120, true, 'right', forms[1]], [line, 170, false, 'left', forms[0]], [line, 260, false, 'right', forms[0]],
+    [line, 380, true, 'left', forms[1]], [c1, 150, false, 'right', forms[2]], [line, 0.2, false, 'left', forms[0]], [line, 9999, false, 'left', forms[0]], [line, 585, false, 'left', forms[0]]]) {
+    const straightLen = switchStraightLength(sw)
+    const args = { track, reversed, sw, side, straightLen, speed: 60 }
+    r('switchOnTrackPlacement', (o) => plain(Sw.switchOnTrackPlacement(o)), { ...args, toeStation: toe })
+    r('switchOnTrackRouteEnd', (o, x) => plain(Sw.switchOnTrackRouteEnd(o, x)), args, toe)
+    r('switchOnTrackRemnant', Sw.switchOnTrackRemnant, track, toe, reversed, 60)
+    r('switchOnTrackToeValid', (o, x) => Sw.switchOnTrackToeValid(o, x), args, toe)
+    const p = Sw.switchOnTrackPlacement({ ...args, toeStation: toe })
+    if (p.geom) {
+      const o = { track, tracks: [track, line], g: p.geom, plain: p.plain, sw, straightLen, cant: 20, cantReason: 'Bestand', speed: 60, switchName: 'switch.009', switchNumber: 9, name: 'Zweig', fields: { owner: 'DB', trackType: 2 } }
+      r('buildSwitchOnTrack', (oo) => plain(Sw.buildSwitchOnTrack({ ...oo, place: Sw.switchOnTrackPlacement({ track: oo.track, toeStation: oo.toeStation, reversed: oo.reversed, sw: oo.sw, side, straightLen }).place })), { ...o, toeStation: toe, reversed })
+    }
+  }
+  r('switchOnTrackSlider', (o, a) => plain(Sw.switchOnTrackSlider(o, a)), { track: line, reversed: false, sw: forms[0], side: 'left', straightLen: switchStraightLength(forms[0]), speed: 60 }, 180)
+  r('switchOnTrackSlider', (o, a) => plain(Sw.switchOnTrackSlider(o, a)), { track: t1, reversed: true, sw: forms[1], side: 'right', straightLen: switchStraightLength(forms[1]), speed: 100 }, null)
+  r('switchOnTrackSlider', (o, a) => plain(Sw.switchOnTrackSlider(o, a)), { track: { elements: [] }, reversed: false, sw: forms[0], side: 'left', straightLen: 30 }, null)
+  const end = { easting: line.elements[4].endNode[0], northing: line.elements[4].endNode[1], zone: EPSG }
+  for (const [sw, side, trailing, stemSigned] of [[forms[0], 'left', false, null], [forms[0], 'right', true, null], [forms[1], 'left', false, 1100], [forms[0], 'right', false, -300], [forms[0], 'right', true, -300], [forms[2], 'left', true, 900]]) {
+    r('buildSwitchAtTrackEnd', (o) => plain(Sw.buildSwitchAtTrackEnd(o)), { start: end, bearing: 90, startWgs: null, sourceTrackId: 'L', sw, side, trailing, stemSigned, cant: 40, cantReason: 'x',
+      speed: 80, switchName: 'switch.003', switchNumber: 3, name: 'b', fields: { owner: 'o' }, mainName: 'm', mainFields: { trackType: 1 } })
+  }
+  for (const form of CROSSING_TYPES.slice(0, 6)) {
+    const endDist = crossingEndDistance(form)
+    const crossAngle = Math.atan(1 / form.ratio) * 180 / Math.PI
+    for (const [track, point] of [[t1, 100], [line, 180], [t1, 5]]) {
+      const ask = { track, endDist, form, crossAngle }
+      r('crossingOnTrackPlacement', (o) => plain(Sw.crossingOnTrackPlacement(o)), { ...ask, pointStation: point })
+      for (const port of ['B', 'D']) r('crossingOnTrackPort', (o, pp) => plain(Sw.crossingOnTrackPort(o, pp)), { ...ask, pointStation: point }, port)
+      const pl = Sw.crossingOnTrackPlacement({ ...ask, pointStation: point })
+      if (pl.geom) {
+        r('buildCrossingOnTrack', (o) => plain(Sw.buildCrossingOnTrack({ ...o, ahead: Sw.crossingOnTrackPlacement({ track: o.track, pointStation: o.pointStation, endDist: o.endDist, form: o.form, crossAngle }).ahead })),
+          { g: pl.geom, track, tracks: [track], form, endDist, switchName: 'crossing.004', switchNumber: 4, name: 'Kreuz', fields: {}, pointStation: point })
+      }
+    }
+    r('crossingOnTrackSlider', (o, a) => plain(Sw.crossingOnTrackSlider(o, a)), { track: t1, endDist, form, crossAngle }, 100)
+  }
+}
 
 function withRolesTrack(track, roles) {
   return { ...track, elements: track.elements.map((el, i) => (roles[i] ? { ...el, role: roles[i] } : el)) }

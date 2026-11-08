@@ -46,13 +46,34 @@ export async function setup({ routes, cloudRoot = null } = {}) {
   return { app, db, clock }
 }
 
+/**
+ * A server in the local mode of the local package (no user management), on a
+ * fresh database; with `staticRoot` the built suite beside the API.
+ */
+export async function setupLocal({ staticRoot = null } = {}) {
+  const clock = { t: Date.parse('2026-10-01T08:00:00Z') }
+  if (!RUST) {
+    const db = openDatabase(':memory:')
+    const app = buildApp({ db, local: true, secureCookie: false, staticRoot })
+    await app.ready()
+    return { app, db, clock }
+  }
+  const dir = mkdtempSync(join(tmpdir(), 'ra-rust-server-'))
+  const file = join(dir, 'rail-across.sqlite')
+  const db = openDatabase(file)
+  const env = { RA_SERVER_LOCAL: '1', ...(staticRoot ? { RA_SERVER_STATIC: staticRoot } : {}) }
+  const app = await rustServer({ file, dir, cloudRoot: null, clock, db, env })
+  return { app, db, clock }
+}
+
 /** The Rust server on `file`, answering as Fastify's app does for the tests. */
-async function rustServer({ file, dir, cloudRoot, clock, db }) {
+async function rustServer({ file, dir, cloudRoot, clock, db, env = {} }) {
   if (!RUST_BIN) throw new Error('the Rust server is not built (cargo build --release -p rail-across-server)')
   const child = spawn(RUST_BIN, ['serve'], {
     env: {
       ...process.env, RA_SERVER_DB: file, RA_SERVER_PORT: '0', RA_SERVER_TEST: '1', RA_SERVER_INSECURE_COOKIE: '1',
       ...(cloudRoot ? { RA_SERVER_CLOUDS: cloudRoot } : { RA_SERVER_NO_CLOUDS: '1' }),
+      ...env,
     },
     stdio: ['ignore', 'pipe', 'inherit'],
   })

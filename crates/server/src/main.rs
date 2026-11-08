@@ -61,7 +61,10 @@ fn main() {
     let args: Vec<String> = std::env::args().skip(1).collect();
     let db = db_path();
     match args.first().map(String::as_str) {
-        Some("serve") => serve(&db),
+        Some("serve") => serve(&db, &args[1..]),
+        Some("create-admin" | "user-count") if env("RA_SERVER_LOCAL").as_deref() == Some("1") => {
+            fail("the local package has no user management (it runs serve --local)")
+        }
         Some("create-admin") => {
             let Some(login) = args.get(1) else {
                 fail("usage: rail-across-server create-admin <login> [name]")
@@ -108,7 +111,23 @@ fn main() {
     }
 }
 
-fn serve(db: &str) {
+fn serve(db: &str, args: &[String]) {
+    let (mut local, mut static_root, mut host, mut port) = (
+        env("RA_SERVER_LOCAL").as_deref() == Some("1"),
+        env("RA_SERVER_STATIC"),
+        env("RA_SERVER_HOST"),
+        env("RA_SERVER_PORT"),
+    );
+    let mut it = args.iter();
+    while let Some(a) = it.next() {
+        match a.as_str() {
+            "--local" => local = true,
+            "--static" => static_root = it.next().cloned(),
+            "--host" => host = it.next().cloned(),
+            "--port" => port = it.next().cloned(),
+            other => fail(format!("unknown option for serve: {other}")),
+        }
+    }
     let conn = open_database(db, &iso(now())).unwrap_or_else(|e| fail(e));
     for (name, note) in rail_across_server::data_migrations::run_data_migrations(&conn, now()).unwrap_or_else(|e| fail(e)) {
         println!("data step {name}: {note}");
@@ -120,6 +139,8 @@ fn serve(db: &str) {
         test_mode: env("RA_SERVER_TEST").as_deref() == Some("1"),
         ..Settings::default()
     };
+    settings.local = local;
+    settings.static_root = static_root.map(PathBuf::from);
     if let Some(t) = env("RA_SERVER_TRUST_PROXY") {
         settings.trust_proxy = t.split(',').map(|s| s.trim().to_string()).filter(|s| !s.is_empty()).collect();
     }
@@ -141,14 +162,17 @@ fn serve(db: &str) {
             let _ = auth::sweep(&sweeper, &db);
         }
     });
-    let addr = format!(
-        "{}:{}",
-        env("RA_SERVER_HOST").unwrap_or_else(|| "127.0.0.1".into()),
-        env("RA_SERVER_PORT").unwrap_or_else(|| "8787".into())
-    );
+    let host = host.unwrap_or_else(|| "127.0.0.1".into());
+    let addr = format!("{host}:{}", port.unwrap_or_else(|| "8787".into()));
     let rt = tokio::runtime::Runtime::new().unwrap_or_else(|e| fail(e));
-    rt.block_on(rail_across_server::serve::serve(app, &addr, |port| println!("listening on port {port}")))
-        .unwrap_or_else(|e| fail(e));
+    rt.block_on(rail_across_server::serve::serve(app, &addr, |port| {
+        println!("listening on port {port}");
+        // The local package's shell reads this line (as from the Node server).
+        if local {
+            println!("RA_DESKTOP_URL=http://{host}:{port}");
+        }
+    }))
+    .unwrap_or_else(|e| fail(e));
     stop.store(true, std::sync::atomic::Ordering::Relaxed);
     if let Some(t) = jobs_thread {
         let _ = t.join();

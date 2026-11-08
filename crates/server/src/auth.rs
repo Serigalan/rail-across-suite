@@ -65,6 +65,21 @@ impl User {
     }
 }
 
+/// The login of the one implicit user of the local package.
+pub const LOCAL_LOGIN: &str = "local";
+
+/// The one user of the local package (`ensureLocalUser`): made once, never signed in as.
+pub fn ensure_local_user(db: &Connection, now_iso: String) -> rusqlite::Result<i64> {
+    if let Some(u) = user_by_login(db, LOCAL_LOGIN)? {
+        return Ok(u.id);
+    }
+    db.execute(
+        "INSERT INTO user (login, name, password_hash, role, active, must_change_password, created_at) VALUES (?, 'Lokal', ?, 'admin', 1, 0, ?)",
+        params![LOCAL_LOGIN, crate::util::hex(&random_bytes(32)), now_iso],
+    )?;
+    Ok(db.last_insert_rowid())
+}
+
 pub fn hash_password(password: &str) -> String {
     let salt = SaltString::encode_b64(&random_bytes(16)).expect("salt");
     Argon2::default().hash_password(password.as_bytes(), &salt).expect("argon2").to_string()

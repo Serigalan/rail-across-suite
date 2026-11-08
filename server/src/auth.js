@@ -14,6 +14,26 @@ const BRAKE_MS = 60 * 1000
 
 export const COOKIE = 'ra_session'
 
+/** The login of the one implicit user of the local package (no user management there). */
+export const LOCAL_LOGIN = 'local'
+
+/**
+ * The one user of the local package (the desktop app's `serve --local`): no
+ * sign-in, no administration. The row only stands there so the records that
+ * name an author — projects, revisions, variants, images, members — keep
+ * their reference with foreign keys on. Its password hash is random and never
+ * checked: there is no login in the local package.
+ */
+export function ensureLocalUser(db, now = () => Date.now()) {
+  const get = db.prepare('SELECT * FROM user WHERE login = ?')
+  const row = get.get(LOCAL_LOGIN)
+  if (row) return row
+  db.prepare(`INSERT INTO user (login, name, password_hash, role, active, must_change_password, created_at)
+              VALUES (?, 'Lokal', ?, 'admin', 1, 0, ?)`)
+    .run(LOCAL_LOGIN, randomBytes(32).toString('hex'), new Date(now()).toISOString())
+  return get.get(LOCAL_LOGIN)
+}
+
 // argon2id with the library's defaults (19 MiB, 2 passes) — what OWASP names.
 const hashPassword = (password) => hash(password)
 

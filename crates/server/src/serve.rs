@@ -15,7 +15,7 @@ use tokio::io::{AsyncReadExt, AsyncSeekExt};
 use tokio_util::io::ReaderStream;
 
 use crate::app::{App, BODY_LIMIT, upload_limit};
-use crate::http::{Payload, Req, Resp, client_ip, parse_cookies, parse_query};
+use crate::http::{Payload, Resp, build_req};
 
 async fn handle(State(app): State<Arc<App>>, ConnectInfo(peer): ConnectInfo<SocketAddr>, request: Request) -> Response<AxBody> {
     let (parts, body) = request.into_parts();
@@ -37,7 +37,6 @@ async fn handle(State(app): State<Arc<App>>, ConnectInfo(peer): ConnectInfo<Sock
             remote = r.clone();
         }
     }
-    let ip = client_ip(&remote, headers.get("x-forwarded-for").map(String::as_str), &app.settings.trust_proxy);
     let limit = upload_limit(&method, &path).unwrap_or(BODY_LIMIT);
     let declared = headers.get("content-length").and_then(|l| l.parse::<usize>().ok());
     let (raw, too_large) = if declared.is_some_and(|l| l > limit) {
@@ -48,17 +47,7 @@ async fn handle(State(app): State<Arc<App>>, ConnectInfo(peer): ConnectInfo<Sock
             Err(_) => (Vec::new(), true),
         }
     };
-    let req = Req {
-        method,
-        path,
-        query: parse_query(url.split_once('?').map(|(_, q)| q).unwrap_or("")),
-        url,
-        cookies: parse_cookies(headers.get("cookie").map(String::as_str)),
-        headers,
-        body: crate::http::Body::None,
-        ip,
-        params: Default::default(),
-    };
+    let req = build_req(&method, &url, headers, &remote, &app.settings.trust_proxy);
     let head_only = req.method == "HEAD";
     let resp = tokio::task::spawn_blocking(move || app.handle(req, raw, too_large))
         .await

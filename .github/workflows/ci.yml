@@ -206,6 +206,25 @@ jobs:
         env:
           RA_SERVER_IMPL: rust
 
+  # The desktop app (decision 0020, step 9): Tauri with the project server in
+  # its own process, a cargo workspace of its own for WebKitGTK; its smoke
+  # check under Xvfb loads a page through the app's URI scheme and asks the API.
+  desktop:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: crates/desktop
+    steps:
+      - uses: actions/checkout@v5
+      - run: sudo apt-get update && sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev libsoup-3.0-dev librsvg2-dev xvfb mdbtools
+      - run: cargo fmt --check
+      - run: cargo clippy -- -D warnings
+      - run: node scripts/stage-mdbtools.mjs
+      - run: cargo build
+      - run: |
+          mkdir -p "$RUNNER_TEMP/site" && echo '<!doctype html><title>Smoke</title>' > "$RUNNER_TEMP/site/index.html"
+          RA_DESKTOP_SITE="$RUNNER_TEMP/site" RA_DESKTOP_DATA="$RUNNER_TEMP/data" xvfb-run -a target/debug/rail-across-desktop --smoke
+
   # The Simulation-Tool's old address, which leads on to the Fahrplan-Editor.
   simulation-tool:
     runs-on: ubuntu-24.04

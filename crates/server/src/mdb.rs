@@ -117,7 +117,18 @@ fn timeout() -> Duration {
 
 /// One table as rows, without the records marked deleted; a table the file lacks yields nothing.
 fn rows(path: &std::path::Path, table: &str) -> Result<Vec<Row>, MdbError> {
-    let mut child = match Command::new(tool()).arg(path).arg(table).stdout(Stdio::piped()).stderr(Stdio::null()).spawn() {
+    let mut cmd = Command::new(tool());
+    cmd.arg(path).arg(table).stdout(Stdio::piped()).stderr(Stdio::null());
+    // mdb-export bundled with its libraries (the desktop app): RA_MDB_LIBS is where they lie.
+    if let Ok(libs) = std::env::var("RA_MDB_LIBS") {
+        let var = if cfg!(target_os = "macos") { "DYLD_LIBRARY_PATH" } else { "LD_LIBRARY_PATH" };
+        let joined = match std::env::var(var) {
+            Ok(old) if !old.is_empty() => format!("{libs}:{old}"),
+            _ => libs,
+        };
+        cmd.env(var, joined);
+    }
+    let mut child = match cmd.spawn() {
         Ok(c) => c,
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Err(MdbError::new("internal", "mdb-export not installed")),
         Err(_) => return Ok(vec![]),

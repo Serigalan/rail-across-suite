@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "The start screen picks folders with the dialog plugin; the app's commands need no permission",
+  "windows": ["splash", "main"],
+  "permissions": ["core:default", "dialog:default"]
+}

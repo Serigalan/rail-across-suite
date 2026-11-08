@@ -256,6 +256,23 @@ pub fn client_ip(remote: &str, forwarded: Option<&str>, trusted: &[String]) -> S
     addrs.last().unwrap().clone()
 }
 
+/// A request from its method, URL, headers (lower-case names) and the peer's address.
+pub fn build_req(method: &str, url: &str, headers: HashMap<String, String>, remote: &str, trusted: &[String]) -> Req {
+    let path = url.split('?').next().unwrap_or("/").to_string();
+    let ip = client_ip(remote, headers.get("x-forwarded-for").map(String::as_str), trusted);
+    Req {
+        method: method.to_string(),
+        query: parse_query(url.split_once('?').map(|(_, q)| q).unwrap_or("")),
+        cookies: parse_cookies(headers.get("cookie").map(String::as_str)),
+        path,
+        url: url.to_string(),
+        headers,
+        body: Body::None,
+        ip,
+        params: HashMap::new(),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::client_ip;

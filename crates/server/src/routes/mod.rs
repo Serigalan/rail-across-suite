@@ -14,6 +14,7 @@ pub mod clouds;
 pub mod projects;
 pub mod runs;
 pub mod shares;
+pub mod site;
 pub mod terrain;
 pub mod timetables;
 pub mod users;
@@ -97,8 +98,18 @@ const ROUTES: &[(&str, &str, Handler)] = &[
 pub type Params = std::collections::HashMap<String, String>;
 
 /// The handler of a request's route and its parameters; None where no route takes it.
-pub fn find(method: &str, path: &str, test_mode: bool) -> Option<(Handler, Params)> {
+pub fn find(method: &str, path: &str, settings: &crate::app::Settings) -> Option<(Handler, Params)> {
     let method = if method == "HEAD" { "GET" } else { method };
+    let test_mode = settings.test_mode;
+    // The local package has no user management: no sign-in, password, admin or user routes; /me is its own.
+    if settings.local {
+        if method == "GET" && path == "/api/me" {
+            return Some((local_me as Handler, Params::new()));
+        }
+        if LOCAL_ABSENT.iter().any(|(m, p)| *m == method && matches(p, path).is_some()) {
+            return None;
+        }
+    }
     // A static part beats a parameter, as in Fastify's router: fewer parameters first.
     let mut best: Option<(usize, Handler, Params)> = None;
     for (m, pattern, h) in ROUTES {
@@ -114,9 +125,32 @@ pub fn find(method: &str, path: &str, test_mode: bool) -> Option<(Handler, Param
     best.map(|(_, h, p)| (h, p))
 }
 
+/// The routes the local package does not have.
+const LOCAL_ABSENT: &[(&str, &str)] = &[
+    ("POST", "/api/login"),
+    ("POST", "/api/logout"),
+    ("POST", "/api/me/password"),
+    ("GET", "/api/admin/users"),
+    ("POST", "/api/admin/users"),
+    ("PATCH", "/api/admin/users/:id"),
+    ("GET", "/api/users"),
+];
+
 fn health(ctx: &mut Ctx) -> Res {
     ctx.db.query_row("select 1", [], |_| Ok(()))?;
-    Ok(Resp::ok(json!({ "status": "ok" })))
+    Ok(Resp::ok(if ctx.app.settings.local {
+        json!({ "status": "ok", "local": true })
+    } else {
+        json!({ "status": "ok" })
+    }))
+}
+
+/// /api/me of the local package: the one implicit local user.
+fn local_me(ctx: &mut Ctx) -> Res {
+    let u = ctx.user.as_ref().ok_or_else(|| ApiError::new(401, "unauthenticated"))?;
+    let mut user = u.public();
+    user["local"] = json!(true);
+    Ok(Resp::ok(json!({ "user": user })))
 }
 
 fn test_sweep(ctx: &mut Ctx) -> Res {

@@ -26,6 +26,10 @@ pub struct Settings {
     pub cloud_root: Option<PathBuf>,
     /// Tests: the clock comes from `x-ra-test-now`, the peer from `x-ra-test-remote`, and /api/__test answers.
     pub test_mode: bool,
+    /// The local package (decision 0020 point 5): no user management, one implicit local user.
+    pub local: bool,
+    /// The built suite served beside the API, one origin (as Caddy does in production).
+    pub static_root: Option<PathBuf>,
 }
 
 impl Default for Settings {
@@ -35,6 +39,8 @@ impl Default for Settings {
             trust_proxy: vec!["127.0.0.1".into(), "::1".into()],
             cloud_root: None,
             test_mode: false,
+            local: false,
+            static_root: None,
         }
     }
 }
@@ -50,6 +56,8 @@ pub struct App {
     pub busy: Mutex<HashSet<String>>,
     pub terrain: crate::terrain::store::TileStore,
     pub dgm5: crate::terrain::dem::Dgm5,
+    /// The one user of the local package.
+    pub local_user: Option<i64>,
 }
 
 /// A request as a route handles it: the request, the signed-in user, the database.
@@ -100,7 +108,11 @@ pub fn upload_limit(method: &str, path: &str) -> Option<usize> {
 
 impl App {
     pub fn new(db: Connection, settings: Settings) -> App {
+        let local_user = settings
+            .local
+            .then(|| crate::auth::ensure_local_user(&db, crate::util::iso(Self::clock_now(None))).expect("the local user"));
         App {
+            local_user,
             db: Mutex::new(db),
             settings,
             clock: Mutex::new(None),
@@ -112,14 +124,17 @@ impl App {
         }
     }
 
+    fn clock_now(test: Option<i64>) -> i64 {
+        test.unwrap_or_else(|| {
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map(|d| d.as_millis() as i64)
+                .unwrap_or(0)
+        })
+    }
+
     pub fn now(&self) -> i64 {
-        if let Some(t) = *self.clock.lock().unwrap() {
-            return t;
-        }
-        std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .map(|d| d.as_millis() as i64)
-            .unwrap_or(0)
+        Self::clock_now(*self.clock.lock().unwrap())
     }
 
     /// One request, its body as bytes (`too_large` where it passed its limit).
@@ -136,7 +151,10 @@ impl App {
             return ApiError::new(415, "json_required").into_resp();
         }
         let db = self.db.lock().unwrap();
-        let user = crate::auth::resolve_session(&db, req.cookies.get(COOKIE).map(String::as_str), self.now());
+        let user = match self.local_user {
+            Some(id) => crate::auth::user_by_id(&db, id),
+            None => crate::auth::resolve_session(&db, req.cookies.get(COOKIE).map(String::as_str), self.now()),
+        };
         if too_large {
             return ApiError::new(413, "too_large").into_resp();
         }
@@ -159,7 +177,10 @@ impl App {
                 json!({ "error": "bad_request", "message": format!("Unsupported Media Type: {content_type}") }),
             );
         }
-        let Some((handler, params)) = crate::routes::find(&req.method, &req.path, self.settings.test_mode) else {
+        let Some((handler, params)) = crate::routes::find(&req.method, &req.path, &self.settings) else {
+            if let (Some(root), "GET" | "HEAD") = (&self.settings.static_root, req.method.as_str()) {
+                return crate::routes::site::serve(root, &req);
+            }
             return Resp::json(
                 404,
                 json!({ "message": format!("Route {}:{} not found", req.method, req.url), "error": "Not Found", "statusCode": 404 }),
@@ -190,5 +211,38 @@ impl App {
     pub fn clear_session_cookie(&self) -> String {
         let secure = if self.settings.secure_cookie { "; Secure" } else { "" };
         format!("{COOKIE}=; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Path=/; HttpOnly{secure}; SameSite=Strict")
+    }
+
+    /// One request handled in this process, without HTTP (the desktop app's URI
+    /// scheme): (status, headers, body). A file answer is read into the body.
+    pub fn call(&self, method: &str, url: &str, headers: Vec<(String, String)>, body: Vec<u8>) -> (u16, Vec<(String, String)>, Vec<u8>) {
+        let mut map = HashMap::new();
+        for (k, v) in headers {
+            map.entry(k.to_ascii_lowercase()).or_insert(v);
+        }
+        let too_large = body.len() > upload_limit(method, url.split('?').next().unwrap_or("")).unwrap_or(BODY_LIMIT);
+        let req = crate::http::build_req(method, url, map, "127.0.0.1", &self.settings.trust_proxy);
+        let resp = self.handle(req, if too_large { Vec::new() } else { body }, too_large);
+        let mut headers = resp.headers;
+        let body = match resp.payload {
+            crate::http::Payload::Empty => Vec::new(),
+            crate::http::Payload::Json(v) => {
+                if !headers.iter().any(|(k, _)| k == "content-type") {
+                    headers.push(("content-type".into(), "application/json; charset=utf-8".into()));
+                }
+                rail_across_js::stringify(&v).into_bytes()
+            }
+            crate::http::Payload::Bytes(b) => b,
+            crate::http::Payload::File(path, start, len) => {
+                use std::io::{Read, Seek, SeekFrom};
+                let mut out = Vec::new();
+                if let Ok(mut f) = std::fs::File::open(path) {
+                    let _ = f.seek(SeekFrom::Start(start));
+                    let _ = f.take(len).read_to_end(&mut out);
+                }
+                out
+            }
+        };
+        (resp.status, headers, if method == "HEAD" { Vec::new() } else { body })
     }
 }

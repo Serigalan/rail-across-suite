@@ -7,6 +7,9 @@
 [workspace]
 resolver = "2"
 members = ["sim/crates/*", "crossover/crates/*", "optimizer/crates/*", "crates/*"]
+# The desktop app (Tauri) is a workspace of its own: it needs WebKitGTK to build,
+# which the server and the core do not (crates/desktop/README.md).
+exclude = ["crates/desktop"]
 
 [workspace.package]
 version = "0.1.0"

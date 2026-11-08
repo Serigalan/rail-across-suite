@@ -14,7 +14,10 @@
 #![recursion_limit = "256"]
 
 pub mod connect;
+pub mod crossover;
+pub mod crossover_edit;
 pub mod edit;
+pub mod optimize;
 pub mod reconnect;
 pub mod roles;
 pub mod scurve;

@@ -3,7 +3,10 @@
 
 //! The commands' operations, named and called as the JavaScript's.
 
-use rail_across_commands::{connect as cn, edit, reconnect as rc, roles, scurve as sc, splice as sp, switches as swc, table, tracks as tr};
+use rail_across_commands::{
+    connect as cn, crossover as co, crossover_edit as ce, edit, optimize as opt, reconnect as rc, roles, scurve as sc, splice as sp, switches as swc, table,
+    tracks as tr,
+};
 use rail_across_js::number;
 use rail_across_switch::mid_chain as mc;
 use serde_json::{Value, json};
@@ -261,6 +264,49 @@ pub fn run(op: &str, input: &Value) -> Option<Result<Value, Failure>> {
                 .map(|r| json!({ "track": r["track"] }))
                 .unwrap_or(Value::Null))
         }
+        // crossover, crossoverEdit
+        "commands.crossoverRequest" => {
+            let o = a.v(0);
+            ok(co::crossover_request(
+                o["picks"].as_array().map(Vec::as_slice).unwrap_or(&[]),
+                rail_across_js::js_number(o.get("speed")),
+                o.get("form").filter(|f| !f.is_null()),
+            ))
+        }
+        "commands.adoptCrossover" => {
+            let o = a.v(0);
+            ok(co::adopt_crossover(
+                o["picks"].as_array().map(Vec::as_slice).unwrap_or(&[]),
+                rail_across_js::js_number(o.get("speed")),
+                &o["solution"],
+                o.get("form").filter(|f| !f.is_null()),
+                rail_across_js::truthy(o.get("lenient")),
+                rail_across_js::truthy(o.get("exactFirst")),
+            )
+            .unwrap_or(Value::Null))
+        }
+        "commands.switchConnectionOf" => {
+            let o = a.v(0);
+            ok(ce::switch_connection_of(
+                &o["trackId"],
+                o["tracks"].as_array().map(Vec::as_slice).unwrap_or(&[]),
+                o["switches"].as_array().map(Vec::as_slice).unwrap_or(&[]),
+            ))
+        }
+        "commands.takeApart" => {
+            let o = a.v(1);
+            ok(ce::take_apart(
+                a.v(0),
+                o["tracks"].as_array().map(Vec::as_slice).unwrap_or(&[]),
+                o["switches"].as_array().map(Vec::as_slice).unwrap_or(&[]),
+            ))
+        }
+        "commands.editStart" => ok(ce::edit_start(a.v(0), a.v(1))),
+        "commands.editCommit" => ok(ce::edit_commit(a.v(0), a.v(1), a.v(2))),
+        // optimizeApply
+        "commands.optimizeRequest" => ok(opt::optimize_request(a.v(0), a.v(1))),
+        "commands.reshapedHeights" => ok(opt::reshaped_heights(a.v(0), &a.list(1)).unwrap_or(Value::Null)),
+        "commands.optimizedTrack" => ok(opt::optimized_track(a.v(0), a.v(1))),
         _ => None,
     }
 }

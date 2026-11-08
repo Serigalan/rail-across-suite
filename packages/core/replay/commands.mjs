@@ -8,6 +8,9 @@ import * as Eg from '../src/commands/editGeometry.js'
 import { endPointStraightUtm } from '../src/geometry/index.js'
 import * as Sc from '../src/commands/sCurve.js'
 import * as Sw from '../src/commands/switches.js'
+import * as Co from '../src/commands/crossover.js'
+import * as Ce from '../src/commands/crossoverEdit.js'
+import * as Oa from '../src/commands/optimizeApply.js'
 import * as Sp from '../src/commands/splice.js'
 import * as Rc from '../src/commands/reconnect.js'
 import { straightElement as sEl, transitionElement as tEl } from '../src/geometry/elementFactory.js'
@@ -104,6 +107,7 @@ export default function record() {
   recordSwitches(r, line)
   recordConnect(r)
   recordSplice(r)
+  recordCrossover(r, line)
   return { commands: calls }
 }
 
@@ -161,6 +165,60 @@ function recordSCurve(r, line) {
 }
 
 import { runBeside as runBesideOf } from '../src/rules/index.js'
+
+function recordCrossover(r, line) {
+  const plain = (v) => JSON.parse(JSON.stringify(v))
+  const t1 = trackOf('X1', A, 90, [['s', 120], ['s', 280]])
+  const t2 = trackOf('X2', { easting: 600000, northing: 5599995.5 }, 90, [['s', 400]])
+  const picks = [Sc.connectionPick(t1, 0, 60), Sc.connectionPick(t2, 0, 150)]
+  r('crossoverRequest', (o) => plain(Co.crossoverRequest(o)), { picks, speed: 60 })
+  r('crossoverRequest', (o) => plain(Co.crossoverRequest(o)), { picks, speed: 80, form: switchTypeByLabel('500 – 1:12') })
+  const toPieces = (res) => res.midPieces.map(p => (p.route.r1 !== p.route.r2 ? { type: 'transition', length: p.route.length, kappa: null }
+    : p.route.r1 == null ? { type: 'straight', length: p.route.length, kappa: null } : { type: 'arc', length: p.route.length, kappa: -1 / p.route.r1 }))
+  const t3 = trackOf('X3', { easting: 600000, northing: 5599993 }, 90.4, [['s', 400]])
+  const picks3 = [Sc.connectionPick(t1, 0, 60), Sc.connectionPick(t3, 0, 150)]
+  r('crossoverRequest', (o) => plain(Co.crossoverRequest(o)), { picks: picks3, speed: 40 })
+  for (const mids of [[{ type: 'straight', length: 5 }, { type: 'arc', length: null, radius: null }], [{ type: 'arc', length: 10, radius: null }, { type: 'straight', length: null }]]) {
+    const res = Sc.solveConnection({ picks: picks3, speed: 60, shift: 0, mids })
+    if (!res?.midPieces) continue
+    const solution = { s1: 0, s2: res.s2, pieces: toPieces(res) }
+    for (const [lenient, exactFirst] of [[false, false], [true, true]]) r('adoptCrossover', (o) => plain(Co.adoptCrossover(o)), { picks: picks3, speed: 60, solution, lenient, exactFirst })
+  }
+  r('adoptCrossover', (o) => plain(Co.adoptCrossover(o)), { picks, speed: 60, solution: { s1: 0, s2: 0, pieces: [{ type: 'straight', length: 3, kappa: null }] } })
+
+  // Editing the connection laid by the S-curve.
+  const settled = Sc.settleConnection({ picks, speed: 60, shift: Sc.preferredShift({ picks, speed: 60 }, Sc.computeShiftBounds({ picks, speed: 60 })) })
+  const commit = Sc.buildSCurve({ result: settled.result, picks, tracks: [t1, t2], switches: [], speed: 60 })
+  if (commit && !commit.carveError) {
+    const tracks = commit.addTracks, switches = commit.addSwitches
+    const conn = tracks[tracks.length - 1]
+    r('switchConnectionOf', (o) => plain(Ce.switchConnectionOf(o)), { trackId: conn.id, tracks, switches })
+    r('switchConnectionOf', (o) => plain(Ce.switchConnectionOf(o)), { trackId: tracks[0].id, tracks, switches })
+    r('switchConnectionOf', (o) => plain(Ce.switchConnectionOf(o)), { trackId: 'nope', tracks, switches })
+    const found = Ce.switchConnectionOf({ trackId: conn.id, tracks, switches })
+    if (!found.error) {
+      r('takeApart', (f, st) => plain(Ce.takeApart(f, st)), plain(found), { tracks, switches })
+      const apart = Ce.takeApart(found, { tracks, switches })
+      if (!apart.error) {
+        r('editStart', (f, ap) => plain(Ce.editStart(f, ap)), plain(found), plain(apart))
+        const start = Ce.editStart(found, apart)
+        const res2 = Sc.settleConnection({ picks: apart.picks, speed: found.speed, shift: start.shift, form: found.form }).result
+        const commit2 = Sc.buildSCurve({ result: res2, picks: apart.picks, tracks: apart.tracks, switches: apart.switches, speed: found.speed,
+          identities: found.turnouts.map(t => t.sw), connTrack: found.conn })
+        r('editCommit', (f, ap, c) => plain(Ce.editCommit(f, ap, c)), plain(found), plain(apart), plain(commit2))
+        r('editCommit', (f, ap, c) => plain(Ce.editCommit(f, ap, c)), plain(found), plain(apart), { carveError: 30 })
+      }
+    }
+  }
+  // Optimizer apply.
+  r('optimizeRequest', Oa.optimizeRequest, line, { corridorCm: 20, grenzwert: 'reg', vMax: '120', regelwerkId: 'db', elementIdx: 2 })
+  r('optimizeRequest', Oa.optimizeRequest, line, { corridorCm: 20, grenzwert: 'reg', vMax: 0 })
+  const els2 = line.elements.map((el, i) => (i === 2 ? { ...el, length: el.length + 1 } : el))
+  r('reshapedHeights', Oa.reshapedHeights, line, line.elements)
+  r('reshapedHeights', Oa.reshapedHeights, line, els2)
+  r('reshapedHeights', Oa.reshapedHeights, line, els2.slice(0, 3))
+  r('optimizedTrack', Oa.optimizedTrack, line, { elements: els2 })
+}
 
 function recordSplice(r) {
   const plain = (v) => JSON.parse(JSON.stringify(v))

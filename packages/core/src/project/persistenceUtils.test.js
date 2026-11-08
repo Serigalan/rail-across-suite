@@ -277,7 +277,7 @@ describe('parseTracksPayload (R0.5)', () => {
 // ── What a record keeps (oltjson-1.1, decisions 333 and 371) ──────────────────────────
 
 describe('a record as it is kept', () => {
-  const arc = { elementType: 1, startNode: [500000.1234567891, 5600000], endNode: [500100, 5600010], bearing: 84.12345678912345, length: 100.12345678912, radius: 500.0000004 }
+  const arc = { elementType: 1, startNode: [500000.1234567891, 5600000], endNode: [500100, 5600010], bearing: 84.12345678912345, length: 100.12345678912, radius: 500.00000004 }
   const kept = (el, heights) => dehydrateProjects([{ id: 'p', tracks: [{ id: 't', epsg: 25832, elements: [el], ...(heights ? { heights } : {}) }] }])[0].tracks[0]
 
   it('leaves out an end bearing its bearing, length and radius give, and the load puts it back', () => {
@@ -294,14 +294,14 @@ describe('a record as it is kept', () => {
     expect(kept({ ...straight, endBearing: 90 }).elements[0]).not.toHaveProperty('endBearing')
   })
 
-  it('keeps plane values to 1 µm, heights to 0.1 mm and angles to 10⁻⁹ °', () => {
-    const t = kept(arc, [{ station: 12.34567891, z: 101.23456, rv: 2000.0000001 }])
+  it('keeps plane values to 0.1 µm, heights to 0.1 mm and angles to 10⁻⁹ °', () => {
+    const t = kept(arc, [{ station: 12.34567891, z: 101.23456, rv: 2000.00000001 }])
     const [el] = t.elements
-    expect(el.startNode).toEqual([500000.123457, 5600000])
-    expect(el.length).toBe(100.123457)
+    expect(el.startNode).toEqual([500000.1234568, 5600000])
+    expect(el.length).toBe(100.1234568)
     expect(el.radius).toBe(500)
     expect(el.bearing).toBe(84.123456789)
-    expect(t.heights[0]).toEqual({ station: 12.345679, z: 101.2346, rv: 2000 })
+    expect(t.heights[0]).toEqual({ station: 12.3456789, z: 101.2346, rv: 2000 })
   })
   // The user's own example: an arc with a ramp kept `cant` beside its two ends.
   describe('the cant: `cant` or `cantStart` + `cantEnd`, never both (Entscheidung 369)', () => {

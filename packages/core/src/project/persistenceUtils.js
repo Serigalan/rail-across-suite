@@ -1,5 +1,5 @@
 import { FORMAT as DOCUMENT_FORMAT, fromDocument, PayloadError, toDocument } from '../document/index.js'
-import { reconstructElements, derivedEndBearing, loadedTrackCants, storedTrackCants } from '../geometry/index.js'
+import { reconstructElements, derivedEndBearing, loadedTrackCants, storedTrackCants, POSITION_DIGITS } from '../geometry/index.js'
 import { rebuildSwitchSymbol } from '../switch/index.js'
 import { rebuildPlatformSymbol, isModelledSwitch, rebuildCoords } from '../track/index.js'
 
@@ -171,8 +171,8 @@ const at = (digits) => {
   const f = 10 ** digits
   return (v) => (Number.isFinite(v) ? Math.round(v * f) / f : v)
 }
-/** Positions, lengths, radii, stations: 1 µm. */
-const um = at(6)
+/** Positions, lengths, radii, stations: 0.1 µm (POSITION_DIGITS), below the 1 µm NODE_TOL compares them with. */
+const position = at(POSITION_DIGITS)
 /** Heights: 0.1 mm. */
 const mm10 = at(4)
 /** Angles in degrees: 10⁻⁹ °. */
@@ -207,8 +207,8 @@ function keptElement({ renderCoords: _rc, geometry: _g, ...el }) {
     const derived = derivedEndBearing(out) ?? out.bearing
     if (derived != null && turnBetween(out.endBearing, derived) < SAME_END_BEARING) delete out.endBearing
   }
-  for (const k of ['startNode', 'endNode']) if (Array.isArray(out[k])) out[k] = out[k].map(um)
-  for (const k of ['length', 'radius', 'r1', 'r2']) if (out[k] != null) out[k] = um(out[k])
+  for (const k of ['startNode', 'endNode']) if (Array.isArray(out[k])) out[k] = out[k].map(position)
+  for (const k of ['length', 'radius', 'r1', 'r2']) if (out[k] != null) out[k] = position(out[k])
   for (const k of ['bearing', 'endBearing']) if (out[k] != null) out[k] = angle(out[k])
   for (const k of ['cant', 'cantStart', 'cantEnd']) if (out[k] != null) out[k] = cant(out[k])
   return out
@@ -217,7 +217,7 @@ function keptElement({ renderCoords: _rc, geometry: _g, ...el }) {
 /** A height point as it is kept. */
 function keptHeight(h) {
   const out = { ...h }
-  for (const k of ['station', 'rv', 'la']) if (out[k] != null) out[k] = um(out[k])
+  for (const k of ['station', 'rv', 'la']) if (out[k] != null) out[k] = position(out[k])
   if (out.z != null) out.z = mm10(out.z)
   return out
 }
@@ -276,8 +276,8 @@ export function dehydrateProjects(projects) {
       ...(p.platforms ? {
         platforms: p.platforms.map(({ coords: _c, ...pf }) => ({
           ...pf,
-          ...(pf.startStation != null ? { startStation: um(pf.startStation) } : {}),
-          ...(pf.endStation != null ? { endStation: um(pf.endStation) } : {}),
+          ...(pf.startStation != null ? { startStation: position(pf.startStation) } : {}),
+          ...(pf.endStation != null ? { endStation: position(pf.endStation) } : {}),
         })),
       } : {}),
     }

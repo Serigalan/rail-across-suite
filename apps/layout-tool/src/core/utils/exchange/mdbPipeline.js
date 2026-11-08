@@ -5,6 +5,7 @@ import {
 } from './mdbImport'
 import { placeMdbSwitches } from './mdbSwitchPlacement'
 import { dropCoveredTracks } from './mdbAxisCleanup'
+import { snapImportedJoints } from './importSnap'
 import { mdbKmLines } from './mdbKmLine'
 import { projectBox } from '../km'
 
@@ -147,7 +148,7 @@ export async function runMdbImport({
     ? placeMdbSwitches(payload, cleaned.tracks, inventory.units, {
       newId, existingSwitches, derive: true,
     })
-    : { tracks: cleaned.tracks, switches: [], errors: [] }
+    : { tracks: snapImportedJoints(cleaned.tracks), switches: [], errors: [] }
 
   const notes = [...built.errors, ...cleanupNotes(cleaned, fill), ...inventory.errors, ...placed.errors]
   if (placed.branchOff?.length) {

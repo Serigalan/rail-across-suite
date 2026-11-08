@@ -1,6 +1,8 @@
 import { dirname, join, resolve } from 'node:path'
 import { buildApp } from './app.js'
 import { openDatabase } from './db.js'
+import { runDataMigrations } from './dataMigrations.js'
+import { createStore } from './store.js'
 import { createAuth, passwordAcceptable, randomPassword } from './auth.js'
 
 /**
@@ -25,6 +27,8 @@ const CLOUDS = env.RA_SERVER_CLOUDS ?? join(dirname(resolve(DB)), 'clouds')
 async function main([command, ...args]) {
   if (command === 'serve') {
     const db = openDatabase(DB)
+    // The data steps run before anything is served (dataMigrations.js).
+    for (const { name, note } of runDataMigrations(db, createStore(db))) console.log(`data step ${name}: ${note}`)
     const app = buildApp({
       db,
       secureCookie: env.RA_SERVER_INSECURE_COOKIE !== '1',

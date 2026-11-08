@@ -1,4 +1,4 @@
-import { nodeUtm, endPointStraightUtm, endPointCurvedUtm, transitionPointAtUtm, utmToWgs84 } from '../geometry/index.js'
+import { nodeUtm, endPointStraightUtm, endPointCurvedUtm, transitionPointAtUtm, utmToWgs84, NODE_TOL } from '../geometry/index.js'
 import { portsOf, portTrack, portEnd } from './switchModel.js'
 import { HEIGHT_POINT_SPACING, HEIGHT_SPLIT_MIN } from './heightDatums.js'
 
@@ -314,7 +314,7 @@ export function trackProfile(track) {
   return { points, boundaries, length: station }
 }
 
-const sameNode = (a, b) => Array.isArray(a) && Array.isArray(b) && Math.abs(a[0] - b[0]) < 0.001 && Math.abs(a[1] - b[1]) < 0.001
+const sameNode = (a, b) => Array.isArray(a) && Array.isArray(b) && Math.abs(a[0] - b[0]) < NODE_TOL && Math.abs(a[1] - b[1]) < NODE_TOL
 
 /**
  * Tracks joined to `track` at one of its ends: through a switch port at that

@@ -6,11 +6,12 @@ import {
 import {
   newSwitchFields, switchElementMark, splitTrackAtJoint, splitElementAt, carveSwitchRoute,
   elementAtStation, pointAtStationUtm, generateId, nextSwitchNumber, switchDesignation,
-  remapSwitches,
+  remapSwitches, rebuildCoords,
 } from '@rail-across/core/track'
-import { resolveEndBearing } from '@rail-across/core/geometry'
+import { refitToNodes, resolveEndBearing } from '@rail-across/core/geometry'
 import { epsgForLagesystem } from './mdbImport'
 import { deriveMdbTurnouts, offsetOnTrack, offsetOnElement, AXIS_TOL } from './mdbSwitchDerive'
+import { snapImportedEnd, snapImportedJoints } from './importSnap'
 
 /**
  * Putting the MDB's switch inventory onto the tracks the same import built.
@@ -63,6 +64,40 @@ const END_TOL = 1.0
 const ALL_TYPES = ALL_SWITCH_TYPES
 
 const trackLength = (t) => t.elements.reduce((s, e) => s + (e.length ?? 0), 0)
+
+/**
+ * Within this of a joint [m], a route's length is the form's: the file states
+ * a turnout's elements to the millimetre, the form to its own dimension. Left
+ * as it is, the carve would leave a sliver that short beyond the route.
+ */
+const FORM_FIT_TOL = 0.001
+
+/**
+ * carveSwitchRoute, the joint nearest the form's length from `endpoint` moved
+ * onto it first where it lies within FORM_FIT_TOL: the two elements at the
+ * joint take their values from the moved node (refitToNodes), and the route is
+ * carved to that joint. Elsewhere the carve is the one asked for.
+ */
+function carveToForm(track, endpoint, cut, mark, length) {
+  const els = track.elements
+  const target = endpoint === 'BEGIN' ? length : trackLength(track) - length
+  let station = 0
+  for (let j = 1; j < els.length; j++) {
+    station += els[j - 1].length
+    const d = target - station
+    if (d === 0 || Math.abs(d) > FORM_FIT_TOL) continue
+    const at = elementAtStation(els, target)
+    if (!at) break
+    const p = pointAtStationUtm(at.el, at.s, track.epsg)
+    const node = [p.easting, p.northing]
+    const elements = [...els]
+    elements[j - 1] = refitToNodes({ ...els[j - 1], endNode: node }, track.epsg, d)
+    elements[j] = refitToNodes({ ...els[j], startNode: node }, track.epsg, -d)
+    const fitted = { ...track, elements, coordinates: rebuildCoords(elements) }
+    return carveSwitchRoute(fitted, endpoint, p, mark, length)
+  }
+  return carveSwitchRoute(track, endpoint, cut, mark, length)
+}
 
 /**
  * Form table entry for a unit, or null. The turnouts are looked up by radius and
@@ -368,8 +403,8 @@ function placeCrossingUnit(found, unit, type, tracks, makeId) {
         ahead.cutsClothoid ? { ...ahead.toeUtm, station: ahead.s } : ahead.toeUtm, ahead.bearing, names)
 
     const mark = switchElementMark(identity, marks[i])
-    const carvedAhead = carveSwitchRoute(split.ahead, split.aheadEndpoint, ahead.endUtm, mark, half)
-    const carvedBehind = carveSwitchRoute(split.behind, split.behindEndpoint, back.endUtm, mark, half)
+    const carvedAhead = carveToForm(split.ahead, split.aheadEndpoint, ahead.endUtm, mark, half)
+    const carvedBehind = carveToForm(split.behind, split.behindEndpoint, back.endUtm, mark, half)
     if (!carvedAhead || !carvedBehind) {
       return { error: `kein Platz für das Endmaß ${half.toFixed(1)} m – nicht gesetzt.` }
     }
@@ -494,7 +529,8 @@ export function placeMdbSwitches(payload, tracks, units,
   // The import hands over tracks without ids — the store gives them one at save
   // time. A port names a track by id, so they get one here, before the first
   // switch parts anything.
-  let current = tracks.map(t => ({ ...t, id: t.id ?? makeId() }))
+  // Ends that meet within the source's quantisation are one node first (importSnap).
+  let current = snapImportedJoints(tracks.map(t => ({ ...t, id: t.id ?? makeId() })))
   // Numbers are the project's, not the file's: the database numbers a switch
   // within its Betriebsstelle, which collides across them and with whatever the
   // project already holds. The name keeps the number the file states — that is
@@ -626,7 +662,7 @@ function placeAtToe(found, unit, type, tracks) {
     const at = elementAtStation(track.elements, leg.endpoint === 'BEGIN' ? length : total - length)
     if (!at) return null
     const cut = pointAtStationUtm(at.el, at.s, track.epsg)
-    return carveSwitchRoute(track, leg.endpoint, cut, switchElementMark(identity, route), length)
+    return carveToForm(track, leg.endpoint, cut, switchElementMark(identity, route), length)
   }
   const stemCarved = carve(stem, 'main', switchStraightLength(type))
   const branchCarved = carve(branch, 'branch', switchBranchLength(type))
@@ -733,21 +769,22 @@ function placeOne(found, unit, type, tracks, makeId, project = projectOnTrack) {
       place.cutsClothoid ? { ...place.toeUtm, station: place.s } : place.toeUtm, place.bearing, names)
 
   const identity = { ...newSwitchFields(), name: unit.name, label: type.label }
-  const carved = carveSwitchRoute(split.ahead, split.aheadEndpoint, place.endUtm,
+  const carved = carveToForm(split.ahead, split.aheadEndpoint, place.endUtm,
     switchElementMark(identity, 'main'), straightLen)
   if (!carved) return { error: 'kein Platz für die Weichenlänge – nicht gesetzt.' }
 
   // The branch is an imported track of its own: its first elements up to the
   // form's branch length are the switch's diverging route. The carve needs the
   // point that length reaches, read off the branch itself.
-  const branchTrack = tracks.find(t => t.id === branch.track.id) ?? branch.track
+  // It begins at the toe the stem was parted at, where the file puts it within its quantisation.
+  const branchTrack = snapImportedEnd(tracks.find(t => t.id === branch.track.id) ?? branch.track, branch.endpoint, place.toeUtm)
   const branchTotal = trackLength(branchTrack)
   if (branchTotal < branchLen) return { error: 'Zweiggleis kürzer als die Weichenform – nicht gesetzt.' }
   const branchEndStation = branch.endpoint === 'BEGIN' ? branchLen : branchTotal - branchLen
   const branchAt = elementAtStation(branchTrack.elements, branchEndStation)
   if (!branchAt) return { error: 'Zweigende liegt nicht auf dem Zweiggleis – nicht gesetzt.' }
   const branchCut = pointAtStationUtm(branchAt.el, branchAt.s, branchTrack.epsg)
-  const branchCarved = carveSwitchRoute(branchTrack, branch.endpoint, branchCut,
+  const branchCarved = carveToForm(branchTrack, branch.endpoint, branchCut,
     switchElementMark(identity, 'branch'), branchLen)
   if (!branchCarved) return { error: 'Zweigroute nicht schneidbar – nicht gesetzt.' }
   // A derived unit took its form from this very branch; only a stated one can

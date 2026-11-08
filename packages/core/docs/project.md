@@ -35,7 +35,7 @@ of arcs and transitions where the record leaves it to them, track coordinates, s
 polygons — from the plane data only. Nothing is converted or repaired there.
 
 `dehydrateProjects` strips all of that again and rounds numbers to what they mean: positions, lengths, radii
-and stations to 1 µm, heights to 0.1 mm, angles to 10⁻⁹°, cant to 0.001 mm; an end bearing that agrees with
+and stations to 0.1 µm, heights to 0.1 mm, angles to 10⁻⁹°, cant to 0.001 mm; an end bearing that agrees with
 the derived one (within 10⁻⁷°) is dropped.
 
 ## Project settings

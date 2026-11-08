@@ -1,6 +1,6 @@
 import {
   nodeUtm, endPointStraightUtm, endPointCurvedUtm, bearingAfterUtm, sampleTransitionUtm,
-  transitionBearingAtUtm,
+  transitionBearingAtUtm, NODE_TOL,
 } from '@rail-across/core/geometry'
 import {
   elementAtStation, pointAtStationUtm, trackLength, switchNumberOf, isLinkSwitch, portTrack,
@@ -30,9 +30,6 @@ import {
 const MAX_BEZIER_ANGLE = Math.PI / 6      // 30°
 /** Vertex spacing of a transition curve [m]; its curvature has no closed form. */
 const TRANSITION_STEP = 1
-/** Below this a drawn end point is the stored node, not a different place [m]. */
-const JOIN_TOL = 1e-3
-
 export const isTransition = (el) => el.elementType === 2
 export const isArc        = (el) => el.radius != null
 
@@ -93,7 +90,7 @@ function transitionCommands(startUtm, el) {
 /**
  * One element as a path, without the leading move: `{ start, cmds }`.
  * The last vertex is snapped to the stored end node when the two agree to
- * within JOIN_TOL, so a drawn chain joins exactly where the data says it does.
+ * within NODE_TOL, so a drawn chain joins exactly where the data says it does.
  */
 function elementPathUtm(el, epsg) {
   const coords = el.geometry?.coordinates ?? []
@@ -110,7 +107,7 @@ function elementPathUtm(el, epsg) {
   const last = cmds[cmds.length - 1]
   if (el.endNode && last) {
     const [e, n] = [last[last.length - 2], last[last.length - 1]]
-    if (Math.hypot(el.endNode[0] - e, el.endNode[1] - n) < JOIN_TOL) {
+    if (Math.hypot(el.endNode[0] - e, el.endNode[1] - n) < NODE_TOL) {
       last[last.length - 2] = el.endNode[0]
       last[last.length - 1] = el.endNode[1]
     }
@@ -125,7 +122,7 @@ export function trackPathUtm(track) {
   for (const el of track.elements ?? []) {
     if (!(el.length > 0)) continue
     const { start, cmds } = elementPathUtm(el, track.epsg)
-    if (!cursor || Math.hypot(cursor[0] - start[0], cursor[1] - start[1]) > JOIN_TOL) {
+    if (!cursor || Math.hypot(cursor[0] - start[0], cursor[1] - start[1]) > NODE_TOL) {
       out.push(['M', start[0], start[1]])
     }
     out.push(...cmds)

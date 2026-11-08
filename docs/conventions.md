@@ -9,12 +9,12 @@ They are taken over from the Layout-Tool (`docs/architecture.md`, *Conventions*,
 
 | Quantity | Unit and sign | Kept to |
 |---|---|---|
-| Coordinates | `[easting, northing]` in m, in the track's plane (`epsg`) | 1 µm (6 decimals) |
-| Lengths, radii, stations | m | 1 µm |
+| Coordinates | `[easting, northing]` in m, in the track's plane (`epsg`) | 0.1 µm (7 decimals) |
+| Lengths, radii, stations | m | 0.1 µm |
 | Stations of height points | m | 1 mm |
 | Heights | m, top of the rail that is not raised; vertical datum per track (`heightEpsg`, default DHHN2016) | 0.1 mm (4 decimals) |
 | Bearings | degrees from grid north, clockwise | 10⁻⁹° |
-| Radii | signed: positive = right-hand curve in the direction of stationing; `null` = straight | 1 µm |
+| Radii | signed: positive = right-hand curve in the direction of stationing; `null` = straight | 0.1 µm |
 | Curvature (in integrators) | κ = −1/R | — |
 | Cant | mm, signed by the raised rail: positive raises the left rail | 0.001 mm |
 | Gradients | ‰, positive = rising in the direction of stationing | derived, not stored |
@@ -23,7 +23,11 @@ They are taken over from the Layout-Tool (`docs/architecture.md`, *Conventions*,
 
 Why these precisions: a switch laid into a track read back at 0.1 mm would inherit a tangent break of 10⁻⁵° on a
 40 m arc, ten times what the chain checks hold every joint to; heights to 0.1 mm keep a gradient between two close
-points right to 0.01 ‰; angles to 10⁻⁹° are below a micrometre over 50 km.
+points right to 0.01 ‰; angles to 10⁻⁹° are below a micrometre over 50 km. Two places closer than 1 µm are the same
+place (`NODE_TOL`, `packages/core/src/geometry/tolerances.js`); positions are kept ten times finer, so a chain that
+joined still joins when read back. An import closes what a file misses by its quantisation, up to 2 mm, onto the points the file
+states (`importSnap.js` of the Layout-Tool); projects kept while the same place was 1 mm were closed once up to that
+millimetre by the server ([decision 0020](decisions/0020-everything-in-rust.md)).
 
 ## Tracks and locations
 

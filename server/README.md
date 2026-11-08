@@ -32,6 +32,10 @@ same code the browser runs. It imports no app.
 
 The schema lives in `migrations/`, one numbered SQL file per step, applied in
 order on start.
+Steps that change the data rather than the schema are in `src/dataMigrations.js`: each runs once when `serve` starts,
+before it listens, and is recorded in `data_migration` with what it did. The first closes every head of every variant
+still worked on where its joints missed by up to a millimetre, as a revision of its own by the inactive user `system`
+(decision 0020: the same place is 1 µm).
 
 ## Tests
 

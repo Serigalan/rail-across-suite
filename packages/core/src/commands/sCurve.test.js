@@ -322,9 +322,11 @@ describe.skipIf(!hasPekBestand)('minimum element length on the PEK Bestand', () 
       .filter(el => !el.switchId && !before.has(el.length.toFixed(3)))
     expect(pieces.length).toBeGreaterThan(0)
     for (const el of pieces) expect(el.length, `piece of ${el.length} m`).toBeGreaterThanOrEqual(32 - 1e-3)
-    // (The Bestand's own straights meet with kinks of up to 0.013°, so the
-    // tangents are not held to the invariant here — the nodes are.)
-    for (const tr of commit.addTracks) expectNodesJoin(tr.elements)
+    // (The Bestand's own straights meet with kinks of up to 0.013°, and its own
+    // nodes miss each other by up to 53 µm on these two tracks, so neither is
+    // held to the invariant here: the nodes are held to the millimetre the
+    // data comes with.)
+    for (const tr of commit.addTracks) expectNodesJoin(tr.elements, 1e-3)
     for (const sw of commit.addSwitches) expectSwitchRoutesCarved(sw, commit.addTracks)
     // The first track is parted at the joint: its element 4 stays whole.
     expect(commit.addTracks.some(tr => tr.elements.at(-1)?.length === t1.elements[4].length)).toBe(true)

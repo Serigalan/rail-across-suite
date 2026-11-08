@@ -1,4 +1,4 @@
-import { curvatureOf, radiusOfCurvature } from '../geometry/index.js'
+import { curvatureOf, radiusOfCurvature, NODE_TOL } from '../geometry/index.js'
 import { switchChainBearingAt, switchChainPointUtm } from './route.js'
 import { STRAIGHT_CURVATURE } from './catalogue.js'
 
@@ -184,7 +184,7 @@ export function chainNewton(mids, signs, start, endAt, x0, { sFixed = null, pati
     r = next.r
   }
   if (norm(r.f) >= 1e-6) return null
-  if (r.pieces.some(p => !(p.length > 1e-3))) return null
+  if (r.pieces.some(p => !(p.length > NODE_TOL))) return null
   return { s2: sOf(x), pieces: r.pieces }
 }
 

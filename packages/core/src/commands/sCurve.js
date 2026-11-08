@@ -2,7 +2,7 @@ import {
   generateId, switchDesignation, nextSwitchNumber, nextTrackName, rebuildCoords, trackLabel,
   newSwitchFields, switchElementMark, splitElementAt, splitTrackAtJoint, carveSwitchRoute,
 } from '../track/index.js'
-import { cantEnds, nodeUtm, wgs84ToUTM, utmToWgs84, transformGridBearing } from '../geometry/index.js'
+import { cantEnds, nodeUtm, wgs84ToUTM, utmToWgs84, transformGridBearing, NODE_TOL } from '../geometry/index.js'
 import {
   switchElementRoute, switchRouteVaries, computeSwitchGeometryUtm, solveSwitchConnection,
   buildConnectionElements, orientStemToward, uniqueStations, turnoutRunsOn,
@@ -146,17 +146,14 @@ function carveThrough(split, cutUtm, mark, length) {
   return carved ? split.tracks.map(tr => (tr.id === carved.id ? carved : tr)) : null
 }
 
-/** Below this a toe sits on its element's end node [m] — switchPlacement's JOINT_TOL. */
-const JOINT_TOL = 1e-3
-
 // Part a track at a toe `station` along its element `elIdx`. On one of the
 // element's nodes that is the joint itself — cut there, the element would
 // leave a piece of no length behind. A transition is cut at the station, as
 // the clothoid it is: its pieces run from its radii to the one at the toe.
 function splitAtToe(track, elIdx, station, junction, bearing, existingNames) {
   const n = track.elements.length
-  const j = station <= JOINT_TOL ? elIdx
-    : station >= track.elements[elIdx].length - JOINT_TOL ? elIdx + 1 : null
+  const j = station <= NODE_TOL ? elIdx
+    : station >= track.elements[elIdx].length - NODE_TOL ? elIdx + 1 : null
   const cut = track.elements[elIdx].elementType === 2 ? { ...junction, station } : junction
   return j != null && j > 0 && j < n
     ? splitTrackAtJoint(track, j, bearing, existingNames)
@@ -284,9 +281,6 @@ function turnoutsOnElements([p1, p2], dir1, shift, res) {
 }
 
 // ── Minimum element length (LP.EL.01) ────────────────────────────────────────
-
-/** Shorter than this a piece is none: the turnout sits on the node [m] (switchPlacement's JOINT_TOL). */
-const NODE_TOL = 1e-3
 
 /**
  * Where turnout `k` (0 or 1) of a solved connection lies on the element it was

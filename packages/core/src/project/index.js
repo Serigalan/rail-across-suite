@@ -15,5 +15,6 @@ export {
   planeInSystem, previewTracksToPlane, projectSystem, projectSystemSetting, systemChoices,
   systemDeviates, withImportSystem, withLineCategory, zoneChoices,
 } from './projectSettings.js'
+export { closeLegacyGaps, LEGACY_NODE_TOL } from './legacyGaps.js'
 export { describeStep, stepTrackIds } from './stepLabel.js'
 export { newFindings, validateProject } from './validateProject.js'

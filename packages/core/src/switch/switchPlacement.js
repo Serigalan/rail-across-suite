@@ -1,17 +1,10 @@
 import {
   cantEnds, nodeUtm, reverseElement, resolveEndBearing, projectOnArcUtm,
-  projectOnTransitionUtm,
+  projectOnTransitionUtm, NODE_TOL,
 } from '../geometry/index.js'
 import { elementAtStation, pointAtStationUtm } from '../track/index.js'
 import { switchElementRoute, switchRouteSlice, switchRouteBearingAt } from './route.js'
 import { asRadius } from './catalogue.js'
-
-/**
- * A toe this close to an element's end sits on the joint, and a route that ends
- * this close to one ends with the element [m] — the tolerance the carve works
- * with (see carveSwitchRoute), so both come to the same element boundaries.
- */
-const JOINT_TOL = 1e-3
 
 /** Largest change of direction at a joint under a turnout that is still none [rad]. */
 const KINK_TOL = 1e-6
@@ -95,8 +88,8 @@ export function placeSwitchOnTrack(track, station, reversed, length) {
   const dir = reversed ? -1 : 1
 
   let joint = null
-  if (hit.s <= JOINT_TOL) joint = hit.elIdx
-  else if (hit.s >= hit.el.length - JOINT_TOL) joint = hit.elIdx + 1
+  if (hit.s <= NODE_TOL) joint = hit.elIdx
+  else if (hit.s >= hit.el.length - NODE_TOL) joint = hit.elIdx + 1
 
   // The toe, and where the walk along the track begins: element `idx` at
   // `local`, a station along the element in its own direction.
@@ -129,7 +122,7 @@ export function placeSwitchOnTrack(track, station, reversed, length) {
   const spans  = []
   let covered = 0
   let lastEndBearing = null
-  while (covered < length - JOINT_TOL) {
+  while (covered < length - NODE_TOL) {
     const el = els[idx]
     if (!el) return { error: 'switch_on_track_no_room' }
     if (el.length > 0) {

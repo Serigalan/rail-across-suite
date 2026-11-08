@@ -1,6 +1,6 @@
 import {
   utmToWgs84, bearingAfterUtm, transitionPointAtUtm, transitionBearingAtUtm, sampleTransitionUtm,
-  clothoidRadiusAt, curvatureOf, radiusOfCurvature, SWITCH_ROUTE_STEP,
+  clothoidRadiusAt, curvatureOf, radiusOfCurvature, SWITCH_ROUTE_STEP, NODE_TOL,
 } from '../geometry/index.js'
 import { STRAIGHT_CURVATURE, asRadius, bauform, branchRadius } from './catalogue.js'
 
@@ -113,14 +113,8 @@ export function switchElementRoute(el) {
 // ── Chains ──────────────────────────────────────────────────────────────────
 
 /**
- * Within this [m] two lengths of a route are the same: lengths added up from
- * elements miss the form's own by float noise.
- */
-export const SWITCH_CHAIN_TOL = 1e-3
-
-/**
  * The first `length` metres of a chain. A chain short of that by no more than
- * SWITCH_CHAIN_TOL is made up on its last piece, since the form's dimension is
+ * NODE_TOL is made up on its last piece, since the form's dimension is
  * the one a turnout has; one shorter still is returned as it is.
  */
 export function switchChainTo(chain, length) {
@@ -128,7 +122,7 @@ export function switchChainTo(chain, length) {
   let before = 0            // length of the pieces taken whole
   for (const piece of toChain(chain)) {
     const left = length - before
-    if (left <= SWITCH_CHAIN_TOL && out.length) break
+    if (left <= NODE_TOL && out.length) break
     if (piece.length < left) {
       out.push(piece)
       before += piece.length
@@ -138,7 +132,7 @@ export function switchChainTo(chain, length) {
     }
   }
   const short = length - before
-  if (out.length && short > 0 && short <= SWITCH_CHAIN_TOL) {
+  if (out.length && short > 0 && short <= NODE_TOL) {
     const last = out.pop()
     out.push(switchRouteSlice(last, 0, length - (before - last.length)))
   }

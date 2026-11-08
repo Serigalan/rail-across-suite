@@ -2,7 +2,7 @@ import {
   generateId, rebuildCoords, trackLabel, reverseHeights, splitHeights, trackLength,
   elementStations, pointOnElement,
 } from '../track/index.js'
-import { resolveEndBearing, reverseElement, nodeUtm, reconstructElements, transformPlanePoint } from '../geometry/index.js'
+import { resolveEndBearing, reverseElement, nodeUtm, reconstructElements, transformPlanePoint, NODE_TOL } from '../geometry/index.js'
 import { cantSign, AUTO_CANT_MODEL, lengthRuleFormula, minElementLength, runBeside } from '../rules/index.js'
 import { sectionAtStation } from '../crossSection/index.js'
 
@@ -325,8 +325,6 @@ export function settleLengths(s, lengths) {
     modes: s.modes.map((m, k) => (due.includes(k) ? 'fixed' : m)),
   }
 }
-
-const NODE_TOL = 1e-3   // m — two nodes this close are the same
 
 const sameNode = (a, b) => Array.isArray(a) && Array.isArray(b)
   && Math.abs(a[0] - b[0]) < NODE_TOL && Math.abs(a[1] - b[1]) < NODE_TOL

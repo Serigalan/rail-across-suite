@@ -24,3 +24,4 @@ it costs. A record is not rewritten when a decision changes; a new one replaces 
 | [0017](0017-stations-in-the-signalling-tool.md) | The Signalling-Tool creates the stations, in the core's register | accepted |
 | [0018](0018-crossover-search-in-rust.md) | The switch connection: one element in JavaScript, the extended one searched in Rust | accepted |
 | [0019](0019-optimizer-in-rust.md) | The optimizer in Rust, in the browser; the Python service goes | accepted |
+| [0020](0020-everything-in-rust.md) | Everything in Rust: the core, the point clouds and the server, one crate set for server and desktop | proposed |

@@ -5,7 +5,7 @@ import {
 
 import {
   bearingAfterUtm, computeCurvedValuesUtm, computeStraightValuesUtm, utmToWgs84, arcElement,
-  straightElement, withCantRamp, curvatureOf,
+  straightElement, withCantRamp, curvatureOf, NODE_TOL,
 } from '../geometry/index.js'
 import {
   computeCrossingGeometryUtm, crossingElements, crossingLegFitsTrack, crossingLegRadius,
@@ -104,9 +104,6 @@ export function switchOnTrackRouteEnd({ track, reversed, sw, side, straightLen }
 }
 
 // ── Minimum element length before the toe (LP.EL.01) ────────────────────────
-
-/** Shorter than this a piece is none: the toe sits on the node [m] (switchPlacement's JOINT_TOL). */
-const NODE_TOL = 1e-3
 
 /**
  * The pieces of its element a turnout at `toeStation` leaves on either side of

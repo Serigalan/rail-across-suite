@@ -4,6 +4,7 @@ import { epsgForLagesystem, parseBauform, RAIL_NAME } from './mdbImport'
 import { offsetOnElement } from './mdbSwitchDerive'
 import { heightAt, trackLength } from '@rail-across/core/track'
 import { arcFrom, straightFrom, transitionElement } from '@rail-across/core/geometry'
+import { snapImportedChain, snapImportedLastEnd } from './importSnap'
 
 /**
  * ProVI's interface files, delivered as a zip archive of text files without an
@@ -310,14 +311,15 @@ export function buildProviAxis(name, records, crs) {
       errors.push(`Achse ${name}, Station ${s0.toFixed(3)} (${main.type}): endet `
         + `${(gap * 1000).toFixed(1)} mm neben dem nächsten Hauptpunkt.`)
     }
-    elements.push(...built)
+    // The stretch ends at the next main point, within its quantisation (importSnap).
+    elements.push(...snapImportedLastEnd(built, crs, [num(h1, 'RW'), num(h1, 'HW')]))
   }
   for (const [what, n] of skipped) {
     errors.push(`Achse ${name}: ${n}× ${what} unbekannt – übersprungen.`)
   }
 
   return {
-    elements, units, errors,
+    elements: snapImportedChain(elements, crs), units, errors,
     begin: num(records[hps[0]].fields, 'STAT'),
     end: num(records[hps[hps.length - 1]].fields, 'STAT'),
   }

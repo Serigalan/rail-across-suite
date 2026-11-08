@@ -1,15 +1,12 @@
 import {
   computeCurvedValuesUtm, computeStraightValuesUtm, resolveEndBearing, curvatureOf,
-  reconstructElements,
+  reconstructElements, NODE_TOL,
 } from '../geometry/index.js'
 
 // Runs of elements that are one element: what a turnout carved into a track
 // and its deletion joins again (switchDelete), and what the element table
 // merges on request — consecutive elements alike in type, radius and cant
 // (Entscheidung 378).
-
-/** Two nodes are the same node below this [m] — chainInvariants' JOINT_TOL. */
-const JOINT_TOL = 1e-3
 
 /** Two tangents are the same tangent below this [°]. */
 const BEARING_TOL = 1e-6
@@ -120,7 +117,7 @@ export function mergeableRun(els, epsg = null, { equal = false } = {}) {
 
   for (let i = 0; i < els.length - 1; i++) {
     const a = els[i], b = els[i + 1]
-    if (Math.hypot(a.endNode[0] - b.startNode[0], a.endNode[1] - b.startNode[1]) > JOINT_TOL) return false
+    if (Math.hypot(a.endNode[0] - b.startNode[0], a.endNode[1] - b.startNode[1]) > NODE_TOL) return false
     if (bearingDelta(resolveEndBearing(a, epsg), b.bearing) > BEARING_TOL) return false
   }
   return true

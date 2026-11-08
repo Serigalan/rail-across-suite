@@ -1,3 +1,4 @@
+import { NODE_TOL } from '../geometry/index.js'
 import { elementStations, portEnd, portTrack, remapSwitches, stationOnTrack } from '../track/index.js'
 import { DEFAULT_MIDS, midUnknowns, planSwitchDeletion, switchParts, SWITCH_PICK_TYPES } from '../switch/index.js'
 import { adoptCrossover } from './crossover.js'
@@ -105,7 +106,7 @@ function pickWhereItStood(toe, end, candidates) {
   for (const track of candidates) {
     const a = stationOnTrack(track, toe)
     const b = end && stationOnTrack(track, end)
-    if (!a || !b || a.dist > 1e-3 || b.dist > 1e-2) continue
+    if (!a || !b || a.dist > NODE_TOL || b.dist > 1e-2) continue
     if (!best || a.dist + b.dist < best.dist) best = { track, toe: a.station, end: b.station, dist: a.dist + b.dist }
   }
   if (!best) return null

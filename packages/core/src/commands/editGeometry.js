@@ -1,7 +1,7 @@
 // Geometry of an element edit: plan, apply and merge length/bearing/radius changes.
 import { rebuildCoords, truncateHeights } from '../track/index.js'
 import { intermediateSpan } from './elementRoles.js'
-import { nodeUtm, arcFrom, straightFrom, transitionElement } from '../geometry/index.js'
+import { nodeUtm, arcFrom, straightFrom, transitionElement, NODE_TOL } from '../geometry/index.js'
 import { switchParts } from '../switch/index.js'
 
 /**
@@ -18,7 +18,7 @@ export const MAX_EDIT_TRACKS   = 3
 
 function nodesApproxEqual(a, b) {
   if (!Array.isArray(a) || !Array.isArray(b)) return false
-  return Math.abs(a[0] - b[0]) < 0.001 && Math.abs(a[1] - b[1]) < 0.001
+  return Math.abs(a[0] - b[0]) < NODE_TOL && Math.abs(a[1] - b[1]) < NODE_TOL
 }
 
 const norm360 = (deg) => ((deg % 360) + 360) % 360

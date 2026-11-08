@@ -1,7 +1,7 @@
-import { utmToWgs84, reverseElement, projectOnArcUtm, projectOnTransitionUtm } from '../geometry/index.js'
+import { utmToWgs84, reverseElement, projectOnArcUtm, projectOnTransitionUtm, NODE_TOL } from '../geometry/index.js'
 import { elementBelongsToSwitch, isLinkSwitch, portTrack, portEnd, linkSymbol } from '../track/index.js'
 import {
-  SWITCH_CHAIN_TOL, chainGeometry, clothoidRoutePoints, negR, switchBranchChain,
+  chainGeometry, clothoidRoutePoints, negR, switchBranchChain,
   switchChainBauform, switchChainBearingAt, switchChainPointUtm, switchChainSegmentsUtm,
   switchChainTo, switchElementRoute, switchRouteBearingAt, switchRouteSegments, switchRouteVaries,
   switchStemRoute, toChain, toRoute, utmEndRoute,
@@ -229,7 +229,7 @@ function routeElements(sw, trackById, port, route, length, { first = false } = {
   const out = []
   let total = 0
   for (const el of ordered) {
-    if (length == null ? out.length > 0 : total >= length - SWITCH_CHAIN_TOL) break
+    if (length == null ? out.length > 0 : total >= length - NODE_TOL) break
     const mine = el.switchBranch
       && (!el.switchRoute || el.switchRoute === route)
       && elementBelongsToSwitch(el, sw)
@@ -279,7 +279,7 @@ export function crossingRoutesFromTracks(sw, trackById) {
   const epsg = trackById[portTrack(sw, 'C')]?.epsg
   if (epsg == null) return null
   if (Math.hypot(mainFirst.startNode[0] - crossFirst.startNode[0],
-    mainFirst.startNode[1] - crossFirst.startNode[1]) > SWITCH_CHAIN_TOL) return null
+    mainFirst.startNode[1] - crossFirst.startNode[1]) > NODE_TOL) return null
 
   const centre = { easting: mainFirst.startNode[0], northing: mainFirst.startNode[1], zone: epsg }
   const main  = switchChainTo(mainEls.map(switchElementRoute), half)
@@ -288,7 +288,7 @@ export function crossingRoutesFromTracks(sw, trackById) {
     const els = routeElements(sw, trackById, port, route, half)
     const first = els[0]
     if (first?.startNode && Math.hypot(first.startNode[0] - centre.easting,
-      first.startNode[1] - centre.northing) <= SWITCH_CHAIN_TOL) {
+      first.startNode[1] - centre.northing) <= NODE_TOL) {
       return { bearing: first.bearing, chain: switchChainTo(els.map(switchElementRoute), half) }
     }
     return {
@@ -368,7 +368,7 @@ export function switchRoutesFromTracks(sw, trackById) {
   const stemEls = routeElements(sw, trackById, 'B2', 'main', mainLen)
   const onNode  = stemEls.length > 0 && Array.isArray(stemEls[0].startNode)
     && Math.hypot(stemEls[0].startNode[0] - node.easting, stemEls[0].startNode[1] - node.northing)
-      <= SWITCH_CHAIN_TOL
+      <= NODE_TOL
   const firstCoords = first.geometry?.coordinates ?? []
   const lastCoords  = last.geometry?.coordinates ?? []
   return {

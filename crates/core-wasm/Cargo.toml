@@ -17,3 +17,4 @@ rail-across-js = { path = "../js" }
 rail-across-geom = { path = "../geom" }
 rail-across-rules = { path = "../rules" }
 rail-across-track = { path = "../track" }
+rail-across-survey = { path = "../survey" }

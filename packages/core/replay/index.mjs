@@ -21,6 +21,7 @@ const RECORDERS = {
   geom: [() => import('./geom.mjs')],
   rules: [() => import('./rules.mjs')],
   track: [() => import('./track.mjs')],
+  survey: [() => import('./survey.mjs')],
 }
 
 /** Write one vector file: [{ op, input, output | error }], one case a line. */

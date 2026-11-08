@@ -58,6 +58,48 @@ pub fn truthy(value: Option<&Value>) -> bool {
     }
 }
 
+/// `x.toFixed(digits)`: the exact decimal value of the double rounded to
+/// `digits` places, a tie to the larger magnitude (ECMA-262 §21.1.3.3) —
+/// not to even, as Rust's own formatting rounds. Past 1e21 as `String(x)`.
+pub fn js_to_fixed(x: f64, digits: usize) -> String {
+    if !x.is_finite() {
+        return es_number(x);
+    }
+    if x.abs() >= 1e21 {
+        return es_number(x);
+    }
+    let negative = x < 0.0;
+    // Exact digits well past the place rounded at: a tie is a 5 and zeros.
+    let exact = format!("{:.*}", digits + 40, x.abs());
+    let (int_part, frac) = exact.split_once('.').unwrap_or((&exact, ""));
+    let kept = &frac[..digits];
+    let rest = &frac[digits..];
+    let up = rest.as_bytes().first().is_some_and(|d| *d >= b'5');
+    let mut all: Vec<u8> = format!("{int_part}{kept}").into_bytes();
+    if up {
+        let mut i = all.len();
+        loop {
+            if i == 0 {
+                all.insert(0, b'1');
+                break;
+            }
+            i -= 1;
+            if all[i] == b'9' {
+                all[i] = b'0';
+            } else {
+                all[i] += 1;
+                break;
+            }
+        }
+    }
+    let text = String::from_utf8(all).expect("digits");
+    let (i, f) = text.split_at(text.len() - digits);
+    let i = if i.is_empty() { "0" } else { i };
+    let body = if digits == 0 { i.to_string() } else { format!("{i}.{f}") };
+    let zero = body.chars().all(|c| c == '0' || c == '.');
+    if negative && !zero { format!("-{body}") } else { body }
+}
+
 /// `Number(value)` — JavaScript's conversion: a string trimmed and read as a
 /// decimal (or `0x…`, `Infinity`), empty as 0; `null` and `false` 0, `true`
 /// 1; anything else, or an absent value, NaN.
@@ -341,5 +383,14 @@ mod tests {
         assert_eq!(js_string(Some(&json!(12.0))), "12");
         assert_eq!(js_string(Some(&json!(0.30000000000000004))), "0.30000000000000004");
         assert_eq!(js_string(None), "undefined");
+    }
+
+    #[test]
+    fn to_fixed_takes_the_larger_of_a_tie() {
+        assert_eq!(js_to_fixed(0.0625, 3), "0.063");
+        assert_eq!(js_to_fixed(1.005, 2), "1.00");
+        assert_eq!(js_to_fixed(-2.5, 0), "-3");
+        assert_eq!(js_to_fixed(123.456, 1), "123.5");
+        assert_eq!(js_to_fixed(-0.0001, 3), "0.000");
     }
 }

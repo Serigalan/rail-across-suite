@@ -17,6 +17,7 @@ mod args;
 mod ops;
 mod ops_geom;
 mod ops_rules;
+mod ops_survey;
 mod ops_track;
 
 thread_local! {

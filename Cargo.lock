@@ -137,6 +137,7 @@ dependencies = [
  "rail-across-geom",
  "rail-across-js",
  "rail-across-rules",
+ "rail-across-survey",
  "rail-across-track",
  "serde_json",
 ]
@@ -230,6 +231,17 @@ name = "rail-across-sim-wasm"
 version = "0.1.0"
 dependencies = [
  "rail-across-sim",
+]
+
+[[package]]
+name = "rail-across-survey"
+version = "0.1.0"
+dependencies = [
+ "rail-across-geom",
+ "rail-across-js",
+ "rail-across-track",
+ "regex",
+ "serde_json",
 ]
 
 [[package]]

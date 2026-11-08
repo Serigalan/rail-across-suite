@@ -419,3 +419,27 @@ pub fn reverse_element(el: &Value) -> Value {
     }
     Value::Object(out)
 }
+
+/// An element sampled every `step` metres or less, in equal steps, as plane
+/// points [[e, n], …] (`elementPoints` of the commands module).
+pub fn element_points(el: &Value, epsg: i64, step: f64) -> Result<Vec<[f64; 2]>, Unsupported> {
+    let len = num(el, "length").filter(|_| get(el, "length").is_some()).unwrap_or(0.0);
+    let first = el.get("geometry").and_then(|g| g.get("coordinates")).and_then(|c| c.get(0));
+    let start = node_utm(el.get("startNode"), first, epsg)?;
+    let n = 1usize.max((len / step - 1e-9).ceil() as usize);
+    let bearing = num(el, "bearing").unwrap_or(f64::NAN);
+    if num(el, "elementType") == Some(2.0) {
+        return Ok(crate::transition::sample_transition(start.e, start.n, bearing, len, num(el, "r1"), num(el, "r2"), is_bloss(str_of(el, "transitionType")), n, 1, len));
+    }
+    let radius = get(el, "radius").and_then(Value::as_f64);
+    Ok((0..=n)
+        .map(|i| {
+            let s = len * i as f64 / n as f64;
+            let p = match radius {
+                Some(r) => end_point_curved(start, bearing, s, r),
+                None => end_point_straight(start, bearing, s),
+            };
+            [p.e, p.n]
+        })
+        .collect())
+}

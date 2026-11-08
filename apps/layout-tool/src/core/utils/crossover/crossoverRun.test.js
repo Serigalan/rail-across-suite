@@ -9,7 +9,7 @@ import { instantiateCrossover, runWith } from './crossoverRun'
 // The search as the dialog runs it, through the module cargo built
 // (crossover/target/…) — skipped where it has not been built.
 const MODULE = fileURLToPath(new URL(
-  '../../../../../../crossover/target/wasm32-unknown-unknown/release/rail_across_crossover_wasm.wasm', import.meta.url))
+  '../../../../../../target/wasm32-unknown-unknown/release/rail_across_crossover_wasm.wasm', import.meta.url))
 const built = existsSync(MODULE)
 
 const EPSG = 25832

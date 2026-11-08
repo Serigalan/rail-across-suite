@@ -1,9 +1,12 @@
 # SPDX-FileCopyrightText: 2026 Serigalan and the Rail-Across-Suite contributors
 # SPDX-License-Identifier: LGPL-3.0-only
 
+# One workspace for all of the suite's Rust (decision 0020): the running time
+# simulation (sim/), the crossover search (crossover/), the optimizer
+# (optimizer/) and the core's crates (crates/). One lock, one target/.
 [workspace]
 resolver = "2"
-members = ["crates/optimizer", "crates/wasm"]
+members = ["sim/crates/*", "crossover/crates/*", "optimizer/crates/*", "crates/*"]
 
 [workspace.package]
 version = "0.1.0"
@@ -15,8 +18,9 @@ rust-version = "1.85"
 [workspace.dependencies]
 serde = { version = "1", features = ["derive"] }
 # The catalogue's thresholds and inputs are read in the order the file lists
-# them: a later one may use an earlier.
+# them: a later one may use an earlier (optimizer); records keep their order.
 serde_json = { version = "1", features = ["preserve_order"] }
+slsqp = "1.0.2"
 
 [profile.release]
 opt-level = 3

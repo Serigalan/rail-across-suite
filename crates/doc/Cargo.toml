@@ -1,0 +1,15 @@
+[package]
+name = "rail-across-doc"
+description = "The core 1.0 document: its door, canonical JSON and hashes, the record as it is kept"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[lib]
+name = "rail_across_doc"
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true

@@ -29,6 +29,10 @@ jobs:
           cache: npm
       - run: npm ci --no-audit --no-fund
         working-directory: .
+      # The core's Rust crates as its WebAssembly module (decision 0020): the
+      # tests run on it where a function has moved, and hold it to the JavaScript.
+      - run: rustup target add wasm32-unknown-unknown
+      - run: npm run wasm
       - run: node tools/modules.mjs
       - run: node tools/vectors.mjs --check
       - run: node tools/types.mjs --check
@@ -110,7 +114,6 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - run: rustup target add wasm32-unknown-unknown
       - run: cargo build --release -p rail-across-sim-wasm --target wasm32-unknown-unknown
-        working-directory: sim
       - run: npm test
         working-directory: packages/running-times
       - run: npm test
@@ -166,43 +169,19 @@ jobs:
       - run: npm test
       - run: npm run build
 
-  # OSRD's simulation core in Rust: OSRD's own cases, clippy, the format.
-  sim:
+  # All of the suite's Rust, one cargo workspace (decision 0020): the
+  # simulation core with OSRD's cases, the crossover search, the optimizer with
+  # the shared rule vectors, the core's crates with the vectors the JavaScript
+  # core records; clippy and the format; the core's WebAssembly module.
+  rust:
     runs-on: ubuntu-24.04
-    defaults:
-      run:
-        working-directory: sim
     steps:
       - uses: actions/checkout@v5
-      - run: cargo fmt --check
-      - run: cargo clippy --all-targets -- -D warnings
-      - run: cargo test
-
-  # The extended switch connection's search in Rust (decision 0018): its
-  # cases, clippy, the format.
-  crossover:
-    runs-on: ubuntu-24.04
-    defaults:
-      run:
-        working-directory: crossover
-    steps:
-      - uses: actions/checkout@v5
+      - run: rustup target add wasm32-unknown-unknown
       - run: cargo fmt --check
       - run: cargo clippy --all-targets -- -D warnings
       - run: cargo test --release
-
-  # The track optimizer in Rust (decision 0019): the shared rule vectors, the
-  # cases the Python service was held to, clippy, the format.
-  optimizer-rs:
-    runs-on: ubuntu-24.04
-    defaults:
-      run:
-        working-directory: optimizer
-    steps:
-      - uses: actions/checkout@v5
-      - run: cargo fmt --check
-      - run: cargo clippy --all-targets -- -D warnings
-      - run: cargo test --release
+      - run: cargo build --release -p rail-across-core-wasm --target wasm32-unknown-unknown
 
   # The Simulation-Tool's old address, which leads on to the Fahrplan-Editor.
   simulation-tool:

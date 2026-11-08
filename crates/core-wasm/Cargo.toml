@@ -1,0 +1,15 @@
+[package]
+name = "rail-across-core-wasm"
+description = "The core's Rust crates as one WebAssembly module, behind the core's JavaScript face"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+serde_json.workspace = true
+rail-across-doc = { path = "../doc" }

@@ -19,6 +19,6 @@ by the core (`adoptCrossover`) before the dialog builds it.
 
 ## Tests
 
-`crossoverRun.test.js` runs the module cargo built (`crossover/target/…`, skipped where there is none) on a pair
+`crossoverRun.test.js` runs the module cargo built (`target/…` of the workspace, skipped where there is none) on a pair
 of tracks no one arc can join: the best answer is solved again and built without an error of LP.EL.01 or
 LP.KS.01, elements set are kept, each turnout is built of its own form, and nothing that closes says so.

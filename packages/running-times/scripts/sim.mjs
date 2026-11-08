@@ -14,7 +14,8 @@ const here = dirname(fileURLToPath(import.meta.url))
 const out = resolve(process.argv[2] ?? 'public/sim')
 const target = join(out, 'rail_across_sim.wasm')
 const sim = resolve(here, '../../../sim')
-const built = join(sim, 'target/wasm32-unknown-unknown/release/rail_across_sim_wasm.wasm')
+// One cargo workspace for the repository (decision 0020): its target/ is at the root.
+const built = join(sim, '../target/wasm32-unknown-unknown/release/rail_across_sim_wasm.wasm')
 
 let source = process.env.RA_SIM_WASM ? resolve(process.env.RA_SIM_WASM) : null
 if (!source) {

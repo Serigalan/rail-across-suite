@@ -9,23 +9,23 @@ Status: **proposed** · 2026-11-08 · carries on [0013](0013-running-times-in-ru
    the point clouds (`packages/pointcloud`, ~3,100), timetables, vehicles and running times (~2,500) and the project
    server (`server/`, ~3,800 lines and its migrations). The modules' interfaces stay React and JavaScript: MapLibre,
    three.js and the pages are not ported.
-2. **One Cargo workspace** takes in `sim/`, `crossover/` and `optimizer/` and the new crates: `ra-doc` (the core 1.0
-   document, the door and its migrations, canonical JSON, hashes), `ra-geom` (elements, clothoids, UTM and NTv2, the
-   one tolerance table), `ra-rules`, `ra-track`, `ra-switch`, `ra-commands`, `ra-signalling`, `ra-planpro`,
-   `ra-pointcloud`, `ra-server` (axum, rusqlite), `ra-wasm` (the browser's binding) and `ra-desktop` (Tauri).
+2. **One Cargo workspace** (`Cargo.toml` at the root; each crate `rail-across-<name>`) takes in `sim/`, `crossover/` and `optimizer/` and the new crates: `crates/doc` (the core 1.0
+   document, the door and its migrations, canonical JSON, hashes), `crates/geom` (elements, clothoids, UTM and NTv2, the
+   one tolerance table), `crates/rules`, `crates/track`, `crates/switch`, `crates/commands`, `crates/signalling`, `crates/planpro`,
+   `crates/pointcloud`, `crates/server` (axum, rusqlite), `crates/core-wasm` (the browser's binding) and `crates/desktop` (Tauri).
 3. **What is computed twice today is computed once**: the optimizer's own geometry kernel and rule check (0019,
-   point 3) go into `ra-geom` and `ra-rules`.
+   point 3) go into `crates/geom` and `crates/rules`.
 4. **The browser runs the same crates as WebAssembly behind the core's JavaScript face.** The import paths
    (`@rail-across/core/track`, …) stay, so the modules do not change when a module of the core changes language.
    The module is loaded once before a page renders, so the core's calls stay synchronous.
-5. **Server and local package are one crate.** `ra-server` runs behind Caddy as one program in place of the Node
+5. **Server and local package are one crate.** `crates/server` runs behind Caddy as one program in place of the Node
    service; the desktop app calls the same router in its own process through its own URI scheme, without a port and
    without Node. The local mode of the branch `desktop-standalone` (`serve --local`, no user management) becomes a
    switch of the crate.
 6. **The API, the database and the accounts stay.** The same routes and JSON shapes, the same SQL migrations on the
    same file, argon2id hashes read as they are (PHC strings), the same session cookie: the server is exchanged under
    running modules and signed-in users.
-7. **The tolerances come as one table** (`packages/core/src/geometry/tolerances.js`, then `ra-geom`): the same place
+7. **The tolerances come as one table** (`packages/core/src/geometry/tolerances.js`, then `crates/geom`): the same place
    is 1 µm (`NODE_TOL`), positions are kept to 0.1 µm. A solver's stopping criterion, an import's matching of foreign
    data, a rule's own distance and anything in another unit keep their own values.
 
@@ -34,15 +34,15 @@ Done module by module, each step shipped on its own, the JavaScript removed when
 | Step | What | Done when |
 |---|---|---|
 | 0 | One workspace and CI job, the WebAssembly pipeline and the core's face, recording the JavaScript core's calls for replay; a Tauri test of the point cloud and the map on macOS (WKWebView) and Linux (WebKitGTK) | the face loads a module; the test decides Tauri or Electron for step 9 |
-| 1 | `ra-doc`: types from `schemas/`, `parseProjectsPayload` and the migration from oltjson-1.1, `dehydrateProjects`, canonical JSON and hashes | `schemas/vectors/` pass, every fixture reads and writes back byte for byte |
-| 2 | `ra-geom`: `geometry/` and the optimizer's kernel, UTM and the NTv2 grids | replay within 10⁻⁹ m |
-| 3 | `ra-rules`: `rules/` and the optimizer's catalogue and check | `packages/core/constraints/tests/` pass |
+| 1 | `crates/doc`: types from `schemas/`, `parseProjectsPayload` and the migration from oltjson-1.1, `dehydrateProjects`, canonical JSON and hashes | `schemas/vectors/` pass, every fixture reads and writes back byte for byte |
+| 2 | `crates/geom`: `geometry/` and the optimizer's kernel, UTM and the NTv2 grids | replay within 10⁻⁹ m |
+| 3 | `crates/rules`: `rules/` and the optimizer's catalogue and check | `packages/core/constraints/tests/` pass |
 | 4 | track, switch, topology, cross section, survey, schematic (~13,000 lines) | replay, the chain invariants |
 | 5 | `commands/`, `merge/`: the editing, measured for speed — coordinates as `Float64Array`, one call per drag | replay; the document kept in WebAssembly memory if the measurement asks for it |
 | 6 | signalling, PlanPro | replay |
-| 7 | `ra-pointcloud` with `las`/`laz`: native on the server, WebAssembly in the browser's worker | the point cloud tests |
-| 8 | `ra-server`: the server's tests as HTTP tests run against both servers; terrain with `tiff`, `zip`, `image-webp`; jobs as threads; `mdb-export` called as before | both servers answer the same; then Caddy is switched, the Node unit kept for going back until the next migration |
-| 9 | `ra-desktop`: Tauri with `ra-server` in process, the start screen, settings and export folder of `desktop-standalone`, `mdb-export` bundled | the app runs without Node |
+| 7 | `crates/pointcloud` with `las`/`laz`: native on the server, WebAssembly in the browser's worker | the point cloud tests |
+| 8 | `crates/server`: the server's tests as HTTP tests run against both servers; terrain with `tiff`, `zip`, `image-webp`; jobs as threads; `mdb-export` called as before | both servers answer the same; then Caddy is switched, the Node unit kept for going back until the next migration |
+| 9 | `crates/desktop`: Tauri with `crates/server` in process, the start screen, settings and export folder of `desktop-standalone`, `mdb-export` bundled | the app runs without Node |
 | 10 | the JavaScript implementations and the server's Node dependencies go; whether `core-py` is still wanted | — |
 
 The JavaScript is the measure until its port has taken over. Results are compared within 10⁻⁹ m, since `sin`,

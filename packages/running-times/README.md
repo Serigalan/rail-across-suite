@@ -23,5 +23,5 @@ An app that runs trains puts the module beside its page with `npm run sim`, whic
 `wasm32-unknown-unknown`), or takes `RA_SIM_WASM`, and writes `public/sim/` with the module's notice and the licence texts.
 
 ```sh
-npm test   # the tests that run the module where cargo built it (sim/target/…)
+npm test   # the tests that run the module where cargo built it (target/… of the workspace)
 ```

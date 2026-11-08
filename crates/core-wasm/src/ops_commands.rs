@@ -3,12 +3,12 @@
 
 //! The commands' operations, named and called as the JavaScript's.
 
-use rail_across_commands::{connect as cn, edit, roles, scurve as sc, switches as swc, table, tracks as tr};
+use rail_across_commands::{connect as cn, edit, reconnect as rc, roles, scurve as sc, splice as sp, switches as swc, table, tracks as tr};
 use rail_across_js::number;
 use rail_across_switch::mid_chain as mc;
 use serde_json::{Value, json};
 
-use crate::args::{Args, opt_num};
+use crate::args::{Args, opt_num, opt_str};
 use crate::ops::Failure;
 
 /// Runs command operation `op`, where it is one.
@@ -216,6 +216,50 @@ pub fn run(op: &str, input: &Value) -> Option<Result<Value, Failure>> {
                 )
             };
             ok(Value::Array(cn::connect_remedies(&anchor, &o["current"], &o["outcome"], &outcome_for)))
+        }
+        // splice
+        "commands.splicePick" => ok(sp::splice_pick(a.v(0), a.u(1))),
+        "commands.pickRuns" => {
+            let (b, af) = sp::pick_runs(&a.list(0), a.u(1));
+            ok(json!({ "runBefore": number(b), "runAfter": number(af) }))
+        }
+        "commands.secondPickRefusal" => ok(opt_str(sp::second_pick_refusal(a.v(0), a.v(1)))),
+        "commands.picksAtSpeed" => ok(Value::Array(sp::picks_at_speed(&a.list(0), a.opt(1)))),
+        "commands.spliceKeptCant" => ok(opt_num(sp::splice_kept_cant(&a.list(0), a.opt(1)))),
+        "commands.spliceRequest" => ok(sp::splice_request(a.v(0), a.v(1), a.v(2), a.opt(3))),
+        "commands.neighbourAxis" => ok(Value::Array(sp::neighbour_axis(a.v(0), a.f(1), a.v(2), a.v(3)))),
+        "commands.neighbourAxisNear" => {
+            let corners: Vec<rail_across_geom::element::Utm> = a.list(2).iter().map(rail_across_geom::element::Utm::from_json).collect();
+            ok(Value::Array(sp::neighbour_axis_near(a.v(0), a.f(1), &corners)))
+        }
+        "commands.clearanceRequest" => ok(sp::clearance_request(a.v(0))),
+        "commands.spliceFromAnswer" => ok(sp::splice_from_answer(a.v(0), &a.list(1), a.opt(2))),
+        "commands.settleLengths" => ok(sp::settle_lengths(a.v(0), a.opt(1))),
+        "commands.buildSplice" => ok(sp::build_splice(a.v(0))),
+        // reconnect
+        "commands.AXIS_SPACING" => ok(number(rc::AXIS_SPACING)),
+        "commands.reconnectRange" => ok(rc::reconnect_range(a.v(0), a.u(1), a.u(2))),
+        "commands.replacedSpan" => {
+            let (first, last) = rc::replaced_span(a.v(0));
+            ok(json!({ "first": first, "last": last }))
+        }
+        "commands.reconnectPick" => ok(rc::reconnect_pick(a.v(0), a.u(1), a.s(2), a.b(3))),
+        "commands.elementPoints" => ok(Value::Array(
+            rc::element_points(a.v(0), a.i(1), a.f(2))
+                .into_iter()
+                .map(|p| json!([number(p[0]), number(p[1])]))
+                .collect(),
+        )),
+        "commands.axisPoints" => ok(rc::axis_points(a.v(0), a.u(1), a.u(2), a.of(3).unwrap_or(rc::AXIS_SPACING))),
+        "commands.stretchDefaults" => ok(rc::stretch_defaults(a.v(0), a.v(1))),
+        "commands.reconnectRequest" => ok(rc::reconnect_request(&a.list(0), a.v(1), a.v(2), a.opt(3))),
+        "commands.reconnectFromAnswer" => ok(rc::reconnect_from_answer(a.v(0), &a.list(1), a.opt(2))),
+        "commands.stationMap" => ok(number(rc::station_map(a.f(0), a.f(1), a.f(2), a.f(3)))),
+        "commands.buildReconnect" => {
+            let o = a.v(0);
+            ok(rc::build_reconnect(&o["track"], &o["range"], &o["solution"], o.get("speed"))
+                .map(|r| json!({ "track": r["track"] }))
+                .unwrap_or(Value::Null))
         }
         _ => None,
     }

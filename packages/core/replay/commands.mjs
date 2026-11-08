@@ -8,6 +8,13 @@ import * as Eg from '../src/commands/editGeometry.js'
 import { endPointStraightUtm } from '../src/geometry/index.js'
 import * as Sc from '../src/commands/sCurve.js'
 import * as Sw from '../src/commands/switches.js'
+import * as Sp from '../src/commands/splice.js'
+import * as Rc from '../src/commands/reconnect.js'
+import { straightElement as sEl, transitionElement as tEl } from '../src/geometry/elementFactory.js'
+import { reconstructElements } from '../src/geometry/elementReconstruct.js'
+import { rebuildCoords } from '../src/track/trackModel.js'
+import spliceAnswers from '../test/fixtures/splice_answers.json' with { type: 'json' }
+import reconnectFixture from '../test/fixtures/reconnect_answers.json' with { type: 'json' }
 import * as Cs from '../src/commands/connectSwitch.js'
 import * as Cc from '../src/commands/connectCrossing.js'
 import { connectRemedies } from '../src/commands/connectRemedies.js'
@@ -96,6 +103,7 @@ export default function record() {
   recordSCurve(r, line)
   recordSwitches(r, line)
   recordConnect(r)
+  recordSplice(r)
   return { commands: calls }
 }
 
@@ -153,6 +161,71 @@ function recordSCurve(r, line) {
 }
 
 import { runBeside as runBesideOf } from '../src/rules/index.js'
+
+function recordSplice(r) {
+  const plain = (v) => JSON.parse(JSON.stringify(v))
+  const P = (x, y, zone = EPSG) => ({ easting: 500000 + x, northing: 5700000 + y, zone })
+  const at = ([e, n]) => ({ easting: e, northing: n, zone: EPSG })
+  const track = (id, elements, extra = {}) => ({ id, name: id, epsg: EPSG, elements, coordinates: rebuildCoords(elements), ...extra })
+  const a = track('a', [sEl(P(0, 0), P(200, 0), { speed: 80 })], { heights: [{ station: 0, z: 100 }, { station: 200, z: 102 }] })
+  const b = track('b', [sEl(P(400, 100), P(400, 700), { speed: 80 })])
+  const a2 = track('a2', [sEl(P(200, 0), P(0, 0), { speed: 80 })], { heights: [{ station: 0, z: 102 }, { station: 200, z: 100 }] })
+  const k = track('k', [sEl(P(0, 0), P(100, 0), { speed: 80 }), tEl(P(100, 0), 90, 60, null, 500, { speed: 80 }).element])
+  const off = track('off', [sEl(at(spliceAnswers.transitionEnd.request.dep.start), at(spliceAnswers.transitionEnd.request.dep.end), { speed: 80 })])
+  const inside = track('t', [sEl(P(-50, 0), P(0, 0)), tEl(P(0, 0), 90, 50, null, 300).element, sEl(P(50, 3), P(100, 3))])
+  for (const [t, i] of [[a, 0], [b, 0], [k, 1], [k, 0], [inside, 1], [inside, 0], [a, 3]]) r('splicePick', Sp.splicePick, t, i)
+  const [pa, pb] = [Sp.splicePick(a, 0), Sp.splicePick(b, 0)]
+  r('secondPickRefusal', Sp.secondPickRefusal, pa, pa); r('secondPickRefusal', Sp.secondPickRefusal, pa, { ...pa, elIdx: 1 })
+  r('secondPickRefusal', Sp.secondPickRefusal, pa, { ...pb, epsg: 25833 }); r('secondPickRefusal', Sp.secondPickRefusal, pa, pb)
+  r('picksAtSpeed', Sp.picksAtSpeed, [pa, { ...pb, speed: 120 }], 100); r('picksAtSpeed', Sp.picksAtSpeed, [pa, pb], null)
+  for (const on of [[false, false], [true, false], [false, true], [true, true], null]) r('spliceKeptCant', Sp.spliceKeptCant, [{ ...pa, cant: -40 }, { ...pb, cant: 20 }], on)
+  const settings = { radius: 300, transitionOn: [true, false], transitions: [60, 60], modes: ['regular', 'fixed'], transitionType: 'clothoid', arcJoin: 'straight', speed: 80, cant: '40' }
+  r('spliceRequest', Sp.spliceRequest, pa, pb, settings)
+  r('spliceRequest', Sp.spliceRequest, Sp.splicePick(k, 1), pb, { radius: '-500', transitionOn: [false, true], transitionTypes: ['bloss'] }, { ref: [[1, 2, 3]], dMin: 4 })
+  r('neighbourAxis', Sp.neighbourAxis, b, EPSG, pa, pb)
+  r('neighbourAxisNear', Sp.neighbourAxisNear, k, EPSG, [P(90, 0), P(150, 10)])
+  r('clearanceRequest', Sp.clearanceRequest, { axis: [[1, 2, 0]], dMin: '4.5', profile: [[0, 1]], maximize: true, speed: 80, cant: -40 })
+  for (const [name, picks, tracks] of [['corner', [pa, pb], [a, b]], ['cornerPickedTheOtherWay', [pb, pa], [a, b]], ['startToStart', [Sp.splicePick(b, 0), Sp.splicePick(a2, 0)], [a2, b]],
+    ['transitionEnd', [Sp.splicePick(off, 0), Sp.splicePick(k, 1)], [off, k]]]) {
+    const { request, answer } = spliceAnswers[name]
+    r('spliceFromAnswer', (an, p, rq) => plain(Sp.spliceFromAnswer(an, p, rq)), answer, picks, request)
+    const sol = Sp.spliceFromAnswer(answer, picks, request).solutions?.[0]
+    if (sol) r('buildSplice', (o) => plain(Sp.buildSplice({ ...o, newId: () => o.newId })), { tracks, solution: plain(sol), speed: 60, cant: 40, newId: `m-${name}` })
+  }
+  r('spliceFromAnswer', (an, p, rq) => plain(Sp.spliceFromAnswer(an, p, rq)), { error: 'splice_error_x', params: { a: 1 }, lengths: [{ regular: 60, regularBy: [{ id: 'LP.UB.07' }], minimumBy: [{ id: 'LP.UB.07' }] }] }, [pa, pb], { transitionDep: 'bloss' })
+  r('spliceFromAnswer', (an, p, rq) => plain(Sp.spliceFromAnswer(an, p, rq)), null, [pa, pb], null)
+  r('settleLengths', Sp.settleLengths, settings, [{ regular: 72.4 }, { regular: 30 }])
+  r('settleLengths', Sp.settleLengths, settings, null)
+
+  // reconnect
+  const makeTrack = (elements, extra = {}) => { const els = reconstructElements(elements.map(el => ({ ...el })), EPSG); return { id: 't', name: 't', epsg: EPSG, elements: els, coordinates: rebuildCoords(els), ...extra } }
+  const rt = makeTrack(reconnectFixture.elements, { heights: [{ station: 0, z: 100 }, { station: 300, z: 103, rv: 5000 }, { station: 920, z: 101 }] })
+  const withSwitch = makeTrack(reconnectFixture.elements.map((el, i) => (i === 1 ? { ...el, switchId: 'w1' } : el)))
+  r('AXIS_SPACING', () => Rc.AXIS_SPACING)
+  for (const [t, x, y] of [[rt, 3, 3], [rt, 4, 2], [rt, 0, 3], [withSwitch, 2, 4], [withSwitch, 1, 3], [rt, 9, 1]]) r('reconnectRange', Rc.reconnectRange, t, x, y)
+  const range = Rc.reconnectRange(rt, 2, 4)
+  r('replacedSpan', Rc.replacedSpan, range)
+  r('replacedSpan', Rc.replacedSpan, Rc.reconnectRange(withSwitch, 2, 4))
+  for (const [t, idx, join, fixed] of [[rt, 1, 'end', false], [rt, 5, 'start', false], [rt, 2, 'end', true], [rt, 4, 'start', true]]) r('reconnectPick', Rc.reconnectPick, t, idx, join, fixed)
+  for (const el of rt.elements) r('elementPoints', Rc.elementPoints, el, EPSG, 7.5)
+  r('axisPoints', Rc.axisPoints, rt, 2, 4, 0.5)
+  r('stretchDefaults', Rc.stretchDefaults, rt, range)
+  const picks = [Rc.reconnectPick(rt, range.dep.idx, 'end', range.dep.fixed), Rc.reconnectPick(rt, range.arr.idx, 'start', range.arr.fixed)]
+  r('reconnectRequest', Rc.reconnectRequest, picks, Rc.axisPoints(rt, 2, 4, 1), { tolerance: '0.1', speed: 100, transitionType: 'clothoid', radius: -800 })
+  for (const name of Object.keys(reconnectFixture.cases)) {
+    const t = name === 'fixedDeparture' ? withSwitch : rt
+    const rr = Rc.reconnectRange(t, 2, 4)
+    const pk = [Rc.reconnectPick(t, rr.dep.idx, 'end', rr.dep.fixed), Rc.reconnectPick(t, rr.arr.idx, 'start', rr.arr.fixed)]
+    const ans = reconnectFixture.cases[name].answer
+    r('reconnectFromAnswer', (an, p) => plain(Rc.reconnectFromAnswer(an, p)), ans, pk)
+    const read = Rc.reconnectFromAnswer(ans, pk)
+    for (const sol of (read.solutions ?? []).slice(0, 2)) {
+      for (const speed of [100, 60]) r('buildReconnect', (o) => plain({ track: Rc.buildReconnect(o)?.track }), { track: t, range: rr, solution: plain(sol), speed })
+    }
+  }
+  r('reconnectFromAnswer', (an, p) => plain(Rc.reconnectFromAnswer(an, p)), { error: 'x' }, picks)
+  for (const s of [5, 50, 100, 1000]) r('stationMap', (s0, o, n, x) => Rc.stationMap(s0, o, n)(x), 20, 100, 95, s)
+}
 
 function recordConnect(r) {
   const plain = (v) => JSON.parse(JSON.stringify(v))

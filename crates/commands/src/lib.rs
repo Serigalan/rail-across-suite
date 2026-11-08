@@ -15,8 +15,10 @@
 
 pub mod connect;
 pub mod edit;
+pub mod reconnect;
 pub mod roles;
 pub mod scurve;
+pub mod splice;
 pub mod switches;
 pub mod table;
 pub mod tracks;

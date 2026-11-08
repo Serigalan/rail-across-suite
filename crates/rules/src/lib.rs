@@ -23,6 +23,7 @@ pub mod element_length;
 pub mod expr;
 pub mod grenzen;
 pub mod katalog;
+pub mod length_formula;
 pub mod physics;
 pub mod pruefung;
 pub mod rule_fields;

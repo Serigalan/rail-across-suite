@@ -1,0 +1,17 @@
+[package]
+name = "rail-across-switch"
+description = "Turnouts and crossings: the forms of DB Ril 800.0120, their routes, symbols, connections and deletion"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[lib]
+name = "rail_across_switch"
+
+[dependencies]
+serde_json.workspace = true
+rail-across-js = { path = "../js" }
+rail-across-geom = { path = "../geom" }
+rail-across-track = { path = "../track" }

@@ -23,6 +23,7 @@ const RECORDERS = {
   track: [() => import('./track.mjs')],
   survey: [() => import('./survey.mjs')],
   views: [() => import('./views.mjs')],
+  switch: [() => import('./switch.mjs')],
 }
 
 /** Write one vector file: [{ op, input, output | error }], one case a line. */

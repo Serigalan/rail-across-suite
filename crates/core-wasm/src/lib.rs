@@ -18,6 +18,7 @@ mod ops;
 mod ops_geom;
 mod ops_rules;
 mod ops_survey;
+mod ops_switch;
 mod ops_track;
 mod ops_views;
 

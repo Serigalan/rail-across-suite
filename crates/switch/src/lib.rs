@@ -7,13 +7,19 @@
 //! to an open end and what stays when one is deleted (`packages/core/src/switch`).
 
 #![allow(clippy::neg_cmp_op_on_partial_ord, clippy::too_many_arguments, clippy::manual_range_contains)]
+#![recursion_limit = "256"]
 
 pub mod cants;
 pub mod catalogue;
+pub mod connect;
+pub mod connection;
 pub mod crossing;
 pub mod delete;
+pub mod detail;
+pub mod detail_scene;
 pub mod gradient;
 pub mod mid_chain;
+pub mod placement;
 pub mod regelwerk;
 pub mod route;
 pub mod sleepers;

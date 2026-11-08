@@ -11,6 +11,12 @@ import * as Sl from '../src/switch/stationSlider.js'
 import * as M from '../src/switch/midChain.js'
 import * as D from '../src/switch/switchDelete.js'
 import { mainTrack, branchTrack, turnout as testTurnout } from '../test/turnoutFixture.js'
+import * as P from '../src/switch/switchPlacement.js'
+import * as K from '../src/switch/connectToTrack.js'
+import * as Cn from '../src/switch/switchConnectionUtils.js'
+import { switchDetail, formDetail, RAIL_OFFSET, SLEEPER_OVERHANG } from '../src/switch/detail.js'
+import { switchDetailScene, connectionPartners } from '../src/switch/detailScene.js'
+import { connectionPick } from '../src/commands/sCurve.js'
 import { WEICHEN_REGELWERK, weichenGruppen } from '../src/switch/weichenRegelwerk.js'
 import { utmToWgs84, straightElement, arcElement, transitionElement, endPointStraightUtm } from '../src/geometry/index.js'
 import { rec } from './record.mjs'
@@ -312,10 +318,173 @@ function recordBodies(calls) {
   r('endCurvature', M.endCurvature, [])
 }
 
+/** A track of straights, arcs and clothoids from `start` (elements built as the dialogs build them). */
+function trackOf(id, start, bearing, parts, extra = {}) {
+  let at = { ...start, zone: EPSG }
+  let b = bearing
+  const elements = parts.map(([kind, length, r1, r2, cant = 0]) => {
+    const fields = { speed: 100, cant, ...extra }
+    const el = kind === 's' ? straightElement(at, endPointStraightUtm(at, b, length), fields)
+      : kind === 'a' ? arcElement(at, R.switchRoutePointUtm(at, b, { length, r1, r2: r1 }), r1, fields)
+        : transitionElement(at, b, length, r1, r2, { ...fields, cant: undefined, cantStart: cant, cantEnd: r2 === 'x' ? 0 : cant }).element
+    at = { easting: el.endNode[0], northing: el.endNode[1], zone: EPSG }
+    b = el.endBearing ?? el.bearing
+    return el
+  })
+  return { id, epsg: EPSG, name: id, elements }
+}
+
+function recordConnections(calls) {
+  const r = (op, fn, ...args) => calls.push(rec(`switch.${op}`, fn, ...args))
+  const k = (op, value) => calls.push({ op: `switch.${op}`, input: [], output: JSON.parse(JSON.stringify(value)) })
+  const A = { easting: 600000, northing: 5600000 }
+  const line = trackOf('L', A, 90, [['s', 150], ['t', 60, null, -1200, 40], ['a', 120, -1200, null, 40], ['t', 60, -1200, null, 40], ['s', 200]])
+  const kinked = { ...line, id: 'K', elements: line.elements.map((el, i) => (i === 0 ? { ...el, endBearing: el.bearing + 0.5 } : el)) }
+  const bloss = { ...line, id: 'B', elements: line.elements.map((el, i) => (i === 1 ? { ...el, transitionType: 'bloss' } : el)) }
+
+  // Placement.
+  for (const [st, rev, len] of [[20, false, 33.23], [140, false, 33.23], [150, false, 27], [170, false, 45], [300, true, 33.23], [210, false, 30], [580, false, 33], [585, true, 40], [0, false, 10], [5, true, 30], [9999, false, 10]]) {
+    r('placeSwitchOnTrack', (t, s, rv, l) => { const p = P.placeSwitchOnTrack(t, s, rv, l); const { cantAt: _c, ...rest } = p; return rest }, line, st, rev, len)
+    const p = P.placeSwitchOnTrack(line, st, rev, len)
+    if (!p.error) {
+      for (const [x, on] of [[0, null], [len / 3, null], [len, null], [len / 2, { s0: 1, length: 3 }]]) {
+        r('placementCantAt', (t, s, rv, l, xx, o) => P.placeSwitchOnTrack(t, s, rv, l).cantAt(xx, o), line, st, rev, len, x, on)
+      }
+    }
+  }
+  r('placeSwitchOnTrack', (t, s, rv, l) => { const p = P.placeSwitchOnTrack(t, s, rv, l); const { cantAt: _c, ...rest } = p; return rest }, kinked, 100, false, 60)
+  r('placeSwitchOnTrack', (t, s, rv, l) => { const p = P.placeSwitchOnTrack(t, s, rv, l); const { cantAt: _c, ...rest } = p; return rest }, bloss, 170, false, 30)
+  for (let i = 0; i < line.elements.length; i++) for (const side of ['before', 'after']) r('turnoutRunsOn', P.turnoutRunsOn, line.elements, i, side, EPSG)
+  r('turnoutRunsOn', P.turnoutRunsOn, kinked.elements, 1, 'before', EPSG)
+  for (const [i, dx, dy] of [[0, 30, 2], [2, 10, -3], [1, 25, 1], [4, -5, 0]]) {
+    const el = line.elements[i]
+    r('clickStation', P.clickStation, line, i, { easting: el.startNode[0] + dx, northing: el.startNode[1] + dy, zone: EPSG })
+  }
+  for (const i of [0, 4, 9]) r('switchEndAnchorRefusal', P.switchEndAnchorRefusal, line, i)
+
+  // Connecting to an open end.
+  const spur = trackOf('S', { easting: 600100, northing: 5600030 }, 95, [['s', 40], ['a', 25, 400], ['s', 12]])
+  const spurT = trackOf('T', { easting: 600100, northing: 5600030 }, 95, [['s', 40], ['t', 20, null, 300]])
+  const spurBack = { ...spur, id: 'SB', elements: [...spur.elements].reverse().map(el => reverseEl(el)) }
+  for (const [t, end, count] of [[spur, 'END', 1], [spur, 'END', 2], [spur, 'BEGIN', 1], [spurT, 'END', 1], [spurBack, 'BEGIN', 1], [spur, 'END', 9], [{ id: 'E', epsg: EPSG, elements: [] }, 'END', 1]]) {
+    r('connectionAnchor', (tr, e, o) => K.connectionAnchor(tr, e, o), t, end, { tracks: [t], switches: [], endMarks: [], count })
+  }
+  r('connectionAnchor', (tr, e, o) => K.connectionAnchor(tr, e, o), spur, 'END', { tracks: [spur], switches: [], endMarks: [{ id: 'bs', kind: 'buffer_stop', trackId: 'S', endpoint: 'END' }] })
+  for (const [t, end, count] of [[spur, 'END', 1], [spur, 'END', 2], [spurT, 'END', 1], [spur, 'BEGIN', 1]]) {
+    const { anchor } = K.connectionAnchor(t, end, { tracks: [t], switches: [], endMarks: [], count })
+    if (!anchor) continue
+    r('endChainDefault', K.endChainDefault, anchor)
+    const last = t.elements[end === 'END' ? t.elements.length - 1 : 0]
+    const node = end === 'END' ? last.endNode : last.startNode
+    for (const [dx, dy, bin] of [[1.5, 0.8, 110], [0.3, -0.4, 100], [-60, 0, 90], [4, 2, 120]]) {
+      const port = { easting: node[0] + dx, northing: node[1] + dy, zone: EPSG }
+      for (const lead of [0, 15]) {
+        r('fitConnectingElement', K.fitConnectingElement, anchor, port, bin, lead)
+        const fit = K.fitConnectingElement(anchor, port, bin, lead)
+        if (fit) {
+          r('refitTrackEnd', K.refitTrackEnd, { ...t, heights: [{ station: 0, z: 10 }, { station: 30, z: 11 }, { station: 70, z: 12 }] }, anchor, fit, port, { speedLimit: 60 })
+          r('refitCount', K.refitCount, fit)
+        }
+      }
+    }
+    const route = trackOf('R', { easting: node[0], northing: node[1] }, 30, [['s', 20]])
+    r('joinRouteIntoTrack', K.joinRouteIntoTrack, t, anchor, route)
+  }
+  k('END_CHAIN_OPEN', K.END_CHAIN_OPEN)
+  for (const mids of [[{ type: 'arc', length: null, radius: 300 }, { type: 'straight', length: null }], [{ type: 'transition', length: 10 }]]) r('endChainOpen', K.endChainOpen, mids)
+
+  // Switch connections between two parallel tracks, two converging ones, one in a curve.
+  const t1 = trackOf('P1', A, 90, [['s', 400]])
+  const t2 = trackOf('P2', { easting: 600000, northing: 5599995.5 }, 90, [['s', 400]])
+  const t3 = trackOf('P3', { easting: 600000, northing: 5599993 }, 90.4, [['s', 400]])
+  const c1 = trackOf('C1', A, 90, [['s', 60], ['t', 50, null, -2000, 30], ['a', 300, -2000, null, 30]])
+  const c2 = trackOf('C2', { easting: 600000, northing: 5599995 }, 90, [['s', 60], ['t', 50, null, -2004.5, 30], ['a', 300, -2004.5, null, 30]])
+  k('CONNECTION_SPEEDS', Cn.CONNECTION_SPEEDS)
+  r('formPair', Cn.formPair, C.switchTypeByLabel('300 – 1:9'))
+  r('formPair', Cn.formPair, [C.switchTypeByLabel('300 – 1:9'), C.switchTypeByLabel('500 – 1:12')])
+  const pick = (t, i, a) => connectionPick(t, i, a)
+  const strip = (res) => res && JSON.parse(JSON.stringify(res))
+  for (const [ta, ia, aa, tb, ib, ab] of [[t1, 0, 100, t2, 0, 150], [t1, 0, 100, t3, 0, 160], [t2, 0, 250, t1, 0, 200], [c1, 2, 40, c2, 2, 70], [c1, 0, 20, c2, 1, 30]]) {
+    const g1raw = pick(ta, ia, aa), g2 = pick(tb, ib, ab)
+    r('orientStemToward', (a, b) => strip(Cn.orientStemToward(a, b)), g1raw, g2)
+    const g1 = Cn.orientStemToward(g1raw, g2)
+    r('computeSwitchConnections', (a, b, s) => Cn.computeSwitchConnections(a, b, s), g1, g2, 0)
+    for (const speed of [40, 60, 80, 100]) {
+      for (const sh of [0, 7.5]) {
+        r('solveSwitchConnection', (a, b, v, s) => strip(Cn.solveSwitchConnection(a, b, v, s)), g1, g2, speed, sh)
+        const res = Cn.solveSwitchConnection(g1, g2, speed, sh)
+        if (res?.valid || res?.overridable) r('buildConnectionElements', (x, v) => strip(Cn.buildConnectionElements(x, v)), strip(res), speed)
+      }
+    }
+    const mids = [{ type: 'arc', length: 25, radius: null }, { type: 'straight', length: null }]
+    r('solveSwitchConnection', (a, b, v, s, m) => strip(Cn.solveSwitchConnection(a, b, v, s, m)), g1, g2, 60, 0, mids)
+    const res3 = Cn.solveSwitchConnection(g1, g2, 60, 0, [{ type: 'straight', length: null }, { type: 'arc', length: null, radius: 600 }, { type: 'straight', length: 8 }])
+    r('solveSwitchConnection', (a, b, v, s, m) => strip(Cn.solveSwitchConnection(a, b, v, s, m)), g1, g2, 60, 0, [{ type: 'straight', length: null }, { type: 'arc', length: null, radius: 600 }, { type: 'straight', length: 8 }])
+    if (res3?.valid || res3?.overridable) r('buildConnectionElements', (x, v) => strip(Cn.buildConnectionElements(x, v)), strip(res3), 60)
+    r('solveSwitchConnection', (a, b, v, s, m, sd, f) => strip(Cn.solveSwitchConnection(a, b, v, s, m, sd, f)), g1, g2, 60, 0, null, null, [C.switchTypeByLabel('300 – 1:9'), C.switchTypeByLabel('500 – 1:12')])
+    r('connectionBranchEnds', (a, b, v, o) => strip(Cn.connectionBranchEnds(a, b, v, o)), g1, g2, 60, { step: 5, reach: 60 })
+  }
+  r('checkMidRun', Cn.checkMidRun, [{ length: 20, r1: 300, r2: 300 }, { length: 6, r1: null, r2: null }], [{ length: 5, r1: null, r2: null }], [{ length: 6, r1: null, r2: null }, { length: 20, r1: -300, r2: -300 }], 80)
+  r('checkMidRun', Cn.checkMidRun, [{ length: 20, r1: 300, r2: 300 }], [{ length: 30, r1: -200, r2: -200 }, { length: 0.0001, r1: null, r2: null }], [{ length: 20, r1: -300, r2: -300 }], 100)
+
+  // Details.
+  k('RAIL_OFFSET', RAIL_OFFSET); k('SLEEPER_OVERHANG', SLEEPER_OVERHANG)
+  for (const form of C.ALL_SWITCH_TYPES) {
+    r('formDetail', formDetail, form, { side: 'left' })
+    if (form.symmetric || form.branch) r('formDetail', formDetail, form, { side: 'right', rail: '49E5' })
+  }
+  r('formDetail', formDetail, C.CROSSING_TYPES[0], {})
+  const laid = [layTurnout('d1', '300 – 1:9', O, 33.3, 'left'), layTurnout('d2', '500 – 1:12', O, 33.3, 'right', 1100)]
+  for (const { sw, tracks } of laid) {
+    r('switchDetail', (t, s, o) => switchDetail(t, s, withForms(o)), tracks, sw, {})
+    r('switchDetail', (t, s, o) => switchDetail(t, s, withForms(o)), tracks, sw, { rail: '49E5' })
+    r('switchDetailScene', switchDetailScene, tracks, [sw], sw, { margin: 10 })
+  }
+  // A crossover: two turnouts joined by their branches, and a third close by.
+  const g1 = Cn.orientStemToward(pick(t1, 0, 100), pick(t2, 0, 150)), g2 = pick(t2, 0, 150)
+  const res = Cn.solveSwitchConnection(g1, g2, 60, 0)
+  if (res?.valid) {
+    const els = Cn.buildConnectionElements(res, 60)
+    const mark = (list, id, route) => list.map(el => ({ ...el, switchBranch: true, switchRoute: route, switchId: id }))
+    const conn = { id: 'X', epsg: EPSG, elements: [...mark(els.branch1, 'w1', 'branch'), ...els.midEls, ...mark(els.branch2, 'w2', 'branch')] }
+    const cut = (t, s0, id) => {
+      const p = P.placeSwitchOnTrack(t, s0, false, C.switchStraightLength(res.switchType))
+      return p
+    }
+    const s1 = res.s1 + 100, s2 = 150 + res.s2
+    const split = (t, s, len, id) => {
+      const before = { ...t, id: `${t.id}a`, elements: [straightElement({ easting: t.elements[0].startNode[0], northing: t.elements[0].startNode[1], zone: EPSG }, endPointStraightUtm({ easting: t.elements[0].startNode[0], northing: t.elements[0].startNode[1], zone: EPSG }, 90, s))] }
+      const toe = endPointStraightUtm({ easting: t.elements[0].startNode[0], northing: t.elements[0].startNode[1], zone: EPSG }, 90, s)
+      const we = endPointStraightUtm(toe, 90, len)
+      const after = { ...t, id: `${t.id}b`, elements: [straightElement(toe, we, { switchBranch: true, switchRoute: 'main', switchId: id }), straightElement(we, endPointStraightUtm(we, 90, 400 - s - len))] }
+      return [before, after]
+    }
+    const len = C.switchStraightLength(res.switchType)
+    const [a1, b1] = split(t1, s1, len, 'w1')
+    const [a2, b2] = split(t2, s2 - len, len, 'w2')
+    const w1 = { switchId: 'w1', kind: 'turnout', label: res.switchType.label, ports: { A: { trackId: a1.id, endpoint: 'END' }, B2: { trackId: b1.id, endpoint: 'BEGIN' }, B1: { trackId: 'X', endpoint: 'BEGIN' } } }
+    const w2 = { switchId: 'w2', kind: 'turnout', label: res.switchType.label, ports: { A: { trackId: b2.id, endpoint: 'BEGIN' }, B2: { trackId: a2.id, endpoint: 'END' }, B1: { trackId: 'X', endpoint: 'END' } } }
+    const tracks = [a1, b1, a2, b2, conn]
+    r('connectionPartners', connectionPartners, tracks, [w1, w2], w1)
+    r('connectionPartners', connectionPartners, tracks, [w1, w2], w2)
+    r('switchDetailScene', switchDetailScene, tracks, [w1, w2], w1, {})
+  }
+}
+
+function reverseEl(el) {
+  const out = { ...el, startNode: el.endNode, endNode: el.startNode, bearing: ((el.endBearing ?? el.bearing) + 180) % 360,
+    ...(el.endBearing != null ? { endBearing: (el.bearing + 180) % 360 } : {}),
+    geometry: { ...el.geometry, coordinates: [...el.geometry.coordinates].reverse() } }
+  if (el.radius != null) out.radius = -el.radius
+  delete out.renderCoords
+  return out
+}
+
 export default function record() {
   const calls = []
   recordCatalogueAndRoutes(calls)
   recordCrossingAndSymbol(calls)
   recordBodies(calls)
+  recordConnections(calls)
   return { switch: calls }
 }

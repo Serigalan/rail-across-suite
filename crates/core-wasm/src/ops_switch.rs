@@ -6,10 +6,15 @@
 use rail_across_js::number;
 use rail_across_switch::cants;
 use rail_across_switch::catalogue as cat;
+use rail_across_switch::connect as cn;
+use rail_across_switch::connection as conn;
 use rail_across_switch::crossing as cr;
 use rail_across_switch::delete as del;
+use rail_across_switch::detail;
+use rail_across_switch::detail_scene;
 use rail_across_switch::gradient as gr;
 use rail_across_switch::mid_chain as mc;
+use rail_across_switch::placement as pl;
 use rail_across_switch::regelwerk;
 use rail_across_switch::route as rt;
 use rail_across_switch::sleepers as sl;
@@ -17,7 +22,7 @@ use rail_across_switch::slider;
 use rail_across_switch::symbol as sy;
 use serde_json::{Value, json};
 
-use crate::args::{Args, opt_num};
+use crate::args::{Args, opt_num, opt_str};
 use crate::ops::Failure;
 
 fn forms(v: &[&Value]) -> Value {
@@ -335,8 +340,134 @@ pub fn run(op: &str, input: &Value) -> Option<Result<Value, Failure>> {
         "switch.switchParts" => ok(del::parts_json(&del::switch_parts(a.v(0), &del::by_id(&a.list(1))))),
         "switch.keptRoutes" => ok(json!(del::kept_routes(a.v(0), &del::switch_parts(a.v(0), &del::by_id(&a.list(1)))))),
         "switch.planSwitchDeletion" => ok(del::plan_switch_deletion(a.v(0), &a.list(1))),
+        // switchPlacement
+        "switch.turnoutRunsOn" => ok(json!(pl::turnout_runs_on(&a.list(0), a.u(1), a.s(2), a.i(3)))),
+        "switch.clickStation" => ok(number(pl::click_station(a.v(0), a.u(1), a.utm(2)))),
+        "switch.placeSwitchOnTrack" => ok(match pl::place_switch_on_track(a.v(0), a.f(1), a.b(2), a.f(3)) {
+            Ok(p) => p.to_json(),
+            Err(e) => json!({ "error": e }),
+        }),
+        "switch.placementCantAt" => ok(match pl::place_switch_on_track(a.v(0), a.f(1), a.b(2), a.f(3)) {
+            Ok(p) => number(
+                p.cant_at(
+                    a.f(4),
+                    a.opt(5)
+                        .map(|o| (o["s0"].as_f64().unwrap_or(f64::NAN), o["length"].as_f64().unwrap_or(f64::NAN))),
+                ),
+            ),
+            Err(_) => Value::Null,
+        }),
+        "switch.switchEndAnchorRefusal" => ok(opt_str(pl::switch_end_anchor_refusal(a.v(0), a.u(1)))),
+        // connectToTrack
+        "switch.connectionAnchor" => {
+            let tracks = a.option(2, "tracks").and_then(Value::as_array).map(Vec::as_slice);
+            let list = |k: &str| a.option(2, k).and_then(Value::as_array).cloned().unwrap_or_default();
+            let count = a.option(2, "count").and_then(Value::as_u64).unwrap_or(1) as usize;
+            ok(
+                match cn::connection_anchor(a.v(0), a.s(1), tracks, &list("switches"), &list("endMarks"), count) {
+                    Ok(an) => json!({ "anchor": an.to_json() }),
+                    Err(e) => json!({ "error": e }),
+                },
+            )
+        }
+        "switch.fitConnectingElement" => ok(
+            cn::fit_connecting_element(&cn::Anchor::from_json(a.v(0)), a.utm(1), a.f(2), a.of(3).unwrap_or(0.0))
+                .map(|f| f.to_json())
+                .unwrap_or(Value::Null),
+        ),
+        "switch.END_CHAIN_OPEN" => ok(json!(cn::END_CHAIN_OPEN)),
+        "switch.endChainDefault" => ok(Value::Array(
+            cn::end_chain_default(&cn::Anchor::from_json(a.v(0))).into_iter().map(|m| m.to_json()).collect(),
+        )),
+        "switch.endChainOpen" => ok(json!(cn::end_chain_open(&mc::mids_from(a.v(0))))),
+        "switch.refitTrackEnd" => ok(cn::refit_track_end(
+            a.v(0),
+            &cn::Anchor::from_json(a.v(1)),
+            &cn::Fit::from_json(a.v(2)),
+            a.utm(3),
+            a.option(4, "speedLimit").and_then(Value::as_f64),
+        )),
+        "switch.refitCount" => ok(json!(cn::refit_count(&cn::Fit::from_json(a.v(0))))),
+        "switch.joinRouteIntoTrack" => {
+            let (track, shift) = cn::join_route_into_track(a.v(0), &cn::Anchor::from_json(a.v(1)), a.v(2));
+            ok(json!({ "track": track, "shift": number(shift) }))
+        }
+        // switchConnectionUtils
+        "switch.formPair" => {
+            let (x, y) = conn::form_pair(a.v(0));
+            ok(json!([x, y]))
+        }
+        "switch.CONNECTION_SPEEDS" => ok(Value::Array(conn::connection_speeds().into_iter().map(number).collect())),
+        "switch.orientStemToward" => {
+            // The stem as it came, its own fields kept, turned where it runs away from the other pick.
+            let turned = conn::orient_stem_toward(&conn::Stem::from_json(a.v(0)), &conn::Stem::from_json(a.v(1)));
+            let mut out = a.v(0).clone();
+            let dir = a.v(0).get("dir").and_then(Value::as_f64).unwrap_or(1.0);
+            if turned.dir != dir {
+                out["dir"] = number(turned.dir);
+            }
+            ok(out)
+        }
+        "switch.checkMidRun" => ok(conn::check_mid_run(&rt::to_chain(a.v(0)), &rt::to_chain(a.v(1)), &rt::to_chain(a.v(2)), a.f(3)).to_json()),
+        "switch.connectionBranchEnds" => ok(conn::connection_branch_ends(
+            &conn::Stem::from_json(a.v(0)),
+            &conn::Stem::from_json(a.v(1)),
+            a.f(2),
+            a.option(3, "step").and_then(Value::as_f64).unwrap_or(0.5),
+            a.option(3, "reach").and_then(Value::as_f64).unwrap_or(300.0),
+            a.option(3, "form"),
+        )),
+        "switch.computeSwitchConnections" => {
+            let mids = a.opt(3).map(mc::mids_from);
+            ok(Value::Array(conn::compute_switch_connections(
+                &conn::Stem::from_json(a.v(0)),
+                &conn::Stem::from_json(a.v(1)),
+                a.of(2).unwrap_or(0.0),
+                mids.as_deref(),
+                seed_of(a.opt(4)),
+            )))
+        }
+        "switch.solveSwitchConnection" => {
+            let mids = a.opt(4).map(mc::mids_from);
+            ok(conn::solve_switch_connection(
+                &conn::Stem::from_json(a.v(0)),
+                &conn::Stem::from_json(a.v(1)),
+                a.f(2),
+                a.of(3).unwrap_or(0.0),
+                mids.as_deref(),
+                seed_of(a.opt(5)),
+                a.opt(6),
+            ))
+        }
+        "switch.buildConnectionElements" => ok(conn::build_connection_elements(a.v(0), a.f(1))),
+        // detail
+        "switch.RAIL_OFFSET" => ok(number(detail::RAIL_OFFSET)),
+        "switch.SLEEPER_OVERHANG" => ok(number(detail::SLEEPER_OVERHANG)),
+        "switch.switchDetail" => with_forms(a.option(2, "forms"), |f| {
+            ok(detail::switch_detail(&a.list(0), a.v(1), f, a.option(2, "rail").cloned()).unwrap_or(Value::Null))
+        }),
+        "switch.formDetail" => ok(detail::form_detail(
+            a.opt(0),
+            a.option(1, "rail").cloned(),
+            a.option(1, "side").and_then(Value::as_str).unwrap_or("left"),
+        )
+        .unwrap_or(Value::Null)),
+        "switch.connectionPartners" => ok(Value::Array(
+            detail_scene::connection_partners(&a.list(0), &a.list(1), a.v(2)).into_iter().cloned().collect(),
+        )),
+        "switch.switchDetailScene" => {
+            ok(detail_scene::switch_detail_scene(&a.list(0), &a.list(1), a.v(2), a.option(3, "margin").and_then(Value::as_f64)).unwrap_or(Value::Null))
+        }
         _ => None,
     }
+}
+
+fn seed_of(v: Option<&Value>) -> Option<(f64, Vec<f64>)> {
+    let v = v?;
+    Some((
+        v.get("ds")?.as_f64()?,
+        v.get("values")?.as_array()?.iter().map(|x| x.as_f64().unwrap_or(f64::NAN)).collect(),
+    ))
 }
 
 fn opts(f: sl::FormOf) -> sl::SleeperOptions {

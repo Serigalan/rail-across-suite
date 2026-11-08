@@ -263,6 +263,7 @@ version = "0.1.0"
 dependencies = [
  "rail-across-geom",
  "rail-across-js",
+ "rail-across-rules",
  "rail-across-track",
  "serde_json",
 ]

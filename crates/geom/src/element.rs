@@ -429,7 +429,18 @@ pub fn element_points(el: &Value, epsg: i64, step: f64) -> Result<Vec<[f64; 2]>,
     let n = 1usize.max((len / step - 1e-9).ceil() as usize);
     let bearing = num(el, "bearing").unwrap_or(f64::NAN);
     if num(el, "elementType") == Some(2.0) {
-        return Ok(crate::transition::sample_transition(start.e, start.n, bearing, len, num(el, "r1"), num(el, "r2"), is_bloss(str_of(el, "transitionType")), n, 1, len));
+        return Ok(crate::transition::sample_transition(
+            start.e,
+            start.n,
+            bearing,
+            len,
+            num(el, "r1"),
+            num(el, "r2"),
+            is_bloss(str_of(el, "transitionType")),
+            n,
+            1,
+            len,
+        ));
     }
     let radius = get(el, "radius").and_then(Value::as_f64);
     Ok((0..=n)

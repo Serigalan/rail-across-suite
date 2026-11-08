@@ -22,6 +22,7 @@ const RECORDERS = {
   rules: [() => import('./rules.mjs')],
   track: [() => import('./track.mjs')],
   survey: [() => import('./survey.mjs')],
+  views: [() => import('./views.mjs')],
 }
 
 /** Write one vector file: [{ op, input, output | error }], one case a line. */
@@ -37,8 +38,12 @@ for (const [crate, recorders] of Object.entries(RECORDERS)) {
   if (wanted.length && !wanted.includes(crate)) continue
   for (const load of recorders) {
     const vectors = await (await load()).default()
-    for (const [name, cases] of Object.entries(vectors)) {
-      console.log(`${writeVectors(crate, name, cases)}: ${cases.length} cases`)
+    // A recorder writing into several crates answers { crate: { name: cases } }.
+    const byCrate = Object.values(vectors).every(v => !Array.isArray(v)) ? vectors : { [crate]: vectors }
+    for (const [into, files] of Object.entries(byCrate)) {
+      for (const [name, cases] of Object.entries(files)) {
+        console.log(`${writeVectors(into, name, cases)}: ${cases.length} cases`)
+      }
     }
   }
 }

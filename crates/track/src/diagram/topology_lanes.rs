@@ -248,15 +248,15 @@ pub fn layout_cluster_lanes(cluster: &Value) -> Value {
         ends[ed.v].push((End { k, end: 1 }, ed.to_port.clone()));
     }
     let mut side_of: Vec<Option<usize>> = vec![None; 2 * kk];
-    for v in 0..n_nodes {
+    for (v, at_v) in ends.iter().enumerate() {
         let kind = kind_of(v);
         let sk = switch_kind(v);
         if (kind == "switch" || kind == "link") && has_sides(&sk) {
-            for (at, port) in &ends[v] {
+            for (at, port) in at_v {
                 side_of[at.k * 2 + at.end] = port.as_deref().and_then(|p| port_side(&sk, p));
             }
-        } else if kind == "joint" && ends[v].len() == 2 {
-            for (j, (at, _)) in ends[v].iter().enumerate() {
+        } else if kind == "joint" && at_v.len() == 2 {
+            for (j, (at, _)) in at_v.iter().enumerate() {
                 side_of[at.k * 2 + at.end] = Some(j);
             }
         }

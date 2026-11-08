@@ -101,7 +101,7 @@ pub fn validate_project(project: &Value) -> Value {
                     "switches",
                     sw.get("switchId"),
                     label.clone(),
-                    obj(vec![("port", Some(json!(port))), ("trackId", track_id.cloned())]),
+                    obj(vec![("port", Some(json!(port))), ("trackId", Some(track_id.cloned().unwrap_or(Value::Null)))]),
                     Some(port.into()),
                 );
                 continue;
@@ -444,6 +444,9 @@ fn seg_dist(px: f64, py: f64, ax: f64, ay: f64, bx: f64, by: f64) -> f64 {
     (ax + u * dx - px).hypot(ay + u * dy - py)
 }
 
+/// A grid cell of a plane: (epsg, x, y).
+type Cell = (String, i64, i64);
+
 #[derive(Clone, Copy)]
 struct Run {
     from: f64,
@@ -486,7 +489,7 @@ pub fn overlapping_tracks(tracks: &[Value], switches: &[Value]) -> Vec<Value> {
             .any(|ea| ends[b].iter().any(|eb| near(ea, eb) && (near(ea, &run.start) || near(ea, &run.end))))
     };
     let keep = |a: &str, b: &str, run: &Run| !from_shared_end(a, b, run) || run.to - run.from >= 0.5 * lengths[a].min(lengths[b]);
-    let mut grid: HashMap<(String, i64, i64), Vec<(String, Pt, Pt)>> = HashMap::new();
+    let mut grid: HashMap<Cell, Vec<(String, Pt, Pt)>> = HashMap::new();
     for t in tracks {
         let pts = &samples[&id_of(t)];
         let epsg = js_string(t.get("epsg"));

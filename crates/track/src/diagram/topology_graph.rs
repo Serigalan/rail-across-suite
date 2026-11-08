@@ -187,7 +187,7 @@ pub fn topology_clusters(nodes: &Map<String, Value>, edges: &[Value]) -> Value {
             clusters.push((es.len(), json!({ "nodes": members, "edges": es })));
         }
     }
-    clusters.sort_by(|a, b| b.0.cmp(&a.0));
+    clusters.sort_by_key(|c| std::cmp::Reverse(c.0));
     let name = |e: &Value| get(e, "name").map(|n| js_string(Some(n))).unwrap_or_default();
     loose.sort_by(|a, b| locale_compare_numeric(&name(a), &name(b)));
     json!({ "clusters": clusters.into_iter().map(|c| c.1).collect::<Vec<_>>(), "loose": loose })

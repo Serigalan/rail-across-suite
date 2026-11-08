@@ -178,3 +178,102 @@ pub fn loaded_track_cants(elements: &[Value]) -> Vec<Value> {
             .collect(),
     )
 }
+
+/// Does the element state its cant at its two ends rather than as one `cant` (`hasCantEnds`)?
+pub fn has_cant_ends(el: &Value) -> bool {
+    is_transition(el) || get(el, "cantStart").is_some() || get(el, "cantEnd").is_some()
+}
+
+/// An element with its cant at one end set (`withEndCant`).
+fn with_end_cant(el: &Value, start: bool, value: f64) -> Value {
+    if is_transition(el) {
+        let mut o = el.as_object().cloned().unwrap_or_default();
+        o.insert(if start { "cantStart" } else { "cantEnd" }.into(), number(value));
+        return Value::Object(o);
+    }
+    if !has_cant_ends(el) {
+        let mut o = el.as_object().cloned().unwrap_or_default();
+        o.insert("cant".into(), number(value));
+        return Value::Object(o);
+    }
+    let own_start = get(el, "cantStart").and_then(Value::as_f64).unwrap_or_else(|| member_or(el, "cant", 0.0));
+    let own_end = get(el, "cantEnd").and_then(Value::as_f64).unwrap_or_else(|| member_or(el, "cant", 0.0));
+    let s = if start { value } else { own_start };
+    let e = if !start { value } else { own_end };
+    with_cant_ramp(el, s, e)
+}
+
+/// Carry the cant `v` over a joint into `out`, from `from` on in direction `step` (`carryCant`).
+fn carry_cant(out: &mut [Value], from: isize, step: isize, v: f64) {
+    let mut j = from;
+    while j >= 0 && (j as usize) < out.len() {
+        let own = has_cant_ends(&out[j as usize]);
+        out[j as usize] = with_end_cant(&out[j as usize], step > 0, v);
+        if own {
+            return;
+        }
+        j += step;
+    }
+}
+
+/// The elements with the cant `v` at the track's end `endpoint` (`withCantAtEnd`).
+pub fn with_cant_at_end(elements: &[Value], endpoint: &str, v: f64) -> Vec<Value> {
+    if elements.is_empty() {
+        return elements.to_vec();
+    }
+    let mut out = elements.to_vec();
+    if endpoint == "END" {
+        let last = out.len() as isize - 1;
+        carry_cant(&mut out, last, -1, v);
+    } else {
+        carry_cant(&mut out, 0, 1, v);
+    }
+    following_cants(out)
+}
+
+/// The elements with the cant of the run `from`–`to` set at both ends of each (`withCantsOver`).
+pub fn with_cants_over(elements: &[Value], from: usize, to: usize, ends: &[(f64, f64)]) -> Vec<Value> {
+    let mut out = elements.to_vec();
+    for i in from..=to {
+        let (start, end) = ends[i - from];
+        let el = &out[i];
+        out[i] = if is_transition(el) {
+            let mut o = el.as_object().cloned().unwrap_or_default();
+            o.insert("cantStart".into(), number(start));
+            o.insert("cantEnd".into(), number(end));
+            Value::Object(o)
+        } else {
+            with_cant_ramp(el, start, end)
+        };
+    }
+    carry_cant(&mut out, from as isize - 1, -1, ends[0].0);
+    carry_cant(&mut out, to as isize + 1, 1, ends[ends.len() - 1].1);
+    following_cants(out)
+}
+
+/// The elements with one cant typed in the element table (`withCantEdit`).
+pub fn with_cant_edit(elements: &[Value], i: usize, key: &str, value: f64) -> Vec<Value> {
+    let mut out = elements.to_vec();
+    let Some(el) = out.get(i).cloned() else { return elements.to_vec() };
+    let i = i as isize;
+    if key == "cant" {
+        if has_cant_ends(&el) {
+            return elements.to_vec();
+        }
+        out[i as usize] = with_end_cant(&el, true, value);
+        carry_cant(&mut out, i - 1, -1, value);
+        carry_cant(&mut out, i + 1, 1, value);
+    } else {
+        if !has_cant_ends(&el) {
+            return elements.to_vec();
+        }
+        let start = key == "cantStart";
+        out[i as usize] = with_end_cant(&el, start, value);
+        if start {
+            carry_cant(&mut out, i - 1, -1, value);
+        } else {
+            carry_cant(&mut out, i + 1, 1, value);
+        }
+    }
+    following_cants(out)
+}

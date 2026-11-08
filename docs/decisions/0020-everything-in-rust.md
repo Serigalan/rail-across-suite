@@ -35,7 +35,7 @@ Done module by module, each step shipped on its own, the JavaScript removed when
 |---|---|---|
 | 0 | One workspace and CI job, the WebAssembly pipeline and the core's face, recording the JavaScript core's calls for replay; a Tauri test of the point cloud and the map on macOS (WKWebView) and Linux (WebKitGTK) | the face loads a module; the test decides Tauri or Electron for step 9 |
 | 1 | `crates/doc`: types from `schemas/`, `parseProjectsPayload` and the migration from oltjson-1.1, `dehydrateProjects`, canonical JSON and hashes | `schemas/vectors/` pass, every fixture reads and writes back byte for byte |
-| 2 | `crates/geom`: `geometry/` and the optimizer's kernel, UTM and the NTv2 grids | replay within 10⁻⁹ m |
+| 2 | `crates/geom`: `geometry/` and the optimizer's kernel, UTM and the NTv2 grids | replay within a few nanometres (below) |
 | 3 | `crates/rules`: `rules/` and the optimizer's catalogue and check | `packages/core/constraints/tests/` pass |
 | 4 | track, switch, topology, cross section, survey, schematic (~13,000 lines) | replay, the chain invariants |
 | 5 | `commands/`, `merge/`: the editing, measured for speed — coordinates as `Float64Array`, one call per drag | replay; the document kept in WebAssembly memory if the measurement asks for it |
@@ -45,8 +45,10 @@ Done module by module, each step shipped on its own, the JavaScript removed when
 | 9 | `crates/desktop`: Tauri with `crates/server` in process, the start screen, settings and export folder of `desktop-standalone`, `mdb-export` bundled | the app runs without Node |
 | 10 | the JavaScript implementations and the server's Node dependencies go; whether `core-py` is still wanted | — |
 
-The JavaScript is the measure until its port has taken over. Results are compared within 10⁻⁹ m, since `sin`,
-`cos` and `atan2` may differ in the last digit between V8 and Rust's libm; canonical JSON and hashes are compared byte
+The JavaScript is the measure until its port has taken over. Results are compared within 4·10⁻⁹ m (two units in
+the last place of a coordinate of 10⁷ m) or four units in their own last place, since `sin`, `cos` and `atan2`
+may differ in the last digit between V8 and Rust's libm — a bearing or a ratio read off two converted points within
+10⁻⁷; canonical JSON and hashes are compared byte
 for byte, numbers written as JavaScript writes them (RFC 8785; `ryu-js`). A module being ported is frozen, or a
 change goes into both.
 

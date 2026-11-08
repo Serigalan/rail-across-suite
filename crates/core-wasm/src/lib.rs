@@ -14,6 +14,7 @@ use std::cell::Cell;
 use serde_json::{Value, json};
 
 mod ops;
+mod ops_geom;
 
 thread_local! {
     static RESULT_LEN: Cell<usize> = const { Cell::new(0) };

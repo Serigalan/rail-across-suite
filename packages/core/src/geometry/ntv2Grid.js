@@ -1,5 +1,6 @@
 import { fromArrayBuffer } from 'geotiff'
 import proj4 from 'proj4'
+import { callNative, nativeReady } from '../native/index.js'
 
 /**
  * The NTv2 grids the historic datums are converted on.
@@ -159,8 +160,10 @@ async function readGrid(grid, base) {
   const res = await fetch(base ? new URL(url, base) : url)
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
   const tiff = await fromArrayBuffer(await res.arrayBuffer())
-  await proj4.nadgrid(grid.key, tiff).ready
+  const read = await proj4.nadgrid(grid.key, tiff).ready
   loaded.add(grid.key)
+  // The core's Rust module converts on the same grid (decision 0020).
+  if (nativeReady()) callNative('geometry.loadGrid', { key: grid.key, subgrids: read.subgrids })
 }
 
 /**

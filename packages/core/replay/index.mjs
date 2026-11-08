@@ -18,6 +18,7 @@ const CRATES = resolve(here, '../../../crates')
 /** The recorders, by crate: each a module whose default export returns { name: cases }. */
 const RECORDERS = {
   doc: [() => import('./doc.mjs')],
+  geom: [() => import('./geom.mjs')],
 }
 
 /** Write one vector file: [{ op, input, output | error }], one case a line. */

@@ -32,6 +32,14 @@ it is.
 What the formats are and why: the Layout-Tool's
 [pointCloud](../../apps/layout-tool/docs/modules/pointCloud.md).
 
+## Rust
+
+`crates/pointcloud` is this package in Rust (decision 0020, step 7), for the project server: the same readers
+(LAZ through the `laz` crate), tiles, import, sections, registration, clearance check and scan, rail detection
+and tracing. The tile files either side writes are read by the other. `npm run replay pointcloud` (in
+`packages/core`) records its vectors; `cargo test -p rail-across-pointcloud` replays them; `src/native.test.js`
+compares the two on the LAZ sample where it and `target/release/ra-pointcloud` are at hand.
+
 ## Check
 
 ```bash

@@ -40,7 +40,7 @@ Done module by module, each step shipped on its own, the JavaScript removed when
 | 4 | track, switch, topology, cross section, survey (~13,000 lines); the schematic strip stays in the page (a callback in, closures out — drawing code) | replay, the chain invariants |
 | 5 | `commands/`, `merge/`: the editing, measured for speed — coordinates as `Float64Array`, one call per drag | replay; the document kept in WebAssembly memory if the measurement asks for it (it did: the session ops) |
 | 6 | signalling, PlanPro | replay (done: `crates/signalling`, `crates/planpro`; the page keeps the JavaScript, the server takes the Rust) |
-| 7 | `crates/pointcloud` with `las`/`laz`: native on the server, WebAssembly in the browser's worker | the point cloud tests |
+| 7 | `crates/pointcloud` with `las`/`laz`: native on the server, WebAssembly in the browser's worker | the point cloud tests (done: `crates/pointcloud` with `laz` and `flate2`, replayed on its own; native for the server. The browser's worker keeps the JavaScript and laz-perf for now: it reads a `File` asynchronously, the crate's readers are synchronous — a step of its own) |
 | 8 | `crates/server`: the server's tests as HTTP tests run against both servers; terrain with `tiff`, `zip`, `image-webp`; jobs as threads; `mdb-export` called as before | both servers answer the same; then Caddy is switched, the Node unit kept for going back until the next migration |
 | 9 | `crates/desktop`: Tauri with `crates/server` in process, the start screen, settings and export folder of `desktop-standalone`, `mdb-export` bundled | the app runs without Node |
 | 10 | the JavaScript implementations and the server's Node dependencies go; whether `core-py` is still wanted | — |

@@ -28,6 +28,7 @@ const RECORDERS = {
   merge: [() => import('./merge.mjs')],
   signalling: [() => import('./signalling.mjs')],
   planpro: [() => import('./planpro.mjs')],
+  pointcloud: [() => import('./pointcloud.mjs')],
 }
 
 /** Write one vector file: [{ op, input, output | error }], one case a line. */

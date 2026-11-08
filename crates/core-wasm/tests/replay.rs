@@ -69,7 +69,10 @@ fn every_recorded_call_comes_out_as_the_javascripts() {
     let crates = format!("{}/..", env!("CARGO_MANIFEST_DIR"));
     let mut files: Vec<_> = std::fs::read_dir(&crates)
         .unwrap()
-        .filter_map(|c| std::fs::read_dir(c.ok()?.path().join("tests/vectors")).ok())
+        // A crate that replays its vectors itself (one outside the module) is left to its own test.
+        .filter_map(|c| c.ok().map(|c| c.path()))
+        .filter(|c| !c.join("tests/replay.rs").exists() || c.ends_with("core-wasm"))
+        .filter_map(|c| std::fs::read_dir(c.join("tests/vectors")).ok())
         .flatten()
         .filter_map(|f| f.ok().map(|f| f.path()))
         .filter(|p| p.extension().is_some_and(|e| e == "json"))

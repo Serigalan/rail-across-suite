@@ -48,6 +48,13 @@ The Layout-Tool's search of the extended switch connection (`crossover/`, built 
 [NLopt](https://github.com/stevengj/nlopt) (S. G. Johnson), from Dieter Kraft's ACM Algorithm 733, which the ACM
 released under the BSD licence — the code scipy uses.
 
+## Libraries built into the point cloud crate
+
+`crates/pointcloud` (the server's point clouds, decision 0020 step 7) is built with the Rust crates
+[laz](https://crates.io/crates/laz) 0.9 (laz-rs, a port of LASzip, © Thomas Montaigu, under Apache-2.0 or MIT),
+[flate2](https://crates.io/crates/flate2) 1.1 and its backend
+[miniz_oxide](https://crates.io/crates/miniz_oxide) 0.9 (both under MIT or Apache-2.0, miniz_oxide also Zlib).
+
 ## Used, not included
 
 | Software | Used for | Licence |

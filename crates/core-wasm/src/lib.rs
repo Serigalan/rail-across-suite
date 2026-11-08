@@ -19,6 +19,7 @@ mod ops_geom;
 mod ops_rules;
 mod ops_survey;
 mod ops_track;
+mod ops_views;
 
 thread_local! {
     static RESULT_LEN: Cell<usize> = const { Cell::new(0) };

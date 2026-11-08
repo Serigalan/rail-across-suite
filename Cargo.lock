@@ -136,6 +136,7 @@ dependencies = [
  "rail-across-doc",
  "rail-across-geom",
  "rail-across-js",
+ "rail-across-project",
  "rail-across-rules",
  "rail-across-survey",
  "rail-across-track",
@@ -199,6 +200,17 @@ name = "rail-across-optimizer-wasm"
 version = "0.1.0"
 dependencies = [
  "rail-across-optimizer",
+]
+
+[[package]]
+name = "rail-across-project"
+version = "0.1.0"
+dependencies = [
+ "rail-across-geom",
+ "rail-across-js",
+ "rail-across-survey",
+ "rail-across-track",
+ "serde_json",
 ]
 
 [[package]]

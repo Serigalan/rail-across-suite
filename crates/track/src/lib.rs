@@ -12,6 +12,8 @@
 #![allow(clippy::neg_cmp_op_on_partial_ord)]
 
 pub mod bands;
+pub mod cross_section;
+pub mod diagram;
 pub mod end_marks;
 pub mod groups;
 pub mod heights;

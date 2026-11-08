@@ -24,6 +24,7 @@ const RECORDERS = {
   survey: [() => import('./survey.mjs')],
   views: [() => import('./views.mjs')],
   switch: [() => import('./switch.mjs')],
+  commands: [() => import('./commands.mjs')],
 }
 
 /** Write one vector file: [{ op, input, output | error }], one case a line. */

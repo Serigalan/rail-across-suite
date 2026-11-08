@@ -15,6 +15,7 @@ use serde_json::{Value, json};
 
 mod args;
 mod ops;
+mod ops_commands;
 mod ops_geom;
 mod ops_rules;
 mod ops_survey;

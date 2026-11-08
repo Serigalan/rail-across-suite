@@ -319,7 +319,7 @@ function recordBodies(calls) {
 }
 
 /** A track of straights, arcs and clothoids from `start` (elements built as the dialogs build them). */
-function trackOf(id, start, bearing, parts, extra = {}) {
+export function trackOf(id, start, bearing, parts, extra = {}) {
   let at = { ...start, zone: EPSG }
   let b = bearing
   const elements = parts.map(([kind, length, r1, r2, cant = 0]) => {

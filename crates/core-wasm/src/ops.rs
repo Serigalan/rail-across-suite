@@ -58,6 +58,9 @@ pub fn run(op: &str, input: Value) -> Result<Value, Failure> {
     if let Some(answer) = crate::ops_survey::run(op, &input) {
         return answer;
     }
+    if let Some(answer) = crate::ops_commands::run(op, &input) {
+        return answer;
+    }
     if let Some(answer) = crate::ops_switch::run(op, &input) {
         return answer;
     }

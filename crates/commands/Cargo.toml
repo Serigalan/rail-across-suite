@@ -1,0 +1,19 @@
+[package]
+name = "rail-across-commands"
+description = "What the dialogs commit, as pure functions of their inputs, and the three-way merge of project records"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[lib]
+name = "rail_across_commands"
+
+[dependencies]
+serde_json.workspace = true
+rail-across-js = { path = "../js" }
+rail-across-geom = { path = "../geom" }
+rail-across-rules = { path = "../rules" }
+rail-across-track = { path = "../track" }
+rail-across-switch = { path = "../switch" }

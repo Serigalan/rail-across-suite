@@ -130,9 +130,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "rail-across-commands"
+version = "0.1.0"
+dependencies = [
+ "rail-across-geom",
+ "rail-across-js",
+ "rail-across-rules",
+ "rail-across-switch",
+ "rail-across-track",
+ "serde_json",
+]
+
+[[package]]
 name = "rail-across-core-wasm"
 version = "0.1.0"
 dependencies = [
+ "rail-across-commands",
  "rail-across-doc",
  "rail-across-geom",
  "rail-across-js",

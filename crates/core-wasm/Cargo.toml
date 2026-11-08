@@ -20,3 +20,4 @@ rail-across-track = { path = "../track" }
 rail-across-survey = { path = "../survey" }
 rail-across-project = { path = "../project" }
 rail-across-switch = { path = "../switch" }
+rail-across-commands = { path = "../commands" }

@@ -49,6 +49,9 @@ pub fn run(op: &str, input: Value) -> Result<Value, Failure> {
     if let Some(answer) = crate::ops_geom::run(op, &input) {
         return answer;
     }
+    if let Some(answer) = crate::ops_rules::run(op, &input) {
+        return answer;
+    }
     match op {
         "version" => Ok(json!({ "module": "rail-across-core", "version": env!("CARGO_PKG_VERSION") })),
 

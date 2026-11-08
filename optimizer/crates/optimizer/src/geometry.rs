@@ -24,8 +24,8 @@ pub type Pt = (f64, f64);
 const DEG2RAD: f64 = PI / 180.0;
 const RAD2DEG: f64 = 180.0 / PI;
 
-/// v = √(R (u + u_f) / 11.8) — see packages/core/constraints/physics.json for the derivation.
-pub const CANT_DEFICIENCY_COEFF: f64 = 11.8;
+/// v = √(R (u + u_f) / 11.8) — the rules' constant (crates/rules).
+pub use rail_across_rules::physics::{CANT_DEFICIENCY_COEFF, permissible_speed};
 
 // The grid a run hands its numbers out on: radii in whole metres, lengths in
 // ten centimetres (the cants' five millimetres are LP.KB.03's). These are the
@@ -88,11 +88,6 @@ pub fn snap_down(value: f64, step: f64) -> f64 {
 pub fn snap_up(value: f64, step: f64) -> f64 {
     let q = value / step;
     round9((q - slack(q)).ceil() * step)
-}
-
-/// Permissible speed [km/h] for radius [m], cant u and cant deficiency uf [mm].
-pub fn permissible_speed(radius: f64, u: f64, uf: f64) -> f64 {
-    (radius.abs() * (u + uf) / CANT_DEFICIENCY_COEFF).sqrt()
 }
 
 /// Chord length whose mid-ordinate against `radius` is SAMPLE_SAGITTA.

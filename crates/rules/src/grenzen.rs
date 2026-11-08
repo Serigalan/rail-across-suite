@@ -33,8 +33,8 @@
 
 use crate::element::Element;
 use crate::expr::{Error, Op, Scope, Sym, Value};
-use crate::geometry::{CANT_DEFICIENCY_COEFF, permissible_speed};
 use crate::katalog::{Branch, Katalog, Rule, Source};
+use crate::physics::{CANT_DEFICIENCY_COEFF, permissible_speed};
 use crate::pruefung::{Context, element_scope};
 use serde_json::json;
 use std::fmt;

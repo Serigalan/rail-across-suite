@@ -19,6 +19,7 @@ const CRATES = resolve(here, '../../../crates')
 const RECORDERS = {
   doc: [() => import('./doc.mjs')],
   geom: [() => import('./geom.mjs')],
+  rules: [() => import('./rules.mjs')],
 }
 
 /** Write one vector file: [{ op, input, output | error }], one case a line. */

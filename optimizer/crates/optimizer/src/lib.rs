@@ -18,30 +18,18 @@
 
 pub mod alignment;
 pub mod clearance;
-pub mod element;
-pub mod expr;
 pub mod geometry;
 pub mod gradient;
-pub mod grenzen;
-pub mod katalog;
 pub mod numerics;
 pub mod optimize;
 pub mod poly;
-pub mod pruefung;
 pub mod reconnect;
-pub mod rules;
 pub mod splice;
 pub mod track;
 
-use std::collections::HashMap;
-
-/// The catalogue `data` (one file of packages/core/constraints) with the
-/// kernel's physics: the one number the catalogue asks of the physics
-/// document is u0_factor, for the comparison radius between two rows of its
-/// table.
-pub fn load_katalog(data: &serde_json::Value) -> Result<katalog::Katalog, expr::Error> {
-    katalog::Katalog::new(data, HashMap::from([("u0_factor".to_string(), geometry::CANT_DEFICIENCY_COEFF)]))
-}
+// The rule catalogue, the check and the limits are the core's (crates/rules,
+// decision 0020) — one check for the app and the optimizer.
+pub use rail_across_rules::{element, expr, grenzen, katalog, load_katalog, pruefung, rules};
 
 use serde_json::{Value, json};
 use std::cell::RefCell;

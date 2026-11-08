@@ -22,3 +22,4 @@ rail-across-project = { path = "../project" }
 rail-across-switch = { path = "../switch" }
 rail-across-commands = { path = "../commands" }
 rail-across-signalling = { path = "../signalling" }
+rail-across-planpro = { path = "../planpro" }

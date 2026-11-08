@@ -152,6 +152,7 @@ dependencies = [
  "rail-across-doc",
  "rail-across-geom",
  "rail-across-js",
+ "rail-across-planpro",
  "rail-across-project",
  "rail-across-rules",
  "rail-across-signalling",
@@ -218,6 +219,18 @@ name = "rail-across-optimizer-wasm"
 version = "0.1.0"
 dependencies = [
  "rail-across-optimizer",
+]
+
+[[package]]
+name = "rail-across-planpro"
+version = "0.1.0"
+dependencies = [
+ "rail-across-commands",
+ "rail-across-doc",
+ "rail-across-geom",
+ "rail-across-js",
+ "rail-across-signalling",
+ "serde_json",
 ]
 
 [[package]]

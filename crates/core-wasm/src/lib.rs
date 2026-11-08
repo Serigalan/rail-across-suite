@@ -17,6 +17,7 @@ mod args;
 mod ops;
 mod ops_commands;
 mod ops_geom;
+mod ops_planpro;
 mod ops_rules;
 mod ops_session;
 mod ops_signalling;

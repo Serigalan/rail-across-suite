@@ -14,7 +14,7 @@ use axum::http::{HeaderName, HeaderValue, Response, StatusCode};
 use tokio::io::{AsyncReadExt, AsyncSeekExt};
 use tokio_util::io::ReaderStream;
 
-use crate::app::{App, BODY_LIMIT, upload_limit};
+use crate::app::{App, BODY_LIMIT, LogLevel, upload_limit};
 use crate::http::{Payload, Resp, build_req};
 
 async fn handle(State(app): State<Arc<App>>, ConnectInfo(peer): ConnectInfo<SocketAddr>, request: Request) -> Response<AxBody> {
@@ -49,9 +49,15 @@ async fn handle(State(app): State<Arc<App>>, ConnectInfo(peer): ConnectInfo<Sock
     };
     let req = build_req(&method, &url, headers, &remote, &app.settings.trust_proxy);
     let head_only = req.method == "HEAD";
+    let (log, ip, started) = (app.settings.log, req.ip.clone(), std::time::Instant::now());
     let resp = tokio::task::spawn_blocking(move || app.handle(req, raw, too_large))
         .await
         .unwrap_or_else(|_| crate::http::ApiError::new(500, "internal").into_resp());
+    // The path without its query: a share link's token stays out of the log.
+    if log >= LogLevel::Info || (log >= LogLevel::Error && resp.status >= 500) {
+        let ms = started.elapsed().as_secs_f64() * 1000.0;
+        println!("{} {ip} {method} {path} {} {ms:.1} ms", crate::util::iso(crate::util::now_ms()), resp.status);
+    }
     into_response(resp, head_only).await
 }
 

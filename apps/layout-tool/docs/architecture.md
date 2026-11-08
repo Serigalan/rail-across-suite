@@ -136,7 +136,7 @@ own module, and a worker only the server build needs lives in `src/server` (the 
 - **Real data**: MDB, ProVI and point cloud excerpts in `src/core/test/fixtures/`; the PEK Halle–Könnern data set
   where present (tests skip without it).
 - **Architecture tests** for layers, modules, colours in components and accessible buttons.
-- The project server's API tests run against an in-memory database with `fastify.inject`.
+- The project server's API tests (`server/test/`) run against the Rust server over HTTP, on a database of their own.
 - The Rust modules' tests (`optimizer/`, `crossover/`) run in CI, the module built for the app's tests too.
 
 ## Adding something

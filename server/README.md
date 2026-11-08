@@ -6,85 +6,89 @@ with variants and revisions (core 1.0 documents), images, point clouds. It
 began as the Layout-Tool's (its roadmap phase 10). Editing and
 calculating stay in the browser; the server stores, versions, checks and
 manages users. It never merges — it takes a revision only on top of the
-current head of a variant (decision 97) and checks it with the browser's own
-code (`parseProjectsPayload`, `validateProject`, decision 91).
+current head of a variant (decision 97) and checks it as the browser does
+(`parseProjectsPayload`, `validateProject`, decision 91 — in the core's crates).
 
-## Rust
-
-`crates/server` is this server in Rust (decision 0020, step 8) — the same database and migrations (it builds
-in `migrations/` and opens a database this server made, and the other way round), the same API, cookie and
-argon2id hashes, the cloud jobs as threads (`RA_SERVER_JOBS=1`, or `rail-across-server cloudjobs serve`), the
-terrain and the MDB import. It is what the deployment runs (`RA_SERVER_IMPL=rust`, deploy/); this server
-stays as the way back (`RA_SERVER_IMPL=node`).
-
-    cargo build --release -p rail-across-server
-    target/release/rail-across-server serve | create-admin <login> [name] | backup <file> | user-count | migrate
-    target/release/rail-across-server cloudjobs serve | run <job> | exec <run>
-
-Its environment is this server's (`RA_SERVER_DB`, `RA_SERVER_CLOUDS`, `RA_SERVER_HOST`, `RA_SERVER_PORT`,
-`RA_SERVER_TRUST_PROXY`, `RA_SERVER_INSECURE_COOKIE`, `RA_TERRAIN_*`, `RA_MDB_*`), plus `RA_SERVER_JOBS`.
-
-The tests here run against both: `npx vitest run` this server in process, `RA_SERVER_IMPL=rust npx vitest
-run` the Rust one over HTTP on the same database file, in its test mode (`RA_SERVER_TEST=1`: the clock from
-`x-ra-test-now`, the peer's address from `x-ra-test-remote`). `test/rustServer.test.js` holds what is not
-HTTP — migrations, the data step, the command line, the cloud jobs' tiles and results, and the MDB
-conversion of a real file where one is at hand — to this server's.
+The server is Rust: `crates/server` (decision 0020, step 8) — axum, rusqlite, argon2id; the cloud jobs as
+threads; the DGM1 terrain and the MDB import. It is the only one that runs: in the deployment (deploy/), in
+the desktop app (`crates/desktop`, in its own process) and in development. This directory holds what it
+shares with the suite's JavaScript — the schema (`migrations/`, built into the binary), the server's HTTP
+tests (`test/`) — and the Node server in `src/` the Rust one was written against: kept as the reference the
+tests can still hold it to (`RA_SERVER_IMPL=node`), run nowhere.
 
 ## Run
 
-Node 22. `npm install` at the repository root (one npm workspace with the apps and packages), then
+    cargo build --release -p rail-across-server
+    target/release/rail-across-server create-admin <login> [name]   # start password printed, changed at first sign-in
+    target/release/rail-across-server serve [--local] [--static <site>] [--host <h>] [--port <n>]
+    target/release/rail-across-server backup <file>                 # consistent copy (SQLite backup API)
+    target/release/rail-across-server user-count | migrate
+    target/release/rail-across-server cloudjobs serve | run <job> | exec <run>
 
-    node bin/rail-across-server.mjs create-admin <login> [name]   # start password printed, changed at first sign-in
-    node bin/rail-across-server.mjs serve
-    node bin/rail-across-server.mjs backup <file>                 # consistent copy (SQLite backup API)
+For development, beside the apps' `npm run dev` (they pass `/api` on to `127.0.0.1:8787`):
+
+    RA_SERVER_INSECURE_COOKIE=1 RA_SERVER_DB=/tmp/rail-across.sqlite cargo run --release -p rail-across-server -- serve
 
 ## The local package (`serve --local`)
 
 The local mode runs the suite completely local on one machine, without user management — the desktop app
-(`crates/desktop`, Tauri) runs it inside its own process through the Rust server's `local` switch, the same
-mode `serve --local` gives both servers here: the server then registers no sign-in, no sessions, no password change and no user or admin
-routes. Every request carries one implicit local user (`ensureLocalUser` — the row only stands there so
-records that name an author keep their reference), and `GET /api/me` answers it with 200, so the modules'
-"signed in?" check passes without a cookie. `GET /api/health` answers `{ status: 'ok', local: true }`.
-`create-admin` and `user-count` refuse under `RA_SERVER_LOCAL=1`.
+(`crates/desktop`, Tauri) runs it inside its own process through the server's `local` setting, the same mode
+`serve --local` gives: the server then answers no sign-in, no sessions, no password change and no user or
+admin routes. Every request carries one implicit local user (the row only stands there so records that name
+an author keep their reference), and `GET /api/me` answers it with 200, so the modules' "signed in?" check
+passes without a cookie. `GET /api/health` answers `{ "status": "ok", "local": true }`. `create-admin` and
+`user-count` refuse under `RA_SERVER_LOCAL=1`.
 
-    node bin/rail-across-server.mjs serve --local --static <site> --host 127.0.0.1 --port 0
+    target/release/rail-across-server serve --local --static <site> --host 127.0.0.1 --port 0
 
 `--static <site>` serves the built suite from one directory (the start page at the root, each module's app
 under its path — the layout `deploy/deploy.sh` builds into `RA_SITE_DIR`, and
-`crates/desktop/scripts/build-site.mjs` into `crates/desktop/site/`), with Range requests answered for the km line data
-and the cloud tiles. Page and API then share one origin, as behind Caddy. In local mode the bound address
-is printed to stdout as `RA_DESKTOP_URL=<address>` — `--port 0` picks a free port. The Rust server
-(`target/release/rail-across-server serve --local --static <site>`) does the same; `test/local.test.js` runs
-against both. Only `127.0.0.1` should be bound: nothing is reachable from other machines.
-`RA_SERVER_LOCAL=1` is the same as `--local`; `RA_SERVER_STATIC` is the `--static` default.
+`crates/desktop/scripts/build-site.mjs` into `crates/desktop/site/`), with Range requests answered for the km
+line data and the cloud tiles. Page and API then share one origin, as behind Caddy. In local mode the bound
+address is printed to stdout as `RA_DESKTOP_URL=<address>` — `--port 0` picks a free port. Only `127.0.0.1`
+should be bound: nothing is reachable from other machines. `RA_SERVER_LOCAL=1` is the same as `--local`;
+`RA_SERVER_STATIC` is the `--static` default.
 
-The server runs on plain Node, without a build step or a module hook: it checks records with the core
-(`@rail-across/core`) and prepares point clouds and runs its long checks with `@rail-across/pointcloud` — the
-same code the browser runs. It imports no app.
+The server checks records with the core's crates (`checkRecord`: `validateProject`, `checkSignalling`) and
+prepares point clouds with `crates/pointcloud` — held to the browser's JavaScript by the replay vectors
+(`packages/core/replay/`).
 
 | Variable | Default | |
 |---|---|---|
 | `RA_SERVER_DB` | `rail-across.sqlite` | database file (SQLite, WAL) |
+| `RA_SERVER_CLOUDS` | `clouds/` beside the database | point clouds: uploads and tiles |
 | `RA_SERVER_HOST` | `127.0.0.1` | bind address |
 | `RA_SERVER_PORT` | `8787` | port |
 | `RA_SERVER_TRUST_PROXY` | `127.0.0.1,::1` | addresses/CIDR ranges whose `X-Forwarded-For` is believed (the reverse proxy) |
 | `RA_SERVER_INSECURE_COOKIE` | — | `1` drops `Secure` from the cookie (plain-http local runs only) |
+| `RA_SERVER_LOG` | `info` | `info` and above write every request to stdout (time, address, method, path without query, status, duration); `error` only failures; `silent` nothing |
+| `RA_SERVER_JOBS` | — | `1` runs the cloud jobs as threads of `serve` (the deployment runs `cloudjobs serve` as a unit of its own) |
+| `RA_CLOUDJOBS_PARALLEL` | `2` | point cloud preparations at once |
+| `RA_CLOUDRUNS_PARALLEL` | `2` | long runs (clearance, rail tracing) at once |
 | `RA_ADMIN_PASSWORD` | — | start password for `create-admin` instead of a generated one |
 | `RA_SERVER_LOCAL` | — | `1` is the local mode (`serve --local`): no user management |
 | `RA_SERVER_STATIC` | — | directory of the built suite to serve beside the API (`--static`) |
+| `RA_TERRAIN_CACHE` | — | where the Länder's DGM1 tiles are kept |
+| `RA_MDB_EXPORT`, `RA_MDB_LIBS`, `RA_MDB_TIMEOUT` | `mdb-export` | the Access import's `mdb-export` |
 
 The schema lives in `migrations/`, one numbered SQL file per step, applied in
 order on start.
-Steps that change the data rather than the schema are in `src/dataMigrations.js`: each runs once when `serve` starts,
+Steps that change the data rather than the schema are in `crates/server/src/data_migrations.rs`: each runs once when `serve` starts,
 before it listens, and is recorded in `data_migration` with what it did. The first closes every head of every variant
 still worked on where its joints missed by up to a millimetre, as a revision of its own by the inactive user `system`
 (decision 0020: the same place is 1 µm).
 
 ## Tests
 
-From `apps/layout-tool/`, with the app's: `npm test` (vitest runs
-`server/test/**` through `fastify.inject` against a database in memory).
+    cargo build --release -p rail-across-server
+    cd server && npx vitest run
+
+The tests of `test/` run against the Rust server over HTTP, on a database file of their own, in its test
+mode (`RA_SERVER_TEST=1`: the clock from `x-ra-test-now`, the peer's address from `x-ra-test-remote`).
+`RA_SERVER_IMPL=node npx vitest run` holds the Node reference to the same tests, in process.
+`test/rustServer.test.js` holds what is not HTTP to the reference — migrations, the data step, the command
+line, the cloud jobs' tiles and results, and the MDB conversion of a real file where one is at hand. The
+crate's own tests (`cargo test -p rail-across-server`) cover the terrain.
 
 ## Behind Caddy
 

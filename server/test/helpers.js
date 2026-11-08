@@ -9,14 +9,18 @@ import { cloudStorage } from '../src/clouds/storage.js'
 
 export const PW = 'correct horse battery'
 
+// Node's own fetch, taken before a test stands in a browser's (variantMerge.test.js).
+const httpFetch = globalThis.fetch
+
 /**
- * Which server the tests run against: this one in process (Fastify's inject),
- * or with RA_SERVER_IMPL=rust the Rust server (crates/server, decision 0020
- * step 8) over HTTP — the same tests, the same database file, the Rust server
- * started in its test mode, where it takes the clock from x-ra-test-now and
- * the peer's address from x-ra-test-remote.
+ * Which server the tests run against: the project server in Rust
+ * (crates/server, decision 0020) over HTTP — the server that runs — started in
+ * its test mode, where it takes the clock from x-ra-test-now and the peer's
+ * address from x-ra-test-remote; or with RA_SERVER_IMPL=node the Node server
+ * of server/src in process (Fastify's inject), which stays as the reference
+ * the Rust one was held to. The same tests, the same database.
  */
-export const RUST = process.env.RA_SERVER_IMPL === 'rust'
+export const RUST = process.env.RA_SERVER_IMPL !== 'node'
 const RUST_BIN = process.env.RA_SERVER_BIN ?? ['release', 'debug']
   .map(p => resolve(import.meta.dirname, `../../target/${p}/rail-across-server`)).find(existsSync)
 
@@ -102,7 +106,7 @@ async function rustServer({ file, dir, cloudRoot, clock, db, env = {} }) {
         if (!Object.keys(h).some(k => k.toLowerCase() === 'content-type')) h['content-type'] = 'application/json'
       }
     }
-    const res = await fetch(base + url, { method, headers: h, body, redirect: 'manual' })
+    const res = await httpFetch(base + url, { method, headers: h, body, redirect: 'manual' })
     const raw = Buffer.from(await res.arrayBuffer())
     const text = raw.toString('utf8')
     const out = {

@@ -15,6 +15,7 @@
     "./schemas/*": "./schemas/*",
     "./types/*": "./types/*",
     "./wasm/*": "./wasm/*",
+    "./native/node": "./src/native/node.js",
     "./*": "./src/*/index.js"
   },
   "scripts": {

@@ -19,7 +19,7 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 
-use rail_across_server::app::{App, Settings};
+use rail_across_server::app::{App, LogLevel, Settings};
 use rail_across_server::auth;
 use rail_across_server::clouds::{Storage, jobs};
 use rail_across_server::db::{backup, open_database};
@@ -139,6 +139,12 @@ fn serve(db: &str, args: &[String]) {
         test_mode: env("RA_SERVER_TEST").as_deref() == Some("1"),
         ..Settings::default()
     };
+    // Every request in the log by default; in test mode only when asked for.
+    settings.log = match env("RA_SERVER_LOG") {
+        Some(l) => LogLevel::parse(&l).unwrap_or_else(|| fail(format!("RA_SERVER_LOG={l}: one of silent, fatal, error, warn, info, debug, trace"))),
+        None if settings.test_mode || local => LogLevel::Silent,
+        None => LogLevel::Info,
+    };
     settings.local = local;
     settings.static_root = static_root.map(PathBuf::from);
     if let Some(t) = env("RA_SERVER_TRUST_PROXY") {
@@ -151,7 +157,7 @@ fn serve(db: &str, args: &[String]) {
     let stop = Arc::new(AtomicBool::new(false));
     let jobs_thread = (env("RA_SERVER_JOBS").as_deref() == Some("1")).then(|| {
         let (db, stop) = (db.to_string(), stop.clone());
-        let parallel = env("RA_CLOUDJOBS_PARALLEL").and_then(|p| p.parse().ok()).unwrap_or(2);
+        let parallel = queue_parallel();
         std::thread::spawn(move || jobs::run_queues(db, storage, parallel, stop, Arc::new(stamp)))
     });
     let sweeper = app.clone();
@@ -179,12 +185,18 @@ fn serve(db: &str, args: &[String]) {
     }
 }
 
+/// How many preparations and how many long runs at once (`RA_CLOUDJOBS_PARALLEL`, `RA_CLOUDRUNS_PARALLEL`).
+fn queue_parallel() -> (usize, usize) {
+    let n = |name| env(name).and_then(|p| p.parse().ok()).unwrap_or(2);
+    (n("RA_CLOUDJOBS_PARALLEL"), n("RA_CLOUDRUNS_PARALLEL"))
+}
+
 fn cloudjobs(db: &str, args: &[String]) {
     let storage = Storage { root: clouds_path(db) };
     match args.first().map(String::as_str) {
         Some("serve") => {
             let stop = Arc::new(AtomicBool::new(false));
-            let parallel = env("RA_CLOUDJOBS_PARALLEL").and_then(|p| p.parse().ok()).unwrap_or(2);
+            let parallel = queue_parallel();
             stamp(&format!("rail-across-server cloudjobs: queue in {db}, clouds in {}", storage.root.display()));
             let s = stop.clone();
             let _ = ctrl_stop(s);

@@ -207,7 +207,7 @@ fn start_main(app: &tauri::AppHandle, smoke: bool) -> Result<(), String> {
         let _ = SERVER.set(Arc::new(App::new(db, settings)));
         let stop = STOP.get_or_init(|| Arc::new(AtomicBool::new(false))).clone();
         let path = db_path.to_string_lossy().into_owned();
-        std::thread::spawn(move || jobs::run_queues(path, Storage { root: clouds }, 2, stop, Arc::new(|m: &str| eprintln!("{m}"))));
+        std::thread::spawn(move || jobs::run_queues(path, Storage { root: clouds }, (2, 2), stop, Arc::new(|m: &str| eprintln!("{m}"))));
     }
     eprintln!("rail-across-suite on the desktop: site {}, working files {}", site.display(), data.display());
     let lang = prefs.language.unwrap_or_else(|| "de".into());

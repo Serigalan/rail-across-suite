@@ -307,19 +307,19 @@ pub fn execute_run(db: &Connection, storage: &Storage, run: &Value, log: &dyn Fn
     Ok(true)
 }
 
-/// The two queues — preparations and long runs — as threads over `db`, until `stop`.
-pub fn run_queues(db_path: String, storage: Storage, parallel: usize, stop: Arc<AtomicBool>, log: Arc<dyn Fn(&str) + Send + Sync>) {
+/// The two queues — preparations and long runs, (`jobs`, `runs`) threads of each — over `db`, until `stop`.
+pub fn run_queues(db_path: String, storage: Storage, parallel: (usize, usize), stop: Arc<AtomicBool>, log: Arc<dyn Fn(&str) + Send + Sync>) {
     if let Ok(db) = open(&db_path) {
         let _ = CloudStore::new(&db, now_ms()).requeue_running();
         let rs = RunStore::new(&db, now_ms());
         let _ = rs.requeue_running();
         let _ = rs.prune();
     }
-    let workers: Vec<std::thread::JoinHandle<()>> = (0..parallel * 2)
+    let workers: Vec<std::thread::JoinHandle<()>> = (0..parallel.0 + parallel.1)
         .map(|k| {
             let (db_path, storage, stop, log) = (db_path.clone(), storage.clone(), stop.clone(), log.clone());
             std::thread::spawn(move || {
-                let runs = k % 2 == 1;
+                let runs = k >= parallel.0;
                 let Ok(db) = open(&db_path) else { return };
                 while !stop.load(Ordering::Relaxed) {
                     let worked = if runs {

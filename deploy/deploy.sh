@@ -124,11 +124,10 @@ if [ "$build" = 1 ]; then
   fi
 
   step "Project server (crates/server)"
-  # The project server in Rust (decision 0020, step 8). RA_SERVER_IMPL=node
-  # runs the Node server in server/ instead — the way back, same database.
-  if [ "$RA_SERVER_IMPL" = rust ]; then
-    cargo build --release -p rail-across-server || die "the Rust project server did not build — fix it, or set RA_SERVER_IMPL=node"
-  fi
+  # The project server in Rust (decision 0020): the service, the cloud jobs
+  # and the command line, one binary, run by the service user.
+  "$RA_CARGO" build --release -p rail-across-server || die "the project server did not build"
+  as_user test -x "$RA_SERVER_BIN" || die "$RA_USER cannot run $RA_SERVER_BIN — make the checkout readable (chmod -R a+rX)"
 
   step "Build"
   # Built beside the site directory and then synced into it: the directory

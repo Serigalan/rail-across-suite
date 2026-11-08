@@ -183,9 +183,9 @@ jobs:
       - run: cargo test --release
       - run: cargo build --release -p rail-across-core-wasm --target wasm32-unknown-unknown
 
-  # The project server's tests against both servers (decision 0020, step 8):
-  # the Node one in process, the Rust one (crates/server) over HTTP on the
-  # same database; and the Rust server's commands and jobs held to Node's.
+  # The project server's tests against the Rust server (crates/server,
+  # decision 0020) over HTTP; and its commands and jobs held to the Node
+  # reference in server/src.
   project-server:
     runs-on: ubuntu-24.04
     defaults:
@@ -202,9 +202,6 @@ jobs:
       - run: cargo build --release -p rail-across-server
         working-directory: .
       - run: npx vitest run
-      - run: npx vitest run
-        env:
-          RA_SERVER_IMPL: rust
 
   # The desktop app (decision 0020, step 9): Tauri with the project server in
   # its own process, a cargo workspace of its own for WebKitGTK; its smoke
@@ -300,7 +297,7 @@ jobs:
       - run: npm test
       - run: npm run build
 
-  # The Open-Layout-Tool with the project server, whose tests its vitest runs.
+  # The Open-Layout-Tool, with the project server for its merge tests.
   layout-tool:
     runs-on: ubuntu-24.04
     defaults:
@@ -327,6 +324,8 @@ jobs:
       - run: rustup target add wasm32-unknown-unknown
       - run: npm run crossover
       - run: npm run optimizer
+      # The project server, for the tests that work against it (variantMerge).
+      - run: cargo build --release -p rail-across-server
       - run: npm test
       - run: npx vite build --outDir /tmp/olt-dist
       - run: npx vite build --mode standalone --outDir /tmp/olt-dist-local

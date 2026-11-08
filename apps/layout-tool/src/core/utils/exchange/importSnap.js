@@ -8,7 +8,7 @@ import { moveTrackEnd, refitToNodes, snapNodeGaps, snapTrackJoints } from '@rail
  * import closes them. A wider gap stays open, and is reported where the import
  * reports one.
  */
-export const IMPORT_SNAP_TOL = 0.002
+const IMPORT_SNAP_TOL = 0.002
 
 /** The elements of an imported chain, closed where they miss by no more than IMPORT_SNAP_TOL. */
 export const snapImportedChain = (elements, epsg) => snapNodeGaps(elements, epsg, IMPORT_SNAP_TOL).elements

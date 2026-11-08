@@ -23,13 +23,13 @@ Operation (setup, deploy, backups, several instances, production releases) is de
 **Edited and computed in the browser wherever it works without a server; the server stores, versions and checks.**
 No computation is held twice: what builds an alignment against the rules — splicing, reconnecting, optimizing,
 the alignment fit — is the optimizer module in Rust, run in the browser in both builds ([optimizer](modules/optimizer.md),
-decision 0019 of the suite), and the Node server runs the browser's own JavaScript for parsing, validation and
-point-cloud jobs. A panel that needs the server says so when it is not
+decision 0019 of the suite), and the project server (Rust, `crates/server`, decision 0020) runs the core's crates —
+held to the browser's JavaScript by the replay vectors — for parsing, validation and point-cloud jobs. A panel that needs the server says so when it is not
 there instead of silently doing nothing.
 
 | In the browser | On the server |
 |---|---|
-| creating and editing tracks, elements, switches, crossings, heights, platforms, cross sections | MDB conversion, DGM1 terrain and relief tiles (Python) |
+| creating and editing tracks, elements, switches, crossings, heights, platforms, cross sections | MDB conversion, DGM1 terrain and relief tiles |
 | joining two tracks (splice, with a track spacing), reconnecting, optimizing, the alignment fit (the optimizer module), rule checks, plan/OSRD/exchange/Verm.ESN export | |
 | merging and resolving conflicts | sign-in, projects, variants, revisions, images, members (Node) |
 | point clouds read on this device | checking every revision; preparing uploaded clouds, long runs over them (Node) |
@@ -128,12 +128,12 @@ request — not by Caddy's file server, whose forward-auth only checks the sign-
 ## What the project server reads for the Layout-Tool
 
 Computing happens in the browser — the optimizer module in Rust ([optimizer](modules/optimizer.md), decision 0019
-of the suite). What a browser cannot read, the project server reads for the app (`server/src/routes/terrain.js`),
+of the suite). What a browser cannot read, the project server reads for the app (`crates/server/src/routes/terrain.rs`),
 behind the session:
 
 | Endpoint | What it does |
 |---|---|
-| `POST /api/terrain` | DGM1 heights of the Länder that publish fixed-URL tiles (`server/src/terrain/`): each tile fetched once, kept in memory and on disk (`RA_TERRAIN_CACHE`), read bilinearly |
+| `POST /api/terrain` | DGM1 heights of the Länder that publish fixed-URL tiles (`crates/server/src/terrain/`): each tile fetched once, kept in memory and on disk (`RA_TERRAIN_CACHE`), read bilinearly |
 | `GET /api/dem/<z>/<x>/<y>.png` | Terrain-RGB map tiles (zoom 16–17) from the same DGM1, heights to the centimetre; gaps filled from DGM5 (lossless WebP, decoded with libwebp as WebAssembly), then from the nearest pixel; 404 outside these Länder |
 | `POST /api/mdb` | Converts an Access file into its Satzarten as JSON with `mdb-export` (mdbtools), the file removed again at once; bytes, not JSON, with the upload header |
 

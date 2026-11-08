@@ -3,7 +3,7 @@ import { buildApp } from './app.js'
 import { openDatabase } from './db.js'
 import { runDataMigrations } from './dataMigrations.js'
 import { createStore } from './store.js'
-import { loadNativeFile } from '@rail-across/core/src/native/node.js'
+import { loadNativeFile } from '@rail-across/core/native/node'
 import { createAuth, passwordAcceptable, randomPassword } from './auth.js'
 
 /**

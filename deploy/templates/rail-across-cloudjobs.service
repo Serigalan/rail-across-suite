@@ -6,15 +6,15 @@ After=network.target
 [Service]
 User=@RA_USER@
 WorkingDirectory=@RA_REPO@/server
-ExecStart=@RA_CLOUDJOBS_EXEC@
+ExecStart=@RA_SERVER_BIN@ cloudjobs serve
 Environment=RA_SERVER_DB=@RA_DB@
 Environment=RA_SERVER_CLOUDS=@RA_CLOUDS@
 Environment=RA_CLOUDJOBS_PARALLEL=@RA_CLOUDJOBS_PARALLEL@
 Environment=RA_CLOUDRUNS_PARALLEL=@RA_CLOUDRUNS_PARALLEL@
 # The server is shared (with OSRD and a second instance on the live one): at
-# most three cores, behind everything else. Each preparation has a heap of
-# 768 MB, each long run 320 MB; the memory limit has to hold all of them at
-# once plus this process (RA_CLOUDJOBS_MEMORY, 3G for two of each).
+# most three cores, behind everything else. Each preparation and each long run
+# is a thread of this process; the memory limit has to hold all of them at
+# once (RA_CLOUDJOBS_MEMORY, 3G for two of each).
 CPUQuota=300%
 Nice=10
 MemoryMax=@RA_CLOUDJOBS_MEMORY@

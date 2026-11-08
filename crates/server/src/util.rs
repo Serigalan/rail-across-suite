@@ -7,6 +7,14 @@
 use rand::RngCore;
 use sha2::{Digest, Sha256};
 
+/// `Date.now()`.
+pub fn now_ms() -> i64 {
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_millis() as i64)
+        .unwrap_or(0)
+}
+
 /// `new Date(ms).toISOString()`.
 pub fn iso(ms: i64) -> String {
     let days = ms.div_euclid(86_400_000);

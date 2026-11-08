@@ -18,9 +18,9 @@ import { prepareCloud } from '../src/clouds/prepare.js'
 import { executeRun } from '../src/clouds/runs.js'
 import { runDataMigrations } from '../src/dataMigrations.js'
 
-// The Rust server's commands and jobs held to this server's (decision 0020,
-// step 8): the HTTP API is held by the other tests run with
-// RA_SERVER_IMPL=rust; here what is not HTTP — the migrations, the data
+// The Rust server's commands and jobs held to the Node reference's (decision
+// 0020, step 8): the HTTP API is held by the other tests, which run against
+// the Rust server; here what is not HTTP — the migrations, the data
 // steps, the command line, and the cloud jobs, whose tiles and results must
 // come out as this server's do. Needs the Rust server built.
 
@@ -130,6 +130,34 @@ describe.skipIf(!BIN)('the Rust server beside this one', () => {
     const copy = new Database(join(dir, 'copy.sqlite'))
     expect(copy.prepare('SELECT login FROM user').pluck().all()).toEqual(['lena'])
     copy.close()
+  })
+
+  it('writes every request to its log, the path without its query, as the Node server\'s logger did', async () => {
+    dir = mkdtempSync(join(tmpdir(), 'ra-rust-'))
+    const { spawn } = await import('node:child_process')
+    const child = spawn(BIN, ['serve', '--port', '0'], {
+      env: { ...process.env, RA_SERVER_DB: join(dir, 'a.sqlite'), RA_SERVER_NO_CLOUDS: '1', RA_SERVER_LOG: 'info' },
+      stdio: ['ignore', 'pipe', 'inherit'],
+    })
+    let out = ''
+    child.stdout.on('data', d => { out += d })
+    try {
+      const port = await new Promise((done, fail) => {
+        const check = setInterval(() => {
+          const m = /listening on port (\d+)/.exec(out)
+          if (m) { clearInterval(check); done(m[1]) }
+        }, 20)
+        child.on('exit', code => { clearInterval(check); fail(new Error(`exited ${code}`)) })
+      })
+      expect((await fetch(`http://127.0.0.1:${port}/api/health?token=secret`)).status).toBe(200)
+      expect((await fetch(`http://127.0.0.1:${port}/api/nope`)).status).toBe(404)
+      await new Promise(r => setTimeout(r, 100))
+      expect(out).toMatch(/^\S+Z 127\.0\.0\.1 GET \/api\/health 200 [\d.]+ ms$/m)
+      expect(out).toMatch(/ GET \/api\/nope 404 /)
+      expect(out).not.toContain('secret')
+    } finally {
+      child.kill()
+    }
   })
 })
 

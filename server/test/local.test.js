@@ -13,7 +13,7 @@ afterEach(async () => {
   ctx = null
 })
 
-/** A server in the local mode of the local package, on a fresh database (this one or, with RA_SERVER_IMPL=rust, the Rust one). */
+/** A server in the local mode of the local package, on a fresh database (the Rust one or, with RA_SERVER_IMPL=node, the Node one). */
 async function startLocal(staticRoot = null) {
   const { app, db } = await setupLocal({ staticRoot })
   ctx = { app, db, dir: staticRoot }

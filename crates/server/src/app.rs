@@ -30,6 +30,35 @@ pub struct Settings {
     pub local: bool,
     /// The built suite served beside the API, one origin (as Caddy does in production).
     pub static_root: Option<PathBuf>,
+    /// What `serve` writes to its log (`RA_SERVER_LOG`): every request from `info`, failures from `error`.
+    pub log: LogLevel,
+}
+
+/// The levels of `RA_SERVER_LOG`, as the Node server's logger had them.
+#[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
+pub enum LogLevel {
+    Silent,
+    Fatal,
+    Error,
+    Warn,
+    Info,
+    Debug,
+    Trace,
+}
+
+impl LogLevel {
+    pub fn parse(s: &str) -> Option<LogLevel> {
+        Some(match s {
+            "silent" => LogLevel::Silent,
+            "fatal" => LogLevel::Fatal,
+            "error" => LogLevel::Error,
+            "warn" => LogLevel::Warn,
+            "info" => LogLevel::Info,
+            "debug" => LogLevel::Debug,
+            "trace" => LogLevel::Trace,
+            _ => return None,
+        })
+    }
 }
 
 impl Default for Settings {
@@ -41,6 +70,7 @@ impl Default for Settings {
             test_mode: false,
             local: false,
             static_root: None,
+            log: LogLevel::Silent,
         }
     }
 }

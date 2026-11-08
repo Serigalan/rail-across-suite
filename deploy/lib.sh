@@ -65,49 +65,35 @@ load_config() {
   RA_CLOUDJOBS_PARALLEL=${RA_CLOUDJOBS_PARALLEL:-2}
   RA_CLOUDRUNS_PARALLEL=${RA_CLOUDRUNS_PARALLEL:-2}
   # Memory per service (systemd MemoryMax). The point cloud jobs: up to
-  # RA_CLOUDJOBS_PARALLEL preparations of 768 MB heap and RA_CLOUDRUNS_PARALLEL
-  # long runs of 320 MB, plus the queue process — 3G holds two of each.
+  # RA_CLOUDJOBS_PARALLEL preparations and RA_CLOUDRUNS_PARALLEL long runs,
+  # threads of one process — 3G holds two of each.
   RA_CLOUDJOBS_MEMORY=${RA_CLOUDJOBS_MEMORY:-3G}
   RA_SERVER_MEMORY=${RA_SERVER_MEMORY:-infinity}
   # What deploy.sh may put on this instance: "main" (git pull, the test
   # server) or "tags" (only prod-* tags with a green CI, production).
   RA_TRACK=${RA_TRACK:-main}
   RA_GITHUB_REPO=${RA_GITHUB_REPO:-Serigalan/rail-across-suite}
-  RA_NODE=${RA_NODE:-$(command -v node || echo /usr/bin/node)}
-  # Which project server runs (decision 0020, step 8): the Rust one
-  # (crates/server, built by deploy.sh) or, to go back, the Node one in server/.
-  # Both use the same database, cloud directory and API.
-  RA_SERVER_IMPL=${RA_SERVER_IMPL:-rust}
+  # The project server in Rust (crates/server, decision 0020), built by
+  # deploy.sh: the service, the cloud jobs and the command line are one binary.
+  RA_CARGO=${RA_CARGO:-$(command -v cargo || echo "$HOME/.cargo/bin/cargo")}
   RA_SERVER_BIN=${RA_SERVER_BIN:-$RA_REPO/target/release/rail-across-server}
-  if [ "$RA_SERVER_IMPL" = rust ]; then
-    RA_SERVER_EXEC="$RA_SERVER_BIN serve"
-    RA_CLOUDJOBS_EXEC="$RA_SERVER_BIN cloudjobs serve"
-    RA_SERVER_CLI="$RA_SERVER_BIN"
-  else
-    RA_SERVER_EXEC="$RA_NODE $RA_REPO/server/bin/rail-across-server.mjs serve"
-    RA_CLOUDJOBS_EXEC="$RA_NODE $RA_REPO/server/bin/rail-across-cloudjobs.mjs serve"
-    RA_SERVER_CLI="$RA_NODE $RA_REPO/server/bin/rail-across-server.mjs"
-  fi
   RA_STATE=$RA_DATA/.deploy-state
   export RA_DOMAIN RA_INSTANCE RA_UNIT_PREFIX RA_LABEL RA_REPO RA_SITE_DIR RA_USER RA_DATA RA_DB \
     RA_BACKUPS RA_BACKUP_DAYS RA_TERRAIN_CACHE RA_CLOUDS RA_BIND RA_SERVER_PORT \
     RA_SERVER_LOG RA_CADDY RA_UPSTREAM RA_SITE_ROOT RA_TRUST_PROXY \
     RA_CADDY_DIR RA_CADDY_SITE RA_CADDY_RELOAD RA_ADMIN_LOGIN \
     RA_CLOUDJOBS_PARALLEL RA_CLOUDRUNS_PARALLEL RA_CLOUDJOBS_MEMORY \
-    RA_SERVER_MEMORY RA_TRACK RA_GITHUB_REPO RA_NODE RA_SERVER_IMPL RA_SERVER_BIN RA_SERVER_EXEC \
-    RA_CLOUDJOBS_EXEC RA_SERVER_CLI
+    RA_SERVER_MEMORY RA_TRACK RA_GITHUB_REPO RA_CARGO RA_SERVER_BIN
 
   case "$RA_BIND" in 0.0.0.0|::|'') die "RA_BIND=$RA_BIND would put the services on every interface" ;; esac
   case "$RA_CADDY" in system|external) ;; *) die "RA_CADDY must be system or external" ;; esac
   case "$RA_TRACK" in main|tags) ;; *) die "RA_TRACK must be main or tags" ;; esac
-  case "$RA_SERVER_IMPL" in rust|node) ;; *) die "RA_SERVER_IMPL must be rust or node" ;; esac
 }
 
 # server_cli <command…>: the project server's command line (backup, user-count,
 # create-admin) as the service user, on this instance's database.
 server_cli() {
-  # shellcheck disable=SC2086  # RA_SERVER_CLI is a command with its arguments
-  (cd "$RA_REPO/server" && RA_SERVER_DB="$RA_DB" as_user $RA_SERVER_CLI "$@")
+  (cd "$RA_REPO" && RA_SERVER_DB="$RA_DB" as_user "$RA_SERVER_BIN" "$@")
 }
 
 # The modules' apps, each built into its path of the site: "<app directory under apps/>:<path>".

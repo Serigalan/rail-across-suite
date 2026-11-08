@@ -13,9 +13,11 @@ use std::cell::Cell;
 
 use serde_json::{Value, json};
 
+mod args;
 mod ops;
 mod ops_geom;
 mod ops_rules;
+mod ops_track;
 
 thread_local! {
     static RESULT_LEN: Cell<usize> = const { Cell::new(0) };
@@ -27,6 +29,10 @@ pub fn dispatch(request: &str) -> String {
         Ok(req) => {
             let op = req.get("op").and_then(Value::as_str).unwrap_or("");
             let input = req.get("input").cloned().unwrap_or(Value::Null);
+            // The ids a call takes before the generator (the replay's, as the JavaScript drew them).
+            if let Some(ids) = req.get("ids").and_then(Value::as_array) {
+                rail_across_js::queue_ids(ids.iter().filter_map(Value::as_str).map(str::to_string));
+            }
             match ops::run(op, input) {
                 Ok(value) => json!({ "ok": value }),
                 Err(ops::Failure { error, detail, data }) => json!({ "error": error, "detail": detail, "data": data }),

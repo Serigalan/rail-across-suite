@@ -15,8 +15,10 @@ use std::cmp::Ordering;
 
 use serde_json::{Map, Number, Value};
 
+mod ids;
 mod number;
 
+pub use ids::{generate_id, queue_ids, seed_ids};
 pub use number::{es_number, number_value};
 
 /// An object, as serde_json holds one.
@@ -53,6 +55,43 @@ pub fn truthy(value: Option<&Value>) -> bool {
         Some(Value::Number(n)) => n.as_f64().is_some_and(|x| x != 0.0 && !x.is_nan()),
         Some(Value::String(s)) => !s.is_empty(),
         Some(_) => true,
+    }
+}
+
+/// `Number(value)` — JavaScript's conversion: a string trimmed and read as a
+/// decimal (or `0x…`, `Infinity`), empty as 0; `null` and `false` 0, `true`
+/// 1; anything else, or an absent value, NaN.
+pub fn js_number(value: Option<&Value>) -> f64 {
+    match value {
+        None => f64::NAN,
+        Some(Value::Null) => 0.0,
+        Some(Value::Bool(b)) => f64::from(u8::from(*b)),
+        Some(Value::Number(n)) => n.as_f64().unwrap_or(f64::NAN),
+        Some(Value::String(s)) => {
+            let t = js_trim(s);
+            if t.is_empty() {
+                return 0.0;
+            }
+            match t {
+                "Infinity" | "+Infinity" => return f64::INFINITY,
+                "-Infinity" => return f64::NEG_INFINITY,
+                _ => {}
+            }
+            if let Some(hex) = t.strip_prefix("0x").or_else(|| t.strip_prefix("0X")) {
+                return u64::from_str_radix(hex, 16).map(|v| v as f64).unwrap_or(f64::NAN);
+            }
+            let ok = t.chars().all(|c| c.is_ascii_digit() || matches!(c, '.' | 'e' | 'E' | '+' | '-'));
+            if !ok || t.contains("inf") || t.contains("nan") {
+                return f64::NAN;
+            }
+            t.parse::<f64>().unwrap_or(f64::NAN)
+        }
+        Some(Value::Array(a)) => match a.len() {
+            0 => 0.0,
+            1 => js_number(Some(&Value::String(js_string(Some(&a[0]))))),
+            _ => f64::NAN,
+        },
+        Some(Value::Object(_)) => f64::NAN,
     }
 }
 

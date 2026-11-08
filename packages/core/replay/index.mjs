@@ -20,6 +20,7 @@ const RECORDERS = {
   doc: [() => import('./doc.mjs')],
   geom: [() => import('./geom.mjs')],
   rules: [() => import('./rules.mjs')],
+  track: [() => import('./track.mjs')],
 }
 
 /** Write one vector file: [{ op, input, output | error }], one case a line. */

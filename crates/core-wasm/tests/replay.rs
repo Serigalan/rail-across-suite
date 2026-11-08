@@ -81,7 +81,11 @@ fn every_recorded_call_comes_out_as_the_javascripts() {
         let cases: Vec<Value> = serde_json::from_str(&std::fs::read_to_string(file).unwrap()).unwrap();
         for (i, case) in cases.iter().enumerate() {
             let op = case["op"].as_str().unwrap();
-            let answer: Value = serde_json::from_str(&dispatch(&json!({ "op": op, "input": case["input"] }).to_string())).unwrap();
+            let mut request = json!({ "op": op, "input": case["input"] });
+            if let Some(ids) = case.get("ids") {
+                request["ids"] = ids.clone();
+            }
+            let answer: Value = serde_json::from_str(&dispatch(&request.to_string())).unwrap();
             calls += 1;
             let tol = case.get("tol").and_then(Value::as_f64).unwrap_or(TOL);
             let verdict = if let Some(want) = case.get("output") {

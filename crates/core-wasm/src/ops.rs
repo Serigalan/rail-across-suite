@@ -52,8 +52,16 @@ pub fn run(op: &str, input: Value) -> Result<Value, Failure> {
     if let Some(answer) = crate::ops_rules::run(op, &input) {
         return answer;
     }
+    if let Some(answer) = crate::ops_track::run(op, &input) {
+        return answer;
+    }
     match op {
         "version" => Ok(json!({ "module": "rail-across-core", "version": env!("CARGO_PKG_VERSION") })),
+        "core.seed" => {
+            let n = |i: usize| input.get(i).and_then(Value::as_u64).unwrap_or(0);
+            rail_across_js::seed_ids(n(0) << 32 | n(1), n(2) << 32 | n(3));
+            Ok(json!(true))
+        }
 
         // document
         // The document itself where the door changed nothing, so the face hands back the one it was given.

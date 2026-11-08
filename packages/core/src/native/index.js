@@ -26,9 +26,17 @@ export class NativeError extends Error {
 /** Whether the module is loaded, so a ported function runs in Rust. */
 export const nativeReady = () => exports_ != null
 
+/** The module's id generator seeded with this device's randomness, as crypto.randomUUID draws it. */
+function seed() {
+  const words = new Uint32Array(4)
+  globalThis.crypto?.getRandomValues?.(words)
+  callNative('core.seed', [...words])
+}
+
 /** The module's instance taken as the face's, from a compiled WebAssembly.Module. */
 export function useNativeModule(module) {
   exports_ = new WebAssembly.Instance(module, {}).exports
+  seed()
   return true
 }
 
@@ -48,6 +56,7 @@ export async function loadNative(source) {
       module = await WebAssembly.compile(await response.arrayBuffer())
     }
     exports_ = (await WebAssembly.instantiate(module, {})).exports
+    seed()
     return true
   } catch {
     return false

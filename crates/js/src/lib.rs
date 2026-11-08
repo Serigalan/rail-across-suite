@@ -335,6 +335,42 @@ pub fn as_f64(n: &Number) -> f64 {
     n.as_f64().unwrap_or(f64::NAN)
 }
 
+/// `Math.hypot(...values)` as V8 computes it: each value divided by the
+/// largest, the squares summed with Kahan's compensation, the root scaled
+/// back — not the libm `hypot`, which may differ in the last place.
+pub fn js_hypot(values: &[f64]) -> f64 {
+    if values.is_empty() {
+        return 0.0;
+    }
+    let mut max = 0.0f64;
+    let mut nan = false;
+    for v in values {
+        if v.is_nan() {
+            nan = true;
+        } else if v.abs() > max {
+            max = v.abs();
+        }
+    }
+    if max == f64::INFINITY {
+        return f64::INFINITY;
+    }
+    if nan {
+        return f64::NAN;
+    }
+    if max == 0.0 {
+        return 0.0;
+    }
+    let (mut sum, mut compensation) = (0.0f64, 0.0f64);
+    for v in values {
+        let n = v.abs() / max;
+        let summand = n * n - compensation;
+        let preliminary = sum + summand;
+        compensation = (preliminary - sum) - summand;
+        sum = preliminary;
+    }
+    sum.sqrt() * max
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

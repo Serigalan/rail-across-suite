@@ -4,6 +4,13 @@ import * as C from '../src/switch/catalogue.js'
 import * as R from '../src/switch/route.js'
 import * as X from '../src/switch/crossing.js'
 import * as Y from '../src/switch/symbol.js'
+import * as S from '../src/switch/sleepers.js'
+import * as G from '../src/switch/switchGradient.js'
+import { coupleSwitchCants } from '../src/switch/switchCants.js'
+import * as Sl from '../src/switch/stationSlider.js'
+import * as M from '../src/switch/midChain.js'
+import * as D from '../src/switch/switchDelete.js'
+import { mainTrack, branchTrack, turnout as testTurnout } from '../test/turnoutFixture.js'
 import { WEICHEN_REGELWERK, weichenGruppen } from '../src/switch/weichenRegelwerk.js'
 import { utmToWgs84, straightElement, arcElement, transitionElement, endPointStraightUtm } from '../src/geometry/index.js'
 import { rec } from './record.mjs'
@@ -195,9 +202,120 @@ function recordCrossingAndSymbol(calls) {
   r('lcsLine', Y.lcsLine, [600000, 5600000], [600030, 5600002], [600030, 5600000], 3.9, EPSG)
 }
 
+/** A form lookup from a table, as the options of a call carry it. */
+const formsOf = (forms) => (forms ? (label) => forms[label] ?? null : undefined)
+const withForms = (o = {}) => { const { forms, ...rest } = o; return { ...rest, ...(forms ? { formOf: formsOf(forms) } : {}) } }
+const stripFrame = (f) => f && ({
+  main: { trackId: f.main.track.id, length: f.main.length, sense: f.main.sense },
+  branch: { trackId: f.branch.track.id, length: f.branch.length, sense: f.branch.sense },
+  variant: f.variant, we: f.we, lds: f.lds, ldsMain: f.ldsMain, ldsBranch: f.ldsBranch, ldsBranchDistance: f.ldsBranchDistance,
+  weBisector: f.weBisector, samples: f.samples, sleepers: f.sleepers, grid: f.grid,
+  ...(f.ldsSleeper ? { sw: f.sw, ldsSleeper: f.ldsSleeper, offset: f.offset, cant: f.cant, reach: f.reach, end: f.end } : {}),
+})
+
+function recordBodies(calls) {
+  const r = (op, fn, ...args) => calls.push(rec(`switch.${op}`, fn, ...args))
+  const TEST = { TEST: { lds: 10 } }
+  const heights = (z0) => [{ station: 0, z: z0 }, { station: 30, z: z0 + 0.12, rv: 4000 }, { station: 60, z: z0 + 0.05 }]
+  const testTracks = (cant) => [{ id: 'a', epsg: 5684, elements: [] }, mainTrack(cant, heights(100)), branchTrack(heights(100.02))]
+  const mainSpec = [[testTracks(0), testTurnout()], [testTracks(60), testTurnout()], [testTracks(-45), testTurnout()],
+    [testTracks(0), testTurnout({ swapped: true, ports: { B1: { trackId: 'm' }, B2: { trackId: 'b' } } })]]
+  for (const [tracks, sw] of mainSpec) {
+    r('switchLds', (s, o) => S.switchLds(s, formsOf(o.forms)), sw, { forms: TEST })
+    r('mainRouteLength', S.mainRouteLength, tracks[1], sw)
+    r('turnoutSleepers', (t, s, o) => stripFrame(S.turnoutSleepers(t, s, withForms(o))), tracks, sw, { forms: TEST })
+    for (const [side, st] of [['main', 12.3], ['branch', 7], ['branch', 39.5], ['main', 0.001], ['main', 55]]) {
+      const frame = S.turnoutSleepers(tracks, sw, { formOf: formsOf(TEST) })
+      if (!frame) continue
+      r('sleeperNear', (t, s, sd, x, o) => S.sleeperNear(S.turnoutSleepers(t, s, withForms(o)), sd, x), tracks, sw, side, st, { forms: TEST })
+      r('sleeperThrough', (t, s, sd, x, o) => S.sleeperThrough(S.turnoutSleepers(t, s, withForms(o)), sd, x), tracks, sw, side, st, { forms: TEST })
+      if (frame && S.sleeperThrough(frame, side, st)) {
+        r('sleeperOffsets', (t, s, sd, x, o) => { const f = S.turnoutSleepers(t, s, withForms(o)); return S.sleeperOffsets(f, S.sleeperThrough(f, sd, x)) }, tracks, sw, side, st, { forms: TEST })
+      }
+    }
+    r('ldsFromToe', (t, s, o) => G.ldsFromToe(t, s, withForms(o)), tracks, sw, { forms: TEST })
+    r('switchCouplings', (t, ss, o) => G.switchCouplings(t, ss, withForms(o)).map(stripFrame), tracks, [sw], { forms: TEST })
+    r('couplingOf', (t, ss, s, o) => stripFrame(G.couplingOf(t, ss, s, withForms(o))), tracks, [sw], sw, { forms: TEST })
+    r('ldsLift', (t, ss, s, h, o) => { const c = G.couplingOf(t, ss, s, withForms(o)); return c ? G.ldsLift(c, h) : null }, tracks, [sw], sw, heights(100), { forms: TEST })
+    for (const st of [0, 5, 17.25, 29.99, 41, 59]) {
+      r('branchPlaneHeight', (t, ss, s, x, o) => { const c = G.couplingOf(t, ss, s, withForms(o)); return c ? G.branchPlaneHeight(c, x) : null }, tracks, [sw], sw, st, { forms: TEST })
+      r('trackHeightAt', (t, ss, tr, x, o) => G.trackHeightAt(t, ss, tr, x, withForms(o)), tracks, [sw], tracks[2], st, { forms: TEST })
+    }
+    r('heightContext', (t, ss, tr, o) => G.heightContext(t, ss, tr, withForms(o)), tracks, [sw], tracks[2], { forms: TEST })
+    r('heightContext', (t, ss, tr, o) => G.heightContext(t, ss, tr, withForms(o)), tracks, [sw], tracks[1], { forms: TEST })
+    r('switchBodySpans', (t, ss, tr, o) => G.switchBodySpans(t, ss, tr, withForms(o)), tracks, [sw], tracks[1], { forms: TEST })
+    r('switchBodySpans', (t, ss, tr, o) => G.switchBodySpans(t, ss, tr, withForms(o)), tracks, [sw], tracks[2], {})
+  }
+  r('planeFrom', G.planeFrom, mainTrack(60), 20, 101, branchTrack(), 20)
+  r('planeFrom', G.planeFrom, mainTrack(60), 20, null, branchTrack(), 20)
+  for (const x of [1.23456, -0.0004, 2.0005]) r('roundMm', G.roundMm, x)
+
+  // Turnouts of the catalogue laid with heights, a crossover of two of them.
+  let k = 0
+  for (const [label, side, mainR] of [['300 – 1:9', 'left', null], ['500 – 1:12', 'right', 1100], ['190 – 1:9', 'right', null], ['300 – 1:9', 'right', -900],
+    ['760 – 1:15', 'left', null], ...C.ALL_SWITCH_TYPES.filter(f => f.branch).slice(0, 2).map(f => [f.label, 'left', null])]) {
+    const { sw, tracks } = layTurnout(`t${++k}`, label, O, 33.3, side, mainR)
+    const withH = tracks.map((t, i) => ({ ...t, heights: [{ station: 0, z: 100 + i }, { station: 20, z: 100.2 + i, rv: 2000 }, { station: 60, z: 100.1 + i }],
+      elements: t.elements.map(el => ({ ...el, cant: i === 1 ? -40 : 0 })) }))
+    r('turnoutSleepers', (t, s, o) => stripFrame(S.turnoutSleepers(t, s, withForms(o))), withH, sw, {})
+    r('turnoutSleepers', (t, s, o) => stripFrame(S.turnoutSleepers(t, s, withForms(o))), withH, sw, { rail: '49E5' })
+    r('switchCouplings', (t, ss, o) => G.switchCouplings(t, ss, withForms(o)).map(stripFrame), withH, [sw], {})
+    for (const st of [3, 15, 31]) r('trackHeightAt', (t, ss, tr, x, o) => G.trackHeightAt(t, ss, tr, x, withForms(o)), withH, [sw], withH[2], st, {})
+    r('switchBodySpans', (t, ss, tr, o) => G.switchBodySpans(t, ss, tr, withForms(o)), withH, [sw], withH[1], {})
+    // Cants: the main route's cant changed by a write; the branch follows.
+    const after = withH.map((t, i) => (i === 1 ? { ...t, elements: t.elements.map((el, j) => (j === 0 ? { ...el, cant: -70 } : el)) } : t))
+    r('coupleSwitchCants', coupleSwitchCants, withH, after, [sw])
+    const branchWrite = withH.map((t, i) => (i === 2 ? { ...t, elements: t.elements.map((el, j) => (j === 0 ? { ...el, cant: 25 } : el)) } : t))
+    r('coupleSwitchCants', coupleSwitchCants, withH, branchWrite, [sw])
+    const approachWrite = withH.map((t, i) => (i === 0 ? { ...t, elements: t.elements.map(el => ({ ...el, cant: -15 })) } : t))
+    r('coupleSwitchCants', coupleSwitchCants, withH, approachWrite, [sw])
+    // Deletion: all three ports occupied, the branch track alone, no track behind the toe.
+    r('switchParts', (s, t) => JSON.parse(JSON.stringify(D.switchParts(s, t))), sw, withH)
+    r('keptRoutes', (s, t) => D.keptRoutes(s, D.switchParts(s, t).byPort), sw, withH)
+    r('planSwitchDeletion', D.planSwitchDeletion, sw, withH)
+    r('planSwitchDeletion', D.planSwitchDeletion, sw, withH.slice(1))
+    r('planSwitchDeletion', D.planSwitchDeletion, { ...sw, swapped: true }, withH)
+    r('planSwitchDeletion', D.planSwitchDeletion, sw, [withH[0], withH[2]])
+  }
+  r('coupleSwitchCants', coupleSwitchCants, [], [], [])
+  r('planSwitchDeletion', D.planSwitchDeletion, { switchId: 'l', kind: 'link', ports: {} }, [])
+  r('planSwitchDeletion', D.planSwitchDeletion, {}, [])
+  for (const form of C.CROSSING_TYPES) {
+    const { sw, tracks, els } = layCrossing('x', form.label, O, 63.5, 6)
+    const more = tracks.map(t => ({ ...t, elements: t.id.endsWith('A') || t.id.endsWith('B') ? [straightElement(endPointStraightUtm(
+      { easting: t.elements[0].startNode[0], northing: t.elements[0].startNode[1], zone: EPSG }, (t.elements[0].bearing + 180) % 360, 20), { easting: t.elements[0].startNode[0], northing: t.elements[0].startNode[1], zone: EPSG }), ...t.elements]
+      : [...t.elements, straightElement({ easting: t.elements.at(-1).endNode[0], northing: t.elements.at(-1).endNode[1], zone: EPSG }, endPointStraightUtm({ easting: t.elements.at(-1).endNode[0], northing: t.elements.at(-1).endNode[1], zone: EPSG }, t.elements.at(-1).bearing, 20))] }))
+    const slips = [els.slip1 && { id: 'x1', epsg: EPSG, name: 'slip 1', elements: [els.slip1] }, els.slip2 && { id: 'x2', epsg: EPSG, elements: [els.slip2] }].filter(Boolean)
+    r('planSwitchDeletion', D.planSwitchDeletion, sw, [...tracks, ...slips])
+    r('planSwitchDeletion', D.planSwitchDeletion, sw, [...more, ...slips])
+    r('planSwitchDeletion', D.planSwitchDeletion, sw, [...more.slice(0, 2), ...tracks.slice(2), ...slips])
+  }
+
+  for (const [sWe, sEnd, count] of [[20, 30, null], [20, 30, 33], [0.9, 5, null], [27.14, 36, 46]]) r('sleeperGrid', S.sleeperGrid, sWe, sEnd, count)
+  for (const lds of [0, -0.244, 3.3, 10.25]) r('sleepersWeToLds', S.sleepersWeToLds, lds)
+  r('tableLds', S.tableLds, { masse: { lds: 7.5 } }, 6); r('tableLds', S.tableLds, null, 6)
+
+  const iv = [[0, 10], [15, 20.5], [30, 30]]
+  for (const s of [-3, 5, 12, 13, 25, 40]) {
+    r('nearestValid', Sl.nearestValid, s, iv)
+    r('settleStation', Sl.settleStation, s, { intervals: iv, snaps: [10.4, 14.8, 30], tol: 1 })
+  }
+  r('nearestValid', Sl.nearestValid, 3, [])
+  r('uniqueStations', Sl.uniqueStations, [3.00001, 3, 2.99999, NaN, 1.5, 12.34567])
+  for (const mids of [M.DEFAULT_MIDS, [], [{ type: 'straight', length: null }, { type: 'arc', length: 20, radius: null }],
+    [{ type: 'transition', length: 15 }, { type: 'arc', length: null, radius: 500 }, { type: 'transition', length: null }],
+    [{ type: 'arc', length: null, radius: 300, side: -1 }, { type: 'arc', length: null, radius: 500 }]]) {
+    r('isDefaultMids', M.isDefaultMids, mids); r('midUnknowns', M.midUnknowns, mids)
+    r('midSignSets', M.midSignSets, mids, 1); r('midSignSets', M.midSignSets, mids, -1)
+  }
+  r('endCurvature', M.endCurvature, [{ length: 3, r1: null, r2: -250 }])
+  r('endCurvature', M.endCurvature, [])
+}
+
 export default function record() {
   const calls = []
   recordCatalogueAndRoutes(calls)
   recordCrossingAndSymbol(calls)
+  recordBodies(calls)
   return { switch: calls }
 }

@@ -4,10 +4,16 @@
 //! The switch module's operations, named and called as the JavaScript's.
 
 use rail_across_js::number;
+use rail_across_switch::cants;
 use rail_across_switch::catalogue as cat;
 use rail_across_switch::crossing as cr;
+use rail_across_switch::delete as del;
+use rail_across_switch::gradient as gr;
+use rail_across_switch::mid_chain as mc;
 use rail_across_switch::regelwerk;
 use rail_across_switch::route as rt;
+use rail_across_switch::sleepers as sl;
+use rail_across_switch::slider;
 use rail_across_switch::symbol as sy;
 use serde_json::{Value, json};
 
@@ -204,8 +210,163 @@ pub fn run(op: &str, input: &Value) -> Option<Result<Value, Failure>> {
             a.opt(5).map(wgs),
             &sy::MainR::from_json(a.opt(6)),
         )),
+        // sleepers
+        "switch.switchLds" => with_forms(a.option(1, "forms"), |f| ok(opt_num(sl::switch_lds(a.v(0), f)))),
+        "switch.mainRouteLength" => ok(number(sl::main_route_length(a.v(0), a.v(1)))),
+        "switch.turnoutSleepers" => with_forms(a.option(2, "forms"), |f| {
+            let o = sl::SleeperOptions {
+                form_of: f,
+                rail: a.option(2, "rail").cloned(),
+                lds_unknown: a.option(2, "ldsUnknown").and_then(Value::as_f64),
+            };
+            ok(sl::turnout_sleepers(&a.list(0), a.v(1), &o).map(|fr| fr.to_json()).unwrap_or(Value::Null))
+        }),
+        "switch.sleeperGrid" => {
+            let count = a.opt(2).and_then(Value::as_f64).map(|c| c as usize);
+            ok(Value::Array(sl::sleeper_grid(a.f(0), a.f(1), count).into_iter().map(number).collect()))
+        }
+        "switch.sleepersWeToLds" => ok(Value::Array(sl::sleepers_we_to_lds(a.f(0)).into_iter().map(number).collect())),
+        "switch.tableLds" => ok(number(sl::table_lds(a.opt(0), a.f(1)))),
+        "switch.sleeperNear" | "switch.sleeperThrough" | "switch.sleeperOffsets" => with_forms(a.option(4, "forms"), |f| {
+            let o = sl::SleeperOptions {
+                form_of: f,
+                rail: None,
+                lds_unknown: a.option(4, "ldsUnknown").and_then(Value::as_f64),
+            };
+            let Some(frame) = sl::turnout_sleepers(&a.list(0), a.v(1), &o) else {
+                return ok(Value::Null);
+            };
+            let (side, station) = (a.s(2), a.f(3));
+            ok(match op {
+                "switch.sleeperNear" => sl::sleeper_near(&frame, side, station, 0.01).map(|s| s.to_json()).unwrap_or(Value::Null),
+                "switch.sleeperThrough" => sl::sleeper_through(&frame, side, station)
+                    .map(|(p, m, b)| {
+                        let mut o = p.to_json();
+                        o["main"] = number(m);
+                        o["branch"] = number(b);
+                        o
+                    })
+                    .unwrap_or(Value::Null),
+                _ => {
+                    let at = |s: &str| sl::sleeper_through(&frame, s, station);
+                    at(side)
+                        .and_then(|(_, m, b)| sl::sleeper_offsets(&frame.main, &frame.branch, m, b))
+                        .map(|(x, y)| json!({ "a": number(x), "y": number(y) }))
+                        .unwrap_or(Value::Null)
+                }
+            })
+        }),
+        // switchGradient
+        "switch.roundMm" => ok(number(gr::round_mm(a.f(0)))),
+        "switch.STATION_TOL" => ok(number(gr::STATION_TOL)),
+        "switch.Z_TOL" => ok(number(gr::Z_TOL)),
+        "switch.ldsFromToe" => with_forms(a.option(2, "forms"), |f| ok(opt_num(gr::lds_from_toe(&a.list(0), a.v(1), &opts(f))))),
+        "switch.switchCouplings" => with_forms(a.option(2, "forms"), |f| {
+            ok(Value::Array(
+                gr::switch_couplings(&a.list(0), &a.list(1), &opts(f)).iter().map(|c| c.to_json()).collect(),
+            ))
+        }),
+        "switch.couplingOf" => with_forms(a.option(3, "forms"), |f| {
+            ok(gr::coupling_of(&a.list(0), &a.list(1), a.v(2), &opts(f))
+                .map(|c| c.to_json())
+                .unwrap_or(Value::Null))
+        }),
+        "switch.ldsLift" => with_forms(a.option(4, "forms"), |f| {
+            let c = gr::coupling_of(&a.list(0), &a.list(1), a.v(2), &opts(f));
+            ok(c.map(|c| number(gr::lds_lift(&c, &a.list(3)))).unwrap_or(Value::Null))
+        }),
+        "switch.planeFrom" => ok(opt_num(gr::plane_from(a.v(0), a.f(1), s_opt(2), a.v(3), a.f(4)))),
+        "switch.branchPlaneHeight" => with_forms(a.option(4, "forms"), |f| {
+            let c = gr::coupling_of(&a.list(0), &a.list(1), a.v(2), &opts(f));
+            ok(c.and_then(|c| gr::branch_plane_height(&c, a.f(3))).map(number).unwrap_or(Value::Null))
+        }),
+        "switch.trackHeightAt" => with_forms(a.option(4, "forms"), |f| {
+            ok(opt_num(gr::track_height_at(&a.list(0), &a.list(1), a.v(2), a.f(3), &opts(f))))
+        }),
+        "switch.heightContext" => with_forms(a.option(3, "forms"), |f| ok(gr::height_context(&a.list(0), &a.list(1), a.v(2), &opts(f)))),
+        "switch.switchBodySpans" => with_forms(a.option(3, "forms"), |f| {
+            ok(Value::Array(gr::switch_body_spans(&a.list(0), &a.list(1), a.v(2), &opts(f))))
+        }),
+        // switchCants
+        "switch.coupleSwitchCants" => {
+            if a.opt(1).is_none_or(|v| v.as_array().is_none_or(Vec::is_empty)) {
+                return ok(a.v(1).clone());
+            }
+            ok(Value::Array(cants::couple_switch_cants(&a.list(0), &a.list(1), &a.list(2))))
+        }
+        // stationSlider
+        "switch.nearestValid" => ok(opt_num(slider::nearest_valid(a.f(0), &intervals(a.v(1))))),
+        "switch.settleStation" => {
+            let snaps: Vec<f64> = a
+                .option(1, "snaps")
+                .and_then(Value::as_array)
+                .map(|v| v.iter().filter_map(Value::as_f64).collect())
+                .unwrap_or_default();
+            let tol = a.option(1, "tol").and_then(Value::as_f64).unwrap_or(1.0);
+            ok(opt_num(slider::settle_station(
+                a.f(0),
+                &intervals(a.option(1, "intervals").unwrap_or(&Value::Null)),
+                &snaps,
+                tol,
+            )))
+        }
+        "switch.uniqueStations" => {
+            let list: Vec<f64> = a.list(0).iter().map(|v| v.as_f64().unwrap_or(f64::NAN)).collect();
+            ok(Value::Array(slider::unique_stations(&list).into_iter().map(number).collect()))
+        }
+        // midChain
+        "switch.DEFAULT_MIDS" => ok(Value::Array(mc::DEFAULT_MIDS.iter().map(|m| m.to_json()).collect())),
+        "switch.MID_OPEN" => ok(json!(mc::MID_OPEN)),
+        "switch.isDefaultMids" => ok(json!(mc::is_default_mids(&mc::mids_from(a.v(0))))),
+        "switch.midUnknowns" => ok(Value::Array(
+            mc::mid_unknowns(&mc::mids_from(a.v(0)))
+                .into_iter()
+                .map(|u| json!({ "i": u.i, "field": if u.length { "length" } else { "k" } }))
+                .collect(),
+        )),
+        "switch.midSignSets" => ok(json!(
+            mc::mid_sign_sets(&mc::mids_from(a.v(0)), a.of(1).unwrap_or(1.0))
+                .into_iter()
+                .map(|s| s.into_iter().map(number).collect::<Vec<_>>())
+                .collect::<Vec<_>>()
+        )),
+        "switch.endCurvature" => ok(number(mc::end_curvature(&rt::to_chain(a.v(0))))),
+        // switchDelete
+        "switch.switchParts" => ok(del::parts_json(&del::switch_parts(a.v(0), &del::by_id(&a.list(1))))),
+        "switch.keptRoutes" => ok(json!(del::kept_routes(a.v(0), &del::switch_parts(a.v(0), &del::by_id(&a.list(1)))))),
+        "switch.planSwitchDeletion" => ok(del::plan_switch_deletion(a.v(0), &a.list(1))),
         _ => None,
     }
+}
+
+fn opts(f: sl::FormOf) -> sl::SleeperOptions {
+    sl::SleeperOptions {
+        form_of: f,
+        rail: None,
+        lds_unknown: None,
+    }
+}
+
+/// Runs `then` with the forms looked up in `forms` (label → form) where given, else in the catalogue.
+fn with_forms<T>(forms: Option<&Value>, then: impl FnOnce(sl::FormOf) -> T) -> T {
+    match forms.and_then(Value::as_object) {
+        Some(table) => {
+            let table = table.clone();
+            let f = move |label: Option<&str>| label.and_then(|l| table.get(l)).filter(|v| !v.is_null()).cloned();
+            then(&f)
+        }
+        None => then(&sl::catalogue_form),
+    }
+}
+
+fn intervals(v: &Value) -> Vec<(f64, f64)> {
+    v.as_array()
+        .map(|a| {
+            a.iter()
+                .map(|p| (p[0].as_f64().unwrap_or(f64::NAN), p[1].as_f64().unwrap_or(f64::NAN)))
+                .collect()
+        })
+        .unwrap_or_default()
 }
 
 fn pts(v: &Value) -> Vec<[f64; 2]> {

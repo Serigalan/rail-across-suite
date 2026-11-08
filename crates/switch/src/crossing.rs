@@ -97,6 +97,9 @@ pub fn pieces_on_radius(pieces: &[Route], signed_r: Option<f64>) -> bool {
     }
 }
 
+/// A slip route and its polyline.
+type Slip = (Route, Vec<[f64; 2]>);
+
 fn utm_pair(u: Utm) -> Value {
     json!([number(u.e), number(u.n)])
 }
@@ -149,7 +152,7 @@ pub fn compute_crossing_geometry_utm(
     let kind = t.get("kind").and_then(Value::as_str);
     let has_slip1 = matches!(kind, Some("single_slip") | Some("double_slip"));
     let has_slip2 = kind == Some("double_slip");
-    let (mut slip1, mut slip2): (Option<(Route, Vec<[f64; 2]>)>, Option<(Route, Vec<[f64; 2]>)>) = (None, None);
+    let (mut slip1, mut slip2): (Option<Slip>, Option<Slip>) = (None, None);
     if leg_r.is_none() {
         let cross_right = cross_angle_deg >= 0.0;
         let build = |side: &str, from: Utm, from_wgs: [f64; 2], to_wgs: [f64; 2], lb: f64| {
@@ -177,8 +180,8 @@ pub fn compute_crossing_geometry_utm(
     main.extend(&to_c[1..]);
     let mut cross = rev(&to_b);
     cross.extend(&to_d[1..]);
-    let sc = |s: &Option<(Route, Vec<[f64; 2]>)>| s.as_ref().map(|s| pts_json(&s.1)).unwrap_or(Value::Null);
-    let sr = |s: &Option<(Route, Vec<[f64; 2]>)>| s.as_ref().map(|s| s.0.to_json()).unwrap_or(Value::Null);
+    let sc = |s: &Option<Slip>| s.as_ref().map(|s| pts_json(&s.1)).unwrap_or(Value::Null);
+    let sr = |s: &Option<Slip>| s.as_ref().map(|s| s.0.to_json()).unwrap_or(Value::Null);
     let w = |p: [f64; 2]| json!([number(p[0]), number(p[1])]);
     json!({
         "kind": t.get("kind"), "label": t.get("label"),

@@ -6,10 +6,16 @@
 //! laid switch, its symbol, where it may lie, switch connections, connecting
 //! to an open end and what stays when one is deleted (`packages/core/src/switch`).
 
-#![allow(clippy::neg_cmp_op_on_partial_ord)]
+#![allow(clippy::neg_cmp_op_on_partial_ord, clippy::too_many_arguments, clippy::manual_range_contains)]
 
+pub mod cants;
 pub mod catalogue;
 pub mod crossing;
+pub mod delete;
+pub mod gradient;
+pub mod mid_chain;
 pub mod regelwerk;
 pub mod route;
+pub mod sleepers;
+pub mod slider;
 pub mod symbol;

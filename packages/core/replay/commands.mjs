@@ -8,6 +8,10 @@ import * as Eg from '../src/commands/editGeometry.js'
 import { endPointStraightUtm } from '../src/geometry/index.js'
 import * as Sc from '../src/commands/sCurve.js'
 import * as Sw from '../src/commands/switches.js'
+import * as Cs from '../src/commands/connectSwitch.js'
+import * as Cc from '../src/commands/connectCrossing.js'
+import { connectRemedies } from '../src/commands/connectRemedies.js'
+import { connectionAnchor } from '../src/switch/index.js'
 import { switchStraightLength, crossingEndDistance, CROSSING_TYPES } from '../src/switch/index.js'
 import { switchTypeByLabel } from '../src/switch/index.js'
 import { trackOf, layTurnout } from './switch.mjs'
@@ -91,6 +95,7 @@ export default function record() {
   r('mergeElementEdits', Eg.mergeElementEdits, tracks, edited, {})
   recordSCurve(r, line)
   recordSwitches(r, line)
+  recordConnect(r)
   return { commands: calls }
 }
 
@@ -148,6 +153,55 @@ function recordSCurve(r, line) {
 }
 
 import { runBeside as runBesideOf } from '../src/rules/index.js'
+
+function recordConnect(r) {
+  const plain = (v) => JSON.parse(JSON.stringify(v))
+  const host = trackOf('H', A, 90, [['s', 500]])
+  const spur = trackOf('S', { easting: 600150, northing: 5600060 }, 120, [['s', 30], ['a', 25, 600]])
+  const spurS = trackOf('SS', { easting: 600150, northing: 5600040 }, 115, [['s', 32]])
+  const spurB = trackOf('SB', { easting: 600320, northing: 5599980 }, 300, [['s', 25]])
+  for (const s of [0, 120, 499, 600]) r('hostPointAt', Cs.hostPointAt, host, s, s === 120 ? 2 : 0)
+  const sw = switchTypeByLabel('190 – 1:9')
+  for (const [target, end, click] of [[spur, 'END', 200], [spurS, 'END', 190], [spurB, 'END', 260]]) {
+    const { anchor } = connectionAnchor(target, end, { tracks: [host, target], switches: [], endMarks: [] })
+    if (!anchor) continue
+    for (const lead of [0, 20]) {
+      r('switchConnectSolutions', (o) => plain(Cs.switchConnectSolutions(o)), { track: host, clickStation: click, anchor, sw, lead })
+    }
+    const { preferred } = Cs.switchConnectSolutions({ track: host, clickStation: click, anchor, sw })
+    if (!preferred) continue
+    r('switchConnectSolutions', (o) => plain(Cs.switchConnectSolutions(o)), { track: host, clickStation: preferred.x, anchor, sw, only: { reversed: preferred.reversed, side: preferred.side }, reach: 40 })
+    const outcome = Cs.switchConnectOutcome({ track: host, target, anchor, solution: preferred, speed: 60 })
+    r('switchConnectOutcome', (o) => plain(Cs.switchConnectOutcome(o)), { track: host, target, anchor, solution: plain(preferred), speed: 60 })
+    r('switchConnectOutcome', (o) => plain(Cs.switchConnectOutcome(o)), { track: host, target, anchor, solution: plain(preferred), speed: 100, speedLimit: 40 })
+    r('buildSwitchConnect', (o) => plain(Cs.buildSwitchConnect({ ...o, solution: { ...o.solution, at: { ...o.solution.at, placement: Sw.switchOnTrackPlacement({ track: o.track, toeStation: o.solution.x, reversed: o.solution.reversed, sw: o.sw, side: o.solution.side, straightLen: switchStraightLength(o.sw) }) } } })),
+      { track: host, target, anchor, solution: plain(preferred), tracks: [host, target], sw, cant: 0, speed: 60, switchName: 'switch.005', switchNumber: 5 })
+    if (outcome.ruleError) {
+      const only = { reversed: preferred.reversed, side: preferred.side }
+      r('connectRemediesForSwitch', (o) => {
+        const byLead = new Map()
+        const solve = (lead) => { if (!byLead.has(lead)) byLead.set(lead, Cs.switchConnectSolutions({ track: o.track, clickStation: o.baseSolution.x, anchor: o.anchor, sw: o.sw, lead, only: o.only, reach: lead + 60 }).solutions[0] ?? null); return byLead.get(lead) }
+        const outcomeFor = ({ lead, speedLimit }) => { const s = lead > 0 ? solve(lead) : o.baseSolution; return s && Cs.switchConnectOutcome({ track: o.track, target: o.target, anchor: o.anchor, solution: s, speed: o.speed, speedLimit }) }
+        return plain(connectRemedies({ anchor: o.anchor, current: o.current, outcome: o.outcome, outcomeFor }))
+      }, { anchor, current: { lead: 0, speedLimit: null }, outcome: plain(outcome), baseSolution: plain(preferred), track: host, target, sw, only, speed: 60 })
+    }
+    const mids = [{ type: 'straight', length: null }, { type: 'arc', length: null, radius: 600, side: 1 }]
+    const { anchor: anchor2 } = connectionAnchor(target, end, { tracks: [host, target], switches: [], endMarks: [], count: Math.min(2, target.elements.length) })
+    if (anchor2 && target.elements.length >= 2) {
+      r('switchConnectChainSolutions', (o) => plain(Cs.switchConnectChainSolutions(o)), { track: host, clickStation: click, anchor: anchor2, sw, mids })
+    }
+  }
+  for (const form of CROSSING_TYPES.slice(0, 3)) {
+    r('crossAngleOf', Cc.crossAngleOf, form, 'right'); r('crossAngleOf', Cc.crossAngleOf, form, 'left')
+    const { anchor } = connectionAnchor(spurS, 'END', { tracks: [host, spurS], switches: [], endMarks: [] })
+    r('crossingConnectSolutions', (o) => plain(Cc.crossingConnectSolutions(o)), { track: host, clickStation: 190, anchor, form })
+    const { preferred } = Cc.crossingConnectSolutions({ track: host, clickStation: 190, anchor, form })
+    if (!preferred) continue
+    r('crossingConnectOutcome', (o) => plain(Cc.crossingConnectOutcome(o)), { target: spurS, anchor, solution: plain(preferred) })
+    r('buildCrossingConnect', (o) => plain(Cc.buildCrossingConnect({ ...o, solution: { ...o.solution, at: { ...o.solution.at, placement: Sw.crossingOnTrackPlacement({ track: o.track, pointStation: o.solution.x, endDist: crossingEndDistance(o.form), form: o.form, crossAngle: Cc.crossAngleOf(o.form, o.solution.crossSide) }) } } })),
+      { track: host, target: { ...spurS, name: 'Gleis.2', owner: 'DB' }, anchor, solution: plain(preferred), tracks: [host, spurS], form, switchName: 'crossing.006', switchNumber: 6 })
+  }
+}
 
 function recordSwitches(r, line) {
   const plain = (v) => JSON.parse(JSON.stringify(v))

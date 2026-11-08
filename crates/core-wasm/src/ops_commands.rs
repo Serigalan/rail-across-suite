@@ -3,7 +3,7 @@
 
 //! The commands' operations, named and called as the JavaScript's.
 
-use rail_across_commands::{edit, roles, scurve as sc, switches as swc, table, tracks as tr};
+use rail_across_commands::{connect as cn, edit, roles, scurve as sc, switches as swc, table, tracks as tr};
 use rail_across_js::number;
 use rail_across_switch::mid_chain as mc;
 use serde_json::{Value, json};
@@ -161,6 +161,62 @@ pub fn run(op: &str, input: &Value) -> Option<Result<Value, Failure>> {
             )
         }
         "commands.crossingOnTrackSlider" => ok(swc::crossing_on_track_slider(&crossing_ask(a.v(0)), a.of(1))),
+        // connectSwitch, connectCrossing, connectRemedies
+        "commands.hostPointAt" => ok(cn::host_point_at(a.v(0), a.f(1), a.of(2).unwrap_or(0.0))
+            .map(|u| u.to_json())
+            .unwrap_or(Value::Null)),
+        "commands.switchConnectSolutions" => ok(cn::switch_connect_solutions(a.v(0))),
+        "commands.switchConnectChainSolutions" => ok(cn::switch_connect_chain_solutions(a.v(0), &mc::mids_from(&a.v(0)["mids"]))),
+        "commands.switchConnectOutcome" => ok(cn::switch_connect_outcome(a.v(0))),
+        "commands.refitOutcome" | "commands.crossingConnectOutcome" => {
+            let o = a.v(0);
+            let s = &o["solution"];
+            let fit = if s["fit"].get("pieces").is_some() {
+                let p = rail_across_switch::route::to_chain(&s["fit"]["pieces"]);
+                rail_across_switch::connect::Fit {
+                    route: p[0],
+                    lead: None,
+                    end_bearing: f64::NAN,
+                    miss: 0.0,
+                    pieces: Some(p),
+                }
+            } else {
+                rail_across_switch::connect::Fit::from_json(&s["fit"])
+            };
+            ok(cn::refit_outcome(
+                &o["target"],
+                &rail_across_switch::connect::Anchor::from_json(&o["anchor"]),
+                &fit,
+                rail_across_geom::element::Utm::from_json(&s["at"]["port"]),
+                o.get("speedLimit").and_then(Value::as_f64),
+            ))
+        }
+        "commands.buildSwitchConnect" => ok(cn::build_switch_connect(a.v(0))),
+        "commands.crossAngleOf" => ok(number(cn::cross_angle_of(a.v(0), a.s(1)))),
+        "commands.crossingConnectSolutions" => ok(cn::crossing_connect_solutions(a.v(0))),
+        "commands.buildCrossingConnect" => ok(cn::build_crossing_connect(a.v(0))),
+        "commands.connectRemediesForSwitch" => {
+            // The remedies as the turnout dialog asks them: each lead solved again near the base solution.
+            let o = a.v(0);
+            let anchor = rail_across_switch::connect::Anchor::from_json(&o["anchor"]);
+            let base = o["baseSolution"].clone();
+            let outcome_for = |c: &Value| -> Value {
+                let lead = c.get("lead").and_then(Value::as_f64).unwrap_or(0.0);
+                let s = if lead > 0.0 {
+                    let ask = json!({ "track": o["track"], "clickStation": base["x"], "anchor": o["anchor"], "sw": o["sw"], "lead": number(lead), "only": o["only"], "reach": number(lead + 60.0) });
+                    cn::switch_connect_solutions(&ask)["solutions"].get(0).cloned().unwrap_or(Value::Null)
+                } else {
+                    base.clone()
+                };
+                if s.is_null() {
+                    return Value::Null;
+                }
+                cn::switch_connect_outcome(
+                    &json!({ "track": o["track"], "target": o["target"], "anchor": o["anchor"], "solution": s, "speed": o["speed"], "speedLimit": c.get("speedLimit") }),
+                )
+            };
+            ok(Value::Array(cn::connect_remedies(&anchor, &o["current"], &o["outcome"], &outcome_for)))
+        }
         _ => None,
     }
 }

@@ -133,8 +133,10 @@ dependencies = [
 name = "rail-across-commands"
 version = "0.1.0"
 dependencies = [
+ "rail-across-doc",
  "rail-across-geom",
  "rail-across-js",
+ "rail-across-project",
  "rail-across-rules",
  "rail-across-survey",
  "rail-across-switch",

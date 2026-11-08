@@ -9,7 +9,8 @@
     clippy::neg_cmp_op_on_partial_ord,
     clippy::too_many_arguments,
     clippy::manual_range_contains,
-    clippy::needless_range_loop
+    clippy::needless_range_loop,
+    clippy::type_complexity
 )]
 #![recursion_limit = "256"]
 
@@ -17,6 +18,7 @@ pub mod connect;
 pub mod crossover;
 pub mod crossover_edit;
 pub mod edit;
+pub mod merge;
 pub mod optimize;
 pub mod reconnect;
 pub mod roles;

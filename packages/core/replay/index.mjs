@@ -25,6 +25,7 @@ const RECORDERS = {
   views: [() => import('./views.mjs')],
   switch: [() => import('./switch.mjs')],
   commands: [() => import('./commands.mjs')],
+  merge: [() => import('./merge.mjs')],
 }
 
 /** Write one vector file: [{ op, input, output | error }], one case a line. */

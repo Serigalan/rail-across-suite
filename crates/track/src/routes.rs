@@ -295,6 +295,17 @@ fn meet(a: &Value, b: &Value, tracks: &[Value], switches: &[Value]) -> bool {
 
 /// A route whose tracks were replaced, on the tracks that took them over (`repairRoute`).
 pub fn repair_route(route: &Value, tracks: &[Value], switches: &[Value], old_track: &dyn Fn(&Value) -> Option<Value>, candidates: &[Value]) -> Value {
+    repair_route_with(route, tracks, switches, old_track, &|_| candidates.to_vec())
+}
+
+/// The same with the tracks each one may have become looked up per track (`repairRoute`'s `candidates(id)`).
+pub fn repair_route_with(
+    route: &Value,
+    tracks: &[Value],
+    switches: &[Value],
+    old_track: &dyn Fn(&Value) -> Option<Value>,
+    candidates: &dyn Fn(&Value) -> Vec<Value>,
+) -> Value {
     let present: Vec<String> = tracks.iter().map(|t| js_string(t.get("id"))).collect();
     let ids = list(route, "trackIds");
     if ids.iter().all(|id| present.contains(&js_string(Some(id)))) {
@@ -306,7 +317,7 @@ pub fn repair_route(route: &Value, tracks: &[Value], switches: &[Value], old_tra
             out.push(id.clone());
             continue;
         }
-        let mut pieces = old_track(id).map(|old| pieces_along(&old, candidates)).unwrap_or_default();
+        let mut pieces = old_track(id).map(|old| pieces_along(&old, &candidates(id))).unwrap_or_default();
         if pieces.len() > 1 {
             let prev = out.last().cloned();
             let next = ids[i + 1..].iter().find(|x| present.contains(&js_string(Some(x)))).cloned();

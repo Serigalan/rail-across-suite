@@ -3,6 +3,7 @@
 
 //! The commands' operations, named and called as the JavaScript's.
 
+use rail_across_commands::merge::{carry as mcarry, diff as mdiff, remap as mremap, three_way as m3};
 use rail_across_commands::{
     connect as cn, crossover as co, crossover_edit as ce, edit, optimize as opt, reconnect as rc, roles, scurve as sc, splice as sp, switches as swc, table,
     tracks as tr,
@@ -307,6 +308,16 @@ pub fn run(op: &str, input: &Value) -> Option<Result<Value, Failure>> {
         "commands.optimizeRequest" => ok(opt::optimize_request(a.v(0), a.v(1))),
         "commands.reshapedHeights" => ok(opt::reshaped_heights(a.v(0), &a.list(1)).unwrap_or(Value::Null)),
         "commands.optimizedTrack" => ok(opt::optimized_track(a.v(0), a.v(1))),
+        // merge
+        "merge.primary" => ok(mdiff::primary(a.v(0))),
+        "merge.diffProject" => ok(mdiff::diff_project(a.v(0), a.v(1))),
+        "merge.diffSize" => ok(json!(mdiff::diff_size(a.v(0)))),
+        "merge.diffEntries" => ok(Value::Array(mdiff::diff_entries(a.v(0)))),
+        "merge.mergeProject" => ok(m3::merge_project(a.v(0))),
+        "merge.validationConflicts" => ok(m3::validation_conflicts(a.v(0), a.v(1))),
+        "merge.resolve" => ok(m3::resolve(a.v(0), a.opt(1).unwrap_or(&json!({})))),
+        "merge.remapKind" => ok(opt_str(mremap::remap_kind(a.s(0), &a.list(1)))),
+        "merge.carryAfterWrite" => ok(mcarry::carry_after_write(a.v(0), a.v(1))),
         _ => None,
     }
 }

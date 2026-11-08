@@ -174,7 +174,7 @@ fn adopt_spec(picks: &[Value], speed: f64, form: Option<&Value>, lenient: bool, 
         if r.get("valid") == Some(&json!(true)) || (lenient && r.get("overridable") == Some(&json!(true))) {
             return Some(json!({
                 "shift": number(settled.shift),
-                "mids": mids.iter().map(|m| mid_json(m)).collect::<Vec<_>>(),
+                "mids": mids.iter().map(mid_json).collect::<Vec<_>>(),
                 "seed": { "ds": number(s2 - s1), "values": values.into_iter().map(number).collect::<Vec<_>>() },
             }));
         }

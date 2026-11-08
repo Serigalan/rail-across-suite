@@ -141,20 +141,36 @@ impl Touched {
     }
 }
 
-fn propagate(tracks: &mut [Value], epsg: f64, old_node: Value, from_el: &Value, touched: &mut Touched) {
+/// The tracks of an edit, copied on first write.
+struct Cow<'a> {
+    tracks: &'a [Value],
+    written: std::collections::HashMap<usize, Value>,
+}
+
+impl<'a> Cow<'a> {
+    fn get(&self, i: usize) -> &Value {
+        self.written.get(&i).unwrap_or(&self.tracks[i])
+    }
+    fn get_mut(&mut self, i: usize) -> &mut Value {
+        let tracks = self.tracks;
+        self.written.entry(i).or_insert_with(|| tracks[i].clone())
+    }
+}
+
+fn propagate(tracks: &mut Cow, epsg: f64, old_node: Value, from_el: &Value, touched: &mut Touched) {
     let mut queue: VecDeque<(Value, Utm, f64)> = VecDeque::from([(old_node, end_utm_of(from_el, epsg as i64), end_bearing_of(from_el))]);
     while let Some((nd, start, bearing)) = queue.pop_front() {
-        for t in tracks.iter_mut() {
-            if js_number(t.get("epsg")) != epsg {
+        for ti in 0..tracks.tracks.len() {
+            if js_number(tracks.get(ti).get("epsg")) != epsg {
                 continue;
             }
-            let tid = js_string(t.get("id"));
-            let n = t.get("elements").and_then(Value::as_array).map(Vec::len).unwrap_or(0);
+            let tid = js_string(tracks.get(ti).get("id"));
+            let n = tracks.get(ti).get("elements").and_then(Value::as_array).map(Vec::len).unwrap_or(0);
             for i in 0..n {
-                let e = t["elements"][i].clone();
-                if !nodes_approx_equal(e.get("startNode"), Some(&nd)) {
+                if !nodes_approx_equal(tracks.get(ti)["elements"][i].get("startNode"), Some(&nd)) {
                     continue;
                 }
+                let e = tracks.get(ti)["elements"][i].clone();
                 let shifted = build_element(
                     &e,
                     start,
@@ -168,7 +184,7 @@ fn propagate(tracks: &mut [Value], epsg: f64, old_node: Value, from_el: &Value, 
                     end_utm_of(&shifted, epsg as i64),
                     end_bearing_of(&shifted),
                 ));
-                t["elements"][i] = shifted;
+                tracks.get_mut(ti)["elements"][i] = shifted;
                 touched.track(tid.clone());
                 if let Some(sid) = e.get("switchId").filter(|v| rail_across_js::truthy(Some(v))) {
                     touched.switch(js_string(Some(sid)));
@@ -200,16 +216,60 @@ fn result(tracks: Vec<Value>, touched: &Touched, error: Option<&str>) -> Value {
 
 /// What changing an element would do (`planElementChange`).
 pub fn plan_element_change(tracks: &[Value], switches: &[Value], track_id: &Value, el_idx: usize, change: &Value) -> Value {
-    let mut new_tracks: Vec<Value> = tracks.to_vec();
+    // No such element: the tracks as they are, not finished (the JavaScript returns its copy then).
+    let found = tracks
+        .iter()
+        .find(|t| strict_eq(t.get("id"), Some(track_id)))
+        .and_then(|t| t["elements"].get(el_idx));
+    if found.is_none() {
+        return result(
+            tracks.to_vec(),
+            &Touched {
+                track_ids: vec![],
+                switch_ids: vec![],
+            },
+            None,
+        );
+    }
+    let (written, touched, error) = plan_element_change_written(tracks, switches, track_id, el_idx, change);
+    let mut all: Vec<Value> = tracks.to_vec();
+    for (i, t) in written {
+        all[i] = t;
+    }
+    result(finish(all), &touched, error)
+}
+
+/// The tracks an element change writes, by index, finished — what a held project needs back.
+pub fn plan_element_change_touched(tracks: &[Value], switches: &[Value], track_id: &Value, el_idx: usize, change: &Value) -> Value {
+    let (written, touched, error) = plan_element_change_written(tracks, switches, track_id, el_idx, change);
+    let mut indices: Vec<usize> = written.keys().copied().collect();
+    indices.sort_unstable();
+    let mut map = written;
+    let out: Vec<Value> = finish(indices.into_iter().filter_map(|i| map.remove(&i)).collect());
+    let out: Vec<Value> = out.into_iter().filter(|t| touched.track_ids.contains(&js_string(t.get("id")))).collect();
+    result(out, &touched, error)
+}
+
+fn plan_element_change_written(
+    tracks: &[Value],
+    switches: &[Value],
+    track_id: &Value,
+    el_idx: usize,
+    change: &Value,
+) -> (std::collections::HashMap<usize, Value>, Touched, Option<&'static str>) {
+    let mut cow = Cow {
+        tracks,
+        written: std::collections::HashMap::new(),
+    };
     let mut touched = Touched {
         track_ids: vec![],
         switch_ids: vec![],
     };
-    let Some(ti) = new_tracks.iter().position(|t| strict_eq(t.get("id"), Some(track_id))) else {
-        return result(new_tracks, &touched, None);
+    let Some(ti) = tracks.iter().position(|t| strict_eq(t.get("id"), Some(track_id))) else {
+        return (cow.written, touched, None);
     };
-    let Some(el) = new_tracks[ti]["elements"].get(el_idx).cloned() else {
-        return result(new_tracks, &touched, None);
+    let Some(el) = tracks[ti]["elements"].get(el_idx).cloned() else {
+        return (cow.written, touched, None);
     };
     let length = change.get("length").and_then(Value::as_f64);
     let bearing = change.get("bearing").and_then(Value::as_f64);
@@ -218,11 +278,10 @@ pub fn plan_element_change(tracks: &[Value], switches: &[Value], track_id: &Valu
     } else {
         None
     };
-    let epsg_v = new_tracks[ti].get("epsg").cloned().unwrap_or(Value::Null);
-    let epsg = js_number(Some(&epsg_v));
+    let epsg = js_number(tracks[ti].get("epsg"));
     let el_radius = f(&el, "radius");
     let follows = radius.is_some_and(|r| !same_radius(r, el_radius)) && f(&el, "elementType") != Some(2.0);
-    let elements = new_tracks[ti]["elements"].as_array().cloned().unwrap_or_default();
+    let elements: &[Value] = tracks[ti]["elements"].as_array().map(Vec::as_slice).unwrap_or(&[]);
     let before = if follows {
         el_idx.checked_sub(1).and_then(|i| joined_transition(elements.get(i), "r2", el_radius)).cloned()
     } else {
@@ -259,15 +318,15 @@ pub fn plan_element_change(tracks: &[Value], switches: &[Value], track_id: &Valu
             radius: Some(radius.unwrap_or(el_radius)),
         },
     );
+    let cut_at: f64 = elements
+        .iter()
+        .take(el_idx)
+        .map(|e| get(e, "length").and_then(Value::as_f64).unwrap_or(0.0))
+        .sum();
     if new_el.get("length") != el.get("length")
-        && let Some(hs) = new_tracks[ti].get("heights").and_then(Value::as_array).cloned()
+        && let Some(hs) = tracks[ti].get("heights").and_then(Value::as_array).cloned()
     {
-        let cut_at: f64 = elements
-            .iter()
-            .take(el_idx)
-            .map(|e| get(e, "length").and_then(Value::as_f64).unwrap_or(0.0))
-            .sum();
-        let t = new_tracks[ti].as_object_mut().expect("a track");
+        let t = cow.get_mut(ti).as_object_mut().expect("a track");
         match truncate_heights(Some(&hs), cut_at) {
             Some(k) => {
                 t.insert("heights".into(), Value::Array(k));
@@ -277,22 +336,23 @@ pub fn plan_element_change(tracks: &[Value], switches: &[Value], track_id: &Valu
             }
         }
     }
-    new_tracks[ti]["elements"][el_idx] = new_el.clone();
+    cow.get_mut(ti)["elements"][el_idx] = new_el.clone();
     if let Some(a) = &after {
         let mut a2 = a.clone();
         a2["r1"] = radius.flatten().map(number).unwrap_or(Value::Null);
-        new_tracks[ti]["elements"][el_idx + 1] = a2;
+        cow.get_mut(ti)["elements"][el_idx + 1] = a2;
     }
-    touched.track(js_string(track_id_of(&new_tracks[ti])));
+    touched.track(js_string(tracks[ti].get("id")));
     if let Some(sid) = el.get("switchId").filter(|v| rail_across_js::truthy(Some(v))) {
         touched.switch(js_string(Some(sid)));
     }
     if let (Some(rb), Some(b)) = (&reshaped_before, &before) {
-        new_tracks[ti]["elements"][el_idx - 1] = rb.clone();
-        propagate(&mut new_tracks, epsg, b.get("endNode").cloned().unwrap_or(Value::Null), rb, &mut touched);
+        cow.get_mut(ti)["elements"][el_idx - 1] = rb.clone();
+        propagate(&mut cow, epsg, b.get("endNode").cloned().unwrap_or(Value::Null), rb, &mut touched);
     }
-    propagate(&mut new_tracks, epsg, el.get("endNode").cloned().unwrap_or(Value::Null), &new_el, &mut touched);
-    let by: Map<String, Value> = new_tracks.iter().map(|t| (js_string(t.get("id")), t.clone())).collect();
+    propagate(&mut cow, epsg, el.get("endNode").cloned().unwrap_or(Value::Null), &new_el, &mut touched);
+    // A switch also stands on the tracks its ports name — read off its ports alone.
+    let by: Map<String, Value> = Map::new();
     for sw in switches {
         let Some(sid) = sw.get("switchId").filter(|v| rail_across_js::truthy(Some(v))) else {
             continue;
@@ -312,11 +372,7 @@ pub fn plan_element_change(tracks: &[Value], switches: &[Value], track_id: &Valu
         }
     }
     let error = (touched.switch_ids.len() > MAX_EDIT_SWITCHES || touched.track_ids.len() > MAX_EDIT_TRACKS).then_some("table_edit_too_wide");
-    result(finish(new_tracks), &touched, error)
-}
-
-fn track_id_of(t: &Value) -> Option<&Value> {
-    t.get("id")
+    (cow.written, touched, error)
 }
 
 fn turn(a: f64, b: f64) -> f64 {

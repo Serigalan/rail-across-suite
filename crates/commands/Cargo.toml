@@ -18,3 +18,5 @@ rail-across-rules = { path = "../rules" }
 rail-across-track = { path = "../track" }
 rail-across-switch = { path = "../switch" }
 rail-across-survey = { path = "../survey" }
+rail-across-doc = { path = "../doc" }
+rail-across-project = { path = "../project" }

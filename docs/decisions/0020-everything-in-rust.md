@@ -38,7 +38,7 @@ Done module by module, each step shipped on its own, the JavaScript removed when
 | 2 | `crates/geom`: `geometry/` and the optimizer's kernel, UTM and the NTv2 grids | replay within a few nanometres (below) |
 | 3 | `crates/rules`: `rules/` and the optimizer's catalogue and check | `packages/core/constraints/tests/` pass |
 | 4 | track, switch, topology, cross section, survey (~13,000 lines); the schematic strip stays in the page (a callback in, closures out — drawing code) | replay, the chain invariants |
-| 5 | `commands/`, `merge/`: the editing, measured for speed — coordinates as `Float64Array`, one call per drag | replay; the document kept in WebAssembly memory if the measurement asks for it |
+| 5 | `commands/`, `merge/`: the editing, measured for speed — coordinates as `Float64Array`, one call per drag | replay; the document kept in WebAssembly memory if the measurement asks for it (it did: the session ops) |
 | 6 | signalling, PlanPro | replay |
 | 7 | `crates/pointcloud` with `las`/`laz`: native on the server, WebAssembly in the browser's worker | the point cloud tests |
 | 8 | `crates/server`: the server's tests as HTTP tests run against both servers; terrain with `tiff`, `zip`, `image-webp`; jobs as threads; `mdb-export` called as before | both servers answer the same; then Caddy is switched, the Node unit kept for going back until the next migration |

@@ -154,6 +154,7 @@ dependencies = [
  "rail-across-js",
  "rail-across-project",
  "rail-across-rules",
+ "rail-across-signalling",
  "rail-across-survey",
  "rail-across-switch",
  "rail-across-track",
@@ -237,6 +238,16 @@ dependencies = [
  "rail-across-geom",
  "rail-across-js",
  "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "rail-across-signalling"
+version = "0.1.0"
+dependencies = [
+ "rail-across-js",
+ "rail-across-switch",
+ "rail-across-track",
  "serde_json",
 ]
 

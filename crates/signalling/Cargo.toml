@@ -1,0 +1,17 @@
+[package]
+name = "rail-across-signalling"
+description = "The signalling domain: the catalogue of DB Ril 301, its check and the extent of the track sections"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[lib]
+name = "rail_across_signalling"
+
+[dependencies]
+serde_json.workspace = true
+rail-across-js = { path = "../js" }
+rail-across-track = { path = "../track" }
+rail-across-switch = { path = "../switch" }

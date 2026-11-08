@@ -19,6 +19,7 @@ mod ops_commands;
 mod ops_geom;
 mod ops_rules;
 mod ops_session;
+mod ops_signalling;
 mod ops_survey;
 mod ops_switch;
 mod ops_track;

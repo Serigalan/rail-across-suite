@@ -157,11 +157,11 @@ else
 fi
 
 step "First admin"
-count=$(cd server && RA_SERVER_DB="$RA_DB" as_user "$RA_NODE" bin/rail-across-server.mjs user-count)
+count=$(server_cli user-count)
 if [ "$count" = 0 ]; then
   pwfile="$RA_DATA/admin-start-password.txt"
   pw=$(python3 -c 'import secrets; print(secrets.token_urlsafe(15))')
-  (cd server && RA_SERVER_DB="$RA_DB" RA_ADMIN_PASSWORD="$pw" as_user "$RA_NODE" bin/rail-across-server.mjs create-admin "$RA_ADMIN_LOGIN")
+  RA_ADMIN_PASSWORD="$pw" server_cli create-admin "$RA_ADMIN_LOGIN"
   umask 077
   printf 'login: %s\nstart password: %s\n(to be changed at the first sign-in; delete this file afterwards)\n' \
     "$RA_ADMIN_LOGIN" "$pw" > "$pwfile"

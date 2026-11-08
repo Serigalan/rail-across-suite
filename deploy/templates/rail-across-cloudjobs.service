@@ -6,7 +6,7 @@ After=network.target
 [Service]
 User=@RA_USER@
 WorkingDirectory=@RA_REPO@/server
-ExecStart=@RA_NODE@ @RA_REPO@/server/bin/rail-across-cloudjobs.mjs serve
+ExecStart=@RA_CLOUDJOBS_EXEC@
 Environment=RA_SERVER_DB=@RA_DB@
 Environment=RA_SERVER_CLOUDS=@RA_CLOUDS@
 Environment=RA_CLOUDJOBS_PARALLEL=@RA_CLOUDJOBS_PARALLEL@

@@ -9,6 +9,27 @@ manages users. It never merges — it takes a revision only on top of the
 current head of a variant (decision 97) and checks it with the browser's own
 code (`parseProjectsPayload`, `validateProject`, decision 91).
 
+## Rust
+
+`crates/server` is this server in Rust (decision 0020, step 8) — the same database and migrations (it builds
+in `migrations/` and opens a database this server made, and the other way round), the same API, cookie and
+argon2id hashes, the cloud jobs as threads (`RA_SERVER_JOBS=1`, or `rail-across-server cloudjobs serve`), the
+terrain and the MDB import. It is what the deployment runs (`RA_SERVER_IMPL=rust`, deploy/); this server
+stays as the way back (`RA_SERVER_IMPL=node`).
+
+    cargo build --release -p rail-across-server
+    target/release/rail-across-server serve | create-admin <login> [name] | backup <file> | user-count | migrate
+    target/release/rail-across-server cloudjobs serve | run <job> | exec <run>
+
+Its environment is this server's (`RA_SERVER_DB`, `RA_SERVER_CLOUDS`, `RA_SERVER_HOST`, `RA_SERVER_PORT`,
+`RA_SERVER_TRUST_PROXY`, `RA_SERVER_INSECURE_COOKIE`, `RA_TERRAIN_*`, `RA_MDB_*`), plus `RA_SERVER_JOBS`.
+
+The tests here run against both: `npx vitest run` this server in process, `RA_SERVER_IMPL=rust npx vitest
+run` the Rust one over HTTP on the same database file, in its test mode (`RA_SERVER_TEST=1`: the clock from
+`x-ra-test-now`, the peer's address from `x-ra-test-remote`). `test/rustServer.test.js` holds what is not
+HTTP — migrations, the data step, the command line, the cloud jobs' tiles and results, and the MDB
+conversion of a real file where one is at hand — to this server's.
+
 ## Run
 
 Node 22. `npm install` at the repository root (one npm workspace with the apps and packages), then

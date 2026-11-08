@@ -50,12 +50,12 @@ describe('signing in', () => {
     const tryIt = (login) => ctx.app.inject({ method: 'POST', url: '/api/login', payload: { login, password: 'wrong password!' } })
     await tryIt('max')
     for (let i = 0; i < BRAKE_ATTEMPTS; i++) await tryIt('ada')
-    expect(ctx.app.auth.failureCount()).toBe(2)
-    ctx.app.auth.sweep()
-    expect(ctx.app.auth.failureCount()).toBe(2)
+    expect(await ctx.app.auth.failureCount()).toBe(2)
+    await ctx.app.auth.sweep()
+    expect(await ctx.app.auth.failureCount()).toBe(2)
     ctx.clock.t += 61 * 1000
-    ctx.app.auth.sweep()
-    expect(ctx.app.auth.failureCount()).toBe(0)
+    await ctx.app.auth.sweep()
+    expect(await ctx.app.auth.failureCount()).toBe(0)
   })
 
   it('believes X-Forwarded-For only from the proxy (R8.3)', async () => {

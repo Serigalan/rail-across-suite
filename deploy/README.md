@@ -21,7 +21,7 @@ Internet ─▶ Caddy (TLS, Let's Encrypt)
              ├─ /sign-in/    die Anmeldeseite (apps/home)           ┐ statisch, aus dist/ (RA_SITE_DIR);
              ├─ /            die Startseite der Suite (apps/home)   │ ohne Sitzung antwortet an jeder
              ├─ /layout/     das Layout-Tool (apps/layout-tool)     ┘ Adresse die Anmeldeseite
-             └─ /api/*       rail-across-server     Node: Anmeldung, Nutzer, Projekte, Varianten,
+             └─ /api/*       rail-across-server     Rust (crates/server; RA_SERVER_IMPL=node: server/): Anmeldung, Nutzer, Projekte, Varianten,
                                                      Revisionen (core 1.0), Punktwolken, MDB, DGM1; SQLite
 
 rail-across-cloudjobs (ohne Port): bereitet hochgeladene Punktwolken auf und rechnet lange Läufe darauf

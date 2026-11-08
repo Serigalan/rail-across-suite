@@ -123,6 +123,13 @@ if [ "$build" = 1 ]; then
     echo "WARNING: no optimizer module — splicing and optimizing cannot compute" >&2
   fi
 
+  step "Project server (crates/server)"
+  # The project server in Rust (decision 0020, step 8). RA_SERVER_IMPL=node
+  # runs the Node server in server/ instead — the way back, same database.
+  if [ "$RA_SERVER_IMPL" = rust ]; then
+    cargo build --release -p rail-across-server || die "the Rust project server did not build — fix it, or set RA_SERVER_IMPL=node"
+  fi
+
   step "Build"
   # Built beside the site directory and then synced into it: the directory
   # itself stays (a Caddy in a container may have it bind-mounted), and the
@@ -155,7 +162,7 @@ if [ "$restart" = 1 ]; then
   if [ -f "$RA_DB" ]; then
     step "Database copy"
     copy="$RA_BACKUPS/rail-across-$(date +%F)-predeploy-$(date +%H%M%S).sqlite"
-    (cd server && RA_SERVER_DB="$RA_DB" as_user "$RA_NODE" bin/rail-across-server.mjs backup "$copy")
+    server_cli backup "$copy"
   fi
   # The units as the templates of this checkout have them — a service of an
   # earlier version taken out (the Python optimizer, decision 0019), the

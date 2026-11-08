@@ -183,6 +183,29 @@ jobs:
       - run: cargo test --release
       - run: cargo build --release -p rail-across-core-wasm --target wasm32-unknown-unknown
 
+  # The project server's tests against both servers (decision 0020, step 8):
+  # the Node one in process, the Rust one (crates/server) over HTTP on the
+  # same database; and the Rust server's commands and jobs held to Node's.
+  project-server:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+        working-directory: .
+      - run: cargo build --release -p rail-across-server
+        working-directory: .
+      - run: npx vitest run
+      - run: npx vitest run
+        env:
+          RA_SERVER_IMPL: rust
+
   # The Simulation-Tool's old address, which leads on to the Fahrplan-Editor.
   simulation-tool:
     runs-on: ubuntu-24.04

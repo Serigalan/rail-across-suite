@@ -1,4 +1,5 @@
 import { FORMAT_NAME, PayloadError, viaNative } from '../document/index.js'
+import { heldProject, holdProject } from '../native/index.js'
 import { reconstructElements, derivedEndBearing, loadedTrackCants } from '../geometry/index.js'
 import { rebuildSwitchSymbol } from '../switch/index.js'
 import { rebuildPlatformSymbol, rebuildCoords } from '../track/index.js'
@@ -148,3 +149,29 @@ function withoutDerived(p) {
 
 /** The records as their documents keep them: derived data stripped, numbers rounded. */
 export const dehydrateProjects = (projects) => viaNative('project.dehydrateProjects', (projects ?? []).map(withoutDerived))
+
+// ── The project the core's module holds (decision 0021, phase C) ─────────────
+
+/**
+ * Hold `project` — the record the page has open — in the core's module, or let
+ * it go with null; after the first only what changed crosses (native
+ * holdProject). The store does this on every write.
+ */
+export { holdProject }
+
+/**
+ * The held project as its infra-data-1.0 document — what a working copy and a
+ * file keep —, made in the module from what it holds; `project` is the record
+ * the caller has, made into a document the usual way where the module holds
+ * another. Options as projectDocument's.
+ */
+export function heldProjectDocument(project, { carrySchemas = false, check = true } = {}) {
+  if (project && heldProject() === project) return viaNative('session.document', [{ carrySchemas, check }])
+  return projectDocument(project, { carrySchemas, check })
+}
+
+/** The held project's record as it is kept (dehydrateProjects), or `project`'s where the module holds another. */
+export function heldKeptProject(project) {
+  if (project && heldProject() === project) return viaNative('session.kept', [])
+  return dehydrateProjects([project])[0]
+}

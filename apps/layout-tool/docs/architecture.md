@@ -91,15 +91,17 @@ own module, and a worker only the server build needs lives in `src/server` (the 
 ## Data flow
 
 1. **Start.** The NTv2 base grids are loaded first (hydration converts historic datums), then the store.
-2. **Open.** A project — an infra-data-1.0 document, or an oltjson-1.1 file (see [data format](data-format.md)) — passes `parseProjectsPayload` and comes out as the record, is
-   hydrated (display geometry derived) and becomes the store's open project.
-3. **Edit.** A panel gathers input, calls a command (`utils/commands`), checks the result against the rules and
+2. **Open.** A project — an infra-data-1.0 document (see [data format](data-format.md)) — passes `parseProjectsPayload` and comes out as the record, is
+   hydrated (display geometry derived) and becomes the store's open project. The core's module holds it too
+   ([decision 0021](../../../docs/decisions/0021-one-format-one-build-the-project-in-the-module.md), phase C).
+3. **Edit.** A panel gathers input, calls a command (`@rail-across/core/commands`), checks the result against the rules and
    hands it to a store function. The store applies it immutably, applies consequences (turnout height coupling,
-   route repair, end-mark pruning, length-governed curves) in the same undo step, notifies subscribers and writes
-   the dehydrated record behind to where the project is kept.
-4. **Save / share.** Local build: IndexedDB and file export (the infra-data-1.0 document). Main build: the working copy
-   in IndexedDB, checked in as a revision — its infra-data-1.0 document; the server validates it with the same code and
-   stores it gzip-compressed.
+   route repair, end-mark pruning, length-governed curves) in the same undo step, notifies subscribers, writes the
+   module only what changed (`holdProject`) and writes the project's document behind to where it is kept. A command
+   handed the open project's tracks or switches gets them from the module rather than across JSON.
+4. **Save / share.** The working copy in IndexedDB — the project's infra-data-1.0 document, made by the module from
+   what it holds —, checked in as a revision; the server validates it with the same code and stores it
+   gzip-compressed. A file export is the same document.
 
 ## Off the main thread
 

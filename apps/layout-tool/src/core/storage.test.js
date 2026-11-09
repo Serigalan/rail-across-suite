@@ -403,7 +403,7 @@ describe('a project kept where its opener says', () => {
   const el = (length) => ({ elementType: 0, length, bearing: 90, startNode: [0, 0], endNode: [length, 0] })
   const record = () => ({ id: 'kp', title: 'K', tracks: [{ id: 't', epsg: 25832, elements: [el(10), el(20)] }], switches: [] })
 
-  it('writes the record with its meta behind every change, and says what it keeps', async () => {
+  it('writes the project\'s document with its meta behind every change, and says what it keeps', async () => {
     const saved = []
     openStoredProject({ project: record(), meta: { projectId: 'kp', note: 1 }, save: (r) => { saved.push(r) } })
     expect(currentStoredMeta()).toEqual({ projectId: 'kp', note: 1 })
@@ -411,7 +411,10 @@ describe('a project kept where its opener says', () => {
     await flushPendingWrites()
     expect(saved).toHaveLength(1)
     expect(saved[0]).toMatchObject({ projectId: 'kp', note: 1 })
-    expect(saved[0].project.tracks[0].elements[0].geometry).toBeUndefined()   // dehydrated
+    // The project as its infra-data-1.0 document, made by the core's module from what it holds.
+    expect(saved[0].document).toMatchObject({ format: 'infra-data', version: '1.0' })
+    expect(saved[0].document.domains.core.collections.tracks[0].elements[0].geometry).toBeUndefined()
+    expect(saved[0].document.domains.core.collections.tracks[0].elements).toHaveLength(1)
     expect(saved[0].updatedAt).toEqual(expect.any(String))
     await closeStoredProject()
     expect(currentStoredProject()).toBeNull()

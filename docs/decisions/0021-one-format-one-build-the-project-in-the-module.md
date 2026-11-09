@@ -35,8 +35,8 @@ Status: **accepted** · 2026-11-09 · carries on [0020](0020-everything-in-rust.
 |---|---|---|
 | A | the local build goes | one build; CI builds the desktop app in its place (done) |
 | B | infra-data-1.0 the only format at every boundary | the server's revisions migrated, working copies on open, oltjson refused, its reader gone (done: data step `0021-infra-data`, schema version 4; `@rail-across/working-copy` keeps documents; the API, files and track files take documents only; the door holds a switch's branch to its `switchId`, which the schema cannot say) |
-| C | the session in the module: the project held as the document, commands in, views out; the Layout-Tool rebuilt onto it | the record gone from the page; no slower than before on the PEK data set in Chrome and WebKit |
-| D | the core's remaining JavaScript as queries of the session: geometry, track, switch, cross section, rule check, signalling catalogue, element table, station register | the core package is the bridge |
+| C | the session in the module: the project held there, written by what changed, lent to every operation handed it | no slower than before on the PEK data set in Chrome and WebKit (done: `holdProject`, the store writes only what changed — a track the module answered named, not sent back —; an operation handed the open project's tracks or switches is lent them; the working copy's document is made from what the module holds. A drag step of the element table on the PEK Bestand: 184–237 ms across JSON before, 10–15 ms held, in Chrome and WebKitGTK alike — see `packages/core/docs/native.md`) |
+| D | the core's remaining JavaScript as queries of the session: geometry, track, switch, cross section, rule check, signalling catalogue, element table, station register; the display geometry worked out in the module; the page's views in the document's terms | the core package is the bridge; the record gone from the page |
 | E | the Layout-Tool's own computing (`src/core/utils`: exchange, plan, elevation, km) and the packages running times, timetables and vehicles | in Rust where it is not slower |
 
 ## Why

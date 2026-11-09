@@ -66,16 +66,124 @@ export async function loadNative(source) {
 /** Forget the module (tests that hold the JavaScript to the same answers). */
 export function unloadNative() {
   exports_ = null
+  held = null
+  heldNames.clear()
+  answers = new WeakMap()
 }
 
 /** As the replay recorded a call's arguments: a Map as an object, a Set as an array. */
 const mapsAndSets = (_, x) => (x instanceof Map ? Object.fromEntries(x) : x instanceof Set ? [...x] : x)
 
+// ── The project the module holds (decision 0021, phase C) ───────────────────
+//
+// The page hands the module the project it has open once (holdProject) and,
+// after every step, only what the step changed — by reference: the record is
+// immutable, so a member or a track that is the same object is the same.
+// From then on an argument that *is* one of the held project's members (its
+// tracks, its switches, …), or the project itself, crosses as a marker
+// (`{"$held": "tracks"}`) and the module lends the operation what it holds
+// there, instead of the page carrying it across as JSON on every call.
+
+let held = null
+const heldNames = new Map()
+// What the module answered on the held project and still keeps, by the page's
+// object it became: written back, it is named (`{"$a": [answer, i]}`), not sent.
+let answers = new WeakMap()
+
+/** `item` is item `i` of answer `answer` of an operation on the held project (session ops). */
+export function answeredBy(item, answer, i) {
+  if (item && typeof item === 'object') answers.set(item, [answer, i])
+}
+
+/**
+ * What changed from `before` to `after`: members set and members removed; of a
+ * changed array, the items it kept named by their place in the held one and
+ * (`named`) those the module answered named by their answer.
+ */
+function patchOf(before, after, named = true) {
+  const patch = {}
+  const removed = []
+  for (const k of Object.keys(before)) if (!(k in after) || after[k] === undefined) removed.push(k)
+  for (const [k, v] of Object.entries(after)) {
+    if (v === undefined || v === before[k]) continue
+    const old = before[k]
+    if (Array.isArray(v) && Array.isArray(old) && old.length) {
+      const at = new Map(old.map((item, i) => [item, i]))
+      let kept = 0
+      const items = v.map((item) => {
+        if (!item || typeof item !== 'object') return item
+        const i = at.get(item)
+        if (i !== undefined) { kept++; return { $k: i } }
+        const a = named && answers.get(item)
+        if (a) { kept++; return { $a: a } }
+        return item
+      })
+      patch[k] = kept ? { $items: items } : v
+    } else {
+      patch[k] = v
+    }
+  }
+  return { patch, removed }
+}
+
+/**
+ * Hold `project` in the module — the record the page has open, or null to let
+ * it go. After the first, a call writes only what changed since the last.
+ */
+export function holdProject(project) {
+  if (!exports_) return
+  if (project === held) return
+  if (!project) {
+    callNative('session.close', [])
+  } else if (!held) {
+    callNative('session.open', [project])
+  } else {
+    try {
+      const { patch, removed } = patchOf(held, project)
+      callNative('session.write', [patch, removed])
+    } catch (err) {
+      if (!(err instanceof NativeError && err.code === 'session_answer_gone')) throw err
+      const { patch, removed } = patchOf(held, project, false)
+      callNative('session.write', [patch, removed])
+    }
+  }
+  held = project ?? null
+  heldNames.clear()
+  if (held) {
+    heldNames.set(held, '')
+    for (const [k, v] of Object.entries(held)) if (v && typeof v === 'object') heldNames.set(v, k)
+  }
+}
+
+/** The project the module holds, as the page last handed it (null for none). */
+export const heldProject = () => held
+
+/** Arguments with what is held replaced by its marker — an argument, its members and theirs. */
+function marked(v, depth) {
+  if (!v || typeof v !== 'object') return v
+  const name = heldNames.get(v)
+  if (name !== undefined) return { $held: name }
+  if (depth >= 3 || v instanceof Map || v instanceof Set || ArrayBuffer.isView(v)) return v
+  if (Array.isArray(v)) {
+    let changed = false
+    const out = v.map((x) => { const m = marked(x, depth + 1); if (m !== x) changed = true; return m })
+    return changed ? out : v
+  }
+  if (Object.getPrototypeOf(v) !== Object.prototype) return v
+  let out = null
+  for (const [k, x] of Object.entries(v)) {
+    const m = marked(x, depth + 1)
+    if (m !== x) (out ??= { ...v })[k] = m
+  }
+  return out ?? v
+}
+
 /** Operation `op` of the module on `input` (JSON-able); its result, or a NativeError. */
 export function callNative(op, input = null) {
   if (!exports_) throw new NativeError('native_not_loaded')
   const { memory, alloc, dealloc, run, result_len: resultLen } = exports_
-  const bytes = encoder.encode(JSON.stringify({ op, input }, mapsAndSets))
+  const given = held && Array.isArray(input) && !op.startsWith('session.') ? input.map(a => marked(a, 1)) : input
+  const bytes = encoder.encode(JSON.stringify({ op, input: given }, mapsAndSets))
   const ptr = alloc(bytes.length)
   new Uint8Array(memory.buffer, ptr, bytes.length).set(bytes)
   const out = run(ptr, bytes.length)
@@ -133,19 +241,29 @@ export function keepSame(out, given) {
  */
 export function reuseFrom(out, args) {
   const known = new Map()
-  // What holds a member set to undefined anywhere says more than its JSON (`'heights' in track`): its
-  // key keeps the undefined, which no answer of the module has, so it is never taken.
-  const keyOf = (v) => JSON.stringify(v, (_, x) => (x === undefined ? '\u0000undefined' : x))
+  // A long array is not keyed as a whole — its JSON would be the project's on
+  // every call —; one of the answer that holds the very items of one of these,
+  // in order, is that array.
+  const long = []
   const note = (v, depth) => {
     if (!v || typeof v !== 'object' || ArrayBuffer.isView(v)) return
-    const key = keyOf(v)
-    if (!known.has(key)) known.set(key, v)
+    if (Array.isArray(v) && v.length > LONG) long.push(v)
+    else {
+      const key = keyOf(v)
+      if (!known.has(key)) known.set(key, v)
+    }
     if (depth <= 0) return
     for (const c of Array.isArray(v) ? v : Object.values(v)) note(c, depth - 1)
   }
   for (const a of args) note(a, 3)
   const walk = (v, depth) => {
     if (!v || typeof v !== 'object') return v
+    if (Array.isArray(v) && v.length > LONG) {
+      // A list of points or numbers is the answer's own; a list of objects may hold the arguments' items.
+      if (depth <= 0 || !v[0] || typeof v[0] !== 'object' || Array.isArray(v[0])) return v
+      const items = v.map(c => walk(c, depth - 1))
+      return long.find(a => a.length === items.length && a.every((x, i) => x === items[i])) ?? items
+    }
     const same = known.get(JSON.stringify(v))
     if (same) return same
     if (depth <= 0) return v
@@ -153,6 +271,51 @@ export function reuseFrom(out, args) {
     return Object.fromEntries(Object.entries(v).map(([k, c]) => [k, walk(c, depth - 1)]))
   }
   return walk(out, 4)
+}
+
+const LONG = 16
+
+// What holds a member set to undefined anywhere says more than its JSON (`'heights' in track`): its
+// key keeps the undefined, which no answer of the module has, so it is never taken. A frozen
+// object does not change — the page's record is frozen as it is written —, so its key is worked
+// out once.
+const keys = new WeakMap()
+function keyOf(v) {
+  let key = keys.get(v)
+  if (key === undefined) {
+    key = JSON.stringify(v, (_, x) => (x === undefined ? '\u0000undefined' : x))
+    if (Object.isFrozen(v)) keys.set(v, key)
+  }
+  return key
+}
+
+/**
+ * The answer's tracks `out` with each that is the same, as JSON, as the track
+ * of its id in `tracks` replaced by that very track — and of one that is not,
+ * each member and each element that is the same — so what an operation on the
+ * held project left alone stays the page's own object (for its memos), at the
+ * cost of the tracks the answer holds rather than the whole project's.
+ */
+export function reuseTracks(out, tracks) {
+  const before = new Map(tracks.map(t => [t.id, t]))
+  return out.map((t) => {
+    const old = before.get(t?.id)
+    if (!old) return t
+    let same = Object.keys(t).length === Object.keys(old).length
+    const kept = {}
+    for (const [k, v] of Object.entries(t)) {
+      const was = old[k]
+      let x = v
+      if (v === was || !v || typeof v !== 'object' || !was || typeof was !== 'object') x = v
+      else if (Array.isArray(v) && Array.isArray(was) && v.length === was.length && v.length && v[0] && typeof v[0] === 'object' && !Array.isArray(v[0])) {
+        const items = v.map((e, i) => (JSON.stringify(e) === keyOf(was[i]) ? was[i] : e))
+        x = items.every((e, i) => e === was[i]) ? was : items
+      } else if (!(Array.isArray(v) && v.length > LONG) && JSON.stringify(v) === keyOf(was)) x = was
+      if (x !== was) same = false
+      kept[k] = x
+    }
+    return same ? old : kept
+  })
 }
 
 /** A JSON object as the Map the JavaScript answered with. */

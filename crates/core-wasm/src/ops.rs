@@ -44,36 +44,48 @@ fn flag(input: &Value, key: &str, otherwise: bool) -> bool {
     }
 }
 
-/// Runs operation `op` on `input`.
-pub fn run(op: &str, input: Value) -> Result<Value, Failure> {
-    if let Some(answer) = crate::ops_geom::run(op, &input) {
+/// Runs operation `op` on `input`. What the input names of the project the
+/// module holds (`{"$held": …}`, decision 0021) is lent to the operation for
+/// the call and taken back after it (`ops_session::lend`).
+pub fn run(op: &str, mut input: Value) -> Result<Value, Failure> {
+    if let Some(answer) = crate::ops_session::run_owned(op, &mut input) {
         return answer;
     }
-    if let Some(answer) = crate::ops_rules::run(op, &input) {
+    let lent = crate::ops_session::lend(&mut input);
+    let answer = run_on(op, &input);
+    crate::ops_session::give_back(&mut input, lent);
+    answer
+}
+
+fn run_on(op: &str, input: &Value) -> Result<Value, Failure> {
+    if let Some(answer) = crate::ops_geom::run(op, input) {
         return answer;
     }
-    if let Some(answer) = crate::ops_track::run(op, &input) {
+    if let Some(answer) = crate::ops_rules::run(op, input) {
         return answer;
     }
-    if let Some(answer) = crate::ops_survey::run(op, &input) {
+    if let Some(answer) = crate::ops_track::run(op, input) {
         return answer;
     }
-    if let Some(answer) = crate::ops_session::run(op, &input) {
+    if let Some(answer) = crate::ops_survey::run(op, input) {
         return answer;
     }
-    if let Some(answer) = crate::ops_commands::run(op, &input) {
+    if let Some(answer) = crate::ops_session::run(op, input) {
         return answer;
     }
-    if let Some(answer) = crate::ops_switch::run(op, &input) {
+    if let Some(answer) = crate::ops_commands::run(op, input) {
         return answer;
     }
-    if let Some(answer) = crate::ops_views::run(op, &input) {
+    if let Some(answer) = crate::ops_switch::run(op, input) {
         return answer;
     }
-    if let Some(answer) = crate::ops_signalling::run(op, &input) {
+    if let Some(answer) = crate::ops_views::run(op, input) {
         return answer;
     }
-    if let Some(answer) = crate::ops_planpro::run(op, &input) {
+    if let Some(answer) = crate::ops_signalling::run(op, input) {
+        return answer;
+    }
+    if let Some(answer) = crate::ops_planpro::run(op, input) {
         return answer;
     }
     match op {
@@ -87,20 +99,20 @@ pub fn run(op: &str, input: Value) -> Result<Value, Failure> {
         // document
         // The document itself where the door changed nothing, so the face hands back the one it was given.
         "document.checkDocument" => {
-            let doc = door::check_document(&input)?;
-            Ok(if doc == input { json!({ "same": true }) } else { json!({ "doc": doc }) })
+            let doc = door::check_document(input)?;
+            Ok(if doc == *input { json!({ "same": true }) } else { json!({ "doc": doc }) })
         }
         "document.toDocument" => Ok(door::to_document(
             &input["record"],
-            flag(&input, "carrySchemas", false),
-            flag(&input, "check", true),
+            flag(input, "carrySchemas", false),
+            flag(input, "check", true),
         )?),
-        "document.fromDocument" => Ok(door::from_document(&input)?),
+        "document.fromDocument" => Ok(door::from_document(input)?),
         "document.recordToDocument" => Ok(core_format::record_to_document(&input["record"], door::schema_hashes())?),
-        "document.manifestOf" => Ok(manifest::manifest_of(&input)),
-        "document.documentHash" => Ok(json!(manifest::document_hash(&input))),
-        "document.canonicalJson" => canonical_json(&input).map(Value::String).map_err(|e| Failure::new("no_json", Some(e.0))),
-        "document.stationRegister" => Ok(stations::station_register_json(&input)),
+        "document.manifestOf" => Ok(manifest::manifest_of(input)),
+        "document.documentHash" => Ok(json!(manifest::document_hash(input))),
+        "document.canonicalJson" => canonical_json(input).map(Value::String).map_err(|e| Failure::new("no_json", Some(e.0))),
+        "document.stationRegister" => Ok(stations::station_register_json(input)),
         "document.renamedStation" => {
             let id = input.get("id").and_then(Value::as_str).unwrap_or("");
             let uic = input.as_object().and_then(|o| o.get("uic")).map(|u| if u.is_null() { None } else { Some(u) });
@@ -108,11 +120,11 @@ pub fn run(op: &str, input: Value) -> Result<Value, Failure> {
         }
 
         // project
-        "project.parseProjectsPayload" => Ok(json!({ "projects": persistence::parse_projects_payload(&input)? })),
+        "project.parseProjectsPayload" => Ok(json!({ "projects": persistence::parse_projects_payload(input)? })),
         "project.projectDocument" => Ok(persistence::project_document(
             &input["record"],
-            flag(&input, "carrySchemas", false),
-            flag(&input, "check", true),
+            flag(input, "carrySchemas", false),
+            flag(input, "check", true),
         )?),
         "project.dehydrateProjects" => {
             let projects = input.as_array().cloned().unwrap_or_default();

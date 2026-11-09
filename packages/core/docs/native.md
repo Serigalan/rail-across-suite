@@ -20,11 +20,37 @@ an object, a Set as an array), and `revive` gives back what JSON does not carry 
 JavaScript threw comes back as an Error with its message. A worker that does not load the module uses
 only what is still JavaScript.
 
+## The held project (decision 0021, phase C)
+
+The page hands the module the project it has open — `holdProject(record)`, which the Layout-Tool's store calls
+on every write — and the module keeps it (`crates/core-wasm/src/ops_session.rs`). The first call opens it; each
+after that writes only what changed, found by reference (the record is immutable and frozen as it is written): a
+member that is the same object is left out, and of an array that changed, an item that is the same object is
+named by its place in the held one (`{"$k": i}`) and one the module answered by its answer (`{"$a": [n, i]}`),
+so a track a command made is not sent back. From then on an argument of any operation that *is* a member of
+the held project, or the project itself — up to two levels into the arguments — crosses as a marker
+(`{"$held": "tracks"}`), and the module lends the operation what it holds there for the call, moved rather than
+copied. `heldProjectDocument` and `heldKeptProject` (`@rail-across/core/project`) make the document and the
+kept record from what the module holds; `planElementChange` on the held tracks asks `session.planElementChange`,
+which answers only the tracks it touched, and `reuseTracks` gives back what of them is the same as the page's
+own objects.
+
+Measured on the PEK Bestand (113 tracks, 69 switches), one drag step of the element table (`planElementChange`
+and the step written back), on a machine under load:
+
+| | across JSON (before) | held |
+|---|---|---|
+| Node (V8) | — | 9 ms + 1.4 ms written |
+| Chrome 154 | 184–237 ms | 10–15 ms |
+| WebKitGTK 2.50 (the desktop app's engine on Linux) | 200–213 ms | 13–15 ms |
+
+Opening it (the first `holdProject`) takes 60–160 ms, once.
+
 ## Files
 
 | File | What |
 |---|---|
-| `index.js` | `loadNative`, `useNativeModule`, `callNative`, `viaRust`, `asMap`, `keepSame`, `reuseFrom`, `nativeReady`, `unloadNative`, `NativeError` |
+| `index.js` | `loadNative`, `useNativeModule`, `callNative`, `viaRust`, `asMap`, `keepSame`, `reuseFrom`, `reuseTracks`, `nativeReady`, `unloadNative`, `NativeError`; the held project: `holdProject`, `heldProject`, `answeredBy` |
 | `node.js` | `loadNativeFile` — the module from its file, synchronously (Node only) |
 
 `npm run wasm` (`scripts/wasm.mjs`) builds the module with cargo and puts it in `packages/core/wasm/`

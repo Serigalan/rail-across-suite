@@ -15,7 +15,7 @@
 // This file is the module's public face: code outside packages/core/src/commands/
 // imports from here and nowhere else (tools/modules.mjs). See docs/commands.md.
 
-import { reuseFrom, viaRust } from '../native/index.js'
+import { answeredBy, callNative, heldProject, reuseFrom, reuseTracks, viaRust } from '../native/index.js'
 
 /** A command on the module, what it passed through untouched given back as it was. */
 const command = (op) => viaRust(`commands.${op}`, reuseFrom)
@@ -88,7 +88,24 @@ export const neighbourAxisNear = command('neighbourAxisNear')
 export const optimizeRequest = command('optimizeRequest')
 export const optimizedTrack = command('optimizedTrack')
 export const picksAtSpeed = command('picksAtSpeed')
-export const planElementChange = command('planElementChange')
+const planElementChangeOf = command('planElementChange')
+/**
+ * What changing element `index` of track `trackId` would do. On the project the
+ * core's module holds (its tracks and switches as the page has them), only the
+ * tracks it touched cross back and the others stay the very objects they are
+ * (decision 0021, phase C); on any other tracks, as the command.
+ */
+export function planElementChange(tracks, switches, trackId, index, change) {
+  const held = heldProject()
+  if (!held || tracks !== held.tracks || switches !== held.switches) return planElementChangeOf(tracks, switches, trackId, index, change)
+  const plan = callNative('session.planElementChange', [trackId, index, change])
+  const touched = new Map(reuseTracks(plan.tracks, tracks).map((t, i) => {
+    answeredBy(t, plan.answer, i)
+    return [t.id, t]
+  }))
+  const { answer: _answer, ...rest } = plan
+  return { ...rest, tracks: tracks.map(t => touched.get(t.id) ?? t) }
+}
 export const planIntermediateChange = command('planIntermediateChange')
 export const preferredShift = command('preferredShift')
 export const reconnectFromAnswer = command('reconnectFromAnswer')

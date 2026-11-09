@@ -61,12 +61,27 @@ export function openDb() {
 // opened either.
 const OLD_FORMAT = 'oltjson-1.1'
 
-const documentOf = (record) => (record ? projectDocument(record) : undefined)
+// A record's document, made once: the records do not change (the base of a
+// copy is written again with every step of the copy).
+const documents = new WeakMap()
+function documentOf(record) {
+  if (!record) return undefined
+  let doc = documents.get(record)
+  if (!doc) {
+    doc = projectDocument(record)
+    documents.set(record, doc)
+  }
+  return doc
+}
 const recordOf = (doc) => (doc ? parseProjectsPayload(doc).projects[0] : undefined)
 
-/** A copy as it is kept: its records as documents. */
-function stored({ project, basePayload, ...rest }) {
-  return { ...rest, document: documentOf(project), baseDocument: documentOf(basePayload), format: FORMAT_NAME }
+/**
+ * A copy as it is kept: its records as documents. A tool that has the
+ * project's document already (the Layout-Tool's store, from the core's module)
+ * hands it as `document` instead of the record.
+ */
+function stored({ project, basePayload, document, ...rest }) {
+  return { ...rest, document: document ?? documentOf(project), baseDocument: documentOf(basePayload), format: FORMAT_NAME }
 }
 
 /** A kept copy as the tools read it — its documents through the door — or null where it cannot be read. */
@@ -112,7 +127,7 @@ export async function getAllWorkingCopies() {
   return entries.map(copyOf).filter(Boolean)
 }
 
-/** Keep a working copy: { variantId, projectId, base, basePayload, project, idLog, … }. */
+/** Keep a working copy: { variantId, projectId, base, basePayload, project | document, idLog, … }. */
 export async function putWorkingCopy(copy) {
   const entry = stored(copy)
   const db = await openDb()

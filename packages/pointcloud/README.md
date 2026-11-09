@@ -53,4 +53,4 @@ npm run wasm   # the import module, which the tests load
 npm test       # vitest; the LAZ sample is looked for under OLT_LAZ_FIXTURE and skipped where it is not there
 ```
 
-E57 samples are in `test/fixtures/e57/`, made with libE57Format by `tools/e57fixtures.py`.
+E57 samples are in `test/fixtures/e57/`: written once with libE57Format, the format's reference implementation, and kept as fixed data (the script that wrote them, in Python, went so the repository has no Python; the files and what a reader has to get out of them stay as they are).

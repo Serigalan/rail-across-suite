@@ -19,13 +19,13 @@ export const hasLaz = LAZ_PATH !== null
 
 /**
  * The same sample as E57, the way a scanner writes one: the points local to a
- * pose, in millimetre integers — made with libE57Format by
- * `python tools/e57fixtures.py <laz> <e57>`; looked for next to the LAZ file.
+ * pose, in millimetre integers — written with libE57Format from the LAZ
+ * sample; looked for next to the LAZ file.
  */
 const E57_CANDIDATE = LAZ_PATH?.replace(/\.laz$/i, '.e57')
 export const E57_SAMPLE_PATH = E57_CANDIDATE && existsSync(E57_CANDIDATE) ? E57_CANDIDATE : null
 
-/** The small E57 files kept in the repository (tools/e57fixtures.py) and what they hold. */
+/** The small E57 files kept in the repository — written once with libE57Format — and what they hold. */
 export const E57_FIXTURES = new URL('./fixtures/e57/', import.meta.url).pathname
 
 /** A source over a file on disk, read synchronously as the import module reads (a worker's FileReaderSync). */

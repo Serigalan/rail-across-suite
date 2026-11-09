@@ -93,12 +93,11 @@ the terrain and the MDB's CSV; the point clouds' code is `crates/pointcloud`'s, 
 
 ## Behind Caddy
 
-The API is served under `/api/` on the app's own origin (no CORS). The
-optimizer and terrain (`/optimizer/*`) and the km line data (`/data/km*`) sit
-behind the sign-in through `forward_auth` against `GET /api/me` — forward_auth
-sends the request's own headers, the session cookie with them — so the Python
-service itself stays as it is (decision 102). `GET /api/health` answers without
-a session, for the deploy script's check.
+The API is served under `/api/` on the app's own origin (no CORS). Everything
+else of the suite — its pages and the km line data (`/data/km*`) — sits behind
+the sign-in through `forward_auth` against `GET /api/me` (decision 102):
+forward_auth sends the request's own headers, the session cookie with them.
+`GET /api/health` answers without a session, for the deploy script's check.
 
 The Caddy site, the systemd units (service and daily backup timer) and the
 scripts that install them are in the app's `deploy/`

@@ -37,8 +37,8 @@ decision 0021.)
 | Every module has a page in `docs/modules/`. | `tools/modules.mjs` |
 | No module reads the store. | architecture test |
 
-`npm run check` runs everything CI runs: lint, knip (dead code), unused translations, the boundary, the module
-rules, all tests, both builds, and — with a Python environment — the optimizer's tests.
+`npm run check` runs everything CI runs: lint, knip (dead code), unused translations, the module rules, the
+docs, all tests, the build, and — where cargo is found — the Rust modules' tests.
 
 ## The computing modules
 

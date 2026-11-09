@@ -9,12 +9,15 @@ axis points (the fit itself runs in the optimizer module).
 
 ## Files
 
-| File | What it does |
+The computation is Rust (decision 0020, step 10): `index.js` calls the core's module for each function
+(`crates/survey`); its JavaScript is gone, the vectors it was held to are frozen.
+
+| In `crates/survey/src/` | What it does |
 |---|---|
-| `axisSurvey.js` | A measured axis kept in the project: axis points from a rail trace, packed; statistics, defects |
-| `referenceAxis.js` | A reference axis (Bestandsachse): a surveyed track's axis as points every centimetre, built from a TRA (and optional GRA) file |
-| `shiftValues.js` | Shift values (Verschiebewerte): across and in height, at round stations of the reference axis; CSV |
-| `alignmentFit.js` | Alignment from axis points: point file parsing, the request to the service, the new track and the report from its answer, editing the straights |
+| `axis.rs` | A measured axis kept in the project: axis points from a rail trace, packed; statistics, defects |
+| `reference.rs` | A reference axis (Bestandsachse): a surveyed track's axis as points every centimetre, built from a TRA (and optional GRA) file |
+| `shift.rs` | Shift values (Verschiebewerte): across and in height, at round stations of the reference axis; CSV |
+| `fit.rs` | Alignment from axis points: point file parsing, the request to the service, the new track and the report from its answer, editing the straights |
 
 ## Axis surveys
 
@@ -82,5 +85,6 @@ for transitions that shift the curve by less than 2 cm (L²/24R).
 
 ## Tests
 
-`axisSurvey.test.js`, `referenceAxis.test.js`, `shiftValues.test.js`, `alignmentFit.test.js` (with a real
-service answer from `packages/core/test/fixtures/align_answer.json`).
+`axisSurvey.test.js`, `shiftValues.test.js` here and the Layout-Tool's `referenceAxis.test.js`,
+`alignmentFit.test.js` (with a real service answer from `packages/core/test/fixtures/align_answer.json`) —
+through `index.js`, so on the Rust module; `crates/survey` replays its frozen vectors.

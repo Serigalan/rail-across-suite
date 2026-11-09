@@ -11,6 +11,11 @@
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { loadNativeFile } from '../src/native/node.js'
+
+// What the JavaScript still records calls into the modules already on Rust
+// (step 10): the core's module is loaded first.
+if (!loadNativeFile()) throw new Error('the core\'s module is not built: npm run wasm')
 
 const here = dirname(fileURLToPath(import.meta.url))
 const CRATES = resolve(here, '../../../crates')

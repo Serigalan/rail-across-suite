@@ -3,9 +3,8 @@ import { existsSync, readFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 import {
-  REFERENCE_MAX_LENGTH, axisOutline, axisRange, buildReferenceAxis, referenceAxisDefect, referencePoints, referenceStretches,
-  sampleAlong,
-} from '@rail-across/core/src/survey/referenceAxis.js'
+  REFERENCE_MAX_LENGTH, axisOutline, axisRange, buildReferenceAxis, referenceAxisDefect, referenceStretches,
+} from '@rail-across/core/survey'
 import { straightElement, arcFrom, transitionElement } from '@rail-across/core/src/geometry/elementFactory.js'
 import { endPointStraightUtm } from '@rail-across/core/src/geometry/elementUtils.js'
 
@@ -34,6 +33,32 @@ const pointAt = (els, s, epsg = EPSG) => {
   return null
 }
 
+/** The points of a reference axis as the record keeps them — e, n in the plane [m], z with NaN where none. */
+function referencePoints(axis) {
+  const p = axis.points
+  const count = p.de.length
+  const e = new Float64Array(count), n = new Float64Array(count)
+  let ce = 0, cn = 0
+  for (let i = 0; i < count; i++) {
+    ce += p.de[i]; cn += p.dn[i]
+    e[i] = p.e0 + ce / 1000
+    n[i] = p.n0 + cn / 1000
+  }
+  let z = null
+  if (p.z) {
+    z = new Float64Array(count).fill(NaN)
+    let cz = 0
+    for (let k = 0; k < p.z.dz.length; k++) {
+      cz += p.z.dz[k]
+      z[p.z.i0 + k] = (p.z.z0 + cz) / 1000
+    }
+  }
+  return { offset: p.s0 * 1, e, n, z }
+}
+
+/** The axis between `from` and `to` as buildReferenceAxis samples it, the stationing of the elements. */
+const sampleAlong = (elements, epsg, from, to) => referencePoints(buildReferenceAxis({ name: 's', epsg, elements, from, to, tra: 's' }))
+
 describe('sampling an axis', () => {
   it('puts a point on every centimetre of its stationing, between the stations asked for', () => {
     const els = [straightElement(P(0, 0), P(100, 0))]
@@ -50,7 +75,8 @@ describe('sampling an axis', () => {
     const { offset, e, n } = sampleAlong(els, EPSG, 90, 300)
     for (let i = 0; i < e.length; i += 1237) {
       const p = pointAt(els, offset + i * 0.01)
-      expect(Math.hypot(e[i] - p.easting, n[i] - p.northing)).toBeLessThan(2e-4)
+      // Kept as whole millimetres: at most half of one each way.
+      expect(Math.hypot(e[i] - p.easting, n[i] - p.northing)).toBeLessThanOrEqual(Math.SQRT1_2 * 1e-3 + 1e-9)
     }
   })
 })
@@ -98,10 +124,6 @@ describe('a reference axis', () => {
     }
     expect(axis).toMatchObject({ heightEpsg: 7837, source: { tra: 'a.TRA', gra: 'a.GRA' } })
     expect(referenceAxisDefect(axis)).toBe(null)
-  })
-
-  it('decodes once per axis', () => {
-    expect(referencePoints(axis)).toBe(referencePoints(axis))
   })
 
   it('has heights only where the gradient reaches', () => {

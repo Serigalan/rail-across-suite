@@ -2,9 +2,9 @@ import { describe, it, expect } from 'vitest'
 import {
   ALIGN_DEFAULTS, alignRequest, deleteStraight, elementReport, fittedCurvature, gradientReport, insertStraight,
   moveStraightEnd, parseAxisPointFile, straightRanges, surveyAxis, trackFromFit,
-} from '@rail-across/core/src/survey/alignmentFit.js'
+} from '@rail-across/core/survey'
 import { axisPointsCsv } from '@rail-across/pointcloud/src/railTrace.js'
-import { surveyFromTrace } from '@rail-across/core/src/survey/axisSurvey.js'
+import { surveyFromTrace } from '@rail-across/core/survey'
 import { expectValidTrack } from '@rail-across/core/test/chainInvariants.js'
 import { trackLength } from '@rail-across/core/src/track/heightUtils.js'
 import fixture from '@rail-across/core/test/fixtures/align_answer.json'

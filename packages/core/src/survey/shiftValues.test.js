@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import {
   comparedLine, deviationAt, heightsComparable, nearestAxis, referenceProfile, shiftSummary, shiftValues, shiftValuesCsv,
-} from './shiftValues.js'
-import { buildReferenceAxis } from './referenceAxis.js'
+} from './index.js'
+import { buildReferenceAxis } from './index.js'
 import { straightElement, arcFrom } from '../geometry/elementFactory.js'
 
 

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { surveyFromTrace, surveyPoints, surveyStats, surveyDefect, withoutPoints } from './axisSurvey.js'
+import { surveyFromTrace, surveyPoints, surveyStats, surveyDefect, withoutPoints } from './index.js'
 import { validateProject } from '../project/validateProject.js'
 import { mergeProject } from '../merge/index.js'
 import { describeStep } from '../project/stepLabel.js'

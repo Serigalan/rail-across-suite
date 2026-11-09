@@ -3,6 +3,7 @@ import { api } from './api'
 import { I18n, initialLanguage, keepLanguage, textsFor } from './i18n'
 import { MODULES, routeOf, takeNotice } from './modules'
 import Header from './Header'
+import { rememberLanguage } from './desktop'
 import Home from './pages/Home'
 import Infrastructure from './pages/Infrastructure'
 import Planned from './pages/Planned'
@@ -68,7 +69,7 @@ export default function App() {
     return () => { alive = false }
   }, [user])
 
-  const chooseLanguage = (l) => { keepLanguage(l); setLanguage(l) }
+  const chooseLanguage = (l) => { keepLanguage(l); setLanguage(l); rememberLanguage(l) }
   const passwordChanged = (u) => {
     setUser(u)
     setNotice({ key: 'password_done' })

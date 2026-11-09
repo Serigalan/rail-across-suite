@@ -3,18 +3,25 @@
 // without anything installed: the binary and the libraries it needs that a
 // plain system does not have (libmdb, libglib on macOS …) copied into
 // crates/desktop/mdbtools/ (mdb-export, lib/). The server sets the library
-// path for it (RA_MDB_LIBS). Where mdb-export is not installed here, the app
-// is built without it and the MDB import says the tool is missing.
+// path for it (RA_MDB_LIBS; on Windows PATH). Where mdb-export is not
+// installed here, the app is built without it and the MDB import says the tool
+// is missing.
+//
+// On Windows mdb-export comes from MSYS2 (pacman -S mingw-w64-x86_64-mdbtools,
+// C:\msys64\mingw64\bin\mdb-export.exe): MSYS2's ldd (RA_LDD, default
+// C:\msys64\usr\bin\ldd.exe) names the DLLs it needs, those beside it are copied.
 //
 //   node scripts/stage-mdbtools.mjs [path to mdb-export]
 import { execFileSync } from 'node:child_process'
 import { chmodSync, copyFileSync, existsSync, mkdirSync, rmSync } from 'node:fs'
-import { basename, join, resolve } from 'node:path'
+import { basename, dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const OUT = resolve(fileURLToPath(new URL('.', import.meta.url)), '../mdbtools')
 const which = (cmd) => { try { return execFileSync(process.platform === 'win32' ? 'where' : 'which', [cmd], { encoding: 'utf8' }).split('\n')[0].trim() } catch { return null } }
+const MSYS = 'C:\\msys64'
 const tool = process.argv[2] ?? process.env.RA_MDB_EXPORT ?? which('mdb-export')
+  ?? (process.platform === 'win32' && existsSync(join(MSYS, 'mingw64/bin/mdb-export.exe')) ? join(MSYS, 'mingw64/bin/mdb-export.exe') : null)
 
 rmSync(OUT, { recursive: true, force: true })
 mkdirSync(join(OUT, 'lib'), { recursive: true })
@@ -35,6 +42,12 @@ if (process.platform === 'linux') {
 } else if (process.platform === 'darwin') {
   libs = execFileSync('otool', ['-L', tool], { encoding: 'utf8' }).split('\n').slice(1)
     .map(l => l.trim().split(' ')[0]).filter(p => p && !p.startsWith('/usr/lib/') && !p.startsWith('/System/') && existsSync(p))
+} else if (process.platform === 'win32') {
+  // "libglib-2.0-0.dll => /mingw64/bin/libglib-2.0-0.dll (0x…)": Windows' own DLLs do not lie beside the tool.
+  const ldd = process.env.RA_LDD ?? join(MSYS, 'usr/bin/ldd.exe')
+  libs = execFileSync(ldd, [tool], { encoding: 'utf8' }).split('\n')
+    .map(l => /^\s*(\S+\.dll)\s*=>/i.exec(l)?.[1]).filter(Boolean)
+    .map(name => join(dirname(tool), name)).filter(p => existsSync(p))
 }
 // Writable copies: Homebrew installs its libraries read-only, and Tauri's build
 // copies the resources over the ones of the build before.

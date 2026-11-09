@@ -2,11 +2,14 @@ name: Release desktop app
 
 # The desktop app as a GitHub release (decision 0021: it takes the place of the local build's zip): pushing a
 # tag desktop-YYYY-MM-DD[.n] builds the app with the project server in its process (crates/desktop) on
-# Linux, macOS and Windows and attaches the packages to a release of that tag.
+# Linux, macOS and Windows and attaches the packages to a release of that tag. On Windows the package is
+# portable: a ZIP of one folder (crates/desktop/portable/), besides the installers. Run by hand, it builds the
+# packages as the run's artifacts and releases nothing.
 
 on:
   push:
     tags: ['desktop-*']
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -30,10 +33,27 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev libsoup-3.0-dev librsvg2-dev mdbtools
       - if: runner.os == 'macOS'
         run: brew install mdbtools
+      # mdb-export from MSYS2, which the runner has; scripts/stage-mdbtools.mjs finds it there.
+      - if: runner.os == 'Windows'
+        run: C:\msys64\usr\bin\pacman.exe -Sy --noconfirm --needed mingw-w64-x86_64-mdbtools
       - run: cargo install tauri-cli --version '^2' --locked
       # Runs scripts/build-site.mjs and scripts/stage-mdbtools.mjs itself (tauri.conf.json).
       - run: cargo tauri build
         working-directory: crates/desktop
+      # The portable package: the program, the suite and mdb-export in one folder with the file `portable`,
+      # which keeps everything the app stores in that folder (src/main.rs).
+      - if: runner.os == 'Windows'
+        shell: pwsh
+        working-directory: crates/desktop
+        run: |
+          $dir = "target/portable/Rail-Across-Suite"
+          New-Item -ItemType Directory -Force $dir | Out-Null
+          Copy-Item target/release/rail-across-desktop.exe "$dir/Rail-Across-Suite.exe"
+          Copy-Item -Recurse site "$dir/site"
+          Copy-Item -Recurse mdbtools "$dir/mdbtools"
+          Copy-Item portable/* $dir
+          New-Item -ItemType Directory -Force target/release/bundle/portable | Out-Null
+          Compress-Archive -Path $dir -DestinationPath "target/release/bundle/portable/Rail-Across-Suite-${{ github.ref_name }}-windows-portable.zip"
       - uses: actions/upload-artifact@v4
         with:
           name: desktop-${{ matrix.os }}
@@ -43,9 +63,11 @@ jobs:
             crates/desktop/target/release/bundle/**/*.dmg
             crates/desktop/target/release/bundle/**/*.msi
             crates/desktop/target/release/bundle/**/*.exe
+            crates/desktop/target/release/bundle/**/*.zip
 
   release:
     needs: build
+    if: startsWith(github.ref, 'refs/tags/desktop-')
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5

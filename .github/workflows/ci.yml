@@ -224,9 +224,34 @@ jobs:
       - run: cargo clippy -- -D warnings
       - run: node scripts/stage-mdbtools.mjs
       - run: cargo build
+      # Portable, as the Windows package runs: the working files in the folder's data/.
       - run: |
           mkdir -p "$RUNNER_TEMP/site" && echo '<!doctype html><title>Smoke</title>' > "$RUNNER_TEMP/site/index.html"
-          RA_DESKTOP_SITE="$RUNNER_TEMP/site" RA_DESKTOP_DATA="$RUNNER_TEMP/data" xvfb-run -a target/debug/rail-across-desktop --smoke
+          RA_DESKTOP_SITE="$RUNNER_TEMP/site" RA_DESKTOP_PORTABLE="$RUNNER_TEMP/portable" xvfb-run -a target/debug/rail-across-desktop --smoke
+          test -f "$RUNNER_TEMP/portable/data/rail-across.sqlite"
+
+  # The same on Windows, where the portable package is the one shipped: WebView2, the scheme's
+  # http://rail.localhost/ address, the Windows-only code of the app and the server.
+  desktop-windows:
+    runs-on: windows-2022
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: crates/desktop
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v5
+      - run: cargo clippy -- -D warnings
+      - run: cargo build
+      - timeout-minutes: 5
+        run: |
+          New-Item -ItemType Directory -Force "$env:RUNNER_TEMP/site" | Out-Null
+          Set-Content "$env:RUNNER_TEMP/site/index.html" '<!doctype html><title>Smoke</title>'
+          $env:RA_DESKTOP_SITE = "$env:RUNNER_TEMP/site"
+          $env:RA_DESKTOP_PORTABLE = "$env:RUNNER_TEMP/portable"
+          target/debug/rail-across-desktop.exe --smoke
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+          if (-not (Test-Path "$env:RUNNER_TEMP/portable/data/rail-across.sqlite")) { throw 'no database in the portable folder' }
 
   # The Simulation-Tool's old address, which leads on to the Fahrplan-Editor.
   simulation-tool:

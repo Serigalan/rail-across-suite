@@ -1,6 +1,9 @@
 // SPDX-FileCopyrightText: 2026 Serigalan and the Rail-Across-Suite contributors
 // SPDX-License-Identifier: LGPL-3.0-only
 
+// Started from Explorer, no console window beside the app's (release builds).
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+
 //! Rail-Across-Suite on the desktop (decision 0020, step 9): the whole suite
 //! in one Tauri window, the project server (`crates/server`) in this very
 //! process. The window loads the built suite from the URI scheme `rail`
@@ -13,17 +16,27 @@
 //! screen (ui/splash.html) asks for the suite's language, the folder of the
 //! working files (database, point clouds) and the folder exported files are
 //! saved to; the choices are kept in settings.json in the app data directory
-//! (the local package of the branch `desktop-standalone`). `mdb-export` comes
-//! bundled where scripts/stage-mdbtools.mjs found it.
+//! (the local package of the branch `desktop-standalone`). The suite's start
+//! page opens the start screen again (`open_settings`); a change restarts the
+//! app. `mdb-export` comes bundled where scripts/stage-mdbtools.mjs found it.
+//!
+//! The portable package (Windows, a ZIP): a file `portable` beside the
+//! executable puts everything the app keeps into that folder — settings.json,
+//! the working files under data/, the exports under export/, the webview's own
+//! storage (the working copies, the language) under webview/ — and paths in it
+//! are kept relative to it, so it can move, a USB stick under another drive
+//! letter included. Started from Explorer, what the server reports goes to
+//! rail-across.log beside the working files.
 //!
 //! Environment: RA_DESKTOP_SITE — the built site (default: the bundled one,
 //! else crates/desktop/site, else the repository's dist/); RA_DESKTOP_DATA —
-//! the working files, overriding the start screen's choice.
+//! the working files, overriding the start screen's choice;
+//! RA_DESKTOP_PORTABLE — a folder to run portable in, without the marker file.
 //! `--smoke`: start on the defaults, load the suite, ask the API through the
 //! window, fetch the Layout-Tool's page and compile the core's WebAssembly
 //! module there, print what came back, then quit (CI's check of the package).
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, OnceLock};
 
@@ -37,12 +50,70 @@ use tauri::{Builder, Manager, RunEvent, WebviewUrl, WebviewWindowBuilder, Window
 static SERVER: OnceLock<Arc<App>> = OnceLock::new();
 /// Tells the cloud jobs' threads to stop.
 static STOP: OnceLock<Arc<AtomicBool>> = OnceLock::new();
+/// The folder of the portable package, if it is one.
+static PORTABLE: OnceLock<Option<PathBuf>> = OnceLock::new();
 
 fn now() -> i64 {
     std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .map(|d| d.as_millis() as i64)
         .unwrap_or(0)
+}
+
+/// RA_DESKTOP_PORTABLE, else the executable's folder where a file `portable` lies in it.
+fn portable() -> Option<&'static PathBuf> {
+    PORTABLE
+        .get_or_init(|| {
+            if let Some(d) = std::env::var_os("RA_DESKTOP_PORTABLE").filter(|d| !d.is_empty()) {
+                return Some(PathBuf::from(d));
+            }
+            let dir = std::env::current_exe().ok()?.parent()?.to_path_buf();
+            dir.join("portable").is_file().then_some(dir)
+        })
+        .as_ref()
+}
+
+/// A folder as settings.json keeps it: inside the portable folder, relative to it.
+fn kept(p: &Path) -> String {
+    match portable().and_then(|base| p.strip_prefix(base).ok()) {
+        Some(rel) => rel.to_string_lossy().into_owned(),
+        None => p.to_string_lossy().into_owned(),
+    }
+}
+
+/// A folder from settings.json: a relative one lies in the portable folder.
+fn resolved(s: &str) -> PathBuf {
+    let p = PathBuf::from(s);
+    match portable() {
+        Some(base) if p.is_relative() => base.join(p),
+        _ => p,
+    }
+}
+
+/// Where settings.json lies: the portable folder, else the app data directory.
+fn settings_dir(app: &impl Manager<tauri::Wry>) -> Option<PathBuf> {
+    portable().cloned().or_else(|| app.path().app_data_dir().ok())
+}
+
+/// The working files unless chosen: data/ in the portable folder, else the app data directory.
+fn default_work_dir(app: &impl Manager<tauri::Wry>) -> Option<PathBuf> {
+    match portable() {
+        Some(base) => Some(base.join("data")),
+        None => app.path().app_data_dir().ok(),
+    }
+}
+
+/// The exports unless chosen: export/ in the portable folder, else where the webview saves downloads.
+fn default_export_dir() -> Option<PathBuf> {
+    portable().map(|base| base.join("export"))
+}
+
+/// The webview's own storage: webview/ in the portable folder, else the platform's place for it.
+fn with_storage<'a, M: Manager<tauri::Wry>>(b: WebviewWindowBuilder<'a, tauri::Wry, M>) -> WebviewWindowBuilder<'a, tauri::Wry, M> {
+    match portable() {
+        Some(base) => b.data_directory(base.join("webview")),
+        None => b,
+    }
 }
 
 /// What the start screen asks; None until chosen, then the defaults apply.
@@ -56,16 +127,17 @@ struct Prefs {
 struct PrefsState(Mutex<Prefs>);
 
 fn settings_file(app: &impl Manager<tauri::Wry>) -> Option<PathBuf> {
-    app.path().app_data_dir().ok().map(|d| d.join("settings.json"))
+    settings_dir(app).map(|d| d.join("settings.json"))
 }
 
 fn load_prefs(app: &impl Manager<tauri::Wry>) -> Prefs {
     let mut p = Prefs::default();
     if let Ok(s) = std::fs::read_to_string(settings_file(app).unwrap_or_default()) {
         if let Ok(v) = serde_json::from_str::<serde_json::Value>(&s) {
+            let dir = |k: &str| v.get(k).and_then(|x| x.as_str()).filter(|d| !d.is_empty()).map(resolved);
             p.language = v.get("language").and_then(|x| x.as_str()).map(String::from);
-            p.work_dir = v.get("workDir").and_then(|x| x.as_str()).map(PathBuf::from);
-            p.export_dir = v.get("exportDir").and_then(|x| x.as_str()).map(PathBuf::from);
+            p.work_dir = dir("workDir");
+            p.export_dir = dir("exportDir");
         }
     }
     p
@@ -78,7 +150,12 @@ fn save_prefs(app: &impl Manager<tauri::Wry>, p: &Prefs) {
         }
         let _ = std::fs::write(
             f,
-            serde_json::json!({ "language": p.language, "workDir": p.work_dir, "exportDir": p.export_dir }).to_string(),
+            serde_json::json!({
+                "language": p.language,
+                "workDir": p.work_dir.as_deref().map(kept),
+                "exportDir": p.export_dir.as_deref().map(kept),
+            })
+            .to_string(),
         );
     }
 }
@@ -88,12 +165,21 @@ fn current_prefs(app: tauri::AppHandle) -> serde_json::Value {
     let p = app.state::<PrefsState>().0.lock().unwrap().clone();
     serde_json::json!({
         "language": p.language, "workDir": p.work_dir, "exportDir": p.export_dir,
-        "defaults": { "workDir": app.path().app_data_dir().ok(), "exportDir": app.path().download_dir().ok() },
+        "defaults": {
+            "workDir": default_work_dir(&app),
+            "exportDir": default_export_dir().or_else(|| app.path().download_dir().ok()),
+        },
+        "portable": portable().is_some(),
+        "running": SERVER.get().is_some(),
     })
 }
 
+/// The start screen's choices: kept, then the suite starts — or, opened again
+/// from the suite, starts anew on them (the server's working files are fixed
+/// for its lifetime). Async: a window built in a synchronous command
+/// deadlocks on Windows (WebView2).
 #[tauri::command]
-fn start_app(app: tauri::AppHandle, prefs: serde_json::Value) -> Result<(), String> {
+async fn start_app(app: tauri::AppHandle, prefs: serde_json::Value) -> Result<(), String> {
     let dir = |k: &str| prefs.get(k).and_then(|x| x.as_str()).filter(|d| !d.is_empty()).map(PathBuf::from);
     let p = Prefs {
         language: prefs.get("language").and_then(|x| x.as_str()).map(String::from),
@@ -102,11 +188,33 @@ fn start_app(app: tauri::AppHandle, prefs: serde_json::Value) -> Result<(), Stri
     };
     save_prefs(&app, &p);
     *app.state::<PrefsState>().0.lock().unwrap() = p;
+    if SERVER.get().is_some() {
+        stop_jobs();
+        app.restart();
+    }
     start_main(&app, false)?;
     if let Some(splash) = app.get_webview_window("splash") {
         let _ = splash.close();
     }
     Ok(())
+}
+
+/// The start screen again, from the suite's start page.
+#[tauri::command]
+async fn open_settings(app: tauri::AppHandle) -> Result<(), String> {
+    match app.get_webview_window("splash") {
+        Some(w) => w.set_focus().map_err(|e| e.to_string()),
+        None => open_splash(&app).map_err(|e| e.to_string()),
+    }
+}
+
+/// The language chosen in the suite, for the next start.
+#[tauri::command]
+fn set_language(app: tauri::AppHandle, language: String) {
+    let state = app.state::<PrefsState>();
+    let mut p = state.0.lock().unwrap();
+    p.language = Some(language);
+    save_prefs(&app, &p);
 }
 
 /// The smoke check's report from the window.
@@ -186,9 +294,11 @@ fn start_main(app: &tauri::AppHandle, smoke: bool) -> Result<(), String> {
         .ok()
         .map(PathBuf::from)
         .or(prefs.work_dir)
-        .or_else(|| app.path().app_data_dir().ok())
+        .or_else(|| default_work_dir(app))
         .ok_or("no app data directory")?;
     std::fs::create_dir_all(&data).map_err(|e| e.to_string())?;
+    #[cfg(windows)]
+    stderr_to_log(&data);
     let db_path = data.join("rail-across.sqlite");
     let clouds = data.join("clouds");
     use_bundled_mdbtools(app);
@@ -230,15 +340,16 @@ fn start_main(app: &tauri::AppHandle, smoke: bool) -> Result<(), String> {
              window.__TAURI__.core.invoke('smoke_report', { report: r }) });",
         );
     }
-    WebviewWindowBuilder::new(app, "main", WebviewUrl::CustomProtocol(root_url()))
+    with_storage(WebviewWindowBuilder::new(app, "main", WebviewUrl::CustomProtocol(root_url())))
         .title("Rail-Across-Suite")
         .inner_size(1440.0, 900.0)
         .min_inner_size(1024.0, 640.0)
         .initialization_script(&script)
         .on_download(|webview, event| {
             if let DownloadEvent::Requested { destination, .. } = event {
-                let dir = webview.state::<PrefsState>().0.lock().unwrap().export_dir.clone();
+                let dir = webview.state::<PrefsState>().0.lock().unwrap().export_dir.clone().or_else(default_export_dir);
                 if let (Some(dir), Some(name)) = (dir, destination.file_name()) {
+                    let _ = std::fs::create_dir_all(&dir);
                     *destination = dir.join(name);
                 }
             }
@@ -247,6 +358,43 @@ fn start_main(app: &tauri::AppHandle, smoke: bool) -> Result<(), String> {
         .build()
         .map_err(|e| e.to_string())?;
     Ok(())
+}
+
+/// The start screen (ui/splash.html).
+fn open_splash(app: &tauri::AppHandle) -> tauri::Result<()> {
+    with_storage(WebviewWindowBuilder::new(app, "splash", WebviewUrl::App("splash.html".into())))
+        .title("Rail-Across-Suite")
+        .inner_size(560.0, 560.0)
+        .resizable(false)
+        .center()
+        .build()?;
+    Ok(())
+}
+
+/// Started from Explorer, a Windows app has no stderr: what the server and its
+/// jobs report goes to rail-across.log beside the working files then, begun
+/// anew past 5 MB. Run from a console or with its output caught (CI), it stays there.
+#[cfg(windows)]
+fn stderr_to_log(dir: &Path) {
+    use std::os::windows::io::IntoRawHandle;
+    #[link(name = "kernel32")]
+    unsafe extern "system" {
+        fn GetStdHandle(which: u32) -> isize;
+        fn SetStdHandle(which: u32, handle: isize) -> i32;
+    }
+    const STD_ERROR_HANDLE: u32 = 0xFFFF_FFF4;
+    // SAFETY: asks for the process's own standard handle; null or -1 when it has none.
+    let current = unsafe { GetStdHandle(STD_ERROR_HANDLE) };
+    if current != 0 && current != -1 {
+        return;
+    }
+    let path = dir.join("rail-across.log");
+    let fresh = std::fs::metadata(&path).map(|m| m.len() > 5 << 20).unwrap_or(false);
+    let file = std::fs::OpenOptions::new().create(true).append(!fresh).write(true).truncate(fresh).open(&path);
+    if let Ok(file) = file {
+        // SAFETY: hands the file's handle, which it gives up, to the process as its stderr.
+        unsafe { SetStdHandle(STD_ERROR_HANDLE, file.into_raw_handle() as isize) };
+    }
 }
 
 fn stop_jobs() {
@@ -262,7 +410,7 @@ fn main() {
         .register_asynchronous_uri_scheme_protocol("rail", |_ctx, request, responder| {
             std::thread::spawn(move || responder.respond(answer(request)));
         })
-        .invoke_handler(tauri::generate_handler![current_prefs, start_app, smoke_report])
+        .invoke_handler(tauri::generate_handler![current_prefs, start_app, open_settings, set_language, smoke_report])
         .setup(move |app| {
             let handle = app.handle().clone();
             app.manage(PrefsState(Mutex::new(load_prefs(&handle))));
@@ -270,12 +418,7 @@ fn main() {
             if has_settings || smoke {
                 start_main(&handle, smoke).map_err(Box::<dyn std::error::Error>::from)?;
             } else {
-                WebviewWindowBuilder::new(app, "splash", WebviewUrl::App("splash.html".into()))
-                    .title("Rail-Across-Suite")
-                    .inner_size(560.0, 470.0)
-                    .resizable(false)
-                    .center()
-                    .build()?;
+                open_splash(&handle)?;
             }
             Ok(())
         })

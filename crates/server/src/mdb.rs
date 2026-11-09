@@ -119,14 +119,28 @@ fn timeout() -> Duration {
 fn rows(path: &std::path::Path, table: &str) -> Result<Vec<Row>, MdbError> {
     let mut cmd = Command::new(tool());
     cmd.arg(path).arg(table).stdout(Stdio::piped()).stderr(Stdio::null());
-    // mdb-export bundled with its libraries (the desktop app): RA_MDB_LIBS is where they lie.
-    if let Ok(libs) = std::env::var("RA_MDB_LIBS") {
-        let var = if cfg!(target_os = "macos") { "DYLD_LIBRARY_PATH" } else { "LD_LIBRARY_PATH" };
-        let joined = match std::env::var(var) {
-            Ok(old) if !old.is_empty() => format!("{libs}:{old}"),
-            _ => libs,
+    // mdb-export bundled with its libraries (the desktop app): RA_MDB_LIBS is where they lie,
+    // found on the loader's path — Windows looks for DLLs on PATH.
+    if let Some(libs) = std::env::var_os("RA_MDB_LIBS") {
+        let var = if cfg!(windows) {
+            "PATH"
+        } else if cfg!(target_os = "macos") {
+            "DYLD_LIBRARY_PATH"
+        } else {
+            "LD_LIBRARY_PATH"
         };
-        cmd.env(var, joined);
+        let old = std::env::var_os(var).unwrap_or_default();
+        let dirs = std::iter::once(std::path::PathBuf::from(libs)).chain(std::env::split_paths(&old));
+        if let Ok(joined) = std::env::join_paths(dirs) {
+            cmd.env(var, joined);
+        }
+    }
+    // A console program started from the desktop app (no console of its own): no window flashing up.
+    #[cfg(windows)]
+    {
+        use std::os::windows::process::CommandExt;
+        const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+        cmd.creation_flags(CREATE_NO_WINDOW);
     }
     let mut child = match cmd.spawn() {
         Ok(c) => c,

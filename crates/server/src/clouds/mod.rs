@@ -83,7 +83,23 @@ fn disk_space(path: &Path) -> (i64, i64) {
     ((s.f_bavail as u64 * s.f_frsize as u64) as i64, (s.f_blocks as u64 * s.f_frsize as u64) as i64)
 }
 
-#[cfg(not(unix))]
+#[cfg(windows)]
+fn disk_space(path: &Path) -> (i64, i64) {
+    use std::os::windows::ffi::OsStrExt;
+    #[link(name = "kernel32")]
+    unsafe extern "system" {
+        fn GetDiskFreeSpaceExW(dir: *const u16, free_to_caller: *mut u64, total: *mut u64, total_free: *mut u64) -> i32;
+    }
+    let wide: Vec<u16> = path.as_os_str().encode_wide().chain(Some(0)).collect();
+    let (mut free, mut total, mut all_free) = (0u64, 0u64, 0u64);
+    // SAFETY: the path is a NUL-terminated UTF-16 string; the three outputs are valid u64s.
+    if unsafe { GetDiskFreeSpaceExW(wide.as_ptr(), &mut free, &mut total, &mut all_free) } == 0 {
+        return (0, 0);
+    }
+    (free as i64, total as i64)
+}
+
+#[cfg(not(any(unix, windows)))]
 fn disk_space(_: &Path) -> (i64, i64) {
     (i64::MAX / 4, i64::MAX / 4)
 }

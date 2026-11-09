@@ -1,0 +1,7 @@
+Diese Datei macht Rail-Across-Suite portabel: Einstellungen, Arbeitsdateien,
+Exporte und der Speicher der Oberfläche liegen in diesem Ordner. Ohne sie
+nutzt die App die Ordner des Benutzers.
+
+This file makes Rail-Across-Suite portable: settings, working files, exports
+and the window's own storage lie in this folder. Without it the app uses the
+user's folders.

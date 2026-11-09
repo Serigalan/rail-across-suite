@@ -6,8 +6,6 @@ import { reuseFrom, viaRust } from '../native/index.js'
 const uniqueStations = viaRust('switch.uniqueStations', reuseFrom)
 
 describe('the position slider', () => {
-  const valid = (s) => (s >= 10.25 && s <= 40.5) || (s >= 60 && s <= 70)
-
   // Finding the valid stretches asks the dialog back (valid(s)); the module does that inside
   // switchOnTrackSlider and crossingOnTrackSlider, tested with them (commands).
   it('skips what is not valid: the nearest valid station', () => {

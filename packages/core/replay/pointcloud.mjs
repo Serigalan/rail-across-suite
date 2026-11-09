@@ -22,7 +22,7 @@ import { cloudSectionPoints, forgetAllClouds } from '@rail-across/pointcloud/src
 import { makeLas, bytesSource } from '@rail-across/pointcloud/test/pointCloudFixture.js'
 import { gaugeProfile, gaugeProfileAreas, gaugeProfileRing } from '../src/crossSection/index.js'
 import { makeTrack } from '../src/track/index.js'
-import { straightFrom, arcFrom } from '../src/geometry/index.js'
+import { straightFrom } from '../src/geometry/index.js'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const REPO = resolve(here, '../../..')

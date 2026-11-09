@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  # The repository's own rules: the import boundaries between apps and packages.
+  # The repository's own rules: the packages' lint and the import boundaries between apps and packages.
   check:
     runs-on: ubuntu-24.04
     steps:
@@ -13,6 +13,9 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: 22
+          cache: npm
+      # ESLint for the packages (npm run lint) comes from the workspace.
+      - run: npm ci --no-audit --no-fund
       - run: npm run check
 
   # The Rail-Data-Core: its tests and its module rules.

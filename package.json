@@ -12,7 +12,8 @@
     "node": ">=22"
   },
   "scripts": {
-    "check": "node tools/boundaries.mjs && node --test 'tools/*.test.mjs'"
+    "lint": "eslint -c packages/eslint.config.js packages",
+    "check": "npm run -s lint && node tools/boundaries.mjs && node --test 'tools/*.test.mjs'"
   },
   "allowScripts": {
     "esbuild": true,

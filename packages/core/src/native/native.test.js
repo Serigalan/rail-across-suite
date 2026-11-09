@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { callNative, nativeReady, NativeError } from './index.js'
 import { loadNativeFile } from './node.js'
 

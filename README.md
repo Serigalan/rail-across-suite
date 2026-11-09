@@ -20,7 +20,7 @@ One repository holds the core, every module and the server
 | `sim/`, `crossover/`, `optimizer/` | Rust, built to WebAssembly for the browser: the running time simulation, the search of the extended switch connection, the track optimizer — splicing, reconnecting, optimizing, the alignment fit ([decision 0019](docs/decisions/0019-optimizer-in-rust.md)) |
 | `crates/` | the core's Rust crates, one cargo workspace with `sim/`, `crossover/` and `optimizer/` (`Cargo.toml` at the root); built as the core's WebAssembly module, and the project server for all modules, `crates/server` ([decision 0020](docs/decisions/0020-everything-in-rust.md)) |
 | `docs/` | data model, decisions, glossary, conventions |
-| `tools/` | repository checks (`npm run check`) |
+| `tools/` | repository checks (`npm run check`, with the packages' lint, `npm run lint`) |
 
 The JavaScript parts — apps, packages and the server's tests — are one npm workspace: `npm install` at the root installs
 them all, `npm run check` checks the repository's rules. Data kept out of the history is fetched per app

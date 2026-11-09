@@ -1,9 +1,10 @@
 // SPDX-FileCopyrightText: 2026 Serigalan and the Rail-Across-Suite contributors
 // SPDX-License-Identifier: LGPL-3.0-only
 
-//! The terrain and MDB pieces of the Rust server, held to what the Node
-//! server's own tests ask of its JavaScript (`server/test/terrain.test.js`).
-//! The GeoTIFFs here were written by geotiff.js, as that test writes them.
+//! The terrain and MDB pieces of the server: the DGM1 tiles, the tile store,
+//! heights and relief tiles, mdb-export's CSV (written after the Node server's
+//! tests of them; the HTTP side is `server/test/terrain.test.js`). The
+//! GeoTIFFs here were written by geotiff.js.
 
 use std::io::{Read, Write};
 use std::sync::{Arc, Mutex};

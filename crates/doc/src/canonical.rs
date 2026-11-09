@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 
 //! Canonical JSON and content hashes (`canonical.js`, `sha256.js`): the one
-//! byte form of a value, so the browser, the server and the Python core hash
+//! byte form of a value, so the browser, the server and the desktop app hash
 //! the same data alike (data model S-R3).
 
 use rail_across_js::canonical_json;

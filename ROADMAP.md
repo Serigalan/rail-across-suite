@@ -90,8 +90,9 @@ Done:
   ([decision 0004](docs/decisions/0004-ids-on-tracks.md)). Files and the project server hold core 1.0 documents;
   the server migrates its oltjson-1.1 revisions when it reads them. The app keeps its record as the model it
   works on.
-- The Python core `packages/core-py` (no dependencies): the same door, canonical JSON, hashes and manifest, held
-  with the JavaScript core to the shared vectors in `schemas/vectors/`.
+- The shared vectors in `schemas/vectors/`: the door, canonical JSON, hashes and manifest, which the JavaScript core
+  and its Rust crates are held to (a Python core held to them too was taken out with decision 0020, step 10: nothing
+  used it).
 
 Open:
 

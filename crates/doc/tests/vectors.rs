@@ -1,9 +1,9 @@
 // SPDX-FileCopyrightText: 2026 Serigalan and the Rail-Across-Suite contributors
 // SPDX-License-Identifier: LGPL-3.0-only
 
-//! The shared vectors (`schemas/vectors/`) that hold the JavaScript and the
-//! Python core to the same results hold this one too: canonical JSON and its
-//! hash, the schema check, whole documents through the door.
+//! The shared vectors (`schemas/vectors/`) that hold the JavaScript core to
+//! its results hold this one too: canonical JSON and its hash, the schema
+//! check, whole documents through the door.
 
 use rail_across_doc::canonical::content_hash;
 use rail_across_doc::door::{check_document, schema_of};

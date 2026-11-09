@@ -1,6 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { setup, signIn } from './helpers.js'
-import { vehicleFault } from '../src/routes/vehicles.js'
 
 let ctx
 afterEach(async () => {
@@ -66,15 +65,22 @@ describe('vehicles', () => {
     expect(bad.json().error).toBe('mass_invalid')
   })
 
-  it('are checked for their curves', () => {
-    expect(vehicleFault(vehicle())).toBeNull()
-    expect(vehicleFault(vehicle({ name: ' ' }))).toBe('name_required')
-    expect(vehicleFault(vehicle({ inertia_coefficient: 0.9 }))).toBe('inertia_coefficient_invalid')
-    expect(vehicleFault(vehicle({ rolling_resistance: { A: -1, B: 0, C: 0 } }))).toBe('rolling_resistance_invalid')
+  it('are checked for their curves', async () => {
+    ctx = await setup()
+    const max = await signIn(ctx.app, 'max')
+    // What the server says of a vehicle: null where it takes it, else its error.
+    const vehicleFault = async (data) => {
+      const res = await max('POST', '/api/vehicles', { data })
+      return res.statusCode === 201 ? null : res.json().error
+    }
+    expect(await vehicleFault(vehicle())).toBeNull()
+    expect(await vehicleFault(vehicle({ name: ' ' }))).toBe('name_required')
+    expect(await vehicleFault(vehicle({ inertia_coefficient: 0.9 }))).toBe('inertia_coefficient_invalid')
+    expect(await vehicleFault(vehicle({ rolling_resistance: { A: -1, B: 0, C: 0 } }))).toBe('rolling_resistance_invalid')
     const modes = (c) => ({ effort_curves: { default_mode: 'm', modes: { m: { is_electric: false, default_curve: c, curves: [] } } } })
-    expect(vehicleFault(vehicle(modes({ speeds: [0], max_efforts: [1] })))).toBe('effort_curves_invalid')
-    expect(vehicleFault(vehicle(modes({ speeds: [0, 5, 5], max_efforts: [1, 1, 1] })))).toBe('effort_curves_invalid')
-    expect(vehicleFault(vehicle(modes({ speeds: [0, 5], max_efforts: [1] })))).toBe('effort_curves_invalid')
-    expect(vehicleFault(vehicle({ effort_curves: { default_mode: 'x', modes: { m: { default_curve: curve, curves: [] } } } }))).toBe('effort_curves_invalid')
+    expect(await vehicleFault(vehicle(modes({ speeds: [0], max_efforts: [1] })))).toBe('effort_curves_invalid')
+    expect(await vehicleFault(vehicle(modes({ speeds: [0, 5, 5], max_efforts: [1, 1, 1] })))).toBe('effort_curves_invalid')
+    expect(await vehicleFault(vehicle(modes({ speeds: [0, 5], max_efforts: [1] })))).toBe('effort_curves_invalid')
+    expect(await vehicleFault(vehicle({ effort_curves: { default_mode: 'x', modes: { m: { default_curve: curve, curves: [] } } } }))).toBe('effort_curves_invalid')
   })
 })

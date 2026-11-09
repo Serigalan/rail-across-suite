@@ -7,8 +7,8 @@ A project as the Rail-Data-Core keeps it and hands it on: the **core 1.0 documen
 Schema, its fields and its collections; locations as one value each; the planning status as a lifespan over
 the construction stages; station names and codes as an operational point register; named runs of tracks as
 `TrackPath`s; bulk point arrays as blobs named by their hash. The schemas are in [`schemas/`](../../../schemas/README.md)
-at the root of the repository (linked into the package), with the test vectors that hold the Python core to the
-same results.
+at the root of the repository (linked into the package), with the test vectors that hold the core's Rust crates
+(`crates/doc`) to the same results.
 
 The module checks documents (the door), turns the record the Layout-Tool works on into one and back, and
 writes canonical JSON and content hashes. The `project` module opens the door for the app and the server
@@ -94,5 +94,5 @@ hash it is filed under.
 
 `canonical.test.js` (SHA-256 against node:crypto, the RFC's examples), `schemaCheck.test.js`, `door.test.js`
 (the conversion both ways, the door's verdicts, the manifest, the PEK data set losslessly, the shared vectors
-current). `node tools/vectors.mjs` writes the shared vectors to `schemas/vectors/`; the Python core is held to
-them.
+current). `node tools/vectors.mjs` writes the shared vectors to `schemas/vectors/`; the Rust crates are held to
+them (`crates/doc/tests/vectors.rs`).

@@ -1,6 +1,6 @@
 // The domain schemas checked as JSON Schema — the part of it they use, no more,
-// so that the Python core reads them exactly alike (core-py, schema_check.py,
-// held to the same vectors). A schema that uses another keyword is refused
+// so that the Rust crate reads them exactly alike (crates/doc, held to the
+// same vectors). A schema that uses another keyword is refused
 // when it is registered rather than half understood.
 
 /** The keywords understood; annotations (`x-…`) are ignored. */

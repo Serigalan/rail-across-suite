@@ -11,10 +11,9 @@ current head of a variant (decision 97) and checks it as the browser does
 
 The server is Rust: `crates/server` (decision 0020, step 8) — axum, rusqlite, argon2id; the cloud jobs as
 threads; the DGM1 terrain and the MDB import. It is the only one that runs: in the deployment (deploy/), in
-the desktop app (`crates/desktop`, in its own process) and in development. This directory holds what it
-shares with the suite's JavaScript — the schema (`migrations/`, built into the binary), the server's HTTP
-tests (`test/`) — and the Node server in `src/` the Rust one was written against: kept as the reference the
-tests can still hold it to (`RA_SERVER_IMPL=node`), run nowhere.
+the desktop app (`crates/desktop`, in its own process) and in development. This directory holds the schema
+(`migrations/`, built into the binary) and the server's tests (`test/`), written for the Node server it
+replaced and run against this one since (decision 0020, step 10 took the Node server out).
 
 ## Run
 
@@ -85,10 +84,12 @@ still worked on where its joints missed by up to a millimetre, as a revision of 
 
 The tests of `test/` run against the Rust server over HTTP, on a database file of their own, in its test
 mode (`RA_SERVER_TEST=1`: the clock from `x-ra-test-now`, the peer's address from `x-ra-test-remote`).
-`RA_SERVER_IMPL=node npx vitest run` holds the Node reference to the same tests, in process.
-`test/rustServer.test.js` holds what is not HTTP to the reference — migrations, the data step, the command
-line, the cloud jobs' tiles and results, and the MDB conversion of a real file where one is at hand. The
-crate's own tests (`cargo test -p rail-across-server`) cover the terrain.
+In test mode
+the server also answers `/api/__test/*`: users made, the cloud queues worked off in its process, a run claimed,
+carried out, queued again or pruned on the test's clock. `test/commands.test.js` holds what is not the API —
+the migrations, the data step, the command line with the cloud jobs' `run` and `exec`, the log, and the MDB
+import of a real file where one is at hand. The crate's own tests (`cargo test -p rail-across-server`) cover
+the terrain and the MDB's CSV; the point clouds' code is `crates/pointcloud`'s, held by its replay.
 
 ## Behind Caddy
 

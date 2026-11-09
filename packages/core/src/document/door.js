@@ -154,7 +154,7 @@ const breaches = (errors, prefix) => errors.map(e => `${prefix}${e.path === '/' 
 /**
  * Check a core 1.0 document; returns it — a domain of an earlier schema of
  * its version brought to this build's —, or throws a PayloadError —
- * the same verdicts the Python core gives (core-py, held to the shared vectors):
+ * the same verdicts its Rust crate gives (crates/doc, held to the shared vectors):
  * `unsupported_version` for a domain or a version this build does not read,
  * `invalid_payload` (with its `details`) for anything else that is not as the
  * schemas say.

@@ -1,6 +1,9 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { as, PW, setup, signIn } from './helpers.js'
-import { BRAKE_ATTEMPTS, SESSION_IDLE } from '../src/auth.js'
+
+// The server's (crates/server/src/auth.rs): wrong sign-ins before the brake, and how long a session lasts unused.
+const BRAKE_ATTEMPTS = 5
+const SESSION_IDLE = 30 * 24 * 3600 * 1000
 
 let ctx
 afterEach(async () => { await ctx?.app.close(); ctx?.db.close() })

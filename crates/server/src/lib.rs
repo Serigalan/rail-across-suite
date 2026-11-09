@@ -1,12 +1,12 @@
 // SPDX-FileCopyrightText: 2026 Serigalan and the Rail-Across-Suite contributors
 // SPDX-License-Identifier: LGPL-3.0-only
 
-//! The project server of Rail-Across-Suite in Rust (decision 0020, step 8):
-//! the same database, migrations and API as the Node server in `server/` —
+//! The project server of Rail-Across-Suite (decision 0020, step 8; it took
+//! the place of the Node server, whose database, migrations and API it kept) —
 //! users and sessions, projects with their variants and revisions checked by
 //! the core's crates, vehicles and timetables, point clouds with their
 //! uploads, tiles, share links and jobs (as threads), the Länder's DGM1 and
-//! the MDB import. The server's tests run against both (`RA_SERVER_IMPL=rust`).
+//! the MDB import. Its HTTP tests are `server/test/`.
 
 #![allow(
     clippy::too_many_arguments,

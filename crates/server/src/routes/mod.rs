@@ -93,6 +93,13 @@ const ROUTES: &[(&str, &str, Handler)] = &[
     ("POST", "/api/__test/sweep", test_sweep),
     ("GET", "/api/__test/failures", test_failures),
     ("POST", "/api/__test/users", test_create_user),
+    ("POST", "/api/__test/jobs", test_jobs),
+    ("POST", "/api/__test/requeue", test_requeue),
+    ("POST", "/api/__test/clouds/claim", test_claim_job),
+    ("POST", "/api/__test/clouds/:id/status", test_cloud_status),
+    ("POST", "/api/__test/runs/claim", test_claim_run),
+    ("POST", "/api/__test/runs/prune", test_prune_runs),
+    ("POST", "/api/__test/runs/:id/execute", test_execute_run),
 ];
 
 pub type Params = std::collections::HashMap<String, String>;
@@ -175,6 +182,69 @@ fn test_create_user(ctx: &mut Ctx) -> Res {
         ctx.now(),
     )?;
     Ok(Resp::ok(json!({ "user": user.public() })))
+}
+
+/// The cloud jobs' storage, for the test routes that run them in this process.
+fn test_storage(ctx: &Ctx) -> Result<crate::clouds::Storage, ApiError> {
+    let root = ctx.app.settings.cloud_root.clone().ok_or_else(|| ApiError::new(404, "clouds_off"))?;
+    Ok(crate::clouds::Storage { root })
+}
+
+/// Work off a queue — `prepare` or `runs` — as `cloudjobs serve` would, here and now: how many it took.
+fn test_jobs(ctx: &mut Ctx) -> Res {
+    let storage = test_storage(ctx)?;
+    let runs = ctx.req.json().get("queue").and_then(Value::as_str) == Some("runs");
+    let mut done = 0;
+    while if runs {
+        crate::clouds::jobs::take_run(&ctx.db, &storage, &|_| {})
+    } else {
+        crate::clouds::jobs::take_job(&ctx.db, &storage, &|_| {})
+    } {
+        done += 1;
+    }
+    Ok(Resp::ok(json!({ "done": done })))
+}
+
+/// What a start of the jobs does first: running jobs and runs queued again.
+fn test_requeue(ctx: &mut Ctx) -> Res {
+    crate::clouds::store::CloudStore::new(&ctx.db, ctx.now()).requeue_running()?;
+    crate::clouds::store::RunStore::new(&ctx.db, ctx.now()).requeue_running()?;
+    Ok(Resp::ok(json!({})))
+}
+
+fn test_claim_job(ctx: &mut Ctx) -> Res {
+    let job = crate::clouds::store::CloudStore::new(&ctx.db, ctx.now()).claim_job()?;
+    Ok(Resp::ok(json!({ "job": job.map(|(id, cloud)| json!({ "id": id, "cloudId": cloud })) })))
+}
+
+fn test_cloud_status(ctx: &mut Ctx) -> Res {
+    let b = ctx.req.json();
+    let status = b.get("status").and_then(Value::as_str).unwrap_or("queued").to_string();
+    let progress = b.get("progress").and_then(Value::as_f64);
+    crate::clouds::store::CloudStore::new(&ctx.db, ctx.now()).set_status(&ctx.req.params["id"], &status, progress, None)?;
+    Ok(Resp::ok(json!({})))
+}
+
+fn test_claim_run(ctx: &mut Ctx) -> Res {
+    let run = crate::clouds::store::RunStore::new(&ctx.db, ctx.now()).claim()?;
+    Ok(Resp::ok(json!({ "run": run })))
+}
+
+/// Runs finished longer ago than they are kept, forgotten as of the test's clock.
+fn test_prune_runs(ctx: &mut Ctx) -> Res {
+    let pruned = crate::clouds::store::RunStore::new(&ctx.db, ctx.now()).prune()?;
+    Ok(Resp::ok(json!({ "pruned": pruned })))
+}
+
+/// One claimed run carried out: whether it finished (false: it was cancelled meanwhile).
+fn test_execute_run(ctx: &mut Ctx) -> Res {
+    let storage = test_storage(ctx)?;
+    let id: i64 = ctx.req.params["id"].parse().unwrap_or(0);
+    let run = crate::clouds::store::RunStore::new(&ctx.db, ctx.now())
+        .get(id)?
+        .ok_or_else(|| ApiError::new(404, "not_found"))?;
+    let done = crate::clouds::jobs::execute_run(&ctx.db, &storage, &run, &|_| {}).map_err(|e| ApiError::new(500, "run_failed").with("detail", json!(e)))?;
+    Ok(Resp::ok(json!({ "done": done })))
 }
 
 /// `text(v, max)`: a value as trimmed text of at most `max` characters, absent as None.

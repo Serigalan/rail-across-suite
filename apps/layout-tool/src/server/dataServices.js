@@ -1,7 +1,7 @@
 // What the project server reads for the Layout-Tool because a browser cannot
 // (decision 0019 of the suite): the Länder's DGM1 — heights for points, relief
 // tiles for the map — and the conversion of an Access file for the MDB import
-// (server/src/routes/terrain.js).
+// (crates/server/src/routes/terrain.rs).
 
 const BASE = import.meta.env?.VITE_OLT_API ?? '/api'
 
@@ -72,7 +72,7 @@ export async function convertMdbOnServer(file, { signal } = {}) {
     res = await fetch(`${BASE}/mdb`, {
       method: 'POST',
       credentials: 'same-origin',
-      // A header of its own, which no form of another site can send (server/src/app.js).
+      // A header of its own, which no form of another site can send (crates/server/src/app.rs).
       headers: { 'Content-Type': 'application/octet-stream', 'X-Olt-Upload': '1' },
       body: file,
       signal,

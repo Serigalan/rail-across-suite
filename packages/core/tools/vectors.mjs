@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 // The shared test vectors of schemas/vectors/: what the JavaScript core makes
 // of canonical JSON, the schema check and whole documents, written down so
-// the Python core (packages/core-py) is held to the same results (data model,
-// S-R3; CONTRIBUTING: one implementation per language).
+// the core's Rust crates (crates/doc) are held to the same results (data
+// model, S-R3; CONTRIBUTING).
 //
 //   node tools/vectors.mjs           write them
 //   node tools/vectors.mjs --check   exit 1 where a file is not what the core makes now

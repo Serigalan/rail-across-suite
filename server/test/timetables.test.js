@@ -1,6 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { setup, signIn } from './helpers.js'
-import { timetableFault } from '../src/routes/timetables.js'
 
 let ctx
 afterEach(async () => {
@@ -102,19 +101,24 @@ describe('timetables', () => {
     expect((await max('POST', `/api/projects/${project.id}/timetables`, { name: ' ' })).json()).toEqual({ error: 'name_required' })
     expect((await max('POST', `/api/projects/${project.id}/timetables`, { name: 'F', data: { trains: [train({ departure: -1 })] } })).json()).toEqual({ error: 'train_invalid' })
 
-    expect(timetableFault({ trains: [] })).toBeNull()
-    expect(timetableFault({ trains: [train()] })).toBeNull()
-    expect(timetableFault(null)).toBe('timetable_invalid')
-    expect(timetableFault({ trains: [], dispatch: { mode: 'wait', priority: 'category', categories: ['ICE', 'RB'], times: { setup: 12, approach: 1000, release: 6 } } })).toBeNull()
-    expect(timetableFault({ trains: [], dispatch: { mode: 'later' } })).toBe('dispatch_invalid')
-    expect(timetableFault({ trains: [], dispatch: { times: { setup: -1 } } })).toBe('dispatch_invalid')
-    expect(timetableFault({ trains: [train(), train()] })).toBe('train_invalid')
-    expect(timetableFault({ trains: [train({ distribution: 'fast' })] })).toBe('train_invalid')
-    expect(timetableFault({ trains: [train({ points: [point('')] })] })).toBe('points_invalid')
-    expect(timetableFault({ trains: [train({ points: [point('A', { stop: 'yes' })] })] })).toBe('points_invalid')
-    expect(timetableFault({ trains: [train({ points: [point('A', { place: 'a' }), point('B', { place: 'x'.repeat(65) })] })] })).toBe('points_invalid')
-    expect(timetableFault({ trains: [train({ points: [point('A', { place: '3f2a' })] })] })).toBeNull()
+    // What the server says of a timetable's data: null where it takes it, else its error.
+    const timetableFault = async (data) => {
+      const res = await max('POST', `/api/projects/${project.id}/timetables`, { name: 'F', data })
+      return res.statusCode === 201 ? null : res.json().error
+    }
+    expect(await timetableFault({ trains: [] })).toBeNull()
+    expect(await timetableFault({ trains: [train()] })).toBeNull()
+    expect(await timetableFault([])).toBe('timetable_invalid')
+    expect(await timetableFault({ trains: [], dispatch: { mode: 'wait', priority: 'category', categories: ['ICE', 'RB'], times: { setup: 12, approach: 1000, release: 6 } } })).toBeNull()
+    expect(await timetableFault({ trains: [], dispatch: { mode: 'later' } })).toBe('dispatch_invalid')
+    expect(await timetableFault({ trains: [], dispatch: { times: { setup: -1 } } })).toBe('dispatch_invalid')
+    expect(await timetableFault({ trains: [train(), train()] })).toBe('train_invalid')
+    expect(await timetableFault({ trains: [train({ distribution: 'fast' })] })).toBe('train_invalid')
+    expect(await timetableFault({ trains: [train({ points: [point('')] })] })).toBe('points_invalid')
+    expect(await timetableFault({ trains: [train({ points: [point('A', { stop: 'yes' })] })] })).toBe('points_invalid')
+    expect(await timetableFault({ trains: [train({ points: [point('A', { place: 'a' }), point('B', { place: 'x'.repeat(65) })] })] })).toBe('points_invalid')
+    expect(await timetableFault({ trains: [train({ points: [point('A', { place: '3f2a' })] })] })).toBeNull()
     // a train not done yet is kept: a night train past midnight, no points yet
-    expect(timetableFault({ trains: [train({ departure: 25 * 3600, points: [] })] })).toBeNull()
+    expect(await timetableFault({ trains: [train({ departure: 25 * 3600, points: [] })] })).toBeNull()
   })
 })

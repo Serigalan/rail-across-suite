@@ -2,10 +2,7 @@ import { spawn } from 'node:child_process'
 import { existsSync, mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
-import { openDatabase } from '../src/db.js'
-import { buildApp } from '../src/app.js'
-import { createAuth } from '../src/auth.js'
-import { cloudStorage } from '../src/clouds/storage.js'
+import Database from 'better-sqlite3'
 
 export const PW = 'correct horse battery'
 
@@ -13,14 +10,13 @@ export const PW = 'correct horse battery'
 const httpFetch = globalThis.fetch
 
 /**
- * Which server the tests run against: the project server in Rust
- * (crates/server, decision 0020) over HTTP — the server that runs — started in
- * its test mode, where it takes the clock from x-ra-test-now and the peer's
- * address from x-ra-test-remote; or with RA_SERVER_IMPL=node the Node server
- * of server/src in process (Fastify's inject), which stays as the reference
- * the Rust one was held to. The same tests, the same database.
+ * The tests run against the project server (crates/server, decision 0020)
+ * over HTTP: each on a database file of its own, the server started in its
+ * test mode, where it takes the clock from x-ra-test-now, the peer's address
+ * from x-ra-test-remote, and answers /api/__test/* — users made, the cloud
+ * jobs run in its process. The database is open beside it (`db`) for what a
+ * test reads behind the API.
  */
-export const RUST = process.env.RA_SERVER_IMPL !== 'node'
 const RUST_BIN = process.env.RA_SERVER_BIN ?? ['release', 'debug']
   .map(p => resolve(import.meta.dirname, `../../target/${p}/rail-across-server`)).find(existsSync)
 
@@ -28,25 +24,11 @@ const RUST_BIN = process.env.RA_SERVER_BIN ?? ['release', 'debug']
  * A server on a fresh database with a clock the test turns, and an admin
  * and a user who have changed their start passwords already.
  */
-export async function setup({ routes, cloudRoot = null } = {}) {
+export async function setup({ cloudRoot = null } = {}) {
   const clock = { t: Date.parse('2026-10-01T08:00:00Z') }
-  const now = () => clock.t
-  if (!RUST) {
-    const db = openDatabase(':memory:')
-    const auth = createAuth(db, { now })
-    await auth.createUser({ login: 'ada', name: 'Ada Admin', password: PW, role: 'admin', mustChangePassword: false })
-    await auth.createUser({ login: 'max', name: 'Max Muster', password: PW, role: 'user', mustChangePassword: false })
-    const app = buildApp({ db, secureCookie: false, now, routes, cloudRoot })
-    await app.ready()
-    return { app, db, clock }
-  }
-  const dir = mkdtempSync(join(tmpdir(), 'ra-rust-server-'))
-  const file = join(dir, 'rail-across.sqlite')
-  const db = openDatabase(file)
-  const auth = createAuth(db, { now })
-  await auth.createUser({ login: 'ada', name: 'Ada Admin', password: PW, role: 'admin', mustChangePassword: false })
-  await auth.createUser({ login: 'max', name: 'Max Muster', password: PW, role: 'user', mustChangePassword: false })
-  const app = await rustServer({ file, dir, cloudRoot, clock, db })
+  const { app, db } = await rustServer({ cloudRoot, clock })
+  await app.auth.createUser({ login: 'ada', name: 'Ada Admin', password: PW, role: 'admin', mustChangePassword: false })
+  await app.auth.createUser({ login: 'max', name: 'Max Muster', password: PW, role: 'user', mustChangePassword: false })
   return { app, db, clock }
 }
 
@@ -56,23 +38,21 @@ export async function setup({ routes, cloudRoot = null } = {}) {
  */
 export async function setupLocal({ staticRoot = null } = {}) {
   const clock = { t: Date.parse('2026-10-01T08:00:00Z') }
-  if (!RUST) {
-    const db = openDatabase(':memory:')
-    const app = buildApp({ db, local: true, secureCookie: false, staticRoot })
-    await app.ready()
-    return { app, db, clock }
-  }
-  const dir = mkdtempSync(join(tmpdir(), 'ra-rust-server-'))
-  const file = join(dir, 'rail-across.sqlite')
-  const db = openDatabase(file)
   const env = { RA_SERVER_LOCAL: '1', ...(staticRoot ? { RA_SERVER_STATIC: staticRoot } : {}) }
-  const app = await rustServer({ file, dir, cloudRoot: null, clock, db, env })
-  return { app, db, clock }
+  return { ...(await rustServer({ cloudRoot: null, clock, env })), clock }
 }
 
-/** The Rust server on `file`, answering as Fastify's app does for the tests. */
-async function rustServer({ file, dir, cloudRoot, clock, db, env = {} }) {
-  if (!RUST_BIN) throw new Error('the Rust server is not built (cargo build --release -p rail-across-server)')
+/** The server binary, for the tests of its command line; undefined where it is not built. */
+export const SERVER_BIN = RUST_BIN
+
+/**
+ * The server on `file` (a database a test made, left where it is) or on a
+ * fresh one, answering as light-my-request does (`inject`).
+ */
+export async function rustServer({ file: given = null, cloudRoot = null, clock = { t: Date.now() }, env = {} } = {}) {
+  if (!RUST_BIN) throw new Error('the project server is not built (cargo build --release -p rail-across-server)')
+  const dir = given ? null : mkdtempSync(join(tmpdir(), 'ra-server-'))
+  const file = given ?? join(dir, 'rail-across.sqlite')
   const child = spawn(RUST_BIN, ['serve'], {
     env: {
       ...process.env, RA_SERVER_DB: file, RA_SERVER_PORT: '0', RA_SERVER_TEST: '1', RA_SERVER_INSECURE_COOKIE: '1',
@@ -91,6 +71,8 @@ async function rustServer({ file, dir, cloudRoot, clock, db, env = {} }) {
     child.on('exit', (code) => fail(new Error(`the Rust server stopped (${code}): ${out}`)))
   })
   const base = `http://127.0.0.1:${port}`
+  // Open once the server listens: its migrations have made the schema.
+  const db = new Database(file)
 
   async function inject({ method = 'GET', url, payload, cookies = {}, headers = {}, remoteAddress }) {
     const h = { 'x-ra-test-now': String(clock.t), ...headers }
@@ -133,10 +115,10 @@ async function rustServer({ file, dir, cloudRoot, clock, db, env = {} }) {
   }
 
   const call = async (method, url, payload) => (await inject({ method, url, payload: method === 'GET' ? undefined : payload ?? {} })).json()
-  return {
-    rust: true,
+  const app = {
     inject,
-    cloudStorage: cloudRoot ? cloudStorage(cloudRoot) : null,
+    /** Work off a cloud queue in the server's process: `prepare` (the default) or `runs`. */
+    runJobs: async (queue = 'prepare') => (await call('POST', '/api/__test/jobs', { queue })).done,
     auth: {
       failureCount: async () => (await call('GET', '/api/__test/failures', undefined)).count,
       sweep: async () => { await call('POST', '/api/__test/sweep') },
@@ -149,9 +131,10 @@ async function rustServer({ file, dir, cloudRoot, clock, db, env = {} }) {
         child.kill('SIGTERM')
         await gone
       }
-      rmSync(dir, { recursive: true, force: true })
+      if (dir) rmSync(dir, { recursive: true, force: true })
     },
   }
+  return { app, db }
 }
 
 /** Sign in and return a request function carrying the session. */

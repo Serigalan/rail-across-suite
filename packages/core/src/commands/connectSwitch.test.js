@@ -4,9 +4,9 @@ import { viaRust } from '../native/index.js'
 import { straightFrom, arcFrom } from '../geometry/elementFactory.js'
 import { SWITCH_TYPES } from '../switch/catalogue.js'
 import { trackLength } from '../track/heightUtils.js'
-import { connectionAnchor, endChainDefault, endChainOpen } from '../switch/connectToTrack.js'
 import { expectValidTrack, expectSwitchRoutesCarved, expectNodesJoin } from '../../test/chainInvariants.js'
 import { resolveEndBearing, reverseElement } from '../geometry/elementUtils.js'
+import { connectionAnchor, endChainDefault, endChainOpen } from '../switch/index.js'
 
 // Steps of the commands, as the module runs them (not part of the face).
 const trackOf = viaRust('commands.trackOf')

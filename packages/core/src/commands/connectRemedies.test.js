@@ -3,9 +3,9 @@ import { buildSwitchConnect, switchConnectOutcome, switchConnectSolutions } from
 import { viaRust } from '../native/index.js'
 import { straightFrom } from '../geometry/elementFactory.js'
 import { SWITCH_TYPES } from '../switch/catalogue.js'
-import { connectionAnchor } from '../switch/connectToTrack.js'
 import { connectRemedies } from './connectRemedies.js'
 import { expectValidTrack } from '../../test/chainInvariants.js'
+import { connectionAnchor } from '../switch/index.js'
 
 // Steps of the commands, as the module runs them (not part of the face).
 const trackOf = viaRust('commands.trackOf')

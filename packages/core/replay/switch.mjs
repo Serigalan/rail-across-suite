@@ -7,19 +7,31 @@ import * as Y from '../src/switch/symbol.js'
 import * as S from '../src/switch/sleepers.js'
 import * as G from '../src/switch/switchGradient.js'
 import { coupleSwitchCants } from '../src/switch/switchCants.js'
-import * as Sl from '../src/switch/stationSlider.js'
-import * as M from '../src/switch/midChain.js'
 import * as D from '../src/switch/switchDelete.js'
 import { mainTrack, branchTrack, turnout as testTurnout } from '../test/turnoutFixture.js'
 import * as P from '../src/switch/switchPlacement.js'
-import * as K from '../src/switch/connectToTrack.js'
-import * as Cn from '../src/switch/switchConnectionUtils.js'
 import { switchDetail, formDetail, RAIL_OFFSET, SLEEPER_OVERHANG } from '../src/switch/detail.js'
 import { switchDetailScene, connectionPartners } from '../src/switch/detailScene.js'
 import { connectionPick } from '../src/commands/index.js'
 import { WEICHEN_REGELWERK, weichenGruppen } from '../src/switch/weichenRegelwerk.js'
 import { utmToWgs84, straightElement, arcElement, transitionElement, endPointStraightUtm } from '../src/geometry/index.js'
-import { rec } from './record.mjs'
+import { frozen, rec } from './record.mjs'
+import { reuseFrom, viaRust } from '../src/native/index.js'
+import * as Face from '../src/switch/index.js'
+import { canonicalJson } from '../src/document/index.js'
+
+// The solvers of the dialogs — connecting to an open end, the switch
+// connection, its middle chain, the station slider — went to Rust (decision
+// 0020, step 10): what is recorded of them is taken from the vectors as they
+// were last recorded from the JavaScript, and what the recordings below build
+// from them is built by the module.
+const SOLVER_CONSTANTS = { DEFAULT_MIDS: [{ type: 'arc', length: null, radius: null }] }
+const solvers = new Proxy({}, { get: (_, name) => SOLVER_CONSTANTS[name] ?? Face[name] ?? viaRust(`switch.${String(name)}`, reuseFrom) })
+const K = solvers, M = solvers, Sl = solvers, Cn = solvers
+const SOLVER_OPS = new Set(['connectionAnchor', 'fitConnectingElement', 'connectionRoots', 'END_CHAIN_OPEN', 'endChainDefault', 'endChainOpen',
+  'solveEndChain', 'refitTrackEnd', 'refitCount', 'joinRouteIntoTrack', 'DEFAULT_MIDS', 'isDefaultMids', 'midUnknowns', 'MID_OPEN', 'solveMidChain',
+  'midSignSets', 'chainNewton', 'endCurvature', 'validIntervals', 'nearestValid', 'settleStation', 'uniqueStations', 'formPair', 'orientStemToward',
+  'checkMidRun', 'connectionBranchEnds', 'CONNECTION_SPEEDS', 'computeSwitchConnections', 'solveSwitchConnection', 'buildConnectionElements'].map(n => `switch.${n}`))
 
 const EPSG = 25832
 const O = { easting: 600123.25, northing: 5600456.5, zone: EPSG }
@@ -486,5 +498,8 @@ export default function record() {
   recordCrossingAndSymbol(calls)
   recordBodies(calls)
   recordConnections(calls)
-  return { switch: calls }
+  // Matched by their input whatever the order of its members: what the module built comes in its own order.
+  const keyOf = (c) => `${c.op}\u0000${canonicalJson(c.input)}`
+  const kept = new Map(frozen('switch', 'switch').filter(c => SOLVER_OPS.has(c.op)).map(c => [keyOf(c), c]))
+  return { switch: calls.map(c => (SOLVER_OPS.has(c.op) ? kept.get(keyOf(c)) ?? c : c)) }
 }

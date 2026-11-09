@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { buildCurvedLineTrack, buildLineTrack, buildSCurve, computeShiftBounds, connectionPick, hasStraightMid, preferredShift, settleConnection, shiftSnaps, stems, straightShifts, waOffset } from './index.js'
 import { viaRust } from '../native/index.js'
-import { SWITCH_TYPES } from '../switch/switchConnectionUtils.js'
 import { minElementLength } from '../rules/elementLength.js'
 import { hasPekBestand, loadPekBestand } from '../../test/pekFixture.js'
 import { hydrateProjects, dehydrateProjects } from '../project/persistenceUtils.js'
@@ -11,6 +10,7 @@ import { computeClothoidUtm, transitionPointAtUtm } from '../geometry/clothoidUt
 import { switchBranchLength, switchStraightLength } from '../switch/catalogue.js'
 import { checkTrack } from '../rules/trassierungCheck.js'
 import { arcFrom, straightFrom, transitionElement } from '../geometry/elementFactory.js'
+import { SWITCH_TYPES } from '../switch/index.js'
 
 // Steps of the commands, as the module runs them (not part of the face).
 const connectionRemnants = viaRust('commands.connectionRemnants')

@@ -24,7 +24,7 @@ into both.
 | `crates/commands/src/scurve.rs` | Switch connection (Weichenverbindung) | Both turnouts and the connecting track between two tracks, for a toe position (shift) on track 1; the range of valid shifts and the snaps |
 | `crates/commands/src/crossover.rs` | Extended switch connection | The request of its search (both branch ends sampled, the limits; decision 0018) and an answer adopted as shift, middle elements and seed |
 | `crates/commands/src/crossover_edit.rs` | Edit switch connection | Which track is a switch connection, the connection taken apart in memory (the turnouts deleted, their lines joined), where the dialog starts on it, and the commit that replaces it |
-| `crates/commands/src/connect.rs` | Connect a turnout to a track | The turnout on the host and the refitted connecting element (see `switch/connectToTrack.js`) |
+| `crates/commands/src/connect.rs` | Connect a turnout to a track | The turnout on the host and the refitted connecting element (see `crates/switch/src/connect.rs`) |
 | `crates/commands/src/connect.rs` | Connect a crossing to a track | The same for one end of a crossing's cross route |
 | `connectRemedies.js` | both of the above | What can be changed where the rules reject the refitted element: lower speed, a transition before the arc |
 | `crates/commands/src/splice.rs` | Join two tracks (Zwei Gleise zusammenfügen) | What a picked element offers, the request, and the merged track built from the answer |

@@ -1,9 +1,12 @@
 import { describe, it, expect } from 'vitest'
 import { adoptCrossover, computeShiftBounds, crossoverRequest } from './index.js'
-import { viaRust } from '../native/index.js'
+import { reuseFrom, viaRust } from '../native/index.js'
 import { minElementLength } from '../rules/elementLength.js'
 import { checkTrack } from '../rules/trassierungCheck.js'
-import { buildConnectionElements, SWITCH_TYPES } from '../switch/switchConnectionUtils.js'
+import { SWITCH_TYPES } from '../switch/index.js'
+
+// Steps of the switch module, as the core's module runs them (not part of its face).
+const buildConnectionElements = viaRust('switch.buildConnectionElements', reuseFrom)
 
 // Steps of the commands, as the module runs them (not part of the face).
 const solveConnection = viaRust('commands.solveConnection')

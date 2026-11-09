@@ -3,11 +3,11 @@ import { buildCrossingConnect, crossingConnectOutcome, crossingConnectSolutions,
 import { viaRust } from '../native/index.js'
 import { straightFrom } from '../geometry/elementFactory.js'
 import { CROSSING_TYPES } from '../switch/catalogue.js'
-import { connectionAnchor } from '../switch/connectToTrack.js'
 import { crossingEndDistance } from '../switch/crossing.js'
 import { expectValidTrack, expectNodesJoin } from '../../test/chainInvariants.js'
 import { resolveEndBearing } from '../geometry/elementUtils.js'
 import { portTrack, portEnd } from '../track/switchModel.js'
+import { connectionAnchor } from '../switch/index.js'
 
 // Steps of the commands, as the module runs them (not part of the face).
 const crossAngleOf = viaRust('commands.crossAngleOf')

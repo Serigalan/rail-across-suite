@@ -1,9 +1,5 @@
 import { describe, it, expect } from 'vitest'
 import {
-  SWITCH_TYPES, CONNECTION_SPEEDS, solveSwitchConnection, computeSwitchConnections,
-  buildConnectionElements, checkMidRun,
-} from './switchConnectionUtils.js'
-import {
   switchArcLength, switchStraightLength, switchBranchLength, branchRadius, SWITCH_CONNECTION_STAGES,
 } from './catalogue.js'
 import { arcCoordsFromRadiusUtm, computeCurvedValuesUtm, endPointCurvedUtm } from '../geometry/elementUtils.js'
@@ -12,6 +8,13 @@ import { planSwitchDeletion } from './switchDelete.js'
 
 import { expectValidTrack, expectSwitchRoutesCarved } from '../../test/chainInvariants.js'
 import { buildSCurve } from '../commands/index.js'
+import { CONNECTION_SPEEDS, SWITCH_TYPES, computeSwitchConnections } from './index.js'
+import { reuseFrom, viaRust } from '../native/index.js'
+
+// Steps of the switch module, as the core's module runs them (not part of its face).
+const buildConnectionElements = viaRust('switch.buildConnectionElements', reuseFrom)
+const checkMidRun = viaRust('switch.checkMidRun', reuseFrom)
+const solveSwitchConnection = viaRust('switch.solveSwitchConnection', reuseFrom)
 
 /**
  * AP 2.1 — the switch connection in a curve.
@@ -428,7 +431,7 @@ describe('the two tracks need not be the same kind of element', () => {
     const ramp = stem(ORIGIN, 0, null, 0, { length: L, along, cantEnd: C * L / (along + toLds) })
     const res = solveSwitchConnection(ramp, stem(at(ORIGIN, -4.5), 0, null, C, { length: L, along }), SPEED)
     expect(res.valid).toBe(true)
-    expect(res.switchType).toBe(FORM)
+    expect(res.switchType).toEqual(FORM)
     expect(res.cant1Start).toBeLessThan(C - 2)          // different at WA
     expect(res.cantLds1).toBeCloseTo(C, 9)
     expect(res.cantLds2).toBe(C)

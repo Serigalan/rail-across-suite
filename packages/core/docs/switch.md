@@ -22,10 +22,10 @@ ports, element marks — is in the `track` module; what the dialogs commit is in
 | `detailScene.js` | A laid turnout in detail with its surroundings: the partners of a switch connection, the turnouts close by and the tracks there, in the turnout's frame |
 | `switchPlacement.js` | Where a turnout lies on a track: the toe at a station, the through route over as many elements as it covers; why it cannot lie somewhere |
 | `switchCants.js` | The cant of a turnout's two routes kept together after every write (`coupleSwitchCants`) |
-| `switchConnectionUtils.js` | The switch connection: two turnouts facing each other on two tracks and the element(s) between them |
-| `midChain.js` | One to three elements between the two branches of a switch connection, two of their values sought |
-| `connectToTrack.js` | Connecting a turnout's branch or a crossing's leg to an open track end by refitting the element there, or the last two laid anew |
-| `stationSlider.js` | The valid stretches and snap points of the position slider |
+| `crates/switch/src/connection.rs` (Rust; the solvers of the dialogs moved there with decision 0020, step 10, called through `index.js`) | The switch connection: two turnouts facing each other on two tracks and the element(s) between them |
+| `crates/switch/src/mid_chain.rs` (Rust) | One to three elements between the two branches of a switch connection, two of their values sought |
+| `crates/switch/src/connect.rs` (Rust) | Connecting a turnout's branch or a crossing's leg to an open track end by refitting the element there, or the last two laid anew |
+| `crates/switch/src/slider.rs` (Rust) | The valid stretches and snap points of the position slider |
 | `switchDelete.js` | Which routes stay as ordinary track when a switch is deleted, and the plan for doing it |
 | `weichenRegelwerk.js` | The form tables grouped for the rulebook viewer |
 
@@ -194,7 +194,7 @@ then on the straight, so its branch is a clothoid and then the form's own arc (R
 a 500 – 1:12), not the clothoid carried on past its end. The commit carves the through route over both
 elements; the piece behind WE is that of the element the switch end falls in.
 
-**The construction** (`switchConnectionUtils.js`). The unknowns are the toe stations s₁ (on track 1, given by
+**The construction** (`crates/switch/src/connection.rs`). The unknowns are the toe stations s₁ (on track 1, given by
 the slider) and s₂ (on track 2, sought). Branch 1 is the form laid on the stem it covers at s₁. The middle
 element is *defined* as the arc leaving branch 1's end on its tangent and turning by `Δ = t₂ − t₁`, so it
 meets branch 2 tangentially for any s₂ — tangent continuity by construction at both ends. An arc of given
@@ -217,7 +217,7 @@ the intermediate element breaks LP.EL.01 or LP.KS.01 (below), when a curve or be
 permitted cant deficiency, or when the cant at the two ends of the middle element differs — the middle
 element carries one value, a step would be a ramp of no length.
 
-**Up to three intermediate elements** (`midChain.js`). Instead of one arc the extended switch connection
+**Up to three intermediate elements** (`crates/switch/src/mid_chain.rs`). Instead of one arc the extended switch connection
 (decision 0018) may lay one to three elements, each a straight, an arc or a transition, each with length (and an arc's radius) given or
 left open. A radius is given with its sign, as the element table shows one — + right, − left, in the
 direction the connection runs from the first turnout to the second — and that fixes the side it bends to
@@ -276,7 +276,7 @@ each record with its own form. An edited connection whose turnouts differ comes 
 
 ## Connecting to an open track end
 
-"Weiche/Kreuzung an Gleis anschließen" (`connectToTrack.js`): a turnout (or crossing) is laid into a host
+"Weiche/Kreuzung an Gleis anschließen" (`crates/switch/src/connect.rs`): a turnout (or crossing) is laid into a host
 track, and its branch (or one end of its cross route) is joined to an open end of another track. The
 element at that end — the *connecting element* — keeps its other node and the tangent there and takes a
 new length and radius so that its open end lands on the port tangentially. The port moves with the
@@ -306,7 +306,7 @@ Where the rules reject it, the dialog offers remedies (lower speed, a transition
 ## Position slider
 
 The dialogs state a turnout's position as a station from the track's BEGIN — a field that takes any value
-and a slider beneath it (`stationSlider.js`). The slider runs finely only over the stretches where the
+and a slider beneath it (`crates/switch/src/slider.rs`). The slider runs finely only over the stretches where the
 turnout may lie (`validIntervals`: sampled every metre, each edge then bisected to 0.1 mm and rounded
 inwards to the millimetre) and skips the rest; it snaps where the toe or switch end falls on an element
 change (within 1 m or one slider pixel). It reaches 50 m either side of the click. The validity test is the

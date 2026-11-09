@@ -2,11 +2,14 @@ import { describe, it, expect } from 'vitest'
 import { arcFrom, straightFrom, transitionElement } from '../geometry/elementFactory.js'
 import { switchRouteBearingAt, switchRoutePointUtm } from './route.js'
 import { trackLength } from '../track/heightUtils.js'
-import {
-  connectionAnchor, connectionRoots, fitConnectingElement, joinRouteIntoTrack, refitTrackEnd,
-} from './connectToTrack.js'
 import { expectValidTrack } from '../../test/chainInvariants.js'
 import { reuseFrom, viaRust } from '../native/index.js'
+import { connectionAnchor } from './index.js'
+
+// Steps of the switch module, as the core's module runs them (not part of its face).
+const fitConnectingElement = viaRust('switch.fitConnectingElement', reuseFrom)
+const joinRouteIntoTrack = viaRust('switch.joinRouteIntoTrack', reuseFrom)
+const refitTrackEnd = viaRust('switch.refitTrackEnd', reuseFrom)
 
 // Steps of the commands, as the core's module runs them (not part of its face).
 const trackOf = viaRust('commands.trackOf', reuseFrom)
@@ -86,32 +89,8 @@ describe('refitting the element to a port', () => {
   })
 })
 
-describe('where along the host the construction connects', () => {
-  // A port sliding along a circle that the element leaving `fixed` on 10° can
-  // follow exactly, arriving on the circle's tangent turned by 0.02°/m from
-  // x = 12: only there does the element meet it tangentially.
-  const anchor = { kind: 'arc', fixedUtm: START, bearing: 10 }
-  const portAt = (x) => {
-    const route = { length: 40 + x, r1: 600, r2: 600 }
-    return { port: switchRoutePointUtm(START, 10, route), bearingIn: switchRouteBearingAt(10, route) + 0.02 * (x - 12) }
-  }
-
-  it('finds the station where the miss in direction vanishes', () => {
-    const roots = connectionRoots(anchor, portAt, { from: 0, to: 50, step: 0.5, near: 20 })
-    expect(roots).toHaveLength(1)
-    expect(roots[0].x).toBeCloseTo(12, 6)
-    expect(roots[0].fit.route.r1).toBeCloseTo(600, 4)
-  })
-
-  it('finds none where the miss keeps its sign', () => {
-    expect(connectionRoots(anchor, portAt, { from: 20, to: 50 })).toEqual([])
-  })
-
-  it('skips stations where the construction cannot stand', () => {
-    const roots = connectionRoots(anchor, x => (x < 5 ? null : portAt(x)), { from: 0, to: 50 })
-    expect(roots[0].x).toBeCloseTo(12, 6)
-  })
-})
+// Where along the host a construction connects asks the dialog back (portAt); the module
+// does that inside switchConnectSolutions and crossingConnectSolutions, tested with them (commands).
 
 describe('the track refitted and joined', () => {
   /** A port 30 m beyond the track's end on its own tangent, slightly to the right. */

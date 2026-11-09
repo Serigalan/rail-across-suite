@@ -8,8 +8,8 @@ use rail_across_geom::chain::{snap_node_gaps, snap_track_joints};
 use rusqlite::{Connection, OptionalExtension, params};
 use serde_json::{Value, json};
 
-use crate::checks::{check_record, normalized_record};
-use crate::store::Store;
+use crate::checks::{check_kept, normalized_record};
+use crate::store::{STORED_FORMAT, Store, pack, unpack};
 use crate::util::{hex, iso, random_bytes};
 
 /// The login of the user the server's own revisions name.
@@ -82,7 +82,7 @@ fn close_node_gaps(db: &Connection, now: i64) -> rusqlite::Result<String> {
             if closed == 0 {
                 continue;
             }
-            let Ok(checked) = check_record(&record, None) else { continue };
+            let Ok(checked) = check_kept(record) else { continue };
             let author = system_user(db, now)?;
             let message = format!("{closed} Stöße bis 1 mm geschlossen – derselbe Ort ist jetzt 1 µm (Entscheidung 0020).");
             if let Ok(Ok(_)) = store.check_in(
@@ -103,6 +103,51 @@ fn close_node_gaps(db: &Connection, now: i64) -> rusqlite::Result<String> {
     Ok(format!("{written} Revisionen, {joints} Stöße"))
 }
 
+/// The document a revision kept before decision 0021 holds: one of the
+/// envelope before it (`schema_version` 3) with today's envelope, one kept as
+/// an oltjson-1.1 record or file (2) turned into one; None where it is neither.
+pub fn infra_data_of(version: i64, payload: &Value) -> Option<Value> {
+    match version {
+        3 => {
+            let doc = rail_across_doc::door::upgrade_envelope(payload);
+            rail_across_doc::door::check_document(&doc).ok()
+        }
+        2 => {
+            let record = match payload.get("projects").and_then(Value::as_array) {
+                Some(projects) => projects.first()?.clone(),
+                None => payload.clone(),
+            };
+            rail_across_doc::persistence::project_document(&record, false, true).ok()
+        }
+        _ => None,
+    }
+}
+
+/// Every revision kept in a format before decision 0021 rewritten as its
+/// infra-data-1.0 document, in place: a revision stays the state it was, only
+/// its form changes. One that cannot be read stays as it was and is refused
+/// as `format_outdated`, as before.
+fn to_infra_data(db: &Connection, _now: i64) -> rusqlite::Result<String> {
+    let rows: Vec<(i64, i64, Vec<u8>)> = db
+        .prepare("SELECT id, schema_version, payload FROM revision WHERE schema_version IN (2, 3)")?
+        .query_map([], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)))?
+        .collect::<Result<_, _>>()?;
+    let (mut written, mut left) = (0, 0);
+    for (id, version, payload) in rows {
+        match unpack(&payload).and_then(|p| infra_data_of(version, &p)) {
+            Some(doc) => {
+                db.execute(
+                    "UPDATE revision SET schema_version = ?, payload = ? WHERE id = ?",
+                    params![STORED_FORMAT, pack(&doc), id],
+                )?;
+                written += 1;
+            }
+            None => left += 1,
+        }
+    }
+    Ok(format!("{written} Revisionen umgeschrieben, {left} nicht lesbar"))
+}
+
 /// Run the data steps this database has not seen, each once: (name, note) of those run.
 pub fn run_data_migrations(db: &Connection, now: i64) -> rusqlite::Result<Vec<(String, String)>> {
     let done: Vec<String> = db
@@ -110,7 +155,9 @@ pub fn run_data_migrations(db: &Connection, now: i64) -> rusqlite::Result<Vec<(S
         .query_map([], |r| r.get(0))?
         .collect::<Result<_, _>>()?;
     let mut ran = Vec::new();
-    let steps: [(&str, fn(&Connection, i64) -> rusqlite::Result<String>); 1] = [("0020-node-tolerance-1um", close_node_gaps)];
+    // In this order: a later step reads the revisions in the form the first gives them.
+    let steps: [(&str, fn(&Connection, i64) -> rusqlite::Result<String>); 2] =
+        [("0021-infra-data", to_infra_data), ("0020-node-tolerance-1um", close_node_gaps)];
     for (name, step) in steps {
         if done.iter().any(|d| d == name) {
             continue;

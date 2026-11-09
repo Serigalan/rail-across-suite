@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest'
-import { rebuildCoords } from '@rail-across/core/src/track/trackModel.js'
+import { rebuildCoords } from '@rail-across/core/track'
 import {
   computeStraightValuesUtm, computeCurvedValuesUtm, arcCoordsFromRadiusUtm,
   endPointStraightUtm, endPointCurvedUtm, bearingAfterUtm,
 } from '@rail-across/core/src/geometry/elementUtils.js'
 import { utmToWgs84 } from '@rail-across/core/src/geometry/coordinateUtils.js'
 import { SAGITTA_ELEMENT, SAGITTA_TRACK } from '@rail-across/core/src/geometry/geometryPrecision.js'
-import { newSwitchFields, switchElementMark } from '@rail-across/core/src/track/switchModel.js'
+import { newSwitchFields, switchElementMark } from '@rail-across/core/track'
 import { expectValidTrack } from '@rail-across/core/test/chainInvariants.js'
 import { transitionElement } from '@rail-across/core/src/geometry/elementFactory.js'
 import { mergeElementEdits, planElementChange } from '@rail-across/core/commands'

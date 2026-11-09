@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest'
 import { buildInfra } from './exchangeExport'
 import { parseOsrdRailJson } from './osrdImport'
-import { SWITCH_TYPES, switchArcLength, switchStraightLength, CROSSING_TYPES } from '@rail-across/core/src/switch/catalogue.js'
-import { computeSwitchGeometryUtm } from '@rail-across/core/src/switch/symbol.js'
-import { switchRouteVaries } from '@rail-across/core/src/switch/route.js'
-import { crossingAngle, computeCrossingGeometryUtm, crossingElements } from '@rail-across/core/src/switch/crossing.js'
-import { newSwitchFields } from '@rail-across/core/src/track/switchModel.js'
+import { SWITCH_TYPES, switchArcLength, switchStraightLength, CROSSING_TYPES } from '@rail-across/core/switch'
+import { computeSwitchGeometryUtm } from '@rail-across/core/switch'
+import { switchRouteVaries } from '@rail-across/core/switch'
+import { crossingAngle, computeCrossingGeometryUtm, crossingElements } from '@rail-across/core/switch'
+import { newSwitchFields } from '@rail-across/core/track'
 import { arcFrom, straightFrom, transitionCantEnds, transitionElement } from '@rail-across/core/geometry'
 
 

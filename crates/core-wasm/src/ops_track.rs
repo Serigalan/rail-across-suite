@@ -95,6 +95,11 @@ pub fn run(op: &str, input: &Value) -> Option<Result<Value, Failure>> {
         "track.elementAtStation" => ok(h::element_at_station_json(&a.list(0), a.f(1))),
         "track.trackSamplePoints" => ok(h::track_sample_points(a.v(0), &a.list(1).iter().filter_map(Value::as_f64).collect::<Vec<_>>())),
         "track.heightAt" => ok(opt_num(h::height_at(&a.list(0), a.f(1)))),
+        "track.joinHeights" => {
+            let side = |i: usize| a.opt(i).and_then(Value::as_array).map(Vec::as_slice);
+            ok(h::join_heights(side(0), side(1), a.f(2)).map(Value::Array).unwrap_or(Value::Null))
+        }
+        "track.verticalCurve" => ok(h::vertical_curve(&a.list(0), a.u(1), a.opt(2).and_then(Value::as_u64).unwrap_or(24) as usize).unwrap_or(Value::Null)),
         "track.pointGrades" => ok(h::point_grades(&a.list(0), a.i(1))),
         "track.roundHeight" => ok(number(h::round_height(a.f(0)))),
         "track.solveHeightPoint" => ok(h::solve_height_point(
@@ -179,6 +184,7 @@ pub fn run(op: &str, input: &Value) -> Option<Result<Value, Failure>> {
         "track.classifyTrackEnds" => ok(tp::classify_track_ends(&a.list(0), &a.list(1), &a.list(2))),
         "track.freeEnds" => ok(Value::Array(tp::free_ends(&a.list(0)))),
         "track.tracksOnFrom" => ok(pairs(tp::tracks_on_from(a.v(0), a.s(1), &a.list(2), &a.list(3)), "trackId")),
+        "track.linkRecord" => ok(tp::link_record(&a.v(0)["a"], &a.v(0)["b"], a.os(1))),
         "track.trackEndAt" => ok(tp::track_end_at(a.opt(0), a.s(1)).map(|e| e.to_json()).unwrap_or(Value::Null)),
         "track.findTrackJoints" => ok(tp::find_track_joints_json(&a.list(0), &a.list(1), a.v(2))),
         "track.existingLinks" => ok(tp::existing_links(&a.list(0), &a.list(1))),

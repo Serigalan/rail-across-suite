@@ -43,9 +43,9 @@ whoever maintains or reviews the tool. User guidance is in the app (*Leitfaden*,
 
 ## Elsewhere
 
-- [`README.md`](../README.md) — features, getting started, the local version
+- [`README.md`](../README.md) — features, getting started
 - [`deploy/README.md`](../../../deploy/README.md) — operating the suite's server
 - [`server/README.md`](../../../server/README.md) — the project server
 - [`optimizer/README.md`](../../../optimizer/README.md) — the optimizer module in Rust
-- [`tools/local/README.md`](../tools/local/README.md) — the local version as handed out
+- [`crates/desktop/README.md`](../../../crates/desktop/README.md) — the desktop app, the suite with its server in one window
 - `packages/core/constraints/*.json` — the rulebooks themselves (DB Ril 800.0110, 800.0120, 800.0130, physics)

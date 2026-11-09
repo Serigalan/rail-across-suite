@@ -97,7 +97,7 @@ hook, no second implementation.
 | `user`, `session` | users (admin or user, deactivated instead of deleted — revisions keep their author; right "edit point clouds"), sessions by token hash |
 | `project`, `project_member` | projects (soft-deleted; templates open to all), members besides the creator |
 | `variant` | named states with parent variant and head revision |
-| `revision` | immutable: parent(s), author, time, message, `schema_version` (3: a core 1.0 document; 2, oltjson-1.1, migrated when read), the whole project as its core 1.0 document gzip-compressed, the id log, the keys of the validation errors it already had, the image hash |
+| `revision` | immutable: parent(s), author, time, message, `schema_version` (4: an infra-data-1.0 document; 3 and 2, the forms before, rewritten once by the data step `0021-infra-data`), the whole project as its infra-data-1.0 document gzip-compressed, the id log, the keys of the validation errors it already had, the image hash |
 | `blob` | images by SHA-256 |
 | `point_cloud`, `cloud_job`, `point_cloud_transform`, `cloud_run`, `share_link` | clouds and their preparation queue, re-referencings with history, long runs, read-only share links |
 
@@ -147,7 +147,7 @@ behind the session:
 - **Members per project; 404 for the unauthorised.**
 - **Point clouds: shared per project on the server, chunked uploads with hashes, served with membership checks.**
 - **Computing in the browser, in Rust; reading for the browser on the project server** (decision 0019 of the
-  suite): one service to run, and the optimizer in the local build too.
+  suite): one service to run, and the optimizer in the desktop app the same.
 - **The DGM1 relief is drawn from the tiles the server already reads for heights**, not from the Länder's own
   hillshade WMS: only a height per pixel gives the same colour scale, legend and hillshade as DGM5, so the two
   meet without a seam. The tiles carry centimetres (MapLibre's `custom` encoding) — the usual 0.1 m would draw

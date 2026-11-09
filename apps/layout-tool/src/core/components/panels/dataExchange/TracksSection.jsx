@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { loadSwitches, loadTracks, commitImport, updateTrack } from '../../../storage'
 import { rebuildCoords, trackLabel } from '@rail-across/core/track'
-import { parseTracksPayload, PayloadError } from '@rail-across/core/project'
-import { loadedTrackCants, reconstructElements, storedTrackCants } from '@rail-across/core/geometry'
+import { parseTracksPayload, PayloadError, tracksDocument } from '@rail-across/core/project'
+import { loadedTrackCants, reconstructElements } from '@rail-across/core/geometry'
 import { downloadJSON, readFileText } from '../../../utils/common'
 import { useI18n } from '../../../locales/i18nContext'
 import { useProject, useTracks } from '../../../hooks/useStore'
@@ -17,14 +17,9 @@ function reconstructTrack(track) {
   return { ...track, elements, coordinates: rebuildCoords(elements) }
 }
 
-/** Without geometry: what a track file carries is the element scalars, the cant as a record keeps it. */
-const forFile = ({ elements, coordinates: _c, ...track }) => ({
-  ...track,
-  elements: storedTrackCants((elements ?? []).map(({ geometry: _g, renderCoords: _rc, ...rest }) => rest)),
-})
-
 /**
- * Single tracks in and out: tracks picked on the map go into a file, and a
+ * Single tracks in and out: tracks picked on the map go into a file — an
+ * infra-data-1.0 document of these tracks alone (decision 0021) —, and a
  * file's tracks come into the project — one whose id is already there is
  * asked about, one at a time.
  */
@@ -83,7 +78,7 @@ export default function TracksSection() {
           {t('data_exchange_select')}
         </button>
         <button className="ui-btn ui-btn-primary ui-btn-block grow" disabled={!selected.length}
-          onClick={() => downloadJSON(selected.map(forFile), project ? `${project.title}_tracks.json` : 'tracks.json')}>
+          onClick={() => downloadJSON(tracksDocument(selected), project ? `${project.title}_tracks.railacross.json` : 'tracks.railacross.json')}>
           {t('data_exchange_export')}
         </button>
       </div>

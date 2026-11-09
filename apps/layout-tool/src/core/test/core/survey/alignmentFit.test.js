@@ -6,7 +6,7 @@ import {
 import { axisPointsCsv } from '@rail-across/pointcloud/src/railTrace.js'
 import { surveyFromTrace } from '@rail-across/core/survey'
 import { expectValidTrack } from '@rail-across/core/test/chainInvariants.js'
-import { trackLength } from '@rail-across/core/src/track/heightUtils.js'
+import { trackLength } from '@rail-across/core/track'
 import fixture from '@rail-across/core/test/fixtures/align_answer.json'
 
 // The fit is the optimizer module's (optimizer/…/alignment.rs); what is

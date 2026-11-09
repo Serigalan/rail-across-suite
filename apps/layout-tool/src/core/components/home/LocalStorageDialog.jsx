@@ -14,8 +14,7 @@ import Modal from '../Modal'
  * IndexedDB holds comes as the sections of whoever keeps it there
  * (`localStoreSections`). `projects` is the start page's list, to name
  * projects and variants by. `onClose(changed)` says whether anything was deleted.
- * `introKey` and `deleteAllKey` say it the way the build keeps its projects
- * (the local build: nowhere else).
+ * `introKey` and `deleteAllKey` say it the way the build keeps its projects.
  */
 export default function LocalStorageDialog({ projects, onClose, introKey = 'local_store_intro', deleteAllKey = 'local_store_delete_all_ask' }) {
   const { t, fill, language } = useI18n()

@@ -2,9 +2,8 @@
 // automatic choice the best source that has a point answers it:
 //
 // 1. The sources that answer points rather than tiles, in the order they were
-//    registered (extension point `terrainSources`, Paket L): the main build
-//    has the Länder's DGM1 there, read by the project server
-//    (server/terrainDgm1.js); the local build has none. Each is
+//    registered (extension point `terrainSources`): the Länder's DGM1, read
+//    by the project server (server/terrainDgm1.js). Each is
 //      { id, sample(lngLats, { chosen }) → { heights, sources }, label(id) → name | null }
 // 2. DGM5 (BKG, Germany, 5 m grid), served as terrain-RGB tiles up to zoom 15,
 //    about 3 m per pixel.

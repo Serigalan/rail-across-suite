@@ -6,7 +6,7 @@ import {
 import { NODE_TOL } from '../src/geometry/tolerances.js'
 import { SAGITTA_ELEMENT } from '../src/geometry/geometryPrecision.js'
 import { cantExceptionOf, cantLimit, worstCantOf } from '../src/rules/cant.js'
-import { switchParts } from '../src/switch/switchDelete.js'
+import { switchParts } from '../src/switch/index.js'
 
 /**
  * The invariants an element chain has to hold however it was built — the

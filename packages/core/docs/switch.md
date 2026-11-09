@@ -8,26 +8,31 @@ clothoid), the routes it adds, the drawn symbol, crossings and crossing switches
 slider of the dialogs, and what remains of the tracks when a switch is deleted. The record itself — kinds,
 ports, element marks — is in the `track` module; what the dialogs commit is in `commands`.
 
+The module is the core's Rust crate `crates/switch` ([decision 0021](../../../docs/decisions/0021-one-format-one-build-the-project-in-the-module.md),
+phase D): `index.js` calls it for every function — a form of the catalogue in an answer given back as the
+catalogue's own object, a test's `formOf` handed over as a table of the forms its switches name —; the
+catalogue as the pickers list it and the constants (`constants.js`) stay JavaScript.
+
 ## Files
 
 | File | What it does |
 |---|---|
-| `catalogue.js` | The forms of `packages/core/constraints/db-ril-800-0120.json` as the geometry reads them: turnout tables, crossing tables, fallback stages for connections, branch radius of a bent turnout, bauform, Weichenmarke distance, the speed a turnout allows on its branch (`switchBranchSpeed`: its record's, else its form's) |
-| `route.js` | A switch route `{ length, r1, r2 }` and chains of them: points, bearings and slices along a route, the branch of a turnout laid on a given stem |
-| `symbol.js` | The drawn switch: routes as polylines, the filled body between them, the LCS line, the label; `rebuildSwitchSymbol` derives all of it from the tracks on load |
-| `crossing.js` | Crossings and crossing switches (incl. Bogenkreuzungsweiche): angle, legs, end distances, connecting curves, geometry |
-| `sleepers.js` | Where a turnout's sleepers lie (along its bisector, 0.30 + 0.60·k m from WA), the ldS, the sleeper through a point of either track — the grid the heights lie on |
-| `switchGradient.js` | The turnout plane: the branch's height from the main route's height, gradient and cant (`ldsLift` on the ldS sleeper, `trackHeightAt` between WA and ldS, `heightContext`); which heights follow which is the app's (elevation) |
-| `detail.js` | A turnout in detail: sleepers (with the bracket sleepers of its variant) and rails in the turnout's own frame, for a laid turnout or a catalogue form on helper tracks |
-| `detailScene.js` | A laid turnout in detail with its surroundings: the partners of a switch connection, the turnouts close by and the tracks there, in the turnout's frame |
-| `switchPlacement.js` | Where a turnout lies on a track: the toe at a station, the through route over as many elements as it covers; why it cannot lie somewhere |
-| `switchCants.js` | The cant of a turnout's two routes kept together after every write (`coupleSwitchCants`) |
+| `crates/switch/src/catalogue.rs` | The forms of `packages/core/constraints/db-ril-800-0120.json` as the geometry reads them: turnout tables, crossing tables, fallback stages for connections, branch radius of a bent turnout, bauform, Weichenmarke distance, the speed a turnout allows on its branch (`switchBranchSpeed`: its record's, else its form's) |
+| `crates/switch/src/route.rs` | A switch route `{ length, r1, r2 }` and chains of them: points, bearings and slices along a route, the branch of a turnout laid on a given stem |
+| `crates/switch/src/symbol.rs` | The drawn switch: routes as polylines, the filled body between them, the LCS line, the label; `rebuildSwitchSymbol` derives all of it from the tracks on load |
+| `crates/switch/src/crossing.rs` | Crossings and crossing switches (incl. Bogenkreuzungsweiche): angle, legs, end distances, connecting curves, geometry |
+| `crates/switch/src/sleepers.rs` | Where a turnout's sleepers lie (along its bisector, 0.30 + 0.60·k m from WA), the ldS, the sleeper through a point of either track — the grid the heights lie on |
+| `crates/switch/src/gradient.rs` | The turnout plane: the branch's height from the main route's height, gradient and cant (`ldsLift` on the ldS sleeper, `trackHeightAt` between WA and ldS, `heightContext`); which heights follow which is the app's (elevation) |
+| `crates/switch/src/detail.rs` | A turnout in detail: sleepers (with the bracket sleepers of its variant) and rails in the turnout's own frame, for a laid turnout or a catalogue form on helper tracks |
+| `crates/switch/src/detail_scene.rs` | A laid turnout in detail with its surroundings: the partners of a switch connection, the turnouts close by and the tracks there, in the turnout's frame |
+| `crates/switch/src/placement.rs` | Where a turnout lies on a track: the toe at a station, the through route over as many elements as it covers; why it cannot lie somewhere |
+| `crates/switch/src/cants.rs` | The cant of a turnout's two routes kept together after every write (`coupleSwitchCants`) |
 | `crates/switch/src/connection.rs` (Rust; the solvers of the dialogs moved there with decision 0020, step 10, called through `index.js`) | The switch connection: two turnouts facing each other on two tracks and the element(s) between them |
 | `crates/switch/src/mid_chain.rs` (Rust) | One to three elements between the two branches of a switch connection, two of their values sought |
 | `crates/switch/src/connect.rs` (Rust) | Connecting a turnout's branch or a crossing's leg to an open track end by refitting the element there, or the last two laid anew |
 | `crates/switch/src/slider.rs` (Rust) | The valid stretches and snap points of the position slider |
-| `switchDelete.js` | Which routes stay as ordinary track when a switch is deleted, and the plan for doing it |
-| `weichenRegelwerk.js` | The form tables grouped for the rulebook viewer |
+| `crates/switch/src/delete.rs` | Which routes stay as ordinary track when a switch is deleted, and the plan for doing it |
+| `crates/switch/src/regelwerk.rs` | The form tables grouped for the rulebook viewer |
 
 ## Forms
 
@@ -84,7 +89,7 @@ that states none (the fb and gb forms). Only a form without one would use the co
 The turnout's through route is the track itself — one piece per element it covers, cut where the turnout
 begins (toe, WA) and ends (WE). It may reach over several elements and lie on straights, arcs and
 clothoids; not on a Bloss curve (its pieces are no Bloss curves), not over another switch, not on a kinked
-straight, and the track must run through tangentially under it (`switchPlacement.js`).
+straight, and the track must run through tangentially under it (`crates/switch/src/placement.rs`).
 
 **Bending.** Laying a turnout into a curve moves no sleeper, so at every station the branch's curvature is
 the stem's plus the form's:
@@ -146,7 +151,7 @@ branch. The variant is the one of the main track's rail at WA (`turnoutSleepers`
 
 WA and WE are rail joints in the middle of a sleeper bay. From WA to WE lie as many sleepers as the variant's
 count less those from WE to the ldS, spaced evenly (0.596–0.617 m for the DB forms, about 0.63 m for the
-run-out turnouts) and square to the bisector — the grid of `sleepers.js`, which the heights snap to as well.
+run-out turnouts) and square to the bisector — the grid of `crates/switch/src/sleepers.rs`, which the heights snap to as well.
 From WE the sleepers are laid off along both following axes: at WE + 0.30 + 0.60·k on the main track and the
 same distance behind the branch's own WE, the ldS at the table's distance (the catalogue's where there is no
 variant; the table's −0.244 of the 215 – 1:4.8 makes the last sleeper before WE the ldS). Each joins its two

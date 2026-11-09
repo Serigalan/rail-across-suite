@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 
 //! Projects, variants and revisions on one database (`store.js`, AP 10.5): a
-//! revision holds the whole project as its core 1.0 document, gzipped; a
+//! revision holds the whole project as its infra-data-1.0 document, gzipped; a
 //! variant is a name and a head; the graph of revisions is walked in memory.
 
 use std::collections::{HashMap, HashSet};
@@ -15,11 +15,14 @@ use rusqlite::{Connection, OptionalExtension, Row, params};
 use serde_json::{Value, json};
 
 use crate::auth::User;
-use crate::checks::normalized_record;
 use crate::http::ApiError;
 use crate::util::{iso, uuid};
 
-const STORED_FORMAT: i64 = 3;
+/// What `revision.schema_version` says of a payload: 4, an infra-data-1.0
+/// document (decision 0021). 3 (the core 1.0 document) and 2 (oltjson-1.1)
+/// are migrated into it once (data migration `0021-infra-data`); anything
+/// else is refused as `format_outdated`.
+pub const STORED_FORMAT: i64 = 4;
 
 pub fn pack(payload: &Value) -> Vec<u8> {
     let mut e = GzEncoder::new(Vec::new(), Compression::default());
@@ -223,10 +226,6 @@ impl<'a> Store<'a> {
         };
         let payload = match version {
             STORED_FORMAT => unpack(&payload).ok_or_else(|| ApiError::new(500, "internal"))?,
-            2 => {
-                let record = unpack(&payload).ok_or_else(|| ApiError::new(409, "format_outdated"))?;
-                rail_across_doc::persistence::project_document(&normalized_record(&record), false, true).map_err(|_| ApiError::new(409, "format_outdated"))?
-            }
             _ => return Err(ApiError::new(409, "format_outdated")),
         };
         Ok(Some(Revision {

@@ -15,14 +15,44 @@
 // This file is the module's public face: code outside packages/core/src/commands/
 // imports from here and nowhere else (tools/modules.mjs). See docs/commands.md.
 
-import { reuseFrom, viaRust } from '../native/index.js'
+import { answeredBy, callNative, heldProject, reuseFrom, reuseTracks, viaRust } from '../native/index.js'
+import { flipSwitchEndpoints, reverseTrack } from '../track/index.js'
 
 /** A command on the module, what it passed through untouched given back as it was. */
 const command = (op) => viaRust(`commands.${op}`, reuseFrom)
 
 export { connectRemedies } from './connectRemedies.js'
-export { rolesFor, withRole } from './elementRoles.js'
-export { inRun, rowOf, tableParts, tableRoles, tableRows, trackEdit, writeRows } from './tableView.js'
+
+// The element table (Entscheidung 375): its rows over a route or a track, the
+// roles the elements may take, an edit of a row written back — the core's
+// module (decision 0021, phase D).
+export const elementRoles = command('elementRoles')
+export const intermediateSpan = command('intermediateSpan')
+export const rolesFor = command('rolesFor')
+export const withRole = command('withRole')
+export const rowOf = command('rowOf')
+export const tableParts = command('tableParts')
+export const tableRoles = command('tableRoles')
+export const tableRows = command('tableRows')
+export const trackEdit = command('trackEdit')
+export const writeRows = command('writeRows')
+
+/**
+ * An edit of a row's track done in the view's direction: `edit(tracks,
+ * switches, index)` on the tracks as the view runs them — the row's track
+ * turned round where the view runs it backwards, and turned back after.
+ */
+export function inRun(row, tracks, switches, edit) {
+  const track = tracks.find(t => t.id === row.trackId)
+  if (!track) return null
+  const count = track.elements?.length ?? 0
+  const index = row.reversed ? count - 1 - row.index : row.index
+  if (!row.reversed) return edit(tracks, switches, index)
+  const turned = tracks.map(t => (t.id === row.trackId ? reverseTrack(t) : t))
+  const out = edit(turned, flipSwitchEndpoints(switches, row.trackId), index)
+  if (!out?.tracks) return out
+  return { ...out, tracks: out.tracks.map(t => (t.id === row.trackId ? reverseTrack(t) : t)) }
+}
 
 /** The keys of the texts the S-curve's refusals are told by, by their reason. */
 export const REASON_MSG = {
@@ -88,7 +118,24 @@ export const neighbourAxisNear = command('neighbourAxisNear')
 export const optimizeRequest = command('optimizeRequest')
 export const optimizedTrack = command('optimizedTrack')
 export const picksAtSpeed = command('picksAtSpeed')
-export const planElementChange = command('planElementChange')
+const planElementChangeOf = command('planElementChange')
+/**
+ * What changing element `index` of track `trackId` would do. On the project the
+ * core's module holds (its tracks and switches as the page has them), only the
+ * tracks it touched cross back and the others stay the very objects they are
+ * (decision 0021, phase C); on any other tracks, as the command.
+ */
+export function planElementChange(tracks, switches, trackId, index, change) {
+  const held = heldProject()
+  if (!held || tracks !== held.tracks || switches !== held.switches) return planElementChangeOf(tracks, switches, trackId, index, change)
+  const plan = callNative('session.planElementChange', [trackId, index, change])
+  const touched = new Map(reuseTracks(plan.tracks, tracks).map((t, i) => {
+    answeredBy(t, plan.answer, i)
+    return [t.id, t]
+  }))
+  const { answer: _answer, ...rest } = plan
+  return { ...rest, tracks: tracks.map(t => touched.get(t.id) ?? t) }
+}
 export const planIntermediateChange = command('planIntermediateChange')
 export const preferredShift = command('preferredShift')
 export const reconnectFromAnswer = command('reconnectFromAnswer')

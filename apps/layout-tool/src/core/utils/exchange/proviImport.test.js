@@ -7,7 +7,7 @@ import {
   proviProject, proviHeights,
 } from './proviImport'
 import { placeMdbSwitches } from './mdbSwitchPlacement'
-import { trackLength, pointAtStationUtm } from '@rail-across/core/src/track/heightUtils.js'
+import { trackLength, pointAtStationUtm } from '@rail-across/core/track'
 import { expectNodesJoin, expectLengthsTrue, expectSwitchRoutesCarved } from '@rail-across/core/test/chainInvariants.js'
 
 /**

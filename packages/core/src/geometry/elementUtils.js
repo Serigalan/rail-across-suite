@@ -242,8 +242,8 @@ export function signedRadiusFrom3PointsUtm(p1, p2, p3) {
  * The end bearing an element's own design values give it: an arc's bearing
  * turned by length / radius, a transition's by the heading its profile
  * accumulates — null for a straight, which has none of its own. A stored
- * `endBearing` that agrees with it is not kept in the file (oltjson-1.0,
- * decision 333); one that does not — a kinked straight, an imported tangent —
+ * `endBearing` that agrees with it is not kept in the file (decision
+ * 333); one that does not — a kinked straight, an imported tangent —
  * is.
  */
 export function derivedEndBearing(element) {

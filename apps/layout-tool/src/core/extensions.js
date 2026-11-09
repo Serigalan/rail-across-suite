@@ -1,12 +1,10 @@
 /**
- * The extension points of core (Paket L, decision 277): where the server
- * components dock onto an app that runs without them.
- *
- * core never imports from src/server. Where a server part has to appear — a
- * tool in a panel, a terrain source, the clouds on the server — core asks
- * here, and src/server/register.js puts it in before the first render. The
- * local build never runs register.js: every list is empty, every provided
- * value its fallback, and core runs complete on its own.
+ * The extension points of core: where the server components dock onto the
+ * app. Where a server part has to appear — a tool in a panel, a terrain
+ * source, the clouds on the server — core asks here, and
+ * src/server/register.js puts it in before the first render. (There was a
+ * build without the server, decision 277; since decision 0021 there is one
+ * build, and what core reads here is always filled.)
  *
  * Two kinds:
  *

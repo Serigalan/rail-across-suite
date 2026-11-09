@@ -2,7 +2,8 @@
  {
   "name": "the sample",
   "document": {
-   "format": "rail-across",
+   "format": "infra-data",
+   "version": "1.0",
    "domains": {
     "core": {
      "version": "1.0",
@@ -360,7 +361,8 @@
  {
   "name": "the sample, carrying its schemas",
   "document": {
-   "format": "rail-across",
+   "format": "infra-data",
+   "version": "1.0",
    "domains": {
     "core": {
      "version": "1.0",
@@ -1785,6 +1787,7 @@
   "name": "another format",
   "document": {
    "format": "oltjson",
+   "version": "1.0",
    "domains": {
     "core": {
      "version": "1.0",
@@ -2107,12 +2110,13 @@
    }
   },
   "valid": false,
-  "code": "invalid_payload"
+  "code": "unsupported_version"
  },
  {
   "name": "a domain version this build does not read",
   "document": {
-   "format": "rail-across",
+   "format": "infra-data",
+   "version": "1.0",
    "domains": {
     "core": {
      "version": "2.0",
@@ -2440,7 +2444,8 @@
  {
   "name": "a domain this build does not read",
   "document": {
-   "format": "rail-across",
+   "format": "infra-data",
+   "version": "1.0",
    "domains": {
     "core": {
      "version": "1.0",
@@ -2827,7 +2832,8 @@
  {
   "name": "a schema hash that is not the version's",
   "document": {
-   "format": "rail-across",
+   "format": "infra-data",
+   "version": "1.0",
    "domains": {
     "core": {
      "version": "1.0",
@@ -3155,7 +3161,8 @@
  {
   "name": "a carried schema under another hash",
   "document": {
-   "format": "rail-across",
+   "format": "infra-data",
+   "version": "1.0",
    "domains": {
     "core": {
      "version": "1.0",
@@ -3700,7 +3707,8 @@
  {
   "name": "a blob that is not what its hash says",
   "document": {
-   "format": "rail-across",
+   "format": "infra-data",
+   "version": "1.0",
    "domains": {
     "core": {
      "version": "1.0",
@@ -3998,7 +4006,8 @@
  {
   "name": "layout depending on nothing",
   "document": {
-   "format": "rail-across",
+   "format": "infra-data",
+   "version": "1.0",
    "domains": {
     "core": {
      "version": "1.0",
@@ -4323,7 +4332,8 @@
  {
   "name": "a track twice",
   "document": {
-   "format": "rail-across",
+   "format": "infra-data",
+   "version": "1.0",
    "domains": {
     "core": {
      "version": "1.0",
@@ -4702,7 +4712,8 @@
  {
   "name": "an element with derived geometry",
   "document": {
-   "format": "rail-across",
+   "format": "infra-data",
+   "version": "1.0",
    "domains": {
     "core": {
      "version": "1.0",
@@ -5031,7 +5042,8 @@
  {
   "name": "one stage only",
   "document": {
-   "format": "rail-across",
+   "format": "infra-data",
+   "version": "1.0",
    "domains": {
     "core": {
      "version": "1.0",
@@ -5356,7 +5368,8 @@
  {
   "name": "a platform with its stations loose",
   "document": {
-   "format": "rail-across",
+   "format": "infra-data",
+   "version": "1.0",
    "domains": {
     "core": {
      "version": "1.0",
@@ -5685,7 +5698,8 @@
  {
   "name": "a collection missing",
   "document": {
-   "format": "rail-across",
+   "format": "infra-data",
+   "version": "1.0",
    "domains": {
     "core": {
      "version": "1.0",
@@ -5986,7 +6000,8 @@
  {
   "name": "no core",
   "document": {
-   "format": "rail-across",
+   "format": "infra-data",
+   "version": "1.0",
    "domains": {
     "layout": {
      "version": "1.0",
@@ -6108,7 +6123,8 @@
  {
   "name": "core as written before the design speed took its name",
   "document": {
-   "format": "rail-across",
+   "format": "infra-data",
+   "version": "1.0",
    "domains": {
     "core": {
      "version": "1.0",
@@ -6466,7 +6482,8 @@
  {
   "name": "the sample with its signalling",
   "document": {
-   "format": "rail-across",
+   "format": "infra-data",
+   "version": "1.0",
    "domains": {
     "core": {
      "version": "1.0",
@@ -7343,7 +7360,8 @@
  {
   "name": "the sample with its signalling, carrying its schemas",
   "document": {
-   "format": "rail-across",
+   "format": "infra-data",
+   "version": "1.0",
    "domains": {
     "core": {
      "version": "1.0",
@@ -10509,7 +10527,8 @@
  {
   "name": "signalling depending on nothing",
   "document": {
-   "format": "rail-across",
+   "format": "infra-data",
+   "version": "1.0",
    "domains": {
     "core": {
      "version": "1.0",
@@ -11332,7 +11351,8 @@
  {
   "name": "a signal acting in no direction",
   "document": {
-   "format": "rail-across",
+   "format": "infra-data",
+   "version": "1.0",
    "domains": {
     "core": {
      "version": "1.0",
@@ -12157,7 +12177,8 @@
  {
   "name": "a frame that shows nothing",
   "document": {
-   "format": "rail-across",
+   "format": "infra-data",
+   "version": "1.0",
    "domains": {
     "core": {
      "version": "1.0",
@@ -13034,7 +13055,8 @@
  {
   "name": "signalling without its overlaps",
   "document": {
-   "format": "rail-across",
+   "format": "infra-data",
+   "version": "1.0",
    "domains": {
     "core": {
      "version": "1.0",

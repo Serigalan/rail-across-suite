@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { translations, languageLabels, format, fill, tOr } from './i18n'
 import {
   SWITCH_KINDS, switchKindLabelKey, switchRouteLabelKey, switchRoutes,
-} from '@rail-across/core/src/track/switchModel.js'
+} from '@rail-across/core/track'
 
 /**
  * A key a component asks for that no locale answers renders as the key itself

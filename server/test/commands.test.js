@@ -3,10 +3,10 @@ import { execFileSync, spawn } from 'node:child_process'
 import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
-import { gunzipSync } from 'node:zlib'
+import { gunzipSync, gzipSync } from 'node:zlib'
 import Database from 'better-sqlite3'
 import { makeLas } from '@rail-across/pointcloud/test/pointCloudFixture.js'
-import { gaugeProfile, gaugeProfileAreas, gaugeProfileRing } from '@rail-across/core/src/crossSection/gaugeProfiles.js'
+import { gaugeProfile, gaugeProfileAreas, gaugeProfileRing } from '@rail-across/core/crossSection'
 import { PW, rustServer, SERVER_BIN, signIn } from './helpers.js'
 
 // What of the server is not its API: the schema and its migrations, the data
@@ -123,6 +123,42 @@ describe.skipIf(!SERVER_BIN)('the data steps', () => {
     expect(db.prepare('SELECT COUNT(*) FROM user').pluck().get()).toBe(1)
     expect(db.prepare('SELECT COUNT(*) FROM revision').pluck().get()).toBe(1)
     db.close()
+  })
+})
+
+describe.skipIf(!SERVER_BIN)('the step to infra-data-1.0 (decision 0021)', () => {
+  it('rewrites the revisions kept as the core 1.0 document and as oltjson-1.1 records, once, in place', async () => {
+    const file = join(fresh(), 'a.sqlite')
+    ctx = await rustServer({ file })
+    await ctx.app.auth.createUser({ login: 'anna', name: 'Anna', password: PW, role: 'admin', mustChangePassword: false })
+    const anna = await signIn(ctx.app, 'anna')
+    const track = { id: 't1', name: 'T1', epsg: 25832, elements: [straight([500000, 5600000], [500100, 5600000])] }
+    const made = (await anna('POST', '/api/projects', { title: 'Halle', payload: { id: 'p1', tracks: [track], switches: [], platforms: [] } })).json()
+    const second = (await anna('POST', `/api/variants/${made.variantId}/revisions`, {
+      base: made.revisionId, payload: { id: made.project.id, title: 'Halle', tracks: [track], switches: [], platforms: [] }, remaps: [],
+    })).json().revision.id
+    await ctx.app.close()
+    ctx.db.close()
+    ctx = null
+    // As the two revisions were kept before: the old envelope, and an oltjson-1.1 record whose track is new.
+    const db = new Database(file)
+    const { format: _f, version: _v, ...doc } = JSON.parse(gunzipSync(db.prepare('SELECT payload FROM revision WHERE id = ?').pluck().get(made.revisionId)).toString())
+    db.prepare('UPDATE revision SET schema_version = 3, payload = ? WHERE id = ?').run(gzipSync(JSON.stringify({ format: 'rail-across', ...doc })), made.revisionId)
+    const record = { id: made.project.id, title: 'Halle', tracks: [{ ...track, status: 'new' }], switches: [], platforms: [] }
+    db.prepare('UPDATE revision SET schema_version = 2, payload = ? WHERE id = ?').run(gzipSync(JSON.stringify(record)), second)
+    db.prepare("DELETE FROM data_migration WHERE name = '0021-infra-data'").run()
+    db.close()
+    expect(cli(file, ['migrate'])).toMatch(/data step 0021-infra-data: 2 Revisionen umgeschrieben, 0 nicht lesbar/)
+    const after = new Database(file)
+    const rows = after.prepare('SELECT schema_version, payload FROM revision ORDER BY id').all()
+    after.close()
+    expect(rows.map(r => r.schema_version)).toEqual([4, 4])
+    const [old, kept] = rows.map(r => JSON.parse(gunzipSync(r.payload).toString()))
+    expect(old).toMatchObject({ format: 'infra-data', version: '1.0', domains: doc.domains })
+    const stages = kept.domains.core.fields.stages
+    expect(kept).toMatchObject({ format: 'infra-data', version: '1.0' })
+    expect(kept.domains.core.collections.tracks[0].lifespan).toEqual({ from: stages[1].id })
+    expect(cli(file, ['migrate'])).toBe('')
   })
 })
 

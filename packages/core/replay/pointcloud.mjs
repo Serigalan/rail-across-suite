@@ -20,7 +20,7 @@ import { detectTrack, edgeCandidates, topSurface } from '@rail-across/pointcloud
 import * as T from '@rail-across/pointcloud/src/railTrace.js'
 import { cloudSectionPoints, forgetAllClouds } from '@rail-across/pointcloud/src/cloudSection.js'
 import { makeLas, bytesSource } from '@rail-across/pointcloud/test/pointCloudFixture.js'
-import { gaugeProfile, gaugeProfileAreas, gaugeProfileRing } from '../src/crossSection/gaugeProfiles.js'
+import { gaugeProfile, gaugeProfileAreas, gaugeProfileRing } from '../src/crossSection/index.js'
 import { makeTrack } from '../src/track/index.js'
 import { straightFrom, arcFrom } from '../src/geometry/index.js'
 

@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { rebuildCoords } from '@rail-across/core/src/track/trackModel.js'
+import { rebuildCoords } from '@rail-across/core/track'
 import { arcFrom, straightFrom, transitionElement } from '@rail-across/core/src/geometry/elementFactory.js'
 import { endPointStraightUtm, endPointCurvedUtm } from '@rail-across/core/src/geometry/elementUtils.js'
 import { cantEnds } from '@rail-across/core/src/geometry/clothoidUtils.js'
 import {
   ALL_SWITCH_TYPES, SWITCH_TYPES, hasCompoundBranch, switchBranchSections, switchStraightLength, switchVariants,
-} from '@rail-across/core/src/switch/catalogue.js'
+} from '@rail-across/core/switch'
 import { dehydrateProjects, hydrateProjects } from '@rail-across/core/src/project/persistenceUtils.js'
 import { hasRuleError } from '@rail-across/core/src/rules/trassierungCheck.js'
 import {

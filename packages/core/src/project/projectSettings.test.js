@@ -6,7 +6,7 @@ import {
 } from './projectSettings.js'
 import { straightFrom } from '../geometry/elementFactory.js'
 import { crsCentre, crsSystem, crsZone, systemCodeAt, systemZones, transformPlanePoint } from '../geometry/coordinateUtils.js'
-import { trackLength } from '../track/heightUtils.js'
+import { trackLength } from '../track/index.js'
 import { reuseFrom, viaRust } from '../native/index.js'
 
 // Steps of the commands, as the core's module runs them (not part of its face).

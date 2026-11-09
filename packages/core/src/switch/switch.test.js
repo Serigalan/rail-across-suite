@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import {
   SWITCH_TYPES, SWITCH_TYPES_SPECIAL, SWITCH_CONNECTION_STAGES, switchTypeByLabel, switchBranchSpeed, switchArcLength, switchStraightLength, switchBranchSections, switchBranchLength, switchFormChain, branchRadius, switchMarkDistance, switchBranchPointAt, switchTangents,
-} from './catalogue.js'
-import { switchBranchChain, switchBranchRoute, switchChainTo, switchChainSlice } from './route.js'
-import { computeSwitchGeometryUtm } from './symbol.js'
+} from './index.js'
+import { switchBranchChain, switchBranchRoute, switchChainTo, switchChainSlice } from './index.js'
+import { computeSwitchGeometryUtm } from './index.js'
 
 // The forms a connection may build from — the three stages of the fallback
 // chain. That is the set every generic test here has always run over; the two

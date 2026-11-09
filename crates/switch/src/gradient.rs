@@ -175,6 +175,14 @@ pub fn lds_lift(c: &Coupling, main_heights: &[Value]) -> f64 {
     slope_at(main_heights, sl.main) * sl.a + (c.cant / RUNNING_CIRCLE_DISTANCE) * sl.y
 }
 
+/// `lds_lift` of a coupling as `Coupling::to_json` writes it — its ldS
+/// sleeper's `main`, `a` and `y`, and its `cant` — on the main route's heights.
+pub fn lds_lift_json(c: &Value, main_heights: &[Value]) -> Option<f64> {
+    let sl = &c["ldsSleeper"];
+    let (main, a, y, cant) = (sl["main"].as_f64()?, sl["a"].as_f64()?, sl["y"].as_f64()?, c["cant"].as_f64().unwrap_or(0.0));
+    Some(slope_at(main_heights, main) * a + (cant / RUNNING_CIRCLE_DISTANCE) * y)
+}
+
 /// The height a point takes from one it depends on "as an ldS" (`planeFrom`).
 pub fn plane_from(src: &Value, src_station: f64, z_src: Option<f64>, dst: &Value, dst_station: f64) -> Option<f64> {
     let (p, pb) = point_at_station(src, src_station)?;

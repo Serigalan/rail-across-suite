@@ -2,12 +2,12 @@ import { describe, it, expect } from 'vitest'
 import {
   findTrackJoints, jointFit, trackEndAt, linkRecord, linkSymbol, claimedEnds,
   existingLinks, linksForJoints, linkAllJoints, JOINT_TOL,
-} from '@rail-across/core/src/track/trackLinkUtils.js'
-import { planSwitchDeletion } from '@rail-across/core/src/switch/switchDelete.js'
+} from '@rail-across/core/track'
+import { planSwitchDeletion } from '@rail-across/core/switch'
 import { buildInfra } from '../../../utils/exchange/exchangeExport'
 import { parseOsrdRailJson } from '../../../utils/exchange/osrdImport'
 import { switchesToPorts } from '../../../utils/exchange/alignmentCodec'
-import { newSwitchFields, LINK_KIND, withPort } from '@rail-across/core/src/track/switchModel.js'
+import { newSwitchFields, LINK_KIND, withPort } from '@rail-across/core/track'
 import { endPointStraightUtm } from '@rail-across/core/src/geometry/elementUtils.js'
 import { transformPlanePoint, transformGridBearing, utmToWgs84 } from '@rail-across/core/src/geometry/coordinateUtils.js'
 

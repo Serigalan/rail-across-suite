@@ -4,7 +4,7 @@ import { closeWorkingCopy, currentWorkingCopy, openWorkingCopy } from './working
 import { checkIn, localChanges, prepareUpdate, revertToHead } from './workingCopySync'
 import { parseProjectsPayload, projectDocument } from '@rail-across/core/project'
 
-/** What the server holds and sends of a record: its core 1.0 document — and the record it holds again. */
+/** What the server holds and sends of a record: its infra-data-1.0 document — and the record it holds again. */
 const doc = (record) => projectDocument(record)
 const recordOf = (payload) => parseProjectsPayload(payload).projects[0]
 
@@ -44,7 +44,7 @@ describe('checking the working copy in', () => {
     const sent = serve({ 'POST /api/variants/v/revisions': [201, { revision: { id: 2, number: 2 } }] })
     const res = await checkIn('neu')
     expect(res.revision.id).toBe(2)
-    expect(sent[0].body).toMatchObject({ base: 1, message: 'neu', remaps: [], payload: { format: 'rail-across' } })
+    expect(sent[0].body).toMatchObject({ base: 1, message: 'neu', remaps: [], payload: { format: 'infra-data', version: '1.0' } })
     expect(recordOf(sent[0].body.payload)).toMatchObject({ id: 'p' })
     expect(recordOf(sent[0].body.payload).tracks.map(t => t.id)).toEqual(['t1', 't2'])
     expect(currentWorkingCopy().base.id).toBe(2)

@@ -5,7 +5,7 @@ import {
   formFromGeometry, formInCatalogue, offsetOnTrack, offsetOnElement, deriveMdbTurnouts, AXIS_TOL,
 } from './mdbSwitchDerive'
 import { computeClothoidUtm } from '@rail-across/core/src/geometry/clothoidUtils.js'
-import { pointAtStationUtm } from '@rail-across/core/src/track/heightUtils.js'
+import { pointAtStationUtm } from '@rail-across/core/track'
 import { endPointStraightUtm, endPointCurvedUtm } from '@rail-across/core/src/geometry/elementUtils.js'
 
 /**

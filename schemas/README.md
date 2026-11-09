@@ -1,13 +1,14 @@
 # schemas
 
-The JSON Schema of each domain of the Rail-Data-Core, and the test vectors that hold the JavaScript and Python
-implementations to the same results (canonical JSON, the schema check, whole documents). See the
+The one format of a project, **infra-data-1.0** ([decision 0021](../docs/decisions/0021-one-format-one-build-the-project-in-the-module.md);
+first called core 1.0): the JSON Schema of its envelope and of each domain of the Rail-Data-Core, and the test vectors
+that hold the core's implementations to the same results (canonical JSON, the schema check, whole documents). See the
 [data model](../docs/data-model.md) for the rules behind them and
-[decision 0009](../docs/decisions/0009-core-1-0-in-the-data-model.md) for why core 1.0 has its shape.
+[decision 0009](../docs/decisions/0009-core-1-0-in-the-data-model.md) for why the format has its shape.
 
 | File | What it is |
 |---|---|
-| `rail-across.schema.json` | A project as one JSON file (`.railacross.json`): the domains, the schemas it carries, its blobs |
+| `infra-data.schema.json` | infra-data-1.0, a project as one JSON file (`.railacross.json`): the domains, the schemas it carries, its blobs |
 | `core/1.0.schema.json` | Domain `core` 1.0: tracks, switches and connectors, platforms, end marks, km lines, the operational point register, the construction stages; the core types `TrackEnd`, `TrackLocation`, `TrackRange`, `TrackPath`, `Lifespan`, `Ref` |
 | `layout/1.0.schema.json` | Domain `layout` 1.0: named runs of tracks (`trackPaths`), measured axes, reference axes, the plan header, the project picture |
 | `signalling/1.0.schema.json` | Domain `signalling` 1.0, after PlanPro 1.10: signals and boards with their logical signals (one per signalling system, as in OSRD), frames and aspects, detection points, track sections, switch elements, train and shunting routes, overlaps, flank protection, the balises and magnets of train protection, station boundaries ([decision 0011](../docs/decisions/0011-signalling-domain.md)); which systems, kinds, settings and aspects there are is the catalogue's (`packages/core/constraints/db-ril-301.json`) |
@@ -22,7 +23,8 @@ document (`packages/core/types/document.d.ts`) are derived from them by `package
 
 ```json
 {
-  "format": "rail-across",
+  "format": "infra-data",
+  "version": "1.0",
   "domains": {
     "core":   { "version": "1.0", "schema": "sha256:…", "fields": { … }, "collections": { … } },
     "layout": { "version": "1.0", "schema": "sha256:…", "dependsOn": ["core"], "fields": { … }, "collections": { … } }

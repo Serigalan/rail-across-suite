@@ -7,14 +7,14 @@ server build adds its own pages and panels from `src/server` (see [server](serve
 ```
 src/core/
   storage.js        the project store: the one open project, undo/redo, write-behind
-  extensions.js     extension points the server build fills
+  extensions.js     extension points src/server fills
   localStore.js     what this browser keeps for the app (storage dialog)
   basemaps.js       the suite's basemaps (@rail-across/basemaps, shared with the Signalling-Tool) and those of extension point `basemaps`
   hooks/            React access to the store and to shared field logic
   map/              the MapLibre map: instance, project layers, picking, previews, km and topology layers
   shell/            the map workspace: sidebar, panel register, overlay rules, step notice
   components/       panels (sidebar), overlays (over the map), forms, charts, icons
-  home/             the local build's start page and project list
+  components/home/  the storage dialog of what the browser keeps
   locales/          de.json, en.json and the i18n context
   styles/           CSS by area, design tokens, palette
   constraints/      the rulebooks as JSON (read by modules and by the optimizer module)
@@ -42,8 +42,7 @@ writes go through the store's functions (`saveTrack`, `deleteElements`, `commitS
 - **Id log.** Splits and joins append `{ from, to: [ids] }`; checking in sends it so a merge can carry the
   other side's references.
 - **Where the project is kept** is the opener's business (`openStoredProject({ project, meta, key, save })`):
-  the working copy of a variant in the server build, a project of the browser's list in the local build, or
-  memory only. Writes are dehydrated and written behind once a burst has come to rest; leaving the page or
+  the working copy of a variant, or memory only. Writes are dehydrated and written behind once a burst has come to rest; leaving the page or
   closing the project flushes at once.
 
 React reads the store through `hooks/useStore.js` (`useSyncExternalStore`): `useProject`, `useTracks`,
@@ -134,13 +133,11 @@ and `tools/i18n-unused.mjs` (in CI) that no key is unused. Default language Engl
 Styles are plain CSS per area with tokens in `tokens.css`; no colour literal in a component (architecture test),
 and few inline styles.
 
-## The local start page (`home/`)
+## What the browser keeps
 
-The local build opens on `LocalStartPage`: the projects of this browser (IndexedDB `olt-local`) with picture,
-counts and date; new, open, rename, export, import (fresh ids, so importing twice gives two projects), delete
-(with the local point clouds). No sign-in: one local user with all rights. If the browser refuses persistent
-storage, the page says so. `localStore.js` lists and clears what the browser keeps (OPFS clouds, settings,
-import reports, hidden tracks, project databases).
+`localStore.js` lists and clears what the browser keeps for the app (OPFS clouds, settings, import reports,
+hidden tracks, the working copies), in the storage dialog (`components/home/LocalStorageDialog.jsx`). The
+projects themselves are the server's — the suite's, or the desktop app's own.
 
 ## Decisions
 

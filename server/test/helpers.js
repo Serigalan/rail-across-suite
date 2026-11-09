@@ -3,6 +3,7 @@ import { existsSync, mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import Database from 'better-sqlite3'
+import { projectDocument } from '@rail-across/core/project'
 
 export const PW = 'correct horse battery'
 
@@ -145,11 +146,23 @@ export async function signIn(app, login, password = PW) {
   return as(app, cookie.value)
 }
 
+/**
+ * A body whose `payload` is a record, with the payload as its infra-data-1.0
+ * document — as every client sends it (decision 0021: the API takes documents
+ * only). The tests write records; one the schemas refuse goes as it is
+ * written, for the server to refuse.
+ */
+export function withDocument(body) {
+  const p = body?.payload
+  if (!p || typeof p !== 'object' || Array.isArray(p) || p.format) return body
+  return { ...body, payload: projectDocument({ id: 'new', ...p }, { check: false }) }
+}
+
 export function as(app, token) {
   const call = (method, url, payload) => app.inject({
     method, url,
     cookies: token ? { ra_session: token } : {},
-    ...(payload !== undefined ? { payload } : method === 'GET' ? {} : { payload: {} }),
+    ...(payload !== undefined ? { payload: withDocument(payload) } : method === 'GET' ? {} : { payload: {} }),
   })
   call.token = token
   return call

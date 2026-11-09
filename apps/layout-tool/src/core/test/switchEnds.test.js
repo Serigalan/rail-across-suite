@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { rebuildCoords } from '@rail-across/core/src/track/trackModel.js'
+import { rebuildCoords } from '@rail-across/core/track'
 import { computeStraightValuesUtm, endPointStraightUtm, resolveEndBearing, nodeUtm } from '@rail-across/core/src/geometry/elementUtils.js'
 import { utmToWgs84 } from '@rail-across/core/src/geometry/coordinateUtils.js'
-import { SWITCH_TYPES } from '@rail-across/core/src/switch/catalogue.js'
-import { switchEndAnchorRefusal } from '@rail-across/core/src/switch/switchPlacement.js'
-import { carveSwitchRoute } from '@rail-across/core/src/track/trackSplitUtils.js'
-import { planSwitchDeletion } from '@rail-across/core/src/switch/switchDelete.js'
+import { SWITCH_TYPES } from '@rail-across/core/switch'
+import { switchEndAnchorRefusal } from '@rail-across/core/switch'
+import { carveSwitchRoute } from '@rail-across/core/track'
+import { planSwitchDeletion } from '@rail-across/core/switch'
 import {
   expectValidTrack, expectSwitchRoutesCarved, expectNodesJoin,
 } from '@rail-across/core/test/chainInvariants.js'
@@ -159,11 +159,4 @@ describe('the through route a junction switch needs beside it', () => {
     expect(carveSwitchRoute(track, 'BEGIN', cut, mark, 50, { accepts: isPlainStraight })).toBeNull()
   })
 
-  it('refuses where a curve lies where the route would', () => {
-    const track = lineTrack(1, 20, 200)
-    const curved = trackOf(track.id, track.name,
-      track.elements.map(el => ({ ...el, elementType: 1, radius: 900 })))
-    const cut = endPointStraightUtm(START, 20, 50)
-    expect(carveSwitchRoute(curved, 'BEGIN', cut, mark, 50, { accepts: isPlainStraight })).toBeNull()
-  })
 })

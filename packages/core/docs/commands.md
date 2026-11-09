@@ -30,8 +30,8 @@ into both.
 | `crates/commands/src/splice.rs` | Join two tracks (Zwei Gleise zusammenfügen) | What a picked element offers, the request, and the merged track built from the answer |
 | `crates/commands/src/reconnect.rs` | Reconnect existing elements (Neu verbinden) | The stretch between two clicks, the old axis every 1 cm, the request to the service and the track written back |
 | `crates/commands/src/edit.rs` | Track editor (element table) | Planning and applying length/bearing/radius changes and how far they reach; a Zwischenelement laid anew between its neighbours |
-| `elementRoles.js` | Track editor (element table) | Fest-, Folge- and Zwischenelement: the roles elements state and the ones that follow from them, what each lets be typed |
-| `tableView.js` | Track editor (element table) | The rows of a track or a route: a route's tracks in its direction, one it runs against turned round; each row's track element, values and edits turned back (`inRun`, `trackEdit`, `writeRows`) |
+| `crates/commands/src/roles.rs` | Track editor (element table) | Fest-, Folge- and Zwischenelement: the roles elements state and the ones that follow from them, what each lets be typed |
+| `crates/commands/src/table.rs` (and `inRun` in `index.js`) | Track editor (element table) | The rows of a track or a route: a route's tracks in its direction, one it runs against turned round; each row's track element, values and edits turned back (`inRun`, `trackEdit`, `writeRows`) |
 | `crates/commands/src/optimize.rs` | Optimize track (server) | The optimizer request and the track a result makes, keeping the gradient |
 
 ## How they behave
@@ -106,7 +106,7 @@ transition next to an arc follows the arc's new radius at its end, keeping its l
 tangentially and outside turnouts. Length and radius are shown to 3 decimals and kept at full precision; only
 a real change is taken over. A kinked straight keeps its kink.
 
-**A route in the track editor** (`tableView.js`, decision 381): the table shows a route's tracks one after the
+**A route in the track editor** (`crates/commands/src/table.rs`, decision 381): the table shows a route's tracks one after the
 other in the route's direction; a track it runs against is turned round (order, bearings, radius and cant signs,
 cant start/end). A cant, a speed or a reason goes onto the track element turned back; a length, a radius and a
 role are worked out on the track turned round and turned back (`inRun`, switch ports flipped with it), so a

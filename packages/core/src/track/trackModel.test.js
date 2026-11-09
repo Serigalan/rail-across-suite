@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { inheritedSpeed } from './trackModel.js'
+import { inheritedSpeed } from './index.js'
 
 describe('inheritedSpeed', () => {
   const track = (...speeds) => ({ elements: speeds.map(speed => ({ elementType: 0, speed })) })

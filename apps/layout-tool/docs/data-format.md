@@ -1,39 +1,39 @@
-# The project record: oltjson-1.1
+# The project record and its format, infra-data-1.0
 
-The Layout-Tool works on one record per project, **oltjson-1.1** — in memory (plus derived display data)
-and in the browser's own storage (local projects and working copies). What crosses a boundary — an exported
-file, the project server's revisions — is the record as a **core 1.0 document**, the format of the
-Rail-Data-Core ([document](../../../packages/core/docs/document.md), the schemas in
-[`schemas/`](../../../schemas/README.md), [decision 0009](../../../docs/decisions/0009-core-1-0-in-the-data-model.md)):
-the same content in the shape of the data model, converted both ways without loss. This page specifies the
-record and gives the reasons for its shape. The code is `packages/core/src/project/persistenceUtils.js` (see
+A project has one format, **infra-data-1.0** ([decision 0021](../../../docs/decisions/0021-one-format-one-build-the-project-in-the-module.md)):
+the document of the Rail-Data-Core ([document](../../../packages/core/docs/document.md), the schemas in
+[`schemas/`](../../../schemas/README.md), [decision 0009](../../../docs/decisions/0009-core-1-0-in-the-data-model.md)).
+An exported file, the project server's revisions and the browser's working copies are documents. In memory the
+Layout-Tool works on the document's content as **the record** — the shape the app reads (plus derived display
+data), converted from and to the document without loss. This page specifies the record and gives the reasons for
+its shape. The code is `packages/core/src/project/persistenceUtils.js` (see
 [project](../../../packages/core/docs/project.md)).
 
-## Envelope
+## The door
 
 ```json
 {
-  "format": "oltjson",
-  "version": "1.1",
-  "projects": [ { …one record… } ]
+  "format": "infra-data",
+  "version": "1.0",
+  "domains": { "core": { … }, "layout": { … } },
+  "blobs": { … }
 }
 ```
 
-The envelope is what files written before core 1.0 hold; a file may hold several records. The door
-(`parseProjectsPayload`) takes such a file by migrating each record into a core 1.0 document and checking it as
-one — the first step of the migration chain — and takes a core 1.0 document as it is. Anything else is refused
-(`unsupported_version`); oltjson-1.0 does not open any more (decision 371). A payload that names a format but does
-not hold it (switches without `switchId`/`kind`/`formVersion`/`ports`, a switch-marked element without
-`switchId`, a field the format does not have) is refused as `invalid_payload`, with what was found. That check is
-the one door: everything behind it may take the model for granted.
+The door (`parseProjectsPayload`) takes an infra-data-1.0 document, checks it against its schemas and gives its
+record. Anything else is refused as `unsupported_version` — an oltjson file among it: that format went with
+decision 0021, and a project kept in it is opened from a server that migrated it. A document that names the
+format but does not hold it (a switch without `kind` or `formVersion`, a switch's branch without its `switchId`, a
+field the format does not have) is refused as `invalid_payload`, with what was found. That check is the one door:
+everything behind it may take the model for granted.
 
-| Where | How the record is kept |
+| Where | How the project is kept |
 |---|---|
-| Exported file (*.railacross.json) | the core 1.0 document, carrying its schemas; the project image embedded as data URL `image` |
-| Local build | IndexedDB `olt-local`: `projects` (the whole record, marked oltjson-1.1, image as data URL) and `summaries` for the list |
-| Server build, browser | IndexedDB `olt` › `workingCopies`: the record being edited plus its base revision and that revision's record |
-| Project server | table `revision`: the core 1.0 document gzip-compressed in `payload`, `schema_version` 3; rows of `schema_version` 2 (oltjson-1.1) are migrated into documents when read, 1 (oltjson-1.0) is refused as `format_outdated`; the image as a blob referenced by `imageHash` |
-| Project server's API | revisions in and out as core 1.0 documents; the browser's API layer (`src/server/api/client.js`) turns them into records through the door and back |
+| Exported file (*.railacross.json) | the infra-data-1.0 document, carrying its schemas; the project image embedded as data URL `image` |
+| Exported tracks (*_tracks.railacross.json) | an infra-data-1.0 document of these tracks alone |
+| Browser | IndexedDB `olt` › `workingCopies`: the document being edited and that of its base revision (`@rail-across/working-copy`) |
+| Project server | table `revision`: the infra-data-1.0 document gzip-compressed in `payload`, `schema_version` 4; the image as a blob referenced by `imageHash`. Rows of the forms before (3, the core 1.0 document; 2, oltjson-1.1) are rewritten once by the data step `0021-infra-data`; any other is refused as `format_outdated` |
+| Project server's API | revisions in and out as infra-data-1.0 documents only; the browser's API layer (`src/server/api/client.js`) turns them into records through the door and back |
 | In memory | the record, hydrated (derived display data added), immutable |
 
 ## The record
@@ -233,7 +233,7 @@ are hidden on this device, and images on the server (referenced by hash).
 ## Why the format is shaped like this
 
 **One content everywhere.** File, browser, server and in-memory model hold the same content: the record, and at
-the boundaries its core 1.0 document. The conversion between the two is one function each way in the core,
+the boundaries its infra-data-1.0 document. The conversion between the two is one function each way in the core,
 tested to lose nothing; the server checks a revision with exactly the code the browser wrote it with, and an
 exported file can be read back anywhere. Once the app works on the document itself (roadmap, phase 2), the
 conversion goes.
@@ -285,11 +285,11 @@ and a rounded bearing walks a long track off course.
 **JSON.** Readable, diffable, and every platform reads it; the browser parses it natively and the server stores it
 gzip-compressed. Binary formats would save little after compression and cost inspectability.
 
-**Old data is migrated at the door, not read tolerantly.** A loader that accepts several versions spreads "this
-field might be missing" through all code behind it. Instead, one door checks the version, and migrates what it
-can: oltjson-1.1 into core 1.0, an explicit, tested step (data model, S-R10). Behind the door only the current
-form exists. What cannot be migrated — oltjson-1.0, when the format was introduced without production data to
-carry over — is refused with a message (the server answers `409 format_outdated` for such rows).
+**Old data is migrated once, not read tolerantly.** A loader that accepts several versions spreads "this
+field might be missing" through all code behind it. Instead, one door checks the version, and what was kept in an
+earlier form is migrated once, an explicit, tested step (data model, S-R10): the server's revisions by a data step,
+the browser's working copies when they are opened (decision 0021). Behind the door only the current form exists;
+what is not migrated is refused with a message (the server answers `409 format_outdated` for such rows).
 
 ## Why not an existing format
 

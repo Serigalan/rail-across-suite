@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest'
 import { straightFrom } from '@rail-across/core/src/geometry/elementFactory.js'
 import {
   resolveRoute, routeAt, routeStationOf, routePointAt, routePath, extendRoute, piecesAlong, repairRoutes, nextRouteName,
-} from '@rail-across/core/src/track/routes.js'
-import { tracksOnFrom } from '@rail-across/core/src/track/topology.js'
+} from '@rail-across/core/track'
+import { tracksOnFrom } from '@rail-across/core/track'
 import { hasPekBestand, loadPekBestand } from '@rail-across/core/test/pekFixture.js'
 import { hydrateProjects } from '@rail-across/core/src/project/persistenceUtils.js'
 
@@ -215,7 +215,7 @@ describe('merging variants', () => {
 
 describe('closeGaps', () => {
   it('fills a gap over the tracks between, and counts what it could not', async () => {
-    const { closeGaps } = await import('@rail-across/core/src/track/routes.js')
+    const { closeGaps } = await import('@rail-across/core/track')
     expect(closeGaps(['A', 'C'], tracks, [])).toEqual({ trackIds: ['A', 'B', 'C'], closed: 1, open: 0 })
     expect(closeGaps(['A', 'D'], tracks, [])).toEqual({ trackIds: ['A', 'D'], closed: 0, open: 1 })
     expect(closeGaps(['C', 'A'], tracks, [])).toEqual({ trackIds: ['C', 'B', 'A'], closed: 1, open: 0 })

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { clickStation, placeSwitchOnTrack, switchEndAnchorRefusal } from './switchPlacement.js'
+import { clickStation, placeSwitchOnTrack, switchEndAnchorRefusal } from './index.js'
 import { arcFrom, straightFrom, transitionElement } from '../geometry/elementFactory.js'
 
 

@@ -11,7 +11,7 @@ import {
   hiddenKmLines, setKmLinesHidden,
   setTrackHeights, setHeightsForTracks, setSwitchDesignMode, switchDesignMode, addDependentPoint, commitReconnect, loadPlatforms, commitImport, historySteps, travelHistory,
 } from './storage'
-import { newBufferStop, newBoundary } from '@rail-across/core/src/track/trackEndMarks.js'
+import { newBufferStop, newBoundary } from '@rail-across/core/track'
 import { endPointCurvedUtm, endPointStraightUtm } from '@rail-across/core/src/geometry/elementUtils.js'
 
 // Outside the browser the store keeps its project in memory; the import
@@ -399,11 +399,11 @@ describe('deleting a track with a switch on it', () => {
   })
 })
 
-describe('a project kept where its opener says (Paket L)', () => {
+describe('a project kept where its opener says', () => {
   const el = (length) => ({ elementType: 0, length, bearing: 90, startNode: [0, 0], endNode: [length, 0] })
   const record = () => ({ id: 'kp', title: 'K', tracks: [{ id: 't', epsg: 25832, elements: [el(10), el(20)] }], switches: [] })
 
-  it('writes the record with its meta behind every change, and says what it keeps', async () => {
+  it('writes the project\'s document with its meta behind every change, and says what it keeps', async () => {
     const saved = []
     openStoredProject({ project: record(), meta: { projectId: 'kp', note: 1 }, save: (r) => { saved.push(r) } })
     expect(currentStoredMeta()).toEqual({ projectId: 'kp', note: 1 })
@@ -411,7 +411,10 @@ describe('a project kept where its opener says (Paket L)', () => {
     await flushPendingWrites()
     expect(saved).toHaveLength(1)
     expect(saved[0]).toMatchObject({ projectId: 'kp', note: 1 })
-    expect(saved[0].project.tracks[0].elements[0].geometry).toBeUndefined()   // dehydrated
+    // The project as its infra-data-1.0 document, made by the core's module from what it holds.
+    expect(saved[0].document).toMatchObject({ format: 'infra-data', version: '1.0' })
+    expect(saved[0].document.domains.core.collections.tracks[0].elements[0].geometry).toBeUndefined()
+    expect(saved[0].document.domains.core.collections.tracks[0].elements).toHaveLength(1)
     expect(saved[0].updatedAt).toEqual(expect.any(String))
     await closeStoredProject()
     expect(currentStoredProject()).toBeNull()
@@ -449,7 +452,7 @@ describe('the store works on the open project, immutably (R1.3)', () => {
     expect(after).not.toBe(before)
     expect(before.tracks[0].elements).toHaveLength(1)
     expect(after.tracks[0].elements).toHaveLength(2)
-    expect(after.tracks[0].elements[1]).not.toHaveProperty('absLength')   // stations are summed, not kept (oltjson-1.0)
+    expect(after.tracks[0].elements[1]).not.toHaveProperty('absLength')   // stations are summed, not kept (decision 333)
     // What a caller is handed cannot be changed behind the store's back.
     expect(() => { after.tracks[0].elements.push(el) }).toThrow(TypeError)
   })

@@ -92,7 +92,6 @@
 .collab-legend-hint { color: var(--collab-muted); margin-left: auto; }
 
 .collab-swatch { display: inline-block; width: 22px; height: 0; border-top: 4px solid var(--swatch); }
-.collab-swatch-removed { border-top-style: dashed; }
 
 .collab-scroll { padding: 4px 0 12px; }
 
@@ -214,7 +213,6 @@
 .collab-status.open { color: var(--collab-warn); }
 .collab-status.done { color: var(--collab-ok); }
 
-
 /* ── pages: the start page and the others of the server build ─────────── */
 
 .collab-page {
@@ -228,23 +226,8 @@
 }
 .collab-center { display: flex; align-items: center; justify-content: center; padding: 16px; }
 
-.collab-card {
-  background: var(--collab-bg);
-  border: 1px solid var(--collab-border);
-  border-radius: 12px;
-  box-shadow: var(--collab-shadow);
-  padding: 28px 24px;
-}
-.collab-login { width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 14px; box-sizing: border-box; }
-.collab-login h2 { margin: 0; font-size: 18px; }
-
 .collab-brand { display: flex; align-items: center; gap: 10px; }
 .collab-brand h1 { margin: 0; font-size: 20px; font-weight: 700; color: var(--collab-fg); }
-/* The tool is a module of Rail-Across-Suite: the way back to its start page, before the tool's name. */
-.home-suite-link { font-size: 14px; font-weight: 600; color: var(--collab-muted); text-decoration: none; }
-.home-suite-link:hover { color: var(--color-primary); text-decoration: underline; }
-.home-suite-sep { color: var(--collab-muted); margin: 0 2px; }
-.collab-logo { width: 49px; height: 34px; color: var(--color-primary); flex-shrink: 0; }
 
 .collab-muted { margin: 0; color: var(--collab-muted); font-size: 13px; line-height: 1.45; }
 .collab-hint { margin: 0; color: var(--collab-muted); font-size: 12px; }
@@ -277,26 +260,7 @@
   outline-offset: -1px;
 }
 .collab-field input[type="file"] { padding: 6px; }
-.collab-check { display: flex; align-items: center; gap: 8px; font-size: 13px; }
 
-
-.collab-link {
-  font: inherit;
-  font-size: 13px;
-  border: none;
-  background: none;
-  color: var(--collab-muted);
-  cursor: pointer;
-  padding: 2px 4px;
-  border-radius: 4px;
-}
-.collab-link:hover { color: var(--collab-fg); }
-.collab-link.active { color: var(--color-primary); font-weight: 600; }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .collab-link.active { color: #9aa2ff; }
-}
-
-.collab-langs { display: flex; justify-content: center; gap: 8px; }
 .collab-actions { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
 .collab-label { font-size: 12px; font-weight: 600; color: var(--collab-muted); text-transform: uppercase; letter-spacing: 0.04em; }
 
@@ -311,7 +275,7 @@
   gap: 14px;
   font-family: system-ui, sans-serif;
 }
-.collab-modal-title { margin: 0; font-size: 17px; }
+
 .collab-modal-list { display: flex; flex-direction: column; gap: 6px; max-height: 240px; overflow-y: auto; }
 .collab-modal-list .collab-list { padding: 0; }
 
@@ -331,95 +295,12 @@
   z-index: 5;
 }
 .home-user { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; position: relative; }
-.home-user-name { font-size: 13px; font-weight: 600; margin-left: 8px; }
 
 .home-main { max-width: 980px; margin: 0 auto; padding: 20px 24px 40px; box-sizing: border-box; }
-.home-section-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin: 8px 0 14px; }
-.home-section-head h2 { margin: 0; font-size: 18px; }
-.home-section-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-
-.home-projects { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
-.home-project {
-  background: var(--collab-bg);
-  border: 1px solid var(--collab-border);
-  border-radius: 12px;
-  padding: 14px 16px;
-}
-.home-project-head { display: flex; align-items: flex-start; gap: 14px; }
-.home-project-image { width: 72px; height: 54px; box-sizing: border-box; border: 1px solid var(--collab-border); object-fit: cover; border-radius: 8px; flex-shrink: 0; background: var(--collab-hover); }
-.home-project-titles { flex: 1; min-width: 0; }
-.home-project-titles h3 { margin: 2px 0 4px; font-size: 16px; overflow-wrap: anywhere; }
-.home-project-toggle { border: none; background: none; color: inherit; font: inherit; cursor: pointer; padding: 0; text-align: left; display: flex; gap: 6px; align-items: baseline; }
-
-.home-variants { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; }
-.home-variant { padding: 6px 0 6px calc(var(--depth) * 22px); border-top: 1px solid var(--collab-border); }
-.home-variant-main { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 12px; }
-.home-variant-name { font-weight: 600; font-size: 14px; min-width: 110px; overflow-wrap: anywhere; }
-.home-branch { color: var(--collab-muted); margin-right: 6px; font-weight: 400; }
-.home-variant-head { flex: 1; font-size: 12.5px; color: var(--collab-muted); min-width: 160px; }
-.home-variant-local { font-size: 12px; color: var(--collab-warn); padding: 2px 0 0 0; }
-.home-variant-ahead { font-size: 12px; color: var(--collab-muted); }
-.home-project-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
-
-.home-menu { position: relative; }
-.home-menu-list {
-  position: absolute;
-  right: 0;
-  top: calc(100% + 4px);
-  z-index: 20;
-  min-width: 190px;
-  background: var(--collab-bg);
-  border: 1px solid var(--collab-border);
-  border-radius: 8px;
-  box-shadow: var(--collab-shadow);
-  padding: 4px;
-  display: flex;
-  flex-direction: column;
-}
-.home-menu-list button {
-  font: inherit;
-  font-size: 13px;
-  text-align: left;
-  border: none;
-  background: none;
-  color: var(--collab-fg);
-  padding: 8px 10px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-.home-menu-list button:hover { background: var(--collab-hover); }
-.home-menu-user { margin: 0; padding: 6px 10px 8px; font-weight: 600; border-bottom: 1px solid var(--collab-border); margin-bottom: 4px; }
-.home-menu-list button.danger { color: var(--collab-danger); }
-
-/* The local build (Paket L): its badge beside the name, and Open beside a project's title. */
-.local-badge {
-  font-size: 12px; font-weight: 600; color: var(--color-primary);
-  border: 1px solid var(--color-primary); border-radius: 999px; padding: 2px 9px;
-}
-.home-project-open { flex-shrink: 0; }
-
-.home-section { margin-top: 32px; }
-/* The guideline's preview (GuideDialog's GuidePreview): its top, fading out, the whole of it a button. */
-.home-guide-preview { position: relative; height: 280px; overflow: hidden; border: 1px solid var(--collab-border); border-radius: 8px; background: #fff; }
-.home-guide-preview iframe { display: block; width: 100%; height: 100%; border: 0; pointer-events: none; }
-.home-guide-open {
-  position: absolute; inset: 0; border: 0; padding: 0 0 20px; cursor: pointer;
-  display: flex; align-items: flex-end; justify-content: center;
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 40%, rgba(255, 255, 255, 0.95) 85%);
-}
-.home-guide-open:hover .ui-btn { filter: brightness(1.1); }
-
-.collab-icon-btn { display: inline-flex; align-items: center; justify-content: center; padding: 6px 9px; }
-.home-language-list { min-width: 150px; }
-.home-language-list button { display: flex; align-items: center; gap: 6px; }
-.home-language-list button.current { font-weight: 600; }
-.home-language-check { width: 1em; color: var(--color-primary); }
 
 @media (max-width: 560px) {
   .home-top { padding: 12px 16px; }
   .home-main { padding: 16px 16px 32px; }
-  .home-variant { padding-left: calc(var(--depth) * 12px); }
-  .home-project-image { width: 56px; height: 42px; }
 }
 
 /* ── the working copy's status bar over the map: the suite's (@rail-across/ui, ui-wc-bar); its note on the last sync ── */
@@ -443,10 +324,6 @@
 }
 
 .collab-ok { margin: 0 0 10px; color: var(--collab-ok); font-size: 13px; }
-.home-variant.archived { opacity: 0.6; }
-.home-variant-buttons { display: flex; gap: 6px; align-items: center; margin-left: auto; }
-.home-archived-toggle { margin-top: 12px; color: var(--collab-muted); }
-.home-project-head .home-menu { margin-left: auto; }
 
 /* ── badges (members, history) ─────────────────────────────────────────── */
 
@@ -488,39 +365,6 @@
 .history-rev-number { font-weight: 700; }
 .history-rev-message { font-size: 13.5px; overflow-wrap: anywhere; }
 .history-rev-actions { display: flex; flex-wrap: wrap; gap: 6px; }
-
-/* ── the picture of a new project (ProjectImagePicker) ───────────────────── */
-
-.image-picker { border: none; margin: 0; padding: 0; min-width: 0; display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
-.image-picker legend { padding: 0; margin-bottom: 5px; color: var(--collab-muted); font-weight: 500; }
-.image-picker-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(56px, 1fr)); gap: 6px; }
-.image-option { position: relative; display: block; cursor: pointer; }
-.image-option input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
-.image-option-tile {
-  display: flex; align-items: center; justify-content: center;
-  aspect-ratio: 4 / 3; border-radius: 6px; overflow: hidden;
-  border: 1px solid var(--collab-border); background: var(--collab-surface);
-}
-.image-option-tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.image-option-text { font-size: 10.5px; line-height: 1.15; text-align: center; color: var(--collab-muted); padding: 2px; overflow-wrap: anywhere; }
-.image-option:hover .image-option-tile { border-color: var(--collab-muted); }
-.image-option input:checked + .image-option-tile { outline: 2px solid var(--color-primary); outline-offset: 1px; border-color: transparent; }
-.image-option input:focus-visible + .image-option-tile { outline: 2px solid var(--color-primary); outline-offset: 3px; }
-.image-picker:disabled .image-option { cursor: default; opacity: 0.6; }
-.image-picker-caption { margin: 0; color: var(--collab-fg); font-weight: 500; }
-.image-picker-credit { margin: 0; font-size: 11px; color: var(--collab-muted); }
-
-/* ── who works on a project (MembersDialog) ──────────────────────────────── */
-
-.home-project-members { margin: 2px 0 0; font-size: 12.5px; }
-.members-intro { margin: 0; font-size: 13px; }
-.members-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
-.members-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-top: 1px solid var(--collab-border); font-size: 13.5px; }
-.members-row:first-child { border-top: none; }
-.members-who { flex: 1; min-width: 0; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; overflow-wrap: anywhere; }
-.members-who .collab-muted { font-size: 12.5px; }
-.members-add { display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--collab-border); padding-top: 12px; }
-.members-hits { max-height: 220px; overflow-y: auto; }
 
 /* ── local storage dialog ───────────────────────────────────────────────── */
 

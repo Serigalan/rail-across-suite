@@ -23,11 +23,11 @@ Open-Layout-Tool before it became a module of the suite.
 - **Data exchange** — import/export full projects or selected tracks as JSON, import Verm.ESN surveying data,
   and export to [OSRD](https://osrd.fr) format
 - **Project management** — projects with variants and revisions on a project server, users with sign-in;
-  or, in the local version, projects in the browser alone
+  on the desktop, the same with the server in the app
 
 ## Documentation
 
-[`docs/`](docs/README.md) describes the architecture, the project data format (oltjson-1.0) and every module of
+[`docs/`](docs/README.md) describes the architecture, the project data format (infra-data-1.0) and every module of
 the app — what it does, how it computes and why it is built that way.
 
 ## Getting Started
@@ -48,31 +48,23 @@ It forwards `/api` to the project server ([`server/`](../../server/README.md)); 
 with `npm run optimizer` and `npm run crossover` (cargo, target `wasm32-unknown-unknown`). Signing in and the users are the
 suite's: sign in on its sign-in page (`apps/home`), or the tool says where to sign in.
 
-## Local version
+## On the desktop
 
-The same codebase also builds a version that runs in the browser alone — no server, no sign-in, the
-projects kept in the browser's storage, with export and import as files (Paket L). It holds only the
-browser components (`src/core`) with the optimizer module; what needs the project server (`src/server`)
-is left out of its bundle.
-
-```bash
-npm run local       # build it and serve it on http://localhost:8080/
-npm run local:zip   # the same as a zip to hand on: app, a small server (Node.js 18+), start scripts
-```
-
-What it can and cannot do: [`tools/local/README.md`](tools/local/README.md) — the README in the zip.
+Without a server, the Layout-Tool runs in the suite's desktop app: the whole suite in one window, the project
+server in the app's own process ([`crates/desktop`](../../crates/desktop/README.md)). There is no build that runs in
+the browser alone ([decision 0021](../../docs/decisions/0021-one-format-one-build-the-project-in-the-module.md)).
 
 ## Running a server
 
 The Layout-Tool is a module of Rail-Across-Suite and runs on the suite's server: the start page at the
 root, this app under `/layout/`, the project server with the one sign-in behind both. The projects are managed
-on the suite's start page under Infrastructure, which opens them here; the main build has no start page of its
-own (the local build keeps its own, for the projects of the browser). The suite's
+on the suite's start page under Infrastructure, which opens them here; the app has no start page of its
+own. The suite's
 [`deploy/`](../../deploy/README.md) sets it all up from one configuration file.
 
 ## Credits
 
-The default project pictures in `public/project-images/` (and the suite's copy in `apps/home/public/`) use country outlines from
+The default project pictures (the suite's, in `apps/home/public/project-images/`) use country outlines from
 [Natural Earth](https://www.naturalearthdata.com) 1:50m (public domain) and pictograms from
 [Font Awesome Free](https://fontawesome.com) 7.3.1 ([CC BY 4.0](https://fontawesome.com/license/free)).
 

@@ -23,7 +23,7 @@ const jsxUsesVars = {
 }
 
 export default defineConfig([
-  globalIgnores(['dist', 'dist-local']),
+  globalIgnores(['dist']),
   {
     files: ['**/*.{js,jsx}'],
     extends: [
@@ -46,21 +46,6 @@ export default defineConfig([
       // `const { a: _a, ...rest } = obj` is how this codebase omits keys — the
       // named siblings of a rest element are omissions, not unused variables.
       'no-unused-vars': ['error', { varsIgnorePattern: '^_', ignoreRestSiblings: true }],
-    },
-  },
-  {
-    // The one direction between the two layers (Paket L, decision 277): the
-    // browser components never import the server components. Where a server
-    // part has to show up in core, core offers an extension point
-    // (core/extensions.js) that src/server/register.js fills.
-    files: ['src/core/**/*.{js,jsx}'],
-    rules: {
-      'no-restricted-imports': ['error', {
-        patterns: [{
-          regex: '^(\\.\\./)+server(/|$)',
-          message: 'src/core never imports from src/server (decision 277) — add an extension point to core/extensions.js instead.',
-        }],
-      }],
     },
   },
   {

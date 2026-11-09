@@ -3,7 +3,7 @@
 Rail-Across-Suite is built around one shared data foundation, the **Rail-Data-Core**. Every module reads and
 writes it; none keeps a private model of the railway. The roadmap therefore starts with the core and adds
 modules only on top of it. The Open-Layout-Tool is the existing module and the source of the core's first
-version: its project format oltjson-1.1 already holds the track network.
+version: its project format (oltjson-1.1, replaced by infra-data-1.0 with decision 0021) already held the track network.
 
 The phases are ordered by dependency, not by date. A phase is done when its exit criteria hold.
 
@@ -56,7 +56,7 @@ Open-Layout-Tool builds, tests and deploys from this repository.
 ## Phase 1 — Rail-Data-Core v1.0, extracted from Open-Layout-Tool
 
 Goal: the core exists as a package of its own and OLT runs on it **without any change in behaviour** — what it
-keeps and exchanges is core 1.0, already in the data model's shape
+keeps and exchanges is infra-data-1.0 (first called core 1.0), already in the data model's shape
 ([decision 0009](docs/decisions/0009-core-1-0-in-the-data-model.md)).
 
 Done:
@@ -77,7 +77,7 @@ Done:
 - The point clouds' computation is the package `@rail-across/pointcloud` (readers, tiles, sections, rail
   detection and trace, registration, clearance), and the turnout plane the clearance scan needs is the core's: the
   project server imports no app and runs on plain Node without a module hook.
-- **core 1.0** ([schemas](schemas/README.md), [document](packages/core/docs/document.md)): JSON Schemas for
+- **infra-data-1.0**, first called core 1.0 ([schemas](schemas/README.md), [document](packages/core/docs/document.md)): JSON Schemas for
   the domains `core` and `layout` with the core types `TrackEnd`, `TrackLocation`, `TrackRange`, `TrackPath`,
   `Lifespan`, `Ref`; platforms and end marks located by them, named runs of tracks as `trackPaths`, the planning
   status as lifespans over the stage list (existing, final), stations as an operational point register, bulk point
@@ -85,11 +85,12 @@ Done:
   collection; a project as one file, `.railacross.json`, carrying its schemas. The types derived from the schemas
   (`packages/core/types/document.d.ts`).
 - The one door: a document is checked whole (envelope, versions, schema hashes, every object against its schema,
-  blob hashes) on the way in and on the way out. oltjson-1.1 is migrated at the door — the first step of the
-  migration chain —, losslessly both ways (the PEK data set is a test). Ids stay on tracks, not on their elements
-  ([decision 0004](docs/decisions/0004-ids-on-tracks.md)). Files and the project server hold core 1.0 documents;
-  the server migrates its oltjson-1.1 revisions when it reads them. The app keeps its record as the model it
-  works on.
+  blob hashes) on the way in and on the way out. oltjson-1.1 was migrated at the door — the first step of the
+  migration chain —, losslessly both ways (the PEK data set was a test); since decision 0021 it is refused, and
+  the format is called infra-data-1.0. Ids stay on tracks, not on their elements
+  ([decision 0004](docs/decisions/0004-ids-on-tracks.md)). Files and the project server hold infra-data-1.0 documents;
+  the server migrated its oltjson-1.1 revisions once (data step `0021-infra-data`). The app keeps its record as the
+  model it works on until phase C of decision 0021 moves the project into the core's module.
 - The shared vectors in `schemas/vectors/`: the door, canonical JSON, hashes and manifest, which the JavaScript core
   and its Rust crates are held to (a Python core held to them too was taken out with decision 0020, step 10: nothing
   used it).
@@ -106,12 +107,12 @@ pass. — Reached.
 
 Goal: the core can carry what the planned modules need, before they are written.
 
-The format has this phase's shape since core 1.0 (decision 0009): domains, location types, lifespans, the
+The format has this phase's shape since its first version (decision 0009): domains, location types, lifespans, the
 register, canonical JSON and the manifest exist as data. What this phase adds is the behaviour behind them, and
 the app working on the document instead of its record.
 
-- The app works on the core 1.0 document; the record and the conversion go.
-- Location types `TrackLocation`, `TrackRange`, `TrackEnd`, `TrackPath`, `Ref` (in the schema since core 1.0) as
+- The app works on the infra-data-1.0 document; the record and the conversion go.
+- Location types `TrackLocation`, `TrackRange`, `TrackEnd`, `TrackPath`, `Ref` (in the schema since its first version) as
   values the core computes with, and the anchor `km` beside station and plane. Before they are written: a look
   at libLRS, the linear referencing library of the OpenRail Association.
 - References declared in each domain's schema through these types (`x-target`); the schema travels with the data.
@@ -127,13 +128,13 @@ the app working on the document instead of its record.
   planning status derived from them, a stage as a view with every check run per stage, replacements naming
   their predecessor, containment as a check, and two-end connectors (`link`) also within one plane for parts
   of a track that are rebuilt ([decision 0003](docs/decisions/0003-construction-stages.md)). The stage list and
-  lifespans are in the format since core 1.0 (oltjson-1.1's status converted at the door: new = from the final
-  stage, removal = up to it); the app holds and edits stages of a project's own.
-- The operational point register (in the format since core 1.0, drawn from the station texts) edited as such.
+  lifespans are in the format since its first version (oltjson-1.1's status converted when it was migrated: new =
+  from the final stage, removal = up to it); the app holds and edits stages of a project's own.
+- The operational point register (in the format since its first version, drawn from the station texts) edited as such.
 - Domains with ownership: `core` (net, platforms, end marks, structures, operational point register, designed
   kilometrage) and discipline domains that store references only into the core.
 - Storage as a hash tree on the server and in the browser: revision → manifest → domain → collection, the blobs
-  stored once (the manifest, the blobs and canonical JSON exist since core 1.0); the exchange container
+  stored once (the manifest, the blobs and canonical JSON exist since the format's first version); the exchange container
   (`.railacross`) with its `mimetype` entry.
 - Server: rights per domain; a domain the author may not write may only change by carrying or by orphans
   moved to their plane position.

@@ -14,6 +14,7 @@ use std::cell::Cell;
 use serde_json::{Value, json};
 
 mod args;
+mod hydrate;
 mod ops;
 mod ops_commands;
 mod ops_geom;

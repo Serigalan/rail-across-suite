@@ -2,7 +2,8 @@
 // Translation keys no source file uses (R6.2). A key counts as used when it
 // appears as a string anywhere under src/ or in the packages whose findings,
 // messages and labels the app translates (packages/core/src, the basemaps'
-// labelKeys in packages/basemaps/src), or when it starts with a prefix
+// labelKeys in packages/basemaps/src) and the core's crates, whose answers carry
+// the codes the app translates (crates/, decision 0020), or when it starts with a prefix
 // that a key is built from at runtime: `status_${s}`, t(`admin_err_${code}`),
 // or a prefix handed on as a string ending in "_" ('admin_err_'), or when it is
 // another literal with a suffix put after it at runtime: t(`${key}_hint`).
@@ -14,12 +15,16 @@ import { join } from 'node:path'
 
 const ROOT = new URL('..', import.meta.url).pathname
 const LOCALES = join(ROOT, 'src/core/locales')
+// Built output (a desktop app's site, a bundle) holds every key it was built with: not a source.
+const SKIP = new Set(['node_modules', 'target', 'tests', 'site', 'dist'])
 const files = (dir) => readdirSync(dir).flatMap(n => {
   const p = join(dir, n)
+  if (SKIP.has(n)) return []
   return statSync(p).isDirectory() ? files(p) : [p]
 })
-const sources = [...files(join(ROOT, 'src')), ...files(join(ROOT, '../../packages/core/src')), ...files(join(ROOT, '../../packages/basemaps/src'))]
-  .filter(p => /\.(jsx?|mjs)$/.test(p) && !p.startsWith(LOCALES + '/') || p.endsWith('i18n.js'))
+const sources = [...files(join(ROOT, 'src')), ...files(join(ROOT, '../../packages/core/src')), ...files(join(ROOT, '../../packages/basemaps/src')),
+  ...files(join(ROOT, '../../crates'))]
+  .filter(p => /\.(jsx?|mjs|rs)$/.test(p) && !p.startsWith(LOCALES + '/') || p.endsWith('i18n.js'))
   .map(p => readFileSync(p, 'utf8')).join('\n')
 
 const locales = readdirSync(LOCALES).filter(n => n.endsWith('.json'))
@@ -28,9 +33,11 @@ const keys = Object.keys(JSON.parse(readFileSync(join(LOCALES, 'en.json'), 'utf8
 const literals = new Set([...sources.matchAll(/['"`]([a-z][a-z0-9_]*)['"`]/g)].map(m => m[1]))
 const prefixes = new Set([
   ...[...sources.matchAll(/`([a-z][a-z0-9_]*_)\$\{/g)].map(m => m[1]),
+  // A key the core's crates build: format!("constraints_weichen_{key}").
+  ...[...sources.matchAll(/format!\("([a-z][a-z0-9_]*_)\{/g)].map(m => m[1]),
   ...[...literals].filter(l => l.endsWith('_')),
 ])
-const suffixes = new Set([...sources.matchAll(/\}(_[a-z0-9_]+)`/g)].map(m => m[1]))
+const suffixes = new Set([...sources.matchAll(/\}(_[a-z0-9_]+)[`"]/g)].map(m => m[1]))
 const used = (key) => literals.has(key) || [...prefixes].some(p => key.startsWith(p)) ||
   [...suffixes].some(s => key.endsWith(s) && literals.has(key.slice(0, -s.length)))
 const unused = keys.filter(k => !used(k))

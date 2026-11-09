@@ -12,10 +12,9 @@ import { saveProjectMeta } from './projectMeta'
 import { MdbDbrefImport, MdbImport } from './panels/tools'
 
 /**
- * The server components dock onto core (Paket L, decision 277): everything
- * core offers an extension point for (core/extensions.js) is filled here,
- * once, when the main build starts — before the first render. The local
- * build never imports this file.
+ * The server components dock onto core: everything core offers an extension
+ * point for (core/extensions.js) is filled here, once, when the app starts —
+ * before the first render.
  */
 
 // The two MDB importers (the service converts the database).

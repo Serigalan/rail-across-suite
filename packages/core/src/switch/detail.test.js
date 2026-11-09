@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { ALL_SWITCH_TYPES, switchTypeByLabel, switchVariants } from './catalogue.js'
-import { formDetail, switchDetail, RAIL_OFFSET, SLEEPER_OVERHANG } from './detail.js'
+import { ALL_SWITCH_TYPES, switchTypeByLabel, switchVariants } from './index.js'
+import { formDetail, switchDetail, RAIL_OFFSET, SLEEPER_OVERHANG } from './index.js'
 import { branchTrack, formOf, mainTrack, turnout } from '../../test/turnoutFixture.js'
 
 const HALF = RAIL_OFFSET + SLEEPER_OVERHANG

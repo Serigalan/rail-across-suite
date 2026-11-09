@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, relative } from 'node:path'
-import { importGraph, serverReach } from '../../../tools/boundary.mjs'
 import { checkModules } from '../../../tools/modules.mjs'
 import { checkDocs } from '../../../tools/docs.mjs'
 
@@ -9,7 +8,6 @@ import { checkDocs } from '../../../tools/docs.mjs'
 // so a new import that breaks one fails here and not in review.
 
 const SRC = join(import.meta.dirname, '..')
-const ROOT = join(SRC, '..', '..')
 const files = (dir) => readdirSync(dir).flatMap(name => {
   const path = join(dir, name)
   return statSync(path).isDirectory() ? files(path) : [path]
@@ -50,34 +48,4 @@ describe('architecture', () => {
   it('documents nothing the repository does not have (docs/)', () => {
     expect(checkDocs()).toEqual([])
   }, 30000)
-
-  // Paket L, decision 277: two layers, one direction.
-  describe('core and server (Paket L)', () => {
-    const graph = importGraph()
-    const reach = serverReach(graph)
-    it('core reaches no server module, not even through another (decision 277)', () => {
-      const offenders = [...reach.keys()].filter(p => p.startsWith(SRC + '/')).map(p => relative(ROOT, p))
-      expect(offenders).toEqual([])
-    })
-    // Everything an entry imports, directly or through another module.
-    const reached = (entry) => {
-      const seen = new Set()
-      const walk = (path) => {
-        if (seen.has(path)) return
-        seen.add(path)
-        for (const d of graph.get(path) ?? []) walk(d)
-      }
-      for (const d of graph.get(join(ROOT, entry))) walk(d)
-      return seen
-    }
-    const firstImport = (entry) => readFileSync(join(ROOT, entry), 'utf8').split('\n').find(line => line.startsWith('import '))
-    it('the local entry imports nothing of src/server', () => {
-      const seen = reached('src/main.local.jsx')
-      expect([...seen].filter(p => p.includes('/src/server/')).map(p => relative(ROOT, p))).toEqual([])
-      expect(seen.has(join(SRC, 'home/LocalApp.jsx'))).toBe(true)
-    })
-    it('the main entry docks the server on before anything else', () => {
-      expect(firstImport('src/main.jsx')).toBe("import './server/register'")
-    })
-  })
 })

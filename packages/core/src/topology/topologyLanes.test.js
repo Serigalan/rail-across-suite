@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { buildTopologyGraph, topologyClusters } from './index.js'
 import { layoutClusterLanes } from './index.js'
-import { newSwitchFields } from '../track/switchModel.js'
+import { newSwitchFields } from '../track/index.js'
 import { endPointStraightUtm } from '../geometry/elementUtils.js'
 import { utmToWgs84 } from '../geometry/coordinateUtils.js'
 import { hydrateProjects } from '../project/persistenceUtils.js'

@@ -8,8 +8,8 @@ import {
 import { straightElement, arcFrom, transitionElement } from '@rail-across/core/src/geometry/elementFactory.js'
 import { endPointStraightUtm } from '@rail-across/core/src/geometry/elementUtils.js'
 
-import { pointOnElement } from '@rail-across/core/src/track/platformUtils.js'
-import { gradientAt } from '@rail-across/core/src/track/heightUtils.js'
+import { pointOnElement } from '@rail-across/core/track'
+import { gradientAt } from '@rail-across/core/track'
 import { buildElements, parseGradient, parseRecords } from '../../../utils/exchange/vermEsnImport'
 
 const EPSG = 25832

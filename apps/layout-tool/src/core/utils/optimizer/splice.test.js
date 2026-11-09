@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { straightElement, straightFrom, arcFrom, transitionElement } from '@rail-across/core/src/geometry/elementFactory.js'
 import { bearingAfterUtm, endPointCurvedUtm, endPointStraightUtm } from '@rail-across/core/src/geometry/elementUtils.js'
-import { rebuildCoords } from '@rail-across/core/src/track/trackModel.js'
+import { rebuildCoords } from '@rail-across/core/track'
 import { expectValidTrack } from '@rail-across/core/test/chainInvariants.js'
 import coreAnswers from '@rail-across/core/test/fixtures/splice_answers.json'
 import { built, solveSplice } from '../../test/optimizerModule'

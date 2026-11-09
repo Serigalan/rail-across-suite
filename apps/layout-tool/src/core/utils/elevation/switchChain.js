@@ -89,7 +89,8 @@ let lastIndex = null
 function indexOf(tracks, switches, opts) {
   const key = [switches, opts?.formOf, ...tracks.map(t => t.elements)]
   if (lastIndex && lastIndex.key.length === key.length && lastIndex.key.every((v, i) => v === key[i])) return lastIndex.ix
-  const entries = switchCouplings(tracks, switches, opts).map(entryOf)
+  // Slim: what a coupling is read for here — its switch, its two ldS and the ldS sleeper's plane.
+  const entries = switchCouplings(tracks, switches, { ...opts, slim: true }).map(entryOf)
   const toe = new Map(), ldsOn = new Map(), onTrack = new Map()
   const add = (m, k, v) => m.set(k, [...(m.get(k) ?? []), v])
   for (const e of entries) {

@@ -3,7 +3,7 @@ import { setup, signIn } from '../../../../server/test/helpers.js'
 import { commitVariantMerge, prepareVariantMerge } from './variantMerge'
 import { parseProjectsPayload } from '@rail-across/core/project'
 
-/** The record a payload of the server (a core 1.0 document) holds. */
+/** The record a payload of the server (an infra-data-1.0 document) holds. */
 const recordOf = (payload) => parseProjectsPayload(payload).projects[0]
 
 beforeAll(() => {

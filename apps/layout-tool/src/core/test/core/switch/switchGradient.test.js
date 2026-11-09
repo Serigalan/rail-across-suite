@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest'
 import {
   switchCoupling, couplingOf, branchPlaneHeight, trackHeightAt, switchBodySpans, heightContext,
-} from '@rail-across/core/src/switch/switchGradient.js'
+} from '@rail-across/core/switch'
 import { switchLds } from '@rail-across/core/switch'
 import { withSwitchHeights, checkVertical } from '../../../utils/elevation'
-import { reverseTrack } from '@rail-across/core/src/track/trackModel.js'
+import { reverseTrack } from '@rail-across/core/track'
 import { LDS, R, branchTrack as branchOf, formOf, mainTrack as mainOf, sleeperAtX, turnout, xAtMain } from '@rail-across/core/test/turnoutFixture.js'
 
 const mainTrack = (cant = 0, heights = [{ station: 0, z: 105.2 }, { station: 60, z: 106.025 }]) => mainOf(cant, heights)
@@ -112,8 +112,11 @@ describe('the plane between WA and ldS', () => {
     const c = switchCoupling(tracks, turnout(), opts)
     const d = 20
     const x = R * Math.sin(d / R), y = R - R * Math.cos(d / R)
-    expect(branchPlaneHeight(c, d)).toBeCloseTo(105.2 + 0.01375 * x + 0.05 * y / 1.5, 4)
-    expect(trackHeightAt(tracks, [turnout()], tracks[1], d, opts)).toBeCloseTo(branchPlaneHeight(c, d), 9)
+    expect(c).not.toBeNull()
+    // Asked of the module on the tracks and the turnout the coupling is of.
+    const z = branchPlaneHeight(tracks, [turnout()], turnout(), d, opts)
+    expect(z).toBeCloseTo(105.2 + 0.01375 * x + 0.05 * y / 1.5, 4)
+    expect(trackHeightAt(tracks, [turnout()], tracks[1], d, opts)).toBeCloseTo(z, 9)
   })
 
   it('is not stored: beyond the ldS and on the main route the gradient answers', () => {

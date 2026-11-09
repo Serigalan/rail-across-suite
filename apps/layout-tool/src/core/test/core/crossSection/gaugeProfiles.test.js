@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   QUERSCHNITT_KATALOG, GAUGE_PROFILES, DEFAULT_GAUGE_PROFILE, gaugeProfile, gaugeProfileRing,
   gaugeProfileAreas, gaugeProfileLabelKey, LICHTRAUM_SOURCE,
-} from '@rail-across/core/src/crossSection/gaugeProfiles.js'
+} from '@rail-across/core/crossSection'
 import { translations } from '../../../locales/i18n'
 
 describe('the profile table', () => {

@@ -1,8 +1,8 @@
-# document — the core 1.0 document and its door
+# document — the infra-data-1.0 document and its door
 
 `packages/core/src/document/` · needs nothing
 
-A project as the Rail-Data-Core keeps it and hands it on: the **core 1.0 document**, in the shape of the
+A project as the Rail-Data-Core keeps it and hands it on: the **infra-data-1.0 document**, in the shape of the
 [data model](../../../docs/data-model.md) — the domains `core` and `layout`, and `signalling` where a project has it, each with its version, its JSON
 Schema, its fields and its collections; locations as one value each; the planning status as a lifespan over
 the construction stages; station names and codes as an operational point register; named runs of tracks as
@@ -31,7 +31,8 @@ writes canonical JSON and content hashes. The `project` module opens the door fo
 
 ```json
 {
-  "format": "rail-across",
+  "format": "infra-data",
+  "version": "1.0",
   "domains": {
     "core":   { "version": "1.0", "schema": "sha256:…", "fields": { "id": "…", "stages": [ … ] },
                 "collections": { "tracks": [ … ], "switches": [ … ], "platforms": [ … ], "endMarks": [ … ],
@@ -46,9 +47,9 @@ writes canonical JSON and content hashes. The `project` module opens the door fo
 
 What each object holds, the schemas say (`schemas/core/1.0.schema.json`, `schemas/layout/1.0.schema.json`,
 `schemas/signalling/1.0.schema.json`); how
-it differs from oltjson-1.1:
+it differs from the record the app works on in memory:
 
-| oltjson-1.1 (the record) | core 1.0 (the document) |
+| the record | infra-data-1.0 (the document) |
 |---|---|
 | one object with everything | `core`: the net, what stands on it, reference data, stages; `layout`: what only the layout tool needs |
 | `status`: `existing`, `new`, `removal` | `lifespan`: none, `{ from: final }`, `{ to: final }` over `stages` (existing state, final state) |

@@ -1,19 +1,19 @@
 import { describe, it, expect } from 'vitest'
-import { CROSSING_TYPES, switchTypeByLabel } from '@rail-across/core/src/switch/catalogue.js'
+import { CROSSING_TYPES, switchTypeByLabel } from '@rail-across/core/switch'
 import {
   crossingAngle, crossingEndDistance, computeCrossingGeometryUtm, crossingLegRadius, crossingLegSignedRadius, computeCrossingGeometryFromPortA, crossingElements, crossingLegFitsTrack,
-} from '@rail-across/core/src/switch/crossing.js'
-import { crossingRoutesFromTracks, rebuildSwitchSymbol, crossingBodyUtm } from '@rail-across/core/src/switch/symbol.js'
-import { newSwitchFields, switchElementMark, portsOf } from '@rail-across/core/src/track/switchModel.js'
-import { planSwitchDeletion, keptRoutes, switchParts } from '@rail-across/core/src/switch/switchDelete.js'
-import { switchDesignation, switchNumberOf } from '@rail-across/core/src/track/identifierUtils.js'
+} from '@rail-across/core/switch'
+import { crossingRoutesFromTracks, rebuildSwitchSymbol, crossingBodyUtm } from '@rail-across/core/switch'
+import { newSwitchFields, switchElementMark, portsOf } from '@rail-across/core/track'
+import { planSwitchDeletion, keptRoutes, switchParts } from '@rail-across/core/switch'
+import { switchDesignation, switchNumberOf } from '@rail-across/core/track'
 import { switchesToPorts } from '../../../utils/exchange/alignmentCodec'
 import { wgs84ToUTM, utmToWgs84 } from '@rail-across/core/src/geometry/coordinateUtils.js'
 import {
   computeStraightValuesUtm, computeCurvedValuesUtm, endPointStraightUtm, endPointCurvedUtm,
 } from '@rail-across/core/src/geometry/elementUtils.js'
-import { rebuildCoords } from '@rail-across/core/src/track/trackModel.js'
-import { placeSwitchOnTrack } from '@rail-across/core/src/switch/switchPlacement.js'
+import { rebuildCoords } from '@rail-across/core/track'
+import { placeSwitchOnTrack } from '@rail-across/core/switch'
 import { expectValidTrack } from '@rail-across/core/test/chainInvariants.js'
 import { buildCrossingOnTrack, crossingOnTrackPlacement } from '@rail-across/core/commands'
 
@@ -794,7 +794,7 @@ describe('the Bogenkreuzungsweichen (AP 3.4)', () => {
     expect(routes.mainBack[0].r1).toBeCloseTo(500.86, 9)
 
     // The body's corners are the ports, and its sides follow the arcs.
-    const body = crossingBodyUtm(routes)
+    const body = crossingBodyUtm(sw, legs)
     expect(dist(body[0][0], g.portA)).toBeLessThan(1e-6)
     expect(dist(body[0][1], g.portB)).toBeLessThan(1e-6)
     expect(dist(body[1][0], g.portC)).toBeLessThan(1e-6)
@@ -805,8 +805,8 @@ describe('the Bogenkreuzungsweichen (AP 3.4)', () => {
 
     // A record whose tracks carry no leg behind the point mirrors the one
     // ahead — which on an arc is the same arc, so the same corners.
-    const mirrored = crossingBodyUtm(crossingRoutesFromTracks(
-      { ...sw, ports: { ...sw.ports, A: { ...sw.ports?.A, trackId: 'none' }, B: { ...sw.ports?.B, trackId: 'none' } }}, legs))
+    const mirrored = crossingBodyUtm(
+      { ...sw, ports: { ...sw.ports, A: { ...sw.ports?.A, trackId: 'none' }, B: { ...sw.ports?.B, trackId: 'none' } }}, legs)
     expect(dist(mirrored[0][0], g.portA)).toBeLessThan(1e-6)
     expect(dist(mirrored[0][1], g.portB)).toBeLessThan(1e-6)
   })

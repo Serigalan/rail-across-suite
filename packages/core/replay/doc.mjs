@@ -4,7 +4,7 @@
 // not the repository's.
 import { readFileSync } from 'node:fs'
 import { checkDocument, fromDocument, manifestOf, PayloadError, toDocument } from '../src/document/index.js'
-import { dehydrateProjects, hydrateProjects, parseProjectsPayload, parseTracksPayload, projectDocument, projectsPayload } from '../src/project/index.js'
+import { dehydrateProjects, hydrateProjects, parseProjectsPayload, parseTracksPayload, projectDocument, tracksDocument } from '../src/project/index.js'
 import { branchTrack, mainTrack, turnout } from '../test/turnoutFixture.js'
 
 const documents = JSON.parse(readFileSync(new URL('../../../schemas/vectors/documents.json', import.meta.url), 'utf8'))
@@ -35,12 +35,17 @@ export default function record() {
   for (const r of records) {
     kept.push(call('document.toDocument', { record: r, carrySchemas: true, check: true }, () => toDocument(dehydrateProjects([r])[0], { carrySchemas: true })))
     kept.push(call('project.projectDocument', { record: r, carrySchemas: false, check: true }, () => projectDocument(r)))
-    kept.push(call('project.parseProjectsPayload', projectsPayload([r]), () => parseProjectsPayload(projectsPayload([r]))))
+    const doc = projectDocument(r, { check: false })
+    kept.push(call('project.parseProjectsPayload', doc, () => parseProjectsPayload(doc)))
     const [hydrated] = hydrateProjects([clone(r)])
     kept.push(call('project.dehydrateProjects', [hydrated], () => dehydrateProjects([hydrated])))
   }
-  kept.push(call('project.parseProjectsPayload', { format: 'oltjson', version: '1.0', projects: [] }, () => parseProjectsPayload({ format: 'oltjson', version: '1.0', projects: [] })))
-  kept.push(call('project.parseTracksPayload', { data: [mainTrack()], switchIds: ['s1'] }, () => parseTracksPayload([mainTrack()], { switchIds: new Set(['s1']) })))
+  // Another format — an oltjson file among them — is refused (decision 0021).
+  const oltjson = { format: 'oltjson', version: '1.1', projects: [] }
+  kept.push(call('project.parseProjectsPayload', oltjson, () => parseProjectsPayload(oltjson)))
+  const tracks = tracksDocument([mainTrack()])
+  kept.push(call('project.parseTracksPayload', { data: tracks, switchIds: ['s1'] }, () => parseTracksPayload(tracks, { switchIds: new Set(['s1']) })))
+  kept.push(call('project.parseTracksPayload', { data: tracks, switchIds: [] }, () => parseTracksPayload(tracks)))
   kept.push(call('project.parseTracksPayload', { data: [mainTrack()], switchIds: [] }, () => parseTracksPayload([mainTrack()])))
   return { door, kept }
 }

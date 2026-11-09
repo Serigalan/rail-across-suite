@@ -1,5 +1,5 @@
 import {
-  hydrateProjects, dehydrateProjects, projectDocument, moveTracksToPlane, withImportSystem,
+  heldKeptProject, heldProjectDocument, holdProject, hydrateProjects, moveTracksToPlane, withImportSystem,
 } from '@rail-across/core/project'
 import {
   elementBelongsToSwitch, portsOf, unmarkSwitchElement, portTrack, portEnd, sliceHeights,
@@ -20,18 +20,17 @@ export const REPORT_KEY_PREFIX = 'olt_reports_'
 // The project store: the one project that is open, held in memory as the
 // single source of truth for every synchronous caller, and written behind to
 // where its opener keeps it (see persist/flush) — the working copy of a
-// variant in the main build (server/workingCopies.js), a project of the list
-// in the local build (core/home/localProjects.js). Opened without a place to
-// keep it, it lives in memory only.
+// variant (server/workingCopies.js). Opened without a place to keep it, it
+// lives in memory only.
 //
 // The record is immutable (R1.3): every write makes a new project object, new
 // arrays for what it changes and shares everything else. That is what makes a
 // snapshot for undo a reference, and what lets React subscribe to it.
 let _project = null
-// Where the open project is kept (Paket L): { key, meta, save } — `meta` what
+// Where the open project is kept: { key, meta, save } — `meta` what
 // its opener keeps beside the record (the server's working copy: variant,
-// base revision and its record), `save(record)` writes { ...meta, project,
-// idLog, updatedAt }, `key` names the entries kept per record outside it
+// base revision and its record), `save(record)` writes { ...meta, document,
+// idLog, updatedAt } — the project as its infra-data-1.0 document —, `key` names the entries kept per record outside it
 // (the import reports). Null for a project opened in memory only.
 let _slot = null
 const MAX_UNDO = 20
@@ -63,12 +62,13 @@ let _dirty = false
 let _flushTimer = null
 let _flushChain = Promise.resolve()
 
-// In development and in the tests the record is frozen as it is written, so a
-// caller that changes a track in place — which would change every undo
-// snapshot sharing it — fails at once instead of corrupting history quietly.
-const FREEZE = import.meta.env?.DEV || import.meta.env?.MODE === 'test'
+// The record is frozen as it is written, so a caller that changes a track in
+// place — which would change every undo snapshot sharing it, and the project
+// the core's module holds — fails at once (in strict mode) instead of
+// corrupting history quietly; and what is frozen, the core's face knows does
+// not change (native reuseFrom). Only what a write made new is walked.
 function deepFreeze(value) {
-  if (!FREEZE || value === null || typeof value !== 'object' || Object.isFrozen(value)) return value
+  if (value === null || typeof value !== 'object' || Object.isFrozen(value)) return value
   Object.freeze(value)
   for (const key of Object.keys(value)) deepFreeze(value[key])
   return value
@@ -127,6 +127,9 @@ function mutate(fn, { undo = true, unlock = false } = {}) {
 
 function setProject(project) {
   _project = deepFreeze(project)
+  // The core's module holds the open project too, written by what changed
+  // (decision 0021, phase C): its operations are lent what they are handed of it.
+  holdProject(_project)
   // Coupled, every turnout fits (decision 384): where one does not — opened
   // so, or a write the coupling could not follow — the design mode is on.
   if (!_switchDesign && switchMisfits(_project).length) _switchDesign = true
@@ -237,7 +240,7 @@ function notify() {
   for (const listener of [..._listeners]) listener()
 }
 
-// ── the open project and where it is kept (Paket L) ─────────────────────────
+// ── the open project and where it is kept ───────────────────────────────────
 
 /**
  * Make `project` (dehydrated) the open project, kept through `save` (see
@@ -252,8 +255,11 @@ export function openStoredProject({ project, meta = {}, key = project.id, save =
   _redoStack = []
   _lastStep = null
   // Every turnout's WA and ldS a point to pick (decision 390) — on the gradient, nothing moves —,
-  // and its toe one height (decision 393).
-  setProject(withToesJoined(withAllLdsPoints(withPrunedMarks(hydrateProjects([structuredClone(project)])[0]))))
+  // and its toe one height (decision 393). The core's module holds the project as it is loaded, so
+  // what these ask of it is lent rather than carried across.
+  const loaded = deepFreeze(hydrateProjects([structuredClone(project)])[0])
+  holdProject(loaded)
+  setProject(withToesJoined(withAllLdsPoints(withPrunedMarks(loaded))))
   return _project
 }
 
@@ -278,7 +284,7 @@ export const currentStoredMeta = () => (_slot && _project ? _slot.meta : null)
 /** The open project as it is kept: { ...meta, project (dehydrated), idLog }, or null for one in memory only. */
 export function currentStoredProject() {
   if (!_slot || !_project) return null
-  return { ..._slot.meta, project: dehydrateProjects([structuredClone(_project)])[0], idLog: loadIdLog() }
+  return { ..._slot.meta, project: heldKeptProject(_project), idLog: loadIdLog() }
 }
 
 /**
@@ -302,6 +308,7 @@ export function setStoredMeta(meta, { clearIdLog = false } = {}) {
 export async function closeStoredProject() {
   await flushPendingWrites()
   _project = null
+  holdProject(null)
   _slot = null
   _idLog = []
   _undoStack = []
@@ -437,9 +444,9 @@ export function flushPendingWrites() {
   if (_flushTimer) { clearTimeout(_flushTimer); _flushTimer = null }
   if (!_dirty || !_slot?.save) return _flushChain
   _dirty = false
-  const stored = currentStoredProject()
-  if (!stored) return _flushChain
-  const record = { ...stored, updatedAt: new Date().toISOString() }
+  if (!_project) return _flushChain
+  // What a working copy keeps is the project's document, made where the project is held.
+  const record = { ..._slot.meta, document: heldProjectDocument(_project), idLog: loadIdLog(), updatedAt: new Date().toISOString() }
   const { save } = _slot
   _flushChain = _flushChain
     .then(() => save(record))
@@ -697,13 +704,13 @@ export const hiddenKmLines = () => _hiddenKmLines.get()
 export const setKmLinesHidden = (lineNumbers, hidden) => _hiddenKmLines.set(lineNumbers.map(String), hidden)
 
 /**
- * The open project as a file: its core 1.0 document, carrying the schemas of
+ * The open project as a file: its infra-data-1.0 document, carrying the schemas of
  * its domains; null without one. Its image goes by the hash the server keeps
  * it under (`imageHash`). `check: false` writes it although the schemas
  * refuse it.
  */
 export function exportProjectDocument({ check = true } = {}) {
-  return _project ? projectDocument(structuredClone(_project), { carrySchemas: true, check }) : null
+  return _project ? heldProjectDocument(_project, { carrySchemas: true, check }) : null
 }
 
 // ── plan header ─────────────────────────────────────────────────────────────

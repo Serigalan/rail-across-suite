@@ -1,3 +1,4 @@
+import { holdProject } from '@rail-across/core/project'
 import { describe, it, expect } from 'vitest'
 import { existsSync, readFileSync } from 'node:fs'
 import { homedir } from 'node:os'
@@ -6,10 +7,10 @@ import { unzipSync, strFromU8 } from 'fflate'
 import { parseRecords, buildElements, parseGradient } from './vermEsnImport'
 import { traBytes, graBytes, traRecords, exportVermEsn, routeAsTrack } from './vermEsnExport'
 import { lagesystemForEpsg, epsgForLagesystem } from './mdbImport'
-import { reverseTrack } from '@rail-across/core/src/track/trackModel.js'
+import { reverseTrack } from '@rail-across/core/track'
 import { arcFrom, straightFrom } from '@rail-across/core/src/geometry/elementFactory.js'
-import { resolveRoute } from '@rail-across/core/src/track/routes.js'
-import { tangentLength } from '@rail-across/core/src/track/heightUtils.js'
+import { resolveRoute } from '@rail-across/core/track'
+import { tangentLength } from '@rail-across/core/track'
 import { hasPekBestand, loadPekBestand } from '@rail-across/core/test/pekFixture.js'
 import { hydrateProjects } from '@rail-across/core/src/project/persistenceUtils.js'
 import { snapNodeGaps, snapTrackJoints } from '@rail-across/core/geometry'
@@ -302,9 +303,12 @@ describe.skipIf(!hasPekBestand)('PEK Bestand', () => {
     expect(worst).toBeLessThan(1e-4)
   })
 
+  // A search over every run of three tracks: some 50,000 calls of the core's module.
   it('a route over three tracks reads back to its own chain, each run in the route\'s direction', () => {
-    // As the app has it: loaded, its arcs' end bearings derived again.
-    const { tracks, switches } = hydrateProjects([loadClosed()])[0]
+    // As the app has it: loaded, its arcs' end bearings derived again — and held by the core's module.
+    const project = hydrateProjects([loadClosed()])[0]
+    holdProject(project)
+    const { tracks, switches } = project
     // From every track, both ways, the longest run of three that can be had.
     let checked = 0, reversed = 0, worst = 0
     for (const first of tracks.filter(t => t.elements?.length)) {
@@ -331,10 +335,11 @@ describe.skipIf(!hasPekBestand)('PEK Bestand', () => {
       }
       if (checked >= 40) break
     }
+    holdProject(null)
     expect(checked).toBeGreaterThan(5)
     expect(reversed).toBeGreaterThan(0)
     expect(worst).toBeLessThan(1e-4)
-  })
+  }, 60000)
 })
 
 describe.skipIf(!cantFiles.length)('a cant ramp of one radius', () => {

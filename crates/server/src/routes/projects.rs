@@ -8,7 +8,7 @@ use serde_json::{Value, json};
 
 use crate::app::Ctx;
 use crate::auth::{self, User};
-use crate::checks::{axis_surveys_changed, check_record, fresh_errors, normalized_record};
+use crate::checks::{axis_surveys_changed, check_kept, check_record, fresh_errors, normalized_record};
 use crate::http::{ApiError, Res, Resp};
 use crate::routes::timetables::checked_timetables;
 use crate::routes::{not_found, number, text};
@@ -81,9 +81,10 @@ pub fn create(ctx: &mut Ctx) -> Res {
         return Err(ApiError::new(403, "template_admin"));
     }
     let timetables = checked_timetables(ctx.req.field("timetables").filter(|v| !v.is_null()).unwrap_or(&json!([])))?;
-    let empty = json!({ "tracks": [], "switches": [], "platforms": [] });
-    let given = ctx.req.field("payload").filter(|v| !v.is_null()).unwrap_or(&empty);
-    let checked = check_record(given, Some("new"))?;
+    let checked = match ctx.req.field("payload").filter(|v| !v.is_null()) {
+        Some(given) => check_record(given)?,
+        None => check_kept(json!({ "id": "new", "tracks": [], "switches": [], "platforms": [] }))?,
+    };
     let variant_name = text(ctx.req.field("variantName"), 100)
         .filter(|n| !n.is_empty())
         .unwrap_or_else(|| if template { "Vorlage" } else { "Bestand" }.into());
@@ -251,7 +252,7 @@ pub fn copy(ctx: &mut Ctx) -> Res {
     .ok_or_else(|| ApiError::new(422, "variant_mismatch"))?;
     let title = text(ctx.req.field("title"), 200).filter(|t| !t.is_empty()).unwrap_or_else(|| p.title.clone());
     let head = s.revision(from.head_revision_id)?.ok_or_else(not_found)?;
-    let checked = check_record(&head.payload, Some("new"))?;
+    let checked = check_record(&head.payload)?;
     let ((pid, vid, rid), copied) = transaction(&ctx.db, || {
         let made = s.create_project(
             &title,
@@ -412,7 +413,7 @@ pub fn check_in(ctx: &mut Ctx) -> Res {
     if !remaps.is_array() {
         return Err(ApiError::new(422, "invalid_remaps"));
     }
-    let checked = check_record(b.get("payload").unwrap_or(&Value::Null), None)?;
+    let checked = check_record(b.get("payload").unwrap_or(&Value::Null))?;
     if checked.record.get("id").and_then(Value::as_str) != Some(&v.project_id) {
         return Err(ApiError::new(422, "project_mismatch"));
     }

@@ -1,17 +1,17 @@
 import { describe, it, expect } from 'vitest'
-import { utmEndRoute } from '@rail-across/core/src/switch/route.js'
+import { utmEndRoute } from '@rail-across/core/switch'
 import { bearingAfterUtm } from '@rail-across/core/src/geometry/elementUtils.js'
 import { utmToWgs84 } from '@rail-across/core/src/geometry/coordinateUtils.js'
-import { SWITCH_TYPES, switchBranchLength, switchStraightLength } from '@rail-across/core/src/switch/catalogue.js'
-import { computeSwitchGeometryUtm, switchRoutesFromTracks } from '@rail-across/core/src/switch/symbol.js'
-import { switchChainPointUtm } from '@rail-across/core/src/switch/route.js'
+import { SWITCH_TYPES, switchBranchLength, switchStraightLength } from '@rail-across/core/switch'
+import { computeSwitchGeometryUtm, switchRoutesFromTracks } from '@rail-across/core/switch'
+import { switchChainPointUtm } from '@rail-across/core/switch'
 import { hydrateProjects, dehydrateProjects } from '@rail-across/core/src/project/persistenceUtils.js'
-import { switchElementRoute } from '@rail-across/core/src/switch/route.js'
-import { planSwitchDeletion } from '@rail-across/core/src/switch/switchDelete.js'
+import { switchElementRoute } from '@rail-across/core/switch'
+import { planSwitchDeletion } from '@rail-across/core/switch'
 import { switchMisfits, withSwitchHeights } from '../utils/elevation/switchChain'
 import { couplingOf } from '@rail-across/core/switch'
-import { trackLength } from '@rail-across/core/src/track/heightUtils.js'
-import { ldsFromToe } from '@rail-across/core/src/switch/switchGradient.js'
+import { trackLength } from '@rail-across/core/track'
+import { ldsFromToe } from '@rail-across/core/switch'
 
 import { expectValidTrack } from '@rail-across/core/test/chainInvariants.js'
 import { buildSCurve, buildSwitchOnTrack, computeShiftBounds, switchOnTrackPlacement } from '@rail-across/core/commands'
@@ -192,14 +192,15 @@ describe('a crossover out of the curve', () => {
   it('couples both turnouts in the cant, the connecting track in the plane of either main route at its ldS (decisions 384, 385)', () => {
     const flat = { ...after, tracks: after.tracks.map(t => ({ ...t, heights: [{ station: 0, z: 100 }, { station: trackLength(t), z: 100 }] })) }
     const cs = flat.switches.map(sw => couplingOf(flat.tracks, flat.switches, sw))
-    const conn = cs[0].branch.track
-    expect(cs[1].branch.track.id).toBe(conn.id)
+    // A coupling names the tracks it is of (the module's answer).
+    const conn = { id: cs[0].branch.trackId }
+    expect(cs[1].branch.trackId).toBe(conn.id)
     const p = withSwitchHeights({ tracks: [] }, flat)
     expect(switchMisfits(p)).toEqual([])
     // Up toward the outer line at either ldS, which the cant raises.
     const h = p.tracks.find(t => t.id === conn.id).heights
     const at = (s) => h.find(q => Math.abs(q.station - s) < 0.011).z
-    const mainAt = (c) => p.tracks.find(t => t.id === c.main.track.id).heights.find(q => Math.abs(q.station - c.ldsMain) < 0.011).z
+    const mainAt = (c) => p.tracks.find(t => t.id === c.main.trackId).heights.find(q => Math.abs(q.station - c.ldsMain) < 0.011).z
     for (const c of cs) expect(Math.sign(at(c.ldsBranch) - mainAt(c))).toBe(Math.sign(c.cant * c.offset))
   })
 })

@@ -157,7 +157,7 @@ describe('the order the app starts in', () => {
     const main = fs.readFileSync(new URL(`../../../../${entry}`, import.meta.url), 'utf8')
 
     it(`waits for the grid before it hydrates the store (${entry})`, () => {
-      expect(main).toMatch(/loadNtv2Grid\(\)\s*\.then\(\s*initStorage\s*\)/)
+      expect(main).toMatch(/(loadNtv2Grid\(\)|\.then\(\s*loadNtv2Grid\s*\))\s*\.then\(\s*initStorage\s*\)/)
     })
 
     it(`does not start the two side by side (${entry})`, () => {

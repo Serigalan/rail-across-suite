@@ -22,7 +22,7 @@ Section 2 tests the model against concrete cases; sections 3 to 5 give the rules
 | **Stations along the track** for whatever is placed on it. | Survives re-shaping of the horizontal alignment. |
 | **One door.** One parse/validate function decides what is accepted; everything behind it trusts the model. Where oltjson refuses an older format, the core migrates it there, explicitly and tested (S-R10), and refuses only what cannot be migrated. | No "field might be missing" scattered through six modules. |
 | **Shared validation** in browser and server; only *new* errors block. | Imported data with real defects stays workable. |
-| **Precision with a reason**: positions, lengths and stations to 1 µm, heights to 0.1 mm, bearings to 10⁻⁹° ([conventions](conventions.md)). | A turnout laid into a track read back at 0.1 mm would inherit a tangent break ten times what the chain checks allow; a rounded bearing walks a long track off course. |
+| **Precision with a reason**: positions, lengths and stations to 0.1 µm, heights to 0.1 mm, bearings to 10⁻⁹° ([conventions](conventions.md)). | A turnout laid into a track read back at 0.1 mm would inherit a tangent break ten times what the chain checks allow; a rounded bearing walks a long track off course. |
 
 ## 2. The cases
 

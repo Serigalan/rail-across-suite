@@ -14,9 +14,13 @@
     "./test/*": "./test/*",
     "./schemas/*": "./schemas/*",
     "./types/*": "./types/*",
+    "./wasm/*": "./wasm/*",
+    "./native/node": "./src/native/node.js",
     "./*": "./src/*/index.js"
   },
   "scripts": {
+    "wasm": "node scripts/wasm.mjs",
+    "replay": "node replay/index.mjs",
     "test": "vitest run"
   },
   "dependencies": {

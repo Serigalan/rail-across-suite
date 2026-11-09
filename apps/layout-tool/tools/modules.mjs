@@ -42,9 +42,9 @@ export const MODULES = readdirSync(UTILS).filter(n => statSync(join(UTILS, n)).i
 /** The module a path lies in, or null. */
 export const moduleOf = (path) => (path.startsWith(UTILS + '/') ? path.slice(UTILS.length + 1).split('/')[0] : null)
 
-/** Every source file that may import a module: the app and the project server. */
+/** Every source file that may import a module: the app's. */
 function sources() {
-  return [...files(join(ROOT, 'src')), ...files(join(ROOT, '../../server/src')), ...files(join(ROOT, '../../server/bin'))]
+  return files(join(ROOT, 'src'))
     .filter(p => /\.(js|jsx|mjs)$/.test(p))
 }
 

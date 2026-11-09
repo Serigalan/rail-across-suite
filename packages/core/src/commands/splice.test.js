@@ -1,7 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import {
-  buildSplice, clearanceRequest, neighbourAxis, secondPickRefusal, settleLengths, spliceFromAnswer, spliceKeptCant, splicePick, spliceRequest,
-} from './splice.js'
+import { buildSplice, clearanceRequest, neighbourAxis, secondPickRefusal, settleLengths, spliceFromAnswer, spliceKeptCant, splicePick, spliceRequest } from './index.js'
 import { straightElement, arcElement, transitionElement } from '../geometry/elementFactory.js'
 import { rebuildCoords } from '../track/trackModel.js'
 import { expectValidTrack } from '../../test/chainInvariants.js'

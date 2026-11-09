@@ -9,7 +9,13 @@ __pycache__/
 apps/home/dist/
 /.tmp-build-*/
 
-# The simulation core's, the crossover search's and the optimizer's cargo builds
+# The cargo workspace's builds (decision 0020), and those of before it
+/target/
 sim/target/
 crossover/target/
 optimizer/target/
+# The core's WebAssembly module, built by packages/core/scripts/wasm.mjs
+/packages/core/wasm/
+# The point cloud import's WebAssembly module, built by packages/pointcloud/scripts/wasm.mjs
+/packages/pointcloud/wasm/
+apps/*/public/core-module/

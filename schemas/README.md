@@ -15,7 +15,7 @@ implementations to the same results (canonical JSON, the schema check, whole doc
 | `vectors/schema.json` | Values checked against a part of a schema: whether it takes them, and where it does not |
 | `vectors/documents.json` | Whole documents: the door's verdict, and for those it takes the manifest and the document's hash |
 
-The schemas are linked into both cores (`packages/core/schemas`, `packages/core-py/schemas`); the types of the
+The schemas are linked into the core (`packages/core/schemas`) and read by its Rust crates (`crates/doc`); the types of the
 document (`packages/core/types/document.d.ts`) are derived from them by `packages/core/tools/types.mjs`.
 
 ## A document

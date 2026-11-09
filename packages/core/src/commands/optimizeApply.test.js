@@ -1,6 +1,10 @@
 import { describe, it, expect } from 'vitest'
-import { optimizeRequest, reshapedHeights, optimizedTrack, optimizeErrorText } from './optimizeApply.js'
+import { optimizeErrorText, optimizeRequest, optimizedTrack } from './index.js'
+import { reuseFrom, viaRust } from '../native/index.js'
 import { straightFrom, arcFrom } from '../geometry/elementFactory.js'
+
+// Steps of the commands, as the module runs them (not part of the face).
+const reshapedHeights = viaRust('commands.reshapedHeights', reuseFrom)
 
 const EPSG = 25832
 const O = { easting: 500000, northing: 5700000, zone: EPSG }

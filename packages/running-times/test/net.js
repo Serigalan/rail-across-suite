@@ -40,4 +40,4 @@ export const marked = {
 }
 
 /** The simulation module where cargo built it (npm run sim in an app), or null. */
-export const WASM = new URL('../../../sim/target/wasm32-unknown-unknown/release/rail_across_sim_wasm.wasm', import.meta.url)
+export const WASM = new URL('../../../target/wasm32-unknown-unknown/release/rail_across_sim_wasm.wasm', import.meta.url)

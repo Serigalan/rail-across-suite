@@ -7,6 +7,7 @@
 // the module's own business. See docs/modules/geometry.md.
 
 export { epsgMismatches, nodeGaps, untrueLengths } from './chainChecks.js'
+export { moveTrackEnd, refitToNodes, snapNodeGaps, snapTrackJoints } from './chainSnap.js'
 export { clamp } from './numbers.js'
 export {
   clothoidRadiusAt, computeClothoidUtm, curvatureOf, projectOnTransitionUtm, radiusOfCurvature,
@@ -29,6 +30,7 @@ export {
 export {
   GEOJSON_MAXZOOM, SAGITTA_ELEMENT, SAGITTA_TRACK, STRAIGHT_VERTEX_SPACING, SWITCH_ROUTE_STEP,
 } from './geometryPrecision.js'
-export { loadedRegionalGrids, loadGridsFor, loadNtv2Grid, loadRegionalGrids } from './ntv2Grid.js'
+export { loadedGrids, loadedRegionalGrids, loadGridsFor, loadNtv2Grid, loadRegionalGrids } from './ntv2Grid.js'
 export { offsetTrackElements } from './parallelUtils.js'
+export { NODE_TOL, POSITION_DIGITS } from './tolerances.js'
 export { transformTrackToPlane } from './planeTransform.js'

@@ -24,5 +24,5 @@ Fahrplan-Editor:
   changed, and one on an older version fails with 409 and the timetable as it is now.
 
 ```sh
-npm test   # the runs with the simulation module where cargo built it (sim/target/…)
+npm test   # the runs with the simulation module where cargo built it (target/… of the workspace)
 ```

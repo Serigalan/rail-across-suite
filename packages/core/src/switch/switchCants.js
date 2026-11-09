@@ -1,4 +1,4 @@
-import { cantEnds, withCantAtEnd, withCantsOver } from '../geometry/index.js'
+import { cantEnds, withCantAtEnd, withCantsOver, NODE_TOL } from '../geometry/index.js'
 import { portEnd, portTrack } from '../track/index.js'
 import { switchAbreast } from './route.js'
 
@@ -9,8 +9,6 @@ import { switchAbreast } from './route.js'
 
 const isTurnout = (sw) => (sw?.kind ?? 'turnout') === 'turnout'
 
-/** Two plane nodes this close are one [m]. */
-const NODE_TOL = 0.001
 /** Two cants this close are one [mm] — the thousandth a record keeps. */
 const SAME_CANT = 0.001
 /** Turnouts coupled again after a pass changed one of their tracks, at most this often. */

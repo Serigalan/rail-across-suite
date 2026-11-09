@@ -1,0 +1,18 @@
+[package]
+name = "rail-across-project"
+description = "The checks a project record has to pass: the browser's and the server's door"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[lib]
+name = "rail_across_project"
+
+[dependencies]
+serde_json.workspace = true
+rail-across-js = { path = "../js" }
+rail-across-geom = { path = "../geom" }
+rail-across-track = { path = "../track" }
+rail-across-survey = { path = "../survey" }

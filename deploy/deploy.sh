@@ -87,6 +87,22 @@ if [ "$build" = 1 ]; then
   step "Data (NTv2 grids, by version and SHA-256)"
   (cd apps/layout-tool && node tools/data.mjs)
 
+  step "Point cloud module (crates/pointcloud-wasm)"
+  # The point cloud import in Rust (decision 0020), which the Layout-Tool's
+  # import worker bundles: the build needs it.
+  node packages/pointcloud/scripts/wasm.mjs || die "the point cloud module did not build"
+
+  step "Core module (crates/)"
+  # The core's Rust crates as one WebAssembly module (decision 0020): put
+  # beside every page of the suite, which loads it before it renders, and in
+  # packages/core/wasm/ for the project server. Without it the suite deploys
+  # all the same, and the core runs on its JavaScript.
+  core_dirs=(apps/home/public/core-module)
+  for m in "${MODULE_APPS[@]}"; do core_dirs+=("apps/${m%%:*}/public/core-module"); done
+  if ! node packages/core/scripts/wasm.mjs "${core_dirs[@]}"; then
+    echo "WARNING: no core module — the suite runs the core's JavaScript" >&2
+  fi
+
   step "Simulation module (sim/)"
   # OSRD's simulation core in Rust: built to WebAssembly with cargo (once) and
   # put beside the page of the app that runs trains — the Fahrplan-Editor, which
@@ -111,6 +127,12 @@ if [ "$build" = 1 ]; then
   if ! (cd apps/layout-tool && node tools/optimizer.mjs); then
     echo "WARNING: no optimizer module — splicing and optimizing cannot compute" >&2
   fi
+
+  step "Project server (crates/server)"
+  # The project server in Rust (decision 0020): the service, the cloud jobs
+  # and the command line, one binary, run by the service user.
+  "$RA_CARGO" build --release -p rail-across-server || die "the project server did not build"
+  as_user test -x "$RA_SERVER_BIN" || die "$RA_USER cannot run $RA_SERVER_BIN — make the checkout readable (chmod -R a+rX)"
 
   step "Build"
   # Built beside the site directory and then synced into it: the directory
@@ -144,7 +166,7 @@ if [ "$restart" = 1 ]; then
   if [ -f "$RA_DB" ]; then
     step "Database copy"
     copy="$RA_BACKUPS/rail-across-$(date +%F)-predeploy-$(date +%H%M%S).sqlite"
-    (cd server && RA_SERVER_DB="$RA_DB" as_user "$RA_NODE" bin/rail-across-server.mjs backup "$copy")
+    server_cli backup "$copy"
   fi
   # The units as the templates of this checkout have them — a service of an
   # earlier version taken out (the Python optimizer, decision 0019), the

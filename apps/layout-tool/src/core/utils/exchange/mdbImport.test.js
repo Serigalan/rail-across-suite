@@ -135,8 +135,10 @@ describe('buildTracksFromMdb', () => {
     expect(tracks).toHaveLength(1)
     expect(tracks[0].elements).toHaveLength(4)
     // Same contract as the CSV path: the running station is the caller's, and
-    // every caller in the app sets it with `recalcAbsLengths`.
-    expectValidTrack({ ...tracks[0], elements: tracks[0].elements })
+    // every caller in the app sets it with `recalcAbsLengths`. The joints are
+    // closed (importSnap): a node moved by a micrometre turns an element of a
+    // few metres by up to 10⁻⁵°, so the tangents are held to 10⁻⁴°, not 10⁻⁶°.
+    expectValidTrack({ ...tracks[0], elements: tracks[0].elements }, { bearingTol: 1e-4 })
   })
 
   it('keeps the plane the elements were surveyed in', () => {

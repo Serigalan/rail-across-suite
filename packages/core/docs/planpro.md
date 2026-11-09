@@ -9,11 +9,13 @@ another net. Pure, without a DOM: it reads its XML itself, so it runs in the bro
 
 ## Files
 
-| File | What it does |
+The reading is Rust (decision 0020, step 10): `index.js` calls the core's module; the JavaScript is gone.
+
+| In `crates/planpro/src/` | What it does |
 |---|---|
-| `xml.js` | A small XML reader, enough for PlanPro: elements, attributes, text, entities |
-| `mapping.js` | PlanPro's enumerations and the domain's values they are read as |
-| `planpro.js` | `readPlanPro` (the plan's objects), `planproRecord` (a record of the suite), `placeSignalling` (onto another net) |
+| `xml.rs` | A small XML reader, enough for PlanPro: elements, attributes, text, entities |
+| `mapping.rs` | PlanPro's enumerations and the domain's values they are read as |
+| `planpro.rs` | `readPlanPro` (the plan's objects), `planproRecord` (a record of the suite), `placeSignalling` (onto another net) |
 
 ## The net
 

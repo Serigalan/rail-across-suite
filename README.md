@@ -15,12 +15,14 @@ One repository holds the core, every module and the server
 | `packages/` | the Rail-Data-Core (JavaScript and Python) and the libraries the apps and the server share (point clouds, the suite's look `ui`) |
 | `schemas/` | JSON Schema per domain, shared test vectors |
 | `apps/` | the modules: the suite's start page, the Layout-Tool, the Signalling-Tool, the Fahrzeug-Editor, the Fahrplan-Editor — timetables and running times in one interface —, and the Simulation-Tool's old address leading on to it |
-| `server/` | the project server for all modules |
+| `server/` | the project server's schema and HTTP tests, and the Node server they were written against, kept as reference ([server/README.md](server/README.md)) |
+| `crates/desktop/` | the desktop app: the whole suite in one Tauri window, the project server in the same process without user management ([crates/desktop/README.md](crates/desktop/README.md)) |
 | `sim/`, `crossover/`, `optimizer/` | Rust, built to WebAssembly for the browser: the running time simulation, the search of the extended switch connection, the track optimizer — splicing, reconnecting, optimizing, the alignment fit ([decision 0019](docs/decisions/0019-optimizer-in-rust.md)) |
+| `crates/` | the core's Rust crates, one cargo workspace with `sim/`, `crossover/` and `optimizer/` (`Cargo.toml` at the root); built as the core's WebAssembly module, and the project server for all modules, `crates/server` ([decision 0020](docs/decisions/0020-everything-in-rust.md)) |
 | `docs/` | data model, decisions, glossary, conventions |
 | `tools/` | repository checks (`npm run check`) |
 
-The JavaScript parts — apps, packages and the server — are one npm workspace: `npm install` at the root installs
+The JavaScript parts — apps, packages and the server's tests — are one npm workspace: `npm install` at the root installs
 them all, `npm run check` checks the repository's rules. Data kept out of the history is fetched per app
 ([decision 0008](docs/decisions/0008-data-outside-history.md)), for the Layout-Tool with `npm run data` in
 `apps/layout-tool/`.

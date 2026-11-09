@@ -10,6 +10,7 @@ import App from './server/App.jsx'
 import { initStorage } from './core/storage'
 import { initWorkingCopies } from './server/workingCopies'
 import { loadNtv2Grid } from '@rail-across/core/geometry'
+import { loadNative } from '@rail-across/core/native'
 
 // The grid first, then the store — in that order, not side by side.
 //
@@ -29,13 +30,17 @@ import { loadNtv2Grid } from '@rail-across/core/geometry'
 // The 3D view of the point clouds (phase 13) is a window of its own,
 // `#/cloud3d?…`: it opens no working copy and loads three.js as a chunk of its
 // own, which the app itself never fetches.
+// The core's Rust module (decision 0020) first, before anything renders; without it
+// the core runs on its JavaScript.
+const native = loadNative(`${import.meta.env.BASE_URL}core-module/rail_across_core.wasm`)
+
 if (location.hash.startsWith('#/cloud3d')) {
-  loadNtv2Grid().then(() => import('./server/cloud3d/Cloud3dApp.jsx')).then((mod) => {
+  native.then(loadNtv2Grid).then(() => import('./server/cloud3d/Cloud3dApp.jsx')).then((mod) => {
     const Cloud3dApp = mod.default
     createRoot(document.getElementById('root')).render(<StrictMode><Cloud3dApp /></StrictMode>)
   })
 } else {
-  loadNtv2Grid().then(initStorage).then(initWorkingCopies).then(() => {
+  native.then(loadNtv2Grid).then(initStorage).then(initWorkingCopies).then(() => {
     createRoot(document.getElementById('root')).render(
       <StrictMode>
         <App />

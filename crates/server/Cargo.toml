@@ -1,0 +1,41 @@
+[package]
+name = "rail-across-server"
+description = "The project server of Rail-Across-Suite in Rust: users, projects, variants and revisions, point clouds, terrain"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[lib]
+name = "rail_across_server"
+
+[[bin]]
+name = "rail-across-server"
+path = "src/main.rs"
+
+[dev-dependencies]
+zip = { version = "4", default-features = false, features = ["deflate"] }
+
+[dependencies]
+serde_json.workspace = true
+axum = { version = "0.8", default-features = false, features = ["http1", "tokio"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "net", "signal", "fs", "time", "io-util"] }
+tokio-util = { version = "0.7", features = ["io"] }
+rusqlite = { version = "0.37", features = ["bundled"] }
+argon2 = "0.5"
+sha2 = "0.10"
+rand = "0.8"
+flate2 = "1.1"
+crc32fast = "1.4"
+tiff = "0.10"
+zip = { version = "4", default-features = false, features = ["deflate"] }
+image-webp = "0.2"
+ureq = "3"
+libc = "0.2"
+rail-across-js = { path = "../js" }
+rail-across-geom = { path = "../geom" }
+rail-across-doc = { path = "../doc" }
+rail-across-project = { path = "../project" }
+rail-across-signalling = { path = "../signalling" }
+rail-across-pointcloud = { path = "../pointcloud" }

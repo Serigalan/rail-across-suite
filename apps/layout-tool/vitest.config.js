@@ -10,6 +10,8 @@ export default defineConfig({
   esbuild: { jsx: 'automatic' },
   test: {
     environment: 'node',
-    include: ['src/**/*.test.js', '../../server/test/**/*.test.js'],
+    // The core's Rust module, which its functions run on (decision 0020).
+    setupFiles: ['../../packages/core/test/setupNative.js'],
+    include: ['src/**/*.test.js'],
   },
 })

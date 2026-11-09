@@ -1,7 +1,7 @@
-import { FORMAT as DOCUMENT_FORMAT, fromDocument, PayloadError, toDocument } from '../document/index.js'
-import { reconstructElements, derivedEndBearing, loadedTrackCants, storedTrackCants } from '../geometry/index.js'
+import { PayloadError, viaNative } from '../document/index.js'
+import { reconstructElements, derivedEndBearing, loadedTrackCants } from '../geometry/index.js'
 import { rebuildSwitchSymbol } from '../switch/index.js'
-import { rebuildPlatformSymbol, isModelledSwitch, rebuildCoords } from '../track/index.js'
+import { rebuildPlatformSymbol, rebuildCoords } from '../track/index.js'
 
 /**
  * oltjson-1.1 — the one format of a project (decision 333, version 1.1 since
@@ -61,7 +61,10 @@ import { rebuildPlatformSymbol, isModelledSwitch, rebuildCoords } from '../track
  * parseProjectsPayload is the door for both: a core 1.0 document, or an
  * oltjson-1.1 file migrated into one (the first step of the migration chain)
  * and checked as such. Anything else is refused, and nothing behind the door
- * has to ask again whether a record is complete.
+ * has to ask again whether a record is complete. The door, the document and
+ * keeping a record (dehydrate) are the core's Rust module (crates/project,
+ * crates/doc; decision 0020, step 10); loading one — its display geometry —
+ * is still the page's own.
  */
 const FORMAT = 'oltjson'
 const FORMAT_VERSION = '1.1'
@@ -72,16 +75,6 @@ export { PayloadError }
 
 /** A file of `records` (already dehydrated): { format, version, projects }. */
 export const projectsPayload = (records) => ({ format: FORMAT, version: FORMAT_VERSION, projects: records })
-
-const isPort = (p) => p == null || (typeof p === 'object' && !Array.isArray(p))
-
-/** The roles an element may state (absent: a Festelement). */
-const ELEMENT_ROLES = ['follow', 'intermediate']
-
-/** Does an element state its role and its reasons as the format has them? */
-const keptRoleAndReasons = (el) => (el.role == null || ELEMENT_ROLES.includes(el.role))
-  && (el.reasons == null || (typeof el.reasons === 'object' && !Array.isArray(el.reasons)
-    && Object.values(el.reasons).every(r => typeof r === 'string')))
 
 /**
  * The records of a payload — a core 1.0 document (one project), or an
@@ -99,29 +92,7 @@ const keptRoleAndReasons = (el) => (el.role == null || ELEMENT_ROLES.includes(el
  * construction stages of its own, and with `invalid_payload` (its `details`
  * saying what) where it states a format it does not hold.
  */
-export function parseProjectsPayload(data) {
-  if (data?.format === DOCUMENT_FORMAT) return { projects: [fromDocument(data)] }
-  if (!data || typeof data !== 'object' || !Array.isArray(data.projects)) {
-    throw new PayloadError('invalid_payload')
-  }
-  if (data.format !== FORMAT || data.version !== FORMAT_VERSION) throw new PayloadError('unsupported_version')
-
-  for (const p of data.projects) {
-    for (const sw of p.switches ?? []) {
-      if (!isModelledSwitch(sw)) throw new PayloadError('invalid_payload')
-      if (sw.ports != null && (typeof sw.ports !== 'object' || !Object.values(sw.ports).every(isPort))) {
-        throw new PayloadError('invalid_payload')
-      }
-    }
-    for (const track of p.tracks ?? []) {
-      for (const el of track.elements ?? []) {
-        if (el.switchBranch && !el.switchId) throw new PayloadError('invalid_payload')
-        if (!keptRoleAndReasons(el)) throw new PayloadError('invalid_payload')
-      }
-    }
-  }
-  return { projects: data.projects.map(p => fromDocument(toDocument(dehydrateProjects([p])[0]))) }
-}
+export const parseProjectsPayload = (data) => viaNative('project.parseProjectsPayload', data)
 
 /**
  * The core 1.0 document of a project record — what a file and the project
@@ -130,9 +101,7 @@ export function parseProjectsPayload(data) {
  * writes it although the schemas refuse it (toDocument).
  */
 export const projectDocument = (record, { carrySchemas = false, check = true } = {}) =>
-  toDocument(dehydrateProjects([record])[0], { carrySchemas, check })
-
-const isPoint = (p) => Array.isArray(p) && p.length >= 2 && p.every(Number.isFinite)
+  viaNative('project.projectDocument', { record: withoutDerived(record), carrySchemas, check })
 
 /**
  * Unwrap a file of tracks as the data exchange panel exports them (one track
@@ -145,82 +114,8 @@ const isPoint = (p) => Array.isArray(p) && p.length >= 2 && p.every(Number.isFin
  * Returns the tracks; throws a PayloadError ('invalid_payload',
  * 'tracks_empty', 'switch_missing') otherwise.
  */
-export function parseTracksPayload(data, { switchIds = new Set() } = {}) {
-  const tracks = Array.isArray(data) ? data : [data]
-  if (tracks.length === 0) throw new PayloadError('tracks_empty')
-  for (const track of tracks) {
-    if (!track || typeof track !== 'object') throw new PayloadError('invalid_payload')
-    if (typeof track.id !== 'string' || !track.id) throw new PayloadError('invalid_payload')
-    if (!Array.isArray(track.elements) || track.elements.length === 0) throw new PayloadError('invalid_payload')
-    for (const el of track.elements) {
-      if (!el || typeof el !== 'object') throw new PayloadError('invalid_payload')
-      if (![0, 1, 2].includes(el.elementType)) throw new PayloadError('invalid_payload')
-      if (!isPoint(el.startNode) || !isPoint(el.endNode)) throw new PayloadError('invalid_payload')
-      if (!Number.isFinite(el.length) || el.length < 0) throw new PayloadError('invalid_payload')
-      if (el.switchBranch && !el.switchId) throw new PayloadError('invalid_payload')
-      if (el.switchId && !switchIds.has(el.switchId)) throw new PayloadError('switch_missing')
-      if (!keptRoleAndReasons(el)) throw new PayloadError('invalid_payload')
-    }
-  }
-  return tracks
-}
-
-// ── Numbers as they are kept ─────────────────────────────────────────────────
-
-const at = (digits) => {
-  const f = 10 ** digits
-  return (v) => (Number.isFinite(v) ? Math.round(v * f) / f : v)
-}
-/** Positions, lengths, radii, stations: 1 µm. */
-const um = at(6)
-/** Heights: 0.1 mm. */
-const mm10 = at(4)
-/** Angles in degrees: 10⁻⁹ °. */
-const angle = at(9)
-/** Cant [mm]: a thousandth of a millimetre. */
-const cant = at(3)
-
-/** An end bearing agreeing with the one the element's design values give is not kept. */
-const SAME_END_BEARING = 1e-7   // °
-
-const turnBetween = (a, b) => Math.abs((((a - b) % 360) + 540) % 360 - 180)
-
-/** The reasons an element keeps: each trimmed, an empty one dropped, none at all no field. */
-function keptReasons(el) {
-  const { reasons, ...rest } = el
-  const kept = Object.entries(reasons ?? {}).map(([id, text]) => [id, String(text ?? '').trim()]).filter(([, text]) => text)
-  return kept.length ? { ...rest, reasons: Object.fromEntries(kept) } : rest
-}
-
-/**
- * One element as it is kept: nothing derived, numbers to what they mean. Its
- * cant comes in from the track (storedTrackCants), which a transition needs to
- * state the ends its neighbours give it.
- */
-function keptElement({ renderCoords: _rc, geometry: _g, ...el }) {
-  const out = keptReasons(el)
-  // An end bearing that is no number — left undefined or NaN by an edit —
-  // says nothing; the design values give it again on load. Kept, it would
-  // hold up the check-in and the export.
-  if (!Number.isFinite(out.endBearing)) delete out.endBearing
-  else {
-    const derived = derivedEndBearing(out) ?? out.bearing
-    if (derived != null && turnBetween(out.endBearing, derived) < SAME_END_BEARING) delete out.endBearing
-  }
-  for (const k of ['startNode', 'endNode']) if (Array.isArray(out[k])) out[k] = out[k].map(um)
-  for (const k of ['length', 'radius', 'r1', 'r2']) if (out[k] != null) out[k] = um(out[k])
-  for (const k of ['bearing', 'endBearing']) if (out[k] != null) out[k] = angle(out[k])
-  for (const k of ['cant', 'cantStart', 'cantEnd']) if (out[k] != null) out[k] = cant(out[k])
-  return out
-}
-
-/** A height point as it is kept. */
-function keptHeight(h) {
-  const out = { ...h }
-  for (const k of ['station', 'rv', 'la']) if (out[k] != null) out[k] = um(out[k])
-  if (out.z != null) out.z = mm10(out.z)
-  return out
-}
+export const parseTracksPayload = (data, { switchIds = new Set() } = {}) =>
+  viaNative('project.parseTracksPayload', { data, switchIds: [...switchIds] })
 
 // ── Hydrate (load) / dehydrate (persist) ─────────────────────────────────────
 
@@ -251,35 +146,26 @@ export function hydrateProjects(projects) {
   return projects ?? []
 }
 
-/** The records as they are kept (oltjson-1.1): derived data stripped, numbers rounded. */
-export function dehydrateProjects(projects) {
-  return (projects ?? []).map((p) => {
-    if (!p.tracks && !p.switches && !p.platforms) return p
-    return {
-      ...p,
-      ...(p.tracks ? {
-        // `regelwerk` and `regelwerkGrenzwert`: what the optimize dialog wrote
-        // onto a track it changed until 2026-11; the format never held them,
-        // and a working copy carrying them could not be checked in.
-        tracks: p.tracks.map(({ coordinates: _coords, regelwerk: _rw, regelwerkGrenzwert: _rg, ...track }) => ({
-          ...track,
-          // `cant` or `cantStart` + `cantEnd`, never both (Entscheidung 369).
-          elements: storedTrackCants(track.elements ?? []).map(keptElement),
-          ...(track.heights ? { heights: track.heights.map(keptHeight) } : {}),
-        })),
-      } : {}),
-      ...(p.switches ? {
-        switches: p.switches.map(({
-          fillCoords: _f, lcsCoords: _l, labelCoords: _lc, bodyCentre: _bc, bauform: _b, ...sw
-        }) => sw),
-      } : {}),
-      ...(p.platforms ? {
-        platforms: p.platforms.map(({ coords: _c, ...pf }) => ({
-          ...pf,
-          ...(pf.startStation != null ? { startStation: um(pf.startStation) } : {}),
-          ...(pf.endStation != null ? { endStation: um(pf.endStation) } : {}),
-        })),
-      } : {}),
-    }
-  })
+/**
+ * A record without the display geometry the load derived — what keeping it
+ * strips anyway, left behind before it is handed to the core's module rather
+ * than written out to it and back.
+ */
+function withoutDerived(p) {
+  if (!p || typeof p !== 'object') return p
+  const out = { ...p }
+  if (Array.isArray(p.tracks)) {
+    out.tracks = p.tracks.map(({ coordinates: _c, ...t }) => (Array.isArray(t.elements)
+      ? { ...t, elements: t.elements.map(el => (el && typeof el === 'object' ? (({ renderCoords: _r, geometry: _g, ...rest }) => rest)(el) : el)) }
+      : t))
+  }
+  if (Array.isArray(p.switches)) {
+    out.switches = p.switches.map(sw => (sw && typeof sw === 'object'
+      ? (({ fillCoords: _f, lcsCoords: _l, labelCoords: _lc, bodyCentre: _bc, ...rest }) => rest)(sw) : sw))
+  }
+  if (Array.isArray(p.platforms)) out.platforms = p.platforms.map(pf => (pf && typeof pf === 'object' ? (({ coords: _c, ...rest }) => rest)(pf) : pf))
+  return out
 }
+
+/** The records as they are kept (oltjson-1.1): derived data stripped, numbers rounded. */
+export const dehydrateProjects = (projects) => viaNative('project.dehydrateProjects', (projects ?? []).map(withoutDerived))

@@ -1,0 +1,32 @@
+# SPDX-FileCopyrightText: 2026 Serigalan and the Rail-Across-Suite contributors
+# SPDX-License-Identifier: LGPL-3.0-only
+
+# One workspace for all of the suite's Rust (decision 0020): the running time
+# simulation (sim/), the crossover search (crossover/), the optimizer
+# (optimizer/) and the core's crates (crates/). One lock, one target/.
+[workspace]
+resolver = "2"
+members = ["sim/crates/*", "crossover/crates/*", "optimizer/crates/*", "crates/*"]
+# The desktop app (Tauri) is a workspace of its own: it needs WebKitGTK to build,
+# which the server and the core do not (crates/desktop/README.md).
+exclude = ["crates/desktop"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "LGPL-3.0-only"
+repository = "https://github.com/Serigalan/rail-across-suite"
+rust-version = "1.85"
+
+[workspace.dependencies]
+serde = { version = "1", features = ["derive"] }
+# The catalogue's thresholds and inputs are read in the order the file lists
+# them: a later one may use an earlier (optimizer); records keep their order.
+# Numbers read back as the double JavaScript reads (float_roundtrip).
+serde_json = { version = "1", features = ["preserve_order", "float_roundtrip"] }
+slsqp = "1.0.2"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1

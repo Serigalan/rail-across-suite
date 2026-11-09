@@ -24,8 +24,8 @@ pub type Pt = (f64, f64);
 const DEG2RAD: f64 = PI / 180.0;
 const RAD2DEG: f64 = 180.0 / PI;
 
-/// v = √(R (u + u_f) / 11.8) — see packages/core/constraints/physics.json for the derivation.
-pub const CANT_DEFICIENCY_COEFF: f64 = 11.8;
+/// v = √(R (u + u_f) / 11.8) — the rules' constant (crates/rules).
+pub use rail_across_rules::physics::{CANT_DEFICIENCY_COEFF, permissible_speed};
 
 // The grid a run hands its numbers out on: radii in whole metres, lengths in
 // ten centimetres (the cants' five millimetres are LP.KB.03's). These are the
@@ -90,11 +90,6 @@ pub fn snap_up(value: f64, step: f64) -> f64 {
     round9((q - slack(q)).ceil() * step)
 }
 
-/// Permissible speed [km/h] for radius [m], cant u and cant deficiency uf [mm].
-pub fn permissible_speed(radius: f64, u: f64, uf: f64) -> f64 {
-    (radius.abs() * (u + uf) / CANT_DEFICIENCY_COEFF).sqrt()
-}
-
 /// Chord length whose mid-ordinate against `radius` is SAMPLE_SAGITTA.
 pub fn sample_step(radius: f64) -> f64 {
     (8.0 * SAMPLE_SAGITTA * radius.abs()).sqrt()
@@ -117,12 +112,11 @@ pub fn dir_of(bearing_deg: f64) -> Pt {
     (b.sin(), b.cos())
 }
 
-fn kappa(r: Option<f64>) -> f64 {
-    match r {
-        Some(r) if r != 0.0 => -1.0 / r,
-        _ => 0.0,
-    }
-}
+// The curvature of a signed radius and the centre of an arc are the core's
+// (crates/geom, decision 0020); the integrators here stay the optimizer's own —
+// Gauss–Legendre and Horner, tuned for the thousands of trial geometries a run
+// evaluates and held to the Python answers.
+use rail_across_geom::transition::to_kappa as kappa;
 
 /// The heading polynomial of a transition as coefficients of
 /// h(s) = a1 s + a2 s² + a3 s³ + a4 s⁴, so that a sampling loop can evaluate
@@ -228,16 +222,7 @@ pub fn transition_end(e: f64, n: f64, bearing_deg: f64, length: f64, r1: Option<
 
 /// Centre of the arc through two points with a signed radius.
 pub fn arc_center(s: Pt, e: Pt, signed_r: f64) -> Option<Pt> {
-    let (dx, dy) = (e.0 - s.0, e.1 - s.1);
-    let chord = dx.hypot(dy);
-    let abs_r = signed_r.abs();
-    if chord < 1e-6 || abs_r < chord / 2.0 {
-        return None;
-    }
-    let (rpx, rpy) = (dy / chord, -dx / chord);
-    let h = (abs_r * abs_r - (chord / 2.0).powi(2)).sqrt();
-    let sgn = if signed_r >= 0.0 { -1.0 } else { 1.0 };
-    Some(((s.0 + e.0) / 2.0 - sgn * h * rpx, (s.1 + e.1) / 2.0 - sgn * h * rpy))
+    rail_across_geom::element::arc_center(s.0, s.1, e.0, e.1, signed_r).map(|(cx, cy, _, _)| (cx, cy))
 }
 
 /// Signed sweep angle between the two endpoint angles (app convention).

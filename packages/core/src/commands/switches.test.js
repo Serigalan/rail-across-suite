@@ -1,10 +1,12 @@
 import { describe, it, expect } from 'vitest'
-import { trackOf } from './tracks.js'
-import {
-  switchOnTrackPlacement, switchOnTrackRemnant, switchOnTrackRouteEnd, switchOnTrackSlider, switchOnTrackToeValid,
-} from './switches.js'
+import { switchOnTrackPlacement, switchOnTrackRemnant, switchOnTrackSlider, switchOnTrackToeValid } from './index.js'
+import { viaRust } from '../native/index.js'
 import { arcFrom, straightFrom } from '../geometry/elementFactory.js'
 import { SWITCH_TYPES, switchStraightLength } from '../switch/catalogue.js'
+
+// Steps of the commands, as the module runs them (not part of the face).
+const switchOnTrackRouteEnd = viaRust('commands.switchOnTrackRouteEnd')
+const trackOf = viaRust('commands.trackOf')
 
 const EPSG = 25832
 const START = { easting: 500000, northing: 5600000, zone: EPSG }

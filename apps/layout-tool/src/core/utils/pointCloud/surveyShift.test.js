@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { surveyFromTrace, surveyPoints } from '@rail-across/core/src/survey/axisSurvey.js'
+import { surveyFromTrace, surveyPoints } from '@rail-across/core/survey'
 import { cloudToPlane } from '@rail-across/pointcloud'
 import { transformMatrix } from '@rail-across/pointcloud/src/registration.js'
 import { cloudRefsOf, surveyChanges, shiftSurvey } from './surveyShift'

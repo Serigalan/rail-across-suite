@@ -201,11 +201,13 @@ describe('in the store', () => {
 
 describe('merging variants', () => {
   it('carries a route over a track the other side split', async () => {
-    const { carryReferences } = await import('@rail-across/core/src/merge/remap.js')
+    // The merge's own step, as the core's module runs it in a merge.
+    const { viaRust } = await import('@rail-across/core/native')
+    const carryReferences = viaRust('merge.carryReferences')
     const B1 = track('B1', 100, 140)
     const B2 = track('B2', 140, 200)
     const record = { tracks: [A, B1, B2, C], switches: [], routes: [{ id: 'r', name: 'R', trackIds: ['A', 'B', 'C'] }] }
-    const { project, carried } = carryReferences(record, [[{ from: 'B', to: ['B1', 'B2'] }]], (id) => (id === 'B' ? B : null))
+    const { project, carried } = carryReferences(record, [[{ from: 'B', to: ['B1', 'B2'] }]], [B])
     expect(project.routes[0].trackIds).toEqual(['A', 'B1', 'B2', 'C'])
     expect(carried).toEqual([{ collection: 'routes', id: 'r', from: 'B', to: 'B1,B2' }])
   })

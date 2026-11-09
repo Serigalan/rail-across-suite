@@ -1,6 +1,7 @@
 import { transitionCantEnds } from '../geometry/index.js'
 import { catalogSpeedRange, severityRank } from './regelkatalog.js'
 import { elementVerdict } from './trassierungCheck.js'
+import { nativeRuleMaxSpeed } from './viaNative.js'
 
 // Speed is designed in 5 km/h steps, like cant is in 5 mm ones.
 export const SPEED_STEP = 5
@@ -58,6 +59,8 @@ const isError = (r) => severityRank(r.severity) >= severityRank('error')
 export function ruleMaxSpeed(elements, i, { cap = null, context = null } = {}) {
   const el = elements[i]
   if (!el) return { speed: null, fixed: [] }
+  const native = nativeRuleMaxSpeed(elements, i, cap, context)
+  if (native) return native
   // One copy of the chain, its three elements around `i` set to each speed in turn.
   const view = elements.slice()
   const near = [i - 1, i, i + 1].filter(j => j >= 0 && j < elements.length)

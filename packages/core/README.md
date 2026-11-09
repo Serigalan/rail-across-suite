@@ -22,8 +22,8 @@ The shared model of Rail-Across-Suite in JavaScript: every module reads and writ
 | `merge` | diff, three-way merge, carrying ids, carrying every domain's locations across a change of the net (R4) | [merge](docs/merge.md) |
 
 `schemas/` links the JSON Schemas of the domains at the root of the repository ([schemas](../../schemas/README.md)),
-and `types/document.d.ts` holds the types derived from them (`node tools/types.mjs`); the Python core
-(`packages/core-py`) reads the same schemas and is held to the same vectors (`node tools/vectors.mjs`).
+and `types/document.d.ts` holds the types derived from them (`node tools/types.mjs`); the Rust crates
+(`crates/doc`) read the same schemas and are held to the same vectors (`node tools/vectors.mjs`).
 `constraints/` holds the rule and form catalogues as data, handed to the optimizer module in Rust as they are
 (`optimizer/` of the repository); `test/` holds helpers and fixtures the tests of the
 core and of the apps share.

@@ -1,14 +1,18 @@
 import { describe, it, expect } from 'vitest'
-import { trackOf } from './tracks.js'
+import { buildCrossingConnect, crossingConnectOutcome, crossingConnectSolutions, crossingOnTrackPlacement } from './index.js'
+import { viaRust } from '../native/index.js'
 import { straightFrom } from '../geometry/elementFactory.js'
 import { CROSSING_TYPES } from '../switch/catalogue.js'
-import { connectionAnchor } from '../switch/connectToTrack.js'
-import { crossingOnTrackPlacement, crossingOnTrackPort } from './switches.js'
-import { buildCrossingConnect, crossAngleOf, crossingConnectOutcome, crossingConnectSolutions } from './connectCrossing.js'
 import { crossingEndDistance } from '../switch/crossing.js'
 import { expectValidTrack, expectNodesJoin } from '../../test/chainInvariants.js'
 import { resolveEndBearing } from '../geometry/elementUtils.js'
 import { portTrack, portEnd } from '../track/switchModel.js'
+import { connectionAnchor } from '../switch/index.js'
+
+// Steps of the commands, as the module runs them (not part of the face).
+const crossAngleOf = viaRust('commands.crossAngleOf')
+const crossingOnTrackPort = viaRust('commands.crossingOnTrackPort')
+const trackOf = viaRust('commands.trackOf')
 
 const EPSG = 25832
 const O = { easting: 500000, northing: 5600000, zone: EPSG }

@@ -1,0 +1,11 @@
+{
+  "name": "rail-across-desktop",
+  "private": true,
+  "description": "The desktop app's build steps; here so that the Tauri CLI runs its hooks in this directory (it takes the directory of a package.json as the frontend's)",
+  "license": "LGPL-3.0-only",
+  "type": "module",
+  "scripts": {
+    "site": "node scripts/build-site.mjs",
+    "mdbtools": "node scripts/stage-mdbtools.mjs"
+  }
+}

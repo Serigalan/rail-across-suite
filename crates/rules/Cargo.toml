@@ -1,0 +1,17 @@
+[package]
+name = "rail-across-rules"
+description = "The rule catalogue: its expression language, the check of an element chain, the limits a run is held to, cant and speed"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[lib]
+name = "rail_across_rules"
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+rail-across-js = { path = "../js" }
+rail-across-geom = { path = "../geom" }

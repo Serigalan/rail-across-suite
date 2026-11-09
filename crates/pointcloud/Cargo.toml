@@ -1,0 +1,24 @@
+[package]
+name = "rail-across-pointcloud"
+description = "Point clouds: LAS/LAZ and E57 read in pieces, tiled at several voxel levels, sections, rail detection and tracing, registration, clearance scans"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[lib]
+name = "rail_across_pointcloud"
+
+[[bin]]
+name = "ra-pointcloud"
+path = "src/bin/ra-pointcloud.rs"
+
+[dependencies]
+serde_json.workspace = true
+flate2 = "1.1"
+laz = "0.9"
+rail-across-js = { path = "../js" }
+rail-across-geom = { path = "../geom" }
+rail-across-track = { path = "../track" }
+rail-across-switch = { path = "../switch" }

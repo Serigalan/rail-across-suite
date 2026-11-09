@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { carryReferences, remapKind } from './remap.js'
+import { viaRust } from '../native/index.js'
 import { straightElement } from '../geometry/elementFactory.js'
 
 const EPSG = 25832
@@ -9,7 +9,10 @@ const track = (id, x0, x1, epsg = EPSG) => ({ id, epsg, elements: [straightEleme
 
 // The old track 'a', 200 m due east, and the two pieces a split made of it.
 const old = { a: track('a', 0, 200) }
-const oldTracks = (id) => old[id] ?? null
+const oldTracks = Object.values(old)
+// The merge's own steps, the module's operations as the merge runs them (not part of its face).
+const remapKind = viaRust('merge.remapKind')
+const carryReferences = viaRust('merge.carryReferences')
 const splitLog = [{ from: 'a', to: ['a1', 'a2'] }]
 
 describe('what the log did to a track', () => {
@@ -45,7 +48,7 @@ describe('carrying references across a split', () => {
   it('moves a platform to the piece it lies on, and leaves one over the cut', () => {
     const { project: out } = carryReferences(project, [splitLog], oldTracks)
     expect(out.platforms[0]).toMatchObject({ trackId: 'a1', startStation: 20, endStation: 60, side: 'left' })
-    expect(out.platforms[1]).toBe(project.platforms[1])
+    expect(out.platforms[1]).toEqual(project.platforms[1])
   })
 
   it('leaves the input untouched', () => {
@@ -90,6 +93,6 @@ describe('what it cannot carry', () => {
     }
     expect(carryReferences(project, [splitLog], oldTracks).project.endMarks[0].trackId).toBe('a')
     const sameplane = { ...project, tracks: [track('a1', 0, 100), track('a2', 100, 200)] }
-    expect(carryReferences(sameplane, [splitLog], () => null).project.endMarks[0].trackId).toBe('a')
+    expect(carryReferences(sameplane, [splitLog], []).project.endMarks[0].trackId).toBe('a')
   })
 })

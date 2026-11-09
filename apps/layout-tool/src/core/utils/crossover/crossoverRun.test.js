@@ -2,14 +2,18 @@ import { describe, it, expect, beforeAll } from 'vitest'
 import { existsSync, readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { adoptCrossover, crossoverRequest, settleConnection } from '@rail-across/core/commands'
-import { buildConnectionElements, SWITCH_TYPES } from '@rail-across/core/switch'
+import { SWITCH_TYPES } from '@rail-across/core/switch'
+import { reuseFrom, viaRust } from '@rail-across/core/native'
 import { checkTrack } from '@rail-across/core/rules'
 import { instantiateCrossover, runWith } from './crossoverRun'
+
+// The connection's elements as the core's module builds them (not part of the switch module's face).
+const buildConnectionElements = viaRust('switch.buildConnectionElements', reuseFrom)
 
 // The search as the dialog runs it, through the module cargo built
 // (crossover/target/…) — skipped where it has not been built.
 const MODULE = fileURLToPath(new URL(
-  '../../../../../../crossover/target/wasm32-unknown-unknown/release/rail_across_crossover_wasm.wasm', import.meta.url))
+  '../../../../../../target/wasm32-unknown-unknown/release/rail_across_crossover_wasm.wasm', import.meta.url))
 const built = existsSync(MODULE)
 
 const EPSG = 25832

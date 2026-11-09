@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { carryAfterWrite, carryDomain } from './carryLocations.js'
-import { carryReferences } from './remap.js'
+import { carryAfterWrite, carryDomainOnto } from './index.js'
+import { viaRust } from '../native/index.js'
 import { straightElement } from '../geometry/elementFactory.js'
 
 const EPSG = 25832
@@ -70,11 +70,7 @@ describe('carrying a domain\'s locations across a write of the net (R4)', () => 
   })
 
   it('reports what it carried', () => {
-    const ctx = {
-      present: new Set(['a1', 'a2', 'b']), changed: (id) => id === 'a', oldTrack: (id) => (id === 'a' ? a : null),
-      candidates: () => [track('a1', 0, 100), track('a2', 100, 200)], tracks: [track('a1', 0, 100), track('a2', 100, 200), b], switches: [],
-    }
-    const { carried } = carryDomain(domain(), ctx)
+    const { carried } = carryDomainOnto(domain(), [a, b], { tracks: [track('a1', 0, 100), track('a2', 100, 200), b], switches: [] })
     expect(carried).toEqual([
       { collection: 'signals', id: 's1', field: 'at', from: 'a', to: 'a2' },
       { collection: 'routes', id: 'r1', field: 'path', from: 'a', to: 'a1,a2,b' },
@@ -85,7 +81,7 @@ describe('carrying a domain\'s locations across a write of the net (R4)', () => 
 describe('carrying a domain\'s locations in a merge, through the id log', () => {
   it('carries the record\'s signalling like its platforms', () => {
     const project = { tracks: [track('a1', 0, 100), track('a2', 100, 200), b], switches: [], signalling: domain() }
-    const { project: out, carried } = carryReferences(project, [[{ from: 'a', to: ['a1', 'a2'] }]], (id) => (id === 'a' ? a : null))
+    const { project: out, carried } = viaRust('merge.carryReferences')(project, [[{ from: 'a', to: ['a1', 'a2'] }]], [a])
     expect(out.signalling.collections.signals[0].at).toEqual(on('a2', 50))
     expect(carried).toContainEqual({ collection: 'signalling.signals', id: 's1', from: 'a', to: 'a2' })
   })

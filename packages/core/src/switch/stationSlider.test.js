@@ -1,23 +1,15 @@
 import { describe, it, expect } from 'vitest'
-import { nearestValid, settleStation, uniqueStations, validIntervals } from './stationSlider.js'
+import { nearestValid, settleStation } from './index.js'
+import { reuseFrom, viaRust } from '../native/index.js'
+
+// Steps of the switch module, as the core's module runs them (not part of its face).
+const uniqueStations = viaRust('switch.uniqueStations', reuseFrom)
 
 describe('the position slider', () => {
   const valid = (s) => (s >= 10.25 && s <= 40.5) || (s >= 60 && s <= 70)
 
-  it('finds the stretches where the position is valid, edges to a tenth of a millimetre', () => {
-    const iv = validIntervals(valid, 0, 100, 1)
-    expect(iv).toHaveLength(2)
-    expect(iv[0][0]).toBeCloseTo(10.25, 4)
-    expect(iv[0][1]).toBeCloseTo(40.5, 4)
-    expect(iv[1]).toEqual([expect.closeTo(60, 4), expect.closeTo(70, 4)])
-  })
-
-  it('asks the snap points on their own: a valid point between failing samples is a stretch', () => {
-    const point = (s) => Math.abs(s - 20.37) < 1e-9
-    expect(validIntervals(point, 0, 50, 1)).toEqual([])
-    expect(validIntervals(point, 0, 50, 1, [20.37, 30])).toEqual([[20.37, 20.37]])
-  })
-
+  // Finding the valid stretches asks the dialog back (valid(s)); the module does that inside
+  // switchOnTrackSlider and crossingOnTrackSlider, tested with them (commands).
   it('skips what is not valid: the nearest valid station', () => {
     const iv = [[10, 40], [60, 70]]
     expect(nearestValid(45, iv)).toBe(40)

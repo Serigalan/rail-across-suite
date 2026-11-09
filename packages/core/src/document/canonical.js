@@ -1,7 +1,7 @@
 import { sha256OfText } from './sha256.js'
 
 // Canonical JSON after RFC 8785 (JCS): the one byte form of a value, so that
-// the browser, the server and the Python core hash the same data alike (data
+// the browser, the server and the desktop app hash the same data alike (data
 // model S-R3). Object members sorted by their names' UTF-16 code units,
 // numbers as ECMAScript writes them (`100`, `1e-7`, `-0` as `0`), strings
 // escaped as JSON.stringify escapes them, no whitespace. Members that are

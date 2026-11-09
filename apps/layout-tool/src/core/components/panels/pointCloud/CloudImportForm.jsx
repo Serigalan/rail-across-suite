@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { crsLabel } from '@rail-across/core/geometry'
 import { HEIGHT_DATUMS, heightDatumLabel } from '@rail-across/core/track'
 import {
-  fileSource, readCloudHeader, probeExtent, projectPlane, startImport, previewPoints, formatName,
+  readFileHeader, probeExtent, projectPlane, startImport, previewPoints, formatName,
   pointsAsText, PREVIEW_POINTS, persistStorage, estimateCloudBytes, CLOUD_CRS, count, crsHint,
   duration, mb, sizeText, stepText, originalGrid,
 } from '../../../utils/pointCloud'
@@ -100,7 +100,7 @@ export default function CloudImportForm({ storage, onMessage, onChanged, onRunni
   const choose = (mode) => async (file) => {
     onMessage(null)
     try {
-      setPick({ file, header: await readCloudHeader(fileSource(file)), mode })
+      setPick({ file, header: await readFileHeader(file), mode })
       setCrs('')
       setHeightEpsg('')
       setKeepRaw(false)

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { SWITCH_TYPES } from '../switch/switchConnectionUtils.js'
-import { stems, solveConnection, computeShiftBounds, settleConnection, connectionRemnants, connectionPick, buildSCurve, shiftSnaps, preferredShift, waOffset, hasStraightMid, straightShifts } from './sCurve.js'
+import { buildCurvedLineTrack, buildLineTrack, buildSCurve, computeShiftBounds, connectionPick, hasStraightMid, preferredShift, settleConnection, shiftSnaps, stems, straightShifts, waOffset } from './index.js'
+import { viaRust } from '../native/index.js'
 import { minElementLength } from '../rules/elementLength.js'
 import { hasPekBestand, loadPekBestand } from '../../test/pekFixture.js'
 import { hydrateProjects, dehydrateProjects } from '../project/persistenceUtils.js'
@@ -9,8 +9,13 @@ import { utmEndRoute } from '../switch/route.js'
 import { computeClothoidUtm, transitionPointAtUtm } from '../geometry/clothoidUtils.js'
 import { switchBranchLength, switchStraightLength } from '../switch/catalogue.js'
 import { checkTrack } from '../rules/trassierungCheck.js'
-import { buildLineTrack, buildCurvedLineTrack, trackOf } from './tracks.js'
 import { arcFrom, straightFrom, transitionElement } from '../geometry/elementFactory.js'
+import { SWITCH_TYPES } from '../switch/index.js'
+
+// Steps of the commands, as the module runs them (not part of the face).
+const connectionRemnants = viaRust('commands.connectionRemnants')
+const solveConnection = viaRust('commands.solveConnection')
+const trackOf = viaRust('commands.trackOf')
 
 const EPSG  = 25832
 const P     = (e, n) => ({ easting: e, northing: n, zone: EPSG })
@@ -322,9 +327,11 @@ describe.skipIf(!hasPekBestand)('minimum element length on the PEK Bestand', () 
       .filter(el => !el.switchId && !before.has(el.length.toFixed(3)))
     expect(pieces.length).toBeGreaterThan(0)
     for (const el of pieces) expect(el.length, `piece of ${el.length} m`).toBeGreaterThanOrEqual(32 - 1e-3)
-    // (The Bestand's own straights meet with kinks of up to 0.013°, so the
-    // tangents are not held to the invariant here — the nodes are.)
-    for (const tr of commit.addTracks) expectNodesJoin(tr.elements)
+    // (The Bestand's own straights meet with kinks of up to 0.013°, and its own
+    // nodes miss each other by up to 53 µm on these two tracks, so neither is
+    // held to the invariant here: the nodes are held to the millimetre the
+    // data comes with.)
+    for (const tr of commit.addTracks) expectNodesJoin(tr.elements, 1e-3)
     for (const sw of commit.addSwitches) expectSwitchRoutesCarved(sw, commit.addTracks)
     // The first track is parted at the joint: its element 4 stays whole.
     expect(commit.addTracks.some(tr => tr.elements.at(-1)?.length === t1.elements[4].length)).toBe(true)

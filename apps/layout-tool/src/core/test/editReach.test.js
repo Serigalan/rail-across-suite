@@ -6,11 +6,14 @@ import {
 } from '@rail-across/core/src/geometry/elementUtils.js'
 import { utmToWgs84 } from '@rail-across/core/src/geometry/coordinateUtils.js'
 import { SAGITTA_ELEMENT, SAGITTA_TRACK } from '@rail-across/core/src/geometry/geometryPrecision.js'
-import { MAX_EDIT_SWITCHES, MAX_EDIT_TRACKS } from '@rail-across/core/src/commands/editGeometry.js'
 import { newSwitchFields, switchElementMark } from '@rail-across/core/src/track/switchModel.js'
-import { planElementChange, mergeElementEdits } from '@rail-across/core/src/commands/editGeometry.js'
 import { expectValidTrack } from '@rail-across/core/test/chainInvariants.js'
 import { transitionElement } from '@rail-across/core/src/geometry/elementFactory.js'
+import { mergeElementEdits, planElementChange } from '@rail-across/core/commands'
+
+// How far one edit of the table may reach (crates/commands/src/edit.rs).
+const MAX_EDIT_SWITCHES = 1
+const MAX_EDIT_TRACKS = 3
 
 /**
  * AP 5.1 — how far one change in the track editor reaches.

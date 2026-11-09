@@ -6,11 +6,6 @@ import { join } from 'node:path'
 import { setup, signIn } from './helpers.js'
 import { makeLas } from '@rail-across/pointcloud/test/pointCloudFixture.js'
 import { gaugeProfile, gaugeProfileRing, gaugeProfileAreas } from '@rail-across/core/src/crossSection/gaugeProfiles.js'
-import { createCloudStore } from '../src/clouds/cloudStore.js'
-import { createRunStore } from '../src/clouds/runStore.js'
-import { createQueue, runQueueJobs } from '../src/clouds/jobs.js'
-import { prepareCloud } from '../src/clouds/prepare.js'
-import { executeRun } from '../src/clouds/runs.js'
 
 let ctx, root
 afterEach(async () => {
@@ -85,26 +80,15 @@ async function readyCloud(ada, project) {
     expect(res.statusCode, res.body).toBe(200)
   }
   await ada('POST', `${url}/complete`)
-  const clouds = createCloudStore(ctx.db)
-  const queue = createQueue({
-    clouds, poll: 1e9, log: () => {},
-    run: (job) => prepareCloud({ cloudId: job.cloud_id, clouds, storage: ctx.app.cloudStorage }),
-  })
-  queue.tick()
-  await queue.drain()
-  expect(clouds.get(cloud.id).status).toBe('ready')
+  await ctx.app.runJobs()
+  expect(ctx.db.prepare('SELECT status FROM point_cloud WHERE id = ?').pluck().get(cloud.id)).toBe('ready')
   return cloud
 }
 
-/** The run queue of rail-across-cloudjobs, each run called here instead of in a process of its own. */
-function runQueue() {
-  const runs = createRunStore(ctx.db)
-  const clouds = createCloudStore(ctx.db)
-  return createQueue({
-    clouds, jobs: runQueueJobs(runs), poll: 1e9, log: () => {},
-    run: (r) => executeRun({ runId: r.id, runs, clouds, storage: ctx.app.cloudStorage }),
-  })
-}
+/** A test route of the server, as the admin of the test. */
+const test = async (url, payload = {}) => (await ctx.app.inject({ method: 'POST', url, payload })).json()
+/** A run's row as the server keeps it, or undefined. */
+const runRow = (id) => ctx.db.prepare('SELECT * FROM cloud_run WHERE id = ?').get(id)
 
 describe('long runs on the server (AP 13.7)', () => {
   it('checks the clearance along a track on the project\'s clouds and keeps what it found', async () => {
@@ -115,9 +99,7 @@ describe('long runs on the server (AP 13.7)', () => {
     const { run } = res.json()
     expect(run).toMatchObject({ kind: 'clearance', status: 'queued', clouds: [cloud.id], subject: { trackId: 't1' } })
 
-    const queue = runQueue()
-    queue.tick()
-    await queue.drain()
+    expect(await ctx.app.runJobs('runs')).toBe(1)
     const done = (await ada('GET', `/api/projects/${project.id}/runs/${run.id}`)).json().run
     expect(done).toMatchObject({ status: 'done', progress: 1 })
     expect(done.result.checked).toBe(60)
@@ -139,9 +121,7 @@ describe('long runs on the server (AP 13.7)', () => {
       kind: 'trace', subject: { name: 'Linie' },
       params: { rail: '54E4', guide: { kind: 'line', epsg: 5678, vertices: [[E0 + 0.3, N0 + 1], [E0 + 0.3, N0 + 29]] } },
     })).json()
-    const queue = runQueue()
-    queue.tick()
-    await queue.drain()
+    expect(await ctx.app.runJobs('runs')).toBe(1)
     const done = (await ada('GET', `/api/projects/${project.id}/runs/${run.id}`)).json().run
     expect(done.status, done.error).toBe('done')
     const { points, epsg } = done.result
@@ -171,32 +151,28 @@ describe('long runs on the server (AP 13.7)', () => {
     const { ada, project } = await start()
     await readyCloud(ada, project)
     const { run } = (await ada('POST', `/api/projects/${project.id}/runs`, clearance())).json()
-    const runs = createRunStore(ctx.db)
-    const claimed = runs.claim()
-    expect(claimed.id).toBe(run.id)
+    expect((await test('/api/__test/runs/claim')).run.id).toBe(run.id)
     expect((await ada('DELETE', `/api/projects/${project.id}/runs/${run.id}`)).json().run.status).toBe('cancelled')
-    const result = await executeRun({
-      runId: run.id, runs, clouds: createCloudStore(ctx.db), storage: ctx.app.cloudStorage,
-    })
-    expect(result).toBeNull()
-    expect(runs.get(run.id)).toMatchObject({ status: 'cancelled', result: null })
+    expect(await test(`/api/__test/runs/${run.id}/execute`)).toEqual({ done: false })
+    expect(runRow(run.id)).toMatchObject({ status: 'cancelled', result: null })
     // A finished run is forgotten when deleted.
     expect((await ada('DELETE', `/api/projects/${project.id}/runs/${run.id}`)).statusCode).toBe(204)
-    expect(runs.get(run.id)).toBeNull()
+    expect(runRow(run.id)).toBeUndefined()
   })
 
   it('a run that was running when the service stopped is queued again; old ones are forgotten', async () => {
     const { ada, project } = await start()
     await readyCloud(ada, project)
     const { run } = (await ada('POST', `/api/projects/${project.id}/runs`, clearance())).json()
-    const runs = createRunStore(ctx.db)
-    runs.claim()
-    runQueueJobs(runs).requeue()
-    expect(runs.get(run.id).status).toBe('queued')
-    runs.claim()
-    runs.finish(run.id, 'failed', 'x')
+    await test('/api/__test/runs/claim')
+    await test('/api/__test/requeue')
+    expect(runRow(run.id).status).toBe('queued')
+    // Claimed and failed; forgotten a week after it was started.
+    await test('/api/__test/runs/claim')
+    ctx.db.prepare("UPDATE cloud_run SET status = 'failed', error = 'x' WHERE id = ?").run(run.id)
+    expect(await test('/api/__test/runs/prune')).toEqual({ pruned: 0 })
     ctx.clock.t += 8 * 24 * 3600 * 1000
-    expect(createRunStore(ctx.db, { now: () => ctx.clock.t }).prune()).toBe(1)
+    expect(await test('/api/__test/runs/prune')).toEqual({ pruned: 1 })
   })
 })
 
@@ -235,9 +211,7 @@ describe('re-referencing on the server (AP 13.13–13.15)', () => {
     // 5 m east, the post stands 6 m right of the axis — out of the clearance.
     await ada('POST', `/api/projects/${project.id}/clouds/${cloud.id}/transforms`, { matrix: shift(5), crs: 5678 })
     const { run } = (await ada('POST', `/api/projects/${project.id}/runs`, clearance())).json()
-    const queue = runQueue()
-    queue.tick()
-    await queue.drain()
+    expect(await ctx.app.runJobs('runs')).toBe(1)
     const done = (await ada('GET', `/api/projects/${project.id}/runs/${run.id}`)).json().run
     expect(done.status, done.error).toBe('done')
     expect(done.result.stretches).toEqual([])

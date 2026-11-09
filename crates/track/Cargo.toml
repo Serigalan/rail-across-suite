@@ -1,0 +1,19 @@
+[package]
+name = "rail-across-track"
+description = "The records a project is made of: tracks, stationing and heights, switch records and ports, links, track ends, platforms, routes, splitting and joining"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[lib]
+name = "rail_across_track"
+
+[dependencies]
+serde_json.workspace = true
+regex = "1"
+unicode-normalization = "0.1"
+rail-across-js = { path = "../js" }
+rail-across-geom = { path = "../geom" }
+rail-across-rules = { path = "../rules" }

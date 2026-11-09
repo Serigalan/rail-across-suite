@@ -1,0 +1,19 @@
+[package]
+name = "rail-across-planpro"
+description = "Reading a PlanPro 1.10 plan: its net as the core's tracks and switches, its signalling as the domain"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[lib]
+name = "rail_across_planpro"
+
+[dependencies]
+serde_json.workspace = true
+rail-across-js = { path = "../js" }
+rail-across-geom = { path = "../geom" }
+rail-across-doc = { path = "../doc" }
+rail-across-commands = { path = "../commands" }
+rail-across-signalling = { path = "../signalling" }

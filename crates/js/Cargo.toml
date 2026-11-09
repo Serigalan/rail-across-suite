@@ -1,0 +1,14 @@
+[package]
+name = "rail-across-js"
+description = "JSON values with JavaScript's meaning: its numbers as text, its strings escaped, canonical JSON, its comparisons"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[lib]
+name = "rail_across_js"
+
+[dependencies]
+serde_json.workspace = true

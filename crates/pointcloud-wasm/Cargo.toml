@@ -1,0 +1,17 @@
+[package]
+name = "rail-across-pointcloud-wasm"
+description = "The point cloud import as a WebAssembly module for the browser's worker: the file read and the tiles written through the page"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+serde_json.workspace = true
+rail-across-js = { path = "../js" }
+rail-across-geom = { path = "../geom" }
+rail-across-pointcloud = { path = "../pointcloud" }

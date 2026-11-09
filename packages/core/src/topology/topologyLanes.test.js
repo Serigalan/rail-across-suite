@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { buildTopologyGraph, topologyClusters } from './topologyGraph.js'
-import { layoutClusterLanes } from './topologyLanes.js'
+import { buildTopologyGraph, topologyClusters } from './index.js'
+import { layoutClusterLanes } from './index.js'
 import { newSwitchFields } from '../track/switchModel.js'
 import { endPointStraightUtm } from '../geometry/elementUtils.js'
 import { utmToWgs84 } from '../geometry/coordinateUtils.js'

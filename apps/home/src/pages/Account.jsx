@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { api } from '../api'
 import { useTexts } from '../i18n'
-import SignIn from '../SignIn'
+import SignIn from '../SignInForm'
 
-/** At least as long as the server asks (server/src/auth.js). */
+/** At least as long as the server asks (crates/server/src/auth.rs). */
 const MIN = 12
 
 /**

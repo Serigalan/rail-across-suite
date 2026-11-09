@@ -7,7 +7,7 @@
 #   sudo deploy/setup.sh                     needs /etc/rail-across/rail-across.env (see rail-across.env.example)
 #   sudo deploy/setup.sh --config <file>     another instance on the same machine (RA_INSTANCE)
 #
-# What it does: system packages (Node 22, mdbtools, acl, Caddy),
+# What it does: system packages (Node 22 for the builds, Rust, mdbtools, acl, Caddy),
 # the service user and data directory (with the point clouds' directory), the
 # NTv2 grids for PROJ, the systemd units (rail-across-server,
 # rail-across-cloudjobs, the backup) and the Caddy site, then deploy.sh for the first build, and finally the
@@ -58,9 +58,17 @@ if [ "$(node_major)" -lt 22 ]; then
   apt-get install -y -q nodejs
 fi
 [ "$(node_major)" -ge 22 ] || die "Node.js 22 or newer is needed"
-# The services run the configured RA_NODE (default: the node on the PATH);
-# checked below, once the service user exists.
-export RA_NODE
+
+# The project server and the modules beside the pages are Rust (decisions
+# 0019, 0020): cargo for root, who runs deploy.sh, with the WebAssembly target.
+if [ ! -x "$RA_CARGO" ]; then
+  step "Rust (rustup)"
+  curl -fsSL https://sh.rustup.rs | sh -s -- -y --profile minimal
+  RA_CARGO=$HOME/.cargo/bin/cargo
+fi
+rustup=$(dirname "$RA_CARGO")/rustup
+if [ -x "$rustup" ]; then "$rustup" target add wasm32-unknown-unknown
+else echo "WARNING: no rustup beside $RA_CARGO — the WebAssembly modules need the target wasm32-unknown-unknown" >&2; fi
 
 if [ "$RA_CADDY" = system ] && ! command -v caddy >/dev/null; then
   step "Caddy"
@@ -91,13 +99,9 @@ for d in "${dirs[@]}"; do   # from / inwards: an inner one may be closed only by
     echo "ACL: $RA_USER may pass through $d"
   fi
 done
-if ! as_user test -r "$RA_REPO/server/bin/rail-across-server.mjs"; then
+if ! as_user test -r "$RA_REPO/Cargo.toml"; then
   die "$RA_USER cannot read $RA_REPO — make the checkout readable (chmod -R a+rX)"
 fi
-# A node under root's home (nvm) is closed to the service user: the units
-# would not start. RA_NODE names one it can run.
-major=$(as_user "$RA_NODE" -p 'process.versions.node.split(".")[0]' 2>/dev/null || echo 0)
-[ "$major" -ge 22 ] || die "$RA_USER cannot run Node.js 22 or newer at $RA_NODE — set RA_NODE in $RA_CONFIG"
 
 step "NTv2 grids for PROJ"
 (cd apps/layout-tool && node tools/data.mjs)
@@ -157,11 +161,11 @@ else
 fi
 
 step "First admin"
-count=$(cd server && RA_SERVER_DB="$RA_DB" as_user "$RA_NODE" bin/rail-across-server.mjs user-count)
+count=$(server_cli user-count)
 if [ "$count" = 0 ]; then
   pwfile="$RA_DATA/admin-start-password.txt"
   pw=$(python3 -c 'import secrets; print(secrets.token_urlsafe(15))')
-  (cd server && RA_SERVER_DB="$RA_DB" RA_ADMIN_PASSWORD="$pw" as_user "$RA_NODE" bin/rail-across-server.mjs create-admin "$RA_ADMIN_LOGIN")
+  RA_ADMIN_PASSWORD="$pw" server_cli create-admin "$RA_ADMIN_LOGIN"
   umask 077
   printf 'login: %s\nstart password: %s\n(to be changed at the first sign-in; delete this file afterwards)\n' \
     "$RA_ADMIN_LOGIN" "$pw" > "$pwfile"

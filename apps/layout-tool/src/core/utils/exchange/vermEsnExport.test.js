@@ -12,6 +12,17 @@ import { resolveRoute } from '@rail-across/core/src/track/routes.js'
 import { tangentLength } from '@rail-across/core/src/track/heightUtils.js'
 import { hasPekBestand, loadPekBestand } from '@rail-across/core/test/pekFixture.js'
 import { hydrateProjects } from '@rail-across/core/src/project/persistenceUtils.js'
+import { snapNodeGaps, snapTrackJoints } from '@rail-across/core/geometry'
+
+/**
+ * A record kept while the same place was 1 mm, closed as the project server's
+ * data step closes it (crates/server, data_migrations): every joint and every
+ * meeting of track ends that missed by up to a millimetre made one node.
+ */
+function closeLegacyGaps(record) {
+  const tracks = (record.tracks ?? []).map(track => ({ ...track, elements: snapNodeGaps(track.elements, track.epsg, 1e-3).elements }))
+  return { ...record, tracks: snapTrackJoints(tracks, 1e-3).tracks }
+}
 
 const EPSG = 5684
 const bufferOf = (bytes) => bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength)
@@ -276,8 +287,12 @@ describe.skipIf(!cantFiles.length)('the Verm.ESN test axes with cant ramps (memo
 })
 
 describe.skipIf(!hasPekBestand)('PEK Bestand', () => {
+  // As the server keeps it since decision 0020: its joints under a millimetre
+  // closed (closeLegacyGaps). The file's own gaps of up to 0.9 mm would
+  // otherwise be closed by the import on the way back.
+  const loadClosed = () => closeLegacyGaps(loadPekBestand())
   it('every track reads back to its own chain within a tenth of a millimetre', () => {
-    const { tracks } = loadPekBestand()
+    const { tracks } = loadClosed()
     let worst = 0
     for (const track of tracks.filter(t => t.elements?.length)) {
       const back = readBack(track)
@@ -289,7 +304,7 @@ describe.skipIf(!hasPekBestand)('PEK Bestand', () => {
 
   it('a route over three tracks reads back to its own chain, each run in the route\'s direction', () => {
     // As the app has it: loaded, its arcs' end bearings derived again.
-    const { tracks, switches } = hydrateProjects([loadPekBestand()])[0]
+    const { tracks, switches } = hydrateProjects([loadClosed()])[0]
     // From every track, both ways, the longest run of three that can be had.
     let checked = 0, reversed = 0, worst = 0
     for (const first of tracks.filter(t => t.elements?.length)) {

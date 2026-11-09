@@ -1,7 +1,5 @@
 import { describe, it, expect } from 'vitest'
 import { rebuildCoords } from '@rail-across/core/src/track/trackModel.js'
-import { buildConnectCurved, buildConnectStraight, buildCurvedLineTrack, buildLineTrack, cantAtTrackEnd, trackOf } from '@rail-across/core/src/commands/tracks.js'
-import { buildSwitchOnTrack, switchOnTrackPlacement } from '@rail-across/core/src/commands/switches.js'
 import { arcFrom, straightFrom, transitionElement } from '@rail-across/core/src/geometry/elementFactory.js'
 import { endPointStraightUtm, endPointCurvedUtm } from '@rail-across/core/src/geometry/elementUtils.js'
 import { cantEnds } from '@rail-across/core/src/geometry/clothoidUtils.js'
@@ -13,6 +11,11 @@ import { hasRuleError } from '@rail-across/core/src/rules/trassierungCheck.js'
 import {
   expectValidTrack, expectNodesJoin, expectTangentsContinuous, expectSwitchCantAdmissible, expectSwitchRoutesCarved,
 } from '@rail-across/core/test/chainInvariants.js'
+import { buildConnectCurved, buildConnectStraight, buildCurvedLineTrack, buildLineTrack, buildSwitchOnTrack, cantAtTrackEnd, switchOnTrackPlacement } from '@rail-across/core/commands'
+import { reuseFrom, viaRust } from '@rail-across/core/native'
+
+// Steps of the commands, as the core's module runs them (not part of its face).
+const trackOf = viaRust('commands.trackOf', reuseFrom)
 
 /**
  * The audit of "create element" and "connect element": the chains those forms

@@ -21,7 +21,7 @@ Internet ─▶ Caddy (TLS, Let's Encrypt)
              ├─ /sign-in/    die Anmeldeseite (apps/home)           ┐ statisch, aus dist/ (RA_SITE_DIR);
              ├─ /            die Startseite der Suite (apps/home)   │ ohne Sitzung antwortet an jeder
              ├─ /layout/     das Layout-Tool (apps/layout-tool)     ┘ Adresse die Anmeldeseite
-             └─ /api/*       rail-across-server     Node: Anmeldung, Nutzer, Projekte, Varianten,
+             └─ /api/*       rail-across-server     Rust (crates/server): Anmeldung, Nutzer, Projekte, Varianten,
                                                      Revisionen (core 1.0), Punktwolken, MDB, DGM1; SQLite
 
 rail-across-cloudjobs (ohne Port): bereitet hochgeladene Punktwolken auf und rechnet lange Läufe darauf
@@ -41,7 +41,9 @@ per `forward_auth` beim Projektserver (`/api/me`), ob die Anfrage eine gültige 
 Gerechnet wird im Browser: die Laufzeitsimulation (`sim/`), die Suche der erweiterten Weichenverbindung
 (`crossover/`) und der Optimierer (`optimizer/`: Zusammenfügen, Neu verbinden, Optimieren, Achse aus Punkten)
 sind Rust, als WebAssembly neben die Seiten gelegt ([Entscheidung 0019](../docs/decisions/0019-optimizer-in-rust.md)).
-`deploy.sh` baut sie mit cargo (Ziel `wasm32-unknown-unknown`). Der Projektserver liest für das Layout-Tool die
+`deploy.sh` baut sie mit cargo (Ziel `wasm32-unknown-unknown`), dazu den Projektserver: ein Rust-Programm
+(`crates/server`, [Entscheidung 0020](../docs/decisions/0020-everything-in-rust.md)) für Dienst, Punktwolken-Aufträge und
+Kommandozeile, `target/release/rail-across-server`; Node braucht nur noch der Build. Der Projektserver liest für das Layout-Tool die
 DGM1-Kacheln der Länder (`RA_TERRAIN_CACHE`) und wandelt Access-Dateien mit `mdb-export` um.
 
 ## Neuer Server
@@ -61,7 +63,7 @@ Die NTv2-Gitter sind nicht im Repository: `setup.sh` und `deploy.sh` holen sie m
 Layout-Tools (Version und SHA-256 in `apps/layout-tool/data.json`). Die Km-Linien gibt es nur für Tests und
 den eigenen Betrieb; wer sie hat, legt sie nach `apps/layout-tool/tiles/`.
 
-`setup.sh` installiert Node 22 (NodeSource), `mdbtools` und Caddy, legt den Dienstnutzer
+`setup.sh` installiert Node 22 (NodeSource, für den Build), Rust (rustup, für root), `mdbtools` und Caddy, legt den Dienstnutzer
 `rail-across` und `/var/lib/rail-across` an, kopiert die NTv2-Gitter dorthin, wo PROJ sie findet, baut die Site,
 richtet die systemd-Units und
 die Caddy-Site ein und legt den ersten Admin an. Dessen Startpasswort steht danach in
@@ -114,7 +116,6 @@ Seit 2026-10-30, unter `https://railacross.open-layout-tool.org/`:
 | Ports (an 172.18.0.1) | 8789 (Projektserver) |
 | Daten | `/var/lib/rail-across` |
 | Site im Caddy | `/opt/rail-across-suite/dist` → `/srv/railacross` |
-| Node | `/usr/local/bin/node` (`RA_NODE`: das Node in roots nvm darf der Dienstnutzer nicht lesen) |
 
 Daneben laufen die beiden Instanzen des früheren Layout-Tools aus dem Repository `open-layout-tool`
 (online.open-layout-tool.org, db-ec.open-layout-tool.org; Units `olt-*`, `olt-prod-*`, Ports 8787/8099 und
@@ -144,7 +145,7 @@ Sicherung über `rail-across.sqlite` kopieren (`-wal`/`-shm` daneben löschen, E
 wieder starten.
 
 Admin von Hand anlegen:
-`cd server && RA_SERVER_DB=/var/lib/rail-across/rail-across.sqlite runuser -u rail-across -- node bin/rail-across-server.mjs create-admin <login> [Name]`
+`RA_SERVER_DB=/var/lib/rail-across/rail-across.sqlite runuser -u rail-across -- /opt/rail-across-suite/target/release/rail-across-server create-admin <login> [Name]`
 
 ## Überwachung
 
@@ -161,7 +162,7 @@ Unit `RA_MONITOR_NOTIFY` steht (ein Befehl, der die Befunde auf stdin bekommt).
 Eine hochgeladene Wolke liegt in `clouds/<Projekt>/<Wolke>/`: die Rohdatei, bis sie aufbereitet ist
 (`raw.part`), die Kacheln der fünf Detailstufen (`tiles-L0.bin` … `tiles-L4.bin`) und ihre Indizes. Hochgeladen
 wird in Stücken von 8 MB über `rail-across-server`, aufbereitet von `rail-across-cloudjobs` — höchstens
-`RA_CLOUDJOBS_PARALLEL` Aufträge zugleich, je in einem eigenen Prozess; daneben die langen Läufe (Lichtraum,
+`RA_CLOUDJOBS_PARALLEL` Aufträge zugleich, je in einem eigenen Thread; daneben die langen Läufe (Lichtraum,
 Schienenverfolgung), höchstens `RA_CLOUDRUNS_PARALLEL`. Je Projekt höchstens 25 GB; vor jedem Hochladen prüft
 der Server diese Quote und den freien Platz. Die tägliche Kopie enthält nur die Datenbank; wer Wolken sichern
 will, kopiert `clouds/` gesondert. Was die Detailstufen sind:
@@ -173,7 +174,7 @@ Die Startseite (`apps/home`) und das Layout-Tool (`apps/layout-tool`) leiten mit
 `OLT_API_TARGET` (Standard `http://127.0.0.1:8787`) weiter, wie Caddy im Betrieb. Der Projektserver lokal:
 
 ```bash
-npm ci && cd server && RA_SERVER_INSECURE_COOKIE=1 RA_SERVER_DB=/tmp/rail-across.sqlite node bin/rail-across-server.mjs serve
+RA_SERVER_INSECURE_COOKIE=1 RA_SERVER_DB=/tmp/rail-across.sqlite cargo run --release -p rail-across-server -- serve
 ```
 
 Ohne Caddy davor gibt es keine Sperre: angemeldet wird lokal mit der Anmeldeseite der Startseite

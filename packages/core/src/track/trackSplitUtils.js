@@ -3,7 +3,7 @@ import { nextTrackName, rebuildCoords } from './trackModel.js'
 import {
   computeStraightValuesUtm, computeCurvedValuesUtm, arcCoordsFromRadiusUtm, nodeUtm, utmToWgs84,
   SAGITTA_ELEMENT, SAGITTA_TRACK, computeClothoidUtm, transitionBearingAtUtm, clothoidRadiusAt,
-  transitionCantEnds, withCantRamp,
+  transitionCantEnds, withCantRamp, NODE_TOL,
 } from '../geometry/index.js'
 import { splitHeights } from './heightUtils.js'
 
@@ -166,9 +166,6 @@ function splitClothoid(el, epsg, cut, ramp) {
   }
 }
 
-/** Below this a carved remainder is not an element, it is the cut itself [m]. */
-const CARVE_TOL = 1e-3
-
 /**
  * Give a switch's through route its own elements at the `endpoint` end of a
  * track. A turnout is two routes of fixed length — the through route and the
@@ -206,24 +203,24 @@ export function carveSwitchRoute(track, endpoint, cut, mark, routeLength = null,
     if (accepts && !accepts(el)) return null
     if (el.elementType === 2 && (el.transitionType === 'bloss' || el.r1 === undefined)) return null
     const remaining = routeLength - total
-    if (el.length < remaining - CARVE_TOL) {
+    if (el.length < remaining - NODE_TOL) {
       covered.add(idx)
       total += el.length
       continue
     }
 
-    // The route ends in this element — with it, where that is within CARVE_TOL
+    // The route ends in this element — with it, where that is within NODE_TOL
     // of its far end.
     let replacement
-    if (el.length - remaining <= CARVE_TOL) {
+    if (el.length - remaining <= NODE_TOL) {
       replacement = [{ ...el, ...mark }]
     } else {
       const station = endpoint === 'BEGIN' ? remaining : el.length - remaining
       const ramp = el.elementType === 2 ? transitionCantEnds(els, idx) : null
       const { a, b } = splitElement(el, track.epsg, el.elementType === 2 ? { ...cut, station } : cut, ramp)
       const [route, rest] = endpoint === 'BEGIN' ? [a, b] : [b, a]
-      if (!(route.length > CARVE_TOL)) return null
-      replacement = rest.length <= CARVE_TOL
+      if (!(route.length > NODE_TOL)) return null
+      replacement = rest.length <= NODE_TOL
         ? [{ ...el, ...mark }]
         : endpoint === 'BEGIN' ? [{ ...route, ...mark }, rest] : [rest, { ...route, ...mark }]
     }
@@ -243,10 +240,10 @@ function carveTerminal(track, endpoint, cut, mark) {
 
   const { a, b } = splitElement(el, track.epsg, cut)
   const [route, rest] = endpoint === 'BEGIN' ? [a, b] : [b, a]
-  if (!(route.length > CARVE_TOL)) return null
+  if (!(route.length > NODE_TOL)) return null
 
   // The turnout filling the element exactly needs no cut — it is that element.
-  const halves = rest.length <= CARVE_TOL
+  const halves = rest.length <= NODE_TOL
     ? [{ ...el, ...mark }]
     : endpoint === 'BEGIN' ? [{ ...route, ...mark }, rest] : [rest, { ...route, ...mark }]
 

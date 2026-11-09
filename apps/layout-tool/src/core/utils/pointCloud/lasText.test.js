@@ -1,10 +1,14 @@
 import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
-import { readCloudHeader, readFirstPoints, readLasHeader } from '@rail-across/pointcloud'
+import { readCloudHeader, readFirstPoints } from '@rail-across/pointcloud'
+import { loadPointCloudModuleFile } from '@rail-across/pointcloud/native/node'
 import { pointsAsText, decimalsOf } from './lasText'
 import {
-  E57_FIXTURES, hasLaz, LAZ_PATH, nodeFileSource, nodeLazPerf, bytesSource, makeLas,
+  E57_FIXTURES, hasLaz, LAZ_PATH, nodeFileSource, bytesSource, makeLas,
 } from '@rail-across/pointcloud/test/pointCloudFixture.js'
+
+// The import module reads the file (crates/pointcloud-wasm, built by npm run wasm in packages/pointcloud).
+loadPointCloudModuleFile()
 
 describe('decimalsOf — what the scale resolves', () => {
   it('counts the decimals of a power of ten', () => {
@@ -18,8 +22,8 @@ describe('readFirstPoints and pointsAsText', () => {
   it('reads only the points asked for and prints one per line', async () => {
     const pts = Array.from({ length: 60000 }, (_, i) => ({ x: 4470000 + i * 0.001, y: 5332000.5, z: 530.25, intensity: i }))
     const source = bytesSource(makeLas(pts, { offset: [4470000, 5332000, 500] }))
-    const header = await readLasHeader(source)
-    const points = await readFirstPoints(source, header, 200)
+    const header = readCloudHeader(source)
+    const points = readFirstPoints(source, 200)
     expect(points).toHaveLength(200)
     const text = pointsAsText(header, points, { name: 'probe.las' })
     const lines = text.split('\n')
@@ -33,14 +37,13 @@ describe('readFirstPoints and pointsAsText', () => {
 
   it('takes what there is when the file holds fewer points', async () => {
     const source = bytesSource(makeLas([{ x: 1, y: 2, z: 3 }]))
-    const header = await readLasHeader(source)
-    expect(await readFirstPoints(source, header, 200)).toHaveLength(1)
+    expect(readFirstPoints(source, 200)).toHaveLength(1)
   })
 
   it('labels the header in the language asked for', async () => {
     const source = bytesSource(makeLas([{ x: 1, y: 2, z: 3 }]))
-    const header = await readLasHeader(source)
-    const text = pointsAsText(header, await readFirstPoints(source, header, 5), {
+    const header = readCloudHeader(source)
+    const text = pointsAsText(header, readFirstPoints(source, 5), {
       labels: { first: 'die ersten {n} Punkte', intensity: 'Intensität' },
     })
     expect(text).toContain('# die ersten 1 Punkte:')
@@ -50,10 +53,10 @@ describe('readFirstPoints and pointsAsText', () => {
 
 describe.skipIf(!hasLaz)('readFirstPoints — the LAZ sample', () => {
   it('decodes the first points as the full read does', async () => {
-    const source = await nodeFileSource(LAZ_PATH)
+    const source = nodeFileSource(LAZ_PATH)
     try {
-      const header = await readLasHeader(source)
-      const points = await readFirstPoints(source, header, 200, { lazPerf: await nodeLazPerf() })
+      const header = readCloudHeader(source)
+      const points = readFirstPoints(source, 200)
       expect(points).toHaveLength(200)
       expect(points[0].x).toBeCloseTo(4470683.058286359, 6)
       expect(points[0].y).toBeCloseTo(5332199.762836749, 6)
@@ -61,7 +64,7 @@ describe.skipIf(!hasLaz)('readFirstPoints — the LAZ sample', () => {
       expect(points[0].intensity).toBe(14867)
       expect(pointsAsText(header, points).split('\n')).toContain('4470683.058\t5332199.763\t536.831\t14867')
     } finally {
-      await source.close()
+      source.close()
     }
   })
 })
@@ -73,8 +76,8 @@ describe('pointsAsText of an E57 file', () => {
 
   it('gives the first points for the text view', async () => {
     const source = fixture('scaled_pose.e57')
-    const header = await readCloudHeader(source)
-    const pts = await readFirstPoints(source, header, 5)
+    const header = readCloudHeader(source)
+    const pts = readFirstPoints(source, 5)
     expect(pts).toHaveLength(5)
     expect(pts[0].x).toBeCloseTo(EXPECTED['scaled_pose.e57'].sample[0][1], 6)
     const text = pointsAsText(header, pts, { name: 'scaled_pose.e57' }).split('\n')

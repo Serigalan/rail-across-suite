@@ -7,8 +7,8 @@ The computations that build or change an alignment against the rule catalogue (d
 optimizing a track or one of its curves, the alignment and gradient fit from measured axis points.
 They are Rust — `optimizer/` of the repository, built to WebAssembly by `npm run optimizer` into
 `public/optimizer-module/` — and run in a worker here, off the page's thread, in both builds. The requests are the
-core's (`commands/splice.js` `spliceRequest`, `commands/reconnect.js` `reconnectRequest`,
-`commands/optimizeApply.js` `optimizeRequest`, `survey/alignmentFit.js` `alignRequest`), and so is reading the
+core's (`commands` `spliceRequest`, `reconnectRequest`,
+`optimizeRequest` and `survey` `alignRequest` — in Rust, `crates/commands` and `crates/survey`), and so is reading the
 answers.
 
 The module rechecks nothing of the app's rules on its own account: the worker hands it the catalogue the app

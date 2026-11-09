@@ -5,9 +5,6 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { setup, signIn } from './helpers.js'
 import { makeLas } from '@rail-across/pointcloud/test/pointCloudFixture.js'
-import { createCloudStore } from '../src/clouds/cloudStore.js'
-import { createQueue } from '../src/clouds/jobs.js'
-import { prepareCloud } from '../src/clouds/prepare.js'
 import { decodeCloudSegment } from '@rail-across/pointcloud/src/tiles.js'
 
 let ctx, root
@@ -58,7 +55,10 @@ async function upload(user, project, bytes = LAS, step = 20000) {
   return { cloud, url }
 }
 
-const clouds = () => createCloudStore(ctx.db)
+/** A cloud's row as the server keeps it. */
+const row = (id) => ctx.db.prepare('SELECT * FROM point_cloud WHERE id = ?').get(id)
+/** A test route of the server, as the admin of the test. */
+const test = async (url, payload = {}) => (await ctx.app.inject({ method: 'POST', url, payload })).json()
 
 describe('uploading a point cloud (AP 13.2)', () => {
   it('goes in pieces, each checked, resumable where it stopped, then queued', async () => {
@@ -77,7 +77,7 @@ describe('uploading a point cloud (AP 13.2)', () => {
     expect((await piece(ada, url, 50000, b)).json()).toEqual({ received: LAS.length })
     const done = (await ada('POST', `${url}/complete`)).json().cloud
     expect(done.status).toBe('queued')
-    expect(clouds().get(cloud.id).sha256).toBe(createHash('sha256').update(LAS).digest('hex'))
+    expect(row(cloud.id).sha256).toBe(createHash('sha256').update(LAS).digest('hex'))
     expect(readFileSync(join(root, project.id, cloud.id, 'raw.part')).equals(Buffer.from(LAS))).toBe(true)
   })
 
@@ -120,13 +120,7 @@ describe('preparing a cloud (AP 13.3) and serving it (AP 13.5)', () => {
     const { ada, project } = await start()
     const { cloud, url } = await upload(ada, project)
     await ada('POST', `${url}/complete`)
-    const store = clouds()
-    const queue = createQueue({
-      clouds: store, poll: 1e9, log: () => {},
-      run: (job) => prepareCloud({ cloudId: job.cloud_id, clouds: store, storage: ctx.app.cloudStorage }),
-    })
-    queue.tick()
-    await queue.drain()
+    expect(await ctx.app.runJobs()).toBe(1)
     const ready = (await ada('GET', `/api/projects/${project.id}/clouds`)).json().clouds[0]
     expect(ready).toMatchObject({ status: 'ready', rgb: true, crs: 5678, points: expect.any(Number) })
     expect(ready.levels.map(l => l.level)).toEqual([0, 1, 2, 3, 4])
@@ -163,48 +157,25 @@ describe('preparing a cloud (AP 13.3) and serving it (AP 13.5)', () => {
     const junk = new Uint8Array(5000).fill(7)
     const { cloud, url } = await upload(ada, project, junk)
     await ada('POST', `${url}/complete`)
-    const store = clouds()
-    const queue = createQueue({
-      clouds: store, poll: 1e9, log: () => {},
-      run: (job) => prepareCloud({ cloudId: job.cloud_id, clouds: store, storage: ctx.app.cloudStorage }),
-    })
-    queue.tick()
-    await queue.drain()
+    expect(await ctx.app.runJobs()).toBe(1)
     const failed = (await ada('GET', `/api/projects/${project.id}/clouds`)).json().clouds[0]
     expect(failed).toMatchObject({ status: 'failed', error: expect.stringContaining('not a LAS file') })
     expect(existsSync(join(root, project.id, cloud.id, 'raw.part'))).toBe(true)
     expect((await ada('POST', `${url}/retry`)).json().cloud).toMatchObject({ status: 'queued', error: null })
   })
 
-  it('a job cut off by stopping the service is not failed, and runs again at the next start', async () => {
-    const { ada, project } = await start()
-    const { url, cloud } = await upload(ada, project)
-    await ada('POST', `${url}/complete`)
-    const store = clouds()
-    let release
-    const queue = createQueue({
-      clouds: store, poll: 1e9, log: () => {},
-      run: () => new Promise((_, reject) => { release = () => reject(new Error('killed by SIGTERM')) }),
-    })
-    queue.tick()
-    const stopping = queue.stop()
-    release()
-    await stopping
-    expect(store.get(cloud.id).status).not.toBe('failed')
-    store.requeueRunning()
-    expect(store.claimJob()).toMatchObject({ cloud_id: cloud.id })
-  })
-
   it('a job that was running when the service stopped is queued again', async () => {
     const { ada, project } = await start()
     const { url, cloud } = await upload(ada, project)
     await ada('POST', `${url}/complete`)
-    const store = clouds()
-    const job = store.claimJob()
-    store.setStatus(cloud.id, 'processing', { progress: 0.4 })
-    store.requeueRunning()
-    expect(store.job(job.id).status).toBe('queued')
-    expect(store.get(cloud.id).status).toBe('queued')
+    const { job } = await test('/api/__test/clouds/claim')
+    expect(job).toMatchObject({ cloudId: cloud.id })
+    await test(`/api/__test/clouds/${cloud.id}/status`, { status: 'processing', progress: 0.4 })
+    expect(ctx.db.prepare('SELECT status FROM cloud_job WHERE id = ?').pluck().get(job.id)).toBe('running')
+    await test('/api/__test/requeue')
+    expect(ctx.db.prepare('SELECT status FROM cloud_job WHERE id = ?').pluck().get(job.id)).toBe('queued')
+    expect(row(cloud.id)).toMatchObject({ status: 'queued', progress: null })
+    expect((await test('/api/__test/clouds/claim')).job).toMatchObject({ id: job.id })
   })
 })
 

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import {
   buildTopologyGraph, topologyClusters, selectionHighlight, switchTrackIds, TOPOLOGY_TRACK_COLORS,
-} from './topologyGraph.js'
+} from './index.js'
 import { newBufferStop } from '../track/trackEndMarks.js'
 import { newSwitchFields } from '../track/switchModel.js'
 import { endPointStraightUtm } from '../geometry/elementUtils.js'

@@ -29,23 +29,14 @@ jobs:
           cache: npm
       - run: npm ci --no-audit --no-fund
         working-directory: .
+      # The core's Rust crates as its WebAssembly module (decision 0020): the
+      # tests run on it where a function has moved, and hold it to the JavaScript.
+      - run: rustup target add wasm32-unknown-unknown
+      - run: npm run wasm
       - run: node tools/modules.mjs
       - run: node tools/vectors.mjs --check
       - run: node tools/types.mjs --check
       - run: npm test
-
-  # The Rail-Data-Core for Python, held to the vectors the JavaScript core writes.
-  core-py:
-    runs-on: ubuntu-24.04
-    defaults:
-      run:
-        working-directory: packages/core-py
-    steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-python@v6
-        with:
-          python-version: '3.12'
-      - run: python -m unittest discover -s tests
 
   # Point clouds, shared by the Open-Layout-Tool and the project server.
   pointcloud:
@@ -61,6 +52,12 @@ jobs:
           cache: npm
       - run: npm ci --no-audit --no-fund
         working-directory: .
+      # The core's Rust module (decision 0020), which the core's functions run on.
+      - run: rustup target add wasm32-unknown-unknown && node packages/core/scripts/wasm.mjs
+        working-directory: .
+      # The import as a WebAssembly module (crates/pointcloud-wasm), which the tests run.
+      - run: rustup target add wasm32-unknown-unknown
+      - run: npm run wasm
       - run: npm test
 
   # The suite's look as a library, shared by the start page and the modules.
@@ -93,6 +90,9 @@ jobs:
           cache: npm
       - run: npm ci --no-audit --no-fund
         working-directory: .
+      # The core's Rust module (decision 0020), which the core's functions run on.
+      - run: rustup target add wasm32-unknown-unknown && node packages/core/scripts/wasm.mjs
+        working-directory: .
       - run: npm test
 
   # The running times — the way over the net, the stations along it, the
@@ -110,7 +110,8 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - run: rustup target add wasm32-unknown-unknown
       - run: cargo build --release -p rail-across-sim-wasm --target wasm32-unknown-unknown
-        working-directory: sim
+      # The core's Rust module (decision 0020), which the core's functions run on.
+      - run: node packages/core/scripts/wasm.mjs
       - run: npm test
         working-directory: packages/running-times
       - run: npm test
@@ -129,6 +130,9 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci --no-audit --no-fund
+        working-directory: .
+      # The core's Rust module (decision 0020), which the core's functions run on.
+      - run: rustup target add wasm32-unknown-unknown && node packages/core/scripts/wasm.mjs
         working-directory: .
       - run: npm test
 
@@ -162,47 +166,67 @@ jobs:
           cache: npm
       - run: npm ci --no-audit --no-fund
         working-directory: .
+      # The core's Rust module (decision 0020), which the core's functions run on.
+      - run: rustup target add wasm32-unknown-unknown && node packages/core/scripts/wasm.mjs
+        working-directory: .
       - run: npm run lint
       - run: npm test
       - run: npm run build
 
-  # OSRD's simulation core in Rust: OSRD's own cases, clippy, the format.
-  sim:
+  # All of the suite's Rust, one cargo workspace (decision 0020): the
+  # simulation core with OSRD's cases, the crossover search, the optimizer with
+  # the shared rule vectors, the core's crates with the vectors the JavaScript
+  # core records; clippy and the format; the core's WebAssembly module.
+  rust:
     runs-on: ubuntu-24.04
-    defaults:
-      run:
-        working-directory: sim
     steps:
       - uses: actions/checkout@v5
-      - run: cargo fmt --check
-      - run: cargo clippy --all-targets -- -D warnings
-      - run: cargo test
-
-  # The extended switch connection's search in Rust (decision 0018): its
-  # cases, clippy, the format.
-  crossover:
-    runs-on: ubuntu-24.04
-    defaults:
-      run:
-        working-directory: crossover
-    steps:
-      - uses: actions/checkout@v5
+      - run: rustup target add wasm32-unknown-unknown
       - run: cargo fmt --check
       - run: cargo clippy --all-targets -- -D warnings
       - run: cargo test --release
+      - run: cargo build --release -p rail-across-core-wasm --target wasm32-unknown-unknown
 
-  # The track optimizer in Rust (decision 0019): the shared rule vectors, the
-  # cases the Python service was held to, clippy, the format.
-  optimizer-rs:
+  # The project server's tests (server/test) against it (crates/server,
+  # decision 0020) over HTTP, its command line and its jobs.
+  project-server:
     runs-on: ubuntu-24.04
     defaults:
       run:
-        working-directory: optimizer
+        working-directory: server
     steps:
       - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+        working-directory: .
+      # The core's Rust module (decision 0020), which the core's functions run on.
+      - run: rustup target add wasm32-unknown-unknown && node packages/core/scripts/wasm.mjs
+        working-directory: .
+      - run: cargo build --release -p rail-across-server
+        working-directory: .
+      - run: npx vitest run
+
+  # The desktop app (decision 0020, step 9): Tauri with the project server in
+  # its own process, a cargo workspace of its own for WebKitGTK; its smoke
+  # check under Xvfb loads a page through the app's URI scheme and asks the API.
+  desktop:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: crates/desktop
+    steps:
+      - uses: actions/checkout@v5
+      - run: sudo apt-get update && sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev libsoup-3.0-dev librsvg2-dev xvfb mdbtools
       - run: cargo fmt --check
-      - run: cargo clippy --all-targets -- -D warnings
-      - run: cargo test --release
+      - run: cargo clippy -- -D warnings
+      - run: node scripts/stage-mdbtools.mjs
+      - run: cargo build
+      - run: |
+          mkdir -p "$RUNNER_TEMP/site" && echo '<!doctype html><title>Smoke</title>' > "$RUNNER_TEMP/site/index.html"
+          RA_DESKTOP_SITE="$RUNNER_TEMP/site" RA_DESKTOP_DATA="$RUNNER_TEMP/data" xvfb-run -a target/debug/rail-across-desktop --smoke
 
   # The Simulation-Tool's old address, which leads on to the Fahrplan-Editor.
   simulation-tool:
@@ -236,6 +260,9 @@ jobs:
           cache: npm
       - run: npm ci --no-audit --no-fund
         working-directory: .
+      # The core's Rust module (decision 0020), which the core's functions run on.
+      - run: rustup target add wasm32-unknown-unknown && node packages/core/scripts/wasm.mjs
+        working-directory: .
       - run: npm run lint
       - run: npm test
       - run: npm run build
@@ -254,6 +281,9 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci --no-audit --no-fund
+        working-directory: .
+      # The core's Rust module (decision 0020), which the core's functions run on.
+      - run: rustup target add wasm32-unknown-unknown && node packages/core/scripts/wasm.mjs
         working-directory: .
       - run: rustup target add wasm32-unknown-unknown
       - run: npm run sim
@@ -275,11 +305,14 @@ jobs:
           cache: npm
       - run: npm ci --no-audit --no-fund
         working-directory: .
+      # The core's Rust module (decision 0020), which the core's functions run on.
+      - run: rustup target add wasm32-unknown-unknown && node packages/core/scripts/wasm.mjs
+        working-directory: .
       - run: npm run lint
       - run: npm test
       - run: npm run build
 
-  # The Open-Layout-Tool with the project server, whose tests its vitest runs.
+  # The Open-Layout-Tool, with the project server for its merge tests.
   layout-tool:
     runs-on: ubuntu-24.04
     defaults:
@@ -294,6 +327,9 @@ jobs:
       # One install for the whole workspace: apps, packages and the server.
       - run: npm ci --no-audit --no-fund
         working-directory: .
+      # The core's Rust module (decision 0020), which the core's functions run on.
+      - run: rustup target add wasm32-unknown-unknown && node packages/core/scripts/wasm.mjs
+        working-directory: .
       - run: node tools/data.mjs
       - run: npm run lint
       - run: npm run knip
@@ -306,6 +342,9 @@ jobs:
       - run: rustup target add wasm32-unknown-unknown
       - run: npm run crossover
       - run: npm run optimizer
+      - run: npm run pointcloud
+      # The project server, for the tests that work against it (variantMerge).
+      - run: cargo build --release -p rail-across-server
       - run: npm test
       - run: npx vite build --outDir /tmp/olt-dist
       - run: npx vite build --mode standalone --outDir /tmp/olt-dist-local

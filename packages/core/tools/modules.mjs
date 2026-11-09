@@ -9,7 +9,7 @@
 //   3. The core imports nothing outside the package but its dependencies
 //      (package.json) and Node's own modules; tests may use vitest.
 //   4. Every module has its page in docs/.
-//   5. A relative import names its file ('.js', '/index.js'), and JSON comes in
+//   5. A relative import names its file ('.js', '/index.js', a module's '.wasm'), and JSON comes in
 //      with `with { type: 'json' }` — so plain Node loads the core as it is,
 //      without a bundler or a module hook.
 //
@@ -78,7 +78,7 @@ export function checkModules() {
       const dep = resolveRelative(path, spec)
       // Rule 5: the file by its name (a directory named by URL is not an import).
       const isDir = existsSync(dep) && statSync(dep).isDirectory()
-      if (!isDir && !/\.(js|mjs|json)$/.test(spec)) breaches.push(`${where} imports '${spec}' — name the file`)
+      if (!isDir && !/\.(js|mjs|json|wasm)$/.test(spec)) breaches.push(`${where} imports '${spec}' — name the file`)
       // Rule 3: nothing outside the package.
       if (relative(ROOT, dep).startsWith('..')) {
         breaches.push(`${where} imports ${relative(ROOT, dep)} — outside the core`)

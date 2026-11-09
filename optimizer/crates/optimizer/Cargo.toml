@@ -11,5 +11,7 @@ rust-version.workspace = true
 name = "rail_across_optimizer"
 
 [dependencies]
+rail-across-geom = { path = "../../../crates/geom" }
+rail-across-rules = { path = "../../../crates/rules" }
 serde.workspace = true
 serde_json.workspace = true

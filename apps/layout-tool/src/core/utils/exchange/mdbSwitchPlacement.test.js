@@ -119,8 +119,10 @@ describe('placeMdbSwitches', () => {
     const worst = (tracks) => Math.max(0, ...tracks.flatMap(t => t.elements.slice(0, -1)
       .map((el, i) => Math.abs(((resolveEndBearing(el, t.epsg) - t.elements[i + 1].bearing + 540) % 360) - 180))))
     // Not identical — parting an element recomputes both halves, which can
-    // shave a fraction off. The claim is that nothing gets worse.
-    expect(worst(placed.tracks)).toBeLessThanOrEqual(worst(built.tracks) + 1e-9)
+    // shave a fraction off, and the branch is closed onto the toe (importSnap),
+    // which turns its first element by up to 10⁻⁵°. The claim is that nothing
+    // gets worse beyond that.
+    expect(worst(placed.tracks)).toBeLessThanOrEqual(worst(built.tracks) + 1e-4)
   })
 
   it('carves the routes the way the model checks them', () => {

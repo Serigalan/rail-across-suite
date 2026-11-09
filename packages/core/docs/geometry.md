@@ -213,7 +213,7 @@ source data's own kinks. Measured over 4 954 joints from DHDN GK4 into DB_REF GK
 
 ### Chain invariants
 
-`chainChecks.js` states what every chain must hold: consecutive nodes within 1 mm (`JOINT_TOL`), tangents
+`chainChecks.js` states what every chain must hold: consecutive nodes within 1 µm (`NODE_TOL`, `tolerances.js`), tangents
 continuous within 10⁻⁶° (`BEARING_TOL`), stated lengths true (a straight to 0.5 µm against its chord, an arc
 to 0.5 mm against its arc length, a transition at least its chord), and no element in another plane than
 its track. The test helper `packages/core/test/chainInvariants.js` asserts them on every construction, and the

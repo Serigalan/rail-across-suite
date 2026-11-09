@@ -1,12 +1,16 @@
 import { describe, it, expect } from 'vitest'
-import {
-  AXIS_SPACING, axisPoints, buildReconnect, reconnectFromAnswer, reconnectPick, reconnectRange, reconnectRequest,
-  replacedSpan, stationMap, stretchDefaults,
-} from './reconnect.js'
+import { axisPoints, buildReconnect, reconnectFromAnswer, reconnectPick, reconnectRange, reconnectRequest, replacedSpan, stretchDefaults } from './index.js'
+import { viaRust } from '../native/index.js'
 import { reconstructElements } from '../geometry/elementReconstruct.js'
 import { rebuildCoords } from '../track/trackModel.js'
 import { expectValidTrack } from '../../test/chainInvariants.js'
 import fixture from '../../test/fixtures/reconnect_answers.json' with { type: 'json' }
+
+// Steps of the commands, as the module runs them (not part of the face).
+const stationAt = viaRust('commands.stationMap')
+const stationMap = (from, oldTo, newTo) => (s) => stationAt(from, oldTo, newTo, s)
+/** The spacing of the old axis's points [m]. */
+const AXIS_SPACING = 0.01
 
 // The search is the optimizer module's (optimizer/…/reconnect.rs); what is tested
 // here is the app's half — the stretch, the old axis, the request and the
@@ -155,8 +159,11 @@ describe('the track written back', () => {
 
   it('re-stations the gradient: in the stretch in proportion, behind it by the difference', () => {
     const { r, read } = answerOf('curve', track)
-    const { track: out, map } = buildReconnect({ track, range: r, solution: read.solutions[0], speed: 100 })
+    const { track: out } = buildReconnect({ track, range: r, solution: read.solutions[0], speed: 100 })
     const oldLen = lengthOf(track.elements), newLen = lengthOf(out.elements)
+    // The old stations on the new track: the stretch from the departure's element to the arrival's stretched.
+    const s0 = lengthOf(track.elements.slice(0, r.dep.idx)), kept = lengthOf(track.elements.slice(r.arr.idx + 1))
+    const map = stationMap(s0, oldLen - s0 - kept, newLen - s0 - kept)
     expect(out.heights.map(p => p.z)).toEqual([100, 103, 101])
     expect(out.heights[0].station).toBe(0)
     expect(out.heights[2].station).toBeCloseTo(920 + newLen - oldLen, 9)

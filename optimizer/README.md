@@ -35,7 +35,7 @@ run builds to the rules the element table shows.
 ## Tests
 
 ```bash
-cargo test            # in optimizer/
+cargo test -p rail-across-optimizer   # anywhere in the workspace (Cargo.toml at the root)
 ```
 
 - `tests/vectors.rs` — the shared vectors of `packages/core/constraints/tests/`: the expression language, the

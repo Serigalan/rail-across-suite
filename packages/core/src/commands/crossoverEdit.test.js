@@ -1,10 +1,12 @@
 import { describe, it, expect } from 'vitest'
-import { editCommit, editStart, switchConnectionOf, takeApart } from './crossoverEdit.js'
-import { buildSCurve, connectionPick, settleConnection, solveConnection } from './sCurve.js'
-import { buildLineTrack } from './tracks.js'
+import { buildLineTrack, buildSCurve, connectionPick, editCommit, editStart, settleConnection, switchConnectionOf, takeApart } from './index.js'
+import { viaRust } from '../native/index.js'
 import { planSwitchDeletion, SWITCH_TYPES } from '../switch/index.js'
 import { remapSwitches } from '../track/index.js'
 import { expectNodesJoin, expectSwitchRoutesCarved } from '../../test/chainInvariants.js'
+
+// Steps of the commands, as the module runs them (not part of the face).
+const solveConnection = viaRust('commands.solveConnection')
 
 const EPSG = 25832
 const P = (e, n) => ({ easting: e, northing: n, zone: EPSG })

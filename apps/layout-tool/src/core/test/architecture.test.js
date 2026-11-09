@@ -46,9 +46,10 @@ describe('architecture', () => {
   it('imports a module through its index, and the modules need each other without a cycle and no interface', () => {
     expect(checkModules().breaches).toEqual([])
   })
+  // It reads every document and every file they name: under a loaded machine longer than vitest's 5 s.
   it('documents nothing the repository does not have (docs/)', () => {
     expect(checkDocs()).toEqual([])
-  })
+  }, 30000)
 
   // Paket L, decision 277: two layers, one direction.
   describe('core and server (Paket L)', () => {

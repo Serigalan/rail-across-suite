@@ -1,55 +1,16 @@
-import { contentHash, derivedId } from './canonical.js'
-import { PayloadError } from './payloadError.js'
+import { derivedId } from './canonical.js'
 
-// The record the Layout-Tool works on, and the core 1.0 document it is
-// kept as — both ways, nothing lost.
-//
-// The record is oltjson-1.1 (apps/layout-tool/docs/data-format.md): one
-// object with the project's fields and its collections. The document holds
-// the same in the shape of the data model (docs/data-model.md): the domains
-// `core` and `layout`, each with its fields and its collections; locations as
-// one value each (`at`, R5); the planning status as a lifespan over the
-// construction stages (R12); station names and codes as an operational point
-// register (R10); named runs of tracks as `trackPaths` (TrackPath); the bulk
-// point arrays as blobs named by their hash (S-R2). Turning a record into a
-// document is the first step of the migration chain (oltjson-1.1 → core 1.0).
-//
-// Until the app holds the stages itself, the document's are drawn from the
-// record: two stages (existing, final) with ids drawn from the project's id.
-// Which is why a document with other stages is refused here
-// (`stages_unsupported`). The register is drawn from the record too — one
-// operational point per station the tracks and platforms name, its id drawn
-// from the name —, and holds besides what the record keeps of it itself
-// (`operationalPoints`): a station the Signalling-Tool created that nothing
-// names yet, its codes, the id it keeps when it is renamed.
-//
-// The domains of the other tools the record carries as they are, untouched:
-// `signalling` ({ fields, collections }, decision 0011) — the Layout-Tool does
-// not edit it, but must not lose it when it writes the project back (data
-// model, F1). In a merge it is one field of the project.
-//
-// Where the two forms say the same thing in two ways, the document says it in
-// one: an explicit status `existing` is no lifespan, an empty station text no
-// station, `null` in a field of a track, switch, platform or end mark an
-// absent field (in an element, `null` keeps its meaning: a straight end).
+// What of the record and its core 1.0 document the page still works out
+// itself: the construction stages a project has without its own, and the
+// operational point register its tracks' and platforms' station texts make
+// (R10) — which point each object names, by the object itself. Turning a
+// record into a document and back is the door's (crates/doc; decision 0020,
+// step 10 took that JavaScript out).
 
 /** The domains this build reads and writes, with their versions. */
 export const DOMAIN_VERSIONS = { core: '1.0', layout: '1.0', signalling: '1.0' }
 
-/** The fields of the record and the domain each goes to. */
-const CORE_FIELDS = ['id', 'title', 'description', 'creator', 'createdAt', 'crsSystem', 'lineCategory', 'gaugeProfile']
-const LAYOUT_FIELDS = ['planHeader', 'image', 'imageHash', 'osrd']
-/** The domains a record carries whole, each as { fields, collections }. */
-const CARRIED = ['signalling']
-const COLLECTIONS = ['tracks', 'switches', 'platforms', 'endMarks', 'routes', 'kmLines', 'axisSurveys', 'referenceAxes', 'operationalPoints']
-/** Collections a record always has, empty or not; the others only where they hold something. */
-const ALWAYS = new Set(['tracks', 'switches', 'platforms'])
-
-const byId = (a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)
-
-const pick = (obj, keys) => Object.fromEntries(keys.filter(k => obj[k] != null).map(k => [k, obj[k]]))
-
-/** `obj` without its members that are null or undefined. */
+/** An object without its null members. */
 const withoutNull = (obj) => Object.fromEntries(Object.entries(obj).filter(([, v]) => v != null))
 
 /** A text, or nothing where it is empty. */
@@ -62,20 +23,6 @@ export const defaultStages = (projectId) => [
   { id: derivedId(`${projectId}\u0000stage\u0000existing`) },
   { id: derivedId(`${projectId}\u0000stage\u0000final`) },
 ]
-
-function lifespanOf(status, final) {
-  if (status === 'new') return { from: final }
-  if (status === 'removal') return { to: final }
-  return undefined
-}
-
-function statusOf(lifespan, final) {
-  if (!lifespan) return undefined
-  const keys = Object.keys(lifespan)
-  if (keys.length === 1 && lifespan.from === final) return 'new'
-  if (keys.length === 1 && lifespan.to === final) return 'removal'
-  throw new PayloadError('stages_unsupported')
-}
 
 // ── Operational points ──────────────────────────────────────────────────────
 
@@ -143,204 +90,4 @@ export function operationalRegister(projectId, tracks, platforms, stored = []) {
   // A point kept under a name that the names make anew is the one they make.
   const unique = new Map([...points.values()].map(p => [p.id, p]))
   return { points: [...unique.values()], pointOf: (obj) => of.get(obj) }
-}
-
-/**
- * What the record keeps of the register: the points of `points` that its
- * tracks and platforms do not make by themselves — with another id, other
- * codes, or named by nothing —, and those the signalling names (`named`), so
- * a station keeps the id its signals and boundaries name when the tracks
- * are named anew.
- */
-function keptPoints(projectId, tracks, platforms, points, named) {
-  const same = (a, b) => b && ['name', 'rl100', 'uic'].every(k => (a[k] ?? null) === (b[k] ?? null))
-  const madeWith = (kept) => new Map(operationalRegister(projectId, tracks, platforms, kept).points.map(p => [p.id, p]))
-  const made = madeWith([])
-  let kept = points.filter(p => named.has(p.id) || !same(p, made.get(p.id)))
-  // One the names make once the others are kept — a code of its own beside a kept point — is not kept either.
-  for (const p of kept.filter(k => !named.has(k.id))) {
-    const others = kept.filter(k => k !== p)
-    if (same(p, madeWith(others).get(p.id))) kept = others
-  }
-  return kept.map(p => withoutNull({ id: p.id, name: p.name, rl100: p.rl100, uic: p.uic }))
-}
-
-// ── The design speed ────────────────────────────────────────────────────────
-
-// An element's design speed is `designSpeed` in the document, as the data
-// format names it beside the signalling speeds; the record the layout tool
-// works on keeps it as `speed`, the name its code and its files have used.
-function designSpeedOut(el) {
-  if (!Object.hasOwn(el, 'speed')) return el
-  const { speed, ...rest } = el
-  return { ...rest, designSpeed: speed }
-}
-function designSpeedIn(el) {
-  if (!Object.hasOwn(el, 'designSpeed')) return el
-  const { designSpeed, ...rest } = el
-  return { ...rest, speed: designSpeed }
-}
-
-/**
- * A carried domain's value as JSON writes it: a member that is `undefined` is
- * no member — an editor that clears a field leaves it so, and a file would
- * never hold it.
- */
-function asWritten(value) {
-  if (Array.isArray(value)) return value.map(v => (v === undefined ? null : asWritten(v)))
-  if (value === null || typeof value !== 'object') return value
-  return Object.fromEntries(Object.entries(value).filter(([, v]) => v !== undefined).map(([k, v]) => [k, asWritten(v)]))
-}
-
-// ── Record → document ───────────────────────────────────────────────────────
-
-/**
- * The core 1.0 document of a record (dehydrated, as persistenceUtils keeps
- * it): { format, domains: { core, layout }, blobs }, every collection sorted by
- * id. `schemaHashes` names the schema of each domain ({ core, layout }); the
- * door adds the schemas themselves where a file should carry them.
- *
- * Throws a PayloadError ('invalid_payload') for a field the format does not
- * have — a record is turned into a document whole or not at all.
- */
-export function recordToDocument(record, schemaHashes) {
-  const known = new Set([...CORE_FIELDS, ...LAYOUT_FIELDS, ...COLLECTIONS, ...CARRIED])
-  const unknown = Object.keys(record ?? {}).filter(k => !known.has(k) && record[k] !== undefined)
-  if (!record || typeof record !== 'object' || record.id == null) throw new PayloadError('invalid_payload', ['/: lacks id'])
-  if (unknown.length) throw new PayloadError('invalid_payload', unknown.map(k => `/${k}: is not a field of the record`))
-
-  const stages = defaultStages(record.id)
-  const final = stages[1].id
-  const tracks = record.tracks ?? []
-  const platforms = record.platforms ?? []
-  const register = operationalRegister(record.id, tracks, platforms, record.operationalPoints ?? [])
-  const blobs = {}
-  const blob = (value) => {
-    const hash = contentHash(value)
-    blobs[hash] = value
-    return hash
-  }
-  const located = (obj, extra) => withoutNull({
-    ...extra,
-    operationalPoint: register.pointOf(obj),
-    lifespan: lifespanOf(obj.status, final),
-  })
-
-  const core = {
-    version: DOMAIN_VERSIONS.core,
-    schema: schemaHashes.core,
-    fields: { ...pick(record, CORE_FIELDS), stages },
-    collections: {
-      tracks: tracks.map((t) => {
-        const { status: _s, stationName: _n, uicStation: _u, ...rest } = t
-        if (rest.elements) rest.elements = rest.elements.map(designSpeedOut)
-        return located(t, withoutNull(rest))
-      }),
-      switches: (record.switches ?? []).map(({ switchId, status, ...sw }) => withoutNull({
-        id: switchId, ...sw, lifespan: lifespanOf(status, final),
-      })),
-      platforms: platforms.map((p) => {
-        const { trackId, startStation, endStation, side, status: _s, stationName: _n, code: _c, ...rest } = p
-        return located(p, {
-          at: withoutNull({ anchor: 'station', trackId, startStation, endStation, side }),
-          ...withoutNull(rest),
-        })
-      }),
-      endMarks: (record.endMarks ?? []).map((m) => {
-        const { trackId, endpoint, status: _s, ...rest } = m
-        return located(m, { ...withoutNull(rest), at: withoutNull({ trackId, endpoint }) })
-      }),
-      kmLines: [...(record.kmLines ?? [])],
-      operationalPoints: register.points,
-    },
-  }
-  const layout = {
-    version: DOMAIN_VERSIONS.layout,
-    schema: schemaHashes.layout,
-    dependsOn: ['core'],
-    fields: pick(record, LAYOUT_FIELDS),
-    collections: {
-      trackPaths: (record.routes ?? []).map(({ trackIds, ...r }) => withoutNull({ ...r, path: { trackIds: trackIds ?? [] } })),
-      axisSurveys: (record.axisSurveys ?? []).map(s => ({ ...s, points: blob(s.points) })),
-      referenceAxes: (record.referenceAxes ?? []).map(a => ({ ...a, points: blob(a.points) })),
-    },
-  }
-  const carried = Object.fromEntries(CARRIED.filter(name => record[name] != null).map(name => [name, {
-    version: DOMAIN_VERSIONS[name],
-    schema: schemaHashes[name],
-    dependsOn: ['core'],
-    fields: asWritten(record[name].fields ?? {}),
-    collections: asWritten(record[name].collections ?? {}),
-  }]))
-  for (const domain of [core, layout, ...Object.values(carried)]) {
-    for (const name of Object.keys(domain.collections)) domain.collections[name] = [...domain.collections[name]].sort(byId)
-  }
-  return { format: 'rail-across', domains: { core, layout, ...carried }, blobs }
-}
-
-// ── Document → record ───────────────────────────────────────────────────────
-
-/**
- * The record a core 1.0 document holds — the inverse of recordToDocument. The
- * document has been through the door (shape, schemas and blob hashes
- * checked); what is checked here is what this build can hold: two stages
- * only, every station a point of the register, every blob an object names
- * there.
- */
-export function documentToRecord(doc) {
-  const core = doc.domains.core
-  const layout = doc.domains.layout ?? { fields: {}, collections: {} }
-  const stages = core.fields.stages
-  if (stages.length !== 2) throw new PayloadError('stages_unsupported')
-  const final = stages[1].id
-  const points = new Map((core.collections.operationalPoints ?? []).map(p => [p.id, p]))
-  const pointOf = (obj) => {
-    if (obj.operationalPoint == null) return {}
-    const p = points.get(obj.operationalPoint)
-    if (!p) throw new PayloadError('invalid_payload', [`/operationalPoints: lacks ${obj.operationalPoint}`])
-    return p
-  }
-  const blob = (hash) => {
-    if (!Object.hasOwn(doc.blobs ?? {}, hash)) throw new PayloadError('invalid_payload', [`/blobs: lacks ${hash}`])
-    return doc.blobs[hash]
-  }
-  const status = (obj) => statusOf(obj.lifespan, final)
-
-  const c = core.collections
-  const l = layout.collections ?? {}
-  const collections = {
-    tracks: (c.tracks ?? []).map(({ lifespan: _l, operationalPoint: _o, ...t }, i, all) => {
-      const p = pointOf(all[i])
-      if (t.elements) t.elements = t.elements.map(designSpeedIn)
-      return withoutNull({ ...t, stationName: p.name, uicStation: p.uic, status: status(all[i]) })
-    }),
-    switches: (c.switches ?? []).map(({ id, lifespan: _l, ...sw }, i, all) => withoutNull({
-      switchId: id, ...sw, status: status(all[i]),
-    })),
-    platforms: (c.platforms ?? []).map(({ at, lifespan: _l, operationalPoint: _o, ...rest }, i, all) => {
-      const p = pointOf(all[i])
-      const { anchor: _a, ...loc } = at
-      return withoutNull({ ...rest, ...loc, stationName: p.name, code: p.rl100, status: status(all[i]) })
-    }),
-    endMarks: (c.endMarks ?? []).map(({ at, lifespan: _l, ...rest }, i, all) => withoutNull({
-      ...rest, ...at, status: status(all[i]),
-    })),
-    routes: (l.trackPaths ?? []).map(({ path, ...r }) => ({ ...r, trackIds: path.trackIds })),
-    kmLines: c.kmLines ?? [],
-    axisSurveys: (l.axisSurveys ?? []).map(s => ({ ...s, points: blob(s.points) })),
-    referenceAxes: (l.referenceAxes ?? []).map(a => ({ ...a, points: blob(a.points) })),
-  }
-  const sc = doc.domains.signalling?.collections ?? {}
-  const named = new Set([...(sc.signals ?? []), ...(sc.stationBoundaries ?? [])].map(o => o.operationalPointId).filter(Boolean))
-  collections.operationalPoints = keptPoints(core.fields.id, collections.tracks, collections.platforms, c.operationalPoints ?? [], named)
-  const { stages: _st, ...coreFields } = core.fields
-  const record = { ...coreFields, ...(layout.fields ?? {}) }
-  for (const name of COLLECTIONS) {
-    if (ALWAYS.has(name) || collections[name].length) record[name] = collections[name]
-  }
-  for (const name of CARRIED) {
-    const domain = doc.domains[name]
-    if (domain) record[name] = { fields: domain.fields, collections: domain.collections }
-  }
-  return record
 }

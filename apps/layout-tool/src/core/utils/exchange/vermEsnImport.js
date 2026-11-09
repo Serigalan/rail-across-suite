@@ -4,6 +4,7 @@ import { gradientStretch } from './proviImport'
 import { arcFrom, straightFrom, transitionElement } from '@rail-across/core/geometry'
 import { axisLine, END_TOL, endMismatch, gradientOnTrack } from './vermEsnKmGradient'
 import { withFileCants } from './fileCants'
+import { snapImportedChain, snapImportedLastEnd } from './importSnap'
 
 const RECORD_SIZE = 78
 const GRA_RECORD_SIZE = 36   // the header is one record long, too
@@ -143,7 +144,10 @@ export function buildElements(records, epsg) {
     }
   }
 
-  return { elements: withFileCants(elements, cants), errors, startStation, stations }
+  // Closed within the file's quantisation, the last element at the closing point (importSnap).
+  const close = lastValidIdx >= 0 ? [records[lastValidIdx].easting, records[lastValidIdx].northing] : null
+  const closed = snapImportedLastEnd(snapImportedChain(elements, crs), crs, close)
+  return { elements: withFileCants(closed, cants), errors, startStation, stations }
 }
 
 // ── Gradient (.GRA) ─────────────────────────────────────────────────────────

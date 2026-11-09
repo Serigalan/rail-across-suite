@@ -1,6 +1,9 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { as, PW, setup, signIn } from './helpers.js'
-import { BRAKE_ATTEMPTS, SESSION_IDLE } from '../src/auth.js'
+
+// The server's (crates/server/src/auth.rs): wrong sign-ins before the brake, and how long a session lasts unused.
+const BRAKE_ATTEMPTS = 5
+const SESSION_IDLE = 30 * 24 * 3600 * 1000
 
 let ctx
 afterEach(async () => { await ctx?.app.close(); ctx?.db.close() })
@@ -50,12 +53,12 @@ describe('signing in', () => {
     const tryIt = (login) => ctx.app.inject({ method: 'POST', url: '/api/login', payload: { login, password: 'wrong password!' } })
     await tryIt('max')
     for (let i = 0; i < BRAKE_ATTEMPTS; i++) await tryIt('ada')
-    expect(ctx.app.auth.failureCount()).toBe(2)
-    ctx.app.auth.sweep()
-    expect(ctx.app.auth.failureCount()).toBe(2)
+    expect(await ctx.app.auth.failureCount()).toBe(2)
+    await ctx.app.auth.sweep()
+    expect(await ctx.app.auth.failureCount()).toBe(2)
     ctx.clock.t += 61 * 1000
-    ctx.app.auth.sweep()
-    expect(ctx.app.auth.failureCount()).toBe(0)
+    await ctx.app.auth.sweep()
+    expect(await ctx.app.auth.failureCount()).toBe(0)
   })
 
   it('believes X-Forwarded-For only from the proxy (R8.3)', async () => {

@@ -1,8 +1,9 @@
 import { expect } from 'vitest'
 import { wgs84ToUTM } from '../src/geometry/coordinateUtils.js'
 import {
-  JOINT_TOL, BEARING_TOL, epsgMismatches, nodeGaps, tangentBreaks, untrueLengths,
+  BEARING_TOL, epsgMismatches, nodeGaps, tangentBreaks, untrueLengths,
 } from '../src/geometry/chainChecks.js'
+import { NODE_TOL } from '../src/geometry/tolerances.js'
 import { SAGITTA_ELEMENT } from '../src/geometry/geometryPrecision.js'
 import { cantExceptionOf, cantLimit, worstCantOf } from '../src/rules/cant.js'
 import { switchParts } from '../src/switch/switchDelete.js'
@@ -16,7 +17,7 @@ import { switchParts } from '../src/switch/switchDelete.js'
 
 
 /** Every element ends where the next begins. */
-export function expectNodesJoin(elements, tol = JOINT_TOL) {
+export function expectNodesJoin(elements, tol = NODE_TOL) {
   for (const { index, gap } of nodeGaps(elements, tol)) {
     expect(gap, `element ${index} endNode to element ${index + 1} startNode`).toBeLessThan(tol)
   }
@@ -39,7 +40,7 @@ export function expectTangentsContinuous(elements, epsg, tol = BEARING_TOL) {
  * transition's is its design length, which its nodes do not state, so it is
  * checked by the chord it cannot be shorter than.
  */
-export function expectLengthsTrue(elements, tol = JOINT_TOL) {
+export function expectLengthsTrue(elements, tol = NODE_TOL) {
   for (const { index, length, expected } of untrueLengths(elements, tol)) {
     const el = elements[index]
     if (el.radius != null) expect(length, `arc length of element ${index}`).toBeCloseTo(expected, 3)
@@ -138,10 +139,12 @@ export function expectRenderCoordsConsistent(elements, epsg) {
     // two runs of the same integrator at two step counts, which puts their far
     // ends a micron apart. The reload snaps both onto the stored end node
     // (reconstructElements), so that micron never reaches the stored geometry.
+    // Display polylines, through WGS 84 and back: compared to a millimetre, not
+    // to NODE_TOL, which is for the stored nodes.
     expect(apart(coarsePlane[0], finePlane[0]),
-      `element ${i} polylines start together`).toBeLessThan(JOINT_TOL)
+      `element ${i} polylines start together`).toBeLessThan(1e-3)
     expect(apart(coarsePlane[coarsePlane.length - 1], finePlane[finePlane.length - 1]),
-      `element ${i} polylines end together`).toBeLessThan(JOINT_TOL)
+      `element ${i} polylines end together`).toBeLessThan(1e-3)
 
     // Every vertex of the coarse polyline sits on the fine one. Both are sampled
     // from the same exact curve, so the gap is the fine polyline's own sagitta —
@@ -156,11 +159,11 @@ export function expectRenderCoordsConsistent(elements, epsg) {
 }
 
 /** The whole checklist for a track the forms produced. */
-export function expectValidTrack(track) {
+export function expectValidTrack(track, { bearingTol = BEARING_TOL } = {}) {
   const elements = track.elements ?? []
   expectEpsgThroughout(track)
   expectNodesJoin(elements)
-  expectTangentsContinuous(elements, track.epsg)
+  expectTangentsContinuous(elements, track.epsg, bearingTol)
   expectLengthsTrue(elements)
   expectRenderCoordsConsistent(elements, track.epsg)
   expectSwitchCantAdmissible(elements)

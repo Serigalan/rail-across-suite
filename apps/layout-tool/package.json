@@ -26,6 +26,8 @@
     "data": "node tools/data.mjs",
     "crossover": "node tools/crossover.mjs",
     "optimizer": "node tools/optimizer.mjs",
+    "pointcloud": "node ../../packages/pointcloud/scripts/wasm.mjs",
+    "core": "node ../../packages/core/scripts/wasm.mjs public/core-module",
     "i18n:unused": "node tools/i18n-unused.mjs"
   },
   "dependencies": {
@@ -36,7 +38,6 @@
     "@rail-across/working-copy": "*",
     "fflate": "^0.8.3",
     "jspdf": "^4.2.1",
-    "laz-perf": "^0.0.7",
     "maplibre-gl": "^5.21.0",
     "pmtiles": "^4.5.0",
     "proj4": "^2.20.4",

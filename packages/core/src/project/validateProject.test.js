@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { hasPek, loadPek } from '../../test/pekFixture.js'
-import { newFindings, overlappingTracks, validateProject } from './validateProject.js'
+import { newFindings, validateProject } from './index.js'
+import { viaRust } from '../native/index.js'
+
+// The check's own step, as the module runs it (not part of the face).
+const overlappingTracks = viaRust('project.overlappingTracks')
 
 // A straight along +x in a metric plane: n elements of `len` metres each.
 function straightTrack(id, { x = 0, y = 0, n = 2, len = 50, epsg = 25832 } = {}) {

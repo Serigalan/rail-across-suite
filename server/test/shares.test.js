@@ -5,9 +5,6 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { as, setup, signIn } from './helpers.js'
 import { makeLas } from '@rail-across/pointcloud/test/pointCloudFixture.js'
-import { createCloudStore } from '../src/clouds/cloudStore.js'
-import { createQueue } from '../src/clouds/jobs.js'
-import { prepareCloud } from '../src/clouds/prepare.js'
 
 let ctx, root
 afterEach(async () => {
@@ -48,13 +45,7 @@ async function start(n = 2) {
     await max('POST', `/api/projects/${project.id}/clouds/${cloud.id}/complete`)
     ids.push(cloud.id)
   }
-  const store = createCloudStore(ctx.db)
-  const queue = createQueue({
-    clouds: store, poll: 1e9, log: () => {},
-    run: (job) => prepareCloud({ cloudId: job.cloud_id, clouds: store, storage: ctx.app.cloudStorage }),
-  })
-  queue.tick()
-  await queue.drain()
+  await ctx.app.runJobs()
   return { max, ada, project, variantId, ids, anon: as(ctx.app, null) }
 }
 

@@ -6,7 +6,8 @@ import { LANGUAGES, useTexts } from './i18n'
  * The bar across the top: the suite's mark on the left, the language and the
  * user's menu on the right — the password, for admins the users of the suite,
  * signing out. The account is the suite's: signed in here, signed in in every
- * module.
+ * module. In the local package there is no account: no menu, only the note
+ * that it is the local one.
  */
 export default function Header({ user, onLanguage, onSignOut }) {
   const { t, language } = useTexts()
@@ -46,7 +47,7 @@ export default function Header({ user, onLanguage, onSignOut }) {
             </div>
           )}
         </div>
-        {user && (
+        {user && !user.local && (
           <div className="ui-menu">
             {/* The user's menu behind their symbol; the name is its label. */}
             <button type="button" className="ui-btn ui-btn-icon" aria-haspopup="menu" aria-expanded={menu === 'user'}
@@ -62,6 +63,11 @@ export default function Header({ user, onLanguage, onSignOut }) {
               </div>
             )}
           </div>
+        )}
+        {user?.local && (
+          <span className="home-local" title={t('local_package')}>
+            <UserIcon /> {user.name} · {t('local_package_short')}
+          </span>
         )}
       </div>
     </header>

@@ -48,6 +48,25 @@ The Layout-Tool's search of the extended switch connection (`crossover/`, built 
 [NLopt](https://github.com/stevengj/nlopt) (S. G. Johnson), from Dieter Kraft's ACM Algorithm 733, which the ACM
 released under the BSD licence — the code scipy uses.
 
+## Libraries built into the point cloud crate
+
+`crates/pointcloud` (the server's point clouds, decision 0020 step 7) is built with the Rust crates
+[laz](https://crates.io/crates/laz) 0.9 (laz-rs, a port of LASzip, © Thomas Montaigu, under Apache-2.0),
+[flate2](https://crates.io/crates/flate2) 1.1 and its backend
+[miniz_oxide](https://crates.io/crates/miniz_oxide) 0.9 (both under MIT or Apache-2.0, miniz_oxide also Zlib).
+
+## Libraries built into the project server
+
+`crates/server` (decision 0020 step 8) is built with, among others, [axum](https://crates.io/crates/axum),
+[tokio](https://crates.io/crates/tokio), [tokio-util](https://crates.io/crates/tokio-util) (MIT),
+[rusqlite](https://crates.io/crates/rusqlite) (MIT) with SQLite itself built in (public domain),
+[argon2](https://crates.io/crates/argon2), [sha2](https://crates.io/crates/sha2),
+[rand](https://crates.io/crates/rand), [tiff](https://crates.io/crates/tiff),
+[zip](https://crates.io/crates/zip), [image-webp](https://crates.io/crates/image-webp),
+[ureq](https://crates.io/crates/ureq), [crc32fast](https://crates.io/crates/crc32fast) and
+[libc](https://crates.io/crates/libc) — each under MIT or Apache-2.0 (or both); `cargo tree -p
+rail-across-server` lists the rest.
+
 ## Used, not included
 
 | Software | Used for | Licence |

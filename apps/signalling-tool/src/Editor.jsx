@@ -4,7 +4,7 @@ import {
   RedoIcon, Shell, Tabs, TextField, UndoIcon, WorkingCopyBar, Workspace,
 } from '@rail-across/ui'
 import { checkSignalling, trackSectionExtents } from '@rail-across/core/signalling'
-import { carryDomain, mergeProject } from '@rail-across/core/merge'
+import { carryDomainOnto, mergeProject } from '@rail-across/core/merge'
 import { projectDocument } from '@rail-across/core/project'
 import { localChangeCount } from '@rail-across/working-copy'
 import { useTexts } from './i18n.js'
@@ -330,13 +330,7 @@ export default function Editor({ project, variant, head, copy: opened, readOnly 
 
   /** Mine laid on the merged net: every location carried by where it stands onto its tracks. */
   const takeMine = ({ next }) => {
-    const before = new Map((record.tracks ?? []).map(tr => [tr.id, tr]))
-    const now = next.project.tracks ?? []
-    const present = new Set(now.map(tr => tr.id))
-    const { domain: carried } = carryDomain(signallingOf(committed), {
-      present, changed: (id) => before.has(id) && (!present.has(id) || now.find(tr => tr.id === id) !== before.get(id)),
-      oldTrack: (id) => before.get(id) ?? null, candidates: () => now, tracks: now, switches: next.project.switches ?? [],
-    })
+    const { domain: carried } = carryDomainOnto(signallingOf(committed), record.tracks ?? [], next.project)
     adopt(next, withSignalling(domainOf(next.project), carried))
     setDialog(null)
   }

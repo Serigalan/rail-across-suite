@@ -1,4 +1,5 @@
 import { resolveEndBearing } from './elementUtils.js'
+import { NODE_TOL } from './tolerances.js'
 
 /**
  * The invariants an element chain has to hold, as plain checks: each returns
@@ -7,16 +8,13 @@ import { resolveEndBearing } from './elementUtils.js'
  * them for a whole project.
  */
 
-/** Two nodes are the same node below this [m]. */
-export const JOINT_TOL = 0.001
-
 /** Two tangents are the same tangent below this [°]. */
 export const BEARING_TOL = 1e-6
 
 const bearingDelta = (a, b) => Math.abs(((a - b + 540) % 360) - 180)
 
 /** Where an element does not end where the next begins: [{ index, gap }]. */
-export function nodeGaps(elements, tol = JOINT_TOL) {
+export function nodeGaps(elements, tol = NODE_TOL) {
   const out = []
   for (let i = 0; i < (elements?.length ?? 0) - 1; i++) {
     const e = elements[i].endNode, s = elements[i + 1].startNode
@@ -44,7 +42,7 @@ export function tangentBreaks(elements, epsg, tol = BEARING_TOL) {
  * only checked against the chord it cannot be shorter than.
  * [{ index, length, expected }] — `expected` the chord for a transition.
  */
-export function untrueLengths(elements, tol = JOINT_TOL) {
+export function untrueLengths(elements, tol = NODE_TOL) {
   const out = []
   ;(elements ?? []).forEach((el, i) => {
     if (!Array.isArray(el.startNode) || !Array.isArray(el.endNode)) return

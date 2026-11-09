@@ -9,7 +9,7 @@ import { runWith } from '../utils/optimizer/optimizerRun'
 // the catalogue handed over with every request.
 
 const MODULE = fileURLToPath(new URL(
-  '../../../../../optimizer/target/wasm32-unknown-unknown/release/rail_across_optimizer_wasm.wasm', import.meta.url))
+  '../../../../../target/wasm32-unknown-unknown/release/rail_across_optimizer_wasm.wasm', import.meta.url))
 
 export const built = existsSync(MODULE)
 

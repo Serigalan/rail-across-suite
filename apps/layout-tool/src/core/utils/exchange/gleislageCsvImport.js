@@ -1,5 +1,6 @@
 import { resolveEndBearing, transformPlanePoint, gkZone, arcFrom, straightFrom, transitionElement } from '@rail-across/core/geometry'
 import { withFileCants } from './fileCants'
+import { snapImportedChain, snapImportedLastEnd } from './importSnap'
 
 const GON2DEG = 0.9
 
@@ -374,10 +375,10 @@ export function buildTracksFromCsv(rows, strecke, cantRows = null, opts = {}) {
   let cantMatched = 0
   let derivedBearings = 0
   chains.forEach((chain, ci) => {
-    const elements = []
+    const built = []
     chain.forEach((rec, i) => {
       const [e, n] = transformPlanePoint(rec.start[0], rec.start[1], sourceEpsg, crs)
-      const prev = elements[elements.length - 1]
+      const prev = built[built.length - 1]
       // No start bearing in the file: carry on from where the predecessor ends
       // (see statesBearing). The first element of a chain has nothing to carry
       // on from, so it keeps what the file said and is reported.
@@ -397,8 +398,13 @@ export function buildTracksFromCsv(rows, strecke, cantRows = null, opts = {}) {
             + `Anschluss-Abweichung ${(gap * 1000).toFixed(1)} mm`)
         }
       }
-      elements.push(el)
+      built.push(el)
     })
+    // Within the source's quantisation the joints are closed, and the last
+    // element ends at the end point the file states where it has one (importSnap).
+    const endAt = chain[chain.length - 1]?.endAt
+    const elements = snapImportedLastEnd(snapImportedChain(built, crs), crs,
+      endAt ? transformPlanePoint(endAt[0], endAt[1], sourceEpsg, crs) : null)
     if (elements.length) {
       if (cantByAddress.size) {
         cantMatched += applyCants(chain, elements, cantByAddress, errors,

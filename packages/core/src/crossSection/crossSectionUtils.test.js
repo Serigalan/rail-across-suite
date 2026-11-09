@@ -5,9 +5,9 @@ import {
   cantAngle, cantPivot, rotatePoint, rotatePointsAbout, fitSection, sectionAtStation, crossSection,
   platformSection, placeSection, sectionNeighbours, sectionLinePoints, PLANUM_EDGE,
   terrainHeightAt, sectionLevels, ASSUMED_RAIL_OVER_TERRAIN,
-} from './crossSectionUtils.js'
+} from './index.js'
 import { wgs84ToUTM } from '../geometry/coordinateUtils.js'
-import { GAUGE_PROFILES, DEFAULT_GAUGE_PROFILE, gaugeProfileRing } from './gaugeProfiles.js'
+import { GAUGE_PROFILES, DEFAULT_GAUGE_PROFILE, gaugeProfileRing } from './index.js'
 
 describe('the frame the section is drawn in', () => {
   it('states the two track figures in millimetres, not metres', () => {

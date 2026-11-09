@@ -306,7 +306,8 @@ pub fn rotate_point([y, z]: [f64; 2], angle: f64) -> [f64; 2] {
     [y * c - z * s, y * s + z * c]
 }
 
-fn rotate_points_about(points: &[[f64; 2]], angle: f64, [py, pz]: [f64; 2]) -> Vec<[f64; 2]> {
+/// Points turned by `angle` about `[py, pz]` (`rotatePointsAbout`).
+pub fn rotate_points_about(points: &[[f64; 2]], angle: f64, [py, pz]: [f64; 2]) -> Vec<[f64; 2]> {
     points
         .iter()
         .map(|&[y, z]| {

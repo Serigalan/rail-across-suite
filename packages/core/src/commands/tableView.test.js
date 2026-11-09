@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { planElementChange } from './index.js'
 import { viaRust } from '../native/index.js'
 import { straightFrom, arcFrom } from '../geometry/elementFactory.js'
-import { inRun, rowOf, tableParts, tableRoles, tableRows, trackEdit, writeRows } from './tableView.js'
+import { inRun, rowOf, tableParts, tableRoles, tableRows, trackEdit, writeRows } from './index.js'
 import { expectValidTrack } from '../../test/chainInvariants.js'
 
 // Steps of the commands, as the module runs them (not part of the face).

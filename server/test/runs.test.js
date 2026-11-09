@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { setup, signIn } from './helpers.js'
 import { makeLas } from '@rail-across/pointcloud/test/pointCloudFixture.js'
-import { gaugeProfile, gaugeProfileRing, gaugeProfileAreas } from '@rail-across/core/src/crossSection/gaugeProfiles.js'
+import { gaugeProfile, gaugeProfileRing, gaugeProfileAreas } from '@rail-across/core/crossSection'
 
 let ctx, root
 afterEach(async () => {

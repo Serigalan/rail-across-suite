@@ -6,7 +6,7 @@ import { join, resolve } from 'node:path'
 import { gunzipSync, gzipSync } from 'node:zlib'
 import Database from 'better-sqlite3'
 import { makeLas } from '@rail-across/pointcloud/test/pointCloudFixture.js'
-import { gaugeProfile, gaugeProfileAreas, gaugeProfileRing } from '@rail-across/core/src/crossSection/gaugeProfiles.js'
+import { gaugeProfile, gaugeProfileAreas, gaugeProfileRing } from '@rail-across/core/crossSection'
 import { PW, rustServer, SERVER_BIN, signIn } from './helpers.js'
 
 // What of the server is not its API: the schema and its migrations, the data

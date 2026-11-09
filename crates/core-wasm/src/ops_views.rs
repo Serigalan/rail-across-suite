@@ -37,6 +37,10 @@ pub fn run(op: &str, input: &Value) -> Option<Result<Value, Failure>> {
         "crossSection.superstructureAt" => ok(cs::superstructure_at(a.v(0), a.f(1))),
         "crossSection.cantAngle" => ok(number(cs::cant_angle(a.of(0).unwrap_or(0.0)))),
         "crossSection.cantPivot" => ok(cs::pts(&[cs::cant_pivot(a.of(0).unwrap_or(0.0))])[0].clone()),
+        "crossSection.rotatePointsAbout" => {
+            let pivot = cs::read_pts(&json!([a.v(2)]))[0];
+            ok(cs::pts(&cs::rotate_points_about(&cs::read_pts(a.v(0)), a.f(1), pivot)))
+        }
         "crossSection.rotatePoint" => {
             let p = cs::read_pts(&json!([a.v(0)]))[0];
             ok(cs::pts(&[cs::rotate_point(p, a.f(1))])[0].clone())

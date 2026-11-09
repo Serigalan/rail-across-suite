@@ -16,13 +16,43 @@
 // imports from here and nowhere else (tools/modules.mjs). See docs/commands.md.
 
 import { answeredBy, callNative, heldProject, reuseFrom, reuseTracks, viaRust } from '../native/index.js'
+import { flipSwitchEndpoints, reverseTrack } from '../track/index.js'
 
 /** A command on the module, what it passed through untouched given back as it was. */
 const command = (op) => viaRust(`commands.${op}`, reuseFrom)
 
 export { connectRemedies } from './connectRemedies.js'
-export { rolesFor, withRole } from './elementRoles.js'
-export { inRun, rowOf, tableParts, tableRoles, tableRows, trackEdit, writeRows } from './tableView.js'
+
+// The element table (Entscheidung 375): its rows over a route or a track, the
+// roles the elements may take, an edit of a row written back — the core's
+// module (decision 0021, phase D).
+export const elementRoles = command('elementRoles')
+export const intermediateSpan = command('intermediateSpan')
+export const rolesFor = command('rolesFor')
+export const withRole = command('withRole')
+export const rowOf = command('rowOf')
+export const tableParts = command('tableParts')
+export const tableRoles = command('tableRoles')
+export const tableRows = command('tableRows')
+export const trackEdit = command('trackEdit')
+export const writeRows = command('writeRows')
+
+/**
+ * An edit of a row's track done in the view's direction: `edit(tracks,
+ * switches, index)` on the tracks as the view runs them — the row's track
+ * turned round where the view runs it backwards, and turned back after.
+ */
+export function inRun(row, tracks, switches, edit) {
+  const track = tracks.find(t => t.id === row.trackId)
+  if (!track) return null
+  const count = track.elements?.length ?? 0
+  const index = row.reversed ? count - 1 - row.index : row.index
+  if (!row.reversed) return edit(tracks, switches, index)
+  const turned = tracks.map(t => (t.id === row.trackId ? reverseTrack(t) : t))
+  const out = edit(turned, flipSwitchEndpoints(switches, row.trackId), index)
+  if (!out?.tracks) return out
+  return { ...out, tracks: out.tracks.map(t => (t.id === row.trackId ? reverseTrack(t) : t)) }
+}
 
 /** The keys of the texts the S-curve's refusals are told by, by their reason. */
 export const REASON_MSG = {

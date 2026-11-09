@@ -11,8 +11,8 @@
 // the module's own business. See docs/document.md.
 
 export { canonicalJson, contentHash, derivedId } from './canonical.js'
-export { DOMAIN_VERSIONS, defaultStages } from './coreFormat.js'
-export { renamedStation, stationRegister } from './stations.js'
+export { DOMAIN_VERSIONS } from './coreFormat.js'
+export { defaultStages, renamedStation, stationRegister } from './stations.js'
 export { documentHash, manifestOf } from './manifest.js'
 export {
   checkDocument, FORMAT, FORMAT_NAME, FORMAT_VERSION, fromDocument, SCHEMA_HASHES, schemaOf, toDocument,

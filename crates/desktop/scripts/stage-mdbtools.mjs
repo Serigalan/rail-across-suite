@@ -36,5 +36,10 @@ if (process.platform === 'linux') {
   libs = execFileSync('otool', ['-L', tool], { encoding: 'utf8' }).split('\n').slice(1)
     .map(l => l.trim().split(' ')[0]).filter(p => p && !p.startsWith('/usr/lib/') && !p.startsWith('/System/') && existsSync(p))
 }
-for (const lib of libs) copyFileSync(lib, join(OUT, 'lib', basename(lib)))
+// Writable copies: Homebrew installs its libraries read-only, and Tauri's build
+// copies the resources over the ones of the build before.
+for (const lib of libs) {
+  copyFileSync(lib, join(OUT, 'lib', basename(lib)))
+  chmodSync(join(OUT, 'lib', basename(lib)), 0o644)
+}
 console.log(`mdb-export staged in ${OUT} with ${libs.length} libraries: ${libs.map(l => basename(l)).join(', ')}`)

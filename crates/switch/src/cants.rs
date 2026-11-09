@@ -196,19 +196,28 @@ fn laid_onto(from: &Oriented, to: &Oriented, host: &Oriented) -> Option<Value> {
 
 fn couple_pass(before: &[Value], tracks: &[Value], switches: &[Value], only: &HashSet<String>) -> (Vec<Value>, HashSet<String>) {
     let was: HashMap<String, &Value> = before.iter().map(|t| (js_string(t.get("id")), t)).collect();
-    let mut by_id: HashMap<String, Value> = tracks.iter().map(|t| (js_string(t.get("id")), t.clone())).collect();
-    let order: Vec<String> = tracks.iter().map(|t| js_string(t.get("id"))).collect();
+    // What the pass wrote, over the tracks as they are: a track is copied only where it is read.
+    let original: HashMap<String, &Value> = tracks.iter().map(|t| (js_string(t.get("id")), t)).collect();
+    let mut written: HashMap<String, Value> = HashMap::new();
     let mut changed: HashSet<String> = HashSet::new();
+    // The runs of the routes: a pass changes cants only, never which elements a route has.
+    let mut all_runs = route_runs(tracks);
     for sw in switches {
         let sid = js_string(sw.get("switchId"));
         if !only.contains(&sid) || !is_turnout(sw) {
             continue;
         }
-        let current: Vec<Value> = order.iter().filter_map(|id| by_id.get(id).cloned()).collect();
-        let Some(runs) = route_runs(&current).remove(&sid) else { continue };
+        let Some(runs) = all_runs.remove(&sid) else { continue };
         let (Some(rm), Some(rb)) = (runs.main.clone(), runs.branch.clone()) else {
             continue;
         };
+        let read = |id: &str, written: &HashMap<String, Value>| written.get(id).cloned().or_else(|| original.get(id).map(|t| (*t).clone()));
+        let mut by_id: HashMap<String, Value> = HashMap::new();
+        for id in [&rm.track_id, &rb.track_id] {
+            if let Some(t) = read(id, &written) {
+                by_id.insert(id.clone(), t);
+            }
+        }
         let Some(toe) = toe_of(&by_id, &runs) else { continue };
         let main = oriented(&by_id[&rm.track_id], &rm, toe);
         let branch = oriented(&by_id[&rb.track_id], &rb, toe);
@@ -216,7 +225,7 @@ fn couple_pass(before: &[Value], tracks: &[Value], switches: &[Value], only: &Ha
             continue;
         }
         let approach_id = port_track(sw, "A").map(|v| js_string(Some(v)));
-        let approach = approach_id.as_ref().and_then(|id| by_id.get(id)).cloned();
+        let approach = approach_id.as_ref().and_then(|id| read(id, &written));
         let end = if port_end(sw, "A") == Some("BEGIN") { "BEGIN" } else { "END" };
         let frame = if end == "END" { 1.0 } else { -1.0 };
         let toe_cant = |track: &Value| -> Option<f64> {
@@ -233,9 +242,9 @@ fn couple_pass(before: &[Value], tracks: &[Value], switches: &[Value], only: &Ha
         });
         let main_led = cant_changed(was.get(&rm.track_id).copied(), &main.track, &rm);
         let branch_led = cant_changed(was.get(&rb.track_id).copied(), &branch.track, &rb);
-        let mut set = |by_id: &mut HashMap<String, Value>, track: Value| {
+        let mut set = |written: &mut HashMap<String, Value>, track: Value| {
             let id = js_string(track.get("id"));
-            by_id.insert(id.clone(), track);
+            written.insert(id.clone(), track);
             changed.insert(id);
         };
         if !main_led && !branch_led {
@@ -249,22 +258,22 @@ fn couple_pass(before: &[Value], tracks: &[Value], switches: &[Value], only: &Ha
             }
             let mut t = main.track.clone();
             t["elements"] = Value::Array(with_cant_at_end(els(&main.track), if main.reversed { "END" } else { "BEGIN" }, main.sign * v));
-            set(&mut by_id, t);
+            set(&mut written, t);
             continue;
         }
         let (lead, follow) = if branch_led && !main_led { (&branch, &main) } else { (&main, &branch) };
         let host = if truthy(sw.get("swapped")) { &branch } else { &main };
         if let Some(next) = laid_onto(lead, follow, host) {
-            set(&mut by_id, next);
+            set(&mut written, next);
         }
         if own_approach {
             let app = approach.expect("approach");
-            let app_now = by_id.get(&js_string(app.get("id"))).cloned().unwrap_or(app);
+            let app_now = written.get(&js_string(app.get("id"))).cloned().unwrap_or(app);
             let v = cant_at(lead, 0.0);
             if (toe_cant(&app_now).unwrap_or(f64::NAN) - v).abs() > SAME_CANT {
                 let mut t = app_now.clone();
                 t["elements"] = Value::Array(with_cant_at_end(els(&app_now), end, frame * v));
-                set(&mut by_id, t);
+                set(&mut written, t);
             }
         }
     }
@@ -273,7 +282,7 @@ fn couple_pass(before: &[Value], tracks: &[Value], switches: &[Value], only: &Ha
     } else {
         tracks
             .iter()
-            .map(|t| by_id.get(&js_string(t.get("id"))).cloned().unwrap_or_else(|| t.clone()))
+            .map(|t| written.get(&js_string(t.get("id"))).cloned().unwrap_or_else(|| t.clone()))
             .collect()
     };
     (out, changed)
@@ -281,16 +290,18 @@ fn couple_pass(before: &[Value], tracks: &[Value], switches: &[Value], only: &Ha
 
 /// The tracks with every turnout's two routes' cant coupled (`coupleSwitchCants`).
 pub fn couple_switch_cants(before: &[Value], after: &[Value], switches: &[Value]) -> Vec<Value> {
+    couple_switch_cants_from(before, after, switches, None)
+}
+
+/// `couple_switch_cants` where the caller knows which tracks the write changed
+/// (`changed`, by id — the page by the objects it holds): those, rather than
+/// every track compared with what it was.
+pub fn couple_switch_cants_from(before: &[Value], after: &[Value], switches: &[Value], changed: Option<&HashSet<String>>) -> Vec<Value> {
     if after.is_empty() || switches.is_empty() {
         return after.to_vec();
     }
-    let touched = |tracks: &[Value], prev: &HashMap<String, &Value>| -> HashSet<String> {
-        let ids: HashSet<String> = tracks
-            .iter()
-            .filter(|t| prev.get(&js_string(t.get("id"))).is_none_or(|p| *p != *t))
-            .map(|t| js_string(t.get("id")))
-            .collect();
-        let runs = route_runs(tracks);
+    let runs = route_runs(after);
+    let touched = |ids: &HashSet<String>| -> HashSet<String> {
         switches
             .iter()
             .filter(|sw| {
@@ -301,19 +312,37 @@ pub fn couple_switch_cants(before: &[Value], after: &[Value], switches: &[Value]
             .map(|sw| js_string(sw.get("switchId")))
             .collect()
     };
-    let was: HashMap<String, &Value> = before.iter().map(|t| (js_string(t.get("id")), t)).collect();
-    let mut only = touched(after, &was);
-    let mut prev_tracks: Vec<Value> = before.to_vec();
-    let mut tracks: Vec<Value> = after.to_vec();
-    let mut n = 0;
+    let first: HashSet<String> = match changed {
+        Some(ids) => ids.clone(),
+        None => {
+            let was: HashMap<String, &Value> = before.iter().map(|t| (js_string(t.get("id")), t)).collect();
+            after
+                .iter()
+                .filter(|t| was.get(&js_string(t.get("id"))).is_none_or(|p| *p != *t))
+                .map(|t| js_string(t.get("id")))
+                .collect()
+        }
+    };
+    let mut only = touched(&first);
+    if only.is_empty() {
+        return after.to_vec();
+    }
+    // The first pass on the tracks as given; each after on the last pass's, from what it changed.
+    let (next, changed) = couple_pass(before, after, switches, &only);
+    if changed.is_empty() {
+        return next;
+    }
+    let mut prev_tracks: Vec<Value> = after.to_vec();
+    let mut tracks = next;
+    only = touched(&changed);
+    let mut n = 1;
     while n < MAX_PASSES && !only.is_empty() {
         let (next, changed) = couple_pass(&prev_tracks, &tracks, switches, &only);
         if changed.is_empty() {
             break;
         }
         prev_tracks = tracks;
-        let prev: HashMap<String, &Value> = prev_tracks.iter().map(|t| (js_string(t.get("id")), t)).collect();
-        only = touched(&next, &prev);
+        only = touched(&changed);
         tracks = next;
         n += 1;
     }

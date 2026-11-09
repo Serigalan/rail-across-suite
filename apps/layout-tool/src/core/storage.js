@@ -255,8 +255,11 @@ export function openStoredProject({ project, meta = {}, key = project.id, save =
   _redoStack = []
   _lastStep = null
   // Every turnout's WA and ldS a point to pick (decision 390) — on the gradient, nothing moves —,
-  // and its toe one height (decision 393).
-  setProject(withToesJoined(withAllLdsPoints(withPrunedMarks(hydrateProjects([structuredClone(project)])[0]))))
+  // and its toe one height (decision 393). The core's module holds the project as it is loaded, so
+  // what these ask of it is lent rather than carried across.
+  const loaded = deepFreeze(hydrateProjects([structuredClone(project)])[0])
+  holdProject(loaded)
+  setProject(withToesJoined(withAllLdsPoints(withPrunedMarks(loaded))))
   return _project
 }
 

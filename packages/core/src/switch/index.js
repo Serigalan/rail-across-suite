@@ -12,7 +12,7 @@
 // imports from here and nowhere else (tools/modules.mjs). What is not listed is
 // the module's own business. See docs/modules/switch.md.
 
-import { reuseFrom as reuseArgs, viaRust } from '../native/index.js'
+import { reuseFrom as reuseArgs, reuseTracks, viaRust } from '../native/index.js'
 import { switchTypeByLabel } from './constants.js'
 
 export {
@@ -82,7 +82,6 @@ export const computeSwitchConnections = viaRust('switch.computeSwitchConnections
 export const computeSwitchGeometryUtm = viaRust('switch.computeSwitchGeometryUtm', reuseFrom)
 export const connectionAnchor = viaRust('switch.connectionAnchor', reuseFrom)
 export const connectionPartners = viaRust('switch.connectionPartners', reuseFrom)
-export const coupleSwitchCants = viaRust('switch.coupleSwitchCants', reuseFrom)
 export const couplingOf = withForms(viaRust('switch.couplingOf', reuseFrom), 3)
 export const crossingAngle = viaRust('switch.crossingAngle', reuseFrom)
 export const crossingBodyUtm = viaRust('switch.crossingBodyUtm', reuseFrom)
@@ -199,6 +198,26 @@ export const tableLds = viaRust('switch.tableLds', reuseFrom)
 export const toChain = viaRust('switch.toChain', reuseFrom)
 export const toRoute = viaRust('switch.toRoute', reuseFrom)
 export const uniqueStations = viaRust('switch.uniqueStations', reuseFrom)
+
+/**
+ * The tracks after a write with the cant of every turnout's two routes coupled
+ * again where the write changed it along one of them (Entscheidung 376): the
+ * very \`afterTracks\` where nothing needed coupling, else the tracks the
+ * coupling changed in their place and every other one as it was — the module
+ * answers only those it changed.
+ */
+export function coupleSwitchCants(beforeTracks, afterTracks, switches) {
+  if (!afterTracks?.length || !switches?.length || beforeTracks === afterTracks) return afterTracks
+  // Which tracks the write changed, by the objects: the module compares no more than those.
+  const was = new Map((beforeTracks ?? []).map(t => [t.id, t]))
+  const wrote = afterTracks.filter(t => was.get(t.id) !== t).map(t => t.id)
+  if (!wrote.length) return afterTracks
+  const changed = coupledChanged(beforeTracks, afterTracks, switches, wrote)
+  if (!changed?.length) return afterTracks
+  const byId = new Map(changed.map(t => [t.id, t]))
+  return afterTracks.map(t => byId.get(t.id) ?? t)
+}
+const coupledChanged = viaRust('switch.coupleSwitchCantsChanged', (out, [, after]) => reuseTracks(out, after))
 
 /** A radius the other way round; null stays null. */
 export const negR = (r) => (r == null ? null : -r)

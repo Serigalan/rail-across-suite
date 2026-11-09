@@ -131,7 +131,6 @@ export const rebuildPlatformSymbol = viaRust('track.rebuildPlatformSymbol', reus
 export const referencesTrack = viaRust('track.referencesTrack', reuseFrom)
 export const remapEndMarks = viaRust('track.remapEndMarks', reuseFrom)
 export const remapSwitches = viaRust('track.remapSwitches', reuseFrom)
-export const repairRoutes = viaRust('track.repairRoutes', reuseFrom)
 export const resolveRoute = viaRust('track.resolveRoute', reuseFrom)
 export const reverseHeights = viaRust('track.reverseHeights', reuseFrom)
 export const reverseTrack = viaRust('track.reverseTrack', reuseFrom)
@@ -190,6 +189,13 @@ export const withPort = viaRust('track.withPort', reuseFrom)
 // The module's other operations, for what asks them directly.
 export const mergeableRun = viaRust('track.mergeableRun', reuseFrom)
 export const offsetEdgeCoords = viaRust('track.offsetEdgeCoords', reuseFrom)
+
+/**
+ * \`after\` with each route over a track the write took away run over what lies
+ * there now (decision 249) — \`after\` itself where it has no routes.
+ */
+export const repairRoutes = (before, after) => (after?.routes?.length ? repairRoutesOf(before, after) : after)
+const repairRoutesOf = viaRust('track.repairRoutes', reuseFrom)
 
 /** A new id for a track, a switch or any record: drawn from the browser's randomness. */
 export const generateId = () => crypto.randomUUID()

@@ -266,9 +266,22 @@ pub fn run(op: &str, input: &Value) -> Option<Result<Value, Failure>> {
         "switch.STATION_TOL" => ok(number(gr::STATION_TOL)),
         "switch.Z_TOL" => ok(number(gr::Z_TOL)),
         "switch.ldsFromToe" => with_forms(a.option(2, "forms"), |f| ok(opt_num(gr::lds_from_toe(&a.list(0), a.v(1), &opts(f))))),
+        // `slim`: without the sleepers, the samples and the grid — what the heights read of a coupling.
         "switch.switchCouplings" => with_forms(a.option(2, "forms"), |f| {
+            let slim = rail_across_js::truthy(a.option(2, "slim"));
             ok(Value::Array(
-                gr::switch_couplings(&a.list(0), &a.list(1), &opts(f)).iter().map(|c| c.to_json()).collect(),
+                gr::switch_couplings(&a.list(0), &a.list(1), &opts(f))
+                    .iter()
+                    .map(|c| {
+                        let mut j = c.to_json();
+                        if slim && let Some(o) = j.as_object_mut() {
+                            for k in ["sleepers", "samples", "grid"] {
+                                o.shift_remove(k);
+                            }
+                        }
+                        j
+                    })
+                    .collect(),
             ))
         }),
         "switch.switchCoupling" => with_forms(a.option(2, "forms"), |f| {
@@ -298,6 +311,19 @@ pub fn run(op: &str, input: &Value) -> Option<Result<Value, Failure>> {
             ok(Value::Array(gr::switch_body_spans(&a.list(0), &a.list(1), a.v(2), &opts(f))))
         }),
         // switchCants
+        // Only the tracks the coupling changed, of the tracks after the write: `[before, after, switches,
+        // changed?]` — `changed` the ids of the tracks the write changed, where the caller knows them.
+        "switch.coupleSwitchCantsChanged" => {
+            let after = a.list(1);
+            if after.is_empty() || a.list(2).is_empty() {
+                return ok(json!([]));
+            }
+            let hint: Option<std::collections::HashSet<String>> = a.opt(3).map(|_| a.strings(3).into_iter().collect());
+            let coupled = cants::couple_switch_cants_from(&a.list(0), &after, &a.list(2), hint.as_ref());
+            ok(Value::Array(
+                coupled.into_iter().zip(after.iter()).filter(|(c, t)| c != *t).map(|(c, _)| c).collect(),
+            ))
+        }
         "switch.coupleSwitchCants" => {
             if a.opt(1).is_none_or(|v| v.as_array().is_none_or(Vec::is_empty)) {
                 return ok(a.v(1).clone());

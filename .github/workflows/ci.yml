@@ -52,6 +52,9 @@ jobs:
           cache: npm
       - run: npm ci --no-audit --no-fund
         working-directory: .
+      # The core's Rust module (decision 0020), which the core's functions run on.
+      - run: rustup target add wasm32-unknown-unknown && node packages/core/scripts/wasm.mjs
+        working-directory: .
       # The import as a WebAssembly module (crates/pointcloud-wasm), which the tests run.
       - run: rustup target add wasm32-unknown-unknown
       - run: npm run wasm
@@ -87,6 +90,9 @@ jobs:
           cache: npm
       - run: npm ci --no-audit --no-fund
         working-directory: .
+      # The core's Rust module (decision 0020), which the core's functions run on.
+      - run: rustup target add wasm32-unknown-unknown && node packages/core/scripts/wasm.mjs
+        working-directory: .
       - run: npm test
 
   # The running times — the way over the net, the stations along it, the
@@ -104,6 +110,8 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - run: rustup target add wasm32-unknown-unknown
       - run: cargo build --release -p rail-across-sim-wasm --target wasm32-unknown-unknown
+      # The core's Rust module (decision 0020), which the core's functions run on.
+      - run: node packages/core/scripts/wasm.mjs
       - run: npm test
         working-directory: packages/running-times
       - run: npm test
@@ -122,6 +130,9 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci --no-audit --no-fund
+        working-directory: .
+      # The core's Rust module (decision 0020), which the core's functions run on.
+      - run: rustup target add wasm32-unknown-unknown && node packages/core/scripts/wasm.mjs
         working-directory: .
       - run: npm test
 
@@ -155,6 +166,9 @@ jobs:
           cache: npm
       - run: npm ci --no-audit --no-fund
         working-directory: .
+      # The core's Rust module (decision 0020), which the core's functions run on.
+      - run: rustup target add wasm32-unknown-unknown && node packages/core/scripts/wasm.mjs
+        working-directory: .
       - run: npm run lint
       - run: npm test
       - run: npm run build
@@ -187,6 +201,9 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci --no-audit --no-fund
+        working-directory: .
+      # The core's Rust module (decision 0020), which the core's functions run on.
+      - run: rustup target add wasm32-unknown-unknown && node packages/core/scripts/wasm.mjs
         working-directory: .
       - run: cargo build --release -p rail-across-server
         working-directory: .
@@ -243,6 +260,9 @@ jobs:
           cache: npm
       - run: npm ci --no-audit --no-fund
         working-directory: .
+      # The core's Rust module (decision 0020), which the core's functions run on.
+      - run: rustup target add wasm32-unknown-unknown && node packages/core/scripts/wasm.mjs
+        working-directory: .
       - run: npm run lint
       - run: npm test
       - run: npm run build
@@ -261,6 +281,9 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci --no-audit --no-fund
+        working-directory: .
+      # The core's Rust module (decision 0020), which the core's functions run on.
+      - run: rustup target add wasm32-unknown-unknown && node packages/core/scripts/wasm.mjs
         working-directory: .
       - run: rustup target add wasm32-unknown-unknown
       - run: npm run sim
@@ -282,6 +305,9 @@ jobs:
           cache: npm
       - run: npm ci --no-audit --no-fund
         working-directory: .
+      # The core's Rust module (decision 0020), which the core's functions run on.
+      - run: rustup target add wasm32-unknown-unknown && node packages/core/scripts/wasm.mjs
+        working-directory: .
       - run: npm run lint
       - run: npm test
       - run: npm run build
@@ -300,6 +326,9 @@ jobs:
           cache: npm
       # One install for the whole workspace: apps, packages and the server.
       - run: npm ci --no-audit --no-fund
+        working-directory: .
+      # The core's Rust module (decision 0020), which the core's functions run on.
+      - run: rustup target add wasm32-unknown-unknown && node packages/core/scripts/wasm.mjs
         working-directory: .
       - run: node tools/data.mjs
       - run: npm run lint

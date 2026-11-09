@@ -33,6 +33,7 @@ jobs:
       - run: npm run crossover
       - run: npm run optimizer
       - run: npm run pointcloud
+      - run: npm run core
       - run: npm run build:local
       - name: Pack
         run: |

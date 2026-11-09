@@ -9,11 +9,14 @@ red open ends) is `src/core/map/topologyLayer.js`.
 
 ## Files
 
-| File | What it does |
+The computation is Rust (decision 0020, step 10): `index.js` calls the core's module for each function and
+gives back as Maps what it answers as objects.
+
+| In the crate | What it does |
 |---|---|
-| `topologyGraph.js` | The project as a graph: nodes (switch, link, joint, end) and edges (tracks); clusters of connected parts |
-| `topologyLanes.js` | The layout: every line through the network on a row of its own |
-| `labelPlacement.js` | Labels placed where they cover nothing |
+| `crates/track/src/diagram/topology_graph.rs` | The project as a graph: nodes (switch, link, joint, end) and edges (tracks); clusters of connected parts |
+| `diagram/topology_lanes.rs` | The layout: every line through the network on a row of its own |
+| `diagram/labels.rs` | Labels placed where they cover nothing |
 
 ## The graph
 
@@ -52,4 +55,5 @@ and then no longer counts as an error.
 
 ## Tests
 
-`topologyGraph.test.js`, `topologyLanes.test.js`, `labelPlacement.test.js`.
+`topologyGraph.test.js`, `topologyLanes.test.js`, `labelPlacement.test.js` — through `index.js`, so on the Rust
+module; the crate replays the vectors recorded from the JavaScript before it went (`crates/track/tests/vectors/topology.json`, frozen).

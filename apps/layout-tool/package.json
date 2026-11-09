@@ -27,6 +27,7 @@
     "crossover": "node tools/crossover.mjs",
     "optimizer": "node tools/optimizer.mjs",
     "pointcloud": "node ../../packages/pointcloud/scripts/wasm.mjs",
+    "core": "node ../../packages/core/scripts/wasm.mjs public/core-module",
     "i18n:unused": "node tools/i18n-unused.mjs"
   },
   "dependencies": {

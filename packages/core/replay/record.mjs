@@ -2,6 +2,8 @@
 // function takes them, the ids it drew, and what came out — the shape every
 // crate from step 4 on is replayed in (crates/core-wasm/src/args.rs).
 
+import { readFileSync } from 'node:fs'
+
 const clone = (v) => (v === undefined ? null : JSON.parse(JSON.stringify(v, (_, x) => (x instanceof Map ? Object.fromEntries(x) : x instanceof Set ? [...x] : x))))
 
 let drawn = null
@@ -35,3 +37,11 @@ export function rng(seed) {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296
   }
 }
+
+/**
+ * The vectors of `crates/<crate>/tests/vectors/<name>.json` as last recorded:
+ * those whose JavaScript is gone (decision 0020, step 10) are kept so, and the
+ * Rust is held to them from then on as to any other test.
+ */
+export const frozen = (crate, name) =>
+  JSON.parse(readFileSync(new URL(`../../../crates/${crate}/tests/vectors/${name}.json`, import.meta.url), 'utf8'))

@@ -5,14 +5,11 @@
 import * as T from '../src/track/index.js'
 import * as X from '../src/crossSection/index.js'
 import { elementStartStation, terrainHeightAt } from '../src/crossSection/crossSectionUtils.js'
-import * as G from '../src/topology/index.js'
-import { segmentHitsBox } from '../src/topology/labelPlacement.js'
-import { switchTrackIds } from '../src/topology/topologyGraph.js'
 import { newFindings, validateProject } from '../src/project/index.js'
 import { overlappingTracks } from '../src/project/validateProject.js'
 import { buildReferenceAxis, surveyFromTrace } from '../src/survey/index.js'
 import { arcFrom, straightFrom, transitionElement, endPointStraightUtm } from '../src/geometry/index.js'
-import { rec } from './record.mjs'
+import { frozen, rec } from './record.mjs'
 
 const EPSG = 25832
 const chain = (start, bearing, parts, extra = {}) => {
@@ -97,47 +94,6 @@ export default function record() {
   x('platformSection', X.platformSection, platforms[0])
   x('platformSection', X.platformSection, { front: 1.7, width: 4, height: 760 }, { rail: '49E5', sleeper: 'SWITCH' })
 
-  // ── topology ──
-  const tp = []
-  const t = (op, fn, ...args) => tp.push(rec(`topology.${op}`, fn, ...args))
-  for (const s of ['W1', 'Gleis 12', '']) t('labelBox', G.labelBox, s)
-  const box = { x0: 0, x1: 10, y0: 0, y1: 10 }
-  for (const sg of [[-5, 5, 15, 5], [-5, -5, -1, 20], [5, 5, 5, 5], [20, 20, 30, 30], [0, 10, 10, 0]]) t('segmentHitsBox', segmentHitsBox, sg, box)
-  t('placeLabels', (items, segs, nb) => G.placeLabels(items, segs, nb),
-    [{ key: 'a', text: 'Weiche 1', x: 0, y: 0, offsets: [[0, -8], [0, 8], [20, 0]] }, { key: 'b', text: 'W2', x: 2, y: -6, offsets: [[0, -8], [0, 8]] }, { key: 'c', text: 'x', x: 50, y: 0, offsets: [[0, 0]] }],
-    [[-30, 0, 30, 0], [0, -30, 0, -10]], [{ x0: -3, x1: 3, y0: -3, y1: 3 }])
-  const graph = G.buildTopologyGraph(tracks, switches, endMarks)
-  t('buildTopologyGraph', G.buildTopologyGraph, tracks, switches, endMarks)
-  t('buildTopologyGraph', G.buildTopologyGraph, tracks, [{ ...sw, swapped: true }], [])
-  t('topologyClusters', G.topologyClusters, graph)
-  const { clusters } = G.topologyClusters(graph)
-  for (const c of clusters) t('layoutClusterLanes', G.layoutClusterLanes, c)
-  // A larger network: a line with three turnouts, a crossover and a loop.
-  const big = (() => {
-    const els = chain({ easting: 601000, northing: 5601000 }, 90, [['s', 900]], { speed: 100 })
-    let main = T.makeTrack({ name: 'main', epsg: EPSG }, els, 'm')
-    const parts = []
-    const sws = []
-    let rest = main
-    for (const [k, at] of [[1, 150], [2, 400], [3, 650]]) {
-      const p = endPointStraightUtm({ easting: 601000, northing: 5601000, zone: EPSG }, 90, at)
-      const { behind: b, ahead: a } = T.splitElementAt(rest, 0, p, at - (900 - T.trackLength(rest)), new Set())
-      parts.push(b)
-      rest = a
-      const side = k === 2 ? 1 : -1
-      const br = T.makeTrack({ name: `b${k}`, epsg: EPSG }, chain(p, 90, [['a', 30, side * 300], ['s', 120]], {}), `b${k}`)
-      parts.push(br)
-      sws.push({ ...T.newSwitchFields('turnout'), switchId: `w${k}`, name: `W${k}`, ports: { A: { trackId: b.id, endpoint: 'END' }, B2: { trackId: a.id, endpoint: 'BEGIN' }, B1: { trackId: br.id, endpoint: 'BEGIN' } } })
-    }
-    parts.push(rest)
-    return { tracks: parts, switches: sws }
-  })()
-  const bigGraph = G.buildTopologyGraph(big.tracks, big.switches, [])
-  t('buildTopologyGraph', G.buildTopologyGraph, big.tracks, big.switches, [])
-  for (const c of G.topologyClusters(bigGraph).clusters) t('layoutClusterLanes', G.layoutClusterLanes, c)
-  for (const sel of [null, { kind: 'switch', id: 'sw1' }, { kind: 'switch', id: 'gone' }, { kind: 'track', id: 'branch' }]) t('selectionHighlight', G.selectionHighlight, sel, switches)
-  t('switchTrackIds', switchTrackIds, sw)
-
   // ── validation ──
   const pj = []
   const v = (op, fn, ...args) => pj.push(rec(`project.${op}`, fn, ...args))
@@ -164,7 +120,8 @@ export default function record() {
   v('newFindings', newFindings, a2.warnings, null)
   v('overlappingTracks', overlappingTracks, [...tracks], switches)
   v('overlappingTracks', overlappingTracks, [ahead, { ...ahead, id: 'copy' }], [])
-  return { track: { cross_section: xs, topology: tp }, project: { validate: pj } }
+  // The topology diagram's JavaScript is gone (step 10): its vectors stay as recorded.
+  return { track: { cross_section: xs, topology: frozen('track', 'topology') }, project: { validate: pj } }
 }
 
 function twin(tracks) { return tracks.find(tr => tr.id === 'twin') }

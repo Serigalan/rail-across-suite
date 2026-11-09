@@ -13,6 +13,7 @@ import { extend } from './core/extensions'
 import { setCurrentUser } from './core/hooks/useCurrentUser'
 import { localProjectsSection } from './core/home/localProjects'
 import { loadNtv2Grid } from '@rail-across/core/geometry'
+import { loadNative } from '@rail-across/core/native'
 
 // The one local user, with every right (decision 281).
 setCurrentUser({ id: 'local', name: 'local', role: 'admin', canEditClouds: true })
@@ -21,7 +22,8 @@ extend('localStoreSections', localProjectsSection)
 // The grid first, then the store — in that order, not side by side: opening a
 // project hydrates it, and a DHDN track's display geometry needs the grid
 // (see main.jsx).
-loadNtv2Grid().then(initStorage).then(() => {
+// The core's Rust module (decision 0020) before anything: the core's functions run on it.
+loadNative(`${import.meta.env.BASE_URL}core-module/rail_across_core.wasm`).then(loadNtv2Grid).then(initStorage).then(() => {
   createRoot(document.getElementById('root')).render(
     <StrictMode>
       <LocalApp />

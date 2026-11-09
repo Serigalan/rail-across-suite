@@ -68,11 +68,14 @@ export function unloadNative() {
   exports_ = null
 }
 
+/** As the replay recorded a call's arguments: a Map as an object, a Set as an array. */
+const mapsAndSets = (_, x) => (x instanceof Map ? Object.fromEntries(x) : x instanceof Set ? [...x] : x)
+
 /** Operation `op` of the module on `input` (JSON-able); its result, or a NativeError. */
 export function callNative(op, input = null) {
   if (!exports_) throw new NativeError('native_not_loaded')
   const { memory, alloc, dealloc, run, result_len: resultLen } = exports_
-  const bytes = encoder.encode(JSON.stringify({ op, input }))
+  const bytes = encoder.encode(JSON.stringify({ op, input }, mapsAndSets))
   const ptr = alloc(bytes.length)
   new Uint8Array(memory.buffer, ptr, bytes.length).set(bytes)
   const out = run(ptr, bytes.length)
@@ -83,3 +86,17 @@ export function callNative(op, input = null) {
   if (answer && 'ok' in answer) return answer.ok
   throw new NativeError(answer?.error ?? 'invalid_answer', answer?.detail, answer?.data)
 }
+
+/**
+ * A function of the core that has moved to Rust (decision 0020, step 10):
+ * called with its arguments as the JavaScript took them — operation `op`
+ * takes them as the replay recorded them, positional — and answering what the
+ * JavaScript answered, as JSON. `revive(result, args)` gives back what JSON
+ * does not carry: a Map, a Set, a typed array.
+ */
+export function viaRust(op, revive = null) {
+  return revive ? (...args) => revive(callNative(op, args), args) : (...args) => callNative(op, args)
+}
+
+/** A JSON object as the Map the JavaScript answered with. */
+export const asMap = (object) => new Map(Object.entries(object ?? {}))

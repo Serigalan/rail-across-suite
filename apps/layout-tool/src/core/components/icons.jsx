@@ -241,15 +241,6 @@ export const RouteIcon = () => (
   </MenuIcon>
 )
 
-// The information about the tool, a page of the settings: an i in a circle.
-export const AboutIcon = () => (
-  <MenuIcon>
-    <path d="M2 8 A6 6 0 1 1 14 8 A6 6 0 1 1 2 8 Z" />
-    <path d="M8 7.5 V11.5" />
-    <circle cx="8" cy="4.8" r="1.5" fill="currentColor" stroke="none" />
-  </MenuIcon>
-)
-
 // Which tracks the map shows: an eye.
 export const TrackVisibilityIcon = () => (
   <MenuIcon>

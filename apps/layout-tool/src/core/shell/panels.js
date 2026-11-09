@@ -142,17 +142,9 @@ export const PANELS = [
       onShowPlanPreview: (preview) => (preview ? s.openOverlay({ kind: 'planPreview', ...preview }) : s.closeOverlay('planPreview')),
     }),
   },
-  // The information is a page of the settings (decision 325): the one a
-  // project opens on, with its first steps; the settings icon opens the
-  // settings themselves.
   {
     id: 'settings', group: 'app', icon: SettingsIcon, titleKey: 'settings', place: 'bottom', Component: SettingsPanel,
-    props: (s) => ({
-      color: s.color, onColorChange: s.setColor,
-      page: s.settingsPage, onPage: s.setSettingsPage,
-      onDraw: () => s.selectPanel('places'), onImport: () => s.selectPanel('data'),
-    }),
-    onEnter: (s) => s.setSettingsPage('main'),
+    props: (s) => ({ color: s.color, onColorChange: s.setColor }),
   },
   // The steps that can be undone and redone (decision 328), opened by the
   // button between the two arrows.

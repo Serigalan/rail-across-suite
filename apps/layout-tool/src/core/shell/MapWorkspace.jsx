@@ -104,10 +104,8 @@ export default function MapWorkspace({ onHome, beforeHome, homeKey, resetKey = 0
   const km = useKmOverlays(map, project?.kmLines)
   useKmLineHover(map, km.kmOverlays.db || km.kmOverlays.other, t, km.localLines)
 
-  // A panel is always open, the information first — for an empty project with
-  // its first steps (R10.13). It is a page of the settings (decision 325).
-  const [activePanel, setActivePanel] = useState('settings')
-  const [settingsPage, setSettingsPage] = useState('info')
+  // A panel is always open: a project opens on creating elements.
+  const [activePanel, setActivePanel] = useState('places')
   const [overlays, dispatch] = useReducer(overlayReducer, OVERLAYS_CLOSED)
   const { overlay, popup, detached } = overlays
   // Two states over each other (AP 10.3): { before, after, beforeLabel, afterLabel, drawUnchanged }.
@@ -205,7 +203,6 @@ export default function MapWorkspace({ onHome, beforeHome, homeKey, resetKey = 0
     showRouteTable: (routeId) => openOverlay({ kind: 'trackTable', track: null, routeId, initialRow: null }),
     setCompare,
     color, setColor,
-    settingsPage, setSettingsPage,
     selectPanel,
   }
 

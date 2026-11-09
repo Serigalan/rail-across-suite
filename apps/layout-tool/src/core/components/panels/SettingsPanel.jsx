@@ -1,26 +1,13 @@
+import { useState } from 'react'
 import { languageLabels } from '../../locales/i18n'
 import { useI18n } from '../../locales/i18nContext'
 import { PROJECT_COLORS } from '../../styles/palette'
-import { AboutIcon } from '../icons'
-import BackButton from './BackButton'
-import InfoPanel from './InfoPanel'
+import GuideDialog from '../GuideDialog'
 
-/**
- * The app's own settings — language, colour — and, as a page of them, the
- * information about the tool (decision 325): the page a project opens on,
- * with its first steps. `page` ('main' | 'info') is the shell's, so the
- * workspace can open on the information; `onDraw`/`onImport` go on to it.
- */
-export default function SettingsPanel({ color, onColorChange, page = 'main', onPage, onDraw, onImport }) {
+/** The app's own settings — language, colour — and the guideline, in its window. */
+export default function SettingsPanel({ color, onColorChange }) {
   const { language, t, setLanguage } = useI18n()
-  if (page === 'info') {
-    return (
-      <>
-        <BackButton onBack={() => onPage?.('main')} />
-        <InfoPanel onDraw={onDraw} onImport={onImport} />
-      </>
-    )
-  }
+  const [guide, setGuide] = useState(false)
   return (
     <>
       <h2>{t('settings')}</h2>
@@ -54,12 +41,8 @@ export default function SettingsPanel({ color, onColorChange, page = 'main', onP
         </div>
       </div>
       <hr className="divider" />
-      <div className="create-element-options">
-        <button type="button" className="ui-btn ui-btn-option" onClick={() => onPage?.('info')}>
-          <AboutIcon />
-          {t('info')}
-        </button>
-      </div>
+      <button type="button" className="ui-btn ui-btn-block" onClick={() => setGuide(true)}>{t('start_guideline')}</button>
+      {guide && <GuideDialog onClose={() => setGuide(false)} />}
     </>
   )
 }

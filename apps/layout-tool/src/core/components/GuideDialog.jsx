@@ -11,9 +11,9 @@ const GUIDE_PAGES = { de: './guideline.html', en: './guideline_en.html' }
 const guidePage = (language) => GUIDE_PAGES[language] ?? GUIDE_PAGES.de
 
 /**
- * The whole guideline in a window of its own over the page: opened from an
- * empty project's first steps. Put on the
- * body, or the panel it is opened from would keep it under the sidebar.
+ * The whole guideline in a window of its own over the page: opened from the
+ * settings. Put on the body, or the panel it is opened from would keep it
+ * under the sidebar.
  */
 export default function GuideDialog({ onClose }) {
   const { t, language } = useI18n()

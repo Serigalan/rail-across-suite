@@ -92,10 +92,6 @@
 .service-dot.ok { background: #2e7d32; }
 .service-dot.down { background: var(--color-error); }
 
-/* The first steps of an empty project (R10.13), at the head of the info panel. */
-.first-steps h2 { margin: 0 0 6px; }
-.first-steps-actions { display: flex; flex-direction: column; gap: var(--space-4); margin-top: 12px; }
-
 /* The 3D toggle below the compass (TiltToggle): a button of MapLibre's
    control group, its label in the grey of the group's icons, and in the
    app's colour on a light tint while tilting is allowed. */

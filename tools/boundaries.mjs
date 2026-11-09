@@ -17,7 +17,7 @@ import { dirname, join, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const SOURCE = /\.(?:[cm]?js|jsx|[cm]?ts|tsx)$/
-const SKIP = new Set(['node_modules', 'dist', 'dist-local', 'build', 'coverage', '.git'])
+const SKIP = new Set(['node_modules', 'dist', 'build', 'coverage', '.git'])
 
 /** Every source file below `dir`. */
 function sourceFiles(dir) {

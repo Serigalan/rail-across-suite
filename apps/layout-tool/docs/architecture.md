@@ -3,35 +3,34 @@
 ## The whole
 
 ```
-                     ┌──────────────────────────── browser ────────────────────────────┐
+                     ┌──────────────── browser, or the desktop app's window ───────────┐
                      │                                                                 │
-  main build ──────▶ │  src/server   session, variants, working copy, service clients, │──▶ rail-across-server (Node, SQLite)
-  (npm run build)    │      │        3D window, server panels                          │      /api
-                     │      ▼ imports, never the other way round                      │
-  local build ─────▶ │  src/core     store · shell · panels · overlays · map · hooks   │──▶ olt-optimizer (Python)
-  (npm run           │      │                                                          │      /optimizer
-   build:local)      │      ▼                                                          │
-                     │  src/core/utils   computing modules (no React, no store)        │
+  npm run build ───▶ │  src/server   session, variants, working copy, service clients, │──▶ rail-across-server (Rust, SQLite)
+                     │      │        3D window, server panels                          │      /api — behind Caddy, or in the
+                     │      ▼                                                          │      desktop app's own process
+                     │  src/core     store · shell · panels · overlays · map · hooks   │
+                     │      │                                                          │
+                     │      ▼                                                          │
+                     │  src/core/utils   computing modules (no React, no store)        │──▶ the core's module (WebAssembly)
                      └─────────────────────────────────────────────────────────────────┘
 ```
 
-- **`src/core`** — everything that computes and stores in the browser alone. The local build ships only this.
-- **`src/server`** — what needs the project server. The main build ships both.
+- **`src/core`** — the store, the map and the panels.
+- **`src/server`** — what talks to the project server: sign-in, variants, the working copy, the server's panels.
 - **`server`** — the suite's project server at the root of the repository ([server](server.md)); **`optimizer/`**,
   **`crossover/`** — the Rust modules beside the page ([optimizer](modules/optimizer.md),
   [crossover](modules/crossover.md)); the suite's **`deploy/`** — operation.
 
-Two builds from one codebase: `vite build` (entry `src/main.jsx`, core + server → `dist/`) and
-`vite build --mode standalone` (entry `src/main.local.jsx`, core alone → `dist-local/`, served by
-`tools/local/serve.mjs` or packed as a zip). `tools/check-local-bundle.mjs` asserts the local bundle contains no
-server part.
+One build (`vite build`, entry `src/main.jsx` → `dist/`; [decision 0021](../../../docs/decisions/0021-one-format-one-build-the-project-in-the-module.md)).
+It runs on the suite's server, or bundled with the project server in the desktop app (`crates/desktop`) — working
+without a network is the desktop app's. (A local build that ran in the browser alone, without a server, went with
+decision 0021.)
 
 ## Layers and their rules
 
 | Rule | Held by |
 |---|---|
-| `src/core` never imports from `src/server`, not even indirectly. Server parts appear in core only through the extension points of `core/extensions.js`, filled by `src/server/register.js` before the first render. | ESLint rule, `tools/boundary.mjs --core`, architecture test |
-| The local entry imports nothing of `src/server`; the main entry docks the server on before anything else. | architecture test |
+| Server parts appear in core through the extension points of `core/extensions.js`, filled by `src/server/register.js` before the first render. | — |
 | Code outside a module of `src/core/utils` imports from its `index.js` and nowhere else; a module of the core as `@rail-across/core/<module>`. | `tools/modules.mjs`, architecture test |
 | The modules depend on each other without a cycle. | `tools/modules.mjs` |
 | A module imports nothing of the interface (components, map, shell, hooks, store) — only the extension points, translations, palette and basemaps; the rulebooks are the core's. | `tools/modules.mjs` |
@@ -145,7 +144,7 @@ own module, and a worker only the server build needs lives in `src/server` (the 
   that module's `index.js`. If it fits no module, add a directory with an `index.js` and a page in
   `docs/modules/` (the check requires both) and make sure the dependency order stays acyclic.
 - What needs the project server goes to `src/server` and docks on through an extension
-  point; `npm run build:local` must stay green.
+  point.
 - A rule value belongs in the catalogue file, not in code; the optimizer module (`optimizer/`, Rust) reads the
   file the app bundles, and the shared vectors in `packages/core/constraints/tests/` hold its rule check to the
   app's.

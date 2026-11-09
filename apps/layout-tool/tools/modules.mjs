@@ -21,11 +21,34 @@
 //   node tools/modules.mjs --order   the modules in dependency order, with what each needs
 import { readdirSync, readFileSync, statSync, existsSync } from 'node:fs'
 import { join, dirname, relative, resolve } from 'node:path'
-import { specifiersOf, resolveSpecifier } from './boundary.mjs'
 
 const ROOT = resolve(dirname(new URL(import.meta.url).pathname), '..')
 const UTILS = join(ROOT, 'src/core/utils')
 const CORE = join(ROOT, 'src/core')
+
+// Everything a module names as a path: static and dynamic imports, re-exports,
+// workers and assets (`new URL(…, import.meta.url)`) and the modules a test mocks.
+const SPECIFIERS = [
+  /\bfrom\s+'([^']+)'/g,
+  /\bimport\s+'([^']+)'/g,
+  /\bimport\(\s*'([^']+)'\s*\)/g,
+  /new URL\(\s*'([^']+)'\s*,\s*import\.meta\.url\s*\)/g,
+  /\bvi\.mock\(\s*'([^']+)'/g,
+]
+
+const specifiersOf = (source) => SPECIFIERS.flatMap(re => [...source.matchAll(re)].map(m => m[1]))
+
+/** The file a relative specifier names, or null for a package or a path that is not there. */
+function resolveSpecifier(from, specifier) {
+  if (!/^\.{1,2}\//.test(specifier)) return null
+  const bare = specifier.replace(/\?.*$/, '')
+  const base = resolve(dirname(from), bare)
+  for (const suffix of ['', '.js', '.jsx', '/index.js', '/index.jsx']) {
+    const p = base + suffix
+    if (existsSync(p) && statSync(p).isFile()) return p
+  }
+  return null
+}
 
 /** What a module may use of src/core outside the modules (rule 3). */
 const CORE_ALLOWED = ['extensions.js', 'locales/', 'styles/', 'basemaps.js']

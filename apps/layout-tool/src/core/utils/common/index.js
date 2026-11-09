@@ -15,8 +15,5 @@ export {
   MARK_LINKS, MARK_RAIL, MARK_WIDTH,
 } from './logoMark'
 export { MAPTILER_KEY } from './mapTiler'
-export {
-  fileToProjectImage, PROJECT_IMAGE_MIME, PROJECT_IMAGES, projectImagePicture, projectImageUrl,
-} from './projectImages'
 export { loadSettings, saveSettings, SETTINGS_KEY } from './settings'
 export { parseSvgPath } from './svgPath'

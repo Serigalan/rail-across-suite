@@ -292,7 +292,7 @@ Server: SQLite (`revision`, `manifest`, `blob`) until several instances or cross
 Postgres with the same tables. Spatial search across projects is a derived index, never the source of truth.
 
 Browser: working copies in IndexedDB with the same hash tree (manifest and blobs), each with its base revision
-and its id log, as in the Open-Layout-Tool. The local build without a server keeps its projects the same way.
+and its id log, as in the Open-Layout-Tool.
 Point clouds stay in the browser's private file system (OPFS) or on the server, outside the record.
 
 ## 6. Consequences for the Open-Layout-Tool

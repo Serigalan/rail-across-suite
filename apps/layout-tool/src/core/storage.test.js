@@ -399,7 +399,7 @@ describe('deleting a track with a switch on it', () => {
   })
 })
 
-describe('a project kept where its opener says (Paket L)', () => {
+describe('a project kept where its opener says', () => {
   const el = (length) => ({ elementType: 0, length, bearing: 90, startNode: [0, 0], endNode: [length, 0] })
   const record = () => ({ id: 'kp', title: 'K', tracks: [{ id: 't', epsg: 25832, elements: [el(10), el(20)] }], switches: [] })
 

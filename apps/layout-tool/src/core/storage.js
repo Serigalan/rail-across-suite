@@ -20,15 +20,14 @@ export const REPORT_KEY_PREFIX = 'olt_reports_'
 // The project store: the one project that is open, held in memory as the
 // single source of truth for every synchronous caller, and written behind to
 // where its opener keeps it (see persist/flush) — the working copy of a
-// variant in the main build (server/workingCopies.js), a project of the list
-// in the local build (core/home/localProjects.js). Opened without a place to
-// keep it, it lives in memory only.
+// variant (server/workingCopies.js). Opened without a place to keep it, it
+// lives in memory only.
 //
 // The record is immutable (R1.3): every write makes a new project object, new
 // arrays for what it changes and shares everything else. That is what makes a
 // snapshot for undo a reference, and what lets React subscribe to it.
 let _project = null
-// Where the open project is kept (Paket L): { key, meta, save } — `meta` what
+// Where the open project is kept: { key, meta, save } — `meta` what
 // its opener keeps beside the record (the server's working copy: variant,
 // base revision and its record), `save(record)` writes { ...meta, project,
 // idLog, updatedAt }, `key` names the entries kept per record outside it
@@ -237,7 +236,7 @@ function notify() {
   for (const listener of [..._listeners]) listener()
 }
 
-// ── the open project and where it is kept (Paket L) ─────────────────────────
+// ── the open project and where it is kept ───────────────────────────────────
 
 /**
  * Make `project` (dehydrated) the open project, kept through `save` (see

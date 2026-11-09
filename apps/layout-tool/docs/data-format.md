@@ -30,8 +30,7 @@ the one door: everything behind it may take the model for granted.
 | Where | How the record is kept |
 |---|---|
 | Exported file (*.railacross.json) | the core 1.0 document, carrying its schemas; the project image embedded as data URL `image` |
-| Local build | IndexedDB `olt-local`: `projects` (the whole record, marked oltjson-1.1, image as data URL) and `summaries` for the list |
-| Server build, browser | IndexedDB `olt` › `workingCopies`: the record being edited plus its base revision and that revision's record |
+| Browser | IndexedDB `olt` › `workingCopies`: the record being edited plus its base revision and that revision's record |
 | Project server | table `revision`: the core 1.0 document gzip-compressed in `payload`, `schema_version` 3; rows of `schema_version` 2 (oltjson-1.1) are migrated into documents when read, 1 (oltjson-1.0) is refused as `format_outdated`; the image as a blob referenced by `imageHash` |
 | Project server's API | revisions in and out as core 1.0 documents; the browser's API layer (`src/server/api/client.js`) turns them into records through the door and back |
 | In memory | the record, hydrated (derived display data added), immutable |

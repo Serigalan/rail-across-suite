@@ -7,8 +7,7 @@ import FormSection from '../../form/FormSection'
 /**
  * The project's title and description (decision 317). They live in the record
  * (`project.title`, `project.description`) — the plans and the exported files
- * are named by them, and the local build lists its projects by them. The
- * server build keeps them in its project list as well, and writes them there
+ * are named by them. The server keeps them in its project list as well, and writes them there
  * first (`saveProjectMeta`): where the server refuses, the record stays as it was.
  *
  * The fields start from the record; the panel mounts this anew whenever the

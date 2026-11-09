@@ -147,7 +147,7 @@ behind the session:
 - **Members per project; 404 for the unauthorised.**
 - **Point clouds: shared per project on the server, chunked uploads with hashes, served with membership checks.**
 - **Computing in the browser, in Rust; reading for the browser on the project server** (decision 0019 of the
-  suite): one service to run, and the optimizer in the local build too.
+  suite): one service to run, and the optimizer in the desktop app the same.
 - **The DGM1 relief is drawn from the tiles the server already reads for heights**, not from the Länder's own
   hillshade WMS: only a height per pixel gives the same colour scale, legend and hillshade as DGM5, so the two
   meet without a seam. The tiles carry centimetres (MapLibre's `custom` encoding) — the usual 0.1 m would draw

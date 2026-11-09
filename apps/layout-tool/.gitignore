@@ -15,7 +15,6 @@ public/optimizer-module/
 
 # Build output
 dist/
-dist-local/
 build/
 
 # Environment variables
@@ -61,4 +60,3 @@ Testdaten.MDB
 
 # Rework-Roadmap — Planung, wie ROADMAP.md
 Roadmap_rework.md
-layout-tool-local-*.zip

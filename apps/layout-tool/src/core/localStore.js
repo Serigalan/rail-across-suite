@@ -19,8 +19,7 @@ import { formatNum } from './locales/i18n'
  *                  hidden tracks — small, but each its own entry
  *
  * and IndexedDB a third, as whoever keeps projects there says: the working
- * copies of the variants (server/localStoreSections.js) or the projects of the
- * local build (core/home/localProjects.js), each a section of its own
+ * copies of the variants (server/localStoreSections.js), each a section of its own
  * (extension point `localStoreSections`):
  *
  *   { id, read(): Promise<items>, deleteAll(), unsaved?(items): number,
@@ -202,7 +201,7 @@ export function deleteEntry(key) {
 
 /**
  * Delete all of it: every file, what every section keeps — the working copies
- * with what was not checked in, the projects of the local build — and every
+ * with what was not checked in — and every
  * entry, settings included, so the app starts as on a new device. Each place
  * is tried even when another fails; the first failure is thrown at the end.
  */

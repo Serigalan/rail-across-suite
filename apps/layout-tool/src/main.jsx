@@ -1,4 +1,4 @@
-// The main build (Paket L): core and server. The server components dock onto
+// The Layout-Tool's one build (decision 0021): core and server. The server components dock onto
 // core first — before anything renders — through the extension points they fill.
 import './server/register'
 import { StrictMode } from 'react'

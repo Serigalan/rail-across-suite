@@ -17,8 +17,7 @@ import { extensionsOf } from '../extensions'
  * side by side while the names show, one above the other in the narrow bar,
  * and a line under them. The history opens a panel of its own, which has no
  * entry of its own in the sidebar (decision 328). The way home is named by
- * `homeKey`: the start page of the local build, the suite's infrastructure
- * editor on the server.
+ * `homeKey`: the suite's infrastructure editor.
  */
 export default function Sidebar({ active, onSelect, onUndo, onRedo, onHome, homeKey = 'tooltip_home' }) {
   const { t, fill } = useI18n()

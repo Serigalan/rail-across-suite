@@ -13,7 +13,7 @@ The module is loaded **once**, and every call after that is synchronous, as the 
 - in Node — the server, the tests — `loadNativeFile()` (`@rail-across/core/native/node`) reads `packages/core/wasm/` synchronously.
 
 Since step 10 the module is not optional: the functions that went to Rust have no JavaScript any more,
-and every page, the local build and every vitest of the repository load it first (`test/setupNative.js`).
+and every page, the desktop app's and every vitest of the repository load it first (`test/setupNative.js`).
 `viaRust(op, revive)` makes such a function: the arguments go across as the replay recorded them (a Map as
 an object, a Set as an array), and `revive` gives back what JSON does not carry — `asMap`, `keepSame` and
 `reuseFrom` (what the module passed through untouched, given back as the very object it was). What the

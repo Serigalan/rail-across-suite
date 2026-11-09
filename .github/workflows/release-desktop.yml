@@ -1,0 +1,62 @@
+name: Release desktop app
+
+# The desktop app as a GitHub release (decision 0021: it takes the place of the local build's zip): pushing a
+# tag desktop-YYYY-MM-DD[.n] builds the app with the project server in its process (crates/desktop) on
+# Linux, macOS and Windows and attaches the packages to a release of that tag.
+
+on:
+  push:
+    tags: ['desktop-*']
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-14, windows-2022]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: rustup target add wasm32-unknown-unknown
+      - if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev libsoup-3.0-dev librsvg2-dev mdbtools
+      - if: runner.os == 'macOS'
+        run: brew install mdbtools
+      - run: cargo install tauri-cli --version '^2' --locked
+      # Runs scripts/build-site.mjs and scripts/stage-mdbtools.mjs itself (tauri.conf.json).
+      - run: cargo tauri build
+        working-directory: crates/desktop
+      - uses: actions/upload-artifact@v4
+        with:
+          name: desktop-${{ matrix.os }}
+          path: |
+            crates/desktop/target/release/bundle/**/*.deb
+            crates/desktop/target/release/bundle/**/*.AppImage
+            crates/desktop/target/release/bundle/**/*.dmg
+            crates/desktop/target/release/bundle/**/*.msi
+            crates/desktop/target/release/bundle/**/*.exe
+
+  release:
+    needs: build
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v4
+        with:
+          path: packages
+      - name: Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="${GITHUB_REF_NAME#desktop-}"
+          find packages -type f > files.txt
+          echo "Rail-Across-Suite for the desktop, version ${version}: the suite with its project server in one window, no server and no Node needed." > release-notes.md
+          xargs -a files.txt gh release create "$GITHUB_REF_NAME" --title "Desktop ${version}" --notes-file release-notes.md --verify-tag

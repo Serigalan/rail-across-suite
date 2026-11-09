@@ -15,7 +15,7 @@ const REPO = resolve(ROOT, '../..')
 // The app's pages, and those of the core package the app's pages link into.
 const DOCS = [join(ROOT, 'docs'), join(REPO, 'packages/core/docs')]
 
-const SKIP = new Set(['node_modules', '.git', 'dist', 'dist-local', '__pycache__', 'archiv'])
+const SKIP = new Set(['node_modules', '.git', 'dist', '__pycache__', 'archiv'])
 const files = (dir) => readdirSync(dir).flatMap(name => {
   if (SKIP.has(name) || name.endsWith('.egg-info')) return []
   const path = join(dir, name)

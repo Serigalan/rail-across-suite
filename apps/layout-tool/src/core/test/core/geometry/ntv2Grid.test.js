@@ -152,8 +152,7 @@ describe('the order the app starts in', () => {
   // coordinates, the grid needs nothing from the store — so the two may not be
   // started side by side. Read off the source because that is where the
   // ordering lives; there is no seam in a three-line bootstrap to test through.
-  // Both builds' entries (Paket L): the main one and the local one.
-  for (const entry of ['main.jsx', 'main.local.jsx']) {
+  for (const entry of ['main.jsx']) {
     const main = fs.readFileSync(new URL(`../../../../${entry}`, import.meta.url), 'utf8')
 
     it(`waits for the grid before it hydrates the store (${entry})`, () => {

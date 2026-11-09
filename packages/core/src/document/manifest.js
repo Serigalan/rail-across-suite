@@ -1,27 +1,13 @@
-import { contentHash } from './canonical.js'
-import { callNative, nativeReady } from '../native/index.js'
+import { callNative } from '../native/index.js'
 
 /**
  * The manifest of a document: per domain its version, its schema and the hash
  * of its fields and of each collection — the hash tree of the data model
  * (section 5.2). The unit of storage is the collection (S-R1): a revision that
- * leaves a collection as it was names the same hash for it.
+ * leaves a collection as it was names the same hash for it. Computed by the
+ * core's Rust module (crates/doc).
  */
-export function manifestOf(doc) {
-  if (nativeReady()) return callNative('document.manifestOf', doc)
-  const domains = {}
-  for (const name of Object.keys(doc.domains).sort()) {
-    const d = doc.domains[name]
-    domains[name] = {
-      version: d.version,
-      schema: d.schema,
-      ...(d.dependsOn ? { dependsOn: d.dependsOn } : {}),
-      fields: contentHash(d.fields),
-      collections: Object.fromEntries(Object.keys(d.collections).sort().map(c => [c, contentHash(d.collections[c])])),
-    }
-  }
-  return { domains }
-}
+export const manifestOf = (doc) => callNative('document.manifestOf', doc)
 
 /** The hash of a document as a whole: its manifest's. */
-export const documentHash = (doc) => (nativeReady() ? callNative('document.documentHash', doc) : contentHash(manifestOf(doc)))
+export const documentHash = (doc) => callNative('document.documentHash', doc)

@@ -19,9 +19,9 @@ writes canonical JSON and content hashes. The `project` module opens the door fo
 | File | What it does |
 |---|---|
 | `stations.js` | The stations of a record by their ids: `stationRegister` (every station and halt a point of the register, and which point a track or platform is of), `renamedStation` (a station renamed, keeping its id, its tracks and platforms stating the new name) |
-| `door.js` | The one door: `checkDocument` (envelope, domain versions and schema hashes — a domain of an earlier schema of its version brought to this one first: core before `designSpeed` and before an end mark's name and speed, signalling's five earlier schemas —, every object against its domain's schema, ids unique per collection, blobs against their hashes), `toDocument` (a record as a checked document, the schemas carried where it travels), `fromDocument` (a checked document as the record) |
-| `coreFormat.js` | The record ↔ document conversion, both ways and lossless; the first step of the migration chain (oltjson-1.1 → core 1.0) |
-| `schemaCheck.js` | The part of JSON Schema the domain schemas use — no more, so Python reads them alike; a schema with another keyword is refused when it is registered |
+| `door.js` | The one door, the core's Rust module (`crates/doc`; decision 0020, step 10 took its JavaScript out): `checkDocument` (envelope, domain versions and schema hashes — a domain of an earlier schema of its version brought to this one first: core before `designSpeed` and before an end mark's name and speed, signalling's five earlier schemas —, every object against its domain's schema, ids unique per collection, blobs against their hashes), `toDocument` (a record as a checked document, the schemas carried where it travels), `fromDocument` (a checked document as the record) |
+| `coreFormat.js` | What the page still works out itself: the default construction stages and the operational point register the station texts make (the record ↔ document conversion, both ways and lossless, is `crates/doc`'s) |
+| `crates/doc/src/schema.rs` | The part of JSON Schema the domain schemas use — no more; a schema with another keyword is refused when it is registered |
 | `canonical.js` | Canonical JSON after RFC 8785, content hashes (`sha256:` + hex), ids of UUID form drawn from a text |
 | `sha256.js` | SHA-256, synchronous, in plain JavaScript (the browser's `crypto.subtle` only answers asynchronously) |
 | `manifest.js` | The manifest of a document — per domain the hash of its fields and of each collection, the hash tree of the data model — and the document's hash |
@@ -92,7 +92,7 @@ hash it is filed under.
 
 ## Tests
 
-`canonical.test.js` (SHA-256 against node:crypto, the RFC's examples), `schemaCheck.test.js`, `door.test.js`
+`canonical.test.js` (SHA-256 against node:crypto, the RFC's examples), `door.test.js`
 (the conversion both ways, the door's verdicts, the manifest, the PEK data set losslessly, the shared vectors
 current). `node tools/vectors.mjs` writes the shared vectors to `schemas/vectors/`; the Rust crates are held to
 them (`crates/doc/tests/vectors.rs`).

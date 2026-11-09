@@ -12,9 +12,9 @@ itself — every field, and why it is shaped as it is — is described in [the d
 
 | File | What it does |
 |---|---|
-| `persistenceUtils.js` | The record: `parseProjectsPayload` (the door), `projectDocument` (a record as its core 1.0 document), `projectsPayload` (the oltjson-1.1 envelope of files from before), `hydrateProjects` (derive on load), `dehydrateProjects` (strip and round on save), `parseTracksPayload` (track files) |
+| `persistenceUtils.js` | The record — the door, the document and keeping it through the core's module (decision 0020, step 10), loading it here: `parseProjectsPayload` (the door), `projectDocument` (a record as its core 1.0 document), `projectsPayload` (the oltjson-1.1 envelope of files from before), `hydrateProjects` (derive on load), `dehydrateProjects` (strip and round on save), `parseTracksPayload` (track files) |
 | `projectSettings.js` | The project's coordinate system and line category; moving tracks into another plane with everything a switch joins to them |
-| `validateProject.js` | Whether a record holds together: errors and warnings, stably keyed; `newFindings` |
+| `crates/project` (Rust) | Whether a record holds together (`validateProject`): errors and warnings, stably keyed; `newFindings` — through `index.js` (decision 0020, step 10) |
 | `stepLabel.js` | What one step did, in a few words, worked out from the two states |
 
 ## Load, save, refuse

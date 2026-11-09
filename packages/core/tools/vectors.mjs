@@ -1,7 +1,8 @@
 #!/usr/bin/env node
-// The shared test vectors of schemas/vectors/: what the JavaScript core makes
-// of canonical JSON, the schema check and whole documents, written down so
-// the core's Rust crates (crates/doc) are held to the same results (data
+// The shared test vectors of schemas/vectors/: what the core makes of
+// canonical JSON (its JavaScript), the schema check (frozen since its
+// JavaScript went, decision 0020 step 10) and whole documents (through the
+// door, the core's module), written down so crates/doc is held to them (data
 // model, S-R3; CONTRIBUTING).
 //
 //   node tools/vectors.mjs           write them
@@ -10,8 +11,9 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
-  canonicalJson, checkDocument, contentHash, documentHash, manifestOf, PayloadError, SchemaSet, schemaOf, toDocument,
+  canonicalJson, checkDocument, contentHash, documentHash, manifestOf, PayloadError, toDocument,
 } from '../src/document/index.js'
+import { loadNativeFile } from '../src/native/node.js'
 import { ksStation } from '../test/signallingFixture.js'
 
 const OUT = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'schemas', 'vectors')
@@ -39,75 +41,14 @@ const canonicalVectors = () => CANONICAL_INPUTS.map(json => {
 
 // ── The schema check ────────────────────────────────────────────────────────
 
-const SCHEMAS = new SchemaSet(['rail-across', 'core', 'layout', 'signalling'].map(schemaOf))
-const STATION = ksStation().collections
-const SIGNAL = STATION.signals[0]
-const TRACK = {
-  id: 't1', epsg: 25832,
-  elements: [{ elementType: 0, startNode: [500000, 5700000], endNode: [500100, 5700000], bearing: 90, length: 100 }],
-}
+// Its JavaScript is gone (decision 0020, step 10): schema.json stays as it was
+// last written from it, and crates/doc is held to it.
+const schemaVectors = () => JSON.parse(readFileSync(join(OUT, 'schema.json'), 'utf8'))
 
-/** [ref, value] — a value and the part of a schema it is checked against. */
-const SCHEMA_CASES = [
-  ['core#/$defs/TrackEnd', { trackId: 't1', endpoint: 'END' }],
-  ['core#/$defs/TrackEnd', { trackId: 't1', endpoint: 'MIDDLE' }],
-  ['core#/$defs/TrackEnd', { trackId: 't1' }],
-  ['core#/$defs/TrackEnd', { trackId: '', endpoint: 'BEGIN', extra: 1 }],
-  ['core#/$defs/TrackRange', { anchor: 'station', trackId: 't1', startStation: 120, endStation: 260, side: 'left' }],
-  ['core#/$defs/TrackRange', { anchor: 'plane', trackId: 't1', startStation: 120, endStation: 260 }],
-  ['core#/$defs/TrackLocation', { anchor: 'station', trackId: 't1', station: 812.4, side: 'right', offset: 2.9, direction: 'down' }],
-  ['core#/$defs/TrackLocation', { anchor: 'plane', easting: 500000, northing: 5700000, epsg: 25832, bearing: 12 }],
-  ['core#/$defs/TrackLocation', { anchor: 'station', trackId: 't1', station: 'km 3' }],
-  ['core#/$defs/TrackLocation', { anchor: 'plane', easting: 500000, northing: 5700000 }],
-  ['core#/$defs/TrackLocation', 'nowhere'],
-  ['core#/$defs/Lifespan', { from: 's1' }],
-  ['core#/$defs/Lifespan', {}],
-  ['core#/$defs/Lifespan', { from: 's1', until: 's2' }],
-  ['core#/$defs/TrackPath', { trackIds: ['a', 'b'] }],
-  ['core#/$defs/TrackPath', { trackIds: 'a' }],
-  ['core#/$defs/Track', TRACK],
-  ['core#/$defs/Track', { ...TRACK, elements: [] }],
-  ['core#/$defs/Track', { ...TRACK, epsg: 25832.5, trackType: 3 }],
-  ['core#/$defs/Track', { ...TRACK, elements: [{ ...TRACK.elements[0], radius: null, r1: 'x', geometry: {} }] }],
-  ['core#/$defs/Switch', { id: 's', kind: 'turnout', formVersion: 1, ports: { A: { trackId: 't1', endpoint: 'END' }, B1: null } }],
-  ['core#/$defs/Switch', { id: 's', kind: 'turnout', formVersion: 1, ports: { E: { trackId: 't1', endpoint: 'END' } } }],
-  ['core#/$defs/Switch', { id: 's', kind: 'turnout', formVersion: 1, ports: { A: { trackId: 't1' } } }],
-  ['core#/$defs/OperationalPoint', { id: 'o', rl100: 'LHT' }],
-  ['core#/$defs/OperationalPoint', { id: 'o' }],
-  ['core#/$defs/KmLine', { id: 'km-6050', lineNumber: 6050, runs: [[[11.9, 51.5, 1200.5]]] }],
-  ['core#/$defs/KmLine', { id: 'km-6050', lineNumber: 6050, runs: [[[11.9, 51.5]]] }],
-  ['layout#/$defs/NamedTrackPath', { id: 'r', name: 'Route 1', path: { trackIds: ['t1'] } }],
-  ['layout#/$defs/AxisSurvey', { id: 'a', epsg: 25832, points: 'sha256:abc' }],
-  ['layout#/$defs/Fields', { planHeader: {}, osrd: { version: '4.0.0' }, imageHash: 'f00' }],
-  ['signalling#/$defs/Signal', SIGNAL],
-  ['signalling#/$defs/Signal', { ...SIGNAL, at: { anchor: 'station', trackId: 't1', station: 20 } }],
-  ['signalling#/$defs/Signal', { ...SIGNAL, at: { anchor: 'plane', easting: 500000, northing: 5700000, epsg: 25832, bearing: 90 } }],
-  ['signalling#/$defs/Signal', { ...SIGNAL, frames: [{ kind: 'screen', aspects: [] }] }],
-  ['signalling#/$defs/Signal', { ...SIGNAL, kind: 'fictive', function: 'gate' }],
-  ['signalling#/$defs/Route', STATION.routes[0]],
-  ['signalling#/$defs/Route', { ...STATION.routes[0], overlaps: [{ preferred: true }] }],
-  ['signalling#/$defs/Overlap', STATION.overlaps[0]],
-  ['signalling#/$defs/FlankProtection', STATION.flankProtection[0]],
-  ['signalling#/$defs/FlankProtection', STATION.flankProtection[1]],
-  ['signalling#/$defs/FlankProtection', { ...STATION.flankProtection[0], protection: { signalId: 'sig-n1', switchElementId: 'we-1', position: 'left' } }],
-  ['signalling#/$defs/FlankProtection', { ...STATION.flankProtection[0], protection: { waived: false } }],
-  ['signalling#/$defs/Balise', STATION.balises[3]],
-  ['signalling#/$defs/Balise', STATION.balises[4]],
-  ['signalling#/$defs/Balise', { ...STATION.balises[0], settings: { frequency: ['1000'] } }],
-  ['signalling#/$defs/Balise', { ...STATION.balises[0], frequency: '1000' }],
-  ['signalling#/$defs/LogicalSignal', { system: 'ks', type: 'main', settings: { Nf: true } }],
-  ['signalling#/$defs/LogicalSignal', { type: 'main' }],
-  ['signalling#/$defs/StationBoundary', STATION.stationBoundaries[0]],
-  ['signalling#/$defs/StationBoundary', { ...STATION.stationBoundaries[0], marks: [{ signalId: 'sig-a', switchId: 'w1' }] }],
-  ['signalling#/$defs/TrackSection', { id: 'ts', kind: 'axleCounting', boundedBy: [] }],
-]
-
-const schemaVectors = () => SCHEMA_CASES.map(([ref, value]) => {
-  const errors = SCHEMAS.check(ref, value, { limit: 1000 })
-  return { ref, value, valid: errors.length === 0, paths: [...new Set(errors.map(e => e.path))].sort() }
-})
 
 // ── Documents ───────────────────────────────────────────────────────────────
+// Through the door — the core's module since step 10: --check sees that it
+// still says of each what it said when the JavaScript was the measure.
 
 /** A record with one of everything the format holds — with the signalling of a small station where asked. */
 function sampleRecord({ signalling = false } = {}) {
@@ -198,6 +139,7 @@ const FILES = {
 }
 
 function main() {
+  if (!loadNativeFile()) throw new Error('the core\'s module is not built: npm run wasm')
   const check = process.argv[2] === '--check'
   let stale = 0
   for (const [file, make] of Object.entries(FILES)) {

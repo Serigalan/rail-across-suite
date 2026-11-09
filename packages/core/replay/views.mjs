@@ -5,9 +5,6 @@
 import * as T from '../src/track/index.js'
 import * as X from '../src/crossSection/index.js'
 import { elementStartStation, terrainHeightAt } from '../src/crossSection/crossSectionUtils.js'
-import { newFindings, validateProject } from '../src/project/index.js'
-import { overlappingTracks } from '../src/project/validateProject.js'
-import { buildReferenceAxis, surveyFromTrace } from '../src/survey/index.js'
 import { arcFrom, straightFrom, transitionElement, endPointStraightUtm } from '../src/geometry/index.js'
 import { frozen, rec } from './record.mjs'
 
@@ -55,7 +52,7 @@ function fixture() {
 }
 
 export default function record() {
-  const { tracks, switches, endMarks, platforms, behind, ahead, branch, sw } = fixture()
+  const { tracks, platforms, behind, ahead } = fixture()
 
   // ── cross section ──
   const xs = []
@@ -94,34 +91,7 @@ export default function record() {
   x('platformSection', X.platformSection, platforms[0])
   x('platformSection', X.platformSection, { front: 1.7, width: 4, height: 760 }, { rail: '49E5', sleeper: 'SWITCH' })
 
-  // ── validation ──
-  const pj = []
-  const v = (op, fn, ...args) => pj.push(rec(`project.${op}`, fn, ...args))
-  const good = { id: 'p', tracks: tracks.filter(tr => tr.id !== 'twin'), switches, endMarks, platforms }
-  v('validateProject', validateProject, good)
-  const survey = surveyFromTrace({ id: 's1', name: 'S' }, { points: [{ station: 0, easting: 600001, northing: 5600001, zLeft: 100, zRight: 100, gauge: 1.435, quality: 'good' }], gaps: [], epsg: EPSG })
-  const axis = buildReferenceAxis({ name: 'R', epsg: EPSG, elements: behind.elements, from: 0, to: 50, tra: 't', importedAt: 'x', id: 'r1' })
-  const gap = { ...branch, elements: [branch.elements[0], { ...branch.elements[1], startNode: [branch.elements[1].startNode[0] + 0.03, branch.elements[1].startNode[1]], length: branch.elements[1].length + 3, epsg: 31468 }],
-    heights: [{ station: 0, z: 1 }, { station: 0, z: 2 }, { station: 900, z: 3 }] }
-  const broken = {
-    ...good,
-    tracks: [...good.tracks.map(tr => (tr.id === 'branch' ? gap : tr)), twin(tracks), { id: 'x9', name: 'odd', epsg: EPSG, elements: [{ ...behind.elements[0], switchId: 'ghost' }] }],
-    switches: [...switches, { ...T.newSwitchFields('turnout'), switchId: 'sw3', name: 'W3', ports: { A: { trackId: behind.id, endpoint: 'END' }, B1: { trackId: 'gone', endpoint: 'BEGIN' }, B2: { trackId: 'cx', endpoint: 'MIDDLE' } } }],
-    platforms: [...platforms, { id: 'p2', trackId: 'gone' }, { id: 'p3', trackId: 'cx', startStation: -3, endStation: 10 }],
-    endMarks: [...endMarks, { id: 'm1', trackId: behind.id, endpoint: 'END' }, { id: 'm2', trackId: 'near', endpoint: 'END' }, { id: 'm3', trackId: 'gone', endpoint: 'BEGIN' }],
-    axisSurveys: [survey, { ...survey, id: 's2', points: { ...survey.points, dn: [] } }],
-    referenceAxes: [axis, { ...axis, id: 'r2', points: { ...axis.points, step: 0 } }],
-    routes: [{ id: 'rt1', name: 'R1', trackIds: [behind.id, ahead.id, 'gone', 'cx'] }, { id: 'rt2', trackIds: [] }],
-  }
-  v('validateProject', validateProject, broken)
-  v('validateProject', validateProject, {})
-  const a1 = validateProject(good), a2 = validateProject(broken)
-  v('newFindings', newFindings, a2.errors, a1.errors)
-  v('newFindings', newFindings, a2.warnings, null)
-  v('overlappingTracks', overlappingTracks, [...tracks], switches)
-  v('overlappingTracks', overlappingTracks, [ahead, { ...ahead, id: 'copy' }], [])
-  // The topology diagram's JavaScript is gone (step 10): its vectors stay as recorded.
-  return { track: { cross_section: xs, topology: frozen('track', 'topology') }, project: { validate: pj } }
+  // The topology diagram's and the validation's JavaScript is gone (step 10): their vectors stay as recorded.
+  return { track: { cross_section: xs, topology: frozen('track', 'topology') }, project: { validate: frozen('project', 'validate') } }
 }
 
-function twin(tracks) { return tracks.find(tr => tr.id === 'twin') }

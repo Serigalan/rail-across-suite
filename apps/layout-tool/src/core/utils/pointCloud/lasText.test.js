@@ -70,7 +70,7 @@ describe.skipIf(!hasLaz)('readFirstPoints — the LAZ sample', () => {
 })
 
 describe('pointsAsText of an E57 file', () => {
-  // What libE57Format wrote and numpy computed from it (tools/e57fixtures.py).
+  // What libE57Format wrote and numpy computed from it (the fixed E57 fixtures).
   const EXPECTED = JSON.parse(readFileSync(`${E57_FIXTURES}expected.json`, 'utf8'))
   const fixture = (name) => bytesSource(new Uint8Array(readFileSync(E57_FIXTURES + name)))
 

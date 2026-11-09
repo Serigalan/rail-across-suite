@@ -12,7 +12,7 @@ One repository holds the core, every module and the server
 
 | Directory | Content |
 |---|---|
-| `packages/` | the Rail-Data-Core (JavaScript and Python) and the libraries the apps and the server share (point clouds, the suite's look `ui`) |
+| `packages/` | the Rail-Data-Core (its JavaScript face over the Rust crates) and the libraries the apps and the server share (point clouds, the suite's look `ui`) |
 | `schemas/` | JSON Schema per domain, shared test vectors |
 | `apps/` | the modules: the suite's start page, the Layout-Tool, the Signalling-Tool, the Fahrzeug-Editor, the Fahrplan-Editor — timetables and running times in one interface —, and the Simulation-Tool's old address leading on to it |
 | `server/` | the project server's schema and HTTP tests, and the Node server they were written against, kept as reference ([server/README.md](server/README.md)) |

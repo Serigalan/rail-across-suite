@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 
 //! The E57 reader against what libE57Format wrote and numpy computed from it
-//! (`packages/pointcloud/tests/fixtures/e57/`, `tools/e57fixtures.py`): counts,
+//! (`packages/pointcloud/test/fixtures/e57/`, kept as fixed data): counts,
 //! sums, sampled points and colours, scan after scan with each pose.
 
 use rail_across_pointcloud::import::{Header, read_cloud_header, read_cloud_points};

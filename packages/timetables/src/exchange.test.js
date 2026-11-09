@@ -22,7 +22,7 @@ describe('a file of timetables', () => {
     const file = timetablesFile(listed)
     const code = (f) => { try { f(); return null } catch (err) { return err.code } }
     expect(code(() => parseTimetablesFile({ ...file, version: '2.0' }))).toBe('timetables_version')
-    expect(code(() => parseTimetablesFile({ format: 'rail-across', domains: {} }))).toBe('timetables_invalid')
+    expect(code(() => parseTimetablesFile({ format: 'infra-data', version: '1.0', domains: {} }))).toBe('timetables_invalid')
     expect(code(() => parseTimetablesFile({ ...file, timetables: [{ name: ' ', data: { trains: [] } }] }))).toBe('timetables_invalid')
     expect(code(() => parseTimetablesFile({ ...file, timetables: [{ name: 'F', data: {} }] }))).toBe('timetables_invalid')
     expect(code(() => timetablesOfText('{'))).toBe('timetables_invalid')

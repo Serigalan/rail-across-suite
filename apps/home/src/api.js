@@ -7,7 +7,7 @@
 // their variants. What a tool does with a
 // variant — working on it, its history, comparing, merging — is the tool's.
 //
-// Revisions travel as core 1.0 documents; a project's record goes out as one
+// Revisions travel as infra-data-1.0 documents; a project's record goes out as one
 // here (projectDocument) and comes back through the core's door
 // (parseProjectsPayload), as in every module.
 import { parseProjectsPayload, projectDocument } from '@rail-across/core/project'

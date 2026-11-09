@@ -1,6 +1,6 @@
 // The suite's project server, same origin as the page: the session is an
 // HttpOnly cookie the browser sends by itself. Of the infrastructure the tool
-// only reads: the user, the projects, a variant's head — a core 1.0 document,
+// only reads: the user, the projects, a variant's head — an infra-data-1.0 document,
 // through the core's door (parseProjectsPayload) as in every module. The
 // timetables it writes are @rail-across/timetables' (timetableApi).
 import { parseProjectsPayload } from '@rail-across/core/project'

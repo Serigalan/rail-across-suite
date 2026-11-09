@@ -1,6 +1,6 @@
 import { derivedId } from './canonical.js'
 
-// What of the record and its core 1.0 document the page still works out
+// What of the record and its infra-data-1.0 document the page still works out
 // itself: the construction stages a project has without its own, and the
 // operational point register its tracks' and platforms' station texts make
 // (R10) — which point each object names, by the object itself. Turning a

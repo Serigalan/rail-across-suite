@@ -1,5 +1,5 @@
 // How the element table may change each element (Entscheidung 375): Fest-,
-// Folge- or Zwischenelement — the roles an element states (`role`, oltjson-1.1)
+// Folge- or Zwischenelement — the roles an element states (`role`, decision 371)
 // and the ones that follow from them.
 
 const isTransition = (el) => el?.elementType === 2

@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Serigalan and the Rail-Across-Suite contributors
 // SPDX-License-Identifier: LGPL-3.0-only
 
-//! The record the Layout-Tool works on (oltjson-1.1) and the core 1.0
+//! The record the Layout-Tool works on and the infra-data-1.0
 //! document it is kept as, both ways, nothing lost (`coreFormat.js`): the
 //! domains `core` and `layout`, locations as one value each, the planning
 //! status as a lifespan over two construction stages, station names and codes
@@ -371,7 +371,7 @@ fn by_id(list: &mut [Value]) {
     });
 }
 
-/// The core 1.0 document of a record (dehydrated), every collection sorted by id (`recordToDocument`).
+/// The infra-data-1.0 document of a record (dehydrated), every collection sorted by id (`recordToDocument`).
 pub fn record_to_document(record: &Value, schema_hashes: &HashMap<&str, String>) -> Result<Value> {
     let known: HashSet<&str> = CORE_FIELDS.iter().chain(LAYOUT_FIELDS).chain(COLLECTIONS).chain(CARRIED).copied().collect();
     let unknown: Vec<String> = record
@@ -537,12 +537,12 @@ pub fn record_to_document(record: &Value, schema_hashes: &HashMap<&str, String>)
             }
         }
     }
-    Ok(json!({ "format": "rail-across", "domains": Value::Object(domains), "blobs": Value::Object(blobs) }))
+    Ok(json!({ "format": crate::door::FORMAT, "version": crate::door::VERSION, "domains": Value::Object(domains), "blobs": Value::Object(blobs) }))
 }
 
 // ── Document → record ───────────────────────────────────────────────────────
 
-/// The record a core 1.0 document holds — the inverse of record_to_document (`documentToRecord`).
+/// The record an infra-data-1.0 document holds — the inverse of record_to_document (`documentToRecord`).
 pub fn document_to_record(doc: &Value) -> Result<Value> {
     let core = &doc["domains"]["core"];
     let empty_layout = json!({ "fields": {}, "collections": {} });

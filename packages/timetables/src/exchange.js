@@ -1,6 +1,6 @@
 /**
  * A project's timetables as a file of their own, beside the project's backup
- * file: the core 1.0 document holds the infrastructure, and a timetable is
+ * file: the infra-data-1.0 document holds the infrastructure, and a timetable is
  * the project's, not a variant's record (decision 0016). Such a file goes
  * out with a project's export, or alone from the Fahrplan-Sim; it comes in
  * with a backup file — into the project or template made of it — or alone,

@@ -1,6 +1,6 @@
 // The suite's project server, same origin as the page: the session is an
 // HttpOnly cookie the browser sends by itself, and every writing request says
-// it carries JSON. Revisions travel as core 1.0 documents; a record goes out
+// it carries JSON. Revisions travel as infra-data-1.0 documents; a record goes out
 // as one (projectDocument) and comes back through the core's door
 // (parseProjectsPayload), as in every module.
 import { parseProjectsPayload, projectDocument } from '@rail-across/core/project'

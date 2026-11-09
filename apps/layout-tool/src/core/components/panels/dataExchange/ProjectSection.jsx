@@ -8,7 +8,7 @@ import MessageList from '../../form/MessageList'
 import ExchangeSection from './ExchangeSection'
 
 /**
- * The whole project as a file: its core 1.0 document (.railacross.json). A
+ * The whole project as a file: its infra-data-1.0 document (.railacross.json). A
  * project the document's schemas refuse is not written at first, and what
  * they found is shown — a click that does nothing would leave the user
  * guessing. It can then be written anyway, to be looked at or mended

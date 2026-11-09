@@ -6,7 +6,7 @@
  * A 401 anywhere but on signing in means the session is gone: the handler set
  * with setUnauthorizedHandler takes the app back to the sign-in page.
  *
- * Revisions travel as core 1.0 documents. The record the app works on goes
+ * Revisions travel as infra-data-1.0 documents. The record the app works on goes
  * out as one and comes back through the door (parseProjectsPayload), here and
  * nowhere else: the callers send and get records.
  */

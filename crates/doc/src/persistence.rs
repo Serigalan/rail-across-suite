@@ -2,160 +2,45 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 
 //! The project record as it is kept and the door to it (`persistenceUtils.js`):
-//! oltjson-1.1 files and core 1.0 documents in, the record with its derived
-//! data stripped and its numbers kept to what they mean.
+//! infra-data-1.0 documents in (decision 0021: the one format), the record with
+//! its derived data stripped and its numbers kept to what they mean.
 
 use rail_across_geom::cant::stored_track_cants;
 use rail_across_geom::element::derived_end_bearing;
 use rail_across_geom::tolerances::POSITION_DIGITS;
 use rail_across_js::{Object, get, js_round, js_string, js_trim, number, truthy};
-use serde_json::{Value, json};
+use serde_json::Value;
 
-use crate::door::{FORMAT as DOCUMENT_FORMAT, from_document, to_document};
+use crate::door::{from_document, to_document};
 use crate::error::{PayloadError, Result};
 
-const FORMAT: &str = "oltjson";
-const FORMAT_VERSION: &str = "1.1";
-/// The format's name as it is spoken of: oltjson-1.1.
-pub const FORMAT_NAME: &str = "oltjson-1.1";
-
-/// A file of `records` (already dehydrated): { format, version, projects }.
-pub fn projects_payload(records: Vec<Value>) -> Value {
-    json!({ "format": FORMAT, "version": FORMAT_VERSION, "projects": records })
-}
-
-fn is_port(p: &Value) -> bool {
-    p.is_null() || p.is_object()
-}
-
-const ELEMENT_ROLES: &[&str] = &["follow", "intermediate"];
-
-fn kept_role_and_reasons(el: &Value) -> bool {
-    let role_ok = match get(el, "role") {
-        None => true,
-        Some(r) => r.as_str().is_some_and(|r| ELEMENT_ROLES.contains(&r)),
-    };
-    let reasons_ok = match get(el, "reasons") {
-        None => true,
-        Some(Value::Object(o)) => o.values().all(Value::is_string),
-        Some(_) => false,
-    };
-    role_ok && reasons_ok
-}
-
-/// `isModelledSwitch`: a switch with its id, its kind and its form version.
-pub fn is_modelled_switch(sw: &Value) -> bool {
-    truthy(sw.get("switchId")) && truthy(sw.get("kind")) && get(sw, "formVersion").is_some()
-}
-
-fn items(v: &Value, key: &str) -> Result<Vec<Value>> {
-    match get(v, key) {
-        None => Ok(Vec::new()),
-        Some(Value::Array(a)) => Ok(a.clone()),
-        Some(_) => Err(PayloadError::new("invalid_payload")),
-    }
-}
-
-/// The records of a payload — a core 1.0 document, or an oltjson-1.1 file —
-/// refused where it is not one of these (`parseProjectsPayload`).
+/// The records of a payload — an infra-data-1.0 document, one project —
+/// refused where it is not one (`parseProjectsPayload`): `unsupported_version`
+/// for another format or version (an oltjson file among them, decision 0021),
+/// `invalid_payload` where it does not hold what it states.
 pub fn parse_projects_payload(data: &Value) -> Result<Vec<Value>> {
-    if data.get("format").and_then(Value::as_str) == Some(DOCUMENT_FORMAT) {
-        return Ok(vec![from_document(data)?]);
-    }
-    let Some(projects) = data.get("projects").and_then(Value::as_array) else {
-        return Err(PayloadError::new("invalid_payload"));
-    };
-    if data.get("format").and_then(Value::as_str) != Some(FORMAT) || data.get("version").and_then(Value::as_str) != Some(FORMAT_VERSION) {
-        return Err(PayloadError::new("unsupported_version"));
-    }
-    for p in projects {
-        for sw in items(p, "switches")? {
-            if !is_modelled_switch(&sw) {
-                return Err(PayloadError::new("invalid_payload"));
-            }
-            if let Some(ports) = get(&sw, "ports") {
-                let ok = match ports {
-                    Value::Object(o) => o.values().all(is_port),
-                    Value::Array(a) => a.iter().all(is_port),
-                    _ => false,
-                };
-                if !ok {
-                    return Err(PayloadError::new("invalid_payload"));
-                }
-            }
-        }
-        for track in items(p, "tracks")? {
-            for el in items(&track, "elements")? {
-                if truthy(el.get("switchBranch")) && !truthy(el.get("switchId")) {
-                    return Err(PayloadError::new("invalid_payload"));
-                }
-                if !kept_role_and_reasons(&el) {
-                    return Err(PayloadError::new("invalid_payload"));
-                }
-            }
-        }
-    }
-    projects
-        .iter()
-        .map(|p| {
-            let kept = dehydrate_project(p);
-            from_document(&to_document(&kept, false, true)?)
-        })
-        .collect()
+    Ok(vec![from_document(data)?])
 }
 
-/// The core 1.0 document of a project record (`projectDocument`).
+/// The infra-data-1.0 document of a project record (`projectDocument`).
 pub fn project_document(record: &Value, carry_schemas: bool, check: bool) -> Result<Value> {
     to_document(&dehydrate_project(record), carry_schemas, check)
 }
 
-fn is_point(p: &Value) -> bool {
-    p.as_array()
-        .is_some_and(|a| a.len() >= 2 && a.iter().all(|x| x.as_f64().is_some_and(f64::is_finite)))
-}
-
-/// The tracks of an exported tracks file, refused where they are not (`parseTracksPayload`).
+/// The tracks of an exported tracks file — an infra-data-1.0 document holding
+/// them —, refused where it is not one or holds none (`tracks_empty`), and where
+/// a track belongs to a switch the project does not have (`switch_missing`):
+/// its branch would point at nothing (`parseTracksPayload`).
 pub fn parse_tracks_payload(data: &Value, switch_ids: &[String]) -> Result<Vec<Value>> {
-    let tracks: Vec<Value> = match data {
-        Value::Array(a) => a.clone(),
-        other => vec![other.clone()],
-    };
+    let record = from_document(data)?;
+    let tracks: Vec<Value> = record.get("tracks").and_then(Value::as_array).cloned().unwrap_or_default();
     if tracks.is_empty() {
         return Err(PayloadError::new("tracks_empty"));
     }
-    let invalid = || PayloadError::new("invalid_payload");
     for track in &tracks {
-        if !track.is_object() {
-            return Err(invalid());
-        }
-        if !track.get("id").and_then(Value::as_str).is_some_and(|s| !s.is_empty()) {
-            return Err(invalid());
-        }
-        let Some(elements) = track.get("elements").and_then(Value::as_array).filter(|e| !e.is_empty()) else {
-            return Err(invalid());
-        };
-        for el in elements {
-            if !el.is_object() {
-                return Err(invalid());
-            }
-            let t = el.get("elementType").and_then(Value::as_f64);
-            if !matches!(t, Some(x) if x == 0.0 || x == 1.0 || x == 2.0) {
-                return Err(invalid());
-            }
-            if !is_point(&el["startNode"]) || !is_point(&el["endNode"]) {
-                return Err(invalid());
-            }
-            if !el.get("length").and_then(Value::as_f64).is_some_and(|l| l.is_finite() && l >= 0.0) {
-                return Err(invalid());
-            }
-            if truthy(el.get("switchBranch")) && !truthy(el.get("switchId")) {
-                return Err(invalid());
-            }
+        for el in track.get("elements").and_then(Value::as_array).into_iter().flatten() {
             if truthy(el.get("switchId")) && !switch_ids.contains(&js_string(el.get("switchId"))) {
                 return Err(PayloadError::new("switch_missing"));
-            }
-            if !kept_role_and_reasons(el) {
-                return Err(invalid());
             }
         }
     }

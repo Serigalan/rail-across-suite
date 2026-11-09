@@ -17,10 +17,10 @@ const record = (extra = {}) => ({ id: 'p', title: 'P', tracks: [track('t1')], sw
 /** The record a record comes back as, through its document. */
 const roundTrip = (r) => fromDocument(JSON.parse(JSON.stringify(toDocument(r, { carrySchemas: true }))))
 
-describe('a record as a core 1.0 document', () => {
+describe('a record as an infra-data-1.0 document', () => {
   it('holds the domains core and layout, each with its version and schema', () => {
     const doc = toDocument(record({ planHeader: { subtitle: 'x' } }))
-    expect(doc.format).toBe('rail-across')
+    expect(doc).toMatchObject({ format: 'infra-data', version: '1.0' })
     expect(doc.domains.core).toMatchObject({ version: '1.0', schema: SCHEMA_HASHES.core, fields: { id: 'p', title: 'P' } })
     expect(doc.domains.layout).toMatchObject({ version: '1.0', schema: SCHEMA_HASHES.layout, dependsOn: ['core'], fields: { planHeader: { subtitle: 'x' } } })
     expect(doc.domains.core.collections.tracks.map(t => t.id)).toEqual(['t1'])
@@ -322,7 +322,7 @@ describe('the manifest', () => {
   })
 })
 
-describe.skipIf(!hasPek)('the PEK data set as a core 1.0 document', () => {
+describe.skipIf(!hasPek)('the PEK data set as an infra-data-1.0 document', () => {
   it('opens and saves losslessly — nulls in its metadata aside, which the document leaves out', () => {
     const pek = loadPek()
     const back = roundTrip(pek)

@@ -25,7 +25,7 @@ async function newProject(user, payload) {
   return res.json()
 }
 
-/** The record a payload of the API (a core 1.0 document) holds. */
+/** The record a payload of the API (an infra-data-1.0 document) holds. */
 const recordOf = (payload) => parseProjectsPayload(payload).projects[0]
 
 /** A variant's head, its document read as the record it holds. */
@@ -43,25 +43,27 @@ describe('projects', () => {
     expect(h.payload).toMatchObject({ id: project.id, title: 'Halle–Könnern', tracks: [] })
   })
 
-  it('keeps a revision as a core 1.0 document and hands it out as one', async () => {
+  it('keeps a revision as an infra-data-1.0 document and hands it out as one (decision 0021)', async () => {
     const { max } = await start()
     const { variantId } = await newProject(max, { tracks: [straight('t1')] })
     const { document } = await head(max, variantId)
-    expect(document).toMatchObject({ format: 'rail-across', domains: { core: { version: '1.0' }, layout: { version: '1.0' } } })
+    expect(document).toMatchObject({ format: 'infra-data', version: '1.0', domains: { core: { version: '1.0' }, layout: { version: '1.0' } } })
     expect(document.domains.core.collections.tracks.map(t => t.id)).toEqual(['t1'])
-    expect(ctx.db.prepare('SELECT schema_version FROM revision').pluck().all()).toEqual([3])
+    expect(ctx.db.prepare('SELECT schema_version FROM revision').pluck().all()).toEqual([4])
   })
 
-  it('reads a revision kept as an oltjson-1.1 record as the document it migrates into', async () => {
+  it('takes documents only: an oltjson-1.1 file is refused', async () => {
     const { max } = await start()
-    const { project, variantId, revisionId } = await newProject(max)
-    const old = { id: project.id, title: 'Halle–Könnern', tracks: [{ ...straight('t1'), status: 'new' }], switches: [], platforms: [] }
-    ctx.db.prepare('UPDATE revision SET schema_version = 2, payload = ? WHERE id = ?').run(gzipSync(JSON.stringify(old)), revisionId)
-    const { document, payload } = await head(max, variantId)
-    const stages = document.domains.core.fields.stages
-    expect(document.domains.core.collections.tracks[0].lifespan).toEqual({ from: stages[1].id })
-    expect(payload.tracks[0]).toMatchObject({ id: 't1', status: 'new' })
-    ctx.db.prepare('UPDATE revision SET schema_version = 1 WHERE id = ?').run(revisionId)
+    const oltjson = { format: 'oltjson', version: '1.1', projects: [{ id: 'p', tracks: [straight('t1')], switches: [], platforms: [] }] }
+    const res = await max('POST', '/api/projects', { title: 'alt', payload: oltjson })
+    expect(res.statusCode).toBe(422)
+    expect(res.json().error).toBe('unsupported_version')
+  })
+
+  it('refuses a revision kept in a form no step reads', async () => {
+    const { max } = await start()
+    const { variantId, revisionId } = await newProject(max)
+    ctx.db.prepare('UPDATE revision SET schema_version = 1, payload = ? WHERE id = ?').run(gzipSync('{}'), revisionId)
     expect((await max('GET', `/api/variants/${variantId}/head`)).statusCode).toBe(409)
   })
 

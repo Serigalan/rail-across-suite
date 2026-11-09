@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Serigalan and the Rail-Across-Suite contributors
 // SPDX-License-Identifier: LGPL-3.0-only
 
-//! The core 1.0 document (decision 0020, step 1) — the `document` module of
+//! The infra-data-1.0 document (decision 0020, step 1) — the `document` module of
 //! the core and the door of its `project` module in Rust: canonical JSON and
 //! content hashes, the manifest, the part of JSON Schema the domain schemas
 //! use, the record ↔ document conversion with its operational point register,

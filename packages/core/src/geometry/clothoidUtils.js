@@ -330,8 +330,8 @@ function storedCants(el) {
 }
 
 /**
- * A track's elements with their cant as a record keeps it (oltjson-1.1,
- * Entscheidung 371): an arc or a straight as storedCants keeps it, a
+ * A track's elements with their cant as a record keeps it (Entscheidung
+ * 371): an arc or a straight as storedCants keeps it, a
  * transition always with both its ends — what transitionCantEnds reads,
  * whether it states them itself or takes them from its neighbours — so the
  * file says every cant there is, and an absent one is 0.

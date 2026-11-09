@@ -449,7 +449,7 @@ describe('the store works on the open project, immutably (R1.3)', () => {
     expect(after).not.toBe(before)
     expect(before.tracks[0].elements).toHaveLength(1)
     expect(after.tracks[0].elements).toHaveLength(2)
-    expect(after.tracks[0].elements[1]).not.toHaveProperty('absLength')   // stations are summed, not kept (oltjson-1.0)
+    expect(after.tracks[0].elements[1]).not.toHaveProperty('absLength')   // stations are summed, not kept (decision 333)
     // What a caller is handed cannot be changed behind the store's back.
     expect(() => { after.tracks[0].elements.push(el) }).toThrow(TypeError)
   })

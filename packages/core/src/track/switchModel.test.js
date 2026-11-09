@@ -55,7 +55,7 @@ describe('isModelledSwitch', () => {
 })
 
 describe('switchElementMark', () => {
-  it('carries the id and the route — the name and label stay on the switch (oltjson-1.0)', () => {
+  it('carries the id and the route — the name and label stay on the switch (decision 333)', () => {
     expect(switchElementMark({ switchId: 'a', name: 'switch.001', label: '300 – 1:9' }, 'branch'))
       .toEqual({
         switchBranch: true, switchRoute: 'branch',
@@ -86,7 +86,7 @@ describe('the ports and routes each kind has', () => {
     }
   })
 
-  it('reads and writes a port as { trackId, endpoint } under `ports` (oltjson-1.0)', () => {
+  it('reads and writes a port as { trackId, endpoint } under `ports` (decision 333)', () => {
     const sw = { kind: 'turnout', ports: { A: { trackId: 'a', endpoint: 'END' } } }
     expect(portTrack(sw, 'A')).toBe('a')
     expect(portEnd(sw, 'A')).toBe('END')

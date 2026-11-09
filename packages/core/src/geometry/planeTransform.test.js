@@ -159,7 +159,7 @@ describe('a whole track in another plane', () => {
     expect(tangentGap).toBeLessThan(1e-3)
   })
 
-  it('keeps no stations of its own on the elements (oltjson-1.0)', () => {
+  it('keeps no stations of its own on the elements (decision 333)', () => {
     const { track: moved } = transformTrackToPlane(track, ZONE)
     for (const el of moved.elements) expect(el).not.toHaveProperty('absLength')
   })

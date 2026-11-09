@@ -27,7 +27,7 @@ Open-Layout-Tool before it became a module of the suite.
 
 ## Documentation
 
-[`docs/`](docs/README.md) describes the architecture, the project data format (oltjson-1.0) and every module of
+[`docs/`](docs/README.md) describes the architecture, the project data format (infra-data-1.0) and every module of
 the app — what it does, how it computes and why it is built that way.
 
 ## Getting Started

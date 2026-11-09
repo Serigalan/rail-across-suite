@@ -1,13 +1,14 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "rail-across",
-  "title": "A Rail-Across-Suite project as one JSON file (.railacross.json)",
+  "$id": "infra-data",
+  "title": "infra-data-1.0: a Rail-Across-Suite project as one JSON file (.railacross.json)",
   "description": "The domain documents of one project state, each with its version and the hash of its schema; the schemas the file carries, by hash; and the blobs its objects name, by hash. The same canonical documents as the container (.railacross) holds, giving the same hashes (S-R9). What each domain holds, its own schema says.",
   "type": "object",
-  "required": ["format", "domains", "blobs"],
+  "required": ["format", "version", "domains", "blobs"],
   "additionalProperties": false,
   "properties": {
-    "format": { "const": "rail-across" },
+    "format": { "const": "infra-data" },
+    "version": { "const": "1.0" },
     "domains": {
       "type": "object",
       "required": ["core"],

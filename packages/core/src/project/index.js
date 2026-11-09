@@ -1,6 +1,6 @@
-// project — the project record as a whole: the oltjson-1.1 record the app
-// works on (load, save, hydrate), the door to it from core 1.0 documents and
-// oltjson-1.1 files, project settings, validation, what one step did. The
+// project — the project record as a whole: the record the app works on (load,
+// hydrate), the door to it from infra-data-1.0 documents (the one format,
+// decision 0021), project settings, validation, what one step did. The
 // door, keeping a record and the validation are the core's Rust module
 // (decision 0020, step 10); loading one, the settings and the step labels —
 // what the page asks for every track and history step it shows — stay here.
@@ -12,8 +12,8 @@
 import { viaRust } from '../native/index.js'
 
 export {
-  dehydrateProjects, FORMAT_NAME, hydrateProjects, parseProjectsPayload, parseTracksPayload,
-  PayloadError, projectDocument, projectsPayload,
+  dehydrateProjects, FORMAT_NAME, hydrateProjects, parseProjectsPayload, parseTracksPayload, PayloadError, projectDocument,
+  tracksDocument,
 } from './persistenceUtils.js'
 export {
   crsChoices, dominantSystem, moveTracksToPlane, newTrackEpsg, ownLineCategory, planeGroup,

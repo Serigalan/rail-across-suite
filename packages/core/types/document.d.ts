@@ -1,11 +1,12 @@
-// The types of the core 1.0 document, derived from the schemas in schemas/ by
+// The types of the infra-data-1.0 document, derived from the schemas in schemas/ by
 // packages/core/tools/types.mjs. Do not edit: change the schema and run the tool.
 
-/** A Rail-Across-Suite project as one JSON file (.railacross.json) */
+/** infra-data-1.0: a Rail-Across-Suite project as one JSON file (.railacross.json) */
 export namespace Document {
   /** The domain documents of one project state, each with its version and the hash of its schema; the schemas the file carries, by hash; and the blobs its objects name, by hash. The same canonical documents as the container (.railacross) holds, giving the same hashes (S-R9). What each domain holds, its own schema says. */
   export type Root = {
-    format: "rail-across"
+    format: "infra-data"
+    version: "1.0"
     domains: {
       /** Names matching ^[a-z][a-zA-Z0-9]*$. */
       [name: string]: Domain

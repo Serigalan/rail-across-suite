@@ -7,11 +7,12 @@ import { WORKING, done as txDone, openDb, request as req } from '@rail-across/wo
 // its version 1.
 //
 // DB `olt`, version 2, one object store in use:
-//   workingCopies – keyPath `variantId`, one record per variant a user has
-//                   opened: { variantId, projectId, base, basePayload,
-//                   project, idLog, updatedAt } — the record being edited
-//                   (dehydrated), the revision it rests on and that
-//                   revision's record, for merging against.
+//   workingCopies – keyPath `variantId`, one entry per variant a user has
+//                   opened: the state being edited and that of the revision
+//                   it rests on, for merging against, each kept as its
+//                   infra-data-1.0 document (decision 0021) and read here as
+//                   { variantId, projectId, base, basePayload, project, idLog,
+//                   updatedAt } with the records.
 //
 // The stores of version 1 (`projects`, `images`) are left as they are and no
 // longer read: there is no taking over of local projects (decision 95). The

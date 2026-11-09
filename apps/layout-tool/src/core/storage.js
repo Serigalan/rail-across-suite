@@ -696,7 +696,7 @@ export const hiddenKmLines = () => _hiddenKmLines.get()
 export const setKmLinesHidden = (lineNumbers, hidden) => _hiddenKmLines.set(lineNumbers.map(String), hidden)
 
 /**
- * The open project as a file: its core 1.0 document, carrying the schemas of
+ * The open project as a file: its infra-data-1.0 document, carrying the schemas of
  * its domains; null without one. Its image goes by the hash the server keeps
  * it under (`imageHash`). `check: false` writes it although the schemas
  * refuse it.

@@ -10,7 +10,7 @@ import { storedTrackCants } from '../src/geometry/clothoidUtils.js'
  * it is not there.
  *
  * The file is from before this tool's own format; it is brought to the
- * oltjson-1.1 record the way an import would need it: every switch a
+ * record the way an import would need it: every switch a
  * `switchId`, `kind`, `formVersion` and its `ports`, every switch element the
  * id of the switch its `switchName` names — and no name of its own after that
  * —, every transition both its cant ends, which it took from its neighbours.
@@ -64,8 +64,8 @@ export function loadPek() {
 
 /**
  * The same line as it stands, at larger scale (113 tracks, 69 switches, two
- * double-track networks with crossovers) — an oltjson-1.1 file, as the app
- * exports it. Looked for under OLT_PEK_BESTAND_FIXTURE or the project
+ * double-track networks with crossovers) — a project file the
+ * Open-Layout-Tool exported before decision 0021, its record read directly. Looked for under OLT_PEK_BESTAND_FIXTURE or the project
  * notes; tests that need it are skipped where it is not there.
  */
 const BESTAND_PATH = [

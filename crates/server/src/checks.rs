@@ -7,24 +7,11 @@
 
 use std::collections::HashSet;
 
-use rail_across_doc::persistence::{dehydrate_projects, parse_projects_payload, project_document, projects_payload};
+use rail_across_doc::persistence::{dehydrate_projects, parse_projects_payload, project_document};
 use rail_across_project::validate::{new_findings, validate_project};
 use serde_json::{Map, Value, json};
 
 use crate::http::ApiError;
-
-fn as_payload(payload: &Value, id: Option<&str>) -> Value {
-    if rail_across_js::truthy(payload.get("format")) {
-        return payload.clone();
-    }
-    let mut record = payload.as_object().cloned().unwrap_or_default();
-    if payload.get("id").is_none_or(Value::is_null) {
-        if let Some(id) = id {
-            record.insert("id".into(), json!(id));
-        }
-    }
-    projects_payload(vec![Value::Object(record)])
-}
 
 /// A checked record: { record, errors, warnings }.
 pub struct Checked {
@@ -39,13 +26,18 @@ impl Checked {
     }
 }
 
-/// `checkRecord`.
-pub fn check_record(payload: &Value, id: Option<&str>) -> Result<Checked, ApiError> {
+/// `checkRecord`: a payload — an infra-data-1.0 document, the one format
+/// (decision 0021) — taken through the door, its record validated.
+pub fn check_record(payload: &Value) -> Result<Checked, ApiError> {
     if !payload.is_object() {
         return Err(ApiError::new(422, "invalid_payload"));
     }
-    let parsed = parse_projects_payload(&as_payload(payload, id)).map_err(|e| ApiError::new(422, &e.code))?;
-    let record = dehydrate_projects(&parsed).into_iter().next().unwrap_or(Value::Null);
+    let parsed = parse_projects_payload(payload).map_err(|e| ApiError::new(422, &e.code))?;
+    check_kept(dehydrate_projects(&parsed).into_iter().next().unwrap_or(Value::Null))
+}
+
+/// A record the server made itself (a data migration's), validated as `check_record` validates.
+pub fn check_kept(record: Value) -> Result<Checked, ApiError> {
     let v = validate_project(&record);
     let list = |k: &str| v.get(k).and_then(Value::as_array).cloned().unwrap_or_default();
     let (mut errors, mut warnings) = (list("errors"), list("warnings"));
@@ -64,9 +56,9 @@ pub fn check_record(payload: &Value, id: Option<&str>) -> Result<Checked, ApiErr
     Ok(Checked { record, errors, warnings })
 }
 
-/// `normalizedRecord`: a stored payload as checkRecord would hand it on, not validated.
+/// `normalizedRecord`: a stored document as checkRecord would hand on its record, not validated.
 pub fn normalized_record(payload: &Value) -> Value {
-    parse_projects_payload(&as_payload(payload, None))
+    parse_projects_payload(payload)
         .ok()
         .and_then(|p| dehydrate_projects(&p).into_iter().next())
         .unwrap_or_else(|| payload.clone())

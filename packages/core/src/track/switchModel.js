@@ -142,7 +142,7 @@ const newSwitchId = () => crypto.randomUUID()
 /**
  * What an element of a switch's route carries so it can be found again: the
  * switch's id and which of its routes this is. Its name and form label are the
- * switch's own and are read there (oltjson-1.0, decision 333) — an element
+ * switch's own and are read there (decision 333) — an element
  * keeps no copy of them.
  */
 export function switchElementMark(sw, route) {
@@ -176,8 +176,8 @@ export function isModelledSwitch(sw) {
 
 /**
  * The ports of each kind: which of the switch's routes carries the elements
- * marked there. What a port joins stands on the record under `ports` (oltjson-
- * 1.0, decision 333): `ports.A = { trackId, endpoint }` — the track it names
+ * marked there. What a port joins stands on the record under `ports` (decision
+ * 333): `ports.A = { trackId, endpoint }` — the track it names
  * and which end of that track ('BEGIN' | 'END') the switch sits at. portTrack and
  * portEnd read it, withPort writes it.
  *

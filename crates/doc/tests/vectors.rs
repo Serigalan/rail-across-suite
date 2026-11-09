@@ -30,7 +30,7 @@ fn canonical_json_and_its_hash() {
 #[test]
 fn the_schema_check() {
     let mut set = SchemaSet::new();
-    for name in ["rail-across", "core", "layout", "signalling"] {
+    for name in ["infra-data", "core", "layout", "signalling"] {
         set.add(schema_of(name).unwrap().clone()).unwrap();
     }
     for case in vectors("schema") {

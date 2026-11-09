@@ -1,7 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Serigalan and the Rail-Across-Suite contributors
 // SPDX-License-Identifier: LGPL-3.0-only
 
-//! The one door for core 1.0 documents (`door.js`): what comes in is checked
+//! The one door for infra-data-1.0 documents (`door.js`; decision 0021 — what
+//! was "the core 1.0 document"): what comes in is checked
 //! here — the file's shape, each domain's version and schema, every object
 //! against its domain's schema, the blobs against their hashes — and what is
 //! written is checked the same way before it leaves. A domain of an earlier
@@ -19,9 +20,17 @@ use crate::error::{PayloadError, Result};
 use crate::schema::{Breach, SchemaSet};
 
 /// The file format's name, as the envelope states it.
-pub const FORMAT: &str = "rail-across";
+pub const FORMAT: &str = "infra-data";
+/// The format's version, as the envelope states it.
+pub const VERSION: &str = "1.0";
+/// The format's name as it is spoken of: infra-data-1.0.
+pub const FORMAT_NAME: &str = "infra-data-1.0";
+/// The envelope the same documents had before decision 0021 ("the core 1.0
+/// document"), which only the project server's one migration still reads
+/// (`upgrade_envelope`).
+pub const OLD_FORMAT: &str = "rail-across";
 
-const ENVELOPE: &str = include_str!("../../../schemas/rail-across.schema.json");
+const ENVELOPE: &str = include_str!("../../../schemas/infra-data.schema.json");
 const CORE: &str = include_str!("../../../schemas/core/1.0.schema.json");
 const LAYOUT: &str = include_str!("../../../schemas/layout/1.0.schema.json");
 const SIGNALLING: &str = include_str!("../../../schemas/signalling/1.0.schema.json");
@@ -59,9 +68,9 @@ pub fn schema_hashes() -> &'static HashMap<&'static str, String> {
     &schemas().hashes
 }
 
-/// The schema of a domain this build reads, by name, and the envelope's ("rail-across").
+/// The schema of a domain this build reads, by name, and the envelope's ("infra-data").
 pub fn schema_of(name: &str) -> Option<&'static Value> {
-    if name == "rail-across" {
+    if name == FORMAT {
         return Some(&schemas().envelope);
     }
     schemas().domains.iter().find(|(d, _)| *d == name).map(|(_, s)| s)
@@ -328,13 +337,13 @@ fn check(name: &str, value: &Value) -> Vec<Breach> {
         .unwrap_or_else(|e| vec![Breach { path: "/".into(), message: e }])
 }
 
-/// Check a core 1.0 document; returns it — a domain of an earlier schema of
+/// Check an infra-data-1.0 document; returns it — a domain of an earlier schema of
 /// its version brought to this build's —, or a PayloadError (`checkDocument`).
 pub fn check_document(given: &Value) -> Result<Value> {
-    if given.get("format").and_then(Value::as_str) != Some(FORMAT) {
-        return Err(PayloadError::with("invalid_payload", vec!["/format: is not rail-across".into()]));
+    if given.get("format").and_then(Value::as_str) != Some(FORMAT) || given.get("version").and_then(Value::as_str) != Some(VERSION) {
+        return Err(PayloadError::with("unsupported_version", vec![format!("/format: is not {FORMAT_NAME}")]));
     }
-    let shape = check("rail-across", given);
+    let shape = check(FORMAT, given);
     if !shape.is_empty() {
         return Err(PayloadError::with("invalid_payload", breaches(&shape, "")));
     }
@@ -392,13 +401,31 @@ pub fn check_document(given: &Value) -> Result<Value> {
             }
         }
     }
+    found.extend(switch_branches_without_switch(&doc));
     if !found.is_empty() {
         return Err(PayloadError::with("invalid_payload", found));
     }
     Ok(doc)
 }
 
-/// The core 1.0 document of a record (dehydrated), checked as the door checks
+/// What the schema cannot say: an element marked as a switch's branch names
+/// the switch it belongs to (the rule the record's door held before decision 0021).
+fn switch_branches_without_switch(doc: &Value) -> Vec<String> {
+    let tracks = doc["domains"]["core"]["collections"]["tracks"].as_array().cloned().unwrap_or_default();
+    let mut found = Vec::new();
+    for (i, track) in tracks.iter().enumerate() {
+        for (j, el) in track["elements"].as_array().into_iter().flatten().enumerate() {
+            if el.get("switchBranch") == Some(&Value::Bool(true)) && !el.get("switchId").is_some_and(|id| rail_across_js::truthy(Some(id))) {
+                found.push(format!(
+                    "/domains/core/collections/tracks/{i}/elements/{j}: is a switch's branch without its switchId"
+                ));
+            }
+        }
+    }
+    found
+}
+
+/// The infra-data-1.0 document of a record (dehydrated), checked as the door checks
 /// what comes in; `carry_schemas` puts the domains' schemas into it, `check:
 /// false` leaves the check out (`toDocument`).
 pub fn to_document(record: &Value, carry_schemas: bool, check: bool) -> Result<Value> {
@@ -415,7 +442,28 @@ pub fn to_document(record: &Value, carry_schemas: bool, check: bool) -> Result<V
     if check { check_document(&doc) } else { Ok(doc) }
 }
 
-/// The record a core 1.0 document holds, once the door has checked it (`fromDocument`).
+/// The record an infra-data-1.0 document holds, once the door has checked it (`fromDocument`).
 pub fn from_document(doc: &Value) -> Result<Value> {
     document_to_record(&check_document(doc)?)
+}
+
+/// A document of the envelope before decision 0021 (`format: "rail-across"`,
+/// no version) in today's (`format: "infra-data"`, `version: "1.0"`) — the
+/// domains are the same. Anything else comes back as it was. Only the project
+/// server's migration of its revisions calls this (decision 0021, point 2).
+pub fn upgrade_envelope(doc: &Value) -> Value {
+    match doc {
+        Value::Object(o) if o.get("format").and_then(Value::as_str) == Some(OLD_FORMAT) => {
+            let mut out = Object::new();
+            out.insert("format".into(), json!(FORMAT));
+            out.insert("version".into(), json!(VERSION));
+            for (k, v) in o {
+                if k != "format" && k != "version" {
+                    out.insert(k.clone(), v.clone());
+                }
+            }
+            Value::Object(out)
+        }
+        other => other.clone(),
+    }
 }

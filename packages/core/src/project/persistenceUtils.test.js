@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import {
-  FORMAT_NAME, dehydrateProjects, hydrateProjects, parseProjectsPayload, parseTracksPayload, PayloadError, projectDocument, projectsPayload,
+  FORMAT_NAME, dehydrateProjects, hydrateProjects, parseProjectsPayload, parseTracksPayload, PayloadError, projectDocument, tracksDocument,
 } from './persistenceUtils.js'
 import { SWITCH_TYPES, switchArcLength, switchStraightLength } from '../switch/catalogue.js'
 import { computeSwitchGeometryUtm } from '../switch/symbol.js'
@@ -31,7 +31,7 @@ describe('hydrateProjects / dehydrateProjects round trip', () => {
     expect(reloadedEls).toHaveLength(origEls.length)
     for (let i = 0; i < origEls.length; i++) {
       const a = origEls[i], b = reloadedEls[i]
-      // Kept to 1 µm and 10⁻⁹ ° (oltjson-1.0).
+      // Kept to 1 µm and 10⁻⁹ ° (decision 333).
       b.startNode.forEach((v, k) => expect(v).toBeCloseTo(a.startNode[k], 6))
       b.endNode.forEach((v, k) => expect(v).toBeCloseTo(a.endNode[k], 6))
       expect(b.bearing).toBeCloseTo(a.bearing, 9)
@@ -177,10 +177,12 @@ describe('loading a project of the current model', () => {
 
 // ── The door: what this tool will and will not take ──────────────────────────
 
-const payloadOf = (projects) => projectsPayload(dehydrateProjects(projects))
+const payloadOf = ([record]) => projectDocument(record)
+// A document of a record the schemas refuse, as a file someone wrote by hand would be.
+const unchecked = (record) => projectDocument(record, { check: false })
 
 describe('parseProjectsPayload', () => {
-  it('takes a payload of the current version and hands the projects back', () => {
+  it('takes an infra-data-1.0 document and hands its project back', () => {
     const payload = payloadOf(switchProject())
     expect(parseProjectsPayload(payload).projects).toHaveLength(1)
   })
@@ -189,92 +191,94 @@ describe('parseProjectsPayload', () => {
     expect(parseProjectsPayload(payloadOf(project())).projects).toHaveLength(1)
   })
 
-  it('says what it takes: { format: oltjson, version: 1.1 }', () => {
-    expect(payloadOf(project())).toMatchObject({ format: 'oltjson', version: '1.1' })
-    expect(FORMAT_NAME).toBe('oltjson-1.1')
+  it('says what it takes: { format: infra-data, version: 1.0 } (decision 0021)', () => {
+    expect(payloadOf(project())).toMatchObject({ format: 'infra-data', version: '1.0' })
+    expect(FORMAT_NAME).toBe('infra-data-1.0')
   })
 
-  it('refuses another format or another version of it by that alone', () => {
-    for (const other of [{ version: 2 }, { version: '1.0' }, { version: '1.2' }, { format: 'railjson' }, { format: undefined }]) {
+  it('refuses another format or another version of it by that alone — an oltjson file among them', () => {
+    const others = [{ version: '2.0' }, { version: undefined }, { format: 'rail-across', version: undefined }, { format: 'railjson' }, { format: undefined }]
+    for (const other of others) {
       const payload = { ...payloadOf(switchProject()), ...other }
-      expect(() => parseProjectsPayload(payload)).toThrow(PayloadError)
-      expect(() => parseProjectsPayload(payload)).toThrow('unsupported_version')
+      expect(() => parseProjectsPayload(payload), JSON.stringify(other)).toThrow('unsupported_version')
     }
+    const oltjson = { format: 'oltjson', version: '1.1', projects: dehydrateProjects(switchProject()) }
+    expect(() => parseProjectsPayload(oltjson)).toThrow('unsupported_version')
   })
 
   it('refuses an element role or reasons the format does not have (Entscheidung 371)', () => {
     for (const bad of [{ role: 'fixed' }, { role: 3 }, { reasons: 'text' }, { reasons: ['a'] }, { reasons: { 'LP.KS.02': 4 } }]) {
-      const payload = payloadOf(project())
-      Object.assign(payload.projects[0].tracks[0].elements[0], bad)
-      expect(() => parseProjectsPayload(payload), JSON.stringify(bad)).toThrow('invalid_payload')
+      const doc = payloadOf(project())
+      Object.assign(doc.domains.core.collections.tracks[0].elements[0], bad)
+      expect(() => parseProjectsPayload(doc), JSON.stringify(bad)).toThrow('invalid_payload')
     }
-    const payload = payloadOf(project())
-    Object.assign(payload.projects[0].tracks[0].elements[0], { role: 'follow', reasons: { 'LP.KS.02': 'Bestand' } })
-    expect(parseProjectsPayload(payload).projects).toHaveLength(1)
+    const [record] = project()
+    Object.assign(record.tracks[0].elements[0], { role: 'follow', reasons: { 'LP.KS.02': 'Bestand' } })
+    expect(parseProjectsPayload(payloadOf([record])).projects).toHaveLength(1)
   })
 
   it('refuses ports that are not { trackId, endpoint } objects', () => {
-    const payload = payloadOf(switchProject())
-    payload.projects[0].switches[0].ports = { A: 'track-a' }
-    expect(() => parseProjectsPayload(payload)).toThrow('invalid_payload')
+    const [record] = switchProject()
+    record.switches[0].ports = { A: 'track-a' }
+    expect(() => parseProjectsPayload(unchecked(record))).toThrow('invalid_payload')
   })
 
   it('refuses a payload that is not one at all', () => {
     for (const bad of [null, undefined, 42, {}, { projects: 'nope' }]) {
-      expect(() => parseProjectsPayload(bad)).toThrow('invalid_payload')
+      expect(() => parseProjectsPayload(bad)).toThrow(PayloadError)
     }
   })
 
-  it('refuses a switch record missing any of the model’s fields', () => {
-    for (const drop of ['switchId', 'kind', 'formVersion']) {
-      const payload = payloadOf(switchProject())
-      delete payload.projects[0].switches[0][drop]
-      expect(() => parseProjectsPayload(payload), drop).toThrow('invalid_payload')
+  it('refuses a switch missing any of the model’s fields', () => {
+    for (const drop of ['kind', 'formVersion']) {
+      const [record] = switchProject()
+      delete record.switches[0][drop]
+      expect(() => parseProjectsPayload(unchecked(record)), drop).toThrow('invalid_payload')
     }
   })
 
   it('refuses a marked element without its switch id', () => {
-    const payload = payloadOf(switchProject())
-    delete payload.projects[0].tracks[1].elements[0].switchId
-    expect(() => parseProjectsPayload(payload)).toThrow('invalid_payload')
+    const [record] = switchProject()
+    delete record.tracks[1].elements[0].switchId
+    expect(() => parseProjectsPayload(unchecked(record))).toThrow('invalid_payload')
   })
 
   it('lets an ordinary element through — only marked ones need an id', () => {
-    const payload = payloadOf(project())
-    expect(payload.projects[0].tracks[0].elements.some(el => el.switchBranch)).toBe(false)
-    expect(() => parseProjectsPayload(payload)).not.toThrow()
+    const [record] = project()
+    expect(record.tracks[0].elements.some(el => el.switchBranch)).toBe(false)
+    expect(() => parseProjectsPayload(payloadOf([record]))).not.toThrow()
   })
 })
 
 describe('parseTracksPayload (R0.5)', () => {
-  const el = (extra = {}) => ({ elementType: 0, startNode: [0, 0], endNode: [10, 0], length: 10, ...extra })
-  const track = (extra = {}) => ({ id: 't1', epsg: 25832, elements: [el()], ...extra })
+  const el = (extra = {}) => ({ elementType: 0, startNode: [0, 0], endNode: [10, 0], bearing: 90, length: 10, ...extra })
+  const track = (extra = {}) => ({ id: 't1', epsg: 25832, trackType: 1, elements: [el()], ...extra })
   const code = (fn) => { try { fn() } catch (e) { return e instanceof PayloadError ? e.code : 'other' } return null }
 
-  it('takes one track or an array of them', () => {
-    expect(parseTracksPayload(track())).toHaveLength(1)
-    expect(parseTracksPayload([track(), track({ id: 't2' })])).toHaveLength(2)
+  it('takes the tracks of a tracks document — one track or several', () => {
+    expect(parseTracksPayload(tracksDocument([track()]))).toHaveLength(1)
+    expect(parseTracksPayload(tracksDocument([track(), track({ id: 't2' })]))).toHaveLength(2)
+    expect(tracksDocument([track()])).toMatchObject({ format: 'infra-data', version: '1.0' })
   })
 
-  it('refuses what is not a track file', () => {
-    expect(code(() => parseTracksPayload([]))).toBe('tracks_empty')
-    expect(code(() => parseTracksPayload({ projects: [] }))).toBe('invalid_payload')
-    expect(code(() => parseTracksPayload(track({ id: 3 })))).toBe('invalid_payload')
-    expect(code(() => parseTracksPayload(track({ elements: [] })))).toBe('invalid_payload')
-    expect(code(() => parseTracksPayload(track({ elements: [el({ elementType: 7 })] })))).toBe('invalid_payload')
-    expect(code(() => parseTracksPayload(track({ elements: [el({ endNode: [1, 'x'] })] })))).toBe('invalid_payload')
-    expect(code(() => parseTracksPayload(track({ elements: [el({ length: -1 })] })))).toBe('invalid_payload')
-    expect(code(() => parseTracksPayload(track({ elements: [el({ switchBranch: 'stem' })] })))).toBe('invalid_payload')
+  it('refuses what is not a tracks document', () => {
+    expect(code(() => parseTracksPayload(tracksDocument([])))).toBe('tracks_empty')
+    expect(code(() => parseTracksPayload([track()]))).toBe('unsupported_version')
+    expect(code(() => parseTracksPayload({ projects: [] }))).toBe('unsupported_version')
+    const bad = (extra) => projectDocument({ id: 'tracks', tracks: [track(extra)] }, { check: false })
+    expect(code(() => parseTracksPayload(bad({ elements: [el({ elementType: 7 })] })))).toBe('invalid_payload')
+    expect(code(() => parseTracksPayload(bad({ elements: [el({ endNode: [1, 'x'] })] })))).toBe('invalid_payload')
+    expect(code(() => parseTracksPayload(bad({ elements: [el({ length: -1 })] })))).toBe('invalid_payload')
   })
 
   it('takes a switch branch only into a project that has the switch', () => {
-    const t = track({ elements: [el({ switchBranch: 'stem', switchId: 's1' })] })
+    const t = tracksDocument([track({ elements: [el({ switchBranch: true, switchId: 's1' })] })])
     expect(code(() => parseTracksPayload(t))).toBe('switch_missing')
     expect(parseTracksPayload(t, { switchIds: new Set(['s1']) })).toHaveLength(1)
   })
 })
 
-// ── What a record keeps (oltjson-1.1, decisions 333 and 371) ──────────────────────────
+// ── What a record keeps (decisions 333 and 371) ──────────────────────────
 
 describe('a record as it is kept', () => {
   const arc = { elementType: 1, startNode: [500000.1234567891, 5600000], endNode: [500100, 5600010], bearing: 84.12345678912345, length: 100.12345678912, radius: 500.00000004 }

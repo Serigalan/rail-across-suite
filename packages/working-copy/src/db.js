@@ -1,15 +1,19 @@
-import { FORMAT_NAME } from '@rail-across/core/project'
+import { FORMAT_NAME, parseProjectsPayload, projectDocument } from '@rail-across/core/project'
 
 // The working copies in the browser's IndexedDB, a thin promise wrapper.
 //
 // DB `olt`, version 2 (the name and version the Layout-Tool gave it, so the
 // copies kept before are still there), one object store in use:
-//   workingCopies – keyPath `variantId`, one record per variant opened in a
+//   workingCopies – keyPath `variantId`, one entry per variant opened in a
 //                   tool of the suite: { variantId, projectId, base,
-//                   basePayload, project, idLog, updatedAt, format } — the
-//                   record being edited (dehydrated), the revision it rests on
-//                   and that revision's record, for merging against; the
-//                   splits and joins since (idLog).
+//                   baseDocument, document, idLog, updatedAt, format } — the
+//                   state being edited and that of the revision it rests on,
+//                   for merging against, each as its infra-data-1.0 document
+//                   (decision 0021: the one format); the splits and joins
+//                   since (idLog).
+//
+// The suite's tools read and write a copy as { …, basePayload, project } with
+// the records the app works on; the documents are this file's business.
 //
 // The stores of version 1 (`projects`, `images`) are the Layout-Tool's to
 // list and empty; nothing here reads them.
@@ -51,34 +55,69 @@ export function openDb() {
   return dbPromise
 }
 
-// A working copy is stored with the format its records are in (oltjson-1.1).
-// One from before it is not read: it was not converted, and what the server
-// keeps of that state is not opened either.
-const current = (record) => record?.format === FORMAT_NAME
+// A copy kept before decision 0021 holds the records themselves, marked
+// oltjson-1.1; it is read once as it is and kept again as documents. One of
+// any other format is not read: what the server keeps of that state is not
+// opened either.
+const OLD_FORMAT = 'oltjson-1.1'
+
+const documentOf = (record) => (record ? projectDocument(record) : undefined)
+const recordOf = (doc) => (doc ? parseProjectsPayload(doc).projects[0] : undefined)
+
+/** A copy as it is kept: its records as documents. */
+function stored({ project, basePayload, ...rest }) {
+  return { ...rest, document: documentOf(project), baseDocument: documentOf(basePayload), format: FORMAT_NAME }
+}
+
+/** A kept copy as the tools read it — its documents through the door — or null where it cannot be read. */
+function copyOf(entry) {
+  if (entry?.format === OLD_FORMAT) return (({ format: _format, ...copy }) => copy)(entry)
+  if (entry?.format !== FORMAT_NAME) return null
+  const { document, baseDocument, format: _format, ...rest } = entry
+  try {
+    return { ...rest, project: recordOf(document), basePayload: recordOf(baseDocument) }
+  } catch (err) {
+    console.warn(`working copy ${entry.variantId} not read: ${err.code ?? err.message}`)
+    return null
+  }
+}
+
+/** The copies of `entries` kept before decision 0021, kept again as documents. */
+async function migrate(entries) {
+  const old = entries.filter(e => e?.format === OLD_FORMAT)
+  if (!old.length) return
+  const db = await openDb()
+  const tx = db.transaction(WORKING, 'readwrite')
+  for (const { format: _format, ...copy } of old) tx.objectStore(WORKING).put(stored(copy))
+  await done(tx)
+}
 
 /** One working copy, or null. */
 export async function getWorkingCopy(variantId) {
   const db = await openDb()
   const tx = db.transaction(WORKING, 'readonly')
-  const record = await request(tx.objectStore(WORKING).get(variantId))
+  const entry = await request(tx.objectStore(WORKING).get(variantId))
   await done(tx)
-  return current(record) ? record : null
+  await migrate([entry])
+  return copyOf(entry)
 }
 
 /** Every working copy. */
 export async function getAllWorkingCopies() {
   const db = await openDb()
   const tx = db.transaction(WORKING, 'readonly')
-  const records = await request(tx.objectStore(WORKING).getAll())
+  const entries = await request(tx.objectStore(WORKING).getAll())
   await done(tx)
-  return records.filter(current)
+  await migrate(entries)
+  return entries.map(copyOf).filter(Boolean)
 }
 
-/** Keep a working copy, in the format its records are in. */
-export async function putWorkingCopy(record) {
+/** Keep a working copy: { variantId, projectId, base, basePayload, project, idLog, … }. */
+export async function putWorkingCopy(copy) {
+  const entry = stored(copy)
   const db = await openDb()
   const tx = db.transaction(WORKING, 'readwrite')
-  tx.objectStore(WORKING).put({ ...record, format: FORMAT_NAME })
+  tx.objectStore(WORKING).put(entry)
   await done(tx)
 }
 

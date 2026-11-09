@@ -1,18 +1,14 @@
-import { PayloadError, viaNative } from '../document/index.js'
+import { FORMAT_NAME, PayloadError, viaNative } from '../document/index.js'
 import { reconstructElements, derivedEndBearing, loadedTrackCants } from '../geometry/index.js'
 import { rebuildSwitchSymbol } from '../switch/index.js'
 import { rebuildPlatformSymbol, rebuildCoords } from '../track/index.js'
 
 /**
- * oltjson-1.1 — the one format of a project (decision 333, version 1.1 since
- * Entscheidung 371): what a file holds, what the browser and the server keep,
- * and what the app works on in memory.
- *
- *   { format: 'oltjson', version: '1.1', projects: [...] }
- *
- * One record per project. The app's model *is* this record, plus the display
- * geometry the load derives from it (hydrateProjects) and the save strips
- * again (dehydrateProjects):
+ * The record the app works on in memory, and the door to it from the one
+ * format of a project, infra-data-1.0 (decision 0021) — what a file holds,
+ * what the project server keeps and what the browser keeps of a working copy.
+ * The record is the document's content in the shape the app reads, plus the
+ * display geometry the load derives (hydrateProjects):
  *
  *   – a track carries one coordinate system (`track.epsg`), and its elements
  *     are stated in it: startNode / endNode, bearing [°], length, radius resp.
@@ -38,65 +34,43 @@ import { rebuildPlatformSymbol, rebuildCoords } from '../track/index.js'
  *     leaves a transition the ends its neighbours give it anyway, so it follows
  *     them (geometry.loadedTrackCants).
  *   – how the element table may change an element (Entscheidung 371): `role`
- *     'follow' from this element on (Folgeelement — it and every one after it
- *     take length and radius, each starting where the one before ends) or
- *     'intermediate' (Zwischenelement — its radius is typed, it and the two
- *     elements beside it are worked out anew, everything else stays); absent,
- *     the element is a Festelement. `reasons` { ruleId: text } the written
- *     justification for each Hinweis of the rule catalogue on the element (a
- *     boundary rule's on the element after the joint); the one for cant in a
- *     turnout over 100 mm stays `cantException`.
+ *     'follow' or 'intermediate', absent a Festelement; `reasons` { ruleId:
+ *     text } the written justification for each Hinweis of the rule catalogue.
  *   – numbers are kept to what they mean: positions, lengths, radii and
- *     stations to 1 µm, heights to 0.1 mm, angles to 10⁻⁹ °. Not coarser for
- *     the plane: nodes and design values must agree to the 10⁻⁶ ° the chain
- *     checks hold a tangent joint to — 0.1 mm on a 40 m arc is 10⁻⁵ °, and a
- *     switch laid into a track read back that way would inherit the break.
+ *     stations to 0.1 µm, heights to 0.1 mm, angles to 10⁻⁹ °.
  *   – `kmLines` are foreign reference data, kept in WGS84 as they came, the
  *     one exception to the plane rule (see kmLineUtils).
  *   – project images live outside the records; an export embeds them.
  *
- * The record is what the app works on. What crosses a boundary — a file, the
- * project server — is the core 1.0 document (document module), the record
- * turned into the shape of the data model and checked against its schemas.
- * parseProjectsPayload is the door for both: a core 1.0 document, or an
- * oltjson-1.1 file migrated into one (the first step of the migration chain)
- * and checked as such. Anything else is refused, and nothing behind the door
- * has to ask again whether a record is complete. The door, the document and
- * keeping a record (dehydrate) are the core's Rust module (crates/project,
- * crates/doc; decision 0020, step 10); loading one — its display geometry —
- * is still the page's own.
+ * parseProjectsPayload is the door: an infra-data-1.0 document is checked and
+ * comes out as the record; anything else — an oltjson file among it — is
+ * refused, and nothing behind the door has to ask again whether a record is
+ * complete. The door and the document are the core's Rust module (crates/doc;
+ * decision 0020, step 10); loading a record — its display geometry — is still
+ * the page's own.
  */
-const FORMAT = 'oltjson'
-const FORMAT_VERSION = '1.1'
-/** The format's name as it is spoken of: oltjson-1.1. */
-export const FORMAT_NAME = `${FORMAT}-${FORMAT_VERSION}`
 
+export { FORMAT_NAME }
 export { PayloadError }
 
-/** A file of `records` (already dehydrated): { format, version, projects }. */
-export const projectsPayload = (records) => ({ format: FORMAT, version: FORMAT_VERSION, projects: records })
-
 /**
- * The records of a payload — a core 1.0 document (one project), or an
- * oltjson-1.1 file ({ format, version, projects }) — and refuse it where it is
- * not one of these.
+ * The records of a payload — an infra-data-1.0 document, one project: { projects: [record] } —
+ * and refuse it where it is not one.
  *
  * This is the one place that decides. Everything downstream — hydrateProjects,
  * the switch symbols, the delete rules — may then take the model for granted
- * instead of each guarding for a field that might be missing. An oltjson-1.1
- * record is migrated into a core 1.0 document and taken through the same
- * checks a document is, so both come out alike.
+ * instead of each guarding for a field that might be missing.
  *
- * Refused with `unsupported_version` where the file is another format or
- * another version, with `stages_unsupported` where a document has
- * construction stages of its own, and with `invalid_payload` (its `details`
- * saying what) where it states a format it does not hold.
+ * Refused with `unsupported_version` where the file is another format (an
+ * oltjson file among them) or another version, with `stages_unsupported` where
+ * a document has construction stages of its own, and with `invalid_payload`
+ * (its `details` saying what) where it states a format it does not hold.
  */
 export const parseProjectsPayload = (data) => viaNative('project.parseProjectsPayload', data)
 
 /**
- * The core 1.0 document of a project record — what a file and the project
- * server hold. Derived data is stripped first; `carrySchemas` puts the
+ * The infra-data-1.0 document of a project record — what a file, the project
+ * server and a working copy hold. Derived data is stripped first; `carrySchemas` puts the
  * domains' schemas in, as a file that travels carries them; `check: false`
  * writes it although the schemas refuse it (toDocument).
  */
@@ -104,15 +78,20 @@ export const projectDocument = (record, { carrySchemas = false, check = true } =
   viaNative('project.projectDocument', { record: withoutDerived(record), carrySchemas, check })
 
 /**
- * Unwrap a file of tracks as the data exchange panel exports them (one track
- * or an array of them, elements without their derived geometry) — and refuse
- * it where it is not one: every track needs an id and a chain of elements of a
- * known kind between two plane points. A track that belongs to a switch may
- * only come back into a project that has that switch (`switchIds`), or its
- * branch would point at nothing.
+ * The infra-data-1.0 document of some tracks, as the data exchange panel
+ * exports them: a project of these tracks alone, its schemas carried.
+ */
+export const tracksDocument = (tracks) =>
+  projectDocument({ id: 'tracks', tracks }, { carrySchemas: true })
+
+/**
+ * The tracks of a file the data exchange panel exported (tracksDocument) — and
+ * refuse it where it is not one: the door checks it as any document. A track
+ * that belongs to a switch may only come back into a project that has that
+ * switch (`switchIds`), or its branch would point at nothing.
  *
- * Returns the tracks; throws a PayloadError ('invalid_payload',
- * 'tracks_empty', 'switch_missing') otherwise.
+ * Returns the tracks; throws a PayloadError ('unsupported_version',
+ * 'invalid_payload', 'tracks_empty', 'switch_missing') otherwise.
  */
 export const parseTracksPayload = (data, { switchIds = new Set() } = {}) =>
   viaNative('project.parseTracksPayload', { data, switchIds: [...switchIds] })
@@ -167,5 +146,5 @@ function withoutDerived(p) {
   return out
 }
 
-/** The records as they are kept (oltjson-1.1): derived data stripped, numbers rounded. */
+/** The records as their documents keep them: derived data stripped, numbers rounded. */
 export const dehydrateProjects = (projects) => viaNative('project.dehydrateProjects', (projects ?? []).map(withoutDerived))

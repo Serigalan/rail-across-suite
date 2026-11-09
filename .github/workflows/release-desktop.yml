@@ -32,9 +32,34 @@ jobs:
       - run: rustup target add wasm32-unknown-unknown
       - if: runner.os == 'macOS'
         run: brew install mdbtools
-      # mdb-export from MSYS2, which the runner has; scripts/stage-mdbtools.mjs finds it there.
+      # mdb-export for Windows: MSYS2 has no package of mdbtools, so it is built from its source the way
+      # mdbtools' own CI builds it on Windows — the msys-native gcc in the MSYS environment of the runner's
+      # MSYS2 —, with iconv (text out as UTF-8), without GLib, libmdb linked in. It is put with the msys DLLs it
+      # needs where scripts/stage-mdbtools.mjs takes it from (RA_MDB_EXPORT). The commit is one whose Windows
+      # builds passed upstream.
       - if: runner.os == 'Windows'
-        run: C:\msys64\usr\bin\pacman.exe -Sy --noconfirm --needed mingw-w64-x86_64-mdbtools
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MSYS
+          release: false
+          install: autotools base-devel gcc git libiconv-devel
+      - if: runner.os == 'Windows'
+        shell: msys2 {0}
+        run: |
+          src="$(cygpath "$RUNNER_TEMP")/mdbtools-src"
+          out="$(cygpath "$RUNNER_TEMP")/mdbtools"
+          git clone --quiet https://github.com/mdbtools/mdbtools.git "$src"
+          cd "$src"
+          git checkout --quiet 3d19ef594446feb4be255370a57d8c7d7789b37b
+          autoreconf -i -f
+          ./configure --build=x86_64-pc-cygwin --enable-iconv --disable-glib --disable-shared --disable-man
+          make -j4
+          mkdir -p "$out"
+          cp src/util/mdb-export.exe "$out/"
+          ldd "$out/mdb-export.exe" | awk '$3 ~ /^\/usr\/bin\// { print $3 }' | xargs -r cp -t "$out/"
+          ls "$out"
+          "$out/mdb-export.exe" --version
+          echo "RA_MDB_EXPORT=$(cygpath -w "$out/mdb-export.exe")" >> "$GITHUB_ENV"
       - run: cargo install tauri-cli --version '^2' --locked
       # Runs scripts/build-site.mjs and scripts/stage-mdbtools.mjs itself (tauri.conf.json).
       - run: cargo tauri build

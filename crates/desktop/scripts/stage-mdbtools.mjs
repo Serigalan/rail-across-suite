@@ -7,9 +7,11 @@
 // installed here, the app is built without it and the MDB import says the tool
 // is missing.
 //
-// On Windows mdb-export comes from MSYS2 (pacman -S mingw-w64-x86_64-mdbtools,
-// C:\msys64\mingw64\bin\mdb-export.exe): MSYS2's ldd (RA_LDD, default
-// C:\msys64\usr\bin\ldd.exe) names the DLLs it needs, those beside it are copied.
+// On Windows MSYS2 has no package of mdbtools: mdb-export is built from its
+// source with MSYS2's msys gcc and put with its msys DLLs in one folder (the
+// release workflow does so, RA_MDB_EXPORT names it). MSYS2's ldd (RA_LDD,
+// default C:\msys64\usr\bin\ldd.exe) names the DLLs it needs, those beside it
+// are copied.
 //
 //   node scripts/stage-mdbtools.mjs [path to mdb-export]
 import { execFileSync } from 'node:child_process'

@@ -35,8 +35,9 @@ otherwise. The executable is not signed, so SmartScreen warns on its first start
 The release workflow (`.github/workflows/release-desktop.yml`) builds the packages for Windows — the ZIP and the
 installers — and macOS — a `.dmg` for Apple silicon —, on a tag `desktop-YYYY-MM-DD[.n]` as a release of that
 tag, by hand as the run's artifacts only (the way to try it before the tag). Neither is signed: SmartScreen warns,
-macOS refuses the first start until it is allowed (the release notes say how). `mdb-export` comes from MSYS2
-(`mingw-w64-x86_64-mdbtools`) on Windows, from Homebrew on macOS, with the libraries it needs. Linux is not
+macOS refuses the first start until it is allowed (the release notes say how). `mdb-export` comes with the libraries it needs:
+from Homebrew on macOS; on Windows, where MSYS2 has no package of it, built from mdbtools' source with MSYS2's
+msys gcc, as mdbtools' own CI does there. Linux is not
 released; CI builds the app on Linux and Windows and runs the smoke check on both, portable.
 
 ## Build

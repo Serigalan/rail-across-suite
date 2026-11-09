@@ -5,31 +5,36 @@
 Pure functions on the objects of a project record: tracks and their element chains, the vertical alignment
 along a track, the switch record and its ports, links, marks at track ends, platforms, routes, and the
 operations that split, join and reverse tracks. Nothing here reads or writes the store — that is what lets
-the importers, the merge and the Node project server use the same code.
+the importers, the merge and the project server use the same code.
+
+The module is the core's Rust crate `crates/track` ([decision 0021](../../../docs/decisions/0021-one-format-one-build-the-project-in-the-module.md),
+phase D): `index.js` calls it for every function, an argument that is a part of the project the module holds
+crossing as its name (`native` holdProject); its constants (`constants.js`), ids drawn from the browser's
+randomness and a heading in the interface's language are what stays JavaScript.
 
 ## Files
 
 | File | What it does |
 |---|---|
-| `trackModel.js` | Making, reversing and joining tracks; repointing switch ports after a split/join (`remapSwitches`); track labels and names |
-| `switchModel.js` | What a switch record is: kinds, routes, ports (`portsOf`, `portTrack`, `portEnd`, `withPort`), the element mark that ties a route's elements to their switch |
-| `heightUtils.js` | The vertical alignment `track.heights`: stationing, interpolation, editing a point by two given values, splitting/joining/reversing heights, joint heights, vertical curves |
-| `heightDatums.js` | Height point spacing and the vertical datums (DHHN2016, DHHN92, EGM96, EGM2008) |
-| `identifierUtils.js` | Ids, track type fields (line track / station track), switch numbering and designations |
-| `trackSplitUtils.js` | Splitting an element or a track at a point (straight, arc, clothoid), carving a switch route out of a track |
-| `mergeElements.js` | Runs of elements that are one element merged into one (`mergeChain`): pieces a carve left (switch deletion), or, with `equal`, consecutive elements alike in kind, radius (to 1 mm) and cant — the element table's merge |
-| `trackLinkUtils.js` | Links: the node where one track ends and the next begins in another plane |
-| `topology.js` | The state of every track end (switch, link, joint, buffer stop, boundary, open); which tracks continue from an end |
-| `trackEndMarks.js` | Buffer stops and planning-area boundaries at free track ends |
-| `bufferStopGeometry.js` | How a buffer stop and a boundary are drawn |
-| `platformUtils.js` | Platforms anchored to a track by two stations; stationing helpers (`pointAtStation`, `stationOnTrack`, `pointOnElement`); carrying platforms when their track turns round or goes into another (`carryPlatforms`, `flipPlatforms`) |
-| `platformForm.js` | The platform dialog's fields and the record they make |
-| `routes.js` | Routes: named runs of connected tracks with their own stationing |
-| `kmLines.js` | The kilometrage of a track point against the project's kilometrage lines (`project.kmLines`), measured in the track's plane |
-| `trackGroups.js` | Grouping tracks by line or station for lists and assignment; the name of a line track from its kilometrage |
-| `planStatus.js` | Planning status (existing / new / removal) of tracks and switches |
-| `alignmentBands.js` | Curvature, cant and speed bands over the station |
-| `search.js` | Matching tracks and switches against typed text |
+| `crates/track/src/model.rs` | Making, reversing and joining tracks; repointing switch ports after a split/join (`remapSwitches`); track labels and names |
+| `crates/track/src/switch_model.rs` | What a switch record is: kinds, routes, ports (`portsOf`, `portTrack`, `portEnd`, `withPort`), the element mark that ties a route's elements to their switch |
+| `crates/track/src/heights.rs` | The vertical alignment `track.heights`: stationing, interpolation, editing a point by two given values, splitting/joining/reversing heights, joint heights, vertical curves |
+| `crates/track/src/heights.rs` | Height point spacing and the vertical datums (DHHN2016, DHHN92, EGM96, EGM2008) |
+| `crates/track/src/ids.rs` | Ids, track type fields (line track / station track), switch numbering and designations |
+| `crates/track/src/split.rs` | Splitting an element or a track at a point (straight, arc, clothoid), carving a switch route out of a track |
+| `crates/track/src/merge.rs` | Runs of elements that are one element merged into one (`mergeChain`): pieces a carve left (switch deletion), or, with `equal`, consecutive elements alike in kind, radius (to 1 mm) and cant — the element table's merge |
+| `crates/track/src/topology.rs` | Links: the node where one track ends and the next begins in another plane |
+| `crates/track/src/topology.rs` | The state of every track end (switch, link, joint, buffer stop, boundary, open); which tracks continue from an end |
+| `crates/track/src/end_marks.rs` | Buffer stops and planning-area boundaries at free track ends |
+| `crates/track/src/bands.rs` | How a buffer stop and a boundary are drawn |
+| `crates/track/src/platforms.rs` | Platforms anchored to a track by two stations; stationing helpers (`pointAtStation`, `stationOnTrack`, `pointOnElement`); carrying platforms when their track turns round or goes into another (`carryPlatforms`, `flipPlatforms`) |
+| `crates/track/src/platforms.rs` | The platform dialog's fields and the record they make |
+| `crates/track/src/routes.rs` | Routes: named runs of connected tracks with their own stationing |
+| `crates/track/src/topology.rs` | The kilometrage of a track point against the project's kilometrage lines (`project.kmLines`), measured in the track's plane |
+| `crates/track/src/groups.rs` | Grouping tracks by line or station for lists and assignment; the name of a line track from its kilometrage |
+| `crates/track/src/status.rs` | Planning status (existing / new / removal) of tracks and switches |
+| `crates/track/src/bands.rs` | Curvature, cant and speed bands over the station |
+| `crates/track/src/groups.rs` | Matching tracks and switches against typed text |
 
 ## Tracks
 
@@ -108,7 +113,7 @@ pair ends that pass close by, the tangents must also oppose within 2°.
 
 ## Track ends
 
-`topology.js` gives every track end exactly one state: `switch` (held by a switch port), `link`, `joint`
+`crates/track/src/topology.rs` gives every track end exactly one state: `switch` (held by a switch port), `link`, `joint`
 (meets exactly one other free end on the same node, < 1 cm, same plane), `buffer_stop`, `boundary`, or
 `open`. There is nothing in between: an end that merely comes close to something is open. Open ends are
 what the topology view draws red. Ends are hashed into ~1.5 m cells so a project of a thousand tracks

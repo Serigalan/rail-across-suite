@@ -2,12 +2,12 @@ import { describe, it, expect } from 'vitest'
 import {
   newBufferStop, newBoundary, bufferStopStations, bufferStopFits, remapEndMarks, flipEndMarks,
   pruneEndMarks, defaultBrakeLength, endMarkName, endMarkStation, BUFFER_STOP_LENGTH, BUFFER_STOP_TYPES,
-} from '@rail-across/core/src/track/trackEndMarks.js'
-import { boundaryFeatures, bufferStopShape, bufferStopFeatures } from '@rail-across/core/src/track/bufferStopGeometry.js'
-import { classifyTrackEnds, freeEnds, switchNodes } from '@rail-across/core/src/track/topology.js'
+} from '@rail-across/core/track'
+import { boundaryFeatures, bufferStopFeatures } from '@rail-across/core/track'
+import { classifyTrackEnds, freeEnds, switchNodes } from '@rail-across/core/track'
 import { endPointStraightUtm, endPointCurvedUtm } from '@rail-across/core/src/geometry/elementUtils.js'
 import { utmToWgs84 } from '@rail-across/core/src/geometry/coordinateUtils.js'
-import { newSwitchFields, LINK_KIND } from '@rail-across/core/src/track/switchModel.js'
+import { newSwitchFields, LINK_KIND } from '@rail-across/core/track'
 
 /**
  * Buffer stops and boundaries sit on track ends (trackEndMarks), and the
@@ -77,6 +77,14 @@ describe('buffer stop stations', () => {
     expect(bufferStopFits(50, NaN)).toBe(false)
   })
 })
+
+// A buffer stop's three parts, as the features draw them: face, body and brake (null where it has none).
+function bufferStopShape(track, mark) {
+  const features = bufferStopFeatures([track], [{ id: 'm', kind: 'buffer_stop', trackId: track.id, ...mark }])
+  if (!features.length) return null
+  const part = (name) => features.find(f => f.properties.part === name)?.geometry.coordinates ?? null
+  return { face: part('face'), body: part('body'), brake: part('brake') }
+}
 
 describe('buffer stop shape', () => {
   it('stands across the track at its face, on a straight', () => {

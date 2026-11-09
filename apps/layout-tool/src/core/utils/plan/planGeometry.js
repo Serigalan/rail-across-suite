@@ -245,7 +245,7 @@ export function switchSymbolUtm(sw, trackById) {
       // The two wedges between the legs at the acute crossing angle, out along
       // all four legs — the same pair of rings the map's fill draws. The obtuse
       // wedges carry no body.
-      fill: crossingBodyUtm(routes),
+      fill: crossingBodyUtm(sw, trackById),
       lcs: null,
       label: sw.label ?? null,
       bauform: 'plain',

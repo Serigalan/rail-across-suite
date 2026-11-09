@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { rebuildCoords, joinTracks, reverseTrack, remapSwitches } from '../track/trackModel.js'
+import { rebuildCoords, joinTracks, reverseTrack, remapSwitches } from '../track/index.js'
 import {
   computeCurvedValuesUtm, computeStraightValuesUtm, arcCoordsFromRadiusUtm,
   endPointCurvedUtm, endPointStraightUtm, bearingAfterUtm,
@@ -7,14 +7,14 @@ import {
 import { computeClothoidUtm, transitionPointAtUtm } from '../geometry/clothoidUtils.js'
 import { utmToWgs84 } from '../geometry/coordinateUtils.js'
 import { SAGITTA_ELEMENT, SAGITTA_TRACK } from '../geometry/geometryPrecision.js'
-import { newSwitchFields, switchElementMark } from '../track/switchModel.js'
-import { splitElementAt, carveSwitchRoute } from '../track/trackSplitUtils.js'
+import { newSwitchFields, switchElementMark } from '../track/index.js'
+import { splitElementAt, carveSwitchRoute } from '../track/index.js'
 import { hydrateProjects, parseProjectsPayload, projectDocument } from '../project/persistenceUtils.js'
-import { joinHeights, splitHeights } from '../track/heightUtils.js'
-import { mergeableRun, mergeChain } from '../track/mergeElements.js'
+import { joinHeights, splitHeights } from '../track/index.js'
+import { mergeableRun, mergeChain } from '../track/index.js'
 import {
   switchParts, planSwitchDeletion, keptRoutes,
-} from './switchDelete.js'
+} from './index.js'
 import {
   expectValidTrack, expectNodesJoin, expectLengthsTrue,
   expectSwitchRoutesCarved,

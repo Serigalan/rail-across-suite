@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { axisPoints, buildReconnect, reconnectFromAnswer, reconnectPick, reconnectRange, reconnectRequest, replacedSpan, stretchDefaults } from './index.js'
 import { viaRust } from '../native/index.js'
 import { reconstructElements } from '../geometry/elementReconstruct.js'
-import { rebuildCoords } from '../track/trackModel.js'
+import { rebuildCoords } from '../track/index.js'
 import { expectValidTrack } from '../../test/chainInvariants.js'
 import fixture from '../../test/fixtures/reconnect_answers.json' with { type: 'json' }
 

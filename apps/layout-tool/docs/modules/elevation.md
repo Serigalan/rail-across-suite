@@ -77,7 +77,7 @@ ldS lies comes from the form (`lds`: distance behind the switch end WE); a form 
 and its area ends at WE.
 
 **Sleepers** lie along the **bisector** of main route and branch — the line equally far from both axes;
-sleeper k at `s_k = 0.3 + 0.6·k` m from WA along it, square to it there (`switch/sleepers.js`). The bisector is traced from WA in
+sleeper k at `s_k = 0.3 + 0.6·k` m from WA along it, square to it there (`crates/switch/src/sleepers.rs`). The bisector is traced from WA in
 1 m steps, each step put back where both axes are equally far. A sleeper crosses the two axes in a *pair*
 of points. Nothing here is a setting or stored.
 
@@ -210,5 +210,5 @@ resolve against a gradient.
 `heightLocks.test.js`, `routeProfile.test.js`, `elevationSource.test.js`, `elevationFill.test.js` next to
 the files; a crossover in cant in `src/core/test/swappedTurnout.test.js`. The turnout plane they build on —
 the branch's height from the main route's (`ldsLift`, `trackHeightAt`) — is the core's
-(`packages/core/src/switch/switchGradient.js`); its tests, which run it with the couplings here, are in
+(`crates/switch/src/gradient.rs`); its tests, which run it with the couplings here, are in
 `src/core/test/core/switch/switchGradient.test.js`.

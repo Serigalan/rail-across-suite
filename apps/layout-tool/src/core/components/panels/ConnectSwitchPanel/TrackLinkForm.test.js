@@ -6,10 +6,10 @@ import { endPointStraightUtm } from '@rail-across/core/src/geometry/elementUtils
 import {
   transformPlanePoint, transformGridBearing, utmToWgs84,
 } from '@rail-across/core/src/geometry/coordinateUtils.js'
-import { findTrackJoints, linkRecord } from '@rail-across/core/src/track/trackLinkUtils.js'
+import { findTrackJoints, linkRecord } from '@rail-across/core/track'
 import { inGerman } from '../../../test/i18n'
 import TrackLinkForm from './TrackLinkForm'
-import { withPort } from '@rail-across/core/src/track/switchModel.js'
+import { withPort } from '@rail-across/core/track'
 
 /**
  * What the link form says before it writes anything. The static renderer runs

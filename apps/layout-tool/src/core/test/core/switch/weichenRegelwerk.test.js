@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { WEICHEN_REGELWERK, WEICHEN_REGELWERK_ID, weichenGruppen } from '@rail-across/core/src/switch/weichenRegelwerk.js'
-import { SWITCH_TYPES, SWITCH_TYPES_SPECIAL, CROSSING_TYPES } from '@rail-across/core/src/switch/catalogue.js'
-import { switchKindLabelKey } from '@rail-across/core/src/track/switchModel.js'
+import { WEICHEN_REGELWERK, WEICHEN_REGELWERK_ID, weichenGruppen } from '@rail-across/core/switch'
+import { SWITCH_TYPES, SWITCH_TYPES_SPECIAL, CROSSING_TYPES } from '@rail-across/core/switch'
+import { switchKindLabelKey } from '@rail-across/core/track'
 import { translations } from '../../../locales/i18n'
 import {
   evaluateRule, ruleById, lookupPiecewise, KATALOG, IN_SWITCH_AREA, CATALOG_ID,

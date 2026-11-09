@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { parseMdbPayload, buildTracksFromMdb, mdbSwitchInventory, buildAllTracksFromMdb } from './mdbImport'
 import { placeMdbSwitches, locateMdbSwitches, switchTypeFor } from './mdbSwitchPlacement'
-import { switchRoutesFromTracks, rebuildSwitchSymbol, crossingRoutesFromTracks } from '@rail-across/core/src/switch/symbol.js'
-import { elementBelongsToSwitch, switchPorts, isModelledSwitch, portTrack } from '@rail-across/core/src/track/switchModel.js'
+import { switchRoutesFromTracks, rebuildSwitchSymbol, crossingRoutesFromTracks } from '@rail-across/core/switch'
+import { elementBelongsToSwitch, switchPorts, isModelledSwitch, portTrack } from '@rail-across/core/track'
 import {
   expectEpsgThroughout, expectNodesJoin,
   expectLengthsTrue, expectRenderCoordsConsistent, expectSwitchRoutesCarved,

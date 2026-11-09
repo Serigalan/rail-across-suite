@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest'
 import {
   switchArcLength, switchStraightLength, switchBranchLength, branchRadius, SWITCH_CONNECTION_STAGES,
-} from './catalogue.js'
+} from './index.js'
 import { arcCoordsFromRadiusUtm, computeCurvedValuesUtm, endPointCurvedUtm } from '../geometry/elementUtils.js'
 import { SAGITTA_ELEMENT, SAGITTA_TRACK } from '../geometry/geometryPrecision.js'
-import { planSwitchDeletion } from './switchDelete.js'
+import { planSwitchDeletion } from './index.js'
 
 import { expectValidTrack, expectSwitchRoutesCarved } from '../../test/chainInvariants.js'
 import { buildSCurve } from '../commands/index.js'

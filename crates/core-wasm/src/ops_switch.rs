@@ -271,11 +271,16 @@ pub fn run(op: &str, input: &Value) -> Option<Result<Value, Failure>> {
                 gr::switch_couplings(&a.list(0), &a.list(1), &opts(f)).iter().map(|c| c.to_json()).collect(),
             ))
         }),
+        "switch.switchCoupling" => with_forms(a.option(2, "forms"), |f| {
+            ok(gr::switch_coupling(&a.list(0), a.v(1), &opts(f)).map(|c| c.to_json()).unwrap_or(Value::Null))
+        }),
         "switch.couplingOf" => with_forms(a.option(3, "forms"), |f| {
             ok(gr::coupling_of(&a.list(0), &a.list(1), a.v(2), &opts(f))
                 .map(|c| c.to_json())
                 .unwrap_or(Value::Null))
         }),
+        // On a coupling as switchCouplings answers it: (coupling, mainHeights).
+        "switch.ldsLift" if a.v(0).get("ldsSleeper").is_some() => ok(opt_num(gr::lds_lift_json(a.v(0), &a.list(1)))),
         "switch.ldsLift" => with_forms(a.option(4, "forms"), |f| {
             let c = gr::coupling_of(&a.list(0), &a.list(1), a.v(2), &opts(f));
             ok(c.map(|c| number(gr::lds_lift(&c, &a.list(3)))).unwrap_or(Value::Null))
@@ -338,6 +343,25 @@ pub fn run(op: &str, input: &Value) -> Option<Result<Value, Failure>> {
         "switch.endCurvature" => ok(number(mc::end_curvature(&rt::to_chain(a.v(0))))),
         // switchDelete
         "switch.switchParts" => ok(del::parts_json(&del::switch_parts(a.v(0), &del::by_id(&a.list(1))))),
+        // On the ports as switchParts gives them by port — `{ A: { occupied }, … }` — or on the tracks.
+        "switch.keptRoutes" if a.v(1).is_object() => {
+            const PORTS: [&str; 6] = ["A", "B1", "B2", "B", "C", "D"];
+            let parts: Vec<del::Port> = PORTS
+                .iter()
+                .filter_map(|p| a.v(1).get(*p).map(|x| (p, x)))
+                .map(|(p, x)| del::Port {
+                    port: p,
+                    route: None,
+                    track_id: None,
+                    endpoint: None,
+                    track: None,
+                    mine: Vec::new(),
+                    beyond: Vec::new(),
+                    occupied: rail_across_js::truthy(x.get("occupied")),
+                })
+                .collect();
+            ok(json!(del::kept_routes(a.v(0), &parts)))
+        }
         "switch.keptRoutes" => ok(json!(del::kept_routes(a.v(0), &del::switch_parts(a.v(0), &del::by_id(&a.list(1)))))),
         "switch.planSwitchDeletion" => ok(del::plan_switch_deletion(a.v(0), &a.list(1))),
         // switchPlacement

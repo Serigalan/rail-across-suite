@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
-import { tracksOnFrom } from './topology.js'
+import { tracksOnFrom } from './index.js'
 import { endPointStraightUtm } from '../geometry/elementUtils.js'
 import { utmToWgs84 } from '../geometry/coordinateUtils.js'
-import { newSwitchFields, LINK_KIND } from './switchModel.js'
+import { newSwitchFields, LINK_KIND } from './index.js'
 import { hasPek, loadPekBestand } from '../../test/pekFixture.js'
 
 /**

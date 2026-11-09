@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import {
   trackKind, trackTypeName, trackGroupKey, groupTracks, groupTitle, assignTracks, plannedNames, stationTrackStem,
-} from './trackGroups.js'
-import { kmTrackName } from './trackGroups.js'
-import { buildTypeFields } from './identifierUtils.js'
+} from './index.js'
+import { kmTrackName } from './index.js'
+import { buildTypeFields } from './index.js'
 
 const line = (id, lineNumber, extra = {}) => ({ id, name: id, trackType: 1, lineNumber, ...extra })
 const station = (id, stationName, extra = {}) => ({ id, name: id, trackType: 2, stationName, ...extra })

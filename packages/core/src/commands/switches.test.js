@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { switchOnTrackPlacement, switchOnTrackRemnant, switchOnTrackSlider, switchOnTrackToeValid } from './index.js'
 import { viaRust } from '../native/index.js'
 import { arcFrom, straightFrom } from '../geometry/elementFactory.js'
-import { SWITCH_TYPES, switchStraightLength } from '../switch/catalogue.js'
+import { SWITCH_TYPES, switchStraightLength } from '../switch/index.js'
 
 // Steps of the commands, as the module runs them (not part of the face).
 const switchOnTrackRouteEnd = viaRust('commands.switchOnTrackRouteEnd')

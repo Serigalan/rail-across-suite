@@ -177,52 +177,109 @@ pub fn run(op: &str, input: &Value) -> Option<Result<Value, Failure>> {
     }
 }
 
-/// Where in the input a member of the held project was lent, and which.
-pub struct Lent(Vec<(Vec<usize>, Vec<String>, String)>);
+/// Where in the input a part of the held project was lent, and which.
+pub struct Lent(Vec<(Vec<usize>, Vec<String>, Part)>);
 
-/// The marker `{"$held": member}` — `""` for the whole project — or None.
-fn marker(v: &Value) -> Option<&str> {
-    match v {
-        Value::Object(o) if o.len() == 1 => o.get("$held").and_then(Value::as_str),
+/// A part of the held project: the path to it — empty for the project itself,
+/// `["tracks"]` for a member, `["tracks", 3]` for an item of it,
+/// `["tracks", 3, "elements"]` for a member of that.
+#[derive(Clone, PartialEq)]
+struct Part(Vec<Seg>);
+
+#[derive(Clone, PartialEq)]
+enum Seg {
+    Key(String),
+    At(usize),
+}
+
+/// The marker `{"$held": part}` — `""` for the whole project, a member's name,
+/// or the path to a part — or None.
+fn marker(v: &Value) -> Option<Part> {
+    let Value::Object(o) = v else { return None };
+    if o.len() != 1 {
+        return None;
+    }
+    match o.get("$held")? {
+        Value::String(s) if s.is_empty() => Some(Part(Vec::new())),
+        Value::String(s) => Some(Part(vec![Seg::Key(s.clone())])),
+        Value::Array(path) => path
+            .iter()
+            .map(|s| match s {
+                Value::String(k) => Some(Seg::Key(k.clone())),
+                Value::Number(n) => n.as_u64().map(|i| Seg::At(i as usize)),
+                _ => None,
+            })
+            .collect::<Option<Vec<_>>>()
+            .map(Part),
         _ => None,
     }
 }
 
+/// The slot of `part` in the held project (None for the whole of it).
+fn held_slot<'v>(held: &'v mut Value, part: &Part) -> Option<&'v mut Value> {
+    if part.0.is_empty() {
+        return None;
+    }
+    let mut at = held;
+    for seg in &part.0 {
+        at = match seg {
+            Seg::Key(k) => at.as_object_mut()?.get_mut(k)?,
+            Seg::At(i) => at.as_array_mut()?.get_mut(*i)?,
+        };
+    }
+    Some(at)
+}
+
+/// Whether two parts overlap — one holds the other: lending one leaves the other incomplete.
+fn overlap(a: &Part, b: &Part) -> bool {
+    let n = a.0.len().min(b.0.len());
+    a.0[..n] == b.0[..n]
+}
+
 /// Every marker in the input — an argument, or a member or item of one, two
 /// levels down — replaced by what the held project has there: moved out of
-/// it the first time, copied for a second marker of the same member.
+/// it the first time, copied where a part of it is named again or lent
+/// already (the whole project, a member and an item of it in one call).
 pub fn lend(input: &mut Value) -> Lent {
-    let mut lent: Vec<(Vec<usize>, Vec<String>, String)> = Vec::new();
-    let mut copies: Vec<(Vec<usize>, Vec<String>, String)> = Vec::new();
+    let mut lent: Vec<(Vec<usize>, Vec<String>, Part)> = Vec::new();
+    let mut copies: Vec<(Vec<usize>, Vec<String>, Part)> = Vec::new();
     HELD.with(|h| {
         let mut held = h.borrow_mut();
         if !held.is_object() {
             return;
         }
+        // Copies first where a part is wanted whole by another marker: what is moved out is gone from the rest.
+        let mut wanted: Vec<Part> = Vec::new();
+        visit(input, &mut Vec::new(), &mut Vec::new(), 0, &mut |slot, _, _| match marker(slot) {
+            Some(p) => {
+                wanted.push(p);
+                true
+            }
+            None => false,
+        });
+        let whole = wanted.iter().any(|w| w.0.is_empty());
         visit(input, &mut Vec::new(), &mut Vec::new(), 0, &mut |slot, idx, keys| {
-            let Some(name) = marker(slot).map(str::to_string) else { return false };
-            if name.is_empty() {
+            let Some(part) = marker(slot) else { return false };
+            let shared = whole || wanted.iter().filter(|w| overlap(w, &part)).count() > 1;
+            if part.0.is_empty() {
                 *slot = held.clone();
-            } else if lent.iter().any(|(_, _, n)| *n == name) {
-                copies.push((idx.to_vec(), keys.to_vec(), name));
-            } else if let Some(v) = held.as_object_mut().and_then(|o| o.get_mut(&name)) {
+            } else if shared {
+                copies.push((idx.to_vec(), keys.to_vec(), part));
+            } else if let Some(v) = held_slot(&mut held, &part) {
                 *slot = v.take();
-                lent.push((idx.to_vec(), keys.to_vec(), name));
+                lent.push((idx.to_vec(), keys.to_vec(), part));
             } else {
                 *slot = Value::Null;
             }
             true
         });
-    });
-    for (idx, keys, name) in copies {
-        let Some((from_idx, from_keys, _)) = lent.iter().find(|(_, _, n)| *n == name) else {
-            continue;
-        };
-        let value = slot_at(input, from_idx, from_keys).map(|v| v.clone()).unwrap_or(Value::Null);
-        if let Some(slot) = slot_at(input, &idx, &keys) {
-            *slot = value;
+        for (idx, keys, part) in &copies {
+            let value = held_slot(&mut held, part).map(|v| v.clone()).unwrap_or(Value::Null);
+            if let Some(slot) = slot_at(input, idx, keys) {
+                *slot = value;
+            }
         }
-    }
+    });
     Lent(lent)
 }
 
@@ -248,7 +305,7 @@ fn visit(v: &mut Value, idx: &mut Vec<usize>, keys: &mut Vec<String>, depth: usi
                 idx.pop();
             }
         }
-        Value::Object(o) if depth > 0 => {
+        Value::Object(o) => {
             for (k, item) in o.iter_mut() {
                 idx.push(usize::MAX);
                 keys.push(k.clone());
@@ -280,10 +337,9 @@ pub fn give_back(input: &mut Value, lent: Lent) {
     }
     HELD.with(|h| {
         let mut held = h.borrow_mut();
-        let Some(project) = held.as_object_mut() else { return };
-        for (idx, keys, name) in lent.0 {
-            if let Some(slot) = slot_at(input, &idx, &keys) {
-                project.insert(name, slot.take());
+        for (idx, keys, part) in lent.0 {
+            if let (Some(slot), Some(home)) = (slot_at(input, &idx, &keys), held_slot(&mut held, &part)) {
+                *home = slot.take();
             }
         }
     });

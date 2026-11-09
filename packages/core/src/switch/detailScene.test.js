@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { connectionPartners, switchDetailScene } from './detailScene.js'
+import { connectionPartners, switchDetailScene } from './index.js'
 import { hydrateProjects } from '../project/persistenceUtils.js'
 import { hasPekBestand, loadPekBestand } from '../../test/pekFixture.js'
 

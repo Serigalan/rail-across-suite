@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { carryPlatforms, flipPlatforms } from './platformUtils.js'
-import { reverseTrack, rebuildCoords } from './trackModel.js'
+import { carryPlatforms, flipPlatforms } from './index.js'
+import { reverseTrack, rebuildCoords } from './index.js'
 import { straightElement } from '../geometry/elementFactory.js'
 import { edgeAt } from '../../test/platformEdge.js'
 

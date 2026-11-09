@@ -11,7 +11,7 @@ import {
   hiddenKmLines, setKmLinesHidden,
   setTrackHeights, setHeightsForTracks, setSwitchDesignMode, switchDesignMode, addDependentPoint, commitReconnect, loadPlatforms, commitImport, historySteps, travelHistory,
 } from './storage'
-import { newBufferStop, newBoundary } from '@rail-across/core/src/track/trackEndMarks.js'
+import { newBufferStop, newBoundary } from '@rail-across/core/track'
 import { endPointCurvedUtm, endPointStraightUtm } from '@rail-across/core/src/geometry/elementUtils.js'
 
 // Outside the browser the store keeps its project in memory; the import

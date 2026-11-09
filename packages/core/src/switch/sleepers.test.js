@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { FIRST_SLEEPER, SLEEPER_SPACING, sleeperGrid, sleeperNear, sleeperOffsets, sleeperThrough, turnoutSleepers } from './sleepers.js'
-import { reverseTrack } from '../track/trackModel.js'
+import { FIRST_SLEEPER, SLEEPER_SPACING, sleeperGrid, sleeperNear, sleeperOffsets, sleeperThrough, turnoutSleepers } from './index.js'
+import { reverseTrack } from '../track/index.js'
 import { branchTrack, formOf, mainTrack, sleeperAtX as exact, turnout, xAtArc, xAtMain } from '../../test/turnoutFixture.js'
 
 describe('the sleeper grid (decision 349)', () => {
@@ -17,7 +17,10 @@ describe('the sleeper grid (decision 349)', () => {
 })
 
 describe('the sleepers of a turnout', () => {
-  const frame = turnoutSleepers([mainTrack(), branchTrack()], turnout(), { formOf })
+  const tracks = [mainTrack(), branchTrack()]
+  const sw = turnout()
+  const opts = { formOf }
+  const frame = turnoutSleepers(tracks, sw, opts)
 
   // WA and WE are rail joints in the middle of a bay (decision 349).
   it('lie with WA and WE in the middle of a bay: evenly between, every 0.6 m behind WE', () => {
@@ -58,7 +61,7 @@ describe('the sleepers of a turnout', () => {
     expect(first.branch - first.main).toBeCloseTo(0, 4)
     // Further on it leans with the bisector: the branch point lies behind the main one.
     const lds = frame.sleepers[frame.sleepers.length - 1]
-    const off = sleeperOffsets(frame, lds)
+    const off = sleeperOffsets(tracks, sw, 'main', lds.main, opts)
     const e = exact(xAtMain(40))
     expect(off.a).toBeCloseTo(e.q[0] - 40, 3)
     expect(off.y).toBeCloseTo(e.q[1], 3)
@@ -66,19 +69,19 @@ describe('the sleepers of a turnout', () => {
   })
 
   it('give the nearest sleeper to a station of either track, only between WA and ldS', () => {
-    expect(sleeperNear(frame, 'main', 10.1).k).toBe(frame.sleepers.find(sl => Math.abs(sl.main - 10.1) < 0.3).k)
-    expect(sleeperNear(frame, 'main', 0)).toBeNull()
-    expect(sleeperNear(frame, 'main', 45)).toBeNull()
-    expect(sleeperNear(frame, 'main', 39.99).k).toBe('lds')
+    expect(sleeperNear(tracks, sw, 'main', 10.1, opts).k).toBe(frame.sleepers.find(sl => Math.abs(sl.main - 10.1) < 0.3).k)
+    expect(sleeperNear(tracks, sw, 'main', 0, opts)).toBeNull()
+    expect(sleeperNear(tracks, sw, 'main', 45, opts)).toBeNull()
+    expect(sleeperNear(tracks, sw, 'main', 39.99, opts).k).toBe('lds')
     const sl = frame.sleepers[20]
-    expect(sleeperNear(frame, 'branch', sl.branch + 0.2)).toBe(sl)
+    expect(sleeperNear(tracks, sw, 'branch', sl.branch + 0.2, opts)).toEqual(sl)
   })
 
   it('lay a sleeper through any point between them', () => {
     const sl = frame.sleepers[30]
-    const through = sleeperThrough(frame, 'branch', sl.branch)
+    const through = sleeperThrough(tracks, sw, 'branch', sl.branch, opts)
     expect(through.main).toBeCloseTo(sl.main, 4)
-    expect(sleeperThrough(frame, 'branch', 50)).toBeNull()
+    expect(sleeperThrough(tracks, sw, 'branch', 50, opts)).toBeNull()
   })
 
   it('are the same on a branch whose stations run toward the toe', () => {
@@ -88,14 +91,11 @@ describe('the sleepers of a turnout', () => {
     expect(b.branch).toBeCloseTo(60 - a.branch, 4)
   })
 
-  it('are worked out once for the same shape, whatever the heights', () => {
-    const tracks = [mainTrack(), branchTrack()]
-    const sw = turnout()
+  it('are the same for the same shape, whatever the heights', () => {
     const first = turnoutSleepers(tracks, sw, { formOf })
     const raised = [{ ...tracks[0], heights: [{ station: 0, z: 1 }, { station: 60, z: 2 }] }, tracks[1]]
     const again = turnoutSleepers(raised, sw, { formOf })
-    expect(again.sleepers).toBe(first.sleepers)
-    expect(again.main.track).toBe(raised[0])
+    expect(again.sleepers).toEqual(first.sleepers)
   })
 
   it('are none for a form without ldS or another kind of switch', () => {

@@ -84,4 +84,18 @@ describe('the held project', () => {
     holdProject(late)
     expect(heldKeptProject(late)).toEqual(dehydrateProjects([late])[0])
   })
+
+  it('lends a single track or switch of it, and copies where the same part is named twice or with its member', () => {
+    const p = project()
+    holdProject(p)
+    const loose = structuredClone(p)
+    expect(callNative('track.rebuildCoords', [p.tracks[1].elements])).toEqual(callNative('track.rebuildCoords', [loose.tracks[1].elements]))
+    // A track's elements and the track itself in one call: the elements copied, the track lent.
+    expect(callNative('track.remapSwitches', [p.switches, [{ oldId: p.tracks[1].id, newId: 'z' }], p.tracks[1].elements, p.tracks[1]]))
+      .toEqual(callNative('track.remapSwitches', [loose.switches, [{ oldId: 'b', newId: 'z' }], loose.tracks[1].elements, loose.tracks[1]]))
+    expect(callNative('switch.coupleSwitchCants', [[p.tracks[0], p.tracks[1]], p.tracks, p.switches]))
+      .toEqual(callNative('switch.coupleSwitchCants', [[loose.tracks[0], loose.tracks[1]], loose.tracks, loose.switches]))
+    expect(callNative('track.remapSwitches', [[p.switches[0], p.switches[0]], []])).toEqual(callNative('track.remapSwitches', [[loose.switches[0], loose.switches[0]], []]))
+    expect(heldKeptProject(p)).toEqual(dehydrateProjects([p])[0])
+  })
 })

@@ -1,8 +1,5 @@
 import { FORMAT_NAME, PayloadError, viaNative } from '../document/index.js'
 import { heldProject, holdProject } from '../native/index.js'
-import { reconstructElements, derivedEndBearing, loadedTrackCants } from '../geometry/index.js'
-import { rebuildSwitchSymbol } from '../switch/index.js'
-import { rebuildPlatformSymbol, rebuildCoords } from '../track/index.js'
 
 /**
  * The record the app works on in memory, and the door to it from the one
@@ -100,30 +97,24 @@ export const parseTracksPayload = (data, { switchIds = new Set() } = {}) =>
 // ── Hydrate (load) / dehydrate (persist) ─────────────────────────────────────
 
 /**
- * Rebuild all derived data in place: element geometry and renderCoords, the
- * end bearing of arcs and transitions where the record leaves it to them,
- * track coordinates, the switch symbols and the platform polygons — from the
- * plane data only. Nothing here converts or repairs; what reaches this point
- * has been through parseProjectsPayload or was written by this tool.
+ * Rebuild all derived data: element geometry and renderCoords, the end bearing
+ * of arcs and transitions where the record leaves it to them, track
+ * coordinates, the switch symbols and the platform polygons — from the plane
+ * data only, in the core's module (decision 0021, phase D). Nothing here
+ * converts or repairs; what reaches this point has been through
+ * parseProjectsPayload or was written by this tool. Each project of
+ * `projects` takes the members worked out, as the load always gave them back
+ * in place; the list is returned.
  */
 export function hydrateProjects(projects) {
-  for (const p of projects ?? []) {
-    for (const track of p.tracks ?? []) {
-      const elements = loadedTrackCants(track.elements ?? []).map(el => {
-        if (el.endBearing != null) return el
-        const derived = derivedEndBearing(el)
-        return derived == null ? el : { ...el, endBearing: derived }
-      })
-      track.elements    = reconstructElements(elements, track.epsg)
-      track.coordinates = rebuildCoords(track.elements)
-    }
-    if (p.switches || p.platforms) {
-      const byId = Object.fromEntries((p.tracks ?? []).map(t => [t.id, t]))
-      if (p.switches)  p.switches  = p.switches.map(sw => rebuildSwitchSymbol(sw, byId))
-      if (p.platforms) p.platforms = p.platforms.map(pf => rebuildPlatformSymbol(pf, byId))
-    }
-  }
-  return projects ?? []
+  const list = projects ?? []
+  if (!list.length) return list
+  const done = viaNative('project.hydrateProjects', [list])
+  list.forEach((p, i) => {
+    if (!p || typeof p !== 'object' || Object.isFrozen(p)) return
+    for (const k of ['tracks', 'switches', 'platforms']) if (done[i]?.[k] !== undefined) p[k] = done[i][k]
+  })
+  return list.map((p, i) => (p && Object.isFrozen(p) ? done[i] : p))
 }
 
 /**

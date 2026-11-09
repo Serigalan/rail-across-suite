@@ -1,4 +1,4 @@
-import { pointAtStation } from '../src/track/platformUtils.js'
+import { pointAtStation } from '../src/track/index.js'
 
 /**
  * Where a platform's front edge stands at station `s` of its track, in the

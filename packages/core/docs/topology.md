@@ -4,7 +4,7 @@
 
 The diagram of the topological connections of a project: nodes where track ends meet, edges the tracks,
 laid out like a track plan. The state of each track end (switch, link, joint, buffer stop, boundary, open)
-is computed in `track/topology.js`; the map's topology view (tracks in true position, big switch circles,
+is computed in `crates/track/src/topology.rs`; the map's topology view (tracks in true position, big switch circles,
 red open ends) is `src/core/map/topologyLayer.js`.
 
 ## Files

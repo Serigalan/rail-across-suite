@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { carveSwitchRoute, splitElementAt, splitTrackAtJoint } from './trackSplitUtils.js'
+import { carveSwitchRoute, splitElementAt, splitTrackAtJoint } from './index.js'
 import { arcFrom, straightFrom, transitionElement } from '../geometry/elementFactory.js'
-import { rebuildCoords } from './trackModel.js'
+import { rebuildCoords } from './index.js'
 import { expectValidTrack } from '../../test/chainInvariants.js'
 
 const EPSG = 25832
@@ -144,7 +144,6 @@ describe('carving a switch route', () => {
     const track = straightAndArc()
     const cut = { easting: O.easting + 30, northing: O.northing }
     expect(carveSwitchRoute(track, 'BEGIN', cut, mark, 500)).toBe(null)                  // track ends first
-    expect(carveSwitchRoute(track, 'BEGIN', cut, mark, 130, { accepts: e => e.elementType === 0 })).toBe(null)
     const bloss = transitionElement(O, 90, 60, null, 500, { transitionType: 'bloss' }).element
     expect(carveSwitchRoute(makeTrack([bloss]), 'BEGIN', cut, mark, 30)).toBe(null)
     const clothoid = transitionElement(O, 90, 60, null, 500).element

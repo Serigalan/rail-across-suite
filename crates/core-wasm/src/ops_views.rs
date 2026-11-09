@@ -99,6 +99,7 @@ pub fn run(op: &str, input: &Value) -> Option<Result<Value, Failure>> {
         "topology.layoutClusterLanes" => ok(topology_lanes::layout_cluster_lanes(a.v(0))),
         // validateProject
         "project.validateProject" => ok(validate::validate_project(a.v(0))),
+        "project.hydrateProjects" => ok(Value::Array(a.list(0).iter().map(crate::hydrate::hydrate_project).collect())),
         "project.newFindings" => ok(Value::Array(validate::new_findings(&a.list(0), &a.list(1)))),
         "project.overlappingTracks" => ok(Value::Array(validate::overlapping_tracks(&a.list(0), &a.list(1)))),
         _ => None,

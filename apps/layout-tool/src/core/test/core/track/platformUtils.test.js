@@ -3,7 +3,7 @@ import {
   PLATFORM_FRONT_OFFSET, PLATFORM_BACK_OFFSET, PLATFORM_WIDTH,
   PLATFORM_HEIGHTS, DEFAULT_PLATFORM_HEIGHT,
   edgeOffsets, platformEdgeElevation, platformLength,
-} from '@rail-across/core/src/track/platformUtils.js'
+} from '@rail-across/core/track'
 import { platformsToOperationalPoints } from '../../../utils/exchange/alignmentCodec'
 
 describe('the platform’s cross section', () => {

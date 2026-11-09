@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest'
 import {
   buildTopologyGraph, topologyClusters, selectionHighlight, switchTrackIds, TOPOLOGY_TRACK_COLORS,
 } from './index.js'
-import { newBufferStop } from '../track/trackEndMarks.js'
-import { newSwitchFields } from '../track/switchModel.js'
+import { newBufferStop } from '../track/index.js'
+import { newSwitchFields } from '../track/index.js'
 import { endPointStraightUtm } from '../geometry/elementUtils.js'
 import { utmToWgs84 } from '../geometry/coordinateUtils.js'
 

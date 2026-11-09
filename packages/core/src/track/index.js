@@ -15,6 +15,7 @@
 // the module's own business. See docs/modules/track.md.
 
 import { asMap, reuseFrom, viaRust } from '../native/index.js'
+import { groupTitle } from './queries.js'
 
 // The small queries the pages ask point by point stay JavaScript (queries.js).
 export {

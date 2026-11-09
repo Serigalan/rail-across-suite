@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   trackKind, trackTypeName, trackGroupKey, groupTracks, groupTitle, assignTracks, plannedNames, stationTrackStem,
 } from './index.js'
-import { kmTrackName } from './index.js'
+import { groupHeading, kmTrackName } from './index.js'
 import { buildTypeFields } from './index.js'
 
 const line = (id, lineNumber, extra = {}) => ({ id, name: id, trackType: 1, lineNumber, ...extra })
@@ -67,6 +67,13 @@ describe('the tracks in groups', () => {
     expect(groupTitle(groups[0])).toBe('6340 · Halle–Könnern')
     expect(groupTitle(groups[3])).toBe('Könnern')
     expect(groups[3].uicStation).toBe('8010205')
+  })
+
+  it('are headed in the list by their kind and title — through the module\'s face, as the panels ask', () => {
+    const t = (key) => ({ track_group_line: 'Strecke', track_group_station: 'Bahnhof', track_group_none: 'Ohne' })[key]
+    expect(groupHeading(t, groups[0])).toBe('Strecke 6340 · Halle–Könnern')
+    expect(groupHeading(t, groups[3])).toBe('Bahnhof Könnern')
+    expect(groupHeading(t, groups[4])).toBe('Ohne')
   })
 
   it('leave out the unassigned group when every track belongs somewhere', () => {

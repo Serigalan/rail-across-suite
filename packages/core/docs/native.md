@@ -12,14 +12,19 @@ The module is loaded **once**, and every call after that is synchronous, as the 
 - in the browser, a page awaits `loadNative(url)` before it renders;
 - in Node — the server, the tests — `loadNativeFile()` (`@rail-across/core/native/node`) reads `packages/core/wasm/` synchronously.
 
-Where it is not loaded, a function that has moved stays with its JavaScript (`nativeReady()`), so the core
-answers the same either way while the port goes on; the tests hold both to the same answers.
+Since step 10 the module is not optional: the functions that went to Rust have no JavaScript any more,
+and every page, the local build and every vitest of the repository load it first (`test/setupNative.js`).
+`viaRust(op, revive)` makes such a function: the arguments go across as the replay recorded them (a Map as
+an object, a Set as an array), and `revive` gives back what JSON does not carry — `asMap`, `keepSame` and
+`reuseFrom` (what the module passed through untouched, given back as the very object it was). What the
+JavaScript threw comes back as an Error with its message. A worker that does not load the module uses
+only what is still JavaScript.
 
 ## Files
 
 | File | What |
 |---|---|
-| `index.js` | `loadNative`, `useNativeModule`, `callNative`, `nativeReady`, `unloadNative`, `NativeError` |
+| `index.js` | `loadNative`, `useNativeModule`, `callNative`, `viaRust`, `asMap`, `keepSame`, `reuseFrom`, `nativeReady`, `unloadNative`, `NativeError` |
 | `node.js` | `loadNativeFile` — the module from its file, synchronously (Node only) |
 
 `npm run wasm` (`scripts/wasm.mjs`) builds the module with cargo and puts it in `packages/core/wasm/`
@@ -38,6 +43,7 @@ answers the same either way while the port goes on; the tests hold both to the s
 | 7 | `crates/pointcloud` (LAS, LAZ with `laz`, E57, the tiles with `flate2`, the import into five levels, plane mapping, registration, slices, the clearance check and scan, rail detection and tracing) — not part of this module: it serves the server, and replays its vectors itself (`crates/pointcloud/tests/replay.rs`) | the import in the browser's worker, as `crates/pointcloud-wasm` (`@rail-across/pointcloud`'s `native.js`, step 10; the JavaScript readers and import and laz-perf are gone, their vectors frozen). Replayed over 137 calls: files made from a description on both sides and the package's E57 fixtures, read and imported and held by sums over every point and segment (zlib's bytes differ from fflate's, what they hold does not); the track scene's section, clearance scan and trace. On the real LAZ sample (49 million points, format 6) the first million came out of laz-rs as out of laz-perf, ten million in 3.5 s against 8.8 s; in the worker the 3.2-million-point sample imports in 3.4 s against laz-perf's 6.1 s. Not to the digit: the registration's tilts on points along a straight line, which the pairs hardly determine. |
 | 8 | `crates/server` (the project server: users and sessions, projects, variants and revisions checked by the core's crates — `checkRecord` with `validateProject` and `checkSignalling` —, vehicles, timetables, point clouds with uploads, tiles, share links and jobs, the DGM1, the MDB import) — not part of this module | none: a server. The server's own tests run against it over HTTP; it is the only project server that runs. |
 | 9 | `crates/desktop` (Tauri: the suite in one window, `crates/server` in the same process behind the URI scheme `rail`, local mode, start screen and settings, `mdb-export` bundled) — not part of this module | none: the desktop app loads this module like any page. |
+| 10 | none new: the JavaScript of what had moved goes where the page does not ask it while it draws, drags or renders — topology, survey, merge, PlanPro, the signalling check and track sections, the document's door and keeping a record, the validation, the commands, the switch solvers — and `core-py` and the Node server go | the page calls the module through `viaRust`; the vectors of what went are frozen. What stays JavaScript and why: decision 0020, step 10. |
 
 The crates are held to the JavaScript three ways: the shared vectors (`schemas/vectors/`), the calls the
 JavaScript records (`npm run replay` → `crates/*/tests/vectors/`, replayed by `crates/core-wasm/tests/replay.rs`),

@@ -17,10 +17,14 @@ Linux needs WebKitGTK and GTK (`libwebkit2gtk-4.1-dev libgtk-3-dev libsoup-3.0-d
 cargo workspace of its own for that reason; it uses the server and the core's crates by path.
 
     npm ci                               # at the repository root
+    cd crates/desktop                    # everything below in this directory
     node scripts/build-site.mjs          # the suite into site/ (start page, modules, Rust modules)
     node scripts/stage-mdbtools.mjs      # mdb-export and its libraries into mdbtools/, where installed
     cargo run --release                  # the app, on site/
-    cargo tauri build                    # the package (with the Tauri CLI): site/ and mdbtools/ bundled
+    cargo tauri build                    # the package (with the Tauri CLI): runs the two scripts itself, bundles site/ and mdbtools/
+
+The `package.json` here holds no dependencies: the Tauri CLI takes the directory of the nearest `package.json`
+as the frontend's and runs `beforeBuildCommand` there — without it, in `crates/`.
 
 | Variable | |
 |---|---|

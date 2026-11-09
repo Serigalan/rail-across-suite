@@ -67,7 +67,7 @@ export const VIRTUAL_FUNCTION = {
   virtualDistant: L('Vorsignal virtuell', 'Virtual distant signal'), other: L('sonstige', 'other'),
 }
 
-export const MOUNTING = {
+const MOUNTING = {
   mast: L('Mast', 'Mast'), bracket: L('Signalausleger', 'Bracket'), gantry: L('Signalbrücke', 'Gantry'), foundation: L('Fundament', 'Foundation'),
   special: L('Sonderkonstruktion', 'Special'), other: L('andere', 'other'),
 }
@@ -79,7 +79,7 @@ const MOUNTINGS_SET = ['mast', 'bracket', 'gantry']
 export const mountingOptions = (language, current) => optionsOf(MOUNTING, language)
   .filter(o => MOUNTINGS_SET.includes(o.value) || o.value === current)
 
-export const POINT_KIND = {
+const POINT_KIND = {
   axleCounter: L('Achszählpunkt', 'Axle counter'), insulatedJointOneRail: L('Isolierstoß einschienig', 'Insulated joint, one rail'),
   insulatedJointTwoRail: L('Isolierstoß zweischienig', 'Insulated joint, two rails'), electricalJoint: L('Elektrischer Trennstoß', 'Electrical joint'),
 }
@@ -181,7 +181,7 @@ export const effectOptions = (language) =>
   Object.entries(SIGNAL_CATALOGUE.zugbeeinflussung.wirksamkeit).map(([value, e]) => ({ value, label: titleIn(e, language) }))
 
 /** A setting's value in words: a choice by its title, a number with its unit. */
-export function settingWord(setting, value, language, t) {
+function settingWord(setting, value, language, t) {
   if (value === undefined) return ''
   if (setting?.typ === 'auswahl') return titleIn(setting.werte[value], language) ?? String(value)
   if (setting?.typ === 'wahrheitswert') return t(value ? 'yes' : 'no')

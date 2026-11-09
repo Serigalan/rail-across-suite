@@ -7,7 +7,7 @@ import { parseProjectsPayload, projectDocument } from '@rail-across/core/project
 
 const BASE = import.meta.env?.VITE_RA_API ?? '/api'
 
-export class ApiError extends Error {
+class ApiError extends Error {
   constructor(status, code, body = null) {
     super(code)
     this.status = status

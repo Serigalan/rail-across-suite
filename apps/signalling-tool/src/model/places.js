@@ -16,7 +16,7 @@ export const trackName = (net, id) => {
 export const BOARD_ASPECTS = ['Zs_3', 'Ne_1', 'Lf_1', 'Lf_2', 'Lf_3', 'Lf_6', 'Lf_7', 'Ra_10', 'Ra_12', 'Ne_14']
 
 /** A turnout as people name it: W3, else its name or form. */
-export function switchName(net, id) {
+function switchName(net, id) {
   const sw = net.switches.find(x => x.switchId === id)
   return Number.isFinite(sw?.number) ? `W${sw.number}` : sw?.name ?? sw?.label ?? id?.slice(0, 8) ?? '—'
 }
@@ -93,7 +93,7 @@ const OTHER_SIDE = { left: 'right', right: 'left' }
 export const sideAlong = (loc, side) => (side && loc?.direction === 'down' ? OTHER_SIDE[side] : side)
 
 /** The other side of the track. */
-export const otherSide = (side) => OTHER_SIDE[side] ?? null
+const otherSide = (side) => OTHER_SIDE[side] ?? null
 
 /** A bracket's screen: on the other side of the track than its mast, at its offset. */
 export const bracketScreen = (foundation, offset = BRACKET_OFFSET) => ({ side: offset ? otherSide(foundation.side ?? 'right') : null, offset })

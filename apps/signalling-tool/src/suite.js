@@ -7,7 +7,7 @@
 // back leads to the suite's projects with this tool chosen.
 
 export const SUITE = import.meta.env?.VITE_RA_SUITE ?? '../'
-export const NOTICE = 'rail-across-notice'
+const NOTICE = 'rail-across-notice'
 
 /** The projects of the infrastructure on the suite's start page, with this tool chosen. */
 export const projectsUrl = () => `${SUITE}#/infrastructure/signalling`

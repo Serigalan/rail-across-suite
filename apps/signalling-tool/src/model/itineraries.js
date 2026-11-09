@@ -84,7 +84,7 @@ export function waysBetween(net, from, to, { limit = 8 } = {}) {
  * [{ signal, piece }] — `piece` the index of the piece it stands on; on the
  * last, `reach` beyond its end.
  */
-export function signalsAlong(domain, way, reach = AT) {
+function signalsAlong(domain, way, reach = AT) {
   const out = []
   const last = way.pieces.length - 1
   way.pieces.forEach((p, i) => {
@@ -107,7 +107,7 @@ export function signalsAlong(domain, way, reach = AT) {
  * from being one: no signal at the target's far end (`no_target_signal`), no
  * route at all (`no_routes`).
  */
-export function routesOfWay(domain, way, target) {
+function routesOfWay(domain, way, target) {
   const lastPiece = way.pieces[way.pieces.length - 1]
   // The signal that ends it: the first one past the target's near end — one there is passed —, within reach of its far end.
   const near = lastPiece.direction === 'up' ? target.at.startStation : target.at.endStation

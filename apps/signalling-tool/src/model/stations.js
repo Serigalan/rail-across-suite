@@ -21,7 +21,7 @@ import { deleted, newId } from './domain.js'
 const ENTRY = new Set(['entry', 'entryExit', 'entryBlock'])
 
 /** Whether a signal leads into its station: an entry signal, or a board Ne 1. */
-export function marksEntry(signal) {
+function marksEntry(signal) {
   const fns = [signal.function, ...(signal.logicalSignals ?? []).map(l => l.function)]
   return fns.some(fn => ENTRY.has(fn)) || (signal.frames ?? []).some(f => f.aspects.some(a => a.aspect === 'Ne_1'))
 }

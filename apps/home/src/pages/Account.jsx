@@ -1,26 +1,9 @@
 import { useState } from 'react'
 import { api } from '../api'
 import { useTexts } from '../i18n'
-import SignIn from '../SignInForm'
 
 /** At least as long as the server asks (crates/server/src/auth.rs). */
 const MIN = 12
-
-/**
- * Signing in, for the whole suite: every module sends whoever is not signed
- * in here, and gets them back (`next`) once they are.
- */
-export function SignInPage({ onSignedIn }) {
-  const { t } = useTexts()
-  return (
-    <main className="home-main ra-account">
-      <section className="ra-card">
-        <h2>{t('sign_in')}</h2>
-        <SignIn onSignedIn={onSignedIn} />
-      </section>
-    </main>
-  )
-}
 
 /**
  * Changing one's own password — forced after an admin set a start password or

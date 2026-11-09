@@ -73,7 +73,7 @@ export function pairDefaults(variants) {
  * description, record, image } with its picture (a data URL) apart, for it is
  * uploaded first. Throws { code: 'import_version' | 'import_invalid' }.
  */
-export function importedProjects(text, fileName = '') {
+function importedProjects(text, fileName = '') {
   let incoming
   try {
     incoming = parseProjectsPayload(JSON.parse(text)).projects

@@ -25,7 +25,7 @@ const PROJECT_IMAGE_MIME = 'image/svg+xml'
 export const projectImageUrl = (image) => `/project-images/${image.file}`
 
 /** UTF-8 text as base64, for the upload's `data`. */
-export function textToBase64(text) {
+function textToBase64(text) {
   const bytes = new TextEncoder().encode(text)
   let binary = ''
   for (let i = 0; i < bytes.length; i += 0x8000) {
@@ -42,7 +42,7 @@ const OWN_MAX_W = 960
  * the picture whole and centred, the rest left to the white margin. Keeps the
  * picture's resolution up to OWN_MAX_W.
  */
-export function fitToSlot(nw, nh, maxW = OWN_MAX_W) {
+function fitToSlot(nw, nh, maxW = OWN_MAX_W) {
   const w0 = Math.max(nw, nh * 4 / 3)
   const k = Math.min(1, maxW / w0)
   const w = Math.max(4, Math.round(w0 * k))

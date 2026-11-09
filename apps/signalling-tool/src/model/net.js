@@ -16,7 +16,7 @@ const A = 6378137
 const E2 = 0.00669437999014
 
 /** The local frame of a set of tracks: (lng, lat) → [x, y] in metres, and back. */
-export function frameOf(tracks) {
+function frameOf(tracks) {
   let lng = 0, lat = 0, n = 0
   for (const t of tracks) {
     const p = pointAtStation(t, 0)

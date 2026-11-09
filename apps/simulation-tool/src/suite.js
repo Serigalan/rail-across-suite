@@ -2,7 +2,7 @@
 // time; it is now a section of the Fahrplan-Editor (../timetable/, Fahrzeit
 // rechnen). This page stays for the addresses that name it, and sends them on.
 
-export const SUITE = import.meta.env?.VITE_RA_SUITE ?? '../'
+const SUITE = import.meta.env?.VITE_RA_SUITE ?? '../'
 
 /**
  * Where an address of the Simulation-Tool leads now: the Fahrplan-Editor's

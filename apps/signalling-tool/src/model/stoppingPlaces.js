@@ -15,7 +15,7 @@ import { stationName } from './stations.js'
 const SHORTEST = 5
 
 /** What bounds a stopping place on a track: its real signals with a screen and its detection points, by station. */
-export function boundsOn(domain, trackId, t) {
+function boundsOn(domain, trackId, t) {
   const { signals, detectionPoints } = domain.collections
   const out = []
   for (const s of signals) {

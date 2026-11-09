@@ -42,7 +42,7 @@ export const INFRASTRUCTURE_TOOLS = [
   { id: 'catenary', available: false, phase: 3 },
 ]
 
-export const DEFAULT_TOOL = 'layout'
+const DEFAULT_TOOL = 'layout'
 
 /** The tool of that id, or the default one. */
 export const toolOf = (id) => INFRASTRUCTURE_TOOLS.find(t => t.id === id) ?? INFRASTRUCTURE_TOOLS.find(t => t.id === DEFAULT_TOOL)
@@ -108,12 +108,11 @@ export function takeNotice() {
 }
 
 /**
- * The suite's own pages: the password (every module sends its users here to
- * change it, and back), and the user administration. Signing in is the
- * sign-in page's (sign-in/), which the server shows before anything else.
+ * The suite's account pages: the password (every module sends its users here
+ * to change it, and back). Signing in is the sign-in page's (sign-in/), which
+ * the server shows before anything else.
  */
-export const ACCOUNT_PAGES = ['password']
-export const SUITE_PAGES = [...ACCOUNT_PAGES, 'admin']
+const ACCOUNT_PAGES = ['password']
 
 /**
  * Where to go after changing the password, from `next`: a path

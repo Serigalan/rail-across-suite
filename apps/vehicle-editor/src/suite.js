@@ -4,7 +4,7 @@
 // opens one vehicle — the Fahrplan-Sim links a train's vehicle so. The way
 // back leads to the start page.
 
-export const SUITE = import.meta.env?.VITE_RA_SUITE ?? '../'
+const SUITE = import.meta.env?.VITE_RA_SUITE ?? '../'
 
 /** The suite's start page. */
 export const suiteUrl = () => SUITE

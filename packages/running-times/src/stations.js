@@ -1,6 +1,6 @@
 import { stationRegister } from '@rail-across/core/document'
 import { BOUNDARY, endMarkName, endMarkStation, trackGroupKey, trackKind, trackLength } from '@rail-across/core/track'
-import { directionOf, pathLength } from './path.js'
+import { directionOf } from './path.js'
 
 /**
  * The stations of a net, as the layout and the register say them, each by
@@ -222,5 +222,3 @@ export function stationsAlong(path, stations) {
 
 /** The direction a path leaves a location in, for a way that goes on from it. */
 export const lastDirection = (path) => (path.length ? directionOf(path[path.length - 1]) : null)
-
-export { pathLength }

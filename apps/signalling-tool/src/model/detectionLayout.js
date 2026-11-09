@@ -23,7 +23,7 @@ export const LAYOUT = { before: 10, behind: 0, clearance: 3.5, merge: 20 }
 const NO_POINT = new Set(['distant', 'distantRepeater'])
 
 /** Whether a signal gets a detection point: a real one on a track with a screen that is no distant signal's. */
-export const takesPoint = (s) => s.kind === 'real' && s.at?.anchor === 'station' && (s.logicalSignals ?? []).some(l => !NO_POINT.has(l.type))
+const takesPoint = (s) => s.kind === 'real' && s.at?.anchor === 'station' && (s.logicalSignals ?? []).some(l => !NO_POINT.has(l.type))
 
 const STEP = 0.5
 const REACH = 250

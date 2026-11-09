@@ -12,7 +12,7 @@ import { CATALOGUE_REF, baliseKindOf, protectionSystemOf, signalKindOf, signalli
  * place and its system (logicalId), as a place has each system once.
  */
 
-export const COLLECTIONS = [
+const COLLECTIONS = [
   'signals', 'detectionPoints', 'trackSections', 'switchElements', 'routes', 'overlaps', 'flankProtection', 'balises',
   'stationBoundaries', 'stoppingPlaces', 'itineraries',
 ]
@@ -23,7 +23,7 @@ export const COLLECTIONS = [
  * name their station (model/stations.js). The tool's state holds them beside
  * the domain's, so an edit of a station is one step with the rest.
  */
-export const CORE_PARTS = ['operationalPoints', 'platforms']
+const CORE_PARTS = ['operationalPoints', 'platforms']
 
 /** An empty domain, planned against the catalogue this build has. */
 export const emptyDomain = () => ({

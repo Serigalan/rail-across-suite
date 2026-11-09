@@ -20,7 +20,7 @@ import { signalTone, TONE_FILL } from './symbols.js'
  */
 
 /** How far a symbol on a side stands from its track at the least [px]. */
-export const SIDE_PX = 9
+const SIDE_PX = 9
 /** Pixels per metre at zoom 0 and the equator (Web Mercator, 512 px tiles). */
 const PPM0 = 512 / 40075016.686
 /** The whole zoom levels the pixels added to a symbol's offset are given for. */
@@ -38,7 +38,7 @@ const PLACE_COLOR = '#0e8a8f'
 export const pixelsPerMetre = (lat, zoom) => (PPM0 * 2 ** zoom) / Math.cos((lat * Math.PI) / 180)
 
 /** The pixels a symbol is moved beyond its offset at a zoom, so it stands SIDE_PX apart at the least. */
-export const extraPx = (offset, lat, zoom) => Math.max(0, SIDE_PX - offset * pixelsPerMetre(lat, zoom))
+const extraPx = (offset, lat, zoom) => Math.max(0, SIDE_PX - offset * pixelsPerMetre(lat, zoom))
 
 /**
  * An object to draw: where it is on its track, where its symbol stands in the

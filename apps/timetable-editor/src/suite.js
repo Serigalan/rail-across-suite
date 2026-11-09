@@ -7,8 +7,8 @@
 // server; `&timetable=<id>&train=<id>` names the one shown and its train.
 // Every way back leads to that tile.
 
-export const SUITE = import.meta.env?.VITE_RA_SUITE ?? '../'
-export const NOTICE = 'rail-across-notice'
+const SUITE = import.meta.env?.VITE_RA_SUITE ?? '../'
+const NOTICE = 'rail-across-notice'
 
 /** The Fahrplan-Editor's page on the suite's start page. */
 export const projectsUrl = () => `${SUITE}#/timetable`

@@ -11,7 +11,7 @@ import { added, newId } from './domain.js'
  */
 
 /** The aspect of the clearance marker. */
-export const CLEARANCE_MARKER = 'Ra_12'
+const CLEARANCE_MARKER = 'Ra_12'
 
 /** How near a marker there is must stand to where one is due, to count [m]. */
 const NEAR = 5
@@ -64,7 +64,7 @@ export function clearanceMarkersDue(net, signals, apart = LAYOUT.clearance) {
 }
 
 /** A clearance marker at a place: a body Ra 12 of no system. */
-export const newClearanceMarker = (at) => ({ id: newId(), kind: 'real', function: 'other', at, frames: [{ kind: 'body', aspects: [{ aspect: CLEARANCE_MARKER }] }] })
+const newClearanceMarker = (at) => ({ id: newId(), kind: 'real', function: 'other', at, frames: [{ kind: 'body', aspects: [{ aspect: CLEARANCE_MARKER }] }] })
 
 /** The domain with every clearance marker it lacks set: { domain, added } — how many. */
 export function withClearanceMarkers(domain, net) {

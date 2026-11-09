@@ -46,6 +46,13 @@ and the step written back), on a machine under load:
 
 Opening it (the first `holdProject`) takes 60–160 ms, once.
 
+Since phase D the track and switch modules, the cross section, the element table, the station register and
+loading a record (`project.hydrateProjects`) are the module's. A held part crosses as its path — a member, an
+item of one, a member of that (`{"$held": ["tracks", 3, "elements"]}`) —, and where an operation is asked on
+every write the page names what changed rather than the module comparing everything
+(`switch.coupleSwitchCantsChanged`, which answers only the tracks the coupling changed). A write of the
+Layout-Tool's store on the PEK Bestand takes 1–2 ms; opening it 1.2 s (1.0 s with the JavaScript before).
+
 ## Files
 
 | File | What |

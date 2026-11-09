@@ -15,7 +15,7 @@ import {
 import { rebuildCoords } from '@rail-across/core/src/track/trackModel.js'
 import { placeSwitchOnTrack } from '@rail-across/core/src/switch/switchPlacement.js'
 import { expectValidTrack } from '@rail-across/core/test/chainInvariants.js'
-import { buildCrossingOnTrack, crossingOnTrackPlacement } from '@rail-across/core/src/commands/switches.js'
+import { buildCrossingOnTrack, crossingOnTrackPlacement } from '@rail-across/core/commands'
 
 /**
  * AP 3.2 — crossings and crossing switches. The dimensions are the ones the

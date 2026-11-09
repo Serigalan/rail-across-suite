@@ -1,9 +1,12 @@
 import { describe, it, expect } from 'vitest'
-import { adoptCrossover, crossoverRequest } from './crossover.js'
-import { computeShiftBounds, solveConnection } from './sCurve.js'
+import { adoptCrossover, computeShiftBounds, crossoverRequest } from './index.js'
+import { viaRust } from '../native/index.js'
 import { minElementLength } from '../rules/elementLength.js'
 import { checkTrack } from '../rules/trassierungCheck.js'
 import { buildConnectionElements, SWITCH_TYPES } from '../switch/switchConnectionUtils.js'
+
+// Steps of the commands, as the module runs them (not part of the face).
+const solveConnection = viaRust('commands.solveConnection')
 
 const EPSG = 25832
 const P = (e, n) => ({ easting: e, northing: n, zone: EPSG })

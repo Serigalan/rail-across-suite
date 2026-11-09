@@ -124,5 +124,36 @@ export function keepSame(out, given) {
   return out
 }
 
+/**
+ * `out` with every object or array that is the same, as JSON, as one of the
+ * arguments' — the arguments themselves, their members, the items of those
+ * and their members — replaced by that very object: what the JavaScript
+ * passed through untouched comes back as it was, for identity checks and the
+ * page's memos.
+ */
+export function reuseFrom(out, args) {
+  const known = new Map()
+  // What holds a member set to undefined anywhere says more than its JSON (`'heights' in track`): its
+  // key keeps the undefined, which no answer of the module has, so it is never taken.
+  const keyOf = (v) => JSON.stringify(v, (_, x) => (x === undefined ? '\u0000undefined' : x))
+  const note = (v, depth) => {
+    if (!v || typeof v !== 'object' || ArrayBuffer.isView(v)) return
+    const key = keyOf(v)
+    if (!known.has(key)) known.set(key, v)
+    if (depth <= 0) return
+    for (const c of Array.isArray(v) ? v : Object.values(v)) note(c, depth - 1)
+  }
+  for (const a of args) note(a, 3)
+  const walk = (v, depth) => {
+    if (!v || typeof v !== 'object') return v
+    const same = known.get(JSON.stringify(v))
+    if (same) return same
+    if (depth <= 0) return v
+    if (Array.isArray(v)) return v.map(c => walk(c, depth - 1))
+    return Object.fromEntries(Object.entries(v).map(([k, c]) => [k, walk(c, depth - 1)]))
+  }
+  return walk(out, 4)
+}
+
 /** A JSON object as the Map the JavaScript answered with. */
 export const asMap = (object) => new Map(Object.entries(object ?? {}))

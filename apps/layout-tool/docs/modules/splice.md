@@ -6,7 +6,7 @@ What "Zwei Gleise zusammenfügen" can change where the rule catalogue rejects a 
 itself — every pair of ends, the transitions in their modes, the judging and ranking of the solutions, what would
 fit where nothing does, the spacing to another track — is the optimizer module's
 ([optimizer](optimizer.md), Rust, decision 0019 of the suite); the dialog's request and commit are in
-`commands/splice.js`.
+`commands` (in Rust, `crates/commands/src/splice.rs`).
 
 ## Files
 

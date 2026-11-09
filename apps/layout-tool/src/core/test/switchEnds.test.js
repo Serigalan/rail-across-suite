@@ -9,7 +9,10 @@ import { planSwitchDeletion } from '@rail-across/core/src/switch/switchDelete.js
 import {
   expectValidTrack, expectSwitchRoutesCarved, expectNodesJoin,
 } from '@rail-across/core/test/chainInvariants.js'
-import { buildSwitchAtTrackEnd } from '@rail-across/core/src/commands/switches.js'
+import { reuseFrom, viaRust } from '@rail-across/core/native'
+
+// Steps of the commands, as the core's module runs them (not part of its face).
+const buildSwitchAtTrackEnd = viaRust('commands.buildSwitchAtTrackEnd', reuseFrom)
 
 /**
  * AP 1.3 — the element boundary at a switch end, across all four dialogs.

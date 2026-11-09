@@ -6,8 +6,6 @@ import { SWITCH_TYPES, switchBranchLength, switchStraightLength } from '@rail-ac
 import { computeSwitchGeometryUtm, switchRoutesFromTracks } from '@rail-across/core/src/switch/symbol.js'
 import { switchChainPointUtm } from '@rail-across/core/src/switch/route.js'
 import { hydrateProjects, dehydrateProjects } from '@rail-across/core/src/project/persistenceUtils.js'
-import { switchOnTrackPlacement, buildSwitchOnTrack, buildSwitchAtTrackEnd } from '@rail-across/core/src/commands/switches.js'
-import { solveConnection, computeShiftBounds, buildSCurve } from '@rail-across/core/src/commands/sCurve.js'
 import { switchElementRoute } from '@rail-across/core/src/switch/route.js'
 import { planSwitchDeletion } from '@rail-across/core/src/switch/switchDelete.js'
 import { switchMisfits, withSwitchHeights } from '../utils/elevation/switchChain'
@@ -16,6 +14,12 @@ import { trackLength } from '@rail-across/core/src/track/heightUtils.js'
 import { ldsFromToe } from '@rail-across/core/src/switch/switchGradient.js'
 
 import { expectValidTrack } from '@rail-across/core/test/chainInvariants.js'
+import { buildSCurve, buildSwitchOnTrack, computeShiftBounds, switchOnTrackPlacement } from '@rail-across/core/commands'
+import { reuseFrom, viaRust } from '@rail-across/core/native'
+
+// Steps of the commands, as the core's module runs them (not part of its face).
+const buildSwitchAtTrackEnd = viaRust('commands.buildSwitchAtTrackEnd', reuseFrom)
+const solveConnection = viaRust('commands.solveConnection', reuseFrom)
 
 /**
  * An outer-bent turnout whose stem radius is its form's own has a straight

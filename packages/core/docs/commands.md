@@ -10,29 +10,36 @@ input, show previews and findings, and claim names and numbers.
 
 ## Files
 
+The commands are Rust (decision 0020, step 10): `index.js` calls `crates/commands` for each — on an action of
+the user's, or a preview when a value of a form changes —, giving back as it was what the module passed
+through untouched. The element table's view and the element roles stay JavaScript beside their Rust (the
+page works them out on every render of the table, from all tracks), as do `connectRemedies` (it asks its
+caller back) and the texts of the optimizer's errors; their vectors are frozen with the rest, so a change goes
+into both.
+
 | File | Dialog | What it builds |
 |---|---|---|
-| `tracks.js` | Create element, connect straight/curve, parallels | New tracks; straights, arcs and transitions appended at a track end; parallel tracks |
-| `switches.js` | Switch on track, crossing on track | A turnout or crossing laid into a track at a station: split track, carved through route, new branch tracks, switch record |
-| `sCurve.js` | Switch connection (Weichenverbindung) | Both turnouts and the connecting track between two tracks, for a toe position (shift) on track 1; the range of valid shifts and the snaps |
-| `crossover.js` | Extended switch connection | The request of its search (both branch ends sampled, the limits; decision 0018) and an answer adopted as shift, middle elements and seed |
-| `crossoverEdit.js` | Edit switch connection | Which track is a switch connection, the connection taken apart in memory (the turnouts deleted, their lines joined), where the dialog starts on it, and the commit that replaces it |
-| `connectSwitch.js` | Connect a turnout to a track | The turnout on the host and the refitted connecting element (see `switch/connectToTrack.js`) |
-| `connectCrossing.js` | Connect a crossing to a track | The same for one end of a crossing's cross route |
+| `crates/commands/src/tracks.rs` | Create element, connect straight/curve, parallels | New tracks; straights, arcs and transitions appended at a track end; parallel tracks |
+| `crates/commands/src/switches.rs` | Switch on track, crossing on track | A turnout or crossing laid into a track at a station: split track, carved through route, new branch tracks, switch record |
+| `crates/commands/src/scurve.rs` | Switch connection (Weichenverbindung) | Both turnouts and the connecting track between two tracks, for a toe position (shift) on track 1; the range of valid shifts and the snaps |
+| `crates/commands/src/crossover.rs` | Extended switch connection | The request of its search (both branch ends sampled, the limits; decision 0018) and an answer adopted as shift, middle elements and seed |
+| `crates/commands/src/crossover_edit.rs` | Edit switch connection | Which track is a switch connection, the connection taken apart in memory (the turnouts deleted, their lines joined), where the dialog starts on it, and the commit that replaces it |
+| `crates/commands/src/connect.rs` | Connect a turnout to a track | The turnout on the host and the refitted connecting element (see `switch/connectToTrack.js`) |
+| `crates/commands/src/connect.rs` | Connect a crossing to a track | The same for one end of a crossing's cross route |
 | `connectRemedies.js` | both of the above | What can be changed where the rules reject the refitted element: lower speed, a transition before the arc |
-| `splice.js` | Join two tracks (Zwei Gleise zusammenfügen) | What a picked element offers, the request, and the merged track built from the answer |
-| `reconnect.js` | Reconnect existing elements (Neu verbinden) | The stretch between two clicks, the old axis every 1 cm, the request to the service and the track written back |
-| `editGeometry.js` | Track editor (element table) | Planning and applying length/bearing/radius changes and how far they reach; a Zwischenelement laid anew between its neighbours |
+| `crates/commands/src/splice.rs` | Join two tracks (Zwei Gleise zusammenfügen) | What a picked element offers, the request, and the merged track built from the answer |
+| `crates/commands/src/reconnect.rs` | Reconnect existing elements (Neu verbinden) | The stretch between two clicks, the old axis every 1 cm, the request to the service and the track written back |
+| `crates/commands/src/edit.rs` | Track editor (element table) | Planning and applying length/bearing/radius changes and how far they reach; a Zwischenelement laid anew between its neighbours |
 | `elementRoles.js` | Track editor (element table) | Fest-, Folge- and Zwischenelement: the roles elements state and the ones that follow from them, what each lets be typed |
 | `tableView.js` | Track editor (element table) | The rows of a track or a route: a route's tracks in its direction, one it runs against turned round; each row's track element, values and edits turned back (`inRun`, `trackEdit`, `writeRows`) |
-| `optimizeApply.js` | Optimize track (server) | The optimizer request and the track a result makes, keeping the gradient |
+| `crates/commands/src/optimize.rs` | Optimize track (server) | The optimizer request and the track a result makes, keeping the gradient |
 
 ## How they behave
 
 **New elements** come from the element factory (`geometry`). A new track takes the coordinate system of the
 project and the strip nearest the first click; its metadata comes from the dialog's track fields.
 
-**Cant** of a new arc (`tracks.js`, `cantAtTrackEnd`): always freely selectable. Without a transition in
+**Cant** of a new arc (`tracks.rs`, `cantAtTrackEnd`): always freely selectable. Without a transition in
 front, the default is the cant of the adjoining element — only a transition ramps cant; with a transition
 the Regelüberhöhung is proposed. "Connect straight" after a canted arc switches its transition on at the
 Regellänge, following speed and form until a length is set by hand.
@@ -41,19 +48,19 @@ Regellänge, following speed and form until a length is set by hand.
 in the chain they will stand in, joints included; any error blocks. Transition lengths are offered as
 Regellänge and Mindestlänge with the governing rule and its formula.
 
-**Switch on track** (`switches.js`): the toe position is a station on the track; the turnout may reach over
+**Switch on track** (`switches.rs`): the toe position is a station on the track; the turnout may reach over
 several elements; the pieces of element left before the toe and from the toe to the next node in the
 opening direction must be zero or at least `l_min` (LP.EL.01 at the speed of the *diverging* track, from
 40 km/h). The new branch track takes the stem track's height datum. Switch records get the lowest free
 number. A crossing needs straight track either side of its crossing point.
 
-**Switch connection** (`sCurve.js`): the slider sets the toe of the first turnout as a station on track 1
+**Switch connection** (`scurve.rs`): the slider sets the toe of the first turnout as a station on track 1
 (±50 m around the click); the construction finds the second (see `switch`). WA is placed first on the
 element change behind the turnout; the remaining pieces on both tracks must be zero or at least `l_min`. The
 connecting track is the branch of both turnouts. Its heights follow both main routes at WA and ldS
 (`elevation`, decisions 384–385).
 
-**Editing a switch connection** (`crossoverEdit.js`, Entscheidung 364; in the Edit panel): a track that
+**Editing a switch connection** (`crossover_edit.rs`, Entscheidung 364; in the Edit panel): a track that
 begins and ends at a route (B1/B2) of two turnouts of forms a turnout can be laid in with
 (`SWITCH_PICK_TYPES`; two different ones as a pair), with one to three elements of its own between their routes, is one
 (`switchConnectionOf`). `takeApart` removes it in memory and deletes both turnouts as the
@@ -70,7 +77,7 @@ opens in the switch connection, anything else in the extended one. The dialog th
 the switch ids, names and numbers and the connecting track, `editCommit` puts the two deletions before it,
 and `storage.commitSwitchConnectionEdit` runs all of it as one undo step.
 
-**Splice** (`splice.js` + `splice` module): a picked straight or arc may be re-shaped; a transition only at a
+**Splice** (`splice.rs` + `splice` module): a picked straight or arc may be re-shaped; a transition only at a
 track end, as the point it ends in (`joinAt`), and the splice builds on from there leaving it as it is. The
 departure is the pick whose end faces the gap, whichever was clicked first; where two ends or two beginnings
 meet, the **shorter** track is reversed and folded in, and the merged track keeps the name and data of the
@@ -81,7 +88,7 @@ are re-stationed; so are the platforms of both tracks, through the `carry` the c
 the part of it the merged track keeps lies on the merged one (`carryPlatforms` in the track module). With a spacing to a neighbouring track the request goes to the optimizer
 service instead (only the server build has it).
 
-**Reconnect** (`reconnect.js`, server build): the stretch between two clicks on one track is replaced by the
+**Reconnect** (`reconnect.rs`, server build): the stretch between two clicks on one track is replaced by the
 splice construction that keeps closest to the old axis. The old axis is sampled every 1 cm in the browser,
 sent as whole millimetres from an origin; the service searches radius (50–50 000 m, whole metres, with the
 app's cant), transitions at Regellänge, Mindestlänge, none, or fitted to the old axis by least squares, and
@@ -91,7 +98,7 @@ deviation. Removing and reconnecting is one undo step; the track keeps its id, n
 platforms in the stretch are re-stationed proportionally, behind it shifted by the length change. A
 neighbour may be kept at a minimum spacing plus the widening from cant.
 
-**Track editor** (`editGeometry.js`): a changed length, radius or bearing re-shapes everything hanging off the
+**Track editor** (`edit.rs`): a changed length, radius or bearing re-shapes everything hanging off the
 element's end, across tracks. A change is refused if it would move **more than one switch or more than three
 tracks** — past that nobody can hold in their head what a typed number moves. The bearing is display only
 (a typed bearing would rotate everything behind it from a cell that looks like a property of one element). A

@@ -1,11 +1,14 @@
 import { describe, it, expect } from 'vitest'
-import { trackOf } from './tracks.js'
+import { buildSwitchConnect, switchConnectOutcome, switchConnectSolutions } from './index.js'
+import { viaRust } from '../native/index.js'
 import { straightFrom } from '../geometry/elementFactory.js'
 import { SWITCH_TYPES } from '../switch/catalogue.js'
 import { connectionAnchor } from '../switch/connectToTrack.js'
-import { buildSwitchConnect, switchConnectOutcome, switchConnectSolutions } from './connectSwitch.js'
 import { connectRemedies } from './connectRemedies.js'
 import { expectValidTrack } from '../../test/chainInvariants.js'
+
+// Steps of the commands, as the module runs them (not part of the face).
+const trackOf = viaRust('commands.trackOf')
 
 const EPSG = 25832
 const O = { easting: 500000, northing: 5600000, zone: EPSG }

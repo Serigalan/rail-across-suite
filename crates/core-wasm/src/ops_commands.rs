@@ -120,14 +120,17 @@ pub fn run(op: &str, input: &Value) -> Option<Result<Value, Failure>> {
         "commands.switchOnTrackToeValid" => ok(json!(swc::switch_on_track_toe_valid(&swc::OnTrack::from_json(a.v(0)), a.f(1)))),
         "commands.switchOnTrackSlider" => ok(swc::switch_on_track_slider(&swc::OnTrack::from_json(a.v(0)), a.of(1))),
         "commands.buildSwitchOnTrack" => {
-            // The placement as the dialog settled on it: laid again from its station.
+            // The placement as the dialog settled on it — handed back by the page, or laid again from its station.
             let o = a.v(0);
-            let place = rail_across_switch::placement::place_switch_on_track(
-                &o["track"],
-                rail_across_js::js_number(o.get("toeStation")),
-                rail_across_js::truthy(o.get("reversed")),
-                rail_across_js::js_number(o.get("straightLen")),
-            );
+            let place = match rail_across_switch::placement::Placement::from_json(&o["place"]) {
+                Some(p) => Ok(p),
+                None => rail_across_switch::placement::place_switch_on_track(
+                    &o["track"],
+                    rail_across_js::js_number(o.get("toeStation")),
+                    rail_across_js::truthy(o.get("reversed")),
+                    rail_across_js::js_number(o.get("straightLen")),
+                ),
+            };
             ok(match place {
                 Ok(p) => swc::build_switch_on_track(o, &p),
                 Err(_) => Value::Null,
@@ -135,13 +138,17 @@ pub fn run(op: &str, input: &Value) -> Option<Result<Value, Failure>> {
         }
         "commands.buildSwitchAtTrackEnd" => ok(swc::build_switch_at_track_end(a.v(0))),
         "commands.buildCrossingOnTrack" => {
+            // The placement ahead as the dialog settled on it, or laid again from the crossing point.
             let o = a.v(0);
-            let place = rail_across_switch::placement::place_switch_on_track(
-                &o["track"],
-                rail_across_js::js_number(o.get("pointStation")),
-                false,
-                rail_across_js::js_number(o.get("endDist")),
-            );
+            let place = match rail_across_switch::placement::Placement::from_json(&o["ahead"]) {
+                Some(p) => Ok(p),
+                None => rail_across_switch::placement::place_switch_on_track(
+                    &o["track"],
+                    rail_across_js::js_number(o.get("pointStation")),
+                    false,
+                    rail_across_js::js_number(o.get("endDist")),
+                ),
+            };
             ok(match place {
                 Ok(p) => swc::build_crossing_on_track(o, &p),
                 Err(_) => Value::Null,

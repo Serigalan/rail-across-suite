@@ -12,7 +12,7 @@ use rail_across_track::heights::{element_at_station, point_at_station_utm};
 use serde_json::{Value, json};
 
 use crate::catalogue::as_radius;
-use crate::route::{Route, chain_json, switch_element_route, switch_route_bearing_at, switch_route_slice};
+use crate::route::{Route, chain_json, switch_element_route, switch_route_bearing_at, switch_route_slice, to_chain};
 
 const KINK_TOL: f64 = 1e-6;
 const DEG2RAD: f64 = std::f64::consts::PI / 180.0;
@@ -147,6 +147,37 @@ impl Placement {
             "spans": self.spans.iter().map(|sp| json!({ "elIdx": sp.el_idx, "s0": number(sp.s0), "length": number(sp.length), "from": number(sp.from), "to": number(sp.to),
                 "cantStart": number(sp.cant_start), "cantEnd": number(sp.cant_end) })).collect::<Vec<_>>(),
             "endUtm": self.end.to_json(),
+        })
+    }
+
+    /// A placement as `to_json` wrote it — what the page hands back to lay what its dialog settled on.
+    pub fn from_json(v: &Value) -> Option<Placement> {
+        let o = v.as_object()?;
+        let f = |x: &Value| x.as_f64().unwrap_or(f64::NAN);
+        let idx = |x: Option<&Value>| x.and_then(Value::as_u64).map(|i| i as usize);
+        Some(Placement {
+            toe: Utm::from_json(o.get("toeUtm")?),
+            bearing: f(o.get("bearing")?),
+            joint: idx(o.get("joint")),
+            el_idx: idx(o.get("elIdx")),
+            s: o.get("s").and_then(Value::as_f64),
+            cuts_clothoid: truthy(o.get("cutsClothoid")),
+            pieces: to_chain(o.get("pieces")?),
+            spans: o
+                .get("spans")?
+                .as_array()?
+                .iter()
+                .map(|sp| Span {
+                    el_idx: sp.get("elIdx").and_then(Value::as_u64).unwrap_or(0) as usize,
+                    s0: f(&sp["s0"]),
+                    length: f(&sp["length"]),
+                    from: f(&sp["from"]),
+                    to: f(&sp["to"]),
+                    cant_start: f(&sp["cantStart"]),
+                    cant_end: f(&sp["cantEnd"]),
+                })
+                .collect(),
+            end: Utm::from_json(o.get("endUtm")?),
         })
     }
 }

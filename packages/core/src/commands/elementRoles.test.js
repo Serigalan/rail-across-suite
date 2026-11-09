@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
+import { planIntermediateChange } from './index.js'
 import { arcFrom, straightFrom, transitionElement } from '../geometry/elementFactory.js'
 import { elementRoles, intermediateSpan, rolesFor, withRole } from './elementRoles.js'
-import { planIntermediateChange } from './editGeometry.js'
 
 // Fest-, Folge- and Zwischenelement in the element table (Entscheidung 375).
 

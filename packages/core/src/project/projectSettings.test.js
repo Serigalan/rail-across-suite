@@ -4,10 +4,13 @@ import {
   previewTracksToPlane, projectSystem, projectSystemSetting, systemChoices, systemDeviates, withImportSystem,
   withLineCategory, zoneChoices,
 } from './projectSettings.js'
-import { trackOf } from '../commands/tracks.js'
 import { straightFrom } from '../geometry/elementFactory.js'
 import { crsCentre, crsSystem, crsZone, systemCodeAt, systemZones, transformPlanePoint } from '../geometry/coordinateUtils.js'
 import { trackLength } from '../track/heightUtils.js'
+import { reuseFrom, viaRust } from '../native/index.js'
+
+// Steps of the commands, as the core's module runs them (not part of its face).
+const trackOf = viaRust('commands.trackOf', reuseFrom)
 
 const UTM32 = 25832, UTM33 = 25833, GK3 = 5683, GK4 = 5684
 

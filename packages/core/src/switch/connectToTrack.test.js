@@ -1,5 +1,4 @@
 import { describe, it, expect } from 'vitest'
-import { trackOf } from '../commands/tracks.js'
 import { arcFrom, straightFrom, transitionElement } from '../geometry/elementFactory.js'
 import { switchRouteBearingAt, switchRoutePointUtm } from './route.js'
 import { trackLength } from '../track/heightUtils.js'
@@ -7,6 +6,10 @@ import {
   connectionAnchor, connectionRoots, fitConnectingElement, joinRouteIntoTrack, refitTrackEnd,
 } from './connectToTrack.js'
 import { expectValidTrack } from '../../test/chainInvariants.js'
+import { reuseFrom, viaRust } from '../native/index.js'
+
+// Steps of the commands, as the core's module runs them (not part of its face).
+const trackOf = viaRust('commands.trackOf', reuseFrom)
 
 const EPSG = 25832
 const START = { easting: 500000, northing: 5600000, zone: EPSG }

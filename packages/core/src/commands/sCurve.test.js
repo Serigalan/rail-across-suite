@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
+import { buildCurvedLineTrack, buildLineTrack, buildSCurve, computeShiftBounds, connectionPick, hasStraightMid, preferredShift, settleConnection, shiftSnaps, stems, straightShifts, waOffset } from './index.js'
+import { viaRust } from '../native/index.js'
 import { SWITCH_TYPES } from '../switch/switchConnectionUtils.js'
-import { stems, solveConnection, computeShiftBounds, settleConnection, connectionRemnants, connectionPick, buildSCurve, shiftSnaps, preferredShift, waOffset, hasStraightMid, straightShifts } from './sCurve.js'
 import { minElementLength } from '../rules/elementLength.js'
 import { hasPekBestand, loadPekBestand } from '../../test/pekFixture.js'
 import { hydrateProjects, dehydrateProjects } from '../project/persistenceUtils.js'
@@ -9,8 +10,12 @@ import { utmEndRoute } from '../switch/route.js'
 import { computeClothoidUtm, transitionPointAtUtm } from '../geometry/clothoidUtils.js'
 import { switchBranchLength, switchStraightLength } from '../switch/catalogue.js'
 import { checkTrack } from '../rules/trassierungCheck.js'
-import { buildLineTrack, buildCurvedLineTrack, trackOf } from './tracks.js'
 import { arcFrom, straightFrom, transitionElement } from '../geometry/elementFactory.js'
+
+// Steps of the commands, as the module runs them (not part of the face).
+const connectionRemnants = viaRust('commands.connectionRemnants')
+const solveConnection = viaRust('commands.solveConnection')
+const trackOf = viaRust('commands.trackOf')
 
 const EPSG  = 25832
 const P     = (e, n) => ({ easting: e, northing: n, zone: EPSG })

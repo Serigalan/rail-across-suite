@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { buildSplice, picksAtSpeed, spliceFromAnswer, splicePick, spliceRequest } from '@rail-across/core/src/commands/splice.js'
 import { straightElement, straightFrom, arcFrom, transitionElement } from '@rail-across/core/src/geometry/elementFactory.js'
 import { bearingAfterUtm, endPointCurvedUtm, endPointStraightUtm } from '@rail-across/core/src/geometry/elementUtils.js'
 import { rebuildCoords } from '@rail-across/core/src/track/trackModel.js'
 import { expectValidTrack } from '@rail-across/core/test/chainInvariants.js'
 import coreAnswers from '@rail-across/core/test/fixtures/splice_answers.json'
 import { built, solveSplice } from '../../test/optimizerModule'
+import { buildSplice, picksAtSpeed, spliceFromAnswer, splicePick, spliceRequest } from '@rail-across/core/commands'
 
 // The splice as the dialog runs it: the optimizer module (optimizer/ of the
 // repository, decision 0019), as cargo built it — skipped where it has not

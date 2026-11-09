@@ -265,7 +265,7 @@ valid the slider spans the shifts at which one is overridable (`computeShiftBoun
 
 **Edited** (Entscheidung 364). `solveSwitchConnection(..., form)` and `connectionBranchEnds(..., { form })`
 take one form instead of the speed's fallback chain: an existing connection is laid again with its own
-turnouts' form (see `commands/crossoverEdit.js`).
+turnouts' form (see `crates/commands/src/crossover_edit.rs`).
 
 **Two forms** (decision 0018). `form` may also be a pair [first turnout's, second turnout's] (`formPair`): each
 turnout is then its own form laid into its own track, with its own branch, through route and ldS. The result

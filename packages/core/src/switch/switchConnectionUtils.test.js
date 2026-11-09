@@ -11,7 +11,7 @@ import { SAGITTA_ELEMENT, SAGITTA_TRACK } from '../geometry/geometryPrecision.js
 import { planSwitchDeletion } from './switchDelete.js'
 
 import { expectValidTrack, expectSwitchRoutesCarved } from '../../test/chainInvariants.js'
-import { buildSCurve } from '../commands/sCurve.js'
+import { buildSCurve } from '../commands/index.js'
 
 /**
  * AP 2.1 — the switch connection in a curve.

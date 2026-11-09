@@ -26,9 +26,9 @@ pub fn run(op: &str, input: &Value) -> Option<Result<Value, Failure>> {
         // crossSection
         "crossSection.RAILS" => ok(cs::rails_json()),
         "crossSection.SLEEPERS" => ok(cs::sleepers_json()),
-        "crossSection.LICHTRAUM_SOURCE" => ok(json!(cs::lichtraum_source())),
+        "crossSection.LICHTRAUM_SOURCE" => ok(json!(cs::clearance_source())),
         "crossSection.GAUGE_PROFILES" => ok(cs::gauge_profiles()),
-        "crossSection.PLANUM_EDGE" => ok(number(cs::planum_edge())),
+        "crossSection.PLANUM_EDGE" => ok(number(cs::formation_edge())),
         "crossSection.gaugeProfile" => ok(cs::gauge_profile(a.os(0))),
         "crossSection.gaugeProfileLabelKey" => ok(json!(cs::gauge_profile_label_key(&rail_across_js::js_string(a.opt(0))))),
         "crossSection.gaugeProfileRing" => ok(Value::Array(cs::gauge_profile_ring(&a.list(0)))),

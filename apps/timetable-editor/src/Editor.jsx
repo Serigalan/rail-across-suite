@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ConfirmDialog, FormDialog, NumberField, Rail, RailBrand, RailButton, RailDivider, Shell, TextField, Workspace, WorkingCopyBar } from '@rail-across/ui'
 import { netLines, stationsOf } from '@rail-across/running-times'
-import { copyTrain, dispatchOf, newTrain, numberAfter, playSpan, taktCopies, trainTitle, TRAIN_COLORS } from '@rail-across/timetables'
+import { copyTrain, dispatchOf, newTrain, numberAfter, playSpan, intervalCopies, trainTitle, TRAIN_COLORS } from '@rail-across/timetables'
 import { useCatalogue } from '@rail-across/vehicles'
 import { useTexts } from './i18n.js'
 import { ChartIcon, GraphIcon, HomeIcon, LiveIcon, LogoIcon, SettingsIcon, TimeIcon, TrainIcon } from './icons.jsx'
@@ -105,7 +105,7 @@ export default function Editor({ project, variant, revision, record, local, init
     timetables.changeTrains(list => [...list, c])
     setTrainId(c.id)
   }
-  const takt = (tr, every, count, numberStep) => timetables.changeTrains(list => [...list, ...taktCopies(tr, { every, count, numberStep })])
+  const interval = (tr, every, count, numberStep) => timetables.changeTrains(list => [...list, ...intervalCopies(tr, { every, count, numberStep })])
   const removeTrain = (tr) => {
     timetables.changeTrains(list => list.filter(x => x.id !== tr.id))
     setTrainId(null)
@@ -166,16 +166,16 @@ export default function Editor({ project, variant, revision, record, local, init
               selected={train?.id} onSelect={(id) => { setTrainId(id); setSection('trains') }} />
           : <TrainSheet key={train?.id ?? 'none'} t={t} language={language} train={train} run={train ? runs.get(train.id) : null}
               timetables={timetables} stations={stations} catalogue={catalogue} record={record} net={net} mayEdit={mayEdit} titles={titles} chartT={rt.t}
-              update={(fn) => train && update(train.id, fn)} onCopy={() => copy(train)} onTakt={() => setDialog({ kind: 'takt' })}
+              update={(fn) => train && update(train.id, fn)} onCopy={() => copy(train)} onInterval={() => setDialog({ kind: 'interval' })}
               onDelete={() => setDialog({ kind: 'deleteTrain' })} onNewTimetable={() => setDialog({ kind: 'new' })} onAddTrain={addTrain} />}
       </Workspace>
-      <Dialogs t={t} dialog={dialog} setDialog={setDialog} timetables={timetables} train={train} takt={takt} removeTrain={removeTrain} />
+      <Dialogs t={t} dialog={dialog} setDialog={setDialog} timetables={timetables} train={train} interval={interval} removeTrain={removeTrain} />
     </Shell>
   )
 }
 
 /** The questions the editor asks: a new timetable's name, another name, deleting, a Takt. */
-function Dialogs({ t, dialog, setDialog, timetables, train, takt, removeTrain }) {
+function Dialogs({ t, dialog, setDialog, timetables, train, interval, removeTrain }) {
   const [name, setName] = useState('')
   const [form, setForm] = useState({ every: 60, count: 4, step: 2 })
   const close = () => setDialog(null)
@@ -228,16 +228,16 @@ function Dialogs({ t, dialog, setDialog, timetables, train, takt, removeTrain })
       </ConfirmDialog>
     )
   }
-  if (kind === 'takt' && train) {
+  if (kind === 'interval' && train) {
     const ok = form.every > 0 && Number.isInteger(form.count) && form.count >= 1 && form.count <= 100
     return (
-      <FormDialog title={t('takt_title')} submitLabel={t('takt_make', { n: form.count ?? 0 })} cancelLabel={t('cancel')} canSubmit={ok}
-        onCancel={close} onSubmit={() => { takt(train, Math.round(form.every * 60), form.count, form.step ?? 0); close() }}>
-        <p className="ui-muted">{t('takt_text')}</p>
+      <FormDialog title={t('interval_title')} submitLabel={t('interval_make', { n: form.count ?? 0 })} cancelLabel={t('cancel')} canSubmit={ok}
+        onCancel={close} onSubmit={() => { interval(train, Math.round(form.every * 60), form.count, form.step ?? 0); close() }}>
+        <p className="ui-muted">{t('interval_text')}</p>
         <div className="ui-fields">
-          <NumberField compact label={t('takt_every')} value={form.every} min={1} step={1} onChange={(v) => setForm(f => ({ ...f, every: v }))} />
-          <NumberField compact label={t('takt_count')} value={form.count} min={1} max={100} step={1} onChange={(v) => setForm(f => ({ ...f, count: v }))} />
-          <NumberField compact label={t('takt_step')} value={form.step} step={1} onChange={(v) => setForm(f => ({ ...f, step: v }))} />
+          <NumberField compact label={t('interval_every')} value={form.every} min={1} step={1} onChange={(v) => setForm(f => ({ ...f, every: v }))} />
+          <NumberField compact label={t('interval_count')} value={form.count} min={1} max={100} step={1} onChange={(v) => setForm(f => ({ ...f, count: v }))} />
+          <NumberField compact label={t('interval_step')} value={form.step} step={1} onChange={(v) => setForm(f => ({ ...f, step: v }))} />
         </div>
       </FormDialog>
     )

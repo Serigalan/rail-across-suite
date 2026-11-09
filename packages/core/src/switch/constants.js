@@ -2,19 +2,19 @@
 // 800.0120 (`constraints/db-ril-800-0120.json`) by kind and class — and its
 // constants (decision 0021, phase D: the functions are the core's Rust module,
 // crates/switch, which reads the same catalogue).
-import KATALOG from '../../constraints/db-ril-800-0120.json' with { type: 'json' }
+import CATALOGUE from '../../constraints/db-ril-800-0120.json' with { type: 'json' }
 
-export { KATALOG as WEICHEN_KATALOG }
+export { CATALOGUE as SWITCH_CATALOGUE }
 
-const FORMEN = KATALOG.formen
+const FORMS = CATALOGUE.formen
 
 /**
  * Any form — turnout or crossing, Regelform or Sonderbauform — looked up by its
  * label. The label is the key a saved project keeps, which is why the
  * catalogue states outright that a label is never renamed.
  */
-export const switchTypeByLabel = (label) => FORMEN.find(form => form.label === label) ?? null
-const turnouts = (klasse) => FORMEN.filter(form => form.art === 'weiche' && form.klasse === klasse)
+export const switchTypeByLabel = (label) => FORMS.find(form => form.label === label) ?? null
+const turnouts = (klasse) => FORMS.filter(form => form.art === 'weiche' && form.klasse === klasse)
 
 /** The standard turnouts (Regelweichen), as the pickers offer them first. */
 export const SWITCH_TYPES = turnouts('regel')
@@ -35,19 +35,19 @@ export const DEFAULT_SWITCH_TYPE_IDX = SWITCH_PICK_TYPES.findIndex(form => form.
  * each: `verbindung` on the form, which the catalogue marks as this tool's own
  * decision rather than the Ril's.
  */
-const stage = (n) => FORMEN
+const stage = (n) => FORMS
   .filter(form => form.verbindung?.stufe === n)
   .sort((a, b) => a.verbindung.rang - b.verbindung.rang)
 export const SWITCH_CONNECTION_STAGES = [stage(1), stage(2), stage(3)]
 
 /** Every turnout form, whatever its class — what an import matches a record against. */
-export const ALL_SWITCH_TYPES = FORMEN.filter(form => form.art === 'weiche')
+export const ALL_SWITCH_TYPES = FORMS.filter(form => form.art === 'weiche')
 /** The crossing forms. */
-export const CROSSING_TYPES = FORMEN.filter(form => form.art === 'kreuzung')
+export const CROSSING_TYPES = FORMS.filter(form => form.art === 'kreuzung')
 
 /** The catalogue's own description: id, title, version. */
-export const WEICHEN_REGELWERK = KATALOG.katalog
-export const WEICHEN_REGELWERK_ID = WEICHEN_REGELWERK.id
+export const SWITCH_RULEBOOK = CATALOGUE.katalog
+export const SWITCH_RULEBOOK_ID = SWITCH_RULEBOOK.id
 
 /** A height point this close to the ldS is the ldS point [m]; heights that agree to Z_TOL agree (kept to 0.1 mm). */
 export const STATION_TOL = 0.01

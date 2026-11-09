@@ -11,7 +11,7 @@ import { reverseTrack } from '@rail-across/core/track'
 import { arcFrom, straightFrom } from '@rail-across/core/src/geometry/elementFactory.js'
 import { resolveRoute } from '@rail-across/core/track'
 import { tangentLength } from '@rail-across/core/track'
-import { hasPekBestand, loadPekBestand } from '@rail-across/core/test/pekFixture.js'
+import { hasPekExisting, loadPekExisting } from '@rail-across/core/test/pekFixture.js'
 import { hydrateProjects } from '@rail-across/core/src/project/persistenceUtils.js'
 import { snapNodeGaps, snapTrackJoints } from '@rail-across/core/geometry'
 
@@ -287,11 +287,11 @@ describe.skipIf(!cantFiles.length)('the Verm.ESN test axes with cant ramps (memo
   })
 })
 
-describe.skipIf(!hasPekBestand)('PEK Bestand', () => {
+describe.skipIf(!hasPekExisting)('PEK Bestand', () => {
   // As the server keeps it since decision 0020: its joints under a millimetre
   // closed (closeLegacyGaps). The file's own gaps of up to 0.9 mm would
   // otherwise be closed by the import on the way back.
-  const loadClosed = () => closeLegacyGaps(loadPekBestand())
+  const loadClosed = () => closeLegacyGaps(loadPekExisting())
   it('every track reads back to its own chain within a tenth of a millimetre', () => {
     const { tracks } = loadClosed()
     let worst = 0

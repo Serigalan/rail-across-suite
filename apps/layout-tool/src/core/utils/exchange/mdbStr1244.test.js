@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { parseMdbPayload, listMdbStrecken, buildAllTracksFromMdb, trackTypeFields } from './mdbImport'
+import { parseMdbPayload, listMdbLines, buildAllTracksFromMdb, trackTypeFields } from './mdbImport'
 import fixture from '../../test/fixtures/mdb_str1244.json'
 
 /**
@@ -38,7 +38,7 @@ describe('trackTypeFields', () => {
 
 describe('a delivery without Gleisabschnitte', () => {
   it('groups its elements by the line their points name', () => {
-    expect(listMdbStrecken(payload)).toEqual([
+    expect(listMdbLines(payload)).toEqual([
       { strecke: '1244', count: 9 },
       { strecke: '6100', count: 6 },
     ])
@@ -81,9 +81,9 @@ describe('a delivery with Gleisabschnitte', () => {
   })
 
   it('files the leftovers under their Trasse, not under the numbers of their points', () => {
-    expect(listMdbStrecken(sectioned).map(s => s.strecke)).toEqual(
+    expect(listMdbLines(sectioned).map(s => s.strecke)).toEqual(
       expect.arrayContaining(['1244', expect.stringMatching(/^(1244UCS|6100)/)]))
-    expect(listMdbStrecken(sectioned).some(s => /UCS|_247-273/.test(s.strecke))).toBe(true)
+    expect(listMdbLines(sectioned).some(s => /UCS|_247-273/.test(s.strecke))).toBe(true)
   })
 })
 

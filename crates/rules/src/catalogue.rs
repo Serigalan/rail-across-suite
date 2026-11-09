@@ -3,7 +3,7 @@
 
 //! A rule catalogue — DB Ril 800.0110 Linienführung as the repo holds it
 //! (packages/core/constraints/db-ril-800-0110.json), read and applied. The Rust
-//! half of the app's packages/core/src/rules/regelkatalog.js, and meant to
+//! half of the app's packages/core/src/rules/ruleCatalogue.js, and meant to
 //! read like it: the same file, the same expression language ([`crate::expr`]),
 //! the same evaluation order, so the optimizer builds to exactly the limits the
 //! app's element table judges by.
@@ -160,7 +160,7 @@ fn number(value: Option<&Json>) -> Option<f64> {
 
 /// One catalogue file, loaded.
 #[derive(Debug, Clone)]
-pub struct Katalog {
+pub struct Catalogue {
     pub id: String,
     pub title: String,
     pub version: String,
@@ -171,10 +171,10 @@ pub struct Katalog {
     physics: HashMap<String, f64>,
 }
 
-impl Katalog {
+impl Catalogue {
     /// The catalogue `data` with the physics provider `physics` (the one
     /// number the catalogue asks of the physics document is u0_factor).
-    pub fn new(data: &Json, physics: HashMap<String, f64>) -> Result<Katalog, Error> {
+    pub fn new(data: &Json, physics: HashMap<String, f64>) -> Result<Catalogue, Error> {
         let mut symbols = Symbols::default();
         let catalog = data.get("catalog").ok_or_else(|| catalogue_error("no catalog"))?;
         let rank = data
@@ -200,7 +200,7 @@ impl Katalog {
             .map(|r| read_rule(r, &mut symbols))
             .collect::<Result<Vec<_>, _>>()?;
 
-        Ok(Katalog {
+        Ok(Catalogue {
             id: text(&catalog["id"], "catalog id")?,
             title: catalog["title"].as_str().unwrap_or_default().to_string(),
             version: catalog["katalog_version"].as_str().unwrap_or_default().to_string(),
@@ -263,8 +263,8 @@ impl Katalog {
 
     // ── applying ─────────────────────────────────────────────────────────
 
-    fn fns<'a>(&'a self, in_context: Option<&'a dyn Fn(&str) -> bool>) -> KatalogFunctions<'a> {
-        KatalogFunctions { katalog: self, in_context }
+    fn fns<'a>(&'a self, in_context: Option<&'a dyn Fn(&str) -> bool>) -> CatalogueFunctions<'a> {
+        CatalogueFunctions { catalogue: self, in_context }
     }
 
     fn inputs(&self, rule: &Rule, base: &Scope, fns: &dyn Functions) -> Result<Scope, Error> {
@@ -430,12 +430,12 @@ impl Katalog {
 }
 
 /// The functions the catalogue's expressions may call.
-struct KatalogFunctions<'a> {
-    katalog: &'a Katalog,
+struct CatalogueFunctions<'a> {
+    catalogue: &'a Catalogue,
     in_context: Option<&'a dyn Fn(&str) -> bool>,
 }
 
-impl Functions for KatalogFunctions<'_> {
+impl Functions for CatalogueFunctions<'_> {
     fn call(&self, name: &str, args: &[Value]) -> Result<Value, Error> {
         match name {
             "lookup" => {
@@ -447,7 +447,7 @@ impl Functions for KatalogFunctions<'_> {
                     None => None,
                     Some(other) => return Err(Error::Expr(format!("lookup column is not a string: {other:?}"))),
                 };
-                self.katalog.lookup(table, *key, column)
+                self.catalogue.lookup(table, *key, column)
             }
             "in_context" => {
                 let Some(Value::Str(id)) = args.first() else {

@@ -1,7 +1,7 @@
 import { hasScreen } from '../model/domain.js'
 
 // What the schematic view draws an object as, and how long a symbol is —
-// the shapes themselves are planzeichen.jsx's.
+// the shapes themselves are planSymbols.jsx's.
 
 /** Which signalling systems' kinds draw as which screen. */
 const FAMILY = {

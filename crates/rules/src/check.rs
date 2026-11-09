@@ -2,18 +2,18 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 
 //! The rule catalogue applied to the app's own elements, answered in the form
-//! of `trassierungCheck.js` (`checkTrack`, `elementVerdict`): every result
+//! of `alignmentCheck.js` (`checkTrack`, `elementVerdict`): every result
 //! with the values its rule read and computed, per element, per joint and per
 //! ramp — what the element table shows. The scopes are [`crate::pruefung`]'s.
 
 use rail_across_js::number;
 use serde_json::{Value as Json, json};
 
-use crate::bundled::{katalog, severity_rank, worst_severity};
+use crate::alignment_check::{Context, boundary_scope, element_scope};
+use crate::bundled::{catalogue, severity_rank, worst_severity};
+use crate::catalogue::{Rule, Source};
 use crate::element::Element;
 use crate::expr::{Error, Value};
-use crate::katalog::{Rule, Source};
-use crate::pruefung::{Context, boundary_scope, element_scope};
 
 fn to_json(v: &Value) -> Json {
     match v {
@@ -26,10 +26,10 @@ fn to_json(v: &Value) -> Json {
 /// One rule applied as `evaluateRule` applies it: `{ id, applied, severity, values, outOfRange? }`,
 /// None where its condition leaves the object alone.
 fn evaluate(rule: &Rule, base: &[(&str, Value)], scope: &crate::expr::Scope, in_context: Option<&dyn Fn(&str) -> bool>) -> Result<Option<Json>, Error> {
-    let k = katalog();
+    let k = catalogue();
     let outcome = match k.evaluate_rule(rule, scope, in_context) {
         Ok(o) => o,
-        Err(Error::OutOfRange(severity)) => crate::katalog::Outcome {
+        Err(Error::OutOfRange(severity)) => crate::catalogue::Outcome {
             applied: true,
             severity: Some(severity),
             values: scope.clone(),
@@ -66,7 +66,7 @@ fn evaluate_rules(
     excluded: &[&str],
 ) -> Result<(Vec<Json>, Option<String>), Error> {
     let mut results = Vec::new();
-    let scope = katalog().scope(base);
+    let scope = catalogue().scope(base);
     for rule in rules {
         if rule.excludes.iter().any(|e| excluded.contains(&e.as_str())) {
             continue;
@@ -94,7 +94,7 @@ fn element_entry(els: &[Element], i: usize, context: Context) -> Result<Option<J
     }
     let in_switch = el.in_switch();
     let ctx = move |id: &str| id == "switch_area" && in_switch;
-    let k = katalog();
+    let k = catalogue();
     let (results, severity) = evaluate_rules(&k.rules_for_element(el.type_id(), el.form()), &element_scope(els, i, context), Some(&ctx), &[])?;
     Ok(Some(entry(i, results, severity)))
 }
@@ -116,7 +116,7 @@ fn ramp_entry(els: &[Element], i: usize) -> Result<Option<Json>, Error> {
         ("model.ramp_on_transition", el.is_transition().into()),
         ("model.ramp_form_matches", (el.form() == Some("clothoid")).into()),
     ];
-    let k = katalog();
+    let k = catalogue();
     let (results, severity) = evaluate_rules(&k.rules_for_scope("cant_ramp"), &base, None, &[])?;
     Ok(Some(entry(i, results, severity)))
 }
@@ -130,7 +130,7 @@ fn boundary_entry(els: &[Element], i: usize) -> Result<Option<Json>, Error> {
     let either = a.in_switch() || b.in_switch();
     let ctx = move |id: &str| id == "switch_area" && either;
     let excluded: &[&str] = if internal { &["switch_internal"] } else { &[] };
-    let k = katalog();
+    let k = catalogue();
     let (results, severity) = evaluate_rules(&k.rules_for_scope("boundary"), &boundary_scope(els, i), Some(&ctx), excluded)?;
     Ok(Some(entry(i, results, severity)))
 }
@@ -207,7 +207,7 @@ pub fn has_rule_error(els: &[Element], context: Context) -> Result<bool, Error> 
 /// "at:id" — what the search for the highest speed compares, without the
 /// values each rule read (`elementVerdict` filtered to errors).
 pub fn verdict_errors(els: &[Element], i: usize, context: Context) -> Result<Vec<String>, Error> {
-    let k = katalog();
+    let k = catalogue();
     let error = severity_rank(Some("error"));
     let mut out = Vec::new();
     let mut apply = |rules: &[&Rule], base: &[(&str, Value)], in_context: Option<&dyn Fn(&str) -> bool>, excluded: &[&str], at: &str| -> Result<(), Error> {

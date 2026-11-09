@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Serigalan and the Rail-Across-Suite contributors
 // SPDX-License-Identifier: LGPL-3.0-only
 
-//! The one physical constant the rules compute with (`regelwerkDefaults.js`,
+//! The one physical constant the rules compute with (`rulebookDefaults.js`,
 //! packages/core/constraints/physics.json).
 
 /// v = √(R (u + u_f) / 11.8) — see packages/core/constraints/physics.json for the derivation.

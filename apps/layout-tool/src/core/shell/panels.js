@@ -126,7 +126,7 @@ export const PANELS = [
     id: 'check', group: 'check', icon: CheckIcon, titleKey: 'check_title', place: 'top', Component: CheckPanel,
     overlay: 'bands',
     props: (s) => ({
-      onShowRegelwerk: s.showRegelwerk,
+      onShowRulebook: s.showRulebook,
       bandsTrackId: s.overlay?.kind === 'bands' ? s.overlay.trackId : null,
       onShowBands: (trackId) => (trackId ? s.openOverlay({ kind: 'bands', trackId }) : s.closeOverlay('bands')),
     }),

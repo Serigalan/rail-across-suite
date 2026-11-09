@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import {
-  QUERSCHNITT_KATALOG, GAUGE_PROFILES, DEFAULT_GAUGE_PROFILE, gaugeProfile, gaugeProfileRing,
-  gaugeProfileAreas, gaugeProfileLabelKey, LICHTRAUM_SOURCE,
+  CROSS_SECTION_CATALOGUE, GAUGE_PROFILES, DEFAULT_GAUGE_PROFILE, gaugeProfile, gaugeProfileRing,
+  gaugeProfileAreas, gaugeProfileLabelKey, CLEARANCE_SOURCE,
 } from '@rail-across/core/crossSection'
 import { translations } from '../../../locales/i18n'
 
@@ -12,13 +12,13 @@ describe('the profile table', () => {
 
   it('is the Lichtraum of Ril 800.0130A01 — Hauptgleise, Nebengleise, S-Bahn and S-Bahn tunnels', () => {
     expect(Object.keys(GAUGE_PROFILES)).toEqual(['hauptgleis', 'nebengleis', 's_bahn', 's_bahn_tunnel'])
-    expect(LICHTRAUM_SOURCE).toBe('DB Ril 800.0130A01')
+    expect(CLEARANCE_SOURCE).toBe('DB Ril 800.0130A01')
     expect(GAUGE_PROFILES.nebengleis.points)
       .toEqual([[0, 0], [2200, 0], [2200, 3900], [1860, 4900], [0, 4900]])
   })
 
   it('names itself to the reader in both languages, apart from the German source title', () => {
-    const key = `regelwerk_title_${QUERSCHNITT_KATALOG.katalog.id}`
+    const key = `regelwerk_title_${CROSS_SECTION_CATALOGUE.katalog.id}`
     for (const lang of Object.keys(translations)) {
       expect(typeof translations[lang][key], lang).toBe('string')
     }
@@ -104,8 +104,8 @@ function inside([py, pz], ring) {
 describe('the catalogue checked against itself', () => {
   it('names every line category in both languages', () => {
     const languages = Object.keys(translations)
-    const kategorien = [...new Set(QUERSCHNITT_KATALOG.streckenquerschnitte.rows.map(r => r.kategorie))]
-    for (const kategorie of kategorien) {
+    const categories = [...new Set(CROSS_SECTION_CATALOGUE.streckenquerschnitte.rows.map(r => r.kategorie))]
+    for (const kategorie of categories) {
       for (const lang of languages) {
         const key = `constraints_querschnitt_kategorie_${kategorie}`
         expect(typeof translations[lang][key], `${lang}.${key}`).toBe('string')
@@ -115,7 +115,7 @@ describe('the catalogue checked against itself', () => {
 
 
   it('states a formation width that is the track spacing plus both edges', () => {
-    for (const row of QUERSCHNITT_KATALOG.streckenquerschnitte.rows) {
+    for (const row of CROSS_SECTION_CATALOGUE.streckenquerschnitte.rows) {
       expect(row.planumsbreite, row.kategorie)
         .toBeCloseTo(row.gleisabstand + 2 * row.planumskante, 9)
     }

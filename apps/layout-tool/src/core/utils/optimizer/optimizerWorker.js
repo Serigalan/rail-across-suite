@@ -1,4 +1,4 @@
-import { KATALOG } from '@rail-across/core/rules'
+import { CATALOGUE } from '@rail-across/core/rules'
 import { instantiateOptimizer, runWith } from './optimizerRun'
 
 // The optimizer off the page's thread, kept between requests: the module
@@ -27,7 +27,7 @@ self.onmessage = async ({ data: { id, url, op, request } }) => {
     return
   }
   try {
-    const answer = runWith(exports, { op, request, catalogue: handedOver ? undefined : KATALOG })
+    const answer = runWith(exports, { op, request, catalogue: handedOver ? undefined : CATALOGUE })
     handedOver = true
     self.postMessage({ id, answer })
   } catch (err) {

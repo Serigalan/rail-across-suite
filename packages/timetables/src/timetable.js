@@ -94,7 +94,7 @@ export function numberAfter(number, step) {
  * Copies of a train at an interval (a Takt): `count` of them, each `every`
  * [s] after the one before, their numbers counted on by `numberStep`.
  */
-export const taktCopies = (train, { every, count, numberStep = 2 }) =>
+export const intervalCopies = (train, { every, count, numberStep = 2 }) =>
   Array.from({ length: count }, (_, i) => copyTrain(train, { shift: every * (i + 1), number: numberAfter(train.number, numberStep * (i + 1)) }))
 
 /** A clock time as one writes it — 7:05, 07:05:30, 0705 — in seconds from midnight, or null. Past 24:00 is the next day. */

@@ -1,6 +1,6 @@
 /**
  * The rule catalogue applied to a track's vertical alignment — the Höhenplan
- * half of DB Ril 800.0110 (HP.*), as trassierungCheck.js is the Lageplan half.
+ * half of DB Ril 800.0110 (HP.*), as alignmentCheck.js is the Lageplan half.
  *
  * The catalogue speaks about two kinds of object here, and so does this:
  *
@@ -62,7 +62,7 @@ function stretchGrades(heights) {
  * Where each element begins and ends along the track, with its design speed
  * and whether it is a cant ramp — an element the cant changes over (a
  * transition, or an arc or straight whose cant changes along it, see
- * trassierungCheck's rampScope).
+ * alignmentCheck's rampScope).
  */
 function elementSpans(elements) {
   let start = 0

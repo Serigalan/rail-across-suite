@@ -3,7 +3,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
-  BUNDLED_KATALOG_VERSION, evalFormel, flattenPhysics, GRENZWERTE, optimizerLimitRows, PHYSICS,
+  BUNDLED_CATALOGUE_VERSION, evalFormula, flattenPhysics, LIMIT_SEVERITIES, optimizerLimitRows, PHYSICS,
 } from './constraintsView.js'
 
 const pkgRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
@@ -23,45 +23,45 @@ describe('the bundled physics file', () => {
 
 describe('flattenPhysics', () => {
   it('takes one row per { wert, ... } entry and leaves groups alone', () => {
-    const { konstanten, profile } = flattenPhysics({
+    const { constants, profile } = flattenPhysics({
       beschreibung: 'Text, kein Wert',
       koeff: { wert: 11.8, einheit: '-', formel_calc: 'sqrt(R*(u+uf)/k)', formel_mathml: '<math></math>', herleitung: 'weil', warum: 'wofür' },
       uebergangsbogenprofile: { clothoid: { name: 'Klothoide', kruemmung_calc: 'kappa1', warum: 'wofür' } },
     })
-    expect(konstanten).toEqual([{
-      path: 'koeff', wert: 11.8, einheit: '-', formelCalc: 'sqrt(R*(u+uf)/k)', formelMathml: '<math></math>',
-      herleitung: 'weil', warum: 'wofür', woVerwendet: 'Optimierer',
+    expect(constants).toEqual([{
+      path: 'koeff', wert: 11.8, einheit: '-', formulaCalc: 'sqrt(R*(u+uf)/k)', formulaMathml: '<math></math>',
+      herleitung: 'weil', warum: 'wofür', whereUsed: 'Optimierer',
     }])
     expect(profile).toEqual([{
-      key: 'clothoid', name: 'Klothoide', kruemmung: '', kruemmungCalc: 'kappa1',
-      kruemmungMathml: '', warum: 'wofür',
+      key: 'clothoid', name: 'Klothoide', kruemmung: '', curvatureCalc: 'kappa1',
+      curvatureMathml: '', warum: 'wofür',
     }])
   })
 
   it('answers empty for a file that states nothing', () => {
-    expect(flattenPhysics({})).toEqual({ konstanten: [], profile: [] })
-    expect(flattenPhysics(null)).toEqual({ konstanten: [], profile: [] })
+    expect(flattenPhysics({})).toEqual({ constants: [], profile: [] })
+    expect(flattenPhysics(null)).toEqual({ constants: [], profile: [] })
   })
 })
 
 describe('flattenPhysics against the real physics.json', () => {
-  const { konstanten, profile } = flattenPhysics(physics)
+  const { constants, profile } = flattenPhysics(physics)
 
   it('finds all three constants, in file order, with their units', () => {
-    expect(konstanten.map(r => r.path)).toEqual([
+    expect(constants.map(r => r.path)).toEqual([
       'ueberhoehungsfehlbetrag_koeffizient', 'wirksame_spurweite', 'erdbeschleunigung',
     ])
-    expect(konstanten.map(r => r.wert)).toEqual([11.8, 1.5, 9.81])
-    expect(konstanten.map(r => r.einheit)).toEqual(['-', 'm', 'm/s^2'])
+    expect(constants.map(r => r.wert)).toEqual([11.8, 1.5, 9.81])
+    expect(constants.map(r => r.einheit)).toEqual(['-', 'm', 'm/s^2'])
   })
 
   it('has a specific "wo verwendet" label for every constant, not the generic fallback', () => {
-    expect(konstanten.filter(r => r.woVerwendet === 'Optimierer')).toEqual([])
+    expect(constants.filter(r => r.whereUsed === 'Optimierer')).toEqual([])
   })
 
   it('carries the coefficient with its formula and its derivation', () => {
-    const coeff = konstanten[0]
-    expect(coeff.formelCalc).toContain('sqrt')
+    const coeff = constants[0]
+    expect(coeff.formulaCalc).toContain('sqrt')
     expect(coeff.herleitung).not.toBe('')
   })
 
@@ -69,47 +69,47 @@ describe('flattenPhysics against the real physics.json', () => {
     expect(profile.map(p => p.key)).toEqual(['clothoid', 'bloss'])
     for (const p of profile) {
       expect(p.name).not.toBe('')
-      expect(p.kruemmungCalc).toContain('kappa1')
+      expect(p.curvatureCalc).toContain('kappa1')
     }
   })
 })
 
 describe('evalFormel', () => {
   it('evaluates a bare arithmetic expression against named variables', () => {
-    expect(evalFormel('a + b * 2', { a: 1, b: 3 })).toBe(7)
+    expect(evalFormula('a + b * 2', { a: 1, b: 3 })).toBe(7)
   })
 
   it('has sqrt available without it being passed as a variable', () => {
-    expect(evalFormel('sqrt(a)', { a: 9 })).toBe(3)
+    expect(evalFormula('sqrt(a)', { a: 9 })).toBe(3)
   })
 })
 
 // formel_calc/kruemmung_calc exist so a test can hold the file to the same
 // arithmetic the kernel runs — not just eyeball that the strings look like the
 // right formula. The optimizer module runs the matching check against its own
-// kernel (optimizer/…/tests/grenzen.rs); there is no JS reimplementation of the
-// kernel to check against here, so this checks evalFormel against the closed
+// kernel (optimizer/…/tests/limits.rs); there is no JS reimplementation of the
+// kernel to check against here, so this checks evalFormula against the closed
 // forms worked out by hand instead.
 describe('formel_calc/kruemmung_calc, evaluated against physics.json', () => {
-  const { konstanten, profile } = flattenPhysics(physics)
+  const { constants, profile } = flattenPhysics(physics)
 
   it('formel_calc reproduces permissible_speed for R=700, u=120, uf=130', () => {
-    const koeff = konstanten[0]
-    const v = evalFormel(koeff.formelCalc, { R: 700, u: 120, uf: 130, k: koeff.wert })
-    expect(v).toBeCloseTo(Math.sqrt(700 * (120 + 130) / koeff.wert), 12)
+    const coeff = constants[0]
+    const v = evalFormula(coeff.formulaCalc, { R: 700, u: 120, uf: 130, k: coeff.wert })
+    expect(v).toBeCloseTo(Math.sqrt(700 * (120 + 130) / coeff.wert), 12)
   })
 
   it("clothoid's kruemmung_calc is linear in s (its own kruemmung_text says so)", () => {
     const clothoid = profile.find(p => p.key === 'clothoid')
     const [kappa1, kappa2, L] = [-0.01, 0.02, 120]
     for (const s of [0, 30, 120]) {
-      const got = evalFormel(clothoid.kruemmungCalc, { kappa1, kappa2, L, s })
+      const got = evalFormula(clothoid.curvatureCalc, { kappa1, kappa2, L, s })
       const expected = kappa1 + (kappa2 - kappa1) * (s / L)     // by hand, not from the file
       expect(got).toBeCloseTo(expected, 12)
     }
     // Linear also means the midpoint sits exactly between the two ends —
     // an independent check the shape really is what "linear" claims.
-    const mid = evalFormel(clothoid.kruemmungCalc, { kappa1, kappa2, L, s: L / 2 })
+    const mid = evalFormula(clothoid.curvatureCalc, { kappa1, kappa2, L, s: L / 2 })
     expect(mid).toBeCloseTo((kappa1 + kappa2) / 2, 12)
   })
 
@@ -118,7 +118,7 @@ describe('formel_calc/kruemmung_calc, evaluated against physics.json', () => {
     const [kappa1, kappa2, L] = [-0.01, 0.02, 120]
     for (const s of [0, 45, 120]) {
       const t = s / L
-      const got = evalFormel(bloss.kruemmungCalc, { kappa1, kappa2, L, s })
+      const got = evalFormula(bloss.curvatureCalc, { kappa1, kappa2, L, s })
       const expected = kappa1 + (kappa2 - kappa1) * (3 * t ** 2 - 2 * t ** 3)   // by hand
       expect(got).toBeCloseTo(expected, 12)
     }
@@ -128,8 +128,8 @@ describe('formel_calc/kruemmung_calc, evaluated against physics.json', () => {
     const h = 1e-4
     for (const s of [0, L]) {
       const derivative = (
-        evalFormel(bloss.kruemmungCalc, { kappa1, kappa2, L, s: s + h })
-        - evalFormel(bloss.kruemmungCalc, { kappa1, kappa2, L, s: s - h })
+        evalFormula(bloss.curvatureCalc, { kappa1, kappa2, L, s: s + h })
+        - evalFormula(bloss.curvatureCalc, { kappa1, kappa2, L, s: s - h })
       ) / (2 * h)
       expect(derivative).toBeCloseTo(0, 3)
     }
@@ -140,10 +140,10 @@ describe('formel_calc/kruemmung_calc, evaluated against physics.json', () => {
 // markup, so a broken tag would not fail loudly, it would quietly draw
 // nothing. These are the checks that make it fail loudly instead.
 describe('the MathML physics.json states', () => {
-  const { konstanten, profile } = flattenPhysics(physics)
+  const { constants, profile } = flattenPhysics(physics)
   const formulas = [
-    ['ueberhoehungsfehlbetrag_koeffizient', konstanten[0].formelMathml],
-    ...profile.map(p => [p.key, p.kruemmungMathml]),
+    ['ueberhoehungsfehlbetrag_koeffizient', constants[0].formulaMathml],
+    ...profile.map(p => [p.key, p.curvatureMathml]),
   ]
 
   it('states one formula for the coefficient and one per profile', () => {
@@ -190,7 +190,7 @@ describe('the MathML physics.json states', () => {
 })
 
 describe('optimizerLimitRows', () => {
-  // What the optimizer module answers to 'limits' (optimizer/…/grenzen.rs,
+  // What the optimizer module answers to 'limits' (optimizer/…/limits.rs,
   // Grenzen::describe) — JSON floats, as the module sends them.
   const served = {
     id: 'db-ril-800-0110', name: katalog.catalog.title, version: katalog.catalog.katalog_version,
@@ -212,7 +212,7 @@ describe('optimizerLimitRows', () => {
     const rows = optimizerLimitRows(served)
     expect(rows).toHaveLength(8)
     for (const row of rows) {
-      for (const level of Object.keys(GRENZWERTE)) {
+      for (const level of Object.keys(LIMIT_SEVERITIES)) {
         expect(row[level].mismatch, `${row.label} ${level}`).toBe(false)
       }
     }
@@ -245,6 +245,6 @@ describe('optimizerLimitRows', () => {
   })
 
   it('names the catalogue version the app bundles', () => {
-    expect(BUNDLED_KATALOG_VERSION).toBe(katalog.catalog.katalog_version)
+    expect(BUNDLED_CATALOGUE_VERSION).toBe(katalog.catalog.katalog_version)
   })
 })

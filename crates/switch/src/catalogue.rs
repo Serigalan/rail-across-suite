@@ -11,11 +11,11 @@ use serde_json::{Value, json};
 
 const FILE: &str = include_str!("../../../packages/core/constraints/db-ril-800-0120.json");
 
-/// The rulebook itself (`WEICHEN_KATALOG`).
-pub static WEICHEN_KATALOG: LazyLock<Value> = LazyLock::new(|| serde_json::from_str(FILE).expect("db-ril-800-0120.json"));
+/// The rulebook itself (`SWITCH_CATALOGUE`).
+pub static SWITCH_CATALOGUE: LazyLock<Value> = LazyLock::new(|| serde_json::from_str(FILE).expect("db-ril-800-0120.json"));
 
 fn formen() -> &'static [Value] {
-    WEICHEN_KATALOG["formen"].as_array().map(Vec::as_slice).unwrap_or(&[])
+    SWITCH_CATALOGUE["formen"].as_array().map(Vec::as_slice).unwrap_or(&[])
 }
 
 fn s<'a>(v: &'a Value, k: &str) -> Option<&'a str> {
@@ -347,8 +347,8 @@ pub fn branch_radius(form_signed_r: f64, stem_signed_r: Option<f64>) -> Option<f
     if k.abs() < STRAIGHT_CURVATURE { None } else { Some(1.0 / k) }
 }
 
-/// Which bauform a stem radius produces (`bauform`).
-pub fn bauform(stem_signed_r: Option<f64>, branch_signed_r: Option<f64>) -> &'static str {
+/// Which bent form a stem radius produces (`bentForm`).
+pub fn bent_form(stem_signed_r: Option<f64>, branch_signed_r: Option<f64>) -> &'static str {
     let Some(stem) = stem_signed_r.filter(|r| *r != 0.0 && !r.is_nan()) else {
         return "plain";
     };

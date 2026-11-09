@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { comparisonRadiusText, lengthText, radiusText } from './rowText'
-import { boundaryScope } from '@rail-across/core/src/rules/trassierungCheck.js'
+import { boundaryScope } from '@rail-across/core/src/rules/alignmentCheck.js'
 
 describe('what the element table shows', () => {
   it('rounds lengths and radii to three decimals', () => {

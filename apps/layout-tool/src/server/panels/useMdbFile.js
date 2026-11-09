@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { parseMdbPayload, listMdbStrecken, ALL_STRECKEN } from '../../core/utils/exchange'
+import { parseMdbPayload, listMdbLines, ALL_LINES } from '../../core/utils/exchange'
 import { convertMdbOnServer, ServiceError } from '../dataServices'
 import { useI18n } from '../../core/locales/i18nContext'
 
@@ -31,9 +31,9 @@ export default function useMdbFile() {
         elements: payload.elements.length, tracks: payload.tracks.length, nodes: payload.nodes.length,
         km: payload.km.length, version: payload.version ?? '?',
       } : null)
-      const list = listMdbStrecken(payload)
+      const list = listMdbLines(payload)
       setStrecken(list)
-      setStrecke(ALL_STRECKEN)
+      setStrecke(ALL_LINES)
       if (!list.length) setErrors([t('data_exchange_mdb_err_empty')])
     } catch (err) {
       payloadRef.current = null

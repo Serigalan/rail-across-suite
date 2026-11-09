@@ -17,8 +17,8 @@ import { switchTypeByLabel } from './constants.js'
 
 export {
   ALL_SWITCH_TYPES, CONNECTION_SPEEDS, CROSSING_TYPES, DEFAULT_SWITCH_TYPE_IDX, END_CHAIN_OPEN, FIRST_SLEEPER, MID_OPEN,
-  RAIL_OFFSET, SLEEPER_OVERHANG, SLEEPER_SPACING, STATION_TOL, STRAIGHT_CURVATURE, SWITCH_CONNECTION_STAGES, SWITCH_PICK_TYPES, SWITCH_TYPES, SWITCH_TYPES_SPECIAL, WEICHEN_KATALOG,
-  switchTypeByLabel, WEICHEN_REGELWERK, WEICHEN_REGELWERK_ID, Z_TOL,
+  RAIL_OFFSET, SLEEPER_OVERHANG, SLEEPER_SPACING, STATION_TOL, STRAIGHT_CURVATURE, SWITCH_CONNECTION_STAGES, SWITCH_PICK_TYPES, SWITCH_TYPES, SWITCH_TYPES_SPECIAL, SWITCH_CATALOGUE,
+  switchTypeByLabel, SWITCH_RULEBOOK, SWITCH_RULEBOOK_ID, Z_TOL,
 } from './constants.js'
 
 /**
@@ -73,7 +73,7 @@ function withForms(fn, at) {
 }
 
 export const asRadius = viaRust('switch.asRadius', reuseFrom)
-export const bauform = viaRust('switch.bauform', reuseFrom)
+export const bauform = viaRust('switch.bentForm', reuseFrom)
 export const branchPlaneHeight = withForms(viaRust('switch.branchPlaneHeight', reuseFrom), 4)
 export const clickStation = viaRust('switch.clickStation', reuseFrom)
 export const computeCrossingGeometryFromPortA = viaRust('switch.computeCrossingGeometryFromPortA', reuseFrom)
@@ -122,7 +122,7 @@ export const switchBranchLength = viaRust('switch.switchBranchLength', reuseFrom
 export const switchBranchPointAt = viaRust('switch.switchBranchPointAt', reuseFrom)
 export const switchBranchSections = viaRust('switch.switchBranchSections', reuseFrom)
 export const switchBranchSpeed = viaRust('switch.switchBranchSpeed', reuseFrom)
-export const switchChainBauform = viaRust('switch.switchChainBauform', reuseFrom)
+export const switchChainBentForm = viaRust('switch.switchChainBentForm', reuseFrom)
 export const switchChainBearingAt = viaRust('switch.switchChainBearingAt', reuseFrom)
 export const switchChainJoints = viaRust('switch.switchChainJoints', reuseFrom)
 export const switchChainPointUtm = viaRust('switch.switchChainPointUtm', reuseFrom)
@@ -149,7 +149,7 @@ export const trackHeightAt = withForms(viaRust('switch.trackHeightAt', reuseFrom
 export const turnoutRunsOn = viaRust('switch.turnoutRunsOn', reuseFrom)
 export const turnoutSleepers = withForms(viaRust('switch.turnoutSleepers', reuseFrom), 2)
 export const utmEndRoute = viaRust('switch.utmEndRoute', reuseFrom)
-export const weichenGruppen = viaRust('switch.weichenGruppen', reuseFrom)
+export const switchGroups = viaRust('switch.switchGroups', reuseFrom)
 
 /**
  * Where a turnout of straight length `length` lies on `track` with its toe at

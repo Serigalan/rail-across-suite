@@ -2,7 +2,7 @@ import { useRef, useState } from 'react'
 import { commitImport, loadTracks } from '../../../storage'
 import { generateId, nextTrackName, rebuildCoords } from '@rail-across/core/track'
 import {
-  parseGleislageCsv, parseUeberhoehungCsv, listStrecken, buildTracksFromCsv, CSV_EPSG,
+  parseTrackPositionCsv, parseCantCsv, listLines, buildTracksFromCsv, CSV_EPSG,
 } from '../../../utils/exchange'
 import { readFileText } from '../../../utils/common'
 import { FILE_CRS_OPTIONS } from '@rail-across/core/geometry'
@@ -45,9 +45,9 @@ export default function CsvSection() {
   const readCsv = async (file) => {
     setErrors([]); setBusy(true); setStrecken([])
     try {
-      const rows = parseGleislageCsv(await readFileText(file))
+      const rows = parseTrackPositionCsv(await readFileText(file))
       rowsRef.current = rows
-      const list = listStrecken(rows)
+      const list = listLines(rows)
       setStrecken(list)
       setStrecke(s => (list.some(x => x.strecke === s) ? s : (list[0]?.strecke ?? '')))
     } catch (err) {
@@ -61,7 +61,7 @@ export default function CsvSection() {
   const readCant = async (file) => {
     setErrors([]); setBusy(true)
     try {
-      cantRowsRef.current = parseUeberhoehungCsv(await readFileText(file))
+      cantRowsRef.current = parseCantCsv(await readFileText(file))
       setCantCount(cantRowsRef.current.length)
     } catch (err) {
       cantRowsRef.current = null

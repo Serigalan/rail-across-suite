@@ -1,5 +1,5 @@
 // The limits the optimizer reports it runs at set beside the app's own — the
-// reading half of RegelwerkOverlay.jsx —, and the physics file turned into
+// reading half of RulebookOverlay.jsx —, and the physics file turned into
 // rows, which its tests hold to the arithmetic. Plain functions, not JSX, so
 // they run in the Node test suite without a DOM.
 //
@@ -11,8 +11,8 @@
 
 import physics from '../../constraints/physics.json' with { type: 'json' }
 import {
-  catalogLimit, catalogSpeedRange, evaluateRule, IN_SWITCH_AREA, KATALOG, ruleById, severityRank,
-} from './regelkatalog.js'
+  catalogLimit, catalogSpeedRange, evaluateRule, IN_SWITCH_AREA, CATALOGUE, ruleById, severityRank,
+} from './ruleCatalogue.js'
 
 export const PHYSICS = physics
 
@@ -31,12 +31,12 @@ const PHYSICS_WHERE_USED = {
 
 // The two levels a run can be held to, and the worst severity each admits —
 // the same pairing as the optimizer's grenzen.py (STUFEN).
-export const GRENZWERTE = { reg: 'hint', discretion: 'warning' }
+export const LIMIT_SEVERITIES = { reg: 'hint', discretion: 'warning' }
 
 // The rule scopes a level lets a run past — grenzen.py's TOLERIERT: at the
 // Ermessensgrenze a run proposes Bloss transitions although LP.UB.02 calls one
 // on this app's straight ramp a Sonderfall (ROADMAP, decision 57).
-const TOLERIERT = { reg: [], discretion: ['cant_ramp'] }
+const TOLERATED = { reg: [], discretion: ['cant_ramp'] }
 
 const DESIGN_SPEEDS = (() => {
   const out = []
@@ -60,8 +60,8 @@ function appLimits(level) {
   const kb05 = catalogLimit('LP.KB.05', level, { 'element.cant': 0 }, IN_SWITCH_AREA)
   const kb06 = catalogLimit('LP.KB.06', 'max', { 'physics.u_f': 0 }, IN_SWITCH_AREA)
   const uf = (v) => catalogLimit('LP.KB.02', level, { 'element.design_speed': v, 'physics.u_f': 0 })
-  const allowed = severityRank(GRENZWERTE[level])
-  const formOk = (form) => TOLERIERT[level].includes(ruleById('LP.UB.02').applies_to.scope)
+  const allowed = severityRank(LIMIT_SEVERITIES[level])
+  const formOk = (form) => TOLERATED[level].includes(ruleById('LP.UB.02').applies_to.scope)
     || severityRank(evaluateRule(ruleById('LP.UB.02'), {
       'model.ramp_on_transition': true, 'model.ramp_form_matches': form === 'clothoid',
     }).severity) <= allowed
@@ -74,7 +74,7 @@ function appLimits(level) {
     ufMax: distinct(DESIGN_SPEEDS.map(uf)),
     ufMaxWeiche: distinct(DESIGN_SPEEDS.map(v => Math.min(uf(v), kb06))),
     uebergangsbogen: ['clothoid', 'bloss'].filter(formOk),
-    schlechtesteStufe: GRENZWERTE[level],
+    schlechtesteStufe: LIMIT_SEVERITIES[level],
   }
 }
 
@@ -91,7 +91,7 @@ const LIMIT_ROWS = [
 ]
 
 /**
- * What GET /regelwerke/<id> says a run is held to, as table rows beside the
+ * What GET /rulebooks/<id> says a run is held to, as table rows beside the
  * app's own reading of the bundled catalogue: [{ label, unit, kind, join,
  * reg: { served, app, mismatch }, discretion: { … } }]. A service deployed
  * from an older commit than this bundle is the disagreement the drift tests on
@@ -101,7 +101,7 @@ export function optimizerLimitRows(served) {
   const app = { reg: appLimits('reg'), discretion: appLimits('discretion') }
   return LIMIT_ROWS.map(row => {
     const out = { label: row.label, unit: row.unit ?? '', kind: row.kind ?? 'number', join: row.join ?? ', ' }
-    for (const level of Object.keys(GRENZWERTE)) {
+    for (const level of Object.keys(LIMIT_SEVERITIES)) {
       const s = served?.grenzwerte?.[level]?.[row.key]
       const a = app[level][row.key]
       out[level] = {
@@ -115,57 +115,57 @@ export function optimizerLimitRows(served) {
 }
 
 /** The catalogue version the app bundles, to hold the service's against. */
-export const BUNDLED_KATALOG_VERSION = KATALOG.catalog.katalog_version
+export const BUNDLED_CATALOGUE_VERSION = CATALOGUE.catalog.katalog_version
 
 /**
  * Evaluates a `*_calc` expression from physics.json — never anything a user
  * typed or a service answered, always this repo's own file, which is what
- * makes `Function` safe to reach for here. `variablen` names the values the
+ * makes `Function` safe to reach for here. `variables` names the values the
  * expression's identifiers resolve to; `sqrt` is the one function name a
  * formula may call.
  */
-export function evalFormel(expr, variablen) {
-  const names = Object.keys(variablen)
+export function evalFormula(expr, variables) {
+  const names = Object.keys(variables)
   const fn = new Function('sqrt', ...names, `"use strict"; return (${expr});`)
-  return fn(Math.sqrt, ...names.map(n => variablen[n]))
+  return fn(Math.sqrt, ...names.map(n => variables[n]))
 }
 
 /**
- * physics.json as rows: `konstanten` (one per { wert, ... } entry, in file
+ * physics.json as rows: `constants` (one per { wert, ... } entry, in file
  * order) and `profile` (the transition curve profiles, which state a curvature
  * function instead of a value). Values keep their JSON type; formatting is the
  * caller's job.
  *
  * A formula travels twice, and neither is a copy of the other: `*_calc` is a
- * bare, evaluable expression (no units, no prose — `evalFormel` below runs
+ * bare, evaluable expression (no units, no prose — `evalFormula` below runs
  * it), `*_mathml` the set formula for a reader of the file. No page shows
  * them; the rows exist so a test can hold the file to the kernel's
  * own arithmetic (see constraintsView.test.js and tests/verify.py's mirror of
  * it) instead of only the constant the formula produces.
  */
-export function flattenPhysics(physik) {
-  const konstanten = []
-  for (const [key, node] of Object.entries(physik ?? {})) {
+export function flattenPhysics(doc) {
+  const constants = []
+  for (const [key, node] of Object.entries(doc ?? {})) {
     if (!node || typeof node !== 'object' || Array.isArray(node)) continue
     if (!('wert' in node)) continue
-    konstanten.push({
+    constants.push({
       path: key,
       wert: node.wert,
       einheit: node.einheit ?? '',
-      formelCalc: node.formel_calc ?? '',
-      formelMathml: node.formel_mathml ?? '',
+      formulaCalc: node.formel_calc ?? '',
+      formulaMathml: node.formel_mathml ?? '',
       herleitung: node.herleitung ?? '',
       warum: node.warum ?? '',
-      woVerwendet: PHYSICS_WHERE_USED[key] ?? 'Optimierer',
+      whereUsed: PHYSICS_WHERE_USED[key] ?? 'Optimierer',
     })
   }
-  const profile = Object.entries(physik?.uebergangsbogenprofile ?? {}).map(([key, node]) => ({
+  const profile = Object.entries(doc?.uebergangsbogenprofile ?? {}).map(([key, node]) => ({
     key,
     name: node.name ?? key,
     kruemmung: node.kruemmung ?? '',
-    kruemmungCalc: node.kruemmung_calc ?? '',
-    kruemmungMathml: node.kruemmung_mathml ?? '',
+    curvatureCalc: node.kruemmung_calc ?? '',
+    curvatureMathml: node.kruemmung_mathml ?? '',
     warum: node.warum ?? '',
   }))
-  return { konstanten, profile }
+  return { constants, profile }
 }

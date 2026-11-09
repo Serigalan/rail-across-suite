@@ -4,8 +4,8 @@
 //! The rules module's operations, named as the JavaScript names them.
 
 use rail_across_js::{get, number};
+use rail_across_rules::alignment_check::Context;
 use rail_across_rules::element::Element;
-use rail_across_rules::pruefung::Context;
 use rail_across_rules::{bundled, cant, check, element_length, rule_fields, speed};
 use serde_json::{Value, json};
 
@@ -125,7 +125,7 @@ pub fn run(op: &str, input: &Value) -> Option<Result<Value, Failure>> {
             "rules.limitCantDef" => number(cant::limit_cant_def(&input["el"])),
             "rules.cantDefLevel" => cant::cant_def_level(&input["el"], f("cantDef")).map(|s| json!(s)).unwrap_or(Value::Null),
             "rules.computeAutoC" => number(cant::compute_auto_c(f("speed"), f("radius"))),
-            "rules.regelCant" => number(cant::regel_cant(f("speed"), f("radius"), input["inSwitch"].as_bool().unwrap_or(false))),
+            "rules.standardCant" => number(cant::standard_cant(f("speed"), f("radius"), input["inSwitch"].as_bool().unwrap_or(false))),
             "rules.cantLimit" => number(cant::cant_limit(input)),
             "rules.clampCant" => number(cant::clamp_cant(f("value"), &input["el"])),
             "rules.worstCantOf" => number(cant::worst_cant_of(input)),

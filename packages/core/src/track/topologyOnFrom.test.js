@@ -3,7 +3,7 @@ import { tracksOnFrom } from './index.js'
 import { endPointStraightUtm } from '../geometry/elementUtils.js'
 import { utmToWgs84 } from '../geometry/coordinateUtils.js'
 import { newSwitchFields, LINK_KIND } from './index.js'
-import { hasPek, loadPekBestand } from '../../test/pekFixture.js'
+import { hasPek, loadPekExisting } from '../../test/pekFixture.js'
 
 /**
  * Where the cross section walks on at a track's end (tracksOnFrom): the tracks
@@ -85,7 +85,7 @@ describe('tracksOnFrom', () => {
   })
 
   it.skipIf(!hasPek)('finds every turnout toe of the Bestand leading into two tracks', () => {
-    const { tracks, switches } = loadPekBestand()
+    const { tracks, switches } = loadPekExisting()
     const turnouts = switches.filter(sw => sw.kind === 'turnout' && sw.ports?.A?.trackId)
     expect(turnouts.length).toBeGreaterThan(0)
     for (const sw of turnouts) {

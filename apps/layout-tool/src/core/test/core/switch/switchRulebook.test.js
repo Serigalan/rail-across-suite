@@ -1,30 +1,30 @@
 import { describe, it, expect } from 'vitest'
-import { WEICHEN_REGELWERK, WEICHEN_REGELWERK_ID, weichenGruppen } from '@rail-across/core/switch'
+import { SWITCH_RULEBOOK, SWITCH_RULEBOOK_ID, switchGroups } from '@rail-across/core/switch'
 import { SWITCH_TYPES, SWITCH_TYPES_SPECIAL, CROSSING_TYPES } from '@rail-across/core/switch'
 import { switchKindLabelKey } from '@rail-across/core/track'
 import { translations } from '../../../locales/i18n'
 import {
-  evaluateRule, ruleById, lookupPiecewise, KATALOG, IN_SWITCH_AREA, CATALOG_ID,
-} from '@rail-across/core/src/rules/regelkatalog.js'
+  evaluateRule, ruleById, lookupPiecewise, CATALOGUE, IN_SWITCH_AREA, CATALOG_ID,
+} from '@rail-across/core/src/rules/ruleCatalogue.js'
 import { computeCantDefSigned } from '@rail-across/core/src/rules/cant.js'
 
 const languages = Object.keys(translations)
 const says = (key) => languages.every(lang => typeof translations[lang][key] === 'string')
 
-const gruppen = weichenGruppen()
-const byKey = Object.fromEntries(gruppen.map(g => [g.key, g]))
+const groups = switchGroups()
+const byKey = Object.fromEntries(groups.map(g => [g.key, g]))
 const form = (key, label) => byKey[key].formen.find(f => f.label === label)
 
 describe('the switch forms as a regelwerk', () => {
   it('names itself to the reader in both languages, apart from the German source title', () => {
-    const key = `regelwerk_title_${WEICHEN_REGELWERK_ID}`
+    const key = `regelwerk_title_${SWITCH_RULEBOOK_ID}`
     expect(says(key), key).toBe(true)
   })
 
   // The catalogue's own order: the Regelformen of A01 first, the
   // Sonderbauformen of A02 after, each split by what a row can state.
   it('groups the forms the way the Ril itself does', () => {
-    expect(gruppen.map(g => g.key)).toEqual([
+    expect(groups.map(g => g.key)).toEqual([
       'regel_weichen', 'regel_kreuzungen', 'regel_kreuzungsweichen',
       'sonder_weichen', 'sonder_kreuzungen', 'sonder_kreuzungsweichen',
     ])
@@ -32,27 +32,27 @@ describe('the switch forms as a regelwerk', () => {
     expect(byKey.sonder_weichen.formen.map(f => f.label))
       .toEqual(SWITCH_TYPES_SPECIAL.map(f => f.label))
     // Every crossing form is in exactly one of the crossing groups.
-    const kreuzungen = gruppen.filter(g => g.art === 'kreuzung').flatMap(g => g.formen)
-    expect(kreuzungen.map(f => f.label).sort())
+    const crossings = groups.filter(g => g.art === 'kreuzung').flatMap(g => g.formen)
+    expect(crossings.map(f => f.label).sort())
       .toEqual(CROSSING_TYPES.map(f => f.label).sort())
   })
 
   // An empty table would claim the Ril has no such group — which is how the
   // Bogenkreuzungsweichen of A02 stayed out of sight until AP 3.4.
   it('leaves out a group with no form in it', () => {
-    expect(gruppen.every(g => g.formen.length)).toBe(true)
+    expect(groups.every(g => g.formen.length)).toBe(true)
     expect(byKey.sonder_kreuzungsweichen.formen.map(f => f.label))
       .toEqual(['EBKW 1:9 – 500.860', 'DBKW 1:9 – 500.860'])
   })
 
   it('says of each group whether it has turnout columns or crossing ones', () => {
-    expect(gruppen.map(g => g.art))
+    expect(groups.map(g => g.art))
       .toEqual(['weiche', 'kreuzung', 'kreuzung', 'weiche', 'kreuzung', 'kreuzung'])
   })
 
   // The viewer keys its rows by label; two forms with one label would be one row.
   it('names every form once across all tables', () => {
-    const labels = gruppen.flatMap(g => g.formen.map(f => f.label))
+    const labels = groups.flatMap(g => g.formen.map(f => f.label))
     expect(new Set(labels).size).toBe(labels.length)
   })
 
@@ -65,8 +65,8 @@ describe('the switch forms as a regelwerk', () => {
   })
 
   it('states the last through sleeper of every turnout form, 0 where it is the switch end', () => {
-    const weichen = gruppen.filter(g => g.art === 'weiche').flatMap(g => g.formen)
-    for (const f of weichen) expect(f.lds, f.label).toEqual(expect.any(Number))
+    const turnouts = groups.filter(g => g.art === 'weiche').flatMap(g => g.formen)
+    for (const f of turnouts) expect(f.lds, f.label).toEqual(expect.any(Number))
     expect(form('regel_weichen', '215 – 1:4.8').lds).toBe(0)
   })
 
@@ -76,7 +76,7 @@ describe('the switch forms as a regelwerk', () => {
   })
 
   it('marks the symmetrical turnout, and only it', () => {
-    const symmetrisch = gruppen.flatMap(g => g.formen).filter(f => f.symmetrisch)
+    const symmetrisch = groups.flatMap(g => g.formen).filter(f => f.symmetrisch)
     expect(symmetrisch.map(f => f.label)).toEqual(['215 – 1:4.8'])
   })
 
@@ -126,14 +126,14 @@ describe('the switch forms as a regelwerk', () => {
 
 describe('what the viewer asks the locales for', () => {
   it('has a name and a note for every group, in every language', () => {
-    for (const g of gruppen) {
+    for (const g of groups) {
       expect(says(g.titleKey), g.titleKey).toBe(true)
       expect(says(g.hintKey), g.hintKey).toBe(true)
     }
   })
 
   it('names every kind of crossing a row carries', () => {
-    for (const f of gruppen.filter(g => g.art === 'kreuzung').flatMap(g => g.formen)) {
+    for (const f of groups.filter(g => g.art === 'kreuzung').flatMap(g => g.formen)) {
       expect(says(switchKindLabelKey(f.kind)), f.label).toBe(true)
     }
   })
@@ -161,21 +161,21 @@ describe('what rulebook it is', () => {
   it('is DB Ril 800.0120, versioned as the rendering it is', () => {
     // What it says about itself is the catalogue's own head, not a second
     // statement beside it.
-    expect(WEICHEN_REGELWERK.id).toBe('db-ril-800-0120')
-    expect(WEICHEN_REGELWERK.title).toBe('DB Ril 800.0120 | Auswahl der Weichen und Kreuzungen')
-    expect(WEICHEN_REGELWERK.katalog_version).toBe('0.6.0')
-    expect(WEICHEN_REGELWERK.status).toBe('draft')
+    expect(SWITCH_RULEBOOK.id).toBe('db-ril-800-0120')
+    expect(SWITCH_RULEBOOK.title).toBe('DB Ril 800.0120 | Auswahl der Weichen und Kreuzungen')
+    expect(SWITCH_RULEBOOK.katalog_version).toBe('0.6.0')
+    expect(SWITCH_RULEBOOK.status).toBe('draft')
     // The Ril's own edition and validity date are stated nowhere.
-    expect(WEICHEN_REGELWERK.version).toBeUndefined()
-    expect(WEICHEN_REGELWERK.gueltig_ab).toBeUndefined()
-    expect(WEICHEN_REGELWERK_ID).toBe(WEICHEN_REGELWERK.id)
+    expect(SWITCH_RULEBOOK.version).toBeUndefined()
+    expect(SWITCH_RULEBOOK.gueltig_ab).toBeUndefined()
+    expect(SWITCH_RULEBOOK_ID).toBe(SWITCH_RULEBOOK.id)
   })
 
-  // The selector puts the optimizer's catalogue and the bundled regelwerke in
+  // The selector puts the optimizer's catalogue and the bundled rulebooks in
   // one list, and folds two entries with one id into one — so 800.0120 may not
   // collide with the id of the one the optimizer applies.
   it('is not the id of the catalogue the optimizer applies', () => {
-    expect(CATALOG_ID).not.toBe(WEICHEN_REGELWERK_ID)
+    expect(CATALOG_ID).not.toBe(SWITCH_RULEBOOK_ID)
   })
 })
 
@@ -183,7 +183,7 @@ describe('what rulebook it is', () => {
 // would let a train over. Nothing here restates a limit — every number comes
 // out of the other catalogue's own rules.
 describe('DB Ril 800.0120 against DB Ril 800.0110 and the physics', () => {
-  const withSpeed = gruppen.flatMap(g => g.formen).filter(f => f.speed != null)
+  const withSpeed = groups.flatMap(g => g.formen).filter(f => f.speed != null)
 
   it('states a branch speed the Linienführung has rules for, on its 5 km/h grid', () => {
     expect(withSpeed.length).toBeGreaterThan(15)
@@ -198,7 +198,7 @@ describe('DB Ril 800.0120 against DB Ril 800.0110 and the physics', () => {
   // A turnout's branch is driven uncanted — a switch is built on one set of
   // sleepers. So every form has to keep LP.KB.06 on its radius alone.
   it('keeps every branch inside the deficiency a turnout may carry, with no cant at all', () => {
-    const turnouts = gruppen.filter(g => g.art === 'weiche').flatMap(g => g.formen)
+    const turnouts = groups.filter(g => g.art === 'weiche').flatMap(g => g.formen)
     expect(turnouts.length).toBeGreaterThan(10)
     for (const f of turnouts) {
       const u_f = computeCantDefSigned(f.speed, f.radius, 0)
@@ -210,7 +210,7 @@ describe('DB Ril 800.0120 against DB Ril 800.0110 and the physics', () => {
   // A crossing switch is built on one set of sleepers as well: every curved
   // route it states has to keep LP.KB.06 at its own speed, uncanted.
   it('keeps every curved route of a crossing switch inside that deficiency too', () => {
-    const routes = gruppen.filter(g => g.art === 'kreuzung').flatMap(g => g.formen)
+    const routes = groups.filter(g => g.art === 'kreuzung').flatMap(g => g.formen)
       .flatMap(f => (f.routen ?? []).map(route => ({ ...route, label: f.label })))
       .filter(route => route.R != null)
     expect(routes.length).toBeGreaterThanOrEqual(7)
@@ -225,11 +225,11 @@ describe('DB Ril 800.0120 against DB Ril 800.0110 and the physics', () => {
   // shorter than the shortest element 800.0110 allows at that speed — for the
   // flatter forms the two are the same number.
   it('asks for an intermediate straight the Linienführung would also allow', () => {
-    const withMinl = gruppen.filter(g => g.art === 'weiche').flatMap(g => g.formen)
+    const withMinl = groups.filter(g => g.art === 'weiche').flatMap(g => g.formen)
       .filter(f => f.minl != null)
     expect(withMinl.length).toBeGreaterThan(10)
     for (const f of withMinl) {
-      const l_min = lookupPiecewise(KATALOG.tables.min_element_length, f.speed)
+      const l_min = lookupPiecewise(CATALOGUE.tables.min_element_length, f.speed)
       expect(f.minl, `${f.label}: ${f.minl} m against ${l_min} m`).toBeGreaterThanOrEqual(l_min)
     }
   })

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import {
   boundaryScope, checkTrack, elementScope, endRun, formOf, hasRuleError, isCheckable, rampScope, runBeside,
-} from './trassierungCheck.js'
+} from './alignmentCheck.js'
 import { computeCantDefSigned } from './cant.js'
 
 // A chain that keeps every rule of the catalogue: 100 km/h throughout, the
@@ -309,10 +309,10 @@ describe('hasRuleError', () => {
   })
 
   it('is false for a hint alone', () => {
-    const offRegel = clean()
-    offRegel[2] = { ...offRegel[2], cant: 60 }        // not the Regelüberhöhung
-    expect(checkTrack(offRegel).severity).toBe('hint')
-    expect(hasRuleError(offRegel)).toBe(false)
+    const offRule = clean()
+    offRule[2] = { ...offRule[2], cant: 60 }        // not the Regelüberhöhung
+    expect(checkTrack(offRule).severity).toBe('hint')
+    expect(hasRuleError(offRule)).toBe(false)
   })
 
   it('is false where there is no design speed to judge by, and for nothing at all', () => {

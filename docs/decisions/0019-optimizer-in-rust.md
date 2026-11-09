@@ -13,7 +13,7 @@ Status: **accepted** · 2026-11-03 · carries on [0018](0018-crossover-search-in
    answers it is held to today (`serviceAnswers.json`) become the Rust side's test cases.
 3. **The rule catalogue is the one the app bundles.** It is handed to the module with each run, not compiled
    in, so the run and the element table can never hold different rules; listing the service's catalogues
-   (`/regelwerke`) and comparing their hash with the app's falls away. The app's own check
+   (`/rulebooks`) and comparing their hash with the app's falls away. The app's own check
    (`packages/core/src/rules`) stays in JavaScript: Rust has its own for its searches, and the shared vectors
    (`packages/core/constraints/tests/`) hold both to the same answers, as they held JavaScript and Python.
 4. **What is not computing moves to the Node server**: the Länder's DGM1 (`/api/terrain`, `/api/dem/…`:

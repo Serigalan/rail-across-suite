@@ -1,7 +1,7 @@
 /**
  * The rule catalogue applied to the app's own elements (AP R.7).
  *
- * regelkatalog.js knows the rules and nothing about tracks; this is the other
+ * ruleCatalogue.js knows the rules and nothing about tracks; this is the other
  * half — it fills the flat scope of names a rule declares
  * (`element.design_speed`, `physics.u_f`, `model.ramp_form_matches`, …) from
  * an element chain, and hands back what each rule said.
@@ -15,10 +15,10 @@
 
 import {
   evaluateRules, rulesForElement, rulesForScope, severityRank, worstSeverity,
-} from './regelkatalog.js'
+} from './ruleCatalogue.js'
 import { cantEnds } from '../geometry/index.js'
 import { computeCantDefSigned } from './cant.js'
-import { CANT_DEFICIENCY_COEFF } from './regelwerkDefaults.js'
+import { CANT_DEFICIENCY_COEFF } from './rulebookDefaults.js'
 
 const PHYSICS = { u0_factor: CANT_DEFICIENCY_COEFF }
 

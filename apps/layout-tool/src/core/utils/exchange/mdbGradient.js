@@ -61,7 +61,7 @@ const HOEHENSYSTEM = {
 }
 
 /** The vertical datum of a Höhensystem key, or null where it has no EPSG code. */
-export function hoehensystemOf(sys) {
+export function heightSystemOf(sys) {
   return HOEHENSYSTEM[String(sys ?? '').trim().toUpperCase()[0]] ?? null
 }
 
@@ -327,7 +327,7 @@ export function mdbGradientChains(payload) {
   let refused = 0
   const foreign = {}
   for (const [sys, elements] of bySys) {
-    const datum = hoehensystemOf(sys)
+    const datum = heightSystemOf(sys)
     if (!datum) { foreign[sys] = elements.length; continue }
     for (const chain of chainsOf(elements)) {
       const points = verticesOf(chain, station, height, sys)
@@ -350,7 +350,7 @@ export function mdbGradientChains(payload) {
     }
   }
   out.sort((a, b) => a.rank - b.rank)
-  const known = (payload?.gradients ?? []).filter(el => hoehensystemOf(el?.sys))
+  const known = (payload?.gradients ?? []).filter(el => heightSystemOf(el?.sys))
   return {
     chains: out, refused, foreign,
     mismatch: heightMismatches(known, height),

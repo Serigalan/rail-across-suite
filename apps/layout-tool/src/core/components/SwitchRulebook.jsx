@@ -1,5 +1,5 @@
 import { Fragment, useState } from 'react'
-import { weichenGruppen, WEICHEN_REGELWERK } from '@rail-across/core/switch'
+import { switchGroups, SWITCH_RULEBOOK } from '@rail-across/core/switch'
 import { switchKindLabelKey } from '@rail-across/core/track'
 import { useI18n } from '../locales/i18nContext'
 import InfoTip from './form/InfoTip'
@@ -38,11 +38,11 @@ const radiusText = (form) => (form.routen
 
 // A variant's sleepers: the count WA–ldS, and the ones outside it in brackets
 // (before WA / behind the ldS on the main and on the branch track).
-const schwellenText = (v) => (v.schwellenzahl == null ? '–'
+const sleeperText = (v) => (v.schwellenzahl == null ? '–'
   : `${v.schwellenzahl}${v.klammer ? ` (${v.klammer.join('/')})` : ''}`)
 
 /** The variants of one form, as the table under its row (Paket WD). */
-function Varianten({ varianten, colSpan }) {
+function Variants({ varianten, colSpan }) {
   const { t } = useI18n()
   return (
     <tr className="constraints-variants">
@@ -68,7 +68,7 @@ function Varianten({ varianten, colSpan }) {
                 <td>{v.profil}</td>
                 <td>{v.schwellen ? t(v.schwellen === 'holz' ? 'constraints_weichen_var_holz' : 'constraints_weichen_var_beton') : '–'}</td>
                 <td>{t(v.klasse === 'regel' ? 'constraints_weichen_var_regel' : 'constraints_weichen_var_sonder')}</td>
-                <td>{schwellenText(v)}</td>
+                <td>{sleeperText(v)}</td>
                 <td>{zahl(v.zs_wa)}</td>
                 <td>{zahl(v.r_ibw_min)}</td>
               </tr>
@@ -80,25 +80,25 @@ function Varianten({ varianten, colSpan }) {
   )
 }
 
-export default function WeichenRegelwerk() {
+export default function SwitchRulebook() {
   const { t } = useI18n()
-  const gruppen = weichenGruppen()
+  const groups = switchGroups()
   // The form whose variants are open — one at a time, the table is long enough.
-  const [offen, setOffen] = useState(null)
+  const [openForm, setOpenForm] = useState(null)
 
   return (
     <>
       <p className="constraints-hint">
-        {t(`regelwerk_title_${WEICHEN_REGELWERK.id}`)} · {t('constraints_katalog_revision')}{' '}
-        {WEICHEN_REGELWERK.katalog_version} ({WEICHEN_REGELWERK.status})
+        {t(`regelwerk_title_${SWITCH_RULEBOOK.id}`)} · {t('constraints_katalog_revision')}{' '}
+        {SWITCH_RULEBOOK.katalog_version} ({SWITCH_RULEBOOK.status})
         <InfoTip text={t('constraints_weichen_hint')} />
       </p>
-      {gruppen.map(gruppe => (
-        <div key={gruppe.key}>
-          <h4 className="constraints-subsection">{t(gruppe.titleKey)}<InfoTip text={t(gruppe.hintKey)} /></h4>
+      {groups.map(group => (
+        <div key={group.key}>
+          <h4 className="constraints-subsection">{t(group.titleKey)}<InfoTip text={t(group.hintKey)} /></h4>
           <table className="track-table constraints-table">
             <thead>
-              {gruppe.art === 'weiche' ? (
+              {group.art === 'weiche' ? (
                 <tr>
                   <th>{t('constraints_weichen_form')}</th>
                   <th>{t('constraints_weichen_radius')}</th>
@@ -124,7 +124,7 @@ export default function WeichenRegelwerk() {
               )}
             </thead>
             <tbody>
-              {gruppe.formen.map(form => (
+              {group.formen.map(form => (
                 <Fragment key={form.label}>
                 <tr>
                   <td className="constraints-value">
@@ -138,7 +138,7 @@ export default function WeichenRegelwerk() {
                       </span>
                     )}
                   </td>
-                  {gruppe.art === 'weiche' ? (
+                  {group.art === 'weiche' ? (
                     <>
                       <td>{zahl(form.radius)}</td>
                       <td>1:{form.neigung}</td>
@@ -163,15 +163,15 @@ export default function WeichenRegelwerk() {
                   )}
                   <td>
                     {form.varianten.length ? (
-                      <button type="button" className="constraints-variants-toggle" aria-expanded={offen === form.label}
-                        onClick={() => setOffen(offen === form.label ? null : form.label)}>
-                        {offen === form.label ? '▾' : '▸'} {form.varianten.length}
+                      <button type="button" className="constraints-variants-toggle" aria-expanded={openForm === form.label}
+                        onClick={() => setOpenForm(openForm === form.label ? null : form.label)}>
+                        {openForm === form.label ? '▾' : '▸'} {form.varianten.length}
                       </button>
                     ) : '–'}
                   </td>
                 </tr>
-                {offen === form.label && (
-                  <Varianten varianten={form.varianten} colSpan={gruppe.art === 'weiche' ? 9 : 8} />
+                {openForm === form.label && (
+                  <Variants varianten={form.varianten} colSpan={group.art === 'weiche' ? 9 : 8} />
                 )}
                 </Fragment>
               ))}

@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { adoptCrossover, computeShiftBounds, crossoverRequest } from './index.js'
 import { reuseFrom, viaRust } from '../native/index.js'
 import { minElementLength } from '../rules/elementLength.js'
-import { checkTrack } from '../rules/trassierungCheck.js'
+import { checkTrack } from '../rules/alignmentCheck.js'
 import { SWITCH_TYPES } from '../switch/index.js'
 
 // Steps of the switch module, as the core's module runs them (not part of its face).

@@ -18,7 +18,7 @@ import { expectNodesJoin, expectLengthsTrue, expectSwitchRoutesCarved } from '@r
  * alone: a cross section `TR624B` (a T that names no axis) and a switch list
  * `WLI623B`. 624S has no gradient.
  */
-const zip = readFileSync(fileURLToPath(new URL('../../test/fixtures/provi_ausschnitt.zip', import.meta.url)))
+const zip = readFileSync(fileURLToPath(new URL('../../test/fixtures/provi_excerpt.zip', import.meta.url)))
 const files = readProviArchive(zip)
 
 const lines = (...rows) => rows.join('\r\n')

@@ -14,9 +14,9 @@
 
 export const PROJECT_IMAGES = [
   'de', 'at', 'fr', 'be', 'ch',
-  'fernbahn', 'tram', 'ubahn', 'gueter',
-  'bahnhof', 'abstellung', 'anschluss', 'hafen', 'flughafen', 'bruecke', 'tunnel', 'bue',
-  'neubau', 'umbau', 'elektrifizierung', 'studie',
+  'main_line', 'tram', 'metro', 'freight',
+  'station', 'sidings', 'industrial_siding', 'port', 'airport', 'bridge', 'tunnel', 'level_crossing',
+  'new_line', 'rebuild', 'electrification', 'study',
 ].map(key => ({ key, labelKey: `project_image_${key}`, file: `${key}.svg` }))
 
 const PROJECT_IMAGE_MIME = 'image/svg+xml'

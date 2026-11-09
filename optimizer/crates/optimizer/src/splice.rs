@@ -30,11 +30,11 @@
 //! Conventions are the geometry kernel's: bearings in degrees clockwise from
 //! grid north, signed radius > 0 for a right-hand curve.
 
+use crate::alignment_check::{Context, check_track};
 use crate::clearance::{self, CantModel, Neighbour, Spacing, auto_cant, check, described, largest_radius};
 use crate::element::Element;
 use crate::geometry::{Profile, Pt, arc_center, arc_forward, arc_sweep, dir_of, fit_curve_group, transition_end, transition_shift};
-use crate::grenzen::{LengthBy, TransitionLengths, transition_lengths};
-use crate::pruefung::{Context, check_track};
+use crate::limits::{LengthBy, TransitionLengths, transition_lengths};
 use crate::rules::Rules;
 use serde_json::{Map, Value as Json, json};
 use std::f64::consts::PI;
@@ -373,7 +373,7 @@ pub struct Pick {
     pub before: f64,
     pub after: f64,
     /// The run of its own curvature beside it, before and after [m]
-    /// (trassierungCheck.runBeside): LP.EL.01 reads what stays of it with it.
+    /// (alignmentCheck.runBeside): LP.EL.01 reads what stays of it with it.
     pub run_before: f64,
     pub run_after: f64,
     /// The one end it may be joined at, where it is not the element itself
@@ -1456,7 +1456,7 @@ fn run_context(sol: &Solution, picks: &[Pick; 2]) -> [Option<Element>; 2] {
 /// joints between them (Paket S, AP S.4) — with the speed and cant each
 /// element will carry.
 pub fn judge(rules: &Rules, sol: &mut Solution, picks: &[Pick; 2]) {
-    let k = rules.katalog;
+    let k = rules.catalogue;
     let els: Vec<Element> = sol.elements.iter().map(El::element).collect();
     let [before, after] = run_context(sol, picks);
     let context = Context {
@@ -1487,7 +1487,7 @@ pub fn judge(rules: &Rules, sol: &mut Solution, picks: &[Pick; 2]) {
 
 fn rank_key(rules: &Rules, sol: &Solution) -> (i32, bool, f64) {
     (
-        rules.katalog.rank(sol.worst.as_deref().unwrap_or("ok")),
+        rules.catalogue.rank(sol.worst.as_deref().unwrap_or("ok")),
         sol.alternative,
         (sol.rebuilt * 1e6).round() / 1e6,
     )

@@ -5,8 +5,8 @@
 
 #![allow(dead_code)]
 
-use rail_across_optimizer::katalog::Katalog;
-use rail_across_optimizer::load_katalog;
+use rail_across_optimizer::catalogue::Catalogue;
+use rail_across_optimizer::load_catalogue;
 use serde_json::Value;
 use std::path::PathBuf;
 
@@ -16,6 +16,6 @@ pub fn constraints(name: &str) -> Value {
     serde_json::from_str(&text).unwrap()
 }
 
-pub fn katalog() -> Katalog {
-    load_katalog(&constraints("db-ril-800-0110.json")).unwrap()
+pub fn catalogue() -> Catalogue {
+    load_catalogue(&constraints("db-ril-800-0110.json")).unwrap()
 }

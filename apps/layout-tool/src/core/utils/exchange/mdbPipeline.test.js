@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { ALL_STRECKEN, runMdbImport, toPlane } from './mdbPipeline'
+import { ALL_LINES, runMdbImport, toPlane } from './mdbPipeline'
 import { parseMdbPayload } from './mdbImport'
-import fixture from '../../test/fixtures/mdb_weiche.json'
+import fixture from '../../test/fixtures/mdb_turnout.json'
 import thueringen from '../../test/fixtures/mdb_thueringen.json'
 import { endPointStraightUtm } from '@rail-across/core/src/geometry/elementUtils.js'
 
@@ -15,7 +15,7 @@ describe('the MDB import pipeline', () => {
   const payload = parseMdbPayload(fixture)
 
   it('builds tracks and the turnout on them as one commit', async () => {
-    const { commit, counts, notes } = await runMdbImport({ payload, strecke: ALL_STRECKEN, fill, newId })
+    const { commit, counts, notes } = await runMdbImport({ payload, strecke: ALL_LINES, fill, newId })
     expect(counts.switches).toBe(1)
     expect(counts.tracks).toBe(commit.addTracks.length)
     expect(commit.addTracks.length).toBeGreaterThan(1)
@@ -26,15 +26,15 @@ describe('the MDB import pipeline', () => {
   })
 
   it('leaves the switches out when asked to', async () => {
-    const { commit, counts } = await runMdbImport({ payload, strecke: ALL_STRECKEN, withSwitches: false, fill, newId })
+    const { commit, counts } = await runMdbImport({ payload, strecke: ALL_LINES, withSwitches: false, fill, newId })
     expect(counts.switches).toBe(0)
     expect(commit.addSwitches.filter(sw => sw.kind === 'turnout')).toEqual([])
   })
 
   it('names tracks around the ones the project already has', async () => {
-    const first = await runMdbImport({ payload, strecke: ALL_STRECKEN, fill, newId })
+    const first = await runMdbImport({ payload, strecke: ALL_LINES, fill, newId })
     const again = await runMdbImport({
-      payload, strecke: ALL_STRECKEN, fill, newId,
+      payload, strecke: ALL_LINES, fill, newId,
       existing: { tracks: first.commit.addTracks, switches: first.commit.addSwitches },
     })
     const taken = new Set(first.commit.addTracks.map(tr => tr.name))
@@ -54,7 +54,7 @@ describe('into one plane', () => {
 
   it('moves every chain into the target plane and says how far it stretched', async () => {
     const { commit, notes } = await runMdbImport({
-      payload, strecke: ALL_STRECKEN, target: 5684, fill, newId, loadGrids: noGrids,
+      payload, strecke: ALL_LINES, target: 5684, fill, newId, loadGrids: noGrids,
     })
     expect(commit.addTracks.every(tr => Number(tr.epsg) === 5684)).toBe(true)
     expect(notes.some(l => l.startsWith('data_exchange_mdb_grid_none'))).toBe(true)
@@ -87,13 +87,13 @@ describe('the axes of the file, cleaned up and checked', () => {
   })
 
   it('leaves out the copy and says so', async () => {
-    const { commit, notes } = await runMdbImport({ payload, strecke: ALL_STRECKEN, fill, newId })
+    const { commit, notes } = await runMdbImport({ payload, strecke: ALL_LINES, fill, newId })
     expect(commit.addTracks.map(tr => tr.name).sort()).toEqual(['A.001', 'B.001'])
     expect(notes.find(l => l.startsWith('data_exchange_mdb_duplicates'))).toContain('C.001 → A.001')
   })
 
   it('links the joint and reports the gap in it', async () => {
-    const { commit, notes } = await runMdbImport({ payload, strecke: ALL_STRECKEN, fill, newId })
+    const { commit, notes } = await runMdbImport({ payload, strecke: ALL_LINES, fill, newId })
     expect(commit.addSwitches.filter(sw => sw.kind === 'link')).toHaveLength(1)
     const gap = notes.find(l => l.startsWith('data_exchange_mdb_gaps'))
     expect(gap).toContain('"n":1')

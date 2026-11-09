@@ -13,10 +13,10 @@ use serde_json::{Value, json};
 
 use crate::platforms::{DEFAULT_PLATFORM_HEIGHT, edge_offsets, element_stations, point_on_element};
 
-const KATALOG_FILE: &str = include_str!("../../../packages/core/constraints/db-ril-800-0130.json");
+const CATALOGUE_FILE: &str = include_str!("../../../packages/core/constraints/db-ril-800-0130.json");
 
-/// The catalogue of DB Ril 800.0130 (`QUERSCHNITT_KATALOG`).
-pub static QUERSCHNITT_KATALOG: LazyLock<Value> = LazyLock::new(|| serde_json::from_str(KATALOG_FILE).expect("db-ril-800-0130.json"));
+/// The catalogue of DB Ril 800.0130 (`CROSS_SECTION_CATALOGUE`).
+pub static CROSS_SECTION_CATALOGUE: LazyLock<Value> = LazyLock::new(|| serde_json::from_str(CATALOGUE_FILE).expect("db-ril-800-0130.json"));
 
 pub const RUNNING_CIRCLE_DISTANCE: f64 = 1500.0;
 pub const TRACK_GAUGE: f64 = 1435.0;
@@ -171,9 +171,9 @@ fn clamp(v: f64, lo: f64, hi: f64) -> f64 {
 
 // ── gauge profiles ──────────────────────────────────────────────────────────
 
-/// "DB Ril 800.0130A01 — Lichtraum" → "DB Ril 800.0130A01" (`LICHTRAUM_SOURCE`).
-pub fn lichtraum_source() -> String {
-    let k = &*QUERSCHNITT_KATALOG;
+/// "DB Ril 800.0130A01 — Lichtraum" → "DB Ril 800.0130A01" (`CLEARANCE_SOURCE`).
+pub fn clearance_source() -> String {
+    let k = &*CROSS_SECTION_CATALOGUE;
     let r = &k["lichtraum"]["source"]["ref"];
     let a01 = k["sources"].as_array().and_then(|s| s.iter().find(|s| &s["id"] == r));
     a01.and_then(|s| s["title"].as_str())
@@ -183,7 +183,7 @@ pub fn lichtraum_source() -> String {
 
 /// The profiles by id (`GAUGE_PROFILES`).
 pub fn gauge_profiles() -> Value {
-    let profiles = QUERSCHNITT_KATALOG["lichtraum"]["profile"].as_array().cloned().unwrap_or_default();
+    let profiles = CROSS_SECTION_CATALOGUE["lichtraum"]["profile"].as_array().cloned().unwrap_or_default();
     Value::Object(
         profiles
             .iter()
@@ -256,9 +256,9 @@ pub fn gauge_profile_areas(areas: &[Value]) -> Vec<Value> {
     out
 }
 
-/// The planum edge beyond the outermost track [mm] (`PLANUM_EDGE`).
-pub fn planum_edge() -> f64 {
-    let rows = QUERSCHNITT_KATALOG["streckenquerschnitte"]["rows"].as_array().cloned().unwrap_or_default();
+/// The planum edge beyond the outermost track [mm] (`FORMATION_EDGE`).
+pub fn formation_edge() -> f64 {
+    let rows = CROSS_SECTION_CATALOGUE["streckenquerschnitte"]["rows"].as_array().cloned().unwrap_or_default();
     1000.0 * rows.iter().map(|r| js_number(r.get("planumskante"))).fold(f64::NEG_INFINITY, f64::max)
 }
 

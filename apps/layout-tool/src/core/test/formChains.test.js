@@ -7,7 +7,7 @@ import {
   ALL_SWITCH_TYPES, SWITCH_TYPES, hasCompoundBranch, switchBranchSections, switchStraightLength, switchVariants,
 } from '@rail-across/core/switch'
 import { dehydrateProjects, hydrateProjects } from '@rail-across/core/src/project/persistenceUtils.js'
-import { hasRuleError } from '@rail-across/core/src/rules/trassierungCheck.js'
+import { hasRuleError } from '@rail-across/core/src/rules/alignmentCheck.js'
 import {
   expectValidTrack, expectNodesJoin, expectTangentsContinuous, expectSwitchCantAdmissible, expectSwitchRoutesCarved,
 } from '@rail-across/core/test/chainInvariants.js'

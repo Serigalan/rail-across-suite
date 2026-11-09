@@ -1,6 +1,6 @@
-import { ruleById, severityRank } from './regelkatalog.js'
+import { ruleById, severityRank } from './ruleCatalogue.js'
 import { evalExpr } from './ruleExpr.js'
-import { checkTrack } from './trassierungCheck.js'
+import { checkTrack } from './alignmentCheck.js'
 
 // A length set by the rules is rounded up to a full decimetre.
 const STEPS_PER_M = 10

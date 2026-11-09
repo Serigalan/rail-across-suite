@@ -4,7 +4,7 @@ import {
   resolveRoute, routeAt, routeStationOf, routePointAt, routePath, extendRoute, piecesAlong, repairRoutes, nextRouteName,
 } from '@rail-across/core/track'
 import { tracksOnFrom } from '@rail-across/core/track'
-import { hasPekBestand, loadPekBestand } from '@rail-across/core/test/pekFixture.js'
+import { hasPekExisting, loadPekExisting } from '@rail-across/core/test/pekFixture.js'
 import { hydrateProjects } from '@rail-across/core/src/project/persistenceUtils.js'
 
 const EPSG = 25832
@@ -141,9 +141,9 @@ describe('nextRouteName', () => {
   })
 })
 
-describe.skipIf(!hasPekBestand)('PEK Bestand', () => {
+describe.skipIf(!hasPekExisting)('PEK Bestand', () => {
   it('a route found over the switches resolves without a gap', () => {
-    const project = hydrateProjects([loadPekBestand()])[0]
+    const project = hydrateProjects([loadPekExisting()])[0]
     const { tracks: ts, switches } = project
     // From a track with a switch at its end, as far on as the network goes.
     const sw = switches.find(s => s.kind === 'turnout' && s.ports?.A?.trackId)

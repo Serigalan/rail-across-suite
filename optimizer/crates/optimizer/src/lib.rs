@@ -29,7 +29,7 @@ pub mod track;
 
 // The rule catalogue, the check and the limits are the core's (crates/rules,
 // decision 0020) — one check for the app and the optimizer.
-pub use rail_across_rules::{element, expr, grenzen, katalog, load_katalog, pruefung, rules};
+pub use rail_across_rules::{alignment_check, catalogue, element, expr, limits, load_catalogue, rules};
 
 use serde_json::{Value, json};
 use std::cell::RefCell;
@@ -42,8 +42,8 @@ thread_local! {
 }
 
 fn load_rules(catalogue: &Value) -> Result<&'static rules::Rules<'static>, String> {
-    let katalog: &'static katalog::Katalog = Box::leak(Box::new(load_katalog(catalogue).map_err(|e| e.to_string())?));
-    let rules = rules::Rules::new(katalog).map_err(|e| e.to_string())?;
+    let catalogue: &'static catalogue::Catalogue = Box::leak(Box::new(load_catalogue(catalogue).map_err(|e| e.to_string())?));
+    let rules = rules::Rules::new(catalogue).map_err(|e| e.to_string())?;
     Ok(Box::leak(Box::new(rules)))
 }
 
@@ -56,7 +56,7 @@ fn load_rules(catalogue: &Value) -> Result<&'static rules::Rules<'static>, Strin
 /// * `reconnect` — "Bestehende Elemente neu verbinden" ([`reconnect::reconnect_payload`])
 /// * `optimize` — a track or one curve of it at a higher speed ([`optimize::optimize_payload`])
 /// * `align` — an alignment and its gradient from measured axis points ([`alignment::align_payload`])
-/// * `limits` — what a run is held to at both levels, for the regelwerk popup
+/// * `limits` — what a run is held to at both levels, for the rulebook popup
 ///
 /// A request that is not one answers `{"error": "invalid_request", "detail"}`.
 pub fn run_json(text: &str) -> String {
@@ -74,7 +74,7 @@ pub fn run_json(text: &str) -> String {
             Some("optimize") => optimize::optimize_payload(rules, request),
             Some("align") => alignment::align_payload(request),
             Some("limits") => Ok(json!({
-                "id": rules.katalog.id, "name": rules.katalog.title, "version": rules.katalog.version,
+                "id": rules.catalogue.id, "name": rules.catalogue.title, "version": rules.catalogue.version,
                 "grenzwerte": {"reg": rules.reg.describe(), "discretion": rules.discretion.describe()},
             })),
             other => Err(format!("invalid request: unknown op {other:?}")),

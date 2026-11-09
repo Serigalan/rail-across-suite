@@ -40,7 +40,7 @@ export function updateMapColors(map, color) {
  * language, only the unbent one has a word behind it. The plan export writes
  * the same, from the same locale keys.
  */
-const bauformCode = (tr, form) => tr(`switch_code_${form ?? 'plain'}`)
+const bentFormCode = (tr, form) => tr(`switch_code_${form ?? 'plain'}`)
 
 /**
  * What a switch element states about itself: the radius of its own route, the
@@ -200,7 +200,7 @@ export function renderTracksOnMap(map, project, { fit = false, topology = false 
     if (entry?.sw === sw) return
     if (entry) removeTrackLabels(entry.labels)
     const labels = sw.labelCoords && sw.label
-      ? [createTrackLabel(map, sw.labelCoords, `${bauformCode(tr, sw.bauform)} ${sw.label}`,
+      ? [createTrackLabel(map, sw.labelCoords, `${bentFormCode(tr, sw.bauform)} ${sw.label}`,
         { minZoom: SWITCH_LABEL_MIN_ZOOM, avoid: sw.bodyCentre ?? null })]
       : []
     _cache.switches.set(key, { sw, labels })

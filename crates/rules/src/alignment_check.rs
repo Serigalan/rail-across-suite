@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 
 //! The rule catalogue applied to an element chain — the app's
-//! packages/core/src/rules/trassierungCheck.js, ported. The shared vectors
+//! packages/core/src/rules/alignmentCheck.js, ported. The shared vectors
 //! (packages/core/constraints/tests/checks.json) hold the two alike.
 //!
 //! [`crate::grenzen`] derives the bounds a run builds to; this judges what a
@@ -15,9 +15,9 @@
 //! transition's cant at its ends is its neighbours' (transitionCantEnds), the
 //! deficiency is rounded to the millimetre (computeCantDefSigned).
 
+use crate::catalogue::{Catalogue, Rule};
 use crate::element::Element;
 use crate::expr::{Error, Value};
-use crate::katalog::{Katalog, Rule};
 
 pub const CANT_DEF_COEFF: f64 = 11.8;
 const CURVATURE_EPS: f64 = 1e-6;
@@ -92,7 +92,7 @@ fn same_geometry(a: Option<&Element>, b: &Element) -> bool {
 }
 
 /// The runs of one curvature beside a chain that is only part of its track
-/// (trassierungCheck.runBeside), for LP.EL.01.
+/// (alignmentCheck.runBeside), for LP.EL.01.
 #[derive(Debug, Clone, Copy, Default)]
 pub struct Context<'a> {
     pub before: Option<&'a Element>,
@@ -196,7 +196,7 @@ pub struct Finding {
 }
 
 fn apply(
-    katalog: &Katalog,
+    catalogue: &Catalogue,
     rules: &[&Rule],
     base: &[(&str, Value)],
     in_context: Option<&dyn Fn(&str) -> bool>,
@@ -204,12 +204,12 @@ fn apply(
     at: &str,
     out: &mut Vec<Finding>,
 ) -> Result<(), Error> {
-    let scope = katalog.scope(base);
+    let scope = catalogue.scope(base);
     for rule in rules {
         if rule.excludes.iter().any(|e| excluded.contains(&e.as_str())) {
             continue;
         }
-        let outcome = katalog.evaluate_rule(rule, &scope, in_context)?;
+        let outcome = catalogue.evaluate_rule(rule, &scope, in_context)?;
         if outcome.applied {
             out.push(Finding {
                 at: at.to_string(),
@@ -225,11 +225,11 @@ fn apply(
 /// (boundaries count where either side is one of them), all of them when
 /// None. `context`: the runs of one curvature beside a chain that is only
 /// part of its track, for LP.EL.01.
-pub fn check_track(katalog: &Katalog, els: &[Element], only: Option<&[usize]>, context: Context) -> Result<Vec<Finding>, Error> {
+pub fn check_track(catalogue: &Catalogue, els: &[Element], only: Option<&[usize]>, context: Context) -> Result<Vec<Finding>, Error> {
     let judged = |i: usize| only.is_none_or(|o| o.contains(&i));
     let speed = |el: &Element| el.speed.is_some_and(|v| v != 0.0);
-    let ramp_rules = katalog.rules_for_scope("cant_ramp");
-    let boundary_rules = katalog.rules_for_scope("boundary");
+    let ramp_rules = catalogue.rules_for_scope("cant_ramp");
+    let boundary_rules = catalogue.rules_for_scope("boundary");
     let mut findings = Vec::new();
     for (i, el) in els.iter().enumerate() {
         if !judged(i) || !speed(el) {
@@ -240,8 +240,8 @@ pub fn check_track(katalog: &Katalog, els: &[Element], only: Option<&[usize]>, c
         let base = element_scope(els, i, context);
         let at = format!("#{i}");
         apply(
-            katalog,
-            &katalog.rules_for_element(el.type_id(), el.form()),
+            catalogue,
+            &catalogue.rules_for_element(el.type_id(), el.form()),
             &base,
             Some(&ctx),
             &[],
@@ -255,7 +255,7 @@ pub fn check_track(katalog: &Katalog, els: &[Element], only: Option<&[usize]>, c
                 ("model.ramp_on_transition", el.is_transition().into()),
                 ("model.ramp_form_matches", (el.form() == Some("clothoid")).into()),
             ];
-            apply(katalog, &ramp_rules, &ramp, None, &[], &at, &mut findings)?;
+            apply(catalogue, &ramp_rules, &ramp, None, &[], &at, &mut findings)?;
         }
     }
     for i in 0..els.len().saturating_sub(1) {
@@ -268,7 +268,7 @@ pub fn check_track(katalog: &Katalog, els: &[Element], only: Option<&[usize]>, c
         let ctx = move |id: &str| id == "switch_area" && either;
         let excluded: &[&str] = if internal { &["switch_internal"] } else { &[] };
         apply(
-            katalog,
+            catalogue,
             &boundary_rules,
             &boundary_scope(els, i),
             Some(&ctx),

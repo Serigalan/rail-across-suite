@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { governing, maxSpeeds, ruleMaxSpeed, ruleMaxSpeedsOf, SPEED_STEP } from './speed.js'
 import { maxSpeedFor } from './cant.js'
-import { checkTrack, elementVerdict } from './trassierungCheck.js'
+import { checkTrack, elementVerdict } from './alignmentCheck.js'
 
 const straight = (extra = {}) => ({ elementType: 0, length: 100, ...extra })
 const arc = (radius, cant, extra = {}) => ({ elementType: 1, length: 100, radius, cant, ...extra })

@@ -2,14 +2,14 @@ import {
   MAX_SWITCH_CANT as RW_MAX_SWITCH_CANT,
   MAX_SWITCH_CANT_DEF as RW_MAX_SWITCH_CANT_DEF,
   CANT_DEFICIENCY_COEFF as RW_CANT_DEFICIENCY_COEFF,
-} from './regelwerkDefaults.js'
-import { catalogLimit, catalogSpeedRange, IN_SWITCH_AREA } from './regelkatalog.js'
+} from './rulebookDefaults.js'
+import { catalogLimit, catalogSpeedRange, IN_SWITCH_AREA } from './ruleCatalogue.js'
 
 // Cant, cant deficiency and the speeds they allow — the dialogs' rules (LP.KB).
 
 /**
  * The cant a curve may carry (mm) — LP.KB.01, read out of DB Ril 800.0110
- * rather than restated here (see regelkatalog.js `catalogLimit`). It used to
+ * rather than restated here (see ruleCatalogue.js `catalogLimit`). It used to
  * be 170 and is now the Ril's 160: since AP R.8 the dialogs create to the
  * rulebook, not merely beside it.
  */
@@ -110,7 +110,7 @@ export function computeAutoC(speed, radius) {
  * on a gentle curve the proposal and the rule part company, and the rule is
  * what this offers.
  */
-export function regelCant(speed, radius, { inSwitch = false } = {}) {
+export function standardCant(speed, radius, { inSwitch = false } = {}) {
   const R = Math.abs(radius)
   if (!(R > 0)) return 0
   return cantSign(radius) * catalogLimit('LP.KB.04', 'u_reg', {

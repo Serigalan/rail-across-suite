@@ -12,7 +12,7 @@ core's (`commands` `spliceRequest`, `reconnectRequest`,
 answers.
 
 The module rechecks nothing of the app's rules on its own account: the worker hands it the catalogue the app
-bundles (`KATALOG` of `@rail-across/core/rules`) with the first request, and it applies that. Its rule check
+bundles (`CATALOGUE` of `@rail-across/core/rules`) with the first request, and it applies that. Its rule check
 is a second implementation beside `packages/core/src/rules`, held to the same answers by the shared vectors
 (`packages/core/constraints/tests/`).
 
@@ -23,7 +23,7 @@ is a second implementation beside `packages/core/src/rules`, held to the same an
 | `optimizerJob.js` | `runOptimizer(op, request, { signal })`: one worker kept between requests; a request given up takes the worker with it. Rejects where the module cannot answer (`optimizer_missing`, `internal`, `invalid_request`) |
 | `optimizerWorker.js` | The worker: fetches the module beside the page once, hands it the catalogue, runs each request |
 | `optimizerRun.js` | The module's interface without a bindings generator: one message's JSON (`{ op, catalogue?, request }`) into its memory, the answer's out |
-| `optimizerRegelwerke.js` | The catalogue the module applies and its limits at both levels, for the regelwerk popup |
+| `optimizerRulebooks.js` | The catalogue the module applies and its limits at both levels, for the rulebook popup |
 
 ## Operations
 

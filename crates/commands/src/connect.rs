@@ -10,11 +10,11 @@ use std::sync::LazyLock;
 use rail_across_geom::element::{Utm, reverse_element};
 use rail_across_geom::transition::curvature_of;
 use rail_across_js::{Object, get, js_hypot, js_number, js_string, number, strict_eq, truthy};
-use rail_across_rules::bundled::{katalog, severity_rank};
+use rail_across_rules::alignment_check::Context;
+use rail_across_rules::bundled::{catalogue, severity_rank};
 use rail_across_rules::check::check_track;
 use rail_across_rules::element::Element;
-use rail_across_rules::grenzen::transition_lengths;
-use rail_across_rules::pruefung::Context;
+use rail_across_rules::limits::transition_lengths;
 use rail_across_rules::rules::Rules;
 use rail_across_rules::speed::SPEED_STEP;
 use rail_across_switch::catalogue::{switch_branch_length, switch_straight_length};
@@ -589,7 +589,7 @@ fn strip_number_suffix(name: &str) -> String {
 const LEAD_START: f64 = 60.0;
 const LEAD_ROUNDS: usize = 6;
 
-static RULES: LazyLock<Rules<'static>> = LazyLock::new(|| Rules::new(katalog()).expect("the bundled catalogue's limits"));
+static RULES: LazyLock<Rules<'static>> = LazyLock::new(|| Rules::new(catalogue()).expect("the bundled catalogue's limits"));
 
 fn remaining_findings(outcome: &Value) -> Vec<Value> {
     let chain = outcome["chain"].as_array().cloned().unwrap_or_default();

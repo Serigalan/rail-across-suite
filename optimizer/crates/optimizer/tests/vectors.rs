@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 
 //! The shared test vectors (packages/core/constraints/tests/) against the Rust
-//! side. The app (ruleExpr.js, trassierungCheck.js, rules/transitionLength.js)
+//! side. The app (ruleExpr.js, alignmentCheck.js, rules/transitionLength.js)
 //! and this crate implement the same expression language, the same catalogue
 //! check and the same shortest transition lengths twice; the vectors are one
 //! set of cases both have to answer alike. The app's half is
@@ -10,10 +10,10 @@
 
 mod common;
 
+use rail_across_optimizer::alignment_check::{Context, check_track};
 use rail_across_optimizer::element::Element;
 use rail_across_optimizer::expr::{Basic, Value, eval_expr};
-use rail_across_optimizer::grenzen::{Grenzen, Stufe, transition_lengths};
-use rail_across_optimizer::pruefung::{Context, check_track};
+use rail_across_optimizer::limits::{Level, Limits, transition_lengths};
 use serde_json::Value as Json;
 
 fn same_number(got: f64, want: f64) -> bool {
@@ -54,12 +54,12 @@ fn expressions() {
 fn checks() {
     let data = common::constraints("tests/checks.json");
     assert_eq!(data["catalogue"], "db-ril-800-0110");
-    let katalog = common::katalog();
+    let catalogue = common::catalogue();
     let chains = data["chains"].as_array().unwrap();
     let mut failures = Vec::new();
     for chain in chains {
         let els: Vec<Element> = serde_json::from_value(chain["elements"].clone()).unwrap();
-        let mut got: Vec<[String; 3]> = check_track(&katalog, &els, None, Context::default())
+        let mut got: Vec<[String; 3]> = check_track(&catalogue, &els, None, Context::default())
             .unwrap()
             .into_iter()
             .map(|f| [f.at, f.rule, f.severity])
@@ -80,9 +80,9 @@ fn checks() {
 #[test]
 fn lengths() {
     let data = common::constraints("tests/transition_lengths.json");
-    let katalog = common::katalog();
-    let reg = Grenzen::new(&katalog, Stufe::Reg).unwrap();
-    let discretion = Grenzen::new(&katalog, Stufe::Discretion).unwrap();
+    let catalogue = common::catalogue();
+    let reg = Limits::new(&catalogue, Level::Reg).unwrap();
+    let discretion = Limits::new(&catalogue, Level::Discretion).unwrap();
     let element = |v: &Json| -> Option<Element> { (!v.is_null()).then(|| serde_json::from_value(v.clone()).unwrap()) };
     let mut failures = Vec::new();
     for case in data["cases"].as_array().unwrap() {

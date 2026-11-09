@@ -10,7 +10,7 @@ import { mdbKmLines } from './mdbKmLine'
 import { projectBox } from '../km'
 
 /** The line-number picker's entry for „every line in the file“. */
-export const ALL_STRECKEN = '*'
+export const ALL_LINES = '*'
 
 /**
  * Every track into one plane, with the regional grids that cover them loaded
@@ -104,7 +104,7 @@ function gapNote(joints, tracks, fill) {
 }
 
 /**
- * What importing `strecke` of an MDB payload (or ALL_STRECKEN) adds to a
+ * What importing `strecke` of an MDB payload (or ALL_LINES) adds to a
  * project holding `existing` ({ tracks, switches }): the tracks, the switches
  * placed on them and the links at their joints, the buffer stops — as one
  * commit — and the notes for the import report.
@@ -127,7 +127,7 @@ export async function runMdbImport({
   const existingSwitches = existing.switches ?? []
   // The whole file at once is the common case — a Betriebsstelle's switches
   // rarely sit on one line number, so picking a single one splits them up.
-  const built = strecke === ALL_STRECKEN
+  const built = strecke === ALL_LINES
     ? buildAllTracksFromMdb(payload)
     : buildTracksFromMdb(payload, strecke)
   const inventory = mdbSwitchInventory(payload)

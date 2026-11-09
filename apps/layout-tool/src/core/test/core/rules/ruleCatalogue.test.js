@@ -3,12 +3,12 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
-  KATALOG, CATALOG_ID, evaluateRule, evaluateRules, lookupPiecewise, lookupSpeedTable,
+  CATALOGUE, CATALOG_ID, evaluateRule, evaluateRules, lookupPiecewise, lookupSpeedTable,
   ruleById, rulesForElement, rulesForScope, severityLabelKey, severityRank, worstSeverity,
   OutOfRange,
-} from '@rail-across/core/src/rules/regelkatalog.js'
+} from '@rail-across/core/src/rules/ruleCatalogue.js'
 import { parseExpr } from '@rail-across/core/src/rules/ruleExpr.js'
-import { CANT_DEFICIENCY_COEFF } from '@rail-across/core/src/rules/regelwerkDefaults.js'
+import { CANT_DEFICIENCY_COEFF } from '@rail-across/core/src/rules/rulebookDefaults.js'
 import { translations } from '../../../locales/i18n'
 import { cantDefLimit, computeAutoC, MAX_CANT, MAX_SWITCH_CANT, MAX_SWITCH_CANT_DEF, MAX_SWITCH_CANT_EXCEPTION } from '@rail-across/core/src/rules/cant.js'
 
@@ -24,7 +24,7 @@ describe('the catalogue file', () => {
   // Bundled, not copied: what the module applies is the file itself, so there
   // is nothing here that could drift from what is maintained in the repo.
   it('is the file in the repo, not a transcription of it', () => {
-    expect(KATALOG).toEqual(onDisk)
+    expect(CATALOGUE).toEqual(onDisk)
     expect(CATALOG_ID).toBe('db-ril-800-0110')
   })
 
@@ -36,22 +36,22 @@ describe('the catalogue file', () => {
   })
 
   it('is versioned as the machine-readable rendering it is, not as the Ril', () => {
-    expect(KATALOG.catalog.title).toBe('DB Ril 800.0110 | Linienführung')
-    expect(KATALOG.catalog.katalog_version).toBe('0.6.0')
-    expect(KATALOG.catalog.status).toBe('draft')
+    expect(CATALOGUE.catalog.title).toBe('DB Ril 800.0110 | Linienführung')
+    expect(CATALOGUE.catalog.katalog_version).toBe('0.6.0')
+    expect(CATALOGUE.catalog.status).toBe('draft')
     // The Ril's own edition and validity date are stated nowhere: this file
     // renders the Ril, it does not speak for it.
-    expect(KATALOG.catalog.version).toBeUndefined()
-    expect(KATALOG.catalog.gueltig_ab).toBeUndefined()
-    const source = KATALOG.sources.find(s => s.id === 'RIL_800_0110')
+    expect(CATALOGUE.catalog.version).toBeUndefined()
+    expect(CATALOGUE.catalog.gueltig_ab).toBeUndefined()
+    const source = CATALOGUE.sources.find(s => s.id === 'RIL_800_0110')
     expect(source.version).toBeUndefined()
     expect(source.gueltig_ab).toBeUndefined()
   })
 })
 
 describe('every rule the catalogue states', () => {
-  const rules = KATALOG.rules
-  const severities = new Set(KATALOG.severity_levels.map(s => s.id))
+  const rules = CATALOGUE.rules
+  const severities = new Set(CATALOGUE.severity_levels.map(s => s.id))
 
   it('carries an id of the documented shape, once', () => {
     const ids = rules.map(r => r.id)
@@ -86,7 +86,7 @@ describe('every rule the catalogue states', () => {
     ])
     expect(sources.length).toBeGreaterThan(30)
     for (const src of sources) expect(() => parseExpr(src), src).not.toThrow()
-    for (const table of Object.values(KATALOG.tables)) {
+    for (const table of Object.values(CATALOGUE.tables)) {
       for (const piece of table.pieces ?? []) expect(() => parseExpr(piece.expr)).not.toThrow()
       for (const mode of Object.values(table.key_mode ?? {})) {
         if (mode?.expr) expect(() => parseExpr(mode.expr)).not.toThrow()
@@ -95,9 +95,9 @@ describe('every rule the catalogue states', () => {
   })
 
   it('only looks up tables, sources and open points that exist', () => {
-    const openPoints = new Set(KATALOG.open_points.map(p => p.id))
-    const sourceIds = new Set(KATALOG.sources.map(s => s.id))
-    const tables = Object.keys(KATALOG.tables)
+    const openPoints = new Set(CATALOGUE.open_points.map(p => p.id))
+    const sourceIds = new Set(CATALOGUE.sources.map(s => s.id))
+    const tables = Object.keys(CATALOGUE.tables)
     const looked = []
     for (const rule of rules) {
       expect(sourceIds.has(rule.source.ref), rule.id).toBe(true)
@@ -110,7 +110,7 @@ describe('every rule the catalogue states', () => {
     // Both tables are actually reached by a rule — an unreferenced table would
     // be a limit nothing is ever measured against.
     expect(new Set(looked)).toEqual(new Set(tables))
-    for (const table of Object.values(KATALOG.tables)) {
+    for (const table of Object.values(CATALOGUE.tables)) {
       if (table.open_point) expect(openPoints.has(table.open_point)).toBe(true)
       expect(severities.has(table.out_of_range)).toBe(true)
     }
@@ -129,7 +129,7 @@ describe('every rule the catalogue states', () => {
   // A context the catalogue does not declare would be one no checker ever
   // sets: the rule asking for it would quietly never fire.
   it('only asks for contexts it declares', () => {
-    const declared = new Set([...KATALOG.contexts.items.map(c => c.id), 'switch_internal'])
+    const declared = new Set([...CATALOGUE.contexts.items.map(c => c.id), 'switch_internal'])
     for (const [, id] of JSON.stringify(rules).matchAll(/in_context\('([a-z_]+)'\)/g)) {
       expect(declared.has(id), id).toBe(true)
     }
@@ -159,7 +159,7 @@ describe('the severity ladder', () => {
 })
 
 describe('the minimum element length table', () => {
-  const table = KATALOG.tables.min_element_length
+  const table = CATALOGUE.tables.min_element_length
 
   it('gives each step its own factor', () => {
     expect(lookupPiecewise(table, 40)).toBeCloseTo(4, 10)
@@ -177,7 +177,7 @@ describe('the minimum element length table', () => {
 })
 
 describe('the comparison radius table', () => {
-  const table = KATALOG.tables.comparison_radius
+  const table = CATALOGUE.tables.comparison_radius
   const formula = (v) => (PHYSICS.u0_factor * v * v) / 106.5
 
   it('gives a tabulated speed the tabulated value, in both columns', () => {
@@ -334,7 +334,7 @@ describe('what the catalogue takes from the physics file', () => {
 describe('what the viewer asks the locales for', () => {
   it('has a name for every severity the catalogue can answer with', () => {
     const languages = Object.keys(translations)
-    for (const level of KATALOG.severity_levels) {
+    for (const level of CATALOGUE.severity_levels) {
       const key = severityLabelKey(level.id)
       for (const lang of languages) {
         expect(typeof translations[lang][key], `${lang}/${key}`).toBe('string')

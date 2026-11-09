@@ -17,7 +17,7 @@ import { demTilesUrl, terrainOnServer } from './dataServices'
  * point inside a box but outside the Land. Kept in step with sources() in
  * crates/server/src/terrain/mod.rs.
  */
-const DGM1_LAENDER = {
+const DGM1_STATES = {
   th: { name: 'Thüringen',           box: [9.85, 50.17, 12.68, 51.68] },
   sn: { name: 'Sachsen',             box: [11.85, 50.15, 15.05, 51.70] },
   be: { name: 'Berlin',              box: [13.07, 52.33, 13.78, 52.68] },
@@ -33,7 +33,7 @@ const DGM1_CHUNK = 5000
 const DGM1_WAIT_AUTO = 20000
 const DGM1_WAIT_CHOSEN = 180000
 
-const inDgm1 = ([lng, lat]) => Object.values(DGM1_LAENDER)
+const inDgm1 = ([lng, lat]) => Object.values(DGM1_STATES)
   .some(({ box: [w, s, e, n] }) => lng >= w && lng <= e && lat >= s && lat <= n)
 
 async function sampleDgm1(lngLats, { chosen = false } = {}) {
@@ -56,7 +56,7 @@ async function sampleDgm1(lngLats, { chosen = false } = {}) {
 function dgm1Label(id) {
   const m = /^dgm1-(\w+)(?: (\d{4})-(\d{4}))?$/.exec(id ?? '')
   if (!m) return null
-  const land = DGM1_LAENDER[m[1]]?.name ?? m[1].toUpperCase()
+  const land = DGM1_STATES[m[1]]?.name ?? m[1].toUpperCase()
   return `DGM1 ${land}${m[2] ? ` ${m[2]}–${m[3]}` : ''}`
 }
 

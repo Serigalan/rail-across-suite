@@ -3,7 +3,7 @@ import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { inGerman, t } from '../../test/i18n'
 import CantField from './CantField'
-import { CANT_STEP, MAX_CANT, cantFromInput, regelCant } from '@rail-across/core/src/rules/cant.js'
+import { CANT_STEP, MAX_CANT, cantFromInput, standardCant } from '@rail-across/core/src/rules/cant.js'
 
 const render = (props) => renderToStaticMarkup(inGerman(createElement(CantField, {
   value: 0, onChange: () => {}, min: -MAX_CANT, max: MAX_CANT, ...props,
@@ -43,7 +43,7 @@ describe('the field itself', () => {
   it('offers the Regelüberhöhung, with the value it would set', () => {
     // 6.5 · 100² / 1000 = 65 mm
     const html = render({ value: 40, speed: 100, radius: 1000 })
-    expect(regelCant(100, 1000)).toBe(65)
+    expect(standardCant(100, 1000)).toBe(65)
     expect(html).toContain(t('cant_regel'))
     expect(html).toContain('(65 mm)')
   })

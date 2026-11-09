@@ -25,7 +25,7 @@ converted on the server.
 | `fileCants.js` | both | The cant at both ends of each element, between a file's curve-relative values and the model's |
 | `vermEsnExport.js` | out | Tracks and routes as TRA + GRA, zipped with a text naming plane and height datum |
 | `proviImport.js` | in | ProVI archives: axes (`A…`), gradients (`T…`), turnouts on axes |
-| `gleislageCsvImport.js` | in | The Gleislage CSV export (and cant CSV) |
+| `trackPositionCsvImport.js` | in | The Gleislage CSV export (and cant CSV) |
 | `mdbImport.js` | in | The DB ASCII interface (Satzarten 11–41) as converted from Access by the server |
 | `mdbGradient.js` | in | MDB gradient (Satzart 22 + 13 + 11) → `track.heights` with its height datum |
 | `mdbKmLine.js` | in | MDB kilometrage line (Satzart 24) → `project.kmLines` |
@@ -243,5 +243,5 @@ where it is silent or guesses, the delivered files decide.
 ## Tests
 
 A test file per importer and exporter, with real-data fixtures in `src/core/test/fixtures/`
-(`mdb_*.json`, `provi_ausschnitt.zip`, `track_optimized.json`), plus `mdbLagesystem.test.js`,
-`mdbOhneAbschnitt.test.js` and `mdbAxisCleanup.test.js`.
+(`mdb_*.json`, `provi_excerpt.zip`, `track_optimized.json`), plus `mdbLagesystem.test.js`,
+`mdbWithoutSection.test.js` and `mdbAxisCleanup.test.js`.

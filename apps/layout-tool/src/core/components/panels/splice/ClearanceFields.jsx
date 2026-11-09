@@ -1,10 +1,10 @@
 import { useI18n } from '../../../locales/i18nContext'
 import FormSection from '../../form/FormSection'
 import NumberInput from '../../form/NumberInput'
-import { QUERSCHNITT_KATALOG } from '@rail-across/core/crossSection'
+import { CROSS_SECTION_CATALOGUE } from '@rail-across/core/crossSection'
 
 // The Regelgleisabstände of Ril 800.0130, as a hint beside the minimum spacing.
-const REGEL_ABSTAENDE = [...new Set(QUERSCHNITT_KATALOG.streckenquerschnitte.rows.map(r => r.gleisabstand))]
+const STANDARD_SPACINGS = [...new Set(CROSS_SECTION_CATALOGUE.streckenquerschnitte.rows.map(r => r.gleisabstand))]
   .sort((a, b) => a - b)
 
 /**
@@ -36,7 +36,7 @@ export default function ClearanceFields({ on, onToggle, refName, picking, onPick
             <label>{t('splice_clearance_dmin')}</label>
             <NumberInput min={0.1} step={0.05} value={dMin} onChange={e => onDMin(Number(e.target.value))} />
             <span className="range-use">
-              {t('splice_clearance_regel')} {REGEL_ABSTAENDE.map(d => `${d.toFixed(2)} m`).join(' · ')}
+              {t('splice_clearance_regel')} {STANDARD_SPACINGS.map(d => `${d.toFixed(2)} m`).join(' · ')}
             </span>
           </div>
           {children}

@@ -174,7 +174,7 @@ export default function ExtendedConnectionForm({ onCommitted, edit = null, initi
   }
 
   const setForm = (k, i) => setForms(prev => (k === 0 && prev[0] === prev[1] ? [i, i] : prev.map((v, j) => (j === k ? i : v))))
-  const bauformText = (stemR, branchR) => t(`switch_bauform_${bauform(stemR, branchR)}`)
+  const bentFormText = (stemR, branchR) => t(`switch_bauform_${bauform(stemR, branchR)}`)
 
   return (
     <>
@@ -243,9 +243,9 @@ export default function ExtendedConnectionForm({ onCommitted, edit = null, initi
           {chosen.index === -1 && <p className="msg-hint">{t('xcon_edit_as_is')}</p>}
           {stands && (<>
             <ReadOnlyField label={t('xcon_turnout_1')}
-              value={`${result.switchType.label} · ${bauformText(result.stemR1, result.signedR1)}`} />
+              value={`${result.switchType.label} · ${bentFormText(result.stemR1, result.signedR1)}`} />
             <ReadOnlyField label={t('xcon_turnout_2')}
-              value={`${(result.switchType2 ?? result.switchType).label} · ${bauformText(result.stemR2, result.signedR2)}`} />
+              value={`${(result.switchType2 ?? result.switchType).label} · ${bentFormText(result.stemR2, result.signedR2)}`} />
             <ReadOnlyField label={t('scurve_station')} value={fmt(stationOf(settled.shift), 2)} />
             <ReadOnlyField label={t('scurve_total')} value={`${result.laenge.toFixed(2)} m`} />
           </>)}

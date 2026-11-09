@@ -45,37 +45,37 @@ async function checkIn(variantId, change, message = '') {
 describe('merging one variant into another (AP 10.8)', () => {
   it('takes the source\'s changes, and the second time only the new ones', async () => {
     const created = (await user('POST', '/api/projects', { title: 'P', payload: { tracks: [straight('t1', 0)] } })).json()
-    const bestand = created.variantId
-    const v2030 = (await user('POST', `/api/projects/${created.projectId}/variants`, { name: '2030', fromVariant: bestand })).json().variant.id
+    const existing = created.variantId
+    const v2030 = (await user('POST', `/api/projects/${created.projectId}/variants`, { name: '2030', fromVariant: existing })).json().variant.id
 
-    await checkIn(bestand, p => ({ ...p, tracks: [...p.tracks, straight('b1', 50)] }), 'Korrektur Bestand')
+    await checkIn(existing, p => ({ ...p, tracks: [...p.tracks, straight('b1', 50)] }), 'Korrektur Bestand')
     await checkIn(v2030, p => ({ ...p, tracks: [...p.tracks, straight('n1', 100)] }), 'Neubau 2030')
 
-    const first = await prepareVariantMerge(bestand, v2030)
+    const first = await prepareVariantMerge(existing, v2030)
     expect(first.result.conflicts).toEqual([])
     expect(first.result.applied.map(a => [a.kind, a.id])).toEqual([['added', 'b1']])
     expect(first.result.merged.tracks.map(t => t.id).sort()).toEqual(['b1', 'n1', 't1'])
     const merged = await commitVariantMerge(first, first.result.merged, 'Bestand → 2030')
     expect(merged.revision.mergeParentId).toBe(first.source.revision.id)
 
-    await checkIn(bestand, p => ({ ...p, tracks: [...p.tracks, straight('b2', 150)] }), 'Noch eine Korrektur')
-    const second = await prepareVariantMerge(bestand, v2030)
+    await checkIn(existing, p => ({ ...p, tracks: [...p.tracks, straight('b2', 150)] }), 'Noch eine Korrektur')
+    const second = await prepareVariantMerge(existing, v2030)
     expect(second.base.id).toBe(first.source.revision.id)
     expect(second.result.applied.map(a => [a.kind, a.id])).toEqual([['added', 'b2']])
     await commitVariantMerge(second, second.result.merged, 'Bestand → 2030')
 
-    expect((await prepareVariantMerge(bestand, v2030)).upToDate).toBe(true)
+    expect((await prepareVariantMerge(existing, v2030)).upToDate).toBe(true)
     const head = (await user('GET', `/api/variants/${v2030}/head`)).json()
     expect(recordOf(head.payload).tracks.map(t => t.id).sort()).toEqual(['b1', 'b2', 'n1', 't1'])
   })
 
   it('shows a conflict where both changed the same thing', async () => {
     const created = (await user('POST', '/api/projects', { title: 'P', payload: { tracks: [straight('t1', 0)] } })).json()
-    const bestand = created.variantId
-    const v2030 = (await user('POST', `/api/projects/${created.projectId}/variants`, { name: '2030', fromVariant: bestand })).json().variant.id
-    await checkIn(bestand, p => ({ ...p, tracks: p.tracks.map(t => ({ ...t, name: 'Bestandsname' })) }))
+    const existing = created.variantId
+    const v2030 = (await user('POST', `/api/projects/${created.projectId}/variants`, { name: '2030', fromVariant: existing })).json().variant.id
+    await checkIn(existing, p => ({ ...p, tracks: p.tracks.map(t => ({ ...t, name: 'Bestandsname' })) }))
     await checkIn(v2030, p => ({ ...p, tracks: p.tracks.map(t => ({ ...t, name: '2030-Name' })) }))
-    const prepared = await prepareVariantMerge(bestand, v2030)
+    const prepared = await prepareVariantMerge(existing, v2030)
     expect(prepared.result.conflicts).toEqual([expect.objectContaining({ objectId: 't1', field: 'name', mine: '2030-Name', theirs: 'Bestandsname' })])
   })
 })

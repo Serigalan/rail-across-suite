@@ -1,10 +1,10 @@
-import { grundText } from './optimizeReport'
+import { reasonText } from './optimizeReport'
 import { useI18n } from '../../../locales/i18nContext'
 
 /** One curve of the report: what changed in it and what held it, or that it stayed. */
 function CurveRow({ r }) {
   const { t } = useI18n()
-  const why = grundText(t, r.grund)
+  const why = reasonText(t, r.grund)
   return (
     <div className="list-row">
       <strong>{t('optimize_curve')} {r.group}{r.arcs > 1 ? `.${r.arc}` : ''}{r.target ? ` (${t('optimize_target')})` : ''}</strong>{' '}

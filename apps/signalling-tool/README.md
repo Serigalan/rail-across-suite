@@ -111,7 +111,7 @@ the whole project with its signalling: the tool hands those addresses on to it. 
 | `src/App.jsx`, `src/suite.js`, `src/workingCopy.js` | what the address asks, the session, loading the variant and its working copy |
 | `src/Editor.jsx` | the shell: sections, selection, steps, the check, the working copy, checking in, updating, discarding |
 | `src/plan/` | the site plan: the net in its true position on a MapLibre map (north up), drawn as its layers; the symbols, picking and placing |
-| `src/schema/` | the schematic view: the core's strip with the symbols of a signalling plan (`planzeichen.jsx`, which symbol an object takes in `symbols.js`), picking |
+| `src/schema/` | the schematic view: the core's strip with the symbols of a signalling plan (`planSymbols.jsx`, which symbol an object takes in `symbols.js`), picking |
 | `src/panels/` | one panel per section, its menu and pages; `editors/` the editors of what *Bearbeiten* edits; `draft.jsx` the panel with *Abbrechen* and *Bestätigen* at its foot, `useSetting.js` setting on the plan while a page is open |
 | `src/model/` | the drawing of the net and finding a place on it (`net.js`), runs over it (`runs.js`), editing the domain — places and their logical signals (`domain.js`), measuring overlaps (`overlaps.js`), equipping signals with magnets (`magnets.js`), steps (`history.js`) |
 | `src/i18n.js`, `src/labels.js` | texts in German and English, the words for the domain's values and the check's findings |

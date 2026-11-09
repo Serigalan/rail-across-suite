@@ -1,4 +1,4 @@
-import KATALOG from '../../constraints/db-ril-301.json' with { type: 'json' }
+import CATALOGUE from '../../constraints/db-ril-301.json' with { type: 'json' }
 
 // The signal aspects of DB Ril 301, the signalling systems and what each kind
 // of signal shows in them, the train protection systems with their balises
@@ -10,15 +10,15 @@ import KATALOG from '../../constraints/db-ril-301.json' with { type: 'json' }
 // entry has a German `title` and an English `title_en`.
 
 /** The catalogue itself, for a viewer or a test that wants more. */
-export { KATALOG as SIGNAL_CATALOGUE }
+export { CATALOGUE as SIGNAL_CATALOGUE }
 
 /** The catalogue as the signalling domain names it in its fields. */
-export const CATALOGUE_REF = { id: KATALOG.katalog.id, version: KATALOG.katalog.katalog_version }
+export const CATALOGUE_REF = { id: CATALOGUE.katalog.id, version: CATALOGUE.katalog.katalog_version }
 
-const ASPECTS = new Map(KATALOG.begriffe.map(b => [b.id, b]))
+const ASPECTS = new Map(CATALOGUE.begriffe.map(b => [b.id, b]))
 
 /** The aspect of that key, or undefined. */
-export const aspectOf = (key, catalogue = KATALOG) => (catalogue === KATALOG ? ASPECTS.get(key) : catalogue.begriffe.find(b => b.id === key))
+export const aspectOf = (key, catalogue = CATALOGUE) => (catalogue === CATALOGUE ? ASPECTS.get(key) : catalogue.begriffe.find(b => b.id === key))
 
 /** An entry's title in a language: `title_en` in English, `title` (German) otherwise and where there is none. */
 export const titleIn = (entry, language) => (entry ? (language === 'de' ? entry.title : entry[`title_${language}`] ?? entry.title) : undefined)
@@ -27,11 +27,11 @@ export const titleIn = (entry, language) => (entry ? (language === 'de' ? entry.
  * What a kind of signal shows in a system (a key of `systeme`):
  * { title, title_en, schirm: { pflicht, fahrt, erlaubt }, zusatz }, or undefined.
  */
-export const signalKindOf = (system, type, catalogue = KATALOG) =>
+export const signalKindOf = (system, type, catalogue = CATALOGUE) =>
   (system && Object.hasOwn(catalogue.systeme, system) ? catalogue.systeme[system].signalarten[type] : undefined)
 
 /** Whether `system` is a signalling system of the catalogue. */
-export const knownSystem = (system, catalogue = KATALOG) => Object.hasOwn(catalogue.systeme, system)
+export const knownSystem = (system, catalogue = CATALOGUE) => Object.hasOwn(catalogue.systeme, system)
 
 /**
  * What a signal's screen must and may show, and which indicators it carries:
@@ -40,7 +40,7 @@ export const knownSystem = (system, catalogue = KATALOG) => Object.hasOwn(catalo
  * zusatz } — `fahrt` per kind, of which each needs one shown; null where no
  * logical signal has a kind of the catalogue.
  */
-export function screenOf(logicalSignals, catalogue = KATALOG) {
+export function screenOf(logicalSignals, catalogue = CATALOGUE) {
   const kinds = (logicalSignals ?? []).map(l => signalKindOf(l.system, l.type, catalogue)).filter(Boolean)
   if (!kinds.length) return null
   const union = (pick) => [...new Set(kinds.flatMap(pick))]
@@ -54,11 +54,11 @@ export function screenOf(logicalSignals, catalogue = KATALOG) {
 }
 
 /** A train protection system of the catalogue (`zugbeeinflussung.systeme`), or undefined. */
-export const protectionSystemOf = (system, catalogue = KATALOG) =>
+export const protectionSystemOf = (system, catalogue = CATALOGUE) =>
   (Object.hasOwn(catalogue.zugbeeinflussung.systeme, system) ? catalogue.zugbeeinflussung.systeme[system] : undefined)
 
 /** A kind of balise or magnet of a train protection system: { title, title_en, pflicht, erlaubt }, or undefined. */
-export const baliseKindOf = (system, kind, catalogue = KATALOG) => {
+export const baliseKindOf = (system, kind, catalogue = CATALOGUE) => {
   const arten = protectionSystemOf(system, catalogue)?.arten
   return arten && Object.hasOwn(arten, kind) ? arten[kind] : undefined
 }
@@ -96,7 +96,7 @@ export function settingsProblems(settings, declared, { pflicht = [], erlaubt } =
 }
 
 /** Whether an aspect may stand on a plate of its own (a board, a Zs 3 as a plate). */
-export const boardAspect = (key, catalogue = KATALOG) => catalogue.ohne_system.tafeln.includes(key)
+export const boardAspect = (key, catalogue = CATALOGUE) => catalogue.ohne_system.tafeln.includes(key)
 
 /**
  * Whether `symbol` is what the aspect asks for: none where it has no symbol,

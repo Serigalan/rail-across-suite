@@ -9,10 +9,10 @@ use rail_across_geom::cant::transition_cant_ends;
 use rail_across_js::{get, number};
 use serde_json::{Value as Json, json};
 
+use crate::alignment_check::Context;
 use crate::bundled::catalog_speed_range;
 use crate::check::verdict_errors;
 use crate::element::Element;
-use crate::pruefung::Context;
 
 /// Speed is designed in 5 km/h steps.
 pub const SPEED_STEP: f64 = 5.0;

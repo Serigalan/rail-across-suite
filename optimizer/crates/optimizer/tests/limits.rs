@@ -7,12 +7,12 @@
 
 mod common;
 
+use rail_across_optimizer::alignment_check::{Context, element_scope};
 use rail_across_optimizer::element::Element;
 use rail_across_optimizer::expr::{Basic, Value, eval_expr};
 use rail_across_optimizer::geometry::{CANT_DEFICIENCY_COEFF, Profile, heading_coeffs, permissible_speed};
-use rail_across_optimizer::grenzen::{Grenzen, Stufe};
-use rail_across_optimizer::load_katalog;
-use rail_across_optimizer::pruefung::{Context, element_scope};
+use rail_across_optimizer::limits::{Level, Limits};
+use rail_across_optimizer::load_catalogue;
 
 #[test]
 fn physics_has_not_drifted_from_the_kernel() {
@@ -45,8 +45,8 @@ fn physics_has_not_drifted_from_the_kernel() {
 }
 
 #[test]
-fn the_catalogue_as_regelkatalog_js_applies_it() {
-    let k = common::katalog();
+fn the_catalogue_as_rule_catalogue_js_applies_it() {
+    let k = common::catalogue();
     let kb02 = k.rule("LP.KB.02").unwrap();
     let severity = |v: f64, uf: f64| {
         let scope = k.scope(&[("element.design_speed", v.into()), ("physics.u_f", uf.into())]);
@@ -59,9 +59,9 @@ fn the_catalogue_as_regelkatalog_js_applies_it() {
 
 #[test]
 fn limits_at_both_levels() {
-    let k = common::katalog();
-    let reg = Grenzen::new(&k, Stufe::Reg).unwrap();
-    let erm = Grenzen::new(&k, Stufe::Discretion).unwrap();
+    let k = common::catalogue();
+    let reg = Limits::new(&k, Level::Reg).unwrap();
+    let erm = Limits::new(&k, Level::Discretion).unwrap();
 
     let min_len: Vec<f64> = [40.0, 70.0, 75.0, 100.0, 105.0, 300.0]
         .iter()
@@ -107,7 +107,7 @@ fn limits_at_both_levels() {
     assert_eq!(reg.jump_speed(100.0, 120.0, false), None);
     assert_eq!(reg.jump_speed(100.0, 120.0, true), Some(120.0));
 
-    assert!(Stufe::parse("approval").is_err());
+    assert!(Level::parse("approval").is_err());
     assert_eq!(reg.forms, [("clothoid", true), ("bloss", false)]);
     assert_eq!(erm.forms, [("clothoid", true), ("bloss", true)]);
 }
@@ -121,15 +121,15 @@ fn a_rule_a_run_cannot_keep_is_refused() {
         "inputs": {"r": {"from": "element.radius", "unit": "m"}},
         "thresholds": {"min": {"expr": "300", "unit": "m"}},
         "evaluation": [{"if": "r >= min", "severity": "ok"}, {"else": "error"}]}));
-    let k = load_katalog(&data).unwrap();
-    let Err(e) = Grenzen::new(&k, Stufe::Reg) else { panic!("accepted") };
+    let k = load_catalogue(&data).unwrap();
+    let Err(e) = Limits::new(&k, Level::Reg) else { panic!("accepted") };
     assert!(e.0.contains("LP.TEST.01"), "{e}");
 
     // The same rule as a mere hint binds no run.
     let last = data["rules"].as_array().unwrap().len() - 1;
     data["rules"][last]["evaluation"][1] = serde_json::json!({"else": "hint"});
-    let k = load_katalog(&data).unwrap();
-    assert!(Grenzen::new(&k, Stufe::Reg).is_ok());
+    let k = load_catalogue(&data).unwrap();
+    assert!(Limits::new(&k, Level::Reg).is_ok());
 }
 
 #[test]

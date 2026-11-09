@@ -9,10 +9,10 @@ import {
 } from '@rail-across/core/test/chainInvariants.js'
 import { resolveEndBearing } from '@rail-across/core/src/geometry/elementUtils.js'
 
-import fixture from '../../test/fixtures/mdb_weiche.json'
-import crossingFixture from '../../test/fixtures/mdb_kreuzungsweiche.json'
-import bogenFixture from '../../test/fixtures/mdb_bogenkreuzungsweiche.json'
-import symFixture from '../../test/fixtures/mdb_symmetrische_weiche.json'
+import fixture from '../../test/fixtures/mdb_turnout.json'
+import crossingFixture from '../../test/fixtures/mdb_slip_switch.json'
+import arcFixture from '../../test/fixtures/mdb_curved_slip_switch.json'
+import symFixture from '../../test/fixtures/mdb_symmetric_turnout.json'
 import { parseProjectsPayload, hydrateProjects, dehydrateProjects, projectDocument } from '@rail-across/core/src/project/persistenceUtils.js'
 
 /**
@@ -237,7 +237,7 @@ describe('placeMdbSwitches — die Bogenkreuzungsweiche (AP 3.4)', () => {
   // same way on that radius and its connection on about R 709 the other way.
   // Every track through the point is curved — which is why the crossing roads
   // are found by the angle they cross at, not by being the straightest.
-  const payload3 = parseMdbPayload(bogenFixture)
+  const payload3 = parseMdbPayload(arcFixture)
   const { units: units3 } = mdbSwitchInventory(payload3)
   const built3 = buildAllTracksFromMdb(payload3)
   const placed3 = placeMdbSwitches(payload3, built3.tracks, units3)

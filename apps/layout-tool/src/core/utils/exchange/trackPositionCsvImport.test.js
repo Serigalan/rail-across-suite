@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import {
   CSV_EPSG, TYPE_STRAIGHT, TYPE_ARC, TYPE_CLOTHOID, CANT_CONSTANT,
-  parseGleislageCsv, parseUeberhoehungCsv, listStrecken, buildTracksFromCsv,
-} from './gleislageCsvImport'
+  parseTrackPositionCsv, parseCantCsv, listLines, buildTracksFromCsv,
+} from './trackPositionCsvImport'
 import { arcFrom, straightFrom } from '@rail-across/core/src/geometry/elementFactory.js'
 
 // A small export of line 6340 in DB_REF GK zone 3, written the way the
@@ -41,7 +41,7 @@ const CANT_CSV = [
 
 describe('reading the export', () => {
   it('keeps the columns it needs, strips a BOM and reads quoted fields', () => {
-    const rows = parseGleislageCsv(CSV)
+    const rows = parseTrackPositionCsv(CSV)
     expect(rows).toHaveLength(7)
     expect(rows[0]).toMatchObject({ typ: TYPE_STRAIGHT, anf: 'A', end: 'B', lsys: 'DR0', strecke: '6340', length: 100 })
     expect(rows[0].bearing).toBeCloseTo(90, 12)
@@ -51,26 +51,26 @@ describe('reading the export', () => {
   })
 
   it('names the columns a file lacks', () => {
-    expect(() => parseGleislageCsv('EELL_ELTYP_WL_TEXT_L,STR_STRECKENNUMMER\nGerade,1\n'))
+    expect(() => parseTrackPositionCsv('EELL_ELTYP_WL_TEXT_L,STR_STRECKENNUMMER\nGerade,1\n'))
       .toThrow(/Spalten fehlen: EELL_PKT_ADRESSE_ANF/)
   })
 
   it('reads a cant export', () => {
-    expect(parseUeberhoehungCsv(CANT_CSV)[0]).toEqual({
+    expect(parseCantCsv(CANT_CSV)[0]).toEqual({
       typ: CANT_CONSTANT, anf: 'B', end: 'C', strecke: '6340', length: 50, u1: 60, u2: 60,
     })
   })
 
   it('lists the lines in numeric order with their row counts', () => {
-    const rows = [...parseGleislageCsv(CSV), { strecke: '10000' }, { strecke: '' }]
-    expect(listStrecken(rows)).toEqual([
+    const rows = [...parseTrackPositionCsv(CSV), { strecke: '10000' }, { strecke: '' }]
+    expect(listLines(rows)).toEqual([
       { strecke: '5550', count: 1 }, { strecke: '6340', count: 6 }, { strecke: '10000', count: 1 },
     ])
   })
 })
 
 describe('building the tracks of one line', () => {
-  const rows = parseGleislageCsv(CSV)
+  const rows = parseTrackPositionCsv(CSV)
 
   it('orders the rows into chains, the switch leg as a chain of its own', () => {
     const { tracks } = buildTracksFromCsv(rows, '6340')
@@ -93,7 +93,7 @@ describe('building the tracks of one line', () => {
   })
 
   it('puts a constant cant on the arc, signed by its curve', () => {
-    const { tracks, errors } = buildTracksFromCsv(rows, '6340', parseUeberhoehungCsv(CANT_CSV))
+    const { tracks, errors } = buildTracksFromCsv(rows, '6340', parseCantCsv(CANT_CSV))
     expect(tracks[0].elements[1].cant).toBe(60)
     expect(tracks[0].elements[0].cant ?? 0).toBe(0)
     expect(errors.some(e => /2 von 4 Elementen ohne Überhöhungssatz/.test(e))).toBe(true)

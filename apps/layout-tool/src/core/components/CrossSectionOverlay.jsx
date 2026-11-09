@@ -11,8 +11,8 @@ import { PLATFORM_FILL_COLOR, PLATFORM_OUTLINE_COLOR } from '../map/mapRenderUti
 import TerrainSourceSelect from './TerrainSourceSelect'
 import {
   crossSection, fitSection, superstructureAt, sectionAtStation, platformSection, placeSection,
-  sectionNeighbours, sectionLinePoints, sectionLevels, sectionOrigin, PLANUM_EDGE, RAILS, SLEEPERS,
-  gaugeProfile, gaugeProfileRing, gaugeProfileAreas, gaugeProfileLabelKey, LICHTRAUM_SOURCE,
+  sectionNeighbours, sectionLinePoints, sectionLevels, sectionOrigin, FORMATION_EDGE, RAILS, SLEEPERS,
+  gaugeProfile, gaugeProfileRing, gaugeProfileAreas, gaugeProfileLabelKey, CLEARANCE_SOURCE,
   DEFAULT_GAUGE_PROFILE,
 } from '@rail-across/core/crossSection'
 import {
@@ -394,7 +394,7 @@ export default function CrossSectionOverlay({ at, onAtChange, onClose, detached 
     const left  = placed.reduce((a, b) => (b.axis[0] < a.axis[0] ? b : a))
     const right = placed.reduce((a, b) => (b.axis[0] > a.axis[0] ? b : a))
     // Room under the outermost tracks for their two label lines.
-    fitPoints.push([left.axis[0] - PLANUM_EDGE, bottomOf(left) - 200], [right.axis[0] + PLANUM_EDGE, bottomOf(right) - 200])
+    fitPoints.push([left.axis[0] - FORMATION_EDGE, bottomOf(left) - 200], [right.axis[0] + FORMATION_EDGE, bottomOf(right) - 200])
   }
   const fitted = size && size.w >= 40 && size.h >= 40 && fitPoints.length ? fitSection(fitPoints, size, MARGIN) : null
 
@@ -646,7 +646,7 @@ export default function CrossSectionOverlay({ at, onAtChange, onClose, detached 
           )
         }))}
         <text x={X(0)} y={Y(zMax) - 8} fontSize="11" fill={PALETTE.label} textAnchor="middle">
-          {`${t(gaugeProfileLabelKey(profile.id))} · ${LICHTRAUM_SOURCE}`}
+          {`${t(gaugeProfileLabelKey(profile.id))} · ${CLEARANCE_SOURCE}`}
         </text>
         <text x={MARGIN / 2} y={size.h - 8} fontSize="11" fill={terrainState.runs ? TERRAIN_COLOR : PALETTE.muted}>
           {terrainState.text}

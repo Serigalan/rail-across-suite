@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { MAX_CANT, MAX_SWITCH_CANT, MAX_SWITCH_CANT_DEF, MAX_SWITCH_CANT_EXCEPTION, cantExceedsLimit, cantExceptionFields, cantExceptionOf, cantLimit, clampSwitchCant, computeMaxSpeed, computeSwitchCant, switchCantError, switchCantLimit, worstCantOf, cantDefLevel, cantDefLimit, limitCantDef, maxSpeedFor, CANT_STEP, computeAutoC, computeCantDef, regelCant } from './cant.js'
+import { MAX_CANT, MAX_SWITCH_CANT, MAX_SWITCH_CANT_DEF, MAX_SWITCH_CANT_EXCEPTION, cantExceedsLimit, cantExceptionFields, cantExceptionOf, cantLimit, clampSwitchCant, computeMaxSpeed, computeSwitchCant, switchCantError, switchCantLimit, worstCantOf, cantDefLevel, cantDefLimit, limitCantDef, maxSpeedFor, CANT_STEP, computeAutoC, computeCantDef, standardCant } from './cant.js'
 
 // The two stretches of speed LP.KB.02 gives their own deficiency limit.
 const SLOW = 100      // ≤ 150 km/h
@@ -290,7 +290,7 @@ describe('cantDefLevel', () => {
 describe('regelCant', () => {
   it('is the value the dialogs already propose wherever a curve needs cant', () => {
     for (const [v, r] of [[100, 1000], [80, 600], [160, 4000], [60, 400]]) {
-      expect(regelCant(v, r), `${v} km/h, R ${r}`).toBe(computeAutoC(v, r))
+      expect(standardCant(v, r), `${v} km/h, R ${r}`).toBe(computeAutoC(v, r))
     }
   })
 
@@ -300,23 +300,23 @@ describe('regelCant', () => {
   it('still states a cant where the proposal answers none', () => {
     expect(computeCantDef(100, 4000, 0)).toBeLessThan(60)
     expect(computeAutoC(100, 4000)).toBe(0)
-    expect(regelCant(100, 4000)).toBe(15)          // 6.5 · 100² / 4000 = 16.25
+    expect(standardCant(100, 4000)).toBe(15)          // 6.5 · 100² / 4000 = 16.25
   })
 
   it('never states more cant than the Ril allows', () => {
     // 6.5 · 100² / 300 = 217 mm, well past the 160 a curve may carry.
-    expect(regelCant(100, 300)).toBe(MAX_CANT)
+    expect(standardCant(100, 300)).toBe(MAX_CANT)
     // …and inside a turnout the cap is the turnout's own.
-    expect(regelCant(100, 300, { inSwitch: true })).toBe(MAX_SWITCH_CANT)
+    expect(standardCant(100, 300, { inSwitch: true })).toBe(MAX_SWITCH_CANT)
   })
 
   it('follows the curve, as stored cant does', () => {
-    expect(regelCant(100, -1000)).toBe(-regelCant(100, 1000))
+    expect(standardCant(100, -1000)).toBe(-standardCant(100, 1000))
   })
 
   it('lands on the design step, and is nil without a curve', () => {
-    expect(regelCant(97, 733) % CANT_STEP).toBe(0)
-    expect(regelCant(100, 0)).toBe(0)
-    expect(regelCant(100, undefined)).toBe(0)
+    expect(standardCant(97, 733) % CANT_STEP).toBe(0)
+    expect(standardCant(100, 0)).toBe(0)
+    expect(standardCant(100, undefined)).toBe(0)
   })
 })

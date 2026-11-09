@@ -7,10 +7,10 @@
 
 export { exportExchange, FORMAT_VERSION } from './exchangeExport'
 export {
-  buildTracksFromCsv, CSV_EPSG, listStrecken, parseGleislageCsv, parseUeberhoehungCsv,
-} from './gleislageCsvImport'
-export { listMdbStrecken, parseMdbPayload } from './mdbImport'
-export { ALL_STRECKEN, runMdbImport } from './mdbPipeline'
+  buildTracksFromCsv, CSV_EPSG, listLines, parseTrackPositionCsv, parseCantCsv,
+} from './trackPositionCsvImport'
+export { listMdbLines, parseMdbPayload } from './mdbImport'
+export { ALL_LINES, runMdbImport } from './mdbPipeline'
 export { placeMdbSwitches } from './mdbSwitchPlacement'
 export { exportToOsrd, OSRD_URL } from './osrdExport'
 export { parseOsrdRailJson } from './osrdImport'

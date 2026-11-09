@@ -16,8 +16,8 @@ use serde_json::{Map, Value, json};
 use crate::catalogue::{switch_branch_length, switch_form_chain, switch_mark, switch_straight_length, switch_type_by_label};
 use crate::crossing::{crossing_end_distance, crossing_wedge_ring};
 use crate::route::{
-    FormSection, Polyline, Route, chain_geometry, chain_json, clothoid_route_points, form_chain, neg_r, pts_json, switch_branch_chain, switch_chain_bauform,
-    switch_chain_bearing_at, switch_chain_point_utm, switch_chain_segments_utm, switch_chain_to, switch_element_route, switch_route_bearing_at,
+    FormSection, Polyline, Route, chain_geometry, chain_json, clothoid_route_points, form_chain, neg_r, pts_json, switch_branch_chain, switch_chain_bearing_at,
+    switch_chain_bent_form, switch_chain_point_utm, switch_chain_segments_utm, switch_chain_to, switch_element_route, switch_route_bearing_at,
     switch_route_segments, switch_route_varies, switch_stem_route, to_route, utm_end_route,
 };
 
@@ -455,7 +455,7 @@ pub fn rebuild_switch_symbol(sw: &Value, by_id: ById) -> Value {
     rest.insert("labelCoords".into(), pts_json(&label));
     rest.insert("bodyCentre".into(), json!([number(centre[0]), number(centre[1])]));
     let symmetric = r.form.is_some_and(|f| f.get("symmetric") == Some(&json!(true)));
-    rest.insert("bauform".into(), json!(switch_chain_bauform(&r.stem, &r.branch, symmetric)));
+    rest.insert("bauform".into(), json!(switch_chain_bent_form(&r.stem, &r.branch, symmetric)));
     if let Some(l) = lcs {
         rest.insert("lcsCoords".into(), pts_json(&l));
     }
@@ -625,7 +625,7 @@ pub fn compute_switch_geometry_utm(start: Utm, bearing: f64, form: &Value, side:
     json!({
         "straightCoords": pts_json(&straight_coords), "arcCoords": pts_json(&arc_coords), "fillCoords": pts_json(&fill),
         "labelCoords": pts_json(&label), "bodyCentre": p(centre),
-        "bauform": switch_chain_bauform(&stem_chain, &branch_chain, symmetric),
+        "bauform": switch_chain_bent_form(&stem_chain, &branch_chain, symmetric),
         "swapped": if symmetric { Value::Null } else { swapped_plain_geometry(start, s_wgs, bearing, form, trailing, &stem, &branch_chain, arc_len) },
         "portA": p(port_a), "portB1": p(port_b1), "portB2": p(port_b2),
         "portA_wgs": p(if trailing { straight_end } else { s_wgs }), "portB1_wgs": p(curved_end), "portB2_wgs": p(if trailing { s_wgs } else { straight_end }),

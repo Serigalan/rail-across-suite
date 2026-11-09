@@ -67,7 +67,7 @@ describe('reading a Lagesystem code', () => {
   })
 
   it('reads a serial character other than 0 like 0, and says it is one', () => {
-    // GND_6403 states its 42/83 chains as EC9 (mdbOhneAbschnitt).
+    // GND_6403 states its 42/83 chains as EC9 (mdbWithoutSection).
     expect(epsgForLagesystem('EC9')).toBe(epsgForLagesystem('EC0'))
     expect(isOfficialLagesystem('EC0')).toBe(true)
     expect(isOfficialLagesystem('EC9')).toBe(false)

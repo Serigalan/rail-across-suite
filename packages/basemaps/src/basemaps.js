@@ -190,7 +190,7 @@ function buildLvStyle(states) {
  * layer's box from the service's capabilities (lng/lat), widened where those
  * leave out part of the state (Bremerhaven, Neuwerk).
  */
-export const LANDESVERMESSUNG_STATES = [
+export const STATE_SURVEY_STATES = [
   { id: 'lv-bw', name: 'Baden-Württemberg',      wmsUrl: 'https://owsproxy.lgl-bw.de/owsproxy/ows/WMS_LGL-BW_ATKIS_DOP_20_C?', layer: 'IMAGES_DOP_20_RGB', attribution: '© LGL Baden-Württemberg (dl-de/by-2-0)', bounds: [7.45, 47.50, 10.55, 49.82] },
   { id: 'lv-by', name: 'Bayern',                  wmsUrl: 'https://geoservices.bayern.de/od/wms/dop/v1/dop20', layer: 'by_dop20c', attribution: '© Bayerische Vermessungsverwaltung (dl-de/by-2-0)', bounds: [8.96, 47.16, 14.03, 50.59] },
   { id: 'lv-be', name: 'Berlin',                  wmsUrl: 'https://gdi.berlin.de/services/wms/truedop_2024', layer: 'truedop_2024', attribution: '© Geoportal Berlin / TrueDOP 2024 (dl-de/by-2-0)', bounds: [13.05, 52.32, 13.77, 52.69] },
@@ -213,7 +213,7 @@ export const LANDESVERMESSUNG_STATES = [
 ]
 
 /** The one preview all states share in the layers panel — a cut of Bavaria's DOP 20. */
-export const LANDESVERMESSUNG_THUMBNAIL = thumb('dop')
+export const STATE_SURVEY_THUMBNAIL = thumb('dop')
 
 const IGN_ORTHO_STYLE = {
   version: 8,
@@ -345,7 +345,7 @@ export function fineReliefStyle(source) {
 // cut of the map itself (thumbnails/), so no two look alike: the orthophotos show
 // different places, DGM5 a river valley at the zoom its 5 m grid is made for.
 // The state orthophotos are not listed here: any choice of states is a
-// basemap of its own, made by `findBasemap` from LANDESVERMESSUNG_STATES.
+// basemap of its own, made by `findBasemap` from STATE_SURVEY_STATES.
 const BASEMAPS = [
   {
     id: 'liberty',
@@ -420,13 +420,13 @@ export const isElevationBasemap = (basemapId, extra = []) => findBasemap(basemap
  * still 'lv-by', as before.
  */
 export function lvBasemapId(stateIds) {
-  return LANDESVERMESSUNG_STATES.filter((s) => stateIds.includes(s.id)).map((s) => s.id).join('+')
+  return STATE_SURVEY_STATES.filter((s) => stateIds.includes(s.id)).map((s) => s.id).join('+')
 }
 
 /** The states a basemap id shows — empty for any basemap but the state orthophotos. */
 export function lvStatesOf(basemapId) {
   const ids = String(basemapId ?? '').split('+')
-  const states = ids.map((id) => LANDESVERMESSUNG_STATES.find((s) => s.id === id && s.wmsUrl))
+  const states = ids.map((id) => STATE_SURVEY_STATES.find((s) => s.id === id && s.wmsUrl))
   return states.every(Boolean) ? states : []
 }
 

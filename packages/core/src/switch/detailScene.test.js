@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { connectionPartners, switchDetailScene } from './index.js'
 import { hydrateProjects } from '../project/persistenceUtils.js'
-import { hasPekBestand, loadPekBestand } from '../../test/pekFixture.js'
+import { hasPekExisting, loadPekExisting } from '../../test/pekFixture.js'
 
 // Tracks only as long as the search needs them: an id and a length.
 const track = (id, length) => ({ id, elements: [{ length }] })
@@ -35,10 +35,10 @@ describe('the partners of a switch connection', () => {
   })
 })
 
-describe.skipIf(!hasPekBestand)('a turnout with its surroundings (PEK Bestand)', () => {
+describe.skipIf(!hasPekExisting)('a turnout with its surroundings (PEK Bestand)', () => {
   // Loaded on first use: a skipped suite still runs its body.
   let pek = null
-  const project = () => (pek ??= hydrateProjects([loadPekBestand()])[0])
+  const project = () => (pek ??= hydrateProjects([loadPekExisting()])[0])
   const named = (name) => project().switches.find(s => s.name === name)
 
   it('draws the other half of a crossover in the turnout’s frame, and the tracks around', () => {

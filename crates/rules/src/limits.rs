@@ -3,7 +3,7 @@
 
 //! The limits a run is held to, read out of the rule catalogue for one level.
 //!
-//! A run is asked for a *Stufe*: the Regelwert (`reg`) or the Ermessensgrenze
+//! A run is asked for a *level*: the Regelwert (`reg`) or the Ermessensgrenze
 //! (`discretion`). What that means is not a table of numbers kept here — it is
 //! a severity. Under the Regelwert nothing the run proposes may be judged worse
 //! than a hint; under the Ermessensgrenze nothing worse than a warning. Which
@@ -17,7 +17,7 @@
 //!
 //! What the bound then *is* for the geometry is the one piece of model
 //! knowledge here, read from where the rule takes its input from, the way the
-//! app's trassierungCheck.js fills the same names:
+//! app's alignmentCheck.js fills the same names:
 //!
 //! * `element.length` — a lower (or upper) bound on an element's length
 //! * `physics.ramp_slope` — the mean ramp gradient 1:m, turned into a length
@@ -31,44 +31,44 @@
 //! are built, not skipped: a run that quietly ignored a rule of the catalogue
 //! it names would be the one thing this module exists to prevent.
 
+use crate::alignment_check::{Context, element_scope};
+use crate::catalogue::{Branch, Catalogue, Rule, Source};
 use crate::element::Element;
 use crate::expr::{Error, Op, Scope, Sym, Value};
-use crate::katalog::{Branch, Katalog, Rule, Source};
 use crate::physics::{CANT_DEFICIENCY_COEFF, permissible_speed};
-use crate::pruefung::{Context, element_scope};
 use serde_json::json;
 use std::fmt;
 
 /// The level a run is asked for.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Stufe {
+pub enum Level {
     /// The Regelwert: nothing worse than a hint.
     Reg,
     /// The Ermessensgrenze: nothing worse than a warning.
     Discretion,
 }
 
-impl Stufe {
-    pub fn parse(s: &str) -> Result<Stufe, GrenzenError> {
+impl Level {
+    pub fn parse(s: &str) -> Result<Level, LimitsError> {
         match s {
-            "reg" => Ok(Stufe::Reg),
-            "discretion" => Ok(Stufe::Discretion),
-            _ => Err(GrenzenError(format!("unbekannte Grenzwertstufe: {s}"))),
+            "reg" => Ok(Level::Reg),
+            "discretion" => Ok(Level::Discretion),
+            _ => Err(LimitsError(format!("unbekannte Grenzwertstufe: {s}"))),
         }
     }
 
     pub fn id(self) -> &'static str {
         match self {
-            Stufe::Reg => "reg",
-            Stufe::Discretion => "discretion",
+            Level::Reg => "reg",
+            Level::Discretion => "discretion",
         }
     }
 
     /// The worst severity a run may produce.
     pub fn worst(self) -> &'static str {
         match self {
-            Stufe::Reg => "hint",
-            Stufe::Discretion => "warning",
+            Level::Reg => "hint",
+            Level::Discretion => "warning",
         }
     }
 
@@ -83,27 +83,27 @@ impl Stufe {
     /// Sonderfall it is.
     fn tolerated(self) -> &'static [&'static str] {
         match self {
-            Stufe::Reg => &[],
-            Stufe::Discretion => &["cant_ramp"],
+            Level::Reg => &[],
+            Level::Discretion => &["cant_ramp"],
         }
     }
 }
 
 /// A level that does not exist, or a rule a run cannot be held to.
 #[derive(Debug, Clone, PartialEq)]
-pub struct GrenzenError(pub String);
+pub struct LimitsError(pub String);
 
-impl fmt::Display for GrenzenError {
+impl fmt::Display for LimitsError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(&self.0)
     }
 }
 
-impl std::error::Error for GrenzenError {}
+impl std::error::Error for LimitsError {}
 
-impl From<Error> for GrenzenError {
-    fn from(e: Error) -> GrenzenError {
-        GrenzenError(e.to_string())
+impl From<Error> for LimitsError {
+    fn from(e: Error) -> LimitsError {
+        LimitsError(e.to_string())
     }
 }
 
@@ -177,13 +177,13 @@ const ELEMENT_KEYS: [(&str, Option<&str>); 4] = [
 ];
 
 /// The limits of one catalogue at one level, ready for the optimizer.
-pub struct Grenzen<'k> {
-    pub katalog: &'k Katalog,
-    pub stufe: Stufe,
+pub struct Limits<'k> {
+    pub catalogue: &'k Catalogue,
+    pub level: Level,
     pub max_rank: i32,
     /// Rules a run at this level is let past, by id — what the acceptance's
     /// own check has to know to judge a run fairly.
-    pub toleriert: Vec<String>,
+    pub tolerated: Vec<String>,
     /// The design speeds the catalogue admits, ascending.
     pub speeds: Vec<f64>,
     pub v_top: f64,
@@ -215,20 +215,20 @@ fn num(value: Option<Value>) -> Result<Option<f64>, Error> {
     }
 }
 
-impl<'k> Grenzen<'k> {
-    pub fn new(katalog: &'k Katalog, stufe: Stufe) -> Result<Grenzen<'k>, GrenzenError> {
-        let max_rank = katalog.rank(stufe.worst());
-        let toleriert = stufe
+impl<'k> Limits<'k> {
+    pub fn new(catalogue: &'k Catalogue, level: Level) -> Result<Limits<'k>, LimitsError> {
+        let max_rank = catalogue.rank(level.worst());
+        let tolerated = level
             .tolerated()
             .iter()
-            .flat_map(|scope| katalog.rules_for_scope(scope))
+            .flat_map(|scope| catalogue.rules_for_scope(scope))
             .map(|r| r.id.clone())
             .collect();
-        let mut g = Grenzen {
-            katalog,
-            stufe,
+        let mut g = Limits {
+            catalogue,
+            level,
             max_rank,
-            toleriert,
+            tolerated,
             speeds: Vec::new(),
             v_top: 0.0,
             u_step: 0.0,
@@ -244,7 +244,7 @@ impl<'k> Grenzen<'k> {
 
         g.speeds = g.design_speeds()?;
         let Some(&v_top) = g.speeds.last() else {
-            return Err(GrenzenError(format!("{}: der Katalog lässt keine Entwurfsgeschwindigkeit zu", katalog.id)));
+            return Err(LimitsError(format!("{}: der Katalog lässt keine Entwurfsgeschwindigkeit zu", catalogue.id)));
         };
         g.v_top = v_top;
 
@@ -253,7 +253,7 @@ impl<'k> Grenzen<'k> {
         g.u_step = g.cants[0][1] - g.cants[0][0];
         for grid in &g.cants {
             if grid.windows(2).any(|w| ((w[1] - w[0]) - g.u_step).abs() > 1e-9) {
-                return Err(GrenzenError(format!("{}: das Überhöhungsraster ist nicht gleichmäßig", katalog.id)));
+                return Err(LimitsError(format!("{}: das Überhöhungsraster ist nicht gleichmäßig", catalogue.id)));
             }
         }
 
@@ -276,12 +276,12 @@ impl<'k> Grenzen<'k> {
     // ── building ─────────────────────────────────────────────────────────
 
     fn admits(&self, severity: Option<&str>) -> bool {
-        severity.is_some_and(|s| self.katalog.rank(s) <= self.max_rank)
+        severity.is_some_and(|s| self.catalogue.rank(s) <= self.max_rank)
     }
 
     fn all_admit(&self, rules: &[&Rule], base: &Scope, in_context: Option<&dyn Fn(&str) -> bool>) -> Result<bool, Error> {
         for rule in rules {
-            let outcome = self.katalog.evaluate_rule(rule, base, in_context)?;
+            let outcome = self.catalogue.evaluate_rule(rule, base, in_context)?;
             if outcome.applied && !self.admits(outcome.severity.as_deref()) {
                 return Ok(false);
             }
@@ -294,7 +294,7 @@ impl<'k> Grenzen<'k> {
     /// text, the same way the app's catalogSpeedRange finds them.
     fn design_speeds(&self) -> Result<Vec<f64>, Error> {
         let rules: Vec<&Rule> = self
-            .katalog
+            .catalogue
             .rules_for_scope("element")
             .into_iter()
             .filter(|r| r.froms() == SPEED_ONLY)
@@ -302,7 +302,7 @@ impl<'k> Grenzen<'k> {
         let mut out = Vec::new();
         for v in SPEED_SCAN {
             let v = f64::from(v);
-            if self.all_admit(&rules, &self.katalog.scope(&[("element.design_speed", v.into())]), None)? {
+            if self.all_admit(&rules, &self.catalogue.scope(&[("element.design_speed", v.into())]), None)? {
                 out.push(v);
             }
         }
@@ -311,9 +311,9 @@ impl<'k> Grenzen<'k> {
 
     /// The cants a curve may carry — asked of the rules that read nothing but
     /// the cant (LP.KB.01, LP.KB.03 and, in a turnout, LP.KB.05).
-    fn cant_grid(&self, on_switch: bool) -> Result<Vec<f64>, GrenzenError> {
+    fn cant_grid(&self, on_switch: bool) -> Result<Vec<f64>, LimitsError> {
         let rules: Vec<&Rule> = self
-            .katalog
+            .catalogue
             .rules_for_element("circular_arc", None)
             .into_iter()
             .filter(|r| r.froms() == CANT_ONLY)
@@ -321,12 +321,12 @@ impl<'k> Grenzen<'k> {
         let mut grid = Vec::new();
         for half in CANT_SCAN {
             let u = f64::from(half) / 2.0;
-            if self.all_admit(&rules, &self.katalog.scope(&[("element.cant", u.into())]), context(on_switch))? {
+            if self.all_admit(&rules, &self.catalogue.scope(&[("element.cant", u.into())]), context(on_switch))? {
                 grid.push(u);
             }
         }
         if grid.len() < 2 || grid[0] != 0.0 {
-            return Err(GrenzenError(format!("{}: kein Überhöhungsraster ab 0 mm", self.katalog.id)));
+            return Err(LimitsError(format!("{}: kein Überhöhungsraster ab 0 mm", self.catalogue.id)));
         }
         Ok(grid)
     }
@@ -359,12 +359,12 @@ impl<'k> Grenzen<'k> {
         Bound::Complex
     }
 
-    fn refuse(rule: &Rule, why: &str) -> GrenzenError {
-        GrenzenError(format!("{} ({}): {why} — der Optimierer kann diese Regel nicht einhalten", rule.id, rule.title))
+    fn refuse(rule: &Rule, why: &str) -> LimitsError {
+        LimitsError(format!("{} ({}): {why} — der Optimierer kann diese Regel nicht einhalten", rule.id, rule.title))
     }
 
     fn rule_index(&self, rule: &Rule) -> usize {
-        self.katalog
+        self.catalogue
             .rules()
             .iter()
             .position(|r| std::ptr::eq(r, rule))
@@ -378,8 +378,8 @@ impl<'k> Grenzen<'k> {
         }
     }
 
-    fn classify(&mut self) -> Result<(), GrenzenError> {
-        let k = self.katalog;
+    fn classify(&mut self) -> Result<(), LimitsError> {
+        let k = self.catalogue;
         for (etype, form) in ELEMENT_KEYS {
             let mut bounds = Vec::new();
             for rule in k.rules_for_element(etype, form) {
@@ -440,7 +440,7 @@ impl<'k> Grenzen<'k> {
                 Some("element" | "boundary" | "cant_ramp") => {}
                 Some(scope) if VERTICAL_SCOPES.contains(&scope) => {}
                 scope => {
-                    return Err(GrenzenError(format!(
+                    return Err(LimitsError(format!(
                         "{}: Regeln für '{}' kennt der Optimierer nicht",
                         k.id,
                         scope.unwrap_or("None")
@@ -475,26 +475,26 @@ impl<'k> Grenzen<'k> {
             ("model.reverse_curve_straight", false.into()),
         ];
         values.extend(extra.iter().cloned());
-        self.katalog.scope(&values)
+        self.catalogue.scope(&values)
     }
 
-    fn deficiency_bound(&self, v: f64, on_switch: bool) -> Result<f64, GrenzenError> {
+    fn deficiency_bound(&self, v: f64, on_switch: bool) -> Result<f64, LimitsError> {
         let mut limit = f64::INFINITY;
         for b in self.bounds_of("circular_arc", None).iter().filter(|b| b.kind == Kind::Deficiency) {
-            let rule = &self.katalog.rules()[b.rule];
-            if let Some(value) = num(self.katalog.threshold(rule, b.threshold, &self.base(v, &[]), context(on_switch))?)? {
+            let rule = &self.catalogue.rules()[b.rule];
+            if let Some(value) = num(self.catalogue.threshold(rule, b.threshold, &self.base(v, &[]), context(on_switch))?)? {
                 limit = limit.min(value);
             }
         }
         if !limit.is_finite() {
-            return Err(GrenzenError(format!("{}: kein Überhöhungsfehlbetrag bei {v} km/h", self.katalog.id)));
+            return Err(LimitsError(format!("{}: kein Überhöhungsfehlbetrag bei {v} km/h", self.catalogue.id)));
         }
         Ok(limit)
     }
 
     /// The smallest comparison radius a curvature jump may have at v.
-    fn jump_bound(&self, v: f64, internal: bool) -> Result<f64, GrenzenError> {
-        let base = self.katalog.scope(&[
+    fn jump_bound(&self, v: f64, internal: bool) -> Result<f64, LimitsError> {
+        let base = self.catalogue.scope(&[
             ("prev.design_speed", v.into()),
             ("next.design_speed", v.into()),
             ("physics.curvature_jump", true.into()),
@@ -504,11 +504,11 @@ impl<'k> Grenzen<'k> {
         ]);
         let mut need: f64 = 0.0;
         for b in &self.jump_rules {
-            let rule = &self.katalog.rules()[b.rule];
+            let rule = &self.catalogue.rules()[b.rule];
             if internal && rule.excludes.iter().any(|e| e == "switch_internal") {
                 continue;
             }
-            match self.katalog.threshold(rule, b.threshold, &base, None) {
+            match self.catalogue.threshold(rule, b.threshold, &base, None) {
                 // No value in the table: no jump admitted.
                 Err(Error::OutOfRange(_)) => return Ok(f64::INFINITY),
                 Err(e) => return Err(e.into()),
@@ -527,15 +527,15 @@ impl<'k> Grenzen<'k> {
     /// it matches a clothoid only. At the Ermessensgrenze that question is
     /// let past.
     fn form_admitted(&self, form: &str) -> Result<bool, Error> {
-        let base = self.katalog.scope(&[
+        let base = self.catalogue.scope(&[
             ("model.ramp_on_transition", true.into()),
             ("model.ramp_form_matches", (form == "clothoid").into()),
         ]);
         let rules: Vec<&Rule> = self
             .ramp_rules
             .iter()
-            .map(|&i| &self.katalog.rules()[i])
-            .filter(|r| !self.toleriert.contains(&r.id))
+            .map(|&i| &self.catalogue.rules()[i])
+            .filter(|r| !self.tolerated.contains(&r.id))
             .collect();
         self.all_admit(&rules, &base, None)
     }
@@ -546,7 +546,7 @@ impl<'k> Grenzen<'k> {
         self.speeds
             .iter()
             .position(|&s| s == v)
-            .unwrap_or_else(|| panic!("{v} km/h is no design speed of {}", self.katalog.id))
+            .unwrap_or_else(|| panic!("{v} km/h is no design speed of {}", self.catalogue.id))
     }
 
     /// The design speed a run states for a curve that permits v: the fastest
@@ -626,11 +626,11 @@ impl<'k> Grenzen<'k> {
         let base = self.base(v, &[("model.reverse_curve_straight", reverse.into())]);
         let mut need: f64 = 0.0;
         for b in self.bounds_of(etype, form).iter().filter(|b| b.kind == Kind::Length && b.op.is_lower()) {
-            let rule = &self.katalog.rules()[b.rule];
+            let rule = &self.catalogue.rules()[b.rule];
             if rule.froms().iter().any(|f| !FLOOR_INPUTS.contains(f)) {
                 continue; // depends on more than the speed: not a floor
             }
-            if let Some(value) = num(self.katalog.threshold(rule, b.threshold, &base, None)?)? {
+            if let Some(value) = num(self.catalogue.threshold(rule, b.threshold, &base, None)?)? {
                 need = need.max(value);
             }
         }
@@ -654,8 +654,8 @@ impl<'k> Grenzen<'k> {
         );
         let mut out = Vec::new();
         for b in self.bounds_of("transition_curve", Some(form)) {
-            let rule = &self.katalog.rules()[b.rule];
-            let value = match self.katalog.threshold(rule, b.threshold, &base, None) {
+            let rule = &self.catalogue.rules()[b.rule];
+            let value = match self.catalogue.threshold(rule, b.threshold, &base, None) {
                 Err(Error::OutOfRange(_)) => return Ok(None),
                 other => num(other?)?,
             };
@@ -704,8 +704,8 @@ impl<'k> Grenzen<'k> {
             v
         };
         json!({
-            "stufe": self.stufe.id(),
-            "schlechtesteStufe": self.stufe.worst(),
+            "stufe": self.level.id(),
+            "schlechtesteStufe": self.level.worst(),
             "geschwindigkeiten": [self.speeds[0], self.v_top],
             "uMax": self.u_max(false), "uMaxWeiche": self.u_max(true), "uStep": self.u_step,
             "ufMax": sorted(&self.uf[0]),
@@ -736,8 +736,8 @@ pub struct TransitionLengths {
     pub minimum_by: Vec<LengthBy>,
 }
 
-fn shortest(grenzen: &Grenzen, form: &str, v: f64, delta_u: f64, delta_uf: f64) -> Result<(Option<f64>, Vec<LengthBy>), Error> {
-    let Some(rules) = grenzen.ramp_rules(form, v, delta_u, delta_uf)? else {
+fn shortest(limits: &Limits, form: &str, v: f64, delta_u: f64, delta_uf: f64) -> Result<(Option<f64>, Vec<LengthBy>), Error> {
+    let Some(rules) = limits.ramp_rules(form, v, delta_u, delta_uf)? else {
         return Ok((None, Vec::new()));
     };
     let lower: Vec<&RampRule> = rules.iter().filter(|r| r.lower).collect();
@@ -778,8 +778,8 @@ pub fn transition_lengths(
     r1: Option<f64>,
     form: &str,
     speed: f64,
-    reg: &Grenzen,
-    discretion: &Grenzen,
+    reg: &Limits,
+    discretion: &Limits,
 ) -> Result<TransitionLengths, Error> {
     if speed.is_nan() || speed <= 0.0 {
         return Ok(TransitionLengths::default());

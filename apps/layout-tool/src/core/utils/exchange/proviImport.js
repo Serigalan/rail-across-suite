@@ -1,6 +1,6 @@
 import { unzipSync } from 'fflate'
 import { cantSign } from '@rail-across/core/rules'
-import { epsgForLagesystem, parseBauform, RAIL_NAME } from './mdbImport'
+import { epsgForLagesystem, parseSwitchForm, RAIL_NAME } from './mdbImport'
 import { offsetOnElement } from './mdbSwitchDerive'
 import { heightAt, trackLength } from '@rail-across/core/track'
 import { arcFrom, straightFrom, transitionElement } from '@rail-across/core/geometry'
@@ -335,7 +335,7 @@ function switchUnit(axis, body, f, crs) {
   const wb = body.find(r => r.type === 'WB')?.fields
   const toe = body.find(r => r.type === 'WZ' && r.fields.TYP === 'WAZ')?.fields
     ?? body.find(r => r.type === 'WS' && r.fields.TYP === 'WA')?.fields
-  const form = parseBauform(wb?.NAME ?? '')
+  const form = parseSwitchForm(wb?.NAME ?? '')
   return {
     host: String(f.ANUM ?? ''),
     branch: axis,

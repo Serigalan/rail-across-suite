@@ -14,13 +14,13 @@ The vertical (Höhenplan) half of the catalogue is applied in `elevation/gradien
 | File | What it does |
 |---|---|
 | `ruleExpr.js` | Tokenizer, parser and evaluator of the catalogue's expression language |
-| `regelkatalog.js` | Reads the catalogue: severities, rules by scope, tables, `evaluateRules`, `catalogLimit` (a rule's threshold as a number) |
-| `trassierungCheck.js` | Fills the rule scope from an element chain and checks a track: per element, per boundary, per cant ramp (`checkTrack`, `hasRuleError`) |
+| `ruleCatalogue.js` | Reads the catalogue: severities, rules by scope, tables, `evaluateRules`, `catalogLimit` (a rule's threshold as a number) |
+| `alignmentCheck.js` | Fills the rule scope from an element chain and checks a track: per element, per boundary, per cant ramp (`checkTrack`, `hasRuleError`) |
 | `cant.js` | Cant and cant deficiency: limits (LP.KB.01/02/05/06), the 5 mm step, Regelüberhöhung, the cant a dialog proposes, the speed a curve permits |
 | `speed.js` | The radius and cant that govern an element's physics; the highest speed the catalogue lets an element carry (V_max), and every element's speed raised to it |
 | `elementLength.js` | `l_min` of LP.EL.01 and the comparison radius of LP.KS.01 (Regelwert, Ermessensgrenze) at a speed |
 | `transitionLength.js` | Regellänge and Mindestlänge of a transition, found from the length rules; the formula each rule shows |
-| `regelwerkDefaults.js` | The few values the dialogs need synchronously, read from the catalogue |
+| `rulebookDefaults.js` | The few values the dialogs need synchronously, read from the catalogue |
 | `ruleFields.js` | Which form field a finding belongs to |
 | `constraintsView.js` | The optimizer's limits as table rows for the rulebook viewer; the physics file as rows, which its tests hold to the arithmetic |
 
@@ -52,7 +52,7 @@ deficiency for clothoid and Bloss, steepest and flattest mean ramp, clothoid as 
 
 The same file is handed to the optimizer module (`optimizer/`, Rust, decision 0019 of the suite), which evaluates
 it with its own port of the expression language. Shared test vectors in `packages/core/constraints/tests/` hold the
-two implementations to the same answers (`ruleExpr.vectors.test.js`, `trassierungCheck.vectors.test.js`,
+two implementations to the same answers (`ruleExpr.vectors.test.js`, `alignmentCheck.vectors.test.js`,
 `transitionLength.vectors.test.js` here, `optimizer/crates/optimizer/tests/vectors.rs` there).
 
 ## The expression language
@@ -68,7 +68,7 @@ must not have. `if(c, a, b)` is evaluated lazily, so only the chosen branch is c
 
 ## Checking a track
 
-`checkTrack(elements)` (`trassierungCheck.js`) fills the scope for each element, each boundary between two
+`checkTrack(elements)` (`alignmentCheck.js`) fills the scope for each element, each boundary between two
 elements and each cant ramp, evaluates every rule of that scope and returns the findings per element and per
 boundary. The scope is built from the app's own arithmetic — the deficiency from `cant.js`, the ramp ends
 from `transitionCantEnds` — never re-derived: a checker with its own physics would first of all find its own
@@ -82,7 +82,7 @@ disagreement with the layout.
   arcs of one radius, are one element on the ground (a straight split at a switch end, the straight end
   piece of a turnout's branch running on into the connecting straight), whatever cant each carries — two
   straights with ramps of their own stay two elements and are one straight to the rule. Transitions stand
-  alone. The optimizer module's port (`pruefung.rs`) does the same (Entscheidung 356).
+  alone. The optimizer module's port (`alignment_check.rs`) does the same (Entscheidung 356).
 - A check of **part of a track** — what a dialog is about to write — is given what lies beside it:
   `checkTrack(chain, { context: [before, after] })` (and `hasRuleError`, `RuleFindings`, `check_track(...,
   context=)`) lets a run reaching the chain's end go on into it. `runBeside(elements, i, side)` reads the
@@ -167,5 +167,5 @@ check.
 
 ## Tests
 
-`ruleExpr.test.js`, `regelkatalog.test.js`, `trassierungCheck.test.js`, `cant.test.js`, `speed.test.js`,
-`transitionLength.test.js`, the three `*.vectors.test.js`, `regelwerkDefaults.test.js`.
+`ruleExpr.test.js`, `ruleCatalogue.test.js`, `alignmentCheck.test.js`, `cant.test.js`, `speed.test.js`,
+`transitionLength.test.js`, the three `*.vectors.test.js`, `rulebookDefaults.test.js`.

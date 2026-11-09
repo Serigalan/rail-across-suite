@@ -400,7 +400,7 @@ impl Search<'_, '_> {
         };
         self.assess(cand);
         let rank = if cand.within {
-            self.rules.katalog.rank(cand.sol.worst.as_deref().unwrap_or("ok"))
+            self.rules.catalogue.rank(cand.sol.worst.as_deref().unwrap_or("ok"))
         } else {
             0
         };
@@ -589,7 +589,7 @@ fn rank_answer(rules: &Rules, sol: &Solution) -> Key {
     let kept = r["spacing"].is_null() || r["spacing"]["kept"] == true;
     let class = if within { if kept { 0 } else { 1 } } else { 2 };
     let rank = if within {
-        rules.katalog.rank(sol.worst.as_deref().unwrap_or("ok"))
+        rules.catalogue.rank(sol.worst.as_deref().unwrap_or("ok"))
     } else {
         0
     };

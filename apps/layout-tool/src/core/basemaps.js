@@ -8,7 +8,7 @@ import { extensionsOf } from './extensions'
 // (extension point `basemaps`, the Länder's DGM1).
 
 export {
-  DEFAULT_BASEMAP, LANDESVERMESSUNG_STATES, LANDESVERMESSUNG_THUMBNAIL, RELIEF_RAMP, fineReliefStyle, lvBasemapId,
+  DEFAULT_BASEMAP, STATE_SURVEY_STATES, STATE_SURVEY_THUMBNAIL, RELIEF_RAMP, fineReliefStyle, lvBasemapId,
   lvStatesOf, onElevationRange, updateElevationRange,
 } from '@rail-across/basemaps'
 

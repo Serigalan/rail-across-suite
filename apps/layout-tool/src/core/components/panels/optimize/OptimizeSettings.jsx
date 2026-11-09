@@ -10,9 +10,9 @@ import { splitUnit } from '../../../locales/i18n'
  * the ramps and every other limit follow from it on the server — and which
  * rulebook. `s` holds the settings, `set(key, value)` changes one.
  */
-export default function OptimizeSettings({ label, what, s, set, regelwerke, onShowRegelwerk }) {
+export default function OptimizeSettings({ label, what, s, set, rulebooks, onShowRulebook }) {
   const { t } = useI18n()
-  const regelwerkId = s.regelwerkId || regelwerke[0]?.id
+  const regelwerkId = s.regelwerkId || rulebooks[0]?.id
   return (
     <div className="element-form">
       <div className="form-field">
@@ -37,24 +37,24 @@ export default function OptimizeSettings({ label, what, s, set, regelwerke, onSh
           <span className="msg-warn msg-small">{t('optimize_grenzwert_discretion_hint')}</span>
         )}
       </div>
-      {regelwerke.length > 1 && (
+      {rulebooks.length > 1 && (
         <div className="form-field">
           <label>{t('optimize_regelwerk')}</label>
           <select value={regelwerkId} onChange={e => set('regelwerkId', e.target.value)}>
-            {regelwerke.map(rw => <option key={rw.id} value={rw.id}>{rw.name}</option>)}
+            {rulebooks.map(rw => <option key={rw.id} value={rw.id}>{rw.name}</option>)}
           </select>
         </div>
       )}
       {/* The same popup the edit panel opens, on the regelwerk this run
           would use — one viewer, not a second copy of the table. */}
-      {regelwerke.length > 0 && (
-        <button className="ui-link msg-info msg-small" type="button" onClick={() => onShowRegelwerk?.(regelwerkId)}>
+      {rulebooks.length > 0 && (
+        <button className="ui-link msg-info msg-small" type="button" onClick={() => onShowRulebook?.(regelwerkId)}>
           {t('optimize_regelwerk_show')}
         </button>
       )}
       <AdvancedInfo>
         <ReadOnlyField label={what} value={label} />
-        {regelwerke.length === 1 && <ReadOnlyField label={t('optimize_regelwerk')} value={regelwerke[0].name} />}
+        {rulebooks.length === 1 && <ReadOnlyField label={t('optimize_regelwerk')} value={rulebooks[0].name} />}
       </AdvancedInfo>
     </div>
   )

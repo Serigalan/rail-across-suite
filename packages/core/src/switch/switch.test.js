@@ -340,7 +340,7 @@ describe('the forms outside the connection chain', () => {
         const branchTurn = turn(g.curveBearing, g.branchEndBearing)
         expect(Math.abs(branchTurn), at).toBeCloseTo(alpha / 2, 9)
         // Not 'abw': a mirror pair of the same form is not an ordinary bent
-        // switch wearing the wrong name (switchChainBauform).
+        // switch wearing the wrong name (switchChainBentForm).
         expect(g.bauform, at).toBe('sym')
       }
     }

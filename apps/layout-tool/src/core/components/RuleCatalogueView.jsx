@@ -1,4 +1,4 @@
-import { KATALOG, severityLabelKey } from '@rail-across/core/rules'
+import { CATALOGUE, severityLabelKey } from '@rail-across/core/rules'
 import { useI18n } from '../locales/i18nContext'
 import InfoTip from './form/InfoTip'
 
@@ -16,9 +16,9 @@ import InfoTip from './form/InfoTip'
 // The catalogue's own German titles are used for what belongs to the
 // catalogue (the meaning of a step, the name of an element type); the app's
 // own words around them are translated as everything else is.
-const TYPE_TITLE = Object.fromEntries(KATALOG.element_types.map(type => [type.id, type.title]))
+const TYPE_TITLE = Object.fromEntries(CATALOGUE.element_types.map(type => [type.id, type.title]))
 const FORM_TITLE = Object.fromEntries(
-  KATALOG.element_types.flatMap(type => (type.forms ?? []).map(form => [form.id, form.title])))
+  CATALOGUE.element_types.flatMap(type => (type.forms ?? []).map(form => [form.id, form.title])))
 const SCOPE_TITLE = {
   element: 'Element', boundary: 'Elementgrenze', cant_ramp: 'Überhöhungsrampe',
   gradient: 'Neigungsabschnitt', vertical_curve: 'Neigungswechsel',
@@ -32,9 +32,9 @@ const appliesTo = (rule) => {
   return [SCOPE_TITLE[applies.scope] ?? applies.scope, what.join(', ')].filter(Boolean).join(' · ')
 }
 
-export default function RegelkatalogView() {
+export default function RuleCatalogueView() {
   const { t } = useI18n()
-  const { catalog, rules, tables } = KATALOG
+  const { catalog, rules, tables } = CATALOGUE
 
   return (
     <>
@@ -47,9 +47,9 @@ export default function RegelkatalogView() {
         <InfoTip text={t('constraints_katalog_hint')} />
       </p>
 
-      <h4 className="constraints-subsection">{t('constraints_severities')}<InfoTip text={KATALOG.aggregation} /></h4>
+      <h4 className="constraints-subsection">{t('constraints_severities')}<InfoTip text={CATALOGUE.aggregation} /></h4>
       <div className="constraints-severities">
-        {KATALOG.severity_levels.map(level => (
+        {CATALOGUE.severity_levels.map(level => (
           <span key={level.id} className={`constraints-severity rule-sev-${level.id}`}>
             {t(severityLabelKey(level.id))}
             {level.meaning && <span className="constraints-note">{level.meaning}</span>}

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { reconstructElements } from '@rail-across/core/src/geometry/elementReconstruct.js'
 import { expectValidTrack } from '@rail-across/core/test/chainInvariants.js'
-import korbbogen from '../../test/fixtures/optimizer_service_korbbogen.json'
+import compoundCurve from '../../test/fixtures/optimizer_service_compound_curve.json'
 import { built, optimizer } from '../../test/optimizerModule'
 
 // The optimizer as the panel runs it: the module of optimizer/ (Rust, decision
@@ -10,8 +10,8 @@ import { built, optimizer } from '../../test/optimizerModule'
 // optimizer/crates/optimizer/tests/optimize.rs; here the answer has to come
 // back as a track this app will take.
 describe.skipIf(!built)('an optimized compound curve', () => {
-  const { track } = korbbogen.request
-  const optimized = built ? optimizer('optimize', korbbogen.request) : null
+  const { track } = compoundCurve.request
+  const optimized = built ? optimizer('optimize', compoundCurve.request) : null
 
   it('rebuilds into a valid element chain', () => {
     const elements = reconstructElements(optimized.elements, track.epsg)

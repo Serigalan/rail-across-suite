@@ -2,17 +2,17 @@
 // lists it (decision 0021, phase D: the functions are the core's Rust module,
 // crates/track's cross section, which reads the same catalogue).
 
-import QUERSCHNITT_KATALOG from '../../constraints/db-ril-800-0130.json' with { type: 'json' }
+import CROSS_SECTION_CATALOGUE from '../../constraints/db-ril-800-0130.json' with { type: 'json' }
 
-export { QUERSCHNITT_KATALOG }
+export { CROSS_SECTION_CATALOGUE }
 
-const A01 = QUERSCHNITT_KATALOG.sources.find(s => s.id === QUERSCHNITT_KATALOG.lichtraum.source.ref)
+const A01 = CROSS_SECTION_CATALOGUE.sources.find(s => s.id === CROSS_SECTION_CATALOGUE.lichtraum.source.ref)
 // "DB Ril 800.0130A01 — Lichtraum" → "DB Ril 800.0130A01": a reference, not a
 // name to translate — the same way a Ril's number is stated everywhere else.
-export const LICHTRAUM_SOURCE = A01.title.split(' — ')[0]
+export const CLEARANCE_SOURCE = A01.title.split(' — ')[0]
 
 export const GAUGE_PROFILES = Object.fromEntries(
-  QUERSCHNITT_KATALOG.lichtraum.profile.map(p => [p.id, {
+  CROSS_SECTION_CATALOGUE.lichtraum.profile.map(p => [p.id, {
     id: p.id,
     points: p.umriss,
     einragungen: p.einragungen ?? [],
@@ -74,8 +74,8 @@ export const DEFAULT_SLEEPER = 'B70'
  * of Ril 800.0130 ask for. The section is fitted to reach at least that far, so
  * the ground beside the track is in view and not only the track itself.
  */
-export const PLANUM_EDGE = 1000 * Math.max(
-  ...QUERSCHNITT_KATALOG.streckenquerschnitte.rows.map(r => r.planumskante))
+export const FORMATION_EDGE = 1000 * Math.max(
+  ...CROSS_SECTION_CATALOGUE.streckenquerschnitte.rows.map(r => r.planumskante))
 
 /** The chosen profile, or the default where a project names one that is gone. */
 export const gaugeProfile = (key) => GAUGE_PROFILES[key] ?? GAUGE_PROFILES[DEFAULT_GAUGE_PROFILE]

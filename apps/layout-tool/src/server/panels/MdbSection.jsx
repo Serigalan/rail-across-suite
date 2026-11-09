@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { commitImport, loadSwitches, loadTracks } from '../../core/storage'
 import { EPSG_OPTIONS } from '@rail-across/core/geometry'
-import { ALL_STRECKEN } from '../../core/utils/exchange'
+import { ALL_LINES } from '../../core/utils/exchange'
 import { importMdb } from '../mdb/mdbImportJob'
 import { useI18n } from '../../core/locales/i18nContext'
 import { useProject } from '../../core/hooks/useStore'
@@ -45,7 +45,7 @@ export default function MdbSection({ dbref = false, onReport }) {
       // not — that is the run whose messages someone comes back to.
       mdb.setErrors(notes)
       onReport?.({
-        source: `${mdb.name || 'MDB'} · ${mdb.strecke === ALL_STRECKEN ? t('data_exchange_reports_all') : mdb.strecke}`,
+        source: `${mdb.name || 'MDB'} · ${mdb.strecke === ALL_LINES ? t('data_exchange_reports_all') : mdb.strecke}`,
         ...counts, lines: notes,
       })
       // One commit, one undo step — a whole database is thousands of tracks.
@@ -78,7 +78,7 @@ export default function MdbSection({ dbref = false, onReport }) {
           <div className="form-field mt-6">
             <label>{t('data_exchange_csv_line')}</label>
             <select className="settings-select" value={mdb.strecke} onChange={e => mdb.setStrecke(e.target.value)}>
-              <option value={ALL_STRECKEN}>{fill('data_exchange_mdb_all', { n: mdb.strecken.length })}</option>
+              <option value={ALL_LINES}>{fill('data_exchange_mdb_all', { n: mdb.strecken.length })}</option>
               {mdb.strecken.map(x => <option key={x.strecke} value={x.strecke}>{x.strecke} ({x.count})</option>)}
             </select>
           </div>

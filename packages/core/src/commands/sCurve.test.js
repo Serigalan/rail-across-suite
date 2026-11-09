@@ -2,13 +2,13 @@ import { describe, it, expect } from 'vitest'
 import { buildCurvedLineTrack, buildLineTrack, buildSCurve, computeShiftBounds, connectionPick, hasStraightMid, preferredShift, settleConnection, shiftSnaps, stems, straightShifts, waOffset } from './index.js'
 import { viaRust } from '../native/index.js'
 import { minElementLength } from '../rules/elementLength.js'
-import { hasPekBestand, loadPekBestand } from '../../test/pekFixture.js'
+import { hasPekExisting, loadPekExisting } from '../../test/pekFixture.js'
 import { hydrateProjects, dehydrateProjects } from '../project/persistenceUtils.js'
 import { expectNodesJoin, expectSwitchRoutesCarved, expectTangentsContinuous } from '../../test/chainInvariants.js'
 import { utmEndRoute } from '../switch/index.js'
 import { computeClothoidUtm, transitionPointAtUtm } from '../geometry/clothoidUtils.js'
 import { switchBranchLength, switchStraightLength } from '../switch/index.js'
-import { checkTrack } from '../rules/trassierungCheck.js'
+import { checkTrack } from '../rules/alignmentCheck.js'
 import { arcFrom, straightFrom, transitionElement } from '../geometry/elementFactory.js'
 import { SWITCH_TYPES } from '../switch/index.js'
 
@@ -280,12 +280,12 @@ describe('minimum element length at the turnouts (LP.EL.01)', () => {
   })
 })
 
-describe.skipIf(!hasPekBestand)('minimum element length on the PEK Bestand', () => {
+describe.skipIf(!hasPekExisting)('minimum element length on the PEK Bestand', () => {
   // The two main tracks of line 6340 run side by side over long straights:
   // 6340.19604 element 5 and 6340.20386 element 4, each 536 m. The Bestand
   // carries no design speeds; here they run at 160 km/h, l_min = 32 m.
   const load = () => {
-    const { tracks } = hydrateProjects([loadPekBestand()])[0]
+    const { tracks } = hydrateProjects([loadPekExisting()])[0]
     for (const tr of tracks) tr.elements = tr.elements.map(el => ({ ...el, speed: 160 }))
     return tracks
   }
@@ -338,7 +338,7 @@ describe.skipIf(!hasPekBestand)('minimum element length on the PEK Bestand', () 
   })
 
   it('lays WA on the element change by default, also where no speed asks for it', () => {
-    const { tracks } = hydrateProjects([loadPekBestand()])[0]
+    const { tracks } = hydrateProjects([loadPekExisting()])[0]
     const t1 = tracks.find(tr => tr.name === '6340.19604')
     const t2 = tracks.find(tr => tr.name === '6340.20386')
     const p1 = connectionPick(t1, 5, 10.4)

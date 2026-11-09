@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest'
-import { checkTrack } from './trassierungCheck.js'
+import { checkTrack } from './alignmentCheck.js'
 import vectors from '../../constraints/tests/checks.json' with { type: 'json' }
 
 // The same chains the optimizer module runs through its port of this check
-// (optimizer/…/pruefung.rs, tests/vectors.rs).
+// (optimizer/…/alignment_check.rs, tests/vectors.rs).
 const key = (f) => JSON.stringify(f)
 function findings(elements) {
   const r = checkTrack(elements)

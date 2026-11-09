@@ -7,11 +7,11 @@
 use rail_across_js::{es_number, js_string};
 use serde_json::Value as Json;
 
-use crate::bundled::{katalog_json, severity_rank};
+use crate::bundled::{catalogue_json, severity_rank};
 use crate::expr::{Basic, Value, eval_expr};
 
 fn rule_json(id: &str) -> Option<&'static Json> {
-    katalog_json()["rules"].as_array()?.iter().find(|r| r["id"].as_str() == Some(id))
+    catalogue_json()["rules"].as_array()?.iter().find(|r| r["id"].as_str() == Some(id))
 }
 
 fn is_word(c: char) -> bool {

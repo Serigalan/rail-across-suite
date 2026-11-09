@@ -1,11 +1,11 @@
 import {
-  mdbGradientChains, stationIndex, gradientForTrack, stationsAlong, bstOf, hoehensystemOf,
+  mdbGradientChains, stationIndex, gradientForTrack, stationsAlong, bstOf, heightSystemOf,
 } from './mdbGradient'
 import {
   buildTracksFromCsv,
   TYPE_STRAIGHT, TYPE_KINK, TYPE_ARC, TYPE_CLOTHOID, TYPE_BLOSS,
   CANT_CONSTANT,
-} from './gleislageCsvImport'
+} from './trackPositionCsvImport'
 import { utmToWgs84 } from '@rail-across/core/geometry'
 import {
   classifyTrackEnds, freeEnds, JOINT_TOL, newBufferStop, DEFAULT_BUFFER_STOP_TYPE, heightDatumLabel,
@@ -139,7 +139,7 @@ const KNTYP_SWITCH = 1
 const KNTYP_CROSSING = 4
 
 /** `KNOTEN` is a fixed 15-char key: Betriebsstelle in 0–9, number in 10–14. */
-export function splitKnoten(knoten) {
+export function splitNodes(knoten) {
   const t = String(knoten ?? '')
   return { bst: t.slice(0, 10).trim(), nr: t.slice(10, 15).trim() }
 }
@@ -156,7 +156,7 @@ const padKey = (a, b) => `${a}\u0000${b}`
  * place stays null and the caller reports it — a switch of the wrong form is
  * worse than a missing one.
  */
-export function parseBauform(text) {
+export function parseSwitchForm(text) {
   const raw = String(text ?? '').trim()
   const out = { raw, prefix: null, kind: null, bogen: false, rail: null, radius: null, n: null, herzstueck: null }
   if (!raw) return out
@@ -174,8 +174,8 @@ export function parseBauform(text) {
 
   // A frog that is not rigid stands behind the slope: `EW 60-500-1:12 fb`
   // (federnd beweglich) or `gb` (gelenkig beweglich) — another form (decision 343).
-  const herz = /\b(fb|gb)\b/i.exec(core)
-  if (herz) out.herzstueck = herz[1].toLowerCase()
+  const frog = /\b(fb|gb)\b/i.exec(core)
+  if (frog) out.herzstueck = frog[1].toLowerCase()
 
   const slope = /1\s*[:]\s*(\d+(?:[.,]\d+)?)/.exec(core)
   if (slope) out.n = Number(slope[1].replace(',', '.'))
@@ -259,7 +259,7 @@ const CLOSURE_TOL = 0.002
  * A line or track number as one spelling: Satzart 33 writes track 0 as `   0`
  * and Satzart 11 as `0000`, and they have to land in one group.
  */
-export const normStrecke = (v) => {
+export const normLine = (v) => {
   const text = String(v ?? '').trim()
   return /^\d+$/.test(text) ? String(Number(text)) : text
 }
@@ -272,11 +272,11 @@ export const normStrecke = (v) => {
  *
  * Returns pair → Map(strecke → richtung).
  */
-function streckeByElement(tracks) {
+function lineByElement(tracks) {
   const byPair = new Map()
   for (const t of tracks) {
     const chain = Array.isArray(t?.chain) ? t.chain : []
-    const strecke = normStrecke(t?.strecke)
+    const strecke = normLine(t?.strecke)
     if (!strecke) continue
     for (let i = 0; i + 1 < chain.length; i++) {
       const key = padKey(chain[i], chain[i + 1])
@@ -347,7 +347,7 @@ export function trackTypeFields(strecke, richtung) {
  */
 const TRASSE = /^Trasse:\s*(\S.*)$/
 
-function looseStrecke(el, pointInfo) {
+function looseLine(el, pointInfo) {
   const a = pointInfo?.get(el?.pad1)
   const b = pointInfo?.get(el?.pad2)
   if (a?.strecke && b && a.strecke === b.strecke) {
@@ -363,7 +363,7 @@ function looseStrecke(el, pointInfo) {
 function pointInfoOf(stations) {
   const out = new Map()
   for (const s of stations ?? []) {
-    const strecke = normStrecke(s?.strecke)
+    const strecke = normLine(s?.strecke)
     if (s?.pad && !out.has(s.pad)) out.set(s.pad, { strecke, richtung: Number(s?.richtung) || 0 })
   }
   return out
@@ -382,7 +382,7 @@ export function mdbRows(payload) {
   const { points, elements, cants, tracks } = payload
   const coords = pointIndex(points)
   const pointError = pointErrorIndex(points)
-  const sectioned = streckeByElement(tracks)
+  const sectioned = lineByElement(tracks)
   // Grouping by the points' own numbers only where nothing groups them better.
   const pointInfo = tracks.length ? null : pointInfoOf(payload.stations)
   // What the sections do not mention is filed under a name of its own, and
@@ -395,7 +395,7 @@ export function mdbRows(payload) {
     if (sectioned.has(key)) continue
     loose++
     if (byPair.has(key)) continue
-    const found = looseStrecke(el, pointInfo)
+    const found = looseLine(el, pointInfo)
     if (found.byPoints) byPoints++
     byPair.set(key, found.map)
   }
@@ -458,7 +458,7 @@ export function mdbRows(payload) {
   return { rows, cantRows, errors }
 }
 
-function streckenOf(rows) {
+function linesOf(rows) {
   const counts = new Map()
   for (const r of rows) counts.set(r.strecke, (counts.get(r.strecke) ?? 0) + 1)
   return [...counts.entries()]
@@ -467,8 +467,8 @@ function streckenOf(rows) {
 }
 
 /** Line numbers present, with how many elements each carries. */
-export function listMdbStrecken(payload) {
-  return streckenOf(mdbRows(payload).rows)
+export function listMdbLines(payload) {
+  return linesOf(mdbRows(payload).rows)
 }
 
 /**
@@ -486,7 +486,7 @@ export function buildTracksFromMdb(payload, strecke, opts = {}) {
   const built = mdbRows(payload)
   const vertical = verticalFor(payload)
   const checks = newChecks()
-  const res = oneStrecke({ ...built, vertical, checks }, strecke, opts)
+  const res = oneLine({ ...built, vertical, checks }, strecke, opts)
   return {
     tracks: res.tracks,
     errors: [...built.errors, ...res.errors, ...checkNotes(checks), ...gradientNotes(vertical, res.tracks)],
@@ -593,12 +593,12 @@ function gradientNotes(vertical, tracks) {
   const systems = [...vertical.systems].sort((a, b) => b[1] - a[1])
   if (systems.length) {
     notes.push(`Höhensysteme der Gradienten: ${systems.map(([sys, n]) => {
-      const datum = hoehensystemOf(sys)
+      const datum = heightSystemOf(sys)
       const name = heightDatumLabel(datum.epsg)
       return `${sys} → ${datum.dbrh ? `${datum.dbrh} als ${name}` : name}: ${n} Gleise`
     }).join(', ')}. Wo mehrere über einem Gleis liegen, gilt DHHN2016 vor DHHN92 vor älteren Systemen.`)
   }
-  if (systems.some(([sys]) => hoehensystemOf(sys).dbrh)) {
+  if (systems.some(([sys]) => heightSystemOf(sys).dbrh)) {
     notes.push('DBRH ist die Höhe, die DB_REF über GNSS liefert: DBRH 2016 bezieht sich auf DHHN2016, '
       + 'DBRH 2003 auf DHHN92 – übernommen als diese Systeme, die Realisierungen weichen um wenige Zentimeter ab.')
   }
@@ -642,8 +642,8 @@ export function buildAllTracksFromMdb(payload, opts = {}) {
   const checks = newChecks()
   const tracks = []
   const errors = [...built.errors]
-  for (const { strecke } of streckenOf(built.rows)) {
-    const res = oneStrecke({ ...built, vertical, checks }, strecke, opts)
+  for (const { strecke } of linesOf(built.rows)) {
+    const res = oneLine({ ...built, vertical, checks }, strecke, opts)
     tracks.push(...res.tracks)
     errors.push(...res.errors)
   }
@@ -651,13 +651,13 @@ export function buildAllTracksFromMdb(payload, opts = {}) {
 }
 
 /** The Richtungskennzeichen most of a chain's rows are filed under. */
-function richtungOf(chain) {
+function chainDirection(chain) {
   const count = new Map()
   for (const r of chain) count.set(r.richtung ?? 0, (count.get(r.richtung ?? 0) ?? 0) + 1)
   return [...count].sort((a, b) => b[1] - a[1])[0]?.[0] ?? 0
 }
 
-function oneStrecke({ rows, cantRows, vertical, checks = newChecks() }, strecke, opts = {}) {
+function oneLine({ rows, cantRows, vertical, checks = newChecks() }, strecke, opts = {}) {
   const errors = []
   const mine = rows.filter(r => r.strecke === String(strecke))
   if (!mine.length) {
@@ -715,7 +715,7 @@ function oneStrecke({ rows, cantRows, vertical, checks = newChecks() }, strecke,
         if (targetEpsg === sourceEpsg) checkChain(chain, elements, checks, strecke)
         if (chain.some(r => r.mp >= DIGITISED)) digitised.add(elements)
         return {
-          ...trackTypeFields(strecke, richtungOf(chain)),
+          ...trackTypeFields(strecke, chainDirection(chain)),
           ...heightsForChain(chain, elements, vertical),
         }
       },
@@ -752,8 +752,8 @@ export function mdbSwitchInventory(payload) {
   for (const n of payload.nodes) {
     const typ = Number(n?.typ)
     if (typ !== KNTYP_SWITCH && typ !== KNTYP_CROSSING) continue
-    const { bst, nr } = splitKnoten(n?.knoten)
-    const form = parseBauform(n?.form)
+    const { bst, nr } = splitNodes(n?.knoten)
+    const form = parseSwitchForm(n?.form)
     const suffix = /[A-Z]$/.test(nr) ? nr.slice(-1) : null
     const base = suffix ? nr.slice(0, -1) : nr
     const key = `${bst}\u0000${base}\u0000${form.prefix ?? ''}`

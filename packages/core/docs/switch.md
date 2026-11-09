@@ -32,7 +32,7 @@ catalogue as the pickers list it and the constants (`constants.js`) stay JavaScr
 | `crates/switch/src/connect.rs` (Rust) | Connecting a turnout's branch or a crossing's leg to an open track end by refitting the element there, or the last two laid anew |
 | `crates/switch/src/slider.rs` (Rust) | The valid stretches and snap points of the position slider |
 | `crates/switch/src/delete.rs` | Which routes stay as ordinary track when a switch is deleted, and the plan for doing it |
-| `crates/switch/src/regelwerk.rs` | The form tables grouped for the rulebook viewer |
+| `crates/switch/src/rulebook.rs` | The form tables grouped for the rulebook viewer |
 
 ## Forms
 

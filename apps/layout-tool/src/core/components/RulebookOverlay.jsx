@@ -1,36 +1,36 @@
 import { useEffect, useState } from 'react'
-import { optimizerRegelwerke } from '../utils/optimizer'
-import { BUNDLED_KATALOG_VERSION, GRENZWERTE, optimizerLimitRows, CATALOG_ID } from '@rail-across/core/rules'
-import { WEICHEN_REGELWERK } from '@rail-across/core/switch'
-import WeichenRegelwerk from './WeichenRegelwerk'
-import QuerschnittRegelwerk from './QuerschnittRegelwerk'
-import { QUERSCHNITT_KATALOG } from '@rail-across/core/crossSection'
-import RegelkatalogView from './RegelkatalogView'
+import { optimizerRulebooks } from '../utils/optimizer'
+import { BUNDLED_CATALOGUE_VERSION, LIMIT_SEVERITIES, optimizerLimitRows, CATALOG_ID } from '@rail-across/core/rules'
+import { SWITCH_RULEBOOK } from '@rail-across/core/switch'
+import SwitchRulebook from './SwitchRulebook'
+import CrossSectionRulebook from './CrossSectionRulebook'
+import { CROSS_SECTION_CATALOGUE } from '@rail-across/core/crossSection'
+import RuleCatalogueView from './RuleCatalogueView'
 import { useI18n } from '../locales/i18nContext'
 import CloseButton from './form/CloseButton'
 
 /**
- * The regelwerke a layout is held to, read-only, in the same popup shell the
+ * The rulebooks a layout is held to, read-only, in the same popup shell the
  * track editor uses. A selector beside the heading names them; the page below
  * is whichever one is chosen.
  *
  * **One rulebook is one entry**, however many faces it has. DB Ril 800.0110 is
- * the rules the app bundles (`regelkatalog.js`) and the very file the optimizer
+ * the rules the app bundles (`ruleCatalogue.js`) and the very file the optimizer
  * applies — so it is listed once, the rules first, and under them the limits
  * the optimizer module (decision 0019 of the suite) says a run is held to at
  * Regelwert and Ermessensgrenze, read out of the same file.
  */
 
-const BUNDLED_IDS = [CATALOG_ID, WEICHEN_REGELWERK.id, QUERSCHNITT_KATALOG.katalog.id]
+const BUNDLED_IDS = [CATALOG_ID, SWITCH_RULEBOOK.id, CROSS_SECTION_CATALOGUE.katalog.id]
 
-export default function RegelwerkOverlay({ regelwerkId, onClose }) {
+export default function RulebookOverlay({ regelwerkId, onClose }) {
   const { t, fill } = useI18n()
-  // The optimizer module's catalogue: { list() → { regelwerke, drift }, get(id) → regelwerk | null }.
-  const service = optimizerRegelwerke
+  // The optimizer module's catalogue: { list() → { rulebooks, drift }, get(id) → regelwerk | null }.
+  const service = optimizerRulebooks
   // null while the list is still being asked for, [] once the service has
   // answered with nothing — the two read the same in a table but not to the
   // reader, who is told either "loading" or "no server".
-  const [regelwerke, setRegelwerke] = useState(service ? null : [])
+  const [rulebooks, setRulebooks] = useState(service ? null : [])
   const [wanted, setWanted] = useState(regelwerkId ?? '')
   // Keyed by id, and only ever written from the fetch callback — never
   // synchronously in the effect body — so a change of id does not need its own
@@ -41,8 +41,8 @@ export default function RegelwerkOverlay({ regelwerkId, onClose }) {
   useEffect(() => {
     if (!service) return undefined
     let cancelled = false
-    service.list().then(({ regelwerke: list }) => {
-      if (!cancelled) setRegelwerke(list)
+    service.list().then(({ rulebooks: list }) => {
+      if (!cancelled) setRulebooks(list)
     })
     return () => { cancelled = true }
   }, [service])
@@ -51,16 +51,16 @@ export default function RegelwerkOverlay({ regelwerkId, onClose }) {
   // language it is asked in (regelwerk_title_<id>) — the way every other name
   // a catalogue states about itself is spoken (see switchKindLabelKey). A
   // served rulebook has no such key and is named as the service states it.
-  const alle = [
+  const all = [
     ...BUNDLED_IDS.map(id => ({ id, name: t(`regelwerk_title_${id}`) })),
-    ...(regelwerke ?? [])
+    ...(rulebooks ?? [])
       .filter(rw => !BUNDLED_IDS.includes(rw.id))
       .map(rw => ({ id: rw.id, name: rw.name })),
   ]
   const id = wanted || CATALOG_ID
   // Only what the service actually lists is asked for — a purely bundled
   // rulebook has nothing to fetch, and a fetch for it would only ever fail.
-  const served = !!regelwerke?.some(rw => rw.id === id)
+  const served = !!rulebooks?.some(rw => rw.id === id)
 
   useEffect(() => {
     if (!id || !served) return
@@ -96,7 +96,7 @@ export default function RegelwerkOverlay({ regelwerkId, onClose }) {
               regelwerk the heading is about, so it belongs to the heading. */}
           <select className="track-table-input constraints-select"
             value={id} onChange={e => setWanted(e.target.value)}>
-            {alle.map(rw => <option key={rw.id} value={rw.id}>{rw.name}</option>)}
+            {all.map(rw => <option key={rw.id} value={rw.id}>{rw.name}</option>)}
           </select>
           <span className="track-table-subtitle">{t('constraints_readonly')}</span>
         </span>
@@ -108,13 +108,13 @@ export default function RegelwerkOverlay({ regelwerkId, onClose }) {
             shown: the bundled rules are still there and still true, and the
             reader has to know that the values half is missing rather than
             gone. */}
-        {service && regelwerke?.length === 0 && (
+        {service && rulebooks?.length === 0 && (
           <p className="constraints-error">{t('constraints_service_down')}</p>
         )}
 
-        {id === CATALOG_ID && <RegelkatalogView />}
-        {id === WEICHEN_REGELWERK.id && <WeichenRegelwerk />}
-        {id === QUERSCHNITT_KATALOG.katalog.id && <QuerschnittRegelwerk />}
+        {id === CATALOG_ID && <RuleCatalogueView />}
+        {id === SWITCH_RULEBOOK.id && <SwitchRulebook />}
+        {id === CROSS_SECTION_CATALOGUE.katalog.id && <CrossSectionRulebook />}
 
         {/* Three states, said apart: still asking, asked and no server, and
             the table itself. A panel that needs the service says so rather
@@ -123,7 +123,7 @@ export default function RegelwerkOverlay({ regelwerkId, onClose }) {
           <p className="constraints-hint">{t('constraints_loading')}</p>
         )}
         {failed && <p className="constraints-error">{t('optimizer_missing')}</p>}
-        {!bundled && !served && regelwerke !== null && (
+        {!bundled && !served && rulebooks !== null && (
           <p className="constraints-error">{t('optimizer_missing')}</p>
         )}
 
@@ -135,9 +135,9 @@ export default function RegelwerkOverlay({ regelwerkId, onClose }) {
             <p className="constraints-hint">
               {regelwerk.name} · {t('constraints_katalog_revision')} {regelwerk.version}
             </p>
-            {regelwerk.version !== BUNDLED_KATALOG_VERSION && (
+            {regelwerk.version !== BUNDLED_CATALOGUE_VERSION && (
               <p className="constraints-error">
-                {fill('constraints_version_mismatch', { served: regelwerk.version, bundled: BUNDLED_KATALOG_VERSION })}
+                {fill('constraints_version_mismatch', { served: regelwerk.version, bundled: BUNDLED_CATALOGUE_VERSION })}
               </p>
             )}
             <table className="track-table constraints-table">
@@ -152,7 +152,7 @@ export default function RegelwerkOverlay({ regelwerkId, onClose }) {
                 {optimizerLimitRows(regelwerk).map(row => (
                   <tr key={row.label}>
                     <td>{t(row.label)}</td>
-                    {Object.keys(GRENZWERTE).map(level => {
+                    {Object.keys(LIMIT_SEVERITIES).map(level => {
                       const cell = row[level]
                       return (
                         <td key={level} className="constraints-value">

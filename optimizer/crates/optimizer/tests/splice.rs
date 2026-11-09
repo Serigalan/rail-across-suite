@@ -135,8 +135,8 @@ fn same_answer(got: &Value, want: &Value) -> Vec<String> {
 #[test]
 fn the_splice_finds_what_the_service_found() {
     let cases: Vec<Value> = serde_json::from_str(include_str!("data/splice_answers.json")).unwrap();
-    let katalog = common::katalog();
-    let rules = Rules::new(&katalog).unwrap();
+    let catalogue = common::catalogue();
+    let rules = Rules::new(&catalogue).unwrap();
     let mut failures = Vec::new();
     for case in &cases {
         let got = splice_payload(&rules, &case["request"]).unwrap();

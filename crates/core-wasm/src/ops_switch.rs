@@ -15,8 +15,8 @@ use rail_across_switch::detail_scene;
 use rail_across_switch::gradient as gr;
 use rail_across_switch::mid_chain as mc;
 use rail_across_switch::placement as pl;
-use rail_across_switch::regelwerk;
 use rail_across_switch::route as rt;
+use rail_across_switch::rulebook;
 use rail_across_switch::sleepers as sl;
 use rail_across_switch::slider;
 use rail_across_switch::symbol as sy;
@@ -70,12 +70,12 @@ pub fn run(op: &str, input: &Value) -> Option<Result<Value, Failure>> {
         "switch.switchFormChain" => ok(Value::Array(cat::switch_form_chain(a.opt(0), a.s(1)))),
         "switch.asRadius" => ok(opt_num(cat::as_radius(s_opt(0)))),
         "switch.branchRadius" => ok(opt_num(cat::branch_radius(a.f(0), s_opt(1)))),
-        "switch.bauform" => ok(json!(cat::bauform(s_opt(0), s_opt(1)))),
+        "switch.bentForm" => ok(json!(cat::bent_form(s_opt(0), s_opt(1)))),
         "switch.switchVariants" => ok(Value::Array(cat::switch_variants(a.opt(0)))),
         "switch.switchVariantFor" => ok(cat::switch_variant_for(a.opt(0), a.opt(1)).unwrap_or(Value::Null)),
         // weichenRegelwerk
-        "switch.WEICHEN_REGELWERK" => ok(regelwerk::weichen_regelwerk()),
-        "switch.weichenGruppen" => ok(Value::Array(regelwerk::weichen_gruppen())),
+        "switch.WEICHEN_REGELWERK" => ok(rulebook::switch_rulebook()),
+        "switch.switchGroups" => ok(Value::Array(rulebook::switch_groups())),
         // route
         "switch.toRoute" => ok(rt::to_route(a.v(0)).to_json()),
         "switch.toChain" => ok(rt::chain_json(&rt::to_chain(a.v(0)))),
@@ -110,7 +110,7 @@ pub fn run(op: &str, input: &Value) -> Option<Result<Value, Failure>> {
             let joints: Vec<f64> = a.list(1).iter().map(|v| v.as_f64().unwrap_or(f64::NAN)).collect();
             ok(number(rt::switch_abreast(a.f(0), &joints, a.f(2), a.f(3))))
         }
-        "switch.switchChainBauform" => ok(json!(rt::switch_chain_bauform(&rt::to_chain(a.v(0)), &rt::to_chain(a.v(1)), a.b(2)))),
+        "switch.switchChainBentForm" => ok(json!(rt::switch_chain_bent_form(&rt::to_chain(a.v(0)), &rt::to_chain(a.v(1)), a.b(2)))),
         "switch.switchRouteSegments" => {
             let r1 = s_opt(1);
             let r2 = if a.0.len() > 2 { s_opt(2) } else { r1 };

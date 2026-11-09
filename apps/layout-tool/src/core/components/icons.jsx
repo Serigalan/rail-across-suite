@@ -277,7 +277,7 @@ export const DeleteSwitchIcon = () => (
 // have stopped it looking like the thing it names. Exempted from the AP 4.3 rule
 // in icons.test.js the same way OverlayThumbnail is — sized in `ex`, so it
 // scales with the button's own font-size instead of carrying a fixed pixel size.
-export const RegelwerkIcon = () => (
+export const RulebookIcon = () => (
   <svg width="1ex" height="2.149ex" viewBox="0 -750 442 950" aria-hidden="true"
     className="icon-glyph icon-glyph-paragraph">
     <g stroke="currentColor" fill="currentColor" strokeWidth={0}>

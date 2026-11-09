@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import {
-  parseMdbPayload, mdbRows, listMdbStrecken, buildAllTracksFromMdb, epsgForLagesystem,
+  parseMdbPayload, mdbRows, listMdbLines, buildAllTracksFromMdb, epsgForLagesystem,
 } from './mdbImport'
 import { crsName, utmToWgs84 } from '@rail-across/core/src/geometry/coordinateUtils.js'
-import fixture from '../../test/fixtures/mdb_ohne_abschnitt.json'
+import fixture from '../../test/fixtures/mdb_without_section.json'
 
 /**
  * An export without Satzart 33.
@@ -29,7 +29,7 @@ describe('an element that belongs to no Gleisabschnitt', () => {
   })
 
   it('offers those names in the line picker, with what hangs on each', () => {
-    expect(listMdbStrecken(payload)).toEqual([
+    expect(listMdbLines(payload)).toEqual([
       { strecke: '6857000S', count: 5 },
       { strecke: 'Gleis_5', count: 4 },
     ])
@@ -40,7 +40,7 @@ describe('an element that belongs to no Gleisabschnitt', () => {
       ...fixture,
       elements: fixture.elements.map(e => ({ ...e, text: 'interaktive GT' })),
     })
-    expect(listMdbStrecken(bare).map(s => s.strecke)).toEqual(['Bst 6403'])
+    expect(listMdbLines(bare).map(s => s.strecke)).toEqual(['Bst 6403'])
   })
 
   it('builds the chains the addresses describe, in the plane each states', () => {

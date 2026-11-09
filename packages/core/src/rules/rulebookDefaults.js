@@ -3,7 +3,7 @@
  * judges on every keystroke, before any fetch could return.
  *
  * They are no longer a hand-kept copy of anything. Since AP R.8 they are read
- * out of the rulebook itself: `regelkatalog.js` bundles DB Ril 800.0110 and
+ * out of the rulebook itself: `ruleCatalogue.js` bundles DB Ril 800.0110 and
  * `catalogLimit` evaluates the very rule a dialog is held to. The drift the
  * AP R.3 note was about — two independently maintained copies with no test
  * between them — is gone by construction. The optimizer has no copy either:
@@ -11,10 +11,10 @@
  * suite), so the two halves of the one Ril cannot part company at all.
  */
 
-import { catalogLimit, IN_SWITCH_AREA } from './regelkatalog.js'
+import { catalogLimit, IN_SWITCH_AREA } from './ruleCatalogue.js'
 
 /** The regelwerk a run uses unless it is told otherwise — DB Ril 800.0110. */
-export const REGELWERK_ID = 'db-ril-800-0110'
+export const RULEBOOK_ID = 'db-ril-800-0110'
 
 // LP.KB.05 — the cant a turnout may carry (weiche.u_max in the served copy).
 export const MAX_SWITCH_CANT = catalogLimit('LP.KB.05', 'reg', { 'element.cant': 0 }, IN_SWITCH_AREA)

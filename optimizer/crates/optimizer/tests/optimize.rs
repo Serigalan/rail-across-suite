@@ -11,10 +11,10 @@
 
 mod common;
 
+use rail_across_optimizer::alignment_check::{Context, check_track};
 use rail_across_optimizer::element::Element;
 use rail_across_optimizer::geometry::{Pt, max_dist_to_polyline};
 use rail_across_optimizer::optimize::optimize_payload;
-use rail_across_optimizer::pruefung::{Context, check_track};
 use rail_across_optimizer::rules::Rules;
 use rail_across_optimizer::track::element_ref_points;
 use serde_json::Value;
@@ -56,8 +56,8 @@ fn polyline(els: &[Value]) -> Vec<Pt> {
 #[test]
 fn the_optimizer_on_the_services_test_tracks() {
     let data: Value = serde_json::from_str(include_str!("data/optimize_python.json")).unwrap();
-    let katalog = common::katalog();
-    let rules = Rules::new(&katalog).unwrap();
+    let catalogue = common::catalogue();
+    let rules = Rules::new(&catalogue).unwrap();
     let mut failures = Vec::new();
     for run in data["runs"].as_array().unwrap() {
         let mut request = run["request"].clone();
@@ -126,13 +126,13 @@ fn the_optimizer_on_the_services_test_tracks() {
         }
         // Every rule kept at the level asked for, by what the run proposed.
         let level = request["grenzwert"].as_str().unwrap();
-        let grenzen = if level == "reg" { &rules.reg } else { &rules.discretion };
+        let limits = if level == "reg" { &rules.reg } else { &rules.discretion };
         let els: Vec<Element> = new.iter().map(|e| serde_json::from_value(e.clone()).unwrap()).collect();
         let idx = new_indices(old, new);
-        let bad: Vec<_> = check_track(&katalog, &els, Some(&idx), Context::default())
+        let bad: Vec<_> = check_track(&catalogue, &els, Some(&idx), Context::default())
             .unwrap()
             .into_iter()
-            .filter(|f| katalog.rank(&f.severity) > grenzen.max_rank && !grenzen.toleriert.contains(&f.rule))
+            .filter(|f| catalogue.rank(&f.severity) > limits.max_rank && !limits.tolerated.contains(&f.rule))
             .collect();
         if !bad.is_empty() {
             fail(format!("findings above the level: {bad:?}"));
@@ -143,8 +143,8 @@ fn the_optimizer_on_the_services_test_tracks() {
 
 #[test]
 fn what_a_run_cannot_take_is_said() {
-    let katalog = common::katalog();
-    let rules = Rules::new(&katalog).unwrap();
+    let catalogue = common::catalogue();
+    let rules = Rules::new(&catalogue).unwrap();
     let straight = |a: [f64; 2], b: [f64; 2]| serde_json::json!({"elementType": 0, "startNode": a, "endNode": b, "length": 1.0});
     let arc = |r: f64| serde_json::json!({"elementType": 1, "radius": r, "startNode": [1, 1], "endNode": [2, 2], "length": 1.0});
     let transition = serde_json::json!({"elementType": 2, "startNode": [1, 1], "endNode": [2, 2], "length": 1.0});

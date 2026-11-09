@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
-import { mdbStation, mdbGradientChains, gradientForTrack, stationsAlong, hoehensystemOf } from './mdbGradient'
+import { mdbStation, mdbGradientChains, gradientForTrack, stationsAlong, heightSystemOf } from './mdbGradient'
 import { parseMdbPayload, buildAllTracksFromMdb } from './mdbImport'
 import { trackLength } from '@rail-across/core/track'
-import fixture from '../../test/fixtures/mdb_gradiente.json'
+import fixture from '../../test/fixtures/mdb_gradient.json'
 
 /**
  * The vertical alignment of the DB ASCII interface: Satzart 22 with the point
@@ -238,20 +238,20 @@ describe('a track the file states no gradient for', () => {
 
 describe('the height system of a gradient', () => {
   it('names the EPSG code of the datum', () => {
-    expect(hoehensystemOf('P00')).toMatchObject({ epsg: 7837 })
-    expect(hoehensystemOf('R00')).toMatchObject({ epsg: 5783 })
-    expect(hoehensystemOf('V00')).toMatchObject({ epsg: 7699 })
-    expect(hoehensystemOf('S00')).toMatchObject({ epsg: 5784 })
-    expect(hoehensystemOf('T00')).toMatchObject({ epsg: 5785 })
+    expect(heightSystemOf('P00')).toMatchObject({ epsg: 7837 })
+    expect(heightSystemOf('R00')).toMatchObject({ epsg: 5783 })
+    expect(heightSystemOf('V00')).toMatchObject({ epsg: 7699 })
+    expect(heightSystemOf('S00')).toMatchObject({ epsg: 5784 })
+    expect(heightSystemOf('T00')).toMatchObject({ epsg: 5785 })
   })
 
   it('reads DBRH, the railway’s own heights, as the official datum it is tied to', () => {
-    expect(hoehensystemOf('O00')).toMatchObject({ epsg: 7837, dbrh: 'DBRH 2016' })
-    expect(hoehensystemOf('N00')).toMatchObject({ epsg: 5783, dbrh: 'DBRH 2003' })
+    expect(heightSystemOf('O00')).toMatchObject({ epsg: 7837, dbrh: 'DBRH 2016' })
+    expect(heightSystemOf('N00')).toMatchObject({ epsg: 5783, dbrh: 'DBRH 2003' })
   })
 
   it('has none for a system without EPSG code', () => {
-    for (const sys of ['U00', 'W00', 'X00', '', null]) expect(hoehensystemOf(sys)).toBe(null)
+    for (const sys of ['U00', 'W00', 'X00', '', null]) expect(heightSystemOf(sys)).toBe(null)
   })
 
   it('leaves a gradient in such a system out, and counts it', () => {

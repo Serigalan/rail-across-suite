@@ -121,10 +121,10 @@ function scanCsv(text, columns, emit) {
   return out
 }
 
-export function parseGleislageCsv(text) {
-  return scanCsv(text, COLUMNS, ([typ, anf, end, lsys, winkel, p1, p2, p3, strecke, geo]) => ({
+export function parseTrackPositionCsv(text) {
+  return scanCsv(text, COLUMNS, ([typ, anf, end, lsys, angle, p1, p2, p3, strecke, geo]) => ({
     typ, anf, end, lsys, strecke,
-    bearing: Number(winkel) * GON2DEG,
+    bearing: Number(angle) * GON2DEG,
     length: Number(p1),
     p2: Number(p2), p3: Number(p3),
     start: firstVertex(geo),
@@ -138,7 +138,7 @@ export function parseGleislageCsv(text) {
  * section, rising/falling across a ramp. Values are magnitudes; the sign comes
  * from the curve they sit in.
  */
-export function parseUeberhoehungCsv(text) {
+export function parseCantCsv(text) {
   return scanCsv(text, CANT_COLUMNS, ([typ, anf, end, p1, p2, p3, strecke]) => ({
     typ, anf, end, strecke,
     length: Number(p1), u1: Number(p2), u2: Number(p3),
@@ -146,7 +146,7 @@ export function parseUeberhoehungCsv(text) {
 }
 
 /** Line numbers present in the file, with their row counts (for the picker). */
-export function listStrecken(rows) {
+export function listLines(rows) {
   const counts = new Map()
   for (const r of rows) {
     if (!r.strecke) continue

@@ -15,7 +15,7 @@ map.setStyle(findBasemap('positron').style)
 |---|---|
 | `allBasemaps(extra)`, `findBasemap(id, extra)` | the basemaps, with a module's own after them (the Layout-Tool's server adds the Länder's DGM1) |
 | `BASEMAP_GROUPS`, `DEFAULT_BASEMAP` | the groups of a layers panel in their order; the default (`liberty`) |
-| `LANDESVERMESSUNG_STATES`, `lvBasemapId`, `lvStatesOf`, `LANDESVERMESSUNG_THUMBNAIL` | the states' orthophotos: several are one basemap, its id their ids joined by `+` |
+| `STATE_SURVEY_STATES`, `lvBasemapId`, `lvStatesOf`, `STATE_SURVEY_THUMBNAIL` | the states' orthophotos: several are one basemap, its id their ids joined by `+` |
 | `isElevationBasemap`, `updateElevationRange`, `onElevationRange`, `RELIEF_RAMP`, `fineReliefStyle` | the basemaps coloured by height, their colour scale re-fitted to what is in view, a finer DEM over DGM5 |
 | `MAPTILER_KEY` | the key for the satellite and terrain tiles; `VITE_MAPTILER_KEY` sets another at build time |
 

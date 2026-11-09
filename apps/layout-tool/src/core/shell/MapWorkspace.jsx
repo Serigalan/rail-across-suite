@@ -30,7 +30,7 @@ import PopoutWindow from '../components/PopoutWindow'
 
 // The overlays and dialogs are chunks of their own (R9.1), loaded when first shown.
 const TrackTableOverlay = lazy(() => import('../components/TrackTableOverlay'))
-const RegelwerkOverlay = lazy(() => import('../components/RegelwerkOverlay'))
+const RulebookOverlay = lazy(() => import('../components/RulebookOverlay'))
 const PlanPreviewOverlay = lazy(() => import('../components/PlanPreviewOverlay'))
 const ElevationOverlay = lazy(() => import('../components/ElevationOverlay'))
 const BandsOverlay = lazy(() => import('../components/BandsOverlay'))
@@ -190,7 +190,7 @@ export default function MapWorkspace({ onHome, beforeHome, homeKey, resetKey = 0
     kmOverlays: km.kmOverlays, setKmOverlay: km.setKmOverlay, kmLinesError: km.kmLinesError,
     topologySelection, setTopologySelection,
     overlay, openOverlay, closeOverlay, detached,
-    showRegelwerk: (regelwerkId = '') => act({ type: 'popup', popup: { kind: 'regelwerk', regelwerkId } }),
+    showRulebook: (regelwerkId = '') => act({ type: 'popup', popup: { kind: 'regelwerk', regelwerkId } }),
     closePopup: () => act({ type: 'closePopup' }),
     // Picking another track keeps the edits — they are the table's, not one
     // track's — so only closing it (null) has to be asked about.
@@ -384,7 +384,7 @@ export default function MapWorkspace({ onHome, beforeHome, homeKey, resetKey = 0
             onDeleted={() => setTopologySelection(null)}
             onClose={() => closeOverlay('topologyGraph')} />}
 
-          {popup?.kind === 'regelwerk' && <RegelwerkOverlay regelwerkId={popup.regelwerkId} onClose={shell.closePopup} />}
+          {popup?.kind === 'regelwerk' && <RulebookOverlay regelwerkId={popup.regelwerkId} onClose={shell.closePopup} />}
 
           {compare && <CompareOverlay mapVersion={mapVersion} {...compare} onClose={() => setCompare(null)} />}
           {renderExtras?.({ mapVersion, setCompare })}

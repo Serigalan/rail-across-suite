@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CANT_STEP, cantFromInput, regelCant } from '@rail-across/core/rules'
+import { CANT_STEP, cantFromInput, standardCant } from '@rail-across/core/rules'
 import { useI18n } from '../../locales/i18nContext'
 import FieldRule from '../form/FieldRule'
 import NumberInput from '../form/NumberInput'
@@ -34,7 +34,7 @@ export default function CantField({ label, info = null, value, onChange, min, ma
   }
 
   const offer = radius && speed
-    ? Math.max(min, Math.min(max, regelCant(speed, radius)))
+    ? Math.max(min, Math.min(max, standardCant(speed, radius)))
     : null
 
   return (

@@ -122,7 +122,7 @@ removes it before effect cleanups run).
   through, below it a second section, `ElevationTable` or `ElevationPointDetails` for the selected point; with the coupling roles and dependencies
   from `elevation`), `CrossSectionOverlay`, `BandsOverlay` (curvature,
   cant, speed, rule findings), `TopologyGraphOverlay`, `PlanPreviewOverlay`, `ProjectTracksOverlay`,
-  `RegelwerkOverlay` (the read-only rulebooks), `collab/CompareOverlay` (two states on the map).
+  `RulebookOverlay` (the read-only rulebooks), `collab/CompareOverlay` (two states on the map).
 - `icons.jsx` — all symbols on a 20 px grid; `chart/` — the curvature diagram and deviation band.
 
 ## Languages and styles

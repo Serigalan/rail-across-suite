@@ -9,7 +9,7 @@ import {
 import {
   lcsLineUtm, switchFillRing, switchRoutePointsUtm, switchRoutesFromTracks,
   crossingRoutesFromTracks, crossingBodyUtm, crossingEndDistance, switchChainPointUtm,
-  switchChainBearingAt, switchChainBauform, switchMark,
+  switchChainBearingAt, switchChainBentForm, switchMark,
 } from '@rail-across/core/switch'
 
 /**
@@ -215,7 +215,7 @@ export function trackPointAt(track, station) {
  * the tangent, the marked elements at port B2 the through route over as many
  * elements as the turnout covers, and the switch form named by `label` gives
  * the through length, so the symbol keeps the turnout's own dimensions whatever
- * the tracks do later. The bauform comes with it (switchChainBauform).
+ * the tracks do later. The bauform comes with it (switchChainBentForm).
  * Returns null for a switch whose branch or form cannot be resolved.
  */
 export function switchSymbolUtm(sw, trackById) {
@@ -282,6 +282,6 @@ export function switchSymbolUtm(sw, trackById) {
     fill: switchFillRing(mainPts, branchPts),
     lcs: type ? lcsLineUtm([node.easting, node.northing], routes.branchEnd, mainEnd, switchMark(type)) : null,
     label: sw.label ?? null,
-    bauform: switchChainBauform(stem, branch),
+    bauform: switchChainBentForm(stem, branch),
   }
 }

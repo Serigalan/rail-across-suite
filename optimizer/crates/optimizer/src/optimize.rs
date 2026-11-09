@@ -27,7 +27,7 @@ use crate::geometry::{
     CANT_DEFICIENCY_COEFF, GroupFit, L_STEP, Pt, R_MIN, R_STEP, Segment, fit_compound_group, fit_s_group, max_dist_to_polyline, sample_arc, sample_transition,
     snap_down, snap_up,
 };
-use crate::grenzen::{Grenzen, Stufe};
+use crate::limits::{Level, Limits};
 use crate::numerics::{Evolution, NelderMead, differential_evolution, nelder_mead};
 use crate::rules::Rules;
 use crate::track::{Built, Group, Skipped, build_elements, elements_of, parse_groups};
@@ -40,7 +40,7 @@ const PENALTY: f64 = 1000.0;
 pub struct Params<'a, 'k> {
     pub corridor: f64,
     pub v_max: Option<f64>,
-    pub grenzen: &'a Grenzen<'k>,
+    pub limits: &'a Limits<'k>,
 }
 
 /// A curvature jump that bounds a group's speed.
@@ -67,11 +67,11 @@ pub struct Sol {
 }
 
 fn u_max_for(g: &Group, p: &Params) -> f64 {
-    p.grenzen.u_max(g.on_switch)
+    p.limits.u_max(g.on_switch)
 }
 
 fn arc_speed(g: &Group, radius: f64, cant: f64, p: &Params) -> f64 {
-    p.grenzen.speed(radius, cant, g.on_switch)
+    p.limits.speed(radius, cant, g.on_switch)
 }
 
 /// The curvature jumps of a group: one per slot without a transition, as
@@ -100,7 +100,7 @@ fn jumps(g: &Group, radii: &[f64]) -> Vec<(usize, f64, bool)> {
 /// the faster of the two design speeds that meet there — left out for the
 /// existing alignment.
 fn group_speed(g: &Group, radii: &[f64], us: &[f64], p: &Params, straights: bool) -> Option<(f64, Option<Jump>)> {
-    let gz = p.grenzen;
+    let gz = p.limits;
     let mut v = radii.iter().zip(us).map(|(r, u)| arc_speed(g, *r, *u, p)).fold(f64::INFINITY, f64::min);
     let mut jump = None;
     let n = radii.len();
@@ -133,7 +133,7 @@ fn group_speed(g: &Group, radii: &[f64], us: &[f64], p: &Params, straights: bool
 }
 
 /// What the group permits as it lies — 0 where the catalogue admits no speed for it.
-fn bestand_speed(g: &Group, p: &Params) -> f64 {
+fn existing_speed(g: &Group, p: &Params) -> f64 {
     let radii: Vec<f64> = g.arcs.iter().map(|a| a.r_alt).collect();
     let us: Vec<f64> = g.arcs.iter().map(|a| a.u_alt).collect();
     group_speed(g, &radii, &us, p, false).map_or(0.0, |(v, _)| v)
@@ -142,7 +142,7 @@ fn bestand_speed(g: &Group, p: &Params) -> f64 {
 /// Speed as the objective counts it: nothing above the target, nor above the
 /// fastest design speed the catalogue knows.
 fn capped(v: f64, p: &Params) -> f64 {
-    let v = v.min(p.grenzen.v_top);
+    let v = v.min(p.limits.v_top);
     match p.v_max {
         Some(v_max) => v.min(v_max),
         None => v,
@@ -153,7 +153,7 @@ fn capped(v: f64, p: &Params) -> f64 {
 /// below what is already built.
 fn radius_cap(g: &Group, u: f64, p: &Params, r_alt: f64) -> f64 {
     match p.v_max {
-        Some(v_max) => r_alt.max(p.grenzen.radius_for(v_max, u, g.on_switch)),
+        Some(v_max) => r_alt.max(p.limits.radius_for(v_max, u, g.on_switch)),
         None => f64::INFINITY,
     }
 }
@@ -186,7 +186,7 @@ fn ramp_lengths(g: &Group, v: f64, radii: &[f64], us: &[f64], p: &Params) -> Opt
         }
         let du = (signed_u[i + 1] - signed_u[i]).abs();
         let duf = (signed_uf[i + 1] - signed_uf[i]).abs();
-        let bounds = p.grenzen.ramp_bounds(g.types[i].id(), v, du, duf).ok()??;
+        let bounds = p.limits.ramp_bounds(g.types[i].id(), v, du, duf).ok()??;
         let length = snap_up(bounds.shortest, L_STEP);
         if length > bounds.longest + 1e-9 {
             return None;
@@ -245,7 +245,7 @@ fn evaluate_group(
     p2: Option<Pt>,
     trans_l: Option<&[f64]>,
 ) -> Option<Sol> {
-    let gz = p.grenzen;
+    let gz = p.limits;
     let (p1, p2) = (p1.unwrap_or(g.p1), p2.unwrap_or(g.p2));
     let proposed = trans_l.is_none();
     let (v, jump) = match group_speed(g, radii, us, p, proposed) {
@@ -304,7 +304,7 @@ fn evaluate_group(
 /// own numbers in the order a designer would check them: target speed,
 /// curvature jump, cant ceiling, corridor, ramp rules. None where nothing is tight.
 fn binding_reason(g: &Group, sol: &Sol, p: &Params) -> Json {
-    let gz = p.grenzen;
+    let gz = p.limits;
     let v = sol.v;
     if let Some(v_max) = p.v_max
         && v >= v_max - 1e-6
@@ -399,7 +399,7 @@ fn max_radius_for(g: &Group, u: f64, p: &Params) -> Option<Sol> {
 }
 
 /// A group re-fitted at its existing parameters, with its existing ramps.
-fn bestand_solution(g: &Group, p: &Params) -> Option<Sol> {
+fn existing_solution(g: &Group, p: &Params) -> Option<Sol> {
     let radii: Vec<f64> = g.arcs.iter().map(|a| a.r_alt).collect();
     let us: Vec<f64> = g.arcs.iter().map(|a| a.u_alt).collect();
     let thetas: Vec<f64> = if g.s_curve {
@@ -436,19 +436,19 @@ fn baseline(groups: &[Group], p: &Params, window: Option<&BTreeSet<usize>>, targ
                 continue;
             }
             if Some(j) != target {
-                solutions.push(bestand_solution(g, p));
+                solutions.push(existing_solution(g, p));
                 continue;
             }
         }
         if g.arcs.len() > 1 && !g.s_curve {
-            solutions.push(bestand_solution(g, p));
+            solutions.push(existing_solution(g, p));
             continue;
         }
         let n_arcs = g.arcs.len();
         let u_alt = g.arcs.iter().map(|a| a.u_alt).fold(f64::INFINITY, f64::min);
         // The whole grid, below the existing cant as well as above it; the
         // existing cant always a candidate.
-        let u_step = p.grenzen.u_step;
+        let u_step = p.limits.u_step;
         let mut u_values = vec![u_alt];
         if (0..n_arcs).all(|i| u_variable(g, i, p)) {
             let mut u = 0.0;
@@ -460,7 +460,7 @@ fn baseline(groups: &[Group], p: &Params, window: Option<&BTreeSet<usize>>, targ
             }
         }
         // A proposal below what the group does today is no proposal.
-        let v_alt = bestand_speed(g, p);
+        let v_alt = existing_speed(g, p);
         let mut best: Option<(Sol, (f64, f64))> = None;
         for u in u_values {
             let Some(cand) = max_radius_for(g, u, p) else { continue };
@@ -541,7 +541,7 @@ impl Window<'_, '_, '_> {
         for (i, idx) in self.straight_ids.iter().enumerate() {
             shifts.insert(*idx, x[i].clamp(-p.corridor, p.corridor));
         }
-        let u_step = p.grenzen.u_step;
+        let u_step = p.limits.u_step;
         let per_group = self
             .live
             .iter()
@@ -573,7 +573,7 @@ impl Window<'_, '_, '_> {
 
     /// How long the straight between two neighbouring groups has to stay.
     fn straight_need(&self, ga: &Group, gb: &Group, a: &Sol, b: &Sol) -> f64 {
-        let gz = self.p.grenzen;
+        let gz = self.p.limits;
         let Some(v) = gz.design_speed(a.v.max(b.v).max(ga.exit_speed)) else {
             return 0.0;
         };
@@ -767,7 +767,7 @@ fn joint_optimize(groups: &[Group], p: &Params, maxiter: usize, seed: u64, targe
     if base.iter().all(Option::is_none) {
         return (base.clone(), HashMap::new(), base);
     }
-    let v_floors: Vec<f64> = groups.iter().map(|g| bestand_speed(g, p)).collect();
+    let v_floors: Vec<f64> = groups.iter().map(|g| existing_speed(g, p)).collect();
 
     if let (Some(t), Some(window)) = (target, &window) {
         let live: Vec<usize> = window.iter().copied().filter(|&j| base[j].is_some()).collect();
@@ -819,9 +819,9 @@ fn unsupported(message: impl Into<String>) -> Json {
 
 /// The transition profiles a run tries: the ramps as they lie, and all of
 /// them Bloss — the latter only where the level admits a Bloss transition.
-fn variants_for(uebergang: &str, gz: &Grenzen) -> Result<Vec<&'static str>, String> {
+fn variants_for(transition: &str, gz: &Limits) -> Result<Vec<&'static str>, String> {
     let bloss_ok = gz.forms.iter().any(|(f, ok)| *f == "bloss" && *ok);
-    match uebergang {
+    match transition {
         "auto" => Ok(if bloss_ok { vec!["bestand", "bloss"] } else { vec!["bestand"] }),
         "bestand" => Ok(vec!["bestand"]),
         "bloss" if bloss_ok => Ok(vec!["bloss"]),
@@ -846,11 +846,11 @@ fn design_speed_json(sol: &Sol) -> Json {
 /// The answer to an optimize request.
 ///
 /// Body: {"track": {elements, epsg, …}, "corridorCm", "grenzwert": "reg" |
-/// "discretion", "uebergang": "auto" | "bestand" | "bloss", "perCurve",
+/// "discretion", "transition": "auto" | "bestand" | "bloss", "perCurve",
 /// "maxiter", "seed", "targetElementIdx", "vMax"}.
 ///
 /// Answers {elements, report, variant, vBestand, vBaseline, vNeu, shifts,
-/// skipped, regelwerk, regelwerkVersion, grenzwert} — or {"error":
+/// skipped, rulebook, regelwerkVersion, grenzwert} — or {"error":
 /// "unsupported_topology", "message"} for a track a run cannot take.
 pub fn optimize_payload(rules: &Rules, payload: &Json) -> Result<Json, String> {
     let bad = |what: &str| format!("invalid request: {what}");
@@ -859,12 +859,12 @@ pub fn optimize_payload(rules: &Rules, payload: &Json) -> Result<Json, String> {
     if els.len() > MAX_ELEMENTS {
         return Err(bad("too many elements"));
     }
-    let stufe = Stufe::parse(payload.get("grenzwert").and_then(Json::as_str).unwrap_or("reg")).map_err(|e| bad(&e.0))?;
-    let gz = rules.at(stufe);
+    let level = Level::parse(payload.get("grenzwert").and_then(Json::as_str).unwrap_or("reg")).map_err(|e| bad(&e.0))?;
+    let gz = rules.at(level);
     let p = Params {
         corridor: payload.get("corridorCm").and_then(Json::as_f64).unwrap_or(50.0) / 100.0,
         v_max: payload.get("vMax").and_then(Json::as_f64).filter(|v| *v != 0.0),
-        grenzen: gz,
+        limits: gz,
     };
     let maxiter = (payload.get("maxiter").and_then(Json::as_u64).unwrap_or(100) as usize).clamp(1, MAX_ITER);
     let seed = payload.get("seed").and_then(Json::as_u64).unwrap_or(1);
@@ -940,22 +940,22 @@ pub fn optimize_payload(rules: &Rules, payload: &Json) -> Result<Json, String> {
         Some(t) => vec![t],
         None => report_gis.clone(),
     };
-    let v_bestand = score_gis.iter().map(|&j| bestand_speed(&groups_used[j], &p)).fold(f64::INFINITY, f64::min);
+    let v_existing = score_gis.iter().map(|&j| existing_speed(&groups_used[j], &p)).fold(f64::INFINITY, f64::min);
     let min_of = |sols: &[Option<Sol>]| {
         let vs: Vec<f64> = score_gis.iter().filter_map(|&j| sols[j].as_ref().map(|s| s.v)).collect();
         if vs.is_empty() {
-            v_bestand
+            v_existing
         } else {
             vs.into_iter().fold(f64::INFINITY, f64::min)
         }
     };
-    let (v_base, v_neu) = (min_of(&base), min_of(&solutions));
+    let (v_base, v_new) = (min_of(&base), min_of(&solutions));
 
     let mut report = Vec::new();
     for &j in &report_gis {
         let (g, sol) = (&groups_used[j], &solutions[j]);
         let reason = sol.as_ref().map(|s| binding_reason(g, s, &p));
-        let v_group_alt = bestand_speed(g, &p);
+        let v_group_alt = existing_speed(g, &p);
         for (i, arc) in g.arcs.iter().enumerate() {
             let mut row = Map::new();
             row.insert("group".into(), json!(j + 1));
@@ -1000,13 +1000,13 @@ pub fn optimize_payload(rules: &Rules, payload: &Json) -> Result<Json, String> {
         "elements": build_elements(els, &epsg, &groups_used, &built, &shifts),
         "report": report,
         "variant": variant,
-        "vBestand": v_bestand,
+        "vBestand": v_existing,
         "vBaseline": v_base,
-        "vNeu": v_neu,
+        "vNeu": v_new,
         "shifts": shift_map,
         "skipped": skipped.iter().map(|(a, b, why)| json!({"from": a, "to": b, "why": why})).collect::<Vec<_>>(),
-        "regelwerk": rules.katalog.id,
-        "regelwerkVersion": rules.katalog.version,
-        "grenzwert": stufe.id(),
+        "regelwerk": rules.catalogue.id,
+        "regelwerkVersion": rules.catalogue.version,
+        "grenzwert": level.id(),
     }))
 }

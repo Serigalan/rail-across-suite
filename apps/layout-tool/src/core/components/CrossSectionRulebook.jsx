@@ -1,6 +1,6 @@
 import {
-  QUERSCHNITT_KATALOG, GAUGE_PROFILES, gaugeProfileRing, gaugeProfileAreas, gaugeProfileLabelKey,
-  LICHTRAUM_SOURCE,
+  CROSS_SECTION_CATALOGUE, GAUGE_PROFILES, gaugeProfileRing, gaugeProfileAreas, gaugeProfileLabelKey,
+  CLEARANCE_SOURCE,
 } from '@rail-across/core/crossSection'
 import { useI18n } from '../locales/i18nContext'
 import { PALETTE } from '../styles/palette'
@@ -55,7 +55,7 @@ function ProfileDrawing({ profile }) {
     <figure className="querschnitt-figure">
       <figcaption className="constraints-value">{t(gaugeProfileLabelKey(profile.id))}</figcaption>
       <svg viewBox={viewBox} className="querschnitt-svg" role="img"
-        aria-label={`${t(gaugeProfileLabelKey(profile.id))} · ${LICHTRAUM_SOURCE}`}>
+        aria-label={`${t(gaugeProfileLabelKey(profile.id))} · ${CLEARANCE_SOURCE}`}>
         <path d={`${path(ring)} Z`} fill="rgba(48,51,131,0.08)" stroke="var(--color-primary)"
           strokeWidth="1.6" {...line} />
         {areas.map((a, i) => (
@@ -122,9 +122,9 @@ function ProfileDrawing({ profile }) {
   )
 }
 
-export default function QuerschnittRegelwerk() {
+export default function CrossSectionRulebook() {
   const { t } = useI18n()
-  const { katalog, streckenquerschnitte } = QUERSCHNITT_KATALOG
+  const { katalog, streckenquerschnitte } = CROSS_SECTION_CATALOGUE
 
   return (
     <>

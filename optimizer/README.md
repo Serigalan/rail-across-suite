@@ -41,7 +41,7 @@ cargo test -p rail-across-optimizer   # anywhere in the workspace (Cargo.toml at
 - `tests/vectors.rs` — the shared vectors of `packages/core/constraints/tests/`: the expression language, the
   catalogue check on element chains, the shortest transition lengths. The app answers the same cases
   (`packages/core/src/rules/*.vectors.test.js`).
-- `tests/grenzen.rs` — the catalogue and the limits at both levels, the physics against `physics.json`: the
+- `tests/limits.rs` — the catalogue and the limits at both levels, the physics against `physics.json`: the
   cases of the service's `tests/verify.py`.
 - `tests/splice.rs` — 243 splice requests and what the service answered (`tests/data/splice_answers.json`).
 - `tests/clearance.rs` — the spacing: the service's `verify_clearance.py`.

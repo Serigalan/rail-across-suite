@@ -5,7 +5,7 @@ import { newSwitchFields } from '../track/index.js'
 import { endPointStraightUtm } from '../geometry/elementUtils.js'
 import { utmToWgs84 } from '../geometry/coordinateUtils.js'
 import { hydrateProjects } from '../project/persistenceUtils.js'
-import { hasPekBestand, loadPekBestand } from '../../test/pekFixture.js'
+import { hasPekExisting, loadPekExisting } from '../../test/pekFixture.js'
 
 /**
  * The topology diagram by lines (AP 9.8): every line through the network on a
@@ -112,9 +112,9 @@ describe('the topology diagram by lines', () => {
   })
 })
 
-describe.skipIf(!hasPekBestand)('the Bestand of Halle–Könnern', () => {
+describe.skipIf(!hasPekExisting)('the Bestand of Halle–Könnern', () => {
   it('draws every crossover short and every network on a few rows', () => {
-    const [project] = hydrateProjects([loadPekBestand()])
+    const [project] = hydrateProjects([loadPekExisting()])
     const { clusters } = topologyClusters(buildTopologyGraph(project.tracks, project.switches, []))
     expect(clusters).toHaveLength(2)
     for (const cluster of clusters) {

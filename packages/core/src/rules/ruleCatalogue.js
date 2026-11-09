@@ -11,23 +11,23 @@
  * severity and every formula lives there, and this module only walks it. That
  * is the whole point of the shape the catalogue is written in — a value moved
  * from the file into code here would be a value no longer maintained where the
- * rulebook is maintained, which is the drift the repo's other regelwerke are
+ * rulebook is maintained, which is the drift the repo's other rulebooks are
  * checked against on disk.
  *
  * Reading is split from the model: this module knows nothing about tracks or
  * elements. It is handed a flat scope of the names a rule declares
  * (`element.design_speed`, `physics.u_f`, …) and gives back a severity.
- * trassierungCheck.js is what fills that scope from the app's own elements.
+ * alignmentCheck.js is what fills that scope from the app's own elements.
  */
 
-import KATALOG from '../../constraints/db-ril-800-0110.json' with { type: 'json' }
+import CATALOGUE from '../../constraints/db-ril-800-0110.json' with { type: 'json' }
 import { evalExpr } from './ruleExpr.js'
 
-export { KATALOG }
+export { CATALOGUE }
 
-export const CATALOG_ID = KATALOG.catalog.id
+export const CATALOG_ID = CATALOGUE.catalog.id
 
-const RANK = Object.fromEntries(KATALOG.severity_levels.map(s => [s.id, s.rank]))
+const RANK = Object.fromEntries(CATALOGUE.severity_levels.map(s => [s.id, s.rank]))
 
 /** Rank of a severity — higher is worse. */
 export const severityRank = (id) => RANK[id] ?? -1
@@ -50,10 +50,10 @@ export const severityLabelKey = (id) => `rule_sev_${id}`
 
 /** The rules written for one kind of object: 'element', 'boundary', 'cant_ramp'. */
 export const rulesForScope = (scope) =>
-  KATALOG.rules.filter(rule => rule.applies_to?.scope === scope)
+  CATALOGUE.rules.filter(rule => rule.applies_to?.scope === scope)
 
 /** A rule by its id — for a test or a viewer that wants one by name. */
-export const ruleById = (id) => KATALOG.rules.find(rule => rule.id === id) ?? null
+export const ruleById = (id) => CATALOGUE.rules.find(rule => rule.id === id) ?? null
 
 /**
  * A table asked for a key it does not cover. Thrown rather than returned so
@@ -125,7 +125,7 @@ function catalogFunctions({ inContext = () => false, physics = {} } = {}) {
     // Half a step rounds up, as the catalogue states.
     round_to: (x, step) => Math.round(x / step) * step,
     lookup: (tableId, key, column) => {
-      const table = KATALOG.tables[tableId]
+      const table = CATALOGUE.tables[tableId]
       if (!table) throw new Error(`unknown table ${tableId}`)
       return table.type === 'piecewise'
         ? lookupPiecewise(table, key)

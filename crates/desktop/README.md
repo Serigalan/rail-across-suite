@@ -17,7 +17,7 @@ lifetime). A language chosen in the suite is kept for the next start as well.
 
 The Windows package is a ZIP of one folder: `Rail-Across-Suite.exe`, the suite (`site/`), `mdb-export` with its
 DLLs (`mdbtools/`) and the two files of [`portable/`](portable/) — the marker `portable` and a readme for the
-user (`LIESMICH.txt`, German and English). With the marker beside the executable everything the app keeps lies
+user (`README.txt`, German and English). With the marker beside the executable everything the app keeps lies
 in that folder:
 
 | | |

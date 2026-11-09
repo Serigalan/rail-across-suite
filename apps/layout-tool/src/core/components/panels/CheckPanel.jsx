@@ -2,7 +2,7 @@ import { Suspense, lazy, useState } from 'react'
 import ShiftValuesPage from './shift/ShiftValuesPage'
 import GroupedTrackList from './GroupedTrackList'
 import {
-  RegelwerkIcon, BandsIcon, ShiftValuesIcon, OptimizeTrackModeIcon, OptimizeElementModeIcon, AxisFitModeIcon,
+  RulebookIcon, BandsIcon, ShiftValuesIcon, OptimizeTrackModeIcon, OptimizeElementModeIcon, AxisFitModeIcon,
 } from '../icons'
 import { useTracks } from '../../hooks/useStore'
 import { useI18n } from '../../locales/i18nContext'
@@ -54,7 +54,7 @@ function BandsPage({ trackId, onShow, onExit }) {
  * fit run in the browser, in the optimizer module (decision 0019 of the
  * suite); a server may put more tools in (`panelTools` of 'check', Paket L).
  */
-export default function CheckPanel({ onShowRegelwerk, bandsTrackId, onShowBands }) {
+export default function CheckPanel({ onShowRulebook, bandsTrackId, onShowBands }) {
   const { t } = useI18n()
   const [page, setPage] = useState('menu')
   const [shiftTrackId, setShiftTrackId] = useState(null)
@@ -78,7 +78,7 @@ export default function CheckPanel({ onShowRegelwerk, bandsTrackId, onShowBands 
   if (mode) {
     return (
       <Suspense fallback={<p className="selecting-hint">…</p>}>
-        <OptimizeTrackPanel initialPage={mode.id} onExit={() => setPage('menu')} onShowRegelwerk={onShowRegelwerk} />
+        <OptimizeTrackPanel initialPage={mode.id} onExit={() => setPage('menu')} onShowRulebook={onShowRulebook} />
       </Suspense>
     )
   }
@@ -86,14 +86,14 @@ export default function CheckPanel({ onShowRegelwerk, bandsTrackId, onShowBands 
   const tool = tools.find(x => x.id === page)
   if (tool) {
     const Tool = tool.Component
-    return <Tool onExit={() => setPage('menu')} onShowRegelwerk={onShowRegelwerk} />
+    return <Tool onExit={() => setPage('menu')} onShowRulebook={onShowRulebook} />
   }
   return (
     <>
       <h2>{t('check_title')}<InfoTip text={t('check_hint')} /></h2>
       <div className="create-element-options">
-        <button className="ui-btn ui-btn-option" onClick={() => onShowRegelwerk?.()}>
-          <RegelwerkIcon />
+        <button className="ui-btn ui-btn-option" onClick={() => onShowRulebook?.()}>
+          <RulebookIcon />
           {t('constraints_regelwerk')}
         </button>
         <span className="create-element-section">{t('check_optimize')}</span>

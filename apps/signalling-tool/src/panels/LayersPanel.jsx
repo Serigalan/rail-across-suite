@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Checkbox, Panel, Section } from '@rail-across/ui'
 import {
-  BASEMAP_GROUPS, LANDESVERMESSUNG_STATES, LANDESVERMESSUNG_THUMBNAIL, allBasemaps, lvBasemapId, lvStatesOf,
+  BASEMAP_GROUPS, STATE_SURVEY_STATES, STATE_SURVEY_THUMBNAIL, allBasemaps, lvBasemapId, lvStatesOf,
 } from '@rail-across/basemaps'
 import { NO_BASEMAP } from '../plan/PlanView.jsx'
 
@@ -29,8 +29,8 @@ export default function LayersPanel({ basemap, setBasemap, t, language }) {
       {extra.toggle && <span className={`layer-caret${extra.open ? ' open' : ''}`} aria-hidden="true">▸</span>}
     </button>
   )
-  const lvSub = !lvIds.length ? t('basemap_landesvermessung_pick')
-    : lvIds.length <= 2 ? lvStatesOf(basemap).map(s => s.name).join(', ') : t('basemap_landesvermessung_count', { n: lvIds.length })
+  const lvSub = !lvIds.length ? t('basemap_state_survey_pick')
+    : lvIds.length <= 2 ? lvStatesOf(basemap).map(s => s.name).join(', ') : t('basemap_state_survey_count', { n: lvIds.length })
 
   return (
     <Panel title={t('section_layers')} intro={t('section_layers_intro')}>
@@ -38,11 +38,11 @@ export default function LayersPanel({ basemap, setBasemap, t, language }) {
         <Section key={group} title={t(`layers_group_${group}`)}>
           <div className="layer-list">
             {allBasemaps().filter(b => b.group === group).map(b => row(b.id, b.thumbnail, t(b.labelKey)))}
-            {group === 'germany' && row('lv', LANDESVERMESSUNG_THUMBNAIL, t('basemap_landesvermessung'), lvSub,
+            {group === 'germany' && row('lv', STATE_SURVEY_THUMBNAIL, t('basemap_state_survey'), lvSub,
               { toggle: () => setLvOpen(v => !v), open: lvOpen, active: lvIds.length > 0 })}
             {group === 'germany' && lvOpen && (
               <div className="layer-states" lang={language}>
-                {LANDESVERMESSUNG_STATES.map(s => (
+                {STATE_SURVEY_STATES.map(s => (
                   <Checkbox key={s.id} label={s.name} checked={lvIds.includes(s.id)} disabled={!s.wmsUrl} onChange={(on) => setLvState(s.id, on)} />
                 ))}
               </div>

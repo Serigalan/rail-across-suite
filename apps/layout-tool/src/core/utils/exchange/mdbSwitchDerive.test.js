@@ -277,14 +277,14 @@ describe('the form two alignments state where they part', () => {
 describe('how far a point is from a track', () => {
   it('is measured against the curve, not against its chord', () => {
     const { tracks } = buildAllTracksFromMdb(survey())
-    const zweig = byName(tracks)['Zweig.001']
+    const branchTrack = byName(tracks)['Zweig.001']
     // The middle of the branch's arc lies on the track; its chord is
     // 21 m² / (8 · 190) = 14 cm away, which a chord test would call an offset.
     const mid = endPointCurvedUtm(
-      { easting: zweig.elements[0].startNode[0], northing: zweig.elements[0].startNode[1] },
+      { easting: branchTrack.elements[0].startNode[0], northing: branchTrack.elements[0].startNode[1] },
       90, arcLen(190) / 2, 190)
-    expect(offsetOnTrack(zweig, xy(mid)).dist).toBeLessThan(1e-6)
-    expect(offsetOnTrack(zweig, xy(mid)).station).toBeCloseTo(arcLen(190) / 2, 6)
+    expect(offsetOnTrack(branchTrack, xy(mid)).dist).toBeLessThan(1e-6)
+    expect(offsetOnTrack(branchTrack, xy(mid)).station).toBeCloseTo(arcLen(190) / 2, 6)
   })
 
   it('measures a point past the end of a transition to that end', () => {

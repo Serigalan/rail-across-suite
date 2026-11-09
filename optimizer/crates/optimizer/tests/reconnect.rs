@@ -115,8 +115,8 @@ fn ask(rules: &Rules, els: &[El], dep: usize, arr: usize, tol: f64, speed: f64, 
 
 #[test]
 fn reconnecting_finds_what_the_service_found() {
-    let katalog = common::katalog();
-    let rules = Rules::new(&katalog).unwrap();
+    let catalogue = common::catalogue();
+    let rules = Rules::new(&catalogue).unwrap();
     let c = Profile::Clothoid;
     let curve = build(
         &[

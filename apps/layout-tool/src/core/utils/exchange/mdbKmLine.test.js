@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { mdbKmRuns, mdbKmLines } from './mdbKmLine'
 import { parseMdbPayload } from './mdbImport'
-import { ALL_STRECKEN, runMdbImport } from './mdbPipeline'
+import { ALL_LINES, runMdbImport } from './mdbPipeline'
 import { ensureKmLines } from '../km'
 import fixture from '../../test/fixtures/mdb_str1244.json'
 
@@ -70,7 +70,7 @@ describe('in the import', () => {
   it('comes along for the lines the imported tracks run on', async () => {
     let n = 0
     const { commit, counts, notes } = await runMdbImport({
-      payload, strecke: ALL_STRECKEN, fill: (key, params) => `${key} ${JSON.stringify(params)}`, newId: () => `id${++n}`,
+      payload, strecke: ALL_LINES, fill: (key, params) => `${key} ${JSON.stringify(params)}`, newId: () => `id${++n}`,
     })
     expect(counts.kmLines).toBe(2)
     expect(commit.addKmLines.map(l => l.lineNumber).sort()).toEqual([1244, 6100])

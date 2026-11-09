@@ -1,6 +1,6 @@
 import { transitionCantEnds } from '../geometry/index.js'
-import { catalogSpeedRange, severityRank } from './regelkatalog.js'
-import { elementVerdict } from './trassierungCheck.js'
+import { catalogSpeedRange, severityRank } from './ruleCatalogue.js'
+import { elementVerdict } from './alignmentCheck.js'
 import { nativeRuleMaxSpeed } from './viaNative.js'
 
 // Speed is designed in 5 km/h steps, like cant is in 5 mm ones.

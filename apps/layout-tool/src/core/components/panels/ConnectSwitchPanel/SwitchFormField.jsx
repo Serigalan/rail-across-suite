@@ -20,7 +20,7 @@ import { useI18n } from '../../../locales/i18nContext'
  */
 export default function SwitchFormField({ value, onChange, hideSymmetric = false, label = null }) {
   const { t } = useI18n()
-  const optionen = (klasse) => SWITCH_PICK_TYPES
+  const options = (klasse) => SWITCH_PICK_TYPES
     .map((form, i) => ({ form, i }))
     .filter(entry => entry.form.klasse === klasse)
     .filter(entry => !hideSymmetric || !entry.form.symmetric)
@@ -30,8 +30,8 @@ export default function SwitchFormField({ value, onChange, hideSymmetric = false
     <div className="form-field">
       <label>{label ?? t('switch_form')}</label>
       <select value={value} onChange={e => onChange(Number(e.target.value))}>
-        <optgroup label={t('switch_form_regel')}>{optionen('regel')}</optgroup>
-        <optgroup label={t('switch_form_sonder')}>{optionen('sonderbauform')}</optgroup>
+        <optgroup label={t('switch_form_regel')}>{options('regel')}</optgroup>
+        <optgroup label={t('switch_form_sonder')}>{options('sonderbauform')}</optgroup>
       </select>
     </div>
   )

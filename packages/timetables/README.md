@@ -7,7 +7,7 @@ Fahrplan-Editor:
   with its traction mode and comfort, its departure, its margin — and its points, each a place by its id (`place`, the name only shown; `withPlaces` gives a point named by its name only its id),
   its track or any, a stop or a pass, the dwell, a departure waited for, the itinerary it prefers to the next
   (`itineraryOptions`, `preferredLegs`: between the signalling's stopping places of the two). A train begins and ends at a station, a buffer stop or a boundary only
-  (`trainProblems` says where it does not), over a boundary at its speed (`crossingSpeed`); copies at an interval (`taktCopies`); clock times read and written;
+  (`trainProblems` says where it does not), over a boundary at its speed (`crossingSpeed`); copies at an interval (`intervalCopies`); clock times read and written;
 - **its run** (`trainRequest`, `trainTimes`, `runTrain`): its way over a variant's net through the tracks its
   points allow — along the itinerary a leg prefers where it leads there, else the shortest (`route.preferred` says
   which, leg by leg) —, the simulation's request, and the times as the timetable shows them — a row for every station along

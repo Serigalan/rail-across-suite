@@ -122,8 +122,8 @@ pub fn compute_auto_c(speed: f64, radius: f64) -> f64 {
     cant_sign(radius) * max_cant().min(round_cant((CANT_COEFF * speed * speed) / r))
 }
 
-/// The Regelüberhöhung — LP.KB.04's `u_reg` (`regelCant`).
-pub fn regel_cant(speed: f64, radius: f64, in_switch: bool) -> f64 {
+/// The Regelüberhöhung — LP.KB.04's `u_reg` (`standardCant`).
+pub fn standard_cant(speed: f64, radius: f64, in_switch: bool) -> f64 {
     let r = radius.abs();
     if !(r > 0.0) {
         return 0.0;

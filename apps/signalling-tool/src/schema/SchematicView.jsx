@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { schematicLayout, schematicPlacer, schematicStrip } from '@rail-across/core/schematic'
 import { STATUS_COLOR } from '@rail-across/core/track'
 import { labelOf } from '../model/domain.js'
-import { BaliseSymbol, DerailerSymbol, DetectionSymbol, SANS, SignalSymbol } from './planzeichen.jsx'
+import { BaliseSymbol, DerailerSymbol, DetectionSymbol, SANS, SignalSymbol } from './planSymbols.jsx'
 import { isClearanceMarker } from '../model/clearanceMarkers.js'
 import { signalSymbolOf, symbolLength } from './symbols.js'
 
@@ -10,7 +10,7 @@ import { signalSymbolOf, symbolLength } from './symbols.js'
  * The schematic view: the net as the strip of the core's schematic layout —
  * its lines lanes along the longest of them, every switch a 45° connection,
  * the length along the lanes to scale — and on it the signalling in the
- * symbols of a signalling plan (planzeichen.jsx), the stopping places bands
+ * symbols of a signalling plan (planSymbols.jsx), the stopping places bands
  * under their tracks. It shows, picks and highlights as the site plan does; setting anew is the site plan's.
  *
  * It is drawn once to one scale both ways — a metre along the lanes one unit

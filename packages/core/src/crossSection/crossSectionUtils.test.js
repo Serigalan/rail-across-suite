@@ -3,7 +3,7 @@ import {
   RUNNING_CIRCLE_DISTANCE, TRACK_GAUGE, RAILS, SLEEPERS, DEFAULT_RAIL, DEFAULT_SLEEPER,
   superstructureAt, elementStartStation,
   cantAngle, cantPivot, rotatePoint, rotatePointsAbout, fitSection, sectionAtStation, crossSection,
-  platformSection, placeSection, sectionNeighbours, sectionLinePoints, PLANUM_EDGE,
+  platformSection, placeSection, sectionNeighbours, sectionLinePoints, FORMATION_EDGE,
   terrainHeightAt, sectionLevels, ASSUMED_RAIL_OVER_TERRAIN,
 } from './index.js'
 import { wgs84ToUTM } from '../geometry/coordinateUtils.js'
@@ -306,7 +306,7 @@ describe('placing another track in the section', () => {
   })
 
   it('reaches the drawing out to the widest planum edge of the Regelquerschnitte', () => {
-    expect(PLANUM_EDGE).toBeCloseTo(3800, 9)
+    expect(FORMATION_EDGE).toBeCloseTo(3800, 9)
   })
 })
 

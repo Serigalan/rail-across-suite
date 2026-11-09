@@ -38,4 +38,4 @@ export const UpIcon = () => <Svg><path d="M6 15l6-6 6 6" /></Svg>
 export const DownIcon = () => <Svg><path d="M6 9l6 6 6-6" /></Svg>
 export const CopyIcon = () => <Svg><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></Svg>
 /** A Takt: the same train again and again, at an interval. */
-export const TaktIcon = () => <Svg><circle cx="12" cy="13" r="8" /><path d="M12 9v4l3 2M9 2h6" /></Svg>
+export const IntervalIcon = () => <Svg><circle cx="12" cy="13" r="8" /><path d="M12 9v4l3 2M9 2h6" /></Svg>

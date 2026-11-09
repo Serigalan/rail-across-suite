@@ -15,7 +15,7 @@ mod common;
 use rail_across_optimizer::clearance::{CantModel, Spacing, auto_cant};
 use rail_across_optimizer::element::Element;
 use rail_across_optimizer::geometry::{Profile, Pt, arc_forward, transition_end};
-use rail_across_optimizer::grenzen::transition_lengths;
+use rail_across_optimizer::limits::transition_lengths;
 use rail_across_optimizer::rules::Rules;
 use rail_across_optimizer::splice::splice_payload;
 use serde_json::{Value, json};
@@ -105,8 +105,8 @@ fn the_spacing_the_cant_adds() {
 
 #[test]
 fn two_straights_kept_off_the_inner_track() {
-    let katalog = common::katalog();
-    let rules = Rules::new(&katalog).unwrap();
+    let catalogue = common::catalogue();
+    let rules = Rules::new(&catalogue).unwrap();
     let ask = |extra: Value, clearance: Value| {
         let cl = merge(json!({"ref": inner(0.0), "dMin": 4.0, "profile": profile(), "cantModel": model()}), clearance);
         best(
@@ -197,8 +197,8 @@ fn two_straights_kept_off_the_inner_track() {
 
 #[test]
 fn an_arc_and_a_straight() {
-    let katalog = common::katalog();
-    let rules = Rules::new(&katalog).unwrap();
+    let catalogue = common::catalogue();
+    let rules = Rules::new(&catalogue).unwrap();
     // The new outer track comes in on a flat arc (R 1500, left, from (100, −4.5) heading east).
     let (end, b_end) = arc_forward(E0 + 100.0, N0 - 4.5, 90.0, -1500.0, 60.0 / 1500.0);
     let arc = json!({"start": [E0 + 100.0, N0 - 4.5], "end": [end.0, end.1], "bearing": b_end, "radius": -1500.0});
@@ -222,8 +222,8 @@ fn an_arc_and_a_straight() {
 
 #[test]
 fn two_arcs_are_checked_not_searched() {
-    let katalog = common::katalog();
-    let rules = Rules::new(&katalog).unwrap();
+    let catalogue = common::catalogue();
+    let rules = Rules::new(&catalogue).unwrap();
     let (a, b_a) = arc_forward(E0, N0, 20.0, 900.0, 250.0 / 900.0);
     let (x, y, b_s1) = transition_end(a.0, a.1, b_a, 70.0, Some(900.0), None, Profile::Clothoid);
     let s1 = (x, y);

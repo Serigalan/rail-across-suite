@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
-import { KATALOG } from '@rail-across/core/rules'
+import { CATALOGUE } from '@rail-across/core/rules'
 import { runWith } from '../utils/optimizer/optimizerRun'
 
 // The optimizer module (optimizer/ of the repository, decision 0019) for the
@@ -19,7 +19,7 @@ if (built) {
   exports = instance.exports
 }
 
-export const optimizer = (op, request) => runWith(exports, { op, request, catalogue: KATALOG })
+export const optimizer = (op, request) => runWith(exports, { op, request, catalogue: CATALOGUE })
 
 /** The splice of `request`, as the dialog's worker answers it. */
 export const solveSplice = (request) => optimizer('splice', request)

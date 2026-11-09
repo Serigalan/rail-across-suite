@@ -12,7 +12,7 @@ use rail_across_geom::transition::{clothoid_radius_at, curvature_of, radius_of_c
 use rail_across_js::{has, number};
 use serde_json::{Value, json};
 
-use crate::catalogue::{STRAIGHT_CURVATURE, as_radius, bauform, branch_radius};
+use crate::catalogue::{STRAIGHT_CURVATURE, as_radius, bent_form, branch_radius};
 
 /// A polyline of WGS84 [lng, lat] pairs.
 pub type Polyline = Vec<[f64; 2]>;
@@ -449,8 +449,8 @@ pub fn switch_branch_chain(sections: &[FormSection], stem: &[Route]) -> Vec<Rout
     out
 }
 
-/// Bauform of a turnout from its two chains (`switchChainBauform`).
-pub fn switch_chain_bauform(stem: &[Route], branch: &[Route], symmetric: bool) -> &'static str {
+/// Bauform of a turnout from its two chains (`switchChainBentForm`).
+pub fn switch_chain_bent_form(stem: &[Route], branch: &[Route], symmetric: bool) -> &'static str {
     if symmetric {
         return "sym";
     }
@@ -472,10 +472,10 @@ pub fn switch_chain_bauform(stem: &[Route], branch: &[Route], symmetric: bool) -
         }),
     );
     if Some(t) == s0.r1 {
-        return bauform(s0.r1, b0.r1);
+        return bent_form(s0.r1, b0.r1);
     }
     let k = 1.0 / t + curvature_of(b0.r1) - curvature_of(s0.r1);
-    bauform(Some(t), if k.abs() < STRAIGHT_CURVATURE { None } else { Some(1.0 / k) })
+    bent_form(Some(t), if k.abs() < STRAIGHT_CURVATURE { None } else { Some(1.0 / k) })
 }
 
 /// Segments a switch route gets (`switchRouteSegments`).

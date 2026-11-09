@@ -4,7 +4,7 @@ import { newVehicle } from '@rail-across/vehicles'
 import { runWith, stationTargets, stationsOf } from '@rail-across/running-times'
 import { marked, net, WASM } from '../../running-times/test/net.js'
 import {
-  copyTrain, formatClock, itineraryOptions, newPoint, newTrain, numberAfter, parseClock, routePoints, runTrain, taktCopies, trainProblems, trainRequest, trainTitle, withPlaces,
+  copyTrain, formatClock, itineraryOptions, newPoint, newTrain, numberAfter, parseClock, routePoints, runTrain, intervalCopies, trainProblems, trainRequest, trainTitle, withPlaces,
 } from './timetable.js'
 
 const stations = stationsOf(net)
@@ -64,7 +64,7 @@ describe('a train of the timetable', () => {
     expect(numberAfter('16001', 2)).toBe('16003')
     expect(numberAfter('RB 7', 1)).toBe('RB 8')
     expect(numberAfter('Sonder', 1)).toBe('Sonder')
-    const copies = taktCopies(t, { every: 3600, count: 2 })
+    const copies = intervalCopies(t, { every: 3600, count: 2 })
     expect(copies.map(c => [c.number, formatClock(c.departure), formatClock(c.points[0].departure)])).toEqual([['16003', '08:00', '08:00'], ['16005', '09:00', '09:00']])
     expect(new Set([t.id, ...copies.map(c => c.id)]).size).toBe(3)
     expect(copyTrain(t).points[0].id).not.toBe(t.points[0].id)

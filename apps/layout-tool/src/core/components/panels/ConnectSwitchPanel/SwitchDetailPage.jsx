@@ -33,7 +33,7 @@ export default function SwitchDetailPage({ target, onShow }) {
   const picked = target?.switchId ? switches.find(s => s.switchId === target.switchId) : null
   const formLabel = target?.formLabel ?? ''
   const rail = target?.rail ?? DEFAULT_RAIL
-  const optionen = (klasse) => SWITCH_PICK_TYPES
+  const options = (klasse) => SWITCH_PICK_TYPES
     .filter(form => form.klasse === klasse)
     .map(form => <option key={form.label} value={form.label}>{form.label}</option>)
 
@@ -50,8 +50,8 @@ export default function SwitchDetailPage({ target, onShow }) {
         <label>{t('switch_detail_form')}</label>
         <select value={formLabel} onChange={e => onShow(e.target.value ? { formLabel: e.target.value, rail } : null)}>
           <option value="">{t('switch_detail_form_none')}</option>
-          <optgroup label={t('switch_form_regel')}>{optionen('regel')}</optgroup>
-          <optgroup label={t('switch_form_sonder')}>{optionen('sonderbauform')}</optgroup>
+          <optgroup label={t('switch_form_regel')}>{options('regel')}</optgroup>
+          <optgroup label={t('switch_form_sonder')}>{options('sonderbauform')}</optgroup>
         </select>
       </div>
       {formLabel && (

@@ -606,16 +606,16 @@ fn geodetic_to_geocentric(p: P3, es: f64, a: f64) -> P3 {
 }
 
 fn geocentric_to_geodetic(p: P3, es: f64, a: f64) -> P3 {
-    let genau = 1e-12;
-    let genau2 = genau * genau;
+    let exact = 1e-12;
+    let exact2 = exact * exact;
     let maxiter = 30;
     let (x, y, z) = (p.x, p.y, p.z);
     let pp = (x * x + y * y).sqrt();
     let rr = (x * x + y * y + z * z).sqrt();
     let longitude;
-    if pp / a < genau {
+    if pp / a < exact {
         longitude = 0.0;
-        if rr / a < genau {
+        if rr / a < exact {
             return P3 { x: p.x, y: p.y, z: p.z };
         }
     } else {
@@ -641,7 +641,7 @@ fn geocentric_to_geodetic(p: P3, es: f64, a: f64) -> P3 {
         let sdphi = sphi * cphi0 - cphi * sphi0;
         cphi0 = cphi;
         sphi0 = sphi;
-        if !(sdphi * sdphi > genau2 && iter < maxiter) {
+        if !(sdphi * sdphi > exact2 && iter < maxiter) {
             break;
         }
     }

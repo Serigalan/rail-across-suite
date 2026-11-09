@@ -231,15 +231,15 @@ describe('variants and revisions', () => {
 
   it('finds the common base after branching, and after a merge the merge itself', async () => {
     const { max } = await start()
-    const { project, variantId: bestand, revisionId: r1 } = await newProject(max, { tracks: [straight('t1')] })
-    const v2030 = (await max('POST', `/api/projects/${project.id}/variants`, { name: '2030', fromVariant: bestand })).json().variant.id
+    const { project, variantId: existing, revisionId: r1 } = await newProject(max, { tracks: [straight('t1')] })
+    const v2030 = (await max('POST', `/api/projects/${project.id}/variants`, { name: '2030', fromVariant: existing })).json().variant.id
     const checkIn = async (variant, base, change, extra = {}) => {
       const h = await head(max, variant)
       const res = await max('POST', `/api/variants/${variant}/revisions`, { base, payload: { ...h.payload, ...change }, remaps: [], ...extra })
       expect(res.statusCode).toBe(201)
       return res.json().revision.id
     }
-    const b2 = await checkIn(bestand, r1, { description: 'Korrektur' })
+    const b2 = await checkIn(existing, r1, { description: 'Korrektur' })
     const n2 = await checkIn(v2030, r1, { title: '2030' })
     const base = (await max('GET', `/api/revisions/${b2}/base/${n2}`)).json().base
     expect(base.id).toBe(r1)
@@ -247,7 +247,7 @@ describe('variants and revisions', () => {
     // Bestand → 2030, the merge carrying Bestand's head as its second parent.
     const merged = await checkIn(v2030, n2, { description: 'Korrektur' }, { mergeParent: b2 })
     expect((await max('GET', `/api/revisions/${b2}/base/${merged}`)).json().base.id).toBe(b2)
-    const b3 = await checkIn(bestand, b2, { description: 'Noch eine' })
+    const b3 = await checkIn(existing, b2, { description: 'Noch eine' })
     expect((await max('GET', `/api/revisions/${b3}/base/${merged}`)).json().base.id).toBe(b2)
 
     // How far Bestand is ahead of 2030: one revision since the merge.

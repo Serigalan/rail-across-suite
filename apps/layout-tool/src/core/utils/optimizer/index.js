@@ -7,4 +7,4 @@
 // the module's own business. See docs/modules/optimizer.md.
 
 export { runOptimizer } from './optimizerJob'
-export { optimizerRegelwerke } from './optimizerRegelwerke'
+export { optimizerRulebooks } from './optimizerRulebooks'

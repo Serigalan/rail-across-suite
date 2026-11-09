@@ -6,7 +6,7 @@
 use serde_json::{Value as Json, json};
 
 use crate::bundled::{rule_by_id, severity_rank, worst_severity};
-use crate::katalog::Source;
+use crate::catalogue::Source;
 
 fn field_of(from: &str) -> Option<&'static str> {
     match from {

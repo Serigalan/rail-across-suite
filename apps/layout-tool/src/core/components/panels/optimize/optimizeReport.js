@@ -21,7 +21,7 @@ const UNIT_BY_RULE = {
  * `fill(t, key, { ist }).replace(...)`. `regelId` names the rule of
  * the catalogue the limit came from, where it came from one (LP.UB.03, …).
  */
-export function formatGrund(grund) {
+export function formatReason(grund) {
   if (!grund?.regel) return null
   const unit = UNIT_BY_RULE[grund.regel]
   if (!unit) return null
@@ -34,8 +34,8 @@ export function formatGrund(grund) {
 
 /** `t(...)`'s result with `{ist}`/`{soll}` filled in and the rule named
  *  after it, or '' where there is no grund to show (an unchanged row). */
-export function grundText(t, grund) {
-  const formatted = formatGrund(grund)
+export function reasonText(t, grund) {
+  const formatted = formatReason(grund)
   if (!formatted) return ''
   const text = fill(t, formatted.key, { ist: formatted.ist, soll: formatted.soll })
   return formatted.regelId ? `${text} · ${formatted.regelId}` : text

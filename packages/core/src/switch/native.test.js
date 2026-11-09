@@ -4,7 +4,7 @@ import { validateProject } from '../project/index.js'
 import { rebuildSwitchSymbol, planSwitchDeletion, switchCouplings } from './index.js'
 import { callNative } from '../native/index.js'
 import { loadNativeFile } from '../native/node.js'
-import { hasPek, loadPek, hasPekBestand, loadPekBestand } from '../../test/pekFixture.js'
+import { hasPek, loadPek, hasPekExisting, loadPekExisting } from '../../test/pekFixture.js'
 
 // The switch module and the project's validation in Rust (decision 0020,
 // step 4), held to the JavaScript on real planning data — read at run time,
@@ -33,9 +33,9 @@ function differs(a, b, path = '') {
 }
 
 const plain = (v) => JSON.parse(JSON.stringify(v, (_, x) => (x instanceof Map ? Object.fromEntries(x) : x)))
-const records = () => [hasPek && loadPek(), hasPekBestand && loadPekBestand()].filter(Boolean)
+const records = () => [hasPek && loadPek(), hasPekExisting && loadPekExisting()].filter(Boolean)
 
-describe.skipIf(!(hasPek || hasPekBestand) || !loadNativeFile())('the switch module in Rust, on the PEK data', { timeout: 60000 }, () => {
+describe.skipIf(!(hasPek || hasPekExisting) || !loadNativeFile())('the switch module in Rust, on the PEK data', { timeout: 60000 }, () => {
   it('validates each record alike', () => {
     for (const record of records()) {
       expect(differs(callNative('project.validateProject', [record]), plain(validateProject(record)))).toBeNull()

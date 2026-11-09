@@ -3,9 +3,9 @@
 // element chains — checkTrack, elementVerdict, the highest speeds — recorded
 // from the JavaScript on chains laid by the factory from a fixed seed.
 import * as r from '../src/rules/index.js'
-import { elementVerdict } from '../src/rules/trassierungCheck.js'
+import { elementVerdict } from '../src/rules/alignmentCheck.js'
 import { ruleMaxSpeed } from '../src/rules/speed.js'
-import { catalogSpeedRange } from '../src/rules/regelkatalog.js'
+import { catalogSpeedRange } from '../src/rules/ruleCatalogue.js'
 import { maxSpeedFor } from '../src/rules/cant.js'
 import { arcFrom, straightFrom, transitionElement } from '../src/geometry/index.js'
 
@@ -40,7 +40,7 @@ export default function record() {
     const cant = Math.round((rand() - 0.2) * 32) * 5 * Math.sign(radius)
     const el = { speed, radius, cant, ...(i % 4 === 0 ? { switchBranch: 'branch', switchId: 's' } : {}), ...(i % 8 === 0 ? { cantException: ' Begründung ' } : {}) }
     limits.push(call('rules.computeAutoC', { speed, radius }, () => r.computeAutoC(speed, radius)))
-    limits.push(call('rules.regelCant', { speed, radius, inSwitch: i % 3 === 0 }, () => r.regelCant(speed, radius, { inSwitch: i % 3 === 0 })))
+    limits.push(call('rules.standardCant', { speed, radius, inSwitch: i % 3 === 0 }, () => r.standardCant(speed, radius, { inSwitch: i % 3 === 0 })))
     limits.push(call('rules.computeSwitchCant', { speed, radius }, () => r.computeSwitchCant(speed, radius)))
     limits.push(call('rules.computeCantDef', { speed, radius, cant }, () => r.computeCantDef(speed, radius, cant)))
     limits.push(call('rules.computeCantDefSigned', { speed, radius, cant }, () => r.computeCantDefSigned(speed, radius, cant)))

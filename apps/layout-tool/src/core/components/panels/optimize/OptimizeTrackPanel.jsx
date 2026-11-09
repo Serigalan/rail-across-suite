@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { loadTracks, updateTrack } from '../../../storage'
 import { trackLabel } from '@rail-across/core/track'
-import { KATALOG } from '@rail-across/core/rules'
+import { CATALOGUE } from '@rail-across/core/rules'
 import { runOptimizer } from '../../../utils/optimizer'
 import { moduleErrorText } from './moduleErrorText'
 import { reconstructElements } from '@rail-across/core/geometry'
@@ -23,7 +23,7 @@ import BackButton from '../BackButton'
 
 // The rulebook a run is held to: the one this bundle carries, which the
 // optimizer module is handed (decision 0019 of the suite).
-const REGELWERKE = [{ id: KATALOG.catalog.id, name: KATALOG.catalog.title, version: KATALOG.catalog.katalog_version }]
+const RULEBOOKS = [{ id: CATALOGUE.catalog.id, name: CATALOGUE.catalog.title, version: CATALOGUE.catalog.katalog_version }]
 
 const OPTIMIZE_PREVIEW_SOURCE = 'optimize-preview-source'
 const OPTIMIZE_PREVIEW_LAYER  = 'optimize-preview-layer'
@@ -54,7 +54,7 @@ function previewGeoJSON(elements) {
 // `initialPage`/`onExit` are what the merged splice-and-optimize panel passes:
 // it opens the panel straight in a mode and takes the back button back to its
 // own menu. Standalone, the panel starts in its own menu as before.
-export default function OptimizeTrackPanel({ initialPage = 'menu', onExit, onShowRegelwerk }) {
+export default function OptimizeTrackPanel({ initialPage = 'menu', onExit, onShowRulebook }) {
   const { t, fill } = useI18n()
   const map = useMap()
   const [page, setPage]           = useState(initialPage)    // 'menu' | 'track' | 'element' | 'axis'
@@ -194,7 +194,7 @@ export default function OptimizeTrackPanel({ initialPage = 'menu', onExit, onSho
       {backButton}
       <h2>{title}</h2>
       <OptimizeSettings label={label} what={mode === 'element' ? t('optimize_mode_element') : 'Track'}
-        s={settings} set={setSetting} regelwerke={REGELWERKE} onShowRegelwerk={onShowRegelwerk} />
+        s={settings} set={setSetting} rulebooks={RULEBOOKS} onShowRulebook={onShowRulebook} />
       <div className="element-form mt-8">
         <button className="ui-btn ui-btn-primary ui-btn-block" onClick={handleRun} disabled={running || !trackId}>{t('optimize_run')}</button>
         {running && (

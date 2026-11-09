@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import {
-  allBasemaps, DEFAULT_BASEMAP, LANDESVERMESSUNG_STATES, LANDESVERMESSUNG_THUMBNAIL, lvBasemapId, lvStatesOf,
+  allBasemaps, DEFAULT_BASEMAP, STATE_SURVEY_STATES, STATE_SURVEY_THUMBNAIL, lvBasemapId, lvStatesOf,
 } from '../../basemaps'
 import { KM_COLOR, KM_OTHER_COLOR, KM_JUMP_COLOR } from '../../map/kmLineLayer'
 import { useHiddenKmLines, useProject } from '../../hooks/useStore'
@@ -75,9 +75,9 @@ export default function LayersPanel({ activeBasemap, onBasemapChange, kmOverlays
     const next = on ? [...lvIds, id] : lvIds.filter((x) => x !== id)
     onBasemapChange(next.length ? lvBasemapId(next) : DEFAULT_BASEMAP)
   }
-  const lvSublabel = lvStates.length === 0 ? t('basemap_landesvermessung_pick')
+  const lvSublabel = lvStates.length === 0 ? t('basemap_state_survey_pick')
     : lvStates.length <= 2 ? lvStates.map((s) => s.name).join(', ')
-    : fill('basemap_landesvermessung_count', { n: lvStates.length })
+    : fill('basemap_state_survey_count', { n: lvStates.length })
 
   const kmOn = KM_OVERLAY_ENTRIES.filter(([key]) => kmOverlays[key])
   // The project's own lines: how many there are, and how many of them are hidden.
@@ -111,15 +111,15 @@ export default function LayersPanel({ activeBasemap, onBasemapChange, kmOverlays
             {group === 'germany' && (
               <FoldRow
                 id="layers-lv-states"
-                thumbnail={<img src={LANDESVERMESSUNG_THUMBNAIL} alt="" className="layer-thumbnail" />}
-                label={t('basemap_landesvermessung')}
+                thumbnail={<img src={STATE_SURVEY_THUMBNAIL} alt="" className="layer-thumbnail" />}
+                label={t('basemap_state_survey')}
                 sublabel={lvSublabel}
                 active={lvStates.length > 0}
                 open={lvOpen}
                 onToggle={() => setLvOpen((v) => !v)}
                 lang={language}
               >
-                {LANDESVERMESSUNG_STATES.map((state) => (
+                {STATE_SURVEY_STATES.map((state) => (
                   <OptionTile
                     key={state.id}
                     label={state.name}

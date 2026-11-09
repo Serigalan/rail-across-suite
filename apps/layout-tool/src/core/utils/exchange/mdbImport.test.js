@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest'
 import {
-  parseBauform, parseMdbPayload, splitKnoten, mdbRows,
-  listMdbStrecken, buildTracksFromMdb, mdbSwitchInventory, epsgForLagesystem,
+  parseSwitchForm, parseMdbPayload, splitNodes, mdbRows,
+  listMdbLines, buildTracksFromMdb, mdbSwitchInventory, epsgForLagesystem,
 } from './mdbImport'
 import { expectValidTrack } from '@rail-across/core/test/chainInvariants.js'
 
-import fixture from '../../test/fixtures/mdb_ausschnitt.json'
+import fixture from '../../test/fixtures/mdb_excerpt.json'
 
 /**
  * AP 6.3 — the Access database of the DB ASCII interface.
@@ -34,67 +34,67 @@ describe('parseMdbPayload', () => {
 
 describe('parseBauform', () => {
   it('reads prefix, rail, radius and slope from the usual spelling', () => {
-    expect(parseBauform('EW 54-190-1:9'))
+    expect(parseSwitchForm('EW 54-190-1:9'))
       .toMatchObject({ prefix: 'EW', kind: 'turnout', rail: 54, radius: 190, n: 9 })
   })
 
   it('takes the decimal comma the source mixes with the point', () => {
-    expect(parseBauform('SYM ABW 49-215-1:4,8').n).toBe(4.8)
-    expect(parseBauform('SYM ABW 54-215-1:4.8').n).toBe(4.8)
+    expect(parseSwitchForm('SYM ABW 49-215-1:4,8').n).toBe(4.8)
+    expect(parseSwitchForm('SYM ABW 54-215-1:4.8').n).toBe(4.8)
   })
 
   it('ignores the qualifiers that describe the alignment, not the form', () => {
-    expect(parseBauform('tlw IBW 54-500-1:12 iU'))
+    expect(parseSwitchForm('tlw IBW 54-500-1:12 iU'))
       .toMatchObject({ prefix: 'IBW', kind: 'turnout', rail: 54, radius: 500, n: 12 })
-    expect(parseBauform('IBW 54-500-1:14 z.T.i.U.').radius).toBe(500)
+    expect(parseSwitchForm('IBW 54-500-1:14 z.T.i.U.').radius).toBe(500)
   })
 
   it('maps the Kreuzungsweichen onto their kinds, EABKW with EKW', () => {
-    expect(parseBauform('DKW 49-190-1:9').kind).toBe('double_slip')
-    expect(parseBauform('EKW 54-500-1:9').kind).toBe('single_slip')
-    expect(parseBauform('EABKW 54-500-1:9').kind).toBe('single_slip')
-    expect(parseBauform('Kr 54-1:9').kind).toBe('crossing')
-    expect(parseBauform('BKr 54-1200/oo-1:11.515').kind).toBe('crossing')
+    expect(parseSwitchForm('DKW 49-190-1:9').kind).toBe('double_slip')
+    expect(parseSwitchForm('EKW 54-500-1:9').kind).toBe('single_slip')
+    expect(parseSwitchForm('EABKW 54-500-1:9').kind).toBe('single_slip')
+    expect(parseSwitchForm('Kr 54-1:9').kind).toBe('crossing')
+    expect(parseSwitchForm('BKr 54-1200/oo-1:11.515').kind).toBe('crossing')
   })
 
   // The Bogenkreuzungsweichen (AP 3.4): the same kinds, but marked, because
   // kind, slope and radius alone are also an EKW 500's.
   it('marks the Bogenkreuzungsweichen, the doppelte among them', () => {
-    expect(parseBauform('EBKW 54-500-1:9')).toMatchObject({ kind: 'single_slip', bogen: true, radius: 500, n: 9 })
-    expect(parseBauform('EW 60-500-1:12 fb')).toMatchObject({ rail: 60, radius: 500, n: 12, herzstueck: 'fb' })
-    expect(parseBauform('EW 60-760-1:14 gb')).toMatchObject({ herzstueck: 'gb' })
-    expect(parseBauform('EW 54-500-1:12').herzstueck).toBeNull()
-    expect(parseBauform('EABKW 54-500-1:9')).toMatchObject({ kind: 'single_slip', bogen: true })
-    expect(parseBauform('DBKW 54-500-1:9')).toMatchObject({ kind: 'double_slip', bogen: true, radius: 500 })
-    expect(parseBauform('EKW 54-500-1:9').bogen).toBe(false)
-    expect(parseBauform('DKW 49-190-1:9').bogen).toBe(false)
+    expect(parseSwitchForm('EBKW 54-500-1:9')).toMatchObject({ kind: 'single_slip', bogen: true, radius: 500, n: 9 })
+    expect(parseSwitchForm('EW 60-500-1:12 fb')).toMatchObject({ rail: 60, radius: 500, n: 12, herzstueck: 'fb' })
+    expect(parseSwitchForm('EW 60-760-1:14 gb')).toMatchObject({ herzstueck: 'gb' })
+    expect(parseSwitchForm('EW 54-500-1:12').herzstueck).toBeNull()
+    expect(parseSwitchForm('EABKW 54-500-1:9')).toMatchObject({ kind: 'single_slip', bogen: true })
+    expect(parseSwitchForm('DBKW 54-500-1:9')).toMatchObject({ kind: 'double_slip', bogen: true, radius: 500 })
+    expect(parseSwitchForm('EKW 54-500-1:9').bogen).toBe(false)
+    expect(parseSwitchForm('DKW 49-190-1:9').bogen).toBe(false)
   })
 
   it('reads a radius with decimals as one number, not two', () => {
-    expect(parseBauform('DBKW 54-500,860-1:9')).toMatchObject({ rail: 54, radius: 500.86, n: 9 })
-    expect(parseBauform('EBKW 54-500.860-1:9').radius).toBe(500.86)
-    expect(parseBauform('SYM ABW 54-215-1:4,8')).toMatchObject({ rail: 54, radius: 215, n: 4.8 })
+    expect(parseSwitchForm('DBKW 54-500,860-1:9')).toMatchObject({ rail: 54, radius: 500.86, n: 9 })
+    expect(parseSwitchForm('EBKW 54-500.860-1:9').radius).toBe(500.86)
+    expect(parseSwitchForm('SYM ABW 54-215-1:4,8')).toMatchObject({ rail: 54, radius: 215, n: 4.8 })
   })
 
   it('leaves a crossing without a radius rather than inventing one', () => {
-    expect(parseBauform('Kr 54-1:9')).toMatchObject({ rail: 54, radius: null, n: 9 })
+    expect(parseSwitchForm('Kr 54-1:9')).toMatchObject({ rail: 54, radius: null, n: 9 })
   })
 
   it('does not read a number that is no rail profile as one', () => {
     // `140` in EW 140-190-1:7 is not a rail — 190 is still the radius.
-    expect(parseBauform('EW 140-190-1:7')).toMatchObject({ rail: null, radius: 190, n: 7 })
+    expect(parseSwitchForm('EW 140-190-1:7')).toMatchObject({ rail: null, radius: 190, n: 7 })
   })
 
   it('reports nothing it cannot place', () => {
-    expect(parseBauform('unbekannt')).toMatchObject({ kind: null, radius: null, n: null })
-    expect(parseBauform('')).toMatchObject({ prefix: null, kind: null })
+    expect(parseSwitchForm('unbekannt')).toMatchObject({ kind: null, radius: null, n: null })
+    expect(parseSwitchForm('')).toMatchObject({ prefix: null, kind: null })
   })
 })
 
 describe('splitKnoten', () => {
   it('splits the fixed 15-character key into Betriebsstelle and number', () => {
-    expect(splitKnoten('  20212746 504A')).toEqual({ bst: '20212746', nr: '504A' })
-    expect(splitKnoten('  168591   301 ')).toEqual({ bst: '168591', nr: '301' })
+    expect(splitNodes('  20212746 504A')).toEqual({ bst: '20212746', nr: '504A' })
+    expect(splitNodes('  168591   301 ')).toEqual({ bst: '168591', nr: '301' })
   })
 })
 
@@ -127,7 +127,7 @@ describe('buildTracksFromMdb', () => {
   const strecke = fixture.tracks[0].strecke
 
   it('lists the line numbers the elements belong to', () => {
-    expect(listMdbStrecken(payload)).toEqual([{ strecke, count: 4 }])
+    expect(listMdbLines(payload)).toEqual([{ strecke, count: 4 }])
   })
 
   it('builds one chain that satisfies the model invariants', () => {

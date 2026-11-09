@@ -1,5 +1,5 @@
-import { buildElement } from './gleislageCsvImport'
-import { elementTypeName, epsgForLagesystem, normStrecke } from './mdbImport'
+import { buildElement } from './trackPositionCsvImport'
+import { elementTypeName, epsgForLagesystem, normLine } from './mdbImport'
 import { mdbStation } from './mdbGradient'
 import { clipRuns } from '../km'
 
@@ -63,7 +63,7 @@ function vertices(el, coords) {
 
 /**
  * The lines of the file as runs, keyed by line number: Map(line → runs).
- * `lines` limits it to these line numbers (strings, as normStrecke spells them).
+ * `lines` limits it to these line numbers (strings, as normLine spells them).
  */
 export function mdbKmRuns(payload, lines = null) {
   const coords = new Map()
@@ -72,7 +72,7 @@ export function mdbKmRuns(payload, lines = null) {
   }
   const lineOf = new Map()
   for (const s of payload?.stations ?? []) {
-    if (s?.pad && !lineOf.has(s.pad)) lineOf.set(s.pad, normStrecke(s.strecke))
+    if (s?.pad && !lineOf.has(s.pad)) lineOf.set(s.pad, normLine(s.strecke))
   }
 
   // Per line, the elements in file order with each pad pair once.
@@ -128,7 +128,7 @@ export function mdbKmRuns(payload, lines = null) {
  * project, and ensureKmLines fetches nothing over it.
  */
 export function mdbKmLines(payload, lines, box) {
-  const wanted = new Set([...lines].map(normStrecke))
+  const wanted = new Set([...lines].map(normLine))
   const out = []
   for (const [line, runs] of mdbKmRuns(payload, wanted)) {
     const clipped = box ? clipRuns(runs, box) : runs

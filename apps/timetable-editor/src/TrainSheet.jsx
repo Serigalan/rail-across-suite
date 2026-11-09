@@ -3,7 +3,7 @@ import { Badge, Button, Checkbox, IconButton, Message, NumberField, PlusIcon, Se
 import { atPlace, CATEGORIES, categoryColor, formatClock, itineraryOptions, newPoint, parseClock, trainProblems, trainTitle, withPlaces } from '@rail-across/timetables'
 import { formatDistance, heightProfile, lngLatAt, marginValue, placeOf, stationById } from '@rail-across/running-times'
 import { comfortsOf, curveFor, modeLabel, powerOf } from '@rail-across/vehicles'
-import { CopyIcon, DownIcon, TaktIcon, UpIcon } from './icons.jsx'
+import { CopyIcon, DownIcon, IntervalIcon, UpIcon } from './icons.jsx'
 import MapView from './map/MapView.jsx'
 import RunChart from './runtime/RunChart.jsx'
 import { insertionIndex } from './rows.js'
@@ -41,7 +41,7 @@ export default function TrainSheet(props) {
   return <Sheet {...props} />
 }
 
-function Sheet({ t, language, train, run, timetables, stations, catalogue, record, net, mayEdit, titles, chartT, update, onCopy, onTakt, onDelete }) {
+function Sheet({ t, language, train, run, timetables, stations, catalogue, record, net, mayEdit, titles, chartT, update, onCopy, onInterval, onDelete }) {
   const entry = catalogue.entries.find(e => e.key === train.vehicle) ?? null
   const problems = trainProblems(train, stations, { vehicle: catalogue.loading || Boolean(entry) })
   const set = (patch) => update(tr => ({ ...tr, ...patch }))
@@ -64,7 +64,7 @@ function Sheet({ t, language, train, run, timetables, stations, catalogue, recor
           {mayEdit && (
             <div className="ui-row tt-actions">
               <Button size="small" icon={<CopyIcon />} onClick={onCopy}>{t('train_copy')}</Button>
-              <Button size="small" icon={<TaktIcon />} onClick={onTakt}>{t('takt')}</Button>
+              <Button size="small" icon={<IntervalIcon />} onClick={onInterval}>{t('interval')}</Button>
               <Button size="small" variant="danger" icon={<TrashIcon size={14} />} onClick={onDelete}>{t('delete')}</Button>
             </div>
           )}

@@ -33,7 +33,7 @@ WebView2 is not bundled: it is part of Windows 11 and of current Windows 10; the
 otherwise. The executable is not signed, so SmartScreen warns on its first start.
 
 The release workflow (`.github/workflows/release-desktop.yml`) builds the packages for Windows — the ZIP and the
-installers — and macOS — a `.dmg` for Apple silicon —, on a tag `desktop-YYYY-MM-DD[.n]` as a release of that
+installers — and macOS — a `.dmg` for Apple silicon —, on a tag `rail-across-suite-vX.Y` (or `desktop-YYYY-MM-DD[.n]`) as a release of that
 tag, by hand as the run's artifacts only (the way to try it before the tag). Neither is signed by a developer account: SmartScreen
 warns; the Mac app is signed ad hoc (`bundle.macOS.signingIdentity: "-"`), so macOS refuses its first start as
 unverified — which System Settings can allow — rather than as damaged, which only `xattr -cr` gets past (the release

@@ -1,15 +1,16 @@
 name: Release desktop app
 
 # The desktop app as a GitHub release (decision 0021: it takes the place of the local build's zip): pushing a
-# tag desktop-YYYY-MM-DD[.n] builds the app with the project server in its process (crates/desktop) on
-# Windows and macOS and attaches the packages to a release of that tag. On Windows the package is portable: a
-# ZIP of one folder (crates/desktop/portable/), besides the installers; on macOS a .dmg for Apple silicon (the
-# runner's). Linux is built and smoke-checked by CI, not released. Run by hand, it builds the packages as the
-# run's artifacts and releases nothing — the way to try a release before its tag.
+# tag rail-across-suite-vX.Y (a version of the suite) or desktop-YYYY-MM-DD[.n] builds the app with the project
+# server in its process (crates/desktop) on Windows and macOS and attaches the packages to a release of that tag.
+# On Windows the package is portable: a ZIP of one folder (crates/desktop/portable/), besides the installers; on
+# macOS a .dmg for Apple silicon (the runner's). Linux is built and smoke-checked by CI, not released. Run by
+# hand, it builds the packages as the run's artifacts and releases nothing — the way to try a release before its
+# tag.
 
 on:
   push:
-    tags: ['desktop-*']
+    tags: ['rail-across-suite-v*', 'desktop-*']
   workflow_dispatch:
 
 permissions:
@@ -83,7 +84,8 @@ jobs:
           Copy-Item -Recurse mdbtools "$dir/mdbtools"
           Copy-Item portable/* $dir
           New-Item -ItemType Directory -Force target/release/bundle/portable | Out-Null
-          Compress-Archive -Path $dir -DestinationPath "target/release/bundle/portable/Rail-Across-Suite-${{ github.ref_name }}-windows-portable.zip"
+          $version = "${{ github.ref_name }}" -replace '^rail-across-suite-v', '' -replace '^desktop-', ''
+          Compress-Archive -Path $dir -DestinationPath "target/release/bundle/portable/Rail-Across-Suite-$version-windows-portable.zip"
       - uses: actions/upload-artifact@v4
         with:
           name: desktop-${{ matrix.os }}
@@ -95,7 +97,7 @@ jobs:
 
   release:
     needs: build
-    if: startsWith(github.ref, 'refs/tags/desktop-')
+    if: startsWith(github.ref, 'refs/tags/rail-across-suite-v') || startsWith(github.ref, 'refs/tags/desktop-')
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
@@ -107,6 +109,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           version="${GITHUB_REF_NAME#desktop-}"
+          version="${version#rail-across-suite-v}"
           find packages -type f > files.txt
           cat > release-notes.md <<EOF
           Rail-Across-Suite for the desktop, version ${version}: the suite with its project server in one window, no server and no Node needed.
@@ -114,4 +117,4 @@ jobs:
           - **Windows:** \`…-windows-portable.zip\` — unpack and start \`Rail-Across-Suite.exe\`; everything stays in that folder. Or install with the \`.msi\` or \`-setup.exe\`. Not signed: SmartScreen warns on the first start (More info → Run anyway). Needs WebView2 (part of Windows 11 and current Windows 10).
           - **macOS (Apple silicon):** the \`.dmg\`. Not signed or notarized: macOS refuses the first start — System Settings → Privacy & Security → Open anyway, or \`xattr -cr /Applications/Rail-Across-Suite.app\`.
           EOF
-          xargs -d '\n' -a files.txt gh release create "$GITHUB_REF_NAME" --title "Desktop ${version}" --notes-file release-notes.md --verify-tag
+          xargs -d '\n' -a files.txt gh release create "$GITHUB_REF_NAME" --title "Rail-Across-Suite ${version}" --notes-file release-notes.md --verify-tag

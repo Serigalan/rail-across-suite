@@ -4,7 +4,7 @@ import {
 } from '@rail-across/ui'
 import { Panel } from './draft.jsx'
 import { newId, labelOf, hasScreen } from '../model/domain.js'
-import { OPERATION, optionsOf, word } from '../labels.js'
+import { OPERATION, derailerOperationOptions, operationWord, optionsOf } from '../labels.js'
 import { DerailerIcon, SwitchIcon } from '../icons.jsx'
 import { CheckList, Created, EditorHead, LocationFields, ObjectFindings } from './common.jsx'
 import { locationFrom, placing, signalOptions as signalChoices } from '../model/places.js'
@@ -63,7 +63,7 @@ export default function ElementsPanel({ domain, net, findings, selection, select
   if (page === 'list') {
     const item = (e) => ({
       id: e.id, label: labelOf('switchElements', e, t),
-      sub: [e.derailer ? null : `${t('switch')} ${switchName(e.switchId)}`, word(OPERATION, e.operation, language)].filter(Boolean).join(' · '),
+      sub: [e.derailer ? null : `${t('switch')} ${switchName(e.switchId)}`, operationWord(e, language)].filter(Boolean).join(' · '),
       end: bad.has(e.id) ? <Badge tone="danger">!</Badge> : null,
     })
     const byName = (a, b) => String(a.label).localeCompare(String(b.label), 'de', { numeric: true })
@@ -105,7 +105,7 @@ export default function ElementsPanel({ domain, net, findings, selection, select
     return (
       <Panel title={t('create_derailer')} intro={t('create_derailer_intro')} back={back}>
         <div className="ui-fields">
-          <SelectField compact wide label={t('operation')} value={operation} options={optionsOf(OPERATION, language)} onChange={(v) => setOperation(v ?? 'electricRemote')} />
+          <SelectField compact wide label={t('operation')} value={operation} options={derailerOperationOptions(language, operation)} onChange={(v) => setOperation(v ?? 'electricRemote')} />
           <SelectField compact wide label={t('preferred')} value={applied} options={[{ value: 'applied', label: t('applied') }, { value: 'removed', label: t('removed') }]} onChange={setApplied} />
         </div>
         <div className="ui-row">
@@ -151,7 +151,8 @@ function ElementEditor({ element: chosen, domain, net, findings, ops, setMode, s
       <div className="ui-fields">
         <TextField compact label={t('name')} value={chosen.name ?? ''} disabled={readOnly} onChange={(v) => set({ name: v || undefined })} />
         <TextField compact label={t('area')} value={chosen.areaNumber ?? ''} disabled={readOnly} onChange={(v) => set({ areaNumber: v || undefined })} />
-        <SelectField compact wide label={t('operation')} value={chosen.operation} options={optionsOf(OPERATION, language)} disabled={readOnly} onChange={(v) => set({ operation: v })} />
+        <SelectField compact wide label={t('operation')} value={chosen.operation}
+          options={chosen.derailer ? derailerOperationOptions(language, chosen.operation) : optionsOf(OPERATION, language)} disabled={readOnly} onChange={(v) => set({ operation: v })} />
         {chosen.derailer ? (
           <SelectField compact wide label={t('preferred')} value={chosen.derailer.preferredPosition ?? null} empty={t('none')} disabled={readOnly}
             options={[{ value: 'applied', label: t('applied') }, { value: 'removed', label: t('removed') }]}

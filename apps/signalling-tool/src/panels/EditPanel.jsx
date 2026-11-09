@@ -3,7 +3,7 @@ import { Badge, GroupedList, Option, Options, OptionsDivider, OptionsHeading } f
 import { Panel } from './draft.jsx'
 import { protectionSystemOf, titleIn } from '@rail-across/core/signalling'
 import { findLogical, hasScreen, labelOf } from '../model/domain.js'
-import { POINT_KIND, SECTION_KIND, VIRTUAL_FUNCTION, baliseWord, logicalSignalWord, word } from '../labels.js'
+import { SECTION_KIND, VIRTUAL_FUNCTION, baliseWord, logicalSignalWord, pointKindWord, word } from '../labels.js'
 import { signalTone } from '../plan/symbols.js'
 import { OFFSET, locationFrom, mountedFrom, placing, sideAlong, trackName } from '../model/places.js'
 import LocationEditor from './editors/LocationEditor.jsx'
@@ -135,7 +135,7 @@ export default function EditPanel({ domain, net, core, findings, extents, select
     },
     {
       key: 'detectionPoints', heading: t('section_detection'), title: t('detection_points'),
-      items: detectionPoints.map(p => ({ id: `detectionPoints:${p.id}`, label: labelOf('detectionPoints', p, t), sub: `${word(POINT_KIND, p.kind, language)} · ${where(p.at)}` })).sort(byName),
+      items: detectionPoints.map(p => ({ id: `detectionPoints:${p.id}`, label: labelOf('detectionPoints', p, t), sub: `${pointKindWord(p.kind, language)} · ${where(p.at)}` })).sort(byName),
     },
     ...[...new Set(balises.map(b => b.system))].sort().map(system => ({
       key: `balises-${system}`, heading: t('section_balises'), title: titleIn(protectionSystemOf(system), language) ?? system,

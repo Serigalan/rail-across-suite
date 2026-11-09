@@ -3,7 +3,7 @@ import { Button, NumberField, Option, Options, OptionsDivider, SelectField, Text
 import { Panel } from './draft.jsx'
 import { deleted, labelOf, newId } from '../model/domain.js'
 import { LAYOUT, detectionLayout } from '../model/detectionLayout.js'
-import { POINT_KIND, SECTION_KIND, optionsOf } from '../labels.js'
+import { SECTION_KIND, optionsOf, pointKindOptions } from '../labels.js'
 import { DetectionIcon, SectionIcon, SwitchIcon } from '../icons.jsx'
 import { Created } from './common.jsx'
 import { kmNameAt, locationFrom, pickingPoints } from '../model/places.js'
@@ -145,7 +145,7 @@ function PointPage({ points, net, kmLines, offer, remake, t, language }) {
   offer(makeOf(f), pointMade(t))
   return <>
     <div className="ui-fields">
-      <SelectField compact label={t('kind')} value={f.kind} options={optionsOf(POINT_KIND, language)} onChange={(v) => set({ kind: v ?? 'axleCounter' })} />
+      <SelectField compact label={t('kind')} value={f.kind} options={pointKindOptions(language, f.kind)} onChange={(v) => set({ kind: v ?? 'axleCounter' })} />
       <TextField compact label={t('name')} value={f.name} onChange={(name) => set({ name })} />
     </div>
     <p className="ui-muted">{t(kmLines?.length ? 'point_km_name' : 'point_km_none')}</p>

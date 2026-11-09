@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { Button, Checkbox, Section, SelectField, TextField } from '@rail-across/ui'
 import { labelOf } from '../../model/domain.js'
-import { POINT_KIND, SECTION_KIND, optionsOf } from '../../labels.js'
+import { SECTION_KIND, optionsOf, pointKindOptions } from '../../labels.js'
 import { CheckList, EditorHead, LocationFields, ObjectFindings } from '../common.jsx'
 import { locationFrom, pickingPoints, placing } from '../../model/places.js'
 
@@ -52,7 +52,7 @@ export function PointEditor({ point, domain, net, findings, ops, setMode, readOn
       <ObjectFindings findings={findings} collection="detectionPoints" id={point.id} t={t} />
       <div className="ui-fields">
         <TextField compact label={t('name')} value={point.name ?? ''} disabled={readOnly} onChange={(v) => set({ name: v || undefined })} />
-        <SelectField compact label={t('kind')} value={point.kind} options={optionsOf(POINT_KIND, language)} disabled={readOnly}
+        <SelectField compact label={t('kind')} value={point.kind} options={pointKindOptions(language, point.kind)} disabled={readOnly}
           onChange={(v) => set({ kind: v })} />
       </div>
       <Section title={t('location')}>

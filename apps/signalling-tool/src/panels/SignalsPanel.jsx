@@ -242,7 +242,7 @@ function LogicalPage({ domain, net, offer, remake, noNet, created, onAdded, wher
     <div className="ui-fields">
       <SelectField compact wide label={t('system')} value={f.system} options={signalSystemOptions(language)}
         onChange={(v) => set({ system: v, type: firstType(v) })} />
-      <SelectField compact wide label={t('type')} value={f.type ?? null} options={signalTypeOptions(f.system, language, t)} onChange={(v) => set({ type: v ?? undefined })} />
+      <SelectField compact wide label={t('type')} value={f.type ?? null} options={signalTypeOptions(f.system, language, t, f.type)} onChange={(v) => set({ type: v ?? undefined })} />
       <SelectField compact wide label={t('function')} value={f.fn} options={functionOptions(language)}
         onChange={(v) => { const fn = v ?? 'entry'; set({ fn, type: typeForChoice(f.system, fn, f.type) }) }} />
       <SelectField compact wide label={t('create_where')} value={where} onChange={setWhere}

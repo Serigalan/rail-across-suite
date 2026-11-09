@@ -84,6 +84,18 @@ export const POINT_KIND = {
   insulatedJointTwoRail: L('Isolierstoß zweischienig', 'Insulated joint, two rails'), electricalJoint: L('Elektrischer Trennstoß', 'Electrical joint'),
 }
 
+/**
+ * The kinds a detection point is given here, in short words: an axle counter, an insulated joint —
+ * the domain's insulatedJointTwoRail, which the export writes as PlanPro's Isolierstoss_zweischienig.
+ */
+const POINT_CHOICES = { axleCounter: L('Achszähler', 'Axle counter'), insulatedJointTwoRail: L('Isolierstoß', 'Insulated joint') }
+
+/** The kinds of detection point to choose from, and the one it has where that is another (read in). */
+export const pointKindOptions = (language, current) => choicesWith(POINT_CHOICES, POINT_KIND, language, current)
+
+/** A detection point's kind in words, in the short word where it is one to choose. */
+export const pointKindWord = (kind, language) => word(POINT_CHOICES[kind] ? POINT_CHOICES : POINT_KIND, kind, language)
+
 export const SECTION_KIND = {
   axleCounting: L('Achszählung', 'Axle counting'), audioFrequencyCircuit: L('TF-Gleisstromkreis', 'Audio frequency circuit'),
   lowFrequencyCircuit: L('NF-Gleisstromkreis', 'Low frequency circuit'), ftgs: L('FTGS', 'FTGS'), other: L('sonstige', 'other'),
@@ -96,6 +108,21 @@ export const OPERATION = {
   disabledRight: L('stillgelegt rechts', 'disabled right'), other: L('sonstige', 'other'),
 }
 
+/**
+ * How a derailer is worked, as it is chosen: remote, local, not worked — the domain's electricRemote and
+ * electricLocal, which the export writes as PlanPro's elektrisch_ferngestellt and elektrisch_ortsgestellt.
+ */
+const DERAILER_OPERATION = {
+  electricRemote: L('ferngestellt', 'remote'), electricLocal: L('ortsgestellt', 'local'), notWorked: L('nicht stellbar', 'not worked'),
+}
+
+/** The ways a derailer is worked to choose from, and the one it has where that is another (read in). */
+export const derailerOperationOptions = (language, current) => choicesWith(DERAILER_OPERATION, OPERATION, language, current)
+
+/** How a switch element or derailer is worked, in words — a derailer's in the short word it is chosen by. */
+export const operationWord = (element, language) =>
+  word(element.derailer && DERAILER_OPERATION[element.operation] ? DERAILER_OPERATION : OPERATION, element.operation, language)
+
 export const TRAIN_TYPE = {
   ZZ: L('ZZ Zug-Zugstraße', 'ZZ train to train route'), ZR: L('ZR Zug-Rangierstraße', 'ZR train to shunting route'),
   ZU: L('ZU Umfahrstraße', 'ZU bypass route'), ZH: L('ZH Hilfszugstraße', 'ZH auxiliary train route'),
@@ -106,6 +133,12 @@ export const SHUNTING_TYPE = { RR: L('RR', 'RR'), RT: L('RT', 'RT'), RTU: L('RTU
 /** The options of a table in a language, for a SelectField. */
 export const optionsOf = (table, language) => Object.entries(table).map(([value, l]) => ({ value, label: l[language] ?? l.de }))
 
+/** The options of `choices`, and `current` in the words of `all` where it is none of them (read in). */
+const choicesWith = (choices, all, language, current) => [
+  ...optionsOf(choices, language),
+  ...(current != null && !choices[current] ? [{ value: current, label: word(all, current, language) }] : []),
+]
+
 /** The word for a value, or the value itself. */
 export const word = (table, value, language) => (value == null ? '' : table[value]?.[language] ?? table[value]?.de ?? String(value))
 
@@ -113,11 +146,21 @@ export const word = (table, value, language) => (value == null ? '' : table[valu
 export const signalSystemOptions = (language) =>
   Object.entries(SIGNAL_CATALOGUE.systeme).map(([value, system]) => ({ value, label: titleIn(system, language) }))
 
-/** The kinds of signal of a system, and `other`: [{ value, label }]. */
-export const signalTypeOptions = (system, language, t) => [
-  ...Object.entries(SIGNAL_CATALOGUE.systeme[system]?.signalarten ?? {}).map(([value, kind]) => ({ value, label: titleIn(kind, language) })),
-  { value: 'other', label: t('other') },
-]
+/**
+ * The kinds of signal a system's signals are given here: of Ks the main, multi-section and distant
+ * signal and the distant signal's repeater — no shunting variants, no `other`; of every other system
+ * its kinds and `other`.
+ */
+const SIGNAL_TYPES_SET = { ks: ['main', 'multiSection', 'distant', 'distantRepeater'] }
+
+/** The kinds of signal of a system to choose from, and the one it has where that is another (read in): [{ value, label }]. */
+export function signalTypeOptions(system, language, t, current) {
+  const kinds = SIGNAL_CATALOGUE.systeme[system]?.signalarten ?? {}
+  const set = SIGNAL_TYPES_SET[system]
+  const label = (value) => (kinds[value] ? titleIn(kinds[value], language) : value === 'other' ? t('other') : value)
+  const values = set ?? [...Object.keys(kinds), 'other']
+  return [...values, ...(current != null && !values.includes(current) ? [current] : [])].map(value => ({ value, label: label(value) }))
+}
 
 /** A logical signal in words: its kind, else its system, e.g. "Ks-Hauptsignal". */
 export function logicalSignalWord(l, language) {

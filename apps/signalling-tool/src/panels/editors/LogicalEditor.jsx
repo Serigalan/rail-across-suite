@@ -57,7 +57,7 @@ export default function LogicalEditor({ id, found, domain, net, findings, select
           options={systems.filter(o => o.value === logical.system || !taken.has(o.value))}
           onChange={(v) => change(withKind(logical, v, firstType(v)))} />
         <SelectField compact wide label={t('type')} value={logical.type ?? null} empty={t('none')} disabled={readOnly}
-          options={signalTypeOptions(logical.system, language, t)} onChange={(v) => change(withKind(logical, logical.system, v ?? undefined))} />
+          options={signalTypeOptions(logical.system, language, t, logical.type)} onChange={(v) => change(withKind(logical, logical.system, v ?? undefined))} />
         <SelectField compact wide label={t('function')} value={functionChoiceOf(logical.function, logical.type) ?? null} empty={t('none')} disabled={readOnly}
           options={functionOptions(language, logical.function)} onChange={(v) => {
             // A distant signal or its repeater is of its own kind as well.

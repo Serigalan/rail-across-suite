@@ -1,12 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import * as Q from './queries.js'
 
 // The small queries kept in JavaScript beside the crate are held to what the
 // crate answers: its frozen vectors (crates/track/tests/vectors/track.json),
 // recorded from this very JavaScript before the module took the rest over.
 
-const cases = readFileSync(new URL('../../../../crates/track/tests/vectors/track.json', import.meta.url), 'utf8')
+const VECTORS = join(import.meta.dirname, '../../../../crates/track/tests/vectors/track.json')
+const cases = readFileSync(VECTORS, 'utf8')
   .split('\n').map(l => l.trim().replace(/,$/, '')).filter(l => l.startsWith('{"op"')).map(l => JSON.parse(l))
 
 // As the recorder called them where it called them otherwise than plainly.

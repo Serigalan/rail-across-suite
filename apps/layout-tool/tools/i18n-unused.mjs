@@ -15,7 +15,8 @@ import { join } from 'node:path'
 
 const ROOT = new URL('..', import.meta.url).pathname
 const LOCALES = join(ROOT, 'src/core/locales')
-const SKIP = new Set(['node_modules', 'target', 'tests'])
+// Built output (a desktop app's site, a bundle) holds every key it was built with: not a source.
+const SKIP = new Set(['node_modules', 'target', 'tests', 'site', 'dist'])
 const files = (dir) => readdirSync(dir).flatMap(n => {
   const p = join(dir, n)
   if (SKIP.has(n)) return []
@@ -32,9 +33,11 @@ const keys = Object.keys(JSON.parse(readFileSync(join(LOCALES, 'en.json'), 'utf8
 const literals = new Set([...sources.matchAll(/['"`]([a-z][a-z0-9_]*)['"`]/g)].map(m => m[1]))
 const prefixes = new Set([
   ...[...sources.matchAll(/`([a-z][a-z0-9_]*_)\$\{/g)].map(m => m[1]),
+  // A key the core's crates build: format!("constraints_weichen_{key}").
+  ...[...sources.matchAll(/format!\("([a-z][a-z0-9_]*_)\{/g)].map(m => m[1]),
   ...[...literals].filter(l => l.endsWith('_')),
 ])
-const suffixes = new Set([...sources.matchAll(/\}(_[a-z0-9_]+)`/g)].map(m => m[1]))
+const suffixes = new Set([...sources.matchAll(/\}(_[a-z0-9_]+)[`"]/g)].map(m => m[1]))
 const used = (key) => literals.has(key) || [...prefixes].some(p => key.startsWith(p)) ||
   [...suffixes].some(s => key.endsWith(s) && literals.has(key.slice(0, -s.length)))
 const unused = keys.filter(k => !used(k))

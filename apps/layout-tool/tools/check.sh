@@ -27,8 +27,10 @@ if [ ! -x "$cargo" ]; then
   echo "== Rust: skipped (no cargo)"
   exit 0
 fi
+# Both are members of the repository's cargo workspace, asked for by their packages.
 for crate in crossover optimizer; do
   echo "== Rust: $crate (format, clippy$([ "$quick" = 0 ] && echo ', tests'))"
-  (cd "../../$crate" && "$cargo" fmt --check && "$cargo" clippy -q --all-targets -- -D warnings)
-  if [ "$quick" = 0 ]; then (cd "../../$crate" && "$cargo" test -q --release >/dev/null); fi
+  pkgs=(-p "rail-across-$crate" -p "rail-across-$crate-wasm")
+  (cd ../.. && "$cargo" fmt --check "${pkgs[@]}" && "$cargo" clippy -q --all-targets "${pkgs[@]}" -- -D warnings)
+  if [ "$quick" = 0 ]; then (cd ../.. && "$cargo" test -q --release "${pkgs[@]}" >/dev/null); fi
 done

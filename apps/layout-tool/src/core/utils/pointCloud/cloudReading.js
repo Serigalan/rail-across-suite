@@ -2,9 +2,8 @@ import * as pc from '@rail-across/pointcloud'
 import { forgetSource, forgetSources, sourceOf } from './cloudSource'
 
 // The reading functions of @rail-across/pointcloud as the app calls them: by
-// project, each cloud given the source it is read from on this device — its
-// tile file in OPFS, or the server's (cloudSource). The package itself only
-// reads `cloud.source`.
+// project, each cloud given the source it is read from — the server's tiles,
+// through the cache (cloudSource). The package itself only reads `cloud.source`.
 
 /** The cloud with its source, as the package reads it. */
 const withSource = (projectId, cloud) => (cloud.source ? cloud : { ...cloud, source: sourceOf(projectId, cloud) })

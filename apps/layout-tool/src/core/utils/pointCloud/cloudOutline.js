@@ -54,9 +54,3 @@ function placedSegments(index) {
   const z = (index.bounds.minZ + index.bounds.maxZ) / 2
   return segs.map(seg => seg.map(([e, n]) => toPlane(e, n, z).slice(0, 2)))
 }
-
-/** Width across and length along the cloud's box [m]. */
-export const cloudSize = (index) => [
-  index.bounds.maxE - index.bounds.minE,
-  index.bounds.maxN - index.bounds.minN,
-]

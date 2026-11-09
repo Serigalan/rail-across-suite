@@ -125,7 +125,7 @@ export default function CrossSectionOverlay({ at, onAtChange, onClose, detached 
   const [reach, setReach] = useState(DEFAULT_REACH)
   const [terrain, setTerrain] = useState(null)   // { key, points: [{ y, z }], sources }
   const [terrainSource, setTerrainSource] = useState(chosenTerrainSource)
-  const [clouds, setClouds] = useState([])          // the project's point clouds, on the server and on this device
+  const [clouds, setClouds] = useState([])          // the project's point clouds, from the server
   const [cloudLevel, setCloudLevel] = useState(1)   // the server clouds' level: 1 the 2-cm voxel, 0 the original
   const [cloudOn, setCloudOn] = useState(true)
   const [pairPick, setPairPick] = useState(false)   // picking pairs for the 3D window's re-referencing

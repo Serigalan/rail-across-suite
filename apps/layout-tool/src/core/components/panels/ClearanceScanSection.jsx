@@ -15,11 +15,11 @@ import ServerRunStatus from './pointCloud/ServerRunStatus'
 
 /**
  * The clearance check along the whole track against the project's point
- * clouds — on the server and on this device (AP 11.5, 13.6): a list of the stretches where measured
+ * clouds (AP 11.5, 13.6): a list of the stretches where measured
  * points reach into the outline, each a click away in the cross section.
  * Absent where the project has no cloud here.
  *
- * Where every cloud lies on the server and the user may start jobs there, the
+ * Where the user may start jobs on the server, the
  * check runs on the server (AP 13.7, decision 237): the window may be closed,
  * and the last result for the track is there for every member afterwards.
  */

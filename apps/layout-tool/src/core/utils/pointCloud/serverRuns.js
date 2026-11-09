@@ -12,8 +12,8 @@ export const runIsActive = (run) => ACTIVE.has(run?.status)
 
 /**
  * Whether a long run goes to the server (decision 237): when the user may
- * start one (decision 203) and every cloud it reads lies there. A cloud only
- * on this device, or a user without the right, keeps it in the browser.
+ * start one (decision 203) and every cloud it reads is the server's. A user
+ * without the right runs it in the browser, on the tiles read from the server.
  */
 export const runsOnServer = (clouds, mayEdit) => Boolean(mayEdit) && clouds.length > 0 && clouds.every(c => c.server)
 

@@ -19,7 +19,7 @@ await loadPointCloudModule(moduleUrl)
 const bodies = importLevels({ source, levels: [1], writers: { 1: writer }, sourceCrs: 5678, targetCrs: 25832 })
 ```
 
-The rest is JavaScript and touches no browser API. Where a cloud's tile file lies — the browser's OPFS, the
+The rest is JavaScript and touches no browser API. Where a cloud's tile file lies — the browser's OPFS cache, the
 server, memory — is the caller's business: every function that reads tiles takes the cloud with its `source`,
 `{ read(offset, length), readMany(ranges) }`, each giving bytes.
 

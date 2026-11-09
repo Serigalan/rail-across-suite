@@ -135,7 +135,7 @@ and few inline styles.
 
 ## What the browser keeps
 
-`localStore.js` lists and clears what the browser keeps for the app (OPFS clouds, settings, import reports,
+`localStore.js` lists and clears what the browser keeps for the app (the cache of the server's clouds, clouds earlier versions read in, settings, import reports,
 hidden tracks, the working copies), in the storage dialog (`components/home/LocalStorageDialog.jsx`). The
 projects themselves are the server's — the suite's, or the desktop app's own.
 

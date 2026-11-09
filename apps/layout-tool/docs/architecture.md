@@ -108,7 +108,7 @@ own module, and a worker only the server build needs lives in `src/server` (the 
 | Worker | Why |
 |---|---|
 | `utils/optimizer/optimizerWorker.js` | splicing, reconnecting, optimizing, the alignment fit: searches that build a chain many times (up to seconds) |
-| `utils/pointCloud/pointCloudWorker.js` | importing gigabytes of LAS/LAZ/E57 into OPFS |
+| `utils/pointCloud/pointCloudWorker.js` | reading a chosen LAS/LAZ/E57 file's header and first points before it is loaded onto the server |
 | `utils/crossover/crossoverWorker.js` | the search of the extended switch connection (a few hundred milliseconds to seconds) |
 | `src/server/mdb/mdbWorker.js` | building, placing and transforming a whole MDB takes seconds |
 | `src/server/cloud3d/tileWorker.js` | decoding and transforming point tiles for the 3D view |

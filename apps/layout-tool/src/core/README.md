@@ -1,7 +1,7 @@
 # src/core — browser components
 
 The browser's part of the app: the project store, the map, the panels, the
-point clouds in OPFS, the plan export. Where a server part has to appear,
+point clouds read from the server, the plan export. Where a server part has to appear,
 `core` offers an extension point (`core/extensions.js`) and
 `src/server/register.js` fills it. There is one build (decision 0021).
 

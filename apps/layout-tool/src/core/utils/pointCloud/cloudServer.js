@@ -9,8 +9,7 @@ import { provided } from '../../extensions'
  *     upload, resume, remove, retry, open3d     (null: not offered)
  *   }
  *
- * Without the server: no clouds there, nothing to upload — the panel reads
- * clouds in on this device.
+ * Without it (tests): no clouds, nothing to load.
  */
 const NO_SERVER = Object.freeze({
   rows: [], uploads: [], readable: [], outlines: [], refresh: async () => {},

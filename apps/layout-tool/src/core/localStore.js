@@ -1,20 +1,19 @@
 import { REPORT_KEY_PREFIX, HIDDEN_KEY_PREFIX, HIDDEN_KM_KEY_PREFIX, forgetHiddenTracks } from './storage'
 import { extensionsOf } from './extensions'
 import { SETTINGS_KEY } from './utils/common'
-import {
-  INDEX_FILE, opfsAvailable, storageEstimate, storagePersisted, forgetAllClouds, forgetCloud,
-  forgetCache,
-} from './utils/pointCloud'
+import { forgetAllClouds, forgetCloud, forgetCache } from './utils/pointCloud'
 import { formatNum } from './locales/i18n'
 
 /**
  * What this browser keeps for the app, and taking it away again — the local
  * storage dialog of the start page. Two places hold it here:
  *
- *   files          the Origin Private File System: the point clouds under
- *                  pointclouds/<projectId>/<cloudId>/, each one entry; an
- *                  import that never finished is one too, without a name;
- *                  anything else at the top of the tree one entry each
+ *   files          the Origin Private File System: the cache of the server's
+ *                  clouds, and point clouds read in on this device by earlier
+ *                  versions (pointclouds/<projectId>/<cloudId>/, each one
+ *                  entry, an import that never finished one too, without a
+ *                  name) — the clouds are the server's now, these can only
+ *                  go; anything else at the top of the tree one entry each
  *   entries        localStorage: the settings, the import reports and the
  *                  hidden tracks — small, but each its own entry
  *
@@ -32,6 +31,28 @@ import { formatNum } from './locales/i18n'
  */
 
 const CLOUD_ROOT = 'pointclouds'
+const INDEX_FILE = 'index.json'
+
+const opfsAvailable = () => typeof navigator !== 'undefined' && !!navigator.storage?.getDirectory
+
+/** Whether the browser has promised to keep this origin's storage. */
+async function storagePersisted() {
+  try {
+    return (await navigator.storage.persisted?.()) ?? false
+  } catch {
+    return false
+  }
+}
+
+/** Space used and offered to this origin [bytes], or null where the browser does not say. */
+async function storageEstimate() {
+  try {
+    const { usage, quota } = await navigator.storage.estimate()
+    return { usage, quota, free: Math.max(0, quota - usage) }
+  } catch {
+    return null
+  }
+}
 
 /** Bytes as B, kB, MB or GB, in the interface language's numbers. */
 export function bytesText(bytes, language) {

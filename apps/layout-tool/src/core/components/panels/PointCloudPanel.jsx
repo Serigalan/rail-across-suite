@@ -1,8 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
-import {
-  listClouds, deleteCloud, opfsAvailable, storagePersisted, storageEstimate, outlineFeature,
-  forgetCloud, cloudServerHook, sizeText,
-} from '../../utils/pointCloud'
+import { useEffect, useState } from 'react'
+import { outlineFeature, cloudServerHook } from '../../utils/pointCloud'
 import { useI18n } from '../../locales/i18nContext'
 import { useProject } from '../../hooks/useStore'
 import { useMayEditClouds } from '../../hooks/useCurrentUser'
@@ -26,23 +23,18 @@ const OUTLINE_LAYERS = [{
 }]
 
 /**
- * Point clouds of the project (AP 13.6): those on the server, which every
- * member sees, and those read in on this device only (Entscheidung 204) —
- * one list. Uploading is the default, reading in locally stays; both, and
- * deleting, are for the admin and whoever has the right (decision 203). Below
- * the list finding a track's axis in the clouds (AP 12.2) and the measured
- * axes. The server's half — the list there, uploading, the 3D window — is the
- * server's (`useCloudServer`, Paket L); without it the panel reads clouds in
- * on this device.
+ * Point clouds of the project (AP 13.6): they lie on the project server —
+ * on the server, or in the desktop app the server in its own process — and
+ * every member sees them. Loading one and deleting are for the admin and
+ * whoever has the right (decision 203). Below the list finding a track's
+ * axis in the clouds (AP 12.2) and the measured axes. The list, loading and
+ * the 3D window are the server's (`useCloudServer`, server/useCloudServer.js).
  */
 export default function PointCloudPanel() {
-  const { t, fill } = useI18n()
+  const { t } = useI18n()
   const project = useProject()
   const mayEdit = useMayEditClouds()
-  const [local, setLocal] = useState(null)
-  const [storage, setStorage] = useState(null)  // { usage, quota, free, persisted }
   const [message, setMessage] = useState(null)  // { kind: 'error'|'done', text }
-  const [running, setRunning] = useState(false)
   // The measured axis whose points are being taken out on the map — the
   // trace's own clicks on the map wait meanwhile.
   const [erasingId, setErasingId] = useState(null)
@@ -51,55 +43,27 @@ export default function PointCloudPanel() {
   const useCloudServer = cloudServerHook()
   const remote = useCloudServer(project.id, { onMessage: setMessage })
 
-  const refreshLocal = async () => {
-    setLocal(opfsAvailable() ? await listClouds(project.id).catch(() => []) : [])
-    const estimate = await storageEstimate()
-    setStorage(estimate && { ...estimate, persisted: await storagePersisted() })
-  }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { refreshLocal() }, [project.id])
-
-  // The clouds the trace reads (the server's at level 1 and this device's),
-  // and those whose outline is drawn.
-  const readable = useMemo(() => [...remote.readable, ...(local ?? [])], [remote.readable, local])
+  // The clouds the trace reads (level 1), and those whose outline is drawn (level 2).
+  const readable = remote.readable
   const outline = usePreview(OUTLINE_LAYERS)
   useEffect(() => {
-    outline.set(OUTLINE_SOURCE, { type: 'FeatureCollection', features: [...remote.outlines, ...(local ?? [])].map(outlineFeature) })
-  }, [outline, remote.outlines, local])
-
-  const removeLocal = async (cloud) => {
-    try {
-      await deleteCloud(project.id, cloud.id)
-      forgetCloud(cloud.id)
-    } catch (err) {
-      setMessage({ kind: 'error', text: `${t('pointcloud_delete_failed')}: ${err.message}` })
-    }
-    refreshLocal()
-  }
+    outline.set(OUTLINE_SOURCE, { type: 'FeatureCollection', features: remote.outlines.map(outlineFeature) })
+  }, [outline, remote.outlines])
 
   return (
     <>
       <h2>{t('pointcloud_title')}<InfoTip text={t('pointcloud_hint')} /></h2>
-      {!opfsAvailable() && <p className="form-error">{t('pointcloud_no_opfs')}</p>}
-      {mayEdit
-        ? <CloudImportForm storage={storage} onMessage={setMessage} onChanged={refreshLocal} onRunning={setRunning} onUpload={remote.upload}
-          localAvailable={opfsAvailable()} />
+      {mayEdit && remote.upload
+        ? <CloudImportForm onMessage={setMessage} onLoad={remote.upload} />
         : <p className="selecting-hint">{t('pointcloud_view_only')}</p>}
       {message && <p className={message.kind === 'error' ? 'form-error' : 'selecting-hint'}>{message.text}</p>}
-      <CloudList local={local} server={remote.rows} uploads={remote.uploads} mayEdit={mayEdit} busy={running}
-        onDeleteLocal={removeLocal} onDeleteServer={remote.remove} onResume={remote.resume} onRetry={remote.retry}
-        onOpen3d={remote.open3d} />
-      {readable.length > 0 && !running && (
+      <CloudList clouds={remote.rows} uploads={remote.uploads} mayEdit={mayEdit}
+        onDelete={remote.remove} onResume={remote.resume} onRetry={remote.retry} onOpen3d={remote.open3d} />
+      {readable.length > 0 && (
         <RailTraceSection clouds={readable} paused={!!erasingId} retrace={retrace} onRetraced={() => setRetrace(null)} />
       )}
       <AxisSurveyList erasingId={erasingId} onErasing={setErasingId} cloudRows={remote.rows ?? []}
         onRetrace={readable.length ? setRetrace : null} />
-      {storage && (
-        <p className="pointcloud-meta pointcloud-storage">
-          {fill('pointcloud_storage', { used: sizeText(storage.usage), free: sizeText(storage.free) })}
-          {!storage.persisted && ` ${t('pointcloud_not_persisted')}`}
-        </p>
-      )}
       {(remote.rows ?? []).length > 0 && <CloudCacheSetting />}
     </>
   )

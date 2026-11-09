@@ -87,6 +87,11 @@ if [ "$build" = 1 ]; then
   step "Data (NTv2 grids, by version and SHA-256)"
   (cd apps/layout-tool && node tools/data.mjs)
 
+  step "Point cloud module (crates/pointcloud-wasm)"
+  # The point cloud import in Rust (decision 0020), which the Layout-Tool's
+  # import worker bundles: the build needs it.
+  node packages/pointcloud/scripts/wasm.mjs || die "the point cloud module did not build"
+
   step "Core module (crates/)"
   # The core's Rust crates as one WebAssembly module (decision 0020): put
   # beside every page of the suite, which loads it before it renders, and in

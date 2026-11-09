@@ -1,8 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { importLevels, importPointCloud } from '@rail-across/pointcloud/src/importPipeline.js'
-import { readLasHeader } from '@rail-across/pointcloud/src/lasReader.js'
-import { bytesSource, makeLas } from '@rail-across/pointcloud/test/pointCloudFixture.js'
+import { importLevels, importPointCloud } from '@rail-across/pointcloud'
+import { loadPointCloudModuleFile } from '@rail-across/pointcloud/native/node'
+import { bytesSource, makeLas, memoryWriter } from '@rail-across/pointcloud/test/pointCloudFixture.js'
 import { extend } from '../core/extensions'
+
+// The clouds of the tests are imported by the Rust module (packages/pointcloud: npm run wasm).
+loadPointCloudModuleFile()
 
 // The server's tile files, as the mocked API serves them: "cloudId|level" → bytes.
 const served = new Map()
@@ -25,20 +28,6 @@ const { transformMatrix, applyMatrix, invertMatrix } = await import('@rail-acros
 const { cloudSectionPoints } = await import('../core/utils/pointCloud')
 const { serverClouds } = await import('./cloudsOnServer')
 extend('cloudProviders', serverClouds)
-
-const memoryWriter = () => {
-  const parts = []
-  let at = 0
-  return {
-    append(bytes) { const o = at; parts.push(bytes); at += bytes.length; return o },
-    bytes() {
-      const out = new Uint8Array(at)
-      let o = 0
-      for (const p of parts) { out.set(p, o); o += p.length }
-      return out
-    },
-  }
-}
 
 const memorySource = (bytes) => ({
   readMany: async (ranges) => ranges.map(([o, l]) => bytes.subarray(o, o + l)),
@@ -73,10 +62,9 @@ describe('a cloud read from the server (AP 13.6)', () => {
 
   it('gives the same points at a station as the same file read in on this device', async () => {
     const source = bytesSource(makeLas(PTS, { offset: [4470000, 5332000, 500], format: 3 }))
-    const header = await readLasHeader(source)
     const local = memoryWriter(), remote = memoryWriter()
-    const localIndex = await importPointCloud({ source, header, writer: local })
-    const remoteIndex = (await importLevels({ source, header, writers: { 1: remote }, levels: [1] }))[1]
+    const localIndex = importPointCloud({ source, writer: local })
+    const remoteIndex = importLevels({ source, writers: { 1: remote }, levels: [1] })[1]
     served.set('srv|1', remote.bytes())
     const frame = { origin: { easting: 4470015.03, northing: 5332005.1 }, bearing: 80, crs: 5678, halfWidth: 8, thickness: 0.1 }
     const a = await cloudSectionPoints('p', { ...localIndex, id: 'loc', crs: 5678, source: memorySource(local.bytes()) }, frame)
@@ -93,9 +81,8 @@ describe('a re-referenced cloud (AP 13.13, 13.15)', () => {
   const moved = (m) => PTS.map(p => { const [x, y, z] = applyMatrix(m, [p.x, p.y, p.z]); return { ...p, x, y, z } })
   const original = async (points, offset) => {
     const source = bytesSource(makeLas(points, { offset, format: 3 }))
-    const header = await readLasHeader(source)
     const w = memoryWriter()
-    const index = (await importLevels({ source, header, writers: { 0: w }, levels: [0] }))[0]
+    const index = importLevels({ source, writers: { 0: w }, levels: [0] })[0]
     return { ...index, source: memorySource(w.bytes()) }
   }
   const rows = (p) => Array.from({ length: p.count }, (_, k) => [p.y[k], p.z[k]])

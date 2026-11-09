@@ -103,6 +103,8 @@ export const REGIONAL_GRIDS = [
 const ALL_GRIDS = [...BASE_GRIDS, ...REGIONAL_GRIDS]
 
 const loaded = new Set()
+/** What proj4js read of each loaded grid, by key — handed on to a Rust module that converts too. */
+const subgridsOf = new Map()
 const lists = new Map()
 
 /** Whether the DHDN base grid is there — the one every plan view depends on. */
@@ -162,9 +164,13 @@ async function readGrid(grid, base) {
   const tiff = await fromArrayBuffer(await res.arrayBuffer())
   const read = await proj4.nadgrid(grid.key, tiff).ready
   loaded.add(grid.key)
+  subgridsOf.set(grid.key, read.subgrids)
   // The core's Rust module converts on the same grid (decision 0020).
   if (nativeReady()) callNative('geometry.loadGrid', { key: grid.key, subgrids: read.subgrids })
 }
+
+/** Every grid loaded so far as `{ key, subgrids }` — for the point cloud import module in a worker. */
+export const loadedGrids = () => [...subgridsOf].map(([key, subgrids]) => ({ key, subgrids }))
 
 /**
  * The base grids, in parallel — they are 24 kB and 72 kB, and the app waits

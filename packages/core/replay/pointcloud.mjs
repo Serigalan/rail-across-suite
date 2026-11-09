@@ -1,17 +1,16 @@
 // The vectors of the point clouds (crates/pointcloud, replayed by its own
 // tests/replay.rs): LAS files made here, the E57 fixtures of the package by
 // path, files made from a description on both sides (points scattered in a
-// box, a synthetic track scene); the readers
-// and the import held to the JavaScript by sums over every point and segment,
-// registration, plane mapping, slices, the clearance check and scan, rail
-// detection and tracing.
+// box, a synthetic track scene); registration, plane mapping, slices, the
+// clearance check and scan, rail detection and tracing held to the JavaScript.
+// The readers' and the import's vectors are frozen: their JavaScript is gone
+// (decision 0020, step 10), and the clouds the rest runs on are imported by
+// the Rust module.
 import { readFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { readCloudHeader, readCloudPoints, readFirstPoints } from '@rail-across/pointcloud/src/cloudReader.js'
-import { parseLasHeader } from '@rail-across/pointcloud/src/lasHeader.js'
-import { importLevels } from '@rail-across/pointcloud/src/importPipeline.js'
-import { parseXml as parseE57Xml } from '@rail-across/pointcloud/src/e57Xml.js'
+import { importLevels } from '@rail-across/pointcloud/src/native.js'
+import { loadPointCloudModuleFile } from '@rail-across/pointcloud/src/nativeNode.js'
 import { planeMapper } from '@rail-across/pointcloud/src/cloudCrs.js'
 import * as R from '@rail-across/pointcloud/src/registration.js'
 import { sliceFrame, tilesInSlice } from '@rail-across/pointcloud/src/cloudSlice.js'
@@ -20,7 +19,6 @@ import { scanClearance, stretchesOf } from '@rail-across/pointcloud/src/clearanc
 import { detectTrack, edgeCandidates, topSurface } from '@rail-across/pointcloud/src/railDetect.js'
 import * as T from '@rail-across/pointcloud/src/railTrace.js'
 import { cloudSectionPoints, forgetAllClouds } from '@rail-across/pointcloud/src/cloudSection.js'
-import { decodeCloudSegment } from '@rail-across/pointcloud/src/tiles.js'
 import { makeLas, bytesSource } from '@rail-across/pointcloud/test/pointCloudFixture.js'
 import { gaugeProfile, gaugeProfileAreas, gaugeProfileRing } from '../src/crossSection/gaugeProfiles.js'
 import { makeTrack } from '../src/track/index.js'
@@ -28,10 +26,8 @@ import { straightFrom, arcFrom } from '../src/geometry/index.js'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const REPO = resolve(here, '../../..')
-const E57 = 'packages/pointcloud/test/fixtures/e57'
 
 const clone = (v) => JSON.parse(JSON.stringify(v, (_, x) => (ArrayBuffer.isView(x) ? Array.from(x) : x)))
-const b64 = (bytes) => Buffer.from(bytes).toString('base64')
 const bytesOf = (file) => (typeof file === 'string' ? new Uint8Array(Buffer.from(file, 'base64'))
   : file.make ? made(file) : new Uint8Array(readFileSync(join(REPO, file.path))))
 
@@ -65,43 +61,11 @@ function noise(seed = 1) {
   }
 }
 
-// ── summaries: what the Rust side computes the same way ──────────────────────
-
-function batchSummary(b) {
-  let x = 0, y = 0, z = 0, i = 0
-  const rgb = [0, 0, 0]
-  const sample = []
-  for (let k = 0; k < b.count; k++) {
-    x += b.x[k]; y += b.y[k]; z += b.z[k]; i += b.intensity[k]
-    if (b.red) { rgb[0] += b.red[k]; rgb[1] += b.green[k]; rgb[2] += b.blue[k] }
-    if (k % 97 === 0) sample.push([k, b.x[k], b.y[k], b.z[k], b.intensity[k], ...(b.red ? [b.red[k], b.green[k], b.blue[k]] : [])])
-  }
-  return { count: b.count, x, y, z, i, rgb: b.red ? rgb : null, sample }
-}
-
-async function readPointsSummary(file) {
-  const source = bytesSource(bytesOf(file))
-  const header = await readCloudHeader(source)
-  const batches = [], progress = []
-  for await (const b of readCloudPoints(source, header, { onProgress: (p) => progress.push(p) })) batches.push(batchSummary(b))
-  return { batches, progress }
-}
-
-function segmentSummary(s) {
-  let x = 0, y = 0, z = 0, i = 0, o = 0
-  for (let k = 0; k < s.x.length; k++) {
-    x += s.x[k]; y += s.y[k]; z += s.z[k]; i += s.i[k]
-    o += (k % 1000) * (s.x[k] + 3 * s.y[k] + 7 * s.z[k])
-  }
-  const sum = (v) => v.reduce((a, c) => a + c, 0)
-  return { x, y, z, i, o, intensity: s.intensity ? sum(s.intensity) : null, rgb: s.r ? [sum(s.r), sum(s.g), sum(s.b)] : null }
-}
-
 const memoryWriter = () => {
   const parts = []
   let at = 0
   return {
-    append(bytes) { const o = at; parts.push(bytes); at += bytes.length; return o },
+    append(bytes) { const o = at; parts.push(bytes.slice()); at += bytes.length; return o },
     bytes() {
       const out = new Uint8Array(at)
       let o = 0
@@ -111,28 +75,16 @@ const memoryWriter = () => {
   }
 }
 
-async function importInto(file, { levels = [1], idlePoints, from, to } = {}) {
+/**
+ * A file imported by the import module (crates/pointcloud-wasm) — the clouds
+ * the JavaScript's sections, scans and traces below run on. The module took
+ * the JavaScript import's place (decision 0020, step 10).
+ */
+function importInto(file, { levels = [1], idlePoints, from, to } = {}) {
   const source = bytesSource(bytesOf(file))
-  const header = await readCloudHeader(source)
   const writers = Object.fromEntries(levels.map(l => [l, memoryWriter()]))
-  const mapper = from != null ? planeMapper(from, to) : undefined
-  const bodies = await importLevels({ source, header, writers, levels, idlePoints, ...(mapper ? { mapper } : {}) })
+  const bodies = importLevels({ source, levels, writers, idlePoints, ...(from != null ? { sourceCrs: from, targetCrs: to } : {}) })
   return { bodies, writers }
-}
-
-async function importSummary(file, opts) {
-  const { bodies, writers } = await importInto(file, opts)
-  const out = {}
-  for (const [level, body] of Object.entries(bodies)) {
-    const bytes = writers[level].bytes()
-    const { bytes: _b, ...rest } = body
-    out[level] = {
-      ...rest,
-      tiles: body.tiles.map(([tx, ty, segs]) => [tx, ty, segs.map(([at, length, count, z0]) =>
-        [count, z0, segmentSummary(decodeCloudSegment(body, bytes.subarray(at, at + length), count))])]),
-    }
-  }
-  return out
 }
 
 let cloudNo = 0
@@ -221,54 +173,18 @@ function trackSlice({ axis = 0, z = 100, cant = 0, head = 0.067, gauge = 1.435, 
 
 // ── the recordings ───────────────────────────────────────────────────────────
 
-async function readers() {
-  const out = []
-  const small = { make: 'scatter', n: 30, seed: 1 }
-  const many = { make: 'scatter', n: 120000, seed: 2, offset: [500000, 5700000, 0] }
+/** The files the recordings make. */
+function files() {
   const colour = { make: 'scatter', n: 3000, seed: 3, rgb: true, format: 3, scale: [0.01, 0.01, 0.001] }
-  const dark = { make: 'scatter', n: 500, seed: 4, rgb: true, dark: true, format: 3 }
-  for (const f of [small, colour].map(made)) out.push(await call('pointcloud.parseLasHeader', (x) => parseLasHeader(bytesOf(x)), b64(f.subarray(0, 4096))))
-  // Headers broken on purpose: too short, LAZ without its record, LAS 1.4.
-  const smallBytes = made(small)
-  const laz = smallBytes.slice(); laz[104] |= 0x80
-  const v14 = new Uint8Array(400); v14.set(smallBytes.subarray(0, 227)); v14[25] = 4
-  new DataView(v14.buffer).setUint16(94, 375, true); new DataView(v14.buffer).setBigUint64(247, 123456789n, true)
-  for (const f of [smallBytes.subarray(0, 100), laz, v14, new TextEncoder().encode('LASX' + ' '.repeat(300))]) {
-    out.push(await call('pointcloud.parseLasHeader', (x) => parseLasHeader(bytesOf(x)), b64(f)))
-  }
-  for (const f of [small, many, colour, dark]) {
-    out.push(await call('pointcloud.readCloudHeader', (x) => readCloudHeader(bytesSource(bytesOf(x))), f))
-    out.push(await call('pointcloud.readPointsSummary', readPointsSummary, f))
-  }
-  out.push(await call('pointcloud.readFirstPoints', async (x, n) => {
-    const s = bytesSource(bytesOf(x))
-    return readFirstPoints(s, await readCloudHeader(s), n)
-  }, small, 7))
-  for (const name of ['color_rgb.e57', 'scaled_pose.e57', 'spherical_two_scans.e57']) {
-    const f = { path: `${E57}/${name}` }
-    out.push(await call('pointcloud.readCloudHeader', (x) => readCloudHeader(bytesSource(bytesOf(x))), f))
-    out.push(await call('pointcloud.readPointsSummary', readPointsSummary, f))
-  }
-  for (const xml of ['<a b="1 &amp; &#65;"><c>t</c><![CDATA[<x>]]><!-- n --><?p?><d e=\'>\'/></a>', '<a><b></a>', '<a>', '', '<e57Root type="Structure"><data3D type="Vector"/></e57Root>']) {
-    out.push(await call('pointcloud.parseE57Xml', parseE57Xml, xml))
-  }
-  return { out, small, many, colour, dark }
+  return { colour }
 }
 
-async function imports({ many, colour, dark }) {
-  const out = []
-  out.push(await call('pointcloud.importLevels', importSummary, many, { levels: [0, 1, 2, 3, 4], idlePoints: 20000 }))
-  out.push(await call('pointcloud.importLevels', importSummary, colour, { levels: [0, 1, 4] }))
-  out.push(await call('pointcloud.importLevels', importSummary, dark, { levels: [1] }))
-  out.push(await call('pointcloud.importLevels', importSummary, colour, { levels: [1, 2], from: 25832, to: 25833 }))
-  // A tall tile: heights over 65.535 m in one 2-m tile cut into bands.
-  const tall = makeLas([...Array(400)].map((_, k) => ({ x: 500000.5 + (k % 7) * 0.1, y: 5700000.5, z: k * 0.5, intensity: k })))
-  out.push(await call('pointcloud.importLevels', importSummary, b64(tall), { levels: [0, 1] }))
-  for (const name of ['color_rgb.e57', 'spherical_two_scans.e57']) {
-    out.push(await call('pointcloud.importLevels', importSummary, { path: `${E57}/${name}` }, { levels: [0, 1, 3] }))
-  }
-  return out
-}
+/**
+ * Vectors whose JavaScript is gone — the LAS, LAZ and E57 readers and the
+ * import (decision 0020, step 10): kept as they were last recorded, the Rust
+ * held to them from now on as to any other test.
+ */
+const frozen = (name) => JSON.parse(readFileSync(join(REPO, 'crates/pointcloud/tests/vectors', `${name}.json`), 'utf8'))
 
 function registrations() {
   const out = []
@@ -465,13 +381,13 @@ async function scenes(ring, areas, colour) {
 }
 
 export default async function record() {
-  const { out: read, many, colour, dark } = await readers()
-  const imported = await imports({ many, colour, dark })
+  if (!loadPointCloudModuleFile()) throw new Error('the point cloud module is not built (npm run wasm in packages/pointcloud)')
+  const { colour } = files()
   const { out: checks, ring, areas } = await slicesAndChecks()
   return {
     pointcloud: {
-      readers: read,
-      imports: imported,
+      readers: frozen('readers'),
+      imports: frozen('imports'),
       registration: registrations(),
       planes: planes(),
       slices: checks,

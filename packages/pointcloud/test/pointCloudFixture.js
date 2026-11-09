@@ -1,8 +1,6 @@
-import { existsSync } from 'node:fs'
-import { open } from 'node:fs/promises'
+import { closeSync, existsSync, fstatSync, openSync, readSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
-import { createLazPerf } from 'laz-perf'
 
 /**
  * The point cloud sample `5550R_00004000m.laz` (8.8 MB, 3 239 356 points,
@@ -30,32 +28,41 @@ export const E57_SAMPLE_PATH = E57_CANDIDATE && existsSync(E57_CANDIDATE) ? E57_
 /** The small E57 files kept in the repository (tools/e57fixtures.py) and what they hold. */
 export const E57_FIXTURES = new URL('./fixtures/e57/', import.meta.url).pathname
 
-/** A reader source over a file on disk, the way fileSource is one over a browser File. */
-export async function nodeFileSource(path) {
-  const fh = await open(path)
-  const { size } = await fh.stat()
+/** A source over a file on disk, read synchronously as the import module reads (a worker's FileReaderSync). */
+export function nodeFileSource(path) {
+  const fd = openSync(path, 'r')
+  const { size } = fstatSync(fd)
   return {
     size,
-    read: async (offset, length) => {
-      const buf = Buffer.alloc(length)
-      await fh.read(buf, 0, length, offset)
-      return new Uint8Array(buf.buffer, buf.byteOffset, length)
+    readSync(offset, length) {
+      const buf = Buffer.alloc(Math.max(0, Math.min(length, size - offset)))
+      const n = readSync(fd, buf, 0, buf.length, offset)
+      return new Uint8Array(buf.buffer, buf.byteOffset, n)
     },
-    close: () => fh.close(),
+    close: () => closeSync(fd),
   }
 }
 
 /** A source over bytes in memory. */
 export const bytesSource = (bytes) => ({
   size: bytes.length,
+  readSync: (offset, length) => bytes.subarray(offset, offset + length),
   read: async (offset, length) => bytes.subarray(offset, offset + length),
 })
 
-let lazPerf = null
-/** The laz-perf module, created once (the Node build finds its WASM itself). */
-export async function nodeLazPerf() {
-  lazPerf ??= await createLazPerf()
-  return lazPerf
+/** A tile writer into memory: `append` keeps a copy and answers its offset; `bytes()` all of it. */
+export function memoryWriter() {
+  const parts = []
+  let at = 0
+  return {
+    append(b) { const o = at; parts.push(b.slice()); at += b.length; return o },
+    bytes() {
+      const out = new Uint8Array(at)
+      let o = 0
+      for (const p of parts) { out.set(p, o); o += p.length }
+      return out
+    },
+  }
 }
 
 /**

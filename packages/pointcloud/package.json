@@ -2,7 +2,7 @@
   "name": "@rail-across/pointcloud",
   "private": true,
   "version": "1.0.0-alpha.0",
-  "description": "Point clouds of Rail-Across-Suite: LAS/LAZ and E57 readers, tiles, sections, rail detection and tracing, registration, clearance scans",
+  "description": "Point clouds of Rail-Across-Suite: the import (LAS/LAZ and E57) as a WebAssembly module, tiles, sections, rail detection and tracing, registration, clearance scans",
   "license": "LGPL-3.0-only",
   "type": "module",
   "engines": {
@@ -10,10 +10,14 @@
   },
   "exports": {
     ".": "./src/index.js",
+    "./native": "./src/native.js",
+    "./native/node": "./src/nativeNode.js",
+    "./wasm/*": "./wasm/*",
     "./src/*": "./src/*",
     "./test/*": "./test/*"
   },
   "scripts": {
+    "wasm": "node scripts/wasm.mjs",
     "test": "vitest run"
   },
   "dependencies": {
@@ -21,7 +25,6 @@
     "fflate": "^0.8.3"
   },
   "devDependencies": {
-    "laz-perf": "^0.0.7",
     "vitest": "^3.2.7"
   }
 }

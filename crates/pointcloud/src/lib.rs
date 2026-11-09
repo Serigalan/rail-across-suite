@@ -5,8 +5,9 @@
 //! LAZ and E57 read in pieces, tiled at several voxel levels, cut into thin
 //! sections, searched for rail heads to trace a track, registered onto each
 //! other and checked against the clearance contour — what the project server
-//! runs in its jobs. The browser keeps the JavaScript (and laz-perf); the
-//! tile files the two write are the same format and read by either.
+//! runs in its jobs, and the browser's import worker through
+//! `crates/pointcloud-wasm`. The browser's main thread still reads the tiles
+//! with the JavaScript of `packages/pointcloud`; the format is the same.
 
 #![allow(
     clippy::too_many_arguments,
@@ -32,6 +33,28 @@ pub mod section;
 pub mod slice;
 pub mod source;
 pub mod tiles;
+
+static CLOCK: std::sync::OnceLock<fn() -> f64> = std::sync::OnceLock::new();
+
+/// The clock the import measures its time by, in seconds — a WebAssembly host
+/// gives its own (`performance.now()`), where `Instant` has none.
+pub fn set_clock(clock: fn() -> f64) {
+    let _ = CLOCK.set(clock);
+}
+
+/// Seconds since some fixed moment: the clock set, else `Instant` (0 in WebAssembly without one).
+pub(crate) fn clock() -> f64 {
+    if let Some(c) = CLOCK.get() {
+        return c();
+    }
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        static START: std::sync::OnceLock<std::time::Instant> = std::sync::OnceLock::new();
+        START.get_or_init(std::time::Instant::now).elapsed().as_secs_f64()
+    }
+    #[cfg(target_arch = "wasm32")]
+    0.0
+}
 
 /// Why reading or computing stopped: aborted by the caller, or an error the
 /// JavaScript would throw, by its message.

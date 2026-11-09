@@ -4,7 +4,6 @@
 //! The geometry module's operations, named as the JavaScript names them.
 
 use rail_across_geom::element::{self, Utm};
-use rail_across_geom::proj::Subgrid;
 use rail_across_geom::{cant, chain, coords, factory, parallel, plane_transform, reconstruct, transition};
 use rail_across_js::{Object, get, number, truthy};
 use serde_json::{Value, json};
@@ -98,21 +97,7 @@ pub fn run(op: &str, input: &Value) -> Option<Result<Value, Failure>> {
             input[1].as_f64().unwrap_or(f64::NAN)
         ))),
         "geometry.loadGrid" => {
-            let subgrids = elements(input, "subgrids")
-                .iter()
-                .map(|g| Subgrid {
-                    ll: [g["ll"][0].as_f64().unwrap_or(0.0), g["ll"][1].as_f64().unwrap_or(0.0)],
-                    del: [g["del"][0].as_f64().unwrap_or(0.0), g["del"][1].as_f64().unwrap_or(0.0)],
-                    lim: [g["lim"][0].as_u64().unwrap_or(0) as usize, g["lim"][1].as_u64().unwrap_or(0) as usize],
-                    cvs: g["cvs"]
-                        .as_array()
-                        .into_iter()
-                        .flatten()
-                        .map(|c| [c[0].as_f64().unwrap_or(f64::NAN), c[1].as_f64().unwrap_or(f64::NAN)])
-                        .collect(),
-                })
-                .collect();
-            coords::load_grid(input["key"].as_str().unwrap_or(""), subgrids);
+            coords::load_grid_json(input);
             Ok(json!(true))
         }
         "geometry.nadgridsList" => Ok(coords::Datum::from_name(input["datum"].as_str().unwrap_or("DHDN"))

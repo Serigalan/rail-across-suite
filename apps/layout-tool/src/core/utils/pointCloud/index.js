@@ -10,8 +10,8 @@
 // the module's own business. See docs/modules/pointCloud.md.
 
 export {
-  applyMatrix, BOTTOM_BAND, checkClearance, cloudPlane, cloudToPlane, decodeCloudSegment, fileSource, IDENTITY,
-  invertMatrix, LEVELS, originalGrid, planeMapper, readCloudHeader, segmentPlacement, solveRegistration,
+  applyMatrix, BOTTOM_BAND, checkClearance, cloudPlane, cloudToPlane, decodeCloudSegment, IDENTITY,
+  invertMatrix, LEVELS, originalGrid, planeMapper, segmentPlacement, solveRegistration,
   axisPointsCsv, cantMm, lineGuide, soHeight, TRACE_STEP, trackGuide,
 } from '@rail-across/pointcloud'
 export { cacheGet, cacheLimit, cachePut, cacheUsage, clearCache, forgetCache, setCacheLimit } from './cloudCache'
@@ -28,7 +28,7 @@ export {
   storageEstimate, storagePersisted,
 } from './cloudStore'
 export { formatName, pointsAsText, PREVIEW_POINTS } from './lasText'
-export { previewPoints, startImport } from './pointCloudImport'
+export { previewPoints, readFileHeader, startImport } from './pointCloudImport'
 export { readableClouds } from './projectClouds'
 export { runIsActive, runsOnServer, serverRunHook } from './serverRuns'
 export { cloudRefsOf, shiftSurvey, surveyChanges } from './surveyShift'

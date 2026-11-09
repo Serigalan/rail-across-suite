@@ -301,6 +301,28 @@ pub fn load_grid(key: &str, subgrids: Vec<Subgrid>) {
     CONVERTERS.with(|c| c.borrow_mut().clear());
 }
 
+/// `load_grid` of a grid as proj4js reads it: `{ key, subgrids: [{ ll, del, lim, cvs }] }`.
+pub fn load_grid_json(input: &serde_json::Value) {
+    let f = |v: &serde_json::Value| v.as_f64().unwrap_or(0.0);
+    let subgrids = input["subgrids"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .map(|g| Subgrid {
+            ll: [f(&g["ll"][0]), f(&g["ll"][1])],
+            del: [f(&g["del"][0]), f(&g["del"][1])],
+            lim: [g["lim"][0].as_u64().unwrap_or(0) as usize, g["lim"][1].as_u64().unwrap_or(0) as usize],
+            cvs: g["cvs"]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .map(|c| [c[0].as_f64().unwrap_or(f64::NAN), c[1].as_f64().unwrap_or(f64::NAN)])
+                .collect(),
+        })
+        .collect();
+    load_grid(input["key"].as_str().unwrap_or(""), subgrids);
+}
+
 /// The `+nadgrids=` list of a datum, or None while it has no grid (`nadgridsList`).
 pub fn nadgrids_list(datum: Datum) -> Option<String> {
     let done = loaded().read().expect("grids");

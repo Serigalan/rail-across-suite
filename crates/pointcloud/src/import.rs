@@ -7,7 +7,6 @@
 
 use std::cell::RefCell;
 use std::collections::HashMap;
-use std::time::Instant;
 
 use serde_json::{Value, json};
 
@@ -217,10 +216,10 @@ pub fn import_levels(
         f64::NEG_INFINITY,
     ];
     let (mut shift, mut cshift): (Option<u32>, u32) = (None, 0);
-    let started = Instant::now();
+    let started = crate::clock();
     let progress_state = RefCell::new((0u64, 0u64));
     let mut on_read = |p: Progress| {
-        let elapsed = started.elapsed().as_secs_f64();
+        let elapsed = crate::clock() - started;
         let share = if p.total_bytes > 0.0 { p.bytes / p.total_bytes } else { 0.0 };
         let (kept, written) = *progress_state.borrow();
         if let Some(f) = on_progress.as_mut() {

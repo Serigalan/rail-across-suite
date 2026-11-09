@@ -7,9 +7,10 @@ Mobile-mapping and terrestrial scans as spatial constraints for the design: LAS,
 gigabytes read as streams, tiled and thinned into the browser's Origin Private File System (or, in the main
 build, prepared on the server), cut into thin slices for the cross section, checked against the clearance
 contour, searched for rail heads to trace a track's measured axis, and re-referenced onto each other. The pure
-functions — readers, tiles, sections, rail detection and trace, registration, clearance — are the package
-`@rail-across/pointcloud` (`packages/pointcloud/`), so the browser, its Web Worker and the project server's jobs
-run the same code; this module keeps what only the browser does and re-exports the rest. A function of the
+functions are the package `@rail-across/pointcloud` (`packages/pointcloud/`): the import — readers and tiling —
+is its Rust module (`crates/pointcloud-wasm`, decision 0020 of the suite), the same crate the project server's
+jobs run; sections, rail detection and trace, registration and clearance are its JavaScript. This module keeps
+what only the browser does and re-exports the rest. A function of the
 package that reads tiles takes each cloud with its `source`; `cloudReading.js` gives it the one this device
 reads it from (`cloudSource.js`).
 
@@ -17,8 +18,8 @@ reads it from (`cloudSource.js`).
 
 | Area | In this module | In `@rail-across/pointcloud` |
 |---|---|---|
-| Reading | `lazPerfBrowser.js` (laz-perf WASM), `lasText.js` (preview) | `lasHeader.js`, `lasReader.js` (LAS/LAZ chunk by chunk), `lazChunkTable.js` (the LAZ chunk table, ported from LASzip), `e57Reader.js` + `e57Xml.js` (E57), `cloudReader.js` (either) |
-| Import | `pointCloudWorker.js` + `pointCloudImport.js` (the browser import in a worker), `cloudProbe.js` (extent and plausibility against the project) | `importPipeline.js` (file → tiles, one or five levels) |
+| Reading | `lasText.js` (preview) | `native.js`: the Rust module (`crates/pointcloud-wasm`) — LAS, LAZ and E57 read synchronously, header and first points |
+| Import | `pointCloudWorker.js` + `pointCloudImport.js` (the browser import in a worker), `cloudProbe.js` (extent and plausibility against the project) | `native.js`: file → tiles, one or five levels, converted to the project's plane |
 | Storage | `cloudStore.js` (OPFS), `cloudCache.js` (OPFS cache of server tiles), `cloudSource.js` (one reader for local and server clouds), `cloudReading.js` (the package's reading functions by project, each cloud with its source), `projectClouds.js` (local + provider clouds of a project) | `tiles.js` (tile format, segments, levels) |
 | Planes | `cloudRegistration.js`, `surveyShift.js` | `cloudCrs.js` (affine map per 250 m cell instead of proj4 per point), `registration.js` (spatial Helmert from point pairs) |
 | Use | `cloudPaint.js`, `cloudOutline.js`, `serverRuns.js`, `cloudServer.js`, `cloudFormat.js` | `cloudSection.js` (points in a cross section), `cloudSlice.js`, `clearanceCheck.js`, `clearanceScan.js`, `railDetect.js`, `railTrace.js` |
@@ -38,10 +39,11 @@ reads it from (`cloudSource.js`).
 
 ## Import
 
-A delivery is a few long files of several GB, read **chunk by chunk**, never whole: LAZ through its chunk
-table and laz-perf's `ChunkDecoder` — laz-perf does not expose the table, so its arithmetic decoder and integer
-compressor were ported from LASzip (the reading part only, checked against laspy on every chunk of the sample);
-E57 by its pages, XML section and compressed vectors, with each scan's pose applied. The import asks for the
+A delivery is a few long files of several GB, read **chunk by chunk**, never whole — by the Rust module in the
+import worker, which reads the file synchronously there (`FileReaderSync`) and writes the tiles through an OPFS
+sync access handle: LAZ through its chunk table and the `laz` crate's decompressor, E57 by its pages, XML
+section and compressed vectors, with each scan's pose applied. The module hears no message while it runs: an
+import is stopped by ending its worker, and the page clears away the directory it had begun. The import asks for the
 file's plane and height system **every time, without a default** — LAS headers name none, it differs per
 delivery, and a default would be clicked through and put the cloud silently beside the track; a plausibility
 probe against the project's tracks catches gross mix-ups.

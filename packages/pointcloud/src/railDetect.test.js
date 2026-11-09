@@ -2,10 +2,9 @@ import { describe, it, expect } from 'vitest'
 import { detectTrack, topSurface, edgeCandidates } from './railDetect.js'
 import { soHeight, cantMm } from './railTrace.js'
 import { sliceFrame, tilesInSlice, sliceSegment, SlicePoints } from './cloudSlice.js'
-import { importPointCloud } from './importPipeline.js'
-import { readLasHeader } from './lasReader.js'
+import { importPointCloud } from './native.js'
 import { decodeCloudSegment, segmentPlacement } from './tiles.js'
-import { hasLaz, LAZ_PATH, nodeFileSource, nodeLazPerf } from '../test/pointCloudFixture.js'
+import { hasLaz, LAZ_PATH, memoryWriter, nodeFileSource } from '../test/pointCloudFixture.js'
 
 /** A small deterministic noise source, so a test sees the same slice every run. */
 function noise(seed = 1) {
@@ -122,19 +121,14 @@ describe('what an axis point states', () => {
 // about 1.52 m right of the line through (4470687, 5332208) at 45.35°.
 describe.skipIf(!hasLaz)('detectTrack on the LAZ sample', () => {
   it('finds the track the scanner ran on at every station, its axis smooth', async () => {
-    const source = await nodeFileSource(LAZ_PATH)
+    const source = nodeFileSource(LAZ_PATH)
     let index, bytes
     try {
-      const header = await readLasHeader(source)
-      const parts = []
-      let at = 0
-      const writer = { append(b) { const o = at; parts.push(b); at += b.length; return o } }
-      index = await importPointCloud({ source, header, writer, lazPerf: await nodeLazPerf() })
-      bytes = new Uint8Array(at)
-      let o = 0
-      for (const p of parts) { bytes.set(p, o); o += p.length }
+      const writer = memoryWriter()
+      index = importPointCloud({ source, writer })
+      bytes = writer.bytes()
     } finally {
-      await source.close()
+      source.close()
     }
     const rad = 45.35 * Math.PI / 180
     const axes = []

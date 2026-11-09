@@ -2,10 +2,9 @@ import { describe, it, expect } from 'vitest'
 import { traceTrack, lineGuide, foresee, gapsOf, axisPointsCsv, AXIS_CSV_HEADER } from './railTrace.js'
 import { detectTrack } from './railDetect.js'
 import { sliceFrame, tilesInSlice, sliceSegment, SlicePoints } from './cloudSlice.js'
-import { importPointCloud } from './importPipeline.js'
-import { readLasHeader } from './lasReader.js'
+import { importPointCloud } from './native.js'
 import { decodeCloudSegment, segmentPlacement } from './tiles.js'
-import { hasLaz, LAZ_PATH, nodeFileSource, nodeLazPerf } from '../test/pointCloudFixture.js'
+import { hasLaz, LAZ_PATH, memoryWriter, nodeFileSource } from '../test/pointCloudFixture.js'
 
 const DEG = Math.PI / 180
 
@@ -101,19 +100,14 @@ describe('the parts of a trace', () => {
 
 describe.skipIf(!hasLaz)('traceTrack on the LAZ sample', () => {
   it('finds the scanned track from a line 1.3 m beside it and 5° askew', async () => {
-    const source = await nodeFileSource(LAZ_PATH)
+    const source = nodeFileSource(LAZ_PATH)
     let index, bytes
     try {
-      const header = await readLasHeader(source)
-      const parts = []
-      let at = 0
-      const writer = { append(b) { const o = at; parts.push(b); at += b.length; return o } }
-      index = await importPointCloud({ source, header, writer, lazPerf: await nodeLazPerf() })
-      bytes = new Uint8Array(at)
-      let o = 0
-      for (const p of parts) { bytes.set(p, o); o += p.length }
+      const writer = memoryWriter()
+      index = importPointCloud({ source, writer })
+      bytes = writer.bytes()
     } finally {
-      await source.close()
+      source.close()
     }
     const detect = async (_c, { origin, bearing, around, window, rail }) => {
       const frame = sliceFrame({ easting: origin.easting, northing: origin.northing, bearing, halfWidth: Math.abs(around) + window + 1.2, thickness: 0.5 })

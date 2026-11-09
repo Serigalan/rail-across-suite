@@ -749,6 +749,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "rail-across-pointcloud-wasm"
+version = "0.1.0"
+dependencies = [
+ "rail-across-geom",
+ "rail-across-js",
+ "rail-across-pointcloud",
+ "serde_json",
+]
+
+[[package]]
 name = "rail-across-project"
 version = "0.1.0"
 dependencies = [

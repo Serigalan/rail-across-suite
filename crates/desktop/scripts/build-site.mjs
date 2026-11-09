@@ -46,6 +46,8 @@ tryRun('core module', [join(REPO, 'packages/core/scripts/wasm.mjs'), ...coreDirs
 tryRun('crossover module', [join(REPO, 'apps/layout-tool/tools/crossover.mjs')], { cwd: join(REPO, 'apps/layout-tool') })
 tryRun('optimizer module', [join(REPO, 'apps/layout-tool/tools/optimizer.mjs')], { cwd: join(REPO, 'apps/layout-tool') })
 tryRun('simulation module', [join(REPO, 'packages/running-times/scripts/sim.mjs')], { cwd: join(REPO, 'apps/timetable-editor') })
+// The point cloud import, which the Layout-Tool's worker bundles: its build needs it.
+run([join(REPO, 'packages/pointcloud/scripts/wasm.mjs')], { cwd: REPO })
 
 rmSync(SITE, { recursive: true, force: true })
 mkdirSync(SITE, { recursive: true })

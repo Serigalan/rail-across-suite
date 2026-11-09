@@ -3,7 +3,7 @@
 
 //! The header of a LAS or LAZ file (ASPRS LAS 1.0–1.4) and its points, read
 //! in pieces (`lasHeader.js`, `lasReader.js`). LAZ is decoded chunk by chunk
-//! with the `laz` crate (laz-rs) where the JavaScript takes laz-perf; a batch
+//! with the `laz` crate (laz-rs), as laz-perf did for the JavaScript; a batch
 //! is one chunk, as there.
 
 use serde_json::{Value, json};
@@ -282,10 +282,16 @@ pub fn read_las_points(source: &dyn Source, header: &LasHeader, mut o: ReadOptio
     }
     let laszip = header.laszip.as_ref().unwrap();
     let vlr = laz::LazVlr::from_buffer(&laszip.record).map_err(|e| Error::msg(e.to_string()))?;
-    let reader = SourceReader {
-        source,
-        pos: header.point_data_offset,
-    };
+    // The decompressor asks for a few bytes at a time: a megabyte read ahead
+    // keeps that from becoming millions of reads of the source (the page's file
+    // in the browser's worker).
+    let reader = std::io::BufReader::with_capacity(
+        1 << 20,
+        SourceReader {
+            source,
+            pos: header.point_data_offset,
+        },
+    );
     let mut decompressor = laz::LasZipDecompressor::new(reader, vlr).map_err(|e| Error::msg(e.to_string()))?;
     let mut buf = Vec::new();
     for chunk in &chunks {

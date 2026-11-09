@@ -16,4 +16,6 @@ crossover/target/
 optimizer/target/
 # The core's WebAssembly module, built by packages/core/scripts/wasm.mjs
 /packages/core/wasm/
+# The point cloud import's WebAssembly module, built by packages/pointcloud/scripts/wasm.mjs
+/packages/pointcloud/wasm/
 apps/*/public/core-module/

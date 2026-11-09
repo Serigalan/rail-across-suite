@@ -14,7 +14,8 @@
  * Lists (what an entry holds is documented where core reads it):
  *
  *   panelTools          a tool in a panel's menu      { panel, id, icon, titleKey, section?, Component, props? }
- *   importSections      a format in the data exchange  { id, Component }
+ *   importSections      a format in the data exchange  { id, Component, menu? }:
+ *                       with menu { icon, titleKey } an option of its own, else behind the dot
  *   sidebarFoot         beside the sidebar's foot      Component
  *   workspaceAddons     rendered in the map view       Component({ project, crossSectionAt, onShowCrossSection })
  *   terrainSources      a source of ground heights     { id, sample, label }        (elevationSource)

@@ -793,7 +793,6 @@ input.input-error, select.input-error, textarea.input-error { border-color: var(
   color: var(--color-muted); margin: var(--space-3) 0;
 }
 .icon-glyph { color: currentcolor; }
-.icon-glyph-physics { vertical-align: -.025ex; }
 .icon-glyph-paragraph { vertical-align: -.452ex; }
 
 /* Commit and Cancel at a dialog's foot (components/form/CommitBar). */

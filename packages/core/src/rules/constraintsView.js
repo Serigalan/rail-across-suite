@@ -1,6 +1,6 @@
-// The physics file turned into table rows, and the limits the optimizer
-// reports it runs at set beside the app's own — the reading half of
-// PhysicsOverlay.jsx and RegelwerkOverlay.jsx. Plain functions, not JSX, so
+// The limits the optimizer reports it runs at set beside the app's own — the
+// reading half of RegelwerkOverlay.jsx —, and the physics file turned into
+// rows, which its tests hold to the arithmetic. Plain functions, not JSX, so
 // they run in the Node test suite without a DOM.
 //
 // Physics has no route on the service and needs none: since the constraints
@@ -138,8 +138,8 @@ export function evalFormel(expr, variablen) {
  *
  * A formula travels twice, and neither is a copy of the other: `*_calc` is a
  * bare, evaluable expression (no units, no prose — `evalFormel` below runs
- * it), `*_mathml` is the set formula the popup renders. Nothing here reads
- * `*_calc` for display; it exists so a test can hold the file to the kernel's
+ * it), `*_mathml` the set formula for a reader of the file. No page shows
+ * them; the rows exist so a test can hold the file to the kernel's
  * own arithmetic (see constraintsView.test.js and tests/verify.py's mirror of
  * it) instead of only the constant the formula produces.
  */

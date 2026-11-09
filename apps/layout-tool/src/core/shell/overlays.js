@@ -8,13 +8,13 @@
  *             projectTracks (project settings), switchDetail (switches)
  *             — { kind, ...data }
  *   popup     a read-only reference popup over the map pane, reachable from
- *             more than one panel: physics | regelwerk ({ regelwerkId })
+ *             more than one panel: regelwerk ({ regelwerkId })
  *   detached  an overlay taken out into a browser window of its own (the
  *             cross section): { kind, ...data, win } — the same store drawn
  *             beside the map while any panel edits it
  *
- * The rules: at most one overlay and one popup at a time; physics and the
- * regelwerk replace each other; changing the panel closes both (the overlay
+ * The rules: at most one overlay and one popup at a time; one rulebook
+ * replaces another; changing the panel closes both (the overlay
  * belongs to the panel that is being left, the popup to no panel at all).
  * A detached overlay belongs to no panel either: it outlives a panel change,
  * and opening its kind again shows the new data in its window instead of over

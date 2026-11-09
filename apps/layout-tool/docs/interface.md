@@ -63,7 +63,7 @@ gets what it needs from the shell through `props(s)`. Server tools appear inside
 
 **Overlays** (`shell/overlays.js`): at most one map overlay and one popup at a time. The overlay belongs to the
 open panel — element table (edit), height profile (heights), cross section, bands (check), topology diagram,
-plan preview, project tracks, switch in detail (switches) — and closes when the panel changes; popups (physics, rulebooks) belong to no panel
+plan preview, project tracks, switch in detail (switches) — and closes when the panel changes; popups (the rulebooks) belong to no panel
 and replace each other. An overlay can be **detached** into its own browser window (the cross section): it stays
 part of the same React tree through a portal, reads the same store, and outlives panel changes.
 
@@ -122,7 +122,7 @@ removes it before effect cleanups run).
   through, below it a second section, `ElevationTable` or `ElevationPointDetails` for the selected point; with the coupling roles and dependencies
   from `elevation`), `CrossSectionOverlay`, `BandsOverlay` (curvature,
   cant, speed, rule findings), `TopologyGraphOverlay`, `PlanPreviewOverlay`, `ProjectTracksOverlay`,
-  `RegelwerkOverlay` / `PhysicsOverlay` (read-only rulebooks), `collab/CompareOverlay` (two states on the map).
+  `RegelwerkOverlay` (the read-only rulebooks), `collab/CompareOverlay` (two states on the map).
 - `icons.jsx` — all symbols on a 20 px grid; `chart/` — the curvature diagram and deviation band.
 
 ## Languages and styles

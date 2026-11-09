@@ -12,26 +12,59 @@ import AlignmentSection from './dataExchange/AlignmentSection'
 import ImportReports from './dataExchange/ImportReports'
 import useImportReports from './dataExchange/useImportReports'
 import ProviImportSection from './ProviImportSection'
+import BackButton from './BackButton'
+import { RailJsonIcon, TracksExchangeIcon, VermEsnIcon } from '../icons'
+
+// The formats of every session, each a page of its own, as the other panels' options.
+const FORMATS = [
+  { id: 'tracks', icon: TracksExchangeIcon, titleKey: 'data_exchange_tracks', Component: TracksSection },
+  { id: 'vermesn', icon: VermEsnIcon, titleKey: 'data_exchange_vermesn', Component: VermEsnSection },
+  { id: 'osrd', icon: RailJsonIcon, titleKey: 'data_exchange_osrd', Component: OsrdSection },
+]
 
 /**
- * Data exchange: one section per format (R5.1). Behind the dot at the bottom
- * are the imports and exports needed now and then rather than every session —
- * the comparison with a file, Provi, the Gleislage CSV, the formats the
- * server converts (`importSections`, Paket L: the two MDB importers) with the
- * reports they leave, and the alignment exchange format.
+ * Data exchange: one section per format (R5.1). The project's export stands
+ * at the head; the formats of every session are options below it, each a page
+ * of its own — Tracks, Verm.ESN, RailJSON, and a format the server converts
+ * that names itself an option (`importSections` with `menu`, Paket L: the MDB
+ * import). Behind the dot at the bottom are those needed now and then — the
+ * comparison with a file, Provi, the Gleislage CSV, the other formats the
+ * server converts, the reports they leave, and the alignment exchange format.
  */
 export default function DataExchangePanel({ onShowCompare }) {
   const { t } = useI18n()
+  const [page, setPage] = useState(null)
   const [more, setMore] = useState(false)
   const reports = useImportReports()
+  const converted = extensionsOf('importSections')
+  const options = [...FORMATS, ...converted.filter(x => x.menu).map(x => ({ ...x, ...x.menu, report: true }))]
+
+  const open = options.find(o => o.id === page)
+  if (open) {
+    const Page = open.Component
+    return (
+      <>
+        <BackButton onBack={() => setPage(null)} />
+        {open.report ? <>
+          <Page onReport={reports.add} />
+          <ImportReports reports={reports.reports} onClear={reports.clear} />
+        </> : <Page />}
+      </>
+    )
+  }
 
   return (
     <>
       <h2>{t('data_exchange')}</h2>
       <ProjectSection />
-      <TracksSection />
-      <VermEsnSection />
-      <OsrdSection />
+      <div className="create-element-options">
+        {options.map(({ id, icon: Icon, titleKey }) => (
+          <button key={id} className="ui-btn ui-btn-option" onClick={() => setPage(id)}>
+            <Icon />
+            {t(titleKey)}
+          </button>
+        ))}
+      </div>
       {more && (
         <>
           <CompareSection onShowCompare={onShowCompare} />
@@ -39,7 +72,7 @@ export default function DataExchangePanel({ onShowCompare }) {
             <ProviImportSection onReport={(source, counts, lines) => reports.add({ source, ...counts, lines })} />
           </ExchangeSection>
           <CsvSection />
-          {extensionsOf('importSections').map(({ id, Component }) => <Component key={id} onReport={reports.add} />)}
+          {converted.filter(x => !x.menu).map(({ id, Component }) => <Component key={id} onReport={reports.add} />)}
           <ImportReports reports={reports.reports} onClear={reports.clear} />
           <AlignmentSection />
         </>

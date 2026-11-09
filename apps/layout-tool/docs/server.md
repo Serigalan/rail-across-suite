@@ -42,7 +42,7 @@ anything renders:
 
 | Extension point | Filled with |
 |---|---|
-| `importSections` | MDB import and MDB import into DB_REF |
+| `importSections` | MDB import (an option of the data exchange, `menu`) and MDB import into DB_REF (behind its dot) |
 | `sidebarFoot` | service status (are the project server and DGM5 there?) |
 | `terrainSources` | the Länder's DGM1 via the project server |
 | `basemaps` | "DGM1 der Länder": DGM5 with the service's 1 m relief tiles over it from map zoom 15 |

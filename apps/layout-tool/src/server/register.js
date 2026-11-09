@@ -10,6 +10,7 @@ import Cloud3dLink from './cloud3d/Cloud3dLink'
 import { legacySection, workingCopiesSection } from './localStoreSections'
 import { saveProjectMeta } from './projectMeta'
 import { MdbDbrefImport, MdbImport } from './panels/tools'
+import { MdbIcon } from '../core/components/icons'
 
 /**
  * The server components dock onto core: everything core offers an extension
@@ -17,8 +18,9 @@ import { MdbDbrefImport, MdbImport } from './panels/tools'
  * before the first render.
  */
 
-// The two MDB importers (the service converts the database).
-extend('importSections', { id: 'mdb', Component: MdbImport })
+// The two MDB importers (the service converts the database): the track network data as an option of the
+// data exchange, the conversion to DB_REF behind its dot.
+extend('importSections', { id: 'mdb', Component: MdbImport, menu: { icon: MdbIcon, titleKey: 'data_exchange_mdb' } })
 extend('importSections', { id: 'mdb-dbref', Component: MdbDbrefImport })
 
 // Whether the services are there, at the sidebar's foot (R10.12).

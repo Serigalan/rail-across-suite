@@ -30,7 +30,6 @@ import PopoutWindow from '../components/PopoutWindow'
 
 // The overlays and dialogs are chunks of their own (R9.1), loaded when first shown.
 const TrackTableOverlay = lazy(() => import('../components/TrackTableOverlay'))
-const PhysicsOverlay = lazy(() => import('../components/PhysicsOverlay'))
 const RegelwerkOverlay = lazy(() => import('../components/RegelwerkOverlay'))
 const PlanPreviewOverlay = lazy(() => import('../components/PlanPreviewOverlay'))
 const ElevationOverlay = lazy(() => import('../components/ElevationOverlay'))
@@ -191,7 +190,6 @@ export default function MapWorkspace({ onHome, beforeHome, homeKey, resetKey = 0
     kmOverlays: km.kmOverlays, setKmOverlay: km.setKmOverlay, kmLinesError: km.kmLinesError,
     topologySelection, setTopologySelection,
     overlay, openOverlay, closeOverlay, detached,
-    showPhysics: () => act({ type: 'popup', popup: { kind: 'physics' } }),
     showRegelwerk: (regelwerkId = '') => act({ type: 'popup', popup: { kind: 'regelwerk', regelwerkId } }),
     closePopup: () => act({ type: 'closePopup' }),
     // Picking another track keeps the edits — they are the table's, not one
@@ -386,7 +384,6 @@ export default function MapWorkspace({ onHome, beforeHome, homeKey, resetKey = 0
             onDeleted={() => setTopologySelection(null)}
             onClose={() => closeOverlay('topologyGraph')} />}
 
-          {popup?.kind === 'physics' && <PhysicsOverlay onClose={shell.closePopup} />}
           {popup?.kind === 'regelwerk' && <RegelwerkOverlay regelwerkId={popup.regelwerkId} onClose={shell.closePopup} />}
 
           {compare && <CompareOverlay mapVersion={mapVersion} {...compare} onClose={() => setCompare(null)} />}

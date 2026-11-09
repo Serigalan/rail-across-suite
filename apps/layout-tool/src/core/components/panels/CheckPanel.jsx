@@ -2,7 +2,7 @@ import { Suspense, lazy, useState } from 'react'
 import ShiftValuesPage from './shift/ShiftValuesPage'
 import GroupedTrackList from './GroupedTrackList'
 import {
-  PhysicsIcon, RegelwerkIcon, BandsIcon, ShiftValuesIcon, OptimizeTrackModeIcon, OptimizeElementModeIcon, AxisFitModeIcon,
+  RegelwerkIcon, BandsIcon, ShiftValuesIcon, OptimizeTrackModeIcon, OptimizeElementModeIcon, AxisFitModeIcon,
 } from '../icons'
 import { useTracks } from '../../hooks/useStore'
 import { useI18n } from '../../locales/i18nContext'
@@ -45,16 +45,16 @@ function BandsPage({ trackId, onShow, onExit }) {
 }
 
 /**
- * Checking the design (R10.7): the physics and the rulebook it is held to —
- * each a popup over the map, as wide as their tables — and the optimizer that
- * holds a track or an element to them, the one place it is offered; beside it
+ * Checking the design (R10.7): the rulebook it is held to — a popup over the
+ * map, as wide as its tables — and the optimizer that holds a track or an
+ * element to it, the one place it is offered; beside it
  * the alignment fit from a measured axis (AP 12.5). Last the bands of a track,
  * to read its alignment along it at one glance, and the shift values of a
  * track against a reference axis (Paket V). The optimizer and the alignment
  * fit run in the browser, in the optimizer module (decision 0019 of the
  * suite); a server may put more tools in (`panelTools` of 'check', Paket L).
  */
-export default function CheckPanel({ onShowPhysics, onShowRegelwerk, bandsTrackId, onShowBands }) {
+export default function CheckPanel({ onShowRegelwerk, bandsTrackId, onShowBands }) {
   const { t } = useI18n()
   const [page, setPage] = useState('menu')
   const [shiftTrackId, setShiftTrackId] = useState(null)
@@ -92,10 +92,6 @@ export default function CheckPanel({ onShowPhysics, onShowRegelwerk, bandsTrackI
     <>
       <h2>{t('check_title')}<InfoTip text={t('check_hint')} /></h2>
       <div className="create-element-options">
-        <button className="ui-btn ui-btn-option" onClick={() => onShowPhysics?.()}>
-          <PhysicsIcon />
-          {t('constraints_physics')}
-        </button>
         <button className="ui-btn ui-btn-option" onClick={() => onShowRegelwerk?.()}>
           <RegelwerkIcon />
           {t('constraints_regelwerk')}

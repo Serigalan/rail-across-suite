@@ -272,26 +272,11 @@ export const DeleteSwitchIcon = () => (
   </MenuIcon>
 )
 
-// Physics — "v²", MathJax's own render of it, exactly as handed over for this
-// button. Not a MenuIcon: a formula glyph is filled type, not a 16×16 stroke
-// drawing, and forcing it into that mould would have stopped it looking like
-// the thing it names. Exempted from the AP 4.3 rule in icons.test.js the same
-// way OverlayThumbnail is — sized in `ex`, so it scales with the button's own
-// font-size instead of carrying a fixed pixel size against it.
-export const PhysicsIcon = () => (
-  <svg width="2.085ex" height="2.025ex" viewBox="0 -883.9 921.6 894.9" aria-hidden="true"
-    className="icon-glyph icon-glyph-physics">
-    <g stroke="currentColor" fill="currentColor" strokeWidth={0}>
-      <g stroke="none">
-        <path d="M173-380q0-25-19-25-24 0-50 29t-43 89q-1 1-2 3t-1 3-2 2-3 1-4 0-8 0H27q-6-6-6-9 0-7 8-29t24-52 44-51 63-22q42 0 65 24t24 56q0 17-3 26 0 6-15 44t-31 89-18 89q0 27 5 44 13 43 63 43 37 0 69-34t50-79 29-83 11-55q0-23-8-40t-18-26-18-18-8-22q0-22 19-41t41-19q19 0 34 18t16 58q0 27-12 83t-37 125-71 119-106 51q-64 0-102-33-37-32-37-95 0-31 8-64t41-117q22-64 22-82" />
-        <path d="M595.063-716.303q-19.089 0-30.401-12.726t-11.312-31.108q0-50.197 37.471-86.961t93.324-36.764q64.337 0 107.464 39.592t43.834 102.515q0 30.401-14.14 57.974t-33.936 48.076-56.56 52.318q-25.452 21.917-70.7 65.044l-41.713 39.592 53.732.707q110.999 0 118.069-3.535 4.949-1.414 16.968-62.923v-2.121h28.28v2.121q-.707 2.121-9.191 64.337t-10.605 65.044V-413H553.35v-21.917q0-4.949 4.242-10.605t21.21-24.745q20.503-22.624 35.35-39.592 6.363-7.07 24.038-26.159t24.038-26.159 20.503-23.331 19.796-24.038 16.261-21.21 14.847-22.624 10.605-20.503 9.191-22.624 4.949-21.21 2.121-23.331q0-44.541-24.038-77.063t-68.579-32.522q-23.331 0-41.006 12.019t-24.745 23.331-7.07 13.433q0 .707 3.535.707 12.726 0 26.159 9.898t13.433 32.522q0 17.675-11.312 29.694t-31.815 12.726" />
-      </g>
-    </g>
-  </svg>
-)
-
-// Regelwerk — "§", MathJax's own render of it. Same exemption as PhysicsIcon,
-// for the same reason: a set typeface character, not a stroke drawing.
+// Regelwerk — "§", MathJax's own render of it. Not a MenuIcon: a formula glyph is
+// filled type, not a 16×16 stroke drawing, and forcing it into that mould would
+// have stopped it looking like the thing it names. Exempted from the AP 4.3 rule
+// in icons.test.js the same way OverlayThumbnail is — sized in `ex`, so it
+// scales with the button's own font-size instead of carrying a fixed pixel size.
 export const RegelwerkIcon = () => (
   <svg width="1ex" height="2.149ex" viewBox="0 -750 442 950" aria-hidden="true"
     className="icon-glyph icon-glyph-paragraph">
@@ -412,6 +397,43 @@ export const ShiftValuesIcon = () => (
     <path d="M1.5 6 C6 6 10 4 14.5 4" />
     <path d="M5 6 V11" />
     <path d="M11 4.5 V11" />
+  </MenuIcon>
+)
+
+// The data exchange's formats, each a page of its own. Tracks in and out: a
+// track, a straight running into an arc, its two ends marked.
+export const TracksExchangeIcon = () => (
+  <MenuIcon>
+    <path d="M2.5 13 H7 C10 13 12 10 13.5 3" />
+    <IconNode cx={2.5} cy={13} />
+    <IconNode cx={13.5} cy={3} />
+  </MenuIcon>
+)
+
+// Verm.ESN: a surveyed axis — the points measured along it, each a cross.
+export const VermEsnIcon = () => (
+  <MenuIcon>
+    <path d="M2.5 12.5 C7 11.5 10 8.5 13.5 3.5" strokeDasharray="1.5 2" />
+    <path d="M1.5 11 L4 13.5 M4 11 L1.5 13.5" />
+    <path d="M6.5 8.5 L9 11 M9 8.5 L6.5 11" />
+    <path d="M12 2 L14.5 4.5 M14.5 2 L12 4.5" />
+  </MenuIcon>
+)
+
+// RailJSON: the braces of a JSON document.
+export const RailJsonIcon = () => (
+  <MenuIcon>
+    <path d="M6 2 C4.5 2 4.5 3 4.5 4.5 V6.5 C4.5 7.5 3.5 8 2.5 8 C3.5 8 4.5 8.5 4.5 9.5 V11.5 C4.5 13 4.5 14 6 14" />
+    <path d="M10 2 C11.5 2 11.5 3 11.5 4.5 V6.5 C11.5 7.5 12.5 8 13.5 8 C12.5 8 11.5 8.5 11.5 9.5 V11.5 C11.5 13 11.5 14 10 14" />
+  </MenuIcon>
+)
+
+// An Access database (MDB): the cylinder a database is drawn as.
+export const MdbIcon = () => (
+  <MenuIcon>
+    <path d="M3 4 C3 2 13 2 13 4 C13 6 3 6 3 4 Z" />
+    <path d="M3 4 V12 C3 14 13 14 13 12 V4" />
+    <path d="M3 8 C3 10 13 10 13 8" />
   </MenuIcon>
 )
 

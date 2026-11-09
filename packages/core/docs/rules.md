@@ -22,7 +22,7 @@ The vertical (Höhenplan) half of the catalogue is applied in `elevation/gradien
 | `transitionLength.js` | Regellänge and Mindestlänge of a transition, found from the length rules; the formula each rule shows |
 | `regelwerkDefaults.js` | The few values the dialogs need synchronously, read from the catalogue |
 | `ruleFields.js` | Which form field a finding belongs to |
-| `constraintsView.js` | The physics file and the optimizer's limits as table rows for the viewers |
+| `constraintsView.js` | The optimizer's limits as table rows for the rulebook viewer; the physics file as rows, which its tests hold to the arithmetic |
 
 ## The catalogue
 

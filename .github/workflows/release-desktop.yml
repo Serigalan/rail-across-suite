@@ -2,9 +2,10 @@ name: Release desktop app
 
 # The desktop app as a GitHub release (decision 0021: it takes the place of the local build's zip): pushing a
 # tag desktop-YYYY-MM-DD[.n] builds the app with the project server in its process (crates/desktop) on
-# Linux, macOS and Windows and attaches the packages to a release of that tag. On Windows the package is
-# portable: a ZIP of one folder (crates/desktop/portable/), besides the installers. Run by hand, it builds the
-# packages as the run's artifacts and releases nothing.
+# Windows and macOS and attaches the packages to a release of that tag. On Windows the package is portable: a
+# ZIP of one folder (crates/desktop/portable/), besides the installers; on macOS a .dmg for Apple silicon (the
+# runner's). Linux is built and smoke-checked by CI, not released. Run by hand, it builds the packages as the
+# run's artifacts and releases nothing — the way to try a release before its tag.
 
 on:
   push:
@@ -19,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-24.04, macos-14, windows-2022]
+        os: [macos-14, windows-2022]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v5
@@ -29,8 +30,6 @@ jobs:
           cache: npm
       - run: npm ci --no-audit --no-fund
       - run: rustup target add wasm32-unknown-unknown
-      - if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev libsoup-3.0-dev librsvg2-dev mdbtools
       - if: runner.os == 'macOS'
         run: brew install mdbtools
       # mdb-export from MSYS2, which the runner has; scripts/stage-mdbtools.mjs finds it there.
@@ -58,8 +57,6 @@ jobs:
         with:
           name: desktop-${{ matrix.os }}
           path: |
-            crates/desktop/target/release/bundle/**/*.deb
-            crates/desktop/target/release/bundle/**/*.AppImage
             crates/desktop/target/release/bundle/**/*.dmg
             crates/desktop/target/release/bundle/**/*.msi
             crates/desktop/target/release/bundle/**/*.exe
@@ -80,5 +77,10 @@ jobs:
         run: |
           version="${GITHUB_REF_NAME#desktop-}"
           find packages -type f > files.txt
-          echo "Rail-Across-Suite for the desktop, version ${version}: the suite with its project server in one window, no server and no Node needed." > release-notes.md
-          xargs -a files.txt gh release create "$GITHUB_REF_NAME" --title "Desktop ${version}" --notes-file release-notes.md --verify-tag
+          cat > release-notes.md <<EOF
+          Rail-Across-Suite for the desktop, version ${version}: the suite with its project server in one window, no server and no Node needed.
+
+          - **Windows:** \`…-windows-portable.zip\` — unpack and start \`Rail-Across-Suite.exe\`; everything stays in that folder. Or install with the \`.msi\` or \`-setup.exe\`. Not signed: SmartScreen warns on the first start (More info → Run anyway). Needs WebView2 (part of Windows 11 and current Windows 10).
+          - **macOS (Apple silicon):** the \`.dmg\`. Not signed or notarized: macOS refuses the first start — System Settings → Privacy & Security → Open anyway, or \`xattr -cr /Applications/Rail-Across-Suite.app\`.
+          EOF
+          xargs -d '\n' -a files.txt gh release create "$GITHUB_REF_NAME" --title "Desktop ${version}" --notes-file release-notes.md --verify-tag

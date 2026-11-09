@@ -40,8 +40,19 @@ if (process.platform === 'linux') {
   libs = execFileSync('ldd', [tool], { encoding: 'utf8' }).split('\n')
     .map(l => /=>\s*(\S+)/.exec(l)?.[1]).filter(p => p && existsSync(p) && !SYSTEM.test(basename(p)))
 } else if (process.platform === 'darwin') {
-  libs = execFileSync('otool', ['-L', tool], { encoding: 'utf8' }).split('\n').slice(1)
-    .map(l => l.trim().split(' ')[0]).filter(p => p && !p.startsWith('/usr/lib/') && !p.startsWith('/System/') && existsSync(p))
+  // otool names only what a file links itself (unlike ldd): followed through the libraries, as libglib needs
+  // libintl and libpcre2 on a Mac without Homebrew. @loader_path is the linking file's folder.
+  const linked = (file) => execFileSync('otool', ['-L', file], { encoding: 'utf8' }).split('\n').slice(1)
+    .map(l => l.trim().split(' ')[0].replace(/^@loader_path\//, dirname(file) + '/'))
+    .filter(p => p && !p.startsWith('/usr/lib/') && !p.startsWith('/System/') && existsSync(p))
+  const seen = new Set()
+  for (const queue = linked(tool); queue.length;) {
+    const lib = queue.shift()
+    if (seen.has(basename(lib))) continue
+    seen.add(basename(lib))
+    libs.push(lib)
+    queue.push(...linked(lib))
+  }
 } else if (process.platform === 'win32') {
   // "libglib-2.0-0.dll => /mingw64/bin/libglib-2.0-0.dll (0x…)": Windows' own DLLs do not lie beside the tool.
   const ldd = process.env.RA_LDD ?? join(MSYS, 'usr/bin/ldd.exe')

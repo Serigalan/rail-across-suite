@@ -22,11 +22,10 @@ settings: a new signalling system (H/V, Sv) is a new entry under `systeme`, a ne
 
 | File | What it does |
 |---|---|
-| `catalogue.js` | The catalogue: an aspect by its key (`aspectOf`), what a kind of signal of a system shows (`signalKindOf`) and what a screen of several logical signals shows (`screenOf`), a train protection system and its kinds (`protectionSystemOf`, `baliseKindOf`), how settings stand to what is declared (`settingsProblems`), whether a symbol fits, which aspects stand on a board of their own, an entry's title in a language (`titleIn`) |
-| `checkSignalling.js` | `checkSignalling({ core, signalling })`: the findings of the domain on the core it stands on, `{ errors, warnings }` as validateProject gives them |
+| `catalogue.js` | Stays JavaScript with `overlaps.js` and `switchSpeeds.js`: the page asks them for every signal and route it draws, and each call to the module would carry the whole domain. The catalogue: an aspect by its key (`aspectOf`), what a kind of signal of a system shows (`signalKindOf`) and what a screen of several logical signals shows (`screenOf`), a train protection system and its kinds (`protectionSystemOf`, `baliseKindOf`), how settings stand to what is declared (`settingsProblems`), whether a symbol fits, which aspects stand on a board of their own, an entry's title in a language (`titleIn`) |
+| `crates/signalling` (Rust) | `checkSignalling({ core, signalling })`: the findings of the domain on the core it stands on, `{ errors, warnings }` as validateProject gives them; the extent of the track detection sections, derived over the net from their points (`trackSectionExtents`, `netParts`) — called through `index.js` (decision 0020, step 10; their JavaScript is gone, their vectors frozen) |
 | `overlaps.js` | What an overlap needs: the speed a route's start signal signals for it (`signallingSpeedOf`), the length a speed and gradient ask (`overlapLength`, catalogue `durchrutschweg`), the gradient over a run from the tracks' heights (`gradientAlong`) |
 | `switchSpeeds.js` | The turnouts a run passes on their branch and the slowest speed they allow there (`branchSpeedOnRun`; a turnout's own, else its form's — `switchBranchSpeed`) |
-| `trackSections.js` | The extent of the track detection sections, derived over the net from their points (`trackSectionExtents`, `netParts`) |
 
 ## The catalogue
 

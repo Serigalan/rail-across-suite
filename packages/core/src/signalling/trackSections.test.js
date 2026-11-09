@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { netParts, trackSectionExtents } from './trackSections.js'
+import { netParts, trackSectionExtents } from './index.js'
 import { straightElement } from '../geometry/elementFactory.js'
 
 const EPSG = 25832

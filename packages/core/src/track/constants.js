@@ -20,6 +20,10 @@ export const BUFFER_STOP_LENGTH = 2.2
 export const FACE_HALF_WIDTH = 1.75
 export const BOUNDARY_HALF_WIDTH = 3
 
+/** Heights: a track is split into height pieces past HEIGHT_SPLIT_MIN, points proposed every HEIGHT_POINT_SPACING [m]. */
+export const HEIGHT_SPLIT_MIN = 200
+export const HEIGHT_POINT_SPACING = 100
+
 /** The vertical datum heights are stated in by default: DHHN2016. */
 export const DEFAULT_HEIGHT_EPSG = 7837
 

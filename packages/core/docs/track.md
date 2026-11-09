@@ -9,8 +9,11 @@ the importers, the merge and the project server use the same code.
 
 The module is the core's Rust crate `crates/track` ([decision 0021](../../../docs/decisions/0021-one-format-one-build-the-project-in-the-module.md),
 phase D): `index.js` calls it for every function, an argument that is a part of the project the module holds
-crossing as its name (`native` holdProject); its constants (`constants.js`), ids drawn from the browser's
-randomness and a heading in the interface's language are what stays JavaScript.
+crossing as its name (`native` holdProject). What stays JavaScript, measured: the small queries the pages ask
+point by point, per signal or per frame — a point, an element or a height at a station, a switch's ports, a
+label (`queries.js`, 47 functions held to the crate's frozen vectors by `queries.test.js`); through the module
+the plan export of the PEK Bestand asked them 15,000 times and took 4.5 s, here 0.35 s —, the constants
+(`constants.js`), ids drawn from the browser's randomness and a heading in the interface's language.
 
 ## Files
 

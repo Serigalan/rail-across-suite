@@ -727,7 +727,6 @@ dependencies = [
 name = "rail-across-planpro"
 version = "0.1.0"
 dependencies = [
- "rail-across-commands",
  "rail-across-doc",
  "rail-across-geom",
  "rail-across-js",

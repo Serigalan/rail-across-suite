@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 
 //! Reading a PlanPro 1.10 plan (`planpro.js`, decision 0011): the net it is
-//! drawn on and its signalling, as the suite's record holds them.
+//! drawn on and its signalling, as the suite's record holds them. The suite
+//! has no PlanPro import any more — too little of a project is in a plan; the
+//! reader stays as the check of the export (`write.rs`, tests/export.rs).
 //!
 //! Every edge (TOP_Kante) becomes a track along its GEO_Kanten in the edge's
 //! direction, every node of tip, left and right a turnout; a point object at
@@ -13,7 +15,6 @@
 use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
 
-use rail_across_commands::merge::carry::{Ctx, carry_domain};
 use rail_across_geom::element::{Utm, reverse_element};
 use rail_across_geom::factory::{arc_element, straight_element, transition_element};
 use rail_across_js::{Object, cmp_utf16, js_hypot, js_number, js_round, js_string, number};
@@ -1430,29 +1431,4 @@ pub fn planpro_record(text: &str, id: Option<&str>, title: Option<&str>) -> Resu
         ("signalling", Some(signalling)),
     ]);
     Ok(json!({ "record": record, "report": report.summary(), "header": model.header }))
-}
-
-/// The signalling of a plan placed on another net (`placeSignalling`):
-/// { signalling, carried }.
-pub fn place_signalling(signalling: &Value, from: &[Value], onto: &Value) -> Value {
-    let old: HashMap<String, Value> = from.iter().map(|t| (js_string(t.get("id")), t.clone())).collect();
-    let tracks: Vec<Value> = onto.get("tracks").and_then(Value::as_array).cloned().unwrap_or_default();
-    let switches: Vec<Value> = onto.get("switches").and_then(Value::as_array).cloned().unwrap_or_default();
-    let changed = |id: &str| old.contains_key(id);
-    let old_track = |id: &str| old.get(id).cloned();
-    let candidates = |_: &str| tracks.clone();
-    let ctx = Ctx {
-        present: tracks.iter().map(|t| js_string(t.get("id"))).collect(),
-        changed: &changed,
-        old_track: &old_track,
-        candidates: &candidates,
-        tracks: tracks.clone(),
-        switches,
-    };
-    let (domain, carried) = carry_domain(signalling, &ctx);
-    let carried: Vec<Value> = carried
-        .into_iter()
-        .map(|c| json!({ "collection": c.collection, "id": c.id, "field": c.field, "from": c.from, "to": c.to }))
-        .collect();
-    json!({ "signalling": domain, "carried": carried })
 }

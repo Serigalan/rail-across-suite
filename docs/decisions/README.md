@@ -26,3 +26,4 @@ it costs. A record is not rewritten when a decision changes; a new one replaces 
 | [0019](0019-optimizer-in-rust.md) | The optimizer in Rust, in the browser; the Python service goes | accepted |
 | [0020](0020-everything-in-rust.md) | Everything in Rust: the core, the point clouds and the server, one crate set for server and desktop | proposed |
 | [0021](0021-one-format-one-build-the-project-in-the-module.md) | One format (infra-data-1.0), one build, the project in the core's module | accepted |
+| [0022](0022-planpro-export-only.md) | PlanPro: export only; the reader stays as the export's check | accepted |

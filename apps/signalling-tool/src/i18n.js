@@ -238,7 +238,6 @@ const de = {
   basemap_landesvermessung_count: '{n} Bundesländer',
   basemap_none: 'Nur der Plan',
   basemap_none_hint: 'Gleise und Signale ohne Hintergrund',
-  section_import_intro: 'Die Signaltechnik eines PlanPro-Plans (.planpro, .ppxml) auf das Gleisnetz des Projekts legen.',
 
   name: 'Name',
   area: 'Kennzahl',
@@ -370,16 +369,6 @@ const de = {
   check_counts: '{e} Fehler, {w} Warnungen',
   show: 'Zeigen',
 
-  import_choose: 'PlanPro-Datei wählen',
-  import_read: 'Gelesen: {title}',
-  import_counts: '{signals} Signale, {routes} Fahrstraßen, {sections} Freimeldeabschnitte, {balises} Balisen/Magnete',
-  import_same_net: 'Der Plan liegt auf genau diesem Gleisnetz: alles bleibt, wo es ist.',
-  import_placed: '{placed} von {total} Orten auf Gleise des Projekts gelegt, {orphaned} verwaist (stehen auf keinem Gleis).',
-  import_replace: 'Signaltechnik ersetzen',
-  import_replace_hint: 'Die Signaltechnik des Projekts wird durch die des Plans ersetzt. Einchecken macht es dauerhaft.',
-  import_skipped: 'Nicht übernommen (gehört nicht zur Signaltechnik dieses Modells): {list}',
-  import_failed: 'Die Datei ließ sich nicht lesen: {error}',
-  import_done: 'Signaltechnik aus „{title}“ übernommen.',
 
   legend: 'Legende',
   collection_signals: 'Signalmasten',
@@ -507,8 +496,15 @@ const de = {
   routes_shunting: 'Rangierstraßen',
   routes_middle: 'Mittelweichen-Teilfahrstraßen',
   section_exchange: 'Datenaustausch',
-  section_exchange_intro: 'Signaltechnik aus anderen Werkzeugen übernehmen.',
-  import_planpro: 'PlanPro-Plan importieren',
+  section_exchange_intro: 'Das Projekt für andere Werkzeuge schreiben.',
+  export_planpro: 'Als PlanPro-Plan exportieren',
+  section_export_intro: 'Das Projekt als PlanPro-Plan (PlanPro 1.10, .ppxml) schreiben: Gleisnetz in DB_REF, Weichen, Prellböcke und die Signaltechnik, wie sie im Editor steht.',
+  export_write: 'PlanPro-Datei schreiben',
+  export_done: 'Geschrieben: {name}',
+  export_counts: '{tracks} Gleise, {switches} Weichen, {signals} Signale, {routes} Fahrstraßen, {sections} Freimeldeabschnitte',
+  export_not_written: 'Nicht geschrieben (PlanPro hat hier keinen Platz dafür oder es liegt auf keinem Gleis): {list}',
+  export_failed: 'Die Datei ließ sich nicht schreiben: {error}',
+  export_check_hint: 'Die Datei ist nicht gegen das PlanPro-Schema geprüft – vor der Weitergabe mit einem PlanPro-Werkzeug öffnen.',
 }
 
 // Findings of the core's check, by code; {…} are their params, named.
@@ -808,7 +804,6 @@ const en = {
   basemap_landesvermessung_count: '{n} states',
   basemap_none: 'The plan alone',
   basemap_none_hint: 'Tracks and signals without a ground',
-  section_import_intro: 'Lay the signalling of a PlanPro plan (.planpro, .ppxml) on the project\'s net.',
 
   name: 'Name',
   area: 'Area number',
@@ -940,16 +935,6 @@ const en = {
   check_counts: '{e} errors, {w} warnings',
   show: 'Show',
 
-  import_choose: 'Choose a PlanPro file',
-  import_read: 'Read: {title}',
-  import_counts: '{signals} signals, {routes} routes, {sections} track sections, {balises} balises/magnets',
-  import_same_net: 'The plan lies on exactly this net: everything stays where it is.',
-  import_placed: '{placed} of {total} locations laid on the project\'s tracks, {orphaned} orphaned (on no track).',
-  import_replace: 'Replace the signalling',
-  import_replace_hint: 'The project\'s signalling is replaced by the plan\'s. Checking in makes it last.',
-  import_skipped: 'Not taken (not part of this model\'s signalling): {list}',
-  import_failed: 'The file could not be read: {error}',
-  import_done: 'Signalling taken from “{title}”.',
 
   legend: 'Legend',
   collection_signals: 'signal masts',
@@ -1077,8 +1062,15 @@ const en = {
   routes_shunting: 'Shunting routes',
   routes_middle: 'Middle-switch routes',
   section_exchange: 'Data exchange',
-  section_exchange_intro: 'Take signalling from other tools.',
-  import_planpro: 'Import PlanPro plan',
+  section_exchange_intro: 'Write the project for other tools.',
+  export_planpro: 'Export as PlanPro plan',
+  section_export_intro: 'Write the project as a PlanPro plan (PlanPro 1.10, .ppxml): the net in DB_REF, switches, buffer stops and the signalling as it stands in the editor.',
+  export_write: 'Write PlanPro file',
+  export_done: 'Written: {name}',
+  export_counts: '{tracks} tracks, {switches} switches, {signals} signals, {routes} routes, {sections} track sections',
+  export_not_written: 'Not written (PlanPro has no place for it here, or it lies on no track): {list}',
+  export_failed: 'The file could not be written: {error}',
+  export_check_hint: 'The file is not checked against the PlanPro schema — open it in a PlanPro tool before passing it on.',
 }
 
 const findingsEn = {

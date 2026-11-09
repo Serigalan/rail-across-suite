@@ -165,12 +165,12 @@ Goal: prove the core with a second real module.
   *Done:* the domain `signalling` 1.0 after PlanPro 1.10 with overlaps and flank protection, checked against the
   PlanPro plan P-Hausen; the catalogue of all Ril 301 aspects with the Ks and shunting signal kinds as logical signals after OSRD, and the balises and magnets of PZB and ETCS, in German and English; places and their logical signals, the speed signalled per route at the start signal (the design speed the core's), overlaps measured from speed and gradient (a draft of Ril 819.0202), platforms as station boundaries, the domain checked against OSRD's RailJSON; one working copy per variant in the browser for both tools; its content check
   with track sections derived over the net; the core carrying its locations on every track edit and merge (R4,
-  R7); reading PlanPro plans; the server checking the domain at check-in; the Signalling-Tool's first version,
+  R7); writing PlanPro plans (an import was tried and went: a plan holds too little of a project, decision 0022); the server checking the domain at check-in; the Signalling-Tool's first version,
   setting objects as OSRD's editor does (snapped to a track, shown before the click) and drawing them beside their track,
   its panels with menus and pages as the Layout-Tool's — creating signals, train detection and balises apart from editing them in one overview
   ([decision 0011](docs/decisions/0011-signalling-domain.md)) on the suite's look as a library, `@rail-across/ui`
   ([decision 0012](docs/decisions/0012-ui-library.md)). *Next:* the values of Ril 819 and Ril 483, level
-  crossings, block and the other parts of a station plan, writing PlanPro.
+  crossings, block and the other parts of a station plan; the PlanPro export checked against the XSD.
 
 **Signalling goes first**: it needs locations, ranges, functional objects and topology, and so tests the
 generalised core most. Catenary follows.

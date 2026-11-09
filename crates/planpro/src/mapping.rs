@@ -2,11 +2,30 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 
 //! PlanPro 1.10's enumerations and the values of the signalling domain they
-//! are read as (`mapping.js`, decision 0011): one table per attribute.
+//! are read as (`mapping.js`, decision 0011): one table per attribute, read
+//! both ways — a key as its value, and a value as the key the export writes
+//! (the first key that reads as it).
 
-/// `SIGNAL_FUNCTION`.
-pub fn signal_function(key: &str) -> Option<&'static str> {
-    Some(match key {
+/// A table: `$name` reads a key, `$back` gives the key a value is written as.
+macro_rules! table {
+    ($(#[$doc:meta])* $name:ident, $back:ident, { $($k:literal => $v:literal),* $(,)? }) => {
+        $(#[$doc])*
+        pub fn $name(key: &str) -> Option<&'static str> {
+            match key {
+                $($k => Some($v),)*
+                _ => None,
+            }
+        }
+        #[doc = concat!("The key a value of [`", stringify!($name), "`] is written as.")]
+        pub fn $back(value: &str) -> Option<&'static str> {
+            [$(($k, $v)),*].into_iter().find(|(_, v)| *v == value).map(|(k, _)| k)
+        }
+    };
+}
+
+table! {
+    /// `SIGNAL_FUNCTION`.
+    signal_function, signal_function_key, {
         "Einfahr_Signal" => "entry",
         "Ausfahr_Signal" => "exit",
         "Einfahr_Ausfahr_Signal" => "entryExit",
@@ -25,13 +44,12 @@ pub fn signal_function(key: &str) -> Option<&'static str> {
         "Vorsignal_Vorsignalwiederholer" => "distant",
         "Alleinstehendes_Zusatzsignal" => "standaloneIndicator",
         "andere" => "other",
-        _ => return None,
-    })
+    }
 }
 
-/// `VIRTUAL_FUNCTION`.
-pub fn virtual_function(key: &str) -> Option<&'static str> {
-    Some(match key {
+table! {
+    /// `VIRTUAL_FUNCTION`.
+    virtual_function, virtual_function_key, {
         "Zug_Start_ohne_Signal" => "trainStartWithoutSignal",
         "Zug_Ziel_ohne_Signal" => "trainTargetWithoutSignal",
         "Zug_Ziel_Strecke" => "trainTargetLine",
@@ -44,13 +62,12 @@ pub fn virtual_function(key: &str) -> Option<&'static str> {
         "Rangier_Start_Ziel_ohne_Signal" => "shuntingStartTargetWithoutSignal",
         "Vsig_virtuell" => "virtualDistant",
         "sonstige" => "other",
-        _ => return None,
-    })
+    }
 }
 
-/// `SIGNAL_TYPE`.
-pub fn signal_type(key: &str) -> Option<&'static str> {
-    Some(match key {
+table! {
+    /// `SIGNAL_TYPE`.
+    signal_type, signal_type_key, {
         "Hauptsignal" => "main",
         "Hauptsperrsignal" => "mainShunting",
         "Mehrabschnittssignal" => "multiSection",
@@ -60,72 +77,66 @@ pub fn signal_type(key: &str) -> Option<&'static str> {
         "Vorsignalwiederholer" => "distantRepeater",
         "Zugdeckungssignal" => "trainCover",
         "andere" => "other",
-        _ => return None,
-    })
+    }
 }
 
-/// `SIGNAL_SYSTEM`.
-pub fn signal_system(key: &str) -> Option<&'static str> {
-    Some(match key {
+table! {
+    /// `SIGNAL_SYSTEM`.
+    signal_system, signal_system_key, {
         "Ks" => "ks",
         "HV" => "hv",
         "SV" => "sv",
         "Hl" => "hl",
-        _ => return None,
-    })
+    }
 }
 
-/// `MOUNTING`.
-pub fn mounting(key: &str) -> Option<&'static str> {
-    Some(match key {
+table! {
+    /// `MOUNTING`.
+    mounting, mounting_key, {
         "Mast" => "mast",
         "Signalausleger" => "bracket",
         "Signalbruecke" => "gantry",
         "Fundament" => "foundation",
         "Sonderkonstruktion" => "special",
         "andere" => "other",
-        _ => return None,
-    })
+    }
 }
 
-/// `FRAME`.
-pub fn frame(key: &str) -> Option<&'static str> {
-    Some(match key {
+table! {
+    /// `FRAME`.
+    frame, frame_key, {
         "Schirm" => "screen",
         "Zusatzanzeiger" => "indicator",
         "Blechtafel" => "plate",
         "Keramikkoerper" => "body",
         "Bezeichnungsschild" => "nameplate",
         "sonstige" => "other",
-        _ => return None,
-    })
+    }
 }
 
-/// `DETECTION_POINT`.
-pub fn detection_point(key: &str) -> Option<&'static str> {
-    Some(match key {
+table! {
+    /// `DETECTION_POINT`.
+    detection_point, detection_point_key, {
         "Isolierstoss_einschienig" => "insulatedJointOneRail",
         "Isolierstoss_zweischienig" => "insulatedJointTwoRail",
         "elektrischer_Trennstoss" => "electricalJoint",
-        _ => return None,
-    })
+    }
 }
 
-/// `SECTION_KIND`.
-pub fn section_kind(key: &str) -> Option<&'static str> {
-    Some(match key {
+table! {
+    /// `SECTION_KIND`.
+    section_kind, section_kind_key, {
         "Achszaehlanlage" => "axleCounting",
         "TF_Gleisstromkreis" => "audioFrequencyCircuit",
         "NF_Gleisstromkreis" => "lowFrequencyCircuit",
         "FTGS" => "ftgs",
         "sonstige" => "other",
-        _ => return None,
-    })
+    }
 }
 
-/// `OPERATION`.
-pub fn operation(key: &str) -> Option<&'static str> {
-    Some(match key {
+table! {
+    /// `OPERATION`.
+    operation, operation_key, {
         "elektrisch_ferngestellt" => "electricRemote",
         "elektrisch_ortsgestellt" => "electricLocal",
         "mechanisch_ferngestellt" => "mechanicalRemote",
@@ -135,109 +146,98 @@ pub fn operation(key: &str) -> Option<&'static str> {
         "stillgelegt_links" => "disabledLeft",
         "stillgelegt_rechts" => "disabledRight",
         "sonstige" => "other",
-        _ => return None,
-    })
+    }
 }
 
-/// `POSITION`.
-pub fn position(key: &str) -> Option<&'static str> {
-    Some(match key {
+table! {
+    /// `POSITION`.
+    position, position_key, {
         "links" => "left",
         "rechts" => "right",
-        _ => return None,
-    })
+    }
 }
 
-/// `VIA`.
-pub fn via(key: &str) -> Option<&'static str> {
-    Some(match key {
+table! {
+    /// `VIA`.
+    via, via_key, {
         "links" => "left",
         "rechts" => "right",
         "Spitze" => "tip",
-        _ => return None,
-    })
+    }
 }
 
-/// `DERAILER_POSITION`.
-pub fn derailer_position(key: &str) -> Option<&'static str> {
-    Some(match key {
+table! {
+    /// `DERAILER_POSITION`.
+    derailer_position, derailer_position_key, {
         "aufgelegt" => "applied",
         "abgelegt" => "removed",
-        _ => return None,
-    })
+    }
 }
 
-/// `TWOFOLD_KIND`.
-pub fn twofold_kind(key: &str) -> Option<&'static str> {
-    Some(match key {
+table! {
+    /// `TWOFOLD_KIND`.
+    twofold_kind, twofold_kind_key, {
         "echt" => "genuine",
         "echt_eigen" => "genuineOwn",
         "eigen" => "own",
-        _ => return None,
-    })
+    }
 }
 
-/// `TWOFOLD_MEASURE`.
-pub fn twofold_measure(key: &str) -> Option<&'static str> {
-    Some(match key {
+table! {
+    /// `TWOFOLD_MEASURE`.
+    twofold_measure, twofold_measure_key, {
         "Verschluss" => "locking",
         "Ersatzschutz" => "substitute",
-        _ => return None,
-    })
+    }
 }
 
-/// `PZB_FREQUENCY`.
-pub fn pzb_frequency(key: &str) -> Option<&'static str> {
-    Some(match key {
+table! {
+    /// `PZB_FREQUENCY`.
+    pzb_frequency, pzb_frequency_key, {
         "500_Hz" => "500",
         "1000_Hz" => "1000",
         "2000_Hz" => "2000",
         "1000_2000_Hz" => "1000+2000",
-        _ => return None,
-    })
+    }
 }
 
-/// `PZB_EFFECT`.
-pub fn pzb_effect(key: &str) -> Option<&'static str> {
-    Some(match key {
+table! {
+    /// `PZB_EFFECT`.
+    pzb_effect, pzb_effect_key, {
         "staendig_wirksam" => "permanent",
         "schaltbar_von_Signal" => "switchedBySignal",
         "sonstige" => "other",
-        _ => return None,
-    })
+    }
 }
 
-/// `PZB_ROUTE_EFFECT`.
-pub fn pzb_route_effect(key: &str) -> Option<&'static str> {
-    Some(match key {
+table! {
+    /// `PZB_ROUTE_EFFECT`.
+    pzb_route_effect, pzb_route_effect_key, {
         "staendig_wirksam_wenn_Fahrstrasse_eingestellt" => "activeWhenSet",
         "unwirksam_wenn_Fahrstrasse_eingestellt" => "inactiveWhenSet",
         "sonstige" => "other",
-        _ => return None,
-    })
+    }
 }
 
-/// `GUE_ARRANGEMENT`.
-pub fn gue_arrangement(key: &str) -> Option<&'static str> {
-    Some(match key {
+table! {
+    /// `GUE_ARRANGEMENT`.
+    gue_arrangement, gue_arrangement_key, {
         "1_EA" => "startFirst",
         "2_AE" => "endFirst",
-        _ => return None,
-    })
+    }
 }
 
-/// `SIDE`.
-pub fn side(key: &str) -> Option<&'static str> {
-    Some(match key {
+table! {
+    /// `SIDE`.
+    side, side_key, {
         "links" => "left",
         "rechts" => "right",
-        _ => return None,
-    })
+    }
 }
 
-/// `SWITCH_KIND`.
-pub fn switch_kind(key: &str) -> Option<&'static str> {
-    Some(match key {
+table! {
+    /// `SWITCH_KIND`.
+    switch_kind, switch_kind_key, {
         "EW" => "turnout",
         "ABW" => "turnout",
         "IBW" => "turnout",
@@ -248,8 +248,7 @@ pub fn switch_kind(key: &str) -> Option<&'static str> {
         "Sym. ABW" => "turnout",
         "Klothoidenweiche" => "turnout",
         "Korbbogenweiche" => "turnout",
-        _ => return None,
-    })
+    }
 }
 
 /// `GEO_FORM`: the element type of the core and, for a transition, its form.
@@ -264,14 +263,15 @@ pub fn geo_form(key: &str) -> Option<(u8, Option<&'static str>)> {
 }
 
 /// `COORDINATE_SYSTEM`: DB_REF in its Gauss-Krüger strips.
+const COORDINATE_SYSTEMS: [(&str, i64); 4] = [("CR0", 5682), ("DR0", 5683), ("ER0", 5684), ("FR0", 5685)];
+
 pub fn coordinate_system(key: &str) -> Option<i64> {
-    Some(match key {
-        "CR0" => 5682,
-        "DR0" => 5683,
-        "ER0" => 5684,
-        "FR0" => 5685,
-        _ => return None,
-    })
+    COORDINATE_SYSTEMS.iter().find(|(k, _)| *k == key).map(|(_, c)| *c)
+}
+
+/// The key of a DB_REF strip's EPSG code.
+pub fn coordinate_system_key(code: i64) -> Option<&'static str> {
+    COORDINATE_SYSTEMS.iter().find(|(_, c)| *c == code).map(|(k, _)| *k)
 }
 
 /// `BUFFER_STOPS`: which end marks are buffer stops.

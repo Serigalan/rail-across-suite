@@ -48,8 +48,8 @@ export const LayersIcon = () => <Svg><path d="M3 6 L9 3.5 L15 6 L21 3.5 V18 L15 
 export const SettingsIcon = () => <Svg><path d="M3 6 H7 M11 6 H21 M3 12 H14 M18 12 H21 M3 18 H5 M9 18 H21" /><circle cx="9" cy="6" r="2" /><circle cx="16" cy="12" r="2" /><circle cx="7" cy="18" r="2" /></Svg>
 /** The check. */
 export const CheckIcon = () => <Svg><path d="M4 12l5 5L20 6" /></Svg>
-/** A file coming in. */
-export const ImportIcon = () => <Svg><path d="M12 3v12M7 10l5 5 5-5" /><path d="M5 21h14" /></Svg>
+/** A file going out. */
+export const ExportIcon = () => <Svg><path d="M12 15V3M7 8l5-5 5 5" /><path d="M5 21h14" /></Svg>
 /** The history: a clock with an arrow running back. */
 export const HistoryIcon = () => <Svg><path d="M4 12A8 8 0 1 0 6.3 6.3" /><path d="M2.8 6.6h3.8V2.8" /><path d="M12 7.5V12l3 2" /></Svg>
 /** The infrastructure editor of the suite: a house. */

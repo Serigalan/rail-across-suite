@@ -10,14 +10,17 @@ plain Node (a test holds it to that), as everything the project server might sha
 
 ## Files
 
-| File | What it does |
+The computation is Rust (decision 0020, step 10): `index.js` calls the core's module for each function. Its
+JavaScript is gone; `carryAfterWrite` goes to the module only for a write that changed the tracks of a record
+carrying a domain, with just what the carrying reads.
+
+| In `crates/commands/src/merge/` | What it does |
 |---|---|
-| `collections.js` | What a record is made of for merging: the collections and their keys, fields, canonical comparison, labels |
-| `diff.js` | `diffProject`, `diffEntries`: what changed between two dehydrated states |
-| `merge.js` | `mergeProject(base, mine, theirs)` → merged record, conflicts, warnings, what was applied; `resolve` |
-| `remap.js` | Carrying a reference across a change of track ids, by geometry |
-| `carryLocations.js` | Carrying the locations of a domain the core does not write (signalling …) across a change of the net: after every write of the Layout-Tool (`carryAfterWrite`) and in a merge (R4, R7) |
-| `index.js` | The module's public interface |
+| `collections.rs` | What a record is made of for merging: the collections and their keys, fields, canonical comparison, labels |
+| `diff.rs` | `diffProject`, `diffEntries`: what changed between two dehydrated states |
+| `three_way.rs` | `mergeProject(base, mine, theirs)` → merged record, conflicts, warnings, what was applied; `resolve` |
+| `remap.rs` | Carrying a reference across a change of track ids, by geometry |
+| `carry.rs` | Carrying the locations of a domain the core does not write (signalling …) across a change of the net: after every write of the Layout-Tool (`carryAfterWrite`), onto a merged net (`carryDomainOnto`) and in a merge (R4, R7) |
 
 ## The unit of merging
 

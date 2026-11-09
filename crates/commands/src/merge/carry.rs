@@ -252,6 +252,32 @@ fn walk(value: &Value, field: &str, ctx: &Ctx, note: &mut dyn FnMut(&str, String
     }
 }
 
+/// A domain carried from the tracks `before` onto a project's tracks and switches —
+/// what the Signalling-Tool's taking of its own side over a merged net builds its
+/// context from: a track changed where it is gone or no longer the same.
+pub fn carry_domain_onto(domain: &Value, before: &[Value], tracks: &[Value], switches: &[Value]) -> (Value, Vec<Moved>) {
+    let old: Map<String, Value> = before.iter().map(|t| (js_string(t.get("id")), t.clone())).collect();
+    let now: Map<String, Value> = tracks.iter().map(|t| (js_string(t.get("id")), t.clone())).collect();
+    let changed = |id: &str| old.contains_key(id) && old.get(id) != now.get(id);
+    let old_track = |id: &str| old.get(id).cloned();
+    let candidates = |_: &str| tracks.to_vec();
+    let ctx = Ctx {
+        present: now.keys().cloned().collect(),
+        changed: &changed,
+        old_track: &old_track,
+        candidates: &candidates,
+        tracks: tracks.to_vec(),
+        switches: switches.to_vec(),
+    };
+    carry_domain(domain, &ctx)
+}
+
+impl Moved {
+    pub fn to_json(&self) -> Value {
+        json!({ "collection": self.collection, "id": self.id, "field": self.field, "from": self.from, "to": self.to })
+    }
+}
+
 /// The domain with every location on a changed track carried (`carryDomain`).
 pub fn carry_domain(domain: &Value, ctx: &Ctx) -> (Value, Vec<Moved>) {
     let mut carried = Vec::new();

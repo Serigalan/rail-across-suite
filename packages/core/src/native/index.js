@@ -95,7 +95,33 @@ export function callNative(op, input = null) {
  * does not carry: a Map, a Set, a typed array.
  */
 export function viaRust(op, revive = null) {
-  return revive ? (...args) => revive(callNative(op, args), args) : (...args) => callNative(op, args)
+  const call = (args) => {
+    try {
+      return callNative(op, args)
+    } catch (err) {
+      // What the JavaScript threw comes back as such: an Error with its message.
+      if (err instanceof NativeError && err.code === 'thrown') throw Object.assign(new Error(err.detail ?? 'thrown'), { data: err.data })
+      throw err
+    }
+  }
+  return revive ? (...args) => revive(call(args), args) : (...args) => call(args)
+}
+
+/**
+ * `out`, or `given` itself where the two are the same as JSON — and of an
+ * object, each member of `given` that is the same: the JavaScript answered
+ * what it left alone as it was, and identity checks and memos rely on that.
+ */
+export function keepSame(out, given) {
+  if (out === given) return given
+  const json = (v) => JSON.stringify(v)
+  if (json(out) === json(given)) return given
+  if (out && given && typeof out === 'object' && typeof given === 'object' && !Array.isArray(out)) {
+    const kept = { ...out }
+    for (const k of Object.keys(kept)) if (k in given && json(kept[k]) === json(given[k])) kept[k] = given[k]
+    return kept
+  }
+  return out
 }
 
 /** A JSON object as the Map the JavaScript answered with. */

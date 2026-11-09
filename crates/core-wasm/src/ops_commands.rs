@@ -318,6 +318,19 @@ pub fn run(op: &str, input: &Value) -> Option<Result<Value, Failure>> {
         "merge.resolve" => ok(m3::resolve(a.v(0), a.opt(1).unwrap_or(&json!({})))),
         "merge.remapKind" => ok(opt_str(mremap::remap_kind(a.s(0), &a.list(1)))),
         "merge.carryAfterWrite" => ok(mcarry::carry_after_write(a.v(0), a.v(1))),
+        "merge.carryDomainOnto" => {
+            let (domain, carried) = mcarry::carry_domain_onto(a.v(0), &a.list(1), &a.list(2), &a.list(3));
+            ok(json!({ "domain": domain, "carried": carried.iter().map(mcarry::Moved::to_json).collect::<Vec<_>>() }))
+        }
+        // The references to tracks gone repointed, the tracks before handed as a list.
+        "merge.carryReferences" => {
+            let logs: Vec<Vec<Value>> = a.list(1).iter().map(|l| l.as_array().cloned().unwrap_or_default()).collect();
+            let logs: Vec<&[Value]> = logs.iter().map(Vec::as_slice).collect();
+            let old = a.list(2);
+            let old_track = |id: &str| old.iter().find(|t| rail_across_js::js_string(t.get("id")) == id).cloned();
+            let (project, carried) = mremap::carry_references(a.v(0), &logs, &old_track);
+            ok(json!({ "project": project, "carried": carried.iter().map(mremap::Carried::to_json).collect::<Vec<_>>() }))
+        }
         _ => None,
     }
 }

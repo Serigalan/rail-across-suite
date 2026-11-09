@@ -5,7 +5,7 @@ import { hasPek, loadPek } from '../../test/pekFixture.js'
 import { splitTrackAtJoint } from '../track/trackSplitUtils.js'
 import { joinTracks } from '../track/trackModel.js'
 import { diffProject, diffSize, mergeProject, resolve } from './index.js'
-import { primary } from './diff.js'
+import { primary } from './index.js'
 import { portTrack, portEnd, withPort } from '../track/switchModel.js'
 import { straightElement } from '../geometry/elementFactory.js'
 import { rebuildCoords } from '../track/trackModel.js'
@@ -268,9 +268,11 @@ describe('a platform moved on a track the other side split (data model, case F2)
 })
 
 describe('the merge module under plain Node', () => {
-  it('loads and merges without a DOM, the bundler or a module hook', () => {
+  it('loads and merges without a DOM, the bundler or a module hook, on the core\'s module', () => {
     const root = fileURLToPath(new URL('../..', import.meta.url))
     const script = `
+      const { loadNativeFile } = await import('./src/native/node.js')
+      loadNativeFile()
       const { mergeProject } = await import('./src/merge/index.js')
       const p = { id: 'p', title: 'a', tracks: [], switches: [] }
       const r = mergeProject({ base: p, mine: { ...p, title: 'b' }, theirs: p })
@@ -295,9 +297,10 @@ describe.skipIf(!hasPek)('mergeProject — validation (rules 6 and 7)', () => {
     // The switches naming the deleted track were already broken in mine: not
     // the merge's doing. The platform is.
     expect(v).toEqual([expect.objectContaining({
-      id: 'object:platforms:pf-v', collection: 'platforms', mine: undefined,
+      id: 'object:platforms:pf-v', collection: 'platforms',
       findings: [expect.objectContaining({ code: 'platform_track_missing' })],
     })])
+    expect(v[0].mine).toBeUndefined()   // mine has no such platform
     const resolved = resolve(r, { 'object:platforms:pf-v': 'mine' })
     expect(resolved.platforms.find(p => p.id === 'pf-v')).toBeUndefined()
   })

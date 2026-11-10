@@ -86,7 +86,7 @@ jobs:
           New-Item -ItemType Directory -Force target/release/bundle/portable | Out-Null
           $version = "${{ github.ref_name }}" -replace '^rail-across-suite-v', '' -replace '^desktop-', ''
           Compress-Archive -Path $dir -DestinationPath "target/release/bundle/portable/Rail-Across-Suite-$version-windows-portable.zip"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: desktop-${{ matrix.os }}
           path: |
@@ -101,7 +101,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           path: packages
       - name: Release

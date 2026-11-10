@@ -1019,7 +1019,7 @@
   "table_route_slip": "Verbindungsbogen",
   "table_crs": "EPSG",
   "table_crs_hint": "Koordinatensystem des Gleises – alle seine Elemente liegen in dieser Ebene",
-  "table_max_speed_hint": "Höchste Entwurfsgeschwindigkeit im 5-km/h-Raster, bei der der Regelkatalog (DB Ril 800.0110) für dieses Element, seine Rampe und seine beiden Elementgrenzen keinen Fehler meldet – Hinweise, Warnungen, Zustimmung und Sonderfall sind erlaubt. Die Nachbarn werden dabei mit derselben Geschwindigkeit gelesen.",
+  "table_max_speed_hint": "Höchste Entwurfsgeschwindigkeit im 5-km/h-Raster, bei der der Regelkatalog (DB Ril 800.0110) für dieses Element, seine Rampe und seine beiden Elementgrenzen keinen Fehler meldet – Hinweise, Warnungen, Zustimmung und Sonderfall sind erlaubt. Die Nachbarn werden dabei mit derselben Geschwindigkeit gelesen. Ein Übergangsbogen höchstens mit der Geschwindigkeit, die der Überhöhungsfehlbetrag an seinem engen Ende zulässt (wie im anschließenden Bogen).",
   "scurve_mids": "Zwischenelemente",
   "scurve_mid_n": "Element {n}",
   "scurve_mid_type_straight": "Gerade",

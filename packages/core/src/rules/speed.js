@@ -1,6 +1,7 @@
 import { transitionCantEnds } from '../geometry/index.js'
 import { catalogSpeedRange, severityRank } from './ruleCatalogue.js'
 import { elementVerdict } from './alignmentCheck.js'
+import { maxSpeedFor } from './cant.js'
 import { nativeRuleMaxSpeed } from './viaNative.js'
 
 // Speed is designed in 5 km/h steps, like cant is in 5 mm ones.
@@ -37,6 +38,21 @@ export function governing(elements, i) {
 const isError = (r) => severityRank(r.severity) >= severityRank('error')
 
 /**
+ * The speed the tighter end of transition `i` allows, on the 5 km/h step;
+ * null for any other element and a transition between straights. There it is
+ * in the curve, with the curve's radius and cant (governing), and the
+ * deficiency an arc may carry (LP.KB.02, LP.KB.06 on a turnout's route) holds
+ * for it as well — which the transition's own rules do not ask.
+ */
+export function tighterEndSpeed(elements, i) {
+  const el = elements[i]
+  if (!isTransition(el)) return null
+  const end = governing(elements, i)
+  if (!end) return null
+  return Math.floor(maxSpeedFor(el, end.radius, end.cant) / SPEED_STEP) * SPEED_STEP
+}
+
+/**
  * The highest design speed the rule catalogue lets element `i` carry
  * (Entscheidung 372): the fastest speed on the 5 km/h step inside the range
  * the catalogue speaks about (LP.ALL.01), and at most `cap` where one is
@@ -50,6 +66,10 @@ const isError = (r) => severityRank(r.severity) >= severityRank('error')
  * that fails: a transition's ramp of the deficiency (LP.UB.05) can fail
  * slow and hold fast, where the cant is in excess of the speed.
  *
+ * A transition carries no more than its tighter end allows (tighterEndSpeed):
+ * its own rules ask for the ramps, not for the deficiency there, and would let
+ * it run faster than the arc it leads into.
+ *
  * An error that stands at every speed (a cant off the 5 mm step, a cant jump
  * at a joint) is no reason for any speed and does not count — it is returned
  * as `fixed`, the rule ids, for the table to show.
@@ -61,6 +81,8 @@ export function ruleMaxSpeed(elements, i, { cap = null, context = null } = {}) {
   if (!el) return { speed: null, fixed: [] }
   const native = nativeRuleMaxSpeed(elements, i, cap, context)
   if (native) return native
+  const end = tighterEndSpeed(elements, i)
+  if (end != null) cap = cap == null ? end : Math.min(cap, end)
   // One copy of the chain, its three elements around `i` set to each speed in turn.
   const view = elements.slice()
   const near = [i - 1, i, i + 1].filter(j => j >= 0 && j < elements.length)

@@ -62,7 +62,7 @@ fn cant(el: &Element) -> f64 {
     }
 }
 
-fn cant_ends(els: &[Element], i: usize) -> (f64, f64) {
+pub(crate) fn cant_ends(els: &[Element], i: usize) -> (f64, f64) {
     // Every element may state the cant at its ends (decision 355): an arc or a
     // straight where it changes along it, a transition where its neighbours do
     // not imply it.

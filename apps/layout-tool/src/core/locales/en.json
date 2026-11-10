@@ -1019,7 +1019,7 @@
   "table_route_slip": "Slip road",
   "table_crs": "EPSG",
   "table_crs_hint": "Coordinate system of the track – every one of its elements lies in this plane",
-  "table_max_speed_hint": "Highest design speed on the 5 km/h step at which the rule catalogue (DB Ril 800.0110) reports no error for this element, its ramp and both its joints – hints, warnings, approval and special cases are allowed. The neighbours are read at the same speed.",
+  "table_max_speed_hint": "Highest design speed on the 5 km/h step at which the rule catalogue (DB Ril 800.0110) reports no error for this element, its ramp and both its joints – hints, warnings, approval and special cases are allowed. The neighbours are read at the same speed. A transition at most at the speed the cant deficiency at its tighter end allows (as in the arc it leads into).",
   "scurve_mids": "Intermediate elements",
   "scurve_mid_n": "Element {n}",
   "scurve_mid_type_straight": "Straight",

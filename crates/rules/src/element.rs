@@ -27,6 +27,8 @@ pub struct Element {
     pub cant_end: Option<f64>,
     /// The turnout an element belongs to; any JSON value but null.
     pub switch_id: Option<serde_json::Value>,
+    /// The route of a turnout it lies on (`'branch'`, …); any JSON value, truthy where it is one.
+    pub switch_branch: Option<serde_json::Value>,
 }
 
 impl Element {

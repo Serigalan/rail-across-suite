@@ -97,6 +97,17 @@ describe('the highest speed the rule catalogue allows (Entscheidung 372)', () =>
     expect(route).toBeLessThan(plain)
   })
 
+  it('holds a transition to what its tighter end allows, the arc it leads into', () => {
+    const els = [straight(), clothoid(null, 500, { length: 80 }), arc(500, 100, { length: 200 }), clothoid(500, null, { length: 80 }), straight()]
+    const speeds = maxSpeeds(els, null).map(e => e.speed)
+    expect(speeds[2]).toBe(down(maxSpeedFor(els[2], 500, 100)))
+    expect(speeds[1]).toBe(speeds[2])
+    expect(speeds[3]).toBe(speeds[2])
+    // Between two arcs the tighter one governs, its cant with it.
+    const compound = [arc(1200, 40, { length: 200 }), clothoid(1200, 600, { length: 120 }), arc(600, 90, { length: 200 })]
+    expect(ruleMaxSpeed(compound, 1).speed).toBeLessThanOrEqual(ruleMaxSpeed(compound, 2).speed)
+  })
+
   it('adds no error when every element is set to it at once', () => {
     const els = [straight({ length: 300 }), clothoid(null, 800, { length: 90 }), arc(800, 90, { length: 200 }),
       clothoid(800, null, { length: 90 }), straight({ length: 50 }), arc(-1500, -40, { length: 300 })]

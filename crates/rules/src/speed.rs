@@ -9,8 +9,9 @@ use rail_across_geom::cant::transition_cant_ends;
 use rail_across_js::{get, number};
 use serde_json::{Value as Json, json};
 
-use crate::alignment_check::Context;
+use crate::alignment_check::{Context, cant_ends};
 use crate::bundled::catalog_speed_range;
+use crate::cant::max_speed_for;
 use crate::check::verdict_errors;
 use crate::element::Element;
 
@@ -40,11 +41,33 @@ pub fn governing(elements: &[Json], i: usize) -> Option<(f64, f64)> {
     None
 }
 
+/// The speed the tighter end of transition `i` allows, on the 5 km/h step (`tighterEndSpeed`); None
+/// for any other element and a transition between straights. There it is in the curve, with the
+/// curve's radius and cant (`governing`), and the deficiency an arc may carry (LP.KB.02, LP.KB.06 on
+/// a turnout's route) holds for it as well — which the transition's own rules do not ask.
+pub fn tighter_end_speed(elements: &[Element], i: usize) -> Option<f64> {
+    let el = elements.get(i).filter(|el| el.is_transition())?;
+    let size = |r: Option<f64>| r.filter(|r| *r != 0.0 && !r.is_nan()).map(f64::abs).unwrap_or(f64::INFINITY);
+    let (r1, r2) = (size(el.r1), size(el.r2));
+    if !r1.min(r2).is_finite() {
+        return None;
+    }
+    let (start, end) = cant_ends(elements, i);
+    let (radius, cant) = if r1 <= r2 { (el.r1?, start) } else { (el.r2?, end) };
+    let branch = rail_across_js::truthy(el.switch_branch.as_ref());
+    let v = max_speed_for(&json!({ "switchBranch": branch }), radius, Some(cant))?;
+    Some((v / SPEED_STEP).floor() * SPEED_STEP)
+}
+
 /// The highest design speed the catalogue lets element `i` carry (`ruleMaxSpeed`): (speed, fixed).
 pub fn rule_max_speed(elements: &[Element], i: usize, cap: Option<f64>, context: Context) -> (Option<f64>, Vec<String>) {
     if i >= elements.len() {
         return (None, Vec::new());
     }
+    let cap = match (cap, tighter_end_speed(elements, i)) {
+        (Some(c), Some(t)) => Some(c.min(t)),
+        (c, t) => c.or(t),
+    };
     let mut view = elements.to_vec();
     let near: Vec<usize> = [i.wrapping_sub(1), i, i + 1].into_iter().filter(|j| *j < elements.len()).collect();
     let (min, max) = catalog_speed_range();

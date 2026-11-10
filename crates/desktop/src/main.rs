@@ -36,17 +36,18 @@
 //! RA_DESKTOP_PORTABLE — a folder to run portable in, without the marker file.
 //! `--smoke`: start on the defaults, load the suite, ask the API through the
 //! window, fetch the Layout-Tool's page and compile the core's WebAssembly
-//! module there, print what came back, then quit (CI's check of the package).
+//! module there, try to open a window (`window.open`), print what came back,
+//! then quit (CI's check of the package).
 
 use std::path::{Path, PathBuf};
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex, OnceLock};
 
 use rail_across_server::app::{App, Settings};
 use rail_across_server::clouds::{jobs, Storage};
 use tauri::http::{Request, Response};
-use tauri::webview::DownloadEvent;
-use tauri::{Builder, Manager, RunEvent, WebviewUrl, WebviewWindowBuilder, WindowEvent};
+use tauri::webview::{DownloadEvent, NewWindowFeatures, NewWindowResponse};
+use tauri::{Builder, Manager, RunEvent, Webview, WebviewUrl, WebviewWindowBuilder, WindowEvent};
 
 /// The server, once the working files are known.
 static SERVER: OnceLock<Arc<App>> = OnceLock::new();
@@ -380,6 +381,10 @@ fn start_main(app: &tauri::AppHandle, smoke: bool) -> Result<(), String> {
                r.layout = (await fetch('/layout/')).status;
                const wasm = await fetch('/core-module/rail_across_core.wasm');
                r.coreModule = wasm.ok ? (await WebAssembly.compile(await wasm.arrayBuffer()), 'compiled') : wasm.status;
+               // Reported, not required: WebKitGTK opens no window without a click.
+               const popup = window.open('/layout/', 'smoke-window');
+               r.window = popup ? 'opened' : null;
+               popup?.close();
                r.ok = r.health.local === true && r.created === 201 && r.projects.includes('Smoke') && r.projects.includes(TEMPLATE) && r.coreModule !== undefined;
              } catch (e) { r.error = String(e); r.ok = false }
              window.__TAURI__.core.invoke('smoke_report', { report: r }) });",
@@ -390,19 +395,60 @@ fn start_main(app: &tauri::AppHandle, smoke: bool) -> Result<(), String> {
         .inner_size(1440.0, 900.0)
         .min_inner_size(1024.0, 640.0)
         .initialization_script(&script)
-        .on_download(|webview, event| {
-            if let DownloadEvent::Requested { destination, .. } = event {
-                let dir = webview.state::<PrefsState>().0.lock().unwrap().export_dir.clone().or_else(default_export_dir);
-                if let (Some(dir), Some(name)) = (dir, destination.file_name()) {
-                    let _ = std::fs::create_dir_all(&dir);
-                    *destination = dir.join(name);
-                }
-            }
-            true
+        .on_download(save_to_exports)
+        .on_new_window({
+            let app = app.clone();
+            move |url, features| open_window(&app, url, features)
         })
         .build()
         .map_err(|e| e.to_string())?;
     Ok(())
+}
+
+/// A download goes to the export folder.
+fn save_to_exports(webview: Webview, event: DownloadEvent) -> bool {
+    if let DownloadEvent::Requested { destination, .. } = event {
+        let dir = webview.state::<PrefsState>().0.lock().unwrap().export_dir.clone().or_else(default_export_dir);
+        if let (Some(dir), Some(name)) = (dir, destination.file_name()) {
+            let _ = std::fs::create_dir_all(&dir);
+            *destination = dir.join(name);
+        }
+    }
+    true
+}
+
+/// A window the suite opens (`window.open`: the point clouds' 3D view, the
+/// map's panels popped out, a vehicle in its editor) — without a handler the
+/// webview opens none. It becomes a window of the app in the opener's webview
+/// environment, so the two share their storage and their BroadcastChannel and
+/// the opener draws into an empty one; an address outside the suite is not opened.
+fn open_window(app: &tauri::AppHandle, url: tauri::Url, features: NewWindowFeatures) -> NewWindowResponse<tauri::Wry> {
+    static NEXT: AtomicUsize = AtomicUsize::new(1);
+    let root = root_url();
+    if url.as_str() != "about:blank" && (url.scheme(), url.host_str()) != (root.scheme(), root.host_str()) {
+        return NewWindowResponse::Deny;
+    }
+    let label = format!("window-{}", NEXT.fetch_add(1, Ordering::Relaxed));
+    let built = WebviewWindowBuilder::new(app, label, WebviewUrl::External("about:blank".parse().expect("about:blank")))
+        .title("Rail-Across-Suite")
+        .inner_size(1280.0, 800.0)
+        .window_features(features)
+        .on_document_title_changed(|window, title| {
+            let _ = window.set_title(&title);
+        })
+        .on_download(save_to_exports)
+        .on_new_window({
+            let app = app.clone();
+            move |url, features| open_window(&app, url, features)
+        })
+        .build();
+    match built {
+        Ok(window) => NewWindowResponse::Create { window },
+        Err(err) => {
+            eprintln!("window for {url} not opened: {err}");
+            NewWindowResponse::Deny
+        }
+    }
 }
 
 /// The start screen (ui/splash.html).

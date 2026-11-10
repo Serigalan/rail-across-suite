@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Button, Message, Option, Options, OptionsHeading, Section, DownloadIcon } from '@rail-across/ui'
+import { Button, Message, Option, Options, OptionsHeading, Section, TextField, DownloadIcon } from '@rail-across/ui'
 import { writePlanPro } from '@rail-across/core/planpro'
 import { Panel } from './draft.jsx'
 import { ExportIcon } from '../icons.jsx'
@@ -23,9 +23,10 @@ export default function ExchangePanel(props) {
   )
 }
 
-/** The text as a file the browser saves — in the desktop app into its export folder. */
-function save(text, name) {
-  const url = URL.createObjectURL(new Blob([text], { type: 'application/xml' }))
+/** The bytes of a file in Base64 as a file the browser saves — in the desktop app into its export folder. */
+function save(base64, name) {
+  const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0))
+  const url = URL.createObjectURL(new Blob([bytes], { type: 'application/zip' }))
   const a = Object.assign(document.createElement('a'), { href: url, download: name })
   document.body.append(a)
   a.click()
@@ -34,23 +35,37 @@ function save(text, name) {
 }
 
 /** A file name of the project's title, without what file systems refuse. */
-const fileName = (title) => `${(title || 'Projekt').replace(/[\\/:*?"<>|]+/g, '_').trim() || 'Projekt'}.ppxml`
+const fileName = (title) => `${(title || 'Projekt').replace(/[\\/:*?"<>|]+/g, '_').trim() || 'Projekt'}.planpro`
+
+/** The planning data a PlanPro plan files itself under; empty fields are filled by the export. */
+const PLANNING = ['projectNumber', 'planner', 'organisation', 'location', 'stage']
+
+/** Notes of the report by collection: how many of each. */
+function byCollection(notes, code) {
+  const n = {}
+  for (const x of notes) if (x.code === code) n[x.collection] = (n[x.collection] ?? 0) + 1
+  return Object.entries(n).map(([k, v]) => `${k} (${v})`).join(', ')
+}
 
 /**
- * Writing the project as a PlanPro 1.10 plan (`.ppxml`): the net, the
- * switches and end marks, and the signalling as it stands in the editor —
- * what is not checked in yet included. What PlanPro has no place for here is
- * listed after writing, by collection.
+ * Writing the project as a PlanPro 1.10 plan (`.planpro`, the container of
+ * PlanPro tools): the net, the switches and end marks, the platforms,
+ * heights and cant, and the signalling as it stands in the editor — what is
+ * not checked in yet included. The planning data say who planned it; what
+ * PlanPro requires and the project does not say, and what PlanPro has no
+ * place for, is listed after writing.
  */
 function ExportPage({ record, domain, back, t }) {
   const [written, setWritten] = useState(null)
   const [error, setError] = useState(null)
+  const [planning, setPlanning] = useState({})
 
   const write = () => {
     setError(null)
     try {
-      const out = writePlanPro(record, { signalling: domain, now: new Date().toISOString() })
-      save(out.text, fileName(record.title))
+      const given = Object.fromEntries(PLANNING.map(k => [k, planning[k]?.trim()]).filter(([, v]) => v))
+      const out = writePlanPro(record, { signalling: domain, now: new Date().toISOString(), planning: given })
+      save(out.archive, fileName(record.title))
       setWritten(out)
     } catch (err) {
       setWritten(null)
@@ -59,10 +74,17 @@ function ExportPage({ record, domain, back, t }) {
   }
 
   const c = written?.counts ?? {}
-  const missing = {}
-  for (const n of written?.report.notes ?? []) missing[n.collection] = (missing[n.collection] ?? 0) + 1
+  const notes = written?.report.notes ?? []
+  const missing = byCollection(notes, 'not_written')
+  const filled = byCollection(notes, 'defaulted')
   return (
     <Panel title={t('export_planpro')} intro={t('section_export_intro')} back={back}>
+      <Section title={t('export_planning')}>
+        {PLANNING.map(k => (
+          <TextField key={k} compact wide label={t(`export_${k}`)} value={planning[k] ?? ''}
+            onChange={v => setPlanning(p => ({ ...p, [k]: v }))} placeholder={t('export_automatic')} />
+        ))}
+      </Section>
       <div className="ui-row">
         <Button variant="primary" icon={<DownloadIcon size={16} />} onClick={write}>{t('export_write')}</Button>
       </div>
@@ -73,9 +95,8 @@ function ExportPage({ record, domain, back, t }) {
             tracks: c.TOP_Kante ?? 0, switches: c.W_Kr_Anlage ?? 0, signals: c.Signal ?? 0,
             routes: c.Fstr_Zug_Rangier ?? 0, sections: c.FMA_Anlage ?? 0,
           })}</p>
-          {Object.keys(missing).length > 0 && (
-            <Message tone="warn">{t('export_not_written', { list: Object.entries(missing).map(([k, n]) => `${k} (${n})`).join(', ') })}</Message>
-          )}
+          {missing && <Message tone="warn">{t('export_not_written', { list: missing })}</Message>}
+          {filled && <Message tone="info">{t('export_defaulted', { list: filled })}</Message>}
           <p className="ui-muted">{t('export_check_hint')}</p>
         </Section>
       )}

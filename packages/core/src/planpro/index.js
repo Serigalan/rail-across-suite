@@ -9,11 +9,15 @@
 import { viaRust } from '../native/index.js'
 
 /**
- * A project as a PlanPro plan: `writePlanPro(record, { signalling, now, version })`
- * → `{ text, report: { notes }, counts }` — the XML (a `.ppxml`), what could not
- * be written and why (`not_written`: collection, id, why), and how many objects
- * of each PlanPro kind were. `record` holds `id`, `title`, `tracks`, `switches`
- * and `endMarks`; `signalling` is the domain (else the record's), `now` the time
- * stamp of the file, `version` the suite's.
+ * A project as a PlanPro plan: `writePlanPro(project, { signalling, now, version,
+ * rulesDate, planning })` → `{ text, manifest, archive, report: { notes }, counts }`
+ * — the plan (`content.xml`), its manifest, the `.planpro` file of both in
+ * Base64, what was not written and why (`not_written`: collection, id, why) and
+ * what PlanPro requires that the project does not say (`defaulted`: collection,
+ * id, field, value), and how many objects of each PlanPro kind were written.
+ * `project` is an infra-data-1.0 document or a record (made one first);
+ * `signalling` the domain as the editor holds it, `now` the time stamp of the
+ * file, `version` the suite's, `planning` { projectNumber, planner,
+ * organisation, location, stage, index, number, informative, kind }.
  */
 export const writePlanPro = viaRust('planpro.writePlanPro')

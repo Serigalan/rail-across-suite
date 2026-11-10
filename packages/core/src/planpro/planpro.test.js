@@ -26,6 +26,10 @@ describe('a project as a PlanPro plan', () => {
     expect(text.startsWith('<?xml version="1.0" encoding="UTF-8"?>')).toBe(true)
     expect(text).toContain('<GEO_Koordinatensystem><Wert>ER0</Wert></GEO_Koordinatensystem>')
     expect(text).toContain('<Erzeugung_Zeitstempel><Wert>2026-11-09T12:00:00Z</Wert></Erzeugung_Zeitstempel>')
+    // Every object with its base, the interlocking and the geodata each a part of the plan.
+    expect(text).toContain('<Basis_Objekt_Allg><Datum_Regelwerk><Wert>2026-11-09</Wert></Datum_Regelwerk></Basis_Objekt_Allg>')
+    expect(text).toContain('<Untergewerk_Art><Wert>ESTW</Wert></Untergewerk_Art>')
+    expect(text).toContain('<Untergewerk_Art><Wert>Geo</Wert></Untergewerk_Art>')
     expect(counts).toMatchObject({ TOP_Kante: 3, TOP_Knoten: 4, GEO_Kante: 3, W_Kr_Anlage: 1, Gleis_Abschluss: 1 })
     expect(counts.Signal).toBeGreaterThanOrEqual(2)
     expect(counts.Fstr_Zug_Rangier).toBeGreaterThanOrEqual(1)
@@ -35,7 +39,28 @@ describe('a project as a PlanPro plan', () => {
     expect(why).toContain('stoppingPlaces:kind_not_written')
   })
 
+  it('packs the plan with its manifest as a .planpro file', () => {
+    const { archive, manifest } = writePlanPro(project(), { signalling: ksStation(), now: '2026-11-09T12:00:00Z' })
+    const bytes = Uint8Array.from(atob(archive), c => c.charCodeAt(0))
+    expect([...bytes.slice(0, 4)]).toEqual([0x50, 0x4b, 0x03, 0x04])
+    const names = new TextDecoder().decode(bytes)
+    expect(names).toContain('content.xml')
+    expect(names).toContain('manifest.xml')
+    expect(manifest).toContain('<content name="content.xml" type="text/xml"/>')
+  })
+
+  it('takes planning data where it is given', () => {
+    const { text } = writePlanPro(project(), {
+      now: '2026-11-09T12:00:00Z',
+      planning: { projectNumber: 'P-4711', planner: 'A. Planer', organisation: 'Büro', location: 'LHT', stage: 'Bauzustand 1' },
+    })
+    expect(text).toContain('<Projekt_Nummer><Wert>P-4711</Wert></Projekt_Nummer>')
+    expect(text).toContain('<Name_Akteur><Wert>A. Planer</Wert></Name_Akteur>')
+    expect(text).toContain('<Fuehrende_Oertlichkeit><Wert>LHT</Wert></Fuehrende_Oertlichkeit>')
+    expect(text).toContain('<Bauzustand_Kurzbezeichnung><Wert>Bauzustand 1</Wert></Bauzustand_Kurzbezeichnung>')
+  })
+
   it('refuses a project without a track in a plane', () => {
-    expect(() => writePlanPro({ tracks: [] })).toThrow(/no track/)
+    expect(() => writePlanPro({ id: 'p', tracks: [] })).toThrow(/no track/)
   })
 })

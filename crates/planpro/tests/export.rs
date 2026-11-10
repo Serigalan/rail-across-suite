@@ -85,17 +85,66 @@ fn as_written(record: &Value) -> Value {
     walk(record, &ids)
 }
 
+/// Every list of objects with ids in id order.
+fn by_id(v: &Value) -> Value {
+    match v {
+        Value::Array(a) => {
+            let mut a: Vec<Value> = a.iter().map(by_id).collect();
+            if a.iter().all(|x| x.get("id").and_then(Value::as_str).is_some()) {
+                a.sort_by(|x, y| x["id"].as_str().cmp(&y["id"].as_str()));
+            }
+            Value::Array(a)
+        }
+        Value::Object(o) => Value::Object(o.iter().map(|(k, x)| (k.clone(), by_id(x))).collect()),
+        _ => v.clone(),
+    }
+}
+
+/// The record as it reads back once the values the report says were filled in are.
+fn with_defaults(mut record: Value, written: &Value) -> Value {
+    for n in written["report"]["notes"].as_array().unwrap().iter().filter(|n| n["code"] == "defaulted") {
+        let id = json!(planpro_id(n["id"].as_str().unwrap()));
+        if n["field"] == "Signal_Befestigungsart" {
+            for s in record["signalling"]["collections"]["signals"].as_array_mut().unwrap() {
+                if s["id"] == id {
+                    s["mounting"] = json!("other");
+                }
+            }
+        }
+    }
+    record
+}
+
+/// What the report says was not written — not the values it filled in.
+fn not_written(written: &Value) -> Value {
+    Value::Array(
+        written["report"]["notes"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|n| n["code"] == "not_written")
+            .cloned()
+            .collect(),
+    )
+}
+
 #[test]
 fn the_test_plan_comes_back_as_it_was_read() {
     let first = planpro_record(&test_plan(), Some("p1"), None).unwrap()["record"].clone();
     let written = write_planpro(&first, &json!({ "now": "2026-11-09T12:00:00Z", "version": "test" })).unwrap();
     let text = written["text"].as_str().unwrap();
     assert!(text.contains("<Werkzeug_Name><Wert>Rail-Across-Suite</Wert></Werkzeug_Name>"));
-    assert_eq!(written["report"]["notes"], json!([]), "{}", written["report"]);
+    assert_eq!(not_written(&written), json!([]), "{}", written["report"]);
     let again = planpro_record(text, Some("p1"), None).unwrap();
-    same(&again["record"], &as_written(&first), "", 1e-3).unwrap();
-    // Nothing the writer writes is left unread.
-    assert_eq!(again["report"]["skipped"], json!({ "Sonstiger_Punkt": 1 }), "{}", again["report"]);
+    // The export reads the project as an infra-data document, whose collections stand by id.
+    same(&by_id(&again["record"]), &by_id(&with_defaults(as_written(&first), &written)), "", 1e-3).unwrap();
+    // Nothing the writer writes is left unread but the danger point and the placeholder of the outside element control.
+    assert_eq!(
+        again["report"]["skipped"],
+        json!({ "Aussenelementansteuerung": 1, "Sonstiger_Punkt": 1 }),
+        "{}",
+        again["report"]
+    );
 }
 
 #[test]
@@ -151,7 +200,7 @@ fn a_project_in_utm_is_written_in_db_ref() {
     // 690 km east in UTM 32 is about 11.7° east: the fourth strip.
     assert!(text.contains("<GEO_Koordinatensystem><Wert>ER0</Wert></GEO_Koordinatensystem>"));
     assert_eq!(
-        written["report"]["notes"],
+        not_written(&written),
         json!([{ "code": "not_written", "collection": "signals", "id": "orphan", "why": "no_track" }])
     );
     let back = planpro_record(text, Some("utm"), None).unwrap()["record"].clone();
@@ -168,7 +217,8 @@ fn a_project_in_utm_is_written_in_db_ref() {
     assert_eq!(sw["ports"]["B1"]["trackId"], json!(planpro_id("branch")));
     assert_eq!(sw["ports"]["B2"]["trackId"], json!(planpro_id("on")));
     assert_eq!(sw["name"], json!("W1"));
-    assert_eq!(sw["label"], json!("300 – 1:9"));
+    // The form as PlanPro names it: the kind of turnout, radius and ratio.
+    assert_eq!(sw["label"], json!("EW 300-1:9"));
     let marks = back["endMarks"].as_array().unwrap();
     let stop = marks.iter().find(|m| m["id"] == json!(planpro_id("stop"))).unwrap();
     assert_eq!(stop["kind"], json!("buffer_stop"));

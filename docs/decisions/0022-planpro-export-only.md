@@ -22,10 +22,25 @@ Status: **accepted** · 2026-11-09 · changes [0011](0011-signalling-domain.md) 
    what was not written and why — a location in the plane, crossings and slips, logical signals after the first,
    balises of systems other than PZB, station boundaries, stopping places and itineraries.
 
+## Amended 2026-11-10: a plan valid against the XSD
+
+The export reads the infra-data-1.0 document — a record is made one first —, so that the model decides what is
+written, not PlanPro: platforms (`Bahnsteig_Anlage`, `Bahnsteig_Kante`), heights (`Hoehenpunkt`, `Hoehenlinie`),
+cant (`Ueberhoehung`, `Ueberhoehungslinie`), operational points (`Oertlichkeit`) and track kinds (`Gleis_Art`)
+are written too. Checked against the PlanPro XSD 1.10.0.3 and a plan of ProSig, it writes what the schema
+requires: every object's base (`Basis_Objekt_Allg` with `Datum_Regelwerk`), the Container in the schema's order,
+the interlocking (ESTW) and the geodata (Geo) as two parts of the plan as PlanPro tools have them, and
+`Objektmanagement` with the planning data (project number, planner, organisation, leading operational point,
+construction stage — given by the user, else filled in). A track section gets its extent over the net from the
+detection points bounding it. What PlanPro requires and the model does not say is written with a stated value and
+named in the report (`defaulted`); one outside element control (`Gleisfreimelde_Innenanlage`) stands in for the
+interlocking's equipment the axle counters and sections refer to. The file is the container PlanPro tools exchange,
+`.planpro`: a ZIP of `content.xml` and `manifest.xml`.
+
 ## Open
 
-- The export is not validated against the PlanPro XSD, which is not in the repository (THIRD-PARTY.md). Mandatory
-  parts the reader never read (`Basis_Objekt_Allg`, `Objektreferenzen`, `Bearbeitungsvermerk`, …) are not
-  written. A plan should be opened in a PlanPro tool before it is passed on; the Signalling-Tool says so.
-- The namespace of the aspects (`nsSignalbegriffe_Ril_301`) and `TOP_Anschluss` `Verbindung` for two tracks
-  joining are taken as PlanPro 1.10 names them, without the schema at hand.
+- The XSD is not in the repository (THIRD-PARTY.md), so the crate's tests cannot validate against it; the
+  check was made outside it. The defaults and the placeholder should be looked at in a PlanPro tool before a plan
+  is passed on; the Signalling-Tool says so.
+- Crossings and slips, `layout.xml` (the drawing of a plan) and kilometres along lines
+  (`Punkt_Objekt_Strecke`, `Strecke_Punkt`) are not written yet.

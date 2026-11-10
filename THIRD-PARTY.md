@@ -35,7 +35,10 @@ them names its source where it lies.
 The catalogue of signal aspects (`packages/core/constraints/db-ril-301.json`, `begriffe`) lists the 192 aspects
 of PlanPro 1.10.0.3.3's `Signalbegriffe_Ril_301.xsd` by their names there, with their short names, their titles
 (the XSD's Langbezeichnung, else the first clause of its Beschreibung) and the symbols its enumerations allow
-([decision 0011](docs/decisions/0011-signalling-domain.md)). No file of PlanPro is in the repository. PlanPro is
+([decision 0011](docs/decisions/0011-signalling-domain.md)). The PlanPro export (`crates/planpro/src/write.rs`)
+names the objects, attributes and enumeration values of PlanPro 1.10.0.3 it writes, and the order of the
+Container, as the XSD has them. No file of PlanPro is in the repository; the export was checked against the XSD
+outside it. PlanPro is
 published by DB InfraGO under the RailPL V1.1 licence; whether that licence covers these facts taken into a
 catalogue under LGPL-3.0-only has not been checked yet.
 

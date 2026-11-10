@@ -19,6 +19,8 @@
 //! (the local package of the branch `desktop-standalone`). The suite's start
 //! page opens the start screen again (`open_settings`); a change restarts the
 //! app. `mdb-export` comes bundled where scripts/stage-mdbtools.mjs found it.
+//! The templates of templates/ — test data — become templates of the server
+//! on the first start on a folder of working files (`seed_templates`).
 //!
 //! The portable package (Windows, a ZIP): a file `portable` beside the
 //! executable puts everything the app keeps into that folder — settings.json,
@@ -260,6 +262,46 @@ fn use_bundled_mdbtools(app: &impl Manager<tauri::Wry>) {
     }
 }
 
+/// The templates the app brings (templates/): test data, to try the suite on —
+/// the line Halle–Könnern of a PEK, its timetables beside it.
+const TEMPLATES: [(&str, &str, &str); 1] = [(
+    "PEK Halle-Könnern (Testdaten)",
+    include_str!("../templates/pek-halle-koennern.railacross.json"),
+    include_str!("../templates/pek-halle-koennern.timetables.json"),
+)];
+
+const TEMPLATE_NOTE: &str = "Testdaten zum Ausprobieren der Suite – keine verbindlichen Planungsdaten. \
+                             Test data to try the suite on – not binding planning data.";
+
+/// The bundled templates made templates of the server, once per folder of working
+/// files (a file `templates-seeded` there): one deleted stays deleted.
+fn seed_templates(server: &App, data: &Path) {
+    let marker = data.join("templates-seeded");
+    if marker.exists() {
+        return;
+    }
+    for (title, document, timetables) in TEMPLATES {
+        let (Ok(payload), Ok(timetables)) = (
+            serde_json::from_str::<serde_json::Value>(document),
+            serde_json::from_str::<serde_json::Value>(timetables),
+        ) else {
+            eprintln!("template {title}: not readable");
+            continue;
+        };
+        let body = serde_json::json!({
+            "title": title, "description": TEMPLATE_NOTE, "template": true, "variantName": "Bestand",
+            "payload": payload, "timetables": timetables["timetables"],
+        });
+        let headers = vec![("content-type".to_string(), "application/json".to_string())];
+        let (status, _, answer) = server.call("POST", "/api/projects", headers, body.to_string().into_bytes());
+        if status != 201 {
+            eprintln!("template {title}: {status} {}", String::from_utf8_lossy(&answer));
+            return;
+        }
+    }
+    let _ = std::fs::write(marker, "");
+}
+
 /// The address of the scheme's root on this platform.
 fn root_url() -> tauri::Url {
     let s = if cfg!(windows) { "http://rail.localhost/" } else { "rail://localhost/" };
@@ -314,7 +356,9 @@ fn start_main(app: &tauri::AppHandle, smoke: bool) -> Result<(), String> {
             static_root: Some(site.clone()),
             ..Settings::default()
         };
-        let _ = SERVER.set(Arc::new(App::new(db, settings)));
+        let server = Arc::new(App::new(db, settings));
+        seed_templates(&server, &data);
+        let _ = SERVER.set(server);
         let stop = STOP.get_or_init(|| Arc::new(AtomicBool::new(false))).clone();
         let path = db_path.to_string_lossy().into_owned();
         std::thread::spawn(move || jobs::run_queues(path, Storage { root: clouds }, (2, 2), stop, Arc::new(|m: &str| eprintln!("{m}"))));
@@ -324,6 +368,7 @@ fn start_main(app: &tauri::AppHandle, smoke: bool) -> Result<(), String> {
     let mut script = format!("try{{localStorage.setItem('rail-across-language',{lang:?})}}catch(e){{}}");
     if smoke {
         // Once the start page is there: ask the API as the suite does, and report.
+        script.push_str(&format!(";const TEMPLATE = {:?};", TEMPLATES[0].0));
         script.push_str(
             "window.addEventListener('load', async () => { const r = {}; try {
                r.me = await (await fetch('/api/me')).json();
@@ -335,7 +380,7 @@ fn start_main(app: &tauri::AppHandle, smoke: bool) -> Result<(), String> {
                r.layout = (await fetch('/layout/')).status;
                const wasm = await fetch('/core-module/rail_across_core.wasm');
                r.coreModule = wasm.ok ? (await WebAssembly.compile(await wasm.arrayBuffer()), 'compiled') : wasm.status;
-               r.ok = r.health.local === true && r.created === 201 && r.projects.includes('Smoke') && r.coreModule !== undefined;
+               r.ok = r.health.local === true && r.created === 201 && r.projects.includes('Smoke') && r.projects.includes(TEMPLATE) && r.coreModule !== undefined;
              } catch (e) { r.error = String(e); r.ok = false }
              window.__TAURI__.core.invoke('smoke_report', { report: r }) });",
         );

@@ -15,7 +15,7 @@ Was wo liegt
   export\          exportierte Dateien
   webview\         Speicher der Oberfläche (Arbeitskopien, Sprache)
   settings.json    die Einstellungen des Startbildschirms
-  site\, mdbtools\ die Suite selbst und der MDB-Import — nicht verändern
+  site\            die Suite selbst — nicht verändern
 
   Ordner innerhalb dieses Ordners werden relativ gespeichert: der Ordner darf
   verschoben werden, auch auf ein Laufwerk mit anderem Buchstaben. Wer beim
@@ -23,6 +23,15 @@ Was wo liegt
   nicht mit.
 
   Sichern = diesen Ordner kopieren, während die App geschlossen ist.
+
+Vorlage
+  Unter den Vorlagen liegt "PEK Halle-Könnern (Testdaten)" mit Fahrplänen:
+  Testdaten zum Ausprobieren, keine verbindlichen Planungsdaten. Eine Kopie
+  davon wird ein eigenes Projekt.
+
+MDB-Import
+  Diese Version enthält mdbtools nicht: der Import von Gleisnetzdaten aus
+  MDB-Dateien steht darin nicht zur Verfügung.
 
 Voraussetzungen
   Windows 10 oder 11 (64 Bit) mit der Microsoft-Edge-WebView2-Laufzeit. Sie
@@ -50,6 +59,10 @@ rail-across.log), export\ the exported files, webview\ the window's own
 storage (working copies, language), settings.json the settings. Folders inside
 this folder are kept relative to it, so it may move. To back up, copy the
 folder while the app is closed.
+
+The templates hold "PEK Halle-Könnern (Testdaten)" with timetables: test data
+to try the suite on, not binding planning data. This version comes without
+mdbtools, so the MDB import is not available.
 
 Needs Windows 10 or 11 (64 bit) with the Microsoft Edge WebView2 runtime
 (part of Windows 11 and of current Windows 10). The program is not signed:

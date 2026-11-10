@@ -2,11 +2,11 @@ name: Release desktop app
 
 # The desktop app as a GitHub release (decision 0021: it takes the place of the local build's zip): pushing a
 # tag rail-across-suite-vX.Y (a version of the suite) or desktop-YYYY-MM-DD[.n] builds the app with the project
-# server in its process (crates/desktop) on Windows and macOS and attaches the packages to a release of that tag.
-# On Windows the package is portable: a ZIP of one folder (crates/desktop/portable/), besides the installers; on
-# macOS a .dmg for Apple silicon (the runner's). Linux is built and smoke-checked by CI, not released. Run by
-# hand, it builds the packages as the run's artifacts and releases nothing — the way to try a release before its
-# tag.
+# server in its process (crates/desktop) for Windows and attaches it to a release of that tag — the portable
+# package only, a ZIP of one folder (crates/desktop/portable/), no installer. It is built without mdb-export: the
+# MDB import says the tool is missing (scripts/stage-mdbtools.mjs finds none on the runner). macOS is not
+# released for now; Linux is built and smoke-checked by CI. Run by hand, it builds the package as the run's
+# artifact and releases nothing — the way to try a release before its tag.
 
 on:
   push:
@@ -18,11 +18,7 @@ permissions:
 
 jobs:
   build:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [macos-15, windows-2022]
-    runs-on: ${{ matrix.os }}
+    runs-on: windows-2022
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -31,69 +27,27 @@ jobs:
           cache: npm
       - run: npm ci --no-audit --no-fund
       - run: rustup target add wasm32-unknown-unknown
-      - if: runner.os == 'macOS'
-        run: brew install mdbtools
-      # mdb-export for Windows: MSYS2 has no package of mdbtools, so it is built from its source the way
-      # mdbtools' own CI builds it on Windows — the msys-native gcc in the MSYS environment of the runner's
-      # MSYS2 —, with iconv (text out as UTF-8), without GLib, libmdb linked in. It is put with the msys DLLs it
-      # needs where scripts/stage-mdbtools.mjs takes it from (RA_MDB_EXPORT). The commit is one whose Windows
-      # builds passed upstream.
-      - if: runner.os == 'Windows'
-        uses: msys2/setup-msys2@v2
-        with:
-          msystem: MSYS
-          release: false
-          install: autotools base-devel gcc git libiconv-devel
-      - if: runner.os == 'Windows'
-        shell: msys2 {0}
-        run: |
-          src="$(cygpath "$RUNNER_TEMP")/mdbtools-src"
-          out="$(cygpath "$RUNNER_TEMP")/mdbtools"
-          git clone --quiet https://github.com/mdbtools/mdbtools.git "$src"
-          cd "$src"
-          git checkout --quiet 3d19ef594446feb4be255370a57d8c7d7789b37b
-          autoreconf -i -f
-          ./configure --build=x86_64-pc-cygwin --enable-iconv --disable-glib --disable-shared --disable-man
-          make -j4
-          mkdir -p "$out"
-          cp src/util/mdb-export.exe "$out/"
-          ldd "$out/mdb-export.exe" | awk '$3 ~ /^\/usr\/bin\// { print $3 }' | xargs -r cp -t "$out/"
-          ls "$out"
-          echo "RA_MDB_EXPORT=$(cygpath -w "$out/mdb-export.exe")" >> "$GITHUB_ENV"
-      # Started as the app starts it — from a Windows process, not from inside MSYS2, whose own msys-2.0.dll
-      # would meet the copy beside the executable.
-      - if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          & $env:RA_MDB_EXPORT --version
-          if ($LASTEXITCODE -ne 0) { throw "mdb-export does not start: exit code $LASTEXITCODE" }
       - run: cargo install tauri-cli --version '^2' --locked
-      # Runs scripts/build-site.mjs and scripts/stage-mdbtools.mjs itself (tauri.conf.json).
-      - run: cargo tauri build
+      # The program alone, no installer; runs scripts/build-site.mjs and scripts/stage-mdbtools.mjs itself
+      # (tauri.conf.json).
+      - run: cargo tauri build --no-bundle
         working-directory: crates/desktop
-      # The portable package: the program, the suite and mdb-export in one folder with the file `portable`,
-      # which keeps everything the app stores in that folder (src/main.rs).
-      - if: runner.os == 'Windows'
-        shell: pwsh
+      # The portable package: the program and the suite in one folder with the file `portable`, which keeps
+      # everything the app stores in that folder (src/main.rs).
+      - shell: pwsh
         working-directory: crates/desktop
         run: |
           $dir = "target/portable/Rail-Across-Suite"
           New-Item -ItemType Directory -Force $dir | Out-Null
           Copy-Item target/release/rail-across-desktop.exe "$dir/Rail-Across-Suite.exe"
           Copy-Item -Recurse site "$dir/site"
-          Copy-Item -Recurse mdbtools "$dir/mdbtools"
           Copy-Item portable/* $dir
-          New-Item -ItemType Directory -Force target/release/bundle/portable | Out-Null
           $version = "${{ github.ref_name }}" -replace '^rail-across-suite-v', '' -replace '^desktop-', ''
-          Compress-Archive -Path $dir -DestinationPath "target/release/bundle/portable/Rail-Across-Suite-$version-windows-portable.zip"
+          Compress-Archive -Path $dir -DestinationPath "target/portable/Rail-Across-Suite-$version-windows-portable.zip"
       - uses: actions/upload-artifact@v7
         with:
-          name: desktop-${{ matrix.os }}
-          path: |
-            crates/desktop/target/release/bundle/**/*.dmg
-            crates/desktop/target/release/bundle/**/*.msi
-            crates/desktop/target/release/bundle/**/*.exe
-            crates/desktop/target/release/bundle/**/*.zip
+          name: desktop-windows-portable
+          path: crates/desktop/target/portable/*.zip
 
   release:
     needs: build
@@ -112,9 +66,10 @@ jobs:
           version="${version#rail-across-suite-v}"
           find packages -type f > files.txt
           cat > release-notes.md <<EOF
-          Rail-Across-Suite for the desktop, version ${version}: the suite with its project server in one window, no server and no Node needed.
+          Rail-Across-Suite for Windows, version ${version}: the suite with its project server in one window, no server and no Node needed.
 
-          - **Windows:** \`…-windows-portable.zip\` — unpack and start \`Rail-Across-Suite.exe\`; everything stays in that folder. Or install with the \`.msi\` or \`-setup.exe\`. Not signed: SmartScreen warns on the first start (More info → Run anyway). Needs WebView2 (part of Windows 11 and current Windows 10).
-          - **macOS (Apple silicon):** the \`.dmg\`. Not signed or notarized: macOS refuses the first start — System Settings → Privacy & Security → Open anyway, or \`xattr -cr /Applications/Rail-Across-Suite.app\`.
+          - **Portable:** unpack \`…-windows-portable.zip\` and start \`Rail-Across-Suite.exe\`; everything stays in that folder. Not signed: SmartScreen warns on the first start (More info → Run anyway). Needs WebView2 (part of Windows 11 and current Windows 10).
+          - **Template:** the project *PEK Halle-Könnern (Testdaten)* with its timetables — test data to try the suite on, not binding planning data.
+          - **Without mdbtools:** the MDB import (Gleisnetzdaten) is not part of this package.
           EOF
           xargs -d '\n' -a files.txt gh release create "$GITHUB_REF_NAME" --title "Rail-Across-Suite ${version}" --notes-file release-notes.md --verify-tag

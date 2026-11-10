@@ -13,10 +13,15 @@ app data directory; the start screen comes by itself only while there is none. T
 suite's start page opens it again; a change restarts the app (the server keeps its working files for its
 lifetime). A language chosen in the suite is kept for the next start as well.
 
+The app brings a template ([`templates/`](templates/), compiled into the program): *PEK Halle-Könnern
+(Testdaten)*, an infra-data-1.0 document with its timetables beside it — test data to try the suite on, the
+title and the description say so. On the first start on a folder of working files it is made a template of
+the server (variant „Bestand“, its timetables with it); a file `templates-seeded` there keeps it from coming
+back once deleted.
+
 ## Portable (Windows)
 
-The Windows package is a ZIP of one folder: `Rail-Across-Suite.exe`, the suite (`site/`), `mdb-export` with its
-DLLs (`mdbtools/`) and the two files of [`portable/`](portable/) — the marker `portable` and a readme for the
+The Windows package is a ZIP of one folder: `Rail-Across-Suite.exe`, the suite (`site/`) and the two files of [`portable/`](portable/) — the marker `portable` and a readme for the
 user (`README.txt`, German and English). With the marker beside the executable everything the app keeps lies
 in that folder:
 
@@ -28,18 +33,18 @@ in that folder:
 | `webview/` | WebView2's own storage — the working copies (IndexedDB), the language |
 
 Started from Explorer, a release build has no console (`windows_subsystem = "windows"`): the server's messages go
-to `data/rail-across.log`, begun anew past 5 MB. `mdb-export` runs without a console window of its own.
+to `data/rail-across.log`, begun anew past 5 MB. A `mdb-export` put beside it in `mdbtools/` runs without a
+console window of its own.
 WebView2 is not bundled: it is part of Windows 11 and of current Windows 10; the readme says where to get it
 otherwise. The executable is not signed, so SmartScreen warns on its first start.
 
-The release workflow (`.github/workflows/release-desktop.yml`) builds the packages for Windows — the ZIP and the
-installers — and macOS — a `.dmg` for Apple silicon —, on a tag `rail-across-suite-vX.Y` (or `desktop-YYYY-MM-DD[.n]`) as a release of that
-tag, by hand as the run's artifacts only (the way to try it before the tag). Neither is signed by a developer account: SmartScreen
-warns; the Mac app is signed ad hoc (`bundle.macOS.signingIdentity: "-"`), so macOS refuses its first start as
-unverified — which System Settings can allow — rather than as damaged, which only `xattr -cr` gets past (the release
-notes say both). `mdb-export` comes with the libraries it needs:
-from Homebrew on macOS; on Windows, where MSYS2 has no package of it, built from mdbtools' source with MSYS2's
-msys gcc, as mdbtools' own CI does there. Linux is not
+The release workflow (`.github/workflows/release-desktop.yml`) builds the Windows ZIP alone — no installer
+(`cargo tauri build --no-bundle`), no macOS package —, on a tag `rail-across-suite-vX.Y` (or
+`desktop-YYYY-MM-DD[.n]`) as a release of that tag, by hand as the run's artifact only (the way to try it before
+the tag). It is built without `mdb-export`: the MDB import says the tool is missing. The executable is not signed
+by a developer account, so SmartScreen warns. `cargo tauri build` elsewhere still bundles what
+`stage-mdbtools.mjs` finds; the Mac app is signed ad hoc (`bundle.macOS.signingIdentity: "-"`), so macOS refuses
+its first start as unverified — which System Settings can allow — rather than as damaged. Linux is not
 released; CI builds the app on Linux and Windows and runs the smoke check on both, portable.
 
 ## Build
@@ -64,7 +69,7 @@ as the frontend's and runs `beforeBuildCommand` there — without it, in `crates
 | `RA_DESKTOP_PORTABLE` | a folder to run portable in, as if the marker lay beside the executable (any platform) |
 
 `--smoke` starts on the defaults, loads the suite and asks the API through the window — `/api/me`,
-`/api/health`, a new project, the project list — prints `RA_DESKTOP_SMOKE={…}` and quits, 0 when the
+`/api/health`, a new project, the project list with the template — prints `RA_DESKTOP_SMOKE={…}` and quits, 0 when the
 answers are right. CI runs it portable, under Xvfb on Linux and on Windows.
 
 ## Logo and icons

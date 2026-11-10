@@ -18,7 +18,8 @@ and every page, the desktop app's and every vitest of the repository load it fir
 an object, a Set as an array), and `revive` gives back what JSON does not carry — `asMap`, `keepSame` and
 `reuseFrom` (what the module passed through untouched, given back as the very object it was). What the
 JavaScript threw comes back as an Error with its message. A worker that does not load the module uses
-only what is still JavaScript.
+only what is still JavaScript; one that calls the core — the Layout-Tool's MDB import — is handed the page's
+compiled module (`nativeModule()`, carried by `postMessage`) and loads it with `loadNative` first.
 
 ## The held project (decision 0021, phase C)
 

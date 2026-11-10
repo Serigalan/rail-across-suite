@@ -4,10 +4,14 @@
 // { key, params } — the translation stays with the page, which has the language.
 import { runMdbImport } from '../../core/utils/exchange'
 import { loadNtv2Grid, loadRegionalGrids, loadGridsFor, loadedRegionalGrids } from '@rail-across/core/geometry'
+import { loadNative } from '@rail-across/core/native'
 
 self.onmessage = async (e) => {
-  const { base, grids, ...args } = e.data
+  const { base, grids, native, ...args } = e.data
   try {
+    // The page's Rust module first: the core's tracks and switches are built in
+    // it, and a grid loaded after it is handed to it as well.
+    if (native && !(await loadNative(native))) throw new Error('native_not_loaded')
     // The grids the page converts with: the base ones and whatever regional
     // ones it has loaded, so a coordinate comes out here as it would there.
     await loadNtv2Grid({ base })

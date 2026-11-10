@@ -10,6 +10,7 @@
 // imports from here and nowhere else (tools/modules.mjs). See docs/native.md.
 
 let exports_ = null
+let module_ = null
 const encoder = new TextEncoder()
 const decoder = new TextDecoder()
 
@@ -36,6 +37,7 @@ function seed() {
 /** The module's instance taken as the face's, from a compiled WebAssembly.Module. */
 export function useNativeModule(module) {
   exports_ = new WebAssembly.Instance(module, {}).exports
+  module_ = module
   seed()
   return true
 }
@@ -56,6 +58,7 @@ export async function loadNative(source) {
       module = await WebAssembly.compile(await response.arrayBuffer())
     }
     exports_ = (await WebAssembly.instantiate(module, {})).exports
+    module_ = module
     seed()
     return true
   } catch {
@@ -63,9 +66,16 @@ export async function loadNative(source) {
   }
 }
 
+/**
+ * The compiled module, null where none is loaded — what a page hands a worker
+ * (postMessage carries it), which loads it with loadNative before it calls the core.
+ */
+export const nativeModule = () => module_
+
 /** Forget the module (tests that hold the JavaScript to the same answers). */
 export function unloadNative() {
   exports_ = null
+  module_ = null
   held = null
   heldNames.clear()
   answers = new WeakMap()

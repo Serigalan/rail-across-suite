@@ -26,8 +26,14 @@ describe('a record as an infra-data-1.0 document', () => {
     expect(doc.domains.core.collections.tracks.map(t => t.id)).toEqual(['t1'])
   })
 
+  it('holds the core alone where the record holds nothing of the layout', () => {
+    const doc = toDocument(record())
+    expect(Object.keys(doc.domains)).toEqual(['core'])
+    expect(fromDocument(doc).tracks.map(t => t.id)).toEqual(['t1'])
+  })
+
   it('carries its schemas where it travels, under the hashes its domains name', () => {
-    const doc = toDocument(record(), { carrySchemas: true })
+    const doc = toDocument(record({ planHeader: { subtitle: 'x' } }), { carrySchemas: true })
     expect(Object.keys(doc.schemas).sort()).toEqual([SCHEMA_HASHES.core, SCHEMA_HASHES.layout].sort())
     for (const [hash, schema] of Object.entries(doc.schemas)) expect(contentHash(schema)).toBe(hash)
     expect(toDocument(record()).schemas).toBeUndefined()
@@ -179,7 +185,7 @@ describe('the door', () => {
   })
 
   it('refuses a version or a domain it does not read', () => {
-    const doc = toDocument(record())
+    const doc = toDocument(record({ planHeader: { subtitle: 'x' } }))
     expect(() => checkDocument({ ...doc, domains: { ...doc.domains, core: { ...doc.domains.core, version: '1.1' } } })).toThrow('unsupported_version')
     expect(() => checkDocument({ ...doc, domains: { ...doc.domains, catenary: doc.domains.layout } })).toThrow('unsupported_version')
   })

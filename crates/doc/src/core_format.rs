@@ -503,20 +503,25 @@ pub fn record_to_document(record: &Value, schema_hashes: &HashMap<&str, String>)
     core.insert("schema".into(), hash("core"));
     core.insert("fields".into(), Value::Object(core_fields));
     core.insert("collections".into(), Value::Object(core_cols));
-    let mut layout_cols = Object::new();
-    layout_cols.insert("trackPaths".into(), Value::Array(track_paths));
-    layout_cols.insert("axisSurveys".into(), Value::Array(axis_surveys));
-    layout_cols.insert("referenceAxes".into(), Value::Array(reference_axes));
-    let mut layout = Object::new();
-    layout.insert("version".into(), json!("1.0"));
-    layout.insert("schema".into(), hash("layout"));
-    layout.insert("dependsOn".into(), json!(["core"]));
-    layout.insert("fields".into(), Value::Object(pick(record, LAYOUT_FIELDS)));
-    layout.insert("collections".into(), Value::Object(layout_cols));
-
+    // The layout domain only where the record holds anything of it: a document
+    // is the core and what is planned on it, every other domain may be missing.
+    let layout_fields = pick(record, LAYOUT_FIELDS);
+    let holds_layout = !layout_fields.is_empty() || !(track_paths.is_empty() && axis_surveys.is_empty() && reference_axes.is_empty());
     let mut domains = Object::new();
     domains.insert("core".into(), Value::Object(core));
-    domains.insert("layout".into(), Value::Object(layout));
+    if holds_layout {
+        let mut layout_cols = Object::new();
+        layout_cols.insert("trackPaths".into(), Value::Array(track_paths));
+        layout_cols.insert("axisSurveys".into(), Value::Array(axis_surveys));
+        layout_cols.insert("referenceAxes".into(), Value::Array(reference_axes));
+        let mut layout = Object::new();
+        layout.insert("version".into(), json!("1.0"));
+        layout.insert("schema".into(), hash("layout"));
+        layout.insert("dependsOn".into(), json!(["core"]));
+        layout.insert("fields".into(), Value::Object(layout_fields));
+        layout.insert("collections".into(), Value::Object(layout_cols));
+        domains.insert("layout".into(), Value::Object(layout));
+    }
     for name in CARRIED {
         if let Some(d) = get(record, name) {
             let mut o = Object::new();

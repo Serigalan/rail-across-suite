@@ -218,6 +218,11 @@ the suite's own, and its results are derived ([decision 0023](decisions/0023-cap
 
 - **Connectors with two ends** (`link`) join two track ends at a node: where the plane changes, and where a
   rebuilt part of a track ties in ([decision 0003](decisions/0003-construction-stages.md)).
+- **A document is the core and what is planned on it.** infra-data is the envelope; the core is in every
+  document. The discipline domains — `layout`, `signalling`, `catenary` and those after them — build on the core
+  alone and may each be missing: a module opens and edits a document without the domains it does not need,
+  shows nothing of those that are missing and carries those that are there (R4, S-R7). A domain that holds
+  nothing is written as missing.
 - **The core is written by every module that needs it**, through the core library (R4,
   [decision 0024](decisions/0024-every-module-writes-the-core.md)). Platforms, end marks and structures are in the
   core because several disciplines place things relative to them.
@@ -283,7 +288,7 @@ blobs: canonical JSON of each collection · bulk point arrays · schemas · imag
 | S-R4 | Revisions are immutable; variants are named heads; the browser merges, the server appends and checks (as in the Open-Layout-Tool). | — |
 | S-R5 | **The server checks per domain**: the author's right for every changed domain, the core writable by every module's right (decision 0024); a changed domain the author may not write must equal the base carried through the id log (R4), with its orphans moved to their plane position (R7). A domain whose own and dependency hashes are unchanged is not validated again. | S5 |
 | S-R6 | **Derived results are caches keyed by input hashes** (coordination findings, simulation results, reverse index), never in a revision; a simulation result also by its construction stage. An **approval** pins a domain hash plus the hashes of its dependencies; whether a later change affects it is decided by the diff, restricted to the approved stages and area. | S3, S7 |
-| S-R7 | **Partial loading is for reading.** Editing the core loads every domain that references it — except in a sketch, which holds no other domains (S-R11). | S4, F12 |
+| S-R7 | **Partial loading is for reading.** Editing the core loads every domain of the document that references it — except in a sketch, which holds no other domains (S-R11). | S4, F12 |
 | S-R8 | **Project level, outside revisions**: variants and sketches, approvals, comments. They refer into revisions; revisions never refer to them. | S3, F12 |
 | S-R9 | **Exchange**: a zip container with the extension `.railacross`, holding the manifest, the canonical collection files, schemas and blobs. Its first entry is an uncompressed file `mimetype` with `application/vnd.rail-across+zip`, so programs recognise it by its content, as OpenDocument and EPUB do. A single-file JSON for small projects (`.railacross.json`) holds the same canonical documents and gives the same hashes ([decision 0007](decisions/0007-project-name.md)). | — |
 | S-R10 | **Versions**: each domain has its own version; the one door runs an explicit, tested migration chain per domain. Behind the door only the current version exists. | F10 |

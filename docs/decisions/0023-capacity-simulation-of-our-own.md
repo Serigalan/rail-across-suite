@@ -17,7 +17,7 @@ Status: **accepted** · 2026-11-11 · replaces [0006](0006-capacity-on-osrd.md);
 4. **Its results stay derived**: caches keyed by the hashes of their inputs and the construction stage, never part
    of a revision (data model, S-R6 and case S7) — as 0006 had it.
 5. **What it needs and the formats lack enters the formats**, not the simulation: the infrastructure's part in
-   infra-data-1.1, the operations' part — timetables, formations, what a study assumes — in a format of its own
+   the next version of infra-data, the operations' part — timetables, formations, what a study assumes — in a format of its own
    beside it, operations-1.0.
 6. **OSRD stays what the suite takes from and exchanges with**: the source of the running time simulation's port
    (0013), the form of the vehicles ([0014](0014-vehicles-in-osrds-form.md)), RailJSON as the Layout-Tool reads and

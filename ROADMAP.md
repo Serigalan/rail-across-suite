@@ -201,16 +201,16 @@ railway.
 - **Running times** in the Fahrplan-Sim (*Fahrzeit rechnen* of the Fahrplan-Editor, `apps/timetable-editor/src/runtime/` — once `apps/simulation-tool/` —, [decision 0013](docs/decisions/0013-running-times-in-rust.md)):
   *done:* OSRD's envelope simulation ported to Rust (`sim/`, [decision 0015](docs/decisions/0015-lgpl.md)) and
   held to OSRD's own test cases; a train over the net of a variant — its path over switches, the grades of the
-  heights and curves, the design speeds and the speeds the signals signal, stops at signals, platforms and points
+  heights and curves (arcs and transitions, after Röckl), the design speeds and the speeds the signals signal, stops at signals, platforms and points
   on the map, a margin linear or after MARECO —, run in the browser as WebAssembly on the working copy; the
   speed and the time over the distance, the timetable of its stops, the run played on the map; the vehicles as
   OSRD's RailJSON rolling stock in a catalogue of the suite, edited in the Fahrzeug-Editor
   (`apps/vehicle-editor/`), OSRD's example vehicles built in ([decision 0014](docs/decisions/0014-vehicles-in-osrds-form.md)). *Next:* the electrification of the net for
-  the traction mode (infra-data-1.1 below), a train's formation in place of one vehicle (operations-1.0 below).
-- **Capacity simulation** — the Kapazitäts-Sim of the start page
-  ([decision 0023](docs/decisions/0023-capacity-simulation-of-our-own.md)): the suite's own, on the running and
+  the traction mode (infra-data-2.0 below), a train's formation in place of one vehicle (operations-1.0 below).
+- **Capacity simulation** — the Kapazitäts-Sim of the start page, an app of its own (`apps/capacity-sim/`,
+  [decision 0023](docs/decisions/0023-capacity-simulation-of-our-own.md)): the suite's own, on the running and
   blocking times above; OSRD run as a service (decision 0006) went. *Next:* the steps K0 to K3 below, and the two
-  formats they need — operations-1.0 for what is the operation's, infra-data-1.1 for what is the railway's.
+  formats they need — operations-1.0 for what is the operation's, infra-data-2.0 for what is the railway's.
 
 ### What the capacity simulation reads, and what it lacks
 
@@ -218,11 +218,11 @@ railway.
 |---|---|---|
 | the way, grades and curves, speeds, stations and stops, blocks, overlaps, track sections, stages | infra-data-1.0: `core` and `signalling` | — |
 | where a block is asked for, how long an overlap stays set | in the format — the distant signals, `routes[].shortDistantSpacing`, `overlaps[].releaseDelay` —, not read: a timetable's 1000 m and 60 s for every block | K0 |
-| the time to set and to release a route | 12 s and 6 s, a timetable's | infra-data-1.1 |
+| the time to set and to release a route | 12 s and 6 s, a timetable's | infra-data-2.0 |
 | the speed a train may run at | the design and the signalled speed, and one vehicle's top speed | operations-1.0: the formation's top speed and brake |
-| the traction system along the way | none: a train's mode is chosen for its whole run | infra-data-1.1 |
-| the train protection | none | infra-data-1.1 |
-| how close trains follow at a planning boundary | none: a train enters as timetabled | infra-data-1.1 |
+| the traction system along the way | none: a train's mode is chosen for its whole run | infra-data-2.0 |
+| the train protection | none | infra-data-2.0 |
+| how close trains follow at a planning boundary | none: a train enters as timetabled | infra-data-2.0 |
 | what a train is made of: load, length, brake | one vehicle of the catalogue | operations-1.0 |
 | the kinds of trains and their rank | a list in the code, an order per timetable | operations-1.0 |
 | connections, turnarounds, the least dwell | none | operations-1.0 |
@@ -240,15 +240,20 @@ Each step answers a question of its own and is of use without the next.
   shortened distant spacing as the route says — in place of 1000 m for all; an overlap stays set for its
   `releaseDelay` in place of 60 s; the sight time counted apart from the time to set the route. *Done when* a
   train's blocking time stairs over a reference stretch are those worked out by hand after Ril 405, part by part.
+  **The reference cases are the suite's own**, made up and kept in the repository — no real data —: a two-track
+  line with Ks block signals, a single-track line with a crossing station, a station with an overtaking track;
+  each with its blocking time parts, headways and compressed occupancy worked out step by step beside it, apart
+  from the code, so that a test holds the code to them.
 - **K1 — Minimum headways and occupancy.** From a timetable's blocking time stairs: the minimum headway
   (Mindestzugfolgezeit) of the trains that follow each other on a stretch, as a table by kind; the timetable
   compressed over a stretch and a period after UIC Code 406 — the occupancy time, the occupancy rate with its
   additional times, the trains that set it —, for a line section and for the tracks and the routes of a station.
   The stretches proposed from the net — from one place where trains overtake, cross, begin or end to the next —
   and kept by their places. Computed in Rust, in a crate beside the running times, from the blocking times the
-  page has. Shown in *Kapazität*, a section of the Fahrplan-Editor that the start page's Kapazitäts-Sim opens: the
-  compressed graphical timetable, the table of headways, the rates held against bounds that can be set (UIC 406's
-  recommended rates proposed), one variant or stage beside another. *Done when* the compressed occupancy of a
+  page has. Shown in the Kapazitäts-Sim, an app of its own (`apps/capacity-sim/`, the start page's tile), on a project's
+  timetables and variants as the Fahrplan-Editor has them and with the same packages: the compressed graphical
+  timetable, the table of headways, the rates held against the bounds of UIC Code 406 — its recommended rates by
+  kind of line and period, which a study may change —, one variant or stage beside another. *Done when* the compressed occupancy of a
   reference timetable is the one worked out by hand, and two stages of a project stand beside each other.
 - **K2 — Free train paths and saturation.** A train of a kind, a formation and a way laid into a timetable at the
   first departure in a window at which it conflicts with none — its stairs moved in time against the others';
@@ -256,7 +261,9 @@ Each step answers a question of its own and is of use without the next.
   stretch carries in a period beyond what is timetabled. A search of the suite's own on its blocking times, not
   STDCM. *Done when* a train laid in runs without a conflict in the dispatched timetable.
 - **K3 — Operation under delays.** A timetable run many times, each time with delays drawn from a scenario — at
-  the entry into the planning area by place and kind, at stops as a longer dwell —, dispatched as the timetable
+  the entry into the planning area by place and kind, at stops as a longer dwell; the suite proposes one: per
+  kind of train a share of trains delayed and their delays drawn from a distribution, each figure a starting value
+  of the suite's, shown as such and with where it comes from, for the planner to replace by measured ones —, dispatched as the timetable
   says, connections and turnarounds held (O4): the delay at the places measured at, its growth over a stretch,
   the punctuality against a threshold, the waiting of the trains for each other.
   **K3a:** the chain from a timetable to its dispatched blocking times — the way over the net, the request to the
@@ -281,7 +288,7 @@ named by its hash, collections sorted by id, blobs by hash, references declared 
 | `timetables` | name; the dispatching (mode, priority); the parts of the blocking time that are the operation's — the sight time, and what stands in where the infrastructure says nothing | the server's `timetable` rows |
 | `trains` | of a timetable: number, kind, formation, departure, margin; its points — place, track, stop, dwell and least dwell, departure, itinerary | a timetable's `trains` |
 | `trainKinds` | the kinds of trains: name, rank in the dispatching, colour | a list in the code, `dispatch.categories` |
-| `formations` | Zugbildung: the traction units by their key in the catalogue; the hauled load — mass, length, top speed; brake position and braked weight percentage | a train names one vehicle |
+| `formations` | Zugbildung: the traction units by their key in the catalogue and their hash; the hauled load — mass, length, top speed; brake position and braked weight percentage | a train names one vehicle |
 | `vehicles` | the vehicles the formations name, as RailJSON rolling stock in blobs: the file carries what it runs with | the suite's catalogue, not in the file |
 | `connections` | Anschluss: from a train's arrival to another's departure at a place; the time to change, how long it is waited for | — |
 | `turnarounds` | Wende: from a train's end to the train its vehicles run as next; the least time to turn | — |
@@ -290,60 +297,92 @@ named by its hash, collections sorted by id, blobs by hash, references declared 
 
 It names the railway by id — `core.operationalPoints`, `core.endMarks`, `core.tracks`, `signalling.itineraries`,
 `signalling.stoppingPlaces` — and belongs to no variant: the references are checked where the operations are laid
-on a variant, and one that finds nothing there is a finding at its train, not a refusal, as it is today. The
-server keeps saving a timetable on its own, with its counter and its refusal of a stale save; the document is the
-whole of a project's operations — what is exported, imported and hashed for the caches.
+on a variant, and one that finds nothing there is a finding at its train, not a refusal, as it is today.
+
+The document is the whole of a project's operations — what is exported, imported and hashed for the caches — and
+is kept in **revisions, as a variant's state is**: immutable, by hash, with a history and the comparison of two
+revisions. A timetable saved on its own makes a new revision of the operations; a save on a stale revision is
+refused, as it is today. This changes the counter per timetable of decision 0016; a record of its own says so
+when O2 is built.
+
+**A train pins its vehicles**: a formation names each by its key in the catalogue and its hash, and the document
+carries each one so named. A change in the catalogue changes no computed timetable unnoticed — the train says
+that its vehicle has changed and takes the new one when asked. An import whose vehicle the catalogue has under
+the same key with another content takes it under its hash, beside the catalogue's, and says so.
 
 - **O1 — The format.** The schema whole (`schemas/operations/1.0.schema.json`): a schema is a version, so the
   collections that come to life later are in it from the first day. The door reading and writing it; vectors for
   JavaScript and Rust. *Done when* both give the same hashes for the vectors.
-- **O2 — Today's data in it.** A data step of the server for the `timetable` rows; the door in place of the checks
+- **O2 — Today's data in it.** A data step of the server for the `timetable` rows, each project's the first
+  revision of its operations; the door in place of the checks
   by hand (`timetable_fault`); a `rail-across-timetables` 1.0 file still read, and turned on its way in; export
   and import as an operations file with the vehicles its trains run with. *Done when* every timetable of the
   server opens as it was, and a project exported here runs on another server with the same times.
 - **O3 — Formations in the simulation.** The mass, length, top speed and brake of the whole train in the request:
   a train runs no faster than the line, its signals and its formation allow — a freight train's lower speed is
-  its own, not the line's.
+  its own, not the line's. Its deceleration follows from its brake position and braked weight percentage by
+  ETCS's conversion model (UNISIG Subset-026), as a deceleration by speed; the simulation, which brakes with one
+  constant deceleration today (`const_gamma`), takes it in steps of speed — an extension of the port, held to the
+  conversion model's figures. ETCS's braking curves stay unported.
 - **O4 — Connections, turnarounds, least dwell.** Held by the dispatching; a connection missed and a turn too
   short as findings at the train.
-- **O5 — Studies and scenarios.** Edited in the Fahrplan-Editor's *Kapazität*, run by K1 to K3.
+- **O5 — Studies and scenarios.** Edited in the Kapazitäts-Sim, run by K1 to K3.
 
-### infra-data-1.1
+### infra-data-2.0
 
-What the simulation needs of the railway itself, in the infrastructure's format. Additions only, which an older
-reader may leave unread (`schemas/README.md`), and all of them in one version: a schema that changes is a new
-version, with its step at the door (S-R10). infra-data-1.1 is `core` 1.1, `layout` 1.0 and `signalling` 1.1.
+What the simulation needs of the railway itself, in the infrastructure's format, and the core kept to what
+several disciplines need. Planned as 1.1; it is 2.0 because platforms leave the core, which a reader of 1.0
+cannot leave unread (`schemas/README.md`). All of it in one version, with one step at the door (S-R10): an
+infra-data 1.0 file reads in as 2.0 with everything it held.
 
-| Domain | Addition | For |
+**The envelope's version is the version of the set**: a minor one where every domain's change is an addition, a
+major one where any domain takes a major one. infra-data-2.0 is `core` 2.0, `layout` 1.1, `signalling` 2.0 and
+the new domain `electrification` 1.0.
+
+| Domain | Change | For |
 |---|---|---|
-| `core` 1.1 | `electrifications`: a range of a track, its system, a lifespan | the traction mode along a train's way; where there is none, no wire |
-| `core` 1.1 | `endMarks[].headway`: how close trains follow at a planning boundary | trains entering from a net that is not in the model |
-| `signalling` 1.1 | `routes[].settingTime` and `.releaseTime`, with the interlocking's values in the domain's fields | the blocking time's parts that are the interlocking's |
-| `signalling` 1.1 | `trainProtection`: a range of a track, the system and its level — PZB, LZB, ETCS —, a lifespan | the braking a train is run with; later, blocks without signals at the track |
+| `electrification` 1.0, new | `electrifications`: a range of a track, its system, a lifespan; depends on the core only | the traction mode along a train's way; where there is none, no wire — a domain of its own, as the core holds only what several disciplines need; the Catenary-Tool plans its masts and sections along it |
+| `core` 2.0 | `platforms` leave it, for `layout` | the core keeps the net, the reference, the boundaries and the stages |
+| `core` 2.0 | `endMarks[].headway`: how close trains follow at a planning boundary | trains entering from a net that is not in the model |
+| `layout` 1.1 | `platforms`, as they were in the core | the layout tool's |
+| `signalling` 2.0 | a stopping place no longer names its platform (`platformId`): the platform is the one its range lies at, derived (R9); a station boundary marked by a platform is marked by the stopping place at it (`stoppingPlaceId`) | no stored reference between sibling domains (R9) |
+| `signalling` 2.0 | `routes[].settingTime` and `.releaseTime`, with the interlocking's values in the domain's fields | the blocking time's parts that are the interlocking's |
+| `signalling` 2.0 | `trainProtection`: a range of a track, the system and its level — PZB, LZB, ETCS —, a lifespan | the braking a train is run with; later, blocks without signals at the track |
 
-Not in 1.1: speeds for a kind of train — the line's speed is the design speed and what the signals signal, for
+What `layout` holds was looked through for 2.0, and all of it is used: `trackPaths` (the Layout-Tool's named
+runs, for the profiles, the cross sections and the speed ranges), `axisSurveys` and `referenceAxes` (point clouds,
+surveys), `planHeader` (the plan's title block), `image` and `imageHash` (the project picture in a file, on the
+server), `osrd` (what a RailJSON import brought that the model does not hold).
+
+Not in 2.0: speeds for a kind of train — the line's speed is the design speed and what the signals signal, for
 every train; a speed profile of its own, as PlanPro's `Geschwindigkeitsprofil` (tilting trains, ETCS's train
 categories), comes with a line that needs one, with the train protection —; level crossings (the
 Signalling-Tool's next, phase 3), neutral sections (with the catenary domain), anything of the operation, any
 result.
 
-- **I1 — The format.** `schemas/core/1.1.schema.json` and `schemas/signalling/1.1.schema.json` beside the 1.0
-  files; the door's step from 1.0 — nothing to convert, the additions begin empty —; the vectors rewritten; the
-  server and the working copies reading 1.0 and writing 1.1. *Done when* every project of the server opens, and
+- **I1 — The format.** `schemas/core/2.0.schema.json`, `schemas/layout/1.1.schema.json`,
+  `schemas/signalling/2.0.schema.json` and `schemas/electrification/1.0.schema.json` beside the 1.0 files; the
+  door's step from 1.0 — the platforms moved to `layout`; a stopping place's `platformId` dropped where its range
+  lies at that platform, kept as a finding where not; a boundary's platform mark turned into the stopping place
+  at it, one made over the platform where there is none; the additions begin empty —; the vectors rewritten; the
+  data model's domain table brought up to date; the server and the working copies reading 1.0 and writing 2.0.
+  *Done when* every project of the server opens with every platform, stopping place and boundary in its place, and
   a file exported as 1.0 reads in with what it held.
-- **I2 — Editing.** Electrification and a boundary's headway in the Layout-Tool; a route's
-  times and the train protection in the Signalling-Tool; the core carrying the ranges through every track edit
-  and merge (R4, R7). *Done when* a range keeps its place over a track split, joined and reversed.
+- **I2 — Editing.** Electrification and a boundary's headway in the Layout-Tool; a route's times and the train
+  protection in the Signalling-Tool; the core library carrying the electrification's ranges and the platforms
+  through every track edit and merge (R4, R7). *Done when* a range keeps its place over a track split, joined and
+  reversed.
 - **I3 — Reading.** The running time takes the traction mode from the electrification along its way; the
-  blocking time takes a route's times; a train enters at a boundary
-  no closer than its headway; RailJSON's `electrifications`, empty in the export today, written and read.
+  blocking time takes a route's times; a train enters at a boundary no closer than its headway; the readers of
+  platforms — the running times, the Signalling-Tool, the PlanPro export — read them from `layout`; RailJSON's
+  `electrifications`, empty in the export today, written and read.
 
 ### Order
 
 1. **K0** — needs no format, and every later figure rests on it.
 2. **O1, O2** — the operations on their format before anything new is put into them.
 3. **K1** — the first figures, from what is there.
-4. **I1 to I3** — the railway's additions.
+4. **I1 to I3** — infra-data-2.0.
 5. **O3, O4** — formations, connections and turnarounds.
 6. **K2**.
 7. **O5 and K3**.
@@ -353,22 +392,11 @@ electrification and the connections make them.
 
 ### Open
 
-- **The delays of a scenario.** The suite has no figures of its own; a scenario's distributions are the
-  planner's. Whether it proposes any, and from where, is to decide before K3.
-- **The bounds of the occupancy rate**: UIC 406's recommended rates proposed, or an infrastructure manager's.
-- **The reference cases** K0 and K1 are held to: worked out by hand, on which stretch, and checked by whom.
-- **Where the capacity is worked with**: a section of the Fahrplan-Editor — the same timetables, working copy
-  and module — as planned above, or an app of its own (`capacity-sim`, decision 0010) once studies outgrow it.
-- **A vehicle's key that an import brings with another content** than the catalogue's — the file's taken under
-  its hash, proposed —, and whether a train pins its vehicles by hash, so that a change of the catalogue changes
-  no computed timetable unnoticed.
-- **From the braked weight percentage to the deceleration** the simulation brakes with (`const_gamma` today):
-  the conversion to choose, ETCS's conversion model a candidate.
-- **Revisions of the operations**: a counter per timetable today; whether a project's operations get revisions as
-  a variant has.
-- **Electrification in the core or in the catenary domain**: the core proposed — whether a line has a wire is
-  the line's, and the Catenary-Tool plans its masts and sections on it.
-- **What the envelope's version says**: the set of the domains' versions, as above, or the envelope's form alone.
+- **More from the core to `layout`, while 2.0 is a major version anyway**: a track's `lagesystem` and
+  `proviAxis` (where an MDB or ProVI import took it from) and its `osrd` (what a RailJSON import brought along)
+  are read by the Layout-Tool's imports and exports alone — proposed to move, keyed by the track.
+- **The project picture once**: `image` (a data URL in a file) and `imageHash` (a blob on the server) are two ways
+  for one picture; one, as a blob of the file, proposed.
 
 **Exit:** for a stretch of a project, the headways, the occupancy rate, the trains it still carries and its
 delays under a scenario come from the variant and the stage as planned, are the same for the same inputs, and

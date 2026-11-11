@@ -7,9 +7,9 @@ the Open-Layout-Tool before it moved here in phase 0), `signalling-tool/` (the S
 *Fahrzeit rechnen*, [decision 0013](../docs/decisions/0013-running-times-in-rust.md)), `vehicle-editor/` (the Fahrzeug-Editor: the
 suite's vehicles in OSRD's form, [decision 0014](../docs/decisions/0014-vehicles-in-osrds-form.md)),
 `timetable-editor/` (the Fahrplan-Editor of the Fahrplan-Sim: a project's timetables, trains from station to station, and a single train's running time computed in the same interface,
-[decision 0016](../docs/decisions/0016-timetables-of-a-project.md)), later `catenary-tool/` and `construction-sim/`
-([decision 0010](../docs/decisions/0010-one-suite-modules-by-task.md)); the capacity simulation begins as a section of the
-Fahrplan-Editor ([decision 0023](../docs/decisions/0023-capacity-simulation-of-our-own.md), [roadmap](../ROADMAP.md) phase 4). An app imports packages, never another app
+[decision 0016](../docs/decisions/0016-timetables-of-a-project.md)), later `capacity-sim/` (the Kapazitäts-Sim, the suite's own capacity simulation,
+[decision 0023](../docs/decisions/0023-capacity-simulation-of-our-own.md), [roadmap](../ROADMAP.md) phase 4), `catenary-tool/` and `construction-sim/`
+([decision 0010](../docs/decisions/0010-one-suite-modules-by-task.md)). An app imports packages, never another app
 ([decision 0001](../docs/decisions/0001-one-repository.md)).
 
 ## The projects of the infrastructure and its tools

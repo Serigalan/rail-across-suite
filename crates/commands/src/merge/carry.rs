@@ -327,7 +327,8 @@ pub fn carry_domain(domain: &Value, ctx: &Ctx) -> (Value, Vec<Moved>) {
     (d, carried)
 }
 
-pub const CARRIED_DOMAINS: [&str; 1] = ["signalling"];
+/// The layers whose locations every write of the net carries (R4): the signalling and the electrification (decision 0025).
+pub const CARRIED_DOMAINS: [&str; 2] = ["signalling", "electrification"];
 
 /// A record after one write of the net, its domains' locations carried (`carryAfterWrite`).
 pub fn carry_after_write(before: &Value, after: &Value) -> Value {

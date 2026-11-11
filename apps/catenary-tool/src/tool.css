@@ -1,0 +1,26 @@
+/* The Catenary-Tool's own: the plan and the parts of its editors. What every
+   module has — colours, buttons, fields, the shell — is the suite's library
+   (@rail-across/ui, ui.css), loaded before this. */
+
+html, body { margin: 0; background: var(--ui-surface); }
+#root { width: 100%; height: 100vh; }
+
+.tool-center { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 24px; text-align: center; }
+
+.plan { position: relative; flex: 1; min-height: 0; overflow: hidden; background: var(--ui-surface); }
+.plan-map { position: absolute; inset: 0; }
+
+.tool-mode {
+  position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); z-index: 5; display: flex; gap: 10px; align-items: center;
+  padding: 8px 10px 8px 14px; border-radius: 10px; background: var(--color-primary); color: #fff; font-size: var(--ui-fs-m); font-weight: 600;
+  box-shadow: var(--ui-shadow);
+}
+.tool-notice { position: absolute; top: 62px; left: 50%; transform: translateX(-50%); z-index: 5; display: flex; gap: 6px; align-items: center; max-width: min(640px, 90%); }
+.tool-notice .ui-message { background: var(--ui-bg); box-shadow: var(--ui-shadow); }
+.tool-fit { position: absolute; top: 10px; right: 10px; z-index: 6; }
+.tool-fit .ui-btn { background: var(--ui-bg); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12); }
+
+.tool-editor { display: flex; flex-direction: column; gap: 12px; }
+/* A system's colour, as the plan draws its ranges. */
+.tool-swatch { display: inline-block; width: 14px; height: 6px; border-radius: 2px; flex: none; }
+.tool-findings { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }

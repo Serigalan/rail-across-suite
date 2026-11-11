@@ -1401,6 +1401,7 @@
   "plan_titleblock": "Title block",
   "plan_titleblock_compact": "Compact",
   "plan_titleblock_full": "Detailed",
+  "plan_titleblock_in_civil": "The title block is filled in in the Civil-Tool; the plan shows it as it stands there.",
   "plan_subtitle": "Plan title",
   "plan_party_owner": "Client",
   "plan_party_lead": "Project management",

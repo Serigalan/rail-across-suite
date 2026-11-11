@@ -42,7 +42,7 @@ describe('the tiles', () => {
         expect(texts[`module_${m.id}`], m.id).toBeTruthy()
         expect(texts[`module_${m.id}_desc`], m.id).toBeTruthy()
       }
-      for (const tool of ['layout', 'signalling', 'catenary']) expect(texts[`tool_${tool}`]).toBeTruthy()
+      for (const tool of ['layout', 'civil', 'signalling', 'catenary']) expect(texts[`tool_${tool}`]).toBeTruthy()
     }
   })
 
@@ -57,7 +57,13 @@ describe('opening a project', () => {
   })
 
   it('opens nothing in a tool that is not there yet', () => {
-    expect(openUrl(toolOf('catenary'), 'p1', 'v1')).toBeNull()
+    expect(openUrl({ id: 'x', available: false }, 'p1', 'v1')).toBeNull()
+  })
+
+  it('opens a variant in the Civil-Tool and the Catenary-Tool beside the start page (decision 0025)', () => {
+    expect(openUrl(toolOf('civil'), 'p1', 'v1')).toBe('civil/?project=p1&variant=v1')
+    expect(openUrl(toolOf('catenary'), 'p1', 'v1')).toBe('catenary/?project=p1&variant=v1')
+    expect(toolUrl(toolOf('catenary'), { action: 'storage' })).toBeNull()
   })
 
   it('opens a variant in the Signalling-Tool, which keeps nothing in the browser', () => {
@@ -73,7 +79,7 @@ describe('asking a tool', () => {
     expect(toolUrl(layout, { project: 'p1', variant: 'v1', action: 'history' })).toBe('layout/?project=p1&variant=v1&action=history')
     expect(toolUrl(layout, { project: 'p1', action: 'merge', from: 'a', to: 'b' })).toBe('layout/?project=p1&action=merge&from=a&to=b')
     expect(toolUrl(layout, { action: 'storage' })).toBe('layout/?action=storage')
-    expect(toolUrl(toolOf('catenary'), { project: 'p1', action: 'view' })).toBeNull()
+    expect(toolUrl({ id: 'x', available: false }, { project: 'p1', action: 'view' })).toBeNull()
   })
 })
 

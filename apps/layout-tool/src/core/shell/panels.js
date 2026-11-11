@@ -1,5 +1,6 @@
 import { lazy } from 'react'
-import { HistoryIcon, ProjectSettingsIcon, LayerIcon, TopologyIcon, PlaceIcon, SettingsIcon, DataExchangeIcon, EditElementIcon, ConnectSwitchIcon, SpliceElementIcon, CrossSectionIcon, PlanExportIcon, ElevationIcon, CheckIcon } from '../components/icons'
+import { HistoryIcon, ProjectSettingsIcon, LayerIcon, TopologyIcon, PlaceIcon, SettingsIcon, DataExchangeIcon, EditElementIcon, ConnectSwitchIcon, SpliceElementIcon, CrossSectionIcon, PlanExportIcon, ElevationIcon, CheckIcon, NewPlatformIcon, RouteIcon } from '../components/icons'
+import { TOOL } from '../tool'
 
 // Each panel is its own chunk (R9.1), loaded the first time it is opened.
 const ProjectSettingsPanel = lazy(() => import('../components/panels/ProjectSettingsPanel'))
@@ -16,6 +17,8 @@ const DataExchangePanel = lazy(() => import('../components/panels/DataExchangePa
 const HistoryPanel = lazy(() => import('../components/panels/HistoryPanel'))
 const PlanExportPanel = lazy(() => import('../components/panels/PlanExportPanel'))
 const CheckPanel = lazy(() => import('../components/panels/CheckPanel'))
+const CivilPlatformsPanel = lazy(() => import('../components/panels/CivilPlatformsPanel'))
+const CivilRunsPanel = lazy(() => import('../components/panels/CivilRunsPanel'))
 
 /**
  * The panels of the map view (R2.3), in the order the sidebar shows them.
@@ -36,8 +39,10 @@ const CheckPanel = lazy(() => import('../components/panels/CheckPanel'))
  *   props(s)    what it takes from the shell `s` (state and handlers in App)
  *   onEnter(s)  runs when the panel is opened, onLeave(s) when it is left
  *   overlay     the map overlay that belongs to the panel and closes with it
+ *   tools       the tools that show it (decision 0025): 'layout', the alignment,
+ *               and 'civil', the civil layer; without, both
  */
-export const PANELS = [
+const ALL_PANELS = [
   {
     id: 'project', group: 'project', icon: ProjectSettingsIcon, titleKey: 'project_settings', place: 'top', Component: ProjectSettingsPanel,
     overlay: 'projectTracks',
@@ -82,18 +87,21 @@ export const PANELS = [
       }
     },
   },
-  { id: 'places', group: 'design', icon: PlaceIcon, titleKey: 'create_element', place: 'top', Component: CreatePanel },
-  { id: 'splice', group: 'design', icon: SpliceElementIcon, titleKey: 'splice_element', place: 'top', Component: SpliceConnectPanel },
+  { id: 'places', tools: ['layout'], group: 'design', icon: PlaceIcon, titleKey: 'create_element', place: 'top', Component: CreatePanel },
+  { id: 'splice', tools: ['layout'], group: 'design', icon: SpliceElementIcon, titleKey: 'splice_element', place: 'top', Component: SpliceConnectPanel },
   {
-    id: 'connect_switch', group: 'design', icon: ConnectSwitchIcon, titleKey: 'connect_switch', place: 'top', Component: ConnectSwitchPanel,
+    id: 'connect_switch', tools: ['layout'], group: 'design', icon: ConnectSwitchIcon, titleKey: 'connect_switch', place: 'top', Component: ConnectSwitchPanel,
     overlay: 'switchDetail',
     props: (s) => ({
       detailTarget: s.overlay?.kind === 'switchDetail' ? s.overlay : null,
       onShowDetail: (target) => (target ? s.openOverlay({ kind: 'switchDetail', ...target }) : s.closeOverlay('switchDetail')),
     }),
   },
+  // The civil layer's own (decision 0025): the platforms, and the named runs of tracks.
+  { id: 'platforms', tools: ['civil'], group: 'design', icon: NewPlatformIcon, titleKey: 'platform_title', place: 'top', Component: CivilPlatformsPanel },
+  { id: 'runs', tools: ['civil'], group: 'design', icon: RouteIcon, titleKey: 'routes', place: 'top', Component: CivilRunsPanel },
   {
-    id: 'edit', group: 'edit', icon: EditElementIcon, titleKey: 'edit', place: 'top', Component: EditElementPanel,
+    id: 'edit', tools: ['layout'], group: 'edit', icon: EditElementIcon, titleKey: 'edit', place: 'top', Component: EditElementPanel,
     overlay: 'trackTable',
     props: (s) => ({
       trackTableId: s.overlay?.kind === 'trackTable' ? s.overlay.track?.id : undefined,
@@ -104,7 +112,7 @@ export const PANELS = [
     }),
   },
   {
-    id: 'elevation', group: 'heights', icon: ElevationIcon, titleKey: 'tooltip_elevation', place: 'top', Component: ElevationPanel,
+    id: 'elevation', tools: ['layout'], group: 'heights', icon: ElevationIcon, titleKey: 'tooltip_elevation', place: 'top', Component: ElevationPanel,
     overlay: 'profile',
     props: (s) => ({
       profileTrackId: s.overlay?.kind === 'profile' && !s.overlay.routeId ? s.overlay.trackId : null,
@@ -114,7 +122,7 @@ export const PANELS = [
     }),
   },
   {
-    id: 'section', group: 'section', icon: CrossSectionIcon, titleKey: 'platform_cross_section', place: 'top', Component: CrossSectionsPanel,
+    id: 'section', tools: ['civil'], group: 'section', icon: CrossSectionIcon, titleKey: 'platform_cross_section', place: 'top', Component: CrossSectionsPanel,
     overlay: 'crossSection',
     props: (s) => ({
       // Over the map or in its own window — a station picked goes to where it is shown.
@@ -150,5 +158,11 @@ export const PANELS = [
   // button between the two arrows.
   { id: 'history', group: 'app', icon: HistoryIcon, titleKey: 'step_history_title', place: 'none', Component: HistoryPanel },
 ]
+
+/** The panels of this tool, in the sidebar's order. */
+export const PANELS = ALL_PANELS.filter(p => !p.tools || p.tools.includes(TOOL))
+
+/** The panel the tool opens with. */
+export const FIRST_PANEL = TOOL === 'civil' ? 'platforms' : 'places'
 
 export const panelById = (id) => PANELS.find(p => p.id === id) ?? null

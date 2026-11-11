@@ -5,6 +5,7 @@ import { useRedoStep, useUndoStep } from '../hooks/useStore'
 import { describeStep } from '@rail-across/core/project'
 import { loadSettings, saveSettings } from '../utils/common'
 import { PANELS } from './panels'
+import { TOOL_NAME } from '../tool'
 import { extensionsOf } from '../extensions'
 
 /**
@@ -59,7 +60,7 @@ export default function Sidebar({ active, onSelect, onUndo, onRedo, onHome, home
         <button type="button" className="sidebar-brand" onClick={onHome}
           title={t(homeKey)} aria-label={t(homeKey)}>
           <LogoIcon className="sidebar-brand-logo" />
-          {labels && <span className="sidebar-brand-name">Layout-Tool</span>}
+          {labels && <span className="sidebar-brand-name">{TOOL_NAME}</span>}
         </button>
         {withDividers(PANELS.filter(p => p.place === 'top'))}
       </div>

@@ -142,9 +142,16 @@ if [ "$build" = 1 ]; then
   out=$(mktemp -d "$RA_REPO/.tmp-build-XXXX")
   trap 'rm -rf "$out"' EXIT
   excludes=()
+  declare -A built=()
   for m in "${MODULE_APPS[@]}"; do
     app=${m%%:*} path=${m#*:}
-    (cd "apps/$app" && npx vite build --outDir "$out/$path" --emptyOutDir)
+    if [ -n "${built[$app]:-}" ]; then
+      # An app that serves a second tool (the Layout-Tool's as the Civil-Tool) is built once.
+      rsync -a --delete "$out/${built[$app]}/" "$out/$path/"
+    else
+      (cd "apps/$app" && npx vite build --outDir "$out/$path" --emptyOutDir)
+      built[$app]=$path
+    fi
     mkdir -p "$RA_SITE_DIR/$path"
     rsync -a --delete "$out/$path/" "$RA_SITE_DIR/$path/"
     excludes+=(--exclude "/$path")

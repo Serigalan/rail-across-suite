@@ -7,6 +7,8 @@
 // manages them for every tool, and asks this one by its address to work on a
 // variant, look at it, show its history, compare or merge two (apps/README.md).
 
+import { TOOL } from '../core/tool'
+
 const SUITE = import.meta.env?.VITE_RA_SUITE ?? '../'
 
 /** The address of a page of the suite's start page (`sign-in`, `password`, or the overview), with where to come back to. */
@@ -16,7 +18,7 @@ function suiteUrl(page = '', next = null) {
 }
 
 /** The projects of the infrastructure on the suite's start page, with this tool chosen. */
-export const projectsUrl = () => suiteUrl('infrastructure/layout')
+export const projectsUrl = () => suiteUrl(`infrastructure/${TOOL}`)
 
 const NOTICE = 'rail-across-notice'
 

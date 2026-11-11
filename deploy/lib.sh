@@ -98,7 +98,8 @@ server_cli() {
 
 # The modules' apps, each built into its path of the site: "<app directory under apps/>:<path>".
 # shellcheck disable=SC2034  # used by deploy.sh
-MODULE_APPS=(layout-tool:layout signalling-tool:signalling simulation-tool:simulation vehicle-editor:vehicles timetable-editor:timetable)
+# The Layout-Tool's app serves the Civil-Tool too (decision 0025): one build, two paths.
+MODULE_APPS=(layout-tool:layout layout-tool:civil signalling-tool:signalling simulation-tool:simulation vehicle-editor:vehicles timetable-editor:timetable)
 
 # The units of this instance, as installed (template rail-across-<x> → $RA_UNIT_PREFIX<x>).
 # shellcheck disable=SC2034  # used by setup.sh

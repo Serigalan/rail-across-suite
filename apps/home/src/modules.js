@@ -38,8 +38,10 @@ export const MODULES = [...EDITORS, ...SIMULATIONS]
  */
 export const INFRASTRUCTURE_TOOLS = [
   { id: 'layout', available: true, path: 'layout/', storage: true },
+  // The Layout-Tool's app as the Civil-Tool (decision 0025): the same build under its own path.
+  { id: 'civil', available: true, path: 'civil/', storage: true },
   { id: 'signalling', available: true, path: 'signalling/' },
-  { id: 'catenary', available: false, phase: 3 },
+  { id: 'catenary', available: true, path: 'catenary/' },
 ]
 
 const DEFAULT_TOOL = 'layout'

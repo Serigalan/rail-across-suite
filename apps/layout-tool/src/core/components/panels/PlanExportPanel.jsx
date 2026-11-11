@@ -6,6 +6,7 @@ import { useI18n } from '../../locales/i18nContext'
 import { useProject } from '../../hooks/useStore'
 import FormSection from '../form/FormSection'
 import PlanHeaderFields from './PlanHeaderFields'
+import { EDITS_CIVIL } from '../../tool'
 import PlanSheetFields from './plan/PlanSheetFields'
 import PlanContentSection from './plan/PlanContentSection'
 import usePlanHeader from './plan/usePlanHeader'
@@ -76,14 +77,17 @@ export default function PlanExportPanel({ onShowPlanPreview }) {
       <PlanSheetFields o={o} set={set} />
       <PlanContentSection o={o} set={set} />
       <FormSection title={t('plan_titleblock')}>
-        <div className="form-field">
-          <select value={header.style} onChange={e => changeHeader({ ...header, style: e.target.value })}>
-            <option value="compact">{t('plan_titleblock_compact')}</option>
-            <option value="full">{t('plan_titleblock_full')}</option>
-          </select>
-        </div>
-        <PlanHeaderFields header={header} onChange={changeHeader} simple={header.style !== 'full'}
-          onError={msg => setStatus({ msg, error: true })} />
+        {/* The title block is the civil layer's, filled in the Civil-Tool (decision 0025); the Layout-Tool prints it. */}
+        {EDITS_CIVIL ? <>
+          <div className="form-field">
+            <select value={header.style} onChange={e => changeHeader({ ...header, style: e.target.value })}>
+              <option value="compact">{t('plan_titleblock_compact')}</option>
+              <option value="full">{t('plan_titleblock_full')}</option>
+            </select>
+          </div>
+          <PlanHeaderFields header={header} onChange={changeHeader} simple={header.style !== 'full'}
+            onError={msg => setStatus({ msg, error: true })} />
+        </> : <p className="selecting-hint">{t('plan_titleblock_in_civil')}</p>}
       </FormSection>
       {status && <p className={status.error ? 'msg-error' : 'msg-info'}>{status.msg}</p>}
       <button className="ui-btn ui-btn-primary ui-btn-block mt-8" disabled={busy}

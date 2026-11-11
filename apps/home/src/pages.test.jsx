@@ -31,9 +31,9 @@ describe('the start page', () => {
 })
 
 describe('the infrastructure editor', () => {
-  it('shows its three tools as tabs, the chosen one selected, and the projects opening in it', () => {
+  it('shows its four tools as tabs, the chosen one selected, and the projects opening in it', () => {
     const html = de(<Infrastructure toolId="layout" user={{ id: 1, role: 'user' }} projects={projects} />)
-    expect(html.match(/role="tab"/g)).toHaveLength(3)
+    expect(html.match(/role="tab"/g)).toHaveLength(4)
     expect(html).toMatch(/aria-selected="true"[^>]*href="#\/infrastructure\/layout"/)
     expect(html).toContain('Projekte öffnen im Layout-Tool')
     expect(html).toContain('href="layout/?project=p1&amp;variant=v1"')
@@ -48,12 +48,13 @@ describe('the infrastructure editor', () => {
     expect(card({})).not.toContain('lokale Änderung')
   })
 
-  it('in a tool that is not there yet lists the projects without a way to open them', () => {
-    const html = de(<Infrastructure toolId="catenary" user={{ id: 1, role: 'user' }} projects={projects} />)
-    expect(html).toContain('Das Catenary-Tool gibt es noch nicht')
-    expect(html).not.toContain('layout/?project=')
-    expect(html).toContain('disabled=""')
-    expect(html).toContain('+ Variante abzweigen')
+  it('opens the projects in the Civil-Tool and the Catenary-Tool, each a layer of its own (decision 0025)', () => {
+    const civil = de(<Infrastructure toolId="civil" user={{ id: 1, role: 'user' }} projects={projects} />)
+    expect(civil).toContain('Projekte öffnen im Civil-Tool')
+    expect(civil).toContain('href="civil/?project=p1&amp;variant=v1"')
+    const catenary = de(<Infrastructure toolId="catenary" user={{ id: 1, role: 'user' }} projects={projects} />)
+    expect(catenary).toContain('Projekte öffnen im Catenary-Tool')
+    expect(catenary).toContain('href="catenary/?project=p1&amp;variant=v1"')
   })
 
 })

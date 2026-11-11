@@ -16,7 +16,7 @@ import { escapeAction, frontHandler } from './escape'
 import useKmLineHover from '../hooks/useKmLineHover'
 import useKmOverlays from './useKmOverlays'
 import { OVERLAYS_CLOSED, closesTrackTable, overlayReducer } from './overlays'
-import { PANELS, panelById } from './panels'
+import { FIRST_PANEL, PANELS, panelById } from './panels'
 import Sidebar from './Sidebar'
 import StepNotice from './StepNotice'
 import MapLegend from './MapLegend'
@@ -104,7 +104,7 @@ export default function MapWorkspace({ onHome, beforeHome, homeKey, resetKey = 0
   useKmLineHover(map, km.kmOverlays.db || km.kmOverlays.other, t, km.localLines)
 
   // A panel is always open: a project opens on creating elements.
-  const [activePanel, setActivePanel] = useState('places')
+  const [activePanel, setActivePanel] = useState(FIRST_PANEL)
   const [overlays, dispatch] = useReducer(overlayReducer, OVERLAYS_CLOSED)
   const { overlay, popup, detached } = overlays
   // Two states over each other (AP 10.3): { before, after, beforeLabel, afterLabel, drawUnchanged }.

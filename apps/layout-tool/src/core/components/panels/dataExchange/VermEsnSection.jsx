@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { commitImport, saveReferenceAxis } from '../../../storage'
+import { EDITS_CIVIL } from '../../../tool'
 import { generateId, rebuildCoords, HEIGHT_DATUMS, heightDatumLabel } from '@rail-across/core/track'
 import {
   gradientHeightCode, gradientReferences, kmLineEntries, kmLineNumber, parseGradient, readAxis, referencedHeights,
@@ -68,7 +69,8 @@ export default function VermEsnSection() {
   const [errors, setErrors] = useState([])
   const [notes, setNotes] = useState([])
   const [done, setDone] = useState(null)
-  const [asReference, setAsReference] = useState(false)
+  // An axis read as a reference axis is the civil layer's (decision 0025): the Civil-Tool reads it so, the Layout-Tool as tracks.
+  const asReference = EDITS_CIVIL
   const [range, setRange] = useState(null)          // { from, to } in the TRA's stationing
 
   const readTra = async (file) => {
@@ -238,11 +240,7 @@ export default function VermEsnSection() {
           )}
         </div>
       )}
-      <label className="transition-curve-row">
-        <input type="checkbox" checked={asReference} onChange={e => setAsReference(e.target.checked)} />
-        <span>{t('data_exchange_reference_toggle')}</span>
-        <InfoTip text={t('data_exchange_reference_hint')} />
-      </label>
+      {asReference && <p className="msg-hint msg-small">{t('data_exchange_reference_hint')}</p>}
       {asReference && tra && range && (
         <>
           <p className="msg-hint msg-small">{fill('data_exchange_reference_axis', {

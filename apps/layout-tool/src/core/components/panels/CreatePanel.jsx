@@ -4,17 +4,16 @@ import CurvedLineForm from './CreateElementPanel/CurvedLineForm'
 import ParallelLineForm from './CreateElementPanel/ParallelLineForm'
 import ParallelTrackForm from './CreateElementPanel/ParallelTrackForm'
 import EndMarkForm from './CreateElementPanel/EndMarkForm'
-import PlatformPanel from './PlatformPanel'
 import {
-  CreateLineIcon, CreateArcIcon, CreateParallelIcon, CreateParallelTrackIcon, BufferStopIcon, BoundaryIcon, NewPlatformIcon,
+  CreateLineIcon, CreateArcIcon, CreateParallelIcon, CreateParallelTrackIcon, BufferStopIcon, BoundaryIcon,
 } from '../icons'
 import { useI18n } from '../../locales/i18nContext'
 import BackButton from './BackButton'
 import { BOUNDARY } from '@rail-across/core/track'
 
 /**
- * Creating elements, track ends (buffer stops, boundaries of the planning
- * area) and platforms in one panel: the menu keeps the three headings, separated by the gray line, and a tool click opens that
+ * Creating elements and track ends (buffer stops, boundaries of the planning
+ * area) in one panel — the platforms are the Civil-Tool's (decision 0025): the menu keeps the headings, separated by the gray line, and a tool click opens that
  * tool's form. The groups share the panel the way the switch panel's tools do
  * — one menu, one back. Connecting to a track end is in the splice panel.
  */
@@ -71,13 +70,6 @@ export default function CreatePanel() {
     </>
   )
 
-  if (page === 'platform') return (
-    <>
-      <BackButton onBack={back} />
-      <PlatformPanel />
-    </>
-  )
-
   return (
     <>
       <h2>{t('create_element')}</h2>
@@ -109,14 +101,6 @@ export default function CreatePanel() {
         <button className="ui-btn ui-btn-option" onClick={() => setPage('boundary')}>
           <BoundaryIcon />
           {t('boundary_create')}
-        </button>
-      </div>
-      <hr className="divider divider-wide" />
-      <h2>{t('platform_title')}</h2>
-      <div className="create-element-options">
-        <button className="ui-btn ui-btn-option" onClick={() => setPage('platform')}>
-          <NewPlatformIcon />
-          {t('platform_new')}
         </button>
       </div>
     </>

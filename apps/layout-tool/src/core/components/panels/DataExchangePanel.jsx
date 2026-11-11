@@ -15,13 +15,16 @@ import useImportReports from './dataExchange/useImportReports'
 import ProviImportSection from './ProviImportSection'
 import BackButton from './BackButton'
 import { RailJsonIcon, TracksExchangeIcon, VermEsnIcon } from '../icons'
+import { EDITS_CIVIL } from '../../tool'
 
-// The formats of every session, each a page of its own, as the other panels' options.
+// The formats of every session, each a page of its own, as the other panels' options —
+// in the Civil-Tool (decision 0025) the one that brings a civil object: Verm.ESN's
+// axis as a reference axis; what brings tracks is the Layout-Tool's.
 const FORMATS = [
   { id: 'tracks', icon: TracksExchangeIcon, titleKey: 'data_exchange_tracks', Component: TracksSection },
-  { id: 'vermesn', icon: VermEsnIcon, titleKey: 'data_exchange_vermesn', Component: VermEsnSection },
+  { id: 'vermesn', icon: VermEsnIcon, titleKey: 'data_exchange_vermesn', Component: VermEsnSection, civil: true },
   { id: 'osrd', icon: RailJsonIcon, titleKey: 'data_exchange_osrd', Component: OsrdSection },
-]
+].filter(f => !EDITS_CIVIL || f.civil)
 
 /**
  * Data exchange: one section per format (R5.1). The project's export stands
@@ -39,7 +42,7 @@ export default function DataExchangePanel({ onShowCompare }) {
   const [more, setMore] = useState(false)
   const reports = useImportReports()
   const converted = extensionsOf('importSections')
-  const options = [...FORMATS, ...converted.filter(x => x.menu).map(x => ({ ...x, ...x.menu, report: true }))]
+  const options = [...FORMATS, ...(EDITS_CIVIL ? [] : converted.filter(x => x.menu).map(x => ({ ...x, ...x.menu, report: true })))]
 
   const open = options.find(o => o.id === page)
   if (open) {
@@ -70,12 +73,14 @@ export default function DataExchangePanel({ onShowCompare }) {
       {more && (
         <>
           <CompareSection onShowCompare={onShowCompare} />
-          <ExchangeSection title={t('data_exchange_provi')} description={t('data_exchange_provi_desc')}>
-            <ProviImportSection onReport={(source, counts, lines) => reports.add({ source, ...counts, lines })} />
-          </ExchangeSection>
-          <CsvSection />
-          {converted.filter(x => !x.menu).map(({ id, Component }) => <Component key={id} onReport={reports.add} />)}
-          <ImportReports reports={reports.reports} onClear={reports.clear} />
+          {!EDITS_CIVIL && <>
+            <ExchangeSection title={t('data_exchange_provi')} description={t('data_exchange_provi_desc')}>
+              <ProviImportSection onReport={(source, counts, lines) => reports.add({ source, ...counts, lines })} />
+            </ExchangeSection>
+            <CsvSection />
+            {converted.filter(x => !x.menu).map(({ id, Component }) => <Component key={id} onReport={reports.add} />)}
+            <ImportReports reports={reports.reports} onClear={reports.clear} />
+          </>}
           <AlignmentSection />
           <SpeedRangesSection />
         </>

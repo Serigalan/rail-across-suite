@@ -11,6 +11,10 @@ import { initStorage } from './core/storage'
 import { initWorkingCopies } from './server/workingCopies'
 import { loadNtv2Grid } from '@rail-across/core/geometry'
 import { loadNative } from '@rail-across/core/native'
+import { TOOL_NAME } from './core/tool'
+
+// One build, two tools (decision 0025): the page says which it is.
+document.title = `${TOOL_NAME} · Rail-Across-Suite`
 
 // The grid first, then the store — in that order, not side by side.
 //

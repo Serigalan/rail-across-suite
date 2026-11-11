@@ -407,6 +407,17 @@ pub fn run(op: &str, input: &Value) -> Option<Result<Value, Failure>> {
             ),
             Err(_) => Value::Null,
         }),
+        // A placement as the page holds it (`placeCantAt`): the cant on its spans, without the track.
+        "switch.placeCantAt" => ok(match pl::Placement::from_json(a.v(0)) {
+            Some(p) if !p.spans.is_empty() => number(
+                p.cant_at(
+                    a.f(1),
+                    a.opt(2)
+                        .map(|o| (o["s0"].as_f64().unwrap_or(f64::NAN), o["length"].as_f64().unwrap_or(f64::NAN))),
+                ),
+            ),
+            _ => Value::Null,
+        }),
         "switch.switchEndAnchorRefusal" => ok(opt_str(pl::switch_end_anchor_refusal(a.v(0), a.u(1)))),
         // connectToTrack
         "switch.connectionAnchor" => {

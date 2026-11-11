@@ -164,6 +164,14 @@ export function placeSwitchOnTrack(track, station, reversed, length) {
 }
 const placeSwitchOnTrackRust = viaRust('switch.placeSwitchOnTrack', reuseFrom)
 
+/**
+ * The cant under a placement `x` from the toe, on the span holding the piece
+ * `on` ({ s0, length }) where given — of a placement as the commands answer it
+ * (switchOnTrackPlacement, switchConnectSolutions), which carries its spans
+ * but, being JSON, no `cantAt` of its own. Null for one without spans.
+ */
+export const placeCantAt = viaRust('switch.placeCantAt', reuseFrom)
+
 // The module's other operations, for what asks them directly.
 export const branchRadius = viaRust('switch.branchRadius', reuseFrom)
 export const buildConnectionElements = viaRust('switch.buildConnectionElements', reuseFrom)

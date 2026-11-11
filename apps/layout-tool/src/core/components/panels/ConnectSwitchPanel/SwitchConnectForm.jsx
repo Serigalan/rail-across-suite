@@ -3,7 +3,7 @@ import { loadTracks, loadSwitches, loadEndMarks, commitSwitchConnection } from '
 import { wgs84ToUTM } from '@rail-across/core/geometry'
 import {
   SWITCH_PICK_TYPES, DEFAULT_SWITCH_TYPE_IDX, clickStation, connectionAnchor, END_CHAIN_OPEN, endChainDefault,
-  endChainOpen, negR,
+  endChainOpen, negR, placeCantAt,
 } from '@rail-across/core/switch'
 import {
   computeSwitchCant, computeCantDef, computeCantDefSigned, switchCantError, MAX_SWITCH_CANT_DEF,
@@ -189,13 +189,13 @@ export default function SwitchConnectForm({ onCommitted }) {
   const cantKey = `${speed}|${switchTypeIdx}`
   const cant = plain || !place
     ? (cantEdit?.key === cantKey ? cantEdit.value : computeSwitchCant(speed, sw.R))
-    : place.cantAt(0)
+    : placeCantAt(place, 0)
   const worstCant = plain || !place ? Math.abs(cant)
     : place.spans.reduce((m, sp) => Math.max(m, Math.abs(sp.cantStart), Math.abs(sp.cantEnd)), 0)
   const g = placement?.geom ?? null
   const worstDef = (segments) => Math.max(...segments.flatMap((seg) => [
-    computeCantDefSigned(speed, seg.r1, place.cantAt(seg.s0, seg)),
-    computeCantDefSigned(speed, seg.r2, place.cantAt(seg.s0 + seg.length, seg)),
+    computeCantDefSigned(speed, seg.r1, placeCantAt(place, seg.s0, seg)),
+    computeCantDefSigned(speed, seg.r2, placeCantAt(place, seg.s0 + seg.length, seg)),
   ]))
   const [stemRoute, branchRoute] = g?.swapped ? [g.branchSegments, g.stemSegments] : [g?.stemSegments, g?.branchSegments]
   const cantDef = plain ? computeCantDef(speed, sw.R, cant) : g ? worstDef(branchRoute) : 0

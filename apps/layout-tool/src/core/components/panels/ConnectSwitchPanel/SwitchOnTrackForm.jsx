@@ -3,7 +3,7 @@ import { loadTracks, commitSwitchConnection } from '../../../storage'
 import { wgs84ToUTM } from '@rail-across/core/geometry'
 import {
   SWITCH_PICK_TYPES, DEFAULT_SWITCH_TYPE_IDX, switchBranchLength, switchStraightLength,
-  switchRouteVaries, clickStation, nearestValid, settleStation,
+  switchRouteVaries, clickStation, nearestValid, settleStation, placeCantAt,
 } from '@rail-across/core/switch'
 import {
   computeSwitchCant, computeCantDef, computeCantDefSigned, switchCantError, MAX_SWITCH_CANT_DEF,
@@ -186,8 +186,8 @@ export default function SwitchOnTrackForm({ onCommitted }) {
   const cantKey = `${speed}|${switchTypeIdx}`
   const cant = plain
     ? (cantEdit?.key === cantKey ? cantEdit.value : computeSwitchCant(speed, sw.R))
-    : place.cantAt(0)
-  const cantEnd    = plain ? cant : place.cantAt(straightLen)
+    : placeCantAt(place, 0)
+  const cantEnd    = plain ? cant : placeCantAt(place, straightLen)
   const cantVaries = !plain && place.spans.some(sp => sp.cantStart !== cant || sp.cantEnd !== cant)
   // What the switch limit has to answer for: the one value unbent, and bent the
   // worst of the ramp the turnout sits on — not just its value at the toe.
@@ -199,8 +199,8 @@ export default function SwitchOnTrackForm({ onCommitted }) {
   // Radius and cant run linearly along each piece, and so does the deficiency
   // wherever the route keeps its side: the worst end of any piece is the route's.
   const worstDef = (segments) => Math.max(...segments.flatMap((seg) => [
-    computeCantDefSigned(speed, seg.r1, place.cantAt(seg.s0, seg)),
-    computeCantDefSigned(speed, seg.r2, place.cantAt(seg.s0 + seg.length, seg)),
+    computeCantDefSigned(speed, seg.r1, placeCantAt(place, seg.s0, seg)),
+    computeCantDefSigned(speed, seg.r2, placeCantAt(place, seg.s0 + seg.length, seg)),
   ]))
   // Swapped, the host track is the branch and the straight the through route.
   const [stemRoute, branchRoute] = swapped ? [g.branchSegments, g.stemSegments] : [g?.stemSegments, g?.branchSegments]

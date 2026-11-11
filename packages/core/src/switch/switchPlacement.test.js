@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { clickStation, placeSwitchOnTrack, switchEndAnchorRefusal } from './index.js'
+import { clickStation, placeCantAt, placeSwitchOnTrack, switchEndAnchorRefusal } from './index.js'
 import { arcFrom, straightFrom, transitionElement } from '../geometry/elementFactory.js'
 
 
@@ -52,6 +52,15 @@ describe('placing a turnout on a track', () => {
     expect(p.cantAt(10)).toBe(0)
     expect(p.cantAt(40)).toBe(40)
     expect(p.cantAt(20, 1)).toBe(40)                // the joint, on the arc's span
+  })
+
+  it('states its cant as JSON too, as the commands answer it', () => {
+    const { cantAt, ...place } = placeSwitchOnTrack(straightAndArc(), 80, false, 50)
+    const json = JSON.parse(JSON.stringify(place))
+    for (const x of [0, 10, 20, 35, 50]) expect(placeCantAt(json, x)).toBe(cantAt(x))
+    expect(placeCantAt(json, 20, { s0: 20, length: 30 })).toBe(40)   // the joint, on the arc's span
+    expect(placeCantAt(json, 20, { s0: 0, length: 20 })).toBe(0)     // …and on the straight's
+    expect(placeCantAt({ ...json, spans: [] }, 10)).toBeNull()
   })
 
   it('opens against the track when reversed, the cant turned with it', () => {

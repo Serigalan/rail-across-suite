@@ -12,7 +12,7 @@ use rail_across_geom::transition::curvature_of;
 use rail_across_js::{Object, generate_id, get, js_number, js_string, number, strict_eq, truthy};
 use rail_across_rules::cant::{cant_exception_fields, worst_cant_of};
 use rail_across_rules::element_length::min_element_length;
-use rail_across_switch::catalogue::switch_branch_length;
+use rail_across_switch::catalogue::{Kind, switch_branch_length, switch_branch_sections};
 use rail_across_switch::crossing::{compute_crossing_geometry_utm, crossing_elements, crossing_leg_radius, crossing_leg_signed_radius, pieces_on_radius};
 use rail_across_switch::placement::{Placement, place_switch_on_track};
 use rail_across_switch::route::{
@@ -49,6 +49,9 @@ pub struct OnTrack<'a> {
     pub side: &'a str,
     pub straight_len: f64,
     pub speed: Option<f64>,
+    /// What the slider snaps onto an element change: `toe` (WA), `end` (WE) or
+    /// `technical` (the technical end); both WA and WE where it is not said.
+    pub snap: Option<&'a str>,
 }
 
 impl<'a> OnTrack<'a> {
@@ -60,6 +63,7 @@ impl<'a> OnTrack<'a> {
             side: o.get("side").and_then(Value::as_str).unwrap_or("left"),
             straight_len: js_number(o.get("straightLen")),
             speed: f(o, "speed"),
+            snap: o.get("snap").and_then(Value::as_str),
         }
     }
 }
@@ -166,38 +170,61 @@ pub fn switch_on_track_route_end(a: &OnTrack, toe: f64) -> Option<(Utm, f64, f64
     ))
 }
 
-/// The pieces a turnout leaves of its element (`switchOnTrackRemnant`).
-pub fn switch_on_track_remnant(track: &Value, toe: f64, reversed: bool, speed: Option<f64>) -> Value {
+/// The pieces a turnout leaves of its elements (`switchOnTrackRemnant`): at WA
+/// the piece before it and the piece of WA's element under it; given the
+/// turnout's `length`, at WE too the piece of WE's element under it and the
+/// piece left beyond — each held to the minimum element length of `speed`
+/// together with the elements of the same geometry it runs on into.
+pub fn switch_on_track_remnant(track: &Value, toe: f64, reversed: bool, speed: Option<f64>, length: Option<f64>) -> Value {
     let es = els(track);
     let Some((idx, s)) = element_at_station(es, toe) else { return Value::Null };
     let len = f(&es[idx], "length").unwrap_or(0.0);
     let on_node = s <= NODE_TOL || s >= len - NODE_TOL;
-    let length = if on_node {
+    let behind_wa = if on_node {
         0.0
     } else if reversed {
         len - s
     } else {
         s
     };
-    let ahead = if on_node { 0.0 } else { len - length };
+    let ahead = if on_node { 0.0 } else { len - behind_wa };
     let speed = speed.filter(|v| *v != 0.0 && !v.is_nan());
     let l_min = speed.and_then(min_element_length);
-    let beyond = |side: &str| run_beside(es, idx, side).unwrap_or(0.0);
-    let run = if length > NODE_TOL {
-        length + beyond(if reversed { "after" } else { "before" })
-    } else {
-        length
-    };
-    let run_ahead = if ahead > NODE_TOL {
-        ahead + beyond(if reversed { "before" } else { "after" })
-    } else {
-        ahead
+    let (back, on) = if reversed { ("after", "before") } else { ("before", "after") };
+    let run = |piece: f64, i: usize, side: &str| {
+        if piece > NODE_TOL {
+            piece + run_beside(es, i, side).unwrap_or(0.0)
+        } else {
+            piece
+        }
     };
     let too_short = |l: f64, r: f64| l_min.is_some_and(|m| l > NODE_TOL && r < m - NODE_TOL);
-    json!({
-        "elIdx": idx, "length": number(length), "ahead": number(ahead), "run": number(run), "runAhead": number(run_ahead),
-        "lMin": l_min.map(number), "speed": speed.map(number), "short": too_short(length, run), "shortAhead": too_short(ahead, run_ahead),
-    })
+    let (run_behind, run_ahead) = (run(behind_wa, idx, back), run(ahead, idx, on));
+    let mut out = json!({
+        "elIdx": idx, "length": number(behind_wa), "ahead": number(ahead), "run": number(run_behind), "runAhead": number(run_ahead),
+        "lMin": l_min.map(number), "speed": speed.map(number), "short": too_short(behind_wa, run_behind), "shortAhead": too_short(ahead, run_ahead),
+    });
+    let we = length.filter(|l| l.is_finite() && *l > 0.0).map(|l| (l, if reversed { toe - l } else { toe + l }));
+    if let Some((l, we)) = we
+        && let Some((j, s)) = element_at_station(es, we)
+    {
+        let len = f(&es[j], "length").unwrap_or(0.0);
+        let (under, beyond) = if s <= NODE_TOL || s >= len - NODE_TOL {
+            (0.0, 0.0)
+        } else if reversed {
+            ((len - s).min(l), s)
+        } else {
+            (s.min(l), len - s)
+        };
+        // A turnout within one element is one piece under it, not two.
+        let under = if j == idx && !on_node { 0.0 } else { under };
+        let (run_under, run_beyond) = (run(under, j, back), run(beyond, j, on));
+        out["end"] = json!({
+            "elIdx": j, "under": number(under), "beyond": number(beyond), "runUnder": number(run_under), "runBeyond": number(run_beyond),
+            "shortUnder": too_short(under, run_under), "shortBeyond": too_short(beyond, run_beyond),
+        });
+    }
+    out
 }
 
 /// May the toe stand here (`switchOnTrackToeValid`)?
@@ -205,8 +232,8 @@ pub fn switch_on_track_toe_valid(a: &OnTrack, toe: f64) -> bool {
     if place_on_track(a, toe).is_err() {
         return false;
     }
-    let r = switch_on_track_remnant(a.track, toe, a.reversed, a.speed);
-    !truthy(r.get("short")) && !truthy(r.get("shortAhead"))
+    let r = switch_on_track_remnant(a.track, toe, a.reversed, a.speed, Some(a.straight_len));
+    ["short", "shortAhead"].iter().all(|k| !truthy(r.get(*k))) && ["shortUnder", "shortBeyond"].iter().all(|k| !truthy(r["end"].get(*k)))
 }
 
 fn slider_window(track: &Value, around: Option<f64>) -> (f64, f64) {
@@ -231,15 +258,39 @@ fn intervals_json(iv: &[(f64, f64)], snaps: &[f64]) -> Value {
     json!({ "intervals": iv.iter().map(|(a, b)| json!([number(*a), number(*b)])).collect::<Vec<_>>(), "snaps": snaps.iter().map(|s| number(*s)).collect::<Vec<_>>() })
 }
 
-/// What the position slider of "Weiche auf Gleis" runs over (`switchOnTrackSlider`).
+/// How far the technical end of a turnout lies from WA along its through
+/// route: where the branch's last curved section ends — at the same distance on
+/// the through route where an element change lies there, as `switch_abreast`
+/// reads the stations up to the last change under the turnout (Entscheidung 370)
+/// — or WE, for a branch curved to its end.
+pub fn switch_technical_end(sw: &Value, straight_len: f64) -> f64 {
+    let sections = switch_branch_sections(Some(sw));
+    match sections.iter().rposition(|s| s.kind != Kind::Straight) {
+        Some(i) if i + 1 < sections.len() => sections[..=i].iter().map(|s| s.length).sum(),
+        _ => straight_len,
+    }
+}
+
+/// What the position slider of "Weiche auf Gleis" runs over (`switchOnTrackSlider`):
+/// the stretches where the toe may stand, and the toe stations that put the
+/// chosen point of the turnout (`snap`) on an element change — exactly there,
+/// so no sliver of an element is left between.
 pub fn switch_on_track_slider(a: &OnTrack, around: Option<f64>) -> Value {
     if els(a.track).is_empty() {
         return json!({ "intervals": [], "snaps": [] });
     }
     let nodes = node_stations(a.track);
     let (from, to) = slider_window(a.track, around);
-    let mut all = nodes.clone();
-    all.extend(nodes.iter().map(|n| if a.reversed { n + a.straight_len } else { n - a.straight_len }));
+    let offsets: Vec<f64> = match a.snap {
+        Some("toe") => vec![0.0],
+        Some("end") => vec![a.straight_len],
+        Some("technical") => vec![switch_technical_end(a.sw, a.straight_len)],
+        _ => vec![0.0, a.straight_len],
+    };
+    let all: Vec<f64> = offsets
+        .iter()
+        .flat_map(|d| nodes.iter().map(move |n| if a.reversed { n + d } else { n - d }))
+        .collect();
     let snaps = unique_stations(&all);
     let iv = valid_intervals(&|s| switch_on_track_toe_valid(a, s), from, to, 1.0, &snaps);
     intervals_json(&iv, &snaps)

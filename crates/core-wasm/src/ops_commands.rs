@@ -116,7 +116,7 @@ pub fn run(op: &str, input: &Value) -> Option<Result<Value, Failure>> {
         "commands.switchOnTrackRouteEnd" => ok(swc::switch_on_track_route_end(&swc::OnTrack::from_json(a.v(0)), a.f(1))
             .map(|(u, b, k)| json!({ "utm": u.to_json(), "bearing": number(b), "k": number(k) }))
             .unwrap_or(Value::Null)),
-        "commands.switchOnTrackRemnant" => ok(swc::switch_on_track_remnant(a.v(0), a.f(1), a.b(2), a.of(3))),
+        "commands.switchOnTrackRemnant" => ok(swc::switch_on_track_remnant(a.v(0), a.f(1), a.b(2), a.of(3), a.of(4))),
         "commands.switchOnTrackToeValid" => ok(json!(swc::switch_on_track_toe_valid(&swc::OnTrack::from_json(a.v(0)), a.f(1)))),
         "commands.switchOnTrackSlider" => ok(swc::switch_on_track_slider(&swc::OnTrack::from_json(a.v(0)), a.of(1))),
         "commands.buildSwitchOnTrack" => {

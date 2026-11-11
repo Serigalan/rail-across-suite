@@ -3,9 +3,10 @@
 
 //! The position slider of the switch dialogs (`stationSlider.js`).
 
-use rail_across_js::js_round;
-
 const EDGE_TOL: f64 = 1e-4;
+const UNIQUE_TOL: f64 = 0.5e-4;
+/// The grid the stretches' ends are rounded inward onto [m].
+const GRID: f64 = 1e-3;
 
 /// The stretches of [from, to] where `valid` holds (`validIntervals`).
 pub fn valid_intervals(valid: &dyn Fn(f64) -> bool, from: f64, to: f64, step: f64, points: &[f64]) -> Vec<(f64, f64)> {
@@ -15,13 +16,13 @@ pub fn valid_intervals(valid: &dyn Fn(f64) -> bool, from: f64, to: f64, step: f6
     let sampled = sampled_intervals(valid, from, to, step);
     let inside = |p: f64| sampled.iter().any(|&(a, b)| p >= a - 1e-9 && p <= b + 1e-9);
     let mut out = sampled.clone();
-    out.extend(
-        points
-            .iter()
-            .copied()
-            .filter(|&p| p >= from && p <= to && !inside(p) && valid(p))
-            .map(|p| (p, p)),
-    );
+    for p in points.iter().copied().filter(|&p| p >= from && p <= to && !inside(p) && valid(p)) {
+        // A point just past a stretch's end, which the millimetre grid fell short of, ends it.
+        match out.iter_mut().find(|(a, b)| (p > *b && p - *b <= GRID + 1e-9) || (p < *a && *a - p <= GRID + 1e-9)) {
+            Some(iv) => *iv = (iv.0.min(p), iv.1.max(p)),
+            None => out.push((p, p)),
+        }
+    }
     out.sort_by(|x, y| (x.0 - y.0).partial_cmp(&0.0).unwrap_or(std::cmp::Ordering::Equal));
     out
 }
@@ -98,11 +99,13 @@ pub fn settle_station(s: f64, intervals: &[(f64, f64)], snaps: &[f64], tol: f64)
     nearest_valid(s, intervals)
 }
 
-/// Stations to a tenth of a millimetre, once each, ascending (`uniqueStations`).
+/// Stations once each, ascending (`uniqueStations`): two within a tenth of a
+/// millimetre are one, and the first of them is kept as it is — a node's own
+/// station, not one rounded off it, so what settles on it leaves no sliver.
 pub fn unique_stations(list: &[f64]) -> Vec<f64> {
     let mut out: Vec<f64> = Vec::new();
-    for s in list.iter().copied().filter(|s| s.is_finite()).map(|s| js_round(s * 1e4) / 1e4) {
-        if !out.contains(&s) {
+    for s in list.iter().copied().filter(|s| s.is_finite()) {
+        if !out.iter().any(|o| (o - s).abs() < UNIQUE_TOL) {
             out.push(s);
         }
     }

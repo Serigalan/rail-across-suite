@@ -357,7 +357,15 @@ pub fn switch_abreast(u: f64, joints: &[f64], from_length: f64, to_length: f64) 
     last + (u - last) * (to_length - last) / (from_length - last)
 }
 
-/// Branch of a switch on the stem chain (`switchBranchChain`).
+/// Branch of a switch on the stem chain (`switchBranchChain`): at every
+/// station the stem's curvature abreast plus the form's. Past the last element
+/// change under the turnout the branch is stretched onto the rest of the stem
+/// (`switch_abreast`). Over an arc there the branch keeps the Ril's bent radius
+/// (`branch_radius`); over a clothoid the stem's curvature is carried over
+/// scaled by the ratio of the two lengths, so the branch turns by exactly the
+/// angle the stem turns beside it and its tangent at WE meets the stem's at the
+/// form's 1:n — a turnout whose WE is a transition's straight end is the plain
+/// turnout there.
 pub fn switch_branch_chain(sections: &[FormSection], stem: &[Route]) -> Vec<Route> {
     let total: f64 = sections.iter().map(|s| s.length).sum();
     let pieces: Vec<Route> = stem.iter().copied().filter(|p| p.length > SLICE_EPS).collect();
@@ -367,6 +375,9 @@ pub fn switch_branch_chain(sections: &[FormSection], stem: &[Route]) -> Vec<Rout
     let through: f64 = pieces.iter().map(|p| p.length).sum();
     let joints = switch_chain_joints(&pieces);
     let abreast = |u: f64| switch_abreast(u, &joints, total, through);
+    let last = joints.iter().copied().filter(|j| *j < total.min(through)).fold(0.0, f64::max);
+    let stretch = if total > last { (through - last) / (total - last) } else { 1.0 };
+    let scale = |u: f64| if u > last + SLICE_EPS { stretch } else { 1.0 };
     let mut starts = Vec::new();
     let mut at = 0.0;
     for s in sections {
@@ -427,7 +438,8 @@ pub fn switch_branch_chain(sections: &[FormSection], stem: &[Route]) -> Vec<Rout
             out.push(switch_branch_route(section.signed_r, &piece, u1 - u0));
             continue;
         }
-        let k_stem = |u: f64| along(curvature_of(piece.r1), curvature_of(piece.r2), piece.length, abreast(u) - s0);
+        let k = if switch_route_varies(&piece) { scale(mid) } else { 1.0 };
+        let k_stem = |u: f64| k * along(curvature_of(piece.r1), curvature_of(piece.r2), piece.length, abreast(u) - s0);
         let k_form = |u: f64| {
             if section_varies {
                 along(

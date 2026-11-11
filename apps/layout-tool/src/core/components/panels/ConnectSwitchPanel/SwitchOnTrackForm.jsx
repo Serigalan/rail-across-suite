@@ -45,6 +45,9 @@ import { splitUnit } from '../../../locales/i18n'
 // Display only — the stored values keep their full precision.
 const fmtR    = (r) => (r == null ? '∞' : `${Math.round(r)} m`)
 const fmtCant = (u) => String(Math.round(u))
+// A station as the dialog keeps it: to the tenth of a micrometre the positions
+// are kept to, so a snap onto an element change stays on it.
+const roundStation = (s) => Math.round(s * 1e7) / 1e7
 // A distance along the track: whole metres as such, else to the centimetre.
 const fmtM = (d) => (Math.abs(d - Math.round(d)) < 5e-3 ? String(Math.round(d)) : d.toFixed(2))
 
@@ -87,6 +90,7 @@ export default function SwitchOnTrackForm({ onCommitted }) {
   const [switchTypeIdx, setTypeIdx] = useState(DEFAULT_SWITCH_TYPE_IDX)
   const [side, setSide]             = useState('left')
   const [reversed, setReversed]     = useState(false)  // switch opens against the track direction
+  const [snap, setSnap]             = useState('toe')  // what the slider snaps onto an element change: toe, end, technical
   const [speed, setSpeed]           = useState(SWITCH_PICK_TYPES[DEFAULT_SWITCH_TYPE_IDX].speed)
   // Cant follows speed/switch type unless the user overrode it for exactly that
   // combination — derived instead of set from an effect.
@@ -111,18 +115,18 @@ export default function SwitchOnTrackForm({ onCommitted }) {
       setErrors([])
       // The click is projected onto the element in the track's own plane and
       // stated as a station along the whole track, which the turnout is placed by.
-      // It snaps as the slider does — onto WA or WE on an element change
-      // within a metre, else the nearest station where the turnout may lie
-      // (Entscheidungen 309–310).
+      // It snaps as the slider does — onto WA, WE or the technical end on an
+      // element change within a metre, else the nearest station where the
+      // turnout may lie (Entscheidungen 309–310).
       const clickUtm = wgs84ToUTM([e.lngLat.lng, e.lngLat.lat], track.epsg)
       const clicked  = Math.round(clickStation(track, elIdx, clickUtm) * 1000) / 1000
       const sw = SWITCH_PICK_TYPES[switchTypeIdx]
-      const range = switchOnTrackSlider({ track, reversed, sw, side, speed, straightLen: switchStraightLength(sw) }, clicked)
+      const range = switchOnTrackSlider({ track, reversed, sw, side, speed, snap, straightLen: switchStraightLength(sw) }, clicked)
       begin({ trackId, clicked })
       // The branch lies at the height datum of the track it leaves (Entscheidung 311).
       setField('heightEpsg', String(track.heightEpsg ?? DEFAULT_HEIGHT_EPSG))
       const at = settleStation(clicked, { ...range, tol: 1 })
-      setStation(String(at == null ? clicked : Math.round(at * 1e4) / 1e4))
+      setStation(String(at == null ? clicked : roundStation(at)))
     },
   })
 
@@ -134,22 +138,24 @@ export default function SwitchOnTrackForm({ onCommitted }) {
   const arcLen      = switchBranchLength(sw)
 
   // ── The slider: the stretches of the track where the turnout lies and
-  // keeps the minimum element length on both sides of WA, and where WA or
-  // WE fall on an element change (Entscheidungen 217, 301, 309–310) ─────────
+  // keeps the minimum element length on both sides of WA and of WE, and where
+  // the point chosen to snap — WA, WE or the technical end — falls on an
+  // element change, exactly there (Entscheidungen 217, 301, 309–310) ────────
   const slider = useMemo(() => (track
-    ? switchOnTrackSlider({ track, reversed, sw, side, speed, straightLen }, pick.clicked)
-    : { intervals: [], snaps: [] }), [track, pick, reversed, sw, side, speed, straightLen])
-  const remnant = track && Number.isFinite(toeStation) ? switchOnTrackRemnant(track, toeStation, reversed, speed) : null
+    ? switchOnTrackSlider({ track, reversed, sw, side, speed, snap, straightLen }, pick.clicked)
+    : { intervals: [], snaps: [] }), [track, pick, reversed, sw, side, speed, snap, straightLen])
+  const remnant = track && Number.isFinite(toeStation)
+    ? switchOnTrackRemnant(track, toeStation, reversed, speed, straightLen) : null
 
   // A setting that changes where the turnout may lie keeps the toe where it
   // is while it still may stand there, else moves it to the nearest place it may.
   const settle = (next) => {
     if (!track || !Number.isFinite(toeStation)) return
     const nextSw = next.sw ?? sw
-    const args = { track, reversed, sw, side, speed, ...next, straightLen: switchStraightLength(nextSw) }
+    const args = { track, reversed, sw, side, speed, snap, ...next, straightLen: switchStraightLength(nextSw) }
     if (switchOnTrackToeValid(args, toeStation)) return
     const to = nearestValid(toeStation, switchOnTrackSlider(args, pick.clicked).intervals)
-    if (to != null) setStation(String(Math.round(to * 1e4) / 1e4))
+    if (to != null) setStation(String(roundStation(to)))
   }
 
   // Where the turnout lies and the geometry it produces — derived, so the
@@ -268,11 +274,24 @@ export default function SwitchOnTrackForm({ onCommitted }) {
       l: remnant.runAhead.toFixed(2), lmin: remnant.lMin.toFixed(2), v: String(remnant.speed),
     })
     : null
-  const remnantUnchecked = !placeError && remnant && remnant.lMin == null && (remnant.length > 0 || remnant.ahead > 0)
+  // At WE: the piece of its element under the turnout, and the piece left beyond it.
+  const end = !placeError && !remnantErr && !aheadErr ? remnant?.end : null
+  const underErr = end?.shortUnder
+    ? fill('switch_on_track_min_element_short_under', {
+      l: end.runUnder.toFixed(2), lmin: remnant.lMin.toFixed(2), v: String(remnant.speed),
+    })
+    : null
+  const beyondErr = end?.shortBeyond && !underErr
+    ? fill('switch_on_track_min_element_short_beyond', {
+      l: end.runBeyond.toFixed(2), lmin: remnant.lMin.toFixed(2), v: String(remnant.speed),
+    })
+    : null
+  const remnantUnchecked = !placeError && remnant && remnant.lMin == null
+    && (remnant.length > 0 || remnant.ahead > 0 || remnant.end?.under > 0 || remnant.end?.beyond > 0)
   const cantErr = switchCantError(worstCant, cantReason)
   const defErr  = cantDef > MAX_SWITCH_CANT_DEF || (stemDef ?? 0) > MAX_SWITCH_CANT_DEF
   // What only the rulebook holds back may be committed all the same.
-  const ruleBlocked = !!(remnantErr || aheadErr || cantErr || defErr)
+  const ruleBlocked = !!(remnantErr || aheadErr || underErr || beyondErr || cantErr || defErr)
 
   if (phase === 'select') {
     return (
@@ -294,6 +313,12 @@ export default function SwitchOnTrackForm({ onCommitted }) {
         <StationSlider label={splitUnit(t('switch_on_track_station')).text} value={station} onChange={setStation}
           intervals={slider.intervals} snaps={slider.snaps}
           hint={remnant ? fill('switch_on_track_wa_after_joint', { d: fmtM(remnant.length) }) : null} />
+        <div className="form-field">
+          <label>{t('switch_on_track_snap')}</label>
+          <select value={snap} onChange={e => setSnap(e.target.value)}>
+            {['toe', 'end', 'technical'].map(k => <option key={k} value={k}>{t(`switch_on_track_snap_${k}`)}</option>)}
+          </select>
+        </div>
         <SwitchFormField value={switchTypeIdx} onChange={i => {
           settle({ sw: SWITCH_PICK_TYPES[i], speed: SWITCH_PICK_TYPES[i].speed }); setTypeIdx(i); setSpeed(SWITCH_PICK_TYPES[i].speed)
         }} />
@@ -346,11 +371,13 @@ export default function SwitchOnTrackForm({ onCommitted }) {
       {slider.intervals.length === 0 && <p className="form-error">{t('switch_on_track_no_stop')}</p>}
       {remnantErr && <p className="form-error">{remnantErr}</p>}
       {aheadErr && <p className="form-error">{aheadErr}</p>}
+      {underErr && <p className="form-error">{underErr}</p>}
+      {beyondErr && <p className="form-error">{beyondErr}</p>}
       {remnantUnchecked && <p className="msg-hint">{t('switch_on_track_min_element_unchecked')}</p>}
       {cantErr && <p className="form-error">{t(`switch_cant_error_${cantErr}`)}</p>}
       {defErr  && <p className="form-error">{t('switch_cant_def_error')}</p>}
 
-      <CommitBar onCommit={handleCommit} onCancel={handleCancel} reason={firstReason(lineNumberError && t(`line_number_error_${lineNumberError}`), placeError, remnantErr, aheadErr, cantErr && t(`switch_cant_error_${cantErr}`), defErr && t('switch_cant_def_error'))}
+      <CommitBar onCommit={handleCommit} onCancel={handleCancel} reason={firstReason(lineNumberError && t(`line_number_error_${lineNumberError}`), placeError, remnantErr, aheadErr, underErr, beyondErr, cantErr && t(`switch_cant_error_${cantErr}`), defErr && t('switch_cant_def_error'))}
         onOverride={ruleBlocked && !lineNumberError && !placeError && g && place ? () => handleCommit(true) : null} className="" />
     </>
   )

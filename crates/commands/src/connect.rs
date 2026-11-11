@@ -81,6 +81,7 @@ fn route_end_at(track: &Value, reversed: bool, sw: &Value, side: &str, x: f64) -
         side,
         straight_len: switch_straight_length(sw),
         speed: None,
+        snap: None,
     };
     let (utm, bearing, k) = switch_on_track_route_end(&a, x)?;
     Some(PortAt {
@@ -99,6 +100,7 @@ fn route_end_full(track: &Value, reversed: bool, sw: &Value, side: &str, x: f64)
         side,
         straight_len: switch_straight_length(sw),
         speed: None,
+        snap: None,
     };
     let p = switch_on_track_placement(&a, Some(x)).ok().flatten()?;
     let g = &p.geom;
@@ -333,7 +335,7 @@ pub fn switch_connect_outcome(o: &Value) -> Value {
         Utm::from_json(&s["at"]["port"]),
         f(o, "speedLimit"),
     );
-    out["remnant"] = switch_on_track_remnant(&o["track"], js_number(s.get("x")), truthy(s.get("reversed")), f(o, "speed"));
+    out["remnant"] = switch_on_track_remnant(&o["track"], js_number(s.get("x")), truthy(s.get("reversed")), f(o, "speed"), Some(switch_straight_length(&o["sw"])));
     out
 }
 
@@ -356,6 +358,7 @@ pub fn build_switch_connect(o: &Value) -> Value {
         side,
         straight_len,
         speed: None,
+        snap: None,
     };
     let Some(p) = switch_on_track_placement(&a, Some(x)).ok().flatten() else {
         return Value::Null;

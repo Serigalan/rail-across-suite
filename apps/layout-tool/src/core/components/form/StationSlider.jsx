@@ -3,7 +3,9 @@ import { settleStation } from '@rail-across/core/switch'
 import { formatNum } from '../../locales/i18n'
 import { useI18n } from '../../locales/i18nContext'
 
-const round = (s) => String(Math.round(s * 1e4) / 1e4)
+// To the tenth of a micrometre positions are kept to: a snap onto an element
+// change stays exactly on it, and leaves no sliver of the element.
+const round = (s) => String(Math.round(s * 1e7) / 1e7)
 
 /**
  * Where a turnout or crossing lies along its track (Entscheidungen 309–311):
@@ -43,7 +45,7 @@ export default function StationSlider({ label, value, onChange, intervals, snaps
             {ticks.map(p => (
               <button key={p} type="button" className="station-slider-tick"
                 style={{ left: `${(p - min) / (max - min) * 100}%` }}
-                title={`${formatNum(round(p), language)} m`} aria-label={`${label}: ${formatNum(round(p), language)} m`}
+                title={`${formatNum(Math.round(p * 1e4) / 1e4, language)} m`} aria-label={`${label}: ${formatNum(Math.round(p * 1e4) / 1e4, language)} m`}
                 onClick={() => onChange(round(p))} />
             ))}
           </div>

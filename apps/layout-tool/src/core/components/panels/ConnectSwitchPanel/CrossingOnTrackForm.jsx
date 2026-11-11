@@ -98,7 +98,7 @@ export default function CrossingOnTrackForm({ onCommitted, initialKind = 'crossi
       const at = settleStation(clicked, { ...crossingOnTrackSlider({ track, endDist, form, crossAngle }, clicked), tol: 1 })
       begin({ trackId, clicked })
       setField('heightEpsg', String(track.heightEpsg ?? DEFAULT_HEIGHT_EPSG))
-      setStation(String(at == null ? clicked : Math.round(at * 1e4) / 1e4))
+      setStation(String(at == null ? clicked : Math.round(at * 1e7) / 1e7))
     },
   })
 

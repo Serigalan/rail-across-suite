@@ -50,8 +50,12 @@ Regellänge and Mindestlänge with the governing rule and its formula.
 
 **Switch on track** (`switches.rs`): the toe position is a station on the track; the turnout may reach over
 several elements; the pieces of element left before the toe and from the toe to the next node in the
-opening direction must be zero or at least `l_min` (LP.EL.01 at the speed of the *diverging* track, from
-40 km/h). The new branch track takes the stem track's height datum. Switch records get the lowest free
+opening direction, and at the switch end the piece of its element under the turnout and the piece left
+beyond it, must be zero or at least `l_min` (LP.EL.01 at the speed of the *diverging* track, from
+40 km/h; a piece runs on into the elements of the same geometry next to it). The slider snaps the point the
+dialog names — the toe (WA), the switch end (WE) or the technical end (`switch_technical_end`: where the
+branch's last curved section ends, WE for a branch curved to its end) — onto an element change, exactly
+there. The new branch track takes the stem track's height datum. Switch records get the lowest free
 number. A crossing needs straight track either side of its crossing point.
 
 **Switch connection** (`scurve.rs`): the slider sets the toe of the first turnout as a station on track 1

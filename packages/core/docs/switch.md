@@ -30,7 +30,7 @@ catalogue as the pickers list it and the constants (`constants.js`) stay JavaScr
 | `crates/switch/src/connection.rs` (Rust; the solvers of the dialogs moved there with decision 0020, step 10, called through `index.js`) | The switch connection: two turnouts facing each other on two tracks and the element(s) between them |
 | `crates/switch/src/mid_chain.rs` (Rust) | One to three elements between the two branches of a switch connection, two of their values sought |
 | `crates/switch/src/connect.rs` (Rust) | Connecting a turnout's branch or a crossing's leg to an open track end by refitting the element there, or the last two laid anew |
-| `crates/switch/src/slider.rs` (Rust) | The valid stretches and snap points of the position slider |
+| `crates/switch/src/slider.rs` (Rust) | The valid stretches and snap points of the position slider — a snap point is a node's own station, not one rounded off it, so a turnout settled on it leaves no sliver of an element |
 | `crates/switch/src/delete.rs` | Which routes stay as ordinary track when a switch is deleted, and the plan for doing it |
 | `crates/switch/src/rulebook.rs` | The form tables grouped for the rulebook viewer |
 
@@ -106,7 +106,15 @@ on the stem's curvature read a few centimetres short of WE (500.21 m in the user
 `switchBranchChain` takes is therefore the track from WA to WE, the through length long.
 
 On a stem of constant curvature that is one radius (`branchRadius`); on a clothoid stem the sum still runs
-linearly in s, so the branch is a clothoid again (`switchBranchChain`). The result
+linearly in s, so the branch is a clothoid again (`switchBranchChain`).
+
+**The turnout angle.** Where the stretched rest of the branch lies over a clothoid, the stem's curvature is
+carried over scaled by the ratio of the two lengths, `(through − last) / (branch − last)`: the branch then turns
+by exactly the angle the stem turns beside it, and its tangent at WE meets the stem's at the form's 1:n. A
+300 – 1:9 laid into a transition whose straight end is WE is the plain turnout there — R 300 and 1:9 to the
+straight; unscaled it came out 1:9.0015. Over an arc the branch keeps the Ril's bent radius
+`1/R = 1/R_stem + 1/R_form` (a 300 – 1:9 in R 900 is R 225), and its tangent at WE meets the stem's at the
+form's angle plus `(branch − through)/R_stem` — a few hundredths of a millimetre per metre. The result
 is the bauform: `plain` (straight stem), `ibw` (inner-bent: branch and stem turn the same way), `abw`
 (outer-bent) or `abw_straight` — the limiting case where the branch comes out straight. That case is built
 as the plain form with its routes swapped (`swapped: true`, see `track`): the curved line is the branch,

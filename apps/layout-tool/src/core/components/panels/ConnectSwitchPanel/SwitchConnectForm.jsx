@@ -241,6 +241,16 @@ export default function SwitchConnectForm({ onCommitted }) {
       l: remnant.runAhead.toFixed(2), lmin: remnant.lMin.toFixed(2), v: String(remnant.speed),
     }))
   }
+  if (remnant?.end?.shortUnder) {
+    rules.push(fill('switch_on_track_min_element_short_under', {
+      l: remnant.end.runUnder.toFixed(2), lmin: remnant.lMin.toFixed(2), v: String(remnant.speed),
+    }))
+  }
+  if (remnant?.end?.shortBeyond) {
+    rules.push(fill('switch_on_track_min_element_short_beyond', {
+      l: remnant.end.runBeyond.toFixed(2), lmin: remnant.lMin.toFixed(2), v: String(remnant.speed),
+    }))
+  }
   if (outcome?.ruleError) rules.push(t('switch_connect_rule_error'))
   const cantErr = switchCantError(worstCant, cantReason)
   if (cantErr) rules.push(t(`switch_cant_error_${cantErr}`))

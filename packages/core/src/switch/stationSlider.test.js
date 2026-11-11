@@ -23,7 +23,9 @@ describe('the position slider', () => {
     expect(settleStation(49.5, { intervals: iv, snaps: [50], tol: 1 })).toBe(40)
   })
 
-  it('states snap points once each, ascending', () => {
-    expect(uniqueStations([3, 1.00001, 1.000012, NaN, 2])).toEqual([1, 2, 3])
+  it('states snap points once each, ascending — the first of two within 0.1 mm, as it is', () => {
+    expect(uniqueStations([3, 1.00001, 1.000012, NaN, 2])).toEqual([1.00001, 2, 3])
+    // A node's own station, not one rounded off it: what settles on it leaves no sliver.
+    expect(uniqueStations([470.81838944, 470.8184])).toEqual([470.81838944])
   })
 })

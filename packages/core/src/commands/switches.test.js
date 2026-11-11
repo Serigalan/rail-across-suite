@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { switchOnTrackPlacement, switchOnTrackRemnant, switchOnTrackSlider, switchOnTrackToeValid } from './index.js'
 import { viaRust } from '../native/index.js'
 import { arcFrom, straightFrom } from '../geometry/elementFactory.js'
-import { SWITCH_TYPES, switchStraightLength } from '../switch/index.js'
+import { ALL_SWITCH_TYPES, SWITCH_TYPES, switchStraightLength } from '../switch/index.js'
 
 // Steps of the commands, as the module runs them (not part of the face).
 const switchOnTrackRouteEnd = viaRust('commands.switchOnTrackRouteEnd')
@@ -66,7 +66,30 @@ describe('switch on track — the piece before the toe (LP.EL.01)', () => {
     expect(switchOnTrackRemnant(line, 110, false, 100)).toMatchObject({ length: 10, run: 110, short: false })
     // Ahead, 10 m to the node and the next straight beyond it.
     expect(switchOnTrackRemnant(line, 90, false, 100)).toMatchObject({ ahead: 10, runAhead: 110, shortAhead: false })
-    expect(switchOnTrackSlider(argsOf(line)).intervals).toHaveLength(1)
+    // At WE, too: the piece beyond it is held to l_min up to the track's end.
+    const L = switchStraightLength(FORM)
+    const mm = (x) => Math.round(x * 1e3) / 1e3
+    expect(switchOnTrackSlider(argsOf(line)).intervals.map(([a, b]) => [mm(a), mm(b)]))
+      .toEqual([[15, mm(185 - L)], [mm(200 - L), mm(200 - L)]])
+  })
+
+  it('at WE, the piece of its element under the turnout and the piece left beyond it', () => {
+    const L = switchStraightLength(FORM)
+    // WE 10 m into the arc: 10 m under the turnout, 90 m beyond.
+    expect(switchOnTrackRemnant(track, 110 - L, false, 100, L).end)
+      .toMatchObject({ elIdx: 1, under: 10, beyond: 90, shortUnder: true, shortBeyond: false })
+    // WE 10 m before the end of the straight: one piece under it with WA, 10 m left beyond.
+    expect(switchOnTrackRemnant(track, 90 - L, false, 100, L).end)
+      .toMatchObject({ elIdx: 0, under: 0, beyond: 10, shortBeyond: true })
+    // WE on the element change: nothing left on either side.
+    expect(switchOnTrackRemnant(track, 100 - L, false, 100, L).end).toMatchObject({ under: 0, beyond: 0, shortUnder: false, shortBeyond: false })
+    // Opening against the track, WE lies behind WA: 10 m beyond it towards the straight's start.
+    const back = switchOnTrackRemnant(track, 10 + L, true, 100, L).end
+    expect(back).toMatchObject({ elIdx: 0, shortBeyond: true })
+    expect(back.beyond).toBeCloseTo(10, 9)
+    // A sliver beyond WE is never a place to stand.
+    expect(switchOnTrackToeValid(argsOf(track), 100 - L + 2.5e-5)).toBe(false)
+    expect(switchOnTrackToeValid(argsOf(track), 100 - L)).toBe(true)
   })
 
   it('takes the speed of the diverging track, not the element\'s (Entscheidung 219)', () => {
@@ -80,17 +103,17 @@ describe('switch on track — what the slider runs over', () => {
   const track = twoStraights(100)
   const room = 200 - switchStraightLength(FORM)
 
-  it('the stretches where the turnout lies and keeps l_min on both sides of WA (Entscheidungen 301, 309)', () => {
+  it('the stretches where the turnout lies and keeps l_min on both sides of WA and WE (Entscheidungen 301, 309)', () => {
+    const L = switchStraightLength(FORM)
     const { intervals } = switchOnTrackSlider(argsOf(track))
-    expect(intervals).toHaveLength(3)
-    const [a, node, b] = intervals
-    expect(a[0]).toBeCloseTo(15, 2)
-    expect(a[1]).toBeCloseTo(85, 2)
-    // The element change itself: no piece on either side.
-    expect(node[0]).toBeCloseTo(100, 2)
-    expect(node[1]).toBeCloseTo(100, 2)
-    expect(b[0]).toBeCloseTo(115, 2)
-    expect(b[1]).toBeLessThanOrEqual(room + 1e-2)
+    // WA: 15 m from the track's begin and from the element change. WE: 15 m
+    // from the element change and the track's end — or on either of them.
+    const expected = [[15, 85 - L], [100 - L, 100 - L], [115 - L, 85], [100, 100], [115, 185 - L], [room, room]]
+    expect(intervals).toHaveLength(expected.length)
+    intervals.forEach(([a, b], i) => {
+      expect(a).toBeCloseTo(expected[i][0], 2)
+      expect(b).toBeCloseTo(expected[i][1], 2)
+    })
     for (const [x, y] of intervals) {
       expect(switchOnTrackToeValid(argsOf(track), x)).toBe(true)
       expect(switchOnTrackToeValid(argsOf(track), y)).toBe(true)
@@ -101,6 +124,8 @@ describe('switch on track — what the slider runs over', () => {
     const { intervals } = switchOnTrackSlider(argsOf(track, false, 30))
     expect(intervals).toHaveLength(1)
     expect(intervals[0][0]).toBeLessThan(1)
+    // Up to WE on the track's end, exactly.
+    expect(intervals[0][1]).toBe(room)
   })
 
   it('runs 50 m either side of the clicked station (Entscheidung 313)', () => {
@@ -115,12 +140,25 @@ describe('switch on track — what the slider runs over', () => {
     expect(switchOnTrackSlider(argsOf(track), 20).intervals.at(-1)[1]).toBeLessThanOrEqual(70)
   })
 
-  it('snaps where WA or WE fall on an element change (Entscheidung 310)', () => {
+  it('snaps where WA or WE fall on an element change (Entscheidung 310) — exactly there', () => {
     const L = switchStraightLength(FORM)
     const { snaps } = switchOnTrackSlider(argsOf(track))
-    for (const s of [0, 100, 200, 100 - L, 200 - L]) expect(snaps).toContain(Math.round(s * 1e4) / 1e4)
+    for (const s of [0, 100, 200, 100 - L, 200 - L]) expect(snaps).toContain(s)
     // Opening against the track, WE lies behind WA in the track's direction.
-    expect(switchOnTrackSlider(argsOf(track, true)).snaps).toContain(Math.round((100 + L) * 1e4) / 1e4)
+    expect(switchOnTrackSlider(argsOf(track, true)).snaps).toContain(100 + L)
+  })
+
+  it('snaps onto what the dialog asks for: WA, WE or the technical end', () => {
+    const L = switchStraightLength(FORM)
+    const snapsOf = (snap, sw = FORM) => switchOnTrackSlider({ ...argsOf(track), sw, straightLen: switchStraightLength(sw), snap }).snaps
+    expect(snapsOf('toe')).toEqual([0, 100, 200])
+    expect(snapsOf('end')).toEqual([-L, 100 - L, 200 - L])
+    // Curved to its end, its technical end is WE.
+    expect(snapsOf('technical')).toEqual(snapsOf('end'))
+    // With a straight end piece it is where the arc ends — its length from WA.
+    const form = ALL_SWITCH_TYPES.find(f => f.label === '500 – 1:14')
+    const arc = form.R * Math.atan(1 / form.ratio)
+    expect(snapsOf('technical', form).map(s => Math.round(s * 1e9) / 1e9)).toEqual([-arc, 100 - arc, 200 - arc].map(s => Math.round(s * 1e9) / 1e9))
   })
 })
 

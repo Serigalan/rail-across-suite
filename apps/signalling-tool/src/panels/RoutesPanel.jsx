@@ -212,6 +212,23 @@ export default function RoutesPanel({
       </Panel>
     )
   }
+  if (page === 'times') {
+    const times = domain.fields.routeTimes ?? {}
+    const setTime = (key, v) => {
+      const next = { ...times, [key]: v ?? undefined }
+      const kept = Object.fromEntries(Object.entries(next).filter(([, x]) => x != null))
+      const { routeTimes: _r, ...fields } = domain.fields
+      ops.replaceAll({ fields: Object.keys(kept).length ? { ...fields, routeTimes: kept } : fields, collections: {} })
+    }
+    return (
+      <Panel title={t('route_times')} intro={t('route_times_hint')} back={back}>
+        <div className="ui-fields">
+          <NumberField compact label={t('route_setting_time')} value={times.setting ?? null} min={0} disabled={readOnly} onChange={(v) => setTime('setting', v)} />
+          <NumberField compact label={t('route_release_time')} value={times.release ?? null} min={0} disabled={readOnly} onChange={(v) => setTime('release', v)} />
+        </div>
+      </Panel>
+    )
+  }
   if (page === 'speeds') {
     return (
       <Panel title={t('speed_ranges')} intro={t('speed_ranges_intro')} back={back}>
@@ -254,6 +271,7 @@ export default function RoutesPanel({
         <Option icon={<RouteIcon />} end={routes.length} onClick={() => setPage('routes')}>{t('section_routes')}</Option>
         <Option icon={<OverlapIcon />} end={overlaps.length} onClick={() => setPage('overlaps')}>{t('overlaps')}</Option>
         <Option icon={<SpeedIcon />} disabled={!routes.length} onClick={() => setPage('speeds')}>{t('speed_ranges')}</Option>
+        <Option icon={<RouteIcon />} onClick={() => setPage('times')}>{t('route_times')}</Option>
         {!readOnly && <Option icon={<RouteIcon />} disabled={!routes.length} onClick={takeElementSpeeds}>{t('take_element_speeds')}</Option>}
       </Options>
     </Panel>
@@ -347,6 +365,11 @@ function RouteEditor({ route, name, domain, net, findings, extents, signalOption
         {route.kind === 'train' && <SelectField compact label={t('train_type')} value={route.trainType ?? null} empty={t('none')} options={optionsOf(TRAIN_TYPE, language)} disabled={readOnly} onChange={(v) => set({ trainType: v ?? undefined })} />}
         {route.kind === 'shunting' && <SelectField compact label={t('shunting_type')} value={route.shuntingType ?? null} empty={t('none')} options={optionsOf(SHUNTING_TYPE, language)} disabled={readOnly} onChange={(v) => set({ shuntingType: v ?? undefined })} />}
         <NumberField compact label={t('rank')} value={route.rank ?? null} min={0} step={1} disabled={readOnly} onChange={(v) => set({ rank: v ?? undefined })} />
+        {/* The blocking time's parts that are the interlocking's (signalling 2.0); without, the domain's. */}
+        <NumberField compact label={t('route_setting_time')} value={route.settingTime ?? null} min={0} disabled={readOnly}
+          placeholder={domain.fields.routeTimes?.setting != null ? String(domain.fields.routeTimes.setting) : ''} onChange={(v) => set({ settingTime: v ?? undefined })} />
+        <NumberField compact label={t('route_release_time')} value={route.releaseTime ?? null} min={0} disabled={readOnly}
+          placeholder={domain.fields.routeTimes?.release != null ? String(domain.fields.routeTimes.release) : ''} onChange={(v) => set({ releaseTime: v ?? undefined })} />
         <TextField compact wide label={t('name')} value={route.name ?? ''} disabled={readOnly} onChange={(v) => set({ name: v || undefined })} />
       </div>
       <Section title={t('route_speed')}>

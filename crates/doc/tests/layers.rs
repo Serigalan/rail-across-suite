@@ -109,3 +109,11 @@ fn the_electrification_its_own_layer() {
     empty["electrification"] = json!({ "fields": {}, "collections": { "electrifications": [] } });
     assert_eq!(domains(&to_document(&empty, false, true).unwrap()), ["core", "civil"]);
 }
+
+#[test]
+fn a_boundary_keeps_its_headway() {
+    let doc = check_document(&case("a boundary's headway")).unwrap();
+    let record = document_to_record(&doc).unwrap();
+    assert_eq!(record["endMarks"][0]["headway"], 120);
+    assert_eq!(to_document(&record, false, true).unwrap(), doc);
+}

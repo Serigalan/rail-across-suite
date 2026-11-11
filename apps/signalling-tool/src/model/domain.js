@@ -15,7 +15,7 @@ import { CATALOGUE_REF, baliseKindOf, protectionSystemOf, signalKindOf, signalli
 
 const COLLECTIONS = [
   'signals', 'detectionPoints', 'trackSections', 'switchElements', 'routes', 'overlaps', 'flankProtection', 'balises',
-  'stationBoundaries', 'stoppingPlaces', 'itineraries',
+  'stationBoundaries', 'stoppingPlaces', 'itineraries', 'trainProtection',
 ]
 
 /**

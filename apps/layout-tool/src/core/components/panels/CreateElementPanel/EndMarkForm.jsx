@@ -93,6 +93,7 @@ export default function EndMarkForm({ onCommitted, edit = false, kind = BUFFER_S
   const [brake, setBrake]       = useState(String(defaultBrakeLength(DEFAULT_BUFFER_STOP_TYPE)))
   const [brakeTyped, setBrakeTyped] = useState(false)
   const [speed, setSpeed]       = useState('')
+  const [headway, setHeadway]   = useState('')
 
   const preview = usePreview(PREVIEW_LAYERS, { resetCursor: true })
 
@@ -104,7 +105,9 @@ export default function EndMarkForm({ onCommitted, edit = false, kind = BUFFER_S
   const tooShort = !boundary && !brakeInvalid && track && !bufferStopFits(have, brakeValue)
   const speedValue = numberOf(speed, null)
   const speedInvalid = boundary && speedValue != null && !(Number.isFinite(speedValue) && speedValue > 0)
-  const invalid = brakeInvalid || tooShort || speedInvalid
+  const headwayValue = numberOf(headway, null)
+  const headwayInvalid = boundary && headwayValue != null && !(Number.isFinite(headwayValue) && headwayValue >= 0)
+  const invalid = brakeInvalid || tooShort || speedInvalid || headwayInvalid
 
   // The dots, the one under the cursor or picked drawn larger.
   useEffect(() => {
@@ -151,6 +154,7 @@ export default function EndMarkForm({ onCommitted, edit = false, kind = BUFFER_S
       const existing = edit ? loadEndMarks().find(mk => mk.id === end.markId) : null
       setName(existing?.name ?? '')
       setSpeed(existing?.speed != null ? String(existing.speed) : '')
+      setHeadway(existing?.headway != null ? String(existing.headway) : '')
       if (existing && !boundary) {
         setType(existing.type ?? DEFAULT_BUFFER_STOP_TYPE)
         setBrake(String(existing.brakeLength ?? 0))
@@ -177,11 +181,12 @@ export default function EndMarkForm({ onCommitted, edit = false, kind = BUFFER_S
 
   // A name left empty is the one proposed: it is not stored, and follows the track's.
   const named = (record) => {
-    const { name: _n, speed: _s, ...rest } = record
+    const { name: _n, speed: _s, headway: _h, ...rest } = record
     return {
       ...rest,
       ...(name.trim() ? { name: name.trim() } : {}),
       ...(boundary && speedValue != null ? { speed: speedValue } : {}),
+      ...(boundary && headwayValue != null ? { headway: headwayValue } : {}),
     }
   }
 
@@ -236,6 +241,9 @@ export default function EndMarkForm({ onCommitted, edit = false, kind = BUFFER_S
               <label>{splitUnit(t('boundary_speed')).text}<InfoTip text={t('boundary_speed_hint')} /></label>
               <NumberInput min="0" step="5" value={speed} onChange={e => setSpeed(e.target.value)} unit="km/h"
                 placeholder={t('boundary_speed_line')} />
+              <label>{splitUnit(t('boundary_headway')).text}<InfoTip text={t('boundary_headway_hint')} /></label>
+              <NumberInput min="0" step="10" value={headway} onChange={e => setHeadway(e.target.value)} unit="s"
+                placeholder={t('boundary_headway_none')} />
             </div>
           ) : (
             <>
@@ -262,6 +270,7 @@ export default function EndMarkForm({ onCommitted, edit = false, kind = BUFFER_S
         })}</p>
       )}
       {picked && speedInvalid && <p className="form-error">{t('boundary_speed_invalid')}</p>}
+      {picked && headwayInvalid && <p className="form-error">{t('boundary_headway_invalid')}</p>}
 
       {picked && mark && (
         <button className="ui-btn ui-btn-danger ui-btn-block" onClick={handleDelete}>

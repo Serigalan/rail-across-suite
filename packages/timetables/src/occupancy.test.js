@@ -4,7 +4,7 @@ import { newVehicle } from '@rail-across/vehicles'
 import { runWith, stationsOf } from '@rail-across/running-times'
 import { net, WASM } from '../../running-times/test/net.js'
 import { newPoint, newTrain, parseClock, runTrain } from './timetable.js'
-import { blockingTimes, blocksAlong, byPriority, conflictsOf, DISPATCH, dispatchOf, occupancy } from './occupancy.js'
+import { blockingTimes, blocksAlong, byPriority, conflictsOf, DISPATCH, dispatchOf, occupancy, withHeadways } from './occupancy.js'
 
 // The test net with main signals the way A-Dorf → C-Stadt runs: A-Dorf's exit, a block signal on the line, C-Stadt's entry.
 const ks = [{ system: 'ks', type: 'multiSection', function: 'exit', frames: [] }]
@@ -51,6 +51,62 @@ describe('the blocks of a way', () => {
     const other = { index: 0, begin: 100, end: 300, stretches: [{ trackId: 'L', lo: 300, hi: 700 }], sections: [{ id: 'S1', to: 0, end: 300 }], free: [] }
     expect(conflictsOf([timed], [{ id: 'x', blocks: [other], begin: 100, end: 300 }])).toEqual([{ block: 1, other: 'x', otherBlock: 0, section: 'S1', begin: 100, end: 116, until: 300 }])
     expect(conflictsOf([timed], [{ id: 'x', blocks: [{ ...other, begin: 120 }], begin: 120, end: 300 }])).toEqual([])
+  })
+
+  it('takes the times to set and release a route and an overlap\'s release from the signalling, the timetable\'s where it says none', () => {
+    const path = [{ trackId: 'A1', start: 200, end: 500 }, { trackId: 'L', start: 0, end: 2500 }, { trackId: 'C1', start: 0, end: 400 }]
+    const timed = {
+      ...signalled,
+      signalling: {
+        fields: { routeTimes: { setting: 8 } },
+        collections: {
+          ...signalled.signalling.collections,
+          routes: [{ id: 'r', kind: 'train', startSignalId: 'N1', targetSignalId: 'B', settingTime: 20, releaseTime: 3 }],
+          overlaps: [{ id: 'd', signalId: 'B', length: 100, releaseDelay: 30 }],
+        },
+      },
+    }
+    const blocks = blocksAlong(timed, path)
+    expect(blocks.map(b => [b.setting, b.release, b.overlapRelease])).toEqual([[null, null, null], [20, 3, 30], [8, null, null], [8, null, null]])
+    // At 10 m/s, 100 m long: the block from N1 is asked for 1000 m before it — at once —, less its own 20 s.
+    const clock = { at0: 0, first: (x) => x / 10, standstills: [], length: 3200, end: 400 }
+    const [first, own, next] = blockingTimes(blocks, clock, 100, { setup: 12, approach: 1000, release: 6 })
+    expect(first.begin).toBe(-12)
+    expect(own.begin).toBe(-20)
+    expect(own.end).toBe(140 + 3)
+    // B is asked for where N1, a multi-section signal, announces it: 250 m along.
+    expect(next.begin).toBe(25 - 8)
+    expect(next.end).toBe(280 + 6)
+  })
+
+  it('asks for a block where its signal is announced: within sight of the distant signal, or of the main signal before showing Ks 2', () => {
+    const path = [{ trackId: 'A1', start: 200, end: 500 }, { trackId: 'L', start: 0, end: 2500 }, { trackId: 'C1', start: 0, end: 400 }]
+    const distant = { ...signal('vA', 'L', 1600), sight: { required: 150 }, logicalSignals: [{ system: 'ks', type: 'distant', function: 'distant', frames: [] }] }
+    const plain = { ...signal('B', 'L', 1000), logicalSignals: [{ system: 'ks', type: 'main', function: 'block', frames: [] }] }
+    const announced = {
+      ...signalled,
+      signalling: { ...signalled.signalling, collections: { ...signalled.signalling.collections, signals: [signal('N1', 'A1', 450), plain, signal('A', 'L', 2400), distant] } },
+    }
+    const blocks = blocksAlong(announced, path)
+    // B is announced by N1, a multi-section signal, 250 m along; A — after a plain main signal — by its distant signal, 1900 m along, seen 150 m before.
+    expect(blocks.map(b => b.approachFrom)).toEqual([null, null, 250, 1750])
+    const clock = { at0: 0, first: (x) => x / 10, standstills: [], length: 3200, end: 400 }
+    const timed = blockingTimes(blocks, clock, 100, { setup: 12, approach: 1000, release: 6 })
+    expect(timed[2].begin).toBe(25 - 12)
+    expect(timed[3].begin).toBe(175 - 12)
+  })
+
+  it('says of a train entering at a boundary sooner after the one before than its least headway', () => {
+    const record = { endMarks: [{ id: 'g', kind: 'boundary', trackId: 'L', endpoint: 'BEGIN', headway: 180 }] }
+    const at = (id, place) => ({ id, points: [{ place }] })
+    const trains = [at('1', 'g'), at('2', 'g'), at('3', 'g'), at('4', 'A-Dorf')]
+    const runs = new Map([['1', { clock: { at0: 600 } }], ['2', { clock: { at0: 720 } }], ['3', { clock: { at0: 1000 } }], ['4', { clock: { at0: 610 } }]])
+    const out = withHeadways(record, trains, runs)
+    expect(out.get('2').headway).toEqual({ place: 'g', after: '1', gap: 120, least: 180 })
+    expect(out.get('1').headway).toBeUndefined()
+    expect(out.get('3').headway).toBeUndefined()
+    expect(out.get('4').headway).toBeUndefined()
+    expect(withHeadways({ endMarks: [] }, trains, runs)).toBe(runs)
   })
 
   it('gives the net to trains by departure, or by their kinds', () => {

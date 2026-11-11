@@ -385,7 +385,13 @@ function OccupancyCard({ t, train, run, record, stations, titles }) {
           </ul>
         </>
       )}
-      {!waits.length && !detours.length && !shown.length && <p className="ui-muted">{t('blocks_free')}</p>}
+      {run.headway && (
+        <Message tone="warn">{t('headway_short', {
+          place: record?.endMarks?.find(m => m.id === run.headway.place)?.name ?? t('boundary'), train: names([run.headway.after]),
+          gap: duration(t, run.headway.gap), least: duration(t, run.headway.least),
+        })}</Message>
+      )}
+      {!waits.length && !detours.length && !shown.length && !run.headway && <p className="ui-muted">{t('blocks_free')}</p>}
     </section>
   )
 }
@@ -423,6 +429,8 @@ function TimesCard({ t, language, train, run, stations, problems, ro, update }) 
   const time = rows ? rows[rows.length - 1].arrival - rows[0].departure : null
   const dwell = rows ? rows.reduce((s, r) => s + (r.arrival != null && r.departure != null ? r.departure - r.arrival : 0), 0) : 0
   const gaps = run?.properties?.gaps
+  // The mode the run was computed with, where the wire along the way chose it or lacks for it (decision 0025).
+  const traction = run?.properties?.traction
   const trackLabel = (row) => {
     const station = stationById(stations, row.key)
     return station?.tracks.find(tr => tr.id === row.track)?.label ?? station?.platforms.find(p => p.trackId === row.track)?.code ?? ''
@@ -457,6 +465,12 @@ function TimesCard({ t, language, train, run, stations, problems, ro, update }) 
             <dt>{t('mean_speed')}</dt><dd>{Math.round(length / Math.max(time - dwell, 1) * 3.6)} km/h</dd>
             <dt>{t('energy')}</dt><dd>{(final.energy_consumption / 3.6e6).toLocaleString(language, { maximumFractionDigits: 1 })} kWh</dd>
           </dl>
+          {traction && (traction.auto || traction.unpowered.length > 0) && (
+            <Message tone={traction.unpowered.length ? 'warn' : 'info'}>
+              {[traction.auto && t('traction_by_wire', { mode: modeLabel(t, traction.mode) }),
+                traction.unpowered.length && t('traction_unpowered', { mode: modeLabel(t, traction.mode), length: formatDistance(traction.unpowered.reduce((s, g) => s + g.end - g.begin, 0), language) })].filter(Boolean).join(' ')}
+            </Message>
+          )}
           {gaps && (gaps.heights.length > 0 || gaps.speed.length > 0) && (
             <Message tone="info">
               {[gaps.heights.length && t('gaps_heights', { length: formatDistance(gaps.heights.reduce((s, g) => s + g.end - g.begin, 0), language) }),

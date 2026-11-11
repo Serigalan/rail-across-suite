@@ -101,5 +101,27 @@ export function exportToOsrd(project) {
       platforms, trackMap, project?.osrd?.operational_points ?? []),
     buffer_stops: endMarksToBufferStops(
       project?.endMarks ?? [], trackMap, project?.osrd?.buffer_stops ?? []),
+    electrifications: electrificationsOf(project, trackMap),
   }
+}
+
+/**
+ * The layer `electrification` (decision 0025) as RailJSON's electrifications:
+ * one per system, its track ranges in both directions — OSRD names a range by
+ * its voltage, as the layer does. Ranges on a track the export does not hold
+ * are left out; one an imported file brought along stays where the layer has
+ * none of its system.
+ */
+export function electrificationsOf(project, trackMap) {
+  const ranges = project?.electrification?.collections?.electrifications ?? []
+  const kept = project?.osrd?.electrifications ?? []
+  const bySystem = new Map()
+  for (const r of ranges) {
+    if (!trackMap[r.at.trackId]) continue
+    const list = bySystem.get(r.system) ?? []
+    list.push({ track: r.at.trackId, begin: exact(r.at.startStation), end: exact(r.at.endStation), applicable_directions: 'BOTH' })
+    bySystem.set(r.system, list)
+  }
+  const made = [...bySystem.entries()].map(([voltage, track_ranges]) => ({ id: `electrification-${voltage}`, voltage, track_ranges }))
+  return [...made, ...kept.filter(e => !bySystem.has(e.voltage))]
 }

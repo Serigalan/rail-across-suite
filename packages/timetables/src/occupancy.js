@@ -10,10 +10,12 @@ import { directionOf, pathLength } from '@rail-across/running-times'
  *
  * A train holds a block (its blocking time, Sperrzeit, after Ril 405 and
  * OSRD's spacing requirements) from the moment it must find it free — when
- * it passes the distant signal `approach` metres before the block's signal,
- * or leaves where it stood within them, less the time to set the route
- * (`setup`) — until its tail has left the block and the block is released
- * (`release`); at its end, until it arrives. Where the variant has track
+ * it comes within sight of the signal that announces the block's (a distant
+ * signal, or the main signal before showing Ks 2), else `approach` metres
+ * before the block's signal, or leaves where it stood within them, less the
+ * time to set the route (`setup`, the route's own where the signalling states
+ * one) — until its tail has left the block and the block is released
+ * (`release`, likewise); at its end, until it arrives. Where the variant has track
  * sections (Freimeldeabschnitte), a block is held section by section, and
  * each section is released as soon as the train's tail has left it (or the
  * block, for the sections of its overlap) — Teilfahrstraßenauflösung: a
@@ -65,9 +67,15 @@ const NO_BLOCK = new Set(['distant', 'distantRepeater', 'shunting'])
 /** Whether a signal bounds blocks: a real one with a main or multi-section screen (as the Signalling-Tool's itineraries). */
 export const isMainSignal = (s) => s.kind === 'real' && (s.logicalSignals ?? []).some(l => !NO_BLOCK.has(l.type))
 
-/** The main signals along a path acting the way it runs there: [{ signal, offset }] in running order. */
-export function signalsAlong(record, path) {
-  const signals = (record?.signalling?.collections?.signals ?? []).filter(isMainSignal)
+/** The kinds of logical signal that announce the next main signal: a distant signal, or a main signal that shows its aspect too. */
+const ANNOUNCES = new Set(['distant', 'distantRepeater', 'multiSection', 'multiSectionShunting'])
+
+/** Whether a signal announces the main signal after it (Ks 2 or a distant signal's aspects). */
+export const announces = (s) => s.kind === 'real' && (s.logicalSignals ?? []).some(l => ANNOUNCES.has(l.type))
+
+/** The signals along a path acting the way it runs there — the main ones, or those `which` takes: [{ signal, offset }] in running order. */
+export function signalsAlong(record, path, which = isMainSignal) {
+  const signals = (record?.signalling?.collections?.signals ?? []).filter(which)
   const out = []
   let at = 0
   for (const p of path) {
@@ -153,27 +161,57 @@ function uncovered(spans, from, to) {
 
 /**
  * The blocks along a path: [{ index, signalId, targetId, from, to, reach,
- * stretches, sections, free }] — `signalId` the signal it begins at (null for
+ * stretches, sections, free, setting, release, overlapRelease }] — `signalId`
+ * the signal it begins at (null for
  * the first, where the train starts), `targetId` the one it ends at (null for
  * the last); `from`, `to` its offsets along the path, `reach` the end of the
  * overlap beyond `to`; `stretches` what it covers of the tracks, the overlap
  * with it; `sections` the track sections it holds [{ id, from, to }], where
  * along the path the train runs into it and has run through it; `free` the stretches of it no
- * section covers.
+ * section covers. `setting` and `release` [s] are the times of the route from
+ * its signal to the next, or the interlocking's (signalling 2.0), null where
+ * the signalling says none; `overlapRelease` [s] how long the overlap beyond
+ * the next signal stays set once a train stands before it (its `releaseDelay`);
+ * `approachFrom` the offset where the block is asked for — the sight distance
+ * before the signal that announces its own —, null where none along the way does.
  */
 export function blocksAlong(record, path) {
   const length = pathLength(path)
-  const overlaps = record?.signalling?.collections?.overlaps ?? []
+  const signalling = record?.signalling
+  const overlaps = signalling?.collections?.overlaps ?? []
+  const routes = signalling?.collections?.routes ?? []
+  const routeTimes = signalling?.fields?.routeTimes ?? {}
   const overlapOf = (signalId) => Math.max(0, ...overlaps.filter(o => o.signalId === signalId).map(o => o.length ?? 0))
+  const delayOf = (signalId) => {
+    const delays = overlaps.filter(o => o.signalId === signalId && o.releaseDelay != null).map(o => o.releaseDelay)
+    return delays.length ? Math.max(...delays) : null
+  }
+  const timesOf = (from, to) => {
+    const route = from && to ? routes.find(r => r.startSignalId === from && r.targetSignalId === to && r.kind !== 'shunting') : null
+    return { setting: route?.settingTime ?? routeTimes.setting ?? null, release: route?.releaseTime ?? routeTimes.release ?? null }
+  }
   const cuts = [{ offset: 0, signal: null }, ...signalsAlong(record, path).filter(s => s.offset > 1 && s.offset < length - 1)]
+  const announcing = signalsAlong(record, path, announces)
+  // Where a block is asked for: the point its signal is first seen from — the sight distance before the
+  // signal that announces it, the farthest back since the main signal before (Ril 405) —, or null.
+  const approachOf = (i) => {
+    const before = cuts[i - 1]?.signal ? cuts[i - 1].offset : -Infinity
+    const by = announcing.filter(a => a.offset < cuts[i].offset - 1 && a.offset >= before - 1)
+    if (!by.length) return null
+    const first = by[0]
+    const sight = first.signal.sight?.required ?? first.signal.sight?.minimum ?? 0
+    return first.offset - sight
+  }
   const spans = sectionsAlong(record, path)
   return cuts.map((c, i) => {
     const next = cuts[i + 1]
     const to = next ? next.offset : length
     const reach = next ? Math.min(length, to + overlapOf(next.signal.id)) : length
     const held = spans.filter(s => Math.min(s.to, reach) - Math.max(s.from, c.offset) > 0.5)
+    const { setting, release } = c.signal ? timesOf(c.signal.id, next?.signal.id) : { setting: null, release: null }
     return {
       index: i, signalId: c.signal?.id ?? null, targetId: next?.signal.id ?? null, from: c.offset, to, reach,
+      setting, release, overlapRelease: next ? delayOf(next.signal.id) : null, approachFrom: c.signal ? approachOf(i) : null,
       stretches: stretchesOf(path, c.offset, reach),
       sections: held.map(s => ({ id: s.id, from: Math.max(s.from, c.offset), to: Math.min(s.to, reach) })),
       free: uncovered(held, c.offset, reach).flatMap(([a, b]) => stretchesOf(path, a, b)),
@@ -184,10 +222,15 @@ export function blocksAlong(record, path) {
 /**
  * The blocking times of a train's blocks, as it runs (`clock`, runClock) with
  * its length [m]: each block with { begin, end } in seconds from midnight.
+ * The times to set and release a route and an overlap's release are the
+ * signalling's where it states them (blocksAlong), else `times`.
  */
-export function blockingTimes(blocks, clock, trainLength, times = BLOCKING) {
+export function blockingTimes(blocks, clock, trainLength, given = BLOCKING) {
   return blocks.map(b => {
-    const approach = Math.max(0, b.from - times.approach)
+    const times = {
+      ...given, setup: b.setting ?? given.setup, release: b.release ?? given.release, overlap: b.overlapRelease ?? given.overlap ?? BLOCKING.overlap,
+    }
+    const approach = Math.max(0, b.approachFrom ?? b.from - times.approach)
     let begin = b.from <= 1e-6 ? clock.at0 : clock.first(approach)
     // where it stands within the approach, the block is asked for as it leaves
     for (const s of clock.standstills) if (s.offset >= approach - 1e-6 && s.offset < b.from - 1e-6) begin = Math.max(begin, s.leave)
@@ -199,7 +242,7 @@ export function blockingTimes(blocks, clock, trainLength, times = BLOCKING) {
     const end = leftAt(b.to)
     // Where it comes to a stand before the block's end signal, its overlap is released a while after.
     const stand = b.targetId == null ? null : clock.standstills.find(s => s.offset <= b.to + 1e-6 && s.offset >= b.to - BEFORE_SIGNAL)
-    const overlapEnd = stand ? Math.min(end, clock.first(stand.offset) + (times.overlap ?? BLOCKING.overlap)) : end
+    const overlapEnd = stand ? Math.min(end, clock.first(stand.offset) + times.overlap) : end
     // A section is released once the train has left it; one of the overlap, with the block or once it stands.
     const sections = (b.sections ?? []).map(s => ({ ...s, end: s.from >= b.to - 0.5 ? overlapEnd : Math.min(end, leftAt(Math.min(s.to, b.to))) }))
     return { ...b, begin: begin - times.setup, end, sections }
@@ -317,7 +360,7 @@ export async function occupancy(record, trains, runOf, dispatch = DISPATCH) {
       const run = out.get(train.id)
       if (run?.blocks) out.set(train.id, { ...run, conflicts: conflictsOf(run.blocks, placed.filter(p => p.id !== train.id)), waits: [], delay: 0 })
     }
-    return out
+    return withHeadways(record, trains, out)
   }
 
   // Kind by kind where the kinds come first, the trains of each as they ask, around those of the kinds before.
@@ -336,6 +379,36 @@ export async function occupancy(record, trains, runOf, dispatch = DISPATCH) {
       detours: st.routes.map(r => ({ signalId: r.signalId, routeId: r.routeId, because: r.because ?? [] })),
       delay: st.run.clock.end - st.free,
     })
+  }
+  return withHeadways(record, trains, out)
+}
+
+/**
+ * The runs with what a boundary's least headway says of them (infra-data-2.0,
+ * `endMarks[].headway`): a train entering at a boundary sooner after the one
+ * before than the net beyond lets trains follow gets `headway` { place, after,
+ * gap, least } — the boundary, the train before, how long after it [s], and
+ * how long at least.
+ */
+export function withHeadways(record, trains, runs) {
+  const least = new Map((record?.endMarks ?? []).filter(m => m.kind === 'boundary' && m.headway > 0).map(m => [m.id, m.headway]))
+  if (!least.size) return runs
+  const entering = new Map()
+  for (const train of trains) {
+    const place = train.points?.[0]?.place
+    const run = runs.get(train.id)
+    if (!least.has(place) || !Number.isFinite(run?.clock?.at0)) continue
+    entering.set(place, [...(entering.get(place) ?? []), { train, at: run.clock.at0 }])
+  }
+  const out = new Map(runs)
+  for (const [place, list] of entering) {
+    list.sort((a, b) => a.at - b.at)
+    for (let i = 1; i < list.length; i++) {
+      const gap = list[i].at - list[i - 1].at
+      if (gap < least.get(place)) {
+        out.set(list[i].train.id, { ...out.get(list[i].train.id), headway: { place, after: list[i - 1].train.id, gap, least: least.get(place) } })
+      }
+    }
   }
   return out
 }
@@ -379,7 +452,7 @@ async function dispatched(record, trains, runOf, timed, times, before = []) {
     const last = given[given.length - 1]
     const stand = holdBefore(st.run, st.run.blocks[st.granted], st.run.blocks, times.approach).offset
     const length = st.run.request.rolling_stock.length
-    const stood = st.run.clock.first(stand) + (times.overlap ?? BLOCKING.overlap)
+    const stood = st.run.clock.first(stand) + (last.overlapRelease ?? times.overlap ?? BLOCKING.overlap)
     const sections = (last.sections ?? []).map(x => {
       if (x.from >= last.to - 0.5) return { ...x, end: Math.min(x.end, stood) }
       return x.to + length > stand - 1e-6 ? { ...x, end: Infinity } : x
@@ -465,7 +538,7 @@ async function dispatched(record, trains, runOf, timed, times, before = []) {
     const held = st.run.blocks[block.index]
     const hold = holdBefore(st.run, held, st.run.blocks, times.approach)
     const leaves = hold.point === 0 ? st.run.clock.at0 : st.run.clock.last(hold.offset)
-    const more = Math.max(1, Math.ceil(until(best) + times.setup - leaves))
+    const more = Math.max(1, Math.ceil(until(best) + (held.setting ?? times.setup) - leaves))
     const same = st.holds.find(h => Math.abs(h.offset - hold.offset) < 1e-6 && h.point === hold.point)
     // a wait further back makes those after it start anew
     st.holds = [...st.holds.filter(h => h.offset < hold.offset - 1e-6), { ...hold, wait: (same?.wait ?? 0) + more }]

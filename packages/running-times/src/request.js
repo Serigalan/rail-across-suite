@@ -1,13 +1,15 @@
 import { pathProperties } from './path.js'
 import { signalledSpeeds } from './route.js'
 import { rollingStockOf } from '@rail-across/vehicles'
+import { electrifiedAlong, tractionFor } from './traction.js'
 
 /**
  * The request the simulation takes (rail-across-sim's SimulationRequest),
  * from a train's way over the net: the path's length, grades and speed
  * limits — the speeds the signals signal first, the layout's design speeds
  * only where no signal signals one (governedLimits) —,
- * the train — a vehicle, its traction `{ mode, comfort }` —, its stops and
+ * the train — a vehicle, its traction `{ mode, comfort }`: a mode not given
+ * is chosen by the wire along the way (traction.js) —, its stops and
  * the margin. Returns { request, properties }.
  *
  * `stops` [{ offset, duration, arrival }] along the path — the last at its
@@ -24,7 +26,9 @@ export function simulationRequest(record, path, { vehicle, traction = {}, stops 
   const length = properties.length
   const limits = governedLimits(properties.speedLimits, signalled)
   if (endSpeed != null && Number.isFinite(endSpeed)) limits.push({ begin: Math.max(0, length - 1), end: length, speed: endSpeed, source: 'boundary' })
-  const rollingStock = rollingStockOf(vehicle, traction)
+  const planned = (record?.electrification?.collections?.electrifications ?? []).length > 0
+  const chosen = tractionFor(vehicle, traction.mode ?? null, electrifiedAlong(record, path), length, planned)
+  const rollingStock = rollingStockOf(vehicle, { ...traction, mode: chosen.mode })
   const schedule = stops.map(s => ({
     path_offset: Math.min(Math.max(s.offset, 0), length),
     ...(s.duration != null ? { stop_duration: s.duration } : {}),
@@ -44,7 +48,7 @@ export function simulationRequest(record, path, { vehicle, traction = {}, stops 
     time_step: timeStep,
   }
   // A design speed is missed only where no signal signals one either.
-  return { request, properties: { ...properties, signalled, gaps: { ...properties.gaps, speed: uncovered(properties.gaps.speed, signalled) } } }
+  return { request, properties: { ...properties, signalled, traction: chosen, gaps: { ...properties.gaps, speed: uncovered(properties.gaps.speed, signalled) } } }
 }
 
 /**

@@ -16,6 +16,7 @@ export default function RuntimeTrain(props) {
   const { t, language, places, catalogue, entry, vehicle, chooseVehicle, modes, mode, comforts, comfort, setTraction, start, setStart, end, setEnd, stops, setStops, margin, setMargin, marginText, distribution, setDistribution, picking, setPicking, route, run, stale, busy, go } = props
   const length = route?.path ? route.offsets.at(-1) : null
   const gaps = run?.properties?.gaps
+  const traction = run?.properties?.traction
   return (
     <Panel title={t('section_train')} intro={t('section_train_intro')}
       foot={<Button variant="primary" disabled={!route?.path || marginText == null || busy || !vehicle} onClick={go}>{busy ? t('running') : t('run')}</Button>}>
@@ -58,6 +59,12 @@ export default function RuntimeTrain(props) {
       </Section>
 
       {run?.error && !stale && <Message tone="error">{t(`error_${run.error.code}`, { message: run.error.message })}</Message>}
+      {traction && !stale && (traction.auto || traction.unpowered.length > 0) && (
+        <Message tone={traction.unpowered.length ? 'warn' : 'info'}>
+          {[traction.auto && t('traction_by_wire', { mode: modeLabel(t, traction.mode) }),
+            traction.unpowered.length && t('traction_unpowered', { mode: modeLabel(t, traction.mode), length: formatDistance(traction.unpowered.reduce((s, g) => s + g.end - g.begin, 0), language) })].filter(Boolean).join(' ')}
+        </Message>
+      )}
       {gaps && !stale && (gaps.heights.length > 0 || gaps.speed.length > 0) && (
         <Message tone="info">
           {[gaps.heights.length && t('gaps_heights', { length: formatDistance(gaps.heights.reduce((s, g) => s + g.end - g.begin, 0), language) }),

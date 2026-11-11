@@ -1,12 +1,15 @@
 // SPDX-FileCopyrightText: 2026 Serigalan and the Rail-Across-Suite contributors
 // SPDX-License-Identifier: LGPL-3.0-only
 
-//! The record the Layout-Tool works on and the infra-data-1.0
-//! document it is kept as, both ways, nothing lost (`coreFormat.js`): the
-//! domains `core` and `layout`, locations as one value each, the planning
-//! status as a lifespan over two construction stages, station names and codes
-//! as an operational point register, named runs of tracks as `trackPaths`, the
-//! bulk point arrays as blobs named by their hash.
+//! The record the tools work on and the infra-data-2.0 document it is kept
+//! as, both ways, nothing lost (`coreFormat.js`): the domain `core` and the
+//! layers on it — `civil`, `signalling`, `electrification` (decision 0025) —,
+//! locations as one value each, the planning status as a lifespan over two
+//! construction stages, station names and codes as an operational point
+//! register, named runs of tracks as `trackPaths`, the bulk point arrays as
+//! blobs named by their hash. The record keeps the platforms at its top and the
+//! stopping places in its signalling, each naming its platform; the document
+//! has the stopping places in the core and the platforms, naming them, in civil.
 
 use std::collections::{HashMap, HashSet};
 
@@ -15,9 +18,10 @@ use serde_json::{Map, Value, json};
 
 use crate::canonical::{content_hash, derived_id};
 use crate::error::{PayloadError, Result};
+use crate::layers;
 
 /// The domains this build reads and writes, with their versions.
-pub const DOMAIN_VERSIONS: &[(&str, &str)] = &[("core", "1.0"), ("layout", "1.0"), ("signalling", "1.0")];
+pub const DOMAIN_VERSIONS: &[(&str, &str)] = &[("core", "2.0"), ("civil", "1.0"), ("signalling", "2.0"), ("electrification", "1.0")];
 
 /// The version of domain `name` this build reads, where it reads it.
 pub fn domain_version(name: &str) -> Option<&'static str> {
@@ -34,8 +38,8 @@ const CORE_FIELDS: &[&str] = &[
     "lineCategory",
     "gaugeProfile",
 ];
-const LAYOUT_FIELDS: &[&str] = &["planHeader", "image", "imageHash", "osrd"];
-const CARRIED: &[&str] = &["signalling"];
+const CIVIL_FIELDS: &[&str] = &["planHeader", "image", "imageHash", "osrd"];
+const CARRIED: &[&str] = &["signalling", "electrification"];
 const COLLECTIONS: &[&str] = &[
     "tracks",
     "switches",
@@ -359,7 +363,7 @@ fn renamed(el: &Value, from: &str, to: &str) -> Value {
 
 // ── Record → document ───────────────────────────────────────────────────────
 
-fn by_id(list: &mut [Value]) {
+pub(crate) fn by_id(list: &mut [Value]) {
     list.sort_by(|a, b| {
         if js_less(a.get("id"), b.get("id")) {
             std::cmp::Ordering::Less
@@ -371,9 +375,9 @@ fn by_id(list: &mut [Value]) {
     });
 }
 
-/// The infra-data-1.0 document of a record (dehydrated), every collection sorted by id (`recordToDocument`).
+/// The infra-data-2.0 document of a record (dehydrated), every collection sorted by id (`recordToDocument`).
 pub fn record_to_document(record: &Value, schema_hashes: &HashMap<&str, String>) -> Result<Value> {
-    let known: HashSet<&str> = CORE_FIELDS.iter().chain(LAYOUT_FIELDS).chain(COLLECTIONS).chain(CARRIED).copied().collect();
+    let known: HashSet<&str> = CORE_FIELDS.iter().chain(CIVIL_FIELDS).chain(COLLECTIONS).chain(CARRIED).copied().collect();
     let unknown: Vec<String> = record
         .as_object()
         .map(|o| o.keys().filter(|k| !known.contains(k.as_str())).cloned().collect())
@@ -465,15 +469,25 @@ pub fn record_to_document(record: &Value, schema_hashes: &HashMap<&str, String>)
         })
         .collect();
 
+    // The stopping places come out of the record's signalling into the core; a
+    // boundary marked by a platform is marked by the stopping place at it, and the
+    // platforms (civil) name the stopping places at them.
+    let mut signalling = get(record, "signalling").map(obj);
+    let mut sig_cols = signalling.as_ref().map(|d| obj(d.get("collections").unwrap_or(&Value::Null))).unwrap_or_default();
+    let mut stopping: Vec<Value> = sig_cols.get("stoppingPlaces").and_then(Value::as_array).cloned().unwrap_or_default();
+    layers::boundaries_by_stopping_place(&mut sig_cols, &mut stopping, &core_platforms);
+    sig_cols.shift_remove("stoppingPlaces");
+    let civil_platforms = layers::platforms_naming(&core_platforms, &stopping);
+
     let mut core_fields = pick(record, CORE_FIELDS);
     core_fields.insert("stages".into(), stages);
     let mut core_cols = Object::new();
     core_cols.insert("tracks".into(), Value::Array(core_tracks));
     core_cols.insert("switches".into(), Value::Array(switches));
-    core_cols.insert("platforms".into(), Value::Array(core_platforms));
     core_cols.insert("endMarks".into(), Value::Array(end_marks));
     core_cols.insert("kmLines".into(), Value::Array(list(record, "kmLines").to_vec()));
     core_cols.insert("operationalPoints".into(), Value::Array(register.points.clone()));
+    core_cols.insert("stoppingPlaces".into(), Value::Array(layers::core_stopping_places(&stopping)));
 
     let track_paths: Vec<Value> = list(record, "routes")
         .iter()
@@ -498,39 +512,53 @@ pub fn record_to_document(record: &Value, schema_hashes: &HashMap<&str, String>)
     let reference_axes = with_blob(list(record, "referenceAxes"));
 
     let hash = |d: &str| schema_hashes.get(d).cloned().map(Value::String).unwrap_or(Value::Null);
+    let layer = |name: &str, fields: Object, collections: Object| -> Value {
+        let mut o = Object::new();
+        o.insert("version".into(), json!(domain_version(name)));
+        o.insert("schema".into(), hash(name));
+        o.insert("dependsOn".into(), json!(["core"]));
+        o.insert("fields".into(), Value::Object(fields));
+        o.insert("collections".into(), Value::Object(collections));
+        Value::Object(o)
+    };
     let mut core = Object::new();
-    core.insert("version".into(), json!("1.0"));
+    core.insert("version".into(), json!(domain_version("core")));
     core.insert("schema".into(), hash("core"));
     core.insert("fields".into(), Value::Object(core_fields));
     core.insert("collections".into(), Value::Object(core_cols));
-    // The layout domain only where the record holds anything of it: a document
-    // is the core and what is planned on it, every other domain may be missing.
-    let layout_fields = pick(record, LAYOUT_FIELDS);
-    let holds_layout = !layout_fields.is_empty() || !(track_paths.is_empty() && axis_surveys.is_empty() && reference_axes.is_empty());
     let mut domains = Object::new();
     domains.insert("core".into(), Value::Object(core));
-    if holds_layout {
-        let mut layout_cols = Object::new();
-        layout_cols.insert("trackPaths".into(), Value::Array(track_paths));
-        layout_cols.insert("axisSurveys".into(), Value::Array(axis_surveys));
-        layout_cols.insert("referenceAxes".into(), Value::Array(reference_axes));
-        let mut layout = Object::new();
-        layout.insert("version".into(), json!("1.0"));
-        layout.insert("schema".into(), hash("layout"));
-        layout.insert("dependsOn".into(), json!(["core"]));
-        layout.insert("fields".into(), Value::Object(layout_fields));
-        layout.insert("collections".into(), Value::Object(layout_cols));
-        domains.insert("layout".into(), Value::Object(layout));
+
+    // A layer only where the record holds anything of it: a document is the core
+    // and what is planned on it, every layer may be missing.
+    let civil_fields = pick(record, CIVIL_FIELDS);
+    let mut civil_cols = Object::new();
+    civil_cols.insert("platforms".into(), Value::Array(civil_platforms));
+    civil_cols.insert("trackPaths".into(), Value::Array(track_paths));
+    civil_cols.insert("axisSurveys".into(), Value::Array(axis_surveys));
+    civil_cols.insert("referenceAxes".into(), Value::Array(reference_axes));
+    if layers::holds_anything(&civil_fields, &civil_cols) {
+        domains.insert("civil".into(), layer("civil", civil_fields, civil_cols));
     }
-    for name in CARRIED {
-        if let Some(d) = get(record, name) {
-            let mut o = Object::new();
-            o.insert("version".into(), json!(domain_version(name)));
-            o.insert("schema".into(), hash(name));
-            o.insert("dependsOn".into(), json!(["core"]));
-            o.insert("fields".into(), get(d, "fields").cloned().unwrap_or(json!({})));
-            o.insert("collections".into(), get(d, "collections").cloned().unwrap_or(json!({})));
-            domains.insert((*name).into(), Value::Object(o));
+    if let Some(d) = signalling.take() {
+        let fields = obj(d.get("fields").unwrap_or(&Value::Null));
+        if layers::holds_anything(&fields, &sig_cols) {
+            for name in layers::SIGNALLING_COLLECTIONS {
+                if !sig_cols.contains_key(*name) {
+                    sig_cols.insert((*name).into(), json!([]));
+                }
+            }
+            domains.insert("signalling".into(), layer("signalling", fields, sig_cols));
+        }
+    }
+    if let Some(d) = get(record, "electrification") {
+        let fields = obj(d.get("fields").unwrap_or(&Value::Null));
+        let mut cols = obj(d.get("collections").unwrap_or(&Value::Null));
+        if layers::holds_anything(&fields, &cols) {
+            if !cols.contains_key("electrifications") {
+                cols.insert("electrifications".into(), json!([]));
+            }
+            domains.insert("electrification".into(), layer("electrification", fields, cols));
         }
     }
     for domain in domains.values_mut() {
@@ -547,11 +575,11 @@ pub fn record_to_document(record: &Value, schema_hashes: &HashMap<&str, String>)
 
 // ── Document → record ───────────────────────────────────────────────────────
 
-/// The record an infra-data-1.0 document holds — the inverse of record_to_document (`documentToRecord`).
+/// The record an infra-data-2.0 document holds — the inverse of record_to_document (`documentToRecord`).
 pub fn document_to_record(doc: &Value) -> Result<Value> {
     let core = &doc["domains"]["core"];
-    let empty_layout = json!({ "fields": {}, "collections": {} });
-    let layout = get(&doc["domains"], "layout").unwrap_or(&empty_layout);
+    let empty_civil = json!({ "fields": {}, "collections": {} });
+    let civil = get(&doc["domains"], "civil").unwrap_or(&empty_civil);
     let stages = core["fields"]["stages"].as_array().cloned().unwrap_or_default();
     if stages.len() != 2 {
         return Err(PayloadError::new("stages_unsupported"));
@@ -580,7 +608,7 @@ pub fn document_to_record(doc: &Value) -> Result<Value> {
             .ok_or_else(|| PayloadError::with("invalid_payload", vec![format!("/blobs: lacks {h}")]))
     };
     let status = |o: &Value| status_of(o.get("lifespan"), &final_id);
-    let l = layout.get("collections").cloned().unwrap_or(json!({}));
+    let l = civil.get("collections").cloned().unwrap_or(json!({}));
 
     let mut tracks = Vec::new();
     for t in list(c, "tracks") {
@@ -605,10 +633,11 @@ pub fn document_to_record(doc: &Value) -> Result<Value> {
         o.insert("status".into(), status(sw)?);
         switches.push(Value::Object(without_null(o)));
     }
+    let civil_platforms = list(&l, "platforms");
     let mut platforms = Vec::new();
-    for pf in list(c, "platforms") {
+    for pf in civil_platforms {
         let p = point_of(pf)?;
-        let mut o = without(&obj(pf), &["at", "lifespan", "operationalPoint"]);
+        let mut o = without(&obj(pf), &["at", "lifespan", "operationalPoint", "stoppingPlaceIds"]);
         for (k, v) in without(&obj(pf.get("at").unwrap_or(&Value::Null)), &["anchor"]) {
             o.insert(k, v);
         }
@@ -653,6 +682,7 @@ pub fn document_to_record(doc: &Value) -> Result<Value> {
         .and_then(|s| s.get("collections"))
         .cloned()
         .unwrap_or(json!({}));
+    let stopping = layers::record_stopping_places(list(c, "stoppingPlaces"), civil_platforms);
     let mut named = HashSet::new();
     for o in list(&sc, "signals").iter().chain(list(&sc, "stationBoundaries")) {
         if let Some(id) = o.get("operationalPointId").filter(|v| rail_across_js::truthy(Some(v))) {
@@ -673,7 +703,7 @@ pub fn document_to_record(doc: &Value) -> Result<Value> {
         ("operationalPoints", operational_points),
     ];
     let core_fields = without(&obj(&core["fields"]), &["stages"]);
-    let mut record = spread(core_fields, obj(layout.get("fields").unwrap_or(&Value::Null)));
+    let mut record = spread(core_fields, obj(civil.get("fields").unwrap_or(&Value::Null)));
     for name in COLLECTIONS {
         let pos = collections.iter().position(|(n, _)| n == name).expect("collection");
         let (_, items) = std::mem::take(&mut collections[pos]);
@@ -682,15 +712,20 @@ pub fn document_to_record(doc: &Value) -> Result<Value> {
         }
     }
     for name in CARRIED {
-        if let Some(d) = doc["domains"].get(name) {
-            let mut o = Object::new();
-            for k in ["fields", "collections"] {
-                if let Some(v) = d.get(k) {
-                    o.insert(k.into(), v.clone());
-                }
-            }
-            record.insert((*name).into(), Value::Object(o));
+        let d = doc["domains"].get(name);
+        // The record's signalling holds the stopping places, which the document keeps in the core.
+        let with_stopping = *name == "signalling" && !stopping.is_empty();
+        if d.is_none() && !with_stopping {
+            continue;
         }
+        let mut o = Object::new();
+        o.insert("fields".into(), d.and_then(|d| d.get("fields")).cloned().unwrap_or(json!({})));
+        let mut cols = obj(d.and_then(|d| d.get("collections")).unwrap_or(&Value::Null));
+        if *name == "signalling" {
+            cols.insert("stoppingPlaces".into(), Value::Array(stopping.clone()));
+        }
+        o.insert("collections".into(), Value::Object(cols));
+        record.insert((*name).into(), Value::Object(o));
     }
     Ok(Value::Object(record))
 }

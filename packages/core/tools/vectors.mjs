@@ -50,8 +50,8 @@ const schemaVectors = () => JSON.parse(readFileSync(join(OUT, 'schema.json'), 'u
 // Through the door — the core's module since step 10: --check sees that it
 // still says of each what it said when the JavaScript was the measure.
 
-/** A record with one of everything the format holds — with the signalling of a small station where asked. */
-function sampleRecord({ signalling = false } = {}) {
+/** A record with one of everything the format holds — with the signalling of a small station, its second stopping place at the platform, and an electrification where asked. */
+function sampleRecord({ signalling = false, electrification = false } = {}) {
   const el = (x0, x1, extra = {}) => ({ elementType: 0, startNode: [500000 + x0, 5700000], endNode: [500000 + x1, 5700000], bearing: 90, length: x1 - x0, ...extra })
   return {
     id: 'b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69', title: 'Halle-Trotha', description: 'vectors', creator: 'core',
@@ -77,39 +77,80 @@ function sampleRecord({ signalling = false } = {}) {
       points: { e0: 500000, n0: 5700000, z0: 108, st: [0, 500], de: [0, 500], dn: [0, 0], zl: [550, 560], zr: [550, 561], ga: [1435, 1436], q: [1, 1] } }],
     referenceAxes: [{ id: 'x1', name: 'Bestand', epsg: 25832, heightEpsg: null, source: { tra: 'a.TRA', gra: null },
       points: { s0: 0, step: 0.01, count: 3, e0: 500000, n0: 5700000, de: [0, 10, 10], dn: [0, 0, 0], z: null } }],
-    ...(signalling ? { signalling: ksStation({ operationalPoint: 'Halle-Trotha' }) } : {}),
+    ...(signalling ? { signalling: atPlatform(ksStation({ operationalPoint: 'Halle-Trotha' })) } : {}),
+    ...(electrification ? { electrification: { fields: {}, collections: { electrifications: [
+      { id: 'el1', name: 'Oberleitung', at: { anchor: 'station', trackId: 't1', startStation: 0, endStation: 250 }, system: '15000V' },
+    ] } } } : {}),
   }
 }
 
-/** [name, change] — a document made from the sample, changed so the door refuses it (or not). */
+/** The station's second stopping place at the sample's platform, as the record names it. */
+function atPlatform(signalling) {
+  const places = signalling.collections.stoppingPlaces.map(h => (h.id === 'hp-2' ? { ...h, platformId: 'p1' } : h))
+  return { ...signalling, collections: { ...signalling.collections, stoppingPlaces: places } }
+}
+
+// infra-data 1.0 documents as the core wrote them before 2.0, frozen: the door reads them as 2.0.
+const BEFORE = JSON.parse(readFileSync(join(OUT, 'infra-data-1.0.json'), 'utf8')).documents
+
+/** [name, change, options] — a document made from the sample, changed so the door refuses it (or not). */
 const DOCUMENT_CASES = [
   ['the sample', () => {}],
   ['the sample, carrying its schemas', (d, carry) => carry()],
   ['another format', (d) => { d.format = 'oltjson' }],
-  ['a domain version this build does not read', (d) => { d.domains.core.version = '2.0' }],
-  ['a domain this build does not read', (d) => { d.domains.catenary = { ...d.domains.layout, version: '0.3' } }],
-  ['a schema hash that is not the version\'s', (d) => { d.domains.layout.schema = `sha256:${'0'.repeat(64)}` }],
+  ['a format version this build does not read', (d) => { d.version = '3.0' }],
+  ['a domain version this build does not read', (d) => { d.domains.core.version = '3.0' }],
+  ['a domain this build does not read', (d) => { d.domains.catenary = { ...d.domains.civil, version: '0.3' } }],
+  ['a schema hash that is not the version\'s', (d) => { d.domains.civil.schema = `sha256:${'0'.repeat(64)}` }],
   ['a carried schema under another hash', (d, carry) => { carry(); d.schemas[d.domains.core.schema] = { $id: 'core' } }],
   ['a blob that is not what its hash says', (d) => { const [h] = Object.keys(d.blobs); d.blobs[h] = { e0: 1 } }],
-  ['layout depending on nothing', (d) => { delete d.domains.layout.dependsOn }],
+  ['civil depending on nothing', (d) => { delete d.domains.civil.dependsOn }],
   ['a track twice', (d) => { d.domains.core.collections.tracks.push(d.domains.core.collections.tracks[0]) }],
   ['an element with derived geometry', (d) => { d.domains.core.collections.tracks[0].elements[0].renderCoords = [] }],
   ['one stage only', (d) => { d.domains.core.fields.stages.pop() }],
-  ['a platform with its stations loose', (d) => { const p = d.domains.core.collections.platforms[0]; p.startStation = p.at.startStation }],
+  ['a platform with its stations loose', (d) => { const p = d.domains.civil.collections.platforms[0]; p.startStation = p.at.startStation }],
+  ['a platform in the core', (d) => { d.domains.core.collections.platforms = d.domains.civil.collections.platforms }],
   ['a collection missing', (d) => { delete d.domains.core.collections.kmLines }],
   ['no core', (d) => { delete d.domains.core }],
-  ['core as written before the design speed took its name', (d) => {
-    d.domains.core.schema = 'sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6'
-    for (const el of d.domains.core.collections.tracks.flatMap(t => t.elements)) {
-      if (Object.hasOwn(el, 'designSpeed')) { el.speed = el.designSpeed; delete el.designSpeed }
-    }
-  }],
+  ['the core alone', (d) => { delete d.domains.civil }],
   ['the sample with its signalling', () => {}, { signalling: true }],
   ['the sample with its signalling, carrying its schemas', (d, carry) => carry(), { signalling: true }],
   ['signalling depending on nothing', (d) => { delete d.domains.signalling.dependsOn }, { signalling: true }],
   ['a signal acting in no direction', (d) => { delete d.domains.signalling.collections.signals[0].at.direction }, { signalling: true }],
   ['a frame that shows nothing', (d) => { d.domains.signalling.collections.signals[0].frames[0].aspects = [] }, { signalling: true }],
   ['signalling without its overlaps', (d) => { delete d.domains.signalling.collections.overlaps }, { signalling: true }],
+  ['stopping places in signalling', (d) => { d.domains.signalling.collections.stoppingPlaces = d.domains.core.collections.stoppingPlaces }, { signalling: true }],
+  ['a boundary marked by a platform', (d) => { d.domains.signalling.collections.stationBoundaries[0].marks.push({ platformId: 'p1' }) }, { signalling: true }],
+  ['a route with its times, train protection', (d) => {
+    d.domains.signalling.fields.routeTimes = { setting: 12, release: 6 }
+    d.domains.signalling.collections.routes[0].settingTime = 8
+    d.domains.signalling.collections.trainProtection = [{ id: 'zb1', at: { anchor: 'station', trackId: 't1', startStation: 0, endStation: 250 }, system: 'pzb' }]
+  }, { signalling: true }],
+  ['the sample with its electrification', () => {}, { electrification: true }],
+  ['an electrification of no system', (d) => { delete d.domains.electrification.collections.electrifications[0].system }, { electrification: true }],
+  ['a boundary\'s headway', (d) => { d.domains.core.collections.endMarks[0].headway = 120 }],
+]
+
+/** [name, change] — an infra-data 1.0 document (frozen), changed or not: the door reads it as 2.0. */
+const BEFORE_CASES = [
+  ['infra-data 1.0: the sample', 'the sample', () => {}],
+  ['infra-data 1.0: the sample with its signalling', 'the sample with its signalling', () => {}],
+  ['infra-data 1.0: a stopping place at a platform, a boundary marked by it', 'the sample with its signalling', (d) => {
+    d.domains.signalling.collections.stoppingPlaces.find(h => h.id === 'hp-2').platformId = 'p1'
+    d.domains.signalling.collections.stationBoundaries[0].marks.push({ platformId: 'p1' })
+  }],
+  ['infra-data 1.0: a boundary marked by a platform no stopping place is at', 'the sample with its signalling', (d) => {
+    d.domains.signalling.collections.stationBoundaries[0].marks.push({ platformId: 'p1' })
+  }],
+  ['infra-data 1.0: core as written before the design speed took its name', 'the sample', (d) => {
+    d.domains.core.schema = 'sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6'
+    for (const el of d.domains.core.collections.tracks.flatMap(t => t.elements)) {
+      if (Object.hasOwn(el, 'designSpeed')) { el.speed = el.designSpeed; delete el.designSpeed }
+    }
+  }],
+  ['infra-data 1.0: a domain this build does not read', 'the sample', (d) => { d.domains.catenary = { ...d.domains.layout, version: '0.3' } }],
+  ['infra-data 1.0: layout of another schema', 'the sample', (d) => { d.domains.layout.schema = `sha256:${'0'.repeat(64)}` }],
+  ['infra-data 1.0: no layout', 'the sample', (d) => { delete d.domains.layout }],
 ]
 
 /** The verdict on a document: the manifest and hash of what the door takes, an earlier schema brought to this one. */
@@ -123,12 +164,19 @@ function verdict(doc) {
   }
 }
 
-const documentVectors = () => DOCUMENT_CASES.map(([name, change, options = {}]) => {
-  const doc = structuredClone(toDocument(sampleRecord(options)))
-  const carry = () => { doc.schemas = structuredClone(toDocument(sampleRecord(options), { carrySchemas: true }).schemas) }
-  change(doc, carry)
-  return { name, document: doc, ...verdict(doc) }
-})
+const documentVectors = () => [
+  ...DOCUMENT_CASES.map(([name, change, options = {}]) => {
+    const doc = structuredClone(toDocument(sampleRecord(options)))
+    const carry = () => { doc.schemas = structuredClone(toDocument(sampleRecord(options), { carrySchemas: true }).schemas) }
+    change(doc, carry)
+    return { name, document: doc, ...verdict(doc) }
+  }),
+  ...BEFORE_CASES.map(([name, from, change]) => {
+    const doc = structuredClone(BEFORE[from])
+    change(doc)
+    return { name, document: doc, ...verdict(doc) }
+  }),
+]
 
 // ── Write or check ──────────────────────────────────────────────────────────
 

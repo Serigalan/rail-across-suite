@@ -1,0 +1,1151 @@
+{
+ "description": "infra-data 1.0 documents as the core wrote them before infra-data-2.0 (decision 0025), frozen: the door reads them as 2.0. tools/vectors.mjs makes the 1.0 cases of documents.json from them.",
+ "documents": {
+  "the sample": {
+   "format": "infra-data",
+   "version": "1.0",
+   "domains": {
+    "core": {
+     "version": "1.0",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
+     "fields": {
+      "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
+      "title": "Halle-Trotha",
+      "description": "vectors",
+      "creator": "core",
+      "createdAt": "2026-10-29T13:21:07.630Z",
+      "crsSystem": "ETRS89_UTM",
+      "lineCategory": "secondary",
+      "gaugeProfile": "hauptgleis",
+      "stages": [
+       {
+        "id": "b2a40cac-c53f-8ee2-b693-61aab009da16"
+       },
+       {
+        "id": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+       }
+      ]
+     },
+     "collections": {
+      "tracks": [
+       {
+        "id": "t1",
+        "name": "6050.001",
+        "trackType": 1,
+        "lineNumber": 6050,
+        "side": 1,
+        "epsg": 25832,
+        "heightEpsg": 7837,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500000,
+           5700000
+          ],
+          "endNode": [
+           500100,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 100,
+          "designSpeed": 80
+         },
+         {
+          "elementType": 0,
+          "startNode": [
+           500100,
+           5700000
+          ],
+          "endNode": [
+           500250,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 150,
+          "cant": 0,
+          "role": "follow"
+         }
+        ],
+        "heights": [
+         {
+          "station": 0,
+          "z": 108.55
+         },
+         {
+          "station": 250,
+          "z": 109.1,
+          "rv": 15000
+         }
+        ]
+       },
+       {
+        "id": "t2",
+        "name": "1",
+        "trackType": 2,
+        "trackNumber": "1",
+        "epsg": 25832,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500250,
+           5700000
+          ],
+          "endNode": [
+           500400,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 150
+         }
+        ],
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "lifespan": {
+         "from": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+        }
+       },
+       {
+        "id": "t3",
+        "name": "alt",
+        "epsg": 25832,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500400,
+           5700000
+          ],
+          "endNode": [
+           500450,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 50
+         }
+        ],
+        "lifespan": {
+         "to": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+        }
+       }
+      ],
+      "switches": [
+       {
+        "id": "w1",
+        "kind": "link",
+        "formVersion": 1,
+        "name": "link.001",
+        "ports": {
+         "A": {
+          "trackId": "t1",
+          "endpoint": "END"
+         },
+         "B": {
+          "trackId": "t2",
+          "endpoint": "BEGIN"
+         }
+        }
+       }
+      ],
+      "platforms": [
+       {
+        "at": {
+         "anchor": "station",
+         "trackId": "t2",
+         "startStation": 10,
+         "endStation": 140,
+         "side": "left"
+        },
+        "id": "p1",
+        "frontOffset": 1.67,
+        "height": 550,
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+       }
+      ],
+      "endMarks": [
+       {
+        "id": "e1",
+        "kind": "buffer_stop",
+        "type": 4,
+        "brakeLength": 4,
+        "at": {
+         "trackId": "t3",
+         "endpoint": "END"
+        }
+       }
+      ],
+      "kmLines": [
+       {
+        "id": "km-6050",
+        "lineNumber": 6050,
+        "crs": "EPSG:4326",
+        "clip": [
+         11.9,
+         51.5,
+         12,
+         51.6
+        ],
+        "runs": [
+         [
+          [
+           11.95,
+           51.55,
+           1200.5
+          ],
+          [
+           11.96,
+           51.56,
+           1300
+          ]
+         ]
+        ]
+       }
+      ],
+      "operationalPoints": [
+       {
+        "id": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "name": "Halle-Trotha",
+        "rl100": "LHT",
+        "uic": "8023111"
+       }
+      ]
+     }
+    },
+    "layout": {
+     "version": "1.0",
+     "schema": "sha256:b2280dcf6cfe779e148b6c402ac46eb4ff1e8d96b55e6e3abcb370ef48ff1f1b",
+     "dependsOn": [
+      "core"
+     ],
+     "fields": {
+      "planHeader": {
+       "subtitle": "Lageplan"
+      },
+      "imageHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+     },
+     "collections": {
+      "trackPaths": [
+       {
+        "id": "r1",
+        "name": "Gleis 1 durch",
+        "path": {
+         "trackIds": [
+          "t1",
+          "t2"
+         ]
+        }
+       }
+      ],
+      "axisSurveys": [
+       {
+        "id": "a1",
+        "name": "Trace",
+        "epsg": 25832,
+        "rail": "54E4",
+        "guide": {
+         "kind": "track",
+         "trackId": "t1"
+        },
+        "cloudNames": [
+         "W0"
+        ],
+        "createdAt": "2026-10-29T13:21:07.630Z",
+        "step": 0.5,
+        "gaps": [],
+        "points": "sha256:b4aa72abe9415d526401fd1bf2a5b35429b0f47eb23781632212aa9e77710d48"
+       }
+      ],
+      "referenceAxes": [
+       {
+        "id": "x1",
+        "name": "Bestand",
+        "epsg": 25832,
+        "heightEpsg": null,
+        "source": {
+         "tra": "a.TRA",
+         "gra": null
+        },
+        "points": "sha256:55dda32d20595141bb76c28a3769eb9345e54af5adea57d111f73a0b63b52acf"
+       }
+      ]
+     }
+    }
+   },
+   "blobs": {
+    "sha256:b4aa72abe9415d526401fd1bf2a5b35429b0f47eb23781632212aa9e77710d48": {
+     "e0": 500000,
+     "n0": 5700000,
+     "z0": 108,
+     "st": [
+      0,
+      500
+     ],
+     "de": [
+      0,
+      500
+     ],
+     "dn": [
+      0,
+      0
+     ],
+     "zl": [
+      550,
+      560
+     ],
+     "zr": [
+      550,
+      561
+     ],
+     "ga": [
+      1435,
+      1436
+     ],
+     "q": [
+      1,
+      1
+     ]
+    },
+    "sha256:55dda32d20595141bb76c28a3769eb9345e54af5adea57d111f73a0b63b52acf": {
+     "s0": 0,
+     "step": 0.01,
+     "count": 3,
+     "e0": 500000,
+     "n0": 5700000,
+     "de": [
+      0,
+      10,
+      10
+     ],
+     "dn": [
+      0,
+      0,
+      0
+     ],
+     "z": null
+    }
+   }
+  },
+  "the sample with its signalling": {
+   "format": "infra-data",
+   "version": "1.0",
+   "domains": {
+    "core": {
+     "version": "1.0",
+     "schema": "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4",
+     "fields": {
+      "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
+      "title": "Halle-Trotha",
+      "description": "vectors",
+      "creator": "core",
+      "createdAt": "2026-10-29T13:21:07.630Z",
+      "crsSystem": "ETRS89_UTM",
+      "lineCategory": "secondary",
+      "gaugeProfile": "hauptgleis",
+      "stages": [
+       {
+        "id": "b2a40cac-c53f-8ee2-b693-61aab009da16"
+       },
+       {
+        "id": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+       }
+      ]
+     },
+     "collections": {
+      "tracks": [
+       {
+        "id": "t1",
+        "name": "6050.001",
+        "trackType": 1,
+        "lineNumber": 6050,
+        "side": 1,
+        "epsg": 25832,
+        "heightEpsg": 7837,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500000,
+           5700000
+          ],
+          "endNode": [
+           500100,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 100,
+          "designSpeed": 80
+         },
+         {
+          "elementType": 0,
+          "startNode": [
+           500100,
+           5700000
+          ],
+          "endNode": [
+           500250,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 150,
+          "cant": 0,
+          "role": "follow"
+         }
+        ],
+        "heights": [
+         {
+          "station": 0,
+          "z": 108.55
+         },
+         {
+          "station": 250,
+          "z": 109.1,
+          "rv": 15000
+         }
+        ]
+       },
+       {
+        "id": "t2",
+        "name": "1",
+        "trackType": 2,
+        "trackNumber": "1",
+        "epsg": 25832,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500250,
+           5700000
+          ],
+          "endNode": [
+           500400,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 150
+         }
+        ],
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "lifespan": {
+         "from": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+        }
+       },
+       {
+        "id": "t3",
+        "name": "alt",
+        "epsg": 25832,
+        "elements": [
+         {
+          "elementType": 0,
+          "startNode": [
+           500400,
+           5700000
+          ],
+          "endNode": [
+           500450,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 50
+         }
+        ],
+        "lifespan": {
+         "to": "c6a55ddb-9ab2-8926-be56-c083752f051a"
+        }
+       }
+      ],
+      "switches": [
+       {
+        "id": "w1",
+        "kind": "link",
+        "formVersion": 1,
+        "name": "link.001",
+        "ports": {
+         "A": {
+          "trackId": "t1",
+          "endpoint": "END"
+         },
+         "B": {
+          "trackId": "t2",
+          "endpoint": "BEGIN"
+         }
+        }
+       }
+      ],
+      "platforms": [
+       {
+        "at": {
+         "anchor": "station",
+         "trackId": "t2",
+         "startStation": 10,
+         "endStation": 140,
+         "side": "left"
+        },
+        "id": "p1",
+        "frontOffset": 1.67,
+        "height": 550,
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+       }
+      ],
+      "endMarks": [
+       {
+        "id": "e1",
+        "kind": "buffer_stop",
+        "type": 4,
+        "brakeLength": 4,
+        "at": {
+         "trackId": "t3",
+         "endpoint": "END"
+        }
+       }
+      ],
+      "kmLines": [
+       {
+        "id": "km-6050",
+        "lineNumber": 6050,
+        "crs": "EPSG:4326",
+        "clip": [
+         11.9,
+         51.5,
+         12,
+         51.6
+        ],
+        "runs": [
+         [
+          [
+           11.95,
+           51.55,
+           1200.5
+          ],
+          [
+           11.96,
+           51.56,
+           1300
+          ]
+         ]
+        ]
+       }
+      ],
+      "operationalPoints": [
+       {
+        "id": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "name": "Halle-Trotha",
+        "rl100": "LHT",
+        "uic": "8023111"
+       }
+      ]
+     }
+    },
+    "layout": {
+     "version": "1.0",
+     "schema": "sha256:b2280dcf6cfe779e148b6c402ac46eb4ff1e8d96b55e6e3abcb370ef48ff1f1b",
+     "dependsOn": [
+      "core"
+     ],
+     "fields": {
+      "planHeader": {
+       "subtitle": "Lageplan"
+      },
+      "imageHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+     },
+     "collections": {
+      "trackPaths": [
+       {
+        "id": "r1",
+        "name": "Gleis 1 durch",
+        "path": {
+         "trackIds": [
+          "t1",
+          "t2"
+         ]
+        }
+       }
+      ],
+      "axisSurveys": [
+       {
+        "id": "a1",
+        "name": "Trace",
+        "epsg": 25832,
+        "rail": "54E4",
+        "guide": {
+         "kind": "track",
+         "trackId": "t1"
+        },
+        "cloudNames": [
+         "W0"
+        ],
+        "createdAt": "2026-10-29T13:21:07.630Z",
+        "step": 0.5,
+        "gaps": [],
+        "points": "sha256:b4aa72abe9415d526401fd1bf2a5b35429b0f47eb23781632212aa9e77710d48"
+       }
+      ],
+      "referenceAxes": [
+       {
+        "id": "x1",
+        "name": "Bestand",
+        "epsg": 25832,
+        "heightEpsg": null,
+        "source": {
+         "tra": "a.TRA",
+         "gra": null
+        },
+        "points": "sha256:55dda32d20595141bb76c28a3769eb9345e54af5adea57d111f73a0b63b52acf"
+       }
+      ]
+     }
+    },
+    "signalling": {
+     "version": "1.0",
+     "schema": "sha256:b28ada7513c555fa4696ff2b41c73bb7565143854c08e2e9bfb067e99018910c",
+     "dependsOn": [
+      "core"
+     ],
+     "fields": {
+      "catalogue": {
+       "id": "db-ril-301",
+       "version": "0.4.0"
+      }
+     },
+     "collections": {
+      "signals": [
+       {
+        "id": "sig-a",
+        "name": "A",
+        "kind": "real",
+        "mounting": "mast",
+        "operationalPointId": "Halle-Trotha",
+        "at": {
+         "anchor": "station",
+         "trackId": "t1",
+         "station": 20,
+         "side": "right",
+         "offset": 3.1,
+         "direction": "up"
+        },
+        "sight": {
+         "required": 300,
+         "achievable": 420
+        },
+        "logicalSignals": [
+         {
+          "system": "ks",
+          "type": "multiSection",
+          "function": "entry",
+          "frames": [
+           {
+            "kind": "screen",
+            "aspects": [
+             {
+              "aspect": "Hp_0"
+             },
+             {
+              "aspect": "Ks_1"
+             },
+             {
+              "aspect": "Ks_2"
+             }
+            ]
+           },
+           {
+            "kind": "indicator",
+            "aspects": [
+             {
+              "aspect": "Zs_3",
+              "symbol": "6"
+             }
+            ]
+           },
+           {
+            "kind": "indicator",
+            "aspects": [
+             {
+              "aspect": "Zs_2",
+              "symbol": "H"
+             }
+            ]
+           },
+           {
+            "kind": "indicator",
+            "aspects": [
+             {
+              "aspect": "Zs_1"
+             }
+            ]
+           }
+          ],
+          "signallingSpeeds": [
+           {
+            "routeId": "rt-a-n1",
+            "speed": 60
+           }
+          ]
+         }
+        ],
+        "frames": [
+         {
+          "kind": "nameplate",
+          "aspects": []
+         }
+        ]
+       },
+       {
+        "id": "sig-n1",
+        "name": "N1",
+        "kind": "real",
+        "mounting": "gantry",
+        "operationalPointId": "Halle-Trotha",
+        "at": {
+         "anchor": "station",
+         "trackId": "t1",
+         "station": 230,
+         "direction": "up"
+        },
+        "foundation": {
+         "side": "right",
+         "offset": 3.8
+        },
+        "logicalSignals": [
+         {
+          "system": "ks",
+          "type": "mainShunting",
+          "function": "exit",
+          "frames": [
+           {
+            "kind": "screen",
+            "aspects": [
+             {
+              "aspect": "Hp_0"
+             },
+             {
+              "aspect": "Ks_1"
+             },
+             {
+              "aspect": "Sh_1"
+             }
+            ]
+           },
+           {
+            "kind": "indicator",
+            "aspects": [
+             {
+              "aspect": "Zs_1"
+             }
+            ]
+           }
+          ],
+          "signallingSpeeds": [
+           {
+            "routeId": "rt-n1-v",
+            "speed": 80
+           }
+          ]
+         }
+        ],
+        "frames": []
+       },
+       {
+        "id": "sig-ne1",
+        "kind": "real",
+        "function": "standaloneIndicator",
+        "mounting": "foundation",
+        "at": {
+         "anchor": "station",
+         "trackId": "t1",
+         "station": 5,
+         "side": "right",
+         "offset": 3.1,
+         "direction": "up"
+        },
+        "operationalPointId": "Halle-Trotha",
+        "frames": [
+         {
+          "kind": "plate",
+          "aspects": [
+           {
+            "aspect": "Ne_1"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "id": "sig-v",
+        "kind": "virtual",
+        "virtualFunction": "trainTargetLine",
+        "at": {
+         "anchor": "station",
+         "trackId": "t2",
+         "station": 140,
+         "side": "right",
+         "offset": 3.1,
+         "direction": "up"
+        }
+       }
+      ],
+      "detectionPoints": [
+       {
+        "id": "dp-1",
+        "name": "1",
+        "kind": "axleCounter",
+        "at": {
+         "anchor": "station",
+         "trackId": "t1",
+         "station": 15,
+         "side": "right",
+         "offset": 3.1,
+         "direction": "up"
+        }
+       },
+       {
+        "id": "dp-2",
+        "name": "2",
+        "kind": "axleCounter",
+        "at": {
+         "anchor": "station",
+         "trackId": "t1",
+         "station": 240,
+         "side": "right",
+         "offset": 3.1,
+         "direction": "up"
+        }
+       }
+      ],
+      "trackSections": [
+       {
+        "id": "ts-1",
+        "name": "1",
+        "kind": "axleCounting",
+        "boundedBy": [
+         "dp-1",
+         "dp-2"
+        ]
+       }
+      ],
+      "switchElements": [
+       {
+        "id": "we-1",
+        "name": "W1",
+        "switchId": "w1",
+        "operation": "electricRemote",
+        "preferredPosition": "left"
+       }
+      ],
+      "routes": [
+       {
+        "id": "rt-a-n1",
+        "name": "A\u2013N1",
+        "kind": "train",
+        "trainType": "ZZ",
+        "startSignalId": "sig-a",
+        "targetSignalId": "sig-n1",
+        "path": {
+         "trackIds": [
+          "t1"
+         ]
+        },
+        "overlaps": [
+         {
+          "overlapId": "ov-n1",
+          "preferred": true
+         }
+        ],
+        "aspects": [
+         {
+          "signalId": "sig-a",
+          "aspect": "Ks_1"
+         },
+         {
+          "signalId": "sig-a",
+          "aspect": "Zs_3",
+          "symbol": "6"
+         }
+        ]
+       },
+       {
+        "id": "rt-n1-v",
+        "name": "N1\u2013Strecke",
+        "kind": "train",
+        "trainType": "ZZ",
+        "startSignalId": "sig-n1",
+        "targetSignalId": "sig-v",
+        "path": {
+         "trackIds": [
+          "t1",
+          "t2"
+         ]
+        },
+        "aspects": [
+         {
+          "signalId": "sig-n1",
+          "aspect": "Ks_1"
+         }
+        ]
+       }
+      ],
+      "overlaps": [
+       {
+        "id": "ov-n1",
+        "name": "N1/200",
+        "signalId": "sig-n1",
+        "path": {
+         "trackIds": [
+          "t1",
+          "t2"
+         ]
+        },
+        "end": {
+         "anchor": "station",
+         "trackId": "t2",
+         "station": 100
+        },
+        "length": 120,
+        "gradient": -2.5,
+        "speed": 60,
+        "clearSections": [
+         "ts-1"
+        ],
+        "switches": [
+         {
+          "switchElementId": "we-1",
+          "locked": true
+         }
+        ]
+       }
+      ],
+      "flankProtection": [
+       {
+        "id": "fla-1",
+        "requester": {
+         "switchElementId": "we-1",
+         "via": "left"
+        },
+        "protection": {
+         "signalId": "sig-n1"
+        }
+       },
+       {
+        "id": "fla-2",
+        "requester": {
+         "switchElementId": "we-1",
+         "via": "right"
+        },
+        "protection": {
+         "waived": true
+        }
+       }
+      ],
+      "balises": [
+       {
+        "id": "etcs-n1",
+        "name": "N1",
+        "at": {
+         "anchor": "station",
+         "trackId": "t1",
+         "station": 226,
+         "side": "right",
+         "offset": 3.1,
+         "direction": "up"
+        },
+        "system": "etcs",
+        "kind": "fixed",
+        "settings": {
+         "group": "N1",
+         "position": 1
+        },
+        "signalId": "sig-n1",
+        "effect": "permanent"
+       },
+       {
+        "id": "pzb-a-1000",
+        "at": {
+         "anchor": "station",
+         "trackId": "t1",
+         "station": 20,
+         "side": "right",
+         "offset": 3.1,
+         "direction": "up"
+        },
+        "system": "pzb",
+        "kind": "magnet",
+        "settings": {
+         "frequency": "1000"
+        },
+        "signalId": "sig-a",
+        "effect": "switchedBySignal"
+       },
+       {
+        "id": "pzb-gue",
+        "at": {
+         "anchor": "station",
+         "trackId": "t1",
+         "station": 200,
+         "side": "right",
+         "offset": 3.1,
+         "direction": "up"
+        },
+        "system": "pzb",
+        "kind": "speedCheck",
+        "signalId": "sig-n1",
+        "effect": "switchedBySignal",
+        "settings": {
+         "frequency": "2000",
+         "testSpeed": 50,
+         "measuringLength": 21.4,
+         "arrangement": "startFirst"
+        },
+        "routes": [
+         {
+          "routeId": "rt-n1-v",
+          "effect": "inactiveWhenSet"
+         }
+        ]
+       },
+       {
+        "id": "pzb-n1-2000",
+        "at": {
+         "anchor": "station",
+         "trackId": "t1",
+         "station": 230,
+         "side": "right",
+         "offset": 3.1,
+         "direction": "up"
+        },
+        "system": "pzb",
+        "kind": "magnet",
+        "settings": {
+         "frequency": "2000"
+        },
+        "signalId": "sig-n1",
+        "effect": "switchedBySignal"
+       },
+       {
+        "id": "pzb-n1-500",
+        "at": {
+         "anchor": "station",
+         "trackId": "t1",
+         "station": 0,
+         "side": "right",
+         "offset": 3.1,
+         "direction": "up"
+        },
+        "system": "pzb",
+        "kind": "magnet",
+        "settings": {
+         "frequency": "500",
+         "ina": true
+        },
+        "signalId": "sig-n1",
+        "effect": "switchedBySignal"
+       }
+      ],
+      "stationBoundaries": [
+       {
+        "id": "bd-1",
+        "operationalPointId": "Halle-Trotha",
+        "marks": [
+         {
+          "signalId": "sig-a"
+         }
+        ]
+       }
+      ],
+      "stoppingPlaces": [
+       {
+        "id": "hp-1",
+        "name": "Gleis 1",
+        "operationalPointId": "Halle-Trotha",
+        "at": {
+         "anchor": "station",
+         "trackId": "t1",
+         "startStation": 20,
+         "endStation": 230
+        }
+       },
+       {
+        "id": "hp-2",
+        "name": "Gleis 2",
+        "operationalPointId": "Halle-Trotha",
+        "at": {
+         "anchor": "station",
+         "trackId": "t2",
+         "startStation": 0,
+         "endStation": 140
+        }
+       }
+      ],
+      "itineraries": [
+       {
+        "id": "fw-1",
+        "name": "1 \u2192 2",
+        "startStoppingPlaceId": "hp-1",
+        "targetStoppingPlaceId": "hp-2",
+        "routeIds": [
+         "rt-n1-v"
+        ],
+        "path": {
+         "trackIds": [
+          "t1",
+          "t2"
+         ]
+        }
+       }
+      ]
+     }
+    }
+   },
+   "blobs": {
+    "sha256:b4aa72abe9415d526401fd1bf2a5b35429b0f47eb23781632212aa9e77710d48": {
+     "e0": 500000,
+     "n0": 5700000,
+     "z0": 108,
+     "st": [
+      0,
+      500
+     ],
+     "de": [
+      0,
+      500
+     ],
+     "dn": [
+      0,
+      0
+     ],
+     "zl": [
+      550,
+      560
+     ],
+     "zr": [
+      550,
+      561
+     ],
+     "ga": [
+      1435,
+      1436
+     ],
+     "q": [
+      1,
+      1
+     ]
+    },
+    "sha256:55dda32d20595141bb76c28a3769eb9345e54af5adea57d111f73a0b63b52acf": {
+     "s0": 0,
+     "step": 0.01,
+     "count": 3,
+     "e0": 500000,
+     "n0": 5700000,
+     "de": [
+      0,
+      10,
+      10
+     ],
+     "dn": [
+      0,
+      0,
+      0
+     ],
+     "z": null
+    }
+   }
+  }
+ }
+}

@@ -43,7 +43,7 @@ pub fn check_kept(record: Value) -> Result<Checked, ApiError> {
     let (mut errors, mut warnings) = (list("errors"), list("warnings"));
     if rail_across_js::truthy(record.get("signalling")) {
         let doc = project_document(&record, false, true).map_err(|e| ApiError::new(422, &e.code))?;
-        let found = rail_across_signalling::check::check_signalling(&doc["domains"]["core"], &doc["domains"]["signalling"]);
+        let found = rail_across_signalling::check::check_signalling_on(&doc["domains"]["core"], &doc["domains"]["signalling"], &doc["domains"]["civil"]);
         let keyed = |f: &Value| {
             let mut o: Map<String, Value> = f.as_object().cloned().unwrap_or_default();
             o.insert("domain".into(), json!("signalling"));

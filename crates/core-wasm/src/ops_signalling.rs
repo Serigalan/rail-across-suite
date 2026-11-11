@@ -49,7 +49,7 @@ pub fn run(op: &str, input: &Value) -> Option<Result<Value, Failure>> {
         "signalling.aspectSpeed" => ok(opt_num(cat::aspect_speed(a.opt(0), a.opt(1)))),
         "signalling.checkSignalling" => {
             let (core, signalling) = domains(input);
-            ok(check::check_signalling(core, signalling))
+            ok(check::check_signalling_on(core, signalling, input.get(0).and_then(|b| b.get("civil")).unwrap_or(&Value::Null)))
         }
         "signalling.overlapLength" => ok(opt_num(overlaps::overlap_length(a.of(0), a.of(1).unwrap_or(0.0)))),
         "signalling.signallingSpeedOf" => ok(found(overlaps::signalling_speed_of(a.v(0), a.v(1)).as_ref())),

@@ -165,7 +165,7 @@ describe('the title block of a project\'s plans', () => {
     expect(savePlanHeader({ subtitle: 'Streckenband' })).toBe(true)
     expect(loadPlanHeader().subtitle).toBe('Streckenband')
     const exported = exportProjectDocument()
-    expect(exported.domains.layout.fields.planHeader.subtitle).toBe('Streckenband')
+    expect(exported.domains.civil.fields.planHeader.subtitle).toBe('Streckenband')
 
     saveTrack({ id: 'th', elements: [] })
     savePlanHeader({ subtitle: 'neu' })
@@ -412,7 +412,7 @@ describe('a project kept where its opener says', () => {
     expect(saved).toHaveLength(1)
     expect(saved[0]).toMatchObject({ projectId: 'kp', note: 1 })
     // The project as its infra-data-1.0 document, made by the core's module from what it holds.
-    expect(saved[0].document).toMatchObject({ format: 'infra-data', version: '1.0' })
+    expect(saved[0].document).toMatchObject({ format: 'infra-data', version: '2.0' })
     expect(saved[0].document.domains.core.collections.tracks[0].elements[0].geometry).toBeUndefined()
     expect(saved[0].document.domains.core.collections.tracks[0].elements).toHaveLength(1)
     expect(saved[0].updatedAt).toEqual(expect.any(String))

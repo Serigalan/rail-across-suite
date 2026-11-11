@@ -14,6 +14,7 @@ pub mod canonical;
 pub mod core_format;
 pub mod door;
 pub mod error;
+pub mod layers;
 pub mod manifest;
 pub mod persistence;
 pub mod schema;

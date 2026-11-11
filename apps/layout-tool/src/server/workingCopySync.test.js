@@ -44,7 +44,7 @@ describe('checking the working copy in', () => {
     const sent = serve({ 'POST /api/variants/v/revisions': [201, { revision: { id: 2, number: 2 } }] })
     const res = await checkIn('neu')
     expect(res.revision.id).toBe(2)
-    expect(sent[0].body).toMatchObject({ base: 1, message: 'neu', remaps: [], payload: { format: 'infra-data', version: '1.0' } })
+    expect(sent[0].body).toMatchObject({ base: 1, message: 'neu', remaps: [], payload: { format: 'infra-data', version: '2.0' } })
     expect(recordOf(sent[0].body.payload)).toMatchObject({ id: 'p' })
     expect(recordOf(sent[0].body.payload).tracks.map(t => t.id)).toEqual(['t1', 't2'])
     expect(currentWorkingCopy().base.id).toBe(2)

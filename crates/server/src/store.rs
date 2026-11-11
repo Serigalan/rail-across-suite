@@ -18,11 +18,14 @@ use crate::auth::User;
 use crate::http::ApiError;
 use crate::util::{iso, uuid};
 
-/// What `revision.schema_version` says of a payload: 4, an infra-data-1.0
-/// document (decision 0021). 3 (the core 1.0 document) and 2 (oltjson-1.1)
-/// are migrated into it once (data migration `0021-infra-data`); anything
-/// else is refused as `format_outdated`.
-pub const STORED_FORMAT: i64 = 4;
+/// What `revision.schema_version` says of a payload: 5, an infra-data-2.0
+/// document (decision 0025). 4 (infra-data-1.0) is migrated into it once (data
+/// migration `0025-infra-data-2.0`) and read through the door where one is
+/// left; 3 (the core 1.0 document) and 2 (oltjson-1.1) once by `0021-infra-data`;
+/// anything else is refused as `format_outdated`.
+pub const STORED_FORMAT: i64 = 5;
+/// infra-data-1.0 (decision 0021), before 2.0.
+pub const STORED_FORMAT_1_0: i64 = 4;
 
 pub fn pack(payload: &Value) -> Vec<u8> {
     let mut e = GzEncoder::new(Vec::new(), Compression::default());
@@ -226,6 +229,9 @@ impl<'a> Store<'a> {
         };
         let payload = match version {
             STORED_FORMAT => unpack(&payload).ok_or_else(|| ApiError::new(500, "internal"))?,
+            STORED_FORMAT_1_0 => unpack(&payload)
+                .and_then(|p| rail_across_doc::door::check_document(&p).ok())
+                .ok_or_else(|| ApiError::new(409, "format_outdated"))?,
             _ => return Err(ApiError::new(409, "format_outdated")),
         };
         Ok(Some(Revision {

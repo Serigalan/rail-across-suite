@@ -1,12 +1,13 @@
 // SPDX-FileCopyrightText: 2026 Serigalan and the Rail-Across-Suite contributors
 // SPDX-License-Identifier: LGPL-3.0-only
 
-//! The one door for infra-data-1.0 documents (`door.js`; decision 0021 — what
+//! The one door for infra-data documents (`door.js`; decision 0021 — what
 //! was "the core 1.0 document"): what comes in is checked
 //! here — the file's shape, each domain's version and schema, every object
 //! against its domain's schema, the blobs against their hashes — and what is
 //! written is checked the same way before it leaves. A domain of an earlier
-//! schema of its version is brought to this build's first (S-R10).
+//! schema of its version is brought to this build's first, and an infra-data
+//! 1.0 document to 2.0, the layers of decision 0025 (S-R10).
 
 use std::collections::{HashMap, HashSet};
 use std::sync::OnceLock;
@@ -17,23 +18,27 @@ use serde_json::{Value, json};
 use crate::canonical::content_hash;
 use crate::core_format::{document_to_record, domain_version, record_to_document};
 use crate::error::{PayloadError, Result};
+use crate::layers;
 use crate::schema::{Breach, SchemaSet};
 
 /// The file format's name, as the envelope states it.
 pub const FORMAT: &str = "infra-data";
 /// The format's version, as the envelope states it.
-pub const VERSION: &str = "1.0";
-/// The format's name as it is spoken of: infra-data-1.0.
-pub const FORMAT_NAME: &str = "infra-data-1.0";
+pub const VERSION: &str = "2.0";
+/// The version before, which the door reads and brings to this one.
+pub const VERSION_BEFORE: &str = "1.0";
+/// The format's name as it is spoken of: infra-data-2.0.
+pub const FORMAT_NAME: &str = "infra-data-2.0";
 /// The envelope the same documents had before decision 0021 ("the core 1.0
 /// document"), which only the project server's one migration still reads
 /// (`upgrade_envelope`).
 pub const OLD_FORMAT: &str = "rail-across";
 
 const ENVELOPE: &str = include_str!("../../../schemas/infra-data.schema.json");
-const CORE: &str = include_str!("../../../schemas/core/1.0.schema.json");
-const LAYOUT: &str = include_str!("../../../schemas/layout/1.0.schema.json");
-const SIGNALLING: &str = include_str!("../../../schemas/signalling/1.0.schema.json");
+const CORE: &str = include_str!("../../../schemas/core/2.0.schema.json");
+const CIVIL: &str = include_str!("../../../schemas/civil/1.0.schema.json");
+const SIGNALLING: &str = include_str!("../../../schemas/signalling/2.0.schema.json");
+const ELECTRIFICATION: &str = include_str!("../../../schemas/electrification/1.0.schema.json");
 
 struct Schemas {
     set: SchemaSet,
@@ -47,7 +52,12 @@ fn schemas() -> &'static Schemas {
     SCHEMAS.get_or_init(|| {
         let parse = |text: &str| serde_json::from_str::<Value>(text).expect("a schema of this build");
         let envelope = parse(ENVELOPE);
-        let domains = vec![("core", parse(CORE)), ("layout", parse(LAYOUT)), ("signalling", parse(SIGNALLING))];
+        let domains = vec![
+            ("core", parse(CORE)),
+            ("civil", parse(CIVIL)),
+            ("signalling", parse(SIGNALLING)),
+            ("electrification", parse(ELECTRIFICATION)),
+        ];
         let mut set = SchemaSet::new();
         set.add(envelope.clone()).expect("the envelope's schema");
         for (_, s) in &domains {
@@ -82,8 +92,14 @@ const SIGNALLING_THIRD: &str = "sha256:0194c1e7fe2a63741270025beb48929d106d74a80
 const SIGNALLING_FOURTH: &str = "sha256:cee619f2ae1b256a81ca5536e3851602cce96841d16bb2fe5f11ffe1a5e1f64c";
 const SIGNALLING_FIFTH: &str = "sha256:d5c61938fb3da1cc80f638c051cac562c19ad207507373ac3381f3a97922d83c";
 const SIGNALLING_SIXTH: &str = "sha256:aeb06433b03125995823095d7ab89567311237560cbc3b9e6a954385305f0134";
+/// Signalling 1.0 as it last was, and core and layout 1.0: what the step to 2.0 starts from.
+const SIGNALLING_SEVENTH: &str = "sha256:b28ada7513c555fa4696ff2b41c73bb7565143854c08e2e9bfb067e99018910c";
 const CORE_FIRST: &str = "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6";
 const CORE_SECOND: &str = "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19";
+const CORE_THIRD: &str = "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4";
+const LAYOUT_FIRST: &str = "sha256:b2280dcf6cfe779e148b6c402ac46eb4ff1e8d96b55e6e3abcb370ef48ff1f1b";
+/// The domains of infra-data 1.0, with the schema each had last.
+const BEFORE: &[(&str, &str)] = &[("core", CORE_THIRD), ("layout", LAYOUT_FIRST), ("signalling", SIGNALLING_SEVENTH)];
 
 fn obj(v: &Value) -> Object {
     v.as_object().cloned().unwrap_or_default()
@@ -248,7 +264,7 @@ fn signalling_step(domain: &Value) -> Option<Value> {
             c.insert("itineraries".into(), json!([]));
             Some(with_schema(domain, SIGNALLING_SIXTH, Some(c)))
         }
-        SIGNALLING_SIXTH => Some(with_schema(domain, &schema_hashes()["signalling"], None)),
+        SIGNALLING_SIXTH => Some(with_schema(domain, SIGNALLING_SEVENTH, None)),
         _ => None,
     }
 }
@@ -285,13 +301,14 @@ fn core_step(domain: &Value) -> Option<Value> {
             c.insert("tracks".into(), Value::Array(tracks));
             Some(with_schema(domain, CORE_SECOND, Some(c)))
         }
-        CORE_SECOND => Some(with_schema(domain, &schema_hashes()["core"], None)),
+        CORE_SECOND => Some(with_schema(domain, CORE_THIRD, None)),
         _ => None,
     }
 }
 
-/// The document with every domain of an earlier schema of its version brought to this build's.
-fn migrated(doc: &Value) -> Value {
+/// An infra-data 1.0 document with every domain of an earlier schema of 1.0
+/// brought to 1.0's last, as the door did while 1.0 was this build's.
+fn migrated_within_1_0(doc: &Value) -> Value {
     let domains = &doc["domains"];
     let mut core = domains.get("core").cloned();
     let mut signalling = domains.get("signalling").cloned();
@@ -323,6 +340,85 @@ fn migrated(doc: &Value) -> Value {
     Value::Object(out)
 }
 
+fn sorted_by_id(mut items: Vec<Value>) -> Vec<Value> {
+    crate::core_format::by_id(&mut items);
+    items
+}
+
+/// infra-data 1.0, its domains at 1.0's last schemas, as infra-data 2.0 (decision 0025):
+/// `layout` and the platforms into `civil`; the stopping places out of `signalling` into
+/// the core, a stopping place's platform into the platform's `stoppingPlaceIds`; a
+/// boundary marked by a platform marked by the stopping place at it, one made over the
+/// platform where there is none. Schemas it carried, it carries as 2.0's. A domain of
+/// another schema is left as it was, for the check to name.
+fn to_2_0(doc: &Value) -> Value {
+    let domains = obj(&doc["domains"]);
+    let schema_is = |name: &str, hash: &str| domains.get(name).and_then(|d| d.get("schema")).and_then(Value::as_str) == Some(hash);
+    if !BEFORE.iter().all(|(name, hash)| !domains.contains_key(*name) || schema_is(name, hash)) {
+        let mut out = obj(doc);
+        out.insert("version".into(), json!(VERSION));
+        return Value::Object(out);
+    }
+    let core = domains.get("core").cloned().unwrap_or(json!({}));
+    let mut core_cols = obj(core.get("collections").unwrap_or(&Value::Null));
+    let platforms = core_cols.shift_remove("platforms").and_then(|v| v.as_array().cloned()).unwrap_or_default();
+    let mut out_domains = Object::new();
+
+    let mut stopping = Vec::new();
+    let mut signalling = None;
+    if let Some(sig) = domains.get("signalling") {
+        let mut cols = obj(sig.get("collections").unwrap_or(&Value::Null));
+        stopping = cols.shift_remove("stoppingPlaces").and_then(|v| v.as_array().cloned()).unwrap_or_default();
+        layers::boundaries_by_stopping_place(&mut cols, &mut stopping, &platforms);
+        let mut d = obj(sig);
+        d.insert("version".into(), json!(crate::core_format::domain_version("signalling")));
+        d.insert("schema".into(), json!(schema_hashes()["signalling"]));
+        d.insert("collections".into(), Value::Object(cols));
+        signalling = Some(Value::Object(d));
+    }
+    core_cols.insert("stoppingPlaces".into(), Value::Array(sorted_by_id(layers::core_stopping_places(&stopping))));
+    let mut c = obj(&core);
+    c.insert("version".into(), json!(crate::core_format::domain_version("core")));
+    c.insert("schema".into(), json!(schema_hashes()["core"]));
+    c.insert("collections".into(), Value::Object(core_cols));
+    out_domains.insert("core".into(), Value::Object(c));
+
+    let layout = domains.get("layout");
+    let mut civil_cols = Object::new();
+    civil_cols.insert("platforms".into(), Value::Array(layers::platforms_naming(&platforms, &stopping)));
+    let layout_cols = layout.map(|l| obj(l.get("collections").unwrap_or(&Value::Null))).unwrap_or_default();
+    for k in ["trackPaths", "axisSurveys", "referenceAxes"] {
+        civil_cols.insert(k.into(), layout_cols.get(k).cloned().unwrap_or(json!([])));
+    }
+    let civil_fields = layout.map(|l| obj(l.get("fields").unwrap_or(&Value::Null))).unwrap_or_default();
+    if layout.is_some() || layers::holds_anything(&civil_fields, &civil_cols) {
+        let mut d = Object::new();
+        d.insert("version".into(), json!(crate::core_format::domain_version("civil")));
+        d.insert("schema".into(), json!(schema_hashes()["civil"]));
+        d.insert("dependsOn".into(), json!(["core"]));
+        d.insert("fields".into(), Value::Object(civil_fields));
+        d.insert("collections".into(), Value::Object(civil_cols));
+        out_domains.insert("civil".into(), Value::Object(d));
+    }
+    if let Some(s) = signalling {
+        out_domains.insert("signalling".into(), s);
+    }
+
+    let mut out = obj(doc);
+    out.insert("version".into(), json!(VERSION));
+    if doc.get("schemas").is_some() {
+        let mut carried = Object::new();
+        for name in out_domains.keys() {
+            if let (Some(h), Some(s)) = (schema_hashes().get(name.as_str()), schema_of(name)) {
+                carried.insert(h.clone(), s.clone());
+            }
+        }
+        out.insert("schemas".into(), Value::Object(carried));
+    }
+    out.insert("domains".into(), Value::Object(out_domains));
+    Value::Object(out)
+}
+
 fn breaches(errors: &[Breach], prefix: &str) -> Vec<String> {
     errors
         .iter()
@@ -337,17 +433,46 @@ fn check(name: &str, value: &Value) -> Vec<Breach> {
         .unwrap_or_else(|e| vec![Breach { path: "/".into(), message: e }])
 }
 
-/// Check an infra-data-1.0 document; returns it — a domain of an earlier schema of
-/// its version brought to this build's —, or a PayloadError (`checkDocument`).
+/// Check an infra-data document; returns it as infra-data-2.0 — an infra-data 1.0
+/// one brought to it, a domain of an earlier schema of its version first brought to
+/// that version's last —, or a PayloadError (`checkDocument`).
 pub fn check_document(given: &Value) -> Result<Value> {
-    if given.get("format").and_then(Value::as_str) != Some(FORMAT) || given.get("version").and_then(Value::as_str) != Some(VERSION) {
+    let version = given.get("version").and_then(Value::as_str);
+    if given.get("format").and_then(Value::as_str) != Some(FORMAT) || !matches!(version, Some(VERSION | VERSION_BEFORE)) {
         return Err(PayloadError::with("unsupported_version", vec![format!("/format: is not {FORMAT_NAME}")]));
     }
-    let shape = check(FORMAT, given);
+    // The envelope's shape is the same in both versions but for the version itself.
+    let mut as_now = obj(given);
+    as_now.insert("version".into(), json!(VERSION));
+    let shape = check(FORMAT, &Value::Object(as_now));
     if !shape.is_empty() {
         return Err(PayloadError::with("invalid_payload", breaches(&shape, "")));
     }
-    let doc = migrated(given);
+    if version == Some(VERSION_BEFORE) {
+        for (name, domain) in given["domains"].as_object().into_iter().flatten() {
+            let known = BEFORE.iter().any(|(d, _)| d == name);
+            if !known || domain.get("version").and_then(Value::as_str) != Some("1.0") {
+                return Err(PayloadError::with(
+                    "unsupported_version",
+                    vec![format!("/domains/{name}: {}", js_string(domain.get("version")))],
+                ));
+            }
+        }
+    }
+    let doc = if version == Some(VERSION_BEFORE) {
+        let within = migrated_within_1_0(given);
+        let wrong: Vec<String> = BEFORE
+            .iter()
+            .filter(|(name, hash)| within["domains"].get(*name).is_some_and(|d| d.get("schema").and_then(Value::as_str) != Some(*hash)))
+            .map(|(name, _)| format!("/domains/{name}/schema: is not the schema of {name} 1.0"))
+            .collect();
+        if !wrong.is_empty() {
+            return Err(PayloadError::with("invalid_payload", wrong));
+        }
+        to_2_0(&within)
+    } else {
+        given.clone()
+    };
     if let Some(Value::Object(schemas)) = doc.get("schemas") {
         for (hash, schema) in schemas {
             if content_hash(schema) != *hash {
@@ -425,7 +550,7 @@ fn switch_branches_without_switch(doc: &Value) -> Vec<String> {
     found
 }
 
-/// The infra-data-1.0 document of a record (dehydrated), checked as the door checks
+/// The infra-data-2.0 document of a record (dehydrated), checked as the door checks
 /// what comes in; `carry_schemas` puts the domains' schemas into it, `check:
 /// false` leaves the check out (`toDocument`).
 pub fn to_document(record: &Value, carry_schemas: bool, check: bool) -> Result<Value> {
@@ -442,7 +567,7 @@ pub fn to_document(record: &Value, carry_schemas: bool, check: bool) -> Result<V
     if check { check_document(&doc) } else { Ok(doc) }
 }
 
-/// The record an infra-data-1.0 document holds, once the door has checked it (`fromDocument`).
+/// The record an infra-data document holds, once the door has checked it (`fromDocument`).
 pub fn from_document(doc: &Value) -> Result<Value> {
     document_to_record(&check_document(doc)?)
 }
@@ -456,7 +581,7 @@ pub fn upgrade_envelope(doc: &Value) -> Value {
         Value::Object(o) if o.get("format").and_then(Value::as_str) == Some(OLD_FORMAT) => {
             let mut out = Object::new();
             out.insert("format".into(), json!(FORMAT));
-            out.insert("version".into(), json!(VERSION));
+            out.insert("version".into(), json!(VERSION_BEFORE));
             for (k, v) in o {
                 if k != "format" && k != "version" {
                     out.insert(k.clone(), v.clone());

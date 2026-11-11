@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { checkSignalling } from '@rail-across/core/signalling'
 import { parseProjectsPayload, projectDocument } from '@rail-across/core/project'
-import { deleted, domainOf, recordOf, signallingOf } from './domain.js'
+import { deleted, domainOf, recordOf, signallingOf, coreOf as coreOfRecord } from './domain.js'
 import {
   boundaryOf, entryMarks, nameTaken, newStation, stationsOf, withBoundary, withPlatforms, withSignals, withStation, withoutStation,
 } from './stations.js'
@@ -28,7 +28,7 @@ const record = {
 }
 
 /** The core of the record the state makes, as the tool reads it. */
-const coreOf = (state) => projectDocument({ ...recordOf(record, state), signalling: undefined }).domains.core
+const coreOf = (state) => coreOfRecord(recordOf(record, state))
 
 describe('the stations', () => {
   it('creates one in the register that nothing names yet, and gives it a platform, which then names it', () => {

@@ -8,7 +8,7 @@ import SettingsPanel from './panels/SettingsPanel.jsx'
 import RoutesPanel from './panels/RoutesPanel.jsx'
 import StationsPanel from './panels/StationsPanel.jsx'
 import { projectDocument } from '@rail-across/core/project'
-import { logicalId } from './model/domain.js'
+import { coreOf, logicalId } from './model/domain.js'
 import { linkedRequest } from './suite.js'
 
 const EPSG = 25832
@@ -232,7 +232,7 @@ describe('the Signalling-Tool', () => {
       platforms: [{ id: 'pf1', trackId: 't2', startStation: 10, endStation: 150, side: 'right', stationName: 'Testdorf' }],
       operationalPoints: [{ id: 'op-w', name: 'Wiesenthal' }],
     }
-    const core = projectDocument({ ...withStation, signalling: undefined }).domains.core
+    const core = coreOf(withStation)
     const testdorf = core.collections.operationalPoints.find(p => p.name === 'Testdorf').id
     const domain = { ...withStation.signalling, collections: { ...withStation.signalling.collections, platforms: withStation.platforms, operationalPoints: withStation.operationalPoints } }
     const panel = (selection, language = 'de') => renderToStaticMarkup(
@@ -249,7 +249,7 @@ describe('the Signalling-Tool', () => {
     const station = panel({ collection: 'operationalPoints', id: testdorf })
     expect(station).toContain('<h2>Bahnhof</h2>')
     expect(station).toContain('Bahnsteig an t2, 10–150 m')
-    expect(station).toMatch(/checked=""\/><span>Bahnsteig an t2/)
+    expect(station).toMatch(/disabled="" checked=""\/><span>Bahnsteig an t2/)
     expect(station).toMatch(/type="checkbox"\/><span>A · t1 · Einfahrsignal<\/span>/)
     expect(station).toContain('Grenze zur freien Strecke')
     expect(station).toContain('Einfahrsignale und Trapeztafeln übernehmen (0)')

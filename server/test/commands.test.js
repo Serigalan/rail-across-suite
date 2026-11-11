@@ -126,39 +126,81 @@ describe.skipIf(!SERVER_BIN)('the data steps', () => {
   })
 })
 
+// An infra-data 1.0 document as the core wrote it before 2.0 (schemas/vectors), frozen.
+const BEFORE_2_0 = JSON.parse(readFileSync(new URL('../../schemas/vectors/infra-data-1.0.json', import.meta.url), 'utf8')).documents
+
+/** A database with one project of two revisions, closed again: its file and the revisions' ids. */
+async function twoRevisions() {
+  const file = join(fresh(), 'a.sqlite')
+  ctx = await rustServer({ file })
+  await ctx.app.auth.createUser({ login: 'anna', name: 'Anna', password: PW, role: 'admin', mustChangePassword: false })
+  const anna = await signIn(ctx.app, 'anna')
+  const track = { id: 't1', name: 'T1', epsg: 25832, elements: [straight([500000, 5600000], [500100, 5600000])] }
+  const made = (await anna('POST', '/api/projects', { title: 'Halle', payload: { id: 'p1', tracks: [track], switches: [], platforms: [] } })).json()
+  const second = (await anna('POST', `/api/variants/${made.variantId}/revisions`, {
+    base: made.revisionId, payload: { id: made.project.id, title: 'Halle', tracks: [track], switches: [], platforms: [] }, remaps: [],
+  })).json().revision.id
+  await ctx.app.close()
+  ctx.db.close()
+  ctx = null
+  return { file, made, second, track }
+}
+
+const payloads = (file) => {
+  const db = new Database(file)
+  const rows = db.prepare('SELECT schema_version, payload FROM revision ORDER BY id').all()
+  db.close()
+  return { versions: rows.map(r => r.schema_version), docs: rows.map(r => JSON.parse(gunzipSync(r.payload).toString())) }
+}
+
 describe.skipIf(!SERVER_BIN)('the step to infra-data-1.0 (decision 0021)', () => {
-  it('rewrites the revisions kept as the core 1.0 document and as oltjson-1.1 records, once, in place', async () => {
-    const file = join(fresh(), 'a.sqlite')
-    ctx = await rustServer({ file })
-    await ctx.app.auth.createUser({ login: 'anna', name: 'Anna', password: PW, role: 'admin', mustChangePassword: false })
-    const anna = await signIn(ctx.app, 'anna')
-    const track = { id: 't1', name: 'T1', epsg: 25832, elements: [straight([500000, 5600000], [500100, 5600000])] }
-    const made = (await anna('POST', '/api/projects', { title: 'Halle', payload: { id: 'p1', tracks: [track], switches: [], platforms: [] } })).json()
-    const second = (await anna('POST', `/api/variants/${made.variantId}/revisions`, {
-      base: made.revisionId, payload: { id: made.project.id, title: 'Halle', tracks: [track], switches: [], platforms: [] }, remaps: [],
-    })).json().revision.id
-    await ctx.app.close()
-    ctx.db.close()
-    ctx = null
+  it('rewrites the revisions kept as the core 1.0 document and as oltjson-1.1 records, once, in place — as infra-data-2.0 now', async () => {
+    const { file, made, second, track } = await twoRevisions()
     // As the two revisions were kept before: the old envelope, and an oltjson-1.1 record whose track is new.
     const db = new Database(file)
-    const { format: _f, version: _v, ...doc } = JSON.parse(gunzipSync(db.prepare('SELECT payload FROM revision WHERE id = ?').pluck().get(made.revisionId)).toString())
+    const { format: _f, version: _v, ...doc } = structuredClone(BEFORE_2_0['the sample'])
     db.prepare('UPDATE revision SET schema_version = 3, payload = ? WHERE id = ?').run(gzipSync(JSON.stringify({ format: 'rail-across', ...doc })), made.revisionId)
     const record = { id: made.project.id, title: 'Halle', tracks: [{ ...track, status: 'new' }], switches: [], platforms: [] }
     db.prepare('UPDATE revision SET schema_version = 2, payload = ? WHERE id = ?').run(gzipSync(JSON.stringify(record)), second)
     db.prepare("DELETE FROM data_migration WHERE name = '0021-infra-data'").run()
     db.close()
     expect(cli(file, ['migrate'])).toMatch(/data step 0021-infra-data: 2 Revisionen umgeschrieben, 0 nicht lesbar/)
-    const after = new Database(file)
-    const rows = after.prepare('SELECT schema_version, payload FROM revision ORDER BY id').all()
-    after.close()
-    expect(rows.map(r => r.schema_version)).toEqual([4, 4])
-    const [old, kept] = rows.map(r => JSON.parse(gunzipSync(r.payload).toString()))
-    expect(old).toMatchObject({ format: 'infra-data', version: '1.0', domains: doc.domains })
+    const { versions, docs: [old, kept] } = payloads(file)
+    expect(versions).toEqual([5, 5])
+    expect(old).toMatchObject({ format: 'infra-data', version: '2.0', domains: { core: { version: '2.0' }, civil: { version: '1.0' } } })
+    expect(old.domains.core.collections.tracks.map(t => t.id)).toEqual(doc.domains.core.collections.tracks.map(t => t.id))
+    expect(old.domains.civil.collections.platforms.map(p => p.id)).toEqual(['p1'])
     const stages = kept.domains.core.fields.stages
-    expect(kept).toMatchObject({ format: 'infra-data', version: '1.0' })
+    expect(kept).toMatchObject({ format: 'infra-data', version: '2.0' })
     expect(kept.domains.core.collections.tracks[0].lifespan).toEqual({ from: stages[1].id })
     expect(cli(file, ['migrate'])).toBe('')
+  })
+})
+
+describe.skipIf(!SERVER_BIN)('the step to infra-data-2.0 (decision 0025)', () => {
+  it('rewrites the revisions kept as infra-data-1.0 documents, once, in place; one left is read through the door', async () => {
+    const { file, made, second } = await twoRevisions()
+    const db = new Database(file)
+    const one = BEFORE_2_0['the sample with its signalling']
+    db.prepare('UPDATE revision SET schema_version = 4, payload = ? WHERE id IN (?, ?)').run(gzipSync(JSON.stringify(one)), made.revisionId, second)
+    db.prepare("DELETE FROM data_migration WHERE name = '0025-infra-data-2.0'").run()
+    db.close()
+    expect(cli(file, ['migrate'])).toMatch(/data step 0025-infra-data-2.0: 2 Revisionen umgeschrieben, 0 nicht lesbar/)
+    const { versions, docs: [doc] } = payloads(file)
+    expect(versions).toEqual([5, 5])
+    expect(Object.keys(doc.domains).sort()).toEqual(['civil', 'core', 'signalling'])
+    expect(doc.domains.core.collections.stoppingPlaces.map(h => h.id)).toEqual(['hp-1', 'hp-2'])
+    expect(doc.domains.signalling.collections.stoppingPlaces).toBeUndefined()
+    expect(cli(file, ['migrate'])).toBe('')
+    // One kept as 1.0 still, as a server of before left it: handed out as 2.0.
+    const again = new Database(file)
+    again.prepare('UPDATE revision SET schema_version = 4, payload = ? WHERE id = ?').run(gzipSync(JSON.stringify(one)), second)
+    again.close()
+    ctx = await rustServer({ file })
+    await ctx.app.auth.createUser({ login: 'bea', name: 'Bea', password: PW, role: 'admin', mustChangePassword: false })
+    const bea = await signIn(ctx.app, 'bea')
+    const head = (await bea('GET', `/api/variants/${made.variantId}/head`)).json()
+    expect(head.payload).toMatchObject({ format: 'infra-data', version: '2.0' })
   })
 })
 

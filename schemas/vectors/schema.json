@@ -375,7 +375,7 @@
   ]
  },
  {
-  "ref": "layout#/$defs/NamedTrackPath",
+  "ref": "civil#/$defs/NamedTrackPath",
   "value": {
    "id": "r",
    "name": "Route 1",
@@ -389,7 +389,7 @@
   "paths": []
  },
  {
-  "ref": "layout#/$defs/AxisSurvey",
+  "ref": "civil#/$defs/AxisSurvey",
   "value": {
    "id": "a",
    "epsg": 25832,
@@ -401,7 +401,7 @@
   ]
  },
  {
-  "ref": "layout#/$defs/Fields",
+  "ref": "civil#/$defs/Fields",
   "value": {
    "planHeader": {},
    "osrd": {

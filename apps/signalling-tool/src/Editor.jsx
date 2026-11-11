@@ -5,14 +5,13 @@ import {
 } from '@rail-across/ui'
 import { checkSignalling, trackSectionExtents } from '@rail-across/core/signalling'
 import { carryDomainOnto, mergeProject } from '@rail-across/core/merge'
-import { projectDocument } from '@rail-across/core/project'
 import { localChangeCount } from '@rail-across/working-copy'
 import { useTexts } from './i18n.js'
 import { api } from './api.js'
 import { projectsUrl } from './suite.js'
 import { freshCopy, keepCopy } from './workingCopy.js'
 import { netDrawing } from './model/net.js'
-import { added, cascadeOf, deleted, domainOf, findLogical, labelOf, recordOf, replaced, signallingOf, withSignalling, withSpeedsShown } from './model/domain.js'
+import { added, cascadeOf, coreOf, deleted, domainOf, findLogical, labelOf, recordOf, replaced, signallingOf, withSignalling, withSpeedsShown } from './model/domain.js'
 import { waysBetween } from './model/itineraries.js'
 import { routeStretches, runStretches, wayPieces } from './model/routeSearch.js'
 import { logicalSignalWord } from './labels.js'
@@ -132,7 +131,7 @@ export default function Editor({ project, variant, head, copy: opened, readOnly 
   const pending = useMemo(() => (draft ? changedIds(committed, draft) : NONE), [committed, draft])
   const net = useMemo(() => ({ tracks: record.tracks ?? [], switches: record.switches ?? [], endMarks: record.endMarks ?? [], kmLines: record.kmLines ?? [] }), [record])
   const drawing = useMemo(() => netDrawing(net.tracks), [net])
-  const coreDomain = useMemo(() => projectDocument({ ...shown, signalling: undefined }).domains.core, [shown])
+  const coreDomain = useMemo(() => coreOf(shown), [shown])
   const findings = useMemo(() => checkSignalling({ core: coreDomain, signalling }), [coreDomain, signalling])
   const extents = useMemo(() => trackSectionExtents({ core: { collections: net }, signalling }), [net, signalling])
   const changes = useMemo(() => (readOnly ? 0 : localChangeCount({ basePayload: copy.basePayload, project: current })), [readOnly, copy, current])

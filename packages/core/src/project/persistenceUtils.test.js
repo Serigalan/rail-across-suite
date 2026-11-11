@@ -182,7 +182,7 @@ const payloadOf = ([record]) => projectDocument(record)
 const unchecked = (record) => projectDocument(record, { check: false })
 
 describe('parseProjectsPayload', () => {
-  it('takes an infra-data-1.0 document and hands its project back', () => {
+  it('takes an infra-data-2.0 document and hands its project back', () => {
     const payload = payloadOf(switchProject())
     expect(parseProjectsPayload(payload).projects).toHaveLength(1)
   })
@@ -191,13 +191,13 @@ describe('parseProjectsPayload', () => {
     expect(parseProjectsPayload(payloadOf(project())).projects).toHaveLength(1)
   })
 
-  it('says what it takes: { format: infra-data, version: 1.0 } (decision 0021)', () => {
-    expect(payloadOf(project())).toMatchObject({ format: 'infra-data', version: '1.0' })
-    expect(FORMAT_NAME).toBe('infra-data-1.0')
+  it('says what it takes: { format: infra-data, version: 2.0 } (decisions 0021, 0025)', () => {
+    expect(payloadOf(project())).toMatchObject({ format: 'infra-data', version: '2.0' })
+    expect(FORMAT_NAME).toBe('infra-data-2.0')
   })
 
   it('refuses another format or another version of it by that alone — an oltjson file among them', () => {
-    const others = [{ version: '2.0' }, { version: undefined }, { format: 'rail-across', version: undefined }, { format: 'railjson' }, { format: undefined }]
+    const others = [{ version: '3.0' }, { version: '1.0' }, { version: undefined }, { format: 'rail-across', version: undefined }, { format: 'railjson' }, { format: undefined }]
     for (const other of others) {
       const payload = { ...payloadOf(switchProject()), ...other }
       expect(() => parseProjectsPayload(payload), JSON.stringify(other)).toThrow('unsupported_version')
@@ -258,7 +258,7 @@ describe('parseTracksPayload (R0.5)', () => {
   it('takes the tracks of a tracks document — one track or several', () => {
     expect(parseTracksPayload(tracksDocument([track()]))).toHaveLength(1)
     expect(parseTracksPayload(tracksDocument([track(), track({ id: 't2' })]))).toHaveLength(2)
-    expect(tracksDocument([track()])).toMatchObject({ format: 'infra-data', version: '1.0' })
+    expect(tracksDocument([track()])).toMatchObject({ format: 'infra-data', version: '2.0' })
   })
 
   it('refuses what is not a tracks document', () => {

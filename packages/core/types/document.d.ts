@@ -1,12 +1,12 @@
 // The types of the infra-data-1.0 document, derived from the schemas in schemas/ by
 // packages/core/tools/types.mjs. Do not edit: change the schema and run the tool.
 
-/** infra-data-1.0: a Rail-Across-Suite project as one JSON file (.railacross.json) */
+/** infra-data-2.0: a Rail-Across-Suite project as one JSON file (.railacross.json) */
 export namespace Document {
   /** The domain documents of one project state, each with its version and the hash of its schema; the schemas the file carries, by hash; and the blobs its objects name, by hash. The same canonical documents as the container (.railacross) holds, giving the same hashes (S-R9). What each domain holds, its own schema says. */
   export type Root = {
     format: "infra-data"
-    version: "1.0"
+    version: "2.0"
     domains: {
       /** Names matching ^[a-z][a-zA-Z0-9]*$. */
       [name: string]: Domain
@@ -39,18 +39,18 @@ export namespace Document {
   }
 }
 
-/** Rail-Data-Core, domain core 1.0 */
+/** Rail-Data-Core, domain core 2.0 */
 export namespace Core {
-  /** The base every module depends on: the net (tracks, switches and connectors), what stands on it for every discipline (platforms, end marks), the reference data (km lines, the operational point register) and the construction stages. Written by the layout tool, carried by the core library. See docs/data-model.md. */
+  /** The base every module depends on: the net (tracks, switches and connectors), what stands on it for every discipline (platforms, end marks), the reference data (km lines, the operational point register) and the construction stages. Written by the layout tool, carried by the core library. See docs/data-model.md. — 2.0 (decision 0025): the alignment and what every layer places things by; the platforms are civil's, the stopping places came in from signalling. */
   export type Root = {
     fields: Fields
     collections: {
       tracks: Array<Track>
       switches: Array<Switch>
-      platforms: Array<Platform>
       endMarks: Array<EndMark>
       kmLines: Array<KmLine>
       operationalPoints: Array<OperationalPoint>
+      stoppingPlaces: Array<StoppingPlace>
     }
   }
   /** The id of an object, unique in its collection; a UUID in lower case by convention. */
@@ -216,15 +216,6 @@ export namespace Core {
       [name: string]: TrackEnd | null
     }
   }
-  export type Platform = {
-    id: Id
-    at: TrackRange
-    frontOffset?: number
-    backOffset?: number
-    height?: number
-    operationalPoint?: Ref
-    lifespan?: Lifespan
-  }
   /** A buffer stop or the boundary of the planning area at a free track end; a train may begin and end at either. */
   export type EndMark = {
     id: Id
@@ -237,6 +228,8 @@ export namespace Core {
     /** At a boundary: the speed [km/h] a train crosses it at in a simulation, entering or leaving; without one, what the line allows there. */
     speed?: number
     lifespan?: Lifespan
+    /** At a boundary: the least time [s] between two trains crossing it the same way — how close trains follow from the net beyond. */
+    headway?: number
   }
   /** Foreign reference data: the stretch of a DB line around the project, in WGS84, the third value of each point its kilometrage [m]. */
   export type KmLine = {
@@ -255,14 +248,24 @@ export namespace Core {
     rl100?: Text
     uic?: Label
   }
+  /** Where trains stop (Halteplatz): a stretch of one track, in a station on one of its tracks or at a platform, on the open line at a platform. The Signalling-Tool sets it (decision 0024); a platform names the stopping places at it (civil). Signals and detection points bound it; where one stands within it, a finding says so. */
+  export type StoppingPlace = {
+    id: Id
+    name?: Text
+    /** The station it is of; without one it lies on the open line. */
+    operationalPointId?: Ref
+    at: TrackRange
+    lifespan?: Lifespan
+  }
 }
 
-/** Rail-Data-Core, domain layout 1.0 */
-export namespace Layout {
-  /** What only the layout tool needs: named runs of tracks, measured axes traced in point clouds, reference axes from surveys, the plan header and the project picture. Depends on core; its references go into the core only. Bulk point arrays are blobs, named by their hash (S-R2). */
+/** Rail-Data-Core, domain civil 1.0 */
+export namespace Civil {
+  /** Civil engineering's layer, edited in the Civil-Tool (decision 0025): platforms, named runs of tracks, measured axes traced in point clouds, reference axes from surveys, the plan header and the project picture — what layout 1.0 held, and the platforms from core 1.0. Depends on core; its references go into the core only. Bulk point arrays are blobs, named by their hash (S-R2). */
   export type Root = {
     fields: Fields
     collections: {
+      platforms: Array<Platform>
       trackPaths: Array<NamedTrackPath>
       axisSurveys: Array<AxisSurvey>
       referenceAxes: Array<ReferenceAxis>
@@ -321,11 +324,23 @@ export namespace Layout {
     }
     points: BlobRef
   }
+  /** It names the stopping places at it (stoppingPlaceIds). */
+  export type Platform = {
+    id: Core.Id
+    at: Core.TrackRange
+    frontOffset?: number
+    backOffset?: number
+    height?: number
+    operationalPoint?: Core.Ref
+    lifespan?: Core.Lifespan
+    /** The stopping places at the platform: the core names nothing above it, so the platform names them. */
+    stoppingPlaceIds?: Array<Core.Ref>
+  }
 }
 
-/** Rail-Data-Core, domain signalling 1.0 */
+/** Rail-Data-Core, domain signalling 2.0 */
 export namespace Signalling {
-  /** The signalling of a project, as the signalling tool plans it: signals and boards, train detection, the switch elements of the interlocking, train and shunting routes with their overlaps, flank protection, the balises and magnets of train protection, the station boundaries, the stopping places and the itineraries from one to another. Depends on core; its references go into the core or into itself (R2, R9). Its objects follow PlanPro 1.10, and like OSRD it keeps every signalling and train protection system out of the schema (decision 0011): a signal carries a logical signal per system, a balise names its system; which systems, kinds, aspects and settings there are is not in this schema but in the catalogue (packages/core/constraints/db-ril-301.json), which the content check reads. */
+  /** The signalling of a project, as the signalling tool plans it: signals and boards, train detection, the switch elements of the interlocking, train and shunting routes with their overlaps, flank protection, the balises and magnets of train protection, the station boundaries and the itineraries from one to another. Depends on core; its references go into the core or into itself (R2, R9). Its objects follow PlanPro 1.10, and like OSRD it keeps every signalling and train protection system out of the schema (decision 0011): a signal carries a logical signal per system, a balise names its system; which systems, kinds, aspects and settings there are is not in this schema but in the catalogue (packages/core/constraints/db-ril-301.json), which the content check reads. — 2.0 (decision 0025): the stopping places are the core's; routes carry their setting and release times; train protection by ranges. */
   export type Root = {
     fields: Fields
     collections: {
@@ -338,15 +353,19 @@ export namespace Signalling {
       flankProtection: Array<FlankProtection>
       balises: Array<Balise>
       stationBoundaries: Array<StationBoundary>
-      stoppingPlaces: Array<StoppingPlace>
       itineraries: Array<Itinerary>
+      trainProtection?: Array<TrainProtection>
     }
   }
-  /** The domain's own fields: the catalogue of signal aspects its signals were planned against. */
+  /** The domain's own fields: the catalogue of signal aspects its signals were planned against. `routeTimes`: the interlocking's setting and release times [s], for every route that states none. */
   export type Fields = {
     catalogue?: {
       id: string
       version: string
+    }
+    routeTimes?: {
+      setting?: number
+      release?: number
     }
   }
   /** A location that states the direction it acts in: `direction` on a track, `bearing` in the plane (an orphan, R7). */
@@ -481,6 +500,10 @@ export namespace Signalling {
       symbol?: string
     }>
     lifespan?: Core.Lifespan
+    /** How long setting the route takes [s] (Fahrstraßenbildezeit); without one, the domain's. */
+    settingTime?: number
+    /** How long releasing it takes once the train has left it [s] (Auflösezeit); without one, the domain's. */
+    releaseTime?: number
   }
   /** An overlap beyond a route's target signal (PlanPro Fstr_DWeg): from the signal along a run of tracks to its danger point, its design length and the gradient that sets it, the speed it allows, the sections that must be clear, and for each switch element on it whether it is locked. */
   export type Overlap = {
@@ -560,19 +583,9 @@ export namespace Signalling {
     } | {
       switchId: Core.Ref
     } | {
-      platformId: Core.Ref
+      /** A halt's boundary: the stopping place at its platform. */
+      stoppingPlaceId: Core.Ref
     }>
-    lifespan?: Core.Lifespan
-  }
-  /** Where trains stop (Halteplatz): a stretch of one track, in a station on one of its tracks or at a platform, on the open line at a platform. Signals and detection points bound it; where one stands within it, a finding says so. */
-  export type StoppingPlace = {
-    id: Core.Id
-    name?: Core.Text
-    /** The station it is of; without one it lies on the open line, at a platform. */
-    operationalPointId?: Core.Ref
-    /** The platform it lies at, where it is one's. */
-    platformId?: Core.Ref
-    at: Core.TrackRange
     lifespan?: Core.Lifespan
   }
   /** A way from one stopping place to another (Fahrweg): its run of tracks, and the train routes it takes, in running order — one route of each station it runs through from signal to signal, none on the open line. A timetable names it as the way a train prefers between two of its points. */
@@ -583,6 +596,37 @@ export namespace Signalling {
     targetStoppingPlaceId: Core.Ref
     routeIds: Array<Core.Ref>
     path: Core.TrackPath
+    lifespan?: Core.Lifespan
+  }
+  /** The train protection over a range of a track: its system and, for ETCS, its level. */
+  export type TrainProtection = {
+    id: Core.Id
+    name?: Core.Text
+    at: Core.TrackRange
+    system: "pzb" | "lzb" | "etcs"
+    /** The ETCS level. */
+    level?: "1" | "2" | "3"
+    lifespan?: Core.Lifespan
+  }
+}
+
+/** Rail-Data-Core, domain electrification 1.0 */
+export namespace Electrification {
+  /** The electrification of the tracks, planned in the Catenary-Tool (decision 0025): which ranges carry a contact wire, and its system. Depends on core; its references go into the core only. Later the masts, cantilevers, wires and sections. */
+  export type Root = {
+    fields: Fields
+    collections: {
+      electrifications: Array<Electrification>
+    }
+  }
+  /** The domain's own fields. */
+  export type Fields = Record<string, never>
+  /** A range of a track under a contact wire (or a conductor rail) of one system. `system` is the voltage as OSRD names a traction mode: 15000V the 15 kV 16.7 Hz of DB, ÖBB and SBB, 25000V 25 kV 50 Hz, the others direct current. A train runs electrically where its vehicle has the mode. */
+  export type Electrification = {
+    id: Core.Id
+    name?: Core.Text
+    at: Core.TrackRange
+    system: "15000V" | "25000V" | "3000V" | "1500V" | "750V" | "600V"
     lifespan?: Core.Lifespan
   }
 }

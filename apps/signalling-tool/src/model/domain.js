@@ -1,4 +1,5 @@
 import { stationRegister } from '@rail-across/core/document'
+import { projectDocument } from '@rail-across/core/project'
 import { CATALOGUE_REF, baliseKindOf, protectionSystemOf, signalKindOf, signallingSpeedOf } from '@rail-across/core/signalling'
 
 /**
@@ -69,6 +70,16 @@ export function recordOf(record, state) {
     ...record, ...(renamed ? { tracks } : {}), platforms,
     operationalPoints: operationalPoints.length ? operationalPoints : undefined, signalling: signallingOf(state),
   }
+}
+
+/**
+ * The core of a record as the tool reads it, its platforms beside it: in
+ * infra-data-2.0 they are civil's (decision 0025), and the stations, the
+ * stopping places and the check name them.
+ */
+export function coreOf(record) {
+  const { domains } = projectDocument({ ...record, signalling: undefined })
+  return { ...domains.core, collections: { ...domains.core.collections, platforms: domains.civil?.collections.platforms ?? [] } }
 }
 
 /** The state with another domain — the parts of the core as they are. */

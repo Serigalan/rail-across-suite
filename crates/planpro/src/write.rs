@@ -883,6 +883,9 @@ pub fn write_planpro(project: &Value, options: &Value) -> Result<Value, String> 
     let core = &doc["domains"]["core"];
     let fields = &core["fields"];
     let c = |k: &str| core.get("collections").map(|c| list(c, k)).unwrap_or(&[]);
+    // The platforms are civil's in infra-data-2.0 (decision 0025); a document of 1.0 had them in the core.
+    let civil = &doc["domains"]["civil"];
+    let platforms: Vec<&Value> = c("platforms").iter().chain(civil.get("collections").map(|c| list(c, "platforms")).unwrap_or(&[])).collect();
     let stages = Stages(list(fields, "stages").iter().filter_map(|s| str_of(s, "id").map(String::from)).collect());
     let now = str_of(options, "now");
     let date = date_of(now).unwrap_or_else(|| "2026-01-01".into());
@@ -1197,7 +1200,7 @@ pub fn write_planpro(project: &Value, options: &Value) -> Result<Value, String> 
             .iter()
             .filter(|t| str_of(t, "operationalPoint") == Some(id) && num_of(t, "trackType") == Some(2.0))
             .count();
-        let refs_platforms = c("platforms").iter().filter(|x| str_of(x, "operationalPoint") == Some(id)).count();
+        let refs_platforms = platforms.iter().filter(|x| str_of(x, "operationalPoint") == Some(id)).count();
         let art = if refs_tracks > 0 {
             "Bf"
         } else if refs_platforms > 0 {
@@ -1241,7 +1244,7 @@ pub fn write_planpro(project: &Value, options: &Value) -> Result<Value, String> 
 
     // Platforms: an installation per operational point, an edge per platform.
     let mut installations: Vec<(Option<&str>, Vec<&Value>)> = Vec::new();
-    for p in c("platforms") {
+    for p in platforms.iter().copied() {
         let op = str_of(p, "operationalPoint");
         match installations.iter_mut().find(|(o, _)| *o == op) {
             Some((_, l)) => l.push(p),
@@ -2208,6 +2211,10 @@ pub fn write_planpro(project: &Value, options: &Value) -> Result<Value, String> 
         for v in col(k) {
             plan.not_written(k, str_of(v, "id").unwrap_or(""), "kind_not_written");
         }
+    }
+    // The stopping places are the core's in infra-data-2.0.
+    for v in c("stoppingPlaces") {
+        plan.not_written("stoppingPlaces", str_of(v, "id").unwrap_or(""), "kind_not_written");
     }
 
     // ── the file ──

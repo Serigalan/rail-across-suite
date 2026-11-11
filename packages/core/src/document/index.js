@@ -1,5 +1,6 @@
-// document — a project as the Rail-Data-Core keeps it: the infra-data-1.0
-// document (decision 0021) with its domains `core`, `layout` and `signalling`,
+// document — a project as the Rail-Data-Core keeps it: the infra-data-2.0
+// document (decisions 0021, 0025) with its domain `core` and the layers `civil`,
+// `signalling` and `electrification`,
 // their JSON Schemas (schemas/), the one door that checks them, the conversion
 // from and to the record the Layout-Tool works on, canonical JSON and content
 // hashes. The door, the

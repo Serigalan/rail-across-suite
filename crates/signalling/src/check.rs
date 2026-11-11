@@ -83,6 +83,14 @@ fn track_length(track: &Value) -> f64 {
 
 /// Whether the signalling domain holds together, on its own and on the core (`checkSignalling`).
 pub fn check_signalling(core: &Value, signalling: &Value) -> Value {
+    check_signalling_on(core, signalling, &Value::Null)
+}
+
+/// The same, with the platforms of `civil` beside the core (infra-data-2.0,
+/// decision 0025). The stopping places are the core's; the record keeps them in
+/// its signalling, each naming its platform, and either is read: the
+/// signalling's where it holds them, else the core's, whose platforms name them.
+pub fn check_signalling_on(core: &Value, signalling: &Value, civil: &Value) -> Value {
     let mut out = Out {
         errors: vec![],
         warnings: vec![],
@@ -91,7 +99,20 @@ pub fn check_signalling(core: &Value, signalling: &Value) -> Value {
     let tracks: HashMap<String, &Value> = coll(core, "tracks").iter().map(|t| (s(t.get("id")), t)).collect();
     let switches = ids(coll(core, "switches"));
     let points = ids(coll(core, "operationalPoints"));
-    let platforms = ids(coll(core, "platforms"));
+    let civil_platforms: Vec<&Value> = coll(core, "platforms").iter().chain(coll(civil, "platforms").iter()).collect();
+    let platforms: HashSet<String> = civil_platforms.iter().map(|p| s(p.get("id"))).collect();
+    let stopping_places: &[Value] = if c("stoppingPlaces").is_empty() { coll(core, "stoppingPlaces") } else { c("stoppingPlaces") };
+    // The platform a stopping place is at: the one it names, or the one naming it.
+    let platform_of = |h: &Value| -> Option<Value> {
+        if let Some(p) = h.get("platformId").filter(|v| truthy(Some(v))) {
+            return Some(p.clone());
+        }
+        let id = s(h.get("id"));
+        civil_platforms
+            .iter()
+            .find(|p| arr(p, "stoppingPlaceIds").iter().any(|x| s(Some(x)) == id))
+            .and_then(|p| p.get("id").cloned())
+    };
     let stages: HashSet<String> = core
         .get("fields")
         .and_then(|f| f.get("stages"))
@@ -108,11 +129,11 @@ pub fn check_signalling(core: &Value, signalling: &Value) -> Value {
         "routes",
         "overlaps",
         "flankProtection",
-        "stoppingPlaces",
     ]
     .into_iter()
     .map(|n| (n, ids(c(n))))
     .collect();
+    let stopping_ids = ids(stopping_places);
     let overlaps: HashMap<String, &Value> = c("overlaps").iter().map(|o| (s(o.get("id")), o)).collect();
 
     let reference = |out: &mut Out, collection: &str, id: &Value, target: &str, value: Option<&Value>, field: &str| {
@@ -122,7 +143,8 @@ pub fn check_signalling(core: &Value, signalling: &Value) -> Value {
             "core.tracks" => tracks.contains_key(&v),
             "core.switches" => switches.contains(&v),
             "core.operationalPoints" => points.contains(&v),
-            "core.platforms" => platforms.contains(&v),
+            "civil.platforms" => platforms.contains(&v),
+            "core.stoppingPlaces" => stopping_ids.contains(&v),
             "signalling.signals" => signals.contains_key(&v),
             t => known.get(t.trim_start_matches("signalling.")).is_some_and(|k| k.contains(&v)),
         };
@@ -766,8 +788,12 @@ pub fn check_signalling(core: &Value, signalling: &Value) -> Value {
                 reference(&mut out, "stationBoundaries", &bid, "core.switches", m.get("switchId"), "marks");
                 continue;
             }
+            if truthy(m.get("stoppingPlaceId")) {
+                reference(&mut out, "stationBoundaries", &bid, "core.stoppingPlaces", m.get("stoppingPlaceId"), "marks");
+                continue;
+            }
             if truthy(m.get("platformId")) {
-                reference(&mut out, "stationBoundaries", &bid, "core.platforms", m.get("platformId"), "marks");
+                reference(&mut out, "stationBoundaries", &bid, "civil.platforms", m.get("platformId"), "marks");
                 continue;
             }
             reference(&mut out, "stationBoundaries", &bid, "signalling.signals", m.get("signalId"), "marks");
@@ -803,7 +829,7 @@ pub fn check_signalling(core: &Value, signalling: &Value) -> Value {
     }
 
     // stopping places
-    let core_platforms: HashMap<String, &Value> = coll(core, "platforms").iter().map(|p| (s(p.get("id")), p)).collect();
+    let core_platforms: HashMap<String, &Value> = civil_platforms.iter().map(|p| (s(p.get("id")), *p)).collect();
     let shows_screen = |sg: &Value| {
         arr(sg, "frames")
             .iter()
@@ -824,8 +850,9 @@ pub fn check_signalling(core: &Value, signalling: &Value) -> Value {
         }
     }
     bounds.retain(|(loc, _)| loc.get("anchor").and_then(Value::as_str) == Some("station"));
-    let stopping: HashMap<String, &Value> = c("stoppingPlaces").iter().map(|h| (s(h.get("id")), h)).collect();
-    for h in c("stoppingPlaces") {
+    let stopping: HashMap<String, &Value> = stopping_places.iter().map(|h| (s(h.get("id")), h)).collect();
+    for h in stopping_places {
+        let platform = platform_of(h);
         let hid = id_of(h);
         let r = &h["at"];
         reference(&mut out, "stoppingPlaces", &hid, "core.tracks", r.get("trackId"), "at.trackId");
@@ -837,7 +864,7 @@ pub fn check_signalling(core: &Value, signalling: &Value) -> Value {
             h.get("operationalPointId"),
             "operationalPointId",
         );
-        reference(&mut out, "stoppingPlaces", &hid, "core.platforms", h.get("platformId"), "platformId");
+        reference(&mut out, "stoppingPlaces", &hid, "civil.platforms", platform.as_ref(), "platformId");
         lifespan(&mut out, "stoppingPlaces", h);
         let track = tracks.get(&s(r.get("trackId")));
         let (st, en) = (
@@ -858,11 +885,11 @@ pub fn check_signalling(core: &Value, signalling: &Value) -> Value {
                 );
             }
         }
-        if !truthy(h.get("operationalPointId")) && !truthy(h.get("platformId")) {
+        if !truthy(h.get("operationalPointId")) && platform.is_none() {
             out.warning("stopping_place_open_line", "stoppingPlaces", &hid, json!({}), "");
         }
-        if let Some(pf_at) = h
-            .get("platformId")
+        if let Some(pf_at) = platform
+            .as_ref()
             .and_then(|p| core_platforms.get(&s(Some(p))))
             .and_then(|p| p.get("at"))
             .filter(|a| truthy(Some(a)))
@@ -886,7 +913,7 @@ pub fn check_signalling(core: &Value, signalling: &Value) -> Value {
     for it in c("itineraries") {
         let iid = id_of(it);
         for field in ["startStoppingPlaceId", "targetStoppingPlaceId"] {
-            reference(&mut out, "itineraries", &iid, "signalling.stoppingPlaces", it.get(field), field);
+            reference(&mut out, "itineraries", &iid, "core.stoppingPlaces", it.get(field), field);
         }
         for r in arr(it, "routeIds") {
             reference(&mut out, "itineraries", &iid, "signalling.routes", Some(r), "routeIds");

@@ -3,7 +3,7 @@ import { Button, ConfirmDialog, GroupedList, Option, Options, OptionsHeading, Pl
 import { Panel } from './draft.jsx'
 import { designationOf } from '../model/domain.js'
 import {
-  boundaryOf, entryMarks, nameTaken, newStation, stationName, stationsOf, withBoundary, withPlatforms, withSignals, withStation, withoutStation,
+  boundaryOf, entryMarks, nameTaken, newStation, stationName, stationsOf, withBoundary, withSignals, withStation, withoutStation,
 } from '../model/stations.js'
 import { signalOptions as signalChoices, trackName } from '../model/places.js'
 import { FUNCTION, word } from '../labels.js'
@@ -169,6 +169,10 @@ function StationEditor({ entry, stations, register, domain, net, core, findings,
       const sw = net.switches.find(x => x.switchId === m.switchId)
       return `${t('switch')} ${sw?.name ?? sw?.label ?? m.switchId.slice(0, 8)}`
     }
+    if (m.stoppingPlaceId) {
+      const h = domain.collections.stoppingPlaces.find(x => x.id === m.stoppingPlaceId)
+      return `${t('object_stoppingPlaces')} ${h?.name ?? m.stoppingPlaceId.slice(0, 8)}`
+    }
     return t('object_platforms')
   }
   const proposal = entryMarks(domain, point.id)
@@ -195,8 +199,7 @@ function StationEditor({ entry, stations, register, domain, net, core, findings,
       <Section title={t('station_platforms')}>
         <p className="ui-muted">{t('station_platforms_hint')}</p>
         {platformOptions.length
-          ? <CheckList options={platformOptions} value={platforms} readOnly={readOnly || !point.name}
-            onChange={(ids) => ops.replaceAll(withPlatforms(domain, point, ids, platforms))} />
+          ? <CheckList options={platformOptions} value={platforms} readOnly onChange={() => {}} />
           : <p className="ui-list-empty">{t('station_platforms_none')}</p>}
       </Section>
 
@@ -207,7 +210,7 @@ function StationEditor({ entry, stations, register, domain, net, core, findings,
         {marks.length ? (
           <ul className="tool-marks">
             {marks.map(m => (
-              <li key={m.signalId ?? m.switchId ?? m.platformId} className="ui-row">
+              <li key={m.signalId ?? m.switchId ?? m.stoppingPlaceId ?? m.platformId} className="ui-row">
                 <span className="ui-grow">{markText(m)}</span>
                 {!readOnly && <button type="button" className="ui-link" onClick={() => setMarks(marks.filter(x => x !== m))}>{t('remove')}</button>}
               </li>

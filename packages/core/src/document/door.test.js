@@ -17,16 +17,45 @@ const record = (extra = {}) => ({ id: 'p', title: 'P', tracks: [track('t1')], sw
 /** The record a record comes back as, through its document. */
 const roundTrip = (r) => fromDocument(JSON.parse(JSON.stringify(toDocument(r, { carrySchemas: true }))))
 
-describe('a record as an infra-data-1.0 document', () => {
-  it('holds the domains core and layout, each with its version and schema', () => {
+// The schemas core, layout and signalling 1.0 had last, before infra-data-2.0 (decision 0025).
+const CORE_1_0 = 'sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4'
+const LAYOUT_1_0 = 'sha256:b2280dcf6cfe779e148b6c402ac46eb4ff1e8d96b55e6e3abcb370ef48ff1f1b'
+const SIGNALLING_1_0 = 'sha256:b28ada7513c555fa4696ff2b41c73bb7565143854c08e2e9bfb067e99018910c'
+
+/** A 2.0 document as infra-data 1.0 wrote the same state: decision 0025 the other way. */
+function oneZero(doc) {
+  const d = structuredClone(doc)
+  d.version = '1.0'
+  delete d.schemas
+  const { core, civil, signalling } = d.domains
+  const platforms = civil?.collections.platforms ?? []
+  const platformOf = (id) => platforms.find(p => p.stoppingPlaceIds?.includes(id))?.id
+  const places = core.collections.stoppingPlaces
+  delete core.collections.stoppingPlaces
+  Object.assign(core, { version: '1.0', schema: CORE_1_0 })
+  core.collections.platforms = platforms.map(({ stoppingPlaceIds: _s, ...pf }) => pf)
+  if (civil) {
+    const { platforms: _p, ...rest } = civil.collections
+    d.domains.layout = { ...civil, version: '1.0', schema: LAYOUT_1_0, collections: rest }
+    delete d.domains.civil
+  }
+  if (signalling) {
+    Object.assign(signalling, { version: '1.0', schema: SIGNALLING_1_0 })
+    signalling.collections.stoppingPlaces = places.map(h => (platformOf(h.id) ? { ...h, platformId: platformOf(h.id) } : h))
+  }
+  return d
+}
+
+describe('a record as an infra-data-2.0 document', () => {
+  it('holds the domains core and civil, each with its version and schema', () => {
     const doc = toDocument(record({ planHeader: { subtitle: 'x' } }))
-    expect(doc).toMatchObject({ format: 'infra-data', version: '1.0' })
-    expect(doc.domains.core).toMatchObject({ version: '1.0', schema: SCHEMA_HASHES.core, fields: { id: 'p', title: 'P' } })
-    expect(doc.domains.layout).toMatchObject({ version: '1.0', schema: SCHEMA_HASHES.layout, dependsOn: ['core'], fields: { planHeader: { subtitle: 'x' } } })
+    expect(doc).toMatchObject({ format: 'infra-data', version: '2.0' })
+    expect(doc.domains.core).toMatchObject({ version: '2.0', schema: SCHEMA_HASHES.core, fields: { id: 'p', title: 'P' } })
+    expect(doc.domains.civil).toMatchObject({ version: '1.0', schema: SCHEMA_HASHES.civil, dependsOn: ['core'], fields: { planHeader: { subtitle: 'x' } } })
     expect(doc.domains.core.collections.tracks.map(t => t.id)).toEqual(['t1'])
   })
 
-  it('holds the core alone where the record holds nothing of the layout', () => {
+  it('holds the core alone where the record holds nothing of the layers', () => {
     const doc = toDocument(record())
     expect(Object.keys(doc.domains)).toEqual(['core'])
     expect(fromDocument(doc).tracks.map(t => t.id)).toEqual(['t1'])
@@ -34,7 +63,7 @@ describe('a record as an infra-data-1.0 document', () => {
 
   it('carries its schemas where it travels, under the hashes its domains name', () => {
     const doc = toDocument(record({ planHeader: { subtitle: 'x' } }), { carrySchemas: true })
-    expect(Object.keys(doc.schemas).sort()).toEqual([SCHEMA_HASHES.core, SCHEMA_HASHES.layout].sort())
+    expect(Object.keys(doc.schemas).sort()).toEqual([SCHEMA_HASHES.core, SCHEMA_HASHES.civil].sort())
     for (const [hash, schema] of Object.entries(doc.schemas)) expect(contentHash(schema)).toBe(hash)
     expect(toDocument(record()).schemas).toBeUndefined()
   })
@@ -53,7 +82,8 @@ describe('a record as an infra-data-1.0 document', () => {
       platforms: [{ id: 'pf', trackId: 't1', startStation: 10, endStation: 90, side: 'left', frontOffset: 1.67 }],
       endMarks: [{ id: 'e', kind: 'buffer_stop', trackId: 't1', endpoint: 'END', type: 4, brakeLength: 4 }],
     })
-    const { platforms, endMarks } = toDocument(r).domains.core.collections
+    const { endMarks } = toDocument(r).domains.core.collections
+    const { platforms } = toDocument(r).domains.civil.collections
     expect(platforms).toEqual([{ id: 'pf', at: { anchor: 'station', trackId: 't1', startStation: 10, endStation: 90, side: 'left' }, frontOffset: 1.67 }])
     expect(endMarks).toEqual([{ id: 'e', kind: 'buffer_stop', type: 4, brakeLength: 4, at: { trackId: 't1', endpoint: 'END' } }])
     expect(roundTrip(r)).toEqual(r)
@@ -64,7 +94,8 @@ describe('a record as an infra-data-1.0 document', () => {
       tracks: [track('a', { stationName: 'Halle-Trotha', uicStation: '8023111' }), track('b', { stationName: 'Halle-Trotha' })],
       platforms: [{ id: 'pf', trackId: 'a', startStation: 0, endStation: 50, stationName: 'Halle-Trotha', code: 'LHT' }],
     })
-    const { tracks, platforms, operationalPoints } = toDocument(r).domains.core.collections
+    const { tracks, operationalPoints } = toDocument(r).domains.core.collections
+    const { platforms } = toDocument(r).domains.civil.collections
     expect(operationalPoints).toEqual([{ id: expect.any(String), name: 'Halle-Trotha', rl100: 'LHT', uic: '8023111' }])
     expect([...tracks, ...platforms].map(o => o.operationalPoint)).toEqual(Array(3).fill(operationalPoints[0].id))
     // A station's codes are the station's: every track naming it shows them.
@@ -84,7 +115,7 @@ describe('a record as an infra-data-1.0 document', () => {
     expect(roundTrip(r).operationalPoints).toEqual([{ id: 'op-k', name: 'Könnern', rl100: 'LKO' }])
     // A platform that names it is of it, and states its code.
     const named = record({ ...r, platforms: [{ id: 'pf', trackId: 't1', startStation: 0, endStation: 50, stationName: 'Könnern' }] })
-    expect(toDocument(named).domains.core.collections.platforms[0].operationalPoint).toBe('op-k')
+    expect(toDocument(named).domains.civil.collections.platforms[0].operationalPoint).toBe('op-k')
     expect(roundTrip(named).platforms[0]).toMatchObject({ stationName: 'Könnern', code: 'LKO' })
     expect(roundTrip(named).operationalPoints).toEqual([{ id: 'op-k', name: 'Könnern', rl100: 'LKO' }])
     // A point just as the names make it is not kept: a record without one stays without.
@@ -109,7 +140,8 @@ describe('a record as an infra-data-1.0 document', () => {
       platforms: [{ id: 'pf', trackId: 't1', startStation: 0, endStation: 50, stationName: 'Könnern', code: 'XX' }],
       operationalPoints: [{ id: 'op-k', name: 'Könnern', rl100: 'LKO' }],
     })
-    const { tracks, platforms, operationalPoints } = toDocument(r).domains.core.collections
+    const { tracks, operationalPoints } = toDocument(r).domains.core.collections
+    const { platforms } = toDocument(r).domains.civil.collections
     expect(tracks[0].operationalPoint).toBe('op-k')
     expect(operationalPoints.find(p => p.id === 'op-k')).toEqual({ id: 'op-k', name: 'Könnern', rl100: 'LKO', uic: '8010195' })
     // A platform stating another code is a point of its own, as two codes under one name are.
@@ -126,8 +158,8 @@ describe('a record as an infra-data-1.0 document', () => {
       referenceAxes: [{ id: 'x', name: 'X', epsg: 25832, heightEpsg: null, source: { tra: 'a.TRA' }, points }],
     })
     const doc = toDocument(r)
-    expect(doc.domains.layout.collections.trackPaths).toEqual([{ id: 'r', name: 'R', path: { trackIds: ['t1'] } }])
-    const [axis] = doc.domains.layout.collections.referenceAxes
+    expect(doc.domains.civil.collections.trackPaths).toEqual([{ id: 'r', name: 'R', path: { trackIds: ['t1'] } }])
+    const [axis] = doc.domains.civil.collections.referenceAxes
     expect(axis.points).toBe(contentHash(points))
     expect(doc.blobs[axis.points]).toEqual(points)
     expect(roundTrip(r)).toEqual(r)
@@ -165,7 +197,7 @@ describe('the door', () => {
     expect(doc.domains.core.collections.tracks[0].elements[0]).not.toHaveProperty('speed')
     expect(fromDocument(doc).tracks[0].elements[0]).toMatchObject({ speed: 80 })
     // A document of the core before the name: its element's speed is read as the design speed.
-    const before = structuredClone(doc)
+    const before = oneZero(doc)
     before.domains.core.schema = 'sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b954053dc9f04112fbbaf6'
     const e = before.domains.core.collections.tracks[0].elements[0]
     e.speed = e.designSpeed
@@ -180,20 +212,22 @@ describe('the door', () => {
     expect(fromDocument(doc).endMarks).toEqual(marks)
     const before = toDocument(record({ tracks: [track('t1')], endMarks: [{ id: 'e1', kind: 'boundary', trackId: 't1', endpoint: 'END' }] }))
     const now = structuredClone(before)
-    before.domains.core.schema = 'sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19'
-    expect(checkDocument(before)).toEqual(now)
+    const old = oneZero(before)
+    old.domains.core.schema = 'sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19'
+    expect(checkDocument(old)).toEqual(now)
   })
 
   it('refuses a version or a domain it does not read', () => {
     const doc = toDocument(record({ planHeader: { subtitle: 'x' } }))
-    expect(() => checkDocument({ ...doc, domains: { ...doc.domains, core: { ...doc.domains.core, version: '1.1' } } })).toThrow('unsupported_version')
-    expect(() => checkDocument({ ...doc, domains: { ...doc.domains, catenary: doc.domains.layout } })).toThrow('unsupported_version')
+    expect(() => checkDocument({ ...doc, domains: { ...doc.domains, core: { ...doc.domains.core, version: '2.1' } } })).toThrow('unsupported_version')
+    expect(() => checkDocument({ ...doc, domains: { ...doc.domains, catenary: doc.domains.civil } })).toThrow('unsupported_version')
+    expect(() => checkDocument({ ...doc, version: '3.0' })).toThrow('unsupported_version')
   })
 
   it('carries the signalling domain through the record untouched, and carries its schema only where it is', () => {
     const signalling = ksStation()
     const doc = toDocument(record({ signalling }), { carrySchemas: true })
-    expect(doc.domains.signalling).toMatchObject({ version: '1.0', schema: SCHEMA_HASHES.signalling, dependsOn: ['core'] })
+    expect(doc.domains.signalling).toMatchObject({ version: '2.0', schema: SCHEMA_HASHES.signalling, dependsOn: ['core'] })
     expect(Object.keys(doc.schemas)).toContain(SCHEMA_HASHES.signalling)
     expect(roundTrip(record({ signalling }))).toEqual(record({ signalling: {
       fields: signalling.fields,
@@ -217,7 +251,7 @@ describe('the door', () => {
     const signalling = ksStation()
     signalling.collections.balises = signalling.collections.balises.filter(b => b.system === 'pzb')
     // A logical signal of its own in each system, as the first schema could say it: one per signal.
-    return toDocument(record({ signalling }))
+    return oneZero(toDocument(record({ signalling })))
   }
   const asSixth = (doc) => {
     const d = structuredClone(doc)
@@ -271,23 +305,25 @@ describe('the door', () => {
     return d
   }
 
-  it('reads signalling 1.0 as each earlier schema wrote it, as of now', () => {
+  it('reads signalling 1.0 as each earlier schema wrote it, as of 1.0\'s last, and that as 2.0', () => {
     const now = stationNow()
-    const without = (doc) => {
+    // What the door makes of a 1.0 document of signalling 1.0's last schema.
+    const last = (doc, extra = {}) => {
       const d = structuredClone(doc)
       d.domains.signalling.schema = now.domains.signalling.schema
-      Object.assign(d.domains.signalling.collections, { stoppingPlaces: [], itineraries: [] })
-      return d
+      Object.assign(d.domains.signalling.collections, extra)
+      return checkDocument(d)
     }
-    const bare = asSixth(now)
-    bare.domains.signalling.schema = now.domains.signalling.schema
-    expect(checkDocument(asSixth(now))).toEqual(bare)
-    expect(checkDocument(asFifth(now))).toEqual(without(asFifth(now)))
-    const open = without(asFourth(now))
+    expect(checkDocument(asSixth(now))).toEqual(last(asSixth(now)))
+    expect(checkDocument(asFifth(now))).toEqual(last(asFifth(now), { stoppingPlaces: [], itineraries: [] }))
+    const open = last(asFourth(now), { stoppingPlaces: [], itineraries: [] })
     expect(checkDocument(asFourth(now))).toEqual(open)
     expect(checkDocument(asThird(now))).toEqual(open)
     expect(checkDocument(asSecond(now))).toEqual(open)
     expect(checkDocument(asFirst(now))).toEqual(open)
+    // and 1.0's last as 2.0: the stopping places in the core
+    expect(checkDocument(now)).toEqual(toDocument(fromDocument(now)))
+    expect(checkDocument(now).domains.core.collections.stoppingPlaces.map(h => h.id)).toEqual(['hp-1', 'hp-2'])
   })
 
   it('leaves out a member of the signalling that is undefined, as a file would', () => {

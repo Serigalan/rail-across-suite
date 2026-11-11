@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { curveResistance, findPath, heightProfile, locationAt, offsetOnPath, pathAlong, pathLength, pathProperties } from './path.js'
+import { curveResistance, findPath, heightProfile, locationAt, offsetOnPath, pathAlong, pathLength, pathProperties, transitionRadius } from './path.js'
 import { routeThrough, routeVia, signalledSpeeds } from './route.js'
 import { governedLimits, marginValue, simulationRequest } from './request.js'
 import { newVehicle } from '@rail-across/vehicles'
@@ -88,6 +88,38 @@ describe('what the physics needs of it', () => {
     const curve = props.gradients.find(g => g.begin > 1000)
     expect(curve.value).toBeCloseTo(curveResistance(1000), 3)
     expect(curve.begin).toBeCloseTo(1500, 6)
+  })
+
+  it('has the resistance of a transition rising piece by piece to its arc\'s', () => {
+    // 120 m of clothoid from straight into a curve of 600 m, the arc after it, both down the track
+    const track = { id: 'K', epsg: 25832, elements: [
+      { ...straight(E0, N0, E0 + 120, N0), elementType: 2, transitionType: 'clothoid', r1: null, r2: 600 },
+      { ...straight(E0 + 120, N0, E0 + 220, N0), elementType: 1, radius: 600 },
+    ] }
+    const net = { tracks: [track] }
+    const up = pathProperties(net, [{ trackId: 'K', start: 0, end: 220 }]).gradients
+    expect(up).toHaveLength(13)
+    // the first piece's middle 5 m in: a radius of 600 · 120 / 5
+    expect(up[0]).toMatchObject({ begin: 0, end: 10 })
+    expect(up[0].value).toBeCloseTo(curveResistance(14400), 3)
+    expect(up[11].value).toBeCloseTo(curveResistance(600 * 120 / 115), 3)
+    expect(up[12]).toMatchObject({ begin: 120, value: Math.round(curveResistance(600) * 1000) / 1000 })
+    for (let i = 1; i < up.length; i++) expect(up[i].value).toBeGreaterThan(up[i - 1].value)
+    // run down the track, the same pieces in the other order
+    const down = pathProperties(net, [{ trackId: 'K', start: 220, end: 0 }]).gradients
+    expect(down.map(g => g.value)).toEqual(up.map(g => g.value).reverse())
+  })
+
+  it('takes a transition\'s radius from its curvature profile, signed radii unsigned', () => {
+    const clothoid = { length: 100, r1: -400, r2: 800, transitionType: 'clothoid' }
+    expect(transitionRadius(clothoid, 0)).toBeCloseTo(400, 6)
+    expect(transitionRadius(clothoid, 100)).toBeCloseTo(800, 6)
+    // through the inflection, straight where the curvature changes its sign
+    expect(transitionRadius(clothoid, 100 * (1 / 400) / (1 / 400 + 1 / 800))).toBeNull()
+    const bloss = { length: 100, r1: null, r2: 500, transitionType: 'bloss' }
+    expect(transitionRadius(bloss, 50)).toBeCloseTo(1000, 6)
+    expect(transitionRadius(bloss, 25)).toBeCloseTo(500 / (3 / 16 - 2 / 64), 6)
+    expect(transitionRadius({ length: 100, r1: null, r2: null }, 50)).toBeNull()
   })
 
   it('has the heights along it for its profile, open where a track has none', () => {

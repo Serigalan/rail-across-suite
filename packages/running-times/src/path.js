@@ -2,7 +2,7 @@ import { heightAt, trackLength, tracksOnFrom } from '@rail-across/core/track'
 
 /**
  * A train's path over the net, and what the physics needs of it: its length,
- * the grades along it — the heights' and the curves' — and the speeds the
+ * the grades along it — the heights' and the curves', transitions too — and the speeds the
  * layout allows. A location is { trackId, station, direction } — `direction`
  * up (with the stationing) or down, or none where either will do. A path is
  * [{ trackId, start, end }] in running order: each piece is run from `start`
@@ -139,13 +139,38 @@ export function curveResistance(radius) {
   return r > 30 ? 500 / (r - 30) : 0
 }
 
-/** The stretches of a track and what each holds: [{ from, to, speed, radius }] along its stationing. */
+/** The longest piece a transition is cut into for its resistance [m]. */
+const TRANSITION_PIECE = 10
+
+/**
+ * The radius of a transition at `s` metres into it [m], unsigned, or null
+ * where it is straight: its curvature runs from 1/r1 to 1/r2 — linearly on
+ * a clothoid, as 3(s/L)² − 2(s/L)³ on a Bloss curve (geometry/clothoidUtils).
+ */
+export function transitionRadius(el, s) {
+  const k1 = el.r1 ? 1 / el.r1 : 0, k2 = el.r2 ? 1 / el.r2 : 0
+  const t = el.length > 0 ? Math.min(1, Math.max(0, s / el.length)) : 0
+  const k = k1 + (k2 - k1) * (el.transitionType === 'bloss' ? 3 * t * t - 2 * t ** 3 : t)
+  return Math.abs(k) > 1e-12 ? 1 / Math.abs(k) : null
+}
+
+/**
+ * The stretches of a track and what each holds: [{ from, to, speed, radius }]
+ * along its stationing — a transition in pieces of at most
+ * TRANSITION_PIECE, each with the radius at its middle.
+ */
 function elementSpans(track) {
   const out = []
   let s = 0
   for (const el of track.elements ?? []) {
     const len = el.length ?? 0
-    if (len > 0) out.push({ from: s, to: s + len, speed: el.speed > 0 ? el.speed : null, radius: el.elementType === 1 ? el.radius : null })
+    const speed = el.speed > 0 ? el.speed : null
+    if (len > 0 && el.elementType === 2) {
+      const n = Math.ceil(len / TRANSITION_PIECE)
+      for (let i = 0; i < n; i++) {
+        out.push({ from: s + len * i / n, to: s + len * (i + 1) / n, speed, radius: transitionRadius(el, len * (i + 0.5) / n) })
+      }
+    } else if (len > 0) out.push({ from: s, to: s + len, speed, radius: el.elementType === 1 ? el.radius : null })
     s += len
   }
   return out

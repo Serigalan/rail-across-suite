@@ -1,9 +1,9 @@
-import { NumberField, Section, SelectField } from '@rail-across/ui'
+import { Section, SelectField } from '@rail-across/ui'
 import { SIGNAL_CATALOGUE, signalKindOf } from '@rail-across/core/signalling'
 import { labelOf, logicalId, withKind, withLogical, withRouteSpeed } from '../../model/domain.js'
 import { signalOptions } from '../../model/places.js'
 import { functionChoiceOf, functionOfChoice, functionOptions, logicalSignalWord, signalSystemOptions, signalTypeOptions, typeForChoice } from '../../labels.js'
-import { CheckList, EditorHead, ObjectFindings } from '../common.jsx'
+import { CheckList, EditorHead, ObjectFindings, SpeedFigureField } from '../common.jsx'
 import FramesEditor from '../frames.jsx'
 
 /**
@@ -71,7 +71,7 @@ export default function LogicalEditor({ id, found, domain, net, findings, select
         {fromHere.length ? fromHere.map(r => (
           <div key={r.id} className="ui-row tool-speed-row">
             <button type="button" className="ui-link ui-grow" onClick={() => select({ collection: 'routes', id: r.id })}>{routeName(r)}</button>
-            <NumberField compact label={t('signalling_speed')} value={speedOf(r.id)} min={0} step={10} disabled={readOnly}
+            <SpeedFigureField aspect="Zs_3" label={t('zs3_shown')} speed={speedOf(r.id)} readOnly={readOnly} t={t}
               onChange={(v) => ops.replaceAll(withRouteSpeed(domain, r, v, logical.system))} />
           </div>
         )) : <p className="ui-muted">{t('no_routes_from_here')}</p>}

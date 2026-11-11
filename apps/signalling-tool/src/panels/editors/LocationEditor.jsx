@@ -1,13 +1,13 @@
 import { Button, Checkbox, NumberField, Option, Options, Section, SelectField, TextField } from '@rail-across/ui'
-import { SIGNAL_CATALOGUE } from '@rail-across/core/signalling'
-import { labelOf, logicalId, newLogical } from '../../model/domain.js'
+import { SIGNAL_CATALOGUE, signallingSpeedOf } from '@rail-across/core/signalling'
+import { labelOf, logicalId, newLogical, withRouteSpeed } from '../../model/domain.js'
 import { VIRTUAL_FUNCTION, functionOptions, functionWord, logicalSignalWord, mountingOptions, optionsOf } from '../../labels.js'
 import { SignalIcon } from '../../icons.jsx'
-import { EditorHead, LocationFields, ObjectFindings, PlaneLine } from '../common.jsx'
+import { EditorHead, LocationFields, ObjectFindings, PlaneLine, SpeedFigureField } from '../common.jsx'
 import FramesEditor from '../frames.jsx'
 import { SpeedReach } from '../speedReach.jsx'
 import { BRACKET_OFFSET, FOUNDATION_OFFSET, ON_FOUNDATION, bracketScreen, farMastPoint, foundationPoint, gantryFarOffset, sideAlong, trackName } from '../../model/places.js'
-import { isSpeedSignal, speedSignalElementSpeed, speedSignalSpeed, speedSymbol, withSpeedSignalSpeed } from '../../model/routeSpeeds.js'
+import { SPEED_SIGNAL, isSpeedSignal, speedSignalElementSpeed, speedSignalSpeed, speedSymbol, withSpeedSignalSpeed } from '../../model/routeSpeeds.js'
 import { stationName } from '../../model/stations.js'
 
 /**
@@ -19,7 +19,7 @@ import { stationName } from '../../model/stations.js'
  * A speed signal Lf 7 says how far it holds and what the elements there
  * allow; a signal with routes from it, the Zs 3 that shows their speeds.
  */
-export default function LocationEditor({ signal, domain, net, core, findings, onChange, onDelete, onPlace, select, setSketch, showOnPlan, readOnly, t, language }) {
+export default function LocationEditor({ signal, domain, net, core, findings, ops, onChange, onDelete, onPlace, select, setSketch, showOnPlan, readOnly, t, language }) {
   const set = (patch) => onChange({ ...signal, ...patch })
   const logical = signal.logicalSignals ?? []
   const free = Object.keys(SIGNAL_CATALOGUE.systeme).filter(sys => !logical.some(l => l.system === sys))
@@ -63,7 +63,7 @@ export default function LocationEditor({ signal, domain, net, core, findings, on
       </div>
 
       {isSpeedSignal(signal) && <SpeedSignalSection signal={signal} domain={domain} net={net} set={onChange} setSketch={setSketch} showOnPlan={showOnPlan} readOnly={readOnly} t={t} />}
-      {logical.length > 0 && <Zs3Section signal={signal} domain={domain} select={select} t={t} />}
+      {logical.length > 0 && <Zs3Section signal={signal} domain={domain} ops={ops} select={select} readOnly={readOnly} t={t} />}
 
       {signal.kind === 'real' && (
         <Section title={t('logical_signals')}>
@@ -147,14 +147,17 @@ function farText(signal, t) {
   return { offset: Math.round(Math.abs(far) * 100) / 100, side: t(side === 'left' ? 'left_of' : 'right_of') }
 }
 
-/** What an Lf 7 shows, and what the elements from it to the next main signal or Lf 7 allow. */
+/** What an Lf 7 shows — its figure, chosen here as in its frame —, and what the elements from it to the next main signal or Lf 7 allow. */
 function SpeedSignalSection({ signal, domain, net, set, setSketch, showOnPlan, readOnly, t }) {
   const shown = speedSignalSpeed(signal)
   const derived = speedSignalElementSpeed(net, domain.collections.signals, signal)
   const fits = derived && speedSymbol(derived.speed) === String((shown ?? 0) / 10)
   return (
     <Section title={t('speed_signal_section')}>
-      <p>{t('speed_signal_shows', { speed: shown != null ? `${shown} km/h` : '—' })}</p>
+      <div className="ui-fields">
+        <SpeedFigureField aspect={SPEED_SIGNAL} label={t('lf7_shown')} speed={shown} readOnly={readOnly} t={t}
+          onChange={(v) => set(withSpeedSignalSpeed(signal, v))} />
+      </div>
       <SpeedReach signal={signal} domain={domain} net={net} setSketch={setSketch} showOnPlan={showOnPlan} t={t}>
         {!readOnly && derived && !fits && (
           <Button size="small" onClick={() => set(withSpeedSignalSpeed(signal, derived.speed))}>{t('take_speed', { speed: Number(speedSymbol(derived.speed)) * 10 })}</Button>
@@ -164,24 +167,27 @@ function SpeedSignalSection({ signal, domain, net, set, setSketch, showOnPlan, r
   )
 }
 
-/** The Zs 3 a signal shows for the routes from it: each figure, its speed and the routes it is shown for. */
-function Zs3Section({ signal, domain, select, t }) {
+/**
+ * The Zs 3 a signal shows for the train routes from it — the speed range each
+ * of them begins with —, its figure chosen here route by route as an Lf 7's
+ * is; a route without one has a range without a speed, which is said.
+ */
+function Zs3Section({ signal, domain, ops, select, readOnly, t }) {
   const { signals, routes } = domain.collections
-  const figures = [...new Set((signal.logicalSignals ?? []).flatMap(l => l.frames ?? []).filter(f => f.kind === 'indicator')
-    .flatMap(f => f.aspects).filter(a => a.aspect === 'Zs_3' && a.symbol).map(a => a.symbol))].sort((a, b) => Number(a) - Number(b))
-  const shownFor = (figure) => routes.filter(r => r.startSignalId === signal.id && (r.aspects ?? []).some(a => a.signalId === signal.id && a.aspect === 'Zs_3' && a.symbol === figure))
+  const fromHere = routes.filter(r => r.startSignalId === signal.id && r.kind === 'train')
   const routeName = (r) => r.name ?? `${labelOf('signals', signal, t)} → ${labelOf('signals', signals.find(s => s.id === r.targetSignalId), t)}`
+  const unsignalled = fromHere.filter(r => signallingSpeedOf(domain, r) == null)
   return (
     <Section title={t('zs3_at_signal')}>
       <p className="ui-muted">{t('zs3_at_signal_hint')}</p>
-      {figures.length ? figures.map(figure => (
-        <div key={figure} className="tool-zs3-row">
-          <strong>{t('zs3_figure', { figure, speed: Number(figure) * 10 })}</strong>
-          {shownFor(figure).map(r => (
-            <button key={r.id} type="button" className="ui-link" onClick={() => select({ collection: 'routes', id: r.id })}>{routeName(r)}</button>
-          ))}
+      {fromHere.length ? fromHere.map(r => (
+        <div key={r.id} className="ui-row tool-speed-row">
+          <button type="button" className="ui-link ui-grow" onClick={() => select({ collection: 'routes', id: r.id })}>{routeName(r)}</button>
+          <SpeedFigureField aspect="Zs_3" label={t('zs3_shown')} speed={signallingSpeedOf(domain, r)} readOnly={readOnly} t={t}
+            onChange={(v) => ops.replaceAll(withRouteSpeed(domain, r, v))} />
         </div>
       )) : <p className="ui-muted">{t('zs3_none')}</p>}
+      {unsignalled.length > 0 && <p className="ui-message ui-message-warn">{t('zs3_missing', { n: unsignalled.length })}</p>}
     </Section>
   )
 }

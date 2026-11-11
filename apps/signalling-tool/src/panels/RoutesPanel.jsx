@@ -16,7 +16,7 @@ import SpeedRanges from './SpeedRanges.jsx'
 import { DIRECTIONS, inDirection } from '../model/directions.js'
 import { stationName } from '../model/stations.js'
 import { ItineraryEditor, ItineraryList, ItinerarySearch } from './Itineraries.jsx'
-import { CheckList, EditorHead, ObjectFindings } from './common.jsx'
+import { CheckList, EditorHead, ObjectFindings, SpeedFigureField } from './common.jsx'
 import { aspectText, pickingSignal, signalOptions as signalChoices, trackName } from '../model/places.js'
 import { ElementLink } from './speedReach.jsx'
 import { isMainSignal } from '../model/itineraries.js'
@@ -351,7 +351,7 @@ function RouteEditor({ route, name, domain, net, findings, extents, signalOption
       <Section title={t('route_speed')}>
         <div className="ui-row">
           {setter && !readOnly
-            ? <div className="ui-grow"><NumberField compact label={t('route_speed_kmh')} value={speed ?? null} min={0} step={10} onChange={(v) => onSignal(v ?? null)} /></div>
+            ? <div className="ui-grow"><SpeedFigureField aspect="Zs_3" label={t('zs3_shown')} speed={speed} onChange={onSignal} t={t} /></div>
             : <span className="ui-grow">{speed != null ? `${speed} km/h` : t('speed_not_signalled')}</span>}
           {setter && (
             <Button size="small" onClick={() => select({ collection: 'logicalSignals', id: logicalId(start.id, setter.system) })}>
@@ -532,7 +532,7 @@ function FindRoutes({ domain, net, extents, ops, setMode, setSketch, t }) {
                 onChange={(on) => setSkipped(prev => { const n = new Set(prev); if (on) n.delete(key); else n.add(key); return n })} />
             </span>
             {!there && (
-              <NumberField compact label={derived != null && speeds[key] == null ? t('route_speed_from_elements') : t('route_speed_kmh')} value={speeds[key] ?? derived} min={0} step={10}
+              <SpeedFigureField aspect="Zs_3" label={derived != null && speeds[key] == null ? t('route_speed_from_elements') : t('zs3_shown')} speed={speeds[key] ?? derived} t={t}
                 onChange={(v) => setSpeeds(prev => ({ ...prev, [key]: v ?? undefined }))} />
             )}
           </div>

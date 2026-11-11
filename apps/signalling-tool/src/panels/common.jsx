@@ -1,4 +1,5 @@
 import { Button, Checkbox, NumberField, SelectField, TrashIcon } from '@rail-across/ui'
+import { aspectOf } from '@rail-across/core/signalling'
 import { planePoint, trackName } from '../model/places.js'
 import { findingText } from '../labels.js'
 import { useTexts } from '../i18n.js'
@@ -52,6 +53,22 @@ export function PlaneLine({ point, t }) {
 }
 
 /** The head of an editor: its title, and the button that deletes the object. */
+/**
+ * The figure a speed signal shows — a Zs 3 or an Lf 7 (`aspect`) — as its
+ * catalogue has them, each with its speed: 7 (70 km/h). `speed` [km/h] is
+ * shown as its tens; onChange gets the speed of the figure chosen, null for none.
+ */
+export function SpeedFigureField({ aspect, label, speed, onChange, readOnly, t }) {
+  const figures = aspectOf(aspect)?.symbole ?? []
+  const figure = speed > 0 ? String(Math.floor(speed / 10)) : null
+  return (
+    <SelectField compact label={label} value={figures.includes(figure) ? figure : null} disabled={readOnly}
+      empty={speed > 0 && !figures.includes(figure) ? `${speed} km/h` : t('none')}
+      options={figures.map(f => ({ value: f, label: t('speed_figure', { figure: f, speed: Number(f) * 10 }) }))}
+      onChange={(v) => onChange(v ? Number(v) * 10 : null)} />
+  )
+}
+
 export function EditorHead({ title, onDelete, readOnly, t, children }) {
   return (
     <div className="tool-editor-head">

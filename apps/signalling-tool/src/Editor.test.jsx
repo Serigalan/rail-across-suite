@@ -182,9 +182,22 @@ describe('the Signalling-Tool', () => {
     const de = panel('de')
     expect(de).toContain('A · Ks-Mehrabschnittssignal')
     expect(de).toContain('Signalisierte Geschwindigkeit je Fahrstraße')
-    expect(de).toContain('value="80"')
+    // The speed as the Zs 3 shows it: its figure, chosen as an Lf 7's.
+    expect(de).toContain('<option value="8" selected="">8 (80 km/h)</option>')
     expect(de).toContain('Einfahrsignal')
     expect(panel('en')).toContain('Signalled speed per route')
+  })
+
+  it('sets the Zs 3 of each train route at its start signal as an Lf 7 is set, and says where a range has none', () => {
+    const de = edit({ collection: 'signals', id: 's-a' })
+    expect(de).toContain('Zs 3 am Signal')
+    expect(de).toContain('<option value="8" selected="">8 (80 km/h)</option>')
+    expect(de).toContain('<option value="7">7 (70 km/h)</option>')
+    expect(de).not.toContain('ohne Zs 3')
+    // Without a speed, its range has none: said.
+    const bare = { ...record.signalling, collections: { ...record.signalling.collections,
+      signals: record.signalling.collections.signals.map(s => ({ ...s, logicalSignals: s.logicalSignals?.map(({ signallingSpeeds: _v, ...l }) => l) })) } }
+    expect(edit({ collection: 'signals', id: 's-a' }, 'de', bare)).toContain('1 Zugstraße(n) ab diesem Signal ohne Zs 3')
   })
 
   it('lists the routes under a menu, and shows a route\'s signalled speed and offers to determine its overlap from it', () => {
@@ -206,7 +219,8 @@ describe('the Signalling-Tool', () => {
           selection={{ collection: 'routes', id: 'r-a-n' }} select={() => {}} ops={{}} setMode={() => {}} readOnly={false} {...textsFor('de')} />
       </I18n.Provider>,
     )
-    expect(html).toContain('<span>Geschwindigkeit [km/h]</span><input type="number" step="10" min="0" value="80"/>')
+    expect(html).toContain('<span>Zs 3</span>')
+    expect(html).toContain('<option value="8" selected="">8 (80 km/h)</option>')
     expect(html).toContain('<span class="ui-grow">Freimeldeabschnitte</span>')
     expect(html).toContain('Durchrutschweg ermitteln')
     expect(html).toContain('Am Signal einstellen')

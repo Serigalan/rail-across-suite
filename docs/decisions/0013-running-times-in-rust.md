@@ -1,7 +1,8 @@
 # 0013 — Running times with OSRD's simulation core, ported to Rust
 
 Status: **proposed** — changes [0006](0006-capacity-on-osrd.md) for the running time of one train; points 2 and 3
-changed by [0015](0015-lgpl.md): the port is in this repository under `sim/`, as everything under LGPL-3.0-only
+changed by [0015](0015-lgpl.md): the port is in this repository under `sim/`, as everything under LGPL-3.0-only;
+point 4 changed by [0023](0023-capacity-simulation-of-our-own.md): the capacity simulation is the suite's own too
 
 ## Decision
 

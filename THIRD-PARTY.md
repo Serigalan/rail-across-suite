@@ -74,7 +74,7 @@ rail-across-server` lists the rest.
 
 | Software | Used for | Licence |
 |---|---|---|
-| [OSRD](https://github.com/OpenRailAssociation/osrd), OpenRail Association | the base of Open-Capacity-Sim, run as a service at a pinned version ([decision 0006](docs/decisions/0006-capacity-on-osrd.md)) | LGPL-3.0 |
+| [OSRD](https://github.com/OpenRailAssociation/osrd), OpenRail Association | exchange: the Layout-Tool reads and writes its RailJSON; the suite does not run it ([decision 0023](docs/decisions/0023-capacity-simulation-of-our-own.md)) | LGPL-3.0 |
 
 ## OSRD's work in the repository
 

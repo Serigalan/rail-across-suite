@@ -10,7 +10,7 @@ it costs. A record is not rewritten when a decision changes; a new one replaces 
 | [0003](0003-construction-stages.md) | Construction stages as lifespans on one state | accepted |
 | [0004](0004-ids-on-tracks.md) | Ids on tracks, not on their elements | accepted |
 | [0005](0005-sketch-mode.md) | A sketch mode in every module | accepted |
-| [0006](0006-capacity-on-osrd.md) | Open-Capacity-Sim builds on OSRD | accepted |
+| [0006](0006-capacity-on-osrd.md) | Open-Capacity-Sim builds on OSRD | replaced by 0023 |
 | [0007](0007-project-name.md) | The project's name: Rail-Across-Suite | accepted |
 | [0008](0008-data-outside-history.md) | Large data outside the history, fetched by version and hash | accepted |
 | [0009](0009-core-1-0-in-the-data-model.md) | core 1.0 has the data model's shape from the start | accepted |
@@ -27,3 +27,4 @@ it costs. A record is not rewritten when a decision changes; a new one replaces 
 | [0020](0020-everything-in-rust.md) | Everything in Rust: the core, the point clouds and the server, one crate set for server and desktop | proposed |
 | [0021](0021-one-format-one-build-the-project-in-the-module.md) | One format (infra-data-1.0), one build, the project in the core's module | accepted |
 | [0022](0022-planpro-export-only.md) | PlanPro: export only; the reader stays as the export's check | accepted |
+| [0023](0023-capacity-simulation-of-our-own.md) | The capacity simulation is the suite's own, on the Fahrplan-Sim's blocking times | accepted |

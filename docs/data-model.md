@@ -208,13 +208,13 @@ core, and derived results above them:
 | discipline | `layout` | layout-tool | surveys, reference axes, named track paths, plan header |
 | discipline | `signalling` | signalling-tool | signals and boards, detection points, track sections, switch elements, train and shunting routes, overlaps, flank protection, balises and magnets (PZB, ETCS), station boundaries; the speeds signalled per route at the signals ([decision 0011](decisions/0011-signalling-domain.md)) |
 | discipline | `catenary` | open-catenary-tool | masts, cantilevers, wires, sections, El signals |
-| discipline | `operations` | open-timetable-tool | train runs, timetable, rolling stock |
+| discipline | `operations` | Fahrplan-Editor | train runs, timetable, rolling stock — a project's, kept beside its variants and not in a variant's record ([decision 0016](decisions/0016-timetables-of-a-project.md)); as a format of its own, operations-1.0, in the [roadmap](../ROADMAP.md)'s phase 4 |
 | discipline | `construction` | open-construction-sim | closures, temporary speed restrictions, tracks in operation per stage |
 | base | `core` | layout-tool | **reference**: coordinate systems, km lines and designed kilometrage, operational point register, catalogue versions (rules, switch forms, profiles) · **net**: tracks (elements, heights, cant, superstructure), switches and connectors · **context**: platforms, end marks, structures (bridges, tunnels, level crossings) · **stages**: the ordered construction stages · **types**: `TrackLocation`, `TrackRange`, `TrackEnd`, `TrackPath`, `Lifespan`, `Ref` |
 | project | — | server | variants and sketches, approvals, comments — they refer into revisions, never back |
 
-Discipline domains store references only into the core (R2, R9). Open-Capacity-Sim writes no domain: it builds on
-OSRD, and its results are derived ([decision 0006](decisions/0006-capacity-on-osrd.md)).
+Discipline domains store references only into the core (R2, R9). The capacity simulation writes no domain: it is
+the suite's own, and its results are derived ([decision 0023](decisions/0023-capacity-simulation-of-our-own.md)).
 
 - **Connectors with two ends** (`link`) join two track ends at a node: where the plane changes, and where a
   rebuilt part of a track ties in ([decision 0003](decisions/0003-construction-stages.md)).
@@ -331,7 +331,7 @@ chain at the one door (S-R10). The format has them since core 1.0, the first ste
 | How are construction stages held? | as lifespans on one state, not as variants | [decision 0003](decisions/0003-construction-stages.md) |
 | Who approves a change to the core schema? | for now @serigalan, the code owner of `packages/` and `schemas/` | [CODEOWNERS](../.github/CODEOWNERS) |
 | How does one try something without the other disciplines? | in a sketch, which returns only through a takeover | [decision 0005](decisions/0005-sketch-mode.md) |
-| What does capacity simulation build on? | OSRD, run as a service; only the adapter is ours | [decision 0006](decisions/0006-capacity-on-osrd.md) |
+| What does capacity simulation build on? | the Fahrplan-Sim's running times and blocking times; it is the suite's own (OSRD as a service, decision 0006, went) | [decision 0023](decisions/0023-capacity-simulation-of-our-own.md) |
 | What are the project and its files called? | Rail-Across-Suite; files `.railacross` | [decision 0007](decisions/0007-project-name.md) |
 | How is the signalling domain structured? | after PlanPro 1.10; like OSRD every signalling and train protection system is in a catalogue, a signal has a logical signal per system (Ks, shunting signals; PZB and ETCS balises first), overlaps and flank protection from 1.0 | [decision 0011](decisions/0011-signalling-domain.md) |
 

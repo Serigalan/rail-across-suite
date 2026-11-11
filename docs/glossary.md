@@ -140,7 +140,15 @@ the Layout-Tool's documentation does.
 | Fahrzeug, Triebfahrzeug | rolling stock, traction unit | — | |
 | Fahrzeit | running time | — | |
 | Sperrzeit | blocking time | — | |
+| Sperrzeitentreppe | blocking time stairs | — | a train's blocking times along its way |
+| Mindestzugfolgezeit | minimum headway | — | |
+| Belegungsgrad, verketteter | occupancy rate | — | of a stretch over a period, after UIC 406 |
 | Leistungsfähigkeit, Kapazität | capacity | — | |
+| Zugbildung | formation | — | traction units and the hauled load |
+| Bremsstellung, Bremshundertstel | brake position, braked weight percentage | — | |
+| Anschluss | connection | — | |
+| Wende | turnaround | — | |
+| Einbruchsverspätung | entry delay | — | the delay a train brings into the planning area |
 
 ## Planning and data
 

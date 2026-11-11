@@ -295,8 +295,8 @@ named by its hash, collections sorted by id, blobs by hash, references declared 
 | `delayScenarios` | the delays at entry by place and kind, the longer dwells — each a distribution with its figures | — |
 | `studies` | a timetable, a period, the stretches from place to place, the bounds, a scenario, the number of runs and the seed | — |
 
-It names the railway by id — `core.operationalPoints`, `core.endMarks`, `core.tracks`, `signalling.itineraries`,
-`signalling.stoppingPlaces` — and belongs to no variant: the references are checked where the operations are laid
+It names the railway by id — `core.operationalPoints`, `core.endMarks`, `core.tracks`, `core.stoppingPlaces`
+(from infra-data-2.0; `signalling.stoppingPlaces` before), `signalling.itineraries` — and belongs to no variant: the references are checked where the operations are laid
 on a variant, and one that finds nothing there is a finding at its train, not a refusal, as it is today.
 
 The document is the whole of a project's operations — what is exported, imported and hashed for the caches — and
@@ -342,10 +342,10 @@ the new domain `electrification` 1.0.
 | Domain | Change | For |
 |---|---|---|
 | `electrification` 1.0, new | `electrifications`: a range of a track, its system, a lifespan; depends on the core only | the traction mode along a train's way; where there is none, no wire — a domain of its own, as the core holds only what several disciplines need; the Catenary-Tool plans its masts and sections along it |
-| `core` 2.0 | `platforms` leave it, for `layout` | the core keeps the net, the reference, the boundaries and the stages |
+| `core` 2.0 | `platforms` leave it, for `layout`; `stoppingPlaces` come into it from `signalling`, as they are | the core keeps what several disciplines place things by: a stopping place is the signalling's itineraries' and boundaries', the platforms' and the timetables' |
 | `core` 2.0 | `endMarks[].headway`: how close trains follow at a planning boundary | trains entering from a net that is not in the model |
-| `layout` 1.1 | `platforms`, as they were in the core | the layout tool's |
-| `signalling` 2.0 | a stopping place no longer names its platform (`platformId`): the platform is the one its range lies at, derived (R9); a station boundary marked by a platform is marked by the stopping place at it (`stoppingPlaceId`) | no stored reference between sibling domains (R9) |
+| `layout` 1.1 | `platforms`, as they were in the core, each naming the stopping places at it (`stoppingPlaceIds`) — a reference into the core, as R2 allows | the layout tool's; the core names nothing above it, so the platform names its stopping places, not they their platform |
+| `signalling` 2.0 | `stoppingPlaces` leave it, for the core; its itineraries name them there; a station boundary marked by a platform is marked by the stopping place at it (`stoppingPlaceId`) | no stored reference between sibling domains (R9) |
 | `signalling` 2.0 | `routes[].settingTime` and `.releaseTime`, with the interlocking's values in the domain's fields | the blocking time's parts that are the interlocking's |
 | `signalling` 2.0 | `trainProtection`: a range of a track, the system and its level — PZB, LZB, ETCS —, a lifespan | the braking a train is run with; later, blocks without signals at the track |
 
@@ -362,9 +362,9 @@ result.
 
 - **I1 — The format.** `schemas/core/2.0.schema.json`, `schemas/layout/1.1.schema.json`,
   `schemas/signalling/2.0.schema.json` and `schemas/electrification/1.0.schema.json` beside the 1.0 files; the
-  door's step from 1.0 — the platforms moved to `layout`; a stopping place's `platformId` dropped where its range
-  lies at that platform, kept as a finding where not; a boundary's platform mark turned into the stopping place
-  at it, one made over the platform where there is none; the additions begin empty —; the vectors rewritten; the
+  door's step from 1.0 — the platforms moved to `layout` and the stopping places to the core; a stopping place's
+  `platformId` turned into the platform's `stoppingPlaceIds`; a boundary's platform mark turned into the stopping
+  place at it, one made over the platform where there is none; the additions begin empty —; the vectors rewritten; the
   data model's domain table brought up to date; the server and the working copies reading 1.0 and writing 2.0.
   *Done when* every project of the server opens with every platform, stopping place and boundary in its place, and
   a file exported as 1.0 reads in with what it held.
@@ -374,7 +374,8 @@ result.
   reversed.
 - **I3 — Reading.** The running time takes the traction mode from the electrification along its way; the
   blocking time takes a route's times; a train enters at a boundary no closer than its headway; the readers of
-  platforms — the running times, the Signalling-Tool, the PlanPro export — read them from `layout`; RailJSON's
+  platforms and stopping places — the running times, the timetables, the Signalling-Tool, the PlanPro export —
+  read them from `layout` and the core; RailJSON's
   `electrifications`, empty in the export today, written and read.
 
 ### Order
@@ -392,6 +393,10 @@ electrification and the connections make them.
 
 ### Open
 
+- **Who writes the stopping places in the core.** The core is written by the Layout-Tool alone (data model,
+  section 4); the stopping places are set in the Signalling-Tool today. Either the Layout-Tool sets them, with
+  the platforms and station tracks, and the Signalling-Tool reads them — proposed, as the rule stands —, or the
+  rule gets an exception for this collection.
 - **More from the core to `layout`, while 2.0 is a major version anyway**: a track's `lagesystem` and
   `proviAxis` (where an MDB or ProVI import took it from) and its `osrd` (what a RailJSON import brought along)
   are read by the Layout-Tool's imports and exports alone — proposed to move, keyed by the track.

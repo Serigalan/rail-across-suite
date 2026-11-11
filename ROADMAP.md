@@ -159,10 +159,15 @@ Goal: prove the core with a second real module.
 - **Catenary-Tool** (`apps/catenary-tool/`, [decision 0025](docs/decisions/0025-layers-on-the-core.md)): the layer
   `electrification` — first the electrified ranges of the tracks and their systems, then masts, cantilevers,
   contact wire height and stagger, tension and feeding sections — located objects and ranges along the track,
-  reading geometry, cant and heights from the core. *Next:* the electrified ranges planned on the net (infra-data-2.0).
+  reading geometry, cant and heights from the core. *Done:* the app on the variant's working copy, the electrified
+  ranges planned on the map — a track and two stations typed or picked, a system, a planning status —, their check
+  (off the track, overlapping, two systems meeting without a section), how much of the net is under wire; the ranges
+  carried over every track edit (R4); written into RailJSON. *Next:* neutral sections, masts and cantilevers.
 - **Civil-Tool** (the Layout-Tool's app under `/civil/`, decision 0025): the layer `civil` — platforms, named runs
   of tracks, measured axes and reference axes from the point clouds, the plan header, the project picture —, taken
-  out of the Layout-Tool, which keeps the alignment alone.
+  out of the Layout-Tool, which keeps the alignment alone. *Done:* one build, the tool by its path; the platforms,
+  the runs, the cross sections with the point clouds and surveys, Verm.ESN axes as reference axes, the plan's title
+  block in the Civil-Tool; creating, splicing, switches, editing tracks and heights in the Layout-Tool.
 - **Open-Signalling-Tool**: signals, detection points, balises, track sections, signalling routes, speed
   profiles; station boundaries stored as references to what marks them (entry signals, trapezoid boards, entry
   switches, platforms), with a special-case finding where they differ from EBO §4; export towards PlanPro /
@@ -249,6 +254,10 @@ Each step answers a question of its own and is of use without the next.
   line with Ks block signals, a single-track line with a crossing station, a station with an overtaking track;
   each with its blocking time parts, headways and compressed occupancy worked out step by step beside it, apart
   from the code, so that a test holds the code to them.
+  *Done:* the block asked for within sight of the signal that announces it — a distant signal, or the main signal
+  before showing Ks 2 —; an overlap's `releaseDelay`; a route's times; reference case A, a two-track line with Ks
+  block signals ([docs/reference-cases](docs/reference-cases/README.md)). *Next:* the sight time of the operation's
+  apart from the sight distance (operations-1.0), reference cases B and C.
 - **K1 — Minimum headways and occupancy.** From a timetable's blocking time stairs: the minimum headway
   (Mindestzugfolgezeit) of the trains that follow each other on a stretch, as a table by kind; the timetable
   compressed over a stretch and a period after UIC Code 406 — the occupancy time, the occupancy rate with its
@@ -369,22 +378,35 @@ Signalling-Tool's next, phase 3), neutral sections (with the catenary), anything
   made over the platform where there is none); the additions begin empty —; the vectors and types written again;
   the server's revisions brought to 2.0 by a data step. *Done when* every project of the server opens with every
   platform, stopping place and boundary in its place, and a file exported as 1.0 reads in with what it held.
+  *Done:* all of it, held to vectors of infra-data 1.0 documents and to the server's data step `0025-infra-data-2.0`;
+  a layer that holds nothing is written as missing.
 - **I2 — The tools.** The Layout-Tool the alignment's alone; the Civil-Tool — the Layout-Tool's app under
   `/civil/` — for the platforms, the runs, the surveys and reference axes, the plan header and the picture; the
   Catenary-Tool (phase 3) for the electrification; a route's times and the train protection in the
   Signalling-Tool; a boundary's headway in the Layout-Tool. *Done when* each tool edits its own layer and shows the
   others read-only, and a range keeps its place over a track split, joined and reversed.
+  *Done:* the Layout-Tool, the Civil-Tool and the Catenary-Tool as above; a route's times and the interlocking's
+  in the Signalling-Tool, which shows a station's platforms read-only; a boundary's headway. *Next:* the train
+  protection in the Signalling-Tool (kept through its edits, not edited yet).
 - **I3 — Reading.** The running time takes the traction mode from the electrification along its way; the
   blocking time takes a route's times; a train enters at a boundary no closer than its headway; RailJSON's
   `electrifications`, empty in the export today, written and read.
+  *Done:* the mode a train runs with chosen by the wire along its way where the train names none — one mode the
+  whole way, as OSRD's switching between modes is not ported —, and where it lacks, said; a route's times in the
+  blocking time; a train entering a boundary too soon after the one before, said (it is not held back yet);
+  RailJSON's electrifications written — read, they stay what the import brought along, as the Catenary-Tool plans
+  the layer.
 
 ### Order
 
-1. **I1, I2** — the layers of decision 0025 on infra-data-2.0, with the Civil-Tool and the Catenary-Tool.
-2. **K0** — the blocking time as the format gives it; every later figure rests on it.
+1. **I1, I2** — the layers of decision 0025 on infra-data-2.0, with the Civil-Tool and the Catenary-Tool. *Done*,
+   but the train protection's editor.
+2. **K0** — the blocking time as the format gives it; every later figure rests on it. *Done*, but the operation's
+   sight time and reference cases B and C.
 3. **O1, O2** — the operations on their format before anything new is put into them.
 4. **K1** — the first figures, from what is there.
-5. **I3** — the running and blocking times read the railway's additions.
+5. **I3** — the running and blocking times read the railway's additions. *Done* ahead of its place, but holding a
+   train back at a boundary.
 6. **O3, O4** — formations, connections and turnarounds.
 7. **K2**.
 8. **O5 and K3**.

@@ -141,4 +141,14 @@ describe('the speeds the elements give', () => {
     expect(inDirection({ ...net, kmLines }, on('t1', 20), 'both')).toBe(true)
     expect(inDirection({ ...net, kmLines }, on('t1', 20), 'rising')).toBe(false)
   })
+
+  it('reads the kilometrage further along a signal\'s run where the line has not begun at it (KHB, 12-N)', () => {
+    // The line begins 150 m into t1 and falls as it runs east: before it, every point is stationed at its first metre.
+    const ll = (x) => utmToWgs84(500000 + x, 5700000, EPSG)
+    const kmLines = [{ lineNumber: '6000', runs: [[[...ll(150), 5100], [...ll(600), 4650]]] }]
+    expect(kmDirection({ ...net, kmLines }, on('t1', 20))).toBe('falling')
+    // On the line, westwards, it rises; off it westwards, nothing to read: the stationing.
+    expect(kmDirection({ ...net, kmLines }, on('t1', 250, 'down'))).toBe('rising')
+    expect(kmDirection({ ...net, kmLines }, on('t1', 140, 'down'))).toBe('falling')
+  })
 })

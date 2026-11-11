@@ -10,7 +10,7 @@ import { measuredOverlap, withMeasuredOverlap } from './overlaps.js'
 import { OFFSET, bracketScreen, farMastPoint, foundationPoint, gantryFarOffset, kmName, kmNameAt, locationFrom, mountedFrom, planePoint, signalOptions, trackName } from './places.js'
 import { magnetFrequency, magnetName, magnetsDue, signalMagnet, withSignal } from './magnets.js'
 import { LAYOUT, detectionLayout, wantedPoints } from './detectionLayout.js'
-import { nextSignals, routeSections, routeStretches, runStretches, wayPieces } from './routeSearch.js'
+import { REACH, nextSignals, routeSections, routeStretches, runStretches, searchWays, wayPieces } from './routeSearch.js'
 import { trackSectionExtents } from '@rail-across/core/signalling'
 import { functionChoiceOf, functionOfChoice, functionOptions, functionWord, mountingOptions, typeForChoice } from '../labels.js'
 import { changedIds, redo, startHistory, step, stepOf, stepsOf, travel, undo } from './history.js'
@@ -275,6 +275,29 @@ describe('editing the domain', () => {
     expect(second.sections).toEqual([])
     expect(second.kept).toHaveLength(4)
     expect(second.removed).toEqual([])
+  })
+
+  it('finds a route over a line of long block sections, and says where it gave up', () => {
+    // Three tracks of 10 km joined by links: the next main signal 23 km ahead (KHB, 12-N to 7-A).
+    const long = {
+      tracks: [track('l1', [0, 0], [10000, 0]), track('l2', [10000, 0], [20000, 0]), track('l3', [20000, 0], [30000, 0])],
+      switches: [
+        { switchId: 'k1', kind: 'link', ports: { A: { trackId: 'l1', endpoint: 'END' }, B: { trackId: 'l2', endpoint: 'BEGIN' } } },
+        { switchId: 'k2', kind: 'link', ports: { A: { trackId: 'l2', endpoint: 'END' }, B: { trackId: 'l3', endpoint: 'BEGIN' } } },
+      ],
+    }
+    const main = (id, at) => ({ id, kind: 'real', name: id, at, logicalSignals: [{ system: 'ks', type: 'main' }] })
+    const signals = [main('n', on('l1', 1000)), main('a', on('l3', 4000))]
+    expect(nextSignals(long, signals, signals[0]).map(f => [f.target.id, f.trackIds, Math.round(f.length)])).toEqual([['a', ['l1', 'l2', 'l3'], 23000]])
+    // A track entered further ahead than the search reaches: nothing found, and the way it gave up on.
+    const lone = {
+      tracks: [...long.tracks.slice(0, 2), track('l3', [20000, 0], [20000 + REACH, 0]), track('l4', [20000 + REACH, 0], [30000 + REACH, 0])],
+      switches: [...long.switches, { switchId: 'k3', kind: 'link', ports: { A: { trackId: 'l3', endpoint: 'END' }, B: { trackId: 'l4', endpoint: 'BEGIN' } } }],
+    }
+    const far = [main('n', on('l1', 1000)), main('a', on('l4', 100))]
+    const { ways, cutOff } = searchWays(lone, far, far[0])
+    expect(ways).toEqual([])
+    expect(cutOff.map(c => c.trackIds)).toEqual([['l1', 'l2', 'l3']])
   })
 
   it('finds the routes from a signal to the next main signals on every way, and the sections they run through', () => {

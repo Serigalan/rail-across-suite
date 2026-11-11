@@ -20,7 +20,7 @@ import { CheckList, EditorHead, ObjectFindings } from './common.jsx'
 import { aspectText, pickingSignal, signalOptions as signalChoices, trackName } from '../model/places.js'
 import { ElementLink } from './speedReach.jsx'
 import { isMainSignal } from '../model/itineraries.js'
-import { boundaryTarget, newBoundaryTarget, nextSignals, routeSections, routeStretches, runStretches, wayPieces } from '../model/routeSearch.js'
+import { DEEPEST, REACH, boundaryTarget, newBoundaryTarget, routeSections, routeStretches, runStretches, searchWays, wayPieces } from '../model/routeSearch.js'
 
 /** The kinds of route, each with the type it starts with. */
 const KINDS = { train: { trainType: 'ZZ' }, shunting: { shuntingType: 'RR' }, middle: { middleType: 'ZM' } }
@@ -432,7 +432,8 @@ function RouteSectionList({ sections, t }) {
 }
 
 /** The ways from a signal to the next main signals, and to a boundary of the planning area: there to the virtual signal that ends it, or one to come. */
-const waysFrom = (net, signals, start) => nextSignals(net, signals, start, { boundaries: true })
+const searchFrom = (net, signals, start) => searchWays(net, signals, start, { boundaries: true })
+const waysFrom = (net, signals, start) => searchFrom(net, signals, start).ways
   .map(f => (f.boundary ? { ...f, target: boundaryTarget(signals, f) } : f))
 
 /**
@@ -452,7 +453,8 @@ function FindRoutes({ domain, net, extents, ops, setMode, setSketch, t }) {
   const [done, setDone] = useState(null)
   const start = mains.find(s => s.id === startId) ?? null
   const keyOf = (f) => `${f.target?.id ?? f.boundary.mark.id}|${f.trackIds.join()}`
-  const found = useMemo(() => (start ? waysFrom(net, signals, start) : []), [net, signals, start])
+  const search = useMemo(() => (start ? searchFrom(net, signals, start) : { ways: [], cutOff: [] }), [net, signals, start])
+  const found = search.ways
   const exists = (startSig, f) => !!f.target && routes.some(r => r.startSignalId === startSig.id && r.targetSignalId === f.target.id && r.path.trackIds.join() === f.trackIds.join())
   const fresh = found.filter(f => !exists(start, f))
   const chosen = fresh.filter(f => !skipped.has(keyOf(f)))
@@ -511,7 +513,8 @@ function FindRoutes({ domain, net, extents, ops, setMode, setSketch, t }) {
       </div>
     </div>
     {done && <p className="tool-created" role="status">{done}</p>}
-    {start && !found.length && <p className="ui-muted">{t('find_routes_none')}</p>}
+    {start && !found.length && !search.cutOff.length && <p className="ui-muted">{t('find_routes_none')}</p>}
+    {start && search.cutOff.length > 0 && <p className="ui-muted">{t('find_routes_cut_off', { km: REACH / 1000, tracks: DEEPEST })}</p>}
     {found.map(f => {
       const key = keyOf(f)
       const there = exists(start, f)

@@ -11,9 +11,13 @@ import { isMainSignal } from './itineraries.js'
  * stand and where it runs.
  */
 
-/** How far a route is looked for ahead of its signal [m], and how many tracks it may run at the most. */
-const REACH = 20000
-const DEEPEST = 80
+/**
+ * How far a route is looked for ahead of its signal [m], and how many tracks
+ * it may run at the most. A line of long block sections has main signals more
+ * than 20 km apart; the search ends at the first main signal on every way.
+ */
+export const REACH = 50000
+export const DEEPEST = 80
 
 const away = (direction) => (direction === 'down' ? 'BEGIN' : 'END')
 
@@ -29,13 +33,24 @@ export const actsAlong = (s, direction) => s.bothDirections || (s.at.direction ?
  * layout's end mark, net.endMarks), its target null and `boundary` { mark,
  * at } — the mark and the track's end, the way it runs.
  */
-export function nextSignals(net, signals, start, { isTarget = isMainSignal, ends = false, boundaries = false } = {}) {
-  if (start?.at?.anchor !== 'station') return []
+export const nextSignals = (net, signals, start, options) => searchWays(net, signals, start, options).ways
+
+/**
+ * nextSignals, and the ways the search gave up on: { ways, cutOff } — each of
+ * `cutOff` a way that ran REACH metres or DEEPEST tracks without meeting a
+ * target, { trackIds, length } as far as it got.
+ */
+export function searchWays(net, signals, start, { isTarget = isMainSignal, ends = false, boundaries = false } = {}) {
+  if (start?.at?.anchor !== 'station') return { ways: [], cutOff: [] }
   const lengths = new Map(net.tracks.map(t => [t.id, trackLength(t)]))
   const targets = signals.filter(s => s.id !== start.id && isTarget(s) && s.at?.anchor === 'station')
   const out = []
+  const cutOff = []
   const walk = (trackId, direction, from, trackIds, run) => {
-    if (run > REACH || trackIds.length > DEEPEST) return
+    if (run > REACH || trackIds.length > DEEPEST) {
+      cutOff.push({ trackIds: trackIds.slice(0, -1), length: run })
+      return
+    }
     const len = lengths.get(trackId) ?? 0
     // The nearest signal ahead on this track, acting along.
     const ahead = targets
@@ -59,12 +74,13 @@ export function nextSignals(net, signals, start, { isTarget = isMainSignal, ends
   }
   walk(start.at.trackId, start.at.direction ?? 'up', start.at.station, [start.at.trackId], 0)
   const seen = new Set()
-  return out.sort((a, b) => a.length - b.length).filter(r => {
+  const ways = out.sort((a, b) => a.length - b.length).filter(r => {
     const key = `${r.target?.id ?? r.boundary?.mark.id}|${r.trackIds.join()}`
     if (seen.has(key)) return false
     seen.add(key)
     return true
   })
+  return { ways, cutOff }
 }
 
 /** How near a boundary a virtual signal must stand to be its route's target [m]. */

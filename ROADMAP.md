@@ -342,7 +342,7 @@ the new domain `electrification` 1.0.
 | Domain | Change | For |
 |---|---|---|
 | `electrification` 1.0, new | `electrifications`: a range of a track, its system, a lifespan; depends on the core only | the traction mode along a train's way; where there is none, no wire — a domain of its own, as the core holds only what several disciplines need; the Catenary-Tool plans its masts and sections along it |
-| `core` 2.0 | `platforms` leave it, for `layout`; `stoppingPlaces` come into it from `signalling`, as they are | the core keeps what several disciplines place things by: a stopping place is the signalling's itineraries' and boundaries', the platforms' and the timetables' |
+| `core` 2.0 | `platforms` leave it, for `layout`; `stoppingPlaces` come into it from `signalling`, as they are, and the Signalling-Tool keeps setting them ([decision 0024](docs/decisions/0024-every-module-writes-the-core.md)) | the core keeps what several disciplines place things by: a stopping place is the signalling's itineraries' and boundaries', the platforms' and the timetables' |
 | `core` 2.0 | `endMarks[].headway`: how close trains follow at a planning boundary | trains entering from a net that is not in the model |
 | `core` 2.0 | a track's `lagesystem`, `proviAxis` and `osrd` leave it, for `layout` | read by the Layout-Tool's imports and exports alone |
 | `layout` 1.1 | `trackSources`: per track (`trackId`) where an import took it from — `lagesystem` (MDB), `proviAxis` (ProVI) — and what a RailJSON import brought along for it (`osrd`), handed back on export; a track split or joined keeps it on each part | the layout tool's |
@@ -396,10 +396,6 @@ electrification and the connections make them.
 
 ### Open
 
-- **Who writes the stopping places in the core.** The core is written by the Layout-Tool alone (data model,
-  section 4); the stopping places are set in the Signalling-Tool today. Either the Layout-Tool sets them, with
-  the platforms and station tracks, and the Signalling-Tool reads them — proposed, as the rule stands —, or the
-  rule gets an exception for this collection.
 - **The project picture once**: `image` (a data URL in a file) and `imageHash` (a blob on the server) are two ways
   for one picture; one, as a blob of the file, proposed.
 

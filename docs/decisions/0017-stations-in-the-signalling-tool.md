@@ -1,7 +1,7 @@
 # 0017 — The Signalling-Tool creates the stations, in the core's register
 
 Status: **accepted** · 2026-11-02 · amends R1 of the [data model](../data-model.md) and
-[0011](0011-signalling-domain.md)
+[0011](0011-signalling-domain.md); point 1's exception is the rule since [0024](0024-every-module-writes-the-core.md)
 
 ## Decision
 

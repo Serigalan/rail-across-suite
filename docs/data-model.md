@@ -153,8 +153,8 @@ The track editor must carry every reference into the net (F1), so it needs every
 
 **S5 — A track planner without signalling rights lays a turnout into a track with signals.** The check-in
 changes the signalling domain: the signals' references are carried onto the new tracks. The server must accept
-that but nothing more. Only the layout tool writes the core, so only track planners cause such changes; the other
-disciplines place their objects by location and never split a track.
+that but nothing more. Every module may write the core ([decision 0024](decisions/0024-every-module-writes-the-core.md)), so such
+changes come from any of them; the server holds each to what the core library carries.
 → A changed domain that the author may not write must equal the base carried through the id log, which the
 server recomputes (S-R5) — the Open-Layout-Tool already checks measured axes against a right in this way.
 
@@ -177,7 +177,7 @@ side is taken, the other change is made again. A track is edited by one person a
 
 | # | Rule | Cases |
 |---|---|---|
-| R1 | Every collection belongs to one **domain**; a module writes only the domains it owns. The exceptions are the core library's own changes in every domain: carrying references (R4) and moving orphans to their plane position (R7); and the Signalling-Tool, which creates the stations in the core: the operational point register's points and which station a platform is of ([decision 0017](decisions/0017-stations-in-the-signalling-tool.md)). | F6 |
+| R1 | Every collection belongs to one **domain**; a module writes the domains it owns and the core, where its work needs it, through the core library ([decision 0024](decisions/0024-every-module-writes-the-core.md)) — the Signalling-Tool the stations of the register ([decision 0017](decisions/0017-stations-in-the-signalling-tool.md)) and the stopping places. Another discipline's domain only the core library changes: carrying references (R4) and moving orphans to their plane position (R7). | F6 |
 | R2 | A domain stores references only into itself or into a declared dependency; the **dependency graph is acyclic**. Inside a domain references may go any way (tracks ↔ switches, as today). | F7 |
 | R3 | **References are declared, not guessed.** A schema marks every reference with a core type: `TrackLocation`, `TrackRange`, `TrackEnd`, `TrackPath`, `Lifespan` (stage ids from the core's stage list) or `Ref` (a bare UUID; the schema names its target type). The schema travels with the data (by hash in the manifest). | F1, F10 |
 | R4 | **One remap.** Whenever the net changes ids or stations (split, join, reverse, delete, a length change before an object, a plane change) or the stage list loses a stage (lifespans that name it move to the following stage), the core carries every declared reference in every domain, in the same step, and records the changed ids in the id log. No module writes its own remap. A build that cannot carry a domain refuses the edit. | F1, F3, F10 |
@@ -210,7 +210,7 @@ core, and derived results above them:
 | discipline | `catenary` | open-catenary-tool | masts, cantilevers, wires, sections, El signals |
 | discipline | `operations` | Fahrplan-Editor | train runs, timetable, rolling stock — a project's, kept beside its variants and not in a variant's record ([decision 0016](decisions/0016-timetables-of-a-project.md)); as a format of its own, operations-1.0, in the [roadmap](../ROADMAP.md)'s phase 4 |
 | discipline | `construction` | open-construction-sim | closures, temporary speed restrictions, tracks in operation per stage |
-| base | `core` | layout-tool | **reference**: coordinate systems, km lines and designed kilometrage, operational point register, catalogue versions (rules, switch forms, profiles) · **net**: tracks (elements, heights, cant, superstructure), switches and connectors · **context**: platforms, end marks, structures (bridges, tunnels, level crossings) · **stages**: the ordered construction stages · **types**: `TrackLocation`, `TrackRange`, `TrackEnd`, `TrackPath`, `Lifespan`, `Ref` |
+| base | `core` | every module, through the core library ([decision 0024](decisions/0024-every-module-writes-the-core.md)) | **reference**: coordinate systems, km lines and designed kilometrage, operational point register, catalogue versions (rules, switch forms, profiles) · **net**: tracks (elements, heights, cant, superstructure), switches and connectors · **context**: platforms, end marks, structures (bridges, tunnels, level crossings) · **stages**: the ordered construction stages · **types**: `TrackLocation`, `TrackRange`, `TrackEnd`, `TrackPath`, `Lifespan`, `Ref` |
 | project | — | server | variants and sketches, approvals, comments — they refer into revisions, never back |
 
 Discipline domains store references only into the core (R2, R9). The capacity simulation writes no domain: it is
@@ -218,8 +218,9 @@ the suite's own, and its results are derived ([decision 0023](decisions/0023-cap
 
 - **Connectors with two ends** (`link`) join two track ends at a node: where the plane changes, and where a
   rebuilt part of a track ties in ([decision 0003](decisions/0003-construction-stages.md)).
-- **The core is written by the layout tool** (and carried by the core library, R4). Platforms, end marks and
-  structures are in the core because several disciplines place things relative to them.
+- **The core is written by every module that needs it**, through the core library (R4,
+  [decision 0024](decisions/0024-every-module-writes-the-core.md)). Platforms, end marks and structures are in the
+  core because several disciplines place things relative to them.
 - **One physical thing, several discipline objects.** A turnout is a core switch (geometry, form, topology); the
   signalling domain has its own switch element referring to it (drive, position detection, interlocking name),
   as PlanPro models it. Each discipline names it in its own terms; the core switch carries the geometry once.
@@ -280,7 +281,7 @@ blobs: canonical JSON of each collection · bulk point arrays · schemas · imag
 | S-R2 | Bulk arrays (reference axes, axis surveys, later measurement runs) are blobs referenced by hash from their object. Point clouds and images stay outside, as today. | S1 |
 | S-R3 | **Canonical bytes**: numbers rounded to the field's precision first, then serialised after RFC 8785 (JCS); set-like collections sorted by id, sequences (`elements`, `heights`) kept in order (the schema says which). The hash is SHA-256 of the uncompressed bytes; compression is a storage detail. Shared test vectors for JavaScript and Python. | S2 |
 | S-R4 | Revisions are immutable; variants are named heads; the browser merges, the server appends and checks (as in the Open-Layout-Tool). | — |
-| S-R5 | **The server checks per domain**: the author's right for every changed domain; a changed domain the author may not write must equal the base carried through the id log (R4), with its orphans moved to their plane position (R7). A domain whose own and dependency hashes are unchanged is not validated again. | S5 |
+| S-R5 | **The server checks per domain**: the author's right for every changed domain, the core writable by every module's right (decision 0024); a changed domain the author may not write must equal the base carried through the id log (R4), with its orphans moved to their plane position (R7). A domain whose own and dependency hashes are unchanged is not validated again. | S5 |
 | S-R6 | **Derived results are caches keyed by input hashes** (coordination findings, simulation results, reverse index), never in a revision; a simulation result also by its construction stage. An **approval** pins a domain hash plus the hashes of its dependencies; whether a later change affects it is decided by the diff, restricted to the approved stages and area. | S3, S7 |
 | S-R7 | **Partial loading is for reading.** Editing the core loads every domain that references it — except in a sketch, which holds no other domains (S-R11). | S4, F12 |
 | S-R8 | **Project level, outside revisions**: variants and sketches, approvals, comments. They refer into revisions; revisions never refer to them. | S3, F12 |

@@ -28,3 +28,4 @@ it costs. A record is not rewritten when a decision changes; a new one replaces 
 | [0021](0021-one-format-one-build-the-project-in-the-module.md) | One format (infra-data-1.0), one build, the project in the core's module | accepted |
 | [0022](0022-planpro-export-only.md) | PlanPro: export only; the reader stays as the export's check | accepted |
 | [0023](0023-capacity-simulation-of-our-own.md) | The capacity simulation is the suite's own, on the Fahrplan-Sim's blocking times | accepted |
+| [0024](0024-every-module-writes-the-core.md) | Every module writes the core where its work needs it, through the core library | accepted |

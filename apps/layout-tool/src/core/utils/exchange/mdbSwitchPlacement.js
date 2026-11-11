@@ -73,30 +73,48 @@ const trackLength = (t) => t.elements.reduce((s, e) => s + (e.length ?? 0), 0)
 const FORM_FIT_TOL = 0.001
 
 /**
- * carveSwitchRoute, the joint nearest the form's length from `endpoint` moved
- * onto it first where it lies within FORM_FIT_TOL: the two elements at the
- * joint take their values from the moved node (refitToNodes), and the route is
- * carved to that joint. Elsewhere the carve is the one asked for.
+ * Within this of a joint [m] — what the survey may put a branch off its form
+ * along the track (BRANCH_TOL_ALONG) — the route ends at the joint itself: the
+ * element there is the surveyed one, and a piece of a few centimetres cut off
+ * it would be an element no rule lets stand (LP.EL.01). Moving the joint that
+ * far instead, as within FORM_FIT_TOL, would kink the track there by d/R.
  */
-function carveToForm(track, endpoint, cut, mark, length) {
+const JOINT_TOL = 0.05
+
+/**
+ * carveSwitchRoute, the route fitted to the joint nearest the form's length
+ * from `endpoint`: within FORM_FIT_TOL the joint is moved onto the form's
+ * length first — the two elements at the joint take their values from the
+ * moved node (refitToNodes) — and the route carved to it; within JOINT_TOL the
+ * route is carved to the joint as it lies. Elsewhere the carve is the one asked for.
+ */
+export function carveToForm(track, endpoint, cut, mark, length) {
   const els = track.elements
-  const target = endpoint === 'BEGIN' ? length : trackLength(track) - length
+  const total = trackLength(track)
+  const target = endpoint === 'BEGIN' ? length : total - length
+  let nearest = null
   let station = 0
   for (let j = 1; j < els.length; j++) {
     station += els[j - 1].length
     const d = target - station
-    if (d === 0 || Math.abs(d) > FORM_FIT_TOL) continue
-    const at = elementAtStation(els, target)
-    if (!at) break
-    const p = pointAtStationUtm(at.el, at.s, track.epsg)
-    const node = [p.easting, p.northing]
-    const elements = [...els]
-    elements[j - 1] = refitToNodes({ ...els[j - 1], endNode: node }, track.epsg, d)
-    elements[j] = refitToNodes({ ...els[j], startNode: node }, track.epsg, -d)
-    const fitted = { ...track, elements, coordinates: rebuildCoords(elements) }
-    return carveSwitchRoute(fitted, endpoint, p, mark, length)
+    if (Math.abs(d) <= JOINT_TOL && (!nearest || Math.abs(d) < Math.abs(nearest.d))) nearest = { j, station, d }
   }
-  return carveSwitchRoute(track, endpoint, cut, mark, length)
+  if (!nearest || nearest.d === 0) return carveSwitchRoute(track, endpoint, cut, mark, length)
+  const { j, station: at, d } = nearest
+  if (Math.abs(d) > FORM_FIT_TOL) {
+    const node = els[j].startNode
+    const joint = { easting: node[0], northing: node[1], zone: track.epsg }
+    return carveSwitchRoute(track, endpoint, joint, mark, endpoint === 'BEGIN' ? at : total - at)
+  }
+  const there = elementAtStation(els, target)
+  if (!there) return carveSwitchRoute(track, endpoint, cut, mark, length)
+  const p = pointAtStationUtm(there.el, there.s, track.epsg)
+  const node = [p.easting, p.northing]
+  const elements = [...els]
+  elements[j - 1] = refitToNodes({ ...els[j - 1], endNode: node }, track.epsg, d)
+  elements[j] = refitToNodes({ ...els[j], startNode: node }, track.epsg, -d)
+  const fitted = { ...track, elements, coordinates: rebuildCoords(elements) }
+  return carveSwitchRoute(fitted, endpoint, p, mark, length)
 }
 
 /**
@@ -698,7 +716,7 @@ function placeAtToe(found, unit, type, tracks) {
  * the Bauform the file names and the alignment it states disagree.
  */
 const BRANCH_TOL_ACROSS = 0.01
-const BRANCH_TOL_ALONG = 0.05
+const BRANCH_TOL_ALONG = JOINT_TOL
 
 /**
  * offsetOnTrack over the stretch of a track between two stations only — a

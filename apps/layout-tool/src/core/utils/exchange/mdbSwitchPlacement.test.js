@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { parseMdbPayload, buildTracksFromMdb, mdbSwitchInventory, buildAllTracksFromMdb } from './mdbImport'
-import { placeMdbSwitches, locateMdbSwitches, switchTypeFor } from './mdbSwitchPlacement'
+import { placeMdbSwitches, locateMdbSwitches, switchTypeFor, carveToForm } from './mdbSwitchPlacement'
+import { arcFrom, straightFrom } from '@rail-across/core/src/geometry/elementFactory.js'
 import { switchRoutesFromTracks, rebuildSwitchSymbol, crossingRoutesFromTracks } from '@rail-across/core/switch'
 import { elementBelongsToSwitch, switchPorts, isModelledSwitch, portTrack } from '@rail-across/core/track'
 import {
@@ -180,6 +181,42 @@ describe('placeMdbSwitches', () => {
       ? first.track.elements[0]
       : first.track.elements[first.track.elements.length - 1]
     expect(Math.abs(el.radius ?? 0)).toBeCloseTo(switchTypeFor(units[0]).R, 0)
+  })
+})
+
+describe('carveToForm — a surveyed joint near the form\'s end', () => {
+  const EPSG = 25832
+  const mark = { switchBranch: true, switchRoute: 'branch', switchId: 'w' }
+  /** A branch track: an arc of the form's length less `short`, then 10 m straight. */
+  function branchTrack(L, short) {
+    const a = arcFrom({ easting: 500000, northing: 5600000, zone: EPSG }, 30, L - short, 300)
+    const b = straightFrom({ easting: a.endNode[0], northing: a.endNode[1], zone: EPSG }, a.endBearing, 10)
+    return { id: 'b', epsg: EPSG, elements: [a, b] }
+  }
+  const lengths = (t) => t.elements.map(e => Math.round(e.length * 1e7) / 1e7)
+  const L = 33.197
+
+  it('ends the route at the joint as it lies, up to 5 cm off the form, leaving no sliver', () => {
+    // Weiche 2, KHB: the surveyed arc ends 9.6 mm short of the form's branch length.
+    const t = branchTrack(L, 0.0096)
+    const end = t.elements[0].endNode
+    const carved = carveToForm(t, 'BEGIN', { easting: end[0], northing: end[1], zone: EPSG }, mark, L)
+    expect(lengths(carved)).toEqual(lengths(t))
+    expect(carved.elements.map(e => e.switchRoute ?? null)).toEqual(['branch', null])
+    // The surveyed geometry stays as it is: no kink at the joint.
+    expect(carved.elements[1].bearing).toBe(t.elements[1].bearing)
+  })
+
+  it('moves the joint onto the form within a millimetre, and cuts the form\'s length beyond 5 cm', () => {
+    const near = branchTrack(L, 0.0004)
+    const carved = carveToForm(near, 'BEGIN', { easting: 0, northing: 0, zone: EPSG }, mark, L)
+    expect(carved.elements[0].length).toBeCloseTo(L, 6)
+    // 20 cm off, it is no survey's quantisation: the route is the form's length.
+    const far = branchTrack(L, 0.2)
+    const p = straightFrom({ easting: far.elements[1].startNode[0], northing: far.elements[1].startNode[1], zone: EPSG }, far.elements[1].bearing, 0.2).endNode
+    const cut = carveToForm(far, 'BEGIN', { easting: p[0], northing: p[1], zone: EPSG }, mark, L)
+    expect(lengths(cut)).toEqual([L - 0.2, 0.2, 9.8].map(x => Math.round(x * 1e7) / 1e7))
+    expect(cut.elements.map(e => e.switchRoute ?? null)).toEqual(['branch', 'branch', null])
   })
 })
 

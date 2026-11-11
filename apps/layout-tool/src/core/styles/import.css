@@ -56,3 +56,8 @@
   white-space: nowrap;
 }
 
+
+/* The speed ranges along a run (data exchange). */
+.speed-ranges-table { width: 100%; border-collapse: collapse; font-size: var(--fs-xs); font-variant-numeric: tabular-nums; margin-top: 4px; }
+.speed-ranges-table th, .speed-ranges-table td { padding: 2px 4px; text-align: right; border-bottom: 1px solid var(--color-border-soft); }
+.speed-ranges-table th { color: var(--color-muted); font-weight: 600; }

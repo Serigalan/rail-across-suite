@@ -19,6 +19,9 @@ export {
   proviSwitchCandidates, readProviArchive,
 } from './proviImport'
 export { planRailJsonImport } from './railJsonImport'
+export {
+  MIN_RANGE, averageSpeed, kmAlong, runOf, speedProfile, speedRanges, speedRangesCsv, speedRangesSvg, withKm,
+} from './speedRanges'
 export { exportVermEsn } from './vermEsnExport'
 export {
   batchReferences, buildVermEsnBatch, gradientHeightCode, gradientReferences, kmLineEntries, kmLineNumber,

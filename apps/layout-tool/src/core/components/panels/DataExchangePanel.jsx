@@ -9,6 +9,7 @@ import OsrdSection from './dataExchange/OsrdSection'
 import CsvSection from './dataExchange/CsvSection'
 import { extensionsOf } from '../../extensions'
 import AlignmentSection from './dataExchange/AlignmentSection'
+import SpeedRangesSection from './dataExchange/SpeedRangesSection'
 import ImportReports from './dataExchange/ImportReports'
 import useImportReports from './dataExchange/useImportReports'
 import ProviImportSection from './ProviImportSection'
@@ -29,7 +30,8 @@ const FORMATS = [
  * that names itself an option (`importSections` with `menu`, Paket L: the MDB
  * import). Behind the dot at the bottom are those needed now and then — the
  * comparison with a file, Provi, the Gleislage CSV, the other formats the
- * server converts, the reports they leave, and the alignment exchange format.
+ * server converts, the reports they leave, the alignment exchange format, and
+ * the highest speeds along a run in ranges, as CSV or SVG.
  */
 export default function DataExchangePanel({ onShowCompare }) {
   const { t } = useI18n()
@@ -75,6 +77,7 @@ export default function DataExchangePanel({ onShowCompare }) {
           {converted.filter(x => !x.menu).map(({ id, Component }) => <Component key={id} onReport={reports.add} />)}
           <ImportReports reports={reports.reports} onClear={reports.clear} />
           <AlignmentSection />
+          <SpeedRangesSection />
         </>
       )}
       <div className="panel-dot-row">

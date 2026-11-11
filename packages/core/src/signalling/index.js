@@ -21,7 +21,7 @@ export {
   CATALOGUE_REF, SIGNAL_CATALOGUE, aspectFitsFrame, aspectOf, aspectSpeed, baliseKindOf, boardAspect, knownSystem, protectionSystemOf,
   screenOf, settingFits, settingsProblems, signalKindOf, symbolFits, titleIn,
 } from './catalogue.js'
-export { gradientAlong, overlapLength, signallingSpeedOf } from './overlaps.js'
+export { boundaryStartSpeed, gradientAlong, overlapLength, routeSpeedOf, signallingSpeedOf } from './overlaps.js'
 export { branchSpeedOnRun } from './switchSpeeds.js'
 
 /** The findings of the domain on the core it stands on, `{ core, signalling }`: { errors, warnings }. */

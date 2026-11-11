@@ -13,7 +13,7 @@ use crate::catalogue::{
     SIGNAL_CATALOGUE, aspect_fits_frame, aspect_of, balise_kind_of, board_aspect, known_system, protection_system_of, settings_problems, signal_kind_of,
     symbol_fits,
 };
-use crate::overlaps::{branch_speed_on_run, overlap_length, signalling_speed_of};
+use crate::overlaps::{branch_speed_on_run, overlap_length, route_speed_of};
 use crate::sections::track_section_extents;
 
 const OVERLAP_TOL: f64 = 0.01;
@@ -552,7 +552,7 @@ pub fn check_signalling(core: &Value, signalling: &Value) -> Value {
         if ovs.iter().filter(|o| truthy(o.get("preferred"))).count() > 1 {
             out.error("overlap_preferred_many", "routes", &rid, json!({}), "");
         }
-        let speed = if kind == Some("train") { signalling_speed_of(signalling, r) } else { None };
+        let speed = if kind == Some("train") { route_speed_of(signalling, r, core) } else { None };
         let speed_f = speed.as_ref().and_then(Value::as_f64);
         let branch = if kind == Some("train") {
             branch_speed_on_run(core_switches, &run)

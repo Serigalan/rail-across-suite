@@ -1,5 +1,5 @@
 import { SIGNAL_CATALOGUE } from './catalogue.js'
-import { heightAt } from '../track/index.js'
+import { BOUNDARY, heightAt, trackLength } from '../track/index.js'
 
 // What an overlap needs: the speed a route leads up to its target with — the
 // speed its start signal signals for it — and the length that speed and the
@@ -17,6 +17,38 @@ export function signallingSpeedOf(signalling, route) {
     if (hit) return hit.speed
   }
   return null
+}
+
+/** How far from a planning boundary a virtual signal may stand and still be its start [m]. */
+const AT_BOUNDARY = 20
+
+/**
+ * The speed trains enter the planning area at where a virtual signal stands at
+ * a boundary acting inward [km/h]: the boundary's, as the layout sets it (an
+ * end mark's `speed`); null elsewhere. `net` holds the tracks and end marks.
+ */
+export function boundaryStartSpeed(net, signal) {
+  if (signal?.kind !== 'virtual' || signal.at?.anchor !== 'station') return null
+  const track = (net?.tracks ?? []).find(t => t.id === signal.at.trackId)
+  if (!track) return null
+  const mark = (net.endMarks ?? []).find(m => {
+    const end = m.at ?? m
+    if (m.kind !== BOUNDARY || end.trackId !== track.id) return false
+    const [edge, inward] = end.endpoint === 'END' ? [trackLength(track), 'down'] : [0, 'up']
+    return (signal.bothDirections || (signal.at.direction ?? 'up') === inward) && Math.abs(signal.at.station - edge) <= AT_BOUNDARY
+  })
+  return mark?.speed > 0 ? mark.speed : null
+}
+
+/**
+ * The speed a route is run at from its start [km/h]: what its start signal
+ * signals for it, else — a virtual start at a planning boundary — the
+ * boundary's speed; null where neither says one.
+ */
+export function routeSpeedOf(signalling, route, net) {
+  const signalled = signallingSpeedOf(signalling, route)
+  if (signalled != null) return signalled
+  return boundaryStartSpeed(net, (signalling?.collections?.signals ?? []).find(s => s.id === route?.startSignalId))
 }
 
 /**

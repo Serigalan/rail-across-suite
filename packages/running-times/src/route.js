@@ -1,4 +1,4 @@
-import { aspectOf, aspectSpeed } from '@rail-across/core/signalling'
+import { aspectOf, aspectSpeed, routeSpeedOf } from '@rail-across/core/signalling'
 import { directionOf, findPath, offsetOnPath, pathAlong, pathLength } from './path.js'
 
 const LF7 = aspectOf('Lf_7')
@@ -107,7 +107,8 @@ export function legThrough(record, from, direction, routes, to) {
  * route of the signalling domain that the path runs along — its start
  * signal passed in the way it acts, its tracks those of the path —, the
  * speed its start signal states for it (a logical signal's
- * signallingSpeeds), from the start signal to the target signal; where a
+ * signallingSpeeds; from a planning boundary, the boundary's), from the
+ * start signal to the target signal; where a
  * speed signal Lf 7 stands on it in the way it runs, the route's speed
  * holds up to it, and what the Lf 7 shows from there on.
  */
@@ -121,7 +122,8 @@ export function signalledSpeeds(record, path) {
     if (route.kind !== 'train') continue
     const start = signals.get(route.startSignalId), target = signals.get(route.targetSignalId)
     if (start?.at?.anchor !== 'station' || target?.at?.anchor !== 'station') continue
-    const speed = (start.logicalSignals ?? []).flatMap(l => l.signallingSpeeds ?? []).find(s => s.routeId === route.id)?.speed
+    // From a planning boundary — a virtual start there — at the boundary's speed.
+    const speed = routeSpeedOf(record.signalling, route, record)
     const ids = route.path?.trackIds ?? []
     const first = trackIds.indexOf(ids[0])
     if (first < 0 || !ids.every((id, i) => trackIds[first + i] === id)) continue

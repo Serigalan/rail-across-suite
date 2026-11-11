@@ -129,6 +129,16 @@ describe('what the physics needs of it', () => {
       lf7('V', { trackId: 'T2', station: 300, direction: 'up' }, '9'), lf7('back', { trackId: 'T2', station: 600, direction: 'down' }, '3')] } } }
     expect(signalledSpeeds(withBoards, path).map(s => [Math.round(s.begin), Math.round(s.end), Math.round(s.speed * 3.6)])).toEqual([[200, 1300, 60], [1300, 1900, 90]])
   })
+
+  it('runs a route from a planning boundary — a virtual start there — at the boundary\'s speed', () => {
+    const c = record.signalling.collections
+    const fromBoundary = { ...record, endMarks: [{ id: 'G', kind: 'boundary', trackId: 'T1', endpoint: 'BEGIN', speed: 70 }],
+      signalling: { collections: { ...c,
+        signals: [...c.signals, { id: 'GS', kind: 'virtual', virtualFunction: 'trainStartWithoutSignal', at: { anchor: 'station', trackId: 'T1', station: 0, direction: 'up' } }],
+        routes: [...c.routes, { id: 'RG', kind: 'train', startSignalId: 'GS', targetSignalId: 'A', path: { trackIds: ['T1'] } }] } } }
+    const from0 = findPath(record, { trackId: 'T1', station: 0, direction: 'up' }, { trackId: 'T4', station: 500 })
+    expect(signalledSpeeds(fromBoundary, from0).map(s => [Math.round(s.begin), Math.round(s.end), Math.round(s.speed * 3.6)]).sort((a, b) => a[0] - b[0])).toEqual([[0, 200, 70], [200, 1900, 60]])
+  })
 })
 
 describe('a train through its stops', () => {

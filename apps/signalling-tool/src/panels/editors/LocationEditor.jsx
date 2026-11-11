@@ -1,5 +1,5 @@
 import { Button, Checkbox, NumberField, Option, Options, Section, SelectField, TextField } from '@rail-across/ui'
-import { SIGNAL_CATALOGUE, signallingSpeedOf } from '@rail-across/core/signalling'
+import { SIGNAL_CATALOGUE, boundaryStartSpeed, signallingSpeedOf } from '@rail-across/core/signalling'
 import { labelOf, logicalId, newLogical, withRouteSpeed } from '../../model/domain.js'
 import { VIRTUAL_FUNCTION, functionOptions, functionWord, logicalSignalWord, mountingOptions, optionsOf } from '../../labels.js'
 import { SignalIcon } from '../../icons.jsx'
@@ -9,6 +9,7 @@ import { SpeedReach } from '../speedReach.jsx'
 import { BRACKET_OFFSET, FOUNDATION_OFFSET, ON_FOUNDATION, bracketScreen, farMastPoint, foundationPoint, gantryFarOffset, sideAlong, trackName } from '../../model/places.js'
 import { SPEED_SIGNAL, isSpeedSignal, speedSignalElementSpeed, speedSignalSpeed, speedSymbol, withSpeedSignalSpeed } from '../../model/routeSpeeds.js'
 import { stationName } from '../../model/stations.js'
+import { boundaryStarts } from '../../model/routeSearch.js'
 
 /**
  * A signal mast — the physical signal: where it stands, on what mounting,
@@ -64,6 +65,7 @@ export default function LocationEditor({ signal, domain, net, core, findings, op
 
       {isSpeedSignal(signal) && <SpeedSignalSection signal={signal} domain={domain} net={net} set={onChange} setSketch={setSketch} showOnPlan={showOnPlan} readOnly={readOnly} t={t} />}
       {logical.length > 0 && <Zs3Section signal={signal} domain={domain} ops={ops} select={select} readOnly={readOnly} t={t} />}
+      {signal.kind === 'virtual' && <BoundaryStartSection signal={signal} domain={domain} net={net} select={select} t={t} />}
 
       {signal.kind === 'real' && (
         <Section title={t('logical_signals')}>
@@ -188,6 +190,31 @@ function Zs3Section({ signal, domain, ops, select, readOnly, t }) {
         </div>
       )) : <p className="ui-muted">{t('zs3_none')}</p>}
       {unsignalled.length > 0 && <p className="ui-message ui-message-warn">{t('zs3_missing', { n: unsignalled.length })}</p>}
+    </Section>
+  )
+}
+
+/**
+ * Where trains enter at a planning boundary — a virtual signal there acting
+ * inward —: the boundary's speed, which the Layout-Tool sets, and the train
+ * routes from it that run at it. A virtual signal shows no Zs 3.
+ */
+function BoundaryStartSection({ signal, domain, net, select, t }) {
+  const { signals, routes } = domain.collections
+  const speed = boundaryStartSpeed(net, signal)
+  const mark = boundaryStarts(net, signals).find(b => b.signal.id === signal.id)?.mark ?? null
+  if (!mark) return null
+  const fromHere = routes.filter(r => r.startSignalId === signal.id && r.kind === 'train')
+  const routeName = (r) => r.name ?? `${labelOf('signals', signal, t)} → ${labelOf('signals', signals.find(s => s.id === r.targetSignalId), t)}`
+  return (
+    <Section title={t('boundary_start')}>
+      <p>{speed != null ? t('route_speed_boundary', { speed }) : t('route_speed_boundary_none')}</p>
+      <p className="ui-muted">{t('boundary_start_hint')}</p>
+      {fromHere.map(r => (
+        <div key={r.id} className="ui-row">
+          <button type="button" className="ui-link ui-grow" onClick={() => select({ collection: 'routes', id: r.id })}>{routeName(r)}</button>
+        </div>
+      ))}
     </Section>
   )
 }

@@ -3,9 +3,9 @@
 
 //! What an overlap needs, and the speed a turnout allows a run (`overlaps.js`, `switchSpeeds.js`).
 
-use rail_across_js::{js_round, strict_eq};
+use rail_across_js::{js_round, number, strict_eq, truthy};
 use rail_across_switch::catalogue::switch_branch_speed;
-use rail_across_track::heights::height_at;
+use rail_across_track::heights::{height_at, track_length};
 use rail_across_track::switch_model::port_track;
 use serde_json::{Value, json};
 
@@ -25,6 +25,44 @@ pub fn signalling_speed_of(signalling: &Value, route: &Value) -> Option<Value> {
         }
     }
     None
+}
+
+/// How far from a planning boundary a virtual signal may stand and still be its start [m].
+const AT_BOUNDARY: f64 = 20.0;
+
+/// The speed trains enter the planning area at where a virtual signal stands
+/// at a boundary acting inward (`boundaryStartSpeed`): the boundary's, as the
+/// layout sets it; None elsewhere. `core` is the core domain — its end marks
+/// at a track end (`at`) or of a record (`trackId`, `endpoint`).
+pub fn boundary_start_speed(core: &Value, signal: &Value) -> Option<f64> {
+    if signal.get("kind").and_then(Value::as_str) != Some("virtual") {
+        return None;
+    }
+    let at = signal.get("at")?;
+    let (track_id, station) = (at.get("trackId")?, at.get("station")?.as_f64()?);
+    let list = |k: &str| core.get("collections").and_then(|c| c.get(k)).and_then(Value::as_array).map(Vec::as_slice).unwrap_or(&[]);
+    let track = list("tracks").iter().find(|t| strict_eq(t.get("id"), Some(track_id)))?;
+    let length = track_length(track);
+    list("endMarks").iter().find_map(|m| {
+        let end = m.get("at").unwrap_or(m);
+        if m.get("kind").and_then(Value::as_str) != Some("boundary") || !strict_eq(end.get("trackId"), Some(track_id)) {
+            return None;
+        }
+        let (edge, inward) = if end.get("endpoint").and_then(Value::as_str) == Some("END") { (length, "down") } else { (0.0, "up") };
+        let acts = truthy(signal.get("bothDirections")) || at.get("direction").and_then(Value::as_str).unwrap_or("up") == inward;
+        (acts && (station - edge).abs() <= AT_BOUNDARY).then(|| m.get("speed").and_then(Value::as_f64).filter(|v| *v > 0.0)).flatten()
+    })
+}
+
+/// The speed a route is run at from its start (`routeSpeedOf`): what its start
+/// signal signals for it, else — a virtual start at a planning boundary — the
+/// boundary's speed.
+pub fn route_speed_of(signalling: &Value, route: &Value, core: &Value) -> Option<Value> {
+    signalling_speed_of(signalling, route).or_else(|| {
+        let signals = signalling.get("collections").and_then(|c| c.get("signals")).and_then(Value::as_array)?;
+        let start = signals.iter().find(|s| strict_eq(s.get("id"), route.get("startSignalId")))?;
+        boundary_start_speed(core, start).map(number)
+    })
 }
 
 /// The length an overlap needs [m] (`overlapLength`).

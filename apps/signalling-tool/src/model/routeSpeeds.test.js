@@ -1,13 +1,13 @@
 import { describe, it, expect } from 'vitest'
 import { straightElement, utmToWgs84 } from '@rail-across/core/geometry'
-import { signallingSpeedOf } from '@rail-across/core/signalling'
+import { boundaryStartSpeed, routeSpeedOf, signallingSpeedOf } from '@rail-across/core/signalling'
 import { added, emptyDomain } from './domain.js'
 import {
   elementSpeed, routeElementSpeed, routeSpeedSections, speedSignalElementSpeed, speedSignalReach, speedSignalSpeed, speedSymbol, withElementSpeeds,
 } from './routeSpeeds.js'
 import { whereStretch } from './places.js'
 import { speedRanges } from './speedRanges.js'
-import { boundaryTarget, newBoundaryTarget, nextSignals } from './routeSearch.js'
+import { boundaryStarts, boundaryTarget, isRouteStart, newBoundaryTarget, nextSignals } from './routeSearch.js'
 import { inDirection, kmDirection } from './directions.js'
 
 const EPSG = 25832
@@ -118,6 +118,31 @@ describe('the speeds the elements give', () => {
     const target = newBoundaryTarget(marked, to)
     expect(target).toMatchObject({ kind: 'virtual', virtualFunction: 'trainTargetLine', at: { trackId: 't2', station: 200, direction: 'up' } })
     expect(boundaryTarget([...d.collections.signals, target], to)).toBe(target)
+  })
+
+  it('starts routes at a boundary as at a virtual signal there, run at the boundary\'s speed', () => {
+    // Trains enter at t1's begin, at 70 km/h.
+    const marked = { ...net, endMarks: [{ id: 'g', kind: 'boundary', trackId: 't1', endpoint: 'BEGIN', speed: 70 }] }
+    const [{ mark, signal: fresh }] = boundaryStarts(marked, [])
+    expect(mark.id).toBe('g')
+    expect(fresh).toMatchObject({ kind: 'virtual', virtualFunction: 'trainStartWithoutSignal', fresh: true, at: { trackId: 't1', station: 0, direction: 'up' } })
+    expect(isRouteStart(fresh)).toBe(true)
+    // Its ways are a signal's: to the next main signal on each.
+    const { fresh: _f, ...start } = { ...fresh, id: 'b' }
+    const d0 = domainOf([start, main('n', on('t2', 80)), main('m', on('t3', 100))])
+    expect(nextSignals(marked, d0.collections.signals, start).map(w => w.target.id)).toEqual(['n', 'm'])
+    // Once it is there, it is the boundary's start.
+    expect(boundaryStarts(marked, d0.collections.signals)[0].signal.id).toBe('b')
+    // A route from it runs at the boundary's speed: the range it begins, the overlap it is measured for.
+    const r = { id: 'rb', kind: 'train', trainType: 'ZZ', startSignalId: 'b', targetSignalId: 'n', path: { trackIds: ['t1', 't2'] } }
+    const d = added(d0, 'routes', r)
+    expect(signallingSpeedOf(d, r)).toBeNull()
+    expect(routeSpeedOf(d, r, marked)).toBe(70)
+    expect(speedRanges(d, marked).map(x => [x.signal.id, x.speed, Math.round(x.length)])).toEqual([['b', 70, 380]])
+    // A virtual signal elsewhere, or facing out of the area, starts nothing at the boundary's speed.
+    expect(boundaryStartSpeed(marked, { ...start, at: on('t1', 100) })).toBeNull()
+    expect(boundaryStartSpeed(marked, { ...start, at: on('t1', 0, 'down') })).toBeNull()
+    expect(boundaryStartSpeed(marked, start)).toBe(70)
   })
 
   it('cuts a route at an Lf 7 a plan brought as a logical signal, as at one on a plate', () => {

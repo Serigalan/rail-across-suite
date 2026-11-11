@@ -39,6 +39,16 @@ describe('a project as a PlanPro plan', () => {
     expect(why).toContain('stoppingPlaces:kind_not_written')
   })
 
+  it('writes a route from a planning boundary at the boundary\'s speed', () => {
+    const signalling = ksStation()
+    const { signals, routes } = signalling.collections
+    signals.push({ id: 'sig-g', kind: 'virtual', virtualFunction: 'trainStartWithoutSignal', at: { anchor: 'station', trackId: 't1', station: 0, direction: 'up' } })
+    routes.push({ ...routes.find(r => r.id === 'rt-a-n1'), id: 'rt-g-a', startSignalId: 'sig-g', targetSignalId: 'sig-a', path: { trackIds: ['t1'] }, overlaps: [] })
+    const withBoundary = { ...project(), endMarks: [...project().endMarks, { id: 'e2', kind: 'boundary', trackId: 't1', endpoint: 'BEGIN', speed: 70 }] }
+    const { text } = writePlanPro(withBoundary, { signalling, now: '2026-11-09T12:00:00Z', version: '1' })
+    expect(text).toContain('<Fstr_V_Hg><Wert>70</Wert></Fstr_V_Hg>')
+  })
+
   it('packs the plan with its manifest as a .planpro file', () => {
     const { archive, manifest } = writePlanPro(project(), { signalling: ksStation(), now: '2026-11-09T12:00:00Z' })
     const bytes = Uint8Array.from(atob(archive), c => c.charCodeAt(0))

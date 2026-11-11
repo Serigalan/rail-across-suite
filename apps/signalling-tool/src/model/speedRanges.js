@@ -1,4 +1,4 @@
-import { signallingSpeedOf } from '@rail-across/core/signalling'
+import { routeSpeedOf } from '@rail-across/core/signalling'
 import { apartColors } from './sectionColors.js'
 import { cut, isSpeedSignal, routeSpeedSections, speedSignalSpeed } from './routeSpeeds.js'
 import { routeStretches } from './routeSearch.js'
@@ -6,8 +6,8 @@ import { routeStretches } from './routeSearch.js'
 /**
  * The speed ranges: where the signals signal a speed, as a train runs a
  * route — from its start signal at the speed it states for the route (the
- * Zs 3 there) up to the first Lf 7 on it, from each Lf 7 at what it shows up
- * to the next or the target signal. A range is one signal's at one speed:
+ * Zs 3 there; from a planning boundary, the boundary's) up to the first Lf 7
+ * on it, from each Lf 7 at what it shows up to the next or the target signal. A range is one signal's at one speed:
  * the stretches of every route it holds over, joined. Two ranges are
  * neighbours where one follows the other on a route, or a route on the one
  * the other starts at its target, or where they share track; each has a
@@ -50,7 +50,7 @@ export function speedRanges(domain, net) {
   const lastOf = []   // [{ target signal id, key }]
   for (const route of routes) {
     if (route.kind !== 'train') continue
-    const speed = signallingSpeedOf(domain, route)
+    const speed = routeSpeedOf(domain, route, net)
     const stretches = routeStretches(net, route, signals)
     if (!stretches.length) continue
     const keys = []

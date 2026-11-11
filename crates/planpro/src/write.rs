@@ -30,6 +30,7 @@ use std::fmt::Write as _;
 
 use rail_across_geom::coords::{plane_to_wgs84, system_code_at, transform_grid_bearing, transform_plane_point};
 use rail_across_signalling::catalogue::{aspect_of, symbol_fits};
+use rail_across_signalling::overlaps::boundary_start_speed;
 use serde_json::{Map, Value, json};
 
 use crate::archive;
@@ -1896,7 +1897,20 @@ pub fn write_planpro(project: &Value, options: &Value) -> Result<Value, String> 
         let run = planpro_id(&format!("run:{guid}"));
         let body = [
             parts,
-            w("Fstr_V_Hg", int_in(speeds.get(id).copied(), 0.0, 500.0)),
+            // A route from a planning boundary at the boundary's speed, where its start states none.
+            w(
+                "Fstr_V_Hg",
+                int_in(
+                    speeds.get(id).copied().or_else(|| {
+                        col("signals")
+                            .iter()
+                            .find(|s| str_of(s, "id") == start)
+                            .and_then(|s| boundary_start_speed(core, s))
+                    }),
+                    0.0,
+                    500.0,
+                ),
+            ),
             w("ID_Start", start.map(planpro_id)),
             w("ID_Ziel", target.map(planpro_id)),
         ]

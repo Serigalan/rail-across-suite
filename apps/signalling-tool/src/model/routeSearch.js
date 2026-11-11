@@ -96,6 +96,28 @@ export const boundaryTarget = (signals, way) => signals.find(s => s.kind === 'vi
   && Math.abs(s.at.station - way.boundary.at.station) <= AT_BOUNDARY) ?? null
 
 /**
+ * Where trains enter the planning area: a boundary is a fictive signal both
+ * ways — the target of a route out to it (boundaryTarget), and the start of
+ * one in from it, run at the boundary's speed. [{ mark, signal }] — `signal`
+ * the virtual one there acting inward, or, where there is none yet, the one
+ * that is to be (`fresh`, a Zugstart ohne Signal named after the boundary).
+ */
+export function boundaryStarts(net, signals) {
+  return (net.endMarks ?? []).filter(m => m.kind === BOUNDARY).flatMap(mark => {
+    const track = net.tracks.find(t => t.id === mark.trackId)
+    if (!track) return []
+    const inward = mark.endpoint === 'END' ? 'down' : 'up'
+    const at = { anchor: 'station', trackId: track.id, station: inward === 'down' ? trackLength(track) : 0, direction: inward }
+    const there = signals.find(s => s.kind === 'virtual' && s.at?.anchor === 'station' && s.at.trackId === at.trackId
+      && actsAlong(s, inward) && Math.abs(s.at.station - at.station) <= AT_BOUNDARY)
+    return [{ mark, signal: there ?? { id: `boundary:${mark.id}`, kind: 'virtual', virtualFunction: 'trainStartWithoutSignal', name: endMarkName(mark, track), at, fresh: true } }]
+  })
+}
+
+/** Whether a signal starts train routes: a main signal, or a virtual one where trains start — a boundary's among them. */
+export const isRouteStart = (s) => isMainSignal(s) || (s.kind === 'virtual' && /^trainStart/.test(s.virtualFunction ?? ''))
+
+/**
  * The virtual signal a route to a boundary ends at, where none is there yet:
  * a train's target on the line (PlanPro Zugziel Strecke) at the track's end,
  * named after the boundary.

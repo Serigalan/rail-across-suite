@@ -3,7 +3,7 @@ import {
   Badge, Button, Checkbox, GroupedList, NumberField, Option, Options, OptionsDivider, OptionsHeading, PlusIcon, Section, SelectField, TextField,
 } from '@rail-across/ui'
 import { Panel } from './draft.jsx'
-import { signallingSpeedOf } from '@rail-across/core/signalling'
+import { routeSpeedOf } from '@rail-across/core/signalling'
 import {
   added, designationOf as signalDesignation, newId, labelOf, logicalId, shownSpeed, withRouteSpeed,
 } from '../model/domain.js'
@@ -19,8 +19,7 @@ import { ItineraryEditor, ItineraryList, ItinerarySearch } from './Itineraries.j
 import { CheckList, EditorHead, ObjectFindings, SpeedFigureField } from './common.jsx'
 import { aspectText, pickingSignal, signalOptions as signalChoices, trackName } from '../model/places.js'
 import { ElementLink } from './speedReach.jsx'
-import { isMainSignal } from '../model/itineraries.js'
-import { DEEPEST, REACH, boundaryTarget, newBoundaryTarget, routeSections, routeStretches, runStretches, searchWays, wayPieces } from '../model/routeSearch.js'
+import { DEEPEST, REACH, boundaryStarts, boundaryTarget, isRouteStart, newBoundaryTarget, routeSections, routeStretches, runStretches, searchWays, wayPieces } from '../model/routeSearch.js'
 
 /** The kinds of route, each with the type it starts with. */
 const KINDS = { train: { trainType: 'ZZ' }, shunting: { shuntingType: 'RR' }, middle: { middleType: 'ZM' } }
@@ -190,7 +189,7 @@ export default function RoutesPanel({
     const item = (r) => ({
       id: r.id, label: routeName(r),
       sub: [r.kind === 'train' ? null : t(`routes_${r.kind}`), r.trainType ?? r.shuntingType ?? r.middleType,
-        signallingSpeedOf(domain, r) != null ? `${signallingSpeedOf(domain, r)} km/h` : null, r.rank ? `#${r.rank}` : null].filter(Boolean).join(' · '),
+        routeSpeedOf(domain, r, net) != null ? `${routeSpeedOf(domain, r, net)} km/h` : null, r.rank ? `#${r.rank}` : null].filter(Boolean).join(' · '),
       end: bad.has(r.id) ? <Badge tone="danger">!</Badge> : null,
     })
     // Under the station of their start signal; those of a signal of the open line last.
@@ -319,9 +318,11 @@ function RouteEditor({ route, name, domain, net, findings, extents, signalOption
   const atTarget = overlaps.filter(o => o.signalId === route.targetSignalId)
   const named = new Map((route.overlaps ?? []).map(o => [o.overlapId, o]))
   const elements = switchesOnRun(net, route.path.trackIds)
-  const speed = signallingSpeedOf(domain, route)
+  const speed = routeSpeedOf(domain, route, net)
   // Where its speed is set: the logical signal at its start that signals it, else the first.
   const setter = start?.logicalSignals?.find(l => l.signallingSpeeds?.some(v => v.routeId === route.id)) ?? start?.logicalSignals?.[0]
+  // From a virtual start — a planning boundary's — at the boundary's speed, which the Layout-Tool sets: no Zs 3.
+  const virtualStart = start?.kind === 'virtual' && route.kind === 'train'
   // What its elements allow, section by section between the Lf 7 on it.
   const sections = route.kind === 'train' && start && target ? routeSpeedSections(net, route, signals) : []
   const derived = sections[0]?.elements ?? null
@@ -350,9 +351,11 @@ function RouteEditor({ route, name, domain, net, findings, extents, signalOption
       </div>
       <Section title={t('route_speed')}>
         <div className="ui-row">
-          {setter && !readOnly
-            ? <div className="ui-grow"><SpeedFigureField aspect="Zs_3" label={t('zs3_shown')} speed={speed} onChange={onSignal} t={t} /></div>
-            : <span className="ui-grow">{speed != null ? `${speed} km/h` : t('speed_not_signalled')}</span>}
+          {virtualStart
+            ? <span className="ui-grow">{speed != null ? t('route_speed_boundary', { speed }) : t('route_speed_boundary_none')}</span>
+            : setter && !readOnly
+              ? <div className="ui-grow"><SpeedFigureField aspect="Zs_3" label={t('zs3_shown')} speed={speed} onChange={onSignal} t={t} /></div>
+              : <span className="ui-grow">{speed != null ? `${speed} km/h` : t('speed_not_signalled')}</span>}
           {setter && (
             <Button size="small" onClick={() => select({ collection: 'logicalSignals', id: logicalId(start.id, setter.system) })}>
               {t('set_at_signal')}
@@ -362,8 +365,8 @@ function RouteEditor({ route, name, domain, net, findings, extents, signalOption
         {derived && (
           <div className="ui-row">
             <ElementLink net={net} elements={derived} base={way} setSketch={setSketch} showOnPlan={showOnPlan} t={t} />
-            {setter && !readOnly && speed !== shownSpeed(derived.speed) && (
-              <Button size="small" onClick={() => onSignal(derived.speed)}>{t('take_speed', { speed: shownSpeed(derived.speed) })}</Button>
+            {setter && !virtualStart && !readOnly && speed !== shownSpeed(derived.speed) && (
+              <Button size="small" onClick={() => onSignal(shownSpeed(derived.speed))}>{t('take_speed', { speed: shownSpeed(derived.speed) })}</Button>
             )}
           </div>
         )}
@@ -445,8 +448,13 @@ const waysFrom = (net, signals, start) => searchFrom(net, signals, start).ways
  */
 function FindRoutes({ domain, net, extents, ops, setMode, setSketch, t }) {
   const { signals, routes } = domain.collections
-  const mains = signals.filter(s => isMainSignal(s) && s.at?.anchor === 'station')
-  const options = signalChoices(net, mains, t)
+  // Where routes start: the main signals, the virtual starts, and every boundary — a fictive signal, made where it is not yet.
+  const boundaries = boundaryStarts(net, signals)
+  const placed = signals.filter(s => isRouteStart(s) && s.at?.anchor === 'station')
+  const mains = [...placed, ...boundaries.map(b => b.signal).filter(s => s.fresh)]
+  const markOf = (s) => boundaries.find(b => b.signal.id === s.id)?.mark ?? null
+  // A boundary's start bears the boundary's name, as its target does: told apart as where trains begin.
+  const options = signalChoices(net, mains, t).map(o => (mains.find(s => s.id === o.value)?.kind === 'virtual' ? { ...o, label: `${o.label} · ${t('train_start')}` } : o))
   const [startId, setStartId] = useState(options[0]?.value ?? null)
   const [speeds, setSpeeds] = useState({})
   const [skipped, setSkipped] = useState(() => new Set())
@@ -455,6 +463,8 @@ function FindRoutes({ domain, net, extents, ops, setMode, setSketch, t }) {
   const keyOf = (f) => `${f.target?.id ?? f.boundary.mark.id}|${f.trackIds.join()}`
   const search = useMemo(() => (start ? searchFrom(net, signals, start) : { ways: [], cutOff: [] }), [net, signals, start])
   const found = search.ways
+  // A start that is not there yet is reckoned with as though it were.
+  const withStart = start?.fresh ? [...signals, start] : signals
   const exists = (startSig, f) => !!f.target && routes.some(r => r.startSignalId === startSig.id && r.targetSignalId === f.target.id && r.path.trackIds.join() === f.trackIds.join())
   const fresh = found.filter(f => !exists(start, f))
   const chosen = fresh.filter(f => !skipped.has(keyOf(f)))
@@ -464,7 +474,7 @@ function FindRoutes({ domain, net, extents, ops, setMode, setSketch, t }) {
   useEffect(() => {
     setSketch?.(found.length ? {
       ways: found.map(f => ({ pieces: wayPieces(runStretches(net, start.at, f.trackIds, endOf(f))), strong: true })),
-      ids: [start.id, ...found.map(f => f.target?.id).filter(Boolean)],
+      ids: [...(start.fresh ? [] : [start.id]), ...found.map(f => f.target?.id).filter(Boolean)],
     } : null)
   }, [found, start, net, setSketch])
   useEffect(() => () => setSketch?.(null), [setSketch])
@@ -473,7 +483,19 @@ function FindRoutes({ domain, net, extents, ops, setMode, setSketch, t }) {
   const make = (ways) => {
     let next = domain
     const made = []
-    for (const { start: from, way, speed } of ways) {
+    const startsMade = new Map()   // a boundary's start made here: its id in the draft
+    for (const { start: asked, way, speed: given } of ways) {
+      let from = asked
+      if (asked.fresh) {
+        if (!startsMade.has(asked.id)) {
+          const { fresh: _f, ...signal } = { ...asked, id: newId() }
+          next = added(next, 'signals', signal)
+          startsMade.set(asked.id, signal)
+        }
+        from = startsMade.get(asked.id)
+      }
+      // From a boundary at the boundary's speed: its start signals none.
+      const speed = asked.kind === 'virtual' ? null : given
       let target = way.target ?? boundaryTarget(next.collections.signals, way)
       if (!target) {
         target = newBoundaryTarget(net, way)
@@ -490,16 +512,18 @@ function FindRoutes({ domain, net, extents, ops, setMode, setSketch, t }) {
     }
     next = withElementSpeeds(next, net, { routeIds: made.filter(m => m.speed == null).map(m => m.route.id), boards: false }).domain
     ops.replaceAll(next)
-    return made.length
+    return { n: made.length, startsMade }
   }
   const takeChosen = () => {
-    const n = make(chosen.map(way => ({ start, way, speed: speeds[keyOf(way)] ?? null })))
+    const { n, startsMade } = make(chosen.map(way => ({ start, way, speed: speeds[keyOf(way)] ?? null })))
+    // A boundary's start made now is the start chosen on.
+    if (startsMade.has(start.id)) setStartId(startsMade.get(start.id).id)
     setDone(t('find_routes_done', { n }))
     setSpeeds({})
   }
   const takeAll = () => {
     const ways = mains.flatMap(s => waysFrom(net, signals, s).filter(f => !exists(s, f)).map(way => ({ start: s, way, speed: null })))
-    setDone(t('find_routes_done_all', { n: make(ways), signals: mains.length }))
+    setDone(t('find_routes_done_all', { n: make(ways).n, signals: mains.length }))
   }
   const km = (m) => (m >= 1000 ? `${(m / 1000).toLocaleString('de', { maximumFractionDigits: 2 })} km` : `${Math.round(m)} m`)
 
@@ -507,7 +531,7 @@ function FindRoutes({ domain, net, extents, ops, setMode, setSketch, t }) {
     <div className="ui-fields">
       <SelectField compact wide label={t('start_signal')} value={startId} options={options} onChange={(v) => { setStartId(v); setSkipped(new Set()); setDone(null) }} />
       <div className="ui-wide ui-row">
-        <Button size="small" disabled={!mains.length} onClick={() => setMode(pickingSignal(mains, t, (id) => { setStartId(id); setSkipped(new Set()); setDone(null); setMode(null) }))}>
+        <Button size="small" disabled={!mains.length} onClick={() => setMode(pickingSignal(placed, t, (id) => { setStartId(id); setSkipped(new Set()); setDone(null); setMode(null) }))}>
           {t('pick_signal_on_plan')}
         </Button>
       </div>
@@ -521,7 +545,8 @@ function FindRoutes({ domain, net, extents, ops, setMode, setSketch, t }) {
       // A boundary without its signal yet is reckoned to the track's end.
       const target = f.target ?? { id: '', at: f.boundary.at }
       const route = { startSignalId: start.id, targetSignalId: target.id, path: { trackIds: f.trackIds } }
-      const derived = shownSpeed(routeElementSpeed(net, route, f.target ? signals : [...signals, target])?.speed)
+      const derived = shownSpeed(routeElementSpeed(net, route, f.target ? withStart : [...withStart, target])?.speed)
+      const atBoundary = markOf(start)?.speed > 0 ? markOf(start).speed : null
       const name = f.target ? signalDesignation(f.target, t) : t('find_routes_boundary', { name: newBoundaryTarget(net, f).name })
       return (
         <div key={key} className="tool-found-route">
@@ -531,7 +556,10 @@ function FindRoutes({ domain, net, extents, ops, setMode, setSketch, t }) {
                 checked={!there && !skipped.has(key)} disabled={there}
                 onChange={(on) => setSkipped(prev => { const n = new Set(prev); if (on) n.delete(key); else n.add(key); return n })} />
             </span>
-            {!there && (
+            {!there && start.kind === 'virtual' && (
+              <span className="ui-muted">{atBoundary != null ? t('route_speed_boundary', { speed: atBoundary }) : t('route_speed_boundary_none')}</span>
+            )}
+            {!there && start.kind !== 'virtual' && (
               <SpeedFigureField aspect="Zs_3" label={derived != null && speeds[key] == null ? t('route_speed_from_elements') : t('zs3_shown')} speed={speeds[key] ?? derived} t={t}
                 onChange={(v) => setSpeeds(prev => ({ ...prev, [key]: v ?? undefined }))} />
             )}

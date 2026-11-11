@@ -1,4 +1,4 @@
-import { gradientAlong, overlapLength, signallingSpeedOf } from '@rail-across/core/signalling'
+import { gradientAlong, overlapLength, routeSpeedOf, signallingSpeedOf } from '@rail-across/core/signalling'
 import { newId, replaced } from './domain.js'
 import { runAhead } from './runs.js'
 
@@ -30,13 +30,13 @@ export function measuredOverlap(net, signal, speed) {
 
 /**
  * A train route's overlap at its target, measured from the speed its start
- * signal signals for it: the one it prefers (or its only one) measured anew,
+ * signal signals for it — from a planning boundary, the boundary's: the one it prefers (or its only one) measured anew,
  * else a new one it names, preferred. { domain } with both, or { problem }:
  * 'speed' where no speed is signalled for it, 'target' where its target stands
  * on no track.
  */
 export function withMeasuredOverlap(domain, net, route) {
-  const speed = signallingSpeedOf(domain, route)
+  const speed = routeSpeedOf(domain, route, net)
   if (speed == null) return { problem: 'speed' }
   const target = domain.collections.signals.find(s => s.id === route.targetSignalId)
   const measured = measuredOverlap(net, target, speed)

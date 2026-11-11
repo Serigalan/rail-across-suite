@@ -29,3 +29,4 @@ it costs. A record is not rewritten when a decision changes; a new one replaces 
 | [0022](0022-planpro-export-only.md) | PlanPro: export only; the reader stays as the export's check | accepted |
 | [0023](0023-capacity-simulation-of-our-own.md) | The capacity simulation is the suite's own, on the Fahrplan-Sim's blocking times | accepted |
 | [0024](0024-every-module-writes-the-core.md) | Every module writes the core where its work needs it, through the core library | accepted |
+| [0025](0025-layers-on-the-core.md) | Layers on the core: the alignment in the Layout-Tool; signalling, electrification and civil each in a tool of its own | accepted |

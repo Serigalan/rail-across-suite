@@ -205,12 +205,12 @@ core, and derived results above them:
 | Level | Domain | Written by | Content |
 |---|---|---|---|
 | derived | — | — | stage views, coordination checks, simulation results, reverse index — caches keyed by input hashes, never in a revision |
-| discipline | `layout` | layout-tool | surveys, reference axes, named track paths, plan header |
+| discipline | `civil` | Civil-Tool | platforms, named track paths, surveys, reference axes, plan header, project picture — `layout` 1.0 before infra-data-2.0 ([decision 0025](decisions/0025-layers-on-the-core.md)) |
 | discipline | `signalling` | signalling-tool | signals and boards, detection points, track sections, switch elements, train and shunting routes, overlaps, flank protection, balises and magnets (PZB, ETCS), station boundaries; the speeds signalled per route at the signals ([decision 0011](decisions/0011-signalling-domain.md)) |
-| discipline | `catenary` | open-catenary-tool | masts, cantilevers, wires, sections, El signals |
+| discipline | `electrification` | Catenary-Tool | electrified ranges and their systems; later masts, cantilevers, wires, sections, El signals |
 | discipline | `operations` | Fahrplan-Editor | train runs, timetable, rolling stock — a project's, kept beside its variants and not in a variant's record ([decision 0016](decisions/0016-timetables-of-a-project.md)); as a format of its own, operations-1.0, in the [roadmap](../ROADMAP.md)'s phase 4 |
 | discipline | `construction` | open-construction-sim | closures, temporary speed restrictions, tracks in operation per stage |
-| base | `core` | every module, through the core library ([decision 0024](decisions/0024-every-module-writes-the-core.md)) | **reference**: coordinate systems, km lines and designed kilometrage, operational point register, catalogue versions (rules, switch forms, profiles) · **net**: tracks (elements, heights, cant, superstructure), switches and connectors · **context**: platforms, end marks, structures (bridges, tunnels, level crossings) · **stages**: the ordered construction stages · **types**: `TrackLocation`, `TrackRange`, `TrackEnd`, `TrackPath`, `Lifespan`, `Ref` |
+| base | `core` | every module, through the core library ([decision 0024](decisions/0024-every-module-writes-the-core.md)) | **reference**: coordinate systems, km lines and designed kilometrage, operational point register, catalogue versions (rules, switch forms, profiles) · **net**: tracks (elements, heights, cant, superstructure), switches and connectors · **context**: end marks, stopping places (from infra-data-2.0; platforms until then), structures (bridges, tunnels, level crossings) · **stages**: the ordered construction stages · **types**: `TrackLocation`, `TrackRange`, `TrackEnd`, `TrackPath`, `Lifespan`, `Ref` |
 | project | — | server | variants and sketches, approvals, comments — they refer into revisions, never back |
 
 Discipline domains store references only into the core (R2, R9). The capacity simulation writes no domain: it is
@@ -219,13 +219,16 @@ the suite's own, and its results are derived ([decision 0023](decisions/0023-cap
 - **Connectors with two ends** (`link`) join two track ends at a node: where the plane changes, and where a
   rebuilt part of a track ties in ([decision 0003](decisions/0003-construction-stages.md)).
 - **A document is the core and what is planned on it.** infra-data is the envelope; the core is in every
-  document. The discipline domains — `layout`, `signalling`, `catenary` and those after them — build on the core
+  document. The discipline domains — `signalling`, `electrification`, `civil` (`layout` in infra-data-1.0) and
+  those after them, each written in its tool ([decision 0025](decisions/0025-layers-on-the-core.md)) — build on the core
   alone and may each be missing: a module opens and edits a document without the domains it does not need,
   shows nothing of those that are missing and carries those that are there (R4, S-R7). A domain that holds
   nothing is written as missing.
 - **The core is written by every module that needs it**, through the core library (R4,
-  [decision 0024](decisions/0024-every-module-writes-the-core.md)). Platforms, end marks and structures are in the
-  core because several disciplines place things relative to them.
+  [decision 0024](decisions/0024-every-module-writes-the-core.md)): the Layout-Tool the alignment, the
+  Signalling-Tool the stations and the stopping places. End marks, stopping places and structures are in the core
+  because several disciplines place things relative to them; the platforms are civil engineering's, in `civil`
+  from infra-data-2.0 ([decision 0025](decisions/0025-layers-on-the-core.md)).
 - **One physical thing, several discipline objects.** A turnout is a core switch (geometry, form, topology); the
   signalling domain has its own switch element referring to it (drive, position detection, interlocking name),
   as PlanPro models it. Each discipline names it in its own terms; the core switch carries the geometry once.

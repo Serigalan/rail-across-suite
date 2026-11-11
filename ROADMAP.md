@@ -156,8 +156,13 @@ taken over with its signals carried or orphaned in the plane, and its crossover 
 
 Goal: prove the core with a second real module.
 
-- **Open-Catenary-Tool**: masts, cantilevers, contact wire height and stagger, tension and feeding sections —
-  located objects and ranges along the track, reading geometry, cant and heights from the core.
+- **Catenary-Tool** (`apps/catenary-tool/`, [decision 0025](docs/decisions/0025-layers-on-the-core.md)): the layer
+  `electrification` — first the electrified ranges of the tracks and their systems, then masts, cantilevers,
+  contact wire height and stagger, tension and feeding sections — located objects and ranges along the track,
+  reading geometry, cant and heights from the core. *Next:* the electrified ranges planned on the net (infra-data-2.0).
+- **Civil-Tool** (the Layout-Tool's app under `/civil/`, decision 0025): the layer `civil` — platforms, named runs
+  of tracks, measured axes and reference axes from the point clouds, the plan header, the project picture —, taken
+  out of the Layout-Tool, which keeps the alignment alone.
 - **Open-Signalling-Tool**: signals, detection points, balises, track sections, signalling routes, speed
   profiles; station boundaries stored as references to what marks them (entry signals, trapezoid boards, entry
   switches, platforms), with a special-case finding where they differ from EBO §4; export towards PlanPro /
@@ -173,7 +178,7 @@ Goal: prove the core with a second real module.
   crossings, block and the other parts of a station plan; crossings and slips in the PlanPro export.
 
 **Signalling goes first**: it needs locations, ranges, functional objects and topology, and so tests the
-generalised core most. Catenary follows.
+generalised core most. Catenary and civil follow, with infra-data-2.0.
 
 - **Coordination checks** between the disciplines, derived from shared locations and storing only findings
   (signal on a mast, El signals before a neutral section, signal sight past masts).
@@ -330,66 +335,59 @@ the same key with another content takes it under its hash, beside the catalogue'
 
 ### infra-data-2.0
 
-What the simulation needs of the railway itself, in the infrastructure's format, and the core kept to what
-several disciplines need. Planned as 1.1; it is 2.0 because platforms leave the core, which a reader of 1.0
-cannot leave unread (`schemas/README.md`). All of it in one version, with one step at the door (S-R10): an
-infra-data 1.0 file reads in as 2.0 with everything it held.
+The layers of [decision 0025](docs/decisions/0025-layers-on-the-core.md) and what the simulation needs of the
+railway itself, in the infrastructure's format. Planned as 1.1; it is 2.0 because the core and signalling change
+in ways a reader of 1.0 cannot leave unread (`schemas/README.md`). All of it in one version, with one step at the
+door (S-R10): an infra-data 1.0 document reads in as 2.0 with everything it held.
 
 **The envelope's version is the version of the set**: a minor one where every domain's change is an addition, a
-major one where any domain takes a major one. infra-data-2.0 is `core` 2.0, `layout` 1.1, `signalling` 2.0 and
-the new domain `electrification` 1.0.
+major one where any domain takes a major one. infra-data-2.0 is `core` 2.0, `signalling` 2.0, `civil` 1.0 and
+`electrification` 1.0; `layout` 1.0 goes into `civil`.
 
 | Domain | Change | For |
 |---|---|---|
-| `electrification` 1.0, new | `electrifications`: a range of a track, its system, a lifespan; depends on the core only | the traction mode along a train's way; where there is none, no wire — a domain of its own, as the core holds only what several disciplines need; the Catenary-Tool plans its masts and sections along it |
-| `core` 2.0 | `platforms` leave it, for `layout`; `stoppingPlaces` come into it from `signalling`, as they are, and the Signalling-Tool keeps setting them ([decision 0024](docs/decisions/0024-every-module-writes-the-core.md)) | the core keeps what several disciplines place things by: a stopping place is the signalling's itineraries' and boundaries', the platforms' and the timetables' |
+| `core` 2.0 | `platforms` leave it, for `civil`; `stoppingPlaces` come into it from `signalling`, as they are, written by the Signalling-Tool ([decision 0024](docs/decisions/0024-every-module-writes-the-core.md)) | the core is the alignment and what every layer places things by |
 | `core` 2.0 | `endMarks[].headway`: how close trains follow at a planning boundary | trains entering from a net that is not in the model |
-| `core` 2.0 | a track's `lagesystem`, `proviAxis` and `osrd` leave it, for `layout` | read by the Layout-Tool's imports and exports alone |
-| `layout` 1.1 | `trackSources`: per track (`trackId`) where an import took it from — `lagesystem` (MDB), `proviAxis` (ProVI) — and what a RailJSON import brought along for it (`osrd`), handed back on export; a track split or joined keeps it on each part | the layout tool's |
-| `layout` 1.1 | `platforms`, as they were in the core, each naming the stopping places at it (`stoppingPlaceIds`) — a reference into the core, as R2 allows | the layout tool's; the core names nothing above it, so the platform names its stopping places, not they their platform |
+| `civil` 1.0, new | what `layout` 1.0 held — `trackPaths`, `axisSurveys`, `referenceAxes`, the plan header, the project picture, the RailJSON objects an import brought along — and the `platforms`, each naming the stopping places at it (`stoppingPlaceIds`) | the Civil-Tool's |
+| `electrification` 1.0, new | `electrifications`: a range of a track, its system, a lifespan | the traction mode along a train's way; where there is none, no wire — the Catenary-Tool's |
 | `signalling` 2.0 | `stoppingPlaces` leave it, for the core; its itineraries name them there; a station boundary marked by a platform is marked by the stopping place at it (`stoppingPlaceId`) | no stored reference between sibling domains (R9) |
 | `signalling` 2.0 | `routes[].settingTime` and `.releaseTime`, with the interlocking's values in the domain's fields | the blocking time's parts that are the interlocking's |
 | `signalling` 2.0 | `trainProtection`: a range of a track, the system and its level — PZB, LZB, ETCS —, a lifespan | the braking a train is run with; later, blocks without signals at the track |
 
-What `layout` holds was looked through for 2.0, and all of it is used: `trackPaths` (the Layout-Tool's named
-runs, for the profiles, the cross sections and the speed ranges), `axisSurveys` and `referenceAxes` (point clouds,
-surveys), `planHeader` (the plan's title block), `image` and `imageHash` (the project picture in a file, on the
-server), `osrd` (what a RailJSON import brought that the model does not hold).
+A track's `lagesystem`, `proviAxis` and `osrd` stay with it in the core: the Layout-Tool's imports of the alignment
+write them.
 
 Not in 2.0: speeds for a kind of train — the line's speed is the design speed and what the signals signal, for
 every train; a speed profile of its own, as PlanPro's `Geschwindigkeitsprofil` (tilting trains, ETCS's train
 categories), comes with a line that needs one, with the train protection —; level crossings (the
-Signalling-Tool's next, phase 3), neutral sections (with the catenary domain), anything of the operation, any
-result.
+Signalling-Tool's next, phase 3), neutral sections (with the catenary), anything of the operation, any result.
 
-- **I1 — The format.** `schemas/core/2.0.schema.json`, `schemas/layout/1.1.schema.json`,
-  `schemas/signalling/2.0.schema.json` and `schemas/electrification/1.0.schema.json` beside the 1.0 files; the
-  door's step from 1.0 — the platforms and a track's `lagesystem`, `proviAxis` and `osrd` moved to `layout`, the
-  stopping places to the core; a stopping place's
-  `platformId` turned into the platform's `stoppingPlaceIds`; a boundary's platform mark turned into the stopping
-  place at it, one made over the platform where there is none; the additions begin empty —; the vectors rewritten; the
-  data model's domain table brought up to date; the server and the working copies reading 1.0 and writing 2.0.
-  *Done when* every project of the server opens with every platform, stopping place and boundary in its place, and
-  a file exported as 1.0 reads in with what it held.
-- **I2 — Editing.** Electrification and a boundary's headway in the Layout-Tool; a route's times and the train
-  protection in the Signalling-Tool; the core library carrying the electrification's ranges and the platforms
-  through every track edit and merge (R4, R7). *Done when* a range keeps its place over a track split, joined and
-  reversed.
+- **I1 — The format.** `schemas/core/2.0.schema.json`, `schemas/signalling/2.0.schema.json`,
+  `schemas/civil/1.0.schema.json` and `schemas/electrification/1.0.schema.json` beside the 1.0 files; the door's step
+  from 1.0 — `layout` and the platforms into `civil`, the stopping places into the core, a stopping place's
+  `platformId` into its platform's `stoppingPlaceIds`, a boundary's platform mark into the stopping place at it (one
+  made over the platform where there is none); the additions begin empty —; the vectors and types written again;
+  the server's revisions brought to 2.0 by a data step. *Done when* every project of the server opens with every
+  platform, stopping place and boundary in its place, and a file exported as 1.0 reads in with what it held.
+- **I2 — The tools.** The Layout-Tool the alignment's alone; the Civil-Tool — the Layout-Tool's app under
+  `/civil/` — for the platforms, the runs, the surveys and reference axes, the plan header and the picture; the
+  Catenary-Tool (phase 3) for the electrification; a route's times and the train protection in the
+  Signalling-Tool; a boundary's headway in the Layout-Tool. *Done when* each tool edits its own layer and shows the
+  others read-only, and a range keeps its place over a track split, joined and reversed.
 - **I3 — Reading.** The running time takes the traction mode from the electrification along its way; the
-  blocking time takes a route's times; a train enters at a boundary no closer than its headway; the readers of
-  platforms and stopping places — the running times, the timetables, the Signalling-Tool, the PlanPro export —
-  read them from `layout` and the core; RailJSON's
+  blocking time takes a route's times; a train enters at a boundary no closer than its headway; RailJSON's
   `electrifications`, empty in the export today, written and read.
 
 ### Order
 
-1. **K0** — needs no format, and every later figure rests on it.
-2. **O1, O2** — the operations on their format before anything new is put into them.
-3. **K1** — the first figures, from what is there.
-4. **I1 to I3** — infra-data-2.0.
-5. **O3, O4** — formations, connections and turnarounds.
-6. **K2**.
-7. **O5 and K3**.
+1. **I1, I2** — the layers of decision 0025 on infra-data-2.0, with the Civil-Tool and the Catenary-Tool.
+2. **K0** — the blocking time as the format gives it; every later figure rests on it.
+3. **O1, O2** — the operations on their format before anything new is put into them.
+4. **K1** — the first figures, from what is there.
+5. **I3** — the running and blocking times read the railway's additions.
+6. **O3, O4** — formations, connections and turnarounds.
+7. **K2**.
+8. **O5 and K3**.
 
 K1 gives its first figures with neither format's additions; K2 and K3 are as good as the formations, the
 electrification and the connections make them.

@@ -20,7 +20,7 @@ export {
 } from './proviImport'
 export { planRailJsonImport } from './railJsonImport'
 export {
-  MIN_RANGE, averageSpeed, kmAlong, runOf, speedProfile, speedRanges, speedRangesCsv, speedRangesSvg, withKm,
+  MIN_RANGE, SPEED_STEPS, SVG_SCALE, averageSpeed, kmAlong, runOf, speedProfile, speedRanges, speedRangesCsv, speedRangesSvg, speedRangesSvgSize, steppedProfile, withKm,
 } from './speedRanges'
 export { exportVermEsn } from './vermEsnExport'
 export {

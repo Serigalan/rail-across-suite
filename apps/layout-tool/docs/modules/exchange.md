@@ -33,7 +33,7 @@ converted on the server.
 | `mdbSwitchPlacement.js` | in | The MDB's switch inventory placed onto the imported tracks |
 | `mdbSwitchDerive.js` | in | Turnouts the inventory does not state, read from the alignment |
 | `mdbPipeline.js` | in | The whole MDB import: tracks, plane, switches, links, buffer stops, notes |
-| `speedRanges.js` | out | The highest speeds along a run (a named route or a track) from the elements' design speed, in ranges of at least 800 m laid for the highest average speed — Σ length / speed least, by dynamic programming over the speed changes and a 10 m grid —, with their kilometres; a CSV table (`;`, decimal comma) or an SVG diagram |
+| `speedRanges.js` | out | The highest speeds along a run (a named route or a track) from the elements' design speed, in ranges of at least 800 m laid for the highest average speed — Σ length / speed least, by dynamic programming over the speed changes and a 10 m grid —, in steps of 5 or 10 km/h (rounded down first, so the ranges are laid for the speeds they show), with their kilometres; a CSV table (`;`, decimal comma) or an SVG diagram to scale in millimetres — a length scale (mm per km of the run, 100 = 1:10 000) and a height scale (mm per km/h) |
 
 ## Principles
 

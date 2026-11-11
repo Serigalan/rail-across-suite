@@ -48,6 +48,16 @@ describe('speed ranges along a run', () => {
     expect(round(speedRanges(speedProfile(runOf({ els: [[1000, null]] }))))).toEqual([[0, 1000, null]])
   })
 
+  it('gives the ranges in steps of 5 or 10 km/h, rounded down, and lays them for those speeds', () => {
+    const profile = speedProfile(runOf({ els: [[1000, 118], [1000, 87], [1000, 104]] }))
+    expect(speedRanges(profile, { speedStep: 5 }).map(r => r.speed)).toEqual([115, 85, 100])
+    expect(speedRanges(profile, { speedStep: 10 }).map(r => r.speed)).toEqual([110, 80, 100])
+    // Rounded alike, two neighbours are one range.
+    expect(round(speedRanges(speedProfile(runOf({ els: [[1000, 104], [1000, 101]] })), { speedStep: 5 }))).toEqual([[0, 2000, 100]])
+    // Never above the design speed; one below the first step keeps its own.
+    expect(round(speedRanges(speedProfile(runOf({ els: [[1000, 3]] })), { speedStep: 5 }))).toEqual([[0, 1000, 3]])
+  })
+
   it('finds the least running time every way of laying the ranges on the grid gives', () => {
     // Random profiles on a 100 m grid, against every partition into ranges of at least 800 m.
     let seed = 7
@@ -81,5 +91,17 @@ describe('speed ranges along a run', () => {
     expect(svg.startsWith('<svg xmlns="http://www.w3.org/2000/svg"')).toBe(true)
     expect(svg).toContain('T &amp; &lt;x&gt;')
     expect(svg).toContain('km 29,812')
+  })
+
+  it('draws the diagram to scale: a kilometre so many millimetres long, a km/h so many high', () => {
+    const ranges = [{ from: 0, to: 2000, speed: 80 }]
+    const texts = { title: 't', subtitle: 's', speedAxis: 'v', legendDesign: 'd', legendRanges: 'r' }
+    // 2 km at 100 mm/km, 85 km/h (80 and a step of 5 above) at 1 mm per km/h, with the margins around.
+    const svg = speedRangesSvg(ranges, ranges, texts, { mmPerKm: 100, mmPerKmh: 1 })
+    expect(svg).toContain('width="236mm" height="129mm" viewBox="0 0 236 129"')
+    // The range's line: from 24 mm to 224 mm, at 80 km/h — 5 mm under the top of the axis.
+    expect(svg).toContain('M24,25L224,25')
+    // Unless another is given, 1 km = 100 mm and 1 km/h = 10 mm.
+    expect(speedRangesSvg(ranges, ranges, texts)).toContain('width="236mm"')
   })
 })

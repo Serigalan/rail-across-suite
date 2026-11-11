@@ -219,12 +219,12 @@ railway.
 | the way, grades and curves, speeds, stations and stops, blocks, overlaps, track sections, stages | infra-data-1.0: `core` and `signalling` | — |
 | where a block is asked for, how long an overlap stays set | in the format — the distant signals, `routes[].shortDistantSpacing`, `overlaps[].releaseDelay` —, not read: a timetable's 1000 m and 60 s for every block | K0 |
 | the time to set and to release a route | 12 s and 6 s, a timetable's | infra-data-1.1 |
-| the speed permitted to a kind of train | the design speed, for all | infra-data-1.1 |
+| the speed a train may run at | the design and the signalled speed, and one vehicle's top speed | operations-1.0: the formation's top speed and brake |
 | the traction system along the way | none: a train's mode is chosen for its whole run | infra-data-1.1 |
 | the train protection | none | infra-data-1.1 |
 | how close trains follow at a planning boundary | none: a train enters as timetabled | infra-data-1.1 |
 | what a train is made of: load, length, brake | one vehicle of the catalogue | operations-1.0 |
-| the kinds of trains, their rank and class of speed | a list in the code, an order per timetable | operations-1.0 |
+| the kinds of trains and their rank | a list in the code, an order per timetable | operations-1.0 |
 | connections, turnarounds, the least dwell | none | operations-1.0 |
 | what a study assumes: period, stretches, bounds, delays, runs | none | operations-1.0 |
 
@@ -280,7 +280,7 @@ named by its hash, collections sorted by id, blobs by hash, references declared 
 |---|---|---|
 | `timetables` | name; the dispatching (mode, priority); the parts of the blocking time that are the operation's — the sight time, and what stands in where the infrastructure says nothing | the server's `timetable` rows |
 | `trains` | of a timetable: number, kind, formation, departure, margin; its points — place, track, stop, dwell and least dwell, departure, itinerary | a timetable's `trains` |
-| `trainKinds` | the kinds of trains: name, rank in the dispatching, class of speed, colour | a list in the code, `dispatch.categories` |
+| `trainKinds` | the kinds of trains: name, rank in the dispatching, colour | a list in the code, `dispatch.categories` |
 | `formations` | Zugbildung: the traction units by their key in the catalogue; the hauled load — mass, length, top speed; brake position and braked weight percentage | a train names one vehicle |
 | `vehicles` | the vehicles the formations name, as RailJSON rolling stock in blobs: the file carries what it runs with | the suite's catalogue, not in the file |
 | `connections` | Anschluss: from a train's arrival to another's departure at a place; the time to change, how long it is waited for | — |
@@ -301,8 +301,9 @@ whole of a project's operations — what is exported, imported and hashed for th
   by hand (`timetable_fault`); a `rail-across-timetables` 1.0 file still read, and turned on its way in; export
   and import as an operations file with the vehicles its trains run with. *Done when* every timetable of the
   server opens as it was, and a project exported here runs on another server with the same times.
-- **O3 — Formations and kinds in the simulation.** The mass, length, top speed and brake of the whole train in the
-  request; the kind's class of speed choosing the speed permitted (I3).
+- **O3 — Formations in the simulation.** The mass, length, top speed and brake of the whole train in the request:
+  a train runs no faster than the line, its signals and its formation allow — a freight train's lower speed is
+  its own, not the line's.
 - **O4 — Connections, turnarounds, least dwell.** Held by the dispatching; a connection missed and a turn too
   short as findings at the train.
 - **O5 — Studies and scenarios.** Edited in the Fahrplan-Editor's *Kapazität*, run by K1 to K3.
@@ -316,25 +317,26 @@ version, with its step at the door (S-R10). infra-data-1.1 is `core` 1.1, `layou
 | Domain | Addition | For |
 |---|---|---|
 | `core` 1.1 | `electrifications`: a range of a track, its system, a lifespan | the traction mode along a train's way; where there is none, no wire |
-| `core` 1.1 | `speedSections`, with the classes of speed in the project's fields: the speed permitted to a class over a range and in a direction, where it is not the design speed | tilting trains above it, freight below; a restriction that is the operation's |
 | `core` 1.1 | `endMarks[].headway`: how close trains follow at a planning boundary | trains entering from a net that is not in the model |
 | `signalling` 1.1 | `routes[].settingTime` and `.releaseTime`, with the interlocking's values in the domain's fields | the blocking time's parts that are the interlocking's |
 | `signalling` 1.1 | `trainProtection`: a range of a track, the system and its level — PZB, LZB, ETCS —, a lifespan | the braking a train is run with; later, blocks without signals at the track |
 
-Not in 1.1: level crossings (the Signalling-Tool's next, phase 3), neutral sections (with the catenary domain),
-anything of the operation, any result.
+Not in 1.1: speeds for a kind of train — the line's speed is the design speed and what the signals signal, for
+every train; a speed profile of its own, as PlanPro's `Geschwindigkeitsprofil` (tilting trains, ETCS's train
+categories), comes with a line that needs one, with the train protection —; level crossings (the
+Signalling-Tool's next, phase 3), neutral sections (with the catenary domain), anything of the operation, any
+result.
 
 - **I1 — The format.** `schemas/core/1.1.schema.json` and `schemas/signalling/1.1.schema.json` beside the 1.0
   files; the door's step from 1.0 — nothing to convert, the additions begin empty —; the vectors rewritten; the
   server and the working copies reading 1.0 and writing 1.1. *Done when* every project of the server opens, and
   a file exported as 1.0 reads in with what it held.
-- **I2 — Editing.** Electrification, the speed of a class and a boundary's headway in the Layout-Tool; a route's
+- **I2 — Editing.** Electrification and a boundary's headway in the Layout-Tool; a route's
   times and the train protection in the Signalling-Tool; the core carrying the ranges through every track edit
   and merge (R4, R7). *Done when* a range keeps its place over a track split, joined and reversed.
-- **I3 — Reading.** The running time takes the traction mode from the electrification along its way and the
-  speed from the class of the train's kind; the blocking time takes a route's times; a train enters at a boundary
-  no closer than its headway; RailJSON's `electrifications` and `speed_sections`, empty in the export today,
-  written and read.
+- **I3 — Reading.** The running time takes the traction mode from the electrification along its way; the
+  blocking time takes a route's times; a train enters at a boundary
+  no closer than its headway; RailJSON's `electrifications`, empty in the export today, written and read.
 
 ### Order
 
@@ -342,12 +344,12 @@ anything of the operation, any result.
 2. **O1, O2** — the operations on their format before anything new is put into them.
 3. **K1** — the first figures, from what is there.
 4. **I1 to I3** — the railway's additions.
-5. **O3, O4** — formations and kinds, connections and turnarounds.
+5. **O3, O4** — formations, connections and turnarounds.
 6. **K2**.
 7. **O5 and K3**.
 
-K1 gives its first figures with neither format's additions; K2 and K3 are as good as the formations, the speeds
-by class and the connections make them.
+K1 gives its first figures with neither format's additions; K2 and K3 are as good as the formations, the
+electrification and the connections make them.
 
 ### Open
 
@@ -367,7 +369,6 @@ by class and the connections make them.
 - **Electrification in the core or in the catenary domain**: the core proposed — whether a line has a wire is
   the line's, and the Catenary-Tool plans its masts and sections on it.
 - **What the envelope's version says**: the set of the domains' versions, as above, or the envelope's form alone.
-- **The classes of speed**: a list of the suite's, or the project's.
 
 **Exit:** for a stretch of a project, the headways, the occupancy rate, the trains it still carries and its
 delays under a scenario come from the variant and the stage as planned, are the same for the same inputs, and

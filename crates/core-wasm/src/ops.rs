@@ -114,6 +114,11 @@ fn run_on(op: &str, input: &Value) -> Result<Value, Failure> {
         "document.canonicalJson" => canonical_json(input).map(Value::String).map_err(|e| Failure::new("no_json", Some(e.0))),
         "document.defaultStages" => Ok(core_format::default_stages(input.as_str().unwrap_or(""))),
         "document.stationRegister" => Ok(stations::station_register_json(input)),
+        "document.withPlatformStops" => Ok(rail_across_doc::layers::with_platform_stops(
+            &input["record"],
+            input.get("platformId").and_then(Value::as_str).unwrap_or(""),
+            input.get("name").and_then(Value::as_str),
+        )),
         "document.renamedStation" => {
             let id = input.get("id").and_then(Value::as_str).unwrap_or("");
             let uic = input.as_object().and_then(|o| o.get("uic")).map(|u| if u.is_null() { None } else { Some(u) });

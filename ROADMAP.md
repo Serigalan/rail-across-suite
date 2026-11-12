@@ -355,9 +355,9 @@ major one where any domain takes a major one. infra-data-2.0 is `core` 2.0, `sig
 
 | Domain | Change | For |
 |---|---|---|
-| `core` 2.0 | `platforms` leave it, for `civil`; `stoppingPlaces` come into it from `signalling`, as they are, written by the Signalling-Tool ([decision 0024](docs/decisions/0024-every-module-writes-the-core.md)) | the core is the alignment and what every layer places things by |
+| `core` 2.0 | `platforms` leave it, for `civil`; `stoppingPlaces` come into it from `signalling`, written by the Signalling-Tool ([decision 0024](docs/decisions/0024-every-module-writes-the-core.md)), with `passengerStop` where the Civil-Tool puts a platform at one | the core is the alignment and what every layer places things by |
 | `core` 2.0 | `endMarks[].headway`: how close trains follow at a planning boundary | trains entering from a net that is not in the model |
-| `civil` 1.0, new | what `layout` 1.0 held — `trackPaths`, `axisSurveys`, `referenceAxes`, the plan header, the project picture, the RailJSON objects an import brought along — and the `platforms`, each naming the stopping places at it (`stoppingPlaceIds`) | the Civil-Tool's |
+| `civil` 1.0, new | what `layout` 1.0 held — `trackPaths`, `axisSurveys`, `referenceAxes`, the plan header, the project picture, the RailJSON objects an import brought along — and the `platforms`, each naming the stopping places at it (`stoppingPlaceIds`) | the Civil-Tool's; a platform put makes the stopping place at it a passenger stop (`passengerStop`, core), or writes one |
 | `electrification` 1.0, new | `electrifications`: a range of a track, its system, a lifespan | the traction mode along a train's way; where there is none, no wire — the Catenary-Tool's |
 | `signalling` 2.0 | `stoppingPlaces` leave it, for the core; its itineraries name them there; a station boundary marked by a platform is marked by the stopping place at it (`stoppingPlaceId`) | no stored reference between sibling domains (R9) |
 | `signalling` 2.0 | `routes[].settingTime` and `.releaseTime`, with the interlocking's values in the domain's fields | the blocking time's parts that are the interlocking's |

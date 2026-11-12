@@ -8,6 +8,7 @@ import {
   carryPlatforms, flipPlatforms, trackLength,
 } from '@rail-across/core/track'
 import { translateTracks } from '@rail-across/core/commands'
+import { withPlatformStops } from '@rail-across/core/document'
 import { carryAfterWrite } from '@rail-across/core/merge'
 import { coupleSwitchCants, rebuildSwitchSymbol } from '@rail-across/core/switch'
 import {
@@ -1086,16 +1087,20 @@ export function loadPlatforms() {
   return _project?.platforms ?? []
 }
 
-export function savePlatform(platform) {
-  return mutate(p => ({ ...p, platforms: [...(p.platforms ?? []), platform] }))
+// A platform put, moved or deleted details the stopping places at it in the
+// core, one step with it (decision 0025): those at it passenger stops it
+// names, one over it called `stopName` where none is at it yet.
+
+export function savePlatform(platform, { stopName } = {}) {
+  return mutate(p => withPlatformStops({ ...p, platforms: [...(p.platforms ?? []), platform] }, platform.id, { name: stopName }))
 }
 
-export function updatePlatform(platform) {
-  return mutate(p => ({ ...p, platforms: (p.platforms ?? []).map(q => (q.id === platform.id ? platform : q)) }))
+export function updatePlatform(platform, { stopName } = {}) {
+  return mutate(p => withPlatformStops({ ...p, platforms: (p.platforms ?? []).map(q => (q.id === platform.id ? platform : q)) }, platform.id, { name: stopName }))
 }
 
 export function deletePlatform(platformId) {
-  return mutate(p => ({ ...p, platforms: (p.platforms ?? []).filter(q => q.id !== platformId) }))
+  return mutate(p => withPlatformStops({ ...p, platforms: (p.platforms ?? []).filter(q => q.id !== platformId) }, platformId))
 }
 
 /** Add or replace the line with this number. */

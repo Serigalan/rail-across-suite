@@ -23,11 +23,16 @@ Status: **accepted** · 2026-11-11 · changes the domains of [0009](0009-core-1-
    edits `civil`; the Layout-Tool shows what it needs of it — the runs for its profiles and tables, the reference
    axes to design against, the plan header for its plan — and edits none of it. What an import brings along it
    keeps as it came.
-4. **The stopping places are the core's**, and the Signalling-Tool writes them there as it sets them
-   ([0024](0024-every-module-writes-the-core.md)). A platform names the stopping places at it (`stoppingPlaceIds`),
-   since the core names nothing above it; a station boundary is marked by a stopping place where it was marked by a
-   platform. Which station a platform is of is set in the Civil-Tool, no longer in the Signalling-Tool (0017,
-   point 3).
+4. **The stopping places are the core's**, one for every train, and mostly the Signalling-Tool writes them there as
+   it sets them ([0024](0024-every-module-writes-the-core.md)). **The Civil-Tool details them**: a platform put or
+   moved makes the stopping places at it — on its track, overlapping it — passenger stops (`passengerStop`, core) and
+   names them (`stoppingPlaceIds`, civil, since the core names nothing above it); where none is at it yet, it writes
+   one over the platform into the core. A platform moved away or deleted takes back what it said, and never deletes
+   a stopping place. The Signalling-Tool sets no platform and shows whether a stopping place is a passenger stop.
+   A station boundary is marked by a stopping place where it was marked by a platform. Which station a platform is
+   of is set in the Civil-Tool, no longer in the Signalling-Tool (0017, point 3). A core 2.0 of before
+   `passengerStop` reads with every stopping place a platform names a passenger stop (data step
+   `0025-passenger-stops`).
 5. **infra-data-2.0** carries it: `core` 2.0, `signalling` 2.0, `civil` 1.0, `electrification` 1.0. The door reads an
    infra-data 1.0 document as 2.0, nothing lost; the envelope's version is the version of the set (the
    [roadmap](../../ROADMAP.md), phase 4).

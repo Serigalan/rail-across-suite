@@ -173,6 +173,33 @@ fn to_infra_data_2_0(db: &Connection, _now: i64) -> rusqlite::Result<String> {
     Ok(format!("{written} Revisionen umgeschrieben, {left} nicht lesbar"))
 }
 
+/// Every infra-data-2.0 revision whose domains are of an earlier schema of 2.0
+/// brought to this build's, in place — the core's stopping places a platform
+/// names made passenger stops (decision 0025). One the door cannot read stays
+/// as it was.
+fn within_infra_data_2_0(db: &Connection, _now: i64) -> rusqlite::Result<String> {
+    let rows: Vec<(i64, Vec<u8>)> = db
+        .prepare("SELECT id, payload FROM revision WHERE schema_version = ?")?
+        .query_map([STORED_FORMAT], |r| Ok((r.get(0)?, r.get(1)?)))?
+        .collect::<Result<_, _>>()?;
+    let (mut written, mut left) = (0, 0);
+    for (id, payload) in rows {
+        let Some(given) = unpack(&payload) else {
+            left += 1;
+            continue;
+        };
+        match rail_across_doc::door::check_document(&given) {
+            Ok(doc) if doc != given => {
+                db.execute("UPDATE revision SET payload = ? WHERE id = ?", params![pack(&doc), id])?;
+                written += 1;
+            }
+            Ok(_) => {}
+            Err(_) => left += 1,
+        }
+    }
+    Ok(format!("{written} Revisionen umgeschrieben, {left} nicht lesbar"))
+}
+
 /// Run the data steps this database has not seen, each once: (name, note) of those run.
 pub fn run_data_migrations(db: &Connection, now: i64) -> rusqlite::Result<Vec<(String, String)>> {
     let done: Vec<String> = db
@@ -181,10 +208,11 @@ pub fn run_data_migrations(db: &Connection, now: i64) -> rusqlite::Result<Vec<(S
         .collect::<Result<_, _>>()?;
     let mut ran = Vec::new();
     // In this order: a later step reads the revisions in the form the first gives them.
-    let steps: [(&str, fn(&Connection, i64) -> rusqlite::Result<String>); 3] = [
+    let steps: [(&str, fn(&Connection, i64) -> rusqlite::Result<String>); 4] = [
         ("0021-infra-data", to_infra_data),
         ("0020-node-tolerance-1um", close_node_gaps),
         ("0025-infra-data-2.0", to_infra_data_2_0),
+        ("0025-passenger-stops", within_infra_data_2_0),
     ];
     for (name, step) in steps {
         if done.iter().any(|d| d == name) {

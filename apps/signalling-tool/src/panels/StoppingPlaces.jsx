@@ -49,7 +49,8 @@ export function StoppingPlacesSection({ entry, domain, net, core, ops, select, m
     const taken = new Set(mine.map(h => h.name))
     let name = base
     for (let n = 2; taken.has(name); n++) name = `${base} (${n})`
-    const h = newStoppingPlace({ name, operationalPointId: pointId ?? undefined, platformId: s.platformId, trackId: s.trackId, from: s.from, to: s.to })
+    // The platform at it the Civil-Tool sets, which makes it a passenger stop (decision 0025).
+    const h = newStoppingPlace({ name, operationalPointId: pointId ?? undefined, trackId: s.trackId, from: s.from, to: s.to })
     ops.add('stoppingPlaces', h)
     setSource(null)
   }
@@ -68,7 +69,7 @@ export function StoppingPlacesSection({ entry, domain, net, core, ops, select, m
         <Options>
           {mine.map(h => (
             <Option key={h.id} icon={<StopIcon />} end={`${placeLength(h)} m`} onClick={() => select({ collection: 'stoppingPlaces', id: h.id })}>
-              {h.name ?? t('unnamed')}<span className="ui-muted"> · {placeWhere(net, h)}</span>
+              {h.name ?? t('unnamed')}<span className="ui-muted"> · {placeWhere(net, h)}{h.passengerStop ? ` · ${t('stopping_passenger')}` : ''}</span>
             </Option>
           ))}
         </Options>
@@ -100,7 +101,8 @@ export function StoppingPlacesSection({ entry, domain, net, core, ops, select, m
 
 /**
  * A stopping place: its name, its stretch, and where it belongs — a station,
- * a platform. Its two ends can be picked on the plan anew, on its track, as
+ * a platform; whether it is a passenger stop, which the Civil-Tool's platform
+ * at it says (decision 0025). Its two ends can be picked on the plan anew, on its track, as
  * the Layout-Tool picks a platform's: each at a signal or detection point
  * within reach.
  */
@@ -145,10 +147,12 @@ export function StoppingPlaceEditor({ place, domain, net, core, findings, ops, m
         <dt>{t('track')}</dt><dd>{trackName(net, place.at.trackId)}</dd>
         <dt>{t('stopping_length')}</dt><dd>{placeLength(place)} m</dd>
         <dt>{t('object_operationalPoints')}</dt><dd>{point ? stationName(point) : t('open_line')}</dd>
+        <dt>{t('stopping_passenger')}</dt><dd>{t(place.passengerStop ? 'yes' : 'no')}</dd>
         {platform && <><dt>{t('object_platforms')}</dt><dd>{platformText(net, platform, t)}</dd></>}
         <dt>{t('itineraries')}</dt><dd>{itineraries.length}</dd>
       </dl>
       <p className="ui-muted">{t('stopping_place_bounds_hint')}</p>
+      <p className="ui-muted">{t('stopping_passenger_hint')}</p>
     </div>
   )
 }

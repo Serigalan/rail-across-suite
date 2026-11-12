@@ -52,7 +52,10 @@ fn the_stopping_places_in_the_core_and_the_platform_naming_them() {
     let core = &doc["domains"]["core"]["collections"];
     assert!(core.get("platforms").is_none());
     assert!(find(&core["stoppingPlaces"], "hp-2").get("platformId").is_none());
-    assert_eq!(find(&doc["domains"]["civil"]["collections"]["platforms"], "p1")["stoppingPlaceIds"], json!(["hp-2"]));
+    assert_eq!(
+        find(&doc["domains"]["civil"]["collections"]["platforms"], "p1")["stoppingPlaceIds"],
+        json!(["hp-2"])
+    );
     assert!(doc["domains"]["signalling"]["collections"].get("stoppingPlaces").is_none());
     // and the record names the platform at its stopping place again, in its signalling
     let record = document_to_record(&doc).unwrap();
@@ -79,7 +82,10 @@ fn infra_data_1_0_reads_in_as_2_0() {
 #[test]
 fn a_boundary_marked_by_a_platform_no_stopping_place_is_at_gets_one() {
     let doc = check_document(&case("infra-data 1.0: a boundary marked by a platform no stopping place is at")).unwrap();
-    let marks = doc["domains"]["signalling"]["collections"]["stationBoundaries"][0]["marks"].as_array().unwrap().clone();
+    let marks = doc["domains"]["signalling"]["collections"]["stationBoundaries"][0]["marks"]
+        .as_array()
+        .unwrap()
+        .clone();
     let made = marks[1]["stoppingPlaceId"].as_str().unwrap().to_string();
     let place = find(&doc["domains"]["core"]["collections"]["stoppingPlaces"], &made);
     let platform = find(&doc["domains"]["civil"]["collections"]["platforms"], "p1");
@@ -93,7 +99,10 @@ fn a_record_with_a_boundary_marked_by_a_platform_as_it_was_kept() {
     // a working copy of a browser keeps the record as infra-data 1.0 had it
     let doc = check_document(&case("the sample with its signalling")).unwrap();
     let mut record = document_to_record(&doc).unwrap();
-    record["signalling"]["collections"]["stationBoundaries"][0]["marks"].as_array_mut().unwrap().push(json!({ "platformId": "p1" }));
+    record["signalling"]["collections"]["stationBoundaries"][0]["marks"]
+        .as_array_mut()
+        .unwrap()
+        .push(json!({ "platformId": "p1" }));
     let written = to_document(&record, false, true).unwrap();
     let marks = &written["domains"]["signalling"]["collections"]["stationBoundaries"][0]["marks"];
     assert_eq!(marks[1], json!({ "stoppingPlaceId": "hp-2" }));
@@ -116,4 +125,114 @@ fn a_boundary_keeps_its_headway() {
     let record = document_to_record(&doc).unwrap();
     assert_eq!(record["endMarks"][0]["headway"], 120);
     assert_eq!(to_document(&record, false, true).unwrap(), doc);
+}
+
+#[test]
+fn a_stopping_place_a_platform_names_is_a_passenger_stop() {
+    let doc = check_document(&case("the sample with its signalling")).unwrap();
+    let places = &doc["domains"]["core"]["collections"]["stoppingPlaces"];
+    assert_eq!(find(places, "hp-2")["passengerStop"], true);
+    assert!(
+        places
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|h| h["id"] != "hp-2")
+            .all(|h| h.get("passengerStop").is_none())
+    );
+}
+
+#[test]
+fn a_2_0_core_before_the_passenger_stops_reads_with_them() {
+    // The core 2.0 as it was before its stopping places said so: the platform naming one makes it one.
+    let mut doc = check_document(&case("the sample with its signalling")).unwrap();
+    let core = &mut doc["domains"]["core"];
+    core["schema"] = json!("sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877");
+    for h in core["collections"]["stoppingPlaces"].as_array_mut().unwrap() {
+        h.as_object_mut().unwrap().remove("passengerStop");
+    }
+    let checked = check_document(&doc).unwrap_or_else(|e| panic!("refused ({e})"));
+    assert_eq!(checked["domains"]["core"]["schema"], rail_across_doc::door::schema_hashes()["core"].as_str());
+    assert_eq!(
+        find(&checked["domains"]["core"]["collections"]["stoppingPlaces"], "hp-2")["passengerStop"],
+        true
+    );
+}
+
+mod platform_stops {
+    use rail_across_doc::layers::with_platform_stops;
+    use serde_json::{Value, json};
+
+    fn record(places: Value, platforms: Value) -> Value {
+        json!({ "id": "proj", "tracks": [], "switches": [], "platforms": platforms,
+            "signalling": { "fields": {}, "collections": { "stoppingPlaces": places } } })
+    }
+    fn place(id: &str, track: &str, a: f64, b: f64) -> Value {
+        json!({ "id": id, "at": { "anchor": "station", "trackId": track, "startStation": a, "endStation": b } })
+    }
+    fn places(r: &Value) -> &Vec<Value> {
+        r["signalling"]["collections"]["stoppingPlaces"].as_array().unwrap()
+    }
+    const P1: fn() -> Value = || json!({ "id": "p1", "trackId": "t1", "startStation": 100.0, "endStation": 240.0, "side": "left" });
+
+    #[test]
+    fn a_stopping_place_at_the_platform_is_detailed_as_a_passenger_stop() {
+        let r = with_platform_stops(
+            &record(json!([place("hp", "t1", 90.0, 200.0), place("other", "t2", 90.0, 200.0)]), json!([P1()])),
+            "p1",
+            Some("Bstg. 1"),
+        );
+        let ps = places(&r);
+        assert_eq!(ps.len(), 2, "none made: one was there");
+        assert_eq!(ps[0]["platformId"], "p1");
+        assert_eq!(ps[0]["passengerStop"], true);
+        assert_eq!(ps[0]["at"], place("hp", "t1", 90.0, 200.0)["at"], "its stretch as the Signalling-Tool set it");
+        assert!(ps[1].get("passengerStop").is_none());
+    }
+
+    #[test]
+    fn one_is_made_over_the_platform_where_none_is_at_it() {
+        let p = json!({ "id": "p1", "trackId": "t1", "startStation": 240.0, "endStation": 100.0, "status": "new" });
+        let r = with_platform_stops(&record(json!([]), json!([p])), "p1", Some("Bstg. 1"));
+        let h = &places(&r)[0];
+        assert_eq!(h["name"], "Bstg. 1");
+        assert_eq!(
+            h["at"],
+            json!({ "anchor": "station", "trackId": "t1", "startStation": 100.0, "endStation": 240.0 })
+        );
+        assert_eq!((h["platformId"].clone(), h["passengerStop"].clone()), (json!("p1"), json!(true)));
+        assert!(h["lifespan"]["from"].is_string(), "of the platform's stage");
+        // and again, nothing more
+        assert_eq!(with_platform_stops(&r, "p1", Some("Bstg. 1")), r);
+    }
+
+    #[test]
+    fn a_record_without_signalling_gets_the_stopping_place_in_it() {
+        let r = with_platform_stops(&json!({ "id": "proj", "tracks": [], "switches": [], "platforms": [P1()] }), "p1", None);
+        assert_eq!(places(&r).len(), 1);
+        assert_eq!(r["signalling"]["fields"], json!({}));
+    }
+
+    #[test]
+    fn a_platform_moved_away_or_deleted_leaves_its_stopping_places_for_every_train() {
+        let mut h = place("hp", "t1", 90.0, 200.0);
+        h["platformId"] = json!("p1");
+        h["passengerStop"] = json!(true);
+        let moved = json!({ "id": "p1", "trackId": "t1", "startStation": 500.0, "endStation": 640.0 });
+        let r = with_platform_stops(&record(json!([h.clone()]), json!([moved])), "p1", None);
+        assert_eq!(places(&r)[0], place("hp", "t1", 90.0, 200.0));
+        assert_eq!(places(&r).len(), 2, "one made where it is now");
+        let gone = with_platform_stops(&record(json!([h]), json!([])), "p1", None);
+        assert_eq!(places(&gone), &vec![place("hp", "t1", 90.0, 200.0)]);
+    }
+
+    #[test]
+    fn a_stopping_place_another_platform_names_stays_its() {
+        let mut h = place("hp", "t1", 90.0, 200.0);
+        h["platformId"] = json!("p0");
+        h["passengerStop"] = json!(true);
+        let p0 = json!({ "id": "p0", "trackId": "t1", "startStation": 80.0, "endStation": 200.0, "side": "right" });
+        let r = with_platform_stops(&record(json!([h.clone()]), json!([p0, P1()])), "p1", None);
+        assert_eq!(places(&r), &vec![h]);
+    }
 }

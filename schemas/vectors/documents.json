@@ -7,7 +7,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877",
+     "schema": "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -345,7 +345,7 @@
     },
     "core": {
      "version": "2.0",
-     "schema": "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877",
+     "schema": "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f",
      "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -358,7 +358,7 @@
     }
    }
   },
-  "hash": "sha256:9aadb304a88a1aabacc8e423c85f41b4ee0027543ab814d9ee1a2c2ac629311f"
+  "hash": "sha256:de3d30ccbdb8ba60e2da31a20cc89041a66c88672c37e8406e6f8007ea930271"
  },
  {
   "name": "the sample, carrying its schemas",
@@ -368,7 +368,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877",
+     "schema": "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -687,7 +687,7 @@
     }
    },
    "schemas": {
-    "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877": {
+    "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f": {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
      "$id": "core",
      "title": "Rail-Data-Core, domain core 2.0",
@@ -1511,7 +1511,7 @@
        }
       },
       "StoppingPlace": {
-       "description": "Where trains stop (Halteplatz): a stretch of one track, in a station on one of its tracks or at a platform, on the open line at a platform. The Signalling-Tool sets it (decision 0024); a platform names the stopping places at it (civil). Signals and detection points bound it; where one stands within it, a finding says so.",
+       "description": "Where trains stop (Halteplatz): a stretch of one track, in a station on one of its tracks or at a platform, on the open line at a platform — for every train. The Signalling-Tool sets it (decision 0024); the Civil-Tool makes or details one where it puts a platform: a passenger stop (passengerStop), named by the platform (civil). Signals and detection points bound it; where one stands within it, a finding says so.",
        "type": "object",
        "required": [
         "id",
@@ -1532,6 +1532,10 @@
         },
         "at": {
          "$ref": "#/$defs/TrackRange"
+        },
+        "passengerStop": {
+         "type": "boolean",
+         "description": "A passenger stop (Personenhalt): passengers board and alight here, at a platform. The Civil-Tool sets it where it puts a platform at the stopping place, which then names it (civil); without it nothing says that passengers board there."
         },
         "lifespan": {
          "$ref": "#/$defs/Lifespan"
@@ -1821,7 +1825,7 @@
     },
     "core": {
      "version": "2.0",
-     "schema": "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877",
+     "schema": "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f",
      "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -1834,7 +1838,7 @@
     }
    }
   },
-  "hash": "sha256:9aadb304a88a1aabacc8e423c85f41b4ee0027543ab814d9ee1a2c2ac629311f"
+  "hash": "sha256:de3d30ccbdb8ba60e2da31a20cc89041a66c88672c37e8406e6f8007ea930271"
  },
  {
   "name": "another format",
@@ -1844,7 +1848,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877",
+     "schema": "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -2174,7 +2178,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877",
+     "schema": "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -2504,7 +2508,7 @@
    "domains": {
     "core": {
      "version": "3.0",
-     "schema": "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877",
+     "schema": "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -2834,7 +2838,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877",
+     "schema": "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -3238,7 +3242,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877",
+     "schema": "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -3568,7 +3572,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877",
+     "schema": "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -3887,7 +3891,7 @@
     }
    },
    "schemas": {
-    "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877": {
+    "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f": {
      "$id": "core"
     },
     "sha256:0b73763db4b8ca57f56472f4b8aeef8a8b02369f4f8a9e3f2b4072480c48b1fb": {
@@ -4163,7 +4167,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877",
+     "schema": "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -4463,7 +4467,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877",
+     "schema": "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -4790,7 +4794,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877",
+     "schema": "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -5171,7 +5175,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877",
+     "schema": "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -5502,7 +5506,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877",
+     "schema": "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -5829,7 +5833,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877",
+     "schema": "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -6160,7 +6164,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877",
+     "schema": "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -6505,7 +6509,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877",
+     "schema": "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -6946,7 +6950,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877",
+     "schema": "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -7196,7 +7200,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877",
+     "schema": "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f",
      "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -7209,7 +7213,7 @@
     }
    }
   },
-  "hash": "sha256:8475414243dca3cf52acf8c22945756223807f77fe04d78ae190767bbe4558db"
+  "hash": "sha256:4bd1f1764f5bd99241d9b473abe7f05727f52f37e21671b810c8b6e27f78018b"
  },
  {
   "name": "the sample with its signalling",
@@ -7219,7 +7223,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877",
+     "schema": "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -7427,7 +7431,8 @@
          "trackId": "t2",
          "startStation": 0,
          "endStation": 140
-        }
+        },
+        "passengerStop": true
        }
       ]
      }
@@ -8057,13 +8062,13 @@
     },
     "core": {
      "version": "2.0",
-     "schema": "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877",
+     "schema": "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f",
      "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
       "kmLines": "sha256:7a0eb47d89ffa24b1917d39c8eab8707f820c9b6bceb81edf5dddcf52ead6457",
       "operationalPoints": "sha256:6a6eb5b21cdb3c39939da851281a7a8b9c968d36cea93d44d383d292b33beb34",
-      "stoppingPlaces": "sha256:74d0ecd0dd5493c8be6f74e74b225c3257e97d820fb734a8bfecffab6917aad3",
+      "stoppingPlaces": "sha256:8662d4bdebd487d290e16ca668b4682e29bc455d67f1a9f5eff91f59cd130f55",
       "switches": "sha256:2b44461e52775cdabdc9c02e42115f9441b311b4240d09dca153d5683a4a4da5",
       "tracks": "sha256:c210042920f2702be7c34786b7e9b01dcceee6fe893c5c05ea8f80f2cde7dd15"
      }
@@ -8090,7 +8095,7 @@
     }
    }
   },
-  "hash": "sha256:52c5b37375e87fdd8621bcd74fe0805d4ccf56bddce3d136e5c9ae8fa9653fcb"
+  "hash": "sha256:06de7af98fb8d15fbb25feb1f5c84a3be3b58f96c7b5c6c9472d79536fe3ed23"
  },
  {
   "name": "the sample with its signalling, carrying its schemas",
@@ -8100,7 +8105,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877",
+     "schema": "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -8308,7 +8313,8 @@
          "trackId": "t2",
          "startStation": 0,
          "endStation": 140
-        }
+        },
+        "passengerStop": true
        }
       ]
      }
@@ -8919,7 +8925,7 @@
     }
    },
    "schemas": {
-    "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877": {
+    "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f": {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
      "$id": "core",
      "title": "Rail-Data-Core, domain core 2.0",
@@ -9743,7 +9749,7 @@
        }
       },
       "StoppingPlace": {
-       "description": "Where trains stop (Halteplatz): a stretch of one track, in a station on one of its tracks or at a platform, on the open line at a platform. The Signalling-Tool sets it (decision 0024); a platform names the stopping places at it (civil). Signals and detection points bound it; where one stands within it, a finding says so.",
+       "description": "Where trains stop (Halteplatz): a stretch of one track, in a station on one of its tracks or at a platform, on the open line at a platform — for every train. The Signalling-Tool sets it (decision 0024); the Civil-Tool makes or details one where it puts a platform: a passenger stop (passengerStop), named by the platform (civil). Signals and detection points bound it; where one stands within it, a finding says so.",
        "type": "object",
        "required": [
         "id",
@@ -9764,6 +9770,10 @@
         },
         "at": {
          "$ref": "#/$defs/TrackRange"
+        },
+        "passengerStop": {
+         "type": "boolean",
+         "description": "A passenger stop (Personenhalt): passengers board and alight here, at a platform. The Civil-Tool sets it where it puts a platform at the stopping place, which then names it (civil); without it nothing says that passengers board there."
         },
         "lifespan": {
          "$ref": "#/$defs/Lifespan"
@@ -11306,13 +11316,13 @@
     },
     "core": {
      "version": "2.0",
-     "schema": "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877",
+     "schema": "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f",
      "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
       "kmLines": "sha256:7a0eb47d89ffa24b1917d39c8eab8707f820c9b6bceb81edf5dddcf52ead6457",
       "operationalPoints": "sha256:6a6eb5b21cdb3c39939da851281a7a8b9c968d36cea93d44d383d292b33beb34",
-      "stoppingPlaces": "sha256:74d0ecd0dd5493c8be6f74e74b225c3257e97d820fb734a8bfecffab6917aad3",
+      "stoppingPlaces": "sha256:8662d4bdebd487d290e16ca668b4682e29bc455d67f1a9f5eff91f59cd130f55",
       "switches": "sha256:2b44461e52775cdabdc9c02e42115f9441b311b4240d09dca153d5683a4a4da5",
       "tracks": "sha256:c210042920f2702be7c34786b7e9b01dcceee6fe893c5c05ea8f80f2cde7dd15"
      }
@@ -11339,7 +11349,7 @@
     }
    }
   },
-  "hash": "sha256:52c5b37375e87fdd8621bcd74fe0805d4ccf56bddce3d136e5c9ae8fa9653fcb"
+  "hash": "sha256:06de7af98fb8d15fbb25feb1f5c84a3be3b58f96c7b5c6c9472d79536fe3ed23"
  },
  {
   "name": "signalling depending on nothing",
@@ -11349,7 +11359,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877",
+     "schema": "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -11557,7 +11567,8 @@
          "trackId": "t2",
          "startStation": 0,
          "endStation": 140
-        }
+        },
+        "passengerStop": true
        }
       ]
      }
@@ -12176,7 +12187,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877",
+     "schema": "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -12384,7 +12395,8 @@
          "trackId": "t2",
          "startStation": 0,
          "endStation": 140
-        }
+        },
+        "passengerStop": true
        }
       ]
      }
@@ -13005,7 +13017,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877",
+     "schema": "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -13213,7 +13225,8 @@
          "trackId": "t2",
          "startStation": 0,
          "endStation": 140
-        }
+        },
+        "passengerStop": true
        }
       ]
      }
@@ -13843,13 +13856,13 @@
     },
     "core": {
      "version": "2.0",
-     "schema": "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877",
+     "schema": "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f",
      "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
       "kmLines": "sha256:7a0eb47d89ffa24b1917d39c8eab8707f820c9b6bceb81edf5dddcf52ead6457",
       "operationalPoints": "sha256:6a6eb5b21cdb3c39939da851281a7a8b9c968d36cea93d44d383d292b33beb34",
-      "stoppingPlaces": "sha256:74d0ecd0dd5493c8be6f74e74b225c3257e97d820fb734a8bfecffab6917aad3",
+      "stoppingPlaces": "sha256:8662d4bdebd487d290e16ca668b4682e29bc455d67f1a9f5eff91f59cd130f55",
       "switches": "sha256:2b44461e52775cdabdc9c02e42115f9441b311b4240d09dca153d5683a4a4da5",
       "tracks": "sha256:c210042920f2702be7c34786b7e9b01dcceee6fe893c5c05ea8f80f2cde7dd15"
      }
@@ -13876,7 +13889,7 @@
     }
    }
   },
-  "hash": "sha256:52c5b37375e87fdd8621bcd74fe0805d4ccf56bddce3d136e5c9ae8fa9653fcb"
+  "hash": "sha256:06de7af98fb8d15fbb25feb1f5c84a3be3b58f96c7b5c6c9472d79536fe3ed23"
  },
  {
   "name": "signalling without its overlaps",
@@ -13886,7 +13899,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877",
+     "schema": "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -14094,7 +14107,8 @@
          "trackId": "t2",
          "startStation": 0,
          "endStation": 140
-        }
+        },
+        "passengerStop": true
        }
       ]
      }
@@ -14686,7 +14700,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877",
+     "schema": "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -14894,7 +14908,8 @@
          "trackId": "t2",
          "startStation": 0,
          "endStation": 140
-        }
+        },
+        "passengerStop": true
        }
       ]
      }
@@ -15469,7 +15484,8 @@
          "trackId": "t2",
          "startStation": 0,
          "endStation": 140
-        }
+        },
+        "passengerStop": true
        }
       ]
      }
@@ -15540,7 +15556,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877",
+     "schema": "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -15748,7 +15764,8 @@
          "trackId": "t2",
          "startStation": 0,
          "endStation": 140
-        }
+        },
+        "passengerStop": true
        }
       ]
      }
@@ -16373,7 +16390,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877",
+     "schema": "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -16581,7 +16598,8 @@
          "trackId": "t2",
          "startStation": 0,
          "endStation": 140
-        }
+        },
+        "passengerStop": true
        }
       ]
      }
@@ -17228,13 +17246,13 @@
     },
     "core": {
      "version": "2.0",
-     "schema": "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877",
+     "schema": "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f",
      "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
       "kmLines": "sha256:7a0eb47d89ffa24b1917d39c8eab8707f820c9b6bceb81edf5dddcf52ead6457",
       "operationalPoints": "sha256:6a6eb5b21cdb3c39939da851281a7a8b9c968d36cea93d44d383d292b33beb34",
-      "stoppingPlaces": "sha256:74d0ecd0dd5493c8be6f74e74b225c3257e97d820fb734a8bfecffab6917aad3",
+      "stoppingPlaces": "sha256:8662d4bdebd487d290e16ca668b4682e29bc455d67f1a9f5eff91f59cd130f55",
       "switches": "sha256:2b44461e52775cdabdc9c02e42115f9441b311b4240d09dca153d5683a4a4da5",
       "tracks": "sha256:c210042920f2702be7c34786b7e9b01dcceee6fe893c5c05ea8f80f2cde7dd15"
      }
@@ -17262,7 +17280,7 @@
     }
    }
   },
-  "hash": "sha256:46ea9cf116ab5c7f97a0644568061fa1cbbc09833fec07b1348d60fc9a3c6bd5"
+  "hash": "sha256:3306e6db765e944ca2916e3bf22d9bbc6d23cc9000b15532fdb51edfbda431aa"
  },
  {
   "name": "the sample with its electrification",
@@ -17272,7 +17290,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877",
+     "schema": "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -17633,7 +17651,7 @@
     },
     "core": {
      "version": "2.0",
-     "schema": "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877",
+     "schema": "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f",
      "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -17657,7 +17675,7 @@
     }
    }
   },
-  "hash": "sha256:501f5c8dd71f2b4d833101e9529163402d2687469784944f6227526ee9c7d512"
+  "hash": "sha256:4f1d1c68da0ac3af792eaa0ab74faba6b17cf58efbdeef5e6abeff59d025667b"
  },
  {
   "name": "an electrification of no system",
@@ -17667,7 +17685,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877",
+     "schema": "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -18019,7 +18037,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877",
+     "schema": "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -18358,7 +18376,7 @@
     },
     "core": {
      "version": "2.0",
-     "schema": "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877",
+     "schema": "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f",
      "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
      "collections": {
       "endMarks": "sha256:f916fe119da35955671647cc01b5c3c6b4247bc796729eb4f17cef2fa9ac66d9",
@@ -18371,7 +18389,7 @@
     }
    }
   },
-  "hash": "sha256:40592c463144255613d7f5615dc28d034e17af069c949daf218d7eee07d3f9c5"
+  "hash": "sha256:5de04d2bad8ef7328543a57a2f34c3fabc8775f06c4217401c6c8ab8928fe7b2"
  },
  {
   "name": "infra-data 1.0: the sample",
@@ -18718,7 +18736,7 @@
     },
     "core": {
      "version": "2.0",
-     "schema": "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877",
+     "schema": "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f",
      "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -18731,7 +18749,7 @@
     }
    }
   },
-  "hash": "sha256:9aadb304a88a1aabacc8e423c85f41b4ee0027543ab814d9ee1a2c2ac629311f"
+  "hash": "sha256:de3d30ccbdb8ba60e2da31a20cc89041a66c88672c37e8406e6f8007ea930271"
  },
  {
   "name": "infra-data 1.0: the sample with its signalling",
@@ -19576,7 +19594,7 @@
     },
     "core": {
      "version": "2.0",
-     "schema": "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877",
+     "schema": "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f",
      "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -19609,7 +19627,7 @@
     }
    }
   },
-  "hash": "sha256:63d28c0bf745afde22d11269acd8733326aa84f2793070cf80cf1e0b6d247bf7"
+  "hash": "sha256:5a279ee9131bba31c20c5c5588b3e1fe69c0b771ede9aa2f62c09070e4c587c6"
  },
  {
   "name": "infra-data 1.0: a stopping place at a platform, a boundary marked by it",
@@ -20458,13 +20476,13 @@
     },
     "core": {
      "version": "2.0",
-     "schema": "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877",
+     "schema": "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f",
      "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
       "kmLines": "sha256:7a0eb47d89ffa24b1917d39c8eab8707f820c9b6bceb81edf5dddcf52ead6457",
       "operationalPoints": "sha256:6a6eb5b21cdb3c39939da851281a7a8b9c968d36cea93d44d383d292b33beb34",
-      "stoppingPlaces": "sha256:74d0ecd0dd5493c8be6f74e74b225c3257e97d820fb734a8bfecffab6917aad3",
+      "stoppingPlaces": "sha256:8662d4bdebd487d290e16ca668b4682e29bc455d67f1a9f5eff91f59cd130f55",
       "switches": "sha256:2b44461e52775cdabdc9c02e42115f9441b311b4240d09dca153d5683a4a4da5",
       "tracks": "sha256:c210042920f2702be7c34786b7e9b01dcceee6fe893c5c05ea8f80f2cde7dd15"
      }
@@ -20491,7 +20509,7 @@
     }
    }
   },
-  "hash": "sha256:4e217c89056228087ab8c508e07e2af3c522f0c053688d0283178dff7417d55c"
+  "hash": "sha256:c3d48bde8d8a654f6d06708bd589b3ba8ef07414ae63385a775e1108f87f1afc"
  },
  {
   "name": "infra-data 1.0: a boundary marked by a platform no stopping place is at",
@@ -21339,13 +21357,13 @@
     },
     "core": {
      "version": "2.0",
-     "schema": "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877",
+     "schema": "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f",
      "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
       "kmLines": "sha256:7a0eb47d89ffa24b1917d39c8eab8707f820c9b6bceb81edf5dddcf52ead6457",
       "operationalPoints": "sha256:6a6eb5b21cdb3c39939da851281a7a8b9c968d36cea93d44d383d292b33beb34",
-      "stoppingPlaces": "sha256:d939896309eb9f42a28e6bc08a27dd049070395762509c34a29a94252bafd7b5",
+      "stoppingPlaces": "sha256:c484a222daed844a4ba48d5cdea8f96c6daa1e02cca1cd1e8e3d89f75cd696de",
       "switches": "sha256:2b44461e52775cdabdc9c02e42115f9441b311b4240d09dca153d5683a4a4da5",
       "tracks": "sha256:c210042920f2702be7c34786b7e9b01dcceee6fe893c5c05ea8f80f2cde7dd15"
      }
@@ -21372,7 +21390,7 @@
     }
    }
   },
-  "hash": "sha256:fe09bd7f8c8186e3f165601a7061dfdd0abeac641439a62c76bf1a4a9f33d3de"
+  "hash": "sha256:3b301bf34cbec8457819367912c98d790dfb053ef32a115cc01924d4b019de97"
  },
  {
   "name": "infra-data 1.0: core as written before the design speed took its name",
@@ -21719,7 +21737,7 @@
     },
     "core": {
      "version": "2.0",
-     "schema": "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877",
+     "schema": "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f",
      "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -21732,7 +21750,7 @@
     }
    }
   },
-  "hash": "sha256:9aadb304a88a1aabacc8e423c85f41b4ee0027543ab814d9ee1a2c2ac629311f"
+  "hash": "sha256:de3d30ccbdb8ba60e2da31a20cc89041a66c88672c37e8406e6f8007ea930271"
  },
  {
   "name": "infra-data 1.0: a domain this build does not read",
@@ -22737,7 +22755,7 @@
     },
     "core": {
      "version": "2.0",
-     "schema": "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877",
+     "schema": "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f",
      "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -22750,6 +22768,6 @@
     }
    }
   },
-  "hash": "sha256:6661dea5aab94e16cd50972085d5d80d2f7ccc5027b6b01098772b9c02799c44"
+  "hash": "sha256:aa204319da8b92b231fd279209be3b858bd4c1b0692155ab961a683e3430b5a3"
  }
 ]

@@ -248,13 +248,15 @@ export namespace Core {
     rl100?: Text
     uic?: Label
   }
-  /** Where trains stop (Halteplatz): a stretch of one track, in a station on one of its tracks or at a platform, on the open line at a platform. The Signalling-Tool sets it (decision 0024); a platform names the stopping places at it (civil). Signals and detection points bound it; where one stands within it, a finding says so. */
+  /** Where trains stop (Halteplatz): a stretch of one track, in a station on one of its tracks or at a platform, on the open line at a platform — for every train. The Signalling-Tool sets it (decision 0024); the Civil-Tool makes or details one where it puts a platform: a passenger stop (passengerStop), named by the platform (civil). Signals and detection points bound it; where one stands within it, a finding says so. */
   export type StoppingPlace = {
     id: Id
     name?: Text
     /** The station it is of; without one it lies on the open line. */
     operationalPointId?: Ref
     at: TrackRange
+    /** A passenger stop (Personenhalt): passengers board and alight here, at a platform. The Civil-Tool sets it where it puts a platform at the stopping place, which then names it (civil); without it nothing says that passengers board there. */
+    passengerStop?: boolean
     lifespan?: Lifespan
   }
 }

@@ -10,6 +10,7 @@ import {
   addElementToTrack, redo, canRedo, undoStep, redoStep, hiddenTracks, setTracksHidden, subscribe,
   hiddenKmLines, setKmLinesHidden,
   setTrackHeights, setHeightsForTracks, setSwitchDesignMode, switchDesignMode, addDependentPoint, commitReconnect, loadPlatforms, commitImport, historySteps, travelHistory,
+  savePlatform, updatePlatform, deletePlatform,
 } from './storage'
 import { newBufferStop, newBoundary } from '@rail-across/core/track'
 import { endPointCurvedUtm, endPointStraightUtm } from '@rail-across/core/src/geometry/elementUtils.js'
@@ -654,5 +655,29 @@ describe('a vertical curve whose length counts (decision 266)', () => {
     openProject({ id: 'rv', tracks: [track([{ station: 0, z: 100 }, { station: 1000, z: 101, rv: 10000 }, { station: 2000, z: 100 }])] })
     setTrackHeights('g', heights().map((p, i) => (i === 2 ? { ...p, z: 99 } : p)))
     expect(heights()[1].rv).toBe(10000)
+  })
+})
+
+describe('a platform and the stopping places at it (decision 0025)', () => {
+  const stops = () => currentProject().signalling?.collections?.stoppingPlaces ?? []
+  const platform = (from, to) => ({ id: 'pf1', trackId: 't1', startStation: from, endStation: to, side: 'left' })
+
+  it('makes one over it where none is at it, a passenger stop it names, in the step that puts it', () => {
+    openProject({ id: 'p1', tracks: [{ id: 't1', elements: [] }], switches: [] })
+    savePlatform(platform(10, 150), { stopName: 'Bstg. 1' })
+    expect(stops()).toMatchObject([{ name: 'Bstg. 1', platformId: 'pf1', passengerStop: true, at: { trackId: 't1', startStation: 10, endStation: 150 } }])
+    undo()
+    expect(stops()).toEqual([])
+  })
+
+  it('details the one the Signalling-Tool set there, moved away leaves it for every train', () => {
+    const hp = { id: 'hp', at: { anchor: 'station', trackId: 't1', startStation: 0, endStation: 120 } }
+    openProject({ id: 'p1', tracks: [{ id: 't1', elements: [] }], switches: [], signalling: { fields: {}, collections: { stoppingPlaces: [hp] } } })
+    savePlatform(platform(10, 150))
+    expect(stops()).toEqual([{ ...hp, platformId: 'pf1', passengerStop: true }])
+    updatePlatform(platform(300, 400))
+    expect(stops()[0]).toEqual(hp)
+    deletePlatform('pf1')
+    expect(stops().map(h => h.platformId ?? null)).toEqual([null, null])
   })
 })

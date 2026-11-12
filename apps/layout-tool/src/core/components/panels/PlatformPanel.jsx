@@ -49,6 +49,9 @@ const ringFC = (ring, type) => ring
  * The height is stated over top of rail; what the form shows absolutely is read
  * off the track's own gradient at the platform's ends and never stored.
  *
+ * Put or moved, it makes the stopping place at it a passenger stop in the core,
+ * or one over it where none is at it yet (decision 0025; storage, savePlatform).
+ *
  * An existing platform can be picked from the list to be edited or deleted; the
  * record keeps only its plane data (track, stations, side, height), and the
  * polygon on the map is derived from it (R5.5: the fields in utils/track/platformForm).
@@ -106,8 +109,10 @@ export default function PlatformPanel() {
     // The polygon rides along in memory so the map can draw it right away; it is
     // stripped on persist and rebuilt from the stations on load.
     const record = { id: editing.id ?? generateId(), ...draft, coords: ring }
-    if (editing.id) updatePlatform(record)
-    else savePlatform(record)
+    // Where no stopping place is at it yet, one is made over it, named as the Signalling-Tool names one.
+    const stopName = t('platform_stop_name', { track: track?.name ?? '' })
+    if (editing.id) updatePlatform(record, { stopName })
+    else savePlatform(record, { stopName })
     reset()
   }
 
@@ -150,6 +155,7 @@ export default function PlatformPanel() {
             onChange={e => set('code', e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, PLATFORM_CODE_MAX))} />
         </div>
       </FormSection>
+      <p>{t('platform_stop_hint')}</p>
       {!valid && <p className="form-error">{t('platform_error_range')}</p>}
       <button className="ui-btn ui-btn-primary ui-btn-block mt-8" onClick={() => { set('start', ''); set('end', ''); setPicking('start') }}>
         {t('platform_repick')}

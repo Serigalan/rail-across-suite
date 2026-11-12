@@ -83,9 +83,12 @@ export function snappedStation(domain, trackId, station, reach, t) {
   return near.length ? round(near.sort((a, b) => a.d - b.d)[0].station) : Math.round(station * 10) / 10
 }
 
-/** A new stopping place on a stretch of a track: of a station, at a platform, or both. */
-export const newStoppingPlace = ({ name, operationalPointId, platformId, trackId, from, to }) => Object.fromEntries(Object.entries({
-  id: newId(), name, operationalPointId, platformId, at: { anchor: 'station', trackId, startStation: from, endStation: to },
+/**
+ * A new stopping place on a stretch of a track, of a station or of the open
+ * line — for every train: the platform at it the Civil-Tool sets (decision 0025).
+ */
+export const newStoppingPlace = ({ name, operationalPointId, trackId, from, to }) => Object.fromEntries(Object.entries({
+  id: newId(), name, operationalPointId, at: { anchor: 'station', trackId, startStation: from, endStation: to },
 }).filter(([, v]) => v !== undefined && v !== null && v !== ''))
 
 /** The stopping places of a station — or, `pointId` null, those of the open line. */

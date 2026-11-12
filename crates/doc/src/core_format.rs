@@ -110,7 +110,7 @@ pub fn default_stages(project_id: &str) -> Value {
     ])
 }
 
-fn lifespan_of(status: Option<&Value>, final_id: &str) -> Value {
+pub(crate) fn lifespan_of(status: Option<&Value>, final_id: &str) -> Value {
     match status.and_then(Value::as_str) {
         Some("new") => json!({ "from": final_id }),
         Some("removal") => json!({ "to": final_id }),
@@ -473,7 +473,10 @@ pub fn record_to_document(record: &Value, schema_hashes: &HashMap<&str, String>)
     // boundary marked by a platform is marked by the stopping place at it, and the
     // platforms (civil) name the stopping places at them.
     let mut signalling = get(record, "signalling").map(obj);
-    let mut sig_cols = signalling.as_ref().map(|d| obj(d.get("collections").unwrap_or(&Value::Null))).unwrap_or_default();
+    let mut sig_cols = signalling
+        .as_ref()
+        .map(|d| obj(d.get("collections").unwrap_or(&Value::Null)))
+        .unwrap_or_default();
     let mut stopping: Vec<Value> = sig_cols.get("stoppingPlaces").and_then(Value::as_array).cloned().unwrap_or_default();
     layers::boundaries_by_stopping_place(&mut sig_cols, &mut stopping, &core_platforms);
     sig_cols.shift_remove("stoppingPlaces");

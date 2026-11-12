@@ -128,6 +128,8 @@ describe.skipIf(!SERVER_BIN)('the data steps', () => {
 
 // An infra-data 1.0 document as the core wrote it before 2.0 (schemas/vectors), frozen.
 const BEFORE_2_0 = JSON.parse(readFileSync(new URL('../../schemas/vectors/infra-data-1.0.json', import.meta.url), 'utf8')).documents
+// The same documents as infra-data-2.0 reads them now (schemas/vectors).
+const NOW_2_0 = Object.fromEntries(JSON.parse(readFileSync(new URL('../../schemas/vectors/documents.json', import.meta.url), 'utf8')).map(c => [c.name, c.document]))
 
 /** A database with one project of two revisions, closed again: its file and the revisions' ids. */
 async function twoRevisions() {
@@ -201,6 +203,26 @@ describe.skipIf(!SERVER_BIN)('the step to infra-data-2.0 (decision 0025)', () =>
     const bea = await signIn(ctx.app, 'bea')
     const head = (await bea('GET', `/api/variants/${made.variantId}/head`)).json()
     expect(head.payload).toMatchObject({ format: 'infra-data', version: '2.0' })
+  })
+})
+
+describe.skipIf(!SERVER_BIN)('the passenger stops in the core (decision 0025)', () => {
+  it('makes a stopping place a platform names a passenger stop in the revisions kept before, once, in place', async () => {
+    const { file, made } = await twoRevisions()
+    const doc = structuredClone(NOW_2_0['the sample with its signalling'])
+    const now = doc.domains.core.schema
+    // As a server before it kept the sample: the core's schema of before, no passenger stops.
+    doc.domains.core.schema = 'sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877'
+    for (const h of doc.domains.core.collections.stoppingPlaces) delete h.passengerStop
+    const db = new Database(file)
+    db.prepare('UPDATE revision SET schema_version = 5, payload = ? WHERE id = ?').run(gzipSync(JSON.stringify(doc)), made.revisionId)
+    db.prepare("DELETE FROM data_migration WHERE name = '0025-passenger-stops'").run()
+    db.close()
+    expect(cli(file, ['migrate'])).toMatch(/data step 0025-passenger-stops: 1 Revisionen umgeschrieben, 0 nicht lesbar/)
+    const { docs: [after] } = payloads(file)
+    expect(after.domains.core.schema).toBe(now)
+    expect(after.domains.core.collections.stoppingPlaces.filter(h => h.passengerStop).map(h => h.id)).toEqual(['hp-2'])
+    expect(cli(file, ['migrate'])).toBe('')
   })
 })
 

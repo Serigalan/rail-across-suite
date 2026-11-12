@@ -98,6 +98,8 @@ const CORE_FIRST: &str = "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b9540
 const CORE_SECOND: &str = "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19";
 const CORE_THIRD: &str = "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4";
 const LAYOUT_FIRST: &str = "sha256:b2280dcf6cfe779e148b6c402ac46eb4ff1e8d96b55e6e3abcb370ef48ff1f1b";
+/// Core 2.0 before its stopping places said whether they are passenger stops.
+const CORE_2_FIRST: &str = "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877";
 /// The domains of infra-data 1.0, with the schema each had last.
 const BEFORE: &[(&str, &str)] = &[("core", CORE_THIRD), ("layout", LAYOUT_FIRST), ("signalling", SIGNALLING_SEVENTH)];
 
@@ -340,6 +342,33 @@ fn migrated_within_1_0(doc: &Value) -> Value {
     Value::Object(out)
 }
 
+/// An infra-data 2.0 document with its core of an earlier schema of 2.0 brought
+/// to this build's: a stopping place a platform names is a passenger stop.
+fn migrated_within_2_0(doc: &Value) -> Value {
+    let Some(core) = doc["domains"]
+        .get("core")
+        .filter(|c| c.get("schema").and_then(Value::as_str) == Some(CORE_2_FIRST))
+    else {
+        return doc.clone();
+    };
+    let platforms = doc["domains"].get("civil").map(|c| list(&c["collections"], "platforms")).unwrap_or_default();
+    let mut cols = obj(core.get("collections").unwrap_or(&Value::Null));
+    if let Some(Value::Array(places)) = cols.get("stoppingPlaces").cloned() {
+        cols.insert("stoppingPlaces".into(), Value::Array(layers::passenger_stops(&places, &platforms)));
+    }
+    let mut d = obj(&doc["domains"]);
+    d.insert("core".into(), with_schema(core, &schema_hashes()["core"], Some(cols)));
+    let mut out = obj(doc);
+    out.insert("domains".into(), Value::Object(d));
+    if let Some(Value::Object(carried)) = doc.get("schemas").filter(|s| s.get(CORE_2_FIRST).is_some()) {
+        let mut carried = carried.clone();
+        carried.shift_remove(CORE_2_FIRST);
+        carried.insert(schema_hashes()["core"].clone(), schema_of("core").cloned().unwrap_or(Value::Null));
+        out.insert("schemas".into(), Value::Object(carried));
+    }
+    Value::Object(out)
+}
+
 fn sorted_by_id(mut items: Vec<Value>) -> Vec<Value> {
     crate::core_format::by_id(&mut items);
     items
@@ -463,7 +492,11 @@ pub fn check_document(given: &Value) -> Result<Value> {
         let within = migrated_within_1_0(given);
         let wrong: Vec<String> = BEFORE
             .iter()
-            .filter(|(name, hash)| within["domains"].get(*name).is_some_and(|d| d.get("schema").and_then(Value::as_str) != Some(*hash)))
+            .filter(|(name, hash)| {
+                within["domains"]
+                    .get(*name)
+                    .is_some_and(|d| d.get("schema").and_then(Value::as_str) != Some(*hash))
+            })
             .map(|(name, _)| format!("/domains/{name}/schema: is not the schema of {name} 1.0"))
             .collect();
         if !wrong.is_empty() {
@@ -471,7 +504,7 @@ pub fn check_document(given: &Value) -> Result<Value> {
         }
         to_2_0(&within)
     } else {
-        given.clone()
+        migrated_within_2_0(given)
     };
     if let Some(Value::Object(schemas)) = doc.get("schemas") {
         for (hash, schema) in schemas {

@@ -35,3 +35,13 @@ export const renamedStation = (record, id, { name, uic } = {}) =>
 
 /** The two stages of a project that has none of its own: existing and final, ids drawn from the project's. */
 export const defaultStages = (projectId) => viaNative('document.defaultStages', projectId)
+
+/**
+ * The record with the stopping places at the platform `platformId` as the
+ * Civil-Tool sets them where it puts, moves or deletes a platform (decision
+ * 0025): those at it passenger stops it names, one over it called `name` where
+ * none is at it yet, those no longer at it neither — never one deleted, they
+ * are for every train (crates/doc, layers).
+ */
+export const withPlatformStops = (record, platformId, { name } = {}) =>
+  viaNative('document.withPlatformStops', { record, platformId, ...(name ? { name } : {}) })

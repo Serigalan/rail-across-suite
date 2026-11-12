@@ -271,6 +271,15 @@ Each step answers a question of its own and is of use without the next.
   timetable, the table of headways, the rates held against the bounds of UIC Code 406 — its recommended rates by
   kind of line and period, which a study may change —, one variant or stage beside another. *Done when* the compressed occupancy of a
   reference timetable is the one worked out by hand, and two stages of a project stand beside each other.
+  *Done:* `crates/capacity` in the core's module — the minimum headway of two trains, a stretch compressed in the
+  order its trains run (occupancy time, rate with and without additional times, the trains that set it), how long
+  each track and section of a station is held, UIC 406's bounds —; `@rail-across/capacity` — a variant at a stage,
+  the stretches proposed from where trains overtake, cross, begin or end —; the Kapazitäts-Sim (`apps/capacity-sim/`,
+  `/capacity/`, the start page's tile): a timetable run over a variant at a stage, its stretches with occupancy
+  against the bound, the compressed and the timetabled blocking time stairs, the headways by kind, the stations'
+  tracks, another variant or stage beside it; reference case A's hour compressed by hand
+  ([docs/reference-cases](docs/reference-cases/a-two-track-line.md)). *Next:* the occupancy of a station's routes
+  as UIC 406 compresses a node, the stretches kept by their places (a study, O5).
 - **K2 — Free train paths and saturation.** A train of a kind, a formation and a way laid into a timetable at the
   first departure in a window at which it conflicts with none — its stairs moved in time against the others';
   a stretch saturated with such trains, in a given mix, until none fits or the rate reaches its bound: what a
@@ -418,7 +427,7 @@ Signalling-Tool's next, phase 3), neutral sections (with the catenary), anything
 2. **K0** — the blocking time as the format gives it; every later figure rests on it. *Done*, but the operation's
    sight time and reference cases B and C.
 3. **O1, O2** — the operations on their format before anything new is put into them. *Done.*
-4. **K1** — the first figures, from what is there.
+4. **K1** — the first figures, from what is there. *Done*, but a station's routes compressed as a node.
 5. **I3** — the running and blocking times read the railway's additions. *Done* ahead of its place, but holding a
    train back at a boundary.
 6. **O3, O4** — formations, connections and turnarounds.

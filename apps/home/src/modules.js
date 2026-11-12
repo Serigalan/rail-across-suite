@@ -22,7 +22,10 @@ export const SIMULATIONS = [
     id: 'timetable', route: 'timetable', available: true, phase: 4,
     apps: [{ id: 'timetables', path: 'timetable/' }],
   },
-  { id: 'capacitySim', route: 'capacity-sim', available: false, phase: 4 },
+  {
+    id: 'capacitySim', route: 'capacity-sim', available: true, phase: 4,
+    apps: [{ id: 'capacity', path: 'capacity/' }],
+  },
   { id: 'constructionSim', route: 'construction-sim', available: false, phase: 5 },
 ]
 

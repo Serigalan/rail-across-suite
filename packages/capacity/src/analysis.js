@@ -40,15 +40,16 @@ export function headwayTable(headways) {
 /**
  * A stretch compressed after UIC Code 406 over the period [from, to): what
  * the crate gives (the trains compressed, the occupancy time, the rates, the
- * trains that set it) with `headways` by kind and `bound`, the recommended
- * rate for `line`.
+ * trains that set it) with `headways` by kind, `bound`, the recommended
+ * rate for `line`, and `input`, the trains as they run there (their blocks
+ * with where each lies on the stretch, to draw them).
  */
 export function analyseStretch(stretch, trains, runs, { from, to, additional = {}, line = 'mixed' } = {}) {
   const input = trainsOnStretch(stretch, trains, runs)
   const compressed = callNative('capacity.compress', { trains: input, from, to, additional })
   const inPeriod = input.filter(t => t.at >= from && t.at < to)
   const headways = headwayTable(callNative('capacity.headways', { trains: inPeriod }))
-  return { ...compressed, headways, bound: boundOf(line, to - from) }
+  return { ...compressed, headways, bound: boundOf(line, to - from), input: inPeriod }
 }
 
 /** How long each track and track section of a station is held over the period [from, to): [{ resource, held, rate, trains }]. */

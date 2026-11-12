@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- The Kapazitäts-Sim's mark: a gauge over the track — how far the line is filled.
+       Small (a tab) as drawn; from 48 px on with the gauge's marks, in the second blue. -->
+  <style>
+    .detail { display: none }
+    @media (min-width: 48px) { .detail { display: inline } }
+  </style>
+  <rect width="200" height="200" rx="42" fill="#303383"/>
+  <path class="detail" d="M53.4 79.8L61.8 86.1M100 53.8V64.3M146.6 79.8L138.2 86.1" fill="none" stroke="#8d8fbb" stroke-width="8" stroke-linecap="round"/>
+  <g fill="none" stroke="#ffffff" stroke-width="14" stroke-linecap="round">
+    <path d="M37 117A63 63 0 0 1 163 117"/>
+    <path d="M100 117L133.6 81.3"/>
+    <path d="M21 146H179"/>
+  </g>
+  <circle cx="100" cy="117" r="12" fill="#ffffff"/>
+</svg>

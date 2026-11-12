@@ -49,9 +49,20 @@ function resourcesOf(block) {
   return (block.stretches ?? []).map(s => ({ track: s.trackId, lo: s.lo, hi: s.hi }))
 }
 
-const asTrain = (train, at, blocks) => ({
+/** Where a block lies on a stretch from `lo` to `hi` along the train's way, as fractions of it from its first place. */
+const spanOf = (b, lo, hi, reversed) => {
+  const f = (x) => Math.min(1, Math.max(0, (x - lo) / (hi - lo || 1)))
+  const [a, c] = [f(b.from), f(b.reach ?? b.to)]
+  return reversed ? [1 - c, 1 - a] : [a, c]
+}
+
+const asTrain = (train, at, blocks, place = null) => ({
   id: train.id, kind: String(train.category ?? '').trim(), at,
-  blocks: blocks.map(b => ({ begin: b.begin, end: b.end, resources: resourcesOf(b) })),
+  ...(place ? { reversed: place.reversed } : {}),
+  blocks: blocks.map(b => ({
+    begin: b.begin, end: b.end, resources: resourcesOf(b),
+    ...(place ? { span: spanOf(b, place.lo, place.hi, place.reversed) } : {}),
+  })),
 })
 
 /**
@@ -70,7 +81,8 @@ export function trainsOnStretch(stretch, trains, runs) {
     const [first, second] = a.offset <= b.offset ? [a, b] : [b, a]
     const blocks = run.blocks.filter(bl => Math.min(bl.reach ?? bl.to, second.offset) - Math.max(bl.from, first.offset) > 1)
     if (!blocks.length) continue
-    out.push(asTrain(train, first.departure ?? first.arrival, blocks))
+    // `span`, `reversed`: where each block lies on the stretch, from its `from` place — for drawing it
+    out.push(asTrain(train, first.departure ?? first.arrival, blocks, { lo: first.offset, hi: second.offset, reversed: a.offset > b.offset }))
   }
   return out
 }

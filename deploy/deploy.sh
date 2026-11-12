@@ -106,10 +106,14 @@ if [ "$build" = 1 ]; then
   step "Simulation module (sim/)"
   # OSRD's simulation core in Rust: built to WebAssembly with cargo (once) and
   # put beside the page of the app that runs trains — the Fahrplan-Editor, which
-  # computes a single train's running time too. Without it the suite deploys
-  # all the same, and the tool says the module is missing.
+  # computes a single train's running time too — and of the Kapazitäts-Sim.
+  # Without it the suite deploys all the same, and the tool says the module is missing.
   if ! (cd apps/timetable-editor && node ../../packages/running-times/scripts/sim.mjs); then
     echo "WARNING: no simulation module — the Fahrplan-Editor cannot compute running times" >&2
+  fi
+  # The Kapazitäts-Sim runs the timetable's trains as the Fahrplan-Editor does.
+  if ! (cd apps/capacity-sim && node ../../packages/running-times/scripts/sim.mjs); then
+    echo "WARNING: no simulation module — the Kapazitäts-Sim cannot run trains" >&2
   fi
 
   step "Crossover module (crossover/)"

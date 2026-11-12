@@ -197,6 +197,29 @@ jobs:
       - run: npm test
       - run: npm run build
 
+  # The Kapazitäts-Sim (roadmap, phase 4, K1) and its package.
+  capacity-sim:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: apps/capacity-sim
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+        working-directory: .
+      # The core's Rust module (decision 0020), which the capacity is computed in.
+      - run: rustup target add wasm32-unknown-unknown && node packages/core/scripts/wasm.mjs
+        working-directory: .
+      - run: npx vitest run
+        working-directory: packages/capacity
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+
   # All of the suite's Rust, one cargo workspace (decision 0020): the
   # simulation core with OSRD's cases, the crossover search, the optimizer with
   # the shared rule vectors, the core's crates with the vectors the JavaScript

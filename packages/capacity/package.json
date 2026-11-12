@@ -19,6 +19,8 @@
     "@rail-across/timetables": "*"
   },
   "devDependencies": {
-    "vitest": "^3.2.7"
+    "vitest": "^3.2.7",
+    "@rail-across/running-times": "*",
+    "@rail-across/vehicles": "*"
   }
 }

@@ -1,0 +1,26 @@
+/* The Kapazitäts-Sim's own: the diagram and its tables. What every module has
+   — colours, buttons, fields, the shell — is the suite's library
+   (@rail-across/ui, ui.css), loaded before this. */
+
+html, body { margin: 0; background: var(--ui-surface); }
+#root { width: 100%; height: 100vh; }
+
+.tool-center { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 24px; text-align: center; }
+
+.cap-page { flex: 1; min-height: 0; overflow: auto; padding: 18px 22px 28px; display: flex; flex-direction: column; gap: 18px; }
+.cap-head { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: baseline; }
+.cap-head h1 { margin: 0; font-size: var(--ui-fs-xl, 20px); }
+.cap-figures { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px; }
+.cap-figure { background: var(--ui-bg); border-radius: 10px; padding: 10px 12px; box-shadow: var(--ui-shadow); }
+.cap-figure b { display: block; font-size: 22px; }
+.cap-figure .over { color: var(--ui-danger, #c0392b); }
+.cap-sides { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 18px; }
+.cap-table { width: 100%; border-collapse: collapse; background: var(--ui-bg); border-radius: 10px; overflow: hidden; box-shadow: var(--ui-shadow); }
+.cap-table th, .cap-table td { padding: 6px 10px; text-align: left; border-bottom: 1px solid var(--ui-border, #e3e4ea); font-size: var(--ui-fs-m); }
+.cap-table td.num, .cap-table th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.cap-diagram { background: var(--ui-bg); border-radius: 10px; box-shadow: var(--ui-shadow); padding: 8px; }
+.cap-diagram svg { display: block; width: 100%; height: auto; }
+.cap-diagram text { font-size: 11px; fill: var(--ui-muted, #5f6473); }
+.cap-rate { font-variant-numeric: tabular-nums; }
+.cap-rate.over { color: var(--ui-danger, #c0392b); font-weight: 600; }
+.cap-swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }

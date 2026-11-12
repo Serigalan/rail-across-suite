@@ -47,11 +47,40 @@ export function stageMembers(project, key) {
   return byKey.get(key)
 }
 
+/** Whether `key` is a day (YYYY-MM-DD) rather than 'existing' or 'final'. */
+export const isDayKey = (key) => typeof key === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(key)
+
+/** A day (YYYY-MM-DD) as the language writes it. */
+export function dayLabel(day, language = 'de') {
+  const [y, m, d] = day.split('-').map(Number)
+  return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString(language, { timeZone: 'UTC', day: '2-digit', month: '2-digit', year: 'numeric' })
+}
+
 /** A stage as a list names it: the existing state, "from <day>", the final state. */
 export function stageLabel(stage, t, language = 'de') {
   if (stage.key === 'existing') return t('stage_existing')
   if (stage.key === 'final') return t('stage_final')
-  const [y, m, d] = stage.date.split('-').map(Number)
-  const day = new Date(Date.UTC(y, m - 1, d)).toLocaleDateString(language, { timeZone: 'UTC', day: '2-digit', month: '2-digit', year: 'numeric' })
+  const day = dayLabel(stage.date, language)
   return stage.name ? `${stage.name} (${day})` : `${t('stage_from')} ${day}`
+}
+
+/** A day (YYYY-MM-DD) of year `y`, month `m` (1–12), day `d`. */
+export const dayOf = (y, m, d) => `${String(y).padStart(4, '0')}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+
+/**
+ * The weeks of a month as a calendar shows them, Monday first: rows of seven
+ * days (YYYY-MM-DD), null where a day belongs to the month before or after.
+ */
+export function monthWeeks(y, m) {
+  const first = (new Date(Date.UTC(y, m - 1, 1)).getUTCDay() + 6) % 7
+  const length = new Date(Date.UTC(y, m, 0)).getUTCDate()
+  const cells = [...Array(first).fill(null), ...Array.from({ length }, (_, i) => dayOf(y, m, i + 1))]
+  while (cells.length % 7) cells.push(null)
+  return Array.from({ length: cells.length / 7 }, (_, i) => cells.slice(i * 7, i * 7 + 7))
+}
+
+/** The month `n` months after year `y`, month `m`: [year, month]. */
+export function monthAfter(y, m, n) {
+  const i = y * 12 + (m - 1) + n
+  return [Math.floor(i / 12), (i % 12) + 1]
 }

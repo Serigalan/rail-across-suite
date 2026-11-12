@@ -29,9 +29,9 @@ export function structureLine(kind, obj, trackById) {
   return coords?.length >= 2 ? coords : null
 }
 
-/** The structures of a project as features: [{ kind, id, coords }]. */
-export function structureFeatures(project) {
-  const trackById = new Map((project?.tracks ?? []).map(t => [t.id, t]))
+/** The structures of a project as features: [{ kind, id, coords }] — on the tracks `tracks` (the project's by default). */
+export function structureFeatures(project, tracks = project?.tracks ?? []) {
+  const trackById = new Map(tracks.map(t => [t.id, t]))
   const features = []
   for (const kind of Object.keys(STRUCTURE_COLORS)) {
     for (const obj of project?.[kind] ?? []) {
@@ -42,8 +42,8 @@ export function structureFeatures(project) {
   return { type: 'FeatureCollection', features }
 }
 
-/** Draw the project's structures, adding the source and layers the first time (or after another basemap). */
-export function renderStructuresOnMap(map, project) {
+/** Draw the project's structures on the tracks `tracks`, adding the source and layers the first time (or after another basemap). */
+export function renderStructuresOnMap(map, project, tracks) {
   // Called with the tracks, once their layers are there: the style is, though its tiles may still be loading.
   if (!map?.getStyle?.()) return
   if (!map.getSource(SOURCE)) map.addSource(SOURCE, { type: 'geojson', data: EMPTY })
@@ -58,5 +58,5 @@ export function renderStructuresOnMap(map, project) {
     map.addLayer({ id: 'civil-barrier', type: 'line', source: SOURCE, filter: of('noiseBarriers'),
       paint: { 'line-color': STRUCTURE_COLORS.noiseBarriers, 'line-width': 3.5, 'line-dasharray': [3, 1] } })
   }
-  map.getSource(SOURCE).setData(structureFeatures(project))
+  map.getSource(SOURCE).setData(structureFeatures(project, tracks))
 }

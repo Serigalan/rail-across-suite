@@ -20,8 +20,9 @@ Status: **accepted** · 2026-11-12 · builds on [0003](0003-construction-stages.
    topology joins A to B1 and to B2, never B1 to B2; at a stage, a port whose track is not in service is empty.
    It replaces the two links of 0003, point 6, where the old and the new part meet the staying one at one place.
 5. **A record at a stage** (`recordAtStage`, `stagesOf` in the core) is what every tool shows a stage by: the
-   Layout-Tool's map, its picker beside the working copy's bar choosing the stage (every one at once, as
-   planned, by default); the Construction-Sim (`apps/construction-sim/`), the net stage by stage with what each
+   Layout-Tool's map, its picker beside the working copy's bar choosing a day — any day stands for the stage
+   in force on it, before every dated one the existing state — or the existing or the final state (every one at
+   once, as planned, by default); the Construction-Sim (`apps/construction-sim/`), the net stage by stage with what each
    changes; the Kapazitäts-Sim's stages.
 
 ## Why

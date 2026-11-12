@@ -374,7 +374,10 @@ mod record_at_stage {
         assert_eq!(ids, ["a", "c"]);
         assert_eq!(ports["B1"], json!(null));
         assert_eq!(at("final").0, ["a", "c", "d"]);
-        assert_eq!(record_at_stage(&r, "1999-01-01"), r, "no such stage: the record as it is");
+        assert_eq!(at("1999-01-01").0, ["a", "b"], "a day before every stage: the existing state");
+        assert_eq!(at("2028-06-01").0, ["a", "b"], "the last day of the old track");
+        assert_eq!(at("2031-01-01").0, ["a", "c"], "any later day: the stage in force, not the final state");
+        assert_eq!(record_at_stage(&r, "neither"), r, "no such stage: the record as it is");
     }
 }
 

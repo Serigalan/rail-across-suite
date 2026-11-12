@@ -220,7 +220,7 @@ export function renderTracksOnMap(map, project, { fit = false, topology = false 
   const platformGeoJSON = {
     type: 'FeatureCollection',
     features: (project.platforms ?? [])
-      .filter(p => (p.coords?.length ?? 0) > 3 && !hidden.has(p.trackId))
+      .filter(p => (p.coords?.length ?? 0) > 3 && !hidden.has(p.trackId) && (!at || at.platforms.has(p.id)))
       .map(p => ({
         type: 'Feature',
         properties: { platformId: p.id },
@@ -232,9 +232,10 @@ export function renderTracksOnMap(map, project, { fit = false, topology = false 
   // heavier than the track, the brake length behind them dashed — white gaps
   // laid over the track line, which is already drawn there. The boundaries of
   // the planning area in the same source: a grey bar across the track's end.
+  const endMarks = (project.endMarks ?? []).filter(m => !at || at.endMarks.has(m.id))
   const bufferStopGeoJSON = {
     type: 'FeatureCollection',
-    features: [...bufferStopFeatures(tracks, project.endMarks ?? []), ...boundaryFeatures(tracks, project.endMarks ?? [])],
+    features: [...bufferStopFeatures(tracks, endMarks), ...boundaryFeatures(tracks, endMarks)],
   }
 
   if (map.getSource(TRACKS_SOURCE)) {
@@ -358,10 +359,10 @@ export function renderTracksOnMap(map, project, { fit = false, topology = false 
   // labels, and its own layers in place of the detailed ones.
   if (topology) clearTrackLabels()
   // The network diagram is of the whole network, hidden tracks or not.
-  showTopology(map, { on: topology, tracks: allTracks, switches: project.switches ?? [], endMarks: project.endMarks ?? [], color: getColor() })
+  showTopology(map, { on: topology, tracks: allTracks, switches: (project.switches ?? []).filter(sw => !at || !sw.switchId || at.switches.has(sw.switchId)), endMarks, color: getColor() })
 
-  // The civil structures beside and over the tracks (decision 0025).
-  renderStructuresOnMap(map, project)
+  // The civil structures beside and over the tracks (decision 0025), on the tracks shown.
+  renderStructuresOnMap(map, project, tracks)
 
   updateLabels(map)
   map.once('idle', () => updateLabels(map))

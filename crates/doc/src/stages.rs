@@ -292,7 +292,10 @@ impl Stages {
         match key {
             "existing" => Some(0),
             "final" => Some(self.days.len() + 1),
-            day => self.days.keys().position(|d| d == day).map(|i| i + 1),
+            // Any day: the stage in force on it — the last one put into force on or before it, before every one
+            // the existing state. Days compare as text (YYYY-MM-DD).
+            day if is_day(day) => Some(self.days.keys().filter(|d| d.as_str() <= day).count()),
+            _ => None,
         }
     }
 
@@ -310,7 +313,7 @@ impl Stages {
 
 /// The record as it stands at the stage `key` (`existing`, a day, `final`): the tracks, switches, platforms and
 /// end marks in service then, a port of a switch whose track is not empty; the layers' objects by their lifespans.
-/// The record as it is where it has no such stage.
+/// A day that begins no stage stands for the stage in force on it. The record as it is where `key` is none of these.
 pub fn record_at_stage(record: &Value, key: &str) -> Value {
     let Ok(s) = Stages::of_record(record) else { return record.clone() };
     let Some(k) = s.index_of_key(key) else { return record.clone() };

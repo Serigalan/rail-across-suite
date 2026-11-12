@@ -14,7 +14,8 @@ export const stagesOf = (record) => viaNative('document.stagesOf', record ?? {})
 /**
  * The record as it stands at the stage `stage` ('existing', a day 'YYYY-MM-DD',
  * 'final'): what is in service then, a switch's port whose track is not there
- * empty, the layers' objects by their lifespans. The record as it is where it
- * has no such stage.
+ * empty, the layers' objects by their lifespans. Any day stands for the stage
+ * in force on it — before every dated one the existing state, never the final
+ * state. The record as it is where `stage` is none of these.
  */
 export const recordAtStage = (record, stage) => (record ? viaNative('document.recordAtStage', { record, stage }) : record)

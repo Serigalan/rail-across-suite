@@ -9,9 +9,9 @@
  * plan's title block draws it; the app itself shows the suite's mark of the
  * tool (components/icons LogoIcon), as the start page does. Lines end square
  * (butt caps), as both plan backends draw them.
- * public/favicon.svg is the whole mark on a square ground, drawn simple:
- * every line of it, each a single stroke of the same width without the inner
- * rail, white in the letters and MARK_LINK_BLUE between them.
+ * public/favicon.svg is not this mark but the suite's of the tool, as the
+ * other tools' are (an alignment, white on MARK_BLUE, its details in
+ * MARK_LINK_BLUE from 48 px on).
  * docs/logo.svg is the mark as drawn here, on MARK_BLUE, for the README.
  */
 

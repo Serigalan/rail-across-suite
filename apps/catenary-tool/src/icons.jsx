@@ -8,8 +8,16 @@ const Svg = ({ children }) => (
   </svg>
 )
 
-/** A mast with its cantilever and the contact wire over the track: the tool's mark. */
-export const LogoIcon = () => <Svg><path d="M5 22V3" /><path d="M5 6h13" /><path d="M5 9l9-3" /><path d="M2 12h20" /><path d="M14 6v6" /><path d="M2 20h20" /></Svg>
+/**
+ * The tool's mark: a mast on its foot, its cantilever, the catenary wire with its droppers and the contact wire —
+ * as public/favicon.svg and the start page draw it.
+ */
+export const LogoIcon = () => (
+  <Svg>
+    <path d="M5 21.5V2.5M3 21.5h4M5 5h4.5M5 9.5L9.5 6M9.5 5.5C13 9 18 9 22.5 6.5M7.5 12.5h15" />
+    <path d="M12.5 8v4.5M16 8.5v4M19.5 8v4.5" strokeOpacity="0.55" />
+  </Svg>
+)
 /** A range under contact wire: the wire over a stretch of track, a bolt. */
 export const RangeIcon = () => <Svg><path d="M2 6h20" /><path d="M2 19h20" /><path d="M7 6v3M17 6v3" /><path d="M13 9l-3 5h4l-3 5" /></Svg>
 export const CheckIcon = () => <Svg><path d="M4 12l5 5L20 6" /></Svg>

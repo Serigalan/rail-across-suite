@@ -77,7 +77,8 @@ describe('timetables', () => {
 
     const into = await max('POST', `/api/projects/${made.project.id}/timetables/import`, { timetables: file })
     expect(into.statusCode).toBe(201)
-    expect(into.json().timetables).toMatchObject([{ name: 'Takt', version: 1, data: { trains: [{ number: '16001' }] } }, { name: 'Nacht' }])
+    // one revision of the project's operations more: the version is its number (decision 0026)
+    expect(into.json().timetables).toMatchObject([{ name: 'Takt', version: 2, data: { trains: [{ number: '16001' }] } }, { name: 'Nacht', version: 2 }])
     expect((await max('POST', `/api/projects/${made.project.id}/timetables/import`, { timetables: [{ name: ' ' }] })).json()).toEqual({ error: 'name_required' })
     expect((await max('POST', `/api/projects/${made.project.id}/timetables/import`, {})).json()).toEqual({ error: 'timetable_invalid' })
     expect((await max('GET', `/api/projects/${made.project.id}/timetables`)).json().timetables).toHaveLength(4)
@@ -91,6 +92,32 @@ describe('timetables', () => {
     // and into no project one does not see
     const adas = (await ada('POST', '/api/projects', { title: 'Adas' })).json().project
     expect((await max('POST', `/api/projects/${adas.id}/timetables/import`, { timetables: file })).statusCode).toBe(404)
+  })
+
+  it('are kept as revisions of the project\'s operations: a save on an older one is taken where its timetable is as it was there (decision 0026)', async () => {
+    ctx = await setup()
+    const max = await signIn(ctx.app, 'max')
+    const ada = await signIn(ctx.app, 'ada')
+    const { project } = (await max('POST', '/api/projects', { title: 'Strecke' })).json()
+    const a = (await max('POST', `/api/projects/${project.id}/timetables`, { name: 'A', data: { trains: [train()] } })).json().timetable
+    const b = (await max('POST', `/api/projects/${project.id}/timetables`, { name: 'B' })).json().timetable
+    expect([a.version, b.version]).toEqual([1, 2])
+    // Ada saves A, read at 1, after B came: A is as it was at 1, so it is taken
+    const saved = await ada('PUT', `/api/timetables/${a.id}`, { version: 1, name: 'A', data: { trains: [train({ number: '16005' })] } })
+    expect(saved.statusCode).toBe(200)
+    expect(saved.json().timetable).toMatchObject({ version: 3, createdBy: { name: 'Max Muster' }, updatedBy: { name: 'Ada Admin' } })
+    // Max saves A, read at 2: it changed since, so it is refused
+    expect((await max('PUT', `/api/timetables/${a.id}`, { version: 2, name: 'A', data: { trains: [] } })).statusCode).toBe(409)
+
+    const head = (await max('GET', `/api/projects/${project.id}/operations`)).json()
+    expect(head).toMatchObject({ number: 3, document: { format: 'operations', version: '1.0' } })
+    expect(head.hash).toMatch(/^sha256:/)
+    expect(head.document.domains.operations.collections.timetables.map(t => t.name).sort()).toEqual(['A', 'B'])
+    const { revisions } = (await max('GET', `/api/projects/${project.id}/operations/revisions`)).json()
+    expect(revisions.map(r => [r.number, r.changed])).toEqual([[3, [a.id]], [2, [b.id]], [1, [a.id]]])
+    const first = (await max('GET', `/api/projects/${project.id}/operations/revisions/1`)).json()
+    expect(first.document.domains.operations.collections.trains.map(t => t.number)).toEqual(['16001'])
+    expect((await max('GET', `/api/projects/${project.id}/operations/revisions/9`)).statusCode).toBe(404)
   })
 
   it('need a session, a name and trains in their shape', async () => {
@@ -116,7 +143,7 @@ describe('timetables', () => {
     expect(await timetableFault({ trains: [train({ distribution: 'fast' })] })).toBe('train_invalid')
     expect(await timetableFault({ trains: [train({ points: [point('')] })] })).toBe('points_invalid')
     expect(await timetableFault({ trains: [train({ points: [point('A', { stop: 'yes' })] })] })).toBe('points_invalid')
-    expect(await timetableFault({ trains: [train({ points: [point('A', { place: 'a' }), point('B', { place: 'x'.repeat(65) })] })] })).toBe('points_invalid')
+    expect(await timetableFault({ trains: [train({ points: [point('A', { place: 'a' }), point('B', { place: 7 })] })] })).toBe('points_invalid')
     expect(await timetableFault({ trains: [train({ points: [point('A', { place: '3f2a' })] })] })).toBeNull()
     // a train not done yet is kept: a night train past midnight, no points yet
     expect(await timetableFault({ trains: [train({ departure: 25 * 3600, points: [] })] })).toBeNull()

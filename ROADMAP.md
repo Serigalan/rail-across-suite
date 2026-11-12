@@ -339,6 +339,12 @@ the same key with another content takes it under its hash, beside the catalogue'
   by hand (`timetable_fault`); a `rail-across-timetables` 1.0 file still read, and turned on its way in; export
   and import as an operations file with the vehicles its trains run with. *Done when* every timetable of the
   server opens as it was, and a project exported here runs on another server with the same times.
+  *Done* ([decision 0026](docs/decisions/0026-operations-in-revisions.md)): the server keeps a project's operations
+  in revisions (`operations_revision`), the timetables' API reading the head and writing revisions, a save on an
+  older revision taken where its timetable is unchanged; the door in place of the checks by hand; data step
+  `0026-operations`; the history and each revision's document under `/api/projects/<id>/operations`; the export an
+  operations file carrying its trains' vehicles, the import of it and of a file of before, a vehicle the catalogue
+  lacks or has otherwise made in it beside its own.
 - **O3 — Formations in the simulation.** The mass, length, top speed and brake of the whole train in the request:
   a train runs no faster than the line, its signals and its formation allow — a freight train's lower speed is
   its own, not the line's. Its deceleration follows from its brake position and braked weight percentage by
@@ -411,7 +417,7 @@ Signalling-Tool's next, phase 3), neutral sections (with the catenary), anything
    but the train protection's editor.
 2. **K0** — the blocking time as the format gives it; every later figure rests on it. *Done*, but the operation's
    sight time and reference cases B and C.
-3. **O1, O2** — the operations on their format before anything new is put into them.
+3. **O1, O2** — the operations on their format before anything new is put into them. *Done.*
 4. **K1** — the first figures, from what is there.
 5. **I3** — the running and blocking times read the railway's additions. *Done* ahead of its place, but holding a
    train back at a boundary.

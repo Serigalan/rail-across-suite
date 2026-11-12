@@ -25,6 +25,7 @@ pub mod data_migrations;
 pub mod db;
 pub mod http;
 pub mod mdb;
+pub mod operations;
 pub mod routes;
 pub mod serve;
 pub mod store;

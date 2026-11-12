@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { timetablesFile, timetablesFileName } from '@rail-across/timetables/exchange'
+import { operationsFile, operationsFileName } from '@rail-across/timetables/exchange'
+import { catalogueEntries } from '../../vehicleCatalogue'
 import { api, blobUrl } from '../../api'
 import { download } from '../../download'
 import { FormDialog } from '../../Dialog'
@@ -118,7 +119,7 @@ export function ExportDialog({ project, onCancel, onDone }) {
     const { payload, variant } = await api.head(variantId)
     const image = payload.imageHash ? await imageAsDataUrl(payload.imageHash) : null
     download(exportedDocument(payload, { title: project.title, image }), exportFileName(project, variant))
-    if (withTimetables && timetables.length) download(timetablesFile(timetables, { project: project.title }), timetablesFileName(project.title))
+    if (withTimetables && timetables.length) download(operationsFile(timetables, await catalogueEntries()), operationsFileName(project.title))
     onDone()
   })
   return (

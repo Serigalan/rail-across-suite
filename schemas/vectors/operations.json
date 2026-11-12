@@ -7,7 +7,7 @@
    "domains": {
     "operations": {
      "version": "1.0",
-     "schema": "sha256:66e58d4eb06fdb3d24356cc45711d5def914454b324a339e4051f6ed1d01d46a",
+     "schema": "sha256:6ee7221f2991714a6b4bf2e9ea282d378c764e5e3e5acb8cbff25ce49a488b61",
      "fields": {},
      "collections": {
       "timetables": [
@@ -153,7 +153,7 @@
    "blobs": {}
   },
   "valid": true,
-  "hash": "sha256:d8a302e8f456ed4aa400115f4a241d7404d6ee2f4c11a622485b847bbc309e82"
+  "hash": "sha256:878b26809e71964c07acb7ed14a3cc7c3a0c44c0e37b1eda89cf94a843bffea5"
  },
  {
   "name": "with its vehicle carried",
@@ -163,7 +163,7 @@
    "domains": {
     "operations": {
      "version": "1.0",
-     "schema": "sha256:66e58d4eb06fdb3d24356cc45711d5def914454b324a339e4051f6ed1d01d46a",
+     "schema": "sha256:6ee7221f2991714a6b4bf2e9ea282d378c764e5e3e5acb8cbff25ce49a488b61",
      "fields": {},
      "collections": {
       "timetables": [
@@ -323,7 +323,7 @@
    }
   },
   "valid": true,
-  "hash": "sha256:db0f658b00e4fa8fd6c30a52616c99bc5caa64feefc6906180ac17e14c15c66a"
+  "hash": "sha256:ff6db385cc02b678dabcae5baa80021397233b273adcdaed552161fba181d32c"
  },
  {
   "name": "no timetables",
@@ -333,7 +333,7 @@
    "domains": {
     "operations": {
      "version": "1.0",
-     "schema": "sha256:66e58d4eb06fdb3d24356cc45711d5def914454b324a339e4051f6ed1d01d46a",
+     "schema": "sha256:6ee7221f2991714a6b4bf2e9ea282d378c764e5e3e5acb8cbff25ce49a488b61",
      "fields": {},
      "collections": {
       "timetables": [],
@@ -351,7 +351,7 @@
    "blobs": {}
   },
   "valid": true,
-  "hash": "sha256:c2c687e8e3662ab833a5bda50043bebd1db84668b6ea48b2eac545c10c21403a"
+  "hash": "sha256:24220492066b9a821cd1ba1c7df0f61f47b689ceae7633ee94599fb626729410"
  },
  {
   "name": "a connection and a turnaround",
@@ -361,7 +361,7 @@
    "domains": {
     "operations": {
      "version": "1.0",
-     "schema": "sha256:66e58d4eb06fdb3d24356cc45711d5def914454b324a339e4051f6ed1d01d46a",
+     "schema": "sha256:6ee7221f2991714a6b4bf2e9ea282d378c764e5e3e5acb8cbff25ce49a488b61",
      "fields": {},
      "collections": {
       "timetables": [
@@ -523,7 +523,7 @@
    "blobs": {}
   },
   "valid": true,
-  "hash": "sha256:b4f341d7b55194bb375fbcc8b99c64fc80f83d40693bea2296ca013470d0e7de"
+  "hash": "sha256:a29c6800d06ed75d9b967cd6aeab25e970a91626ebff48139b8850243d44962c"
  },
  {
   "name": "another version",
@@ -533,7 +533,7 @@
    "domains": {
     "operations": {
      "version": "1.0",
-     "schema": "sha256:66e58d4eb06fdb3d24356cc45711d5def914454b324a339e4051f6ed1d01d46a",
+     "schema": "sha256:6ee7221f2991714a6b4bf2e9ea282d378c764e5e3e5acb8cbff25ce49a488b61",
      "fields": {},
      "collections": {
       "timetables": [
@@ -689,7 +689,7 @@
    "domains": {
     "operations": {
      "version": "1.0",
-     "schema": "sha256:66e58d4eb06fdb3d24356cc45711d5def914454b324a339e4051f6ed1d01d46a",
+     "schema": "sha256:6ee7221f2991714a6b4bf2e9ea282d378c764e5e3e5acb8cbff25ce49a488b61",
      "fields": {},
      "collections": {
       "timetables": [
@@ -845,7 +845,7 @@
    "domains": {
     "operations": {
      "version": "1.0",
-     "schema": "sha256:66e58d4eb06fdb3d24356cc45711d5def914454b324a339e4051f6ed1d01d46a",
+     "schema": "sha256:6ee7221f2991714a6b4bf2e9ea282d378c764e5e3e5acb8cbff25ce49a488b61",
      "fields": {},
      "collections": {
       "timetables": [
@@ -1001,7 +1001,7 @@
    "domains": {
     "operations": {
      "version": "1.0",
-     "schema": "sha256:66e58d4eb06fdb3d24356cc45711d5def914454b324a339e4051f6ed1d01d46a",
+     "schema": "sha256:6ee7221f2991714a6b4bf2e9ea282d378c764e5e3e5acb8cbff25ce49a488b61",
      "fields": {},
      "collections": {
       "timetables": [
@@ -1171,7 +1171,7 @@
    "domains": {
     "operations": {
      "version": "1.0",
-     "schema": "sha256:66e58d4eb06fdb3d24356cc45711d5def914454b324a339e4051f6ed1d01d46a",
+     "schema": "sha256:6ee7221f2991714a6b4bf2e9ea282d378c764e5e3e5acb8cbff25ce49a488b61",
      "fields": {},
      "collections": {
       "timetables": [

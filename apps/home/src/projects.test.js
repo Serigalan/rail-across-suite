@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { timetablesFile } from '@rail-across/timetables/exchange'
+import { operationsFile, timetablesFile } from '@rail-across/timetables/exchange'
 import { projectDocument } from '@rail-across/core/project'
 import { importedFiles } from './projects'
 
@@ -15,6 +15,19 @@ describe('the files chosen to import', () => {
     ])
     expect(projects.map(p => p.title)).toEqual(['Strecke'])
     expect(tt).toEqual([{ name: 'Takt', data: { trains: [] } }])
+  })
+
+  it('read an operations file beside a backup file, with the vehicles it carries (decision 0026)', () => {
+    const loco = { name: 'Lok', mass: 84000 }
+    const train = { id: 't1', number: '1', category: 'RE', name: '', vehicle: 'osrd:loco', mode: null, comfort: 'STANDARD', departure: 3600, margin: '', distribution: 'mareco', points: [] }
+    const file = operationsFile([{ id: 'x', name: 'Takt', data: { trains: [train] } }], [{ key: 'osrd:loco', vehicle: loco }])
+    const { projects, timetables: tt, vehicles } = importedFiles([
+      { name: 'Strecke – Fahrpläne.operations.json', text: JSON.stringify(file) },
+      { name: 'Strecke – Bestand.railacross.json', text: JSON.stringify(backup) },
+    ])
+    expect(projects).toHaveLength(1)
+    expect(tt).toEqual([{ name: 'Takt', data: { trains: [train] } }])
+    expect(vehicles).toMatchObject([{ key: 'osrd:loco', vehicle: loco }])
   })
 
   it('refuse a file that is neither, or timetables of another version', () => {

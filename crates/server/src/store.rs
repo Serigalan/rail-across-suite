@@ -561,27 +561,31 @@ impl<'a> Store<'a> {
         Ok(Value::Array(out))
     }
 
-    /// Timetables ({ name, data }) added to a project as `user`'s; their ids.
-    pub fn add_timetables(&self, project_id: &str, timetables: &[(String, String)], user: i64) -> rusqlite::Result<Vec<String>> {
-        let at = self.iso();
+    /// Timetables ({ name, data }) added to a project as `user`'s, in one new revision of its operations; their ids.
+    pub fn add_timetables(&self, project_id: &str, timetables: &[(String, Value)], user: i64) -> Result<Vec<String>, ApiError> {
+        if timetables.is_empty() {
+            return Ok(Vec::new());
+        }
+        let (number, record) = crate::operations::head(self.db, project_id)?;
+        let mut list = crate::operations::timetables(&record);
         let mut ids = Vec::new();
         for (name, data) in timetables {
             let id = uuid();
-            self.db.execute(
-                "INSERT INTO timetable (id, project_id, name, data, created_by, created_at, updated_by, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-                params![id, project_id, name, data, user, at, user, at],
-            )?;
+            list.push(json!({ "id": id, "name": name, "data": data }));
             ids.push(id);
         }
+        let next = crate::operations::with_timetables(&record, list);
+        crate::operations::commit(self.db, project_id, number, &next, &ids, user, self.now)?;
         Ok(ids)
     }
 
-    pub fn copy_timetables(&self, from: &str, to: &str, user: i64) -> rusqlite::Result<usize> {
-        let list: Vec<(String, String)> = self
-            .db
-            .prepare("SELECT name, data FROM timetable WHERE project_id = ? AND deleted_at IS NULL ORDER BY created_at, rowid")?
-            .query_map([from], |r| Ok((r.get(0)?, r.get(1)?)))?
-            .collect::<Result<_, _>>()?;
+    /// A project's operations copied into another as `user`'s, each timetable under a new id; how many timetables.
+    pub fn copy_timetables(&self, from: &str, to: &str, user: i64) -> Result<usize, ApiError> {
+        let (_, record) = crate::operations::head(self.db, from)?;
+        let list: Vec<(String, Value)> = crate::operations::timetables(&record)
+            .iter()
+            .map(|t| (t["name"].as_str().unwrap_or_default().to_string(), t["data"].clone()))
+            .collect();
         Ok(self.add_timetables(to, &list, user)?.len())
     }
 }

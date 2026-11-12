@@ -200,6 +200,66 @@ fn within_infra_data_2_0(db: &Connection, _now: i64) -> rusqlite::Result<String>
     Ok(format!("{written} Revisionen umgeschrieben, {left} nicht lesbar"))
 }
 
+/// Every project's timetables kept as rows of `timetable` (decision 0016) made
+/// the first revision of its operations (operations-1.0, O2; decision 0026),
+/// each timetable under its id, its maker and last saver kept. One the door
+/// does not take is left out — it stays in its row — and counted.
+fn to_operations(db: &Connection, now: i64) -> rusqlite::Result<String> {
+    type Row = (String, String, String, String, i64, String, i64, String);
+    let rows: Vec<Row> = db
+        .prepare(
+            "SELECT id, project_id, name, data, created_by, created_at, updated_by, updated_at FROM timetable
+             WHERE deleted_at IS NULL ORDER BY project_id, created_at, rowid",
+        )?
+        .query_map([], |r| {
+            Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?, r.get(4)?, r.get(5)?, r.get(6)?, r.get(7)?))
+        })?
+        .collect::<Result<_, _>>()?;
+    if rows.is_empty() {
+        return Ok("0 Fahrpläne".into());
+    }
+    let system = system_user(db, now)?;
+    let (mut projects, mut taken, mut left) = (0, 0, 0);
+    let mut i = 0;
+    while i < rows.len() {
+        let project = rows[i].1.clone();
+        let mine: Vec<&Row> = rows[i..].iter().take_while(|r| r.1 == project).collect();
+        i += mine.len();
+        let kept: i64 = db.query_row("SELECT COUNT(*) FROM operations_revision WHERE project_id = ?", [&project], |r| r.get(0))?;
+        if kept > 0 {
+            continue;
+        }
+        let mut list = Vec::new();
+        let mut ids = Vec::new();
+        for (id, _, name, data, ..) in &mine {
+            let data: Value = serde_json::from_str(data).unwrap_or(Value::Null);
+            if crate::routes::timetables::timetable_fault(&data).is_some() {
+                left += 1;
+                continue;
+            }
+            list.push(json!({ "id": id, "name": name, "data": data }));
+            ids.push(id.clone());
+        }
+        if list.is_empty() {
+            continue;
+        }
+        let record = json!({ "timetables": list });
+        if crate::operations::commit(db, &project, 0, &record, &ids, system, now).is_err() {
+            left += ids.len();
+            continue;
+        }
+        for (id, _, _, _, created_by, created_at, updated_by, updated_at) in &mine {
+            db.execute(
+                "UPDATE operations_timetable SET created_by = ?, created_at = ?, updated_by = ?, updated_at = ? WHERE project_id = ? AND timetable_id = ?",
+                params![created_by, created_at, updated_by, updated_at, project, id],
+            )?;
+        }
+        projects += 1;
+        taken += ids.len();
+    }
+    Ok(format!("{taken} Fahrpläne in {projects} Projekten, {left} nicht lesbar"))
+}
+
 /// Run the data steps this database has not seen, each once: (name, note) of those run.
 pub fn run_data_migrations(db: &Connection, now: i64) -> rusqlite::Result<Vec<(String, String)>> {
     let done: Vec<String> = db
@@ -208,11 +268,12 @@ pub fn run_data_migrations(db: &Connection, now: i64) -> rusqlite::Result<Vec<(S
         .collect::<Result<_, _>>()?;
     let mut ran = Vec::new();
     // In this order: a later step reads the revisions in the form the first gives them.
-    let steps: [(&str, fn(&Connection, i64) -> rusqlite::Result<String>); 4] = [
+    let steps: [(&str, fn(&Connection, i64) -> rusqlite::Result<String>); 5] = [
         ("0021-infra-data", to_infra_data),
         ("0020-node-tolerance-1um", close_node_gaps),
         ("0025-infra-data-2.0", to_infra_data_2_0),
         ("0025-passenger-stops-and-runs", within_infra_data_2_0),
+        ("0026-operations", to_operations),
     ];
     for (name, step) in steps {
         if done.iter().any(|d| d == name) {

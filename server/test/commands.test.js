@@ -233,6 +233,33 @@ describe.skipIf(!SERVER_BIN)('the passenger stops and the runs in the core (deci
   })
 })
 
+describe.skipIf(!SERVER_BIN)('the step to operations-1.0 (decision 0026)', () => {
+  it('makes each project\'s timetables the first revision of its operations, once, their makers kept; one the door refuses stays behind', async () => {
+    const { file, made } = await twoRevisions()
+    const db = new Database(file)
+    const user = db.prepare("SELECT id FROM user WHERE login = 'anna'").get().id
+    const point = (station) => ({ id: `p-${station}`, station, track: null, stop: true, dwell: 60, departure: null })
+    const train = { id: 'z1', number: '16001', category: 'RB', name: '', vehicle: 'osrd:x', mode: null, comfort: 'STANDARD', departure: 21600, margin: '5 %', distribution: 'mareco', points: [point('A'), point('B')] }
+    const add = (id, name, data, deleted = null) => db.prepare(`INSERT INTO timetable (id, project_id, name, data, created_by, created_at, updated_by, updated_at, deleted_at)
+      VALUES (?, ?, ?, ?, ?, '2026-01-02T03:04:05.000Z', ?, '2026-02-03T04:05:06.000Z', ?)`).run(id, made.project.id, name, JSON.stringify(data), user, user, deleted)
+    add('tt-a', 'Takt', { trains: [train], dispatch: { mode: 'wait', priority: 'category', categories: ['RB'] } })
+    add('tt-b', 'Nacht', { trains: [] })
+    add('tt-c', 'Gelöscht', { trains: [] }, '2026-03-01T00:00:00.000Z')
+    add('tt-d', 'Kaputt', { trains: [{ ...train, departure: 'früh' }] })
+    db.prepare("DELETE FROM data_migration WHERE name = '0026-operations'").run()
+    db.close()
+    expect(cli(file, ['migrate'])).toMatch(/data step 0026-operations: 2 Fahrpläne in 1 Projekten, 1 nicht lesbar/)
+    expect(cli(file, ['migrate'])).toBe('')
+
+    ctx = await rustServer({ file })
+    const anna = await signIn(ctx.app, 'anna')
+    const { timetables } = (await anna('GET', `/api/projects/${made.project.id}/timetables`)).json()
+    expect(timetables.map(t => [t.id, t.name, t.version])).toEqual([['tt-b', 'Nacht', 1], ['tt-a', 'Takt', 1]])
+    expect(timetables[1]).toMatchObject({ createdAt: '2026-01-02T03:04:05.000Z', updatedAt: '2026-02-03T04:05:06.000Z', createdBy: { name: 'Anna' } })
+    expect(timetables[1].data).toEqual({ trains: [{ ...train, points: train.points.map(p => ({ ...p, place: null, itinerary: null })) }], dispatch: { mode: 'wait', priority: 'category', categories: ['RB'] } })
+  })
+})
+
 describe.skipIf(!SERVER_BIN)('the command line', () => {
   it('creates admins who sign in with their start password, counts users and writes backups', async () => {
     const file = join(fresh(), 'a.sqlite')

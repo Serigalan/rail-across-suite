@@ -106,7 +106,8 @@
           "$ref": "core#/$defs/Id"
         },
         "name": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "dispatching": {
           "$ref": "#/$defs/Dispatching"
@@ -266,7 +267,8 @@
         },
         "station": {
           "type": "string",
-          "description": "The name the place was chosen under — what a variant that lacks it is told."
+          "description": "The name the place was chosen under — what a variant that lacks it is told.",
+          "minLength": 1
         },
         "track": {
           "type": "string",

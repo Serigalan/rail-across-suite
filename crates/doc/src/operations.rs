@@ -259,41 +259,73 @@ fn formation_id(key: &str) -> String {
     derived_id(&format!("formation\u{0}{key}"))
 }
 
+/// What the record gives for a field: nothing where it is missing, null or an
+/// empty text, else the value as it is — what is not of its type the schema then
+/// refuses, nothing is turned into something else on the way.
+fn given(v: Option<&Value>) -> Option<Value> {
+    match v {
+        None | Some(Value::Null) => None,
+        Some(Value::String(s)) if s.trim().is_empty() => None,
+        Some(v) => Some(v.clone()),
+    }
+}
+
 fn point_to_document(p: &Value) -> Value {
+    if !p.is_object() {
+        return p.clone();
+    }
     let mut o = Object::new();
     put(&mut o, "id", p.get("id").cloned());
-    put(&mut o, "place", p.get("place").filter(|v| filled(Some(v)).is_some()).cloned());
-    put(&mut o, "station", Some(json!(text(p.get("station")).unwrap_or_default())));
-    put(&mut o, "track", p.get("track").filter(|v| filled(Some(v)).is_some()).cloned());
-    put(&mut o, "stop", Some(json!(p.get("stop").and_then(Value::as_bool).unwrap_or(false))));
+    put(&mut o, "place", given(p.get("place")));
+    put(&mut o, "station", p.get("station").cloned());
+    put(&mut o, "track", given(p.get("track")));
+    put(&mut o, "stop", p.get("stop").cloned());
     for k in ["dwell", "leastDwell", "departure"] {
-        put(&mut o, k, p.get(k).filter(|v| v.is_number()).cloned());
+        put(&mut o, k, p.get(k).cloned());
     }
-    put(&mut o, "itinerary", p.get("itinerary").filter(|v| filled(Some(v)).is_some()).cloned());
+    put(&mut o, "itinerary", given(p.get("itinerary")));
     Value::Object(o)
 }
 
 fn dispatching_of(dispatch: &Value, kinds: &mut Kinds) -> (Option<Value>, Option<Value>) {
-    if !dispatch.is_object() {
+    if dispatch.is_null() {
         return (None, None);
+    }
+    if !dispatch.is_object() {
+        return (Some(dispatch.clone()), None);
     }
     let mut d = Object::new();
     put(&mut d, "mode", dispatch.get("mode").cloned());
     put(
         &mut d,
         "priority",
-        dispatch
-            .get("priority")
-            .and_then(Value::as_str)
-            .map(|p| json!(if p == "category" { "kind" } else { p })),
+        dispatch.get("priority").map(|p| if p == "category" { json!("kind") } else { p.clone() }),
     );
-    if let Some(Value::Array(order)) = dispatch.get("categories") {
-        let ids: Vec<Value> = order.iter().filter_map(|c| filled(Some(c))).map(|c| json!(kinds.of(&c))).collect();
-        d.insert("kindOrder".into(), Value::Array(ids));
+    match dispatch.get("categories") {
+        Some(Value::Array(order)) => {
+            let ids: Vec<Value> = order
+                .iter()
+                .map(|c| match c.as_str() {
+                    Some(name) if !name.trim().is_empty() => json!(kinds.of(name)),
+                    _ => c.clone(),
+                })
+                .collect();
+            d.insert("kindOrder".into(), Value::Array(ids));
+        }
+        other => put(&mut d, "kindOrder", other.cloned()),
     }
     let mut times = Object::new();
-    for k in ["setup", "approach", "release", "sight"] {
-        put(&mut times, k, dispatch["times"].get(k).filter(|v| v.is_number()).cloned());
+    match dispatch.get("times") {
+        Some(Value::Object(given_times)) => {
+            for k in ["setup", "approach", "release", "sight"] {
+                put(&mut times, k, given_times.get(k).cloned());
+            }
+        }
+        // what is no object stands where the schema refuses it
+        Some(v) if !v.is_null() => {
+            times.insert("setup".into(), v.clone());
+        }
+        _ => {}
     }
     ((!d.is_empty()).then_some(Value::Object(d)), (!times.is_empty()).then_some(Value::Object(times)))
 }
@@ -361,27 +393,43 @@ pub fn to_operations(record: &Value, check: bool) -> Result<Value> {
         let data = t.get("data").cloned().unwrap_or(json!({}));
         let mut o = Object::new();
         o.insert("id".into(), json!(tid));
-        o.insert("name".into(), json!(text(t.get("name")).unwrap_or_default()));
+        put(&mut o, "name", t.get("name").cloned());
         let (dispatching, times) = dispatching_of(data.get("dispatch").unwrap_or(&Value::Null), &mut kinds);
         put(&mut o, "dispatching", dispatching);
         put(&mut o, "blockingTimes", times);
         timetables.push(Value::Object(o));
         for tr in list(&data, "trains") {
-            let mut id = js_string(tr.get("id"));
-            // An id twice in the project — a timetable imported twice — is drawn anew from its timetable's.
-            if !train_ids.insert(id.clone()) {
-                id = derived_id(&format!("{tid}\u{0}train\u{0}{id}"));
-                train_ids.insert(id.clone());
+            if !tr.is_object() {
+                trains.push(tr.clone());
+                continue;
             }
             let mut o = Object::new();
-            o.insert("id".into(), json!(id));
+            match tr.get("id").and_then(Value::as_str) {
+                Some(given_id) => {
+                    let mut id = given_id.to_string();
+                    // An id twice in the project — a timetable imported twice — is drawn anew from its timetable's.
+                    if !train_ids.insert(id.clone()) {
+                        id = derived_id(&format!("{tid}\u{0}train\u{0}{id}"));
+                        train_ids.insert(id.clone());
+                    }
+                    o.insert("id".into(), json!(id));
+                }
+                None => put(&mut o, "id", tr.get("id").cloned()),
+            }
             o.insert("timetableId".into(), json!(tid));
-            put(&mut o, "number", filled(tr.get("number")).map(Value::String));
-            put(&mut o, "name", filled(tr.get("name")).map(Value::String));
-            put(&mut o, "trainKindId", filled(tr.get("category")).map(|c| json!(kinds.of(&c))));
-            let formation = match (filled(tr.get("formation")), filled(tr.get("vehicle"))) {
+            put(&mut o, "number", given(tr.get("number")));
+            put(&mut o, "name", given(tr.get("name")));
+            put(
+                &mut o,
+                "trainKindId",
+                given(tr.get("category")).map(|c| match c.as_str() {
+                    Some(name) => json!(kinds.of(name)),
+                    None => c,
+                }),
+            );
+            let formation = match (given(tr.get("formation")), given(tr.get("vehicle"))) {
                 (Some(f), _) => Some(f),
-                (None, Some(key)) => {
+                (None, Some(Value::String(key))) => {
                     let fid = formation_id(&key);
                     if formation_ids.insert(fid.clone()) {
                         let mut unit = Object::new();
@@ -389,17 +437,22 @@ pub fn to_operations(record: &Value, check: bool) -> Result<Value> {
                         put(&mut unit, "hash", pinned.get(&key).map(|h| json!(h)));
                         formations.push(json!({ "id": fid, "tractionUnits": [Value::Object(unit)] }));
                     }
-                    Some(fid)
+                    Some(json!(fid))
                 }
-                _ => None,
+                (None, other) => other,
             };
-            put(&mut o, "formationId", formation.map(Value::String));
-            put(&mut o, "mode", filled(tr.get("mode")).map(Value::String));
-            put(&mut o, "comfort", filled(tr.get("comfort")).map(Value::String));
+            put(&mut o, "formationId", formation);
+            put(&mut o, "mode", given(tr.get("mode")));
+            put(&mut o, "comfort", given(tr.get("comfort")));
             put(&mut o, "departure", tr.get("departure").cloned());
-            put(&mut o, "margin", filled(tr.get("margin")).map(Value::String));
+            put(&mut o, "margin", given(tr.get("margin")));
             put(&mut o, "distribution", tr.get("distribution").cloned());
-            o.insert("points".into(), Value::Array(list(tr, "points").iter().map(point_to_document).collect()));
+            match tr.get("points") {
+                Some(Value::Array(points)) => {
+                    o.insert("points".into(), Value::Array(points.iter().map(point_to_document).collect()));
+                }
+                other => put(&mut o, "points", other.cloned()),
+            }
             trains.push(Value::Object(o));
         }
     }

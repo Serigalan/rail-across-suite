@@ -5,6 +5,8 @@ import { api } from '../api'
 import { useTexts } from '../i18n'
 import { errorText } from '../useAction'
 import { importedFiles, splitProjects } from '../projects'
+import { withCarriedVehicles } from '@rail-across/timetables/exchange'
+import { catalogueEntries, createVehicle } from '../vehicleCatalogue'
 import { splitDataUrl } from '../projectImages'
 import ProjectCard from './projects/ProjectCard'
 import { useLocalChanges } from '../localChanges'
@@ -88,9 +90,13 @@ export default function Infrastructure({ toolId, user, projects, onReload = asyn
       setError(errorText(t, err.code))
       return
     }
-    const { projects: made, timetables } = incoming
+    const { projects: made, vehicles } = incoming
+    let { timetables } = incoming
     if (!made.length) { setError(t('import_timetables_alone')); return }
     try {
+      // The vehicles the file carries that the catalogue lacks, made in it first.
+      let added = []
+      if (vehicles.length) ({ timetables, added } = await withCarriedVehicles(timetables, vehicles, { entries: await catalogueEntries(), create: createVehicle }))
       for (const p of made) {
         const record = { ...p.record }
         const picture = splitDataUrl(p.image)
@@ -98,7 +104,8 @@ export default function Infrastructure({ toolId, user, projects, onReload = asyn
         await api.createProject({ title: p.title, description: p.description, payload: record, timetables, ...(template ? { template: true } : {}) })
       }
       const imported = fill(template ? 'templates_imported' : 'projects_imported', { n: made.length })
-      say(timetables.length ? `${imported} ${fill('imported_timetables', { n: timetables.length })}` : imported)
+      const withTimetables = timetables.length ? `${imported} ${fill('imported_timetables', { n: timetables.length })}` : imported
+      say(added.length ? `${withTimetables} ${fill('vehicles_added', { n: added.length, names: added.map(a => a.name).join(', ') })}` : withTimetables)
     } catch (err) {
       setError(errorText(t, err.code))
     }

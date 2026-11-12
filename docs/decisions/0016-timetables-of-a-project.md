@@ -2,7 +2,8 @@
 
 Status: **proposed** — goes with [0013](0013-running-times-in-rust.md) and [0014](0014-vehicles-in-osrds-form.md) ·
 amended 2026-11-02: one tile with the Simulation-Tool, the Fahrplan-Sim; a way a train prefers (6); a train runs
-only into a free block (7); the register's stations are stations (3)
+only into a free block (7); the register's stations are stations (3) · point 1 changed by [0026](0026-operations-in-revisions.md): a
+project's timetables are kept in revisions of its operations, a timetable's version the revision's number
 
 ## Decision
 

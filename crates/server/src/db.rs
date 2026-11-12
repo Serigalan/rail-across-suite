@@ -21,6 +21,7 @@ pub const MIGRATIONS: &[(&str, &str)] = &[
     ("009_vehicle.sql", include_str!("../../../server/migrations/009_vehicle.sql")),
     ("010_timetable.sql", include_str!("../../../server/migrations/010_timetable.sql")),
     ("011_data_migration.sql", include_str!("../../../server/migrations/011_data_migration.sql")),
+    ("012_operations.sql", include_str!("../../../server/migrations/012_operations.sql")),
 ];
 
 /// Open the database (a file, or ":memory:") and bring its schema up to date.

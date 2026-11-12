@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
-import { timetablesFile, timetablesFileName, timetablesOfText } from '@rail-across/timetables/exchange'
+import { operationsFile, operationsFileName, readTimetables, withCarriedVehicles } from '@rail-across/timetables/exchange'
+import { catalogueEntries, createVehicle } from '../vehicleCatalogue'
 import { MODULES, simulationUrl } from '../modules'
 import { ModuleIcon } from '../icons'
 import { api } from '../api'
@@ -43,7 +44,7 @@ export default function Simulation({ route, user, projects, onReload = async () 
     try {
       const { timetables } = await api.timetables(project.id)
       if (!timetables.length) { say(fill('timetables_none', { title: project.title })); return }
-      download(timetablesFile(timetables, { project: project.title }), timetablesFileName(project.title))
+      download(operationsFile(timetables, await catalogueEntries()), operationsFileName(project.title))
     } catch (err) {
       setError(errorText(t, err.code))
     }
@@ -55,9 +56,15 @@ export default function Simulation({ route, user, projects, onReload = async () 
     if (!files.length || !project) return
     say(null)
     try {
-      const timetables = (await Promise.all(files.map(f => f.text()))).flatMap(timetablesOfText)
+      const read = (await Promise.all(files.map(f => f.text()))).map(readTimetables)
+      const vehicles = read.flatMap(r => r.vehicles)
+      let timetables = read.flatMap(r => r.timetables)
+      // The vehicles the file carries that the catalogue lacks, made in it first.
+      let added = []
+      if (vehicles.length) ({ timetables, added } = await withCarriedVehicles(timetables, vehicles, { entries: await catalogueEntries(), create: createVehicle }))
       await api.importTimetables(project.id, timetables)
-      say(fill('timetables_imported', { n: timetables.length, title: project.title }))
+      const imported = fill('timetables_imported', { n: timetables.length, title: project.title })
+      say(added.length ? `${imported} ${fill('vehicles_added', { n: added.length, names: added.map(a => a.name).join(', ') })}` : imported)
     } catch (err) {
       setError(errorText(t, err.code))
     }

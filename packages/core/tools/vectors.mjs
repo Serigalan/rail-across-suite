@@ -11,7 +11,7 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
-  canonicalJson, checkDocument, contentHash, documentHash, manifestOf, PayloadError, toDocument,
+  canonicalJson, checkDocument, checkOperations, contentHash, documentHash, manifestOf, PayloadError, toDocument, toOperations,
 } from '../src/document/index.js'
 import { loadNativeFile } from '../src/native/node.js'
 import { ksStation } from '../test/signallingFixture.js'
@@ -178,12 +178,67 @@ const documentVectors = () => [
   }),
 ]
 
+// ── operations-1.0 ──────────────────────────────────────────────────────────
+
+const stop = (id, place, extra = {}) => ({ id, place, station: place.toUpperCase(), track: null, stop: true, dwell: 60, departure: null, itinerary: null, ...extra })
+
+/** A project's timetables as the suite keeps them: a Takt of two trains and a freight train, a vehicle carried. */
+const operationsRecord = ({ vehicles = false } = {}) => ({
+  timetables: [
+    { id: 'tt-1', name: 'Grundtakt', data: {
+      dispatch: { mode: 'wait', priority: 'category', categories: ['ICE', 'RB'], times: { setup: 12, approach: 1000, release: 6 } },
+      trains: [
+        { id: 'z-1', number: '16001', category: 'RB', name: '', vehicle: 'osrd:loco', mode: null, comfort: 'STANDARD',
+          departure: 28800, margin: '5 %', distribution: 'mareco', points: [stop('a', 'halle'), stop('b', 'leipzig', { track: 't2', dwell: 120 })] },
+        { id: 'z-2', number: '16003', category: 'RB', name: '', vehicle: 'osrd:loco', mode: null, comfort: 'STANDARD',
+          departure: 32400, margin: '5 %', distribution: 'mareco', points: [stop('c', 'halle'), stop('d', 'leipzig')] },
+      ] } },
+    { id: 'tt-2', name: 'Güterverkehr', data: { trains: [
+      { id: 'g-1', number: '', category: 'Gz', name: 'Kies', vehicle: null, mode: null, comfort: 'STANDARD',
+        departure: 3600, margin: '', distribution: 'linear', points: [stop('e', 'leipzig', { stop: false }), stop('f', 'halle')] },
+    ] } },
+  ],
+  ...(vehicles ? { vehicles: [{ key: 'osrd:loco', vehicle: { name: 'Lok', mass: 84000, length: 19.5 } }] } : {}),
+})
+
+const OPERATIONS_CASES = [
+  ['the timetables of a project', () => {}],
+  ['with its vehicle carried', () => {}, { vehicles: true }],
+  ['no timetables', (doc) => { for (const c of Object.values(doc.domains.operations.collections)) c.length = 0 }],
+  ['a connection and a turnaround', (doc) => {
+    const c = doc.domains.operations.collections
+    c.connections.push({ id: 'an-1', fromTrainId: 'z-1', toTrainId: 'g-1', place: 'leipzig', changeTime: 300, waitUpTo: 180 })
+    c.turnarounds.push({ id: 'w-1', fromTrainId: 'z-1', toTrainId: 'z-2', leastTime: 600 })
+  }],
+  ['another version', (doc) => { doc.version = '2.0' }],
+  ['a train of no timetable', (doc) => { doc.domains.operations.collections.trains[0].timetableId = 'tt-9' }],
+  ['a departure as text', (doc) => { doc.domains.operations.collections.trains[0].departure = '8:00' }],
+  ['a vehicle that is not its hash', (doc) => { doc.blobs[Object.keys(doc.blobs)[0]].mass = 1 }, { vehicles: true }],
+  ['a collection missing', (doc) => { delete doc.domains.operations.collections.studies }],
+]
+
+function operationsVerdict(doc) {
+  try {
+    return { valid: true, hash: documentHash(checkOperations(doc)) }
+  } catch (err) {
+    if (!(err instanceof PayloadError)) throw err
+    return { valid: false, code: err.code }
+  }
+}
+
+const operationsVectors = () => OPERATIONS_CASES.map(([name, change, options = {}]) => {
+  const doc = structuredClone(toOperations(operationsRecord(options)))
+  change(doc)
+  return { name, document: doc, ...operationsVerdict(doc) }
+})
+
 // ── Write or check ──────────────────────────────────────────────────────────
 
 const FILES = {
   'canonical.json': canonicalVectors,
   'schema.json': schemaVectors,
   'documents.json': documentVectors,
+  'operations.json': operationsVectors,
 }
 
 function main() {

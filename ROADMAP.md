@@ -329,6 +329,11 @@ the same key with another content takes it under its hash, beside the catalogue'
 - **O1 — The format.** The schema whole (`schemas/operations/1.0.schema.json`): a schema is a version, so the
   collections that come to life later are in it from the first day. The door reading and writing it; vectors for
   JavaScript and Rust. *Done when* both give the same hashes for the vectors.
+  *Done:* `schemas/operations.schema.json` and `schemas/operations/1.0.schema.json`; the door in `crates/doc`
+  (`operations`) — the shape, the references into its own collections, a carried vehicle held to its hash —, the
+  timetables as the suite keeps them into a document and back (a train's kind by name, its vehicle by key, each
+  drawn as an id from the name or key); vectors in `schemas/vectors/operations.json`, written by the JavaScript's
+  face, held by the Rust.
 - **O2 — Today's data in it.** A data step of the server for the `timetable` rows, each project's the first
   revision of its operations; the door in place of the checks
   by hand (`timetable_fault`); a `rail-across-timetables` 1.0 file still read, and turned on its way in; export

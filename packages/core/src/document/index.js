@@ -21,3 +21,7 @@ export {
 export { PayloadError } from './payloadError.js'
 export { sha256Hex, sha256OfText } from './sha256.js'
 export { viaNative } from './viaNative.js'
+export {
+  checkOperations, fromOperations, isOperationsFile, OPERATIONS_FORMAT, OPERATIONS_FORMAT_NAME, OPERATIONS_SCHEMA_HASH, OPERATIONS_VERSION,
+  operationsSchemaOf, toOperations,
+} from './operations.js'

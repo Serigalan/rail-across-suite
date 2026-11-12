@@ -125,6 +125,15 @@ fn run_on(op: &str, input: &Value) -> Result<Value, Failure> {
             Ok(stations::renamed_station(&input["record"], id, input.get("name").filter(|n| !n.is_null()), uic))
         }
 
+        // operations (operations-1.0)
+        "operations.checkOperations" => {
+            let doc = rail_across_doc::operations::check_operations(input)?;
+            Ok(if doc == *input { json!({ "same": true }) } else { json!({ "doc": doc }) })
+        }
+        "operations.toOperations" => Ok(rail_across_doc::operations::to_operations(&input["record"], flag(input, "check", true))?),
+        "operations.fromOperations" => Ok(rail_across_doc::operations::from_operations(input)?),
+        "operations.schemaHash" => Ok(json!(rail_across_doc::operations::schema_hash())),
+
         // project
         "project.parseProjectsPayload" => Ok(json!({ "projects": persistence::parse_projects_payload(input)? })),
         "project.projectDocument" => Ok(persistence::project_document(

@@ -16,6 +16,7 @@ pub mod door;
 pub mod error;
 pub mod layers;
 pub mod manifest;
+pub mod operations;
 pub mod persistence;
 pub mod schema;
 pub mod stations;

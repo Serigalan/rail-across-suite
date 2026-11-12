@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "operations-document",
+  "title": "operations-1.0: a Rail-Across-Suite project's operations as one JSON file (.operations.json)",
+  "description": "The domain operations of one project with its version and the hash of its schema; the schemas the file carries, by hash; and the blobs its objects name, by hash — the envelope of infra-data (decision 0021), for what is the operation's. What the domain holds, its schema says.",
+  "type": "object",
+  "required": [
+    "format",
+    "version",
+    "domains",
+    "blobs"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "format": {
+      "const": "operations"
+    },
+    "version": {
+      "const": "1.0"
+    },
+    "domains": {
+      "type": "object",
+      "required": [
+        "operations"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "operations": {
+          "$ref": "#/$defs/Domain"
+        }
+      }
+    },
+    "schemas": {
+      "description": "The schemas of the domains, keyed by the hash the domains name them by.",
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^sha256:[0-9a-f]{64}$": {
+          "type": "object"
+        }
+      }
+    },
+    "blobs": {
+      "description": "Bulk arrays the objects name by hash, each the value whose canonical JSON has that hash.",
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^sha256:[0-9a-f]{64}$": {}
+      }
+    }
+  },
+  "$defs": {
+    "Domain": {
+      "type": "object",
+      "required": [
+        "version",
+        "schema",
+        "fields",
+        "collections"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+$"
+        },
+        "schema": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "dependsOn": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "fields": {
+          "type": "object"
+        },
+        "collections": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id"
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

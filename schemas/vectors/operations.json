@@ -1,0 +1,1321 @@
+[
+ {
+  "name": "the timetables of a project",
+  "document": {
+   "format": "operations",
+   "version": "1.0",
+   "domains": {
+    "operations": {
+     "version": "1.0",
+     "schema": "sha256:66e58d4eb06fdb3d24356cc45711d5def914454b324a339e4051f6ed1d01d46a",
+     "fields": {},
+     "collections": {
+      "timetables": [
+       {
+        "id": "tt-1",
+        "name": "Grundtakt",
+        "dispatching": {
+         "mode": "wait",
+         "priority": "kind",
+         "kindOrder": [
+          "ee078fe5-7f79-823b-9cb5-24300d98887c",
+          "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400"
+         ]
+        },
+        "blockingTimes": {
+         "setup": 12,
+         "approach": 1000,
+         "release": 6
+        }
+       },
+       {
+        "id": "tt-2",
+        "name": "Güterverkehr"
+       }
+      ],
+      "trains": [
+       {
+        "id": "g-1",
+        "timetableId": "tt-2",
+        "name": "Kies",
+        "trainKindId": "ebf496d8-0315-8505-affa-29e08cddc349",
+        "comfort": "STANDARD",
+        "departure": 3600,
+        "distribution": "linear",
+        "points": [
+         {
+          "id": "e",
+          "place": "leipzig",
+          "station": "LEIPZIG",
+          "stop": false,
+          "dwell": 60
+         },
+         {
+          "id": "f",
+          "place": "halle",
+          "station": "HALLE",
+          "stop": true,
+          "dwell": 60
+         }
+        ]
+       },
+       {
+        "id": "z-1",
+        "timetableId": "tt-1",
+        "number": "16001",
+        "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
+        "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
+        "comfort": "STANDARD",
+        "departure": 28800,
+        "margin": "5 %",
+        "distribution": "mareco",
+        "points": [
+         {
+          "id": "a",
+          "place": "halle",
+          "station": "HALLE",
+          "stop": true,
+          "dwell": 60
+         },
+         {
+          "id": "b",
+          "place": "leipzig",
+          "station": "LEIPZIG",
+          "track": "t2",
+          "stop": true,
+          "dwell": 120
+         }
+        ]
+       },
+       {
+        "id": "z-2",
+        "timetableId": "tt-1",
+        "number": "16003",
+        "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
+        "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
+        "comfort": "STANDARD",
+        "departure": 32400,
+        "margin": "5 %",
+        "distribution": "mareco",
+        "points": [
+         {
+          "id": "c",
+          "place": "halle",
+          "station": "HALLE",
+          "stop": true,
+          "dwell": 60
+         },
+         {
+          "id": "d",
+          "place": "leipzig",
+          "station": "LEIPZIG",
+          "stop": true,
+          "dwell": 60
+         }
+        ]
+       }
+      ],
+      "trainKinds": [
+       {
+        "id": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
+        "name": "RB",
+        "rank": 4
+       },
+       {
+        "id": "ebf496d8-0315-8505-affa-29e08cddc349",
+        "name": "Gz",
+        "rank": 7
+       },
+       {
+        "id": "ee078fe5-7f79-823b-9cb5-24300d98887c",
+        "name": "ICE",
+        "rank": 0
+       }
+      ],
+      "formations": [
+       {
+        "id": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
+        "tractionUnits": [
+         {
+          "vehicle": "osrd:loco"
+         }
+        ]
+       }
+      ],
+      "vehicles": [],
+      "connections": [],
+      "turnarounds": [],
+      "delayScenarios": [],
+      "studies": []
+     }
+    }
+   },
+   "blobs": {}
+  },
+  "valid": true,
+  "hash": "sha256:d8a302e8f456ed4aa400115f4a241d7404d6ee2f4c11a622485b847bbc309e82"
+ },
+ {
+  "name": "with its vehicle carried",
+  "document": {
+   "format": "operations",
+   "version": "1.0",
+   "domains": {
+    "operations": {
+     "version": "1.0",
+     "schema": "sha256:66e58d4eb06fdb3d24356cc45711d5def914454b324a339e4051f6ed1d01d46a",
+     "fields": {},
+     "collections": {
+      "timetables": [
+       {
+        "id": "tt-1",
+        "name": "Grundtakt",
+        "dispatching": {
+         "mode": "wait",
+         "priority": "kind",
+         "kindOrder": [
+          "ee078fe5-7f79-823b-9cb5-24300d98887c",
+          "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400"
+         ]
+        },
+        "blockingTimes": {
+         "setup": 12,
+         "approach": 1000,
+         "release": 6
+        }
+       },
+       {
+        "id": "tt-2",
+        "name": "Güterverkehr"
+       }
+      ],
+      "trains": [
+       {
+        "id": "g-1",
+        "timetableId": "tt-2",
+        "name": "Kies",
+        "trainKindId": "ebf496d8-0315-8505-affa-29e08cddc349",
+        "comfort": "STANDARD",
+        "departure": 3600,
+        "distribution": "linear",
+        "points": [
+         {
+          "id": "e",
+          "place": "leipzig",
+          "station": "LEIPZIG",
+          "stop": false,
+          "dwell": 60
+         },
+         {
+          "id": "f",
+          "place": "halle",
+          "station": "HALLE",
+          "stop": true,
+          "dwell": 60
+         }
+        ]
+       },
+       {
+        "id": "z-1",
+        "timetableId": "tt-1",
+        "number": "16001",
+        "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
+        "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
+        "comfort": "STANDARD",
+        "departure": 28800,
+        "margin": "5 %",
+        "distribution": "mareco",
+        "points": [
+         {
+          "id": "a",
+          "place": "halle",
+          "station": "HALLE",
+          "stop": true,
+          "dwell": 60
+         },
+         {
+          "id": "b",
+          "place": "leipzig",
+          "station": "LEIPZIG",
+          "track": "t2",
+          "stop": true,
+          "dwell": 120
+         }
+        ]
+       },
+       {
+        "id": "z-2",
+        "timetableId": "tt-1",
+        "number": "16003",
+        "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
+        "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
+        "comfort": "STANDARD",
+        "departure": 32400,
+        "margin": "5 %",
+        "distribution": "mareco",
+        "points": [
+         {
+          "id": "c",
+          "place": "halle",
+          "station": "HALLE",
+          "stop": true,
+          "dwell": 60
+         },
+         {
+          "id": "d",
+          "place": "leipzig",
+          "station": "LEIPZIG",
+          "stop": true,
+          "dwell": 60
+         }
+        ]
+       }
+      ],
+      "trainKinds": [
+       {
+        "id": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
+        "name": "RB",
+        "rank": 4
+       },
+       {
+        "id": "ebf496d8-0315-8505-affa-29e08cddc349",
+        "name": "Gz",
+        "rank": 7
+       },
+       {
+        "id": "ee078fe5-7f79-823b-9cb5-24300d98887c",
+        "name": "ICE",
+        "rank": 0
+       }
+      ],
+      "formations": [
+       {
+        "id": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
+        "tractionUnits": [
+         {
+          "vehicle": "osrd:loco",
+          "hash": "sha256:56cf850de652b3633c568b7954c449ce0bd5744815c4ebbbb9b3b39d563e4164"
+         }
+        ]
+       }
+      ],
+      "vehicles": [
+       {
+        "id": "1f54f341-2114-80ac-a632-67bddd35de29",
+        "key": "osrd:loco",
+        "hash": "sha256:56cf850de652b3633c568b7954c449ce0bd5744815c4ebbbb9b3b39d563e4164",
+        "rollingStock": "sha256:56cf850de652b3633c568b7954c449ce0bd5744815c4ebbbb9b3b39d563e4164"
+       }
+      ],
+      "connections": [],
+      "turnarounds": [],
+      "delayScenarios": [],
+      "studies": []
+     }
+    }
+   },
+   "blobs": {
+    "sha256:56cf850de652b3633c568b7954c449ce0bd5744815c4ebbbb9b3b39d563e4164": {
+     "name": "Lok",
+     "mass": 84000,
+     "length": 19.5
+    }
+   }
+  },
+  "valid": true,
+  "hash": "sha256:db0f658b00e4fa8fd6c30a52616c99bc5caa64feefc6906180ac17e14c15c66a"
+ },
+ {
+  "name": "no timetables",
+  "document": {
+   "format": "operations",
+   "version": "1.0",
+   "domains": {
+    "operations": {
+     "version": "1.0",
+     "schema": "sha256:66e58d4eb06fdb3d24356cc45711d5def914454b324a339e4051f6ed1d01d46a",
+     "fields": {},
+     "collections": {
+      "timetables": [],
+      "trains": [],
+      "trainKinds": [],
+      "formations": [],
+      "vehicles": [],
+      "connections": [],
+      "turnarounds": [],
+      "delayScenarios": [],
+      "studies": []
+     }
+    }
+   },
+   "blobs": {}
+  },
+  "valid": true,
+  "hash": "sha256:c2c687e8e3662ab833a5bda50043bebd1db84668b6ea48b2eac545c10c21403a"
+ },
+ {
+  "name": "a connection and a turnaround",
+  "document": {
+   "format": "operations",
+   "version": "1.0",
+   "domains": {
+    "operations": {
+     "version": "1.0",
+     "schema": "sha256:66e58d4eb06fdb3d24356cc45711d5def914454b324a339e4051f6ed1d01d46a",
+     "fields": {},
+     "collections": {
+      "timetables": [
+       {
+        "id": "tt-1",
+        "name": "Grundtakt",
+        "dispatching": {
+         "mode": "wait",
+         "priority": "kind",
+         "kindOrder": [
+          "ee078fe5-7f79-823b-9cb5-24300d98887c",
+          "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400"
+         ]
+        },
+        "blockingTimes": {
+         "setup": 12,
+         "approach": 1000,
+         "release": 6
+        }
+       },
+       {
+        "id": "tt-2",
+        "name": "Güterverkehr"
+       }
+      ],
+      "trains": [
+       {
+        "id": "g-1",
+        "timetableId": "tt-2",
+        "name": "Kies",
+        "trainKindId": "ebf496d8-0315-8505-affa-29e08cddc349",
+        "comfort": "STANDARD",
+        "departure": 3600,
+        "distribution": "linear",
+        "points": [
+         {
+          "id": "e",
+          "place": "leipzig",
+          "station": "LEIPZIG",
+          "stop": false,
+          "dwell": 60
+         },
+         {
+          "id": "f",
+          "place": "halle",
+          "station": "HALLE",
+          "stop": true,
+          "dwell": 60
+         }
+        ]
+       },
+       {
+        "id": "z-1",
+        "timetableId": "tt-1",
+        "number": "16001",
+        "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
+        "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
+        "comfort": "STANDARD",
+        "departure": 28800,
+        "margin": "5 %",
+        "distribution": "mareco",
+        "points": [
+         {
+          "id": "a",
+          "place": "halle",
+          "station": "HALLE",
+          "stop": true,
+          "dwell": 60
+         },
+         {
+          "id": "b",
+          "place": "leipzig",
+          "station": "LEIPZIG",
+          "track": "t2",
+          "stop": true,
+          "dwell": 120
+         }
+        ]
+       },
+       {
+        "id": "z-2",
+        "timetableId": "tt-1",
+        "number": "16003",
+        "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
+        "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
+        "comfort": "STANDARD",
+        "departure": 32400,
+        "margin": "5 %",
+        "distribution": "mareco",
+        "points": [
+         {
+          "id": "c",
+          "place": "halle",
+          "station": "HALLE",
+          "stop": true,
+          "dwell": 60
+         },
+         {
+          "id": "d",
+          "place": "leipzig",
+          "station": "LEIPZIG",
+          "stop": true,
+          "dwell": 60
+         }
+        ]
+       }
+      ],
+      "trainKinds": [
+       {
+        "id": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
+        "name": "RB",
+        "rank": 4
+       },
+       {
+        "id": "ebf496d8-0315-8505-affa-29e08cddc349",
+        "name": "Gz",
+        "rank": 7
+       },
+       {
+        "id": "ee078fe5-7f79-823b-9cb5-24300d98887c",
+        "name": "ICE",
+        "rank": 0
+       }
+      ],
+      "formations": [
+       {
+        "id": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
+        "tractionUnits": [
+         {
+          "vehicle": "osrd:loco"
+         }
+        ]
+       }
+      ],
+      "vehicles": [],
+      "connections": [
+       {
+        "id": "an-1",
+        "fromTrainId": "z-1",
+        "toTrainId": "g-1",
+        "place": "leipzig",
+        "changeTime": 300,
+        "waitUpTo": 180
+       }
+      ],
+      "turnarounds": [
+       {
+        "id": "w-1",
+        "fromTrainId": "z-1",
+        "toTrainId": "z-2",
+        "leastTime": 600
+       }
+      ],
+      "delayScenarios": [],
+      "studies": []
+     }
+    }
+   },
+   "blobs": {}
+  },
+  "valid": true,
+  "hash": "sha256:b4f341d7b55194bb375fbcc8b99c64fc80f83d40693bea2296ca013470d0e7de"
+ },
+ {
+  "name": "another version",
+  "document": {
+   "format": "operations",
+   "version": "2.0",
+   "domains": {
+    "operations": {
+     "version": "1.0",
+     "schema": "sha256:66e58d4eb06fdb3d24356cc45711d5def914454b324a339e4051f6ed1d01d46a",
+     "fields": {},
+     "collections": {
+      "timetables": [
+       {
+        "id": "tt-1",
+        "name": "Grundtakt",
+        "dispatching": {
+         "mode": "wait",
+         "priority": "kind",
+         "kindOrder": [
+          "ee078fe5-7f79-823b-9cb5-24300d98887c",
+          "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400"
+         ]
+        },
+        "blockingTimes": {
+         "setup": 12,
+         "approach": 1000,
+         "release": 6
+        }
+       },
+       {
+        "id": "tt-2",
+        "name": "Güterverkehr"
+       }
+      ],
+      "trains": [
+       {
+        "id": "g-1",
+        "timetableId": "tt-2",
+        "name": "Kies",
+        "trainKindId": "ebf496d8-0315-8505-affa-29e08cddc349",
+        "comfort": "STANDARD",
+        "departure": 3600,
+        "distribution": "linear",
+        "points": [
+         {
+          "id": "e",
+          "place": "leipzig",
+          "station": "LEIPZIG",
+          "stop": false,
+          "dwell": 60
+         },
+         {
+          "id": "f",
+          "place": "halle",
+          "station": "HALLE",
+          "stop": true,
+          "dwell": 60
+         }
+        ]
+       },
+       {
+        "id": "z-1",
+        "timetableId": "tt-1",
+        "number": "16001",
+        "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
+        "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
+        "comfort": "STANDARD",
+        "departure": 28800,
+        "margin": "5 %",
+        "distribution": "mareco",
+        "points": [
+         {
+          "id": "a",
+          "place": "halle",
+          "station": "HALLE",
+          "stop": true,
+          "dwell": 60
+         },
+         {
+          "id": "b",
+          "place": "leipzig",
+          "station": "LEIPZIG",
+          "track": "t2",
+          "stop": true,
+          "dwell": 120
+         }
+        ]
+       },
+       {
+        "id": "z-2",
+        "timetableId": "tt-1",
+        "number": "16003",
+        "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
+        "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
+        "comfort": "STANDARD",
+        "departure": 32400,
+        "margin": "5 %",
+        "distribution": "mareco",
+        "points": [
+         {
+          "id": "c",
+          "place": "halle",
+          "station": "HALLE",
+          "stop": true,
+          "dwell": 60
+         },
+         {
+          "id": "d",
+          "place": "leipzig",
+          "station": "LEIPZIG",
+          "stop": true,
+          "dwell": 60
+         }
+        ]
+       }
+      ],
+      "trainKinds": [
+       {
+        "id": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
+        "name": "RB",
+        "rank": 4
+       },
+       {
+        "id": "ebf496d8-0315-8505-affa-29e08cddc349",
+        "name": "Gz",
+        "rank": 7
+       },
+       {
+        "id": "ee078fe5-7f79-823b-9cb5-24300d98887c",
+        "name": "ICE",
+        "rank": 0
+       }
+      ],
+      "formations": [
+       {
+        "id": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
+        "tractionUnits": [
+         {
+          "vehicle": "osrd:loco"
+         }
+        ]
+       }
+      ],
+      "vehicles": [],
+      "connections": [],
+      "turnarounds": [],
+      "delayScenarios": [],
+      "studies": []
+     }
+    }
+   },
+   "blobs": {}
+  },
+  "valid": false,
+  "code": "unsupported_version"
+ },
+ {
+  "name": "a train of no timetable",
+  "document": {
+   "format": "operations",
+   "version": "1.0",
+   "domains": {
+    "operations": {
+     "version": "1.0",
+     "schema": "sha256:66e58d4eb06fdb3d24356cc45711d5def914454b324a339e4051f6ed1d01d46a",
+     "fields": {},
+     "collections": {
+      "timetables": [
+       {
+        "id": "tt-1",
+        "name": "Grundtakt",
+        "dispatching": {
+         "mode": "wait",
+         "priority": "kind",
+         "kindOrder": [
+          "ee078fe5-7f79-823b-9cb5-24300d98887c",
+          "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400"
+         ]
+        },
+        "blockingTimes": {
+         "setup": 12,
+         "approach": 1000,
+         "release": 6
+        }
+       },
+       {
+        "id": "tt-2",
+        "name": "Güterverkehr"
+       }
+      ],
+      "trains": [
+       {
+        "id": "g-1",
+        "timetableId": "tt-9",
+        "name": "Kies",
+        "trainKindId": "ebf496d8-0315-8505-affa-29e08cddc349",
+        "comfort": "STANDARD",
+        "departure": 3600,
+        "distribution": "linear",
+        "points": [
+         {
+          "id": "e",
+          "place": "leipzig",
+          "station": "LEIPZIG",
+          "stop": false,
+          "dwell": 60
+         },
+         {
+          "id": "f",
+          "place": "halle",
+          "station": "HALLE",
+          "stop": true,
+          "dwell": 60
+         }
+        ]
+       },
+       {
+        "id": "z-1",
+        "timetableId": "tt-1",
+        "number": "16001",
+        "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
+        "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
+        "comfort": "STANDARD",
+        "departure": 28800,
+        "margin": "5 %",
+        "distribution": "mareco",
+        "points": [
+         {
+          "id": "a",
+          "place": "halle",
+          "station": "HALLE",
+          "stop": true,
+          "dwell": 60
+         },
+         {
+          "id": "b",
+          "place": "leipzig",
+          "station": "LEIPZIG",
+          "track": "t2",
+          "stop": true,
+          "dwell": 120
+         }
+        ]
+       },
+       {
+        "id": "z-2",
+        "timetableId": "tt-1",
+        "number": "16003",
+        "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
+        "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
+        "comfort": "STANDARD",
+        "departure": 32400,
+        "margin": "5 %",
+        "distribution": "mareco",
+        "points": [
+         {
+          "id": "c",
+          "place": "halle",
+          "station": "HALLE",
+          "stop": true,
+          "dwell": 60
+         },
+         {
+          "id": "d",
+          "place": "leipzig",
+          "station": "LEIPZIG",
+          "stop": true,
+          "dwell": 60
+         }
+        ]
+       }
+      ],
+      "trainKinds": [
+       {
+        "id": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
+        "name": "RB",
+        "rank": 4
+       },
+       {
+        "id": "ebf496d8-0315-8505-affa-29e08cddc349",
+        "name": "Gz",
+        "rank": 7
+       },
+       {
+        "id": "ee078fe5-7f79-823b-9cb5-24300d98887c",
+        "name": "ICE",
+        "rank": 0
+       }
+      ],
+      "formations": [
+       {
+        "id": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
+        "tractionUnits": [
+         {
+          "vehicle": "osrd:loco"
+         }
+        ]
+       }
+      ],
+      "vehicles": [],
+      "connections": [],
+      "turnarounds": [],
+      "delayScenarios": [],
+      "studies": []
+     }
+    }
+   },
+   "blobs": {}
+  },
+  "valid": false,
+  "code": "invalid_payload"
+ },
+ {
+  "name": "a departure as text",
+  "document": {
+   "format": "operations",
+   "version": "1.0",
+   "domains": {
+    "operations": {
+     "version": "1.0",
+     "schema": "sha256:66e58d4eb06fdb3d24356cc45711d5def914454b324a339e4051f6ed1d01d46a",
+     "fields": {},
+     "collections": {
+      "timetables": [
+       {
+        "id": "tt-1",
+        "name": "Grundtakt",
+        "dispatching": {
+         "mode": "wait",
+         "priority": "kind",
+         "kindOrder": [
+          "ee078fe5-7f79-823b-9cb5-24300d98887c",
+          "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400"
+         ]
+        },
+        "blockingTimes": {
+         "setup": 12,
+         "approach": 1000,
+         "release": 6
+        }
+       },
+       {
+        "id": "tt-2",
+        "name": "Güterverkehr"
+       }
+      ],
+      "trains": [
+       {
+        "id": "g-1",
+        "timetableId": "tt-2",
+        "name": "Kies",
+        "trainKindId": "ebf496d8-0315-8505-affa-29e08cddc349",
+        "comfort": "STANDARD",
+        "departure": "8:00",
+        "distribution": "linear",
+        "points": [
+         {
+          "id": "e",
+          "place": "leipzig",
+          "station": "LEIPZIG",
+          "stop": false,
+          "dwell": 60
+         },
+         {
+          "id": "f",
+          "place": "halle",
+          "station": "HALLE",
+          "stop": true,
+          "dwell": 60
+         }
+        ]
+       },
+       {
+        "id": "z-1",
+        "timetableId": "tt-1",
+        "number": "16001",
+        "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
+        "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
+        "comfort": "STANDARD",
+        "departure": 28800,
+        "margin": "5 %",
+        "distribution": "mareco",
+        "points": [
+         {
+          "id": "a",
+          "place": "halle",
+          "station": "HALLE",
+          "stop": true,
+          "dwell": 60
+         },
+         {
+          "id": "b",
+          "place": "leipzig",
+          "station": "LEIPZIG",
+          "track": "t2",
+          "stop": true,
+          "dwell": 120
+         }
+        ]
+       },
+       {
+        "id": "z-2",
+        "timetableId": "tt-1",
+        "number": "16003",
+        "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
+        "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
+        "comfort": "STANDARD",
+        "departure": 32400,
+        "margin": "5 %",
+        "distribution": "mareco",
+        "points": [
+         {
+          "id": "c",
+          "place": "halle",
+          "station": "HALLE",
+          "stop": true,
+          "dwell": 60
+         },
+         {
+          "id": "d",
+          "place": "leipzig",
+          "station": "LEIPZIG",
+          "stop": true,
+          "dwell": 60
+         }
+        ]
+       }
+      ],
+      "trainKinds": [
+       {
+        "id": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
+        "name": "RB",
+        "rank": 4
+       },
+       {
+        "id": "ebf496d8-0315-8505-affa-29e08cddc349",
+        "name": "Gz",
+        "rank": 7
+       },
+       {
+        "id": "ee078fe5-7f79-823b-9cb5-24300d98887c",
+        "name": "ICE",
+        "rank": 0
+       }
+      ],
+      "formations": [
+       {
+        "id": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
+        "tractionUnits": [
+         {
+          "vehicle": "osrd:loco"
+         }
+        ]
+       }
+      ],
+      "vehicles": [],
+      "connections": [],
+      "turnarounds": [],
+      "delayScenarios": [],
+      "studies": []
+     }
+    }
+   },
+   "blobs": {}
+  },
+  "valid": false,
+  "code": "invalid_payload"
+ },
+ {
+  "name": "a vehicle that is not its hash",
+  "document": {
+   "format": "operations",
+   "version": "1.0",
+   "domains": {
+    "operations": {
+     "version": "1.0",
+     "schema": "sha256:66e58d4eb06fdb3d24356cc45711d5def914454b324a339e4051f6ed1d01d46a",
+     "fields": {},
+     "collections": {
+      "timetables": [
+       {
+        "id": "tt-1",
+        "name": "Grundtakt",
+        "dispatching": {
+         "mode": "wait",
+         "priority": "kind",
+         "kindOrder": [
+          "ee078fe5-7f79-823b-9cb5-24300d98887c",
+          "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400"
+         ]
+        },
+        "blockingTimes": {
+         "setup": 12,
+         "approach": 1000,
+         "release": 6
+        }
+       },
+       {
+        "id": "tt-2",
+        "name": "Güterverkehr"
+       }
+      ],
+      "trains": [
+       {
+        "id": "g-1",
+        "timetableId": "tt-2",
+        "name": "Kies",
+        "trainKindId": "ebf496d8-0315-8505-affa-29e08cddc349",
+        "comfort": "STANDARD",
+        "departure": 3600,
+        "distribution": "linear",
+        "points": [
+         {
+          "id": "e",
+          "place": "leipzig",
+          "station": "LEIPZIG",
+          "stop": false,
+          "dwell": 60
+         },
+         {
+          "id": "f",
+          "place": "halle",
+          "station": "HALLE",
+          "stop": true,
+          "dwell": 60
+         }
+        ]
+       },
+       {
+        "id": "z-1",
+        "timetableId": "tt-1",
+        "number": "16001",
+        "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
+        "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
+        "comfort": "STANDARD",
+        "departure": 28800,
+        "margin": "5 %",
+        "distribution": "mareco",
+        "points": [
+         {
+          "id": "a",
+          "place": "halle",
+          "station": "HALLE",
+          "stop": true,
+          "dwell": 60
+         },
+         {
+          "id": "b",
+          "place": "leipzig",
+          "station": "LEIPZIG",
+          "track": "t2",
+          "stop": true,
+          "dwell": 120
+         }
+        ]
+       },
+       {
+        "id": "z-2",
+        "timetableId": "tt-1",
+        "number": "16003",
+        "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
+        "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
+        "comfort": "STANDARD",
+        "departure": 32400,
+        "margin": "5 %",
+        "distribution": "mareco",
+        "points": [
+         {
+          "id": "c",
+          "place": "halle",
+          "station": "HALLE",
+          "stop": true,
+          "dwell": 60
+         },
+         {
+          "id": "d",
+          "place": "leipzig",
+          "station": "LEIPZIG",
+          "stop": true,
+          "dwell": 60
+         }
+        ]
+       }
+      ],
+      "trainKinds": [
+       {
+        "id": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
+        "name": "RB",
+        "rank": 4
+       },
+       {
+        "id": "ebf496d8-0315-8505-affa-29e08cddc349",
+        "name": "Gz",
+        "rank": 7
+       },
+       {
+        "id": "ee078fe5-7f79-823b-9cb5-24300d98887c",
+        "name": "ICE",
+        "rank": 0
+       }
+      ],
+      "formations": [
+       {
+        "id": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
+        "tractionUnits": [
+         {
+          "vehicle": "osrd:loco",
+          "hash": "sha256:56cf850de652b3633c568b7954c449ce0bd5744815c4ebbbb9b3b39d563e4164"
+         }
+        ]
+       }
+      ],
+      "vehicles": [
+       {
+        "id": "1f54f341-2114-80ac-a632-67bddd35de29",
+        "key": "osrd:loco",
+        "hash": "sha256:56cf850de652b3633c568b7954c449ce0bd5744815c4ebbbb9b3b39d563e4164",
+        "rollingStock": "sha256:56cf850de652b3633c568b7954c449ce0bd5744815c4ebbbb9b3b39d563e4164"
+       }
+      ],
+      "connections": [],
+      "turnarounds": [],
+      "delayScenarios": [],
+      "studies": []
+     }
+    }
+   },
+   "blobs": {
+    "sha256:56cf850de652b3633c568b7954c449ce0bd5744815c4ebbbb9b3b39d563e4164": {
+     "name": "Lok",
+     "mass": 1,
+     "length": 19.5
+    }
+   }
+  },
+  "valid": false,
+  "code": "invalid_payload"
+ },
+ {
+  "name": "a collection missing",
+  "document": {
+   "format": "operations",
+   "version": "1.0",
+   "domains": {
+    "operations": {
+     "version": "1.0",
+     "schema": "sha256:66e58d4eb06fdb3d24356cc45711d5def914454b324a339e4051f6ed1d01d46a",
+     "fields": {},
+     "collections": {
+      "timetables": [
+       {
+        "id": "tt-1",
+        "name": "Grundtakt",
+        "dispatching": {
+         "mode": "wait",
+         "priority": "kind",
+         "kindOrder": [
+          "ee078fe5-7f79-823b-9cb5-24300d98887c",
+          "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400"
+         ]
+        },
+        "blockingTimes": {
+         "setup": 12,
+         "approach": 1000,
+         "release": 6
+        }
+       },
+       {
+        "id": "tt-2",
+        "name": "Güterverkehr"
+       }
+      ],
+      "trains": [
+       {
+        "id": "g-1",
+        "timetableId": "tt-2",
+        "name": "Kies",
+        "trainKindId": "ebf496d8-0315-8505-affa-29e08cddc349",
+        "comfort": "STANDARD",
+        "departure": 3600,
+        "distribution": "linear",
+        "points": [
+         {
+          "id": "e",
+          "place": "leipzig",
+          "station": "LEIPZIG",
+          "stop": false,
+          "dwell": 60
+         },
+         {
+          "id": "f",
+          "place": "halle",
+          "station": "HALLE",
+          "stop": true,
+          "dwell": 60
+         }
+        ]
+       },
+       {
+        "id": "z-1",
+        "timetableId": "tt-1",
+        "number": "16001",
+        "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
+        "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
+        "comfort": "STANDARD",
+        "departure": 28800,
+        "margin": "5 %",
+        "distribution": "mareco",
+        "points": [
+         {
+          "id": "a",
+          "place": "halle",
+          "station": "HALLE",
+          "stop": true,
+          "dwell": 60
+         },
+         {
+          "id": "b",
+          "place": "leipzig",
+          "station": "LEIPZIG",
+          "track": "t2",
+          "stop": true,
+          "dwell": 120
+         }
+        ]
+       },
+       {
+        "id": "z-2",
+        "timetableId": "tt-1",
+        "number": "16003",
+        "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
+        "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
+        "comfort": "STANDARD",
+        "departure": 32400,
+        "margin": "5 %",
+        "distribution": "mareco",
+        "points": [
+         {
+          "id": "c",
+          "place": "halle",
+          "station": "HALLE",
+          "stop": true,
+          "dwell": 60
+         },
+         {
+          "id": "d",
+          "place": "leipzig",
+          "station": "LEIPZIG",
+          "stop": true,
+          "dwell": 60
+         }
+        ]
+       }
+      ],
+      "trainKinds": [
+       {
+        "id": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
+        "name": "RB",
+        "rank": 4
+       },
+       {
+        "id": "ebf496d8-0315-8505-affa-29e08cddc349",
+        "name": "Gz",
+        "rank": 7
+       },
+       {
+        "id": "ee078fe5-7f79-823b-9cb5-24300d98887c",
+        "name": "ICE",
+        "rank": 0
+       }
+      ],
+      "formations": [
+       {
+        "id": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
+        "tractionUnits": [
+         {
+          "vehicle": "osrd:loco"
+         }
+        ]
+       }
+      ],
+      "vehicles": [],
+      "connections": [],
+      "turnarounds": [],
+      "delayScenarios": []
+     }
+    }
+   },
+   "blobs": {}
+  },
+  "valid": false,
+  "code": "invalid_payload"
+ }
+]

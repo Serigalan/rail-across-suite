@@ -13,14 +13,16 @@ document and brings it to 2.0: `layout` and the platforms into `civil`, the stop
 | File | What it is |
 |---|---|
 | `infra-data.schema.json` | infra-data-2.0, a project as one JSON file (`.railacross.json`): the domains, the schemas it carries, its blobs |
-| `core/2.0.schema.json` | Domain `core` 2.0: tracks, switches and connectors, end marks, km lines, the operational point register, the stopping places, the construction stages; the core types `TrackEnd`, `TrackLocation`, `TrackRange`, `TrackPath`, `Lifespan`, `Ref` |
-| `civil/1.0.schema.json` | Domain `civil` 1.0: platforms, each naming the stopping places at it; named runs of tracks (`trackPaths`), measured axes, reference axes, the plan header, the project picture |
+| `core/2.0.schema.json` | Domain `core` 2.0: tracks, switches and connectors, end marks, km lines, the operational point register, the stopping places (passenger stops among them), the named runs of tracks (`trackPaths`), the construction stages; the core types `TrackEnd`, `TrackLocation`, `TrackRange`, `TrackPath`, `Lifespan`, `Ref` |
+| `civil/1.0.schema.json` | Domain `civil` 1.0: platforms, each naming the stopping places at it; measured axes, reference axes, the plan header, the project picture |
 | `signalling/2.0.schema.json` | Domain `signalling` 2.0, after PlanPro 1.10: signals and boards with their logical signals (one per signalling system, as in OSRD), frames and aspects, detection points, track sections, switch elements, train and shunting routes with their setting and release times, overlaps, flank protection, the balises and magnets of train protection, train protection by ranges, station boundaries, itineraries ([decision 0011](../docs/decisions/0011-signalling-domain.md)); which systems, kinds, settings and aspects there are is the catalogue's (`packages/core/constraints/db-ril-301.json`) |
 | `electrification/1.0.schema.json` | Domain `electrification` 1.0: the electrified ranges of the tracks and their systems |
 | `infra-data-1.0.schema.json`, `core/1.0.schema.json`, `layout/1.0.schema.json`, `signalling/1.0.schema.json` | infra-data 1.0 as it was last, for reference: the door no longer checks against them, it brings such a document to 2.0 |
+| `operations.schema.json`, `operations/1.0.schema.json` | operations-1.0, a project's operations as one JSON file (`.operations.json`) in the envelope of infra-data: the domain `operations` 1.0 — timetables, trains, train kinds, formations, the vehicles they run with (carried as blobs), connections, turnarounds, delay scenarios, studies (the [roadmap](../ROADMAP.md), phase 4) |
 | `vectors/canonical.json` | Values as JSON text, their canonical JSON (RFC 8785) and its hash |
 | `vectors/schema.json` | Values checked against a part of a schema: whether it takes them, and where it does not |
 | `vectors/documents.json` | Whole documents: the door's verdict, and for those it takes the manifest and the document's hash — infra-data 1.0 ones among them |
+| `vectors/operations.json` | Whole operations documents: the door's verdict, and for those it takes the document's hash |
 | `vectors/infra-data-1.0.json` | infra-data 1.0 documents as the core wrote them, frozen: the inputs of the 1.0 cases of `documents.json` |
 
 The schemas are linked into the core (`packages/core/schemas`) and read by its Rust crates (`crates/doc`); the types of the

@@ -7,12 +7,12 @@ import { stationsOf } from '@rail-across/running-times'
 import { dispatchOf, formatClock, parseClock, timetableApi, trainTitle } from '@rail-across/timetables'
 import { useRuns } from '@rail-across/timetables/runs'
 import { useCatalogue } from '@rail-across/vehicles'
-import { analyseStretch, BOUNDS, proposedStretches, recordAtStage, STAGES, stationOccupancy } from '@rail-across/capacity'
+import { analyseStretch, BOUNDS, proposedStretches, recordAtStage, stagesOf, stationOccupancy } from '@rail-across/capacity'
 import { useTexts } from './i18n.js'
 import { api } from './api.js'
 import { projectsUrl } from './suite.js'
 import Diagram from './Diagram.jsx'
-import { busiestHour, minutes, percent, periodText, resourceLabel } from './study.js'
+import { busiestHour, minutes, percent, periodText, resourceLabel, stageName } from './study.js'
 import { HomeIcon, LogoIcon, SettingsIcon, StationIcon, StretchIcon, StudyIcon } from './icons.jsx'
 
 const NO_TRAINS = []
@@ -97,11 +97,11 @@ export default function Editor({ project, variants, initialVariant }) {
   const run = [...a.runs.values()]
   const done = run.filter(r => r?.blocks).length
   const failed = run.filter(r => r && (r.problems || r.error || r.failedAt != null)).length
-  const sideName = (id, stage) => `${variants.find(v => v.id === id)?.name ?? '—'} · ${t(`stage_${stage}`)}`
+  const sideName = (id, stage) => `${variants.find(v => v.id === id)?.name ?? '—'} · ${stageName(stage, t, language)}`
   const trackName = (id) => a.record?.tracks?.find(tr => tr.id === id)?.name ?? id?.slice(0, 8) ?? '—'
 
   const panel = section === 'study'
-    ? <StudyPanel {...{ t, study, set, period, timetables, timetableId, setTimetableId, variants }} />
+    ? <StudyPanel {...{ t, language, study, set, period, timetables, timetableId, setTimetableId, variants, heads }} />
     : section === 'stations'
       ? <ListPanel title={t('section_stations')} intro={t('section_stations_intro')} empty={t('stations_none')}
         items={stations.map(s => ({ id: s.key, label: s.name, icon: <StationIcon />, end: `${s.tracks.length}` }))} chosen={chosen} choose={setChosen} />
@@ -186,9 +186,13 @@ function ClockField({ label, value, onChange }) {
   return <TextField compact label={label} value={text} onChange={setText} onBlur={() => { const s = parseClock(text); if (s != null) onChange(s); else setText(formatClock(value)) }} />
 }
 
-function StudyPanel({ t, study, set, period, timetables, timetableId, setTimetableId, variants }) {
+function StudyPanel({ t, language, study, set, period, timetables, timetableId, setTimetableId, variants, heads }) {
   const variantOptions = variants.map(v => ({ value: v.id, label: v.name }))
-  const stageOptions = STAGES.map(s => ({ value: s, label: t(`stage_${s}`) }))
+  // The stages each variant has: the existing state, every day something is put into or taken out of service, the final.
+  const stageOptions = (id) => {
+    const listed = stagesOf(heads.get(id) ?? { id: 'none' })
+    return (listed.length ? listed : [{ key: 'existing' }, { key: 'final' }]).map(s => ({ value: s.key, label: stageName(s.key, t, language) }))
+  }
   return (
     <Panel title={t('section_study')} intro={t('section_study_intro')}>
       <Section title={t('timetable')}>
@@ -206,13 +210,13 @@ function StudyPanel({ t, study, set, period, timetables, timetableId, setTimetab
       <Section title={t('side_a')}>
         <div className="ui-fields">
           <SelectField wide compact label={t('variant')} value={study.variantId} options={variantOptions} onChange={(variantId) => set({ variantId })} />
-          <SelectField compact label={t('stage')} value={study.stage} options={stageOptions} onChange={(stage) => set({ stage })} />
+          <SelectField compact label={t('stage')} value={study.stage} options={stageOptions(study.variantId)} onChange={(stage) => set({ stage })} />
         </div>
       </Section>
       <Section title={t('side_b')}>
         <div className="ui-fields">
           <SelectField wide compact label={t('variant')} value={study.compareId} empty={t('compare_none')} options={variantOptions} onChange={(compareId) => set({ compareId })} />
-          <SelectField compact label={t('stage')} value={study.compareStage} options={stageOptions} onChange={(compareStage) => set({ compareStage })} />
+          <SelectField compact label={t('stage')} value={study.compareStage} options={stageOptions(study.compareId)} onChange={(compareStage) => set({ compareStage })} />
         </div>
       </Section>
     </Panel>

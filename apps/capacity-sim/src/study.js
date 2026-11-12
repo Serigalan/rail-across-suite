@@ -40,3 +40,11 @@ export function resourceLabel(key, trackName, t) {
   const [from, to] = (range ?? '').split('-')
   return t('resource_track', { track: trackName(track), from, to })
 }
+
+/** A stage as a list names it: the existing state, "from <day>", the final state. */
+export function stageName(key, t, language = 'de') {
+  if (key === 'existing' || key === 'final') return t(`stage_${key}`)
+  const [y, m, d] = String(key).split('-').map(Number)
+  if (!y || !m || !d) return String(key)
+  return `${t('stage_from')} ${new Date(Date.UTC(y, m - 1, d)).toLocaleDateString(language, { timeZone: 'UTC', day: '2-digit', month: '2-digit', year: 'numeric' })}`
+}

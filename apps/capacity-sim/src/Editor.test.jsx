@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { busiestHour, minutes, percent, periodText, resourceLabel } from './study.js'
+import { busiestHour, minutes, percent, periodText, resourceLabel, stageName } from './study.js'
 import { linkedRequest, projectsUrl } from './suite.js'
 import Diagram from './Diagram.jsx'
 import { textsFor } from './i18n.js'
@@ -11,6 +11,12 @@ describe('the Kapazitäts-Sim\'s figures as it shows them', () => {
     expect(percent(null)).toBe('—')
     expect(minutes(283.5)).toBe('4:44')
     expect(periodText({ from: 8 * 3600, to: 9 * 3600 })).toBe('08:00–09:00')
+  })
+
+  it('names a stage by its day', () => {
+    const { t } = textsFor('de')
+    expect(stageName('existing', t)).toBe('Bestand')
+    expect(stageName('2028-06-02', t)).toBe('ab 02.06.2028')
   })
 
   it('starts on the hour the trains are thickest in', () => {

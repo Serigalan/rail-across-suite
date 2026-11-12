@@ -30,8 +30,9 @@ without a day belongs to the final state alone. `map/trackLayers.js` then draws 
 platforms and end marks standing then, and the structures on those tracks. The point in time chosen is the
 session's (`storage.mapStage`), not the record's.
 
-The days are typed in the element table, two columns for the whole track, whichever of its rows they are
-typed in (`components/TrackTableOverlay.jsx`). A construction stage connector (`stage_link`) joins the track
+The days are typed in the element table's head — they are the whole track's, not an element's: in the bar
+beside the track's name, in a route's table at each of its tracks' headings (`TrackDays` in
+`components/trackTable/TrackTableHeader.jsx`, written by `components/TrackTableOverlay.jsx`). A construction stage connector (`stage_link`) joins the track
 at A to the one at B1 while that is in service and to the one at B2 from then on; it is made under
 Switches → Stage connector (`components/panels/ConnectSwitchPanel/StageLinkForm.jsx`), its roles proposed by
 the tracks' days.

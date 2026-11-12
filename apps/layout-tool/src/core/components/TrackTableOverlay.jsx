@@ -17,7 +17,7 @@ import TrackTableRow from './trackTable/TrackTableRow'
 import { ruleGroups } from './trackTable/rowText'
 import { useOverlayHeight } from './chart/useChartViewport'
 import { useI18n } from '../locales/i18nContext'
-import { TrackTableBar, TrackTableHead } from './trackTable/TrackTableHeader'
+import { TrackDays, TrackTableBar, TrackTableHead } from './trackTable/TrackTableHeader'
 
 // Fields that reshape the element geometry (and the downstream chain).
 const GEOM_KEYS = new Set(['length', 'bearing', 'radius'])
@@ -25,10 +25,7 @@ const GEOM_KEYS = new Set(['length', 'bearing', 'radius'])
 const CANT_KEYS = new Set(['cant', 'cantStart', 'cantEnd'])
 
 // The table's columns — a route's track heading spans all of them.
-const TABLE_COLUMNS = 19
-
-// The days a track is in service (decision 0027), typed in any row of it.
-const LIFE_KEYS = new Set(['inServiceFrom', 'inServiceTo'])
+const TABLE_COLUMNS = 17
 
 /** A track's planning status and the days it is in service, as the record states them. */
 function lifeOf(tr) {
@@ -295,10 +292,6 @@ export default function TrackTableOverlay({
     const isEmpty = raw === '' || raw == null
     const at = rows[row]
     if (!at) return
-    if (LIFE_KEYS.has(key)) {
-      setLife(at.trackId, key, isEmpty ? undefined : String(raw))
-      return
-    }
     const own = (k, v) => trackEdit(at, k, v)
     if (key === 'role') {
       const out = inRun(at, tracks, [], (ts, _sw, index) => {
@@ -380,7 +373,8 @@ export default function TrackTableOverlay({
   }
 
   // When a track is in service (decision 0027): its first day and its last —
-  // the whole track's, whichever of its rows they are typed in. A first day
+  // the whole track's, so typed in the table's head (in a route's, at each of
+  // its tracks' headings) rather than in a row. A first day
   // makes it new, a last day alone a removal; a last day before the first is
   // not taken.
   function setLife(trackId, key, day) {
@@ -504,6 +498,7 @@ export default function TrackTableOverlay({
     <div className="track-table-overlay" style={overlay.style}>
       <div className="profile-resize" onPointerDown={overlay.onResizeStart} />
       <TrackTableBar title={title} length={viewLength}
+        days={route ? null : <TrackDays life={lifeOf(tracks.find(tr => tr.id === track.id))} onChange={(key, day) => setLife(track.id, key, day)} />}
         cap={cap} onCap={setCap} onMaxSpeeds={handleMaxSpeeds} onMerge={handleMerge}
         reachError={reachError} notice={notice} reached={reached}
         dirty={dirty} changed={changed.length} onSave={handleSave} onClose={onClose} />
@@ -519,13 +514,16 @@ export default function TrackTableOverlay({
                 {route && rows[i].trackId !== rows[i - 1]?.trackId && (
                   <tr className="track-table-part">
                     <td colSpan={TABLE_COLUMNS}>
-                      {fill(rows[i].reversed ? 'table_route_part_reversed' : 'table_route_part', { name: trackName(rows[i].trackId) })}
+                      <div className="track-table-part-head">
+                        {fill(rows[i].reversed ? 'table_route_part_reversed' : 'table_route_part', { name: trackName(rows[i].trackId) })}
+                        <TrackDays life={lifeOf(tracks.find(tr => tr.id === rows[i].trackId))}
+                          onChange={(key, day) => setLife(rows[i].trackId, key, day)} />
+                      </div>
                     </td>
                   </tr>
                 )}
                 <TrackTableRow elements={elements} i={i} sw={switchById.get(el.switchId)}
                   station={stations[i]?.start} rules={check.perElement[i]} joint={jointAt(i)} vmax={vmaxes[i]} role={roles[i]} epsg={rows[i].epsg}
-                  life={lifeOf(tracks.find(tr => tr.id === rows[i].trackId))}
                   active={i === activeRow} onActivate={() => setActiveRow(i)}
                   onEdit={(key, raw) => commit(i, key, raw)} />
               </Fragment>

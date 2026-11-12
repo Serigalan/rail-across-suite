@@ -5,12 +5,13 @@ import CloseButton from '../form/CloseButton'
 import NumberInput from '../form/NumberInput'
 
 /**
- * The bar above the table: the track and its length, the line speed and the
+ * The bar above the table: the track and its length, the days it is in
+ * service (`days`, a TrackDays — none for a route), the line speed and the
  * button that fills the speed column up to it, the one that merges alike
  * elements, what the edits reached (or why the last one was refused), Save and
  * close.
  */
-export function TrackTableBar({ title, length, cap, onCap, onMaxSpeeds, onMerge, reachError, notice, reached, dirty, changed, onSave, onClose }) {
+export function TrackTableBar({ title, length, days, cap, onCap, onMaxSpeeds, onMerge, reachError, notice, reached, dirty, changed, onSave, onClose }) {
   const { t, fill, language } = useI18n()
   return (
     <div className="track-table-header">
@@ -18,6 +19,7 @@ export function TrackTableBar({ title, length, cap, onCap, onMaxSpeeds, onMerge,
         {title}
         <span className="track-table-subtitle">{lengthText(length, language)} m</span>
       </span>
+      {days}
       <div className="row-wide">
         <label className="track-table-cap" title={t('table_speed_cap_hint')}>
           {t('table_speed_cap')}
@@ -53,6 +55,30 @@ export function TrackTableBar({ title, length, cap, onCap, onMaxSpeeds, onMerge,
   )
 }
 
+/**
+ * The days a whole track is in service (decision 0027): its first and its
+ * last, each a browser date field (ISO 8601), emptied none. They are the
+ * track's and not an element's, so they stand in the table's head and not in
+ * a column. `onChange(key, day)` with 'inServiceFrom' or 'inServiceTo'.
+ */
+export function TrackDays({ life = {}, onChange }) {
+  const { t } = useI18n()
+  const field = (key, word, label, hint) => (
+    <label className="track-table-day" title={t(hint)}>
+      {t(word)}
+      <input type="date" className="track-table-input track-table-input-day" value={life[key] ?? ''} aria-label={t(label)}
+        onChange={e => onChange(key, e.target.value || undefined)} />
+    </label>
+  )
+  return (
+    <span className="track-table-days">
+      <span className="track-table-days-lead">{t('table_in_service')}</span>
+      {field('inServiceFrom', 'table_in_service_from_word', 'table_in_service_from', 'table_in_service_from_hint')}
+      {field('inServiceTo', 'table_in_service_to_word', 'table_in_service_to', 'table_in_service_to_hint')}
+    </span>
+  )
+}
+
 /** The column heads. */
 export function TrackTableHead() {
   const { t } = useI18n()
@@ -76,8 +102,6 @@ export function TrackTableHead() {
         <th title={t('table_max_speed_hint')}>
           {t('table_max_speed')} (km/h)
         </th>
-        <th title={t('table_in_service_from_hint')}>{t('table_in_service_from')}</th>
-        <th title={t('table_in_service_to_hint')}>{t('table_in_service_to')}</th>
         <th title={t('table_crs_hint')}>{t('table_crs')}</th>
         <th title={t('table_comparison_radius_hint')}>{t('table_comparison_radius')} (m)</th>
       </tr>

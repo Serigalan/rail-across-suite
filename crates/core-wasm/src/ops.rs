@@ -125,6 +125,12 @@ fn run_on(op: &str, input: &Value) -> Result<Value, Failure> {
             Ok(stations::renamed_station(&input["record"], id, input.get("name").filter(|n| !n.is_null()), uic))
         }
 
+        // capacity (K1)
+        "capacity.compress" => Ok(rail_across_capacity::compress(input)),
+        "capacity.headways" => Ok(rail_across_capacity::headways(input)),
+        "capacity.resourceOccupancy" => Ok(rail_across_capacity::resource_occupancy(input)),
+        "capacity.bounds" => Ok(rail_across_capacity::bounds()),
+
         // operations (operations-1.0)
         "operations.checkOperations" => {
             let doc = rail_across_doc::operations::check_operations(input)?;

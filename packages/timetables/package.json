@@ -10,7 +10,8 @@
   },
   "exports": {
     ".": "./src/index.js",
-    "./exchange": "./src/exchange.js"
+    "./exchange": "./src/exchange.js",
+    "./runs": "./src/useRuns.js"
   },
   "scripts": {
     "test": "vitest run"
@@ -21,5 +22,8 @@
   },
   "devDependencies": {
     "vitest": "^3.2.7"
+  },
+  "peerDependencies": {
+    "react": "^19.2.4"
   }
 }

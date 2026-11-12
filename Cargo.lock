@@ -632,6 +632,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "rail-across-capacity"
+version = "0.1.0"
+dependencies = [
+ "serde_json",
+]
+
+[[package]]
 name = "rail-across-commands"
 version = "0.1.0"
 dependencies = [
@@ -650,6 +657,7 @@ dependencies = [
 name = "rail-across-core-wasm"
 version = "0.1.0"
 dependencies = [
+ "rail-across-capacity",
  "rail-across-commands",
  "rail-across-doc",
  "rail-across-geom",

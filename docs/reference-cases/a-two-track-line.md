@@ -67,3 +67,49 @@ Cleared when the tail has passed S3, 5500 + 150 = 5650 m, 282.5 s; released in t
 
 The sight distance stands for the sight time of Ril 405 here: the block is asked for where the announcing signal is
 first seen. A sight time of the operation's (operations-1.0) is not part of this case.
+
+## Headways and the compressed occupancy (K1)
+
+A second train beside the first: **B**, as long, at a constant 10 m/s from station 0 at 0 s, arriving at 6000 m at
+600 s. Its blocks by the same rules as A's:
+
+| Block | Begins [s] | Ends [s] | worked out |
+|---|---|---|---|
+| 0 | −12 | 171 | asked for at its start; tail past S1 at 1650 m, 165 s, + 6 s |
+| 1 | 20 | 370 | asked for at 300 m, 30 s, − 10 s; tail past S2 at 3650 m, 365 s, + 5 s |
+| 2 | 138 | 571 | asked for at S1, 150 s, − 12 s; tail past S3 at 5650 m, 565 s, + 6 s |
+| 3 | 338 | 606 | asked for at S2, 350 s, − 12 s; arrived at 600 s, + 6 s |
+
+**What two blocks hold the same.** The track has no track sections, so a block is held whole — its overlap with
+it. Block 1 reaches 200 m into block 2's track (S2's overlap, 3500–3700 m), block 2 as far into block 3's: each
+of these holds what the other holds there. So a train behind finds its block 1 free only once the train before has
+left block 2: without a track section of its own, the overlap is only known free when the whole block it lies in is.
+
+**The minimum headway** of a train behind another (both at station 0 at their own 0 s) is the largest of the
+first's end less the second's begin over every two blocks that hold the same track:
+
+| Before → behind | Block pairs that bind | Minimum headway [s] |
+|---|---|---|
+| A → A | A's block 2 (ends 288.5) and the next A's block 1 (begins 5) | **283.5** |
+| A → B | A's block 2 (288.5) and B's block 1 (20) | **268.5** |
+| B → A | B's block 2 (571) and A's block 1 (5) | **566** |
+| B → B | B's block 2 (571) and the next B's block 1 (20) | **551** |
+
+(Same block with same block alone, as a line without overlaps would have it, A → A would be 225.5 s, block 2's
+288.5 − 63.)
+
+**The timetable**, one hour from 0 s: A1 at 0 s, B1 at 300 s, A2 at 1200 s, A3 at 1800 s. Compressed after UIC
+Code 406 — in this order, each as early behind those before as their blocking times let it, never before the one
+before it:
+
+| Train | Runs at [s] | Compressed to [s] | Bound by | Its blocking times end at [s] |
+|---|---|---|---|---|
+| A1 | 0 | 0 | — | 306 |
+| B1 | 300 | 268.5 | A1 (A → B 268.5) | 874.5 |
+| A2 | 1200 | 834.5 | B1 (268.5 + 566) | 1140.5 |
+| A3 | 1800 | 1118 | A2 (834.5 + 283.5) | 1424 |
+
+**The occupancy time** runs from the first blocking time begun, A1's block 0 at −12 s, to the last ended, A3's
+block 3 at 1424 s: **1436 s**, an occupancy rate of 1436 / 3600 = **39.9 %** of the hour. The trains that set it,
+each bound to the one before: **A1, B1, A2, A3**. The test `crates/capacity/tests/reference.rs` holds the
+capacity crate to these figures.

@@ -1,0 +1,24 @@
+{
+  "name": "@rail-across/capacity",
+  "private": true,
+  "version": "0.1.0",
+  "description": "The capacity of Rail-Across-Suite: the stretches of a net, the minimum headways and the occupancy after UIC Code 406 from a timetable's blocking times, for the Kapazitäts-Sim",
+  "license": "LGPL-3.0-only",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@rail-across/core": "*",
+    "@rail-across/timetables": "*"
+  },
+  "devDependencies": {
+    "vitest": "^3.2.7"
+  }
+}

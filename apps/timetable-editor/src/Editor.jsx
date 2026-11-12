@@ -16,7 +16,7 @@ import SettingsPanel from './panels/SettingsPanel.jsx'
 import TrainSheet from './TrainSheet.jsx'
 import Graph from './Graph.jsx'
 import { useTimetables } from './useTimetables.js'
-import { useRuns } from './useRuns.js'
+import { useRuns } from '@rail-across/timetables/runs'
 import { byDeparture } from './rows.js'
 import { keepInAddress, keptVehicle, projectsUrl } from './suite.js'
 

@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { simulate } from '@rail-across/running-times'
-import { occupancy, runKey, runTrain } from '@rail-across/timetables'
+import { occupancy } from './occupancy.js'
+import { runKey, runTrain } from './timetable.js'
 
 /** Runs kept for a net: beyond them the oldest are made again when asked for. */
 const KEPT = 2000
 
 /**
- * The runs of a timetable's trains over the net, made in the background
+ * The runs of a timetable's trains over the net — the Fahrplan-Editor's and
+ * the Kapazitäts-Sim's (`@rail-across/timetables/runs`), made in the background
  * with the simulation module: first each train for itself, as they come;
  * then the occupancy of the blocks (occupancy.js) as the timetable's
  * `dispatch` says — the conflicts said, or the routes set as the trains
@@ -23,10 +25,9 @@ export function useRuns(record, stations, trains, catalogue, dispatch) {
   const made = useRef({ record: null, byKey: new Map() })
   // the catalogue is new on every load; its vehicles, as they are, decide
   const vehicles = catalogue.loading ? null : catalogue.entries.map(e => `${e.key}@${e.version ?? 0}`).join('|')
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const entries = useMemo(() => catalogue.entries, [vehicles])
+  // the dispatch as it reads, not as the object it is on each render
   const rules = JSON.stringify(dispatch)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const settled = useMemo(() => dispatch, [rules])
 
   useEffect(() => {

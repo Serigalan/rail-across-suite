@@ -17,7 +17,7 @@ const projects = {
 }
 
 describe('the start page', () => {
-  it('shows two editors and three simulations apart, the infrastructure editor with its tools', () => {
+  it('shows two editors and three simulations apart, the infrastructure editor with its main tools and more', () => {
     const html = de(<Home />)
     for (const name of ['Infrastruktur-Editor', 'Fahrzeug-Editor', 'Fahrplan-Sim', 'Kapazitäts-Sim', 'Baubetriebs-Sim']) {
       expect(html).toContain(name)
@@ -25,7 +25,10 @@ describe('the start page', () => {
     expect(html.indexOf('Fahrzeug-Editor')).toBeLessThan(html.indexOf('Simulationen'))
     expect(html.indexOf('Simulationen')).toBeLessThan(html.indexOf('>Fahrplan-Sim<'))
     expect(html).toContain('href="#/infrastructure"')
-    for (const tool of ['layout', 'signalling', 'catenary']) expect(html).toContain(`href="#/infrastructure/${tool}"`)
+    for (const tool of ['layout', 'signalling']) expect(html).toContain(`href="#/infrastructure/${tool}"`)
+    // the others behind "more …", which opens the editor with all its tools
+    for (const tool of ['civil', 'catenary']) expect(html).not.toContain(`href="#/infrastructure/${tool}"`)
+    expect(html).toContain('mehr …')
     expect(html).not.toContain('ui-badge')
   })
 })

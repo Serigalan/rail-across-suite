@@ -31,17 +31,19 @@ function ModuleTile({ module }) {
 
 /**
  * The infrastructure editor's tile, twice as wide: the module on the left,
- * its tools on the right as a list of names — each opening the editor in that tool,
- * grey for one still to come.
+ * its main tools on the right as a list of names — each opening the editor in
+ * that tool, grey for one still to come —, the others behind "more …", which
+ * opens the editor with all of them.
  */
 function InfrastructureTile({ module }) {
   const { t, fill } = useTexts()
+  const others = INFRASTRUCTURE_TOOLS.filter(tool => !tool.featured)
   return (
     <li className="ra-tile-wide">
       <div className="ra-tile ra-tile-split">
         <a className="ra-tile-main" href={tileUrl(module)}><TileBody module={module} /></a>
         <ul className="ra-subtools">
-          {INFRASTRUCTURE_TOOLS.map(tool => (
+          {INFRASTRUCTURE_TOOLS.filter(tool => tool.featured).map(tool => (
             <li key={tool.id}>
               <a className={`ra-subtool${tool.available ? '' : ' ra-subtool-planned'}`} href={hashOf({ page: 'infrastructure', tool: tool.id })}
                 title={tool.available ? undefined : fill('tool_soon', { n: tool.phase })}>
@@ -50,6 +52,14 @@ function InfrastructureTile({ module }) {
               </a>
             </li>
           ))}
+          {others.length > 0 && (
+            <li>
+              <a className="ra-subtool ra-subtool-more" href={hashOf({ page: 'infrastructure' })} title={others.map(tool => t(`tool_${tool.id}`)).join(', ')}>
+                <span className="ra-subtool-icon" aria-hidden="true">…</span>
+                <span className="ra-subtool-name">{t('tools_more')}</span>
+              </a>
+            </li>
+          )}
         </ul>
       </div>
     </li>

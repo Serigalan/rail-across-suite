@@ -37,13 +37,14 @@ export const MODULES = [...EDITORS, ...SIMULATIONS]
 /**
  * The tools of the infrastructure editor — the mode a project opens in.
  * `path` is where an available tool's app lies beside the start page;
- * `storage` whether it keeps anything in the browser to show.
+ * `storage` whether it keeps anything in the browser to show; `featured`
+ * whether the start page's tile names it, the others behind "more …".
  */
 export const INFRASTRUCTURE_TOOLS = [
-  { id: 'layout', available: true, path: 'layout/', storage: true },
+  { id: 'layout', available: true, path: 'layout/', storage: true, featured: true },
   // The Layout-Tool's app as the Civil-Tool (decision 0025): the same build under its own path.
   { id: 'civil', available: true, path: 'civil/', storage: true },
-  { id: 'signalling', available: true, path: 'signalling/' },
+  { id: 'signalling', available: true, path: 'signalling/', featured: true },
   { id: 'catenary', available: true, path: 'catenary/' },
 ]
 

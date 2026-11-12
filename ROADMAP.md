@@ -163,11 +163,13 @@ Goal: prove the core with a second real module.
   ranges planned on the map — a track and two stations typed or picked, a system, a planning status —, their check
   (off the track, overlapping, two systems meeting without a section), how much of the net is under wire; the ranges
   carried over every track edit (R4); written into RailJSON. *Next:* neutral sections, masts and cantilevers.
-- **Civil-Tool** (the Layout-Tool's app under `/civil/`, decision 0025): the layer `civil` — platforms, named runs
-  of tracks, measured axes and reference axes from the point clouds, the plan header, the project picture —, taken
-  out of the Layout-Tool, which keeps the alignment alone. *Done:* one build, the tool by its path; the platforms,
-  the runs, the cross sections with the point clouds and surveys, Verm.ESN axes as reference axes, the plan's title
-  block in the Civil-Tool; creating, splicing, switches, editing tracks and heights in the Layout-Tool.
+- **Civil-Tool** (the Layout-Tool's app under `/civil/`, decision 0025): the layer `civil` — platforms, measured
+  axes and reference axes from the point clouds, the plan header, the project picture —, taken out of the
+  Layout-Tool, which keeps the alignment alone. *Done:* one build, the tool by its path, a bridge as its mark; the
+  platforms, each making the stopping place at it a passenger stop in the core or writing one, the cross sections
+  with the point clouds and surveys, Verm.ESN axes as reference axes, the plan's title block in the Civil-Tool;
+  the project's settings, the topology, the runs, creating, splicing, switches, editing tracks and heights in the
+  Layout-Tool.
 - **Open-Signalling-Tool**: signals, detection points, balises, track sections, signalling routes, speed
   profiles; station boundaries stored as references to what marks them (entry signals, trapezoid boards, entry
   switches, platforms), with a special-case finding where they differ from EBO §4; export towards PlanPro /

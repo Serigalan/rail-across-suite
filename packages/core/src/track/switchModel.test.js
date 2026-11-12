@@ -5,7 +5,7 @@ import {
 
 describe('the model’s vocabulary', () => {
   it('names the kinds a record can discriminate on, the turnout first', () => {
-    expect(SWITCH_KINDS).toEqual(['turnout', 'crossing', 'single_slip', 'double_slip', 'link'])
+    expect(SWITCH_KINDS).toEqual(['turnout', 'crossing', 'single_slip', 'double_slip', 'link', 'stage_link'])
     expect(SWITCH_KINDS).toContain(DEFAULT_SWITCH_KIND)
     expect(SWITCH_KINDS).toContain(LINK_KIND)
   })

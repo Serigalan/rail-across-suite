@@ -19,6 +19,7 @@ use serde_json::{Map, Value, json};
 use crate::canonical::{content_hash, derived_id};
 use crate::error::{PayloadError, Result};
 use crate::layers;
+use crate::stages::Stages;
 
 /// The domains this build reads and writes, with their versions.
 pub const DOMAIN_VERSIONS: &[(&str, &str)] = &[("core", "2.0"), ("civil", "1.0"), ("signalling", "2.0"), ("electrification", "1.0")];
@@ -116,21 +117,6 @@ pub(crate) fn lifespan_of(status: Option<&Value>, final_id: &str) -> Value {
         Some("removal") => json!({ "to": final_id }),
         _ => Value::Null,
     }
-}
-
-fn status_of(lifespan: Option<&Value>, final_id: &str) -> Result<Value> {
-    let Some(l) = lifespan.filter(|l| rail_across_js::truthy(Some(l))) else {
-        return Ok(Value::Null);
-    };
-    let keys = l.as_object().map(|o| o.len()).unwrap_or(0);
-    let fin = Value::String(final_id.to_string());
-    if keys == 1 && strict_eq(l.get("from"), Some(&fin)) {
-        return Ok(json!("new"));
-    }
-    if keys == 1 && strict_eq(l.get("to"), Some(&fin)) {
-        return Ok(json!("removal"));
-    }
-    Err(PayloadError::new("stages_unsupported"))
 }
 
 // ── Operational points ──────────────────────────────────────────────────────
@@ -377,7 +363,14 @@ pub(crate) fn by_id(list: &mut [Value]) {
 
 /// The infra-data-2.0 document of a record (dehydrated), every collection sorted by id (`recordToDocument`).
 pub fn record_to_document(record: &Value, schema_hashes: &HashMap<&str, String>) -> Result<Value> {
-    let known: HashSet<&str> = CORE_FIELDS.iter().chain(CIVIL_FIELDS).chain(COLLECTIONS).chain(CARRIED).copied().collect();
+    let known: HashSet<&str> = CORE_FIELDS
+        .iter()
+        .chain(CIVIL_FIELDS)
+        .chain(COLLECTIONS)
+        .chain(CARRIED)
+        .chain(&["stages"])
+        .copied()
+        .collect();
     let unknown: Vec<String> = record
         .as_object()
         .map(|o| o.keys().filter(|k| !known.contains(k.as_str())).cloned().collect())
@@ -392,9 +385,9 @@ pub fn record_to_document(record: &Value, schema_hashes: &HashMap<&str, String>)
         ));
     }
 
-    let pid = js_string(record.get("id"));
-    let stages = default_stages(&pid);
-    let final_id = js_string(stages[1].get("id"));
+    // The stages by their days: the existing and the final state, and one for every day between (decision 0027).
+    let stage_list = Stages::of_record(record)?;
+    let stages = stage_list.to_document();
     let tracks = list(record, "tracks");
     let platforms = list(record, "platforms");
     let register = operational_register(record.get("id"), tracks, platforms, list(record, "operationalPoints"));
@@ -404,7 +397,7 @@ pub fn record_to_document(record: &Value, schema_hashes: &HashMap<&str, String>)
         blobs.insert(hash.clone(), value.clone());
         Value::String(hash)
     };
-    let located = |source: Option<Source>, status: Option<&Value>, extra: Object| -> Value {
+    let located = |source: Option<Source>, of: &Value, extra: Object| -> Value {
         let mut o = extra;
         o.insert(
             "operationalPoint".into(),
@@ -413,7 +406,7 @@ pub fn record_to_document(record: &Value, schema_hashes: &HashMap<&str, String>)
                 .map(|s| Value::String(s.into()))
                 .unwrap_or(Value::Null),
         );
-        o.insert("lifespan".into(), lifespan_of(status, &final_id));
+        o.insert("lifespan".into(), stage_list.lifespan(of));
         Value::Object(without_null(o))
     };
 
@@ -421,12 +414,12 @@ pub fn record_to_document(record: &Value, schema_hashes: &HashMap<&str, String>)
         .iter()
         .enumerate()
         .map(|(i, t)| {
-            let mut rest = without(&obj(t), &["status", "stationName", "uicStation"]);
+            let mut rest = without(&obj(t), &["status", "inServiceFrom", "inServiceTo", "stationName", "uicStation"]);
             if let Some(Value::Array(els)) = rest.get("elements").filter(|e| rail_across_js::truthy(Some(e))) {
                 let els: Vec<Value> = els.iter().map(|el| renamed(el, "speed", "designSpeed")).collect();
                 rest.insert("elements".into(), Value::Array(els));
             }
-            located(Some(Source::Track(i)), t.get("status"), without_null(rest))
+            located(Some(Source::Track(i)), t, without_null(rest))
         })
         .collect();
     let switches: Vec<Value> = list(record, "switches")
@@ -434,10 +427,10 @@ pub fn record_to_document(record: &Value, schema_hashes: &HashMap<&str, String>)
         .map(|sw| {
             let mut o = Object::new();
             o.insert("id".into(), opt(sw.get("switchId").cloned()));
-            for (k, v) in without(&obj(sw), &["switchId", "status"]) {
+            for (k, v) in without(&obj(sw), &["switchId", "status", "inServiceFrom", "inServiceTo"]) {
                 o.insert(k, v);
             }
-            o.insert("lifespan".into(), lifespan_of(sw.get("status"), &final_id));
+            o.insert("lifespan".into(), stage_list.lifespan(sw));
             Value::Object(without_null(o))
         })
         .collect();
@@ -450,22 +443,35 @@ pub fn record_to_document(record: &Value, schema_hashes: &HashMap<&str, String>)
             for k in ["trackId", "startStation", "endStation", "side"] {
                 at.insert(k.into(), opt(p.get(k).cloned()));
             }
-            let rest = without(&obj(p), &["trackId", "startStation", "endStation", "side", "status", "stationName", "code"]);
+            let rest = without(
+                &obj(p),
+                &[
+                    "trackId",
+                    "startStation",
+                    "endStation",
+                    "side",
+                    "status",
+                    "inServiceFrom",
+                    "inServiceTo",
+                    "stationName",
+                    "code",
+                ],
+            );
             let mut extra = Object::new();
             extra.insert("at".into(), Value::Object(without_null(at)));
-            located(Some(Source::Platform(i)), p.get("status"), spread(extra, without_null(rest)))
+            located(Some(Source::Platform(i)), p, spread(extra, without_null(rest)))
         })
         .collect();
     let end_marks: Vec<Value> = list(record, "endMarks")
         .iter()
         .map(|m| {
-            let rest = without(&obj(m), &["trackId", "endpoint", "status"]);
+            let rest = without(&obj(m), &["trackId", "endpoint", "status", "inServiceFrom", "inServiceTo"]);
             let mut at = Object::new();
             at.insert("trackId".into(), opt(m.get("trackId").cloned()));
             at.insert("endpoint".into(), opt(m.get("endpoint").cloned()));
             let mut extra = without_null(rest);
             extra.insert("at".into(), Value::Object(without_null(at)));
-            located(None, m.get("status"), extra)
+            located(None, m, extra)
         })
         .collect();
 
@@ -584,10 +590,7 @@ pub fn document_to_record(doc: &Value) -> Result<Value> {
     let empty_civil = json!({ "fields": {}, "collections": {} });
     let civil = get(&doc["domains"], "civil").unwrap_or(&empty_civil);
     let stages = core["fields"]["stages"].as_array().cloned().unwrap_or_default();
-    if stages.len() != 2 {
-        return Err(PayloadError::new("stages_unsupported"));
-    }
-    let final_id = js_string(stages[1].get("id"));
+    let stage_list = Stages::of_document(&stages)?;
     let c = &core["collections"];
     let mut points: HashMap<String, Value> = HashMap::new();
     for p in list(c, "operationalPoints") {
@@ -610,7 +613,14 @@ pub fn document_to_record(doc: &Value) -> Result<Value> {
             .cloned()
             .ok_or_else(|| PayloadError::with("invalid_payload", vec![format!("/blobs: lacks {h}")]))
     };
-    let status = |o: &Value| status_of(o.get("lifespan"), &final_id);
+    // The status and the days of an object, from its lifespan over the stages.
+    let lived = |o: &Value, into: &mut Object| -> Result<()> {
+        let (status, from, to) = stage_list.record_fields(o.get("lifespan"))?;
+        into.insert("status".into(), status);
+        into.insert("inServiceFrom".into(), from);
+        into.insert("inServiceTo".into(), to);
+        Ok(())
+    };
     let l = civil.get("collections").cloned().unwrap_or(json!({}));
 
     let mut tracks = Vec::new();
@@ -623,7 +633,7 @@ pub fn document_to_record(doc: &Value) -> Result<Value> {
         }
         rest.insert("stationName".into(), opt(p.get("name").cloned()));
         rest.insert("uicStation".into(), opt(p.get("uic").cloned()));
-        rest.insert("status".into(), status(t)?);
+        lived(t, &mut rest)?;
         tracks.push(Value::Object(without_null(rest)));
     }
     let mut switches = Vec::new();
@@ -633,7 +643,7 @@ pub fn document_to_record(doc: &Value) -> Result<Value> {
         for (k, v) in without(&obj(sw), &["id", "lifespan"]) {
             o.insert(k, v);
         }
-        o.insert("status".into(), status(sw)?);
+        lived(sw, &mut o)?;
         switches.push(Value::Object(without_null(o)));
     }
     let civil_platforms = list(&l, "platforms");
@@ -646,7 +656,7 @@ pub fn document_to_record(doc: &Value) -> Result<Value> {
         }
         o.insert("stationName".into(), opt(p.get("name").cloned()));
         o.insert("code".into(), opt(p.get("rl100").cloned()));
-        o.insert("status".into(), status(pf)?);
+        lived(pf, &mut o)?;
         platforms.push(Value::Object(without_null(o)));
     }
     let mut end_marks = Vec::new();
@@ -655,7 +665,7 @@ pub fn document_to_record(doc: &Value) -> Result<Value> {
         for (k, v) in obj(m.get("at").unwrap_or(&Value::Null)) {
             o.insert(k, v);
         }
-        o.insert("status".into(), status(m)?);
+        lived(m, &mut o)?;
         end_marks.push(Value::Object(without_null(o)));
     }
     let routes: Vec<Value> = list(c, "trackPaths")
@@ -707,6 +717,9 @@ pub fn document_to_record(doc: &Value) -> Result<Value> {
     ];
     let core_fields = without(&obj(&core["fields"]), &["stages"]);
     let mut record = spread(core_fields, obj(civil.get("fields").unwrap_or(&Value::Null)));
+    if let Some(kept) = stage_list.to_record() {
+        record.insert("stages".into(), kept);
+    }
     for name in COLLECTIONS {
         let pos = collections.iter().position(|(n, _)| n == name).expect("collection");
         let (_, items) = std::mem::take(&mut collections[pos]);

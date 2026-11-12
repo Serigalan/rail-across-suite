@@ -99,14 +99,17 @@ export namespace Core {
   export type TrackPath = {
     trackIds: Array<Ref>
   }
-  /** The first construction stage an object exists in and the first it no longer exists in; an absent end is open, no lifespan at all means existing and staying (decision 0003). */
+  /** The first construction stage an object exists in and the first it no longer exists in; an absent end is open, no lifespan at all means existing and staying (decision 0003). A stage that begins on a day makes the dates of the tools: an object in service from a day exists from the stage that begins that day, one in service until a day no longer from the stage that begins the day after (decision 0027). */
   export type Lifespan = {
     from?: Ref
     to?: Ref
   }
+  /** A construction stage (decision 0003): the existing state first, the final state last, each between them from the day it begins (`date`), in their order. */
   export type Stage = {
     id: Id
     name?: Text
+    /** The day the stage begins (ISO 8601); a stage between the existing and the final state has one (decision 0027). */
+    date?: string
   }
   /** The project's own fields. `stages` is the ordered list of construction stages: the first is the existing state, the last the final state. */
   export type Fields = {
@@ -196,10 +199,10 @@ export namespace Core {
       [name: string]: unknown
     }
   }
-  /** A turnout, crossing, slip or two-end connector (`link`) at a node; its ports hold track ends. A link joins two track ends where the plane changes or where a rebuilt part of a track ties in. */
+  /** A turnout, crossing, slip, two-end connector (`link`) or construction stage connector (`stage_link`) at a node; its ports hold track ends. A link joins two track ends where the plane changes or where a rebuilt part of a track ties in; a stage link joins the track at A to the one at B1 while that exists and to the one at B2 from then on — never both: one track ends, the other begins (decision 0027). */
   export type Switch = {
     id: Id
-    kind: "turnout" | "crossing" | "single_slip" | "double_slip" | "link"
+    kind: "turnout" | "crossing" | "single_slip" | "double_slip" | "link" | "stage_link"
     formVersion: number
     name?: Text
     number?: number

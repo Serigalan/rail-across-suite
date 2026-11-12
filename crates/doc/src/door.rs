@@ -102,6 +102,8 @@ const LAYOUT_FIRST: &str = "sha256:b2280dcf6cfe779e148b6c402ac46eb4ff1e8d96b55e6
 /// and before it held the named runs of tracks, which civil 1.0 held first.
 const CORE_2_FIRST: &str = "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877";
 const CORE_2_SECOND: &str = "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f";
+/// Core 2.0 with the runs, before its stages had days and switches a stage link (decision 0027).
+const CORE_2_THIRD: &str = "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c";
 /// Civil 1.0 with the named runs of tracks.
 const CIVIL_FIRST: &str = "sha256:0b73763db4b8ca57f56472f4b8aeef8a8b02369f4f8a9e3f2b4072480c48b1fb";
 /// The domains of infra-data 1.0, with the schema each had last.
@@ -349,7 +351,7 @@ fn migrated_within_1_0(doc: &Value) -> Value {
 /// An infra-data 2.0 document with its core and civil of an earlier schema of
 /// 2.0 brought to this build's: a stopping place a platform names is a
 /// passenger stop (core's second), the named runs of tracks are the core's, no
-/// longer civil's (core's third, civil's second).
+/// longer civil's (core's third, civil's second), stages may have days (core's fourth).
 fn migrated_within_2_0(doc: &Value) -> Value {
     let schema = |d: Option<&Value>| d.and_then(|d| d.get("schema")).and_then(Value::as_str).map(str::to_string);
     let mut core = doc["domains"].get("core").cloned();
@@ -376,7 +378,11 @@ fn migrated_within_2_0(doc: &Value) -> Value {
         if schema(Some(c)).as_deref() == Some(CORE_2_SECOND) {
             let mut cols = obj(c.get("collections").unwrap_or(&Value::Null));
             cols.insert("trackPaths".into(), runs.unwrap_or(json!([])));
-            *c = with_schema(c, &schema_hashes()["core"], Some(cols));
+            *c = with_schema(c, CORE_2_THIRD, Some(cols));
+        }
+        // Days on the stages and the stage link only add: what was is as it was.
+        if schema(Some(c)).as_deref() == Some(CORE_2_THIRD) {
+            *c = with_schema(c, &schema_hashes()["core"], None);
         }
     }
     if schema(core.as_ref()) == core_was && schema(civil.as_ref()) == civil_was {

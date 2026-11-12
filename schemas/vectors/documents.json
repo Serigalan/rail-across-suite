@@ -7,7 +7,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c",
+     "schema": "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -344,7 +344,7 @@
     },
     "core": {
      "version": "2.0",
-     "schema": "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c",
+     "schema": "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3",
      "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -358,7 +358,7 @@
     }
    }
   },
-  "hash": "sha256:822ae532f4918d5d48171b5e864418bcc60331aa36bcfc471bab22db90e4af24"
+  "hash": "sha256:4e824cae7e4bcbcd49fde43cc4ac5db64da9a0ba6470f0edf2f922be86049f93"
  },
  {
   "name": "the sample, carrying its schemas",
@@ -368,7 +368,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c",
+     "schema": "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -687,7 +687,7 @@
     }
    },
    "schemas": {
-    "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c": {
+    "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3": {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
      "$id": "core",
      "title": "Rail-Data-Core, domain core 2.0",
@@ -943,7 +943,7 @@
        }
       },
       "Lifespan": {
-       "description": "The first construction stage an object exists in and the first it no longer exists in; an absent end is open, no lifespan at all means existing and staying (decision 0003).",
+       "description": "The first construction stage an object exists in and the first it no longer exists in; an absent end is open, no lifespan at all means existing and staying (decision 0003). A stage that begins on a day makes the dates of the tools: an object in service from a day exists from the stage that begins that day, one in service until a day no longer from the stage that begins the day after (decision 0027).",
        "type": "object",
        "minProperties": 1,
        "additionalProperties": false,
@@ -970,8 +970,14 @@
         },
         "name": {
          "$ref": "#/$defs/Text"
+        },
+        "date": {
+         "type": "string",
+         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+         "description": "The day the stage begins (ISO 8601); a stage between the existing and the final state has one (decision 0027)."
         }
-       }
+       },
+       "description": "A construction stage (decision 0003): the existing state first, the final state last, each between them from the day it begins (`date`), in their order."
       },
       "Fields": {
        "description": "The project's own fields. `stages` is the ordered list of construction stages: the first is the existing state, the last the final state.",
@@ -1300,7 +1306,7 @@
        }
       },
       "Switch": {
-       "description": "A turnout, crossing, slip or two-end connector (`link`) at a node; its ports hold track ends. A link joins two track ends where the plane changes or where a rebuilt part of a track ties in.",
+       "description": "A turnout, crossing, slip, two-end connector (`link`) or construction stage connector (`stage_link`) at a node; its ports hold track ends. A link joins two track ends where the plane changes or where a rebuilt part of a track ties in; a stage link joins the track at A to the one at B1 while that exists and to the one at B2 from then on — never both: one track ends, the other begins (decision 0027).",
        "type": "object",
        "required": [
         "id",
@@ -1319,7 +1325,8 @@
           "crossing",
           "single_slip",
           "double_slip",
-          "link"
+          "link",
+          "stage_link"
          ]
         },
         "formVersion": {
@@ -1823,7 +1830,7 @@
     },
     "core": {
      "version": "2.0",
-     "schema": "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c",
+     "schema": "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3",
      "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -1837,7 +1844,7 @@
     }
    }
   },
-  "hash": "sha256:822ae532f4918d5d48171b5e864418bcc60331aa36bcfc471bab22db90e4af24"
+  "hash": "sha256:4e824cae7e4bcbcd49fde43cc4ac5db64da9a0ba6470f0edf2f922be86049f93"
  },
  {
   "name": "another format",
@@ -1847,7 +1854,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c",
+     "schema": "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -2177,7 +2184,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c",
+     "schema": "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -2507,7 +2514,7 @@
    "domains": {
     "core": {
      "version": "3.0",
-     "schema": "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c",
+     "schema": "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -2837,7 +2844,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c",
+     "schema": "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -3229,7 +3236,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c",
+     "schema": "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -3559,7 +3566,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c",
+     "schema": "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -3878,7 +3885,7 @@
     }
    },
    "schemas": {
-    "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c": {
+    "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3": {
      "$id": "core"
     },
     "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60": {
@@ -4127,7 +4134,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c",
+     "schema": "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -4427,7 +4434,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c",
+     "schema": "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -4754,7 +4761,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c",
+     "schema": "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -5135,7 +5142,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c",
+     "schema": "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -5466,7 +5473,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c",
+     "schema": "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -5793,7 +5800,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c",
+     "schema": "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -6124,7 +6131,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c",
+     "schema": "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -6469,7 +6476,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c",
+     "schema": "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -6898,7 +6905,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c",
+     "schema": "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -7160,7 +7167,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c",
+     "schema": "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3",
      "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -7174,7 +7181,7 @@
     }
    }
   },
-  "hash": "sha256:4963fd97a350bc16ff0e8b60418e8abbe949fe52a696c1e60875cb2ab3db86be"
+  "hash": "sha256:3b7f2f1da55b5f9438ff772fdaa3a2abc66cabfc359cf9cf5f23b14d767d31d5"
  },
  {
   "name": "the sample with its signalling",
@@ -7184,7 +7191,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c",
+     "schema": "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -8022,7 +8029,7 @@
     },
     "core": {
      "version": "2.0",
-     "schema": "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c",
+     "schema": "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3",
      "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -8056,7 +8063,7 @@
     }
    }
   },
-  "hash": "sha256:276045fd61a3f788ebaf79e5c439bb33fc337df5aa205d5819bab22945fdd3f2"
+  "hash": "sha256:3e6b0bbb0551905b57895e5c03377bc14761eef18c15e68a194fe790e64db26e"
  },
  {
   "name": "the sample with its signalling, carrying its schemas",
@@ -8066,7 +8073,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c",
+     "schema": "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -8886,7 +8893,7 @@
     }
    },
    "schemas": {
-    "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c": {
+    "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3": {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
      "$id": "core",
      "title": "Rail-Data-Core, domain core 2.0",
@@ -9142,7 +9149,7 @@
        }
       },
       "Lifespan": {
-       "description": "The first construction stage an object exists in and the first it no longer exists in; an absent end is open, no lifespan at all means existing and staying (decision 0003).",
+       "description": "The first construction stage an object exists in and the first it no longer exists in; an absent end is open, no lifespan at all means existing and staying (decision 0003). A stage that begins on a day makes the dates of the tools: an object in service from a day exists from the stage that begins that day, one in service until a day no longer from the stage that begins the day after (decision 0027).",
        "type": "object",
        "minProperties": 1,
        "additionalProperties": false,
@@ -9169,8 +9176,14 @@
         },
         "name": {
          "$ref": "#/$defs/Text"
+        },
+        "date": {
+         "type": "string",
+         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+         "description": "The day the stage begins (ISO 8601); a stage between the existing and the final state has one (decision 0027)."
         }
-       }
+       },
+       "description": "A construction stage (decision 0003): the existing state first, the final state last, each between them from the day it begins (`date`), in their order."
       },
       "Fields": {
        "description": "The project's own fields. `stages` is the ordered list of construction stages: the first is the existing state, the last the final state.",
@@ -9499,7 +9512,7 @@
        }
       },
       "Switch": {
-       "description": "A turnout, crossing, slip or two-end connector (`link`) at a node; its ports hold track ends. A link joins two track ends where the plane changes or where a rebuilt part of a track ties in.",
+       "description": "A turnout, crossing, slip, two-end connector (`link`) or construction stage connector (`stage_link`) at a node; its ports hold track ends. A link joins two track ends where the plane changes or where a rebuilt part of a track ties in; a stage link joins the track at A to the one at B1 while that exists and to the one at B2 from then on — never both: one track ends, the other begins (decision 0027).",
        "type": "object",
        "required": [
         "id",
@@ -9518,7 +9531,8 @@
           "crossing",
           "single_slip",
           "double_slip",
-          "link"
+          "link",
+          "stage_link"
          ]
         },
         "formVersion": {
@@ -11275,7 +11289,7 @@
     },
     "core": {
      "version": "2.0",
-     "schema": "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c",
+     "schema": "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3",
      "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -11309,7 +11323,7 @@
     }
    }
   },
-  "hash": "sha256:276045fd61a3f788ebaf79e5c439bb33fc337df5aa205d5819bab22945fdd3f2"
+  "hash": "sha256:3e6b0bbb0551905b57895e5c03377bc14761eef18c15e68a194fe790e64db26e"
  },
  {
   "name": "signalling depending on nothing",
@@ -11319,7 +11333,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c",
+     "schema": "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -12147,7 +12161,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c",
+     "schema": "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -12977,7 +12991,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c",
+     "schema": "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -13815,7 +13829,7 @@
     },
     "core": {
      "version": "2.0",
-     "schema": "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c",
+     "schema": "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3",
      "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -13849,7 +13863,7 @@
     }
    }
   },
-  "hash": "sha256:276045fd61a3f788ebaf79e5c439bb33fc337df5aa205d5819bab22945fdd3f2"
+  "hash": "sha256:3e6b0bbb0551905b57895e5c03377bc14761eef18c15e68a194fe790e64db26e"
  },
  {
   "name": "signalling without its overlaps",
@@ -13859,7 +13873,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c",
+     "schema": "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -14660,7 +14674,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c",
+     "schema": "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -15516,7 +15530,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c",
+     "schema": "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -16350,7 +16364,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c",
+     "schema": "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -17205,7 +17219,7 @@
     },
     "core": {
      "version": "2.0",
-     "schema": "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c",
+     "schema": "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3",
      "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -17240,7 +17254,7 @@
     }
    }
   },
-  "hash": "sha256:e8912b54a177301bdebe02e1e26667bee362a58eb953a062c2183bc551802d3b"
+  "hash": "sha256:c7aff63b222efb1313e4063e5da40a58aa734f98c4218b6ef9904e667bfea003"
  },
  {
   "name": "the sample with its electrification",
@@ -17250,7 +17264,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c",
+     "schema": "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -17610,7 +17624,7 @@
     },
     "core": {
      "version": "2.0",
-     "schema": "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c",
+     "schema": "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3",
      "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -17635,7 +17649,7 @@
     }
    }
   },
-  "hash": "sha256:a4921d37270cf484b67911afb96136343b7e53e54efcc1f51aa4f6da7d074c77"
+  "hash": "sha256:ad85d8f5e52a5d7d48358f38559506ed6ad3e6aa941261331dde10551edcd655"
  },
  {
   "name": "an electrification of no system",
@@ -17645,7 +17659,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c",
+     "schema": "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -17997,7 +18011,7 @@
    "domains": {
     "core": {
      "version": "2.0",
-     "schema": "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c",
+     "schema": "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -18335,7 +18349,7 @@
     },
     "core": {
      "version": "2.0",
-     "schema": "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c",
+     "schema": "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3",
      "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
      "collections": {
       "endMarks": "sha256:f916fe119da35955671647cc01b5c3c6b4247bc796729eb4f17cef2fa9ac66d9",
@@ -18349,7 +18363,7 @@
     }
    }
   },
-  "hash": "sha256:7e3fe5e25a1d68d854126909dfff86a52af9fa2376cff95c1cc562ac9b285078"
+  "hash": "sha256:bdb0ea58274b3b0c6b34097b714b36f334307bccc75c2e0907afc6fabb49c9c6"
  },
  {
   "name": "infra-data 1.0: the sample",
@@ -18695,7 +18709,7 @@
     },
     "core": {
      "version": "2.0",
-     "schema": "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c",
+     "schema": "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3",
      "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -18709,7 +18723,7 @@
     }
    }
   },
-  "hash": "sha256:822ae532f4918d5d48171b5e864418bcc60331aa36bcfc471bab22db90e4af24"
+  "hash": "sha256:4e824cae7e4bcbcd49fde43cc4ac5db64da9a0ba6470f0edf2f922be86049f93"
  },
  {
   "name": "infra-data 1.0: the sample with its signalling",
@@ -19553,7 +19567,7 @@
     },
     "core": {
      "version": "2.0",
-     "schema": "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c",
+     "schema": "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3",
      "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -19587,7 +19601,7 @@
     }
    }
   },
-  "hash": "sha256:3fbd08b668196c993227182cce57dd626b793d78a9a3586ee6707adde7d9d8fe"
+  "hash": "sha256:69f8e2ed4e06d505e9976beae13c9f454e72aad30d712f9c0da1910a4a59833e"
  },
  {
   "name": "infra-data 1.0: a stopping place at a platform, a boundary marked by it",
@@ -20435,7 +20449,7 @@
     },
     "core": {
      "version": "2.0",
-     "schema": "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c",
+     "schema": "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3",
      "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -20469,7 +20483,7 @@
     }
    }
   },
-  "hash": "sha256:845ff69c06d114306343df0d4c0292e59511df822cbc245137fdf3a2e94bdd92"
+  "hash": "sha256:e114fc683ef25fa69254592113e83ace49fd41bc03b22f3d7007d4b3f6c4a368"
  },
  {
   "name": "infra-data 1.0: a boundary marked by a platform no stopping place is at",
@@ -21316,7 +21330,7 @@
     },
     "core": {
      "version": "2.0",
-     "schema": "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c",
+     "schema": "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3",
      "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -21350,7 +21364,7 @@
     }
    }
   },
-  "hash": "sha256:439a64d2ebdb4fc4f0489d91c1a35723236127c24b1691a6301915e7cf0ae560"
+  "hash": "sha256:5f693288a73a1ab7b6cbed09b672e73ab847a64fd106e3109a5c89f7629d13d4"
  },
  {
   "name": "infra-data 1.0: core as written before the design speed took its name",
@@ -21696,7 +21710,7 @@
     },
     "core": {
      "version": "2.0",
-     "schema": "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c",
+     "schema": "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3",
      "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -21710,7 +21724,7 @@
     }
    }
   },
-  "hash": "sha256:822ae532f4918d5d48171b5e864418bcc60331aa36bcfc471bab22db90e4af24"
+  "hash": "sha256:4e824cae7e4bcbcd49fde43cc4ac5db64da9a0ba6470f0edf2f922be86049f93"
  },
  {
   "name": "infra-data 1.0: a domain this build does not read",
@@ -22714,7 +22728,7 @@
     },
     "core": {
      "version": "2.0",
-     "schema": "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c",
+     "schema": "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3",
      "fields": "sha256:cc6666bc2da370ae0e05336651155d88b65156dc46389dee1f59b5b6b7c6efc1",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -22728,6 +22742,6 @@
     }
    }
   },
-  "hash": "sha256:b3cdc54c30478cd2744668091ad01c92a14889bf76ad424dd934d59c0123d552"
+  "hash": "sha256:cf405d11943bc72c02c245aafbc16ae1d2181477880b7ce879a13afeace0ab29"
  }
 ]

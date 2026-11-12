@@ -9,6 +9,9 @@ use serde_json::{Value, json};
 use crate::util::{obj, text};
 
 pub const LINK_KIND: &str = "link";
+/// A construction stage connector (decision 0027): three track ends, A joined to B1 while that exists and to B2
+/// from then on — not a switch: never both at once.
+pub const STAGE_LINK_KIND: &str = "stage_link";
 pub const DEFAULT_SWITCH_KIND: &str = "turnout";
 pub const SWITCH_FORM_VERSION: i64 = 1;
 
@@ -18,7 +21,7 @@ pub fn switch_route_ports(kind: Option<&str>) -> Vec<(&'static str, [&'static st
         Some("crossing") => vec![("main", ["A", "C"]), ("cross", ["B", "D"])],
         Some("single_slip") => vec![("main", ["A", "C"]), ("cross", ["B", "D"]), ("slip1", ["A", "D"])],
         Some("double_slip") => vec![("main", ["A", "C"]), ("cross", ["B", "D"]), ("slip1", ["A", "D"]), ("slip2", ["B", "C"])],
-        Some("link") => vec![],
+        Some("link" | "stage_link") => vec![],
         _ => vec![("main", ["A", "B2"]), ("branch", ["A", "B1"])],
     }
 }
@@ -44,13 +47,14 @@ pub fn switch_kind_label_key(kind: Option<&str>) -> &'static str {
         Some("crossing") => "table_type_crossing",
         Some("single_slip") | Some("double_slip") => "table_type_crossing_switch",
         Some("link") => "table_type_link",
+        Some("stage_link") => "table_type_stage_link",
         _ => "table_type_switch",
     }
 }
 
 /// The key a route of a kind is named by (`switchRouteLabelKey`).
 pub fn switch_route_label_key(kind: Option<&str>, route: &str) -> Option<&'static str> {
-    let known = matches!(kind, Some("turnout" | "crossing" | "single_slip" | "double_slip" | "link"));
+    let known = matches!(kind, Some("turnout" | "crossing" | "single_slip" | "double_slip" | "link" | "stage_link"));
     if known && !switch_route_ports(kind).iter().any(|(r, _)| *r == route) {
         return None;
     }
@@ -65,8 +69,24 @@ pub fn switch_route_label_key(kind: Option<&str>, route: &str) -> Option<&'stati
     }
 }
 
+/// Whether a switch record is a connector, no switch: a link, or a construction stage connector.
 pub fn is_link_switch(sw: &Value) -> bool {
-    text(sw, "kind") == Some(LINK_KIND)
+    matches!(text(sw, "kind"), Some(LINK_KIND | STAGE_LINK_KIND))
+}
+
+/// Whether a switch record is a construction stage connector.
+pub fn is_stage_link(sw: &Value) -> bool {
+    text(sw, "kind") == Some(STAGE_LINK_KIND)
+}
+
+/// The ports a connector joins a port to: every other for a link; for a stage link A to B1 and B2, each of
+/// those to A alone — the old and the new track are never joined to each other.
+pub fn joined_ports(sw: &Value, port: &str) -> Vec<&'static str> {
+    let all = ports_of(sw);
+    if is_stage_link(sw) {
+        return if port == "A" { vec!["B1", "B2"] } else { vec!["A"] };
+    }
+    all.into_iter().map(|(p, _)| p).filter(|p| *p != port).collect()
 }
 
 /// The marks an element of a switch route carries (`switchElementMark`).
@@ -98,6 +118,7 @@ pub fn switch_ports(kind: Option<&str>) -> Vec<(&'static str, Option<&'static st
     match kind {
         Some("crossing" | "single_slip" | "double_slip") => vec![("A", Some("main")), ("B", Some("cross")), ("C", Some("main")), ("D", Some("cross"))],
         Some("link") => vec![("A", None), ("B", None)],
+        Some("stage_link") => vec![("A", None), ("B1", None), ("B2", None)],
         _ => vec![("A", Some("main")), ("B1", Some("branch")), ("B2", Some("main"))],
     }
 }

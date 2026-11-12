@@ -14,6 +14,7 @@
 export { canonicalJson, contentHash, derivedId } from './canonical.js'
 export { DOMAIN_VERSIONS } from './coreFormat.js'
 export { defaultStages, renamedStation, stationRegister, withPlatformStops } from './stations.js'
+export { recordAtStage, stagesOf } from './stages.js'
 export { documentHash, manifestOf } from './manifest.js'
 export {
   checkDocument, FORMAT, FORMAT_NAME, FORMAT_VERSION, fromDocument, SCHEMA_HASHES, schemaOf, toDocument,

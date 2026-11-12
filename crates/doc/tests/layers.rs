@@ -257,3 +257,123 @@ mod platform_stops {
         assert_eq!(places(&r), &vec![h]);
     }
 }
+
+mod stage_days {
+    use rail_across_doc::core_format::document_to_record;
+    use rail_across_doc::door::{check_document, to_document};
+    use rail_across_doc::stages::{day_after, day_before};
+    use serde_json::{Value, json};
+
+    fn track(id: &str, extra: Value) -> Value {
+        let el = json!({ "elementType": 0, "startNode": [500000, 5700000], "endNode": [500100, 5700000], "bearing": 90, "length": 100, "speed": 80 });
+        let mut t = json!({ "id": id, "name": id, "epsg": 25832, "elements": [el] });
+        for (k, v) in extra.as_object().unwrap() {
+            t[k] = v.clone();
+        }
+        t
+    }
+
+    fn record() -> Value {
+        json!({
+            "id": "p", "switches": [], "platforms": [],
+            "tracks": [
+                track("a", json!({})),
+                track("b", json!({ "status": "removal", "inServiceTo": "2028-06-01" })),
+                track("c", json!({ "status": "new", "inServiceFrom": "2028-06-02" })),
+                track("d", json!({ "status": "new" })),
+                track("e", json!({ "status": "new", "inServiceFrom": "2027-03-01", "inServiceTo": "2028-06-01" })),
+            ],
+        })
+    }
+
+    #[test]
+    fn days_go_round_the_year() {
+        assert_eq!(day_after("2028-06-01").as_deref(), Some("2028-06-02"));
+        assert_eq!(day_after("2028-02-28").as_deref(), Some("2028-02-29"));
+        assert_eq!(day_after("2027-12-31").as_deref(), Some("2028-01-01"));
+        assert_eq!(day_before("2028-03-01").as_deref(), Some("2028-02-29"));
+        assert_eq!(day_after("2028-02-30"), None);
+    }
+
+    #[test]
+    fn a_stage_for_each_day_and_the_lifespans_over_them() {
+        let doc = to_document(&record(), false, true).unwrap();
+        let stages = doc["domains"]["core"]["fields"]["stages"].as_array().unwrap().clone();
+        let days: Vec<Value> = stages.iter().map(|s| s.get("date").cloned().unwrap_or(Value::Null)).collect();
+        assert_eq!(days, vec![Value::Null, json!("2027-03-01"), json!("2028-06-02"), Value::Null]);
+        let tracks = doc["domains"]["core"]["collections"]["tracks"].as_array().unwrap().clone();
+        let life = |id: &str| tracks.iter().find(|t| t["id"] == id).unwrap().get("lifespan").cloned().unwrap_or(Value::Null);
+        let (s1, s2, last) = (stages[1]["id"].clone(), stages[2]["id"].clone(), stages[3]["id"].clone());
+        assert_eq!(life("a"), Value::Null);
+        assert_eq!(life("b"), json!({ "to": s2 }), "until 1 June: no longer from the stage of 2 June");
+        assert_eq!(life("c"), json!({ "from": s2 }));
+        assert_eq!(life("d"), json!({ "from": last }));
+        assert_eq!(life("e"), json!({ "from": s1, "to": s2 }));
+        // and back as it was
+        let back = document_to_record(&check_document(&doc).unwrap()).unwrap();
+        for t in record()["tracks"].as_array().unwrap() {
+            let b = back["tracks"].as_array().unwrap().iter().find(|x| x["id"] == t["id"]).unwrap();
+            for k in ["status", "inServiceFrom", "inServiceTo"] {
+                assert_eq!(b.get(k), t.get(k), "{} {k}", t["id"]);
+            }
+        }
+        assert_eq!(
+            back["stages"].as_array().unwrap().iter().map(|s| s["date"].clone()).collect::<Vec<_>>(),
+            vec![json!("2027-03-01"), json!("2028-06-02")]
+        );
+    }
+
+    #[test]
+    fn a_stage_link_joins_three_tracks() {
+        let mut r = record();
+        r["switches"] = json!([{ "switchId": "v", "kind": "stage_link", "formVersion": 1, "ports": {
+            "A": { "trackId": "a", "endpoint": "END" }, "B1": { "trackId": "b", "endpoint": "BEGIN" }, "B2": { "trackId": "c", "endpoint": "BEGIN" } } }]);
+        let doc = to_document(&r, false, true).unwrap_or_else(|e| panic!("refused ({e})"));
+        assert_eq!(doc["domains"]["core"]["collections"]["switches"][0]["kind"], "stage_link");
+    }
+
+    #[test]
+    fn a_day_that_is_none_is_refused() {
+        let mut r = record();
+        r["tracks"][1]["inServiceTo"] = json!("01.06.2028");
+        assert_eq!(to_document(&r, false, true).unwrap_err().code, "invalid_payload");
+    }
+}
+
+mod record_at_stage {
+    use rail_across_doc::stages::{record_at_stage, stages_of};
+    use serde_json::json;
+
+    #[test]
+    fn what_stands_at_each_stage() {
+        let r = json!({
+            "id": "p", "platforms": [],
+            "tracks": [
+                { "id": "a" }, { "id": "b", "status": "removal", "inServiceTo": "2028-06-01" },
+                { "id": "c", "status": "new", "inServiceFrom": "2028-06-02" }, { "id": "d", "status": "new" },
+            ],
+            "switches": [{ "switchId": "v", "kind": "stage_link", "ports": {
+                "A": { "trackId": "a", "endpoint": "END" }, "B1": { "trackId": "b", "endpoint": "BEGIN" }, "B2": { "trackId": "c", "endpoint": "BEGIN" } } }],
+        });
+        let keys: Vec<String> = stages_of(&r)
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|s| s["key"].as_str().unwrap().to_string())
+            .collect();
+        assert_eq!(keys, ["existing", "2028-06-02", "final"]);
+        let at = |k: &str| {
+            let v = record_at_stage(&r, k);
+            let ids: Vec<String> = v["tracks"].as_array().unwrap().iter().map(|t| t["id"].as_str().unwrap().to_string()).collect();
+            (ids, v["switches"][0]["ports"].clone())
+        };
+        let (ids, ports) = at("existing");
+        assert_eq!(ids, ["a", "b"]);
+        assert_eq!(ports["B2"], json!(null), "the new track not yet: its port empty");
+        let (ids, ports) = at("2028-06-02");
+        assert_eq!(ids, ["a", "c"]);
+        assert_eq!(ports["B1"], json!(null));
+        assert_eq!(at("final").0, ["a", "c", "d"]);
+        assert_eq!(record_at_stage(&r, "1999-01-01"), r, "no such stage: the record as it is");
+    }
+}

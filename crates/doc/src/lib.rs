@@ -19,6 +19,7 @@ pub mod manifest;
 pub mod operations;
 pub mod persistence;
 pub mod schema;
+pub mod stages;
 pub mod stations;
 
 pub use error::PayloadError;

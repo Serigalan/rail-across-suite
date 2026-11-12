@@ -63,6 +63,6 @@ describe('a variant at a stage', () => {
     const record = { id: 'p', tracks: [{ id: 'a' }, { id: 'n', status: 'new' }, { id: 'r', status: 'removal' }], switches: [], platforms: [] }
     expect(recordAtStage(record, 'existing').tracks.map(t => t.id)).toEqual(['a', 'r'])
     expect(recordAtStage(record, 'final').tracks.map(t => t.id)).toEqual(['a', 'n'])
-    expect(recordAtStage(record, 'as planned')).toBe(record)
+    expect(recordAtStage(record, 'as planned')).toEqual(record)
   })
 })

@@ -12,7 +12,7 @@ use rail_across_js::{Object, cmp_utf16, js_round, js_string, number, strict_eq, 
 use serde_json::{Value, json};
 
 use crate::end_marks::{BOUNDARY, BUFFER_STOP, end_key};
-use crate::switch_model::{LINK_KIND, is_link_switch, new_switch_fields, port_end, port_track, ports_of, switch_route_ports};
+use crate::switch_model::{LINK_KIND, is_link_switch, joined_ports, new_switch_fields, port_end, port_track, ports_of, switch_route_ports};
 use crate::util::{elements, epsg, text};
 
 const JOINT_EXACT: f64 = 0.01;
@@ -255,7 +255,7 @@ pub fn tracks_on_from(track_id: &Value, endpoint: &str, tracks: &[Value], switch
         let routes: Vec<[&str; 2]> = switch_route_ports(text(sw, "kind")).into_iter().map(|(_, r)| r).collect();
         for port in mine {
             let others: Vec<&str> = if is_link_switch(sw) {
-                ports.iter().filter(|(p, _)| *p != port).map(|(p, _)| *p).collect()
+                joined_ports(sw, port)
             } else {
                 routes
                     .iter()
@@ -429,7 +429,7 @@ pub fn existing_links(switches: &[Value], tracks: &[Value]) -> Value {
     };
     let mut out: Vec<(Option<f64>, Value)> = switches
         .iter()
-        .filter(|sw| is_link_switch(sw))
+        .filter(|sw| text(sw, "kind") == Some(LINK_KIND))
         .map(|sw| {
             let a = end_of(port_track(sw, "A"), port_end(sw, "A"));
             let b = end_of(port_track(sw, "B"), port_end(sw, "B"));

@@ -31,12 +31,17 @@ fn port_side(kind: &str, port: &str) -> Option<usize> {
             "B" => Some(1),
             _ => None,
         },
+        "stage_link" => match port {
+            "A" => Some(0),
+            "B1" | "B2" => Some(1),
+            _ => None,
+        },
         _ => None,
     }
 }
 
 fn has_sides(kind: &str) -> bool {
-    matches!(kind, "turnout" | "crossing" | "single_slip" | "double_slip" | "link")
+    matches!(kind, "turnout" | "crossing" | "single_slip" | "double_slip" | "link" | "stage_link")
 }
 
 fn through(kind: &str) -> &'static [(&'static str, &'static str)] {
@@ -44,6 +49,7 @@ fn through(kind: &str) -> &'static [(&'static str, &'static str)] {
         "turnout" => &[("A", "B2")],
         "crossing" | "single_slip" | "double_slip" => &[("A", "C")],
         "link" => &[("A", "B")],
+        "stage_link" => &[("A", "B1")],
         _ => &[],
     }
 }

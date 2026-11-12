@@ -2102,5 +2102,6 @@
   "table_cant_ends_hint": "Cant at the start and the end of the element, signed by the raised rail (+ left raised). An element has either one cant (column Cant) or one at each end (a transition, or an arc or straight whose cant changes along it) – never both. No cant is 0.",
   "bands_cant_ends_hint": "Magnitude in mm, the raised rail stays the same; emptied, the end follows the neighbouring element again. No design step – a ramp passes through the values between. A typed value runs on over the joint (the element beside takes it), and at a turnout the other route takes it too. A sign against the curve is typed in the Trackeditor.",
   "platform_stop_name": "Pl. {track}",
-  "platform_stop_hint": "A platform makes the stopping place at it a passenger stop; where there is none yet, it makes one over its length."
+  "platform_stop_hint": "A platform makes the stopping place at it a passenger stop; where there is none yet, it makes one over its length.",
+  "table_type_stage_link": "Stage connector"
 }

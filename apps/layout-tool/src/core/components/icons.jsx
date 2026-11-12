@@ -589,6 +589,15 @@ export const LogoIcon = ({ className }) => (
   </svg>
 )
 
+// The Civil-Tool's mark: an arch bridge, its deck running out on both sides —
+// as public/civil-favicon.svg draws it small, without its railing.
+export const CivilLogoIcon = ({ className }) => (
+  <svg viewBox="2 6 44 34" className={className} aria-hidden="true">
+    <path d="M4 12H44M13 12V38M35 12V38M13 38A11 25 0 0 1 35 38M4 13A9 25 0 0 1 13 38M44 13A9 25 0 0 0 35 38"
+      fill="none" stroke="currentColor" strokeWidth="3.2" />
+  </svg>
+)
+
 // Switches — the through track, and the branch leaving it for the parallel one.
 export const ConnectSwitchIcon = () => (
   <SidebarIcon>

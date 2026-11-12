@@ -3,7 +3,7 @@
 One directory per module with its own build, named after the module: `home/` (the suite's start page: the
 sign-in, the user administration, the modules and the projects), `layout-tool/` (the Layout-Tool, which was
 the Open-Layout-Tool before it moved here in phase 0 — the alignment; the same build serves the Civil-Tool under `/civil/`, the
-civil layer: platforms, runs of tracks, surveys, the title block, [decision 0025](../docs/decisions/0025-layers-on-the-core.md)), `signalling-tool/` (the Signalling-Tool),
+civil layer: platforms, surveys, the title block, [decision 0025](../docs/decisions/0025-layers-on-the-core.md)), `signalling-tool/` (the Signalling-Tool),
 `simulation-tool/` (once the running times of the Fahrplan-Sim, now a page that leads on to the Fahrplan-Editor's
 *Fahrzeit rechnen*, [decision 0013](../docs/decisions/0013-running-times-in-rust.md)), `vehicle-editor/` (the Fahrzeug-Editor: the
 suite's vehicles in OSRD's form, [decision 0014](../docs/decisions/0014-vehicles-in-osrds-form.md)),

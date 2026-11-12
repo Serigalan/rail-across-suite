@@ -73,7 +73,12 @@ fn infra_data_1_0_reads_in_as_2_0() {
     assert_eq!(doc["domains"]["signalling"]["version"], "2.0");
     let civil = &doc["domains"]["civil"];
     assert_eq!(civil["fields"]["planHeader"], json!({ "subtitle": "Lageplan" }));
-    assert_eq!(civil["collections"]["trackPaths"].as_array().unwrap().len(), 1);
+    assert_eq!(
+        doc["domains"]["core"]["collections"]["trackPaths"].as_array().unwrap().len(),
+        1,
+        "the runs the core's"
+    );
+    assert!(civil["collections"].get("trackPaths").is_none());
     assert_eq!(find(&civil["collections"]["platforms"], "p1")["stoppingPlaceIds"], json!(["hp-2"]));
     let marks = &doc["domains"]["signalling"]["collections"]["stationBoundaries"][0]["marks"];
     assert_eq!(marks, &json!([{ "signalId": "sig-a" }, { "stoppingPlaceId": "hp-2" }]));
@@ -143,19 +148,35 @@ fn a_stopping_place_a_platform_names_is_a_passenger_stop() {
 }
 
 #[test]
-fn a_2_0_core_before_the_passenger_stops_reads_with_them() {
-    // The core 2.0 as it was before its stopping places said so: the platform naming one makes it one.
+fn a_2_0_document_of_before_reads_with_the_passenger_stops_and_the_runs_in_the_core() {
+    // The core 2.0 and civil 1.0 as they were first: no passenger stops, the runs civil's.
     let mut doc = check_document(&case("the sample with its signalling")).unwrap();
+    let run = json!({ "id": "r", "name": "R", "path": { "trackIds": ["t1"] } });
     let core = &mut doc["domains"]["core"];
     core["schema"] = json!("sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877");
+    core["collections"].as_object_mut().unwrap().remove("trackPaths");
     for h in core["collections"]["stoppingPlaces"].as_array_mut().unwrap() {
         h.as_object_mut().unwrap().remove("passengerStop");
     }
+    let civil = &mut doc["domains"]["civil"];
+    civil["schema"] = json!("sha256:0b73763db4b8ca57f56472f4b8aeef8a8b02369f4f8a9e3f2b4072480c48b1fb");
+    civil["collections"]["trackPaths"] = json!([run.clone()]);
     let checked = check_document(&doc).unwrap_or_else(|e| panic!("refused ({e})"));
-    assert_eq!(checked["domains"]["core"]["schema"], rail_across_doc::door::schema_hashes()["core"].as_str());
+    let hashes = rail_across_doc::door::schema_hashes();
+    assert_eq!(checked["domains"]["core"]["schema"], hashes["core"].as_str());
+    assert_eq!(checked["domains"]["civil"]["schema"], hashes["civil"].as_str());
     assert_eq!(
         find(&checked["domains"]["core"]["collections"]["stoppingPlaces"], "hp-2")["passengerStop"],
         true
+    );
+    assert_eq!(checked["domains"]["core"]["collections"]["trackPaths"], json!([run]));
+    assert!(checked["domains"]["civil"]["collections"].get("trackPaths").is_none());
+    // A core of between (passenger stops, no runs) takes the runs as well.
+    let mut between = doc.clone();
+    between["domains"]["core"]["schema"] = json!("sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f");
+    assert_eq!(
+        check_document(&between).unwrap()["domains"]["core"]["collections"]["trackPaths"],
+        checked["domains"]["core"]["collections"]["trackPaths"]
     );
 }
 

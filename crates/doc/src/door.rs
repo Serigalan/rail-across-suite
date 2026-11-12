@@ -98,8 +98,12 @@ const CORE_FIRST: &str = "sha256:c237af09e3ac3915398d9c7795088518df4023bfd0b9540
 const CORE_SECOND: &str = "sha256:16ae19c7adbb08fedabbb0ad778fc765c7faa8a8b2c56cbdbc9adfa91f622a19";
 const CORE_THIRD: &str = "sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4";
 const LAYOUT_FIRST: &str = "sha256:b2280dcf6cfe779e148b6c402ac46eb4ff1e8d96b55e6e3abcb370ef48ff1f1b";
-/// Core 2.0 before its stopping places said whether they are passenger stops.
+/// Core 2.0 before its stopping places said whether they are passenger stops,
+/// and before it held the named runs of tracks, which civil 1.0 held first.
 const CORE_2_FIRST: &str = "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877";
+const CORE_2_SECOND: &str = "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f";
+/// Civil 1.0 with the named runs of tracks.
+const CIVIL_FIRST: &str = "sha256:0b73763db4b8ca57f56472f4b8aeef8a8b02369f4f8a9e3f2b4072480c48b1fb";
 /// The domains of infra-data 1.0, with the schema each had last.
 const BEFORE: &[(&str, &str)] = &[("core", CORE_THIRD), ("layout", LAYOUT_FIRST), ("signalling", SIGNALLING_SEVENTH)];
 
@@ -342,28 +346,60 @@ fn migrated_within_1_0(doc: &Value) -> Value {
     Value::Object(out)
 }
 
-/// An infra-data 2.0 document with its core of an earlier schema of 2.0 brought
-/// to this build's: a stopping place a platform names is a passenger stop.
+/// An infra-data 2.0 document with its core and civil of an earlier schema of
+/// 2.0 brought to this build's: a stopping place a platform names is a
+/// passenger stop (core's second), the named runs of tracks are the core's, no
+/// longer civil's (core's third, civil's second).
 fn migrated_within_2_0(doc: &Value) -> Value {
-    let Some(core) = doc["domains"]
-        .get("core")
-        .filter(|c| c.get("schema").and_then(Value::as_str) == Some(CORE_2_FIRST))
-    else {
+    let schema = |d: Option<&Value>| d.and_then(|d| d.get("schema")).and_then(Value::as_str).map(str::to_string);
+    let mut core = doc["domains"].get("core").cloned();
+    let mut civil = doc["domains"].get("civil").cloned();
+    let (core_was, civil_was) = (schema(core.as_ref()), schema(civil.as_ref()));
+    if let Some(c) = core.as_mut() {
+        if schema(Some(c)).as_deref() == Some(CORE_2_FIRST) {
+            let platforms = civil.as_ref().map(|c| list(&c["collections"], "platforms")).unwrap_or_default();
+            let mut cols = obj(c.get("collections").unwrap_or(&Value::Null));
+            if let Some(Value::Array(places)) = cols.get("stoppingPlaces").cloned() {
+                cols.insert("stoppingPlaces".into(), Value::Array(layers::passenger_stops(&places, &platforms)));
+            }
+            *c = with_schema(c, CORE_2_SECOND, Some(cols));
+        }
+    }
+    // The runs leave civil of before, for the core.
+    let mut runs = None;
+    if let Some(v) = civil.as_mut().filter(|v| schema(Some(v)).as_deref() == Some(CIVIL_FIRST)) {
+        let mut cols = obj(v.get("collections").unwrap_or(&Value::Null));
+        runs = cols.shift_remove("trackPaths");
+        *v = with_schema(v, &schema_hashes()["civil"], Some(cols));
+    }
+    if let Some(c) = core.as_mut() {
+        if schema(Some(c)).as_deref() == Some(CORE_2_SECOND) {
+            let mut cols = obj(c.get("collections").unwrap_or(&Value::Null));
+            cols.insert("trackPaths".into(), runs.unwrap_or(json!([])));
+            *c = with_schema(c, &schema_hashes()["core"], Some(cols));
+        }
+    }
+    if schema(core.as_ref()) == core_was && schema(civil.as_ref()) == civil_was {
         return doc.clone();
-    };
-    let platforms = doc["domains"].get("civil").map(|c| list(&c["collections"], "platforms")).unwrap_or_default();
-    let mut cols = obj(core.get("collections").unwrap_or(&Value::Null));
-    if let Some(Value::Array(places)) = cols.get("stoppingPlaces").cloned() {
-        cols.insert("stoppingPlaces".into(), Value::Array(layers::passenger_stops(&places, &platforms)));
     }
     let mut d = obj(&doc["domains"]);
-    d.insert("core".into(), with_schema(core, &schema_hashes()["core"], Some(cols)));
+    for (name, domain) in [("core", core), ("civil", civil)] {
+        if let Some(domain) = domain {
+            d.insert(name.into(), domain);
+        }
+    }
     let mut out = obj(doc);
     out.insert("domains".into(), Value::Object(d));
-    if let Some(Value::Object(carried)) = doc.get("schemas").filter(|s| s.get(CORE_2_FIRST).is_some()) {
+    // A document that carries its schemas carries this build's of what it changed.
+    if let Some(Value::Object(carried)) = doc.get("schemas") {
         let mut carried = carried.clone();
-        carried.shift_remove(CORE_2_FIRST);
-        carried.insert(schema_hashes()["core"].clone(), schema_of("core").cloned().unwrap_or(Value::Null));
+        for (name, was) in [("core", core_was), ("civil", civil_was)] {
+            let now = &schema_hashes()[name];
+            if let Some(was) = was.filter(|w| w != now && carried.contains_key(w)) {
+                carried.shift_remove(&was);
+                carried.insert(now.clone(), schema_of(name).cloned().unwrap_or(Value::Null));
+            }
+        }
         out.insert("schemas".into(), Value::Object(carried));
     }
     Value::Object(out)
@@ -406,17 +442,18 @@ fn to_2_0(doc: &Value) -> Value {
         signalling = Some(Value::Object(d));
     }
     core_cols.insert("stoppingPlaces".into(), Value::Array(sorted_by_id(layers::core_stopping_places(&stopping))));
+    let layout = domains.get("layout");
+    let layout_cols = layout.map(|l| obj(l.get("collections").unwrap_or(&Value::Null))).unwrap_or_default();
+    core_cols.insert("trackPaths".into(), layout_cols.get("trackPaths").cloned().unwrap_or(json!([])));
     let mut c = obj(&core);
     c.insert("version".into(), json!(crate::core_format::domain_version("core")));
     c.insert("schema".into(), json!(schema_hashes()["core"]));
     c.insert("collections".into(), Value::Object(core_cols));
     out_domains.insert("core".into(), Value::Object(c));
 
-    let layout = domains.get("layout");
     let mut civil_cols = Object::new();
     civil_cols.insert("platforms".into(), Value::Array(layers::platforms_naming(&platforms, &stopping)));
-    let layout_cols = layout.map(|l| obj(l.get("collections").unwrap_or(&Value::Null))).unwrap_or_default();
-    for k in ["trackPaths", "axisSurveys", "referenceAxes"] {
+    for k in ["axisSurveys", "referenceAxes"] {
         civil_cols.insert(k.into(), layout_cols.get(k).cloned().unwrap_or(json!([])));
     }
     let civil_fields = layout.map(|l| obj(l.get("fields").unwrap_or(&Value::Null))).unwrap_or_default();

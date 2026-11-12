@@ -375,7 +375,7 @@
   ]
  },
  {
-  "ref": "civil#/$defs/NamedTrackPath",
+  "ref": "core#/$defs/NamedTrackPath",
   "value": {
    "id": "r",
    "name": "Route 1",

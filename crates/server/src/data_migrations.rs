@@ -212,7 +212,7 @@ pub fn run_data_migrations(db: &Connection, now: i64) -> rusqlite::Result<Vec<(S
         ("0021-infra-data", to_infra_data),
         ("0020-node-tolerance-1um", close_node_gaps),
         ("0025-infra-data-2.0", to_infra_data_2_0),
-        ("0025-passenger-stops", within_infra_data_2_0),
+        ("0025-passenger-stops-and-runs", within_infra_data_2_0),
     ];
     for (name, step) in steps {
         if done.iter().any(|d| d == name) {

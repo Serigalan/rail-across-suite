@@ -206,22 +206,29 @@ describe.skipIf(!SERVER_BIN)('the step to infra-data-2.0 (decision 0025)', () =>
   })
 })
 
-describe.skipIf(!SERVER_BIN)('the passenger stops in the core (decision 0025)', () => {
-  it('makes a stopping place a platform names a passenger stop in the revisions kept before, once, in place', async () => {
+describe.skipIf(!SERVER_BIN)('the passenger stops and the runs in the core (decision 0025)', () => {
+  it('makes a stopping place a platform names a passenger stop and the runs the core\'s in the revisions kept before, once, in place', async () => {
     const { file, made } = await twoRevisions()
     const doc = structuredClone(NOW_2_0['the sample with its signalling'])
     const now = doc.domains.core.schema
     // As a server before it kept the sample: the core's schema of before, no passenger stops.
     doc.domains.core.schema = 'sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877'
     for (const h of doc.domains.core.collections.stoppingPlaces) delete h.passengerStop
+    // and its runs civil's, of civil's schema of before
+    const run = { id: 'r', name: 'R', path: { trackIds: ['t1'] } }
+    delete doc.domains.core.collections.trackPaths
+    doc.domains.civil.schema = 'sha256:0b73763db4b8ca57f56472f4b8aeef8a8b02369f4f8a9e3f2b4072480c48b1fb'
+    doc.domains.civil.collections.trackPaths = [run]
     const db = new Database(file)
     db.prepare('UPDATE revision SET schema_version = 5, payload = ? WHERE id = ?').run(gzipSync(JSON.stringify(doc)), made.revisionId)
-    db.prepare("DELETE FROM data_migration WHERE name = '0025-passenger-stops'").run()
+    db.prepare("DELETE FROM data_migration WHERE name = '0025-passenger-stops-and-runs'").run()
     db.close()
-    expect(cli(file, ['migrate'])).toMatch(/data step 0025-passenger-stops: 1 Revisionen umgeschrieben, 0 nicht lesbar/)
+    expect(cli(file, ['migrate'])).toMatch(/data step 0025-passenger-stops-and-runs: 1 Revisionen umgeschrieben, 0 nicht lesbar/)
     const { docs: [after] } = payloads(file)
     expect(after.domains.core.schema).toBe(now)
     expect(after.domains.core.collections.stoppingPlaces.filter(h => h.passengerStop).map(h => h.id)).toEqual(['hp-2'])
+    expect(after.domains.core.collections.trackPaths).toEqual([run])
+    expect(after.domains.civil.collections.trackPaths).toBeUndefined()
     expect(cli(file, ['migrate'])).toBe('')
   })
 })

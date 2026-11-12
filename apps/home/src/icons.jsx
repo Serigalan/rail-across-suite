@@ -94,6 +94,13 @@ const MARKS = {
       <Dot x={17} y={36} /><Dot x={31} y={25} />
     </>
   ),
+  // The Civil-Tool: an arch bridge, its deck running out on both sides, the railing on it.
+  civil: (
+    <>
+      <path d="M4 20H44M14 20V42M34 20V42M14 42A10 22 0 0 1 34 42M4 20A10 22 0 0 1 14 42M44 20A10 22 0 0 0 34 42" />
+      <Faint d="M4 12H44M8 12V20M16 12V20M24 12V20M32 12V20M40 12V20" />
+    </>
+  ),
   // The Signalling-Tool: a main signal on its mast, the mast's plate on it.
   signalling: (
     <>

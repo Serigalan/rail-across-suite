@@ -11,10 +11,12 @@ import { initStorage } from './core/storage'
 import { initWorkingCopies } from './server/workingCopies'
 import { loadNtv2Grid } from '@rail-across/core/geometry'
 import { loadNative } from '@rail-across/core/native'
-import { TOOL_NAME } from './core/tool'
+import { EDITS_CIVIL, TOOL_NAME } from './core/tool'
 
-// One build, two tools (decision 0025): the page says which it is.
+// One build, two tools (decision 0025): the page says which it is, by its
+// name and its mark — the Civil-Tool's a bridge.
 document.title = `${TOOL_NAME} · Rail-Across-Suite`
+if (EDITS_CIVIL) document.querySelector('link[rel="icon"]')?.setAttribute('href', './civil-favicon.svg')
 
 // The grid first, then the store — in that order, not side by side.
 //

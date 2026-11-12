@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- The Civil-Tool's mark: an arch bridge, its deck running out on both sides.
+       Small (a tab) as drawn; from 48 px on with its railing, in the second blue. -->
+  <style>
+    .railing { display: none }
+    @media (min-width: 48px) { .railing { display: inline } }
+  </style>
+  <rect width="200" height="200" rx="42" fill="#303383"/>
+  <g class="railing" fill="none" stroke="#8d8fbb" stroke-width="7">
+    <path d="M10 34.5H190M25 31V55M55 31V55M85 31V55M115 31V55M145 31V55M175 31V55"/>
+  </g>
+  <g fill="none" stroke="#ffffff" stroke-linecap="butt">
+    <path d="M10 62H190" stroke-width="14"/>
+    <path d="M50 69V146M150 69V146" stroke-width="14"/>
+    <path d="M50 146A50 77 0 0 1 150 146M10 69A40 77 0 0 1 50 146M190 69A40 77 0 0 0 150 146" stroke-width="14"/>
+  </g>
+</svg>

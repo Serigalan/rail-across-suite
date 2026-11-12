@@ -10,17 +10,19 @@ import DeleteForm from './DeleteForm'
 import DeleteTrackForm from './DeleteTrackForm'
 import DeleteSwitchForm from './DeleteSwitchForm'
 import SwitchStatusForm from './SwitchStatusForm'
+import RoutesForm from './RoutesForm'
 import EndMarkForm from '../CreateElementPanel/EndMarkForm'
 import { BOUNDARY } from '@rail-across/core/track'
 import SwitchConnectionEdit from '../ConnectSwitchPanel/SwitchConnectionEdit'
 import {
   EditLengthIcon, DeleteElementIcon, EditTracksIcon, EditPropertiesIcon,
   ChangeDirectionIcon, MoveTrackIcon, DeleteTrackIcon, DeleteSwitchIcon,
-  BufferStopIcon, BoundaryIcon, SwitchConnectionIcon,
+  BufferStopIcon, BoundaryIcon, RouteIcon, SwitchConnectionIcon,
 } from '../../icons'
 import { useI18n } from '../../../locales/i18nContext'
 import useMapPick from '../../../map/useMapPick'
 import BackButton from '../BackButton'
+import InfoTip from '../../form/InfoTip'
 
 export default function EditElementPanel({ trackTableId, trackTableRouteId, onShowTrackTable, onShowRouteTable, onCloseConstraints }) {
   const { t } = useI18n()
@@ -87,6 +89,13 @@ export default function EditElementPanel({ trackTableId, trackTableRouteId, onSh
     )
   }
 
+  if (page === 'routes') return (
+    <>
+      {backButton()}
+      <h2>{t('routes')}<InfoTip text={t('route_hint')} /></h2>
+      <RoutesForm />
+    </>
+  )
 
   if (page === 'delete_track') return (
     <>
@@ -190,6 +199,11 @@ export default function EditElementPanel({ trackTableId, trackTableRouteId, onSh
         <button className="ui-btn ui-btn-option" onClick={() => goto('delete_track')}>
           <DeleteTrackIcon />
           {t('edit_track_delete')}
+        </button>
+        <span className="create-element-section">{t('edit_route')}</span>
+        <button className="ui-btn ui-btn-option" onClick={() => goto('routes')}>
+          <RouteIcon />
+          {t('routes')}
         </button>
         <span className="create-element-section">{t('edit_switch')}</span>
         <button className="ui-btn ui-btn-option" onClick={() => goto('switch_connection')}>

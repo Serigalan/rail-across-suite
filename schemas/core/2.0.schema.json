@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "core",
   "title": "Rail-Data-Core, domain core 2.0",
-  "description": "The base every module depends on: the net (tracks, switches and connectors), what stands on it for every discipline (platforms, end marks), the reference data (km lines, the operational point register) and the construction stages. Written by the layout tool, carried by the core library. See docs/data-model.md. — 2.0 (decision 0025): the alignment and what every layer places things by; the platforms are civil's, the stopping places came in from signalling.",
+  "description": "The base every module depends on: the net (tracks, switches and connectors), what stands on it for every discipline (platforms, end marks), the reference data (km lines, the operational point register) and the construction stages. Written by the layout tool, carried by the core library. See docs/data-model.md. — 2.0 (decision 0025): the alignment and what every layer places things by; the platforms are civil's, the stopping places came in from signalling, the named runs of tracks from layout.",
   "type": "object",
   "required": [
     "fields",
@@ -59,6 +59,12 @@
           "type": "array",
           "items": {
             "$ref": "#/$defs/StoppingPlace"
+          }
+        },
+        "trackPaths": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/NamedTrackPath"
           }
         }
       }
@@ -850,6 +856,26 @@
         },
         "lifespan": {
           "$ref": "#/$defs/Lifespan"
+        }
+      }
+    },
+    "NamedTrackPath": {
+      "description": "A named run of tracks (a `route` in the Open-Layout-Tool; the bare word is reserved for the signalling route): the Layout-Tool's, for its profiles and tables.",
+      "type": "object",
+      "required": [
+        "id",
+        "path"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "name": {
+          "$ref": "#/$defs/Text"
+        },
+        "path": {
+          "$ref": "#/$defs/TrackPath"
         }
       }
     }

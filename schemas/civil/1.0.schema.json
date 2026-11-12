@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "civil",
   "title": "Rail-Data-Core, domain civil 1.0",
-  "description": "Civil engineering's layer, edited in the Civil-Tool (decision 0025): platforms, named runs of tracks, measured axes traced in point clouds, reference axes from surveys, the plan header and the project picture — what layout 1.0 held, and the platforms from core 1.0. Depends on core; its references go into the core only. Bulk point arrays are blobs, named by their hash (S-R2).",
+  "description": "Civil engineering's layer, edited in the Civil-Tool (decision 0025): platforms, measured axes traced in point clouds, reference axes from surveys, the plan header and the project picture — what layout 1.0 held but its named runs of tracks, and the platforms from core 1.0. Depends on core; its references go into the core only. Bulk point arrays are blobs, named by their hash (S-R2).",
   "type": "object",
   "required": [
     "fields",
@@ -17,7 +17,6 @@
       "type": "object",
       "required": [
         "platforms",
-        "trackPaths",
         "axisSurveys",
         "referenceAxes"
       ],
@@ -27,12 +26,6 @@
           "type": "array",
           "items": {
             "$ref": "#/$defs/Platform"
-          }
-        },
-        "trackPaths": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/NamedTrackPath"
           }
         },
         "axisSurveys": {
@@ -75,26 +68,6 @@
         "osrd": {
           "type": "object",
           "description": "RailJSON objects the layout tool does not model, handed back on export."
-        }
-      }
-    },
-    "NamedTrackPath": {
-      "description": "A named run of tracks (a `route` in the Open-Layout-Tool; the bare word is reserved for the signalling route).",
-      "type": "object",
-      "required": [
-        "id",
-        "path"
-      ],
-      "additionalProperties": false,
-      "properties": {
-        "id": {
-          "$ref": "core#/$defs/Id"
-        },
-        "name": {
-          "$ref": "core#/$defs/Text"
-        },
-        "path": {
-          "$ref": "core#/$defs/TrackPath"
         }
       }
     },

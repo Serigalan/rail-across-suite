@@ -41,7 +41,7 @@ export namespace Document {
 
 /** Rail-Data-Core, domain core 2.0 */
 export namespace Core {
-  /** The base every module depends on: the net (tracks, switches and connectors), what stands on it for every discipline (platforms, end marks), the reference data (km lines, the operational point register) and the construction stages. Written by the layout tool, carried by the core library. See docs/data-model.md. — 2.0 (decision 0025): the alignment and what every layer places things by; the platforms are civil's, the stopping places came in from signalling. */
+  /** The base every module depends on: the net (tracks, switches and connectors), what stands on it for every discipline (platforms, end marks), the reference data (km lines, the operational point register) and the construction stages. Written by the layout tool, carried by the core library. See docs/data-model.md. — 2.0 (decision 0025): the alignment and what every layer places things by; the platforms are civil's, the stopping places came in from signalling, the named runs of tracks from layout. */
   export type Root = {
     fields: Fields
     collections: {
@@ -51,6 +51,7 @@ export namespace Core {
       kmLines: Array<KmLine>
       operationalPoints: Array<OperationalPoint>
       stoppingPlaces: Array<StoppingPlace>
+      trackPaths?: Array<NamedTrackPath>
     }
   }
   /** The id of an object, unique in its collection; a UUID in lower case by convention. */
@@ -259,16 +260,21 @@ export namespace Core {
     passengerStop?: boolean
     lifespan?: Lifespan
   }
+  /** A named run of tracks (a `route` in the Open-Layout-Tool; the bare word is reserved for the signalling route): the Layout-Tool's, for its profiles and tables. */
+  export type NamedTrackPath = {
+    id: Id
+    name?: Text
+    path: TrackPath
+  }
 }
 
 /** Rail-Data-Core, domain civil 1.0 */
 export namespace Civil {
-  /** Civil engineering's layer, edited in the Civil-Tool (decision 0025): platforms, named runs of tracks, measured axes traced in point clouds, reference axes from surveys, the plan header and the project picture — what layout 1.0 held, and the platforms from core 1.0. Depends on core; its references go into the core only. Bulk point arrays are blobs, named by their hash (S-R2). */
+  /** Civil engineering's layer, edited in the Civil-Tool (decision 0025): platforms, measured axes traced in point clouds, reference axes from surveys, the plan header and the project picture — what layout 1.0 held but its named runs of tracks, and the platforms from core 1.0. Depends on core; its references go into the core only. Bulk point arrays are blobs, named by their hash (S-R2). */
   export type Root = {
     fields: Fields
     collections: {
       platforms: Array<Platform>
-      trackPaths: Array<NamedTrackPath>
       axisSurveys: Array<AxisSurvey>
       referenceAxes: Array<ReferenceAxis>
     }
@@ -288,12 +294,6 @@ export namespace Civil {
     osrd?: {
       [name: string]: unknown
     }
-  }
-  /** A named run of tracks (a `route` in the Open-Layout-Tool; the bare word is reserved for the signalling route). */
-  export type NamedTrackPath = {
-    id: Core.Id
-    name?: Core.Text
-    path: Core.TrackPath
   }
   /** A measured track axis traced in point clouds, in a plane of its own; its points are whole millimetres in parallel arrays, a blob. */
   export type AxisSurvey = {

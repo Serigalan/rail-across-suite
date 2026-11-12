@@ -158,7 +158,7 @@ describe('a record as an infra-data-2.0 document', () => {
       referenceAxes: [{ id: 'x', name: 'X', epsg: 25832, heightEpsg: null, source: { tra: 'a.TRA' }, points }],
     })
     const doc = toDocument(r)
-    expect(doc.domains.civil.collections.trackPaths).toEqual([{ id: 'r', name: 'R', path: { trackIds: ['t1'] } }])
+    expect(doc.domains.core.collections.trackPaths).toEqual([{ id: 'r', name: 'R', path: { trackIds: ['t1'] } }])
     const [axis] = doc.domains.civil.collections.referenceAxes
     expect(axis.points).toBe(contentHash(points))
     expect(doc.blobs[axis.points]).toEqual(points)

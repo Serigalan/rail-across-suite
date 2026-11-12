@@ -1,5 +1,5 @@
 import { lazy } from 'react'
-import { HistoryIcon, ProjectSettingsIcon, LayerIcon, TopologyIcon, PlaceIcon, SettingsIcon, DataExchangeIcon, EditElementIcon, ConnectSwitchIcon, SpliceElementIcon, CrossSectionIcon, PlanExportIcon, ElevationIcon, CheckIcon, NewPlatformIcon, RouteIcon } from '../components/icons'
+import { HistoryIcon, ProjectSettingsIcon, LayerIcon, TopologyIcon, PlaceIcon, SettingsIcon, DataExchangeIcon, EditElementIcon, ConnectSwitchIcon, SpliceElementIcon, CrossSectionIcon, PlanExportIcon, ElevationIcon, CheckIcon, NewPlatformIcon } from '../components/icons'
 import { TOOL } from '../tool'
 
 // Each panel is its own chunk (R9.1), loaded the first time it is opened.
@@ -18,7 +18,6 @@ const HistoryPanel = lazy(() => import('../components/panels/HistoryPanel'))
 const PlanExportPanel = lazy(() => import('../components/panels/PlanExportPanel'))
 const CheckPanel = lazy(() => import('../components/panels/CheckPanel'))
 const CivilPlatformsPanel = lazy(() => import('../components/panels/CivilPlatformsPanel'))
-const CivilRunsPanel = lazy(() => import('../components/panels/CivilRunsPanel'))
 
 /**
  * The panels of the map view (R2.3), in the order the sidebar shows them.
@@ -44,7 +43,7 @@ const CivilRunsPanel = lazy(() => import('../components/panels/CivilRunsPanel'))
  */
 const ALL_PANELS = [
   {
-    id: 'project', group: 'project', icon: ProjectSettingsIcon, titleKey: 'project_settings', place: 'top', Component: ProjectSettingsPanel,
+    id: 'project', tools: ['layout'], group: 'project', icon: ProjectSettingsIcon, titleKey: 'project_settings', place: 'top', Component: ProjectSettingsPanel,
     overlay: 'projectTracks',
     props: (s) => ({
       tracksOpen: s.overlay?.kind === 'projectTracks',
@@ -62,7 +61,7 @@ const ALL_PANELS = [
     }),
   },
   {
-    id: 'topology', group: 'view', icon: TopologyIcon, titleKey: 'topology_title', place: 'top', Component: TopologyPanel,
+    id: 'topology', tools: ['layout'], group: 'view', icon: TopologyIcon, titleKey: 'topology_title', place: 'top', Component: TopologyPanel,
     overlay: 'topologyGraph',
     props: (s) => ({
       selection: s.topologySelection, onSelect: s.setTopologySelection,
@@ -99,7 +98,6 @@ const ALL_PANELS = [
   },
   // The civil layer's own (decision 0025): the platforms, and the named runs of tracks.
   { id: 'platforms', tools: ['civil'], group: 'design', icon: NewPlatformIcon, titleKey: 'platform_title', place: 'top', Component: CivilPlatformsPanel },
-  { id: 'runs', tools: ['civil'], group: 'design', icon: RouteIcon, titleKey: 'routes', place: 'top', Component: CivilRunsPanel },
   {
     id: 'edit', tools: ['layout'], group: 'edit', icon: EditElementIcon, titleKey: 'edit', place: 'top', Component: EditElementPanel,
     overlay: 'trackTable',

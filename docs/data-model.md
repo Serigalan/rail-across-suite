@@ -325,7 +325,7 @@ chain at the one door (S-R10). The format has them since core 1.0, the first ste
 |---|---|
 | `stationName`, `uicStation`, `code` as text (F6) | references to the operational point register |
 | `status`: `existing`, `new`, `removal` | `lifespan`: none, `from` the final stage, `to` the final stage; the status is derived (R12) |
-| `routes`, named runs of tracks | `trackPaths` in the `layout` domain, of the core type `TrackPath` |
+| `routes`, named runs of tracks | `trackPaths` in the core (the `layout` domain before infra-data-2.0), of the core type `TrackPath` |
 | `link` only where the plane changes | two-end connector also within one plane, for rebuilt parts (decision 0003) |
 | platform and end mark fields of their own | the core location types `TrackRange` and `TrackEnd` |
 | one record for everything | the `core` and `layout` domains in the hash tree (section 5) |

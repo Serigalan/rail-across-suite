@@ -6,7 +6,7 @@
 //! layers on it — `civil`, `signalling`, `electrification` (decision 0025) —,
 //! locations as one value each, the planning status as a lifespan over two
 //! construction stages, station names and codes as an operational point
-//! register, named runs of tracks as `trackPaths`, the bulk point arrays as
+//! register, named runs of tracks as the core's `trackPaths`, the bulk point arrays as
 //! blobs named by their hash. The record keeps the platforms at its top and the
 //! stopping places in its signalling, each naming its platform; the document
 //! has the stopping places in the core and the platforms, naming them, in civil.
@@ -500,6 +500,7 @@ pub fn record_to_document(record: &Value, schema_hashes: &HashMap<&str, String>)
             Value::Object(without_null(o))
         })
         .collect();
+    core_cols.insert("trackPaths".into(), Value::Array(track_paths));
     let mut with_blob = |items: &[Value]| -> Vec<Value> {
         items
             .iter()
@@ -537,7 +538,6 @@ pub fn record_to_document(record: &Value, schema_hashes: &HashMap<&str, String>)
     let civil_fields = pick(record, CIVIL_FIELDS);
     let mut civil_cols = Object::new();
     civil_cols.insert("platforms".into(), Value::Array(civil_platforms));
-    civil_cols.insert("trackPaths".into(), Value::Array(track_paths));
     civil_cols.insert("axisSurveys".into(), Value::Array(axis_surveys));
     civil_cols.insert("referenceAxes".into(), Value::Array(reference_axes));
     if layers::holds_anything(&civil_fields, &civil_cols) {
@@ -658,7 +658,7 @@ pub fn document_to_record(doc: &Value) -> Result<Value> {
         o.insert("status".into(), status(m)?);
         end_marks.push(Value::Object(without_null(o)));
     }
-    let routes: Vec<Value> = list(&l, "trackPaths")
+    let routes: Vec<Value> = list(c, "trackPaths")
         .iter()
         .map(|r| {
             let mut o = without(&obj(r), &["path"]);

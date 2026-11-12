@@ -8,7 +8,8 @@ html, body { margin: 0; background: var(--ui-surface); }
 .tool-center { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 24px; text-align: center; }
 
 .plan { position: relative; flex: 1; min-height: 0; overflow: hidden; background: var(--ui-surface); }
-.plan-map { position: absolute; inset: 0; }
+/* Over MapLibre's own `.maplibregl-map { position: relative }`, which its style sheet, loaded later, sets. */
+.plan > .plan-map { position: absolute; inset: 0; }
 
 .tool-mode {
   position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); z-index: 5; display: flex; gap: 10px; align-items: center;

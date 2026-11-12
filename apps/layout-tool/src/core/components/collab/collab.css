@@ -390,3 +390,6 @@
 .local-store-all { margin-right: auto; }
 
 /* The disk of the point clouds, under the users (AP 13.16). */
+
+/* ── the construction stage the map shows (StagePicker), beside the working copy's bar ── */
+.stage-picker { display: inline-flex; align-items: center; gap: 8px; }

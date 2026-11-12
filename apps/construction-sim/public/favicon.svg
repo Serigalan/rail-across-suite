@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- The Construction-Sim's mark: a barrier with its lamp across the track — the net while it is rebuilt.
+       Small (a tab) as drawn; from 48 px on with the barrier's stripes, in the second blue. -->
+  <style>
+    .detail { display: none }
+    @media (min-width: 48px) { .detail { display: inline } }
+  </style>
+  <rect width="200" height="200" rx="42" fill="#303383"/>
+  <g fill="none" stroke="#ffffff" stroke-width="14" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M24 152H176"/>
+    <path d="M58 104V152M142 104V152"/>
+    <rect x="34" y="72" width="132" height="32" rx="6"/>
+    <path d="M58 72V58"/>
+  </g>
+  <circle cx="58" cy="44" r="12" fill="#ffffff"/>
+  <path class="detail" d="M62 76L52 100M90 76L80 100M118 76L108 100M146 76L136 100" fill="none" stroke="#8d8fbb" stroke-width="8" stroke-linecap="round"/>
+</svg>

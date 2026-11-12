@@ -26,6 +26,8 @@ const de = {
   open_capacity: 'Kapazität',
   module_constructionSim: 'Baubetriebs-Sim',
   module_constructionSim_desc: 'Bauzustände, Sperrungen und Langsamfahrstellen, Zustand für Zustand.',
+  module_constructionSim_open: 'Projekte öffnen in der Baubetriebs-Sim — das Netz Bauzustand für Bauzustand',
+  open_construction: 'Bauzustände',
   planned_text: 'Dieses Modul gibt es noch nicht. Es liest und schreibt dieselbe Beschreibung der Eisenbahn wie alle anderen, sobald es da ist.',
 
   tool_layout: 'Layout-Tool',
@@ -266,6 +268,8 @@ const en = {
   open_capacity: 'Capacity',
   module_constructionSim: 'Construction sim',
   module_constructionSim_desc: 'Construction stages, closures and speed restrictions, stage by stage.',
+  module_constructionSim_open: 'Projects open in the construction sim — the net stage by stage',
+  open_construction: 'Construction stages',
   planned_text: 'This module does not exist yet. Once it does, it reads and writes the same description of the railway as all the others.',
 
   tool_layout: 'Layout-Tool',

@@ -1,0 +1,19 @@
+/* The Construction-Sim's own: the plan, its legend and the stage list. What
+   every module has — colours, buttons, fields, the shell — is the suite's
+   library (@rail-across/ui, ui.css), loaded before this. */
+
+html, body { margin: 0; background: var(--ui-surface); }
+#root { width: 100%; height: 100vh; }
+
+.tool-center { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 24px; text-align: center; }
+
+.plan { position: relative; flex: 1; min-height: 0; overflow: hidden; background: var(--ui-surface); }
+.plan-map { position: absolute; inset: 0; }
+
+.stage-step { display: inline-flex; align-items: center; gap: 6px; }
+.stage-legend {
+  position: absolute; bottom: 14px; left: 14px; z-index: 5; display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center;
+  padding: 8px 12px; border-radius: 10px; background: var(--ui-bg); box-shadow: var(--ui-shadow); font-size: var(--ui-fs-m);
+}
+.stage-legend i, .stage-changes i { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+.stage-changes ul { margin: 4px 0 10px 24px; padding: 0; }

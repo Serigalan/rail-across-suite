@@ -10,7 +10,8 @@
  * on its page and opens a variant in each of its apps there — the Fahrplan-Sim in
  * the Fahrplan-Editor, its timetables and a single train's running time in
  * one interface; one with `direct` needs no project: its tile opens its app
- * at `path` itself.
+ * at `path` itself. `timetables` whether its page exports and imports the
+ * projects' timetables.
  */
 export const EDITORS = [
   { id: 'infrastructure', route: 'infrastructure', available: true, phase: 1 },
@@ -19,14 +20,18 @@ export const EDITORS = [
 
 export const SIMULATIONS = [
   {
-    id: 'timetable', route: 'timetable', available: true, phase: 4,
+    id: 'timetable', route: 'timetable', available: true, phase: 4, timetables: true,
     apps: [{ id: 'timetables', path: 'timetable/' }],
   },
   {
-    id: 'capacitySim', route: 'capacity-sim', available: true, phase: 4,
+    id: 'capacitySim', route: 'capacity-sim', available: true, phase: 4, timetables: true,
     apps: [{ id: 'capacity', path: 'capacity/' }],
   },
-  { id: 'constructionSim', route: 'construction-sim', available: false, phase: 5 },
+  // The construction stages by their days (decision 0027): the net stage by stage, read-only.
+  {
+    id: 'constructionSim', route: 'construction-sim', available: true, phase: 5,
+    apps: [{ id: 'construction', path: 'construction/' }],
+  },
 ]
 
 /** Routes of modules that went into another, and the one they are now. */

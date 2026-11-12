@@ -132,8 +132,8 @@ function SimulationCard({ project, module, localChanges, mayImport, onCopy, onEx
       </ul>
       <div className="ra-project-actions">
         {project.template && <button type="button" className="ui-btn ui-btn-primary" onClick={onCopy}>{t('template_copy')}</button>}
-        <button type="button" className="ui-btn" onClick={onExport}>{t('timetables_export')}</button>
-        {mayImport && <button type="button" className="ui-btn" onClick={onImport}>{t('timetables_import')}</button>}
+        {module.timetables && <button type="button" className="ui-btn" onClick={onExport}>{t('timetables_export')}</button>}
+        {module.timetables && mayImport && <button type="button" className="ui-btn" onClick={onImport}>{t('timetables_import')}</button>}
       </div>
     </li>
   )

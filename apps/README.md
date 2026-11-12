@@ -10,8 +10,8 @@ suite's vehicles in OSRD's form, [decision 0014](../docs/decisions/0014-vehicles
 `timetable-editor/` (the Fahrplan-Editor of the Fahrplan-Sim: a project's timetables, trains from station to station, and a single train's running time computed in the same interface,
 [decision 0016](../docs/decisions/0016-timetables-of-a-project.md)), `catenary-tool/` (the Catenary-Tool: the electrification,
 [decision 0025](../docs/decisions/0025-layers-on-the-core.md)), `capacity-sim/` (the Kapazitäts-Sim, the suite's own capacity simulation: headways and occupancy after UIC 406,
-[decision 0023](../docs/decisions/0023-capacity-simulation-of-our-own.md), [roadmap](../ROADMAP.md) phase 4), later `construction-sim/`
-([decision 0010](../docs/decisions/0010-one-suite-modules-by-task.md)). An app imports packages, never another app
+[decision 0023](../docs/decisions/0023-capacity-simulation-of-our-own.md), [roadmap](../ROADMAP.md) phase 4), `construction-sim/` (the Baubetriebs-Sim: the net construction stage by construction stage,
+[decision 0027](../docs/decisions/0027-construction-stages-by-their-days.md)) ([decision 0010](../docs/decisions/0010-one-suite-modules-by-task.md)). An app imports packages, never another app
 ([decision 0001](../docs/decisions/0001-one-repository.md)).
 
 ## The projects of the infrastructure and its tools

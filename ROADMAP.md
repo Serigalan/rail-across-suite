@@ -130,6 +130,10 @@ the app working on the document instead of its record.
   of a track that are rebuilt ([decision 0003](docs/decisions/0003-construction-stages.md)). The stage list and
   lifespans are in the format since its first version (oltjson-1.1's status converted when it was migrated: new =
   from the final stage, removal = up to it); the app holds and edits stages of a project's own.
+  *Done* ([decision 0027](docs/decisions/0027-construction-stages-by-their-days.md)): the stages by their days —
+  a track's, switch's, platform's or end mark's first and last day in service, typed for a track in the
+  Layout-Tool's track editor —, a record at a stage in the core, the Layout-Tool's map at a stage chosen beside
+  the working copy's bar, the construction stage connector of three ends.
 - The operational point register (in the format since its first version, drawn from the station texts) edited as such.
 - Domains with ownership: `core` (net, platforms, end marks, structures, operational point register, designed
   kilometrage) and discipline domains that store references only into the core.
@@ -450,6 +454,11 @@ are the reference cases' where there is one.
 
 Construction stages and lifespans are part of the core from phase 2
 ([decision 0003](docs/decisions/0003-construction-stages.md)); this phase builds on them.
+
+*Begun:* the Construction-Sim (`apps/construction-sim/`, `/construction/`, the start page's Baubetriebs-Sim): a
+variant's net stage by stage — the existing state, every day something is put into or taken out of service,
+the final state —, what comes into service with each and what leaves it, the stage connectors
+([decision 0027](docs/decisions/0027-construction-stages-by-their-days.md)).
 
 - `construction` domain: closures, temporary speed restrictions and the tracks in operation per stage.
 - The stages' periods and the work between two stages — what ends and begins there — as the base of the

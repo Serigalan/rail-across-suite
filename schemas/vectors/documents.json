@@ -211,7 +211,7 @@
     },
     "civil": {
      "version": "1.0",
-     "schema": "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60",
+     "schema": "sha256:976db8ee32fc843127777a4a90345dcb074d6cb962916ec0b4856b693a6d241b",
      "dependsOn": [
       "core"
      ],
@@ -331,7 +331,7 @@
    "domains": {
     "civil": {
      "version": "1.0",
-     "schema": "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60",
+     "schema": "sha256:976db8ee32fc843127777a4a90345dcb074d6cb962916ec0b4856b693a6d241b",
      "dependsOn": [
       "core"
      ],
@@ -358,7 +358,7 @@
     }
    }
   },
-  "hash": "sha256:4e824cae7e4bcbcd49fde43cc4ac5db64da9a0ba6470f0edf2f922be86049f93"
+  "hash": "sha256:42263a670ff72b25cf5fb42a6cffa38d04f9f94e4e2a83909c78d0a970323000"
  },
  {
   "name": "the sample, carrying its schemas",
@@ -572,7 +572,7 @@
     },
     "civil": {
      "version": "1.0",
-     "schema": "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60",
+     "schema": "sha256:976db8ee32fc843127777a4a90345dcb074d6cb962916ec0b4856b693a6d241b",
      "dependsOn": [
       "core"
      ],
@@ -1577,11 +1577,11 @@
       }
      }
     },
-    "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60": {
+    "sha256:976db8ee32fc843127777a4a90345dcb074d6cb962916ec0b4856b693a6d241b": {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
      "$id": "civil",
      "title": "Rail-Data-Core, domain civil 1.0",
-     "description": "Civil engineering's layer, edited in the Civil-Tool (decision 0025): platforms, measured axes traced in point clouds, reference axes from surveys, the plan header and the project picture — what layout 1.0 held but its named runs of tracks, and the platforms from core 1.0. Depends on core; its references go into the core only. Bulk point arrays are blobs, named by their hash (S-R2).",
+     "description": "Civil engineering's layer, edited in the Civil-Tool (decision 0025): platforms, bridges, retaining walls and noise barriers, measured axes traced in point clouds, reference axes from surveys, the plan header and the project picture — what layout 1.0 held but its named runs of tracks, and the platforms from core 1.0. Depends on core; its references go into the core only. Bulk point arrays are blobs, named by their hash (S-R2).",
      "type": "object",
      "required": [
       "fields",
@@ -1617,6 +1617,24 @@
          "type": "array",
          "items": {
           "$ref": "#/$defs/ReferenceAxis"
+         }
+        },
+        "bridges": {
+         "type": "array",
+         "items": {
+          "$ref": "#/$defs/Bridge"
+         }
+        },
+        "retainingWalls": {
+         "type": "array",
+         "items": {
+          "$ref": "#/$defs/RetainingWall"
+         }
+        },
+        "noiseBarriers": {
+         "type": "array",
+         "items": {
+          "$ref": "#/$defs/NoiseBarrier"
          }
         }
        }
@@ -1807,6 +1825,136 @@
         }
        },
        "description": "It names the stopping places at it (stoppingPlaceIds)."
+      },
+      "Bridge": {
+       "description": "A railway bridge (Eisenbahnüberführung) the track crosses over on: from where it begins to where it ends along the track.",
+       "type": "object",
+       "required": [
+        "id",
+        "at"
+       ],
+       "additionalProperties": false,
+       "properties": {
+        "id": {
+         "$ref": "core#/$defs/Id"
+        },
+        "name": {
+         "$ref": "core#/$defs/Text"
+        },
+        "at": {
+         "$ref": "core#/$defs/TrackRange"
+        },
+        "kind": {
+         "enum": [
+          "beam",
+          "arch",
+          "frame",
+          "truss",
+          "other"
+         ],
+         "description": "Its structure: beam, arch, frame, truss."
+        },
+        "spans": {
+         "type": "integer",
+         "minimum": 1,
+         "description": "How many spans."
+        },
+        "crosses": {
+         "$ref": "core#/$defs/Text"
+        },
+        "clearance": {
+         "type": "number",
+         "minimum": 0,
+         "description": "The clear height under it [m]."
+        },
+        "lifespan": {
+         "$ref": "core#/$defs/Lifespan"
+        }
+       }
+      },
+      "RetainingWall": {
+       "description": "A retaining wall (Stützmauer) beside the track: from where it begins to where it ends along it, on its side.",
+       "type": "object",
+       "required": [
+        "id",
+        "at"
+       ],
+       "additionalProperties": false,
+       "properties": {
+        "id": {
+         "$ref": "core#/$defs/Id"
+        },
+        "name": {
+         "$ref": "core#/$defs/Text"
+        },
+        "at": {
+         "$ref": "core#/$defs/TrackRange"
+        },
+        "kind": {
+         "enum": [
+          "cantilever",
+          "gravity",
+          "sheetPile",
+          "gabion",
+          "other"
+         ],
+         "description": "Its build: cantilever (Winkelstützmauer), gravity (Schwergewichtsmauer), sheet pile (Spundwand), gabion."
+        },
+        "offset": {
+         "type": "number",
+         "minimum": 0,
+         "description": "How far from the track's axis [m]."
+        },
+        "height": {
+         "type": "number",
+         "minimum": 0,
+         "description": "How high over the ground in front of it [m]."
+        },
+        "lifespan": {
+         "$ref": "core#/$defs/Lifespan"
+        }
+       }
+      },
+      "NoiseBarrier": {
+       "description": "A noise barrier (Lärmschutzwand) beside the track: from where it begins to where it ends along it, on its side.",
+       "type": "object",
+       "required": [
+        "id",
+        "at"
+       ],
+       "additionalProperties": false,
+       "properties": {
+        "id": {
+         "$ref": "core#/$defs/Id"
+        },
+        "name": {
+         "$ref": "core#/$defs/Text"
+        },
+        "at": {
+         "$ref": "core#/$defs/TrackRange"
+        },
+        "kind": {
+         "enum": [
+          "absorbing",
+          "reflecting",
+          "transparent"
+         ],
+         "description": "Its face: highly absorbing, reflecting, transparent."
+        },
+        "offset": {
+         "type": "number",
+         "minimum": 0,
+         "description": "How far from the track's axis [m]."
+        },
+        "height": {
+         "type": "number",
+         "minimum": 0,
+         "description": "How high over top of rail [m]."
+        },
+        "lifespan": {
+         "$ref": "core#/$defs/Lifespan"
+        }
+       }
       }
      }
     }
@@ -1817,7 +1965,7 @@
    "domains": {
     "civil": {
      "version": "1.0",
-     "schema": "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60",
+     "schema": "sha256:976db8ee32fc843127777a4a90345dcb074d6cb962916ec0b4856b693a6d241b",
      "dependsOn": [
       "core"
      ],
@@ -1844,7 +1992,7 @@
     }
    }
   },
-  "hash": "sha256:4e824cae7e4bcbcd49fde43cc4ac5db64da9a0ba6470f0edf2f922be86049f93"
+  "hash": "sha256:42263a670ff72b25cf5fb42a6cffa38d04f9f94e4e2a83909c78d0a970323000"
  },
  {
   "name": "another format",
@@ -2058,7 +2206,7 @@
     },
     "civil": {
      "version": "1.0",
-     "schema": "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60",
+     "schema": "sha256:976db8ee32fc843127777a4a90345dcb074d6cb962916ec0b4856b693a6d241b",
      "dependsOn": [
       "core"
      ],
@@ -2388,7 +2536,7 @@
     },
     "civil": {
      "version": "1.0",
-     "schema": "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60",
+     "schema": "sha256:976db8ee32fc843127777a4a90345dcb074d6cb962916ec0b4856b693a6d241b",
      "dependsOn": [
       "core"
      ],
@@ -2718,7 +2866,7 @@
     },
     "civil": {
      "version": "1.0",
-     "schema": "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60",
+     "schema": "sha256:976db8ee32fc843127777a4a90345dcb074d6cb962916ec0b4856b693a6d241b",
      "dependsOn": [
       "core"
      ],
@@ -3048,7 +3196,7 @@
     },
     "civil": {
      "version": "1.0",
-     "schema": "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60",
+     "schema": "sha256:976db8ee32fc843127777a4a90345dcb074d6cb962916ec0b4856b693a6d241b",
      "dependsOn": [
       "core"
      ],
@@ -3110,7 +3258,7 @@
     },
     "catenary": {
      "version": "0.3",
-     "schema": "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60",
+     "schema": "sha256:976db8ee32fc843127777a4a90345dcb074d6cb962916ec0b4856b693a6d241b",
      "dependsOn": [
       "core"
      ],
@@ -3770,7 +3918,7 @@
     },
     "civil": {
      "version": "1.0",
-     "schema": "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60",
+     "schema": "sha256:976db8ee32fc843127777a4a90345dcb074d6cb962916ec0b4856b693a6d241b",
      "dependsOn": [
       "core"
      ],
@@ -3888,11 +4036,11 @@
     "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3": {
      "$id": "core"
     },
-    "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60": {
+    "sha256:976db8ee32fc843127777a4a90345dcb074d6cb962916ec0b4856b693a6d241b": {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
      "$id": "civil",
      "title": "Rail-Data-Core, domain civil 1.0",
-     "description": "Civil engineering's layer, edited in the Civil-Tool (decision 0025): platforms, measured axes traced in point clouds, reference axes from surveys, the plan header and the project picture — what layout 1.0 held but its named runs of tracks, and the platforms from core 1.0. Depends on core; its references go into the core only. Bulk point arrays are blobs, named by their hash (S-R2).",
+     "description": "Civil engineering's layer, edited in the Civil-Tool (decision 0025): platforms, bridges, retaining walls and noise barriers, measured axes traced in point clouds, reference axes from surveys, the plan header and the project picture — what layout 1.0 held but its named runs of tracks, and the platforms from core 1.0. Depends on core; its references go into the core only. Bulk point arrays are blobs, named by their hash (S-R2).",
      "type": "object",
      "required": [
       "fields",
@@ -3928,6 +4076,24 @@
          "type": "array",
          "items": {
           "$ref": "#/$defs/ReferenceAxis"
+         }
+        },
+        "bridges": {
+         "type": "array",
+         "items": {
+          "$ref": "#/$defs/Bridge"
+         }
+        },
+        "retainingWalls": {
+         "type": "array",
+         "items": {
+          "$ref": "#/$defs/RetainingWall"
+         }
+        },
+        "noiseBarriers": {
+         "type": "array",
+         "items": {
+          "$ref": "#/$defs/NoiseBarrier"
          }
         }
        }
@@ -4118,6 +4284,136 @@
         }
        },
        "description": "It names the stopping places at it (stoppingPlaceIds)."
+      },
+      "Bridge": {
+       "description": "A railway bridge (Eisenbahnüberführung) the track crosses over on: from where it begins to where it ends along the track.",
+       "type": "object",
+       "required": [
+        "id",
+        "at"
+       ],
+       "additionalProperties": false,
+       "properties": {
+        "id": {
+         "$ref": "core#/$defs/Id"
+        },
+        "name": {
+         "$ref": "core#/$defs/Text"
+        },
+        "at": {
+         "$ref": "core#/$defs/TrackRange"
+        },
+        "kind": {
+         "enum": [
+          "beam",
+          "arch",
+          "frame",
+          "truss",
+          "other"
+         ],
+         "description": "Its structure: beam, arch, frame, truss."
+        },
+        "spans": {
+         "type": "integer",
+         "minimum": 1,
+         "description": "How many spans."
+        },
+        "crosses": {
+         "$ref": "core#/$defs/Text"
+        },
+        "clearance": {
+         "type": "number",
+         "minimum": 0,
+         "description": "The clear height under it [m]."
+        },
+        "lifespan": {
+         "$ref": "core#/$defs/Lifespan"
+        }
+       }
+      },
+      "RetainingWall": {
+       "description": "A retaining wall (Stützmauer) beside the track: from where it begins to where it ends along it, on its side.",
+       "type": "object",
+       "required": [
+        "id",
+        "at"
+       ],
+       "additionalProperties": false,
+       "properties": {
+        "id": {
+         "$ref": "core#/$defs/Id"
+        },
+        "name": {
+         "$ref": "core#/$defs/Text"
+        },
+        "at": {
+         "$ref": "core#/$defs/TrackRange"
+        },
+        "kind": {
+         "enum": [
+          "cantilever",
+          "gravity",
+          "sheetPile",
+          "gabion",
+          "other"
+         ],
+         "description": "Its build: cantilever (Winkelstützmauer), gravity (Schwergewichtsmauer), sheet pile (Spundwand), gabion."
+        },
+        "offset": {
+         "type": "number",
+         "minimum": 0,
+         "description": "How far from the track's axis [m]."
+        },
+        "height": {
+         "type": "number",
+         "minimum": 0,
+         "description": "How high over the ground in front of it [m]."
+        },
+        "lifespan": {
+         "$ref": "core#/$defs/Lifespan"
+        }
+       }
+      },
+      "NoiseBarrier": {
+       "description": "A noise barrier (Lärmschutzwand) beside the track: from where it begins to where it ends along it, on its side.",
+       "type": "object",
+       "required": [
+        "id",
+        "at"
+       ],
+       "additionalProperties": false,
+       "properties": {
+        "id": {
+         "$ref": "core#/$defs/Id"
+        },
+        "name": {
+         "$ref": "core#/$defs/Text"
+        },
+        "at": {
+         "$ref": "core#/$defs/TrackRange"
+        },
+        "kind": {
+         "enum": [
+          "absorbing",
+          "reflecting",
+          "transparent"
+         ],
+         "description": "Its face: highly absorbing, reflecting, transparent."
+        },
+        "offset": {
+         "type": "number",
+         "minimum": 0,
+         "description": "How far from the track's axis [m]."
+        },
+        "height": {
+         "type": "number",
+         "minimum": 0,
+         "description": "How high over top of rail [m]."
+        },
+        "lifespan": {
+         "$ref": "core#/$defs/Lifespan"
+        }
+       }
       }
      }
     }
@@ -4338,7 +4634,7 @@
     },
     "civil": {
      "version": "1.0",
-     "schema": "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60",
+     "schema": "sha256:976db8ee32fc843127777a4a90345dcb074d6cb962916ec0b4856b693a6d241b",
      "dependsOn": [
       "core"
      ],
@@ -4638,7 +4934,7 @@
     },
     "civil": {
      "version": "1.0",
-     "schema": "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60",
+     "schema": "sha256:976db8ee32fc843127777a4a90345dcb074d6cb962916ec0b4856b693a6d241b",
      "fields": {
       "planHeader": {
        "subtitle": "Lageplan"
@@ -5016,7 +5312,7 @@
     },
     "civil": {
      "version": "1.0",
-     "schema": "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60",
+     "schema": "sha256:976db8ee32fc843127777a4a90345dcb074d6cb962916ec0b4856b693a6d241b",
      "dependsOn": [
       "core"
      ],
@@ -5347,7 +5643,7 @@
     },
     "civil": {
      "version": "1.0",
-     "schema": "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60",
+     "schema": "sha256:976db8ee32fc843127777a4a90345dcb074d6cb962916ec0b4856b693a6d241b",
      "dependsOn": [
       "core"
      ],
@@ -5674,7 +5970,7 @@
     },
     "civil": {
      "version": "1.0",
-     "schema": "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60",
+     "schema": "sha256:976db8ee32fc843127777a4a90345dcb074d6cb962916ec0b4856b693a6d241b",
      "dependsOn": [
       "core"
      ],
@@ -6004,7 +6300,7 @@
     },
     "civil": {
      "version": "1.0",
-     "schema": "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60",
+     "schema": "sha256:976db8ee32fc843127777a4a90345dcb074d6cb962916ec0b4856b693a6d241b",
      "dependsOn": [
       "core"
      ],
@@ -6350,7 +6646,7 @@
     },
     "civil": {
      "version": "1.0",
-     "schema": "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60",
+     "schema": "sha256:976db8ee32fc843127777a4a90345dcb074d6cb962916ec0b4856b693a6d241b",
      "dependsOn": [
       "core"
      ],
@@ -6653,7 +6949,7 @@
     },
     "civil": {
      "version": "1.0",
-     "schema": "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60",
+     "schema": "sha256:976db8ee32fc843127777a4a90345dcb074d6cb962916ec0b4856b693a6d241b",
      "dependsOn": [
       "core"
      ],
@@ -6779,7 +7075,7 @@
    "domains": {
     "civil": {
      "version": "1.0",
-     "schema": "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60",
+     "schema": "sha256:976db8ee32fc843127777a4a90345dcb074d6cb962916ec0b4856b693a6d241b",
      "dependsOn": [
       "core"
      ],
@@ -7419,7 +7715,7 @@
     },
     "civil": {
      "version": "1.0",
-     "schema": "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60",
+     "schema": "sha256:976db8ee32fc843127777a4a90345dcb074d6cb962916ec0b4856b693a6d241b",
      "dependsOn": [
       "core"
      ],
@@ -8016,7 +8312,7 @@
    "domains": {
     "civil": {
      "version": "1.0",
-     "schema": "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60",
+     "schema": "sha256:976db8ee32fc843127777a4a90345dcb074d6cb962916ec0b4856b693a6d241b",
      "dependsOn": [
       "core"
      ],
@@ -8063,7 +8359,7 @@
     }
    }
   },
-  "hash": "sha256:3e6b0bbb0551905b57895e5c03377bc14761eef18c15e68a194fe790e64db26e"
+  "hash": "sha256:3977a68c8a46de57d0b9c4cd0ff905ef7c6d40aa4b1ad09e7dcd2e5cad93ee08"
  },
  {
   "name": "the sample with its signalling, carrying its schemas",
@@ -8301,7 +8597,7 @@
     },
     "civil": {
      "version": "1.0",
-     "schema": "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60",
+     "schema": "sha256:976db8ee32fc843127777a4a90345dcb074d6cb962916ec0b4856b693a6d241b",
      "dependsOn": [
       "core"
      ],
@@ -9783,11 +10079,11 @@
       }
      }
     },
-    "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60": {
+    "sha256:976db8ee32fc843127777a4a90345dcb074d6cb962916ec0b4856b693a6d241b": {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
      "$id": "civil",
      "title": "Rail-Data-Core, domain civil 1.0",
-     "description": "Civil engineering's layer, edited in the Civil-Tool (decision 0025): platforms, measured axes traced in point clouds, reference axes from surveys, the plan header and the project picture — what layout 1.0 held but its named runs of tracks, and the platforms from core 1.0. Depends on core; its references go into the core only. Bulk point arrays are blobs, named by their hash (S-R2).",
+     "description": "Civil engineering's layer, edited in the Civil-Tool (decision 0025): platforms, bridges, retaining walls and noise barriers, measured axes traced in point clouds, reference axes from surveys, the plan header and the project picture — what layout 1.0 held but its named runs of tracks, and the platforms from core 1.0. Depends on core; its references go into the core only. Bulk point arrays are blobs, named by their hash (S-R2).",
      "type": "object",
      "required": [
       "fields",
@@ -9823,6 +10119,24 @@
          "type": "array",
          "items": {
           "$ref": "#/$defs/ReferenceAxis"
+         }
+        },
+        "bridges": {
+         "type": "array",
+         "items": {
+          "$ref": "#/$defs/Bridge"
+         }
+        },
+        "retainingWalls": {
+         "type": "array",
+         "items": {
+          "$ref": "#/$defs/RetainingWall"
+         }
+        },
+        "noiseBarriers": {
+         "type": "array",
+         "items": {
+          "$ref": "#/$defs/NoiseBarrier"
          }
         }
        }
@@ -10013,6 +10327,136 @@
         }
        },
        "description": "It names the stopping places at it (stoppingPlaceIds)."
+      },
+      "Bridge": {
+       "description": "A railway bridge (Eisenbahnüberführung) the track crosses over on: from where it begins to where it ends along the track.",
+       "type": "object",
+       "required": [
+        "id",
+        "at"
+       ],
+       "additionalProperties": false,
+       "properties": {
+        "id": {
+         "$ref": "core#/$defs/Id"
+        },
+        "name": {
+         "$ref": "core#/$defs/Text"
+        },
+        "at": {
+         "$ref": "core#/$defs/TrackRange"
+        },
+        "kind": {
+         "enum": [
+          "beam",
+          "arch",
+          "frame",
+          "truss",
+          "other"
+         ],
+         "description": "Its structure: beam, arch, frame, truss."
+        },
+        "spans": {
+         "type": "integer",
+         "minimum": 1,
+         "description": "How many spans."
+        },
+        "crosses": {
+         "$ref": "core#/$defs/Text"
+        },
+        "clearance": {
+         "type": "number",
+         "minimum": 0,
+         "description": "The clear height under it [m]."
+        },
+        "lifespan": {
+         "$ref": "core#/$defs/Lifespan"
+        }
+       }
+      },
+      "RetainingWall": {
+       "description": "A retaining wall (Stützmauer) beside the track: from where it begins to where it ends along it, on its side.",
+       "type": "object",
+       "required": [
+        "id",
+        "at"
+       ],
+       "additionalProperties": false,
+       "properties": {
+        "id": {
+         "$ref": "core#/$defs/Id"
+        },
+        "name": {
+         "$ref": "core#/$defs/Text"
+        },
+        "at": {
+         "$ref": "core#/$defs/TrackRange"
+        },
+        "kind": {
+         "enum": [
+          "cantilever",
+          "gravity",
+          "sheetPile",
+          "gabion",
+          "other"
+         ],
+         "description": "Its build: cantilever (Winkelstützmauer), gravity (Schwergewichtsmauer), sheet pile (Spundwand), gabion."
+        },
+        "offset": {
+         "type": "number",
+         "minimum": 0,
+         "description": "How far from the track's axis [m]."
+        },
+        "height": {
+         "type": "number",
+         "minimum": 0,
+         "description": "How high over the ground in front of it [m]."
+        },
+        "lifespan": {
+         "$ref": "core#/$defs/Lifespan"
+        }
+       }
+      },
+      "NoiseBarrier": {
+       "description": "A noise barrier (Lärmschutzwand) beside the track: from where it begins to where it ends along it, on its side.",
+       "type": "object",
+       "required": [
+        "id",
+        "at"
+       ],
+       "additionalProperties": false,
+       "properties": {
+        "id": {
+         "$ref": "core#/$defs/Id"
+        },
+        "name": {
+         "$ref": "core#/$defs/Text"
+        },
+        "at": {
+         "$ref": "core#/$defs/TrackRange"
+        },
+        "kind": {
+         "enum": [
+          "absorbing",
+          "reflecting",
+          "transparent"
+         ],
+         "description": "Its face: highly absorbing, reflecting, transparent."
+        },
+        "offset": {
+         "type": "number",
+         "minimum": 0,
+         "description": "How far from the track's axis [m]."
+        },
+        "height": {
+         "type": "number",
+         "minimum": 0,
+         "description": "How high over top of rail [m]."
+        },
+        "lifespan": {
+         "$ref": "core#/$defs/Lifespan"
+        }
+       }
       }
      }
     },
@@ -11276,7 +11720,7 @@
    "domains": {
     "civil": {
      "version": "1.0",
-     "schema": "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60",
+     "schema": "sha256:976db8ee32fc843127777a4a90345dcb074d6cb962916ec0b4856b693a6d241b",
      "dependsOn": [
       "core"
      ],
@@ -11323,7 +11767,7 @@
     }
    }
   },
-  "hash": "sha256:3e6b0bbb0551905b57895e5c03377bc14761eef18c15e68a194fe790e64db26e"
+  "hash": "sha256:3977a68c8a46de57d0b9c4cd0ff905ef7c6d40aa4b1ad09e7dcd2e5cad93ee08"
  },
  {
   "name": "signalling depending on nothing",
@@ -11561,7 +12005,7 @@
     },
     "civil": {
      "version": "1.0",
-     "schema": "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60",
+     "schema": "sha256:976db8ee32fc843127777a4a90345dcb074d6cb962916ec0b4856b693a6d241b",
      "dependsOn": [
       "core"
      ],
@@ -12389,7 +12833,7 @@
     },
     "civil": {
      "version": "1.0",
-     "schema": "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60",
+     "schema": "sha256:976db8ee32fc843127777a4a90345dcb074d6cb962916ec0b4856b693a6d241b",
      "dependsOn": [
       "core"
      ],
@@ -13219,7 +13663,7 @@
     },
     "civil": {
      "version": "1.0",
-     "schema": "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60",
+     "schema": "sha256:976db8ee32fc843127777a4a90345dcb074d6cb962916ec0b4856b693a6d241b",
      "dependsOn": [
       "core"
      ],
@@ -13816,7 +14260,7 @@
    "domains": {
     "civil": {
      "version": "1.0",
-     "schema": "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60",
+     "schema": "sha256:976db8ee32fc843127777a4a90345dcb074d6cb962916ec0b4856b693a6d241b",
      "dependsOn": [
       "core"
      ],
@@ -13863,7 +14307,7 @@
     }
    }
   },
-  "hash": "sha256:3e6b0bbb0551905b57895e5c03377bc14761eef18c15e68a194fe790e64db26e"
+  "hash": "sha256:3977a68c8a46de57d0b9c4cd0ff905ef7c6d40aa4b1ad09e7dcd2e5cad93ee08"
  },
  {
   "name": "signalling without its overlaps",
@@ -14101,7 +14545,7 @@
     },
     "civil": {
      "version": "1.0",
-     "schema": "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60",
+     "schema": "sha256:976db8ee32fc843127777a4a90345dcb074d6cb962916ec0b4856b693a6d241b",
      "dependsOn": [
       "core"
      ],
@@ -14902,7 +15346,7 @@
     },
     "civil": {
      "version": "1.0",
-     "schema": "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60",
+     "schema": "sha256:976db8ee32fc843127777a4a90345dcb074d6cb962916ec0b4856b693a6d241b",
      "dependsOn": [
       "core"
      ],
@@ -15758,7 +16202,7 @@
     },
     "civil": {
      "version": "1.0",
-     "schema": "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60",
+     "schema": "sha256:976db8ee32fc843127777a4a90345dcb074d6cb962916ec0b4856b693a6d241b",
      "dependsOn": [
       "core"
      ],
@@ -16592,7 +17036,7 @@
     },
     "civil": {
      "version": "1.0",
-     "schema": "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60",
+     "schema": "sha256:976db8ee32fc843127777a4a90345dcb074d6cb962916ec0b4856b693a6d241b",
      "dependsOn": [
       "core"
      ],
@@ -17206,7 +17650,7 @@
    "domains": {
     "civil": {
      "version": "1.0",
-     "schema": "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60",
+     "schema": "sha256:976db8ee32fc843127777a4a90345dcb074d6cb962916ec0b4856b693a6d241b",
      "dependsOn": [
       "core"
      ],
@@ -17254,7 +17698,7 @@
     }
    }
   },
-  "hash": "sha256:c7aff63b222efb1313e4063e5da40a58aa734f98c4218b6ef9904e667bfea003"
+  "hash": "sha256:ae06cbead073cbf750561c9d418b08273c6dcfd1f184bdd06b0dc7a75caeb35b"
  },
  {
   "name": "the sample with its electrification",
@@ -17468,7 +17912,7 @@
     },
     "civil": {
      "version": "1.0",
-     "schema": "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60",
+     "schema": "sha256:976db8ee32fc843127777a4a90345dcb074d6cb962916ec0b4856b693a6d241b",
      "dependsOn": [
       "core"
      ],
@@ -17611,7 +18055,7 @@
    "domains": {
     "civil": {
      "version": "1.0",
-     "schema": "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60",
+     "schema": "sha256:976db8ee32fc843127777a4a90345dcb074d6cb962916ec0b4856b693a6d241b",
      "dependsOn": [
       "core"
      ],
@@ -17649,7 +18093,7 @@
     }
    }
   },
-  "hash": "sha256:ad85d8f5e52a5d7d48358f38559506ed6ad3e6aa941261331dde10551edcd655"
+  "hash": "sha256:2dec4ddb88cf168fd20fed68fbeea679838cfbc2ae9ac39525559331b7557ae7"
  },
  {
   "name": "an electrification of no system",
@@ -17863,7 +18307,7 @@
     },
     "civil": {
      "version": "1.0",
-     "schema": "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60",
+     "schema": "sha256:976db8ee32fc843127777a4a90345dcb074d6cb962916ec0b4856b693a6d241b",
      "dependsOn": [
       "core"
      ],
@@ -18216,7 +18660,7 @@
     },
     "civil": {
      "version": "1.0",
-     "schema": "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60",
+     "schema": "sha256:976db8ee32fc843127777a4a90345dcb074d6cb962916ec0b4856b693a6d241b",
      "dependsOn": [
       "core"
      ],
@@ -18336,7 +18780,7 @@
    "domains": {
     "civil": {
      "version": "1.0",
-     "schema": "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60",
+     "schema": "sha256:976db8ee32fc843127777a4a90345dcb074d6cb962916ec0b4856b693a6d241b",
      "dependsOn": [
       "core"
      ],
@@ -18363,7 +18807,7 @@
     }
    }
   },
-  "hash": "sha256:bdb0ea58274b3b0c6b34097b714b36f334307bccc75c2e0907afc6fabb49c9c6"
+  "hash": "sha256:54b6ade774c0aa24d1ea8da7441176266184ff9224a2e6e5355092bc441455a7"
  },
  {
   "name": "infra-data 1.0: the sample",
@@ -18696,7 +19140,7 @@
    "domains": {
     "civil": {
      "version": "1.0",
-     "schema": "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60",
+     "schema": "sha256:976db8ee32fc843127777a4a90345dcb074d6cb962916ec0b4856b693a6d241b",
      "dependsOn": [
       "core"
      ],
@@ -18723,7 +19167,7 @@
     }
    }
   },
-  "hash": "sha256:4e824cae7e4bcbcd49fde43cc4ac5db64da9a0ba6470f0edf2f922be86049f93"
+  "hash": "sha256:42263a670ff72b25cf5fb42a6cffa38d04f9f94e4e2a83909c78d0a970323000"
  },
  {
   "name": "infra-data 1.0: the sample with its signalling",
@@ -19554,7 +19998,7 @@
    "domains": {
     "civil": {
      "version": "1.0",
-     "schema": "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60",
+     "schema": "sha256:976db8ee32fc843127777a4a90345dcb074d6cb962916ec0b4856b693a6d241b",
      "dependsOn": [
       "core"
      ],
@@ -19601,7 +20045,7 @@
     }
    }
   },
-  "hash": "sha256:69f8e2ed4e06d505e9976beae13c9f454e72aad30d712f9c0da1910a4a59833e"
+  "hash": "sha256:6a89390f7732cdbd936c81ac8215ca392ae86fa7eb92b11f5cf2ee417801bc7a"
  },
  {
   "name": "infra-data 1.0: a stopping place at a platform, a boundary marked by it",
@@ -20436,7 +20880,7 @@
    "domains": {
     "civil": {
      "version": "1.0",
-     "schema": "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60",
+     "schema": "sha256:976db8ee32fc843127777a4a90345dcb074d6cb962916ec0b4856b693a6d241b",
      "dependsOn": [
       "core"
      ],
@@ -20483,7 +20927,7 @@
     }
    }
   },
-  "hash": "sha256:e114fc683ef25fa69254592113e83ace49fd41bc03b22f3d7007d4b3f6c4a368"
+  "hash": "sha256:4a4d00384fdb14c08d4177c088a4b65af07d678d4cd81d90015da6f37b8ebecc"
  },
  {
   "name": "infra-data 1.0: a boundary marked by a platform no stopping place is at",
@@ -21317,7 +21761,7 @@
    "domains": {
     "civil": {
      "version": "1.0",
-     "schema": "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60",
+     "schema": "sha256:976db8ee32fc843127777a4a90345dcb074d6cb962916ec0b4856b693a6d241b",
      "dependsOn": [
       "core"
      ],
@@ -21364,7 +21808,7 @@
     }
    }
   },
-  "hash": "sha256:5f693288a73a1ab7b6cbed09b672e73ab847a64fd106e3109a5c89f7629d13d4"
+  "hash": "sha256:547c211ab1d9497cb03f00222dc149b0a3789ea6159b53ef777a945a0abac185"
  },
  {
   "name": "infra-data 1.0: core as written before the design speed took its name",
@@ -21697,7 +22141,7 @@
    "domains": {
     "civil": {
      "version": "1.0",
-     "schema": "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60",
+     "schema": "sha256:976db8ee32fc843127777a4a90345dcb074d6cb962916ec0b4856b693a6d241b",
      "dependsOn": [
       "core"
      ],
@@ -21724,7 +22168,7 @@
     }
    }
   },
-  "hash": "sha256:4e824cae7e4bcbcd49fde43cc4ac5db64da9a0ba6470f0edf2f922be86049f93"
+  "hash": "sha256:42263a670ff72b25cf5fb42a6cffa38d04f9f94e4e2a83909c78d0a970323000"
  },
  {
   "name": "infra-data 1.0: a domain this build does not read",
@@ -22715,7 +23159,7 @@
    "domains": {
     "civil": {
      "version": "1.0",
-     "schema": "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60",
+     "schema": "sha256:976db8ee32fc843127777a4a90345dcb074d6cb962916ec0b4856b693a6d241b",
      "dependsOn": [
       "core"
      ],
@@ -22742,6 +23186,6 @@
     }
    }
   },
-  "hash": "sha256:cf405d11943bc72c02c245aafbc16ae1d2181477880b7ce879a13afeace0ab29"
+  "hash": "sha256:53b18bb8552d7f1488b935903b4efe14d678a63527ce762f5611afec9f45711a"
  }
 ]

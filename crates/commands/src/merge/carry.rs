@@ -339,7 +339,17 @@ pub fn carry_after_write(before: &Value, after: &Value) -> Value {
         .into_iter()
         .filter(|n| after.get(*n).and_then(|d| d.get("collections")).is_some_and(|c| truthy(Some(c))))
         .collect();
-    if domains.is_empty() {
+    // The civil structures the record keeps at its top are carried as a domain of their own (decision 0025).
+    let structures: Map<String, Value> = STRUCTURES
+        .iter()
+        .filter_map(|n| {
+            after
+                .get(*n)
+                .filter(|v| v.as_array().is_some_and(|a| !a.is_empty()))
+                .map(|v| ((*n).to_string(), v.clone()))
+        })
+        .collect();
+    if domains.is_empty() && structures.is_empty() {
         return after.clone();
     }
     let old: Map<String, Value> = before
@@ -376,5 +386,14 @@ pub fn carry_after_write(before: &Value, after: &Value) -> Value {
             out[name] = domain;
         }
     }
+    if !structures.is_empty() {
+        let (carried, _) = carry_domain(&json!({ "collections": structures }), &ctx);
+        for (name, list) in carried["collections"].as_object().into_iter().flatten() {
+            out[name.as_str()] = list.clone();
+        }
+    }
     out
 }
+
+/// The civil structures a record keeps at its top, carried with the net as a domain's locations are.
+pub const STRUCTURES: [&str; 3] = ["bridges", "retainingWalls", "noiseBarriers"];

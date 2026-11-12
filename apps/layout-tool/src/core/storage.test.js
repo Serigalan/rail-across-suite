@@ -10,7 +10,7 @@ import {
   addElementToTrack, redo, canRedo, undoStep, redoStep, hiddenTracks, setTracksHidden, subscribe,
   hiddenKmLines, setKmLinesHidden,
   setTrackHeights, setHeightsForTracks, setSwitchDesignMode, switchDesignMode, addDependentPoint, commitReconnect, loadPlatforms, commitImport, historySteps, travelHistory,
-  savePlatform, updatePlatform, deletePlatform,
+  savePlatform, updatePlatform, deletePlatform, saveStructure, loadStructures, deleteStructure,
 } from './storage'
 import { newBufferStop, newBoundary } from '@rail-across/core/track'
 import { endPointCurvedUtm, endPointStraightUtm } from '@rail-across/core/src/geometry/elementUtils.js'
@@ -679,5 +679,19 @@ describe('a platform and the stopping places at it (decision 0025)', () => {
     expect(stops()[0]).toEqual(hp)
     deletePlatform('pf1')
     expect(stops().map(h => h.platformId ?? null)).toEqual([null, null])
+  })
+})
+
+describe('bridges, retaining walls and noise barriers in the store (decision 0025)', () => {
+  const el = (length) => ({ elementType: 0, length, bearing: 90, startNode: [500000, 5600000], endNode: [500000 + length, 5600000] })
+
+  it('keeps them, and carries them with their track when it is turned round', () => {
+    openProject({ id: 'cs1', tracks: [{ id: 't', epsg: 25832, elements: [el(100)] }], switches: [] })
+    saveStructure('noiseBarriers', { id: 'lsw', at: { anchor: 'station', trackId: 't', startStation: 10, endStation: 40, side: 'left' }, kind: 'absorbing', offset: 3.8, height: 2 })
+    expect(loadStructures('noiseBarriers')).toHaveLength(1)
+    reverseTrackDirection('t')
+    expect(loadStructures('noiseBarriers')[0].at).toMatchObject({ trackId: 't', startStation: 60, endStation: 90, side: 'right' })
+    deleteStructure('noiseBarriers', 'lsw')
+    expect(currentProject().noiseBarriers).toBeUndefined()
   })
 })

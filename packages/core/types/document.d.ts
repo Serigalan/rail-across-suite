@@ -273,13 +273,16 @@ export namespace Core {
 
 /** Rail-Data-Core, domain civil 1.0 */
 export namespace Civil {
-  /** Civil engineering's layer, edited in the Civil-Tool (decision 0025): platforms, measured axes traced in point clouds, reference axes from surveys, the plan header and the project picture — what layout 1.0 held but its named runs of tracks, and the platforms from core 1.0. Depends on core; its references go into the core only. Bulk point arrays are blobs, named by their hash (S-R2). */
+  /** Civil engineering's layer, edited in the Civil-Tool (decision 0025): platforms, bridges, retaining walls and noise barriers, measured axes traced in point clouds, reference axes from surveys, the plan header and the project picture — what layout 1.0 held but its named runs of tracks, and the platforms from core 1.0. Depends on core; its references go into the core only. Bulk point arrays are blobs, named by their hash (S-R2). */
   export type Root = {
     fields: Fields
     collections: {
       platforms: Array<Platform>
       axisSurveys: Array<AxisSurvey>
       referenceAxes: Array<ReferenceAxis>
+      bridges?: Array<Bridge>
+      retainingWalls?: Array<RetainingWall>
+      noiseBarriers?: Array<NoiseBarrier>
     }
   }
   /** A bulk array kept as a blob of its own: the SHA-256 of its canonical JSON. */
@@ -340,6 +343,46 @@ export namespace Civil {
     lifespan?: Core.Lifespan
     /** The stopping places at the platform: the core names nothing above it, so the platform names them. */
     stoppingPlaceIds?: Array<Core.Ref>
+  }
+  /** A railway bridge (Eisenbahnüberführung) the track crosses over on: from where it begins to where it ends along the track. */
+  export type Bridge = {
+    id: Core.Id
+    name?: Core.Text
+    at: Core.TrackRange
+    /** Its structure: beam, arch, frame, truss. */
+    kind?: "beam" | "arch" | "frame" | "truss" | "other"
+    /** How many spans. */
+    spans?: number
+    crosses?: Core.Text
+    /** The clear height under it [m]. */
+    clearance?: number
+    lifespan?: Core.Lifespan
+  }
+  /** A retaining wall (Stützmauer) beside the track: from where it begins to where it ends along it, on its side. */
+  export type RetainingWall = {
+    id: Core.Id
+    name?: Core.Text
+    at: Core.TrackRange
+    /** Its build: cantilever (Winkelstützmauer), gravity (Schwergewichtsmauer), sheet pile (Spundwand), gabion. */
+    kind?: "cantilever" | "gravity" | "sheetPile" | "gabion" | "other"
+    /** How far from the track's axis [m]. */
+    offset?: number
+    /** How high over the ground in front of it [m]. */
+    height?: number
+    lifespan?: Core.Lifespan
+  }
+  /** A noise barrier (Lärmschutzwand) beside the track: from where it begins to where it ends along it, on its side. */
+  export type NoiseBarrier = {
+    id: Core.Id
+    name?: Core.Text
+    at: Core.TrackRange
+    /** Its face: highly absorbing, reflecting, transparent. */
+    kind?: "absorbing" | "reflecting" | "transparent"
+    /** How far from the track's axis [m]. */
+    offset?: number
+    /** How high over top of rail [m]. */
+    height?: number
+    lifespan?: Core.Lifespan
   }
 }
 

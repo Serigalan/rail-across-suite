@@ -106,6 +106,8 @@ const CORE_2_SECOND: &str = "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d
 const CORE_2_THIRD: &str = "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c";
 /// Civil 1.0 with the named runs of tracks.
 const CIVIL_FIRST: &str = "sha256:0b73763db4b8ca57f56472f4b8aeef8a8b02369f4f8a9e3f2b4072480c48b1fb";
+/// Civil 1.0 without the runs, before its bridges, retaining walls and noise barriers.
+const CIVIL_SECOND: &str = "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60";
 /// The domains of infra-data 1.0, with the schema each had last.
 const BEFORE: &[(&str, &str)] = &[("core", CORE_THIRD), ("layout", LAYOUT_FIRST), ("signalling", SIGNALLING_SEVENTH)];
 
@@ -372,7 +374,11 @@ fn migrated_within_2_0(doc: &Value) -> Value {
     if let Some(v) = civil.as_mut().filter(|v| schema(Some(v)).as_deref() == Some(CIVIL_FIRST)) {
         let mut cols = obj(v.get("collections").unwrap_or(&Value::Null));
         runs = cols.shift_remove("trackPaths");
-        *v = with_schema(v, &schema_hashes()["civil"], Some(cols));
+        *v = with_schema(v, CIVIL_SECOND, Some(cols));
+    }
+    // Bridges, retaining walls and noise barriers only add: what was is as it was.
+    if let Some(v) = civil.as_mut().filter(|v| schema(Some(v)).as_deref() == Some(CIVIL_SECOND)) {
+        *v = with_schema(v, &schema_hashes()["civil"], None);
     }
     if let Some(c) = core.as_mut() {
         if schema(Some(c)).as_deref() == Some(CORE_2_SECOND) {

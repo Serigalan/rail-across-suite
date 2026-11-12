@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "civil",
   "title": "Rail-Data-Core, domain civil 1.0",
-  "description": "Civil engineering's layer, edited in the Civil-Tool (decision 0025): platforms, measured axes traced in point clouds, reference axes from surveys, the plan header and the project picture — what layout 1.0 held but its named runs of tracks, and the platforms from core 1.0. Depends on core; its references go into the core only. Bulk point arrays are blobs, named by their hash (S-R2).",
+  "description": "Civil engineering's layer, edited in the Civil-Tool (decision 0025): platforms, bridges, retaining walls and noise barriers, measured axes traced in point clouds, reference axes from surveys, the plan header and the project picture — what layout 1.0 held but its named runs of tracks, and the platforms from core 1.0. Depends on core; its references go into the core only. Bulk point arrays are blobs, named by their hash (S-R2).",
   "type": "object",
   "required": [
     "fields",
@@ -38,6 +38,24 @@
           "type": "array",
           "items": {
             "$ref": "#/$defs/ReferenceAxis"
+          }
+        },
+        "bridges": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Bridge"
+          }
+        },
+        "retainingWalls": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RetainingWall"
+          }
+        },
+        "noiseBarriers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/NoiseBarrier"
           }
         }
       }
@@ -228,6 +246,136 @@
         }
       },
       "description": "It names the stopping places at it (stoppingPlaceIds)."
+    },
+    "Bridge": {
+      "description": "A railway bridge (Eisenbahnüberführung) the track crosses over on: from where it begins to where it ends along the track.",
+      "type": "object",
+      "required": [
+        "id",
+        "at"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "core#/$defs/Id"
+        },
+        "name": {
+          "$ref": "core#/$defs/Text"
+        },
+        "at": {
+          "$ref": "core#/$defs/TrackRange"
+        },
+        "kind": {
+          "enum": [
+            "beam",
+            "arch",
+            "frame",
+            "truss",
+            "other"
+          ],
+          "description": "Its structure: beam, arch, frame, truss."
+        },
+        "spans": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "How many spans."
+        },
+        "crosses": {
+          "$ref": "core#/$defs/Text"
+        },
+        "clearance": {
+          "type": "number",
+          "minimum": 0,
+          "description": "The clear height under it [m]."
+        },
+        "lifespan": {
+          "$ref": "core#/$defs/Lifespan"
+        }
+      }
+    },
+    "RetainingWall": {
+      "description": "A retaining wall (Stützmauer) beside the track: from where it begins to where it ends along it, on its side.",
+      "type": "object",
+      "required": [
+        "id",
+        "at"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "core#/$defs/Id"
+        },
+        "name": {
+          "$ref": "core#/$defs/Text"
+        },
+        "at": {
+          "$ref": "core#/$defs/TrackRange"
+        },
+        "kind": {
+          "enum": [
+            "cantilever",
+            "gravity",
+            "sheetPile",
+            "gabion",
+            "other"
+          ],
+          "description": "Its build: cantilever (Winkelstützmauer), gravity (Schwergewichtsmauer), sheet pile (Spundwand), gabion."
+        },
+        "offset": {
+          "type": "number",
+          "minimum": 0,
+          "description": "How far from the track's axis [m]."
+        },
+        "height": {
+          "type": "number",
+          "minimum": 0,
+          "description": "How high over the ground in front of it [m]."
+        },
+        "lifespan": {
+          "$ref": "core#/$defs/Lifespan"
+        }
+      }
+    },
+    "NoiseBarrier": {
+      "description": "A noise barrier (Lärmschutzwand) beside the track: from where it begins to where it ends along it, on its side.",
+      "type": "object",
+      "required": [
+        "id",
+        "at"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "core#/$defs/Id"
+        },
+        "name": {
+          "$ref": "core#/$defs/Text"
+        },
+        "at": {
+          "$ref": "core#/$defs/TrackRange"
+        },
+        "kind": {
+          "enum": [
+            "absorbing",
+            "reflecting",
+            "transparent"
+          ],
+          "description": "Its face: highly absorbing, reflecting, transparent."
+        },
+        "offset": {
+          "type": "number",
+          "minimum": 0,
+          "description": "How far from the track's axis [m]."
+        },
+        "height": {
+          "type": "number",
+          "minimum": 0,
+          "description": "How high over top of rail [m]."
+        },
+        "lifespan": {
+          "$ref": "core#/$defs/Lifespan"
+        }
+      }
     }
   }
 }

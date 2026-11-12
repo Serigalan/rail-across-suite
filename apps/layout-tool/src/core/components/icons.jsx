@@ -502,6 +502,42 @@ const SidebarIcon = ({ children }) => (
   </svg>
 )
 
+// Platforms — the platform between two tracks seen from above, its edges along them.
+export const PlatformsIcon = () => (
+  <SidebarIcon>
+    <path d="M1.5 4.5 H22.5 M1.5 19.5 H22.5" />
+    <path d="M3.5 8.5 H20.5 V15.5 H3.5 Z" fill="currentColor" fillOpacity={0.3} />
+  </SidebarIcon>
+)
+
+// Bridges — an arch bridge from the side: its deck running out on both sides, the piers and the arch between them.
+export const BridgeIcon = () => (
+  <SidebarIcon>
+    <path d="M1.5 7.5 H22.5" />
+    <path d="M7 7.5 V20.5 M17 7.5 V20.5" />
+    <path d="M7 20.5 A5 10 0 0 1 17 20.5" />
+    <path d="M1.5 8 A5.5 12 0 0 1 7 20.5 M22.5 8 A5.5 12 0 0 0 17 20.5" strokeOpacity={0.6} />
+  </SidebarIcon>
+)
+
+// Retaining walls — in cross section: the wall on its foot, the earth it holds up behind it.
+export const RetainingWallIcon = () => (
+  <SidebarIcon>
+    <path d="M1.5 5.5 H9 V20.5 H1.5 Z" fill="currentColor" fillOpacity={0.3} stroke="none" />
+    <path d="M1.5 5.5 H9 V20.5 H16.5 M9 20.5 H22.5" />
+    <path d="M6.5 5.5 V18" strokeOpacity={0.6} />
+  </SidebarIcon>
+)
+
+// Noise barriers — the panels between their posts beside the track.
+export const NoiseBarrierIcon = () => (
+  <SidebarIcon>
+    <path d="M3.5 5.5 H20.5 V16.5 H3.5 Z" fill="currentColor" fillOpacity={0.3} />
+    <path d="M3.5 5 V19 M9.2 5.5 V16.5 M14.8 5.5 V16.5 M20.5 5 V19" />
+    <path d="M1.5 20.5 H22.5" />
+  </SidebarIcon>
+)
+
 // Layers — a folded map: the panel is first of all where the basemap is picked.
 export const LayerIcon = () => (
   <SidebarIcon>

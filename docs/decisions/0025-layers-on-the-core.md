@@ -17,7 +17,7 @@ Status: **accepted** · 2026-11-11 · changes the domains of [0009](0009-core-1-
    |---|---|---|
    | `signalling` | Signalling-Tool | signals, train detection, switch elements, routes, overlaps, flank protection, balises, station boundaries, itineraries, train protection |
    | `electrification` | Catenary-Tool | the electrified ranges of the tracks and their systems; later masts, cantilevers, wires and sections |
-   | `civil` | Civil-Tool | platforms; measured axes and reference axes; the plan header; the project picture; what a RailJSON import brought along that the model does not hold |
+   | `civil` | Civil-Tool | platforms; bridges, retaining walls, noise barriers — each along its track, carried with it as a layer's locations are; measured axes and reference axes; the plan header; the project picture; what a RailJSON import brought along that the model does not hold |
 
 3. **The `layout` domain goes**: what it held is `civil`'s, with the platforms from the core — but the named runs of
    tracks, which the Layout-Tool's profiles and tables are made of: they are the core's (`trackPaths`; a document of

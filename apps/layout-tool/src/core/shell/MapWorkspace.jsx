@@ -267,7 +267,7 @@ export default function MapWorkspace({ onHome, beforeHome, homeKey, resetKey = 0
   const drawn = useRef(null)
   useEffect(() => {
     if (!project) { drawn.current = null; return }
-    const parts = [project.tracks, project.switches, project.platforms, project.endMarks, hidden, stage]
+    const parts = [project.tracks, project.switches, project.platforms, project.endMarks, project.bridges, project.retainingWalls, project.noiseBarriers, hidden, stage]
     const before = drawn.current
     drawn.current = parts
     if (before && parts.every((x, i) => x === before[i])) return

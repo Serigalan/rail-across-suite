@@ -1,5 +1,5 @@
 import { lazy } from 'react'
-import { HistoryIcon, ProjectSettingsIcon, LayerIcon, TopologyIcon, PlaceIcon, SettingsIcon, DataExchangeIcon, EditElementIcon, ConnectSwitchIcon, SpliceElementIcon, CrossSectionIcon, PlanExportIcon, ElevationIcon, CheckIcon, NewPlatformIcon } from '../components/icons'
+import { HistoryIcon, ProjectSettingsIcon, LayerIcon, TopologyIcon, PlaceIcon, SettingsIcon, DataExchangeIcon, EditElementIcon, ConnectSwitchIcon, SpliceElementIcon, CrossSectionIcon, PlanExportIcon, ElevationIcon, CheckIcon, PlatformsIcon, BridgeIcon, RetainingWallIcon, NoiseBarrierIcon } from '../components/icons'
 import { TOOL } from '../tool'
 
 // Each panel is its own chunk (R9.1), loaded the first time it is opened.
@@ -18,6 +18,7 @@ const HistoryPanel = lazy(() => import('../components/panels/HistoryPanel'))
 const PlanExportPanel = lazy(() => import('../components/panels/PlanExportPanel'))
 const CheckPanel = lazy(() => import('../components/panels/CheckPanel'))
 const CivilPlatformsPanel = lazy(() => import('../components/panels/CivilPlatformsPanel'))
+const CivilStructurePanel = lazy(() => import('../components/panels/CivilStructurePanel'))
 
 /**
  * The panels of the map view (R2.3), in the order the sidebar shows them.
@@ -97,7 +98,11 @@ const ALL_PANELS = [
     }),
   },
   // The civil layer's own (decision 0025): the platforms, and the named runs of tracks.
-  { id: 'platforms', tools: ['civil'], group: 'design', icon: NewPlatformIcon, titleKey: 'platform_title', place: 'top', Component: CivilPlatformsPanel },
+  { id: 'platforms', tools: ['civil'], group: 'design', icon: PlatformsIcon, titleKey: 'platform_title', place: 'top', Component: CivilPlatformsPanel },
+  // The civil structures (decision 0025): bridges, retaining walls, noise barriers.
+  { id: 'bridges', tools: ['civil'], group: 'structures', icon: BridgeIcon, titleKey: 'civil_bridges', place: 'top', Component: CivilStructurePanel, props: () => ({ kind: 'bridges' }) },
+  { id: 'retainingWalls', tools: ['civil'], group: 'structures', icon: RetainingWallIcon, titleKey: 'civil_retainingWalls', place: 'top', Component: CivilStructurePanel, props: () => ({ kind: 'retainingWalls' }) },
+  { id: 'noiseBarriers', tools: ['civil'], group: 'structures', icon: NoiseBarrierIcon, titleKey: 'civil_noiseBarriers', place: 'top', Component: CivilStructurePanel, props: () => ({ kind: 'noiseBarriers' }) },
   {
     id: 'edit', tools: ['layout'], group: 'edit', icon: EditElementIcon, titleKey: 'edit', place: 'top', Component: EditElementPanel,
     overlay: 'trackTable',

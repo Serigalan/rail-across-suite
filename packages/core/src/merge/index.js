@@ -30,7 +30,9 @@ export const validationConflicts = viaRust('merge.validationConflicts')
 export const resolve = viaRust('merge.resolve')
 
 /** The domains a record carries for others, by the name it holds them under. */
-export const CARRIED_DOMAINS = ['signalling']
+export const CARRIED_DOMAINS = ['signalling', 'electrification']
+/** The civil structures the record keeps at its top, carried as a domain's locations are (decision 0025). */
+export const CARRIED_STRUCTURES = ['bridges', 'retainingWalls', 'noiseBarriers']
 
 const carryAfterWriteRust = viaRust('merge.carryAfterWrite')
 /** A track as the carrying reads it: without its display line, which it does not need and which is the bulk. */
@@ -38,21 +40,25 @@ const plainTrack = ({ coordinates: _c, ...track }) => track
 
 /**
  * A record after one write of the net (the Layout-Tool's storage.js: every
- * write comes by here): the domains it carries for others with their
- * locations carried onto the tracks `after` has — the record itself where
- * nothing moved. Only a write that changed the tracks of a record carrying a
- * domain goes to the module, with just what the carrying reads.
+ * write comes by here): the domains it carries for others and its civil
+ * structures with their locations carried onto the tracks `after` has — the
+ * record itself where nothing moved. Only a write that changed the tracks of
+ * a record carrying any goes to the module, with just what the carrying reads.
  */
 export function carryAfterWrite(before, after) {
   if (!after || before?.tracks === after.tracks) return after
   const domains = CARRIED_DOMAINS.filter(name => after[name]?.collections)
-  if (!domains.length) return after
+  const structures = CARRIED_STRUCTURES.filter(name => after[name]?.length)
+  if (!domains.length && !structures.length) return after
   const out = carryAfterWriteRust(
     { tracks: (before?.tracks ?? []).map(plainTrack) },
-    { tracks: (after.tracks ?? []).map(plainTrack), switches: after.switches ?? [], ...Object.fromEntries(domains.map(n => [n, after[n]])) },
+    {
+      tracks: (after.tracks ?? []).map(plainTrack), switches: after.switches ?? [],
+      ...Object.fromEntries([...domains, ...structures].map(n => [n, after[n]])),
+    },
   )
   let next = after
-  for (const name of domains) next = keepSame({ ...next, [name]: out[name] }, after)
+  for (const name of [...domains, ...structures]) next = keepSame({ ...next, [name]: out[name] }, after)
   return next
 }
 /**

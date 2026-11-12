@@ -28,6 +28,9 @@ export const usePlatforms = () => useSyncExternalStore(subscribe, platformsOf, p
 export const useAxisSurveys = () => useSyncExternalStore(subscribe, axisSurveysOf, axisSurveysOf)
 export const useReferenceAxes = () => useSyncExternalStore(subscribe, referenceAxesOf, referenceAxesOf)
 export const useRoutes = () => useSyncExternalStore(subscribe, routesOf, routesOf)
+const structuresOf = Object.fromEntries(['bridges', 'retainingWalls', 'noiseBarriers'].map(k => [k, part(k)]))
+/** The civil structures of a kind: 'bridges', 'retainingWalls' or 'noiseBarriers' (decision 0025). */
+export const useStructures = (kind) => useSyncExternalStore(subscribe, structuresOf[kind], structuresOf[kind])
 /** The ids of the tracks hidden on the map (a Set, kept on this device). */
 export const useHiddenTracks = () => useSyncExternalStore(subscribe, hiddenTracks, hiddenTracks)
 

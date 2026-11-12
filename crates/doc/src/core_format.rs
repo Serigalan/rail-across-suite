@@ -51,7 +51,12 @@ const COLLECTIONS: &[&str] = &[
     "axisSurveys",
     "referenceAxes",
     "operationalPoints",
+    "bridges",
+    "retainingWalls",
+    "noiseBarriers",
 ];
+/// The civil structures, kept in the record as the document has them (decision 0025).
+pub const STRUCTURES: &[&str] = &["bridges", "retainingWalls", "noiseBarriers"];
 const ALWAYS: &[&str] = &["tracks", "switches", "platforms"];
 
 fn obj(v: &Value) -> Object {
@@ -546,6 +551,13 @@ pub fn record_to_document(record: &Value, schema_hashes: &HashMap<&str, String>)
     civil_cols.insert("platforms".into(), Value::Array(civil_platforms));
     civil_cols.insert("axisSurveys".into(), Value::Array(axis_surveys));
     civil_cols.insert("referenceAxes".into(), Value::Array(reference_axes));
+    for name in STRUCTURES {
+        let mut items = list(record, name).to_vec();
+        if !items.is_empty() {
+            by_id(&mut items);
+            civil_cols.insert((*name).into(), Value::Array(items));
+        }
+    }
     if layers::holds_anything(&civil_fields, &civil_cols) {
         domains.insert("civil".into(), layer("civil", civil_fields, civil_cols));
     }
@@ -714,6 +726,9 @@ pub fn document_to_record(doc: &Value) -> Result<Value> {
         ("axisSurveys", axis_surveys),
         ("referenceAxes", reference_axes),
         ("operationalPoints", operational_points),
+        ("bridges", list(&l, "bridges").to_vec()),
+        ("retainingWalls", list(&l, "retainingWalls").to_vec()),
+        ("noiseBarriers", list(&l, "noiseBarriers").to_vec()),
     ];
     let core_fields = without(&obj(&core["fields"]), &["stages"]);
     let mut record = spread(core_fields, obj(civil.get("fields").unwrap_or(&Value::Null)));

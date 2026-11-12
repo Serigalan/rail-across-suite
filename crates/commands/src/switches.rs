@@ -204,7 +204,9 @@ pub fn switch_on_track_remnant(track: &Value, toe: f64, reversed: bool, speed: O
         "elIdx": idx, "length": number(behind_wa), "ahead": number(ahead), "run": number(run_behind), "runAhead": number(run_ahead),
         "lMin": l_min.map(number), "speed": speed.map(number), "short": too_short(behind_wa, run_behind), "shortAhead": too_short(ahead, run_ahead),
     });
-    let we = length.filter(|l| l.is_finite() && *l > 0.0).map(|l| (l, if reversed { toe - l } else { toe + l }));
+    let we = length
+        .filter(|l| l.is_finite() && *l > 0.0)
+        .map(|l| (l, if reversed { toe - l } else { toe + l }));
     if let Some((l, we)) = we
         && let Some((j, s)) = element_at_station(es, we)
     {

@@ -7,6 +7,7 @@ import { highlightColors } from './mapColors'
 import { loadSettings } from '../utils/common'
 import { hiddenTracks, mapStage } from '../storage'
 import { stageMembers } from '../utils/stage'
+import { renderStructuresOnMap } from './structureLayers'
 import { boundaryFeatures, bufferStopFeatures } from '@rail-across/core/track'
 import { BOUNDARY_GREY, showTopology } from './topologyLayer'
 import { getColor, PLATFORM_FILL_COLOR, PLATFORM_FILL_OPACITY, PLATFORM_OUTLINE_COLOR } from './mapRenderUtils'
@@ -358,6 +359,9 @@ export function renderTracksOnMap(map, project, { fit = false, topology = false 
   if (topology) clearTrackLabels()
   // The network diagram is of the whole network, hidden tracks or not.
   showTopology(map, { on: topology, tracks: allTracks, switches: project.switches ?? [], endMarks: project.endMarks ?? [], color: getColor() })
+
+  // The civil structures beside and over the tracks (decision 0025).
+  renderStructuresOnMap(map, project)
 
   updateLabels(map)
   map.once('idle', () => updateLabels(map))

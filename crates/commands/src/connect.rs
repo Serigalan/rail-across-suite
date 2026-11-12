@@ -335,7 +335,13 @@ pub fn switch_connect_outcome(o: &Value) -> Value {
         Utm::from_json(&s["at"]["port"]),
         f(o, "speedLimit"),
     );
-    out["remnant"] = switch_on_track_remnant(&o["track"], js_number(s.get("x")), truthy(s.get("reversed")), f(o, "speed"), Some(switch_straight_length(&o["sw"])));
+    out["remnant"] = switch_on_track_remnant(
+        &o["track"],
+        js_number(s.get("x")),
+        truthy(s.get("reversed")),
+        f(o, "speed"),
+        Some(switch_straight_length(&o["sw"])),
+    );
     out
 }
 

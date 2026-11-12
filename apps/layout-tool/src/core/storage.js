@@ -1117,6 +1117,27 @@ export function deletePlatform(platformId) {
   return mutate(p => withPlatformStops({ ...p, platforms: (p.platforms ?? []).filter(q => q.id !== platformId) }, platformId))
 }
 
+// ── bridges, retaining walls, noise barriers (civil, decision 0025) ─────────
+
+/** The civil structures of a kind: 'bridges', 'retainingWalls' or 'noiseBarriers'. */
+export const loadStructures = (kind) => _project?.[kind] ?? []
+
+export function saveStructure(kind, obj) {
+  return mutate(p => ({ ...p, [kind]: [...(p[kind] ?? []), obj] }))
+}
+
+export function updateStructure(kind, obj) {
+  return mutate(p => ({ ...p, [kind]: (p[kind] ?? []).map(q => (q.id === obj.id ? obj : q)) }))
+}
+
+export function deleteStructure(kind, id) {
+  return mutate(p => {
+    const rest = (p[kind] ?? []).filter(q => q.id !== id)
+    const { [kind]: _gone, ...others } = p
+    return rest.length ? { ...p, [kind]: rest } : others
+  })
+}
+
 /** Add or replace the line with this number. */
 export function saveKmLine(kmLine) {
   const same = (l) => String(l.lineNumber) === String(kmLine.lineNumber)

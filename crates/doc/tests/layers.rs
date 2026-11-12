@@ -377,3 +377,30 @@ mod record_at_stage {
         assert_eq!(record_at_stage(&r, "1999-01-01"), r, "no such stage: the record as it is");
     }
 }
+
+mod structures {
+    use rail_across_doc::core_format::document_to_record;
+    use rail_across_doc::door::{check_document, to_document};
+    use serde_json::json;
+
+    #[test]
+    fn bridges_walls_and_barriers_are_civil_and_come_back() {
+        let el = json!({ "elementType": 0, "startNode": [500000, 5700000], "endNode": [500100, 5700000], "bearing": 90, "length": 100, "speed": 80 });
+        let at = |a: f64, b: f64, side: &str| json!({ "anchor": "station", "trackId": "t", "startStation": a, "endStation": b, "side": side });
+        let record = json!({
+            "id": "p", "switches": [], "platforms": [],
+            "tracks": [{ "id": "t", "name": "T", "epsg": 25832, "elements": [el] }],
+            "bridges": [{ "id": "br", "name": "EÜ Bach", "at": at(20.0, 40.0, "left"), "kind": "arch", "spans": 1, "crosses": "Bach" }],
+            "retainingWalls": [{ "id": "sm", "at": at(0.0, 60.0, "right"), "kind": "cantilever", "offset": 4.5, "height": 3 }],
+            "noiseBarriers": [{ "id": "lsw", "at": at(10.0, 90.0, "left"), "kind": "absorbing", "offset": 3.8, "height": 2 }],
+        });
+        let doc = to_document(&record, false, true).unwrap_or_else(|e| panic!("refused ({e})"));
+        let civil = &doc["domains"]["civil"]["collections"];
+        assert_eq!(civil["bridges"][0]["kind"], "arch");
+        assert_eq!(civil["noiseBarriers"][0]["height"], 2);
+        let back = document_to_record(&check_document(&doc).unwrap()).unwrap();
+        for k in ["bridges", "retainingWalls", "noiseBarriers"] {
+            assert_eq!(back[k], record[k], "{k}");
+        }
+    }
+}

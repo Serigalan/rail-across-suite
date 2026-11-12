@@ -137,7 +137,7 @@ describe('the panel menu icon rule (AP 4.3)', () => {
 // these on the primary colour.
 const SIDEBAR_ICONS = [
   'ProjectSettingsIcon', 'LayerIcon', 'TopologyIcon', 'PlaceIcon', 'ConnectSwitchIcon', 'SpliceElementIcon',
-  'ElevationIcon', 'CrossSectionIcon', 'EditElementIcon', 'DataExchangeIcon', 'PlanExportIcon',
+  'ElevationIcon', 'CrossSectionIcon', 'PlatformsIcon', 'BridgeIcon', 'RetainingWallIcon', 'NoiseBarrierIcon', 'EditElementIcon', 'DataExchangeIcon', 'PlanExportIcon',
   'UndoIcon', 'HistoryIcon', 'HomeIcon', 'SettingsIcon',
 ]
 

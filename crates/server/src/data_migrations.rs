@@ -268,7 +268,7 @@ pub fn run_data_migrations(db: &Connection, now: i64) -> rusqlite::Result<Vec<(S
         .collect::<Result<_, _>>()?;
     let mut ran = Vec::new();
     // In this order: a later step reads the revisions in the form the first gives them.
-    let steps: [(&str, fn(&Connection, i64) -> rusqlite::Result<String>); 6] = [
+    let steps: [(&str, fn(&Connection, i64) -> rusqlite::Result<String>); 7] = [
         ("0021-infra-data", to_infra_data),
         ("0020-node-tolerance-1um", close_node_gaps),
         ("0025-infra-data-2.0", to_infra_data_2_0),
@@ -276,6 +276,8 @@ pub fn run_data_migrations(db: &Connection, now: i64) -> rusqlite::Result<Vec<(S
         ("0026-operations", to_operations),
         // The core's schema with days on its stages (decision 0027): the revisions named by it, as they were.
         ("0027-stage-days", within_infra_data_2_0),
+        // Civil's schema with bridges, retaining walls and noise barriers: the revisions named by it, as they were.
+        ("0027-civil-structures", within_infra_data_2_0),
     ];
     for (name, step) in steps {
         if done.iter().any(|d| d == name) {

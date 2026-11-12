@@ -12,8 +12,9 @@ Status: **accepted** · 2026-11-12 · builds on [0003](0003-construction-stages.
    `from` the stage beginning on the first day, `to` the stage beginning the day after the last. A first day
    makes the object new, a last day alone a removal; a status without a day is as before — new from the final
    state, removed at it.
-3. **The Layout-Tool's track editor states a track's days**: two columns, *in service from* and *until*, the whole
-   track's, whichever of its rows they are typed in. A track rebuilt in part is drawn as parts, each a track
+3. **The Layout-Tool's track editor states a track's days**: *in service from* and *until*, the whole track's, so
+   in the table's head — beside the track's name, in a route's table at each of its tracks' headings — and not
+   in a column of its elements. A track rebuilt in part is drawn as parts, each a track
    with its days (0003, point 6).
 4. **A construction stage connector** (`stage_link`) joins three track ends at one place without being a switch:
    the track at A to the one at B1 while that is in service, and to the one at B2 from then on — never both. The

@@ -119,6 +119,16 @@ const MARKS = {
       <Faint d="M25 15.9V25M32 17V25M39 16V25" />
     </>
   ),
+  // The Noise-Study-Tool: a source by the track, its sound spreading in arcs, a noise barrier, the house behind it.
+  noise: (
+    <>
+      <Faint d="M3 42H45" />
+      <Dot x={11} y={34} r={2.6} />
+      <path d="M16.4 29.5A7 7 0 0 1 16.4 38.5M21 25.6A13 13 0 0 1 21 42.4" />
+      <rect x="26" y="12" width="5" height="30" rx="1" />
+      <Faint d="M26 20h5M26 28h5M26 36h5M36 42V34l4.5-4 4.5 4v8" />
+    </>
+  ),
 }
 
 // The modules' drawings, 120 × 48, as wide as their tiles: what each is about,

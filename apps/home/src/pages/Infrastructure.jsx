@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
-import { INFRASTRUCTURE_TOOLS, hashOf, toolOf, toolUrl } from '../modules'
+import { FEATURED_TOOLS, MORE_TOOLS, hashOf, toolOf, toolUrl } from '../modules'
 import { ModuleIcon } from '../icons'
+import ToolStack from './ToolStack'
 import { api } from '../api'
 import { useTexts } from '../i18n'
 import { errorText } from '../useAction'
@@ -15,27 +16,67 @@ import {
   BranchDialog, CopyTemplateDialog, DeleteProjectDialog, ExportDialog, NewProjectDialog, PairDialog, RenameProjectDialog, VariantDialog,
 } from './projects/dialogs'
 
+// How far a swipe has to go across the tabs to turn their page [px].
+const SWIPE = 50
+
 /**
  * The tools as tabs: large, each with its icon. The chosen one stands out and
  * the others are greyed — the projects below open in the chosen tool. A tool
  * that is not there yet can be chosen all the same, and says so below.
+ *
+ * Two pages side by side, one in sight: the main tools and "more", whose
+ * marks it stacks; and, swiped in from the right, a way back and the further
+ * tools. The page in sight is the one with the chosen tool, or the further
+ * tools where the address asks for them (`more`); "more" and the way back
+ * turn it, and so does a swipe across the tabs. "More" names the chosen tool
+ * when it is one of those out of sight.
  */
-function ToolTabs({ current }) {
+function ToolTabs({ current, more }) {
   const { t, fill } = useTexts()
+  const chosenTool = toolOf(current)
+  const [page, setPage] = useState(() => (more || !chosenTool.featured ? 1 : 0))
+  const touch = useRef(null)
+  const tab = (tool) => {
+    const chosen = tool.id === current
+    return (
+      <a key={tool.id} role="tab" aria-selected={chosen} href={hashOf({ page: 'infrastructure', tool: tool.id })}
+        className={`ra-tab${chosen ? ' ra-tab-chosen' : ''}`}>
+        <span className="ra-tile-icon"><ModuleIcon id={tool.id} /></span>
+        <span className="ra-tile-name">{t(`tool_${tool.id}`)}</span>
+        <span className="ra-tile-desc">{t(`tool_${tool.id}_desc`)}</span>
+        {!tool.available && <span className="ui-badge">{fill('tool_soon', { n: tool.phase })}</span>}
+      </a>
+    )
+  }
+  const onTouchEnd = (e) => {
+    const dx = e.changedTouches[0].clientX - (touch.current ?? e.changedTouches[0].clientX)
+    if (dx < -SWIPE) setPage(1)
+    if (dx > SWIPE) setPage(0)
+    touch.current = null
+  }
   return (
-    <div className="ra-tabs" role="tablist">
-      {INFRASTRUCTURE_TOOLS.map(tool => {
-        const chosen = tool.id === current
-        return (
-          <a key={tool.id} role="tab" aria-selected={chosen} href={hashOf({ page: 'infrastructure', tool: tool.id })}
-            className={`ra-tab${chosen ? ' ra-tab-chosen' : ''}`}>
-            <span className="ra-tile-icon"><ModuleIcon id={tool.id} /></span>
-            <span className="ra-tile-name">{t(`tool_${tool.id}`)}</span>
-            <span className="ra-tile-desc">{t(`tool_${tool.id}_desc`)}</span>
-            {!tool.available && <span className="ui-badge">{fill('tool_soon', { n: tool.phase })}</span>}
-          </a>
-        )
-      })}
+    <div className="ra-tabs-viewport" onTouchStart={e => { touch.current = e.touches[0].clientX }} onTouchEnd={onTouchEnd}>
+      <div className="ra-tabs-track" style={{ '--ra-tabs-page': page }}>
+        <div className="ra-tabs ra-tabs-main" role="tablist" inert={page !== 0}>
+          {FEATURED_TOOLS.map(tab)}
+          <button type="button" className="ra-tab ra-tab-nav ra-tab-more" onClick={() => setPage(1)}
+            title={fill('tools_more_hint', { tools: MORE_TOOLS.map(tool => t(`tool_${tool.id}`)).join(', ') })}>
+            <ToolStack tools={MORE_TOOLS} chosen={current} />
+            <span className="ra-tile-name">{t('tools_more')}</span>
+            <span className="ra-tile-desc">{MORE_TOOLS.map(tool => t(`tool_${tool.id}`)).join(' · ')}</span>
+            {!chosenTool.featured && <span className="ra-more-chosen">{fill('tools_more_chosen', { tool: t(`tool_${chosenTool.id}`) })}</span>}
+            <span className="ra-more-arrow" aria-hidden="true">→</span>
+          </button>
+        </div>
+        <div className="ra-tabs ra-tabs-more" role="tablist" inert={page !== 1}>
+          <button type="button" className="ra-tab ra-tab-nav ra-tab-back" onClick={() => setPage(0)}
+            title={t('tools_back')} aria-label={t('tools_back')}>
+            <span className="ra-more-arrow" aria-hidden="true">←</span>
+            <ToolStack tools={FEATURED_TOOLS} chosen={current} vertical />
+          </button>
+          {MORE_TOOLS.map(tab)}
+        </div>
+      </div>
     </div>
   )
 }
@@ -56,7 +97,7 @@ function ToolTabs({ current }) {
  * as a project of their own, its timetables with it. Signed in one always is here: the server shows
  * the sign-in page before the suite.
  */
-export default function Infrastructure({ toolId, user, projects, onReload = async () => {} }) {
+export default function Infrastructure({ toolId, more = false, user, projects, onReload = async () => {} }) {
   const { t, fill } = useTexts()
   const tool = toolOf(toolId)
   const toolName = t(`tool_${tool.id}`)
@@ -121,7 +162,8 @@ export default function Infrastructure({ toolId, user, projects, onReload = asyn
     <main className="home-main">
       <a className="ui-link ra-back" href="#/">← {t('back')}</a>
       <h2 className="ra-page-title">{t('module_infrastructure')}</h2>
-      <ToolTabs current={tool.id} />
+      {/* Anew where the address asks for the further tools, so the page in sight follows it. */}
+      <ToolTabs key={more ? 'more' : 'main'} current={tool.id} more={more} />
       <hr className="ra-rule" />
 
       <div className="home-section-head">

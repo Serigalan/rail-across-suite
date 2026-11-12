@@ -191,6 +191,9 @@ Goal: prove the core with a second real module.
 **Signalling goes first**: it needs locations, ranges, functional objects and topology, and so tests the
 generalised core most. Catenary and civil follow, with infra-data-2.0.
 
+- **Noise-Study-Tool** (planned; the infrastructure editor shows it behind "more"): a noise study on the variant —
+  the trains' emission from the tracks and the operations' timetables, its propagation over the terrain, the noise
+  barriers and bridges of the layer `civil`; the levels at receivers and as a map, a variant against another.
 - **Coordination checks** between the disciplines, derived from shared locations and storing only findings
   (signal on a mast, El signals before a neutral section, signal sight past masts).
 - Decided in this phase: who writes a coordination domain, should a relation between disciplines not be

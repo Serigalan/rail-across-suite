@@ -43,7 +43,8 @@ export const MODULES = [...EDITORS, ...SIMULATIONS]
  * The tools of the infrastructure editor — the mode a project opens in.
  * `path` is where an available tool's app lies beside the start page;
  * `storage` whether it keeps anything in the browser to show; `featured`
- * whether the start page's tile names it, the others behind "more …".
+ * whether it comes first — named on the start page's tile, the first page of
+ * the editor's tabs —, the others behind "more", a page further on.
  */
 export const INFRASTRUCTURE_TOOLS = [
   { id: 'layout', available: true, path: 'layout/', storage: true, featured: true },
@@ -51,7 +52,13 @@ export const INFRASTRUCTURE_TOOLS = [
   { id: 'civil', available: true, path: 'civil/', storage: true },
   { id: 'signalling', available: true, path: 'signalling/', featured: true },
   { id: 'catenary', available: true, path: 'catenary/' },
+  // The noise study (ROADMAP, phase 3): the trains' emission, its propagation, the noise barriers, the levels at receivers.
+  { id: 'noise', available: false, phase: 3 },
 ]
+
+/** The tools that come first, and the others behind "more". */
+export const FEATURED_TOOLS = INFRASTRUCTURE_TOOLS.filter(t => t.featured)
+export const MORE_TOOLS = INFRASTRUCTURE_TOOLS.filter(t => !t.featured)
 
 const DEFAULT_TOOL = 'layout'
 
@@ -135,15 +142,16 @@ export function safeNext(next) {
 }
 
 /**
- * The page a location hash names: { page, tool, next } — `#/` the start,
+ * The page a location hash names: { page, tool, more, next } — `#/` the start,
  * `#/infrastructure/signalling` the infrastructure editor in that mode,
+ * `#/infrastructure/more` it with its further tools in sight (in its default mode),
  * `#/capacity-sim` a module's own page (`#/timetable-sim` the Fahrplan-Sim's, as it was), `#/password?next=/layout/` changing
  * the password and back to where one came from, `#/admin` the users.
  */
 export function routeOf(hash) {
   const [path, query = ''] = String(hash ?? '').replace(/^#\/?/, '').split('?')
   const [page = '', tool] = path.split('/')
-  if (page === 'infrastructure') return { page, tool: toolOf(tool).id }
+  if (page === 'infrastructure') return tool === 'more' ? { page, tool: DEFAULT_TOOL, more: true } : { page, tool: toolOf(tool).id }
   if (ACCOUNT_PAGES.includes(page)) return { page, next: safeNext(new URLSearchParams(query).get('next')) }
   if (page === 'admin') return { page }
   if (MOVED[page]) return { page: MOVED[page] }
@@ -151,8 +159,9 @@ export function routeOf(hash) {
   return module ? { page: module.route } : { page: '' }
 }
 
-/** The hash of a page (for the infrastructure editor with its tool, for an account page with where it goes back to). */
-export function hashOf({ page, tool, next }) {
+/** The hash of a page (for the infrastructure editor with its tool or its further tools, for an account page with where it goes back to). */
+export function hashOf({ page, tool, more, next }) {
+  if (page === 'infrastructure' && more) return `#/${page}/more`
   if (page === 'infrastructure' && tool) return `#/${page}/${tool}`
   if (ACCOUNT_PAGES.includes(page) && next) return `#/${page}?${new URLSearchParams({ next })}`
   return `#/${page ?? ''}`

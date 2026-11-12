@@ -10,6 +10,7 @@ describe('the pages by the address', () => {
     expect(routeOf('#/infrastructure')).toEqual({ page: 'infrastructure', tool: 'layout' })
     expect(routeOf('#/infrastructure/catenary')).toEqual({ page: 'infrastructure', tool: 'catenary' })
     expect(routeOf('#/infrastructure/nonsense')).toEqual({ page: 'infrastructure', tool: 'layout' })
+    expect(routeOf('#/infrastructure/more')).toEqual({ page: 'infrastructure', tool: 'layout', more: true })
     expect(routeOf('#/capacity-sim')).toEqual({ page: 'capacity-sim' })
     expect(routeOf('#/timetable-sim')).toEqual({ page: 'timetable' })   // gone into the Fahrplan-Sim
     expect(routeOf('#/elsewhere')).toEqual({ page: '' })
@@ -17,7 +18,7 @@ describe('the pages by the address', () => {
 
   it('writes the hash every page is read back from', () => {
     for (const route of [
-      { page: '' }, { page: 'infrastructure', tool: 'signalling' }, { page: 'timetable' },
+      { page: '' }, { page: 'infrastructure', tool: 'signalling' }, { page: 'infrastructure', tool: 'layout', more: true }, { page: 'timetable' },
       { page: 'password', next: '/layout/?project=p1&variant=v1' }, { page: 'password', next: null }, { page: 'admin' },
     ]) {
       expect(routeOf(hashOf(route))).toEqual(route)

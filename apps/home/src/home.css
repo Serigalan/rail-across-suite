@@ -101,16 +101,56 @@ html, body { margin: 0; background: var(--ui-surface); }
 .ra-subtool-name { font-size: 15px; font-weight: 600; }
 .ra-subtool-planned .ra-subtool-icon { color: var(--ra-line-off); }
 .ra-subtool-planned .ra-subtool-name { color: var(--ui-muted); }
-.ra-subtool-more .ra-subtool-icon { display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700; }
-.ra-subtool-more .ra-subtool-name { color: var(--ui-muted); }
+/* "More": the further tools' marks stacked, their names below its own, an arrow that leans on hover. */
+.ra-subtool-more { margin-top: 4px; border: 1px dashed var(--ui-border); }
+.ra-subtool-more:hover { border-color: var(--color-primary); border-style: solid; }
+.ra-subtool-text { display: flex; flex-direction: column; gap: 1px; min-width: 0; flex: 1; }
+.ra-subtool-list { font-size: 12.5px; line-height: 1.35; color: var(--ui-muted); }
+.ra-more-arrow { font-size: 18px; font-weight: 600; color: var(--ra-line); transition: transform 0.2s; }
+.ra-subtool-more:hover .ra-more-arrow { transform: translateX(4px); }
+
+/* Some tools' marks as a stack, each on its round ground, overlapping. */
+.ra-stack { display: inline-flex; flex-shrink: 0; }
+.ra-stack-icon {
+  width: 34px; height: 34px; box-sizing: border-box; padding: 4px; border-radius: 50%;
+  background: var(--ra-art-bg); border: 1.5px solid var(--ui-bg); box-shadow: 0 0 0 1px var(--ra-art-border); color: var(--ra-line);
+}
+.ra-stack-icon + .ra-stack-icon { margin-left: -10px; }
+.ra-stack-icon .ra-icon { display: block; width: 100%; height: 100%; }
+.ra-stack-planned { color: var(--ra-line-off); background: var(--ui-surface); }
+/* The chosen tool, when it is one of those behind the stack. */
+.ra-stack-icon.ra-stack-chosen { box-shadow: 0 0 0 2px var(--color-primary); position: relative; }
+.ra-stack-vertical { flex-direction: column; }
+.ra-stack-vertical .ra-stack-icon + .ra-stack-icon { margin-left: 0; margin-top: 6px; }
 
 /* The tools as tabs: the chosen one in the primary colour, sitting on the line
    below like a tab on its sheet; the others greyed until chosen. */
 .ra-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: stretch; }
 .ra-tab { padding: 20px 20px 18px; border-width: 2px; }
 .ra-tab .ra-tile-icon { width: 56px; height: 56px; }
-.ra-tab:not(.ra-tab-chosen) { opacity: 0.5; filter: grayscale(1); }
-.ra-tab:not(.ra-tab-chosen):hover { opacity: 0.8; }
+.ra-tab:not(.ra-tab-chosen):not(.ra-tab-nav) { opacity: 0.5; filter: grayscale(1); }
+.ra-tab:not(.ra-tab-chosen):not(.ra-tab-nav):hover { opacity: 0.8; }
+
+/* Two pages of tabs side by side, one in sight; the other swipes in. The
+   viewport's padding keeps the chosen tab's point and the shadows in it, the
+   gap between the pages keeps the other one out of that padding. */
+.ra-tabs-viewport { overflow: hidden; padding: 6px 6px 16px; margin: -6px -6px -16px; touch-action: pan-y; }
+.ra-tabs-track { display: flex; gap: 32px; transform: translateX(calc(var(--ra-tabs-page, 0) * (-100% - 32px))); transition: transform 0.45s cubic-bezier(0.22, 0.8, 0.24, 1); }
+.ra-tabs-track > .ra-tabs { flex: 0 0 100%; min-width: 0; }
+.ra-tabs-more { grid-template-columns: 76px repeat(3, minmax(0, 1fr)); }
+@media (prefers-reduced-motion: reduce) { .ra-tabs-track { transition: none; } }
+
+/* "More" and the way back: no tool of their own, so never greyed — dashed, like a sheet still to turn. */
+.ra-tab-nav { font: inherit; text-align: left; cursor: pointer; border-style: dashed; background: var(--ui-surface); }
+.ra-tab-nav:hover { border-color: var(--color-primary); border-style: solid; }
+.ra-tab-more .ra-stack { margin-bottom: 4px; min-height: 56px; align-items: center; }
+.ra-tab-more .ra-stack-icon { width: 46px; height: 46px; padding: 6px; }
+.ra-tab-more .ra-stack-icon + .ra-stack-icon { margin-left: -14px; }
+.ra-tab-more .ra-more-arrow { position: absolute; right: 18px; top: 18px; font-size: 22px; }
+.ra-tab-more:hover .ra-more-arrow { transform: translateX(5px); }
+.ra-more-chosen { align-self: flex-start; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; color: var(--ui-fg); background: var(--ui-selected); }
+.ra-tab-back { align-items: center; justify-content: center; gap: 14px; padding: 14px 8px; }
+.ra-tab-back:hover .ra-more-arrow { transform: translateX(-4px); }
 .ra-tab-chosen { border-color: var(--color-primary); background: var(--ui-selected); box-shadow: 0 6px 20px rgba(48, 51, 131, 0.16); }
 .ra-tab-chosen::after {
   content: ''; position: absolute; left: 50%; bottom: -12px; width: 20px; height: 20px; transform: translateX(-50%) rotate(45deg);
@@ -199,7 +239,10 @@ html, body { margin: 0; background: var(--ui-surface); }
 .ra-planned p { margin: 0 0 10px; line-height: 1.5; }
 
 @media (max-width: 760px) {
-  .ra-tiles, .ra-tabs { grid-template-columns: minmax(0, 1fr); }
+  .ra-tiles, .ra-tabs, .ra-tabs-more { grid-template-columns: minmax(0, 1fr); }
+  .ra-tab-back { flex-direction: row; }
+  .ra-tab-back .ra-stack-vertical { flex-direction: row; }
+  .ra-tab-back .ra-stack-vertical .ra-stack-icon + .ra-stack-icon { margin-top: 0; margin-left: 6px; }
   .ra-tile-wide { grid-column: auto; }
   .ra-tile-split { flex-direction: column; }
   .ra-tile-main { border-radius: 13px 13px 0 0; }

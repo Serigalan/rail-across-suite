@@ -98,7 +98,7 @@ export default function App() {
         {notice && <p className="ui-ok ra-notice" role="status">{notice.text ?? texts.t(notice.key)}</p>}
         {user === null && <p className="ui-error ra-notice" role="alert">{texts.t('server_unreachable')}</p>}
         {user && page === '' && <Home />}
-        {user && page === 'infrastructure' && <Infrastructure toolId={route.tool} user={user} projects={projects} onReload={loadProjects} />}
+        {user && page === 'infrastructure' && <Infrastructure toolId={route.tool} more={Boolean(route.more)} user={user} projects={projects} onReload={loadProjects} />}
         {user && page === 'password' && (
           <PasswordPage forced={forced} onDone={passwordChanged} onCancel={() => goOn(route.next)} />
         )}

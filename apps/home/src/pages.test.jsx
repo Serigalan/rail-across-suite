@@ -26,17 +26,31 @@ describe('the start page', () => {
     expect(html.indexOf('Simulationen')).toBeLessThan(html.indexOf('>Fahrplan-Sim<'))
     expect(html).toContain('href="#/infrastructure"')
     for (const tool of ['layout', 'signalling']) expect(html).toContain(`href="#/infrastructure/${tool}"`)
-    // the others behind "more …", which opens the editor with all its tools
-    for (const tool of ['civil', 'catenary']) expect(html).not.toContain(`href="#/infrastructure/${tool}"`)
-    expect(html).toContain('mehr …')
+    // the others behind "more", named and stacked, which opens the editor with them in sight
+    for (const tool of ['civil', 'catenary', 'noise']) expect(html).not.toContain(`href="#/infrastructure/${tool}"`)
+    expect(html).toContain('href="#/infrastructure/more"')
+    expect(html).toContain('Weitere Tools')
+    expect(html).toContain('Civil · Catenary · Noise-Study')
     expect(html).not.toContain('ui-badge')
   })
 })
 
 describe('the infrastructure editor', () => {
-  it('shows its four tools as tabs, the chosen one selected, and the projects opening in it', () => {
+  it('has the further tools in sight where the address asks for them or one of them is chosen', () => {
+    const page = (props) => de(<Infrastructure user={{ id: 1, role: 'user' }} projects={projects} {...props} />)
+    expect(page({ toolId: 'layout', more: true })).toContain('--ra-tabs-page:1')
+    const civil = page({ toolId: 'civil' })
+    expect(civil).toContain('--ra-tabs-page:1')
+    expect(civil).toContain('gewählt: Civil-Tool')
+    expect(page({ toolId: 'noise' })).toContain('kommt in Phase 3')
+  })
+
+  it('shows its five tools as tabs, the chosen one selected, and the projects opening in it', () => {
     const html = de(<Infrastructure toolId="layout" user={{ id: 1, role: 'user' }} projects={projects} />)
-    expect(html.match(/role="tab"/g)).toHaveLength(4)
+    expect(html.match(/role="tab"/g)).toHaveLength(5)
+    // the main tools in sight, the further ones a page on, behind "more"
+    expect(html).toContain('--ra-tabs-page:0')
+    expect(html).toContain('Weitere Tools')
     expect(html).toMatch(/aria-selected="true"[^>]*href="#\/infrastructure\/layout"/)
     expect(html).toContain('Projekte öffnen im Layout-Tool')
     expect(html).toContain('href="layout/?project=p1&amp;variant=v1"')

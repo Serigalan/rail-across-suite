@@ -1,5 +1,6 @@
-import { EDITORS, INFRASTRUCTURE_TOOLS, SIMULATIONS, hashOf, tileUrl } from '../modules'
+import { EDITORS, FEATURED_TOOLS, MORE_TOOLS, SIMULATIONS, hashOf, tileUrl } from '../modules'
 import { ModuleArt, ModuleIcon } from '../icons'
+import ToolStack from './ToolStack'
 import { useTexts } from '../i18n'
 
 /**
@@ -32,18 +33,18 @@ function ModuleTile({ module }) {
 /**
  * The infrastructure editor's tile, twice as wide: the module on the left,
  * its main tools on the right as a list of names — each opening the editor in
- * that tool, grey for one still to come —, the others behind "more …", which
- * opens the editor with all of them.
+ * that tool, grey for one still to come —, the others behind "more": their
+ * marks as a stack and their names, opening the editor with them in sight.
  */
 function InfrastructureTile({ module }) {
   const { t, fill } = useTexts()
-  const others = INFRASTRUCTURE_TOOLS.filter(tool => !tool.featured)
+  const shortName = (tool) => t(`tool_${tool.id}`).replace(/-Tool$/, '')
   return (
     <li className="ra-tile-wide">
       <div className="ra-tile ra-tile-split">
         <a className="ra-tile-main" href={tileUrl(module)}><TileBody module={module} /></a>
         <ul className="ra-subtools">
-          {INFRASTRUCTURE_TOOLS.filter(tool => tool.featured).map(tool => (
+          {FEATURED_TOOLS.map(tool => (
             <li key={tool.id}>
               <a className={`ra-subtool${tool.available ? '' : ' ra-subtool-planned'}`} href={hashOf({ page: 'infrastructure', tool: tool.id })}
                 title={tool.available ? undefined : fill('tool_soon', { n: tool.phase })}>
@@ -52,11 +53,16 @@ function InfrastructureTile({ module }) {
               </a>
             </li>
           ))}
-          {others.length > 0 && (
+          {MORE_TOOLS.length > 0 && (
             <li>
-              <a className="ra-subtool ra-subtool-more" href={hashOf({ page: 'infrastructure' })} title={others.map(tool => t(`tool_${tool.id}`)).join(', ')}>
-                <span className="ra-subtool-icon" aria-hidden="true">…</span>
-                <span className="ra-subtool-name">{t('tools_more')}</span>
+              <a className="ra-subtool ra-subtool-more" href={hashOf({ page: 'infrastructure', more: true })}
+                title={fill('tools_more_hint', { tools: MORE_TOOLS.map(tool => t(`tool_${tool.id}`)).join(', ') })}>
+                <ToolStack tools={MORE_TOOLS} />
+                <span className="ra-subtool-text">
+                  <span className="ra-subtool-name">{t('tools_more')}</span>
+                  <span className="ra-subtool-list">{MORE_TOOLS.map(shortName).join(' · ')}</span>
+                </span>
+                <span className="ra-more-arrow" aria-hidden="true">→</span>
               </a>
             </li>
           )}

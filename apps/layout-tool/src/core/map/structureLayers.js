@@ -44,7 +44,8 @@ export function structureFeatures(project) {
 
 /** Draw the project's structures, adding the source and layers the first time (or after another basemap). */
 export function renderStructuresOnMap(map, project) {
-  if (!map?.isStyleLoaded?.()) return
+  // Called with the tracks, once their layers are there: the style is, though its tiles may still be loading.
+  if (!map?.getStyle?.()) return
   if (!map.getSource(SOURCE)) map.addSource(SOURCE, { type: 'geojson', data: EMPTY })
   if (!map.getLayer(LAYERS[0])) {
     const of = (kind) => ['==', ['get', 'kind'], kind]

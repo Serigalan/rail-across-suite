@@ -1,7 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <!-- The Signalling-Tool's mark: a main signal, its screen with two lights, the mast on its foot.
+       Small (a tab) as drawn; from 48 px on with the mast's plate, in the second blue. -->
+  <style>
+    .detail { display: none }
+    @media (min-width: 48px) { .detail { display: inline } }
+  </style>
   <rect width="24" height="24" rx="5" fill="#303383"/>
   <rect x="8" y="2.5" width="8" height="11.5" rx="2.5" fill="#ffffff"/>
   <circle cx="12" cy="5.9" r="1.6" fill="#303383"/>
   <circle cx="12" cy="10.6" r="1.6" fill="#303383" fill-opacity="0.55"/>
   <path d="M12 14v6.5M9 20.5h6" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round"/>
+  <g class="detail">
+    <rect x="10.4" y="15.3" width="3.2" height="3.6" rx="0.4" fill="#8d8fbb"/>
+    <path d="M10.4 16.55h3.2v1.1h-3.2z" fill="#ffffff"/>
+  </g>
 </svg>

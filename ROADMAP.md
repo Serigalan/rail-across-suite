@@ -381,7 +381,8 @@ Signalling-Tool's next, phase 3), neutral sections (with the catenary), anything
   *Done:* all of it, held to vectors of infra-data 1.0 documents and to the server's data step `0025-infra-data-2.0`;
   a layer that holds nothing is written as missing.
 - **I2 — The tools.** The Layout-Tool the alignment's alone; the Civil-Tool — the Layout-Tool's app under
-  `/civil/` — for the platforms, the runs, the surveys and reference axes, the plan header and the picture; the
+  `/civil/` — for the platforms and the passenger stops, the surveys and reference axes, the plan header and the
+  picture (the runs stay the Layout-Tool's, in the core); the
   Catenary-Tool (phase 3) for the electrification; a route's times and the train protection in the
   Signalling-Tool; a boundary's headway in the Layout-Tool. *Done when* each tool edits its own layer and shows the
   others read-only, and a range keeps its place over a track split, joined and reversed.

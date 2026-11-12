@@ -341,6 +341,18 @@
   padding: 6px 8px 6px 14px; background: var(--ui-bg); color: var(--ui-fg); border: 1px solid var(--ui-border); border-radius: 10px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15); font-family: var(--ui-font); font-size: 13px;
 }
+/* The bar with an overlay beside it: the two side by side, centred as the bar alone is. */
+.ui-wc-row {
+  position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 9;
+  display: flex; align-items: flex-start; gap: 8px; width: max-content; max-width: calc(100% - 140px);
+}
+.ui-wc-row > .ui-wc-bar { position: static; transform: none; max-width: none; }
+.ui-wc-aside {
+  display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: var(--ui-bg); color: var(--ui-fg);
+  border: 1px solid var(--ui-border); border-radius: 10px; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  font-family: var(--ui-font); font-size: 13px; white-space: nowrap;
+}
+.ui-wc-aside select { font: inherit; font-size: 12.5px; padding: 4px 6px; border-radius: 6px; border: 1px solid var(--ui-border); background: var(--ui-surface); color: var(--ui-fg); }
 /* Where and the state stay on one line; the ways to act go below when there is no room. */
 .ui-wc-head { display: flex; align-items: center; gap: 6px 12px; min-width: 0; }
 .ui-wc-state { flex-shrink: 0; white-space: nowrap; }
@@ -367,6 +379,7 @@
 .ui-wc-btn-primary:hover:not(:disabled) { background: var(--color-primary); filter: brightness(1.12); }
 @media (max-width: 760px) {
   .ui-wc-bar { max-width: calc(100% - 20px); }
+  .ui-wc-row { max-width: calc(100% - 20px); flex-wrap: wrap; }
 }
 
 .ui-workspace { flex: 1; min-width: 0; position: relative; display: flex; flex-direction: column; }

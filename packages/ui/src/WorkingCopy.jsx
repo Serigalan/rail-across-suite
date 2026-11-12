@@ -6,10 +6,11 @@
  * them (the server is newer), `onState` what a click on it does (showing the
  * changes; without it the pill only says) —, or `note` where it has no state
  * (read-only). `actions` [{ label, onClick, disabled, primary }] the ways to
- * act on it: update, discard, check in, or back.
+ * act on it: update, discard, check in, or back. `aside` an overlay of the
+ * same kind beside the bar — the construction stage the map shows, say.
  */
-export function WorkingCopyBar({ title, subtitle, revision, state, stateLabel, stateNote, stateTitle, onState, note, actions = [] }) {
-  return (
+export function WorkingCopyBar({ title, subtitle, revision, state, stateLabel, stateNote, stateTitle, onState, note, actions = [], aside = null }) {
+  const bar = (
     <div className="ui-wc-bar" role="status">
       <span className="ui-wc-head">
         <span className="ui-wc-where">
@@ -36,4 +37,6 @@ export function WorkingCopyBar({ title, subtitle, revision, state, stateLabel, s
       )}
     </div>
   )
+  if (!aside) return bar
+  return <div className="ui-wc-row">{bar}<div className="ui-wc-aside">{aside}</div></div>
 }

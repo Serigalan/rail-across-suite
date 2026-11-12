@@ -6,7 +6,7 @@ import { isElevationBasemap } from '../basemaps'
 import TiltToggle from '../map/TiltToggle'
 import { renderTracksOnMap, updateMapColors } from '../map/trackLayers'
 import { currentProject, deleteKmLine, loadSwitches, loadTracks, redo, saveKmLine, undo } from '../storage'
-import { useHiddenTracks, useProject } from '../hooks/useStore'
+import { useHiddenTracks, useMapStage, useProject } from '../hooks/useStore'
 import { FILTER_NONE } from '../map/pick'
 import { highlightTopology, zoomToTopologyTracks } from '../map/topologyLayer'
 import { selectionHighlight } from '@rail-across/core/topology'
@@ -65,6 +65,8 @@ export default function MapWorkspace({ onHome, beforeHome, homeKey, resetKey = 0
   const project = useProject()
   // The tracks hidden on the map — a redraw when that changes, like a write.
   const hidden = useHiddenTracks()
+  // …and the construction stage it shows (decision 0027).
+  const stage = useMapStage()
   const projectRef = useRef(project)
   useEffect(() => { projectRef.current = project }, [project])
   // The map view is light: its panels, plans and tables are drawn for paper.
@@ -265,7 +267,7 @@ export default function MapWorkspace({ onHome, beforeHome, homeKey, resetKey = 0
   const drawn = useRef(null)
   useEffect(() => {
     if (!project) { drawn.current = null; return }
-    const parts = [project.tracks, project.switches, project.platforms, project.endMarks, hidden]
+    const parts = [project.tracks, project.switches, project.platforms, project.endMarks, hidden, stage]
     const before = drawn.current
     drawn.current = parts
     if (before && parts.every((x, i) => x === before[i])) return
@@ -275,7 +277,7 @@ export default function MapWorkspace({ onHome, beforeHome, homeKey, resetKey = 0
       renderTracksOnMap(map.current, project, { topology: topologyRef.current })
     }
     if (!before || parts[0] !== before[0]) syncKmLines()
-  }, [project, hidden, syncKmLines, map])
+  }, [project, hidden, stage, syncKmLines, map])
 
   // Element and switch labels are language-dependent, so a language change has
   // to redraw them.

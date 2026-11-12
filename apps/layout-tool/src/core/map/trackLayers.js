@@ -5,7 +5,8 @@ import { GEOJSON_MAXZOOM, resolveEndBearing, displayCoords } from '@rail-across/
 import { FILTER_NONE } from './pick'
 import { highlightColors } from './mapColors'
 import { loadSettings } from '../utils/common'
-import { hiddenTracks } from '../storage'
+import { hiddenTracks, mapStage } from '../storage'
+import { stageMembers } from '../utils/stage'
 import { boundaryFeatures, bufferStopFeatures } from '@rail-across/core/track'
 import { BOUNDARY_GREY, showTopology } from './topologyLayer'
 import { getColor, PLATFORM_FILL_COLOR, PLATFORM_FILL_OPACITY, PLATFORM_OUTLINE_COLOR } from './mapRenderUtils'
@@ -108,7 +109,11 @@ const _cache = { lang: null, generation: null, tracks: new Map(), switches: new 
 export function renderTracksOnMap(map, project, { fit = false, topology = false } = {}) {
   if (!map || !project) return
   const hidden = hiddenTracks()
-  const allTracks = project.tracks ?? []
+  // At a construction stage, only what stands then (decision 0027).
+  const stage = mapStage()
+  const at = stage ? stageMembers(project, stage) : null
+  const staged = at ? (project.tracks ?? []).filter(tr => at.tracks.has(tr.id)) : (project.tracks ?? [])
+  const allTracks = staged
   const tracks = hidden.size ? allTracks.filter(tr => !hidden.has(tr.id)) : allTracks
   // Labels are language-dependent and this runs outside the component tree, so
   // the language comes from the settings the app writes it to.
@@ -118,7 +123,7 @@ export function renderTracksOnMap(map, project, { fit = false, topology = false 
   const onTracks = (list) => new Set(list.flatMap(tr => (tr.elements ?? []).map(el => el.switchId).filter(Boolean)))
   const shownSwitchIds = hidden.size ? onTracks(tracks) : null
   const namedSwitchIds = hidden.size ? onTracks(allTracks) : null
-  const switches = (project.switches ?? []).filter(sw =>
+  const switches = (project.switches ?? []).filter(sw => (!at || !sw.switchId || at.switches.has(sw.switchId))).filter(sw =>
     !shownSwitchIds || !sw.switchId || shownSwitchIds.has(sw.switchId) || !namedSwitchIds.has(sw.switchId))
   // The switch an element belongs to, so its radius label knows which side of
   // its own line the turnout body fills and can go to the other one.

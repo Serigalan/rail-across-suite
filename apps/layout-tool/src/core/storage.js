@@ -695,6 +695,20 @@ export function forgetHiddenTracks() {
 
 export const hiddenTracks = () => _hiddenTracks.get()
 
+// The construction stage the map shows (decision 0027): null for every one
+// at once, as planned — else 'existing', a day, 'final'. Kept for this
+// project in this session; another project starts with every one again.
+let _mapStage = { project: null, key: null }
+
+/** The stage the map shows, or null for all of them. */
+export const mapStage = () => (_mapStage.project === (_project?.id ?? null) ? _mapStage.key : null)
+
+/** Show the map at stage `key` (null: all of them). */
+export function setMapStage(key) {
+  _mapStage = { project: _project?.id ?? null, key: key ?? null }
+  notify()
+}
+
 /** Hide (`hidden` true) or show the tracks `trackIds` on the map. */
 export const setTracksHidden = (trackIds, hidden) => _hiddenTracks.set(trackIds, hidden)
 

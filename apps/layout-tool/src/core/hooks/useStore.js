@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react'
-import { currentProject, hiddenKmLines, hiddenTracks, lastStep, redoStep, subscribe, switchDesignMode, undoStep } from '../storage'
+import { currentProject, hiddenKmLines, hiddenTracks, lastStep, mapStage, redoStep, subscribe, switchDesignMode, undoStep } from '../storage'
 
 // The open project, read through a subscription (R1.4): a component that uses
 // one of these renders again after every write and every undo, and only reads
@@ -30,6 +30,9 @@ export const useReferenceAxes = () => useSyncExternalStore(subscribe, referenceA
 export const useRoutes = () => useSyncExternalStore(subscribe, routesOf, routesOf)
 /** The ids of the tracks hidden on the map (a Set, kept on this device). */
 export const useHiddenTracks = () => useSyncExternalStore(subscribe, hiddenTracks, hiddenTracks)
+
+/** The construction stage the map shows, or null for all of them (decision 0027). */
+export const useMapStage = () => useSyncExternalStore(subscribe, mapStage, mapStage)
 
 /** The line numbers of the project's kilometrage lines hidden on the map (a Set, kept on this device). */
 export const useHiddenKmLines = () => useSyncExternalStore(subscribe, hiddenKmLines, hiddenKmLines)

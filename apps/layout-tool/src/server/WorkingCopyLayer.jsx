@@ -2,6 +2,7 @@ import { lazy } from 'react'
 import { useI18n } from '../core/locales/i18nContext'
 import ConfirmModal from '../core/components/ConfirmModal'
 import WorkingCopyBar from './collab/WorkingCopyBar'
+import StagePicker from '../core/components/StagePicker'
 import { currentWorkingCopy } from './workingCopies'
 
 const ConflictDialog = lazy(() => import('./collab/ConflictDialog'))
@@ -19,7 +20,7 @@ export default function WorkingCopyLayer({ wc, mapVersion, setCompare }) {
     <>
       {wc.wc && (
         <WorkingCopyBar projectTitle={wc.wc.project.title} variantName={wc.wc.variant.name} base={wc.base}
-          changes={wc.changes.length} serverNewer={wc.serverNewer} busy={wc.busy}
+          changes={wc.changes.length} serverNewer={wc.serverNewer} busy={wc.busy} aside={<StagePicker />}
           onCheckIn={wc.askCheckIn}
           onUpdate={() => wc.startUpdate()}
           onDiscard={wc.askDiscard}

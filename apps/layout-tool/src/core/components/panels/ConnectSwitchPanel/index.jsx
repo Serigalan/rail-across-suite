@@ -6,6 +6,7 @@ import SwitchConnectForm from './SwitchConnectForm'
 import CrossingOnTrackForm from './CrossingOnTrackForm'
 import CrossingConnectForm from './CrossingConnectForm'
 import TrackLinkForm from './TrackLinkForm'
+import StageLinkForm from './StageLinkForm'
 import SwitchDetailPage from './SwitchDetailPage'
 import SwitchSearch from './SwitchSearch'
 import {
@@ -92,6 +93,14 @@ export default function ConnectSwitchPanel({ detailTarget = null, onShowDetail }
     </>
   )
 
+  if (page === 'stage_link') return (
+    <>
+      <BackButton onBack={back} />
+      <h2>{t('stage_link')}<InfoTip text={t('stage_link_hint')} /></h2>
+      <StageLinkForm onCommitted={() => setPage('menu')} />
+    </>
+  )
+
   return (
     <>
       <PanelHeading title={t('connect_switch')}
@@ -127,6 +136,10 @@ export default function ConnectSwitchPanel({ detailTarget = null, onShowDetail }
         <button className="ui-btn ui-btn-option" onClick={() => setPage('link')}>
           <SwitchLinkIcon />
           {t('switch_link')}
+        </button>
+        <button className="ui-btn ui-btn-option" onClick={() => setPage('stage_link')}>
+          <SwitchLinkIcon />
+          {t('stage_link')}
         </button>
         <hr className="divider divider-wide" />
         <button className="ui-btn ui-btn-option" onClick={() => setPage('detail')}>

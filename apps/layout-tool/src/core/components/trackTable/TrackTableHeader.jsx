@@ -76,6 +76,8 @@ export function TrackTableHead() {
         <th title={t('table_max_speed_hint')}>
           {t('table_max_speed')} (km/h)
         </th>
+        <th title={t('table_in_service_from_hint')}>{t('table_in_service_from')}</th>
+        <th title={t('table_in_service_to_hint')}>{t('table_in_service_to')}</th>
         <th title={t('table_crs_hint')}>{t('table_crs')}</th>
         <th title={t('table_comparison_radius_hint')}>{t('table_comparison_radius')} (m)</th>
       </tr>

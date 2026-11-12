@@ -19,8 +19,10 @@ import {
  * every one they have while typed. `joint` is the joint the element starts
  * with — its comparison radius and what the boundary rules said there, shown
  * in the last column on the line between this row and the one before.
+ * `life` the days its track is in service (decision 0027), the same in every
+ * row of the track: typed in one, they are the track's.
  */
-export default function TrackTableRow({ elements, i, sw, station, rules, joint, vmax, role, epsg, active, onActivate, onEdit }) {
+export default function TrackTableRow({ elements, i, sw, station, rules, joint, vmax, role, epsg, life = {}, active, onActivate, onEdit }) {
   const { t, fill, language, num } = useI18n()
   const el = elements[i]
   const g = governing(elements, i)
@@ -90,6 +92,13 @@ export default function TrackTableRow({ elements, i, sw, station, rules, joint, 
       <td title={vmax?.fixed.length ? fill('table_max_speed_fixed', { rules: vmax.fixed.join(', ') }) : undefined}>
         <TextCell value={vMax ?? '–'} className={vmax?.fixed.length ? 'input-error' : ''} />
       </td>
+      {/* The days the whole track is in service (decision 0027): from its first, until its last. */}
+      <td title={t('table_in_service_from_hint')}>
+        <DayCell value={life.inServiceFrom} onCommit={edit('inServiceFrom')} label={t('table_in_service_from')} />
+      </td>
+      <td title={t('table_in_service_to_hint')}>
+        <DayCell value={life.inServiceTo} onCommit={edit('inServiceTo')} label={t('table_in_service_to')} />
+      </td>
       {/* The plane the whole track is stated in — one code per track, so the
           column says which frame these eastings and northings are in. */}
       <td title={crsLabel(epsg)}><TextCell value={epsg ?? '–'} /></td>
@@ -141,4 +150,12 @@ function jointNote(t, fill, i, joint) {
   const fired = (joint.results ?? []).filter(r => r.severity !== 'ok')
     .map(r => `${r.id} · ${t(severityLabelKey(r.severity))}: ${ruleById(r.id)?.title ?? ''}`)
   return [fill('table_comparison_radius_at', { a: String(i), b: String(i + 1) }), ...fired].join('\n')
+}
+
+/** A day, as the browser's own date field takes it (ISO 8601); emptied, none. */
+function DayCell({ value, onCommit, label }) {
+  return (
+    <input type="date" className="track-table-input track-table-input-day" value={value ?? ''} aria-label={label}
+      onChange={e => onCommit(e.target.value)} />
+  )
 }

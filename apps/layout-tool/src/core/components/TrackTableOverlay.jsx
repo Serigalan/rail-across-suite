@@ -25,7 +25,16 @@ const GEOM_KEYS = new Set(['length', 'bearing', 'radius'])
 const CANT_KEYS = new Set(['cant', 'cantStart', 'cantEnd'])
 
 // The table's columns — a route's track heading spans all of them.
-const TABLE_COLUMNS = 17
+const TABLE_COLUMNS = 19
+
+// The days a track is in service (decision 0027), typed in any row of it.
+const LIFE_KEYS = new Set(['inServiceFrom', 'inServiceTo'])
+
+/** A track's planning status and the days it is in service, as the record states them. */
+function lifeOf(tr) {
+  if (!tr) return {}
+  return Object.fromEntries(['status', 'inServiceFrom', 'inServiceTo'].filter(k => tr[k] != null).map(k => [k, tr[k]]))
+}
 
 // Line speed the table starts with — clearing the field lifts it again.
 const DEFAULT_SPEED_CAP = 160
@@ -93,6 +102,8 @@ export default function TrackTableOverlay({
   // what Save puts back — the working copy holds all of them, touched or not —
   // and what makes the table dirty.
   const [changed, setChanged] = useState([])
+  // …and those whose days in service it changed (decision 0027).
+  const [lifeChanged, setLifeChanged] = useState([])
   // A one-off word to the user about something that happened to the table
   // rather than in it: an undo took its edits away, or what a merge did — a
   // key, or { key, vars } where it counts something.
@@ -284,6 +295,10 @@ export default function TrackTableOverlay({
     const isEmpty = raw === '' || raw == null
     const at = rows[row]
     if (!at) return
+    if (LIFE_KEYS.has(key)) {
+      setLife(at.trackId, key, isEmpty ? undefined : String(raw))
+      return
+    }
     const own = (k, v) => trackEdit(at, k, v)
     if (key === 'role') {
       const out = inRun(at, tracks, [], (ts, _sw, index) => {
@@ -362,6 +377,26 @@ export default function TrackTableOverlay({
       if (value != null && !Number.isFinite(value)) return
       setMeta(at, key, value)
     }
+  }
+
+  // When a track is in service (decision 0027): its first day and its last —
+  // the whole track's, whichever of its rows they are typed in. A first day
+  // makes it new, a last day alone a removal; a last day before the first is
+  // not taken.
+  function setLife(trackId, key, day) {
+    const tr = tracks.find(x => x.id === trackId)
+    if (!tr) return
+    const { [key]: _old, ...rest } = tr
+    const next = day ? { ...rest, [key]: day } : rest
+    if (next.inServiceFrom && next.inServiceTo && next.inServiceTo < next.inServiceFrom) {
+      setNotice('table_in_service_order')
+      return
+    }
+    const status = next.inServiceFrom ? 'new' : next.inServiceTo ? 'removal' : tr.status
+    setNotice(null)
+    setChanged(prev => (prev.includes(trackId) ? prev : [...prev, trackId]))
+    setLifeChanged(prev => (prev.includes(trackId) ? prev : [...prev, trackId]))
+    setTracks(prev => prev.map(x => (x.id !== trackId ? x : { ...next, ...(status ? { status } : {}) })))
   }
 
   // One track's elements replaced by what `change` makes of them.
@@ -444,9 +479,18 @@ export default function TrackTableOverlay({
     // of the project, so writing it back whole would take the store with it.
     // The switches the edits reached get their symbols rebuilt in the same step
     // — they are derived from these very tracks.
-    const next = mergeElementEdits(loadTracks(), withStandingReasons(tracks, changed),
+    const merged = mergeElementEdits(loadTracks(), withStandingReasons(tracks, changed),
       { changed, reshaped: reached.trackIds })
+    // The days a track is in service are the track's, not its elements': taken over as typed.
+    const lives = new Map(tracks.filter(tr => lifeChanged.includes(tr.id)).map(tr => [tr.id, tr]))
+    const next = merged.map(tr => {
+      const typed = lives.get(tr.id)
+      if (!typed) return tr
+      const { inServiceFrom: _f, inServiceTo: _t, status: _s, ...rest } = tr
+      return { ...rest, ...lifeOf(typed) }
+    })
     commitTrackEdit(next, reached.switchIds)
+    setLifeChanged([])
     // Start again from what was written: the working copy is the store's again,
     // with no old field of a track left over from before it was opened.
     setSeen(loadTracks())
@@ -481,6 +525,7 @@ export default function TrackTableOverlay({
                 )}
                 <TrackTableRow elements={elements} i={i} sw={switchById.get(el.switchId)}
                   station={stations[i]?.start} rules={check.perElement[i]} joint={jointAt(i)} vmax={vmaxes[i]} role={roles[i]} epsg={rows[i].epsg}
+                  life={lifeOf(tracks.find(tr => tr.id === rows[i].trackId))}
                   active={i === activeRow} onActivate={() => setActiveRow(i)}
                   onEdit={(key, raw) => commit(i, key, raw)} />
               </Fragment>

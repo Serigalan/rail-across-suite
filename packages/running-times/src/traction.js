@@ -1,8 +1,11 @@
+import { wireStretches } from '@rail-across/core/track'
+
 /**
  * The traction a train runs with along its way, from the electrification of
- * the net (the layer `electrification`, decision 0025): which stretches of a
- * path lie under contact wire of which system, and the vehicle's mode to run
- * with — the one asked for, else the vehicle's electric mode that has wire the
+ * the net (the layer `electrification`, decisions 0025, 0029): which stretches
+ * of a path lie under contact wire of which voltage — a wire running where its
+ * suspension points and section insulators carry it —, and the vehicle's mode
+ * to run with — the one asked for, else the vehicle's electric mode that has wire the
  * whole way, else its thermal one, else its default. The simulation runs one
  * mode the whole way (OSRD's switching between modes is not ported); where the
  * mode chosen is electric and the wire is missing or of another system, the
@@ -11,18 +14,18 @@
 
 /** The ranges under wire along a path: [{ begin, end, system }] in running order, offsets along the path [m]. */
 export function electrifiedAlong(record, path) {
-  const ranges = record?.electrification?.collections?.electrifications ?? []
+  const ranges = wireStretches(record?.electrification)
   const out = []
   let at = 0
   for (const p of path ?? []) {
     const lo = Math.min(p.start, p.end), hi = Math.max(p.start, p.end)
     const along = (station) => at + Math.abs(station - p.start)
     for (const r of ranges) {
-      if (r.at?.trackId !== p.trackId) continue
-      const a = Math.max(lo, r.at.startStation), b = Math.min(hi, r.at.endStation)
+      if (r.trackId !== p.trackId) continue
+      const a = Math.max(lo, r.startStation), b = Math.min(hi, r.endStation)
       if (b - a <= 1e-6) continue
       const [begin, end] = [along(a), along(b)].sort((x, y) => x - y)
-      out.push({ begin, end, system: r.system })
+      out.push({ begin, end, system: r.voltage })
     }
     at += hi - lo
   }

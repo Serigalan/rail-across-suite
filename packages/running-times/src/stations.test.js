@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { marked, net } from '../test/net.js'
 import { routeVia } from './route.js'
-import { renamedStation } from '@rail-across/core/document'
+import { derivedId, renamedStation } from '@rail-across/core/document'
 import { parseProjectsPayload, projectDocument } from '@rail-across/core/project'
 import { crossingSpeed, placeOf, stationById, stationNamed, stationTargets, stationsAlong, stationsOf } from './stations.js'
 
@@ -89,14 +89,15 @@ describe('the stations of a net', () => {
     expect(new Set(before.map(s => s.id)).size).toBe(before.length)
     // the same ids from the project's document
     const read = (record) => parseProjectsPayload(JSON.parse(JSON.stringify(projectDocument(record)))).projects[0]
-    expect(stationsOf(read(project)).map(s => [s.id, s.name])).toEqual(before.map(s => [s.id, s.name]))
+    // the document names every object by a UUID (decision 0029, phase 2): a short id by the one drawn from it
+    expect(stationsOf(read(project)).map(s => [s.id, s.name])).toEqual(before.map(s => [derivedId(s.id), s.name]))
     // renamed: the same id under the new name, its tracks with it
     const renamed = read({ ...project, ...renamedStation(project, c.id, { name: 'C-City' }) })
-    const after = stationById(stationsOf(renamed), c.id)
+    const after = stationById(stationsOf(renamed), derivedId(c.id))
     expect(after).toMatchObject({ name: 'C-City', kind: 'station' })
-    expect(after.tracks.map(tr => tr.id)).toEqual(['C1', 'C2'])
+    expect(after.tracks.map(tr => tr.id).sort()).toEqual(['C1', 'C2'].map(derivedId).sort())
     // a point finds it by its id, an old one by its name
-    expect(placeOf(stationsOf(renamed), { place: c.id, station: 'C-Stadt' })?.name).toBe('C-City')
+    expect(placeOf(stationsOf(renamed), { place: derivedId(c.id), station: 'C-Stadt' })?.name).toBe('C-City')
     expect(placeOf(stationsOf(renamed), { station: 'C-Stadt' })).toBeNull()
     expect(placeOf(before, { station: 'c-stadt' })?.id).toBe(c.id)
   })

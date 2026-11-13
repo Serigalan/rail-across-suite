@@ -9,14 +9,17 @@ const straight = (id, y, length) => ({
 })
 const record = {
   id: 'p1', title: 'P', tracks: [straight('t1', 0, 1000)], switches: [], platforms: [],
-  electrification: { fields: {}, collections: { electrifications: [
-    { id: 'el1', name: 'Oberleitung Nord', at: { anchor: 'station', trackId: 't1', startStation: 0, endStation: 600 }, system: '15000V' },
-  ] } },
+  electrification: { fields: {}, collections: {
+    contactWires: [{ id: 'cw1', name: 'Oberleitung Nord', voltage: '15000V' }],
+    masts: [0, 600].map(station => ({ id: `m${station}`, kind: 'cantilever', at: { anchor: 'station', trackId: 't1', station } })),
+    suspensionPoints: [0, 600].map(station => ({ id: `p${station}`, mastId: `m${station}`, at: { anchor: 'station', trackId: 't1', station }, contactWireId: 'cw1' })),
+    sectionInsulators: [],
+  } },
 }
 const head = { revision: { id: 1, number: 3 }, record }
 
 describe('the Catenary-Tool', () => {
-  it('lists the ranges under wire with their systems, a form for a new one, and how much is electrified', () => {
+  it('lists the contact wires with their voltages, a form for a new stretch, and how much is electrified', () => {
     const html = renderToStaticMarkup(
       <I18n.Provider value={textsFor('de')}>
         <Editor project={{ title: 'P' }} variant={{ id: 'v1', name: 'Hauptvariante' }} head={head} copy={null} readOnly={false} />
@@ -24,7 +27,8 @@ describe('the Catenary-Tool', () => {
     )
     expect(html).toContain('Catenary-Tool')
     expect(html).toContain('Oberleitung Nord · 15 kV 16,7 Hz')
-    expect(html).toContain('Bereich anlegen')
+    expect(html).toContain('Abschnitt anlegen')
+    expect(html).toContain('Masten')
     expect(html).toContain('0.60 von 1.00 km Gleis elektrifiziert')
     expect(html).toContain('Revision 3')
   })

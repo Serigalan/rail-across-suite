@@ -82,9 +82,14 @@ function sampleRecord({ signalling = false, electrification = false } = {}) {
     referenceAxes: [{ id: 'x1', name: 'Bestand', epsg: 25832, heightEpsg: null, source: { tra: 'a.TRA', gra: null },
       points: { s0: 0, step: 0.01, count: 3, e0: 500000, n0: 5700000, de: [0, 10, 10], dn: [0, 0, 0], z: null } }],
     ...(signalling ? atPlatform({ signalling: ksStation({ operationalPoint: HALLE_TROTHA }), stoppingPlaces: ksStoppingPlaces({ operationalPoint: HALLE_TROTHA }) }) : {}),
-    ...(electrification ? { electrification: { fields: {}, collections: { electrifications: [
-      { id: 'el1', name: 'Oberleitung', at: { anchor: 'station', trackId: 't1', startStation: 0, endStation: 250 }, system: '15000V' },
-    ] } } } : {}),
+    ...(electrification ? { electrification: { fields: {}, collections: {
+      contactWires: [{ id: 'cw1', name: 'Oberleitung', voltage: '15000V' }],
+      masts: [0, 250].map(station => ({ id: `m${station}`, kind: 'cantilever', at: { anchor: 'station', trackId: 't1', station, side: 'right', offset: 3.2 } })),
+      suspensionPoints: [0, 250].map(station => ({
+        id: `sp${station}`, mastId: `m${station}`, at: { anchor: 'station', trackId: 't1', station }, contactWireId: 'cw1', height: 5.5,
+      })),
+      sectionInsulators: [],
+    } } } : {}),
   }
 }
 
@@ -137,7 +142,8 @@ const DOCUMENT_CASES = [
     d.domains.signalling.collections.trainProtection = [{ id: derivedId('zb1'), at: { anchor: 'station', trackId: derivedId('t1'), startStation: 0, endStation: 250 }, system: 'pzb' }]
   }, { signalling: true }],
   ['the sample with its electrification', () => {}, { electrification: true }],
-  ['an electrification of no system', (d) => { delete d.domains.electrification.collections.electrifications[0].system }, { electrification: true }],
+  ['a contact wire of no voltage', (d) => { delete d.domains.electrification.collections.contactWires[0].voltage }, { electrification: true }],
+  ['a suspension point on a mast that is not there', (d) => { d.domains.electrification.collections.suspensionPoints[0].mastId = derivedId('m9') }, { electrification: true }],
   ['a boundary\'s headway', (d) => { d.domains.core.collections.endMarks[0].headway = 120 }],
   ['a track of a station that is not there', (d) => { d.domains.core.collections.tracks[1].operationalPointId = derivedId('op-nowhere') }],
   ['a switch element of a switch that is not there', (d) => { d.domains.signalling.collections.switchElements[0].switchId = derivedId('w9') }, { signalling: true }],

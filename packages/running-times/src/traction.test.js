@@ -3,8 +3,16 @@ import { electrifiedAlong, tractionFor, withoutWire } from './traction.js'
 
 // Two tracks run one after the other, T1 up 0…1000, T2 down 600…0.
 const path = [{ trackId: 'T1', start: 0, end: 1000 }, { trackId: 'T2', start: 600, end: 0 }]
-const range = (trackId, startStation, endStation, system = '15000V') => ({ id: `${trackId}-${startStation}`, at: { anchor: 'station', trackId, startStation, endStation }, system })
-const record = (...ranges) => ({ electrification: { fields: {}, collections: { electrifications: ranges } } })
+// A contact wire over a range of a track, carried at its ends (electrification 3.0, decision 0029).
+const range = (trackId, startStation, endStation, voltage = '15000V') => ({ id: `${trackId}-${startStation}`, trackId, startStation, endStation, voltage })
+const record = (...ranges) => ({ electrification: { fields: {}, collections: {
+  contactWires: ranges.map(r => ({ id: r.id, voltage: r.voltage })),
+  masts: [],
+  suspensionPoints: ranges.flatMap(r => [r.startStation, r.endStation].map((station, i) => ({
+    id: `${r.id}-${i}`, mastId: `m-${r.id}-${i}`, at: { anchor: 'station', trackId: r.trackId, station }, contactWireId: r.id,
+  }))),
+  sectionInsulators: [],
+} } })
 const mode = (isElectric) => ({ is_electric: isElectric, default_curve: { speeds: [0, 10], max_efforts: [1, 1] }, curves: [] })
 const hybrid = { effort_curves: { default_mode: 'thermal', modes: { thermal: mode(false), '15000V': mode(true) } } }
 const electricOnly = { effort_curves: { default_mode: '25000V', modes: { '25000V': mode(true), '15000V': mode(true) } } }

@@ -17,6 +17,9 @@
 import { asMap, reuseFrom, viaRust } from '../native/index.js'
 import { groupTitle } from './queries.js'
 
+// Where a contact wire runs follows from what carries it (electrification 3.0).
+export { emptyElectrification, VOLTAGES, wireStretches } from './contactWires.js'
+
 // The small queries the pages ask point by point stay JavaScript (queries.js).
 export {
   edgeOffsets, elementAtStation, elementBelongsToSwitch, elementOnSwitchRoute, elementStations, endKey, endMarkName, endOfIndex, gradientAt, groupTitle, heightAt, heightStations, isLinkSwitch, isModelledSwitch, lifespanWithStatus, newSwitchFields, platformLength, pointAtStation, pointAtStationUtm, pointGrades, pointOnElement, portEnd, portTrack, portsOf, roundHeight, stationFromClick, stationOnTrack, switchDesignation, switchElementMark, switchKindLabelKey, switchNumberOf, switchPorts, switchRouteLabelKey, switchRoutePorts, switchRoutes, switchStatus, tangentLength, trackGroupKey, trackKind, trackLength, trackSamplePoints, trackStatus, trackTypeName, turnoutDivergingPort, turnoutLinePort, turnoutLineRoute, unmarkSwitchElement, withLifespan, withPort,

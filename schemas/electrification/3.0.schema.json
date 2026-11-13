@@ -1,0 +1,202 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "electrification",
+  "title": "Rail-Data-Core, domain electrification 3.0",
+  "description": "The electrification of the tracks, planned in the Catenary-Tool (decision 0025): which ranges carry a contact wire, and its system. Depends on core; its references go into the core only. Later the masts, cantilevers, wires and sections. — 2.0 (decision 0028): on core 3.0, a lifespan states days. — 2.1 (decision 0028, phase C): every reference names an object of the collection its `x-target` names (the door's rule). — 3.0 (decision 0029, phase 3): masts, the suspension points on them that hold a contact wire over a track, section insulators that part two circuits, and the contact wires with their voltage; where a wire runs follows from what carries it.",
+  "type": "object",
+  "required": [
+    "fields",
+    "collections"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "fields": {
+      "$ref": "#/$defs/Fields"
+    },
+    "collections": {
+      "type": "object",
+      "required": [
+        "contactWires",
+        "masts",
+        "suspensionPoints",
+        "sectionInsulators"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "contactWires": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ContactWire"
+          }
+        },
+        "masts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Mast"
+          }
+        },
+        "suspensionPoints": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SuspensionPoint"
+          }
+        },
+        "sectionInsulators": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SectionInsulator"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "Fields": {
+      "description": "The layer's own fields.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {}
+    },
+    "Voltage": {
+      "description": "A traction voltage, named as OSRD names the traction mode.",
+      "enum": [
+        "15000V",
+        "25000V",
+        "3000V",
+        "1500V",
+        "750V",
+        "600V"
+      ]
+    },
+    "ContactWire": {
+      "description": "A contact wire: one circuit, with its voltage. It runs where the suspension points and section insulators that name it carry it.",
+      "type": "object",
+      "required": [
+        "id",
+        "voltage"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "core#/$defs/Id"
+        },
+        "name": {
+          "$ref": "core#/$defs/Text"
+        },
+        "voltage": {
+          "$ref": "#/$defs/Voltage"
+        },
+        "lifespan": {
+          "$ref": "core#/$defs/Lifespan"
+        }
+      }
+    },
+    "Mast": {
+      "description": "A mast beside a track, or a portal or headspan across several: what holds the suspension points.",
+      "type": "object",
+      "required": [
+        "id",
+        "at"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "core#/$defs/Id"
+        },
+        "name": {
+          "$ref": "core#/$defs/Label"
+        },
+        "kind": {
+          "enum": [
+            "cantilever",
+            "portal",
+            "headspan",
+            "other"
+          ]
+        },
+        "at": {
+          "$ref": "core#/$defs/TrackLocation"
+        },
+        "lifespan": {
+          "$ref": "core#/$defs/Lifespan"
+        }
+      }
+    },
+    "SuspensionPoint": {
+      "description": "Where a mast holds a contact wire over a track: the wire, its height and its stagger there.",
+      "type": "object",
+      "required": [
+        "id",
+        "mastId",
+        "at",
+        "contactWireId"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "core#/$defs/Id"
+        },
+        "mastId": {
+          "$ref": "core#/$defs/Ref",
+          "x-target": "electrification.masts"
+        },
+        "at": {
+          "$ref": "core#/$defs/TrackLocation"
+        },
+        "contactWireId": {
+          "$ref": "core#/$defs/Ref",
+          "x-target": "electrification.contactWires"
+        },
+        "height": {
+          "type": "number",
+          "minimum": 0
+        },
+        "stagger": {
+          "type": "number"
+        },
+        "lifespan": {
+          "$ref": "core#/$defs/Lifespan"
+        }
+      }
+    },
+    "SectionInsulator": {
+      "description": "A section insulator (Streckentrennung): a part of the contact line that separates two circuits on a track — the wire before it and the wire after it, in the direction of stationing.",
+      "type": "object",
+      "required": [
+        "id",
+        "at",
+        "contactWireBeforeId",
+        "contactWireAfterId"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "core#/$defs/Id"
+        },
+        "name": {
+          "$ref": "core#/$defs/Label"
+        },
+        "kind": {
+          "enum": [
+            "insulator",
+            "neutralSection"
+          ]
+        },
+        "at": {
+          "$ref": "core#/$defs/TrackLocation"
+        },
+        "contactWireBeforeId": {
+          "$ref": "core#/$defs/Ref",
+          "x-target": "electrification.contactWires"
+        },
+        "contactWireAfterId": {
+          "$ref": "core#/$defs/Ref",
+          "x-target": "electrification.contactWires"
+        },
+        "lifespan": {
+          "$ref": "core#/$defs/Lifespan"
+        }
+      }
+    }
+  }
+}

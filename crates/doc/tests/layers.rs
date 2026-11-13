@@ -110,11 +110,29 @@ fn a_boundary_marked_by_a_platform_no_stopping_place_is_at_gets_one() {
 fn the_electrification_its_own_layer() {
     let doc = check_document(&case("the sample with its electrification")).unwrap();
     let record = document_to_record(&doc).unwrap();
-    assert_eq!(record["electrification"]["collections"]["electrifications"][0]["system"], "15000V");
+    assert_eq!(record["electrification"]["collections"]["contactWires"][0]["voltage"], "15000V");
+    assert_eq!(record["electrification"]["collections"]["suspensionPoints"].as_array().unwrap().len(), 2);
     assert_eq!(to_document(&record, false, true).unwrap(), doc);
     let mut empty = record.clone();
-    empty["electrification"] = json!({ "fields": {}, "collections": { "electrifications": [] } });
+    empty["electrification"] =
+        json!({ "fields": {}, "collections": { "contactWires": [], "masts": [], "suspensionPoints": [], "sectionInsulators": [] } });
     assert_eq!(domains(&to_document(&empty, false, true).unwrap()), ["core", "civil"]);
+}
+
+#[test]
+fn an_electrified_range_of_before_is_a_contact_wire_carried_at_its_ends() {
+    let doc = check_document(&case("stages: the sample with its electrification")).unwrap();
+    let cols = &doc["domains"]["electrification"]["collections"];
+    assert_eq!(doc["domains"]["electrification"]["version"], "3.0");
+    let wires = cols["contactWires"].as_array().unwrap();
+    assert_eq!(wires.len(), 1);
+    assert_eq!(wires[0]["voltage"], "15000V");
+    let points = cols["suspensionPoints"].as_array().unwrap();
+    let mut stations: Vec<f64> = points.iter().map(|p| p["at"]["station"].as_f64().unwrap()).collect();
+    stations.sort_by(f64::total_cmp);
+    assert_eq!(stations, [0.0, 250.0]);
+    assert!(points.iter().all(|p| p["contactWireId"] == wires[0]["id"]));
+    assert_eq!(cols["masts"].as_array().unwrap().len(), 2);
 }
 
 #[test]

@@ -593,7 +593,7 @@ Diese Spezifikation ist das Ziel des Datenmodells. Mit Stand 13. November 2026 w
 in diesen Punkten ab; jeder wird in einem eigenen Schritt angeglichen (Entscheidung 0028 und die folgenden):
 
 - Zwei Dateien statt einer: die Infrastruktur als infra-data 2.0 (`.railacross.json`, Domänen core 4.0, civil 3.0,
-  signalling 4.0, electrification 2.1), der Betrieb als operations 1.0 (`.operations.json`) mit einer Domäne
+  signalling 4.0, electrification 3.0), der Betrieb als operations 1.0 (`.operations.json`) mit einer Domäne
   `operations`, in der die Fahrzeuge mitgeführt werden; eine Datei von vorher führt noch die Schemas mit.
 - Ein Fahrzeug hält sein Rollmaterial als Blob und nennt seine Traktionsarten ein zweites Mal (`tractionModes`).
 - Der Record, mit dem die Werkzeuge arbeiten, behält das Vokabular von vorher — die Arten als Zahlen,
@@ -601,7 +601,5 @@ in diesen Punkten ab; jeder wird in einem eigenen Schritt angeglichen (Entscheid
   Kilometer je Punkt und Kennungen jeder Form; die Tür wandelt ihn ins Dokument und zurück (Entscheidung 0029,
   Phase 6 nimmt das heraus). Eine Kilometrierungslinie von vorher steht als Punkte da, noch nicht mit
   Trassierungselementen angenähert.
-- Der Layer electrification hält elektrifizierte Gleisabschnitte mit ihrem System, noch keine Masten, Aufhängepunkte,
-  Streckentrennungen und Fahrdrähte.
 - Die Punkte eines Zugs nennen ihren Ort in einem Feld (`place`) und behalten den Namen, unter dem er gewählt wurde.
 - Eine Domäne, die der Leser nicht kennt, wird abgelehnt, nicht erhalten.

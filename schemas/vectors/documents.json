@@ -19542,26 +19542,69 @@
      }
     },
     "electrification": {
-     "version": "2.1",
-     "schema": "sha256:45c09436f949eb966d091985b23378eb9736d0db4f2991957f78209f07dbf8a1",
+     "version": "3.0",
+     "schema": "sha256:8b4a2b38167b50a64a5960bbf80794b174455828be3aae7103f548b9b63f826d",
      "dependsOn": [
       "core"
      ],
      "fields": {},
      "collections": {
-      "electrifications": [
+      "contactWires": [
        {
-        "id": "f7185442-5943-868b-a20e-578c8ec43d55",
+        "id": "49f0a46e-9b95-8149-8957-bb95e87f1e60",
         "name": "Oberleitung",
+        "voltage": "15000V"
+       }
+      ],
+      "masts": [
+       {
+        "id": "2f242e84-c356-89e7-974e-4319289a9991",
+        "kind": "cantilever",
         "at": {
          "anchor": "station",
          "trackId": "628b49d9-6dcd-897a-830d-d4f597705899",
-         "startStation": 0,
-         "endStation": 250
-        },
-        "system": "15000V"
+         "station": 250,
+         "side": "right",
+         "offset": 3.2
+        }
+       },
+       {
+        "id": "e4223ed2-0d7e-8574-8a32-6e2b268ca6db",
+        "kind": "cantilever",
+        "at": {
+         "anchor": "station",
+         "trackId": "628b49d9-6dcd-897a-830d-d4f597705899",
+         "station": 0,
+         "side": "right",
+         "offset": 3.2
+        }
        }
-      ]
+      ],
+      "suspensionPoints": [
+       {
+        "id": "0099bfdd-38b7-87d0-9ffb-21fea90ec1a1",
+        "mastId": "e4223ed2-0d7e-8574-8a32-6e2b268ca6db",
+        "at": {
+         "anchor": "station",
+         "trackId": "628b49d9-6dcd-897a-830d-d4f597705899",
+         "station": 0
+        },
+        "contactWireId": "49f0a46e-9b95-8149-8957-bb95e87f1e60",
+        "height": 5.5
+       },
+       {
+        "id": "ccfaad42-9984-85e6-a189-b28f2e2540b4",
+        "mastId": "2f242e84-c356-89e7-974e-4319289a9991",
+        "at": {
+         "anchor": "station",
+         "trackId": "628b49d9-6dcd-897a-830d-d4f597705899",
+         "station": 250
+        },
+        "contactWireId": "49f0a46e-9b95-8149-8957-bb95e87f1e60",
+        "height": 5.5
+       }
+      ],
+      "sectionInsulators": []
      }
     }
    },
@@ -19662,22 +19705,25 @@
      }
     },
     "electrification": {
-     "version": "2.1",
-     "schema": "sha256:45c09436f949eb966d091985b23378eb9736d0db4f2991957f78209f07dbf8a1",
+     "version": "3.0",
+     "schema": "sha256:8b4a2b38167b50a64a5960bbf80794b174455828be3aae7103f548b9b63f826d",
      "dependsOn": [
       "core"
      ],
      "fields": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
      "collections": {
-      "electrifications": "sha256:5db292022fccfc47a898eb08b090789d6c8ba8e211f6bfd7817e51ea5efecabf"
+      "contactWires": "sha256:13a38db2240cbc6951f6acbcef33d0703c94a39fb0063d54c70287218b6e25e8",
+      "masts": "sha256:351258e1c819b17113be161a445612e6e15f4629738dfae72991cc97bdacf16f",
+      "sectionInsulators": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "suspensionPoints": "sha256:4ced4719545cf57073fdc0805dc99d98fc3e2ef1dba2e3d4128db9d936f21224"
      }
     }
    }
   },
-  "hash": "sha256:ca0dd61fa24f5f20ddb7035bc6dd21ede09a3681949735696db17f44917056e7"
+  "hash": "sha256:408140760bd75397bac5e4b0fb76a2cc127e559fed0d70d1e31996125d04994f"
  },
  {
-  "name": "an electrification of no system",
+  "name": "a contact wire of no voltage",
   "document": {
    "format": "infra-data",
    "version": "2.0",
@@ -19928,25 +19974,455 @@
      }
     },
     "electrification": {
-     "version": "2.1",
-     "schema": "sha256:45c09436f949eb966d091985b23378eb9736d0db4f2991957f78209f07dbf8a1",
+     "version": "3.0",
+     "schema": "sha256:8b4a2b38167b50a64a5960bbf80794b174455828be3aae7103f548b9b63f826d",
      "dependsOn": [
       "core"
      ],
      "fields": {},
      "collections": {
-      "electrifications": [
+      "contactWires": [
        {
-        "id": "f7185442-5943-868b-a20e-578c8ec43d55",
-        "name": "Oberleitung",
+        "id": "49f0a46e-9b95-8149-8957-bb95e87f1e60",
+        "name": "Oberleitung"
+       }
+      ],
+      "masts": [
+       {
+        "id": "2f242e84-c356-89e7-974e-4319289a9991",
+        "kind": "cantilever",
         "at": {
          "anchor": "station",
          "trackId": "628b49d9-6dcd-897a-830d-d4f597705899",
-         "startStation": 0,
-         "endStation": 250
+         "station": 250,
+         "side": "right",
+         "offset": 3.2
+        }
+       },
+       {
+        "id": "e4223ed2-0d7e-8574-8a32-6e2b268ca6db",
+        "kind": "cantilever",
+        "at": {
+         "anchor": "station",
+         "trackId": "628b49d9-6dcd-897a-830d-d4f597705899",
+         "station": 0,
+         "side": "right",
+         "offset": 3.2
+        }
+       }
+      ],
+      "suspensionPoints": [
+       {
+        "id": "0099bfdd-38b7-87d0-9ffb-21fea90ec1a1",
+        "mastId": "e4223ed2-0d7e-8574-8a32-6e2b268ca6db",
+        "at": {
+         "anchor": "station",
+         "trackId": "628b49d9-6dcd-897a-830d-d4f597705899",
+         "station": 0
+        },
+        "contactWireId": "49f0a46e-9b95-8149-8957-bb95e87f1e60",
+        "height": 5.5
+       },
+       {
+        "id": "ccfaad42-9984-85e6-a189-b28f2e2540b4",
+        "mastId": "2f242e84-c356-89e7-974e-4319289a9991",
+        "at": {
+         "anchor": "station",
+         "trackId": "628b49d9-6dcd-897a-830d-d4f597705899",
+         "station": 250
+        },
+        "contactWireId": "49f0a46e-9b95-8149-8957-bb95e87f1e60",
+        "height": 5.5
+       }
+      ],
+      "sectionInsulators": []
+     }
+    }
+   },
+   "blobs": {
+    "sha256:b4aa72abe9415d526401fd1bf2a5b35429b0f47eb23781632212aa9e77710d48": {
+     "e0": 500000,
+     "n0": 5700000,
+     "z0": 108,
+     "st": [
+      0,
+      500
+     ],
+     "de": [
+      0,
+      500
+     ],
+     "dn": [
+      0,
+      0
+     ],
+     "zl": [
+      550,
+      560
+     ],
+     "zr": [
+      550,
+      561
+     ],
+     "ga": [
+      1435,
+      1436
+     ],
+     "q": [
+      1,
+      1
+     ]
+    },
+    "sha256:55dda32d20595141bb76c28a3769eb9345e54af5adea57d111f73a0b63b52acf": {
+     "s0": 0,
+     "step": 0.01,
+     "count": 3,
+     "e0": 500000,
+     "n0": 5700000,
+     "de": [
+      0,
+      10,
+      10
+     ],
+     "dn": [
+      0,
+      0,
+      0
+     ],
+     "z": null
+    },
+    "sha256:6eebb9c1db12546281ffd814c7d4af8b0e8b431290767fda2ab94b254e84593a": [
+     [
+      704523.0125,
+      5715114.8953,
+      1200.5
+     ],
+     [
+      705171.1455,
+      5716254.725,
+      1300
+     ]
+    ]
+   }
+  },
+  "valid": false,
+  "code": "invalid_payload"
+ },
+ {
+  "name": "a suspension point on a mast that is not there",
+  "document": {
+   "format": "infra-data",
+   "version": "2.0",
+   "domains": {
+    "core": {
+     "version": "4.0",
+     "schema": "sha256:2dd6dee14dc22be99741f2b095a314185273f3662f809433d7639fe4c59f6abf",
+     "fields": {
+      "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
+      "title": "Halle-Trotha",
+      "description": "vectors",
+      "creator": "core",
+      "createdAt": "2026-10-29T13:21:07.630Z",
+      "crsSystem": "ETRS89_UTM",
+      "lineCategory": "secondary",
+      "gaugeProfile": "hauptgleis"
+     },
+     "collections": {
+      "tracks": [
+       {
+        "id": "628b49d9-6dcd-897a-830d-d4f597705899",
+        "name": "6050.001",
+        "trackType": "line",
+        "lineNumber": 6050,
+        "side": "regular",
+        "epsg": 25832,
+        "heightEpsg": 7837,
+        "elements": [
+         {
+          "elementType": "straight",
+          "startNode": [
+           500000,
+           5700000
+          ],
+          "endNode": [
+           500100,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 100,
+          "designSpeed": 80
+         },
+         {
+          "elementType": "straight",
+          "startNode": [
+           500100,
+           5700000
+          ],
+          "endNode": [
+           500250,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 150,
+          "cant": 0,
+          "role": "follow"
+         }
+        ],
+        "heights": [
+         {
+          "station": 0,
+          "z": 108.55
+         },
+         {
+          "station": 250,
+          "z": 109.1,
+          "rv": 15000
+         }
+        ]
+       },
+       {
+        "id": "c4447403-8d45-8e40-a471-4afefa7bf8da",
+        "name": "1",
+        "trackType": "station",
+        "trackNumber": "1",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "lifespan": {
+         "from": "2027-05-01"
+        },
+        "epsg": 25832,
+        "elements": [
+         {
+          "elementType": "straight",
+          "startNode": [
+           500250,
+           5700000
+          ],
+          "endNode": [
+           500400,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 150
+         }
+        ]
+       },
+       {
+        "id": "cece8a9c-ecfb-8c7e-bee4-f3346d5e2544",
+        "name": "alt",
+        "lifespan": {
+         "to": "open"
+        },
+        "epsg": 25832,
+        "elements": [
+         {
+          "elementType": "straight",
+          "startNode": [
+           500400,
+           5700000
+          ],
+          "endNode": [
+           500450,
+           5700000
+          ],
+          "bearing": 90,
+          "length": 50
+         }
+        ]
+       }
+      ],
+      "switches": [
+       {
+        "id": "60c5590f-72ee-8292-b954-5afc28bf63ca",
+        "kind": "link",
+        "formVersion": 1,
+        "name": "link.001",
+        "ports": {
+         "A": {
+          "trackId": "628b49d9-6dcd-897a-830d-d4f597705899",
+          "endpoint": "END"
+         },
+         "B": {
+          "trackId": "c4447403-8d45-8e40-a471-4afefa7bf8da",
+          "endpoint": "BEGIN"
+         }
+        }
+       }
+      ],
+      "endMarks": [
+       {
+        "id": "8b5cc4df-7eec-8d32-a781-4eca4af047ae",
+        "kind": "buffer_stop",
+        "type": 4,
+        "brakeLength": 4,
+        "at": {
+         "trackId": "cece8a9c-ecfb-8c7e-bee4-f3346d5e2544",
+         "endpoint": "END"
+        }
+       }
+      ],
+      "kmLines": [
+       {
+        "id": "1a675d3d-777a-80af-8de7-7fa615e9805f",
+        "lineNumber": 6050,
+        "epsg": 25832,
+        "runs": [
+         {
+          "kmStart": 1200.5,
+          "counting": "up",
+          "points": "sha256:6eebb9c1db12546281ffd814c7d4af8b0e8b431290767fda2ab94b254e84593a"
+         }
+        ]
+       }
+      ],
+      "operationalPoints": [
+       {
+        "id": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "name": "Halle-Trotha",
+        "rl100": "LHT",
+        "uic": "8023111"
+       }
+      ],
+      "stoppingPlaces": [],
+      "trackPaths": [
+       {
+        "id": "82f3e9c6-95dc-8b8d-9b11-818d5701919e",
+        "name": "Gleis 1 durch",
+        "path": {
+         "trackIds": [
+          "628b49d9-6dcd-897a-830d-d4f597705899",
+          "c4447403-8d45-8e40-a471-4afefa7bf8da"
+         ]
         }
        }
       ]
+     }
+    },
+    "civil": {
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
+     "dependsOn": [
+      "core"
+     ],
+     "fields": {
+      "planHeader": {
+       "subtitle": "Lageplan"
+      },
+      "imageHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+     },
+     "collections": {
+      "platforms": [
+       {
+        "at": {
+         "anchor": "station",
+         "trackId": "c4447403-8d45-8e40-a471-4afefa7bf8da",
+         "startStation": 10,
+         "endStation": 140,
+         "side": "left"
+        },
+        "id": "f64551fc-d6f0-8823-8b87-971cfb914464",
+        "frontOffset": 1.67,
+        "height": 550,
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+       }
+      ],
+      "axisSurveys": [
+       {
+        "id": "f55ff16f-66f4-8360-a66b-95db6f8fec01",
+        "name": "Trace",
+        "epsg": 25832,
+        "rail": "54E4",
+        "guide": {
+         "kind": "track",
+         "trackId": "628b49d9-6dcd-897a-830d-d4f597705899"
+        },
+        "cloudNames": [
+         "W0"
+        ],
+        "createdAt": "2026-10-29T13:21:07.630Z",
+        "step": 0.5,
+        "gaps": [],
+        "points": "sha256:b4aa72abe9415d526401fd1bf2a5b35429b0f47eb23781632212aa9e77710d48"
+       }
+      ],
+      "referenceAxes": [
+       {
+        "id": "ec31682f-de56-8917-952f-f78a7a8adeff",
+        "name": "Bestand",
+        "epsg": 25832,
+        "heightEpsg": null,
+        "source": {
+         "tra": "a.TRA",
+         "gra": null
+        },
+        "points": "sha256:55dda32d20595141bb76c28a3769eb9345e54af5adea57d111f73a0b63b52acf"
+       }
+      ]
+     }
+    },
+    "electrification": {
+     "version": "3.0",
+     "schema": "sha256:8b4a2b38167b50a64a5960bbf80794b174455828be3aae7103f548b9b63f826d",
+     "dependsOn": [
+      "core"
+     ],
+     "fields": {},
+     "collections": {
+      "contactWires": [
+       {
+        "id": "49f0a46e-9b95-8149-8957-bb95e87f1e60",
+        "name": "Oberleitung",
+        "voltage": "15000V"
+       }
+      ],
+      "masts": [
+       {
+        "id": "2f242e84-c356-89e7-974e-4319289a9991",
+        "kind": "cantilever",
+        "at": {
+         "anchor": "station",
+         "trackId": "628b49d9-6dcd-897a-830d-d4f597705899",
+         "station": 250,
+         "side": "right",
+         "offset": 3.2
+        }
+       },
+       {
+        "id": "e4223ed2-0d7e-8574-8a32-6e2b268ca6db",
+        "kind": "cantilever",
+        "at": {
+         "anchor": "station",
+         "trackId": "628b49d9-6dcd-897a-830d-d4f597705899",
+         "station": 0,
+         "side": "right",
+         "offset": 3.2
+        }
+       }
+      ],
+      "suspensionPoints": [
+       {
+        "id": "0099bfdd-38b7-87d0-9ffb-21fea90ec1a1",
+        "mastId": "b3af560f-faf0-8191-8d8d-64d620153306",
+        "at": {
+         "anchor": "station",
+         "trackId": "628b49d9-6dcd-897a-830d-d4f597705899",
+         "station": 0
+        },
+        "contactWireId": "49f0a46e-9b95-8149-8957-bb95e87f1e60",
+        "height": 5.5
+       },
+       {
+        "id": "ccfaad42-9984-85e6-a189-b28f2e2540b4",
+        "mastId": "2f242e84-c356-89e7-974e-4319289a9991",
+        "at": {
+         "anchor": "station",
+         "trackId": "628b49d9-6dcd-897a-830d-d4f597705899",
+         "station": 250
+        },
+        "contactWireId": "49f0a46e-9b95-8149-8957-bb95e87f1e60",
+        "height": 5.5
+       }
+      ],
+      "sectionInsulators": []
      }
     }
    },
@@ -29152,19 +29628,22 @@
      }
     },
     "electrification": {
-     "version": "2.1",
-     "schema": "sha256:45c09436f949eb966d091985b23378eb9736d0db4f2991957f78209f07dbf8a1",
+     "version": "3.0",
+     "schema": "sha256:8b4a2b38167b50a64a5960bbf80794b174455828be3aae7103f548b9b63f826d",
      "dependsOn": [
       "core"
      ],
      "fields": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
      "collections": {
-      "electrifications": "sha256:5db292022fccfc47a898eb08b090789d6c8ba8e211f6bfd7817e51ea5efecabf"
+      "contactWires": "sha256:36ab8c2f95edccc89d9b788e9ef3a373ba5ad3c257557fe75db85cf59bc9f1d4",
+      "masts": "sha256:841fe0b8534a3cfcbb85f79dbb5404b170d6d13a1faa0135c7f64fda8ba1ac90",
+      "sectionInsulators": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "suspensionPoints": "sha256:0961ca630b713bedb4a124efdc6e557cd07e665c7828062aeb5952375cd62a36"
      }
     }
    }
   },
-  "hash": "sha256:8e966761808b1a10d6c5c63e3da5af094bdac8f5bd3eaf3b85692c56a33c5563"
+  "hash": "sha256:2afd5c1b634dfd9a7514215afa29f3c239cac81bf0b30a7c487e7172ffef7f2d"
  },
  {
   "name": "stages: a stage with its day, a track out of service with it and one into",

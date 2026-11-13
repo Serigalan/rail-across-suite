@@ -20,7 +20,7 @@ use crate::error::{PayloadError, Result};
 use crate::layers;
 
 /// The domains this build reads and writes, with their versions.
-pub const DOMAIN_VERSIONS: &[(&str, &str)] = &[("core", "4.0"), ("civil", "3.0"), ("signalling", "4.0"), ("electrification", "2.1")];
+pub const DOMAIN_VERSIONS: &[(&str, &str)] = &[("core", "4.0"), ("civil", "3.0"), ("signalling", "4.0"), ("electrification", "3.0")];
 
 /// The version of domain `name` this build reads, where it reads it.
 pub fn domain_version(name: &str) -> Option<&'static str> {
@@ -541,8 +541,10 @@ pub fn record_domains(record: &Value, schema_hashes: &HashMap<&str, String>) -> 
         let fields = obj(d.get("fields").unwrap_or(&Value::Null));
         let mut cols = obj(d.get("collections").unwrap_or(&Value::Null));
         if layers::holds_anything(&fields, &cols) {
-            if !cols.contains_key("electrifications") {
-                cols.insert("electrifications".into(), json!([]));
+            for name in ["contactWires", "masts", "suspensionPoints", "sectionInsulators"] {
+                if !cols.contains_key(name) {
+                    cols.insert(name.into(), json!([]));
+                }
             }
             domains.insert("electrification".into(), layer("electrification", fields, cols));
         }

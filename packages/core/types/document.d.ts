@@ -668,23 +668,55 @@ export namespace Signalling {
   }
 }
 
-/** Rail-Data-Core, domain electrification 2.1 */
+/** Rail-Data-Core, domain electrification 3.0 */
 export namespace Electrification {
-  /** The electrification of the tracks, planned in the Catenary-Tool (decision 0025): which ranges carry a contact wire, and its system. Depends on core; its references go into the core only. Later the masts, cantilevers, wires and sections. — 2.0 (decision 0028): on core 3.0, a lifespan states days. — 2.1 (decision 0028, phase C): every reference names an object of the collection its `x-target` names (the door's rule). */
+  /** The electrification of the tracks, planned in the Catenary-Tool (decision 0025): which ranges carry a contact wire, and its system. Depends on core; its references go into the core only. Later the masts, cantilevers, wires and sections. — 2.0 (decision 0028): on core 3.0, a lifespan states days. — 2.1 (decision 0028, phase C): every reference names an object of the collection its `x-target` names (the door's rule). — 3.0 (decision 0029, phase 3): masts, the suspension points on them that hold a contact wire over a track, section insulators that part two circuits, and the contact wires with their voltage; where a wire runs follows from what carries it. */
   export type Root = {
     fields: Fields
     collections: {
-      electrifications: Array<Electrification>
+      contactWires: Array<ContactWire>
+      masts: Array<Mast>
+      suspensionPoints: Array<SuspensionPoint>
+      sectionInsulators: Array<SectionInsulator>
     }
   }
-  /** The domain's own fields. */
+  /** The layer's own fields. */
   export type Fields = Record<string, never>
-  /** A range of a track under a contact wire (or a conductor rail) of one system. `system` is the voltage as OSRD names a traction mode: 15000V the 15 kV 16.7 Hz of DB, ÖBB and SBB, 25000V 25 kV 50 Hz, the others direct current. A train runs electrically where its vehicle has the mode. */
-  export type Electrification = {
+  /** A traction voltage, named as OSRD names the traction mode. */
+  export type Voltage = "15000V" | "25000V" | "3000V" | "1500V" | "750V" | "600V"
+  /** A contact wire: one circuit, with its voltage. It runs where the suspension points and section insulators that name it carry it. */
+  export type ContactWire = {
     id: Core.Id
     name?: Core.Text
-    at: Core.TrackRange
-    system: "15000V" | "25000V" | "3000V" | "1500V" | "750V" | "600V"
+    voltage: Voltage
+    lifespan?: Core.Lifespan
+  }
+  /** A mast beside a track, or a portal or headspan across several: what holds the suspension points. */
+  export type Mast = {
+    id: Core.Id
+    name?: Core.Label
+    kind?: "cantilever" | "portal" | "headspan" | "other"
+    at: Core.TrackLocation
+    lifespan?: Core.Lifespan
+  }
+  /** Where a mast holds a contact wire over a track: the wire, its height and its stagger there. */
+  export type SuspensionPoint = {
+    id: Core.Id
+    mastId: Core.Ref
+    at: Core.TrackLocation
+    contactWireId: Core.Ref
+    height?: number
+    stagger?: number
+    lifespan?: Core.Lifespan
+  }
+  /** A section insulator (Streckentrennung): a part of the contact line that separates two circuits on a track — the wire before it and the wire after it, in the direction of stationing. */
+  export type SectionInsulator = {
+    id: Core.Id
+    name?: Core.Label
+    kind?: "insulator" | "neutralSection"
+    at: Core.TrackLocation
+    contactWireBeforeId: Core.Ref
+    contactWireAfterId: Core.Ref
     lifespan?: Core.Lifespan
   }
 }

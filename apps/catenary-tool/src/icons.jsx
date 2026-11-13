@@ -18,8 +18,12 @@ export const LogoIcon = () => (
     <path d="M12.5 8v4.5M16 8.5v4M19.5 8v4.5" strokeOpacity="0.55" />
   </Svg>
 )
-/** A range under contact wire: the wire over a stretch of track, a bolt. */
-export const RangeIcon = () => <Svg><path d="M2 6h20" /><path d="M2 19h20" /><path d="M7 6v3M17 6v3" /><path d="M13 9l-3 5h4l-3 5" /></Svg>
+/** A contact wire: the wire over a stretch of track, a bolt. */
+export const WireIcon = () => <Svg><path d="M2 6h20" /><path d="M2 19h20" /><path d="M7 6v3M17 6v3" /><path d="M13 9l-3 5h4l-3 5" /></Svg>
+/** A mast: its foot, its pole and its cantilever over the track. */
+export const MastIcon = () => <Svg><path d="M7 21.5V3M4.5 21.5h5M7 5.5h11M7 10l11-4.5" /><path d="M15 5.5v3" /></Svg>
+/** A section insulator: a wire broken, the two ends apart. */
+export const InsulatorIcon = () => <Svg><path d="M2 12h7M15 12h7" /><path d="M9 8v8M15 8v8" /></Svg>
 export const CheckIcon = () => <Svg><path d="M4 12l5 5L20 6" /></Svg>
 export const SettingsIcon = () => <Svg><path d="M3 6 H7 M11 6 H21 M3 12 H14 M18 12 H21 M3 18 H5 M9 18 H21" /><circle cx="9" cy="6" r="2" /><circle cx="16" cy="12" r="2" /><circle cx="7" cy="18" r="2" /></Svg>
 export const HomeIcon = () => <Svg><path d="M2 11.5L12 3l10 8.5" /><path d="M16 6.4V3.5h2.5v5" /><path d="M5 9v10.5A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V9" /></Svg>

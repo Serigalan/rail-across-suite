@@ -26,7 +26,7 @@ export function simulationRequest(record, path, { vehicle, traction = {}, stops 
   const length = properties.length
   const limits = governedLimits(properties.speedLimits, signalled)
   if (endSpeed != null && Number.isFinite(endSpeed)) limits.push({ begin: Math.max(0, length - 1), end: length, speed: endSpeed, source: 'boundary' })
-  const planned = (record?.electrification?.collections?.electrifications ?? []).length > 0
+  const planned = (record?.electrification?.collections?.contactWires ?? []).length > 0
   const chosen = tractionFor(vehicle, traction.mode ?? null, electrifiedAlong(record, path), length, planned)
   const rollingStock = rollingStockOf(vehicle, { ...traction, mode: chosen.mode })
   const schedule = stops.map(s => ({

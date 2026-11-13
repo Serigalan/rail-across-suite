@@ -41,7 +41,7 @@ const ENVELOPE: &str = include_str!("../../../schemas/infra-data.schema.json");
 const CORE: &str = include_str!("../../../schemas/core/4.0.schema.json");
 const CIVIL: &str = include_str!("../../../schemas/civil/3.0.schema.json");
 const SIGNALLING: &str = include_str!("../../../schemas/signalling/4.0.schema.json");
-const ELECTRIFICATION: &str = include_str!("../../../schemas/electrification/2.1.schema.json");
+const ELECTRIFICATION: &str = include_str!("../../../schemas/electrification/3.0.schema.json");
 
 struct Schemas {
     set: SchemaSet,
@@ -132,6 +132,8 @@ const PAST: &[(&str, &str, &str)] = &[
     ("core", "3.1", "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c"),
     ("civil", "2.1", "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879"),
     ("signalling", "3.1", "sha256:2b365df5f72c616a99c70729f50afd5fdd243f14cff4798f78a70f0855a1e14d"),
+    // Electrified ranges of tracks with their systems, before masts and contact wires (decision 0029, phase 3).
+    ("electrification", "2.1", "sha256:45c09436f949eb966d091985b23378eb9736d0db4f2991957f78209f07dbf8a1"),
 ];
 
 /// The hash the schema of a domain's version goes by: this build's, or one of a version before (`PAST`).
@@ -524,6 +526,7 @@ const STEPS: &[Step] = &[
     Step { domains: LIFESPANS_BY_DAY, apply: lifespans_by_day },
     Step { domains: REFERENCES_RESOLVED, apply: references_resolved },
     Step { domains: WORDS_AND_NAMES, apply: words_and_names },
+    Step { domains: CONTACT_WIRES, apply: contact_wires },
 ];
 
 const LIFESPANS_BY_DAY: &[(&str, &str, &str)] =
@@ -533,6 +536,8 @@ const REFERENCES_RESOLVED: &[(&str, &str, &str)] =
     &[("core", "3.0", "3.1"), ("civil", "2.0", "2.1"), ("signalling", "3.0", "3.1"), ("electrification", "2.0", "2.1")];
 
 const WORDS_AND_NAMES: &[(&str, &str, &str)] = &[("core", "3.1", "4.0"), ("civil", "2.1", "3.0"), ("signalling", "3.1", "4.0")];
+
+const CONTACT_WIRES: &[(&str, &str, &str)] = &[("electrification", "2.1", "3.0")];
 
 fn version_of<'a>(doc: &'a Value, name: &str) -> Option<&'a str> {
     doc["domains"].get(name)?.get("version")?.as_str()
@@ -619,6 +624,58 @@ fn words_and_names(doc: &Value) -> Value {
         domain.insert("schema".into(), json!(hash_of(name, to)));
     }
     out.as_object_mut().expect("document").insert("blobs".into(), Value::Object(blobs));
+    out
+}
+
+/// Electrification 3.0 (decision 0029, phase 3): an electrified range of a track with its system becomes a
+/// contact wire of that voltage, carried at both ends of the range by a suspension point on a mast there — where
+/// a wire runs follows from what carries it, so it runs where the range ran. Name and lifespan go with the wire,
+/// the lifespan with the masts and points too; their ids are drawn from the range's.
+fn contact_wires(doc: &Value) -> Value {
+    let mut out = doc.clone();
+    let Some(Value::Object(domain)) = out.get_mut("domains").and_then(|d| d.get_mut("electrification")) else { return out };
+    let ranges = list(domain.get("collections").unwrap_or(&Value::Null), "electrifications");
+    let (mut wires, mut masts, mut points) = (Vec::new(), Vec::new(), Vec::new());
+    for r in &ranges {
+        let id = js_string(r.get("id"));
+        let at = r.get("at").cloned().unwrap_or(Value::Null);
+        let mut wire = Object::new();
+        wire.insert("id".into(), json!(id));
+        set_opt(&mut wire, "name", r.get("name").cloned());
+        wire.insert("voltage".into(), r.get("system").cloned().unwrap_or(Value::Null));
+        set_opt(&mut wire, "lifespan", r.get("lifespan").cloned());
+        wires.push(Value::Object(wire));
+        for (end, station) in [("start", at.get("startStation")), ("end", at.get("endStation"))] {
+            let mut place = Object::new();
+            place.insert("anchor".into(), json!("station"));
+            place.insert("trackId".into(), at.get("trackId").cloned().unwrap_or(Value::Null));
+            place.insert("station".into(), station.cloned().unwrap_or(json!(0)));
+            let mast_id = crate::canonical::derived_id(&format!("{id}:mast:{end}"));
+            let mut mast = Object::new();
+            mast.insert("id".into(), json!(mast_id));
+            mast.insert("kind".into(), json!("other"));
+            let mut mast_at = place.clone();
+            set_opt(&mut mast_at, "side", at.get("side").cloned());
+            mast.insert("at".into(), Value::Object(mast_at));
+            set_opt(&mut mast, "lifespan", r.get("lifespan").cloned());
+            masts.push(Value::Object(mast));
+            let mut point = Object::new();
+            point.insert("id".into(), json!(crate::canonical::derived_id(&format!("{id}:point:{end}"))));
+            point.insert("mastId".into(), json!(mast_id));
+            point.insert("at".into(), Value::Object(place));
+            point.insert("contactWireId".into(), json!(id));
+            set_opt(&mut point, "lifespan", r.get("lifespan").cloned());
+            points.push(Value::Object(point));
+        }
+    }
+    let mut cols = Object::new();
+    cols.insert("contactWires".into(), Value::Array(sorted_by_id(wires)));
+    cols.insert("masts".into(), Value::Array(sorted_by_id(masts)));
+    cols.insert("suspensionPoints".into(), Value::Array(sorted_by_id(points)));
+    cols.insert("sectionInsulators".into(), json!([]));
+    domain.insert("collections".into(), Value::Object(cols));
+    domain.insert("version".into(), json!("3.0"));
+    domain.insert("schema".into(), json!(hash_of("electrification", "3.0")));
     out
 }
 

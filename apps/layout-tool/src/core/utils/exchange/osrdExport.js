@@ -1,4 +1,5 @@
 import { withStationTexts } from '@rail-across/core/document'
+import { wireStretches } from '@rail-across/core/track'
 import {
   exact, round3, buildCoords, totalLength,
   horizontalElements, startAnchor, endAnchor, switchesToPorts,
@@ -109,21 +110,22 @@ export function exportToOsrd(record) {
 }
 
 /**
- * The layer `electrification` (decision 0025) as RailJSON's electrifications:
- * one per system, its track ranges in both directions — OSRD names a range by
- * its voltage, as the layer does. Ranges on a track the export does not hold
+ * The layer `electrification` (decisions 0025, 0029) as RailJSON's
+ * electrifications: one per voltage, the stretches its contact wires run on
+ * (from the first to the last point carrying them on a track) in both
+ * directions — OSRD names a range by its voltage, as the layer does. Ranges on a track the export does not hold
  * are left out; one an imported file brought along stays where the layer has
  * none of its system.
  */
 export function electrificationsOf(project, trackMap) {
-  const ranges = project?.electrification?.collections?.electrifications ?? []
+  const ranges = wireStretches(project?.electrification).filter(r => r.endStation > r.startStation)
   const kept = project?.osrd?.electrifications ?? []
   const bySystem = new Map()
   for (const r of ranges) {
-    if (!trackMap[r.at.trackId]) continue
-    const list = bySystem.get(r.system) ?? []
-    list.push({ track: r.at.trackId, begin: exact(r.at.startStation), end: exact(r.at.endStation), applicable_directions: 'BOTH' })
-    bySystem.set(r.system, list)
+    if (!trackMap[r.trackId]) continue
+    const list = bySystem.get(r.voltage) ?? []
+    list.push({ track: r.trackId, begin: exact(r.startStation), end: exact(r.endStation), applicable_directions: 'BOTH' })
+    bySystem.set(r.voltage, list)
   }
   const made = [...bySystem.entries()].map(([voltage, track_ranges]) => ({ id: `electrification-${voltage}`, voltage, track_ranges }))
   return [...made, ...kept.filter(e => !bySystem.has(e.voltage))]

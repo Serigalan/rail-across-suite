@@ -13,7 +13,11 @@ before forward, version by version: an infra-data 1.0 one to 2.0 (`layout` and t
 stopping places into the core), one with a register of construction stages to lifespans by day (core 3.0 —
 a stage's day the day itself, a `to` the day before it, the final stage `"open"`, the existing one no statement),
 one of 3.0 whose references may name nothing to references that name something (core 3.1 — what names nothing is
-cut as deleting it would have cut it).
+cut as deleting it would have cut it), one of 3.1 to the words and names of the specification rail-across-1.0
+(core 4.0, civil 3.0, signalling 4.0 — [decision 0029](../docs/decisions/0029-the-suite-on-rail-across-1.0.md),
+phase 1: the kinds as words, every reference ending in `Id`, no plane of an element's own, a switch with `B1` its
+main track and `B2` its branch). The record the tools work on keeps the words of before until it follows the
+document (decision 0029, phase 6); the conversion converts.
 
 The door checks what a schema cannot say: a lifespan's days are days, the first not after the last; every
 reference — a member the schema marks with `x-target`, the collection it points into — names an object of that
@@ -26,10 +30,11 @@ may carry one; the states a project passes through are worked out of them, never
 | File | What it is |
 |---|---|
 | `infra-data.schema.json` | infra-data-2.0, a project as one JSON file (`.railacross.json`): the domains, the schemas it carries, its blobs |
-| `core/3.1.schema.json` | Domain `core` 3.1: tracks, switches and connectors, end marks, km lines, the operational point register, the stopping places (passenger stops among them), the named runs of tracks (`trackPaths`); the core types `TrackEnd`, `TrackLocation`, `TrackRange`, `TrackPath`, `Lifespan` (by day), `Day`, `Ref` |
-| `civil/2.1.schema.json` | Domain `civil` 2.1: platforms, each naming the stopping places at it; bridges, retaining walls and noise barriers; measured axes, reference axes, the plan header, the project picture |
-| `signalling/3.1.schema.json` | Domain `signalling` 3.1, after PlanPro 1.10: signals and boards with their logical signals (one per signalling system, as in OSRD), frames and aspects, detection points, track sections, switch elements, train and shunting routes with their setting and release times, overlaps, flank protection, the balises and magnets of train protection, train protection by ranges, station boundaries, itineraries ([decision 0011](../docs/decisions/0011-signalling-domain.md)); which systems, kinds, settings and aspects there are is the catalogue's (`packages/core/constraints/db-ril-301.json`) |
+| `core/4.0.schema.json` | Domain `core` 4.0: tracks, switches and connectors, end marks, km lines, the operational point register, the stopping places (passenger stops among them), the named runs of tracks (`trackPaths`); the core types `TrackEnd`, `TrackLocation`, `TrackRange`, `TrackPath`, `Lifespan` (by day), `Day`, `Ref` |
+| `civil/3.0.schema.json` | Domain `civil` 3.0: platforms, each naming the stopping places at it; bridges, retaining walls and noise barriers; measured axes, reference axes, the plan header, the project picture |
+| `signalling/4.0.schema.json` | Domain `signalling` 4.0, after PlanPro 1.10: signals and boards with their logical signals (one per signalling system, as in OSRD), frames and aspects, detection points, track sections, switch elements, train and shunting routes with their setting and release times, overlaps, flank protection, the balises and magnets of train protection, train protection by ranges, station boundaries, itineraries ([decision 0011](../docs/decisions/0011-signalling-domain.md)); which systems, kinds, settings and aspects there are is the catalogue's (`packages/core/constraints/db-ril-301.json`) |
 | `electrification/2.1.schema.json` | Domain `electrification` 2.1: the electrified ranges of the tracks and their systems |
+| `core/3.1.schema.json`, `civil/2.1.schema.json`, `signalling/3.1.schema.json` | the domains with every reference naming an object, the kinds still numbers (decision 0028, phase C), for reference |
 | `core/3.0.schema.json`, `civil/2.0.schema.json`, `signalling/3.0.schema.json`, `electrification/2.0.schema.json` | the domains with lifespans by day as they were before references had to name something (decision 0028, phase A), for reference |
 | `core/2.0.schema.json`, `civil/1.0.schema.json`, `signalling/2.0.schema.json`, `electrification/1.0.schema.json` | the domains as they were last with a register of construction stages (decision 0027), for reference: the door no longer checks against them, it brings such a document forward |
 | `infra-data-1.0.schema.json`, `core/1.0.schema.json`, `layout/1.0.schema.json`, `signalling/1.0.schema.json` | infra-data 1.0 as it was last, for reference: the door no longer checks against them, it brings such a document to 2.0 |

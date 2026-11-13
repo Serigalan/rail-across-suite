@@ -1,4 +1,4 @@
-import { projectDocument } from '@rail-across/core/project'
+import { recordDomains } from '@rail-across/core/project'
 import { CATALOGUE_REF, baliseKindOf, protectionSystemOf, signalKindOf, signallingSpeedOf } from '@rail-across/core/signalling'
 
 /**
@@ -68,7 +68,7 @@ export function recordOf(record, state) {
  * stopping places and the check name them.
  */
 export function coreOf(record) {
-  const { domains } = projectDocument({ ...record, signalling: undefined })
+  const domains = recordDomains({ ...record, signalling: undefined })
   return { ...domains.core, collections: { ...domains.core.collections, platforms: domains.civil?.collections.platforms ?? [] } }
 }
 

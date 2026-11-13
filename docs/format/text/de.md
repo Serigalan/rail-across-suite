@@ -592,14 +592,14 @@ Die Prüfsummen sind hier gekürzt; in einer Datei hat jede ihre 64 Hexziffern.
 Diese Spezifikation ist das Ziel des Datenmodells. Mit Stand 13. November 2026 weicht die Implementierung der Suite
 in diesen Punkten ab; jeder wird in einem eigenen Schritt angeglichen (Entscheidung 0028 und die folgenden):
 
-- Zwei Dateien statt einer: die Infrastruktur als infra-data 2.0 (`.railacross.json`, Domänen core 3.1, civil 2.1,
-  signalling 3.1, electrification 2.1), der Betrieb als operations 1.0 (`.operations.json`) mit einer Domäne
+- Zwei Dateien statt einer: die Infrastruktur als infra-data 2.0 (`.railacross.json`, Domänen core 4.0, civil 3.0,
+  signalling 4.0, electrification 2.1), der Betrieb als operations 1.0 (`.operations.json`) mit einer Domäne
   `operations`, in der die Fahrzeuge mitgeführt werden; eine Datei von vorher führt noch die Schemas mit.
 - Ein Fahrzeug hält sein Rollmaterial als Blob und nennt seine Traktionsarten ein zweites Mal (`tractionModes`).
-- Die Weichenart heißt `turnout`, ihr Zweiggleis ist `B1`, ihr Stammgleis `B2`.
 - Kilometrierungslinien sind Polylinien in WGS 84 mit dem Kilometer je Punkt.
-- Element- und Gleisarten sind Zahlen (`elementType` 0/1/2, `trackType` 1/2, `side` 1/2); ein Element kann eine
-  eigene Ebene nennen; einige Verweise heißen ohne `Id` (`operationalPoint`, `dep`).
+- Der Record, mit dem die Werkzeuge arbeiten, behält das Vokabular von vorher — die Arten als Zahlen,
+  `operationalPoint`, `dep`, eine `turnout` mit `B1` als Zweiggleis —; die Tür wandelt ihn ins Dokument und zurück
+  (Entscheidung 0029, Phase 6 nimmt das heraus).
 - Der Layer electrification hält elektrifizierte Gleisabschnitte mit ihrem System, noch keine Masten, Aufhängepunkte,
   Streckentrennungen und Fahrdrähte.
 - Die Punkte eines Zugs nennen ihren Ort in einem Feld (`place`) und behalten den Namen, unter dem er gewählt wurde.

@@ -158,6 +158,7 @@ fn run_on(op: &str, input: &Value) -> Result<Value, Failure> {
             flag(input, "carrySchemas", false),
             flag(input, "check", true),
         )?),
+        "project.recordDomains" => Ok(persistence::record_domains(&input["record"])?),
         "project.dehydrateProjects" => {
             let projects = input.as_array().cloned().unwrap_or_default();
             Ok(Value::Array(persistence::dehydrate_projects(&projects)))

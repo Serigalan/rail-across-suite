@@ -39,9 +39,9 @@ export namespace Document {
   }
 }
 
-/** Rail-Data-Core, domain core 3.1 */
+/** Rail-Data-Core, domain core 4.0 */
 export namespace Core {
-  /** The base every module depends on: the net (tracks, switches and connectors), what stands on it for every discipline (platforms, end marks) and the reference data (km lines, the operational point register). Written by the layout tool, carried by the core library. See docs/data-model.md. — 2.0 (decision 0025): the alignment and what every layer places things by; the platforms are civil's, the stopping places came in from signalling, the named runs of tracks from layout. — 3.0 (decision 0028): no construction stages; a lifespan states days. — 3.1 (decision 0028, phase C): every reference names an object of the collection its `x-target` names (the door's rule). */
+  /** The base every module depends on: the net (tracks, switches and connectors), what stands on it for every discipline (platforms, end marks) and the reference data (km lines, the operational point register). Written by the layout tool, carried by the core library. See docs/data-model.md. — 2.0 (decision 0025): the alignment and what every layer places things by; the platforms are civil's, the stopping places came in from signalling, the named runs of tracks from layout. — 3.0 (decision 0028): no construction stages; a lifespan states days. — 3.1 (decision 0028, phase C): every reference names an object of the collection its `x-target` names (the door's rule). — 4.0 (decision 0029, phase 1): the kinds as words, every reference ending in `Id`, no plane of an element's own, a switch with B1 its main track and B2 its branch. */
   export type Root = {
     fields: Fields
     collections: {
@@ -119,11 +119,9 @@ export namespace Core {
     lineCategory?: LineCategory
     gaugeProfile?: Text
   }
-  /** One design element of a track: straight (0), arc (1) or transition (2). No station, no polyline: stations are the running sum of the lengths, drawn geometry is derived. */
+  /** One design element of a track: straight, arc or transition. No station, no polyline: stations are the running sum of the lengths, drawn geometry is derived. */
   export type Element = {
-    elementType: 0 | 1 | 2
-    /** The plane the element is stated in, where it says so: its track's (a finding of the chain checks where not). */
-    epsg?: Epsg
+    elementType: "straight" | "arc" | "transition"
     startNode: Point
     endNode: Point
     bearing?: number
@@ -158,7 +156,7 @@ export namespace Core {
     reason?: Text
     locked?: boolean
     id?: Id
-    dep?: Ref
+    depId?: Ref
     depMode?: "lds" | "continueBefore" | "continueAfter" | "wa" | "continue"
     free?: boolean
   }
@@ -170,12 +168,12 @@ export namespace Core {
   export type Track = {
     id: Id
     name?: Text
-    trackType?: 1 | 2
+    trackType?: "line" | "station"
     lineNumber?: Label
     lineName?: Text
-    side?: number
+    side?: "regular" | "opposite"
     trackNumber?: Label
-    operationalPoint?: Ref
+    operationalPointId?: Ref
     owner?: Text
     trackUse?: "siding"
     lineCategory?: LineCategory
@@ -195,10 +193,10 @@ export namespace Core {
       [name: string]: unknown
     }
   }
-  /** A turnout, crossing, slip, two-end connector (`link`) or construction stage connector (`stage_link`) at a node; its ports hold track ends. A link joins two track ends where the plane changes or where a rebuilt part of a track ties in; a stage link joins the track at A to the one at B1 while that exists and to the one at B2 from then on — never both: one track ends, the other begins (decision 0027). */
+  /** A switch, crossing, slip, two-end connector (`link`) or construction stage connector (`stage_link`) at a node; its ports hold track ends. A switch: A its toe, B1 the main track, B2 the branch. A link joins two track ends where the plane changes or where a rebuilt part of a track ties in; a stage link joins the track at A to the one at B1 while that exists and to the one at B2 from then on — never both: one track ends, the other begins (decision 0027). */
   export type Switch = {
     id: Id
-    kind: "turnout" | "crossing" | "single_slip" | "double_slip" | "link" | "stage_link"
+    kind: "switch" | "crossing" | "single_slip" | "double_slip" | "link" | "stage_link"
     formVersion: number
     name?: Text
     number?: number
@@ -267,9 +265,9 @@ export namespace Core {
   }
 }
 
-/** Rail-Data-Core, domain civil 2.1 */
+/** Rail-Data-Core, domain civil 3.0 */
 export namespace Civil {
-  /** Civil engineering's layer, edited in the Civil-Tool (decision 0025): platforms, bridges, retaining walls and noise barriers, measured axes traced in point clouds, reference axes from surveys, the plan header and the project picture — what layout 1.0 held but its named runs of tracks, and the platforms from core 1.0. Depends on core; its references go into the core only. Bulk point arrays are blobs, named by their hash (S-R2). — 2.0 (decision 0028): on core 3.0, a lifespan states days. — 2.1 (decision 0028, phase C): every reference names an object of the collection its `x-target` names (the door's rule). */
+  /** Civil engineering's layer, edited in the Civil-Tool (decision 0025): platforms, bridges, retaining walls and noise barriers, measured axes traced in point clouds, reference axes from surveys, the plan header and the project picture — what layout 1.0 held but its named runs of tracks, and the platforms from core 1.0. Depends on core; its references go into the core only. Bulk point arrays are blobs, named by their hash (S-R2). — 2.0 (decision 0028): on core 3.0, a lifespan states days. — 2.1 (decision 0028, phase C): every reference names an object of the collection its `x-target` names (the door's rule). — 3.0 (decision 0029, phase 1): a platform names its operational point by `operationalPointId`. */
   export type Root = {
     fields: Fields
     collections: {
@@ -335,7 +333,7 @@ export namespace Civil {
     frontOffset?: number
     backOffset?: number
     height?: number
-    operationalPoint?: Core.Ref
+    operationalPointId?: Core.Ref
     lifespan?: Core.Lifespan
     /** The stopping places at the platform: the core names nothing above it, so the platform names them. */
     stoppingPlaceIds?: Array<Core.Ref>
@@ -382,9 +380,9 @@ export namespace Civil {
   }
 }
 
-/** Rail-Data-Core, domain signalling 3.1 */
+/** Rail-Data-Core, domain signalling 4.0 */
 export namespace Signalling {
-  /** The signalling of a project, as the signalling tool plans it: signals and boards, train detection, the switch elements of the interlocking, train and shunting routes with their overlaps, flank protection, the balises and magnets of train protection, the station boundaries and the itineraries from one to another. Depends on core; its references go into the core or into itself (R2, R9). Its objects follow PlanPro 1.10, and like OSRD it keeps every signalling and train protection system out of the schema (decision 0011): a signal carries a logical signal per system, a balise names its system; which systems, kinds, aspects and settings there are is not in this schema but in the catalogue (packages/core/constraints/db-ril-301.json), which the content check reads. — 2.0 (decision 0025): the stopping places are the core's; routes carry their setting and release times; train protection by ranges. — 3.0 (decision 0028): on core 3.0, a lifespan states days. — 3.1 (decision 0028, phase C): every reference names an object of the collection its `x-target` names (the door's rule). */
+  /** The signalling of a project, as the signalling tool plans it: signals and boards, train detection, the switch elements of the interlocking, train and shunting routes with their overlaps, flank protection, the balises and magnets of train protection, the station boundaries and the itineraries from one to another. Depends on core; its references go into the core or into itself (R2, R9). Its objects follow PlanPro 1.10, and like OSRD it keeps every signalling and train protection system out of the schema (decision 0011): a signal carries a logical signal per system, a balise names its system; which systems, kinds, aspects and settings there are is not in this schema but in the catalogue (packages/core/constraints/db-ril-301.json), which the content check reads. — 2.0 (decision 0025): the stopping places are the core's; routes carry their setting and release times; train protection by ranges. — 3.0 (decision 0028): on core 3.0, a lifespan states days. — 3.1 (decision 0028, phase C): every reference names an object of the collection its `x-target` names (the door's rule). — 4.0 (decision 0029, phase 1): every reference ends in `Id` (`detectionPointIds`, `clearSectionIds`, `passOn.leftId`/`rightId`). */
   export type Root = {
     fields: Fields
     collections: {
@@ -504,7 +502,7 @@ export namespace Signalling {
     /** The number of the interlocking area it belongs to, which leads its full designation (PlanPro Kennzahl: 60 in 60A). */
     areaNumber?: Core.Label
     kind: "axleCounting" | "audioFrequencyCircuit" | "lowFrequencyCircuit" | "ftgs" | "other"
-    boundedBy: Array<Core.Ref>
+    detectionPointIds: Array<Core.Ref>
     /** PlanPro FMA_Hilffreimeldung. */
     auxiliaryClearing?: boolean
     lifespan?: Core.Lifespan
@@ -532,7 +530,7 @@ export namespace Signalling {
     /** Its distant signal stands at a shortened braking distance (PlanPro Fstr_Vsigabstand_Verkuerzt). */
     shortDistantSpacing?: boolean
     /** For a shunting route, the sections that must be clear (PlanPro ID_FMA_Anlage_Rangier_Frei); a train route's follow from its run. */
-    clearSections?: Array<Core.Ref>
+    clearSectionIds?: Array<Core.Ref>
     overlaps?: Array<{
       overlapId: Core.Ref
       preferred?: boolean
@@ -565,7 +563,7 @@ export namespace Signalling {
     speed?: number
     /** How long it stays set after the train stopped [s] (PlanPro Aufloesung_Verzoegerung). */
     releaseDelay?: number
-    clearSections?: Array<Core.Ref>
+    clearSectionIds?: Array<Core.Ref>
     switches?: Array<{
       switchElementId: Core.Ref
       locked: boolean
@@ -593,10 +591,10 @@ export namespace Signalling {
     }
     /** The flank protection the protecting switch element asks for in turn, per its position (PlanPro Fla_Schutz_Weitergabe). */
     passOn?: {
-      left?: Core.Ref
-      right?: Core.Ref
+      leftId?: Core.Ref
+      rightId?: Core.Ref
     }
-    clearSections?: Array<Core.Ref>
+    clearSectionIds?: Array<Core.Ref>
     lifespan?: Core.Lifespan
   }
   /** A track element of a train protection system that acts at a point — a PZB track magnet or speed check, an ETCS Eurobalise (PlanPro PZB_Element, Balise): its system and kind, keys of the catalogue's `zugbeeinflussung`, with the settings the catalogue declares for them (a PZB magnet's frequency, an ETCS balise's place in its group); where it acts, the signal it belongs to, and whether it acts always, with its signal or with routes. */

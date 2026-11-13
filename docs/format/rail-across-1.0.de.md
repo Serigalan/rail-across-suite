@@ -592,14 +592,14 @@ Die Prüfsummen sind hier gekürzt; in einer Datei hat jede ihre 64 Hexziffern.
 Diese Spezifikation ist das Ziel des Datenmodells. Mit Stand 13. November 2026 weicht die Implementierung der Suite
 in diesen Punkten ab; jeder wird in einem eigenen Schritt angeglichen (Entscheidung 0028 und die folgenden):
 
-- Zwei Dateien statt einer: die Infrastruktur als infra-data 2.0 (`.railacross.json`, Domänen core 3.1, civil 2.1,
-  signalling 3.1, electrification 2.1), der Betrieb als operations 1.0 (`.operations.json`) mit einer Domäne
+- Zwei Dateien statt einer: die Infrastruktur als infra-data 2.0 (`.railacross.json`, Domänen core 4.0, civil 3.0,
+  signalling 4.0, electrification 2.1), der Betrieb als operations 1.0 (`.operations.json`) mit einer Domäne
   `operations`, in der die Fahrzeuge mitgeführt werden; eine Datei von vorher führt noch die Schemas mit.
 - Ein Fahrzeug hält sein Rollmaterial als Blob und nennt seine Traktionsarten ein zweites Mal (`tractionModes`).
-- Die Weichenart heißt `turnout`, ihr Zweiggleis ist `B1`, ihr Stammgleis `B2`.
 - Kilometrierungslinien sind Polylinien in WGS 84 mit dem Kilometer je Punkt.
-- Element- und Gleisarten sind Zahlen (`elementType` 0/1/2, `trackType` 1/2, `side` 1/2); ein Element kann eine
-  eigene Ebene nennen; einige Verweise heißen ohne `Id` (`operationalPoint`, `dep`).
+- Der Record, mit dem die Werkzeuge arbeiten, behält das Vokabular von vorher — die Arten als Zahlen,
+  `operationalPoint`, `dep`, eine `turnout` mit `B1` als Zweiggleis —; die Tür wandelt ihn ins Dokument und zurück
+  (Entscheidung 0029, Phase 6 nimmt das heraus).
 - Der Layer electrification hält elektrifizierte Gleisabschnitte mit ihrem System, noch keine Masten, Aufhängepunkte,
   Streckentrennungen und Fahrdrähte.
 - Die Punkte eines Zugs nennen ihren Ort in einem Feld (`place`) und behalten den Namen, unter dem er gewählt wurde.
@@ -1488,7 +1488,7 @@ _Weitere Properties sind nicht erlaubt._
 | `name` |  | [`Label`](#core-Label) | Name |
 | `areaNumber` |  | [`Label`](#core-Label) | Kennzahl des Stellbereichs, die der vollen Bezeichnung vorangeht (PlanPro Kennzahl: 60 in 60A) |
 | `kind` | ja | eins der Werte unter Bedeutung | Art der Freimeldung<br>`axleCounting` Achszählung<br>`audioFrequencyCircuit` Tonfrequenz-Gleisstromkreis<br>`lowFrequencyCircuit` Niederfrequenz-Gleisstromkreis<br>`ftgs` FTGS<br>`other` sonstige |
-| `boundedBy` | ja | Liste von [`Ref`](#core-Ref) → `signalling.detectionPoints`; mindestens 1 Eintrag | die begrenzenden Freimeldepunkte |
+| `detectionPointIds` | ja | Liste von [`Ref`](#core-Ref) → `signalling.detectionPoints`; mindestens 1 Eintrag | die begrenzenden Freimeldepunkte |
 | `auxiliaryClearing` |  | Wahrheitswert | Hilfsfreimeldung (PlanPro FMA\_Hilffreimeldung) |
 | `lifespan` |  | [`Lifespan`](#core-Lifespan) | Lebensdauer: die Tage im Betrieb; fehlt sie, besteht das Objekt und bleibt |
 
@@ -1546,7 +1546,7 @@ _Weitere Properties sind nicht erlaubt._
 | `path` | ja | [`TrackPath`](#core-TrackPath) | die Gleisfolge |
 | `autoSetting` |  | Wahrheitswert | durch Selbststellbetrieb eingestellt |
 | `shortDistantSpacing` |  | Wahrheitswert | Vorsignal im verkürzten Bremswegabstand |
-| `clearSections` |  | Liste von [`Ref`](#core-Ref) → `signalling.trackSections` | Gleisfreimeldeabschnitte, die frei sein müssen |
+| `clearSectionIds` |  | Liste von [`Ref`](#core-Ref) → `signalling.trackSections` | Gleisfreimeldeabschnitte, die frei sein müssen |
 | `overlaps` |  | Liste von Objekten (Properties unten) | Durchrutschwege, in denen sie enden darf |
 | `overlaps[].overlapId` | ja | [`Ref`](#core-Ref) → `signalling.overlaps` | der Durchrutschweg |
 | `overlaps[].preferred` |  | Wahrheitswert | der bevorzugte |
@@ -1577,7 +1577,7 @@ _Weitere Properties sind nicht erlaubt._
 | `gradient` |  | Zahl | maßgebende Neigung [‰], negativ im Gefälle |
 | `speed` |  | Zahl; ≥ 0 | zulässige Geschwindigkeit [km/h] |
 | `releaseDelay` |  | Zahl; ≥ 0 | Auflösungsverzögerung [s] |
-| `clearSections` |  | Liste von [`Ref`](#core-Ref) → `signalling.trackSections` | Gleisfreimeldeabschnitte, die frei sein müssen |
+| `clearSectionIds` |  | Liste von [`Ref`](#core-Ref) → `signalling.trackSections` | Gleisfreimeldeabschnitte, die frei sein müssen |
 | `switches` |  | Liste von Objekten (Properties unten) | Weichen im Durchrutschweg |
 | `switches[].switchElementId` | ja | [`Ref`](#core-Ref) → `signalling.switchElements` | das Weichenelement |
 | `switches[].locked` | ja | Wahrheitswert | verschlossen |
@@ -1604,9 +1604,9 @@ _Weitere Properties sind nicht erlaubt._
 | `protection.position` |  | [`SwitchPosition`](#signalling-SwitchPosition) | seine Lage; eine Gleissperre gibt ihn aufgelegt und nennt keine |
 | `protection.waived` | ja | genau `true` | auf Flankenschutz verzichtet |
 | `passOn` |  | Objekt (Properties unten) | Flankenschutz, den das schützende Element seinerseits verlangt (PlanPro Fla\_Schutz\_Weitergabe) |
-| `passOn.left` |  | [`Ref`](#core-Ref) → `signalling.flankProtection` | für seine Lage links |
-| `passOn.right` |  | [`Ref`](#core-Ref) → `signalling.flankProtection` | für seine Lage rechts |
-| `clearSections` |  | Liste von [`Ref`](#core-Ref) → `signalling.trackSections` | Gleisfreimeldeabschnitte, die frei sein müssen |
+| `passOn.leftId` |  | [`Ref`](#core-Ref) → `signalling.flankProtection` | für seine Lage links |
+| `passOn.rightId` |  | [`Ref`](#core-Ref) → `signalling.flankProtection` | für seine Lage rechts |
+| `clearSectionIds` |  | Liste von [`Ref`](#core-Ref) → `signalling.trackSections` | Gleisfreimeldeabschnitte, die frei sein müssen |
 | `lifespan` |  | [`Lifespan`](#core-Lifespan) | Lebensdauer: die Tage im Betrieb; fehlt sie, besteht das Objekt und bleibt |
 
 <a id="signalling-Balise"></a>

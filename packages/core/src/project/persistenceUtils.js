@@ -76,6 +76,13 @@ export const projectDocument = (record, { carrySchemas = false, check = true } =
   viaNative('project.projectDocument', { record: withoutDerived(record), carrySchemas, check })
 
 /**
+ * The domains of a record's document in the words and names the record keeps
+ * (decision 0029, phase 1): what a tool reads of the core beside its own layer
+ * until the record follows the document. Not checked.
+ */
+export const recordDomains = (record) => viaNative('project.recordDomains', { record: withoutDerived(record) })
+
+/**
  * The document of some tracks, as the data exchange panel exports them: a
  * project of these tracks alone, its schemas carried. An element's membership
  * in a switch of the project is not written — the file has no switches, and a

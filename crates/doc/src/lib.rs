@@ -21,5 +21,6 @@ pub mod persistence;
 pub mod schema;
 pub mod stages;
 pub mod stations;
+pub mod words;
 
 pub use error::PayloadError;

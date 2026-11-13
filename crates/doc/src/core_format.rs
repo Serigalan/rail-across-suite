@@ -20,7 +20,7 @@ use crate::error::{PayloadError, Result};
 use crate::layers;
 
 /// The domains this build reads and writes, with their versions.
-pub const DOMAIN_VERSIONS: &[(&str, &str)] = &[("core", "3.1"), ("civil", "2.1"), ("signalling", "3.1"), ("electrification", "2.1")];
+pub const DOMAIN_VERSIONS: &[(&str, &str)] = &[("core", "4.0"), ("civil", "3.0"), ("signalling", "4.0"), ("electrification", "2.1")];
 
 /// The version of domain `name` this build reads, where it reads it.
 pub fn domain_version(name: &str) -> Option<&'static str> {
@@ -530,6 +530,8 @@ pub fn record_to_document(record: &Value, schema_hashes: &HashMap<&str, String>)
             }
         }
     }
+    // The record keeps the words and names of before (decision 0029, phase 6 takes this out).
+    crate::words::forward(&mut domains);
     Ok(json!({ "format": crate::door::FORMAT, "version": crate::door::VERSION, "domains": Value::Object(domains), "blobs": Value::Object(blobs) }))
 }
 
@@ -537,6 +539,9 @@ pub fn record_to_document(record: &Value, schema_hashes: &HashMap<&str, String>)
 
 /// The record an infra-data-2.0 document holds — the inverse of record_to_document (`documentToRecord`).
 pub fn document_to_record(doc: &Value) -> Result<Value> {
+    let mut domains = obj(&doc["domains"]);
+    crate::words::back(&mut domains);
+    let doc = &json!({ "domains": Value::Object(domains), "blobs": doc.get("blobs").cloned().unwrap_or(json!({})) });
     let core = &doc["domains"]["core"];
     let empty_civil = json!({ "fields": {}, "collections": {} });
     let civil = get(&doc["domains"], "civil").unwrap_or(&empty_civil);

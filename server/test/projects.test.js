@@ -50,7 +50,7 @@ describe('projects', () => {
     const { document } = await head(max, variantId)
     expect(document).toMatchObject({ format: 'infra-data', version: '2.0', domains: { core: { version: DOMAIN_VERSIONS.core } } })
     expect(document.domains.core.collections.tracks.map(t => t.id)).toEqual(['t1'])
-    expect(ctx.db.prepare('SELECT schema_version FROM revision').pluck().all()).toEqual([7])
+    expect(ctx.db.prepare('SELECT schema_version FROM revision').pluck().all()).toEqual([8])
   })
 
   it('takes documents only: an oltjson-1.1 file is refused', async () => {

@@ -574,14 +574,14 @@ The hashes are shortened here; in a file each has its 64 hex digits.
 This specification is the target of the data model. As of 13 November 2026 the suite's implementation differs
 from it in these points, each to be brought in line by its own step (decision 0028 and those after it):
 
-- Two files instead of one: the infrastructure as infra-data 2.0 (`.railacross.json`, domains core 3.1,
-  civil 2.1, signalling 3.1, electrification 2.1), the operation as operations 1.0 (`.operations.json`) with one
+- Two files instead of one: the infrastructure as infra-data 2.0 (`.railacross.json`, domains core 4.0,
+  civil 3.0, signalling 4.0, electrification 2.1), the operation as operations 1.0 (`.operations.json`) with one
   domain `operations`, the vehicles carried in it; a file of before still carries the schemas.
 - A vehicle keeps its rolling stock as a blob and states its traction modes a second time (`tractionModes`).
-- The switch kind is `turnout`, its branch `B1` and its main track `B2`.
 - Km lines are polylines in WGS 84 with the kilometrage per point.
-- Element and track kinds are numbers (`elementType` 0/1/2, `trackType` 1/2, `side` 1/2); an element may state a
-  plane of its own; some references are named without `Id` (`operationalPoint`, `dep`).
+- The record the tools work on keeps the words of before — the kinds as numbers, `operationalPoint`, `dep`, a
+  `turnout` with `B1` its branch —; the door converts it into the document and back (decision 0029, phase 6
+  takes that out).
 - The layer electrification holds electrified stretches of track with their system, not yet masts, suspension
   points, section insulators and contact wires.
 - The points of a train name their place in one member (`place`) and keep the name it was chosen under.

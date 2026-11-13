@@ -216,7 +216,7 @@
    "epsg": 25832,
    "elements": [
     {
-     "elementType": 0,
+     "elementType": "straight",
      "startNode": [
       500000,
       5700000
@@ -252,7 +252,7 @@
    "epsg": 25832.5,
    "elements": [
     {
-     "elementType": 0,
+     "elementType": "straight",
      "startNode": [
       500000,
       5700000
@@ -280,7 +280,7 @@
    "epsg": 25832,
    "elements": [
     {
-     "elementType": 0,
+     "elementType": "straight",
      "startNode": [
       500000,
       5700000
@@ -307,14 +307,14 @@
   "ref": "core#/$defs/Switch",
   "value": {
    "id": "s",
-   "kind": "turnout",
+   "kind": "switch",
    "formVersion": 1,
    "ports": {
     "A": {
      "trackId": "t1",
      "endpoint": "END"
     },
-    "B1": null
+    "B2": null
    }
   },
   "valid": true,
@@ -324,7 +324,7 @@
   "ref": "core#/$defs/Switch",
   "value": {
    "id": "s",
-   "kind": "turnout",
+   "kind": "switch",
    "formVersion": 1,
    "ports": {
     "E": {
@@ -342,7 +342,7 @@
   "ref": "core#/$defs/Switch",
   "value": {
    "id": "s",
-   "kind": "turnout",
+   "kind": "switch",
    "formVersion": 1,
    "ports": {
     "A": {
@@ -967,14 +967,14 @@
    "length": 120,
    "gradient": -2.5,
    "speed": 60,
-   "clearSections": [
-    "ts-1"
-   ],
    "switches": [
     {
      "switchElementId": "we-1",
      "locked": true
     }
+   ],
+   "clearSectionIds": [
+    "ts-1"
    ]
   },
   "valid": true,
@@ -1214,11 +1214,11 @@
   "value": {
    "id": "ts",
    "kind": "axleCounting",
-   "boundedBy": []
+   "detectionPointIds": []
   },
   "valid": false,
   "paths": [
-   "/boundedBy"
+   "/detectionPointIds"
   ]
  }
 ]

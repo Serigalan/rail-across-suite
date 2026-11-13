@@ -392,7 +392,11 @@ fn geo_pieces(el: &Value, track: &str, epsg: i64, strip: i64) -> Result<Vec<GeoP
     let length = num_of(el, "length").unwrap_or(chord) * scale;
     let bearing = transform_grid_bearing(s.0, s.1, num_of(el, "bearing").unwrap_or(0.0), epsg, strip).map_err(fail)?;
     let gon = ((bearing / GON) % 400.0 + 400.0) % 400.0;
-    let kind = num_of(el, "elementType").unwrap_or(0.0) as i64;
+    let kind = match str_of(el, "elementType") {
+        Some("arc") => 1,
+        Some("transition") => 2,
+        _ => 0,
+    };
     let arc = num_of(el, "radius").filter(|r| *r != 0.0 && (r * scale).abs() < 100_000.0);
     let (form, radius_a, radius_b) = match kind {
         1 if arc.is_some() => ("Bogen", Some(radius(arc, scale)), None),
@@ -942,7 +946,7 @@ pub fn write_planpro(project: &Value, options: &Value) -> Result<Value, String> 
             let end = endpoint_index(str_of(p, "endpoint"))?;
             edges.contains_key(track).then(|| (track.to_string(), end))
         };
-        let kind = str_of(sw, "kind").unwrap_or("turnout");
+        let kind = str_of(sw, "kind").unwrap_or("switch");
         if kind == "link" {
             // Two track ends joined: one node, where they meet.
             let ends: Vec<_> = ["A", "B", "B1", "B2"]
@@ -959,11 +963,12 @@ pub fn write_planpro(project: &Value, options: &Value) -> Result<Value, String> 
             }
             continue;
         }
-        let (Some(a), Some(b1), Some(b2)) = (port("A"), port("B1"), port("B2")) else {
+        // A switch of core 4.0: B1 its main track, B2 its branch.
+        let (Some(a), Some(b1), Some(b2)) = (port("A"), port("B2"), port("B1")) else {
             plan.not_written("switches", id, "ports_not_on_tracks");
             continue;
         };
-        if kind != "turnout" {
+        if kind != "switch" {
             plan.not_written("switches", id, "kind_not_written");
             continue;
         }
@@ -1140,10 +1145,10 @@ pub fn write_planpro(project: &Value, options: &Value) -> Result<Value, String> 
             let body = [whole(edge), always("Bezeichnung", w("Bez_Gleis_Bezeichnung", Some(name)))].concat();
             plan.put("Gleis_Bezeichnung", &planpro_id(&format!("name:{}", edge.guid)), body, state);
         }
-        let kind = match (num_of(t, "trackType").map(|k| k as i64), str_of(t, "trackUse")) {
+        let kind = match (str_of(t, "trackType"), str_of(t, "trackUse")) {
             (_, Some("siding")) => Some("Nebengleis"),
-            (Some(1), _) => Some("Streckengleis"),
-            (Some(2), _) => Some("Hauptgleis"),
+            (Some("line"), _) => Some("Streckengleis"),
+            (Some("station"), _) => Some("Hauptgleis"),
             _ => None,
         };
         if let Some(k) = kind {
@@ -1185,9 +1190,9 @@ pub fn write_planpro(project: &Value, options: &Value) -> Result<Value, String> 
         };
         let refs_tracks = tracks
             .iter()
-            .filter(|t| str_of(t, "operationalPoint") == Some(id) && num_of(t, "trackType") == Some(2.0))
+            .filter(|t| str_of(t, "operationalPointId") == Some(id) && str_of(t, "trackType") == Some("station"))
             .count();
-        let refs_platforms = platforms.iter().filter(|x| str_of(x, "operationalPoint") == Some(id)).count();
+        let refs_platforms = platforms.iter().filter(|x| str_of(x, "operationalPointId") == Some(id)).count();
         let art = if refs_tracks > 0 {
             "Bf"
         } else if refs_platforms > 0 {
@@ -1232,7 +1237,7 @@ pub fn write_planpro(project: &Value, options: &Value) -> Result<Value, String> 
     // Platforms: an installation per operational point, an edge per platform.
     let mut installations: Vec<(Option<&str>, Vec<&Value>)> = Vec::new();
     for p in platforms.iter().copied() {
-        let op = str_of(p, "operationalPoint");
+        let op = str_of(p, "operationalPointId");
         match installations.iter_mut().find(|(o, _)| *o == op) {
             Some((_, l)) => l.push(p),
             None => installations.push((op, vec![p])),
@@ -1381,7 +1386,7 @@ pub fn write_planpro(project: &Value, options: &Value) -> Result<Value, String> 
             let p = sw.get("ports")?.get(k)?;
             Some((str_of(p, "trackId")?.to_string(), endpoint_index(str_of(p, "endpoint"))?))
         };
-        let trunk = if port("B2").and_then(|key| node.conn.get(&key).copied()) == Some("Links") {
+        let trunk = if port("B1").and_then(|key| node.conn.get(&key).copied()) == Some("Links") {
             "links"
         } else {
             "rechts"
@@ -1397,8 +1402,8 @@ pub fn write_planpro(project: &Value, options: &Value) -> Result<Value, String> 
                 "0".into()
             })
         };
-        let straight = speed(design(port("B2")).or(design(port("A"))), "Geschwindigkeit_Stammgleis");
-        let branch = speed(num_of(sw, "speed").or(design(port("B1"))), "Geschwindigkeit_Zweiggleis");
+        let straight = speed(design(port("B1")).or(design(port("A"))), "Geschwindigkeit_Stammgleis");
+        let branch = speed(num_of(sw, "speed").or(design(port("B2"))), "Geschwindigkeit_Zweiggleis");
         let (left, right) = if trunk == "links" { (straight, branch) } else { (branch, straight) };
         let drives = match operation {
             Some("electricRemote" | "electricLocal" | "springBack") => "1",
@@ -1610,7 +1615,7 @@ pub fn write_planpro(project: &Value, options: &Value) -> Result<Value, String> 
     let mut group_section: HashMap<usize, String> = HashMap::new();
     for s in col("trackSections") {
         let id = str_of(s, "id").unwrap_or("");
-        let bounded: Vec<String> = list(s, "boundedBy").iter().filter_map(Value::as_str).map(String::from).collect();
+        let bounded: Vec<String> = list(s, "detectionPointIds").iter().filter_map(Value::as_str).map(String::from).collect();
         match stretch.group_of(&bounded) {
             Some(g) => {
                 section_group.insert(id.to_string(), g);
@@ -1628,7 +1633,7 @@ pub fn write_planpro(project: &Value, options: &Value) -> Result<Value, String> 
         if !written_sections.contains(id) {
             continue;
         }
-        for p in list(s, "boundedBy").iter().filter_map(Value::as_str) {
+        for p in list(s, "detectionPointIds").iter().filter_map(Value::as_str) {
             bounds.entry(p).or_default().push(planpro_id(id));
         }
     }
@@ -1846,7 +1851,7 @@ pub fn write_planpro(project: &Value, options: &Value) -> Result<Value, String> 
                 [w("Laenge_Soll", Some(length)), w("Massgebende_Neigung", Some(gradient))].concat(),
             ),
             group("Fstr_DWeg_Spezifisch", specific.unwrap_or_default()),
-            section_refs(o, "clearSections", "ID_FMA_Anlage_Freimeldung"),
+            section_refs(o, "clearSectionIds", "ID_FMA_Anlage_Freimeldung"),
             w("ID_Fstr_Fahrweg", Some(run)),
             w("ID_PZB_Gefahrpunkt", Some(mark)),
         ]
@@ -1918,7 +1923,7 @@ pub fn write_planpro(project: &Value, options: &Value) -> Result<Value, String> 
                             "RR".into()
                         })),
                     ),
-                    section_refs(r, "clearSections", "ID_FMA_Anlage_Rangier_Frei"),
+                    section_refs(r, "clearSectionIds", "ID_FMA_Anlage_Rangier_Frei"),
                 ]
                 .concat(),
             ),
@@ -2012,8 +2017,8 @@ pub fn write_planpro(project: &Value, options: &Value) -> Result<Value, String> 
         };
         let pass = f.get("passOn").unwrap_or(&Value::Null);
         let passed = [
-            w("ID_Fla_Weitergabe_L", gref_in(pass, "left", &flank_ids)),
-            w("ID_Fla_Weitergabe_R", gref_in(pass, "right", &flank_ids)),
+            w("ID_Fla_Weitergabe_L", gref_in(pass, "leftId", &flank_ids)),
+            w("ID_Fla_Weitergabe_R", gref_in(pass, "rightId", &flank_ids)),
         ]
         .concat();
         let protection = if let Some(sig) = gref_in(p, "signalId", &written_signals) {
@@ -2055,7 +2060,7 @@ pub fn write_planpro(project: &Value, options: &Value) -> Result<Value, String> 
         ]
         .concat();
         plan.put("Fla_Schutz", &guid, body, state);
-        for (k, s) in list(f, "clearSections")
+        for (k, s) in list(f, "clearSectionIds")
             .iter()
             .filter_map(Value::as_str)
             .filter(|s| written_sections.contains(*s))

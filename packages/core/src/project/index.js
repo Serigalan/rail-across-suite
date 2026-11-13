@@ -13,7 +13,7 @@ import { viaRust } from '../native/index.js'
 
 export {
   dehydrateProjects, FORMAT_NAME, heldKeptProject, heldProjectDocument, holdProject, hydrateProjects,
-  layersWithoutDangling, parseProjectsPayload, parseTracksPayload, PayloadError, projectDocument, tracksDocument,
+  layersWithoutDangling, parseProjectsPayload, parseTracksPayload, PayloadError, projectDocument, recordDomains, tracksDocument,
 } from './persistenceUtils.js'
 export {
   crsChoices, dominantSystem, moveTracksToPlane, newTrackEpsg, ownLineCategory, planeGroup,

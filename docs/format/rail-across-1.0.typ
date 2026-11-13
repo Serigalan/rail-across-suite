@@ -475,11 +475,10 @@ The hashes are shortened here; in a file each has its 64 hex digits.
 
 This specification is the target of the data model. As of 13 November 2026 the suite's implementation differs from it in these points, each to be brought in line by its own step (decision 0028 and those after it):
 
-- Two files instead of one: the infrastructure as infra-data 2.0 (`.railacross.json`, domains core 3.1, civil 2.1, signalling 3.1, electrification 2.1), the operation as operations 1.0 (`.operations.json`) with one domain `operations`, the vehicles carried in it; a file of before still carries the schemas.
+- Two files instead of one: the infrastructure as infra-data 2.0 (`.railacross.json`, domains core 4.0, civil 3.0, signalling 4.0, electrification 2.1), the operation as operations 1.0 (`.operations.json`) with one domain `operations`, the vehicles carried in it; a file of before still carries the schemas.
 - A vehicle keeps its rolling stock as a blob and states its traction modes a second time (`tractionModes`).
-- The switch kind is `turnout`, its branch `B1` and its main track `B2`.
 - Km lines are polylines in WGS 84 with the kilometrage per point.
-- Element and track kinds are numbers (`elementType` 0/1/2, `trackType` 1/2, `side` 1/2); an element may state a plane of its own; some references are named without `Id` (`operationalPoint`, `dep`).
+- The record the tools work on keeps the words of before — the kinds as numbers, `operationalPoint`, `dep`, a `turnout` with `B1` its branch —; the door converts it into the document and back (decision 0029, phase 6 takes that out).
 - The layer electrification holds electrified stretches of track with their system, not yet masts, suspension points, section insulators and contact wires.
 - The points of a train name their place in one member (`place`) and keep the name it was chosen under.
 - Not every id is a UUID (km lines `km-6050`, objects of older files).
@@ -1295,7 +1294,7 @@ _No further properties are allowed._
   [`name`], [], [#link(<core-Label>)[`Label`]], [Name],
   [`areaNumber`], [], [#link(<core-Label>)[`Label`]], [Number of the interlocking area that precedes the full designation (PlanPro Kennzahl: 60 in 60A)],
   [`kind`], [yes], [one of the values under Meaning], [Kind of detection #linebreak() `axleCounting` axle counting #linebreak() `audioFrequencyCircuit` audio frequency track circuit #linebreak() `lowFrequencyCircuit` low frequency track circuit #linebreak() `ftgs` FTGS #linebreak() `other` other],
-  [`boundedBy`], [yes], [list of #link(<core-Ref>)[`Ref`] → `signalling.​detectionPoints`; at least 1 entry], [The detection points that bound it],
+  [`detectionPointIds`], [yes], [list of #link(<core-Ref>)[`Ref`] → `signalling.​detectionPoints`; at least 1 entry], [The detection points that bound it],
   [`auxiliaryClearing`], [], [boolean], [Auxiliary clearing (PlanPro FMA\_Hilffreimeldung)],
   [`lifespan`], [], [#link(<core-Lifespan>)[`Lifespan`]], [Lifespan: the days in service; without one, the object exists and stays],
 )
@@ -1351,7 +1350,7 @@ _No further properties are allowed._
   [`path`], [yes], [#link(<core-TrackPath>)[`TrackPath`]], [The run of tracks],
   [`autoSetting`], [], [boolean], [Set by automatic route setting],
   [`shortDistantSpacing`], [], [boolean], [Distant signal at a shortened braking distance],
-  [`clearSections`], [], [list of #link(<core-Ref>)[`Ref`] → `signalling.​trackSections`], [Track sections that must be clear],
+  [`clearSectionIds`], [], [list of #link(<core-Ref>)[`Ref`] → `signalling.​trackSections`], [Track sections that must be clear],
   [`overlaps`], [], [list of objects (properties below)], [Overlaps it may end in],
   [`overlaps[].​overlapId`], [yes], [#link(<core-Ref>)[`Ref`] → `signalling.​overlaps`], [The overlap],
   [`overlaps[].​preferred`], [], [boolean], [The preferred one],
@@ -1381,7 +1380,7 @@ _No further properties are allowed._
   [`gradient`], [], [number], [Governing gradient \[‰\], negative downhill],
   [`speed`], [], [number; ≥ 0], [Permitted speed \[km/h\]],
   [`releaseDelay`], [], [number; ≥ 0], [Release delay \[s\]],
-  [`clearSections`], [], [list of #link(<core-Ref>)[`Ref`] → `signalling.​trackSections`], [Track sections that must be clear],
+  [`clearSectionIds`], [], [list of #link(<core-Ref>)[`Ref`] → `signalling.​trackSections`], [Track sections that must be clear],
   [`switches`], [], [list of objects (properties below)], [Switches in the overlap],
   [`switches[].​switchElementId`], [yes], [#link(<core-Ref>)[`Ref`] → `signalling.​switchElements`], [The switch element],
   [`switches[].​locked`], [yes], [boolean], [Locked],
@@ -1407,9 +1406,9 @@ _No further properties are allowed._
   [`protection.​position`], [], [#link(<signalling-SwitchPosition>)[`SwitchPosition`]], [Its position; a derailer gives it applied and names none],
   [`protection.​waived`], [yes], [exactly `true`], [Flank protection waived],
   [`passOn`], [], [object (properties below)], [Flank protection the protecting element asks for in turn (PlanPro Fla\_Schutz\_Weitergabe)],
-  [`passOn.​left`], [], [#link(<core-Ref>)[`Ref`] → `signalling.​flankProtection`], [For its left position],
-  [`passOn.​right`], [], [#link(<core-Ref>)[`Ref`] → `signalling.​flankProtection`], [For its right position],
-  [`clearSections`], [], [list of #link(<core-Ref>)[`Ref`] → `signalling.​trackSections`], [Track sections that must be clear],
+  [`passOn.​leftId`], [], [#link(<core-Ref>)[`Ref`] → `signalling.​flankProtection`], [For its left position],
+  [`passOn.​rightId`], [], [#link(<core-Ref>)[`Ref`] → `signalling.​flankProtection`], [For its right position],
+  [`clearSectionIds`], [], [list of #link(<core-Ref>)[`Ref`] → `signalling.​trackSections`], [Track sections that must be clear],
   [`lifespan`], [], [#link(<core-Lifespan>)[`Lifespan`]], [Lifespan: the days in service; without one, the object exists and stays],
 )
 

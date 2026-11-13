@@ -96,7 +96,7 @@ fn a_boundary_marked_by_a_platform_no_stopping_place_is_at_gets_one() {
     let place = find(&doc["domains"]["core"]["collections"]["stoppingPlaces"], &made);
     let platform = find(&doc["domains"]["civil"]["collections"]["platforms"], "p1");
     assert_eq!(place["at"], platform["at"]);
-    assert_eq!(place["operationalPointId"], platform["operationalPoint"]);
+    assert_eq!(place["operationalPointId"], platform["operationalPointId"]);
     assert_eq!(platform["stoppingPlaceIds"], json!([made]));
 }
 
@@ -352,7 +352,7 @@ mod stage_days {
         doc["domains"]["civil"] = json!({ "version": "2.0", "schema": civil, "dependsOn": ["core"], "fields": {}, "collections": {} });
         assert_eq!(check_document(&doc).unwrap_err().code, "unsupported_version");
         let mut doc = to_document(&record(), false, true).unwrap();
-        doc["domains"]["core"]["version"] = json!("4.0");
+        doc["domains"]["core"]["version"] = json!("5.0");
         let e = check_document(&doc).unwrap_err();
         assert_eq!(e.code, "unsupported_version");
         assert!(e.details[0].contains("newer than this program reads"), "{:?}", e.details);

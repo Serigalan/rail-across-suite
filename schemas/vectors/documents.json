@@ -6,8 +6,8 @@
    "version": "2.0",
    "domains": {
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -23,14 +23,14 @@
        {
         "id": "t1",
         "name": "6050.001",
-        "trackType": 1,
+        "trackType": "line",
         "lineNumber": 6050,
-        "side": 1,
+        "side": "regular",
         "epsg": 25832,
         "heightEpsg": 7837,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500000,
            5700000
@@ -44,7 +44,7 @@
           "designSpeed": 80
          },
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500100,
            5700000
@@ -74,16 +74,16 @@
        {
         "id": "t2",
         "name": "1",
-        "trackType": 2,
+        "trackType": "station",
         "trackNumber": "1",
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500250,
            5700000
@@ -106,7 +106,7 @@
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500400,
            5700000
@@ -202,8 +202,8 @@
      }
     },
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
@@ -226,7 +226,7 @@
         "id": "p1",
         "frontOffset": 1.67,
         "height": 550,
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
        }
       ],
       "axisSurveys": [
@@ -322,21 +322,21 @@
   "manifest": {
    "domains": {
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
      "fields": "sha256:8d9ae941998100a45679076ed67feb55eaf5c06dc028c5ff9396bbe93de06ffb",
      "collections": {
       "axisSurveys": "sha256:d7c72a86fce12420e2a646aa0087a31572d6db6bedd895b31181daeacff533cc",
-      "platforms": "sha256:1ab2e26c887a12abb8b4fdfaf22b1e56ec9406f85b66f80155a57a0c1aa07910",
+      "platforms": "sha256:2853131c119b12a613cc8f09bdf8db392f6b4aeed2b2a8c34e80cd1b27bfd602",
       "referenceAxes": "sha256:04906ea395d28e3d03af2cc45d7057c92d832faaeb875b5fb0ba3c9c40047a3e"
      }
     },
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -345,12 +345,12 @@
       "stoppingPlaces": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
       "switches": "sha256:2b44461e52775cdabdc9c02e42115f9441b311b4240d09dca153d5683a4a4da5",
       "trackPaths": "sha256:b6c705b568655eb210b5794b4ce86a95e2f3da8b51f5c298057698fb02b5db8f",
-      "tracks": "sha256:76bd23dc65b28375453ed82a78e4465f8cd7c0cd235fa38074b272d80fc01b0f"
+      "tracks": "sha256:2bbca6583e8cc23457cf9c4cf29ca58032d7ef9938caabaf3df5cba9e2c3196d"
      }
     }
    }
   },
-  "hash": "sha256:ad543daf6ed95e079ed3648885e7be8eb61847a3845b4193f30e98552372d37c"
+  "hash": "sha256:e8d95463e901b55964993309dd2c3c4ad94a1a7cad3453d2a50b76f9654b4380"
  },
  {
   "name": "the sample, carrying its schemas",
@@ -359,8 +359,8 @@
    "version": "2.0",
    "domains": {
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -376,14 +376,14 @@
        {
         "id": "t1",
         "name": "6050.001",
-        "trackType": 1,
+        "trackType": "line",
         "lineNumber": 6050,
-        "side": 1,
+        "side": "regular",
         "epsg": 25832,
         "heightEpsg": 7837,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500000,
            5700000
@@ -397,7 +397,7 @@
           "designSpeed": 80
          },
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500100,
            5700000
@@ -427,16 +427,16 @@
        {
         "id": "t2",
         "name": "1",
-        "trackType": 2,
+        "trackType": "station",
         "trackNumber": "1",
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500250,
            5700000
@@ -459,7 +459,7 @@
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500400,
            5700000
@@ -555,8 +555,8 @@
      }
     },
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
@@ -579,7 +579,7 @@
         "id": "p1",
         "frontOffset": 1.67,
         "height": 550,
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
        }
       ],
       "axisSurveys": [
@@ -671,11 +671,11 @@
     }
    },
    "schemas": {
-    "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c": {
+    "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61": {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
      "$id": "core",
-     "title": "Rail-Data-Core, domain core 3.1",
-     "description": "The base every module depends on: the net (tracks, switches and connectors), what stands on it for every discipline (platforms, end marks) and the reference data (km lines, the operational point register). Written by the layout tool, carried by the core library. See docs/data-model.md. — 2.0 (decision 0025): the alignment and what every layer places things by; the platforms are civil's, the stopping places came in from signalling, the named runs of tracks from layout. — 3.0 (decision 0028): no construction stages; a lifespan states days. — 3.1 (decision 0028, phase C): every reference names an object of the collection its `x-target` names (the door's rule).",
+     "title": "Rail-Data-Core, domain core 4.0",
+     "description": "The base every module depends on: the net (tracks, switches and connectors), what stands on it for every discipline (platforms, end marks) and the reference data (km lines, the operational point register). Written by the layout tool, carried by the core library. See docs/data-model.md. — 2.0 (decision 0025): the alignment and what every layer places things by; the platforms are civil's, the stopping places came in from signalling, the named runs of tracks from layout. — 3.0 (decision 0028): no construction stages; a lifespan states days. — 3.1 (decision 0028, phase C): every reference names an object of the collection its `x-target` names (the door's rule). — 4.0 (decision 0029, phase 1): the kinds as words, every reference ending in `Id`, no plane of an element's own, a switch with B1 its main track and B2 its branch.",
      "type": "object",
      "required": [
       "fields",
@@ -991,7 +991,7 @@
        }
       },
       "Element": {
-       "description": "One design element of a track: straight (0), arc (1) or transition (2). No station, no polyline: stations are the running sum of the lengths, drawn geometry is derived.",
+       "description": "One design element of a track: straight, arc or transition. No station, no polyline: stations are the running sum of the lengths, drawn geometry is derived.",
        "type": "object",
        "required": [
         "elementType",
@@ -1003,14 +1003,10 @@
        "properties": {
         "elementType": {
          "enum": [
-          0,
-          1,
-          2
+          "straight",
+          "arc",
+          "transition"
          ]
-        },
-        "epsg": {
-         "$ref": "#/$defs/Epsg",
-         "description": "The plane the element is stated in, where it says so: its track's (a finding of the chain checks where not)."
         },
         "startNode": {
          "$ref": "#/$defs/Point"
@@ -1142,7 +1138,7 @@
         "id": {
          "$ref": "#/$defs/Id"
         },
-        "dep": {
+        "depId": {
          "$ref": "#/$defs/Ref",
          "x-target": "the id of another height point"
         },
@@ -1197,8 +1193,8 @@
         },
         "trackType": {
          "enum": [
-          1,
-          2
+          "line",
+          "station"
          ]
         },
         "lineNumber": {
@@ -1208,12 +1204,15 @@
          "$ref": "#/$defs/Text"
         },
         "side": {
-         "type": "integer"
+         "enum": [
+          "regular",
+          "opposite"
+         ]
         },
         "trackNumber": {
          "$ref": "#/$defs/Label"
         },
-        "operationalPoint": {
+        "operationalPointId": {
          "$ref": "#/$defs/Ref",
          "x-target": "core.operationalPoints"
         },
@@ -1275,7 +1274,7 @@
        }
       },
       "Switch": {
-       "description": "A turnout, crossing, slip, two-end connector (`link`) or construction stage connector (`stage_link`) at a node; its ports hold track ends. A link joins two track ends where the plane changes or where a rebuilt part of a track ties in; a stage link joins the track at A to the one at B1 while that exists and to the one at B2 from then on — never both: one track ends, the other begins (decision 0027).",
+       "description": "A switch, crossing, slip, two-end connector (`link`) or construction stage connector (`stage_link`) at a node; its ports hold track ends. A switch: A its toe, B1 the main track, B2 the branch. A link joins two track ends where the plane changes or where a rebuilt part of a track ties in; a stage link joins the track at A to the one at B1 while that exists and to the one at B2 from then on — never both: one track ends, the other begins (decision 0027).",
        "type": "object",
        "required": [
         "id",
@@ -1290,7 +1289,7 @@
         },
         "kind": {
          "enum": [
-          "turnout",
+          "switch",
           "crossing",
           "single_slip",
           "double_slip",
@@ -1546,11 +1545,11 @@
       }
      }
     },
-    "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879": {
+    "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d": {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
      "$id": "civil",
-     "title": "Rail-Data-Core, domain civil 2.1",
-     "description": "Civil engineering's layer, edited in the Civil-Tool (decision 0025): platforms, bridges, retaining walls and noise barriers, measured axes traced in point clouds, reference axes from surveys, the plan header and the project picture — what layout 1.0 held but its named runs of tracks, and the platforms from core 1.0. Depends on core; its references go into the core only. Bulk point arrays are blobs, named by their hash (S-R2). — 2.0 (decision 0028): on core 3.0, a lifespan states days. — 2.1 (decision 0028, phase C): every reference names an object of the collection its `x-target` names (the door's rule).",
+     "title": "Rail-Data-Core, domain civil 3.0",
+     "description": "Civil engineering's layer, edited in the Civil-Tool (decision 0025): platforms, bridges, retaining walls and noise barriers, measured axes traced in point clouds, reference axes from surveys, the plan header and the project picture — what layout 1.0 held but its named runs of tracks, and the platforms from core 1.0. Depends on core; its references go into the core only. Bulk point arrays are blobs, named by their hash (S-R2). — 2.0 (decision 0028): on core 3.0, a lifespan states days. — 2.1 (decision 0028, phase C): every reference names an object of the collection its `x-target` names (the door's rule). — 3.0 (decision 0029, phase 1): a platform names its operational point by `operationalPointId`.",
      "type": "object",
      "required": [
       "fields",
@@ -1777,7 +1776,7 @@
         "height": {
          "type": "number"
         },
-        "operationalPoint": {
+        "operationalPointId": {
          "$ref": "core#/$defs/Ref",
          "x-target": "core.operationalPoints"
         },
@@ -1933,21 +1932,21 @@
   "manifest": {
    "domains": {
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
      "fields": "sha256:8d9ae941998100a45679076ed67feb55eaf5c06dc028c5ff9396bbe93de06ffb",
      "collections": {
       "axisSurveys": "sha256:d7c72a86fce12420e2a646aa0087a31572d6db6bedd895b31181daeacff533cc",
-      "platforms": "sha256:1ab2e26c887a12abb8b4fdfaf22b1e56ec9406f85b66f80155a57a0c1aa07910",
+      "platforms": "sha256:2853131c119b12a613cc8f09bdf8db392f6b4aeed2b2a8c34e80cd1b27bfd602",
       "referenceAxes": "sha256:04906ea395d28e3d03af2cc45d7057c92d832faaeb875b5fb0ba3c9c40047a3e"
      }
     },
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -1956,12 +1955,12 @@
       "stoppingPlaces": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
       "switches": "sha256:2b44461e52775cdabdc9c02e42115f9441b311b4240d09dca153d5683a4a4da5",
       "trackPaths": "sha256:b6c705b568655eb210b5794b4ce86a95e2f3da8b51f5c298057698fb02b5db8f",
-      "tracks": "sha256:76bd23dc65b28375453ed82a78e4465f8cd7c0cd235fa38074b272d80fc01b0f"
+      "tracks": "sha256:2bbca6583e8cc23457cf9c4cf29ca58032d7ef9938caabaf3df5cba9e2c3196d"
      }
     }
    }
   },
-  "hash": "sha256:ad543daf6ed95e079ed3648885e7be8eb61847a3845b4193f30e98552372d37c"
+  "hash": "sha256:e8d95463e901b55964993309dd2c3c4ad94a1a7cad3453d2a50b76f9654b4380"
  },
  {
   "name": "another format",
@@ -1970,8 +1969,8 @@
    "version": "2.0",
    "domains": {
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -1987,14 +1986,14 @@
        {
         "id": "t1",
         "name": "6050.001",
-        "trackType": 1,
+        "trackType": "line",
         "lineNumber": 6050,
-        "side": 1,
+        "side": "regular",
         "epsg": 25832,
         "heightEpsg": 7837,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500000,
            5700000
@@ -2008,7 +2007,7 @@
           "designSpeed": 80
          },
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500100,
            5700000
@@ -2038,16 +2037,16 @@
        {
         "id": "t2",
         "name": "1",
-        "trackType": 2,
+        "trackType": "station",
         "trackNumber": "1",
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500250,
            5700000
@@ -2070,7 +2069,7 @@
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500400,
            5700000
@@ -2166,8 +2165,8 @@
      }
     },
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
@@ -2190,7 +2189,7 @@
         "id": "p1",
         "frontOffset": 1.67,
         "height": 550,
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
        }
       ],
       "axisSurveys": [
@@ -2292,8 +2291,8 @@
    "version": "3.0",
    "domains": {
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -2309,14 +2308,14 @@
        {
         "id": "t1",
         "name": "6050.001",
-        "trackType": 1,
+        "trackType": "line",
         "lineNumber": 6050,
-        "side": 1,
+        "side": "regular",
         "epsg": 25832,
         "heightEpsg": 7837,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500000,
            5700000
@@ -2330,7 +2329,7 @@
           "designSpeed": 80
          },
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500100,
            5700000
@@ -2360,16 +2359,16 @@
        {
         "id": "t2",
         "name": "1",
-        "trackType": 2,
+        "trackType": "station",
         "trackNumber": "1",
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500250,
            5700000
@@ -2392,7 +2391,7 @@
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500400,
            5700000
@@ -2488,8 +2487,8 @@
      }
     },
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
@@ -2512,7 +2511,7 @@
         "id": "p1",
         "frontOffset": 1.67,
         "height": 550,
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
        }
       ],
       "axisSurveys": [
@@ -2615,7 +2614,7 @@
    "domains": {
     "core": {
      "version": "2.5",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -2631,14 +2630,14 @@
        {
         "id": "t1",
         "name": "6050.001",
-        "trackType": 1,
+        "trackType": "line",
         "lineNumber": 6050,
-        "side": 1,
+        "side": "regular",
         "epsg": 25832,
         "heightEpsg": 7837,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500000,
            5700000
@@ -2652,7 +2651,7 @@
           "designSpeed": 80
          },
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500100,
            5700000
@@ -2682,16 +2681,16 @@
        {
         "id": "t2",
         "name": "1",
-        "trackType": 2,
+        "trackType": "station",
         "trackNumber": "1",
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500250,
            5700000
@@ -2714,7 +2713,7 @@
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500400,
            5700000
@@ -2810,8 +2809,8 @@
      }
     },
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
@@ -2834,7 +2833,7 @@
         "id": "p1",
         "frontOffset": 1.67,
         "height": 550,
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
        }
       ],
       "axisSurveys": [
@@ -2936,8 +2935,8 @@
    "version": "2.0",
    "domains": {
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -2953,14 +2952,14 @@
        {
         "id": "t1",
         "name": "6050.001",
-        "trackType": 1,
+        "trackType": "line",
         "lineNumber": 6050,
-        "side": 1,
+        "side": "regular",
         "epsg": 25832,
         "heightEpsg": 7837,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500000,
            5700000
@@ -2974,7 +2973,7 @@
           "designSpeed": 80
          },
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500100,
            5700000
@@ -3004,16 +3003,16 @@
        {
         "id": "t2",
         "name": "1",
-        "trackType": 2,
+        "trackType": "station",
         "trackNumber": "1",
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500250,
            5700000
@@ -3036,7 +3035,7 @@
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500400,
            5700000
@@ -3132,8 +3131,8 @@
      }
     },
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
@@ -3156,7 +3155,7 @@
         "id": "p1",
         "frontOffset": 1.67,
         "height": 550,
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
        }
       ],
       "axisSurveys": [
@@ -3195,7 +3194,7 @@
     },
     "catenary": {
      "version": "0.3",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
@@ -3218,7 +3217,7 @@
         "id": "p1",
         "frontOffset": 1.67,
         "height": 550,
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
        }
       ],
       "axisSurveys": [
@@ -3320,8 +3319,8 @@
    "version": "2.0",
    "domains": {
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -3337,14 +3336,14 @@
        {
         "id": "t1",
         "name": "6050.001",
-        "trackType": 1,
+        "trackType": "line",
         "lineNumber": 6050,
-        "side": 1,
+        "side": "regular",
         "epsg": 25832,
         "heightEpsg": 7837,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500000,
            5700000
@@ -3358,7 +3357,7 @@
           "designSpeed": 80
          },
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500100,
            5700000
@@ -3388,16 +3387,16 @@
        {
         "id": "t2",
         "name": "1",
-        "trackType": 2,
+        "trackType": "station",
         "trackNumber": "1",
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500250,
            5700000
@@ -3420,7 +3419,7 @@
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500400,
            5700000
@@ -3516,7 +3515,7 @@
      }
     },
     "civil": {
-     "version": "2.1",
+     "version": "3.0",
      "schema": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
      "dependsOn": [
       "core"
@@ -3540,7 +3539,7 @@
         "id": "p1",
         "frontOffset": 1.67,
         "height": 550,
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
        }
       ],
       "axisSurveys": [
@@ -3642,8 +3641,8 @@
    "version": "2.0",
    "domains": {
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -3659,14 +3658,14 @@
        {
         "id": "t1",
         "name": "6050.001",
-        "trackType": 1,
+        "trackType": "line",
         "lineNumber": 6050,
-        "side": 1,
+        "side": "regular",
         "epsg": 25832,
         "heightEpsg": 7837,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500000,
            5700000
@@ -3680,7 +3679,7 @@
           "designSpeed": 80
          },
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500100,
            5700000
@@ -3710,16 +3709,16 @@
        {
         "id": "t2",
         "name": "1",
-        "trackType": 2,
+        "trackType": "station",
         "trackNumber": "1",
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500250,
            5700000
@@ -3742,7 +3741,7 @@
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500400,
            5700000
@@ -3838,8 +3837,8 @@
      }
     },
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
@@ -3862,7 +3861,7 @@
         "id": "p1",
         "frontOffset": 1.67,
         "height": 550,
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
        }
       ],
       "axisSurveys": [
@@ -3954,14 +3953,14 @@
     }
    },
    "schemas": {
-    "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c": {
+    "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61": {
      "$id": "core"
     },
-    "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879": {
+    "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d": {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
      "$id": "civil",
-     "title": "Rail-Data-Core, domain civil 2.1",
-     "description": "Civil engineering's layer, edited in the Civil-Tool (decision 0025): platforms, bridges, retaining walls and noise barriers, measured axes traced in point clouds, reference axes from surveys, the plan header and the project picture — what layout 1.0 held but its named runs of tracks, and the platforms from core 1.0. Depends on core; its references go into the core only. Bulk point arrays are blobs, named by their hash (S-R2). — 2.0 (decision 0028): on core 3.0, a lifespan states days. — 2.1 (decision 0028, phase C): every reference names an object of the collection its `x-target` names (the door's rule).",
+     "title": "Rail-Data-Core, domain civil 3.0",
+     "description": "Civil engineering's layer, edited in the Civil-Tool (decision 0025): platforms, bridges, retaining walls and noise barriers, measured axes traced in point clouds, reference axes from surveys, the plan header and the project picture — what layout 1.0 held but its named runs of tracks, and the platforms from core 1.0. Depends on core; its references go into the core only. Bulk point arrays are blobs, named by their hash (S-R2). — 2.0 (decision 0028): on core 3.0, a lifespan states days. — 2.1 (decision 0028, phase C): every reference names an object of the collection its `x-target` names (the door's rule). — 3.0 (decision 0029, phase 1): a platform names its operational point by `operationalPointId`.",
      "type": "object",
      "required": [
       "fields",
@@ -4188,7 +4187,7 @@
         "height": {
          "type": "number"
         },
-        "operationalPoint": {
+        "operationalPointId": {
          "$ref": "core#/$defs/Ref",
          "x-target": "core.operationalPoints"
         },
@@ -4350,8 +4349,8 @@
    "version": "2.0",
    "domains": {
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -4367,14 +4366,14 @@
        {
         "id": "t1",
         "name": "6050.001",
-        "trackType": 1,
+        "trackType": "line",
         "lineNumber": 6050,
-        "side": 1,
+        "side": "regular",
         "epsg": 25832,
         "heightEpsg": 7837,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500000,
            5700000
@@ -4388,7 +4387,7 @@
           "designSpeed": 80
          },
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500100,
            5700000
@@ -4418,16 +4417,16 @@
        {
         "id": "t2",
         "name": "1",
-        "trackType": 2,
+        "trackType": "station",
         "trackNumber": "1",
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500250,
            5700000
@@ -4450,7 +4449,7 @@
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500400,
            5700000
@@ -4546,8 +4545,8 @@
      }
     },
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
@@ -4570,7 +4569,7 @@
         "id": "p1",
         "frontOffset": 1.67,
         "height": 550,
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
        }
       ],
       "axisSurveys": [
@@ -4642,8 +4641,8 @@
    "version": "2.0",
    "domains": {
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -4659,14 +4658,14 @@
        {
         "id": "t1",
         "name": "6050.001",
-        "trackType": 1,
+        "trackType": "line",
         "lineNumber": 6050,
-        "side": 1,
+        "side": "regular",
         "epsg": 25832,
         "heightEpsg": 7837,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500000,
            5700000
@@ -4680,7 +4679,7 @@
           "designSpeed": 80
          },
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500100,
            5700000
@@ -4710,16 +4709,16 @@
        {
         "id": "t2",
         "name": "1",
-        "trackType": 2,
+        "trackType": "station",
         "trackNumber": "1",
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500250,
            5700000
@@ -4742,7 +4741,7 @@
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500400,
            5700000
@@ -4838,8 +4837,8 @@
      }
     },
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "fields": {
       "planHeader": {
        "subtitle": "Lageplan"
@@ -4859,7 +4858,7 @@
         "id": "p1",
         "frontOffset": 1.67,
         "height": 550,
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
        }
       ],
       "axisSurveys": [
@@ -4961,8 +4960,8 @@
    "version": "2.0",
    "domains": {
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -4978,14 +4977,14 @@
        {
         "id": "t1",
         "name": "6050.001",
-        "trackType": 1,
+        "trackType": "line",
         "lineNumber": 6050,
-        "side": 1,
+        "side": "regular",
         "epsg": 25832,
         "heightEpsg": 7837,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500000,
            5700000
@@ -4999,7 +4998,7 @@
           "designSpeed": 80
          },
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500100,
            5700000
@@ -5029,16 +5028,16 @@
        {
         "id": "t2",
         "name": "1",
-        "trackType": 2,
+        "trackType": "station",
         "trackNumber": "1",
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500250,
            5700000
@@ -5061,7 +5060,7 @@
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500400,
            5700000
@@ -5078,14 +5077,14 @@
        {
         "id": "t1",
         "name": "6050.001",
-        "trackType": 1,
+        "trackType": "line",
         "lineNumber": 6050,
-        "side": 1,
+        "side": "regular",
         "epsg": 25832,
         "heightEpsg": 7837,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500000,
            5700000
@@ -5099,7 +5098,7 @@
           "designSpeed": 80
          },
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500100,
            5700000
@@ -5208,8 +5207,8 @@
      }
     },
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
@@ -5232,7 +5231,7 @@
         "id": "p1",
         "frontOffset": 1.67,
         "height": 550,
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
        }
       ],
       "axisSurveys": [
@@ -5334,8 +5333,8 @@
    "version": "2.0",
    "domains": {
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -5351,14 +5350,14 @@
        {
         "id": "t1",
         "name": "6050.001",
-        "trackType": 1,
+        "trackType": "line",
         "lineNumber": 6050,
-        "side": 1,
+        "side": "regular",
         "epsg": 25832,
         "heightEpsg": 7837,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500000,
            5700000
@@ -5373,7 +5372,7 @@
           "renderCoords": []
          },
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500100,
            5700000
@@ -5403,16 +5402,16 @@
        {
         "id": "t2",
         "name": "1",
-        "trackType": 2,
+        "trackType": "station",
         "trackNumber": "1",
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500250,
            5700000
@@ -5435,7 +5434,7 @@
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500400,
            5700000
@@ -5531,8 +5530,8 @@
      }
     },
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
@@ -5555,7 +5554,7 @@
         "id": "p1",
         "frontOffset": 1.67,
         "height": 550,
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
        }
       ],
       "axisSurveys": [
@@ -5657,8 +5656,8 @@
    "version": "2.0",
    "domains": {
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -5682,14 +5681,14 @@
        {
         "id": "t1",
         "name": "6050.001",
-        "trackType": 1,
+        "trackType": "line",
         "lineNumber": 6050,
-        "side": 1,
+        "side": "regular",
         "epsg": 25832,
         "heightEpsg": 7837,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500000,
            5700000
@@ -5703,7 +5702,7 @@
           "designSpeed": 80
          },
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500100,
            5700000
@@ -5733,16 +5732,16 @@
        {
         "id": "t2",
         "name": "1",
-        "trackType": 2,
+        "trackType": "station",
         "trackNumber": "1",
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500250,
            5700000
@@ -5765,7 +5764,7 @@
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500400,
            5700000
@@ -5861,8 +5860,8 @@
      }
     },
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
@@ -5885,7 +5884,7 @@
         "id": "p1",
         "frontOffset": 1.67,
         "height": 550,
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
        }
       ],
       "axisSurveys": [
@@ -5987,8 +5986,8 @@
    "version": "2.0",
    "domains": {
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -6004,14 +6003,14 @@
        {
         "id": "t1",
         "name": "6050.001",
-        "trackType": 1,
+        "trackType": "line",
         "lineNumber": 6050,
-        "side": 1,
+        "side": "regular",
         "epsg": 25832,
         "heightEpsg": 7837,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500000,
            5700000
@@ -6025,7 +6024,7 @@
           "designSpeed": 80
          },
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500100,
            5700000
@@ -6055,16 +6054,16 @@
        {
         "id": "t2",
         "name": "1",
-        "trackType": 2,
+        "trackType": "station",
         "trackNumber": "1",
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "s1"
         },
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500250,
            5700000
@@ -6087,7 +6086,7 @@
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500400,
            5700000
@@ -6183,8 +6182,8 @@
      }
     },
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
@@ -6207,7 +6206,7 @@
         "id": "p1",
         "frontOffset": 1.67,
         "height": 550,
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
        }
       ],
       "axisSurveys": [
@@ -6309,8 +6308,8 @@
    "version": "2.0",
    "domains": {
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -6326,14 +6325,14 @@
        {
         "id": "t1",
         "name": "6050.001",
-        "trackType": 1,
+        "trackType": "line",
         "lineNumber": 6050,
-        "side": 1,
+        "side": "regular",
         "epsg": 25832,
         "heightEpsg": 7837,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500000,
            5700000
@@ -6347,7 +6346,7 @@
           "designSpeed": 80
          },
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500100,
            5700000
@@ -6377,9 +6376,9 @@
        {
         "id": "t2",
         "name": "1",
-        "trackType": 2,
+        "trackType": "station",
         "trackNumber": "1",
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01",
          "to": "2027-04-30"
@@ -6387,7 +6386,7 @@
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500250,
            5700000
@@ -6410,7 +6409,7 @@
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500400,
            5700000
@@ -6506,8 +6505,8 @@
      }
     },
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
@@ -6530,7 +6529,7 @@
         "id": "p1",
         "frontOffset": 1.67,
         "height": 550,
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
        }
       ],
       "axisSurveys": [
@@ -6632,8 +6631,8 @@
    "version": "2.0",
    "domains": {
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -6649,14 +6648,14 @@
        {
         "id": "t1",
         "name": "6050.001",
-        "trackType": 1,
+        "trackType": "line",
         "lineNumber": 6050,
-        "side": 1,
+        "side": "regular",
         "epsg": 25832,
         "heightEpsg": 7837,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500000,
            5700000
@@ -6670,7 +6669,7 @@
           "designSpeed": 80
          },
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500100,
            5700000
@@ -6700,16 +6699,16 @@
        {
         "id": "t2",
         "name": "1",
-        "trackType": 2,
+        "trackType": "station",
         "trackNumber": "1",
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-02-30"
         },
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500250,
            5700000
@@ -6732,7 +6731,7 @@
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500400,
            5700000
@@ -6828,8 +6827,8 @@
      }
     },
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
@@ -6852,7 +6851,7 @@
         "id": "p1",
         "frontOffset": 1.67,
         "height": 550,
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
        }
       ],
       "axisSurveys": [
@@ -6954,8 +6953,8 @@
    "version": "2.0",
    "domains": {
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -6971,14 +6970,14 @@
        {
         "id": "t1",
         "name": "6050.001",
-        "trackType": 1,
+        "trackType": "line",
         "lineNumber": 6050,
-        "side": 1,
+        "side": "regular",
         "epsg": 25832,
         "heightEpsg": 7837,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500000,
            5700000
@@ -6992,7 +6991,7 @@
           "designSpeed": 80
          },
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500100,
            5700000
@@ -7022,9 +7021,9 @@
        {
         "id": "t2",
         "name": "1",
-        "trackType": 2,
+        "trackType": "station",
         "trackNumber": "1",
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "open",
          "to": "open"
@@ -7032,7 +7031,7 @@
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500250,
            5700000
@@ -7055,7 +7054,7 @@
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500400,
            5700000
@@ -7151,8 +7150,8 @@
      }
     },
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
@@ -7175,7 +7174,7 @@
         "id": "p1",
         "frontOffset": 1.67,
         "height": 550,
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
        }
       ],
       "axisSurveys": [
@@ -7271,21 +7270,21 @@
   "manifest": {
    "domains": {
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
      "fields": "sha256:8d9ae941998100a45679076ed67feb55eaf5c06dc028c5ff9396bbe93de06ffb",
      "collections": {
       "axisSurveys": "sha256:d7c72a86fce12420e2a646aa0087a31572d6db6bedd895b31181daeacff533cc",
-      "platforms": "sha256:1ab2e26c887a12abb8b4fdfaf22b1e56ec9406f85b66f80155a57a0c1aa07910",
+      "platforms": "sha256:2853131c119b12a613cc8f09bdf8db392f6b4aeed2b2a8c34e80cd1b27bfd602",
       "referenceAxes": "sha256:04906ea395d28e3d03af2cc45d7057c92d832faaeb875b5fb0ba3c9c40047a3e"
      }
     },
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -7294,12 +7293,12 @@
       "stoppingPlaces": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
       "switches": "sha256:2b44461e52775cdabdc9c02e42115f9441b311b4240d09dca153d5683a4a4da5",
       "trackPaths": "sha256:b6c705b568655eb210b5794b4ce86a95e2f3da8b51f5c298057698fb02b5db8f",
-      "tracks": "sha256:389b5b458cb078b031346e2619933d1c29b97217b8b188b3fd7bb9215a6418e4"
+      "tracks": "sha256:61fe5b89833a10fcd22ef53ff1cd6fe2cae2702a31a4e0348eb058ec0780d0cb"
      }
     }
    }
   },
-  "hash": "sha256:87182dc9a8fe99315a79c88f953114c43d020b7e27aae131bddcab5f67f1f19d"
+  "hash": "sha256:a82efccf937046cb335e81bab45e78661bb2b879ca1be532987b88d2b5d7de01"
  },
  {
   "name": "a domain of a later version",
@@ -7309,7 +7308,7 @@
    "domains": {
     "core": {
      "version": "4.0",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -7325,14 +7324,14 @@
        {
         "id": "t1",
         "name": "6050.001",
-        "trackType": 1,
+        "trackType": "line",
         "lineNumber": 6050,
-        "side": 1,
+        "side": "regular",
         "epsg": 25832,
         "heightEpsg": 7837,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500000,
            5700000
@@ -7346,7 +7345,7 @@
           "designSpeed": 80
          },
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500100,
            5700000
@@ -7376,16 +7375,16 @@
        {
         "id": "t2",
         "name": "1",
-        "trackType": 2,
+        "trackType": "station",
         "trackNumber": "1",
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500250,
            5700000
@@ -7408,7 +7407,7 @@
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500400,
            5700000
@@ -7504,8 +7503,8 @@
      }
     },
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
@@ -7528,7 +7527,7 @@
         "id": "p1",
         "frontOffset": 1.67,
         "height": 550,
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
        }
       ],
       "axisSurveys": [
@@ -7620,8 +7619,39 @@
     }
    }
   },
-  "valid": false,
-  "code": "unsupported_version"
+  "valid": true,
+  "manifest": {
+   "domains": {
+    "civil": {
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
+     "dependsOn": [
+      "core"
+     ],
+     "fields": "sha256:8d9ae941998100a45679076ed67feb55eaf5c06dc028c5ff9396bbe93de06ffb",
+     "collections": {
+      "axisSurveys": "sha256:d7c72a86fce12420e2a646aa0087a31572d6db6bedd895b31181daeacff533cc",
+      "platforms": "sha256:2853131c119b12a613cc8f09bdf8db392f6b4aeed2b2a8c34e80cd1b27bfd602",
+      "referenceAxes": "sha256:04906ea395d28e3d03af2cc45d7057c92d832faaeb875b5fb0ba3c9c40047a3e"
+     }
+    },
+    "core": {
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
+     "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
+     "collections": {
+      "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
+      "kmLines": "sha256:7a0eb47d89ffa24b1917d39c8eab8707f820c9b6bceb81edf5dddcf52ead6457",
+      "operationalPoints": "sha256:6a6eb5b21cdb3c39939da851281a7a8b9c968d36cea93d44d383d292b33beb34",
+      "stoppingPlaces": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "switches": "sha256:2b44461e52775cdabdc9c02e42115f9441b311b4240d09dca153d5683a4a4da5",
+      "trackPaths": "sha256:b6c705b568655eb210b5794b4ce86a95e2f3da8b51f5c298057698fb02b5db8f",
+      "tracks": "sha256:2bbca6583e8cc23457cf9c4cf29ca58032d7ef9938caabaf3df5cba9e2c3196d"
+     }
+    }
+   }
+  },
+  "hash": "sha256:e8d95463e901b55964993309dd2c3c4ad94a1a7cad3453d2a50b76f9654b4380"
  },
  {
   "name": "a platform with its stations loose",
@@ -7630,8 +7660,8 @@
    "version": "2.0",
    "domains": {
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -7647,14 +7677,14 @@
        {
         "id": "t1",
         "name": "6050.001",
-        "trackType": 1,
+        "trackType": "line",
         "lineNumber": 6050,
-        "side": 1,
+        "side": "regular",
         "epsg": 25832,
         "heightEpsg": 7837,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500000,
            5700000
@@ -7668,7 +7698,7 @@
           "designSpeed": 80
          },
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500100,
            5700000
@@ -7698,16 +7728,16 @@
        {
         "id": "t2",
         "name": "1",
-        "trackType": 2,
+        "trackType": "station",
         "trackNumber": "1",
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500250,
            5700000
@@ -7730,7 +7760,7 @@
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500400,
            5700000
@@ -7826,8 +7856,8 @@
      }
     },
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
@@ -7850,7 +7880,7 @@
         "id": "p1",
         "frontOffset": 1.67,
         "height": 550,
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "startStation": 10
        }
       ],
@@ -7953,8 +7983,8 @@
    "version": "2.0",
    "domains": {
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -7970,14 +8000,14 @@
        {
         "id": "t1",
         "name": "6050.001",
-        "trackType": 1,
+        "trackType": "line",
         "lineNumber": 6050,
-        "side": 1,
+        "side": "regular",
         "epsg": 25832,
         "heightEpsg": 7837,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500000,
            5700000
@@ -7991,7 +8021,7 @@
           "designSpeed": 80
          },
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500100,
            5700000
@@ -8021,16 +8051,16 @@
        {
         "id": "t2",
         "name": "1",
-        "trackType": 2,
+        "trackType": "station",
         "trackNumber": "1",
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500250,
            5700000
@@ -8053,7 +8083,7 @@
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500400,
            5700000
@@ -8158,14 +8188,14 @@
         "id": "p1",
         "frontOffset": 1.67,
         "height": 550,
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
        }
       ]
      }
     },
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
@@ -8188,7 +8218,7 @@
         "id": "p1",
         "frontOffset": 1.67,
         "height": 550,
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
        }
       ],
       "axisSurveys": [
@@ -8290,8 +8320,8 @@
    "version": "2.0",
    "domains": {
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -8307,14 +8337,14 @@
        {
         "id": "t1",
         "name": "6050.001",
-        "trackType": 1,
+        "trackType": "line",
         "lineNumber": 6050,
-        "side": 1,
+        "side": "regular",
         "epsg": 25832,
         "heightEpsg": 7837,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500000,
            5700000
@@ -8328,7 +8358,7 @@
           "designSpeed": 80
          },
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500100,
            5700000
@@ -8358,16 +8388,16 @@
        {
         "id": "t2",
         "name": "1",
-        "trackType": 2,
+        "trackType": "station",
         "trackNumber": "1",
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500250,
            5700000
@@ -8390,7 +8420,7 @@
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500400,
            5700000
@@ -8459,8 +8489,8 @@
      }
     },
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
@@ -8483,7 +8513,7 @@
         "id": "p1",
         "frontOffset": 1.67,
         "height": 550,
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
        }
       ],
       "axisSurveys": [
@@ -8585,8 +8615,8 @@
    "version": "2.0",
    "domains": {
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
@@ -8609,7 +8639,7 @@
         "id": "p1",
         "frontOffset": 1.67,
         "height": 550,
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
        }
       ],
       "axisSurveys": [
@@ -8711,8 +8741,8 @@
    "version": "2.0",
    "domains": {
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -8728,14 +8758,14 @@
        {
         "id": "t1",
         "name": "6050.001",
-        "trackType": 1,
+        "trackType": "line",
         "lineNumber": 6050,
-        "side": 1,
+        "side": "regular",
         "epsg": 25832,
         "heightEpsg": 7837,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500000,
            5700000
@@ -8749,7 +8779,7 @@
           "designSpeed": 80
          },
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500100,
            5700000
@@ -8779,16 +8809,16 @@
        {
         "id": "t2",
         "name": "1",
-        "trackType": 2,
+        "trackType": "station",
         "trackNumber": "1",
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500250,
            5700000
@@ -8811,7 +8841,7 @@
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500400,
            5700000
@@ -8965,8 +8995,8 @@
   "manifest": {
    "domains": {
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -8975,12 +9005,12 @@
       "stoppingPlaces": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
       "switches": "sha256:2b44461e52775cdabdc9c02e42115f9441b311b4240d09dca153d5683a4a4da5",
       "trackPaths": "sha256:b6c705b568655eb210b5794b4ce86a95e2f3da8b51f5c298057698fb02b5db8f",
-      "tracks": "sha256:76bd23dc65b28375453ed82a78e4465f8cd7c0cd235fa38074b272d80fc01b0f"
+      "tracks": "sha256:2bbca6583e8cc23457cf9c4cf29ca58032d7ef9938caabaf3df5cba9e2c3196d"
      }
     }
    }
   },
-  "hash": "sha256:cbdc5740797dc2f8f1ec66f9915abd4f383caca0fc8df11af5dceb40ab6ee0a1"
+  "hash": "sha256:d772b60d64ec90014c98bf1a8d095f4cef8618ae4d3d250c6a4676c8d617abbc"
  },
  {
   "name": "the sample with its signalling",
@@ -8989,8 +9019,8 @@
    "version": "2.0",
    "domains": {
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -9006,14 +9036,14 @@
        {
         "id": "t1",
         "name": "6050.001",
-        "trackType": 1,
+        "trackType": "line",
         "lineNumber": 6050,
-        "side": 1,
+        "side": "regular",
         "epsg": 25832,
         "heightEpsg": 7837,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500000,
            5700000
@@ -9027,7 +9057,7 @@
           "designSpeed": 80
          },
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500100,
            5700000
@@ -9057,16 +9087,16 @@
        {
         "id": "t2",
         "name": "1",
-        "trackType": 2,
+        "trackType": "station",
         "trackNumber": "1",
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500250,
            5700000
@@ -9089,7 +9119,7 @@
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500400,
            5700000
@@ -9209,8 +9239,8 @@
      }
     },
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
@@ -9233,7 +9263,7 @@
         "id": "p1",
         "frontOffset": 1.67,
         "height": 550,
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "stoppingPlaceIds": [
          "hp-2"
         ]
@@ -9274,8 +9304,8 @@
      }
     },
     "signalling": {
-     "version": "3.1",
-     "schema": "sha256:2b365df5f72c616a99c70729f50afd5fdd243f14cff4798f78a70f0855a1e14d",
+     "version": "4.0",
+     "schema": "sha256:3f2028a819de91859b4043792875c785a8b1a0efee098b5d8153751b0477f9b5",
      "dependsOn": [
       "core"
      ],
@@ -9494,7 +9524,7 @@
         "id": "ts-1",
         "name": "1",
         "kind": "axleCounting",
-        "boundedBy": [
+        "detectionPointIds": [
          "dp-1",
          "dp-2"
         ]
@@ -9580,7 +9610,7 @@
         "length": 120,
         "gradient": -2.5,
         "speed": 60,
-        "clearSections": [
+        "clearSectionIds": [
          "ts-1"
         ],
         "switches": [
@@ -9806,21 +9836,21 @@
   "manifest": {
    "domains": {
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
      "fields": "sha256:8d9ae941998100a45679076ed67feb55eaf5c06dc028c5ff9396bbe93de06ffb",
      "collections": {
       "axisSurveys": "sha256:d7c72a86fce12420e2a646aa0087a31572d6db6bedd895b31181daeacff533cc",
-      "platforms": "sha256:7b22ad9f70c7d17a4b780e774f4995e63db0342ef438948dc3bbf7ae99ad7d3e",
+      "platforms": "sha256:2f905ed4acae130e7986cc288e017918399c195e47509ec4a3d00fe34545e6cc",
       "referenceAxes": "sha256:04906ea395d28e3d03af2cc45d7057c92d832faaeb875b5fb0ba3c9c40047a3e"
      }
     },
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -9829,12 +9859,12 @@
       "stoppingPlaces": "sha256:f2127e8a5f5a3a1486ce2322b77f2eba3b9f82d39bf9e50e09494308ab9de7b4",
       "switches": "sha256:2b44461e52775cdabdc9c02e42115f9441b311b4240d09dca153d5683a4a4da5",
       "trackPaths": "sha256:b6c705b568655eb210b5794b4ce86a95e2f3da8b51f5c298057698fb02b5db8f",
-      "tracks": "sha256:76bd23dc65b28375453ed82a78e4465f8cd7c0cd235fa38074b272d80fc01b0f"
+      "tracks": "sha256:2bbca6583e8cc23457cf9c4cf29ca58032d7ef9938caabaf3df5cba9e2c3196d"
      }
     },
     "signalling": {
-     "version": "3.1",
-     "schema": "sha256:2b365df5f72c616a99c70729f50afd5fdd243f14cff4798f78a70f0855a1e14d",
+     "version": "4.0",
+     "schema": "sha256:3f2028a819de91859b4043792875c785a8b1a0efee098b5d8153751b0477f9b5",
      "dependsOn": [
       "core"
      ],
@@ -9844,17 +9874,17 @@
       "detectionPoints": "sha256:c98deaa1cfec2a74eded2bfb06749831953268a0e3d4a2d9f5fcf21103d899e7",
       "flankProtection": "sha256:0f5fddb634a2d9ab8ee97b8c819917e50051b58e8013a3067258bd2b8bd43567",
       "itineraries": "sha256:48fa57878f19759e28d9bc188310030a7bd27e244d1e2f4726e27ce637de77ce",
-      "overlaps": "sha256:3dc90110fb0c0f878b841fd5d497829f036e5627d4099479d1726c8905b62e3e",
+      "overlaps": "sha256:9bed917cd1a86b07f346a1335860ffb679b2f7b3a5f9608284aac771517fef9a",
       "routes": "sha256:8460ec8eb8679ccbafe0fd56878bbaf049e8c8562d45d2c675607f5a48784be2",
       "signals": "sha256:91d0f3b99a6980d031f1f09b22fa300f29a26fb9166a93cfa9f7a624f7b4e176",
       "stationBoundaries": "sha256:2bf80f1521fd6eac8c1d9db2dcd3fa38756e1c88e5d9bec4b89afc33f4004381",
       "switchElements": "sha256:fe471ee1c255021503a7e8f6862566e6d5aeb76a76cad3782b7ce37c87adb591",
-      "trackSections": "sha256:dd2ee2e1d729211c5aaac5bf7c209b78c81c887bff24f6413ae439d92f4b8496"
+      "trackSections": "sha256:78608ac79ca68d66f19dd5cd8112e477b957b6e7d98f8617420e4d827f63f13f"
      }
     }
    }
   },
-  "hash": "sha256:36b0468acf143ae82f5fdb1214e71366635761ba78134921c26470afc5cab856"
+  "hash": "sha256:658e622e582ac276c1167ce810ceb80a5afb1dbd0043cf554b9e308234fbb438"
  },
  {
   "name": "the sample with its signalling, carrying its schemas",
@@ -9863,8 +9893,8 @@
    "version": "2.0",
    "domains": {
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -9880,14 +9910,14 @@
        {
         "id": "t1",
         "name": "6050.001",
-        "trackType": 1,
+        "trackType": "line",
         "lineNumber": 6050,
-        "side": 1,
+        "side": "regular",
         "epsg": 25832,
         "heightEpsg": 7837,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500000,
            5700000
@@ -9901,7 +9931,7 @@
           "designSpeed": 80
          },
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500100,
            5700000
@@ -9931,16 +9961,16 @@
        {
         "id": "t2",
         "name": "1",
-        "trackType": 2,
+        "trackType": "station",
         "trackNumber": "1",
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500250,
            5700000
@@ -9963,7 +9993,7 @@
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500400,
            5700000
@@ -10083,8 +10113,8 @@
      }
     },
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
@@ -10107,7 +10137,7 @@
         "id": "p1",
         "frontOffset": 1.67,
         "height": 550,
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "stoppingPlaceIds": [
          "hp-2"
         ]
@@ -10148,8 +10178,8 @@
      }
     },
     "signalling": {
-     "version": "3.1",
-     "schema": "sha256:2b365df5f72c616a99c70729f50afd5fdd243f14cff4798f78a70f0855a1e14d",
+     "version": "4.0",
+     "schema": "sha256:3f2028a819de91859b4043792875c785a8b1a0efee098b5d8153751b0477f9b5",
      "dependsOn": [
       "core"
      ],
@@ -10368,7 +10398,7 @@
         "id": "ts-1",
         "name": "1",
         "kind": "axleCounting",
-        "boundedBy": [
+        "detectionPointIds": [
          "dp-1",
          "dp-2"
         ]
@@ -10454,7 +10484,7 @@
         "length": 120,
         "gradient": -2.5,
         "speed": 60,
-        "clearSections": [
+        "clearSectionIds": [
          "ts-1"
         ],
         "switches": [
@@ -10676,11 +10706,11 @@
     }
    },
    "schemas": {
-    "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c": {
+    "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61": {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
      "$id": "core",
-     "title": "Rail-Data-Core, domain core 3.1",
-     "description": "The base every module depends on: the net (tracks, switches and connectors), what stands on it for every discipline (platforms, end marks) and the reference data (km lines, the operational point register). Written by the layout tool, carried by the core library. See docs/data-model.md. — 2.0 (decision 0025): the alignment and what every layer places things by; the platforms are civil's, the stopping places came in from signalling, the named runs of tracks from layout. — 3.0 (decision 0028): no construction stages; a lifespan states days. — 3.1 (decision 0028, phase C): every reference names an object of the collection its `x-target` names (the door's rule).",
+     "title": "Rail-Data-Core, domain core 4.0",
+     "description": "The base every module depends on: the net (tracks, switches and connectors), what stands on it for every discipline (platforms, end marks) and the reference data (km lines, the operational point register). Written by the layout tool, carried by the core library. See docs/data-model.md. — 2.0 (decision 0025): the alignment and what every layer places things by; the platforms are civil's, the stopping places came in from signalling, the named runs of tracks from layout. — 3.0 (decision 0028): no construction stages; a lifespan states days. — 3.1 (decision 0028, phase C): every reference names an object of the collection its `x-target` names (the door's rule). — 4.0 (decision 0029, phase 1): the kinds as words, every reference ending in `Id`, no plane of an element's own, a switch with B1 its main track and B2 its branch.",
      "type": "object",
      "required": [
       "fields",
@@ -10996,7 +11026,7 @@
        }
       },
       "Element": {
-       "description": "One design element of a track: straight (0), arc (1) or transition (2). No station, no polyline: stations are the running sum of the lengths, drawn geometry is derived.",
+       "description": "One design element of a track: straight, arc or transition. No station, no polyline: stations are the running sum of the lengths, drawn geometry is derived.",
        "type": "object",
        "required": [
         "elementType",
@@ -11008,14 +11038,10 @@
        "properties": {
         "elementType": {
          "enum": [
-          0,
-          1,
-          2
+          "straight",
+          "arc",
+          "transition"
          ]
-        },
-        "epsg": {
-         "$ref": "#/$defs/Epsg",
-         "description": "The plane the element is stated in, where it says so: its track's (a finding of the chain checks where not)."
         },
         "startNode": {
          "$ref": "#/$defs/Point"
@@ -11147,7 +11173,7 @@
         "id": {
          "$ref": "#/$defs/Id"
         },
-        "dep": {
+        "depId": {
          "$ref": "#/$defs/Ref",
          "x-target": "the id of another height point"
         },
@@ -11202,8 +11228,8 @@
         },
         "trackType": {
          "enum": [
-          1,
-          2
+          "line",
+          "station"
          ]
         },
         "lineNumber": {
@@ -11213,12 +11239,15 @@
          "$ref": "#/$defs/Text"
         },
         "side": {
-         "type": "integer"
+         "enum": [
+          "regular",
+          "opposite"
+         ]
         },
         "trackNumber": {
          "$ref": "#/$defs/Label"
         },
-        "operationalPoint": {
+        "operationalPointId": {
          "$ref": "#/$defs/Ref",
          "x-target": "core.operationalPoints"
         },
@@ -11280,7 +11309,7 @@
        }
       },
       "Switch": {
-       "description": "A turnout, crossing, slip, two-end connector (`link`) or construction stage connector (`stage_link`) at a node; its ports hold track ends. A link joins two track ends where the plane changes or where a rebuilt part of a track ties in; a stage link joins the track at A to the one at B1 while that exists and to the one at B2 from then on — never both: one track ends, the other begins (decision 0027).",
+       "description": "A switch, crossing, slip, two-end connector (`link`) or construction stage connector (`stage_link`) at a node; its ports hold track ends. A switch: A its toe, B1 the main track, B2 the branch. A link joins two track ends where the plane changes or where a rebuilt part of a track ties in; a stage link joins the track at A to the one at B1 while that exists and to the one at B2 from then on — never both: one track ends, the other begins (decision 0027).",
        "type": "object",
        "required": [
         "id",
@@ -11295,7 +11324,7 @@
         },
         "kind": {
          "enum": [
-          "turnout",
+          "switch",
           "crossing",
           "single_slip",
           "double_slip",
@@ -11551,11 +11580,11 @@
       }
      }
     },
-    "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879": {
+    "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d": {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
      "$id": "civil",
-     "title": "Rail-Data-Core, domain civil 2.1",
-     "description": "Civil engineering's layer, edited in the Civil-Tool (decision 0025): platforms, bridges, retaining walls and noise barriers, measured axes traced in point clouds, reference axes from surveys, the plan header and the project picture — what layout 1.0 held but its named runs of tracks, and the platforms from core 1.0. Depends on core; its references go into the core only. Bulk point arrays are blobs, named by their hash (S-R2). — 2.0 (decision 0028): on core 3.0, a lifespan states days. — 2.1 (decision 0028, phase C): every reference names an object of the collection its `x-target` names (the door's rule).",
+     "title": "Rail-Data-Core, domain civil 3.0",
+     "description": "Civil engineering's layer, edited in the Civil-Tool (decision 0025): platforms, bridges, retaining walls and noise barriers, measured axes traced in point clouds, reference axes from surveys, the plan header and the project picture — what layout 1.0 held but its named runs of tracks, and the platforms from core 1.0. Depends on core; its references go into the core only. Bulk point arrays are blobs, named by their hash (S-R2). — 2.0 (decision 0028): on core 3.0, a lifespan states days. — 2.1 (decision 0028, phase C): every reference names an object of the collection its `x-target` names (the door's rule). — 3.0 (decision 0029, phase 1): a platform names its operational point by `operationalPointId`.",
      "type": "object",
      "required": [
       "fields",
@@ -11782,7 +11811,7 @@
         "height": {
          "type": "number"
         },
-        "operationalPoint": {
+        "operationalPointId": {
          "$ref": "core#/$defs/Ref",
          "x-target": "core.operationalPoints"
         },
@@ -11932,11 +11961,11 @@
       }
      }
     },
-    "sha256:2b365df5f72c616a99c70729f50afd5fdd243f14cff4798f78a70f0855a1e14d": {
+    "sha256:3f2028a819de91859b4043792875c785a8b1a0efee098b5d8153751b0477f9b5": {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
      "$id": "signalling",
-     "title": "Rail-Data-Core, domain signalling 3.1",
-     "description": "The signalling of a project, as the signalling tool plans it: signals and boards, train detection, the switch elements of the interlocking, train and shunting routes with their overlaps, flank protection, the balises and magnets of train protection, the station boundaries and the itineraries from one to another. Depends on core; its references go into the core or into itself (R2, R9). Its objects follow PlanPro 1.10, and like OSRD it keeps every signalling and train protection system out of the schema (decision 0011): a signal carries a logical signal per system, a balise names its system; which systems, kinds, aspects and settings there are is not in this schema but in the catalogue (packages/core/constraints/db-ril-301.json), which the content check reads. — 2.0 (decision 0025): the stopping places are the core's; routes carry their setting and release times; train protection by ranges. — 3.0 (decision 0028): on core 3.0, a lifespan states days. — 3.1 (decision 0028, phase C): every reference names an object of the collection its `x-target` names (the door's rule).",
+     "title": "Rail-Data-Core, domain signalling 4.0",
+     "description": "The signalling of a project, as the signalling tool plans it: signals and boards, train detection, the switch elements of the interlocking, train and shunting routes with their overlaps, flank protection, the balises and magnets of train protection, the station boundaries and the itineraries from one to another. Depends on core; its references go into the core or into itself (R2, R9). Its objects follow PlanPro 1.10, and like OSRD it keeps every signalling and train protection system out of the schema (decision 0011): a signal carries a logical signal per system, a balise names its system; which systems, kinds, aspects and settings there are is not in this schema but in the catalogue (packages/core/constraints/db-ril-301.json), which the content check reads. — 2.0 (decision 0025): the stopping places are the core's; routes carry their setting and release times; train protection by ranges. — 3.0 (decision 0028): on core 3.0, a lifespan states days. — 3.1 (decision 0028, phase C): every reference names an object of the collection its `x-target` names (the door's rule). — 4.0 (decision 0029, phase 1): every reference ends in `Id` (`detectionPointIds`, `clearSectionIds`, `passOn.leftId`/`rightId`).",
      "type": "object",
      "required": [
       "fields",
@@ -12454,7 +12483,7 @@
        "required": [
         "id",
         "kind",
-        "boundedBy"
+        "detectionPointIds"
        ],
        "additionalProperties": false,
        "properties": {
@@ -12477,7 +12506,7 @@
           "other"
          ]
         },
-        "boundedBy": {
+        "detectionPointIds": {
          "type": "array",
          "minItems": 1,
          "items": {
@@ -12698,7 +12727,7 @@
          "type": "boolean",
          "description": "Its distant signal stands at a shortened braking distance (PlanPro Fstr_Vsigabstand_Verkuerzt)."
         },
-        "clearSections": {
+        "clearSectionIds": {
          "description": "For a shunting route, the sections that must be clear (PlanPro ID_FMA_Anlage_Rangier_Frei); a train route's follow from its run.",
          "type": "array",
          "items": {
@@ -12814,7 +12843,7 @@
          "type": "number",
          "minimum": 0
         },
-        "clearSections": {
+        "clearSectionIds": {
          "type": "array",
          "items": {
           "$ref": "core#/$defs/Ref",
@@ -12936,17 +12965,17 @@
          "type": "object",
          "additionalProperties": false,
          "properties": {
-          "left": {
+          "leftId": {
            "$ref": "core#/$defs/Ref",
            "x-target": "signalling.flankProtection"
           },
-          "right": {
+          "rightId": {
            "$ref": "core#/$defs/Ref",
            "x-target": "signalling.flankProtection"
           }
          }
         },
-        "clearSections": {
+        "clearSectionIds": {
          "type": "array",
          "items": {
           "$ref": "core#/$defs/Ref",
@@ -13191,21 +13220,21 @@
   "manifest": {
    "domains": {
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
      "fields": "sha256:8d9ae941998100a45679076ed67feb55eaf5c06dc028c5ff9396bbe93de06ffb",
      "collections": {
       "axisSurveys": "sha256:d7c72a86fce12420e2a646aa0087a31572d6db6bedd895b31181daeacff533cc",
-      "platforms": "sha256:7b22ad9f70c7d17a4b780e774f4995e63db0342ef438948dc3bbf7ae99ad7d3e",
+      "platforms": "sha256:2f905ed4acae130e7986cc288e017918399c195e47509ec4a3d00fe34545e6cc",
       "referenceAxes": "sha256:04906ea395d28e3d03af2cc45d7057c92d832faaeb875b5fb0ba3c9c40047a3e"
      }
     },
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -13214,12 +13243,12 @@
       "stoppingPlaces": "sha256:f2127e8a5f5a3a1486ce2322b77f2eba3b9f82d39bf9e50e09494308ab9de7b4",
       "switches": "sha256:2b44461e52775cdabdc9c02e42115f9441b311b4240d09dca153d5683a4a4da5",
       "trackPaths": "sha256:b6c705b568655eb210b5794b4ce86a95e2f3da8b51f5c298057698fb02b5db8f",
-      "tracks": "sha256:76bd23dc65b28375453ed82a78e4465f8cd7c0cd235fa38074b272d80fc01b0f"
+      "tracks": "sha256:2bbca6583e8cc23457cf9c4cf29ca58032d7ef9938caabaf3df5cba9e2c3196d"
      }
     },
     "signalling": {
-     "version": "3.1",
-     "schema": "sha256:2b365df5f72c616a99c70729f50afd5fdd243f14cff4798f78a70f0855a1e14d",
+     "version": "4.0",
+     "schema": "sha256:3f2028a819de91859b4043792875c785a8b1a0efee098b5d8153751b0477f9b5",
      "dependsOn": [
       "core"
      ],
@@ -13229,17 +13258,17 @@
       "detectionPoints": "sha256:c98deaa1cfec2a74eded2bfb06749831953268a0e3d4a2d9f5fcf21103d899e7",
       "flankProtection": "sha256:0f5fddb634a2d9ab8ee97b8c819917e50051b58e8013a3067258bd2b8bd43567",
       "itineraries": "sha256:48fa57878f19759e28d9bc188310030a7bd27e244d1e2f4726e27ce637de77ce",
-      "overlaps": "sha256:3dc90110fb0c0f878b841fd5d497829f036e5627d4099479d1726c8905b62e3e",
+      "overlaps": "sha256:9bed917cd1a86b07f346a1335860ffb679b2f7b3a5f9608284aac771517fef9a",
       "routes": "sha256:8460ec8eb8679ccbafe0fd56878bbaf049e8c8562d45d2c675607f5a48784be2",
       "signals": "sha256:91d0f3b99a6980d031f1f09b22fa300f29a26fb9166a93cfa9f7a624f7b4e176",
       "stationBoundaries": "sha256:2bf80f1521fd6eac8c1d9db2dcd3fa38756e1c88e5d9bec4b89afc33f4004381",
       "switchElements": "sha256:fe471ee1c255021503a7e8f6862566e6d5aeb76a76cad3782b7ce37c87adb591",
-      "trackSections": "sha256:dd2ee2e1d729211c5aaac5bf7c209b78c81c887bff24f6413ae439d92f4b8496"
+      "trackSections": "sha256:78608ac79ca68d66f19dd5cd8112e477b957b6e7d98f8617420e4d827f63f13f"
      }
     }
    }
   },
-  "hash": "sha256:36b0468acf143ae82f5fdb1214e71366635761ba78134921c26470afc5cab856"
+  "hash": "sha256:658e622e582ac276c1167ce810ceb80a5afb1dbd0043cf554b9e308234fbb438"
  },
  {
   "name": "signalling depending on nothing",
@@ -13248,8 +13277,8 @@
    "version": "2.0",
    "domains": {
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -13265,14 +13294,14 @@
        {
         "id": "t1",
         "name": "6050.001",
-        "trackType": 1,
+        "trackType": "line",
         "lineNumber": 6050,
-        "side": 1,
+        "side": "regular",
         "epsg": 25832,
         "heightEpsg": 7837,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500000,
            5700000
@@ -13286,7 +13315,7 @@
           "designSpeed": 80
          },
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500100,
            5700000
@@ -13316,16 +13345,16 @@
        {
         "id": "t2",
         "name": "1",
-        "trackType": 2,
+        "trackType": "station",
         "trackNumber": "1",
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500250,
            5700000
@@ -13348,7 +13377,7 @@
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500400,
            5700000
@@ -13468,8 +13497,8 @@
      }
     },
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
@@ -13492,7 +13521,7 @@
         "id": "p1",
         "frontOffset": 1.67,
         "height": 550,
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "stoppingPlaceIds": [
          "hp-2"
         ]
@@ -13533,8 +13562,8 @@
      }
     },
     "signalling": {
-     "version": "3.1",
-     "schema": "sha256:2b365df5f72c616a99c70729f50afd5fdd243f14cff4798f78a70f0855a1e14d",
+     "version": "4.0",
+     "schema": "sha256:3f2028a819de91859b4043792875c785a8b1a0efee098b5d8153751b0477f9b5",
      "fields": {
       "catalogue": {
        "id": "db-ril-301",
@@ -13750,7 +13779,7 @@
         "id": "ts-1",
         "name": "1",
         "kind": "axleCounting",
-        "boundedBy": [
+        "detectionPointIds": [
          "dp-1",
          "dp-2"
         ]
@@ -13836,7 +13865,7 @@
         "length": 120,
         "gradient": -2.5,
         "speed": 60,
-        "clearSections": [
+        "clearSectionIds": [
          "ts-1"
         ],
         "switches": [
@@ -14068,8 +14097,8 @@
    "version": "2.0",
    "domains": {
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -14085,14 +14114,14 @@
        {
         "id": "t1",
         "name": "6050.001",
-        "trackType": 1,
+        "trackType": "line",
         "lineNumber": 6050,
-        "side": 1,
+        "side": "regular",
         "epsg": 25832,
         "heightEpsg": 7837,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500000,
            5700000
@@ -14106,7 +14135,7 @@
           "designSpeed": 80
          },
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500100,
            5700000
@@ -14136,16 +14165,16 @@
        {
         "id": "t2",
         "name": "1",
-        "trackType": 2,
+        "trackType": "station",
         "trackNumber": "1",
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500250,
            5700000
@@ -14168,7 +14197,7 @@
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500400,
            5700000
@@ -14288,8 +14317,8 @@
      }
     },
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
@@ -14312,7 +14341,7 @@
         "id": "p1",
         "frontOffset": 1.67,
         "height": 550,
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "stoppingPlaceIds": [
          "hp-2"
         ]
@@ -14353,8 +14382,8 @@
      }
     },
     "signalling": {
-     "version": "3.1",
-     "schema": "sha256:2b365df5f72c616a99c70729f50afd5fdd243f14cff4798f78a70f0855a1e14d",
+     "version": "4.0",
+     "schema": "sha256:3f2028a819de91859b4043792875c785a8b1a0efee098b5d8153751b0477f9b5",
      "dependsOn": [
       "core"
      ],
@@ -14572,7 +14601,7 @@
         "id": "ts-1",
         "name": "1",
         "kind": "axleCounting",
-        "boundedBy": [
+        "detectionPointIds": [
          "dp-1",
          "dp-2"
         ]
@@ -14658,7 +14687,7 @@
         "length": 120,
         "gradient": -2.5,
         "speed": 60,
-        "clearSections": [
+        "clearSectionIds": [
          "ts-1"
         ],
         "switches": [
@@ -14890,8 +14919,8 @@
    "version": "2.0",
    "domains": {
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -14907,14 +14936,14 @@
        {
         "id": "t1",
         "name": "6050.001",
-        "trackType": 1,
+        "trackType": "line",
         "lineNumber": 6050,
-        "side": 1,
+        "side": "regular",
         "epsg": 25832,
         "heightEpsg": 7837,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500000,
            5700000
@@ -14928,7 +14957,7 @@
           "designSpeed": 80
          },
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500100,
            5700000
@@ -14958,16 +14987,16 @@
        {
         "id": "t2",
         "name": "1",
-        "trackType": 2,
+        "trackType": "station",
         "trackNumber": "1",
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500250,
            5700000
@@ -14990,7 +15019,7 @@
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500400,
            5700000
@@ -15110,8 +15139,8 @@
      }
     },
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
@@ -15134,7 +15163,7 @@
         "id": "p1",
         "frontOffset": 1.67,
         "height": 550,
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "stoppingPlaceIds": [
          "hp-2"
         ]
@@ -15175,8 +15204,8 @@
      }
     },
     "signalling": {
-     "version": "3.1",
-     "schema": "sha256:2b365df5f72c616a99c70729f50afd5fdd243f14cff4798f78a70f0855a1e14d",
+     "version": "4.0",
+     "schema": "sha256:3f2028a819de91859b4043792875c785a8b1a0efee098b5d8153751b0477f9b5",
      "dependsOn": [
       "core"
      ],
@@ -15395,7 +15424,7 @@
         "id": "ts-1",
         "name": "1",
         "kind": "axleCounting",
-        "boundedBy": [
+        "detectionPointIds": [
          "dp-1",
          "dp-2"
         ]
@@ -15481,7 +15510,7 @@
         "length": 120,
         "gradient": -2.5,
         "speed": 60,
-        "clearSections": [
+        "clearSectionIds": [
          "ts-1"
         ],
         "switches": [
@@ -15707,21 +15736,21 @@
   "manifest": {
    "domains": {
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
      "fields": "sha256:8d9ae941998100a45679076ed67feb55eaf5c06dc028c5ff9396bbe93de06ffb",
      "collections": {
       "axisSurveys": "sha256:d7c72a86fce12420e2a646aa0087a31572d6db6bedd895b31181daeacff533cc",
-      "platforms": "sha256:7b22ad9f70c7d17a4b780e774f4995e63db0342ef438948dc3bbf7ae99ad7d3e",
+      "platforms": "sha256:2f905ed4acae130e7986cc288e017918399c195e47509ec4a3d00fe34545e6cc",
       "referenceAxes": "sha256:04906ea395d28e3d03af2cc45d7057c92d832faaeb875b5fb0ba3c9c40047a3e"
      }
     },
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -15730,12 +15759,12 @@
       "stoppingPlaces": "sha256:f2127e8a5f5a3a1486ce2322b77f2eba3b9f82d39bf9e50e09494308ab9de7b4",
       "switches": "sha256:2b44461e52775cdabdc9c02e42115f9441b311b4240d09dca153d5683a4a4da5",
       "trackPaths": "sha256:b6c705b568655eb210b5794b4ce86a95e2f3da8b51f5c298057698fb02b5db8f",
-      "tracks": "sha256:76bd23dc65b28375453ed82a78e4465f8cd7c0cd235fa38074b272d80fc01b0f"
+      "tracks": "sha256:2bbca6583e8cc23457cf9c4cf29ca58032d7ef9938caabaf3df5cba9e2c3196d"
      }
     },
     "signalling": {
-     "version": "3.1",
-     "schema": "sha256:2b365df5f72c616a99c70729f50afd5fdd243f14cff4798f78a70f0855a1e14d",
+     "version": "4.0",
+     "schema": "sha256:3f2028a819de91859b4043792875c785a8b1a0efee098b5d8153751b0477f9b5",
      "dependsOn": [
       "core"
      ],
@@ -15745,17 +15774,17 @@
       "detectionPoints": "sha256:c98deaa1cfec2a74eded2bfb06749831953268a0e3d4a2d9f5fcf21103d899e7",
       "flankProtection": "sha256:0f5fddb634a2d9ab8ee97b8c819917e50051b58e8013a3067258bd2b8bd43567",
       "itineraries": "sha256:48fa57878f19759e28d9bc188310030a7bd27e244d1e2f4726e27ce637de77ce",
-      "overlaps": "sha256:3dc90110fb0c0f878b841fd5d497829f036e5627d4099479d1726c8905b62e3e",
+      "overlaps": "sha256:9bed917cd1a86b07f346a1335860ffb679b2f7b3a5f9608284aac771517fef9a",
       "routes": "sha256:8460ec8eb8679ccbafe0fd56878bbaf049e8c8562d45d2c675607f5a48784be2",
       "signals": "sha256:91d0f3b99a6980d031f1f09b22fa300f29a26fb9166a93cfa9f7a624f7b4e176",
       "stationBoundaries": "sha256:2bf80f1521fd6eac8c1d9db2dcd3fa38756e1c88e5d9bec4b89afc33f4004381",
       "switchElements": "sha256:fe471ee1c255021503a7e8f6862566e6d5aeb76a76cad3782b7ce37c87adb591",
-      "trackSections": "sha256:dd2ee2e1d729211c5aaac5bf7c209b78c81c887bff24f6413ae439d92f4b8496"
+      "trackSections": "sha256:78608ac79ca68d66f19dd5cd8112e477b957b6e7d98f8617420e4d827f63f13f"
      }
     }
    }
   },
-  "hash": "sha256:36b0468acf143ae82f5fdb1214e71366635761ba78134921c26470afc5cab856"
+  "hash": "sha256:658e622e582ac276c1167ce810ceb80a5afb1dbd0043cf554b9e308234fbb438"
  },
  {
   "name": "signalling without its overlaps",
@@ -15764,8 +15793,8 @@
    "version": "2.0",
    "domains": {
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -15781,14 +15810,14 @@
        {
         "id": "t1",
         "name": "6050.001",
-        "trackType": 1,
+        "trackType": "line",
         "lineNumber": 6050,
-        "side": 1,
+        "side": "regular",
         "epsg": 25832,
         "heightEpsg": 7837,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500000,
            5700000
@@ -15802,7 +15831,7 @@
           "designSpeed": 80
          },
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500100,
            5700000
@@ -15832,16 +15861,16 @@
        {
         "id": "t2",
         "name": "1",
-        "trackType": 2,
+        "trackType": "station",
         "trackNumber": "1",
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500250,
            5700000
@@ -15864,7 +15893,7 @@
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500400,
            5700000
@@ -15984,8 +16013,8 @@
      }
     },
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
@@ -16008,7 +16037,7 @@
         "id": "p1",
         "frontOffset": 1.67,
         "height": 550,
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "stoppingPlaceIds": [
          "hp-2"
         ]
@@ -16049,8 +16078,8 @@
      }
     },
     "signalling": {
-     "version": "3.1",
-     "schema": "sha256:2b365df5f72c616a99c70729f50afd5fdd243f14cff4798f78a70f0855a1e14d",
+     "version": "4.0",
+     "schema": "sha256:3f2028a819de91859b4043792875c785a8b1a0efee098b5d8153751b0477f9b5",
      "dependsOn": [
       "core"
      ],
@@ -16269,7 +16298,7 @@
         "id": "ts-1",
         "name": "1",
         "kind": "axleCounting",
-        "boundedBy": [
+        "detectionPointIds": [
          "dp-1",
          "dp-2"
         ]
@@ -16557,8 +16586,8 @@
    "version": "2.0",
    "domains": {
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -16574,14 +16603,14 @@
        {
         "id": "t1",
         "name": "6050.001",
-        "trackType": 1,
+        "trackType": "line",
         "lineNumber": 6050,
-        "side": 1,
+        "side": "regular",
         "epsg": 25832,
         "heightEpsg": 7837,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500000,
            5700000
@@ -16595,7 +16624,7 @@
           "designSpeed": 80
          },
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500100,
            5700000
@@ -16625,16 +16654,16 @@
        {
         "id": "t2",
         "name": "1",
-        "trackType": 2,
+        "trackType": "station",
         "trackNumber": "1",
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500250,
            5700000
@@ -16657,7 +16686,7 @@
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500400,
            5700000
@@ -16777,8 +16806,8 @@
      }
     },
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
@@ -16801,7 +16830,7 @@
         "id": "p1",
         "frontOffset": 1.67,
         "height": 550,
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "stoppingPlaceIds": [
          "hp-2"
         ]
@@ -16842,8 +16871,8 @@
      }
     },
     "signalling": {
-     "version": "3.1",
-     "schema": "sha256:2b365df5f72c616a99c70729f50afd5fdd243f14cff4798f78a70f0855a1e14d",
+     "version": "4.0",
+     "schema": "sha256:3f2028a819de91859b4043792875c785a8b1a0efee098b5d8153751b0477f9b5",
      "dependsOn": [
       "core"
      ],
@@ -17062,7 +17091,7 @@
         "id": "ts-1",
         "name": "1",
         "kind": "axleCounting",
-        "boundedBy": [
+        "detectionPointIds": [
          "dp-1",
          "dp-2"
         ]
@@ -17148,7 +17177,7 @@
         "length": 120,
         "gradient": -2.5,
         "speed": 60,
-        "clearSections": [
+        "clearSectionIds": [
          "ts-1"
         ],
         "switches": [
@@ -17405,8 +17434,8 @@
    "version": "2.0",
    "domains": {
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -17422,14 +17451,14 @@
        {
         "id": "t1",
         "name": "6050.001",
-        "trackType": 1,
+        "trackType": "line",
         "lineNumber": 6050,
-        "side": 1,
+        "side": "regular",
         "epsg": 25832,
         "heightEpsg": 7837,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500000,
            5700000
@@ -17443,7 +17472,7 @@
           "designSpeed": 80
          },
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500100,
            5700000
@@ -17473,16 +17502,16 @@
        {
         "id": "t2",
         "name": "1",
-        "trackType": 2,
+        "trackType": "station",
         "trackNumber": "1",
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500250,
            5700000
@@ -17505,7 +17534,7 @@
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500400,
            5700000
@@ -17625,8 +17654,8 @@
      }
     },
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
@@ -17649,7 +17678,7 @@
         "id": "p1",
         "frontOffset": 1.67,
         "height": 550,
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "stoppingPlaceIds": [
          "hp-2"
         ]
@@ -17690,8 +17719,8 @@
      }
     },
     "signalling": {
-     "version": "3.1",
-     "schema": "sha256:2b365df5f72c616a99c70729f50afd5fdd243f14cff4798f78a70f0855a1e14d",
+     "version": "4.0",
+     "schema": "sha256:3f2028a819de91859b4043792875c785a8b1a0efee098b5d8153751b0477f9b5",
      "dependsOn": [
       "core"
      ],
@@ -17910,7 +17939,7 @@
         "id": "ts-1",
         "name": "1",
         "kind": "axleCounting",
-        "boundedBy": [
+        "detectionPointIds": [
          "dp-1",
          "dp-2"
         ]
@@ -17996,7 +18025,7 @@
         "length": 120,
         "gradient": -2.5,
         "speed": 60,
-        "clearSections": [
+        "clearSectionIds": [
          "ts-1"
         ],
         "switches": [
@@ -18231,8 +18260,8 @@
    "version": "2.0",
    "domains": {
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -18248,14 +18277,14 @@
        {
         "id": "t1",
         "name": "6050.001",
-        "trackType": 1,
+        "trackType": "line",
         "lineNumber": 6050,
-        "side": 1,
+        "side": "regular",
         "epsg": 25832,
         "heightEpsg": 7837,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500000,
            5700000
@@ -18269,7 +18298,7 @@
           "designSpeed": 80
          },
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500100,
            5700000
@@ -18299,16 +18328,16 @@
        {
         "id": "t2",
         "name": "1",
-        "trackType": 2,
+        "trackType": "station",
         "trackNumber": "1",
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500250,
            5700000
@@ -18331,7 +18360,7 @@
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500400,
            5700000
@@ -18451,8 +18480,8 @@
      }
     },
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
@@ -18475,7 +18504,7 @@
         "id": "p1",
         "frontOffset": 1.67,
         "height": 550,
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "stoppingPlaceIds": [
          "hp-2"
         ]
@@ -18516,8 +18545,8 @@
      }
     },
     "signalling": {
-     "version": "3.1",
-     "schema": "sha256:2b365df5f72c616a99c70729f50afd5fdd243f14cff4798f78a70f0855a1e14d",
+     "version": "4.0",
+     "schema": "sha256:3f2028a819de91859b4043792875c785a8b1a0efee098b5d8153751b0477f9b5",
      "dependsOn": [
       "core"
      ],
@@ -18740,7 +18769,7 @@
         "id": "ts-1",
         "name": "1",
         "kind": "axleCounting",
-        "boundedBy": [
+        "detectionPointIds": [
          "dp-1",
          "dp-2"
         ]
@@ -18827,7 +18856,7 @@
         "length": 120,
         "gradient": -2.5,
         "speed": 60,
-        "clearSections": [
+        "clearSectionIds": [
          "ts-1"
         ],
         "switches": [
@@ -19065,21 +19094,21 @@
   "manifest": {
    "domains": {
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
      "fields": "sha256:8d9ae941998100a45679076ed67feb55eaf5c06dc028c5ff9396bbe93de06ffb",
      "collections": {
       "axisSurveys": "sha256:d7c72a86fce12420e2a646aa0087a31572d6db6bedd895b31181daeacff533cc",
-      "platforms": "sha256:7b22ad9f70c7d17a4b780e774f4995e63db0342ef438948dc3bbf7ae99ad7d3e",
+      "platforms": "sha256:2f905ed4acae130e7986cc288e017918399c195e47509ec4a3d00fe34545e6cc",
       "referenceAxes": "sha256:04906ea395d28e3d03af2cc45d7057c92d832faaeb875b5fb0ba3c9c40047a3e"
      }
     },
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -19088,12 +19117,12 @@
       "stoppingPlaces": "sha256:f2127e8a5f5a3a1486ce2322b77f2eba3b9f82d39bf9e50e09494308ab9de7b4",
       "switches": "sha256:2b44461e52775cdabdc9c02e42115f9441b311b4240d09dca153d5683a4a4da5",
       "trackPaths": "sha256:b6c705b568655eb210b5794b4ce86a95e2f3da8b51f5c298057698fb02b5db8f",
-      "tracks": "sha256:76bd23dc65b28375453ed82a78e4465f8cd7c0cd235fa38074b272d80fc01b0f"
+      "tracks": "sha256:2bbca6583e8cc23457cf9c4cf29ca58032d7ef9938caabaf3df5cba9e2c3196d"
      }
     },
     "signalling": {
-     "version": "3.1",
-     "schema": "sha256:2b365df5f72c616a99c70729f50afd5fdd243f14cff4798f78a70f0855a1e14d",
+     "version": "4.0",
+     "schema": "sha256:3f2028a819de91859b4043792875c785a8b1a0efee098b5d8153751b0477f9b5",
      "dependsOn": [
       "core"
      ],
@@ -19103,18 +19132,18 @@
       "detectionPoints": "sha256:c98deaa1cfec2a74eded2bfb06749831953268a0e3d4a2d9f5fcf21103d899e7",
       "flankProtection": "sha256:0f5fddb634a2d9ab8ee97b8c819917e50051b58e8013a3067258bd2b8bd43567",
       "itineraries": "sha256:48fa57878f19759e28d9bc188310030a7bd27e244d1e2f4726e27ce637de77ce",
-      "overlaps": "sha256:3dc90110fb0c0f878b841fd5d497829f036e5627d4099479d1726c8905b62e3e",
+      "overlaps": "sha256:9bed917cd1a86b07f346a1335860ffb679b2f7b3a5f9608284aac771517fef9a",
       "routes": "sha256:788c857e1f73a95c52d5bc624efcab1e1608c838cdc77463406311e4e68b736f",
       "signals": "sha256:91d0f3b99a6980d031f1f09b22fa300f29a26fb9166a93cfa9f7a624f7b4e176",
       "stationBoundaries": "sha256:2bf80f1521fd6eac8c1d9db2dcd3fa38756e1c88e5d9bec4b89afc33f4004381",
       "switchElements": "sha256:fe471ee1c255021503a7e8f6862566e6d5aeb76a76cad3782b7ce37c87adb591",
-      "trackSections": "sha256:dd2ee2e1d729211c5aaac5bf7c209b78c81c887bff24f6413ae439d92f4b8496",
+      "trackSections": "sha256:78608ac79ca68d66f19dd5cd8112e477b957b6e7d98f8617420e4d827f63f13f",
       "trainProtection": "sha256:693035517db706028a1751f20f6b384212fa36fb7390cd984d6dd0ea1b0333fd"
      }
     }
    }
   },
-  "hash": "sha256:bd5842fdfd27ed4c198a5f873d4ecbb36a6becdf36617c43b5e545a9d3b1fccd"
+  "hash": "sha256:75ba7112283daf978885b4fcdabcd9114b9644ef630880b9c85a94e04bffcd9d"
  },
  {
   "name": "the sample with its electrification",
@@ -19123,8 +19152,8 @@
    "version": "2.0",
    "domains": {
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -19140,14 +19169,14 @@
        {
         "id": "t1",
         "name": "6050.001",
-        "trackType": 1,
+        "trackType": "line",
         "lineNumber": 6050,
-        "side": 1,
+        "side": "regular",
         "epsg": 25832,
         "heightEpsg": 7837,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500000,
            5700000
@@ -19161,7 +19190,7 @@
           "designSpeed": 80
          },
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500100,
            5700000
@@ -19191,16 +19220,16 @@
        {
         "id": "t2",
         "name": "1",
-        "trackType": 2,
+        "trackType": "station",
         "trackNumber": "1",
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500250,
            5700000
@@ -19223,7 +19252,7 @@
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500400,
            5700000
@@ -19319,8 +19348,8 @@
      }
     },
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
@@ -19343,7 +19372,7 @@
         "id": "p1",
         "frontOffset": 1.67,
         "height": 550,
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
        }
       ],
       "axisSurveys": [
@@ -19462,21 +19491,21 @@
   "manifest": {
    "domains": {
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
      "fields": "sha256:8d9ae941998100a45679076ed67feb55eaf5c06dc028c5ff9396bbe93de06ffb",
      "collections": {
       "axisSurveys": "sha256:d7c72a86fce12420e2a646aa0087a31572d6db6bedd895b31181daeacff533cc",
-      "platforms": "sha256:1ab2e26c887a12abb8b4fdfaf22b1e56ec9406f85b66f80155a57a0c1aa07910",
+      "platforms": "sha256:2853131c119b12a613cc8f09bdf8db392f6b4aeed2b2a8c34e80cd1b27bfd602",
       "referenceAxes": "sha256:04906ea395d28e3d03af2cc45d7057c92d832faaeb875b5fb0ba3c9c40047a3e"
      }
     },
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -19485,7 +19514,7 @@
       "stoppingPlaces": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
       "switches": "sha256:2b44461e52775cdabdc9c02e42115f9441b311b4240d09dca153d5683a4a4da5",
       "trackPaths": "sha256:b6c705b568655eb210b5794b4ce86a95e2f3da8b51f5c298057698fb02b5db8f",
-      "tracks": "sha256:76bd23dc65b28375453ed82a78e4465f8cd7c0cd235fa38074b272d80fc01b0f"
+      "tracks": "sha256:2bbca6583e8cc23457cf9c4cf29ca58032d7ef9938caabaf3df5cba9e2c3196d"
      }
     },
     "electrification": {
@@ -19501,7 +19530,7 @@
     }
    }
   },
-  "hash": "sha256:d28a53eed1f3e3ce25fb4db55679ac618326505ddb1086e535cf8fdd9c9b0e15"
+  "hash": "sha256:cb0188eb081eeb1e6d542ebdabfe96d5ae05bd79c2cbfce4d0595ebeb9f99598"
  },
  {
   "name": "an electrification of no system",
@@ -19510,8 +19539,8 @@
    "version": "2.0",
    "domains": {
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -19527,14 +19556,14 @@
        {
         "id": "t1",
         "name": "6050.001",
-        "trackType": 1,
+        "trackType": "line",
         "lineNumber": 6050,
-        "side": 1,
+        "side": "regular",
         "epsg": 25832,
         "heightEpsg": 7837,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500000,
            5700000
@@ -19548,7 +19577,7 @@
           "designSpeed": 80
          },
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500100,
            5700000
@@ -19578,16 +19607,16 @@
        {
         "id": "t2",
         "name": "1",
-        "trackType": 2,
+        "trackType": "station",
         "trackNumber": "1",
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500250,
            5700000
@@ -19610,7 +19639,7 @@
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500400,
            5700000
@@ -19706,8 +19735,8 @@
      }
     },
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
@@ -19730,7 +19759,7 @@
         "id": "p1",
         "frontOffset": 1.67,
         "height": 550,
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
        }
       ],
       "axisSurveys": [
@@ -19854,8 +19883,8 @@
    "version": "2.0",
    "domains": {
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -19871,14 +19900,14 @@
        {
         "id": "t1",
         "name": "6050.001",
-        "trackType": 1,
+        "trackType": "line",
         "lineNumber": 6050,
-        "side": 1,
+        "side": "regular",
         "epsg": 25832,
         "heightEpsg": 7837,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500000,
            5700000
@@ -19892,7 +19921,7 @@
           "designSpeed": 80
          },
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500100,
            5700000
@@ -19922,16 +19951,16 @@
        {
         "id": "t2",
         "name": "1",
-        "trackType": 2,
+        "trackType": "station",
         "trackNumber": "1",
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500250,
            5700000
@@ -19954,7 +19983,7 @@
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500400,
            5700000
@@ -20051,8 +20080,8 @@
      }
     },
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
@@ -20075,7 +20104,7 @@
         "id": "p1",
         "frontOffset": 1.67,
         "height": 550,
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
        }
       ],
       "axisSurveys": [
@@ -20171,21 +20200,21 @@
   "manifest": {
    "domains": {
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
      "fields": "sha256:8d9ae941998100a45679076ed67feb55eaf5c06dc028c5ff9396bbe93de06ffb",
      "collections": {
       "axisSurveys": "sha256:d7c72a86fce12420e2a646aa0087a31572d6db6bedd895b31181daeacff533cc",
-      "platforms": "sha256:1ab2e26c887a12abb8b4fdfaf22b1e56ec9406f85b66f80155a57a0c1aa07910",
+      "platforms": "sha256:2853131c119b12a613cc8f09bdf8db392f6b4aeed2b2a8c34e80cd1b27bfd602",
       "referenceAxes": "sha256:04906ea395d28e3d03af2cc45d7057c92d832faaeb875b5fb0ba3c9c40047a3e"
      }
     },
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:f916fe119da35955671647cc01b5c3c6b4247bc796729eb4f17cef2fa9ac66d9",
@@ -20194,12 +20223,12 @@
       "stoppingPlaces": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
       "switches": "sha256:2b44461e52775cdabdc9c02e42115f9441b311b4240d09dca153d5683a4a4da5",
       "trackPaths": "sha256:b6c705b568655eb210b5794b4ce86a95e2f3da8b51f5c298057698fb02b5db8f",
-      "tracks": "sha256:76bd23dc65b28375453ed82a78e4465f8cd7c0cd235fa38074b272d80fc01b0f"
+      "tracks": "sha256:2bbca6583e8cc23457cf9c4cf29ca58032d7ef9938caabaf3df5cba9e2c3196d"
      }
     }
    }
   },
-  "hash": "sha256:c4919b84def78c0124f04588fe4f98cd306f8a143bf1135c04009b95b51adb09"
+  "hash": "sha256:8daca4a374fd813058c4b47bde3d83670280475369a18fc53874671b5fa649f4"
  },
  {
   "name": "a track of a station that is not there",
@@ -20208,8 +20237,8 @@
    "version": "2.0",
    "domains": {
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -20225,14 +20254,14 @@
        {
         "id": "t1",
         "name": "6050.001",
-        "trackType": 1,
+        "trackType": "line",
         "lineNumber": 6050,
-        "side": 1,
+        "side": "regular",
         "epsg": 25832,
         "heightEpsg": 7837,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500000,
            5700000
@@ -20246,7 +20275,7 @@
           "designSpeed": 80
          },
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500100,
            5700000
@@ -20276,16 +20305,16 @@
        {
         "id": "t2",
         "name": "1",
-        "trackType": 2,
+        "trackType": "station",
         "trackNumber": "1",
-        "operationalPoint": "op-nowhere",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500250,
            5700000
@@ -20297,7 +20326,8 @@
           "bearing": 90,
           "length": 150
          }
-        ]
+        ],
+        "operationalPoint": "op-nowhere"
        },
        {
         "id": "t3",
@@ -20308,7 +20338,7 @@
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500400,
            5700000
@@ -20404,8 +20434,8 @@
      }
     },
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
@@ -20428,7 +20458,7 @@
         "id": "p1",
         "frontOffset": 1.67,
         "height": 550,
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
        }
       ],
       "axisSurveys": [
@@ -20530,8 +20560,8 @@
    "version": "2.0",
    "domains": {
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -20547,14 +20577,14 @@
        {
         "id": "t1",
         "name": "6050.001",
-        "trackType": 1,
+        "trackType": "line",
         "lineNumber": 6050,
-        "side": 1,
+        "side": "regular",
         "epsg": 25832,
         "heightEpsg": 7837,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500000,
            5700000
@@ -20568,7 +20598,7 @@
           "designSpeed": 80
          },
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500100,
            5700000
@@ -20598,16 +20628,16 @@
        {
         "id": "t2",
         "name": "1",
-        "trackType": 2,
+        "trackType": "station",
         "trackNumber": "1",
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500250,
            5700000
@@ -20630,7 +20660,7 @@
         "epsg": 25832,
         "elements": [
          {
-          "elementType": 0,
+          "elementType": "straight",
           "startNode": [
            500400,
            5700000
@@ -20750,8 +20780,8 @@
      }
     },
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
@@ -20774,7 +20804,7 @@
         "id": "p1",
         "frontOffset": 1.67,
         "height": 550,
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "stoppingPlaceIds": [
          "hp-2"
         ]
@@ -20815,8 +20845,8 @@
      }
     },
     "signalling": {
-     "version": "3.1",
-     "schema": "sha256:2b365df5f72c616a99c70729f50afd5fdd243f14cff4798f78a70f0855a1e14d",
+     "version": "4.0",
+     "schema": "sha256:3f2028a819de91859b4043792875c785a8b1a0efee098b5d8153751b0477f9b5",
      "dependsOn": [
       "core"
      ],
@@ -21035,7 +21065,7 @@
         "id": "ts-1",
         "name": "1",
         "kind": "axleCounting",
-        "boundedBy": [
+        "detectionPointIds": [
          "dp-1",
          "dp-2"
         ]
@@ -21121,7 +21151,7 @@
         "length": 120,
         "gradient": -2.5,
         "speed": 60,
-        "clearSections": [
+        "clearSectionIds": [
          "ts-1"
         ],
         "switches": [
@@ -21676,21 +21706,21 @@
   "manifest": {
    "domains": {
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
      "fields": "sha256:8d9ae941998100a45679076ed67feb55eaf5c06dc028c5ff9396bbe93de06ffb",
      "collections": {
       "axisSurveys": "sha256:d7c72a86fce12420e2a646aa0087a31572d6db6bedd895b31181daeacff533cc",
-      "platforms": "sha256:1ab2e26c887a12abb8b4fdfaf22b1e56ec9406f85b66f80155a57a0c1aa07910",
+      "platforms": "sha256:2853131c119b12a613cc8f09bdf8db392f6b4aeed2b2a8c34e80cd1b27bfd602",
       "referenceAxes": "sha256:04906ea395d28e3d03af2cc45d7057c92d832faaeb875b5fb0ba3c9c40047a3e"
      }
     },
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -21699,12 +21729,12 @@
       "stoppingPlaces": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
       "switches": "sha256:2b44461e52775cdabdc9c02e42115f9441b311b4240d09dca153d5683a4a4da5",
       "trackPaths": "sha256:b6c705b568655eb210b5794b4ce86a95e2f3da8b51f5c298057698fb02b5db8f",
-      "tracks": "sha256:7a2b2f9d94022372e11d2c62724d510cfa23633a03b2443fbeac26b074c3d723"
+      "tracks": "sha256:b79cfab38ac468ae24d5d2e7ef1afe8d235dc6f4c76a6d2ff157bf282fd1713d"
      }
     }
    }
   },
-  "hash": "sha256:72cb394a6c83dc2bb623e0b1e52ec0698886adff92b8467845164fff1e455807"
+  "hash": "sha256:a4c138a63dbdb5471c907cc838e9a901673533bc950c83dfb36869e8c68998fb"
  },
  {
   "name": "infra-data 1.0: the sample with its signalling",
@@ -22534,21 +22564,21 @@
   "manifest": {
    "domains": {
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
      "fields": "sha256:8d9ae941998100a45679076ed67feb55eaf5c06dc028c5ff9396bbe93de06ffb",
      "collections": {
       "axisSurveys": "sha256:d7c72a86fce12420e2a646aa0087a31572d6db6bedd895b31181daeacff533cc",
-      "platforms": "sha256:1ab2e26c887a12abb8b4fdfaf22b1e56ec9406f85b66f80155a57a0c1aa07910",
+      "platforms": "sha256:2853131c119b12a613cc8f09bdf8db392f6b4aeed2b2a8c34e80cd1b27bfd602",
       "referenceAxes": "sha256:04906ea395d28e3d03af2cc45d7057c92d832faaeb875b5fb0ba3c9c40047a3e"
      }
     },
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -22557,12 +22587,12 @@
       "stoppingPlaces": "sha256:d8702301b89da15d76834acbf33c4b5fc839f95e5a381fd43ed99e865eb8385e",
       "switches": "sha256:2b44461e52775cdabdc9c02e42115f9441b311b4240d09dca153d5683a4a4da5",
       "trackPaths": "sha256:b6c705b568655eb210b5794b4ce86a95e2f3da8b51f5c298057698fb02b5db8f",
-      "tracks": "sha256:7a2b2f9d94022372e11d2c62724d510cfa23633a03b2443fbeac26b074c3d723"
+      "tracks": "sha256:b79cfab38ac468ae24d5d2e7ef1afe8d235dc6f4c76a6d2ff157bf282fd1713d"
      }
     },
     "signalling": {
-     "version": "3.1",
-     "schema": "sha256:2b365df5f72c616a99c70729f50afd5fdd243f14cff4798f78a70f0855a1e14d",
+     "version": "4.0",
+     "schema": "sha256:3f2028a819de91859b4043792875c785a8b1a0efee098b5d8153751b0477f9b5",
      "dependsOn": [
       "core"
      ],
@@ -22572,17 +22602,17 @@
       "detectionPoints": "sha256:c98deaa1cfec2a74eded2bfb06749831953268a0e3d4a2d9f5fcf21103d899e7",
       "flankProtection": "sha256:0f5fddb634a2d9ab8ee97b8c819917e50051b58e8013a3067258bd2b8bd43567",
       "itineraries": "sha256:48fa57878f19759e28d9bc188310030a7bd27e244d1e2f4726e27ce637de77ce",
-      "overlaps": "sha256:3dc90110fb0c0f878b841fd5d497829f036e5627d4099479d1726c8905b62e3e",
+      "overlaps": "sha256:9bed917cd1a86b07f346a1335860ffb679b2f7b3a5f9608284aac771517fef9a",
       "routes": "sha256:8460ec8eb8679ccbafe0fd56878bbaf049e8c8562d45d2c675607f5a48784be2",
       "signals": "sha256:91d0f3b99a6980d031f1f09b22fa300f29a26fb9166a93cfa9f7a624f7b4e176",
       "stationBoundaries": "sha256:2bf80f1521fd6eac8c1d9db2dcd3fa38756e1c88e5d9bec4b89afc33f4004381",
       "switchElements": "sha256:fe471ee1c255021503a7e8f6862566e6d5aeb76a76cad3782b7ce37c87adb591",
-      "trackSections": "sha256:dd2ee2e1d729211c5aaac5bf7c209b78c81c887bff24f6413ae439d92f4b8496"
+      "trackSections": "sha256:78608ac79ca68d66f19dd5cd8112e477b957b6e7d98f8617420e4d827f63f13f"
      }
     }
    }
   },
-  "hash": "sha256:703b86bd27477faccc5153a66cd335fc1dc937cdbcbe13b396a8bfe08eb063c5"
+  "hash": "sha256:beadf23d59f8321dc97c129aff465638d275ebab1d0a8c41eaef7203bdfe41cf"
  },
  {
   "name": "infra-data 1.0: a stopping place at a platform, a boundary marked by it",
@@ -23416,21 +23446,21 @@
   "manifest": {
    "domains": {
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
      "fields": "sha256:8d9ae941998100a45679076ed67feb55eaf5c06dc028c5ff9396bbe93de06ffb",
      "collections": {
       "axisSurveys": "sha256:d7c72a86fce12420e2a646aa0087a31572d6db6bedd895b31181daeacff533cc",
-      "platforms": "sha256:7b22ad9f70c7d17a4b780e774f4995e63db0342ef438948dc3bbf7ae99ad7d3e",
+      "platforms": "sha256:2f905ed4acae130e7986cc288e017918399c195e47509ec4a3d00fe34545e6cc",
       "referenceAxes": "sha256:04906ea395d28e3d03af2cc45d7057c92d832faaeb875b5fb0ba3c9c40047a3e"
      }
     },
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -23439,12 +23469,12 @@
       "stoppingPlaces": "sha256:f2127e8a5f5a3a1486ce2322b77f2eba3b9f82d39bf9e50e09494308ab9de7b4",
       "switches": "sha256:2b44461e52775cdabdc9c02e42115f9441b311b4240d09dca153d5683a4a4da5",
       "trackPaths": "sha256:b6c705b568655eb210b5794b4ce86a95e2f3da8b51f5c298057698fb02b5db8f",
-      "tracks": "sha256:7a2b2f9d94022372e11d2c62724d510cfa23633a03b2443fbeac26b074c3d723"
+      "tracks": "sha256:b79cfab38ac468ae24d5d2e7ef1afe8d235dc6f4c76a6d2ff157bf282fd1713d"
      }
     },
     "signalling": {
-     "version": "3.1",
-     "schema": "sha256:2b365df5f72c616a99c70729f50afd5fdd243f14cff4798f78a70f0855a1e14d",
+     "version": "4.0",
+     "schema": "sha256:3f2028a819de91859b4043792875c785a8b1a0efee098b5d8153751b0477f9b5",
      "dependsOn": [
       "core"
      ],
@@ -23454,17 +23484,17 @@
       "detectionPoints": "sha256:c98deaa1cfec2a74eded2bfb06749831953268a0e3d4a2d9f5fcf21103d899e7",
       "flankProtection": "sha256:0f5fddb634a2d9ab8ee97b8c819917e50051b58e8013a3067258bd2b8bd43567",
       "itineraries": "sha256:48fa57878f19759e28d9bc188310030a7bd27e244d1e2f4726e27ce637de77ce",
-      "overlaps": "sha256:3dc90110fb0c0f878b841fd5d497829f036e5627d4099479d1726c8905b62e3e",
+      "overlaps": "sha256:9bed917cd1a86b07f346a1335860ffb679b2f7b3a5f9608284aac771517fef9a",
       "routes": "sha256:8460ec8eb8679ccbafe0fd56878bbaf049e8c8562d45d2c675607f5a48784be2",
       "signals": "sha256:91d0f3b99a6980d031f1f09b22fa300f29a26fb9166a93cfa9f7a624f7b4e176",
       "stationBoundaries": "sha256:36f1852fd6a64d9bcd8c25ad2aac22d2a86ae1c273544ca1e7a923852fa20cd4",
       "switchElements": "sha256:fe471ee1c255021503a7e8f6862566e6d5aeb76a76cad3782b7ce37c87adb591",
-      "trackSections": "sha256:dd2ee2e1d729211c5aaac5bf7c209b78c81c887bff24f6413ae439d92f4b8496"
+      "trackSections": "sha256:78608ac79ca68d66f19dd5cd8112e477b957b6e7d98f8617420e4d827f63f13f"
      }
     }
    }
   },
-  "hash": "sha256:96aaac7eea6301e5967ccd17cd17d666ae865a6f1d5742df7003219a79dea5cd"
+  "hash": "sha256:979b4def4681043ef6ff16ac345148891d71102a68a52fd20166e770063418aa"
  },
  {
   "name": "infra-data 1.0: a boundary marked by a platform no stopping place is at",
@@ -24297,21 +24327,21 @@
   "manifest": {
    "domains": {
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
      "fields": "sha256:8d9ae941998100a45679076ed67feb55eaf5c06dc028c5ff9396bbe93de06ffb",
      "collections": {
       "axisSurveys": "sha256:d7c72a86fce12420e2a646aa0087a31572d6db6bedd895b31181daeacff533cc",
-      "platforms": "sha256:c202498541182619ca01485b561de2425945ddf3785021239cbb995bc20440b3",
+      "platforms": "sha256:4dc345a5bbb1e9dfad3c83ea87c4c9a284de3e6ede4b3af5159e744fe6cc5831",
       "referenceAxes": "sha256:04906ea395d28e3d03af2cc45d7057c92d832faaeb875b5fb0ba3c9c40047a3e"
      }
     },
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -24320,12 +24350,12 @@
       "stoppingPlaces": "sha256:b4a83cede412854f8f0006c179b7d5e41ec6896c18318c6195c59bcb2f9fb82a",
       "switches": "sha256:2b44461e52775cdabdc9c02e42115f9441b311b4240d09dca153d5683a4a4da5",
       "trackPaths": "sha256:b6c705b568655eb210b5794b4ce86a95e2f3da8b51f5c298057698fb02b5db8f",
-      "tracks": "sha256:7a2b2f9d94022372e11d2c62724d510cfa23633a03b2443fbeac26b074c3d723"
+      "tracks": "sha256:b79cfab38ac468ae24d5d2e7ef1afe8d235dc6f4c76a6d2ff157bf282fd1713d"
      }
     },
     "signalling": {
-     "version": "3.1",
-     "schema": "sha256:2b365df5f72c616a99c70729f50afd5fdd243f14cff4798f78a70f0855a1e14d",
+     "version": "4.0",
+     "schema": "sha256:3f2028a819de91859b4043792875c785a8b1a0efee098b5d8153751b0477f9b5",
      "dependsOn": [
       "core"
      ],
@@ -24335,17 +24365,17 @@
       "detectionPoints": "sha256:c98deaa1cfec2a74eded2bfb06749831953268a0e3d4a2d9f5fcf21103d899e7",
       "flankProtection": "sha256:0f5fddb634a2d9ab8ee97b8c819917e50051b58e8013a3067258bd2b8bd43567",
       "itineraries": "sha256:48fa57878f19759e28d9bc188310030a7bd27e244d1e2f4726e27ce637de77ce",
-      "overlaps": "sha256:3dc90110fb0c0f878b841fd5d497829f036e5627d4099479d1726c8905b62e3e",
+      "overlaps": "sha256:9bed917cd1a86b07f346a1335860ffb679b2f7b3a5f9608284aac771517fef9a",
       "routes": "sha256:8460ec8eb8679ccbafe0fd56878bbaf049e8c8562d45d2c675607f5a48784be2",
       "signals": "sha256:91d0f3b99a6980d031f1f09b22fa300f29a26fb9166a93cfa9f7a624f7b4e176",
       "stationBoundaries": "sha256:9f5f6062438696bcffbac0581c1c2c2632bdd72297c7ebec2294dd8b7120c6eb",
       "switchElements": "sha256:fe471ee1c255021503a7e8f6862566e6d5aeb76a76cad3782b7ce37c87adb591",
-      "trackSections": "sha256:dd2ee2e1d729211c5aaac5bf7c209b78c81c887bff24f6413ae439d92f4b8496"
+      "trackSections": "sha256:78608ac79ca68d66f19dd5cd8112e477b957b6e7d98f8617420e4d827f63f13f"
      }
     }
    }
   },
-  "hash": "sha256:1595aa13016b96a2a3f6b475fdbb352a739f7b775bbf0a488640f9b015a6cfae"
+  "hash": "sha256:77783675b9229c3c0d80dd4b7008263009994e9c6d40d5e5a47753db274602b3"
  },
  {
   "name": "infra-data 1.0: core as written before the design speed took its name",
@@ -24677,21 +24707,21 @@
   "manifest": {
    "domains": {
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
      "fields": "sha256:8d9ae941998100a45679076ed67feb55eaf5c06dc028c5ff9396bbe93de06ffb",
      "collections": {
       "axisSurveys": "sha256:d7c72a86fce12420e2a646aa0087a31572d6db6bedd895b31181daeacff533cc",
-      "platforms": "sha256:1ab2e26c887a12abb8b4fdfaf22b1e56ec9406f85b66f80155a57a0c1aa07910",
+      "platforms": "sha256:2853131c119b12a613cc8f09bdf8db392f6b4aeed2b2a8c34e80cd1b27bfd602",
       "referenceAxes": "sha256:04906ea395d28e3d03af2cc45d7057c92d832faaeb875b5fb0ba3c9c40047a3e"
      }
     },
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -24700,12 +24730,12 @@
       "stoppingPlaces": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
       "switches": "sha256:2b44461e52775cdabdc9c02e42115f9441b311b4240d09dca153d5683a4a4da5",
       "trackPaths": "sha256:b6c705b568655eb210b5794b4ce86a95e2f3da8b51f5c298057698fb02b5db8f",
-      "tracks": "sha256:7a2b2f9d94022372e11d2c62724d510cfa23633a03b2443fbeac26b074c3d723"
+      "tracks": "sha256:b79cfab38ac468ae24d5d2e7ef1afe8d235dc6f4c76a6d2ff157bf282fd1713d"
      }
     }
    }
   },
-  "hash": "sha256:72cb394a6c83dc2bb623e0b1e52ec0698886adff92b8467845164fff1e455807"
+  "hash": "sha256:a4c138a63dbdb5471c907cc838e9a901673533bc950c83dfb36869e8c68998fb"
  },
  {
   "name": "infra-data 1.0: a domain this build does not read",
@@ -25695,21 +25725,21 @@
   "manifest": {
    "domains": {
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
      "fields": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
      "collections": {
       "axisSurveys": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
-      "platforms": "sha256:1ab2e26c887a12abb8b4fdfaf22b1e56ec9406f85b66f80155a57a0c1aa07910",
+      "platforms": "sha256:2853131c119b12a613cc8f09bdf8db392f6b4aeed2b2a8c34e80cd1b27bfd602",
       "referenceAxes": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
      }
     },
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -25718,12 +25748,12 @@
       "stoppingPlaces": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
       "switches": "sha256:2b44461e52775cdabdc9c02e42115f9441b311b4240d09dca153d5683a4a4da5",
       "trackPaths": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
-      "tracks": "sha256:7a2b2f9d94022372e11d2c62724d510cfa23633a03b2443fbeac26b074c3d723"
+      "tracks": "sha256:b79cfab38ac468ae24d5d2e7ef1afe8d235dc6f4c76a6d2ff157bf282fd1713d"
      }
     }
    }
   },
-  "hash": "sha256:f33cf80eef3b70e90c824abba99fc73326996b5a5daa668507f39b90317b624a"
+  "hash": "sha256:8199c9f015a9c7deb11565c09d7187384dab9390d94771fe6886b8d4aba2f93d"
  },
  {
   "name": "stages: the sample",
@@ -26056,21 +26086,21 @@
   "manifest": {
    "domains": {
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
      "fields": "sha256:8d9ae941998100a45679076ed67feb55eaf5c06dc028c5ff9396bbe93de06ffb",
      "collections": {
       "axisSurveys": "sha256:d7c72a86fce12420e2a646aa0087a31572d6db6bedd895b31181daeacff533cc",
-      "platforms": "sha256:1ab2e26c887a12abb8b4fdfaf22b1e56ec9406f85b66f80155a57a0c1aa07910",
+      "platforms": "sha256:2853131c119b12a613cc8f09bdf8db392f6b4aeed2b2a8c34e80cd1b27bfd602",
       "referenceAxes": "sha256:04906ea395d28e3d03af2cc45d7057c92d832faaeb875b5fb0ba3c9c40047a3e"
      }
     },
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -26079,12 +26109,12 @@
       "stoppingPlaces": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
       "switches": "sha256:2b44461e52775cdabdc9c02e42115f9441b311b4240d09dca153d5683a4a4da5",
       "trackPaths": "sha256:b6c705b568655eb210b5794b4ce86a95e2f3da8b51f5c298057698fb02b5db8f",
-      "tracks": "sha256:7a2b2f9d94022372e11d2c62724d510cfa23633a03b2443fbeac26b074c3d723"
+      "tracks": "sha256:b79cfab38ac468ae24d5d2e7ef1afe8d235dc6f4c76a6d2ff157bf282fd1713d"
      }
     }
    }
   },
-  "hash": "sha256:72cb394a6c83dc2bb623e0b1e52ec0698886adff92b8467845164fff1e455807"
+  "hash": "sha256:a4c138a63dbdb5471c907cc838e9a901673533bc950c83dfb36869e8c68998fb"
  },
  {
   "name": "stages: the sample, carrying its schemas",
@@ -27690,21 +27720,21 @@
   "manifest": {
    "domains": {
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
      "fields": "sha256:8d9ae941998100a45679076ed67feb55eaf5c06dc028c5ff9396bbe93de06ffb",
      "collections": {
       "axisSurveys": "sha256:d7c72a86fce12420e2a646aa0087a31572d6db6bedd895b31181daeacff533cc",
-      "platforms": "sha256:1ab2e26c887a12abb8b4fdfaf22b1e56ec9406f85b66f80155a57a0c1aa07910",
+      "platforms": "sha256:2853131c119b12a613cc8f09bdf8db392f6b4aeed2b2a8c34e80cd1b27bfd602",
       "referenceAxes": "sha256:04906ea395d28e3d03af2cc45d7057c92d832faaeb875b5fb0ba3c9c40047a3e"
      }
     },
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -27713,12 +27743,12 @@
       "stoppingPlaces": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
       "switches": "sha256:2b44461e52775cdabdc9c02e42115f9441b311b4240d09dca153d5683a4a4da5",
       "trackPaths": "sha256:b6c705b568655eb210b5794b4ce86a95e2f3da8b51f5c298057698fb02b5db8f",
-      "tracks": "sha256:7a2b2f9d94022372e11d2c62724d510cfa23633a03b2443fbeac26b074c3d723"
+      "tracks": "sha256:b79cfab38ac468ae24d5d2e7ef1afe8d235dc6f4c76a6d2ff157bf282fd1713d"
      }
     }
    }
   },
-  "hash": "sha256:72cb394a6c83dc2bb623e0b1e52ec0698886adff92b8467845164fff1e455807"
+  "hash": "sha256:a4c138a63dbdb5471c907cc838e9a901673533bc950c83dfb36869e8c68998fb"
  },
  {
   "name": "stages: the sample with its signalling",
@@ -28552,21 +28582,21 @@
   "manifest": {
    "domains": {
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
      "fields": "sha256:8d9ae941998100a45679076ed67feb55eaf5c06dc028c5ff9396bbe93de06ffb",
      "collections": {
       "axisSurveys": "sha256:d7c72a86fce12420e2a646aa0087a31572d6db6bedd895b31181daeacff533cc",
-      "platforms": "sha256:7b22ad9f70c7d17a4b780e774f4995e63db0342ef438948dc3bbf7ae99ad7d3e",
+      "platforms": "sha256:2f905ed4acae130e7986cc288e017918399c195e47509ec4a3d00fe34545e6cc",
       "referenceAxes": "sha256:04906ea395d28e3d03af2cc45d7057c92d832faaeb875b5fb0ba3c9c40047a3e"
      }
     },
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -28575,12 +28605,12 @@
       "stoppingPlaces": "sha256:f2127e8a5f5a3a1486ce2322b77f2eba3b9f82d39bf9e50e09494308ab9de7b4",
       "switches": "sha256:2b44461e52775cdabdc9c02e42115f9441b311b4240d09dca153d5683a4a4da5",
       "trackPaths": "sha256:b6c705b568655eb210b5794b4ce86a95e2f3da8b51f5c298057698fb02b5db8f",
-      "tracks": "sha256:7a2b2f9d94022372e11d2c62724d510cfa23633a03b2443fbeac26b074c3d723"
+      "tracks": "sha256:b79cfab38ac468ae24d5d2e7ef1afe8d235dc6f4c76a6d2ff157bf282fd1713d"
      }
     },
     "signalling": {
-     "version": "3.1",
-     "schema": "sha256:2b365df5f72c616a99c70729f50afd5fdd243f14cff4798f78a70f0855a1e14d",
+     "version": "4.0",
+     "schema": "sha256:3f2028a819de91859b4043792875c785a8b1a0efee098b5d8153751b0477f9b5",
      "dependsOn": [
       "core"
      ],
@@ -28590,17 +28620,17 @@
       "detectionPoints": "sha256:c98deaa1cfec2a74eded2bfb06749831953268a0e3d4a2d9f5fcf21103d899e7",
       "flankProtection": "sha256:0f5fddb634a2d9ab8ee97b8c819917e50051b58e8013a3067258bd2b8bd43567",
       "itineraries": "sha256:48fa57878f19759e28d9bc188310030a7bd27e244d1e2f4726e27ce637de77ce",
-      "overlaps": "sha256:3dc90110fb0c0f878b841fd5d497829f036e5627d4099479d1726c8905b62e3e",
+      "overlaps": "sha256:9bed917cd1a86b07f346a1335860ffb679b2f7b3a5f9608284aac771517fef9a",
       "routes": "sha256:8460ec8eb8679ccbafe0fd56878bbaf049e8c8562d45d2c675607f5a48784be2",
       "signals": "sha256:91d0f3b99a6980d031f1f09b22fa300f29a26fb9166a93cfa9f7a624f7b4e176",
       "stationBoundaries": "sha256:2bf80f1521fd6eac8c1d9db2dcd3fa38756e1c88e5d9bec4b89afc33f4004381",
       "switchElements": "sha256:fe471ee1c255021503a7e8f6862566e6d5aeb76a76cad3782b7ce37c87adb591",
-      "trackSections": "sha256:dd2ee2e1d729211c5aaac5bf7c209b78c81c887bff24f6413ae439d92f4b8496"
+      "trackSections": "sha256:78608ac79ca68d66f19dd5cd8112e477b957b6e7d98f8617420e4d827f63f13f"
      }
     }
    }
   },
-  "hash": "sha256:e8282f5ea650085e13df9dee0be9f710e79406405a089d226496344466b6fd05"
+  "hash": "sha256:ffc17f5541ebf870b59bf14a3f9ee9cbbefd116423c0734a5cd20e5a8860c609"
  },
  {
   "name": "stages: the sample with its electrification",
@@ -28956,21 +28986,21 @@
   "manifest": {
    "domains": {
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
      "fields": "sha256:8d9ae941998100a45679076ed67feb55eaf5c06dc028c5ff9396bbe93de06ffb",
      "collections": {
       "axisSurveys": "sha256:d7c72a86fce12420e2a646aa0087a31572d6db6bedd895b31181daeacff533cc",
-      "platforms": "sha256:1ab2e26c887a12abb8b4fdfaf22b1e56ec9406f85b66f80155a57a0c1aa07910",
+      "platforms": "sha256:2853131c119b12a613cc8f09bdf8db392f6b4aeed2b2a8c34e80cd1b27bfd602",
       "referenceAxes": "sha256:04906ea395d28e3d03af2cc45d7057c92d832faaeb875b5fb0ba3c9c40047a3e"
      }
     },
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -28979,7 +29009,7 @@
       "stoppingPlaces": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
       "switches": "sha256:2b44461e52775cdabdc9c02e42115f9441b311b4240d09dca153d5683a4a4da5",
       "trackPaths": "sha256:b6c705b568655eb210b5794b4ce86a95e2f3da8b51f5c298057698fb02b5db8f",
-      "tracks": "sha256:7a2b2f9d94022372e11d2c62724d510cfa23633a03b2443fbeac26b074c3d723"
+      "tracks": "sha256:b79cfab38ac468ae24d5d2e7ef1afe8d235dc6f4c76a6d2ff157bf282fd1713d"
      }
     },
     "electrification": {
@@ -28995,7 +29025,7 @@
     }
    }
   },
-  "hash": "sha256:3d162c7f474b9de57ca5c07260891a95e2f469af0fb638d97345a5f492c8d3de"
+  "hash": "sha256:7879492b7453ea69b59bbc9a488c425c5793f4275139bc2c7969a0484b97c630"
  },
  {
   "name": "stages: a stage with its day, a track out of service with it and one into",
@@ -29333,21 +29363,21 @@
   "manifest": {
    "domains": {
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
      "fields": "sha256:8d9ae941998100a45679076ed67feb55eaf5c06dc028c5ff9396bbe93de06ffb",
      "collections": {
       "axisSurveys": "sha256:d7c72a86fce12420e2a646aa0087a31572d6db6bedd895b31181daeacff533cc",
-      "platforms": "sha256:1ab2e26c887a12abb8b4fdfaf22b1e56ec9406f85b66f80155a57a0c1aa07910",
+      "platforms": "sha256:2853131c119b12a613cc8f09bdf8db392f6b4aeed2b2a8c34e80cd1b27bfd602",
       "referenceAxes": "sha256:04906ea395d28e3d03af2cc45d7057c92d832faaeb875b5fb0ba3c9c40047a3e"
      }
     },
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -29356,12 +29386,12 @@
       "stoppingPlaces": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
       "switches": "sha256:2b44461e52775cdabdc9c02e42115f9441b311b4240d09dca153d5683a4a4da5",
       "trackPaths": "sha256:b6c705b568655eb210b5794b4ce86a95e2f3da8b51f5c298057698fb02b5db8f",
-      "tracks": "sha256:1b20778b842d8d3f667980a3a99995671809267a1b0fec684a2323d5dd23b733"
+      "tracks": "sha256:de70a1ec02d69a2bd1c8398ce051912ef98633a252dd6f5c50e7e15e4703b1bc"
      }
     }
    }
   },
-  "hash": "sha256:7fd4c17367ce8c9d4673edd48e2b80cab23b7a18ab2ab988ed3ea8de384632dc"
+  "hash": "sha256:4f3d38beac74188b6b67896c67a9b3d83b8e3d571a6ec86706dc51a05792f295"
  },
  {
   "name": "stages: a lifespan naming a stage that is not there",
@@ -29694,21 +29724,21 @@
   "manifest": {
    "domains": {
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
      "fields": "sha256:8d9ae941998100a45679076ed67feb55eaf5c06dc028c5ff9396bbe93de06ffb",
      "collections": {
       "axisSurveys": "sha256:d7c72a86fce12420e2a646aa0087a31572d6db6bedd895b31181daeacff533cc",
-      "platforms": "sha256:1ab2e26c887a12abb8b4fdfaf22b1e56ec9406f85b66f80155a57a0c1aa07910",
+      "platforms": "sha256:2853131c119b12a613cc8f09bdf8db392f6b4aeed2b2a8c34e80cd1b27bfd602",
       "referenceAxes": "sha256:04906ea395d28e3d03af2cc45d7057c92d832faaeb875b5fb0ba3c9c40047a3e"
      }
     },
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -29717,12 +29747,12 @@
       "stoppingPlaces": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
       "switches": "sha256:2b44461e52775cdabdc9c02e42115f9441b311b4240d09dca153d5683a4a4da5",
       "trackPaths": "sha256:b6c705b568655eb210b5794b4ce86a95e2f3da8b51f5c298057698fb02b5db8f",
-      "tracks": "sha256:7a2b2f9d94022372e11d2c62724d510cfa23633a03b2443fbeac26b074c3d723"
+      "tracks": "sha256:b79cfab38ac468ae24d5d2e7ef1afe8d235dc6f4c76a6d2ff157bf282fd1713d"
      }
     }
    }
   },
-  "hash": "sha256:72cb394a6c83dc2bb623e0b1e52ec0698886adff92b8467845164fff1e455807"
+  "hash": "sha256:a4c138a63dbdb5471c907cc838e9a901673533bc950c83dfb36869e8c68998fb"
  },
  {
   "name": "stages: a signal of the final state",
@@ -30559,21 +30589,21 @@
   "manifest": {
    "domains": {
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
      "fields": "sha256:8d9ae941998100a45679076ed67feb55eaf5c06dc028c5ff9396bbe93de06ffb",
      "collections": {
       "axisSurveys": "sha256:d7c72a86fce12420e2a646aa0087a31572d6db6bedd895b31181daeacff533cc",
-      "platforms": "sha256:7b22ad9f70c7d17a4b780e774f4995e63db0342ef438948dc3bbf7ae99ad7d3e",
+      "platforms": "sha256:2f905ed4acae130e7986cc288e017918399c195e47509ec4a3d00fe34545e6cc",
       "referenceAxes": "sha256:04906ea395d28e3d03af2cc45d7057c92d832faaeb875b5fb0ba3c9c40047a3e"
      }
     },
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -30582,12 +30612,12 @@
       "stoppingPlaces": "sha256:f2127e8a5f5a3a1486ce2322b77f2eba3b9f82d39bf9e50e09494308ab9de7b4",
       "switches": "sha256:2b44461e52775cdabdc9c02e42115f9441b311b4240d09dca153d5683a4a4da5",
       "trackPaths": "sha256:b6c705b568655eb210b5794b4ce86a95e2f3da8b51f5c298057698fb02b5db8f",
-      "tracks": "sha256:7a2b2f9d94022372e11d2c62724d510cfa23633a03b2443fbeac26b074c3d723"
+      "tracks": "sha256:b79cfab38ac468ae24d5d2e7ef1afe8d235dc6f4c76a6d2ff157bf282fd1713d"
      }
     },
     "signalling": {
-     "version": "3.1",
-     "schema": "sha256:2b365df5f72c616a99c70729f50afd5fdd243f14cff4798f78a70f0855a1e14d",
+     "version": "4.0",
+     "schema": "sha256:3f2028a819de91859b4043792875c785a8b1a0efee098b5d8153751b0477f9b5",
      "dependsOn": [
       "core"
      ],
@@ -30597,17 +30627,17 @@
       "detectionPoints": "sha256:c98deaa1cfec2a74eded2bfb06749831953268a0e3d4a2d9f5fcf21103d899e7",
       "flankProtection": "sha256:0f5fddb634a2d9ab8ee97b8c819917e50051b58e8013a3067258bd2b8bd43567",
       "itineraries": "sha256:48fa57878f19759e28d9bc188310030a7bd27e244d1e2f4726e27ce637de77ce",
-      "overlaps": "sha256:3dc90110fb0c0f878b841fd5d497829f036e5627d4099479d1726c8905b62e3e",
+      "overlaps": "sha256:9bed917cd1a86b07f346a1335860ffb679b2f7b3a5f9608284aac771517fef9a",
       "routes": "sha256:8460ec8eb8679ccbafe0fd56878bbaf049e8c8562d45d2c675607f5a48784be2",
       "signals": "sha256:ba5f155bcd117ad79a3888bb5b3940cc2b3279ee6106818b7e5f17e2b76ac2ce",
       "stationBoundaries": "sha256:2bf80f1521fd6eac8c1d9db2dcd3fa38756e1c88e5d9bec4b89afc33f4004381",
       "switchElements": "sha256:fe471ee1c255021503a7e8f6862566e6d5aeb76a76cad3782b7ce37c87adb591",
-      "trackSections": "sha256:dd2ee2e1d729211c5aaac5bf7c209b78c81c887bff24f6413ae439d92f4b8496"
+      "trackSections": "sha256:78608ac79ca68d66f19dd5cd8112e477b957b6e7d98f8617420e4d827f63f13f"
      }
     }
    }
   },
-  "hash": "sha256:a257bb3029ac3d83791696f24be69426708554904f0c2c236304479e70f32867"
+  "hash": "sha256:155fda53a7151a28183bb276c057728ac3d7eca9ffb49290e952d1957c851ab2"
  },
  {
   "name": "stages: civil of a version that does not go with the core's",
@@ -32101,21 +32131,21 @@
   "manifest": {
    "domains": {
     "civil": {
-     "version": "2.1",
-     "schema": "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879",
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
      "dependsOn": [
       "core"
      ],
      "fields": "sha256:8d9ae941998100a45679076ed67feb55eaf5c06dc028c5ff9396bbe93de06ffb",
      "collections": {
       "axisSurveys": "sha256:d7c72a86fce12420e2a646aa0087a31572d6db6bedd895b31181daeacff533cc",
-      "platforms": "sha256:7b22ad9f70c7d17a4b780e774f4995e63db0342ef438948dc3bbf7ae99ad7d3e",
+      "platforms": "sha256:2f905ed4acae130e7986cc288e017918399c195e47509ec4a3d00fe34545e6cc",
       "referenceAxes": "sha256:04906ea395d28e3d03af2cc45d7057c92d832faaeb875b5fb0ba3c9c40047a3e"
      }
     },
     "core": {
-     "version": "3.1",
-     "schema": "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c",
+     "version": "4.0",
+     "schema": "sha256:cb072b5b6e3477ef4f816297f300aa54ecd4dbed33834a793e23947c89c6ab61",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:5b02d33e3c0c06793db9a6b28c562ab0cedb93e9ed1a6e0b326b479442785784",
@@ -32124,12 +32154,12 @@
       "stoppingPlaces": "sha256:f2127e8a5f5a3a1486ce2322b77f2eba3b9f82d39bf9e50e09494308ab9de7b4",
       "switches": "sha256:2b44461e52775cdabdc9c02e42115f9441b311b4240d09dca153d5683a4a4da5",
       "trackPaths": "sha256:b6c705b568655eb210b5794b4ce86a95e2f3da8b51f5c298057698fb02b5db8f",
-      "tracks": "sha256:7a2b2f9d94022372e11d2c62724d510cfa23633a03b2443fbeac26b074c3d723"
+      "tracks": "sha256:b79cfab38ac468ae24d5d2e7ef1afe8d235dc6f4c76a6d2ff157bf282fd1713d"
      }
     },
     "signalling": {
-     "version": "3.1",
-     "schema": "sha256:2b365df5f72c616a99c70729f50afd5fdd243f14cff4798f78a70f0855a1e14d",
+     "version": "4.0",
+     "schema": "sha256:3f2028a819de91859b4043792875c785a8b1a0efee098b5d8153751b0477f9b5",
      "dependsOn": [
       "core"
      ],
@@ -32139,16 +32169,16 @@
       "detectionPoints": "sha256:c98deaa1cfec2a74eded2bfb06749831953268a0e3d4a2d9f5fcf21103d899e7",
       "flankProtection": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
       "itineraries": "sha256:48fa57878f19759e28d9bc188310030a7bd27e244d1e2f4726e27ce637de77ce",
-      "overlaps": "sha256:cec8094646dc0bb0b11db06d8912f8fafa931ae3f4a795a27dbac79e751fdc05",
-      "routes": "sha256:8460ec8eb8679ccbafe0fd56878bbaf049e8c8562d45d2c675607f5a48784be2",
+      "overlaps": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "routes": "sha256:e2db68b6a163e1b2ca163968dbf07f838b656178f82b1a5b7b9746af201c072e",
       "signals": "sha256:30a1133bc82d739443f8a2f2cc19c3d6d4a54d9c26fde873c617fbd9429c1a4a",
       "stationBoundaries": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
       "switchElements": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
-      "trackSections": "sha256:dd2ee2e1d729211c5aaac5bf7c209b78c81c887bff24f6413ae439d92f4b8496"
+      "trackSections": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
      }
     }
    }
   },
-  "hash": "sha256:43140a933b4fc1a77040b013c9333c3fa4c99ca0cf7ad8bd6170a75b691baabc"
+  "hash": "sha256:2751d2456dff1b58fb1d23c86bd8d9579fb46a4f82ee33a97dabf7b625ab4252"
  }
 ]

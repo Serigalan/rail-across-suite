@@ -27,6 +27,16 @@ pub fn project_document(record: &Value, carry_schemas: bool, check: bool) -> Res
     to_document(&dehydrate_project(record), carry_schemas, check)
 }
 
+/// The domains of a project record's document in the words and names the record keeps (decision 0029, phase 1):
+/// what a tool reads of the core beside its own layer until the record follows the document (phase 6). Not
+/// checked: a tool reads it while it works.
+pub fn record_domains(record: &Value) -> Result<Value> {
+    let doc = to_document(&dehydrate_project(record), false, false)?;
+    let mut domains = doc["domains"].as_object().cloned().unwrap_or_default();
+    crate::words::back(&mut domains);
+    Ok(Value::Object(domains))
+}
+
 /// The tracks of an exported tracks file — an infra-data-1.0 document holding
 /// them —, refused where it is not one or holds none (`tracks_empty`), and where
 /// a track belongs to a switch the project does not have (`switch_missing`):

@@ -38,9 +38,9 @@ pub const FORMAT_NAME: &str = "infra-data-2.0";
 pub const OLD_FORMAT: &str = "rail-across";
 
 const ENVELOPE: &str = include_str!("../../../schemas/infra-data.schema.json");
-const CORE: &str = include_str!("../../../schemas/core/3.1.schema.json");
-const CIVIL: &str = include_str!("../../../schemas/civil/2.1.schema.json");
-const SIGNALLING: &str = include_str!("../../../schemas/signalling/3.1.schema.json");
+const CORE: &str = include_str!("../../../schemas/core/4.0.schema.json");
+const CIVIL: &str = include_str!("../../../schemas/civil/3.0.schema.json");
+const SIGNALLING: &str = include_str!("../../../schemas/signalling/4.0.schema.json");
 const ELECTRIFICATION: &str = include_str!("../../../schemas/electrification/2.1.schema.json");
 
 struct Schemas {
@@ -128,6 +128,10 @@ const PAST: &[(&str, &str, &str)] = &[
     ("civil", "2.0", "sha256:b96345ebf422de4fb8d7c1bf426b6db7468f5f85f36d531df86a2e0d17f4e03c"),
     ("signalling", "3.0", "sha256:cb1bad694c35458f33858b91d4893c137da0c378ce92a7a7217addbc13d27083"),
     ("electrification", "2.0", "sha256:812af795a72e4fec5e9f15cfec93bf2180907775ee98db987a9d8c92dfec2eb9"),
+    // Every reference names an object, the kinds still numbers (decision 0028, phase C).
+    ("core", "3.1", "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c"),
+    ("civil", "2.1", "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879"),
+    ("signalling", "3.1", "sha256:2b365df5f72c616a99c70729f50afd5fdd243f14cff4798f78a70f0855a1e14d"),
 ];
 
 /// The hash the schema of a domain's version goes by: this build's, or one of a version before (`PAST`).
@@ -519,6 +523,7 @@ struct Step {
 const STEPS: &[Step] = &[
     Step { domains: LIFESPANS_BY_DAY, apply: lifespans_by_day },
     Step { domains: REFERENCES_RESOLVED, apply: references_resolved },
+    Step { domains: WORDS_AND_NAMES, apply: words_and_names },
 ];
 
 const LIFESPANS_BY_DAY: &[(&str, &str, &str)] =
@@ -526,6 +531,8 @@ const LIFESPANS_BY_DAY: &[(&str, &str, &str)] =
 
 const REFERENCES_RESOLVED: &[(&str, &str, &str)] =
     &[("core", "3.0", "3.1"), ("civil", "2.0", "2.1"), ("signalling", "3.0", "3.1"), ("electrification", "2.0", "2.1")];
+
+const WORDS_AND_NAMES: &[(&str, &str, &str)] = &[("core", "3.1", "4.0"), ("civil", "2.1", "3.0"), ("signalling", "3.1", "4.0")];
 
 fn version_of<'a>(doc: &'a Value, name: &str) -> Option<&'a str> {
     doc["domains"].get(name)?.get("version")?.as_str()
@@ -587,6 +594,21 @@ fn references_resolved(doc: &Value) -> Value {
     let mut out = without_dangling(doc).0;
     let Some(Value::Object(domains)) = out.get_mut("domains") else { return out };
     for (name, _, to) in REFERENCES_RESOLVED {
+        let Some(Value::Object(domain)) = domains.get_mut(*name) else { continue };
+        domain.insert("version".into(), json!(to));
+        domain.insert("schema".into(), json!(hash_of(name, to)));
+    }
+    out
+}
+
+/// Core 4.0, its words and names (decision 0029, phase 1): the kinds as words, the references ending in `Id`,
+/// no plane of an element's own, a switch with `B1` its main track (`words`). The domains are at the step's
+/// versions after it.
+fn words_and_names(doc: &Value) -> Value {
+    let mut out = doc.clone();
+    let Some(Value::Object(domains)) = out.get_mut("domains") else { return out };
+    crate::words::forward(domains);
+    for (name, _, to) in WORDS_AND_NAMES {
         let Some(Value::Object(domain)) = domains.get_mut(*name) else { continue };
         domain.insert("version".into(), json!(to));
         domain.insert("schema".into(), json!(hash_of(name, to)));

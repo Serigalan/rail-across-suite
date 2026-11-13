@@ -42,8 +42,10 @@ pub fn check_kept(record: Value) -> Result<Checked, ApiError> {
     let list = |k: &str| v.get(k).and_then(Value::as_array).cloned().unwrap_or_default();
     let (mut errors, mut warnings) = (list("errors"), list("warnings"));
     if rail_across_js::truthy(record.get("signalling")) {
-        let doc = project_document(&record, false, true).map_err(|e| ApiError::new(422, &e.code))?;
-        let found = rail_across_signalling::check::check_signalling_on(&doc["domains"]["core"], &doc["domains"]["signalling"], &doc["domains"]["civil"]);
+        project_document(&record, false, true).map_err(|e| ApiError::new(422, &e.code))?;
+        // The signalling's check reads the domains in the words the record keeps (decision 0029, phase 1).
+        let domains = rail_across_doc::persistence::record_domains(&record).map_err(|e| ApiError::new(422, &e.code))?;
+        let found = rail_across_signalling::check::check_signalling_on(&domains["core"], &domains["signalling"], &domains["civil"]);
         let keyed = |f: &Value| {
             let mut o: Map<String, Value> = f.as_object().cloned().unwrap_or_default();
             o.insert("domain".into(), json!("signalling"));

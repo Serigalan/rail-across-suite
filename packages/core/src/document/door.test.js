@@ -112,8 +112,8 @@ describe('a record as an infra-data-2.0 document', () => {
     })
     const doc = toDocument(r)
     expect(doc.domains.core.collections.operationalPoints).toEqual(operationalPoints)
-    expect(doc.domains.core.collections.tracks.map(t => t.operationalPoint)).toEqual(['op-k', 'op-k', undefined])
-    expect(doc.domains.civil.collections.platforms[0].operationalPoint).toBe('op-k')
+    expect(doc.domains.core.collections.tracks.map(t => t.operationalPointId)).toEqual(['op-k', 'op-k', undefined])
+    expect(doc.domains.civil.collections.platforms[0].operationalPointId).toBe('op-k')
     // a station nothing names stays, under its id
     expect(roundTrip(r)).toEqual(r)
   })

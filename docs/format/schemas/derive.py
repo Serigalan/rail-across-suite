@@ -127,6 +127,13 @@ signalling['description'] = ('The signalling: signals and their logical signals,
                              'Its concepts map onto PlanPro 1.10 so that a plan can be exported; it follows PlanPro '
                              'only so far as that asks. Which systems, kinds, settings and aspects there are is the '
                              'catalogue\'s. A layer on core.')
+sd = signalling['$defs']
+rename(sd['TrackSection']['properties'], 'boundedBy', 'detectionPointIds', sd['TrackSection'].get('required'))
+for k in ['Route', 'Overlap', 'FlankProtection']:
+    rename(sd[k]['properties'], 'clearSections', 'clearSectionIds', sd[k].get('required'))
+pass_on = sd['FlankProtection']['properties']['passOn']['properties']
+rename(pass_on, 'left', 'leftId')
+rename(pass_on, 'right', 'rightId')
 write('signalling/4.0.schema.json', signalling)
 
 # ── electrification 3.0: masts, suspension points, section insulators, contact wires ───────────────────────

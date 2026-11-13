@@ -520,7 +520,7 @@
       "required": [
         "id",
         "kind",
-        "boundedBy"
+        "detectionPointIds"
       ],
       "additionalProperties": false,
       "properties": {
@@ -543,7 +543,7 @@
             "other"
           ]
         },
-        "boundedBy": {
+        "detectionPointIds": {
           "type": "array",
           "minItems": 1,
           "items": {
@@ -764,7 +764,7 @@
           "type": "boolean",
           "description": "Its distant signal stands at a shortened braking distance (PlanPro Fstr_Vsigabstand_Verkuerzt)."
         },
-        "clearSections": {
+        "clearSectionIds": {
           "description": "For a shunting route, the sections that must be clear (PlanPro ID_FMA_Anlage_Rangier_Frei); a train route's follow from its run.",
           "type": "array",
           "items": {
@@ -880,7 +880,7 @@
           "type": "number",
           "minimum": 0
         },
-        "clearSections": {
+        "clearSectionIds": {
           "type": "array",
           "items": {
             "$ref": "core#/$defs/Ref",
@@ -1002,17 +1002,17 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "left": {
+            "leftId": {
               "$ref": "core#/$defs/Ref",
               "x-target": "signalling.flankProtection"
             },
-            "right": {
+            "rightId": {
               "$ref": "core#/$defs/Ref",
               "x-target": "signalling.flankProtection"
             }
           }
         },
-        "clearSections": {
+        "clearSectionIds": {
           "type": "array",
           "items": {
             "$ref": "core#/$defs/Ref",

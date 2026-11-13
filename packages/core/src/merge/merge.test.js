@@ -124,12 +124,13 @@ describe.skipIf(!hasPek)('mergeProject — PEK Halle–Könnern', () => {
 
   it('rule 4: a km line new on both sides conflicts where they differ', () => {
     const base = loadPek(), mine = loadPek(), theirs = loadPek()
-    mine.kmLines = [{ lineNumber: 6050, runs: [[[11.9, 51.5, 0]]] }]
-    theirs.kmLines = [{ lineNumber: 6050, runs: [[[11.9, 51.5, 0]]] }]
+    // a km line goes by its id, which the km sources draw from its number
+    mine.kmLines = [{ id: 'km-6050', lineNumber: 6050, runs: [[[11.9, 51.5, 0]]] }]
+    theirs.kmLines = [{ id: 'km-6050', lineNumber: 6050, runs: [[[11.9, 51.5, 0]]] }]
     expect(mergeProject({ base, mine, theirs }).conflicts).toEqual([])
-    theirs.kmLines = [{ lineNumber: 6050, runs: [[[11.9, 51.5, 1]]] }]
+    theirs.kmLines = [{ id: 'km-6050', lineNumber: 6050, runs: [[[11.9, 51.5, 1]]] }]
     const { conflicts } = mergeProject({ base, mine, theirs })
-    expect(conflicts).toEqual([expect.objectContaining({ kind: 'both_added', collection: 'kmLines', objectId: '6050' })])
+    expect(conflicts).toEqual([expect.objectContaining({ kind: 'both_added', collection: 'kmLines', objectId: 'km-6050' })])
   })
 
   it('rule 5: a switch and a platform the other side put on a split track follow it to the right piece', () => {
@@ -314,5 +315,52 @@ describe.skipIf(!hasPek)('mergeProject — validation (rules 6 and 7)', () => {
     expect(r.conflicts).toEqual([])
     expect(r.warnings.filter(w => w.code === 'tracks_overlap').map(w => [w.id, w.params.otherId].sort()))
       .toContainEqual(['drawn-by-me', 'drawn-by-them'])
+  })
+})
+
+describe('what the records hold, object by object (decision 0028, phase D)', () => {
+  const P = (x) => ({ easting: 500000 + x, northing: 5600000, zone: 25832 })
+  const pieces = (...xs) => xs.slice(1).map((x, i) => straightElement(P(xs[i]), P(x)))
+  const straight = (id, x0, x1) => ({ id, name: id, epsg: 25832, elements: pieces(x0, x1) })
+  const base = () => ({
+    id: 'p', title: 'P', tracks: [straight('t1', 0, 1000)], switches: [], platforms: [],
+    signalling: { fields: { catalogue: { id: 'db-ril-301', version: '0.4.0' } }, collections: {
+      signals: [{ id: 's1', name: 'A', kind: 'virtual', virtualFunction: 'trainTargetLine' }, { id: 's2', name: 'B', kind: 'virtual', virtualFunction: 'trainTargetLine' }],
+    } },
+    bridges: [{ id: 'b1', name: 'Saalebrücke', at: { anchor: 'station', trackId: 't1', startStation: 100, endStation: 300 } }],
+  })
+  const signal = (p, id) => p.signalling.collections.signals.find(s => s.id === id)
+  const withSignal = (p, id, change) => ({ ...p, signalling: { ...p.signalling, collections: { ...p.signalling.collections, signals: p.signalling.collections.signals.map(s => (s.id === id ? { ...s, ...change } : s)) } } })
+
+  it('takes two people\'s changes to different signals both, no longer the signalling as one value', () => {
+    const { merged, conflicts, applied } = mergeProject({ base: base(), mine: withSignal(base(), 's1', { name: 'A1' }), theirs: withSignal(base(), 's2', { name: 'B1' }) })
+    expect(conflicts).toEqual([])
+    expect([signal(merged, 's1').name, signal(merged, 's2').name]).toEqual(['A1', 'B1'])
+    expect(applied).toEqual([expect.objectContaining({ collection: 'signalling.signals', id: 's2', kind: 'changed', fields: ['name'] })])
+  })
+
+  it('makes one signal changed both ways a conflict on that signal, which a choice decides', () => {
+    const result = mergeProject({ base: base(), mine: withSignal(base(), 's1', { name: 'X' }), theirs: withSignal(base(), 's1', { name: 'Y' }) })
+    expect(result.conflicts).toEqual([expect.objectContaining({ collection: 'signalling.signals', objectId: 's1', field: 'name', kind: 'field' })])
+    expect(signal(resolve(result, { [result.conflicts[0].id]: 'theirs' }), 's1').name).toBe('Y')
+    expect(signal(resolve(result, {}), 's1').name).toBe('X')
+  })
+
+  it('merges the civil structures object by object, and lists them in the diff', () => {
+    const mine = { ...base(), bridges: [...base().bridges, { id: 'b2', name: 'Flutbrücke', at: { anchor: 'station', trackId: 't1', startStation: 500, endStation: 600 } }] }
+    const theirs = { ...base(), bridges: [{ ...base().bridges[0], name: 'Saalebrücke Trotha' }] }
+    const { merged, conflicts } = mergeProject({ base: base(), mine, theirs })
+    expect(conflicts).toEqual([])
+    expect(merged.bridges.map(b => [b.id, b.name])).toEqual([['b1', 'Saalebrücke Trotha'], ['b2', 'Flutbrücke']])
+    expect(diffProject(base(), mine).bridges.added).toEqual([{ id: 'b2', label: 'Flutbrücke' }])
+  })
+
+  it('carries a civil structure onto the piece of a track the other side split', () => {
+    const t1 = { ...straight('t1', 0, 1000), elements: pieces(0, 500, 1000) }
+    const { tracks: [left, right] } = splitTrackAtJoint(t1, 1, 90, new Set())
+    const before = { ...base(), tracks: [t1] }
+    const tracks = [primary({ tracks: [left] }).tracks[0], primary({ tracks: [right] }).tracks[0]]
+    const { merged } = mergeProject({ base: before, mine: { ...before, title: 'Q' }, theirs: { ...before, tracks }, remapsTheirs: [{ from: 't1', to: [left.id, right.id] }] })
+    expect(merged.bridges[0].at).toMatchObject({ trackId: left.id, startStation: 100, endStation: 300 })
   })
 })

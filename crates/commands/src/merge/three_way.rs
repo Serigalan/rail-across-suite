@@ -8,7 +8,10 @@ use rail_across_project::validate::{new_findings, validate_project};
 use rail_across_track::switch_model::{port_track, ports_of};
 use serde_json::{Map, Value, json};
 
-use super::collections::{WHOLE, collection_names, fields_of, index_collection, key_of, object_from_fields, object_label, project_fields, same_value};
+use super::collections::{
+    WHOLE, collections_in, fields_of, index_collection, key_of, layers_in, list_of, object_from_fields, object_label, project_fields, same_value,
+    set_list,
+};
 use super::diff::primary;
 use super::remap::{carry_references, remap_kind};
 
@@ -121,28 +124,40 @@ fn carry(record: &Value, ctx: &Value) -> (Value, Vec<super::remap::Carried>) {
 /// Three-way merge of two states against their common ancestor (`mergeProject`).
 pub fn merge_project(o: &Value) -> Value {
     let (b, m, t) = (primary(&o["base"]), primary(&o["mine"]), primary(&o["theirs"]));
+    // What the three hold, object by object: every collection with ids and every layer's (decision 0028, phase D).
+    let collections = collections_in(&[&b, &m, &t]);
+    let layers = layers_in(&[&b, &m, &t]);
     let remaps_mine: Vec<Value> = o.get("remapsMine").and_then(Value::as_array).cloned().unwrap_or_default();
     let remaps_theirs: Vec<Value> = o.get("remapsTheirs").and_then(Value::as_array).cloned().unwrap_or_default();
     let mut conflicts: Vec<Value> = Vec::new();
     let mut applied: Vec<Value> = Vec::new();
-    let (project_out, taken) = merge_field_maps(&project_fields(&b), &project_fields(&m), &project_fields(&t), &mut |f, vb, vm, vt| {
-        conflicts.push(conflict("project", "project", Some(f), json!(f), vb, vm, vt, "field", None));
-    });
+    let (project_out, taken) = merge_field_maps(
+        &project_fields(&b, &collections),
+        &project_fields(&m, &collections),
+        &project_fields(&t, &collections),
+        &mut |f, vb, vm, vt| {
+            conflicts.push(conflict("project", "project", Some(f), json!(f), vb, vm, vt, "field", None));
+        },
+    );
     if !taken.is_empty() {
         applied.push(json!({ "collection": "project", "id": "project", "label": null, "kind": "changed", "fields": taken }));
     }
     let mut merged = project_out;
+    let mut lists: Vec<(String, Vec<Value>)> = Vec::new();
     let mut all_tracks: Map<String, Value> = Map::new();
     for tr in list(&b, "tracks").iter().chain(list(&t, "tracks")).chain(list(&m, "tracks")) {
         all_tracks.insert(js_string(tr.get("id")), tr.clone());
     }
     let mut sides = [b.clone(), m.clone(), t.clone()];
     let mut carried_before: Vec<(super::remap::Carried, &'static str)> = Vec::new();
-    let order: Vec<&str> = std::iter::once("tracks").chain(collection_names().filter(|n| *n != "tracks")).collect();
-    for name in order {
+    for name in collections.iter().map(String::as_str) {
         let [bc, mc, tc] = &sides;
         let (bi, mi, ti) = (index_collection(bc, name), index_collection(mc, name), index_collection(tc, name));
-        if !truthy(bc.get(name)) && !truthy(mc.get(name)) && !truthy(tc.get(name)) {
+        let held = |p: &Value| match name.split_once('.') {
+            Some(_) => !list_of(p, name).is_empty(),
+            None => truthy(p.get(name)),
+        };
+        if !held(bc) && !held(mc) && !held(tc) {
             continue;
         }
         let mut out: Map<String, Value> = Map::new();
@@ -219,9 +234,9 @@ pub fn merge_project(o: &Value) -> Value {
                 (None, None) => {}
             }
         }
-        merged.insert(name.into(), Value::Array(out.values().cloned().collect()));
+        lists.push((name.into(), out.values().cloned().collect()));
         if name == "tracks" {
-            let merged_tracks = merged["tracks"].clone();
+            let merged_tracks = Value::Array(out.values().cloned().collect());
             let old = old_track_of(vec![b.clone(), t.clone(), m.clone()]);
             let onto = |p: &Value, side: &'static str, carried_before: &mut Vec<(super::remap::Carried, &'static str)>| -> Value {
                 let mut with = p.clone();
@@ -246,7 +261,16 @@ pub fn merge_project(o: &Value) -> Value {
             ];
         }
     }
-    let merged = Value::Object(merged);
+    // A layer stood among the fields by its own fields; its collections were merged as collections.
+    for layer in &layers {
+        if let Some(fields) = merged.remove(layer) {
+            merged.insert(layer.clone(), json!({ "fields": fields, "collections": {} }));
+        }
+    }
+    let mut merged = Value::Object(merged);
+    for (name, items) in lists {
+        set_list(&mut merged, &name, items);
+    }
     let context = json!({
         "base": b, "mine": m, "theirs": t, "remapsMine": remaps_mine, "remapsTheirs": remaps_theirs,
         "known": validate_project(&m),
@@ -285,7 +309,7 @@ pub fn validation_conflicts(record: &Value, ctx: &Value) -> Value {
         let fid = js_string(f.get("id"));
         let id = format!("object:{collection}:{fid}");
         if !by_object.iter().any(|(k, _)| *k == id) {
-            let find = |p: &Value| list(p, &collection).iter().find(|o| key_of(&collection, o) == fid).cloned();
+            let find = |p: &Value| list_of(p, &collection).iter().find(|o| key_of(&collection, o) == fid).cloned();
             let obj = find(&ctx["mine"]).or_else(|| find(&ctx["theirs"])).or_else(|| find(record));
             let mut tracks: Map<String, Value> = Map::new();
             for p in [&ctx["base"], &ctx["theirs"], &ctx["mine"], record] {
@@ -325,6 +349,11 @@ pub fn validation_conflicts(record: &Value, ctx: &Value) -> Value {
 fn apply_choice(record: &mut Value, collection: &str, object_id: &str, field: Option<&str>, value: Option<&Value>) {
     if collection == "project" {
         let f = field.unwrap_or("");
+        // A layer stands among the record's fields by its own fields.
+        if record.get(f).is_some_and(|l| l.get("collections").is_some_and(Value::is_object)) {
+            record[f]["fields"] = value.cloned().unwrap_or(json!({}));
+            return;
+        }
         let o = record.as_object_mut().expect("a record");
         match value {
             None => {
@@ -336,10 +365,7 @@ fn apply_choice(record: &mut Value, collection: &str, object_id: &str, field: Op
         }
         return;
     }
-    if !record.get(collection).is_some_and(Value::is_array) {
-        record[collection] = json!([]);
-    }
-    let list = record[collection].as_array_mut().expect("a list");
+    let mut list: Vec<Value> = list_of(record, collection).to_vec();
     let at = list.iter().position(|o| key_of(collection, o) == object_id);
     match field {
         None => match (value, at) {
@@ -364,6 +390,7 @@ fn apply_choice(record: &mut Value, collection: &str, object_id: &str, field: Op
             list[i] = object_from_fields(collection, &fields);
         }
     }
+    set_list(record, collection, list);
 }
 
 /// The record with every conflict decided (`resolve`).
@@ -391,7 +418,7 @@ pub fn resolve(merge_result: &Value, choices: &Value) -> Value {
             continue;
         }
         let from = if side.as_str() == Some("theirs") { &ctx["theirs"] } else { &ctx["mine"] };
-        let value = list(from, collection).iter().find(|o| key_of(collection, o) == object_id).cloned();
+        let value = list_of(from, collection).iter().find(|o| key_of(collection, o) == object_id).cloned();
         apply_choice(&mut record, collection, object_id, None, value.as_ref());
     }
     carry(&record, ctx).0

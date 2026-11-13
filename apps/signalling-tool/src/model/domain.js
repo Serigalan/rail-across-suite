@@ -56,7 +56,9 @@ export const signallingOf = (state) => ({ fields: state.fields, collections: Obj
  */
 export function recordOf(record, state) {
   const { operationalPoints, platforms } = state.collections
-  return { ...record, platforms, operationalPoints, signalling: signallingOf(state) }
+  // An empty register where the record had none is none: it is no change of the record.
+  const points = operationalPoints.length || record?.operationalPoints ? { operationalPoints } : {}
+  return { ...record, platforms, ...points, signalling: signallingOf(state) }
 }
 
 /**

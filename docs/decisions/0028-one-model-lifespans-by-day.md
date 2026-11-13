@@ -94,6 +94,11 @@ carried out in phases, each of them released by itself.
   layers: a switch deleted takes its switch elements along, and what is nothing without them. A tracks file
   holds the tracks alone, without their elements' membership in switches it has not. The project server keeps
   revisions as format 7 and cuts once those of 6 (`0028-references`).
+- Phase D: merge and diff find the collections in the records — every list of objects with ids, every
+  collection of a carried layer (`signalling.signals`) — and merge each object member by member, a location
+  the record states flat as one value; a layer's fields are one value. Two people changing different signals
+  no longer conflict on the whole signalling; the civil structures merge object by object and follow a track
+  split on the other side. A km line goes by its id (`km-<line number>`, as every source writes it).
 - `stagesOf` and `recordAtStage` stay, as what is worked out: the states a project passes through — the
   existing one, every day something changes, the final one — and the record as it stands at one, now the civil
   structures by their lifespans too.

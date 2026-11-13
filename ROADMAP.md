@@ -144,6 +144,9 @@ the app working on the document instead of its record.
 - References checked at the door. *Done* ([decision 0028](docs/decisions/0028-one-model-lifespans-by-day.md),
   phase C): every reference the schemas mark names an object; what a document of before named and lacked is cut
   as a deletion would have cut it, and the Layout-Tool's store cuts the same after a write.
+- Merging over every collection. *Done* ([decision 0028](docs/decisions/0028-one-model-lifespans-by-day.md),
+  phase D): no list kept by hand — the layers' objects and the civil structures merge object by object, and
+  every collection that holds locations is carried after a track is split or joined.
 - Domains with ownership: `core` (net, platforms, end marks, structures, operational point register, designed
   kilometrage) and discipline domains that store references only into the core.
 - Storage as a hash tree on the server and in the browser: revision → manifest → domain → collection, the blobs

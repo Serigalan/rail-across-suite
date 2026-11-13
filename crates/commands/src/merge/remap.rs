@@ -292,6 +292,22 @@ pub fn carry_references(project: &Value, logs: &[&[Value]], old_tracks: &dyn Fn(
             });
         }
     }
+    // Every other collection of the record that holds locations — the civil structures among them, and any
+    // to come — is carried as a layer's are (decision 0028, phase D).
+    for name in super::collections::collections_in(&[project]).into_iter().filter(|n| !n.contains('.')) {
+        if ["tracks", "switches", "platforms", "endMarks", "routes"].contains(&name.as_str()) {
+            continue;
+        }
+        let d = json!({ "fields": {}, "collections": { name.clone(): project[&name] } });
+        let (domain, moved) = carry_domain(&d, &ctx);
+        if domain == d {
+            continue;
+        }
+        out[&name] = domain["collections"][&name].clone();
+        for m in moved {
+            carried.push(Carried { collection: name.clone(), id: m.id, from: m.from, to: m.to });
+        }
+    }
     if rail_across_js::truthy(project.get("routes")) {
         out["routes"] = Value::Array(routes);
     }

@@ -2,8 +2,9 @@ import { diffEntries, diffProject } from '@rail-across/core/merge'
 
 /**
  * What a working copy changed against the revision it rests on, as the
- * project's diff lists it (diffEntries): its tracks, switches and the rest
- * object by object; a domain the core carries (signalling) as one entry.
+ * project's diff lists it (diffEntries): its tracks, switches, the layers'
+ * objects and the rest object by object, a layer's fields as one entry
+ * (decision 0028, phase D).
  */
 export function localChanges(wc) {
   if (!wc?.basePayload || !wc.project) return []
@@ -29,12 +30,8 @@ export function domainChanges(before, after) {
   return n
 }
 
-/**
- * How many changes a working copy holds, the signalling counted object by
- * object rather than as the one entry the project's diff makes of it.
- */
+/** How many changes a working copy holds: every object the project's diff lists, the layers' among them. */
 export function localChangeCount(wc) {
   if (!wc?.basePayload || !wc.project) return 0
-  const core = localChanges(wc).filter(e => !(e.collection === 'project' && e.id === 'signalling')).length
-  return core + domainChanges(wc.basePayload.signalling, wc.project.signalling)
+  return localChanges(wc).length
 }

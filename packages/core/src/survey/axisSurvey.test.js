@@ -67,7 +67,7 @@ describe('a measured axis in the record', () => {
     expect(errors.map(e => e.code)).toEqual(['axis_survey_malformed'])
   })
 
-  it('merges as one object: both sides keep what they added, an edit of both is a conflict', () => {
+  it('merges member by member: both sides keep what they added, the same member edited both ways is a conflict', () => {
     const a = surveyFromTrace(meta, trace)
     const b = surveyFromTrace({ ...meta, id: 's2', name: 'Linie' }, trace)
     const base = { id: 'p', tracks: [], axisSurveys: [a] }
@@ -80,7 +80,7 @@ describe('a measured axis in the record', () => {
       base, mine: { ...base, axisSurveys: [{ ...a, name: 'x' }] }, theirs: { ...base, axisSurveys: [{ ...a, name: 'y' }] },
     })
     expect(both.conflicts).toHaveLength(1)
-    expect(both.conflicts[0].id).toBe('axisSurveys:s1:*')
+    expect(both.conflicts[0].id).toBe('axisSurveys:s1:name')
   })
 
   it('names the undo step', () => {

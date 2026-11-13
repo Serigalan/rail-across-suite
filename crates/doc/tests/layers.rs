@@ -69,8 +69,8 @@ fn infra_data_1_0_reads_in_as_of_today() {
     let doc = check_document(&case("infra-data 1.0: a stopping place at a platform, a boundary marked by it")).unwrap();
     assert_eq!(doc["version"], "2.0");
     assert_eq!(domains(&doc), ["core", "civil", "signalling"]);
-    assert_eq!(doc["domains"]["core"]["version"], "3.0");
-    assert_eq!(doc["domains"]["signalling"]["version"], "3.0");
+    assert_eq!(doc["domains"]["core"]["version"], rail_across_doc::core_format::domain_version("core").unwrap());
+    assert_eq!(doc["domains"]["signalling"]["version"], rail_across_doc::core_format::domain_version("signalling").unwrap());
     let civil = &doc["domains"]["civil"];
     assert_eq!(civil["fields"]["planHeader"], json!({ "subtitle": "Lageplan" }));
     assert_eq!(
@@ -340,7 +340,7 @@ mod stage_days {
     fn a_document_of_2_0_states_its_stages_as_days() {
         let now = check_document(&of_2_0()).unwrap_or_else(|e| panic!("refused ({e})"));
         assert_eq!(now, to_document(&record(), false, true).unwrap(), "as the record of today makes it");
-        assert_eq!(now["domains"]["core"]["version"], "3.0");
+        assert_eq!(now["domains"]["core"]["version"], rail_across_doc::core_format::domain_version("core").unwrap());
         assert_eq!(check_document(&now).unwrap(), now, "and stays as it is");
     }
 
@@ -465,5 +465,38 @@ mod structures {
         for k in ["bridges", "retainingWalls", "noiseBarriers"] {
             assert_eq!(back[k], record[k], "{k}");
         }
+    }
+}
+
+mod references {
+    use super::case;
+    use rail_across_doc::door::{check_document, without_dangling};
+    use serde_json::json;
+
+    #[test]
+    fn a_reference_to_nothing_is_refused_and_named() {
+        let mut doc = check_document(&case("the sample with its signalling")).unwrap();
+        doc["domains"]["signalling"]["collections"]["switchElements"][0]["switchId"] = json!("w9");
+        let e = check_document(&doc).unwrap_err();
+        assert_eq!(e.code, "invalid_payload");
+        assert_eq!(e.details, ["/domains/signalling/collections/switchElements/0/switchId: names w9, which core.switches lacks"]);
+    }
+
+    #[test]
+    fn what_names_nothing_is_cut_with_what_needs_it() {
+        let mut doc = check_document(&case("the sample with its signalling")).unwrap();
+        let sig = &mut doc["domains"]["signalling"]["collections"];
+        sig["switchElements"][0]["switchId"] = json!("w9");
+        sig["signals"][0]["operationalPointId"] = json!("op-nowhere");
+        let (cut, what) = without_dangling(&doc);
+        let paths: Vec<&str> = what.iter().filter_map(|c| c["path"].as_str()).collect();
+        // the switch element requires its switch: it goes, and the flank protection it requests with it;
+        // the signal's station is its own to lose
+        assert!(paths.contains(&"/collections/switchElements/0"), "{paths:?}");
+        assert!(paths.contains(&"/collections/signals/0/operationalPointId"), "{paths:?}");
+        assert!(cut["domains"]["signalling"]["collections"]["switchElements"].as_array().unwrap().is_empty());
+        assert!(cut["domains"]["signalling"]["collections"]["flankProtection"].as_array().unwrap().is_empty());
+        assert!(check_document(&cut).is_ok(), "nothing dangles after it");
+        assert_eq!(without_dangling(&cut).1, Vec::<serde_json::Value>::new(), "and a second time nothing is cut");
     }
 }

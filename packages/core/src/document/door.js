@@ -1,15 +1,16 @@
 import ENVELOPE from '../../schemas/infra-data.schema.json' with { type: 'json' }
-import CORE from '../../schemas/core/3.0.schema.json' with { type: 'json' }
-import CIVIL from '../../schemas/civil/2.0.schema.json' with { type: 'json' }
-import SIGNALLING from '../../schemas/signalling/3.0.schema.json' with { type: 'json' }
-import ELECTRIFICATION from '../../schemas/electrification/2.0.schema.json' with { type: 'json' }
+import CORE from '../../schemas/core/3.1.schema.json' with { type: 'json' }
+import CIVIL from '../../schemas/civil/2.1.schema.json' with { type: 'json' }
+import SIGNALLING from '../../schemas/signalling/3.1.schema.json' with { type: 'json' }
+import ELECTRIFICATION from '../../schemas/electrification/2.1.schema.json' with { type: 'json' }
 import { contentHash } from './canonical.js'
 import { viaNative } from './viaNative.js'
 
 // The one door for infra-data documents (decision 0021: the one format of
 // a project, what was "the core 1.0 document"): what comes in is checked here — the
 // file's shape, each domain's version and schema, every object against its
-// domain's schema and the rules a schema cannot state (a lifespan's days), the
+// domain's schema and the rules a schema cannot state (a lifespan's days, a
+// reference naming an object of its collection), the
 // blobs against their hashes, a document of an earlier version brought to this
 // build's, version by version (an infra-data 1.0 document to the layers of
 // decision 0025, the stages of before to the days of decision 0028) — and

@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { PW, setup, signIn } from './helpers.js'
 import { hasPek, loadPek } from '@rail-across/core/test/pekFixture.js'
 import { parseProjectsPayload } from '@rail-across/core/project'
+import { DOMAIN_VERSIONS } from '@rail-across/core/document'
 
 let ctx
 afterEach(async () => { await ctx?.app.close(); ctx?.db.close() })
@@ -47,9 +48,9 @@ describe('projects', () => {
     const { max } = await start()
     const { variantId } = await newProject(max, { tracks: [straight('t1')] })
     const { document } = await head(max, variantId)
-    expect(document).toMatchObject({ format: 'infra-data', version: '2.0', domains: { core: { version: '3.0' } } })
+    expect(document).toMatchObject({ format: 'infra-data', version: '2.0', domains: { core: { version: DOMAIN_VERSIONS.core } } })
     expect(document.domains.core.collections.tracks.map(t => t.id)).toEqual(['t1'])
-    expect(ctx.db.prepare('SELECT schema_version FROM revision').pluck().all()).toEqual([6])
+    expect(ctx.db.prepare('SELECT schema_version FROM revision').pluck().all()).toEqual([7])
   })
 
   it('takes documents only: an oltjson-1.1 file is refused', async () => {
@@ -171,10 +172,20 @@ describe('variants and revisions', () => {
     const { max } = await start()
     const { variantId, revisionId } = await newProject(max, { tracks: [straight('t1')] })
     const h = await head(max, variantId)
+    const bad = { ...h.payload, platforms: [{ id: 'pf', trackId: 't1', startStation: 0, endStation: 5000 }] }
+    const res = await max('POST', `/api/variants/${variantId}/revisions`, { base: revisionId, payload: bad, remaps: [] })
+    expect(res.statusCode).toBe(422)
+    expect(res.json()).toMatchObject({ error: 'invalid_record', errors: [expect.objectContaining({ code: 'platform_out_of_range' })] })
+  })
+
+  it('refuses a record that names what it lacks, at the door (decision 0028, phase C)', async () => {
+    const { max } = await start()
+    const { variantId, revisionId } = await newProject(max, { tracks: [straight('t1')] })
+    const h = await head(max, variantId)
     const bad = { ...h.payload, platforms: [{ id: 'pf', trackId: 'nowhere', startStation: 0, endStation: 10 }] }
     const res = await max('POST', `/api/variants/${variantId}/revisions`, { base: revisionId, payload: bad, remaps: [] })
     expect(res.statusCode).toBe(422)
-    expect(res.json()).toMatchObject({ error: 'invalid_record', errors: [expect.objectContaining({ code: 'platform_track_missing' })] })
+    expect(res.json().error).toBe('invalid_payload')
   })
 
   it('checks the signalling a record carries, on its core, and keeps it', async () => {
@@ -201,9 +212,9 @@ describe('variants and revisions', () => {
 
   it('takes errors the base already had: they are not this check-in\'s doing', async () => {
     const { max } = await start()
-    const broken = { tracks: [straight('t1')], platforms: [{ id: 'pf', trackId: 'nowhere', startStation: 0, endStation: 10 }] }
+    const broken = { tracks: [straight('t1')], platforms: [{ id: 'pf', trackId: 't1', startStation: 0, endStation: 5000 }] }
     const { variantId, revisionId, errors } = await newProject(max, broken)
-    expect(errors.map(e => e.code)).toEqual(['platform_track_missing'])
+    expect(errors.map(e => e.code)).toEqual(['platform_out_of_range'])
     const h = await head(max, variantId)
     const res = await max('POST', `/api/variants/${variantId}/revisions`, { base: revisionId, payload: { ...h.payload, title: 'x' }, remaps: [] })
     expect(res.statusCode).toBe(201)

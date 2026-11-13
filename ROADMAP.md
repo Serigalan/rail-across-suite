@@ -141,6 +141,9 @@ the app working on the document instead of its record.
   *Done* ([decision 0028](docs/decisions/0028-one-model-lifespans-by-day.md), phase B): the record holds the points
   as objects with ids, a track and a platform name theirs; nothing is drawn from texts any more but what an
   import reads.
+- References checked at the door. *Done* ([decision 0028](docs/decisions/0028-one-model-lifespans-by-day.md),
+  phase C): every reference the schemas mark names an object; what a document of before named and lacked is cut
+  as a deletion would have cut it, and the Layout-Tool's store cuts the same after a write.
 - Domains with ownership: `core` (net, platforms, end marks, structures, operational point register, designed
   kilometrage) and discipline domains that store references only into the core.
 - Storage as a hash tree on the server and in the browser: revision → manifest → domain → collection, the blobs

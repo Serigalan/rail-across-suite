@@ -38,10 +38,10 @@ pub const FORMAT_NAME: &str = "infra-data-2.0";
 pub const OLD_FORMAT: &str = "rail-across";
 
 const ENVELOPE: &str = include_str!("../../../schemas/infra-data.schema.json");
-const CORE: &str = include_str!("../../../schemas/core/3.0.schema.json");
-const CIVIL: &str = include_str!("../../../schemas/civil/2.0.schema.json");
-const SIGNALLING: &str = include_str!("../../../schemas/signalling/3.0.schema.json");
-const ELECTRIFICATION: &str = include_str!("../../../schemas/electrification/2.0.schema.json");
+const CORE: &str = include_str!("../../../schemas/core/3.1.schema.json");
+const CIVIL: &str = include_str!("../../../schemas/civil/2.1.schema.json");
+const SIGNALLING: &str = include_str!("../../../schemas/signalling/3.1.schema.json");
+const ELECTRIFICATION: &str = include_str!("../../../schemas/electrification/2.1.schema.json");
 
 struct Schemas {
     set: SchemaSet,
@@ -123,6 +123,11 @@ const PAST: &[(&str, &str, &str)] = &[
     ("civil", "1.0", CIVIL_LAST),
     ("signalling", "2.0", SIGNALLING_2_LAST),
     ("electrification", "1.0", ELECTRIFICATION_LAST),
+    // Lifespans by day, a reference free to name nothing (decision 0028, phase A).
+    ("core", "3.0", "sha256:72e2181866b52fa05ca684e66c5b2e4fcc91fdf46f57ad63a0690ccfec210805"),
+    ("civil", "2.0", "sha256:b96345ebf422de4fb8d7c1bf426b6db7468f5f85f36d531df86a2e0d17f4e03c"),
+    ("signalling", "3.0", "sha256:cb1bad694c35458f33858b91d4893c137da0c378ce92a7a7217addbc13d27083"),
+    ("electrification", "2.0", "sha256:812af795a72e4fec5e9f15cfec93bf2180907775ee98db987a9d8c92dfec2eb9"),
 ];
 
 /// The hash the schema of a domain's version goes by: this build's, or one of a version before (`PAST`).
@@ -511,13 +516,16 @@ struct Step {
 
 /// The steps in their order. A step applies where a domain it names is at the version it starts from; the
 /// others it names are then at theirs too, or the document is of no version this build reads.
-const STEPS: &[Step] = &[Step {
-    domains: LIFESPANS_BY_DAY,
-    apply: lifespans_by_day,
-}];
+const STEPS: &[Step] = &[
+    Step { domains: LIFESPANS_BY_DAY, apply: lifespans_by_day },
+    Step { domains: REFERENCES_RESOLVED, apply: references_resolved },
+];
 
 const LIFESPANS_BY_DAY: &[(&str, &str, &str)] =
     &[("core", "2.0", "3.0"), ("civil", "1.0", "2.0"), ("signalling", "2.0", "3.0"), ("electrification", "1.0", "2.0")];
+
+const REFERENCES_RESOLVED: &[(&str, &str, &str)] =
+    &[("core", "3.0", "3.1"), ("civil", "2.0", "2.1"), ("signalling", "3.0", "3.1"), ("electrification", "2.0", "2.1")];
 
 fn version_of<'a>(doc: &'a Value, name: &str) -> Option<&'a str> {
     doc["domains"].get(name)?.get("version")?.as_str()
@@ -570,6 +578,178 @@ fn lifespans_by_day(doc: &Value) -> Value {
     let mut out = obj(doc);
     out.insert("domains".into(), Value::Object(domains));
     Value::Object(out)
+}
+
+/// References that name something (decision 0028, phase C): a document of before could hold a reference to an
+/// object that was not there — the tools reported it instead —; it is cut as the deletion of that object would
+/// have cut it (`without_dangling`). The domains are at the step's versions after it.
+fn references_resolved(doc: &Value) -> Value {
+    let mut out = without_dangling(doc).0;
+    let Some(Value::Object(domains)) = out.get_mut("domains") else { return out };
+    for (name, _, to) in REFERENCES_RESOLVED {
+        let Some(Value::Object(domain)) = domains.get_mut(*name) else { continue };
+        domain.insert("version".into(), json!(to));
+        domain.insert("schema".into(), json!(hash_of(name, to)));
+    }
+    out
+}
+
+/// A reference of a domain's collection: the domain, and the reference as the schema walk gives it, its paths
+/// within the domain's `{ fields, collections }`.
+pub struct DomainReference {
+    pub domain: String,
+    pub reference: crate::schema::Reference,
+}
+
+/// Every reference a document's domains hold, by what their schemas mark (`x-target`).
+pub fn references_of(doc: &Value) -> Vec<DomainReference> {
+    let mut out = Vec::new();
+    for (name, domain) in doc.get("domains").and_then(Value::as_object).into_iter().flatten() {
+        if schemas().set.get(name).is_none() {
+            continue;
+        }
+        let mut part = Object::new();
+        part.insert("fields".into(), domain.get("fields").cloned().unwrap_or(json!({})));
+        part.insert("collections".into(), domain.get("collections").cloned().unwrap_or(json!({})));
+        for reference in schemas().set.references(name, &Value::Object(part)).unwrap_or_default() {
+            out.push(DomainReference { domain: name.clone(), reference });
+        }
+    }
+    out
+}
+
+/// The references of a document that name nothing: the target collection (`domain.collection`) has no object of
+/// that id — or the document no such domain.
+pub fn dangling(doc: &Value) -> Vec<DomainReference> {
+    let mut ids: HashMap<String, HashSet<String>> = HashMap::new();
+    references_of(doc)
+        .into_iter()
+        .filter(|r| {
+            let target = r.reference.target.clone();
+            let have = ids.entry(target.clone()).or_insert_with(|| {
+                let (d, c) = target.split_once('.').unwrap_or(("", ""));
+                list(&doc["domains"][d]["collections"], c).iter().filter_map(|o| o.get("id").map(|v| stringify(v))).collect()
+            });
+            !have.contains(&stringify(&json!(r.reference.id)))
+        })
+        .collect()
+}
+
+/// The steps of a JSON pointer, a number where it is one.
+fn pointer_steps(path: &str) -> Vec<String> {
+    path.split('/').filter(|p| !p.is_empty()).map(str::to_string).collect()
+}
+
+/// Remove what `path` names in `value` — a member, or an item of a list.
+fn remove_at(value: &mut Value, path: &[String]) {
+    let Some((last, parents)) = path.split_last() else { return };
+    let mut node = value;
+    for p in parents {
+        node = match node {
+            Value::Object(o) => match o.get_mut(p) {
+                Some(n) => n,
+                None => return,
+            },
+            Value::Array(a) => match p.parse::<usize>().ok().and_then(|i| a.get_mut(i)) {
+                Some(n) => n,
+                None => return,
+            },
+            _ => return,
+        };
+    }
+    match node {
+        Value::Object(o) => {
+            o.shift_remove(last);
+        }
+        Value::Array(a) => {
+            if let Some(i) = last.parse::<usize>().ok().filter(|i| *i < a.len()) {
+                a.remove(i);
+            }
+        }
+        _ => {}
+    }
+}
+
+/// The steps compared as a pointer orders them: a number by its value.
+fn by_steps(a: &[String], b: &[String]) -> std::cmp::Ordering {
+    for (x, y) in a.iter().zip(b) {
+        let o = match (x.parse::<usize>(), y.parse::<usize>()) {
+            (Ok(m), Ok(n)) => m.cmp(&n),
+            _ => x.cmp(y),
+        };
+        if o != std::cmp::Ordering::Equal {
+            return o;
+        }
+    }
+    a.len().cmp(&b.len())
+}
+
+/// A document without the references that name nothing (`withoutDangling`): each cut where the schema lets it go
+/// — an optional reference alone, an item of a list, else the object that requires it —, an object the cuts
+/// leave short of what its schema asks taken as a whole, and on until nothing dangles: what was cut goes with
+/// what named it, as a deletion takes along what is nothing without the object it took. Returns the document
+/// and what was cut: [{ domain, path, target, id }], `path` the cut's within the domain.
+pub fn without_dangling(doc: &Value) -> (Value, Vec<Value>) {
+    let mut doc = doc.clone();
+    let mut cut = Vec::new();
+    for _ in 0..64 {
+        let found = dangling(&doc);
+        if found.is_empty() {
+            break;
+        }
+        let mut by_domain: HashMap<String, Vec<Vec<String>>> = HashMap::new();
+        for r in &found {
+            cut.push(json!({ "domain": r.domain, "path": r.reference.cut, "target": r.reference.target, "id": r.reference.id }));
+            by_domain.entry(r.domain.clone()).or_default().push(pointer_steps(&r.reference.cut));
+        }
+        for (name, mut paths) in by_domain {
+            // An ancestor's cut takes its descendants; the deepest and last first, so the others stay where they are.
+            paths.sort_by(|a, b| by_steps(b, a));
+            paths.dedup();
+            let kept: Vec<Vec<String>> = paths
+                .iter()
+                .filter(|p| !paths.iter().any(|q| q.len() < p.len() && p.starts_with(q)))
+                .cloned()
+                .collect();
+            let Some(domain) = doc.get_mut("domains").and_then(|d| d.get_mut(&name)) else { continue };
+            let mut part = json!({ "fields": domain.get("fields").cloned().unwrap_or(json!({})), "collections": domain.get("collections").cloned().unwrap_or(json!({})) });
+            for p in &kept {
+                remove_at(&mut part, p);
+            }
+            // An object a cut left short of its schema goes as a whole (a boundary without its last mark).
+            loop {
+                let short: Vec<Vec<String>> = check(&name, &part)
+                    .iter()
+                    .map(|b| pointer_steps(&b.path))
+                    .filter(|p| p.len() >= 3 && p[0] == "collections")
+                    .map(|p| p[..3].to_vec())
+                    .collect();
+                if short.is_empty() {
+                    break;
+                }
+                let mut short = short;
+                short.sort_by(|a, b| by_steps(b, a));
+                short.dedup();
+                for p in &short {
+                    remove_at(&mut part, p);
+                    cut.push(json!({ "domain": name, "path": format!("/{}", p.join("/")), "target": null, "id": null }));
+                }
+            }
+            if let Some(o) = domain.as_object_mut() {
+                o.insert("fields".into(), part["fields"].take());
+                o.insert("collections".into(), part["collections"].take());
+            }
+        }
+    }
+    // An element that was a branch of a switch cut away is no branch any more: a branch names its switch.
+    for track in doc["domains"]["core"]["collections"]["tracks"].as_array_mut().into_iter().flatten() {
+        for el in track.get_mut("elements").and_then(Value::as_array_mut).into_iter().flatten() {
+            if let Some(o) = el.as_object_mut().filter(|o| o.get("switchBranch") == Some(&Value::Bool(true)) && !o.contains_key("switchId")) {
+                o.shift_remove("switchBranch");
+            }
+        }
+    }
+    (doc, cut)
 }
 
 /// A document of infra-data 2.0 brought forward step by step to the versions this build reads; refused where a
@@ -729,6 +909,15 @@ pub fn check_document(given: &Value) -> Result<Value> {
         }
     }
     found.extend(switch_branches_without_switch(&doc));
+    // What the schema cannot say of a reference: it names an object of its collection (decision 0028, phase C).
+    if found.is_empty() {
+        for r in dangling(&doc) {
+            found.push(format!(
+                "/domains/{}{}: names {}, which {} lacks",
+                r.domain, r.reference.path, js_string(Some(&json!(r.reference.id))), r.reference.target
+            ));
+        }
+    }
     if !found.is_empty() {
         return Err(PayloadError::with("invalid_payload", found));
     }

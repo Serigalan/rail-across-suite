@@ -3,6 +3,7 @@ import { execFileSync, spawn } from 'node:child_process'
 import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
+import { contentHash, DOMAIN_VERSIONS } from '@rail-across/core/document'
 import { gunzipSync, gzipSync } from 'node:zlib'
 import Database from 'better-sqlite3'
 import { makeLas } from '@rail-across/pointcloud/test/pointCloudFixture.js'
@@ -170,8 +171,8 @@ describe.skipIf(!SERVER_BIN)('the step to infra-data-1.0 (decision 0021)', () =>
     db.close()
     expect(cli(file, ['migrate'])).toMatch(/data step 0021-infra-data: 2 Revisionen umgeschrieben, 0 nicht lesbar/)
     const { versions, docs: [old, kept] } = payloads(file)
-    expect(versions).toEqual([6, 6])
-    expect(old).toMatchObject({ format: 'infra-data', version: '2.0', domains: { core: { version: '3.0' }, civil: { version: '2.0' } } })
+    expect(versions).toEqual([7, 7])
+    expect(old).toMatchObject({ format: 'infra-data', version: '2.0', domains: { core: { version: DOMAIN_VERSIONS.core }, civil: { version: DOMAIN_VERSIONS.civil } } })
     expect(old.domains.core.collections.tracks.map(t => t.id)).toEqual(doc.domains.core.collections.tracks.map(t => t.id))
     expect(old.domains.civil.collections.platforms.map(p => p.id)).toEqual(['p1'])
     expect(kept).toMatchObject({ format: 'infra-data', version: '2.0' })
@@ -191,7 +192,7 @@ describe.skipIf(!SERVER_BIN)('the step to infra-data-2.0 (decision 0025)', () =>
     db.close()
     expect(cli(file, ['migrate'])).toMatch(/data step 0025-infra-data-2.0: 2 Revisionen umgeschrieben, 0 nicht lesbar/)
     const { versions, docs: [doc] } = payloads(file)
-    expect(versions).toEqual([6, 6])
+    expect(versions).toEqual([7, 7])
     expect(Object.keys(doc.domains).sort()).toEqual(['civil', 'core', 'signalling'])
     expect(doc.domains.core.collections.stoppingPlaces.map(h => h.id)).toEqual(['hp-1', 'hp-2'])
     expect(doc.domains.signalling.collections.stoppingPlaces).toBeUndefined()
@@ -248,9 +249,9 @@ describe.skipIf(!SERVER_BIN)('the step to lifespans by day (decision 0028)', () 
     db.close()
     expect(cli(file, ['migrate'])).toMatch(/data step 0028-lifespans-by-day: 2 Revisionen umgeschrieben, 0 nicht lesbar/)
     const { versions, docs: [after] } = payloads(file)
-    expect(versions).toEqual([6, 6])
-    expect(after.domains.core).toMatchObject({ version: '3.0', schema: NOW['the sample'].domains.core.schema })
-    expect(after.domains.civil.version).toBe('2.0')
+    expect(versions).toEqual([7, 7])
+    expect(after.domains.core).toMatchObject({ version: DOMAIN_VERSIONS.core, schema: NOW['the sample'].domains.core.schema })
+    expect(after.domains.civil.version).toBe(DOMAIN_VERSIONS.civil)
     expect(after.domains.core.fields.stages).toBeUndefined()
     expect(after.domains.core.collections.tracks.map(t => t.lifespan ?? null)).toEqual([null, { from: '2028-06-02' }, { to: 'open' }])
     expect(cli(file, ['migrate'])).toBe('')
@@ -262,8 +263,31 @@ describe.skipIf(!SERVER_BIN)('the step to lifespans by day (decision 0028)', () 
     await ctx.app.auth.createUser({ login: 'bea', name: 'Bea', password: PW, role: 'admin', mustChangePassword: false })
     const bea = await signIn(ctx.app, 'bea')
     const head = (await bea('GET', `/api/variants/${made.variantId}/head`)).json()
-    expect(head.payload.domains.core.version).toBe('3.0')
+    expect(head.payload.domains.core.version).toBe(DOMAIN_VERSIONS.core)
     expect(head.payload.domains.core.collections.tracks[1].lifespan).toEqual({ from: '2028-06-02' })
+  })
+})
+
+describe.skipIf(!SERVER_BIN)('the step to references that name something (decision 0028, phase C)', () => {
+  it('cuts what a revision kept with its lifespans by day names and lacks, once, in place', async () => {
+    const { file, made } = await twoRevisions()
+    // As a build of phase A kept the sample: its domains at 3.0 and 2.0, a switch element of a switch not there.
+    const doc = structuredClone(NOW['the sample with its signalling'])
+    const schema = (path) => contentHash(JSON.parse(readFileSync(new URL(`../../schemas/${path}.schema.json`, import.meta.url), 'utf8')))
+    Object.assign(doc.domains.core, { version: '3.0', schema: schema('core/3.0') })
+    Object.assign(doc.domains.civil, { version: '2.0', schema: schema('civil/2.0') })
+    Object.assign(doc.domains.signalling, { version: '3.0', schema: schema('signalling/3.0') })
+    doc.domains.signalling.collections.switchElements[0].switchId = 'w9'
+    const db = new Database(file)
+    db.prepare('UPDATE revision SET schema_version = 6, payload = ? WHERE id = ?').run(gzipSync(JSON.stringify(doc)), made.revisionId)
+    db.prepare("DELETE FROM data_migration WHERE name = '0028-references'").run()
+    db.close()
+    expect(cli(file, ['migrate'])).toMatch(/data step 0028-references: 1 Revisionen umgeschrieben, 0 nicht lesbar/)
+    const { versions, docs: [after] } = payloads(file)
+    expect(versions).toEqual([7, 7])
+    expect(after.domains.signalling.version).toBe(DOMAIN_VERSIONS.signalling)
+    expect(after.domains.signalling.collections.switchElements).toEqual([])
+    expect(cli(file, ['migrate'])).toBe('')
   })
 })
 

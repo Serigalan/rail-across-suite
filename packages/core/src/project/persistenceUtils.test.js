@@ -271,10 +271,11 @@ describe('parseTracksPayload (R0.5)', () => {
     expect(code(() => parseTracksPayload(bad({ elements: [el({ length: -1 })] })))).toBe('invalid_payload')
   })
 
-  it('takes a switch branch only into a project that has the switch', () => {
+  it('writes the tracks alone: a switch branch comes back as a track of its own (decision 0028)', () => {
     const t = tracksDocument([track({ elements: [el({ switchBranch: true, switchId: 's1' })] })])
-    expect(code(() => parseTracksPayload(t))).toBe('switch_missing')
-    expect(parseTracksPayload(t, { switchIds: new Set(['s1']) })).toHaveLength(1)
+    const [back] = parseTracksPayload(t)
+    expect(back.elements[0]).not.toHaveProperty('switchId')
+    expect(back.elements[0]).not.toHaveProperty('switchBranch')
   })
 })
 

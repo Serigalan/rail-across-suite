@@ -3,4 +3,4 @@
 // core's module (crates/doc; decisions 0020, 0021 and 0028).
 
 /** The domains this build reads and writes, with their versions (crates/doc, DOMAIN_VERSIONS). */
-export const DOMAIN_VERSIONS = { core: '3.0', civil: '2.0', signalling: '3.0', electrification: '2.0' }
+export const DOMAIN_VERSIONS = { core: '3.1', civil: '2.1', signalling: '3.1', electrification: '2.1' }

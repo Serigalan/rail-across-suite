@@ -613,7 +613,7 @@
         "name": "A",
         "kind": "real",
         "mounting": "mast",
-        "operationalPointId": "Halle-Trotha",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "at": {
          "anchor": "station",
          "trackId": "t1",
@@ -693,7 +693,7 @@
         "name": "N1",
         "kind": "real",
         "mounting": "gantry",
-        "operationalPointId": "Halle-Trotha",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "at": {
          "anchor": "station",
          "trackId": "t1",
@@ -756,7 +756,7 @@
          "offset": 3.1,
          "direction": "up"
         },
-        "operationalPointId": "Halle-Trotha",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "frames": [
          {
           "kind": "plate",
@@ -833,7 +833,7 @@
       "routes": [
        {
         "id": "rt-a-n1",
-        "name": "A\u2013N1",
+        "name": "A–N1",
         "kind": "train",
         "trainType": "ZZ",
         "startSignalId": "sig-a",
@@ -863,7 +863,7 @@
        },
        {
         "id": "rt-n1-v",
-        "name": "N1\u2013Strecke",
+        "name": "N1–Strecke",
         "kind": "train",
         "trainType": "ZZ",
         "startSignalId": "sig-n1",
@@ -1041,7 +1041,7 @@
       "stationBoundaries": [
        {
         "id": "bd-1",
-        "operationalPointId": "Halle-Trotha",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "marks": [
          {
           "signalId": "sig-a"
@@ -1053,7 +1053,7 @@
        {
         "id": "hp-1",
         "name": "Gleis 1",
-        "operationalPointId": "Halle-Trotha",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "at": {
          "anchor": "station",
          "trackId": "t1",
@@ -1064,7 +1064,7 @@
        {
         "id": "hp-2",
         "name": "Gleis 2",
-        "operationalPointId": "Halle-Trotha",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "at": {
          "anchor": "station",
          "trackId": "t2",
@@ -1076,7 +1076,7 @@
       "itineraries": [
        {
         "id": "fw-1",
-        "name": "1 \u2192 2",
+        "name": "1 → 2",
         "startStoppingPlaceId": "hp-1",
         "targetStoppingPlaceId": "hp-2",
         "routeIds": [

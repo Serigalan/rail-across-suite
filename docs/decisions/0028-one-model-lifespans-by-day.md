@@ -84,6 +84,16 @@ carried out in phases, each of them released by itself.
   Layout-Tool's store, `withStationPoints`); a format that names stations by text takes them from the points
   (`withStationTexts`). A platform's `code` was read as its station's RL100 code but used as its number: a
   platform has no number of its own, it is its track's.
+- Phase C: the domains go to core 3.1, civil 2.1, signalling 3.1, electrification 2.1 — the schemas' text is the
+  same but for the rule they now state, and the meaning changed: every reference (`x-target`) names an object of
+  its collection. A document of the current version that names what it lacks is refused, the path and the id
+  named. A document of before was free to, the tools reporting it as a finding instead; brought forward, what it
+  names and lacks is cut as deleting that object would have cut it — an optional reference alone, an item of a
+  list, else the object that requires it, an object the cut leaves short of its schema as a whole, on until
+  nothing dangles. The Layout-Tool's store does the same after a write that takes objects away, and only in the
+  layers: a switch deleted takes its switch elements along, and what is nothing without them. A tracks file
+  holds the tracks alone, without their elements' membership in switches it has not. The project server keeps
+  revisions as format 7 and cuts once those of 6 (`0028-references`).
 - `stagesOf` and `recordAtStage` stay, as what is worked out: the states a project passes through — the
   existing one, every day something changes, the final one — and the record as it stands at one, now the civil
   structures by their lifespans too.

@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "electrification",
+  "title": "Rail-Data-Core, domain electrification 2.1",
+  "description": "The electrification of the tracks, planned in the Catenary-Tool (decision 0025): which ranges carry a contact wire, and its system. Depends on core; its references go into the core only. Later the masts, cantilevers, wires and sections. — 2.0 (decision 0028): on core 3.0, a lifespan states days. — 2.1 (decision 0028, phase C): every reference names an object of the collection its `x-target` names (the door's rule).",
+  "type": "object",
+  "required": [
+    "fields",
+    "collections"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "fields": {
+      "$ref": "#/$defs/Fields"
+    },
+    "collections": {
+      "type": "object",
+      "required": [
+        "electrifications"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "electrifications": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Electrification"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "Fields": {
+      "description": "The domain's own fields.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {}
+    },
+    "Electrification": {
+      "description": "A range of a track under a contact wire (or a conductor rail) of one system. `system` is the voltage as OSRD names a traction mode: 15000V the 15 kV 16.7 Hz of DB, ÖBB and SBB, 25000V 25 kV 50 Hz, the others direct current. A train runs electrically where its vehicle has the mode.",
+      "type": "object",
+      "required": [
+        "id",
+        "at",
+        "system"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "core#/$defs/Id"
+        },
+        "name": {
+          "$ref": "core#/$defs/Text"
+        },
+        "at": {
+          "$ref": "core#/$defs/TrackRange"
+        },
+        "system": {
+          "enum": [
+            "15000V",
+            "25000V",
+            "3000V",
+            "1500V",
+            "750V",
+            "600V"
+          ]
+        },
+        "lifespan": {
+          "$ref": "core#/$defs/Lifespan"
+        }
+      }
+    }
+  }
+}

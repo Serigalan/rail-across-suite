@@ -2121,7 +2121,7 @@
        {
         "id": "hp-1",
         "name": "Gleis 1",
-        "operationalPointId": "Halle-Trotha",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "at": {
          "anchor": "station",
          "trackId": "t1",
@@ -2132,7 +2132,7 @@
        {
         "id": "hp-2",
         "name": "Gleis 2",
-        "operationalPointId": "Halle-Trotha",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "at": {
          "anchor": "station",
          "trackId": "t2",
@@ -2240,7 +2240,7 @@
         "name": "A",
         "kind": "real",
         "mounting": "mast",
-        "operationalPointId": "Halle-Trotha",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "at": {
          "anchor": "station",
          "trackId": "t1",
@@ -2320,7 +2320,7 @@
         "name": "N1",
         "kind": "real",
         "mounting": "gantry",
-        "operationalPointId": "Halle-Trotha",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "at": {
          "anchor": "station",
          "trackId": "t1",
@@ -2383,7 +2383,7 @@
          "offset": 3.1,
          "direction": "up"
         },
-        "operationalPointId": "Halle-Trotha",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "frames": [
          {
           "kind": "plate",
@@ -2668,7 +2668,7 @@
       "stationBoundaries": [
        {
         "id": "bd-1",
-        "operationalPointId": "Halle-Trotha",
+        "operationalPointId": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "marks": [
          {
           "signalId": "sig-a"

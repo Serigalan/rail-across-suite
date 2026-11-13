@@ -18,14 +18,17 @@ use crate::auth::User;
 use crate::http::ApiError;
 use crate::util::{iso, uuid};
 
-/// What `revision.schema_version` says of a payload: 6, an infra-data document
-/// whose lifespans state days (decision 0028: core 3.0). 5 (the document with
-/// its register of construction stages, decision 0025) is migrated into it once
-/// (data migration `0028-lifespans-by-day`), 4 (infra-data-1.0) by
-/// `0025-infra-data-2.0`, and either is read through the door where one is
-/// left; 3 (the core 1.0 document) and 2 (oltjson-1.1) once by `0021-infra-data`;
-/// anything else is refused as `format_outdated`.
-pub const STORED_FORMAT: i64 = 6;
+/// What `revision.schema_version` says of a payload: 7, an infra-data document
+/// whose every reference names an object (decision 0028, phase C: core 3.1).
+/// 6 (lifespans by day, a reference free to name nothing: core 3.0) is migrated
+/// into it once (data migration `0028-references`), 5 (the document with its
+/// register of construction stages, decision 0025) by `0028-lifespans-by-day`,
+/// 4 (infra-data-1.0) by `0025-infra-data-2.0`, and each is read through the
+/// door where one is left; 3 (the core 1.0 document) and 2 (oltjson-1.1) once
+/// by `0021-infra-data`; anything else is refused as `format_outdated`.
+pub const STORED_FORMAT: i64 = 7;
+/// Lifespans by day, before references had to name something (decision 0028, phase A).
+pub const STORED_FORMAT_LIFESPANS: i64 = 6;
 /// The document with its register of construction stages (decision 0025), before 0028.
 pub const STORED_FORMAT_STAGES: i64 = 5;
 /// infra-data-1.0 (decision 0021), before 2.0.
@@ -233,7 +236,7 @@ impl<'a> Store<'a> {
         };
         let payload = match version {
             STORED_FORMAT => unpack(&payload).ok_or_else(|| ApiError::new(500, "internal"))?,
-            STORED_FORMAT_STAGES | STORED_FORMAT_1_0 => unpack(&payload)
+            STORED_FORMAT_LIFESPANS | STORED_FORMAT_STAGES | STORED_FORMAT_1_0 => unpack(&payload)
                 .and_then(|p| rail_across_doc::door::check_document(&p).ok())
                 .ok_or_else(|| ApiError::new(409, "format_outdated"))?,
             _ => return Err(ApiError::new(409, "format_outdated")),

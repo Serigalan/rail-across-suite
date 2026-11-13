@@ -13,6 +13,13 @@ const el = (x0, x1, extra = {}) => ({
 })
 const track = (id, extra = {}) => ({ id, name: id, epsg: 25832, elements: [el(0, 100)], ...extra })
 const record = (extra = {}) => ({ id: 'p', title: 'P', tracks: [track('t1')], switches: [], platforms: [], ...extra })
+/** A record with the station of the signalling fixture and what it stands on: tracks t1, t2, the switch w1, the station op1. */
+const station = (extra = {}) => record({
+  tracks: [track('t1'), track('t2')],
+  switches: [{ switchId: 'w1', kind: 'link', formVersion: 1, name: 'link.001', ports: { A: { trackId: 't1', endpoint: 'END' }, B: { trackId: 't2', endpoint: 'BEGIN' } } }],
+  operationalPoints: [{ id: 'op1', name: 'Halle-Trotha' }],
+  ...extra,
+})
 
 /** The record a record comes back as, through its document. */
 const roundTrip = (r) => fromDocument(JSON.parse(JSON.stringify(toDocument(r, { carrySchemas: true }))))
@@ -50,9 +57,8 @@ describe('a record as an infra-data-2.0 document', () => {
   it('holds the domains core and civil, each with its version and schema', () => {
     const doc = toDocument(record({ planHeader: { subtitle: 'x' } }))
     expect(doc).toMatchObject({ format: 'infra-data', version: '2.0' })
-    expect(doc.domains.core).toMatchObject({ version: '3.0', schema: SCHEMA_HASHES.core, fields: { id: 'p', title: 'P' } })
-    expect(doc.domains.civil).toMatchObject({ version: '2.0', schema: SCHEMA_HASHES.civil, dependsOn: ['core'], fields: { planHeader: { subtitle: 'x' } } })
-    expect([doc.domains.core.version, doc.domains.civil.version]).toEqual([DOMAIN_VERSIONS.core, DOMAIN_VERSIONS.civil])
+    expect(doc.domains.core).toMatchObject({ version: DOMAIN_VERSIONS.core, schema: SCHEMA_HASHES.core, fields: { id: 'p', title: 'P' } })
+    expect(doc.domains.civil).toMatchObject({ version: DOMAIN_VERSIONS.civil, schema: SCHEMA_HASHES.civil, dependsOn: ['core'], fields: { planHeader: { subtitle: 'x' } } })
     expect(doc.domains.core.collections.tracks.map(t => t.id)).toEqual(['t1'])
   })
 
@@ -191,10 +197,10 @@ describe('the door', () => {
 
   it('carries the signalling domain through the record untouched, and carries its schema only where it is', () => {
     const signalling = ksStation()
-    const doc = toDocument(record({ signalling }), { carrySchemas: true })
-    expect(doc.domains.signalling).toMatchObject({ version: '3.0', schema: SCHEMA_HASHES.signalling, dependsOn: ['core'] })
+    const doc = toDocument(station({ signalling }), { carrySchemas: true })
+    expect(doc.domains.signalling).toMatchObject({ version: DOMAIN_VERSIONS.signalling, schema: SCHEMA_HASHES.signalling, dependsOn: ['core'] })
     expect(Object.keys(doc.schemas)).toContain(SCHEMA_HASHES.signalling)
-    expect(roundTrip(record({ signalling }))).toEqual(record({ signalling: {
+    expect(roundTrip(station({ signalling }))).toEqual(station({ signalling: {
       fields: signalling.fields,
       collections: Object.fromEntries(Object.entries(signalling.collections).map(([k, v]) => [k, [...v].sort((a, b) => (a.id < b.id ? -1 : 1))])),
     } }))
@@ -216,7 +222,7 @@ describe('the door', () => {
     const signalling = ksStation()
     signalling.collections.balises = signalling.collections.balises.filter(b => b.system === 'pzb')
     // A logical signal of its own in each system, as the first schema could say it: one per signal.
-    return oneZero(toDocument(record({ signalling })))
+    return oneZero(toDocument(station({ signalling })))
   }
   const asSixth = (doc) => {
     const d = structuredClone(doc)
@@ -295,14 +301,14 @@ describe('the door', () => {
     const signalling = ksStation()
     signalling.collections.overlaps[0].gradient = undefined
     signalling.collections.signals[0].name = undefined
-    const doc = toDocument(record({ signalling }))
+    const doc = toDocument(station({ signalling }))
     expect(doc.domains.signalling.collections.overlaps[0]).not.toHaveProperty('gradient')
   })
 
   it('refuses a signalling domain its schema does not take', () => {
     const signalling = ksStation()
     delete signalling.collections.signals[0].at.direction
-    expect(() => toDocument(record({ signalling }))).toThrow('invalid_payload')
+    expect(() => toDocument(station({ signalling }))).toThrow('invalid_payload')
   })
 
   it('refuses a register of stages in a document of today', () => {

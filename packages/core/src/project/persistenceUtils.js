@@ -1,5 +1,5 @@
 import { FORMAT_NAME, PayloadError, viaNative } from '../document/index.js'
-import { heldProject, holdProject } from '../native/index.js'
+import { heldProject, holdProject, reuseFrom } from '../native/index.js'
 
 /**
  * The record the app works on in memory, and the door to it from the one
@@ -76,11 +76,18 @@ export const projectDocument = (record, { carrySchemas = false, check = true } =
   viaNative('project.projectDocument', { record: withoutDerived(record), carrySchemas, check })
 
 /**
- * The infra-data-1.0 document of some tracks, as the data exchange panel
- * exports them: a project of these tracks alone, its schemas carried.
+ * The document of some tracks, as the data exchange panel exports them: a
+ * project of these tracks alone, its schemas carried. An element's membership
+ * in a switch of the project is not written — the file has no switches, and a
+ * document names nothing it lacks (decision 0028, phase C): a branch comes
+ * back as a track of its own.
  */
 export const tracksDocument = (tracks) =>
-  projectDocument({ id: 'tracks', tracks }, { carrySchemas: true })
+  projectDocument({ id: 'tracks', tracks: tracks.map(alone) }, { carrySchemas: true })
+
+const alone = (track) => ({
+  ...track, elements: (track.elements ?? []).map(({ switchId: _s, switchBranch: _b, ...el }) => el),
+})
 
 /**
  * The tracks of a file the data exchange panel exported (tracksDocument) — and
@@ -93,6 +100,29 @@ export const tracksDocument = (tracks) =>
  */
 export const parseTracksPayload = (data, { switchIds = new Set() } = {}) =>
   viaNative('project.parseTracksPayload', { data, switchIds: [...switchIds] })
+
+/** What of a record lies on the net and names its objects, without being part of it: the layers, the civil structures, the measured axes. */
+const LAYER_PARTS = ['signalling', 'electrification', 'bridges', 'retainingWalls', 'noiseBarriers', 'axisSurveys']
+
+/**
+ * The record (hydrated or not) with what its layers name and it lacks cut, as
+ * the door cuts a document of before (decision 0028, phase C): an optional
+ * reference alone, an item of a list, else the object that requires it, on
+ * until nothing dangles — a switch deleted takes its switch elements along,
+ * and what is nothing without them. Only the layers change (LAYER_PARTS);
+ * what is the same keeps its identity. Returns { record, cut } — `cut` what
+ * went, [{ domain, path, target, id }] —, the record itself where nothing did.
+ */
+export function layersWithoutDangling(record) {
+  const { record: pruned, cut } = viaNative('document.withoutDangling', withoutDerived(record))
+  if (!cut.length) return { record, cut }
+  const next = { ...record }
+  for (const k of LAYER_PARTS) {
+    if (pruned[k] !== undefined) next[k] = pruned[k]
+    else delete next[k]
+  }
+  return { record: reuseFrom(next, [record]), cut }
+}
 
 // ── Hydrate (load) / dehydrate (persist) ─────────────────────────────────────
 

@@ -81,7 +81,7 @@ function sampleRecord({ signalling = false, electrification = false } = {}) {
       points: { e0: 500000, n0: 5700000, z0: 108, st: [0, 500], de: [0, 500], dn: [0, 0], zl: [550, 560], zr: [550, 561], ga: [1435, 1436], q: [1, 1] } }],
     referenceAxes: [{ id: 'x1', name: 'Bestand', epsg: 25832, heightEpsg: null, source: { tra: 'a.TRA', gra: null },
       points: { s0: 0, step: 0.01, count: 3, e0: 500000, n0: 5700000, de: [0, 10, 10], dn: [0, 0, 0], z: null } }],
-    ...(signalling ? { signalling: atPlatform(ksStation({ operationalPoint: 'Halle-Trotha' })) } : {}),
+    ...(signalling ? { signalling: atPlatform(ksStation({ operationalPoint: HALLE_TROTHA })) } : {}),
     ...(electrification ? { electrification: { fields: {}, collections: { electrifications: [
       { id: 'el1', name: 'Oberleitung', at: { anchor: 'station', trackId: 't1', startStation: 0, endStation: 250 }, system: '15000V' },
     ] } } } : {}),
@@ -140,6 +140,8 @@ const DOCUMENT_CASES = [
   ['the sample with its electrification', () => {}, { electrification: true }],
   ['an electrification of no system', (d) => { delete d.domains.electrification.collections.electrifications[0].system }, { electrification: true }],
   ['a boundary\'s headway', (d) => { d.domains.core.collections.endMarks[0].headway = 120 }],
+  ['a track of a station that is not there', (d) => { d.domains.core.collections.tracks[1].operationalPoint = 'op-nowhere' }],
+  ['a switch element of a switch that is not there', (d) => { d.domains.signalling.collections.switchElements[0].switchId = 'w9' }, { signalling: true }],
 ]
 
 /** [name, change] — an infra-data 1.0 document (frozen), changed or not: the door reads it as today's. */
@@ -182,6 +184,13 @@ const STAGES_CASES = [
   }],
   ['stages: civil of a version that does not go with the core\'s', 'the sample', (d) => { d.domains.civil.version = '2.0' }],
   ['stages: the core of another schema', 'the sample', (d) => { d.domains.core.schema = `sha256:${'0'.repeat(64)}` }],
+  // A document of before could name what was not there; brought forward, it is cut as a deletion would have cut it.
+  ['stages: references to nothing, cut as a deletion cuts them', 'the sample with its signalling', (d) => {
+    const c = d.domains.signalling.collections
+    c.signals[0].operationalPointId = 'op-nowhere'
+    c.switchElements[0].switchId = 'w9'
+    c.stationBoundaries[0].marks = [{ switchId: 'w9' }]
+  }],
 ]
 
 /** The verdict on a document: the manifest and hash of what the door takes, an earlier schema brought to this one. */

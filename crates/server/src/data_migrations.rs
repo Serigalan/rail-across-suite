@@ -9,7 +9,7 @@ use rusqlite::{Connection, OptionalExtension, params};
 use serde_json::{Value, json};
 
 use crate::checks::{check_kept, normalized_record};
-use crate::store::{STORED_FORMAT, STORED_FORMAT_1_0, STORED_FORMAT_STAGES, Store, pack, unpack};
+use crate::store::{STORED_FORMAT, STORED_FORMAT_1_0, STORED_FORMAT_LIFESPANS, STORED_FORMAT_STAGES, Store, pack, unpack};
 use crate::util::{hex, iso, random_bytes};
 
 /// The login of the user the server's own revisions name.
@@ -186,6 +186,15 @@ fn from_infra_data_2_0(db: &Connection, _now: i64) -> rusqlite::Result<String> {
     through_the_door(db, STORED_FORMAT_STAGES)
 }
 
+/// Every revision kept with its lifespans by day rewritten as today's, in
+/// place (decision 0028, phase C): a reference that names nothing — the tools
+/// reported one instead before — cut as the deletion of what it named would
+/// have cut it. One the door cannot read stays as it was, and is read through
+/// the door each time it is asked for.
+fn from_lifespans_by_day(db: &Connection, _now: i64) -> rusqlite::Result<String> {
+    through_the_door(db, STORED_FORMAT_LIFESPANS)
+}
+
 /// Every revision kept in the form `from` rewritten as the door reads it, in today's form.
 fn through_the_door(db: &Connection, from: i64) -> rusqlite::Result<String> {
     let rows: Vec<(i64, Vec<u8>)> = db
@@ -276,7 +285,7 @@ pub fn run_data_migrations(db: &Connection, now: i64) -> rusqlite::Result<Vec<(S
         .collect::<Result<_, _>>()?;
     let mut ran = Vec::new();
     // In this order: a later step reads the revisions in the form the first gives them.
-    let steps: [(&str, fn(&Connection, i64) -> rusqlite::Result<String>); 8] = [
+    let steps: [(&str, fn(&Connection, i64) -> rusqlite::Result<String>); 9] = [
         ("0021-infra-data", to_infra_data),
         ("0020-node-tolerance-1um", close_node_gaps),
         ("0025-infra-data-2.0", from_infra_data_1_0),
@@ -288,6 +297,8 @@ pub fn run_data_migrations(db: &Connection, now: i64) -> rusqlite::Result<Vec<(S
         ("0027-civil-structures", from_infra_data_2_0),
         // No stages, the lifespans by day (decision 0028): every revision kept before it.
         ("0028-lifespans-by-day", from_infra_data_2_0),
+        // A reference names something (decision 0028, phase C): every revision a build of phase A or B kept.
+        ("0028-references", from_lifespans_by_day),
     ];
     for (name, step) in steps {
         if done.iter().any(|d| d == name) {

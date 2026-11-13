@@ -20,7 +20,7 @@ use crate::error::{PayloadError, Result};
 use crate::layers;
 
 /// The domains this build reads and writes, with their versions.
-pub const DOMAIN_VERSIONS: &[(&str, &str)] = &[("core", "3.0"), ("civil", "2.0"), ("signalling", "3.0"), ("electrification", "2.0")];
+pub const DOMAIN_VERSIONS: &[(&str, &str)] = &[("core", "3.1"), ("civil", "2.1"), ("signalling", "3.1"), ("electrification", "2.1")];
 
 /// The version of domain `name` this build reads, where it reads it.
 pub fn domain_version(name: &str) -> Option<&'static str> {

@@ -10,7 +10,7 @@ import {
   addElementToTrack, redo, canRedo, undoStep, redoStep, hiddenTracks, setTracksHidden, subscribe,
   hiddenKmLines, setKmLinesHidden,
   setTrackHeights, setHeightsForTracks, setSwitchDesignMode, switchDesignMode, addDependentPoint, commitReconnect, loadPlatforms, commitImport, historySteps, travelHistory,
-  savePlatform, updatePlatform, deletePlatform, saveStructure, loadStructures, deleteStructure, updateTrack,
+  savePlatform, updatePlatform, deletePlatform, saveStructure, loadStructures, deleteStructure, updateTrack, commitSwitchDeletion,
 } from './storage'
 import { newBufferStop, newBoundary } from '@rail-across/core/track'
 import { endPointCurvedUtm, endPointStraightUtm } from '@rail-across/core/src/geometry/elementUtils.js'
@@ -724,5 +724,34 @@ describe('a station a form states as text (decision 0028)', () => {
     expect(point).toMatchObject({ name: 'Halle-Trotha', rl100: 'LHT' })
     expect(pf.operationalPoint).toBe(point.id)
     expect(currentProject().signalling.collections.stoppingPlaces[0].operationalPointId).toBe(point.id)
+  })
+})
+
+describe('what a write takes away (decision 0028, phase C)', () => {
+  it('takes along what the layers name of it: a switch deleted, its switch element and what needs that', async () => {
+    const { ksStation } = await import('@rail-across/core/test/signallingFixture.js')
+    const signalling = ksStation()
+    const track = (id) => ({ id, epsg: 25832, elements: [{ elementType: 0, startNode: [500000, 5600000], endNode: [500100, 5600000], bearing: 90, length: 100 }] })
+    openProject({
+      id: 'p1', tracks: [track('t1'), track('t2')], operationalPoints: [{ id: 'op1', name: 'Halle-Trotha' }],
+      switches: [{ switchId: 'w1', kind: 'link', formVersion: 1, ports: { A: { trackId: 't1', endpoint: 'END' }, B: { trackId: 't2', endpoint: 'BEGIN' } } }],
+      signalling,
+    })
+    const before = currentProject()
+    commitSwitchDeletion({ switchId: 'w1', removeTrackIds: [], updateTracks: [], remap: {} })
+    const after = currentProject().signalling.collections
+    expect(after.switchElements).toEqual([])
+    // the flank protection the switch element asked for went with it; the signals stayed, as they were
+    expect(after.flankProtection).toEqual([])
+    expect(after.signals).toBe(before.signalling.collections.signals)
+    expect(currentProject().tracks.map(t => t.id)).toEqual(['t1', 't2'])
+    undo()
+    expect(currentProject().signalling.collections.switchElements).toHaveLength(1)
+  })
+
+  it('leaves a write that takes nothing away as it is', () => {
+    openProject({ id: 'p1', tracks: [], switches: [] })
+    saveTrack({ id: 't1', elements: [] })
+    expect(loadTracks()).toHaveLength(1)
   })
 })

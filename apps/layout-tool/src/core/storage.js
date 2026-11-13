@@ -1,5 +1,5 @@
 import {
-  heldKeptProject, heldProjectDocument, holdProject, hydrateProjects, moveTracksToPlane, withImportSystem,
+  heldKeptProject, heldProjectDocument, holdProject, hydrateProjects, layersWithoutDangling, moveTracksToPlane, withImportSystem,
 } from '@rail-across/core/project'
 import {
   elementBelongsToSwitch, portsOf, unmarkSwitchElement, portTrack, portEnd, sliceHeights,
@@ -95,6 +95,22 @@ export function currentProject() {
  * false; nothing at all — not even an undo step — when no project is open.
  * Returns whether a project was there to change.
  */
+const idsOf = (list, key = 'id') => new Set((list ?? []).map(o => o?.[key]))
+const tookFrom = (a, b, key) => a !== b && [...idsOf(a, key)].some(id => !idsOf(b, key).has(id))
+
+/**
+ * `after` with what its layers name and a write from `before` took away cut
+ * (layersWithoutDangling) — asked only where the write took objects out of
+ * what the layers name: tracks, switches, platforms, stations, stopping places.
+ */
+function withoutDanglingAfter(before, after) {
+  if (!before || !after) return after
+  const took = tookFrom(before.tracks, after.tracks) || tookFrom(before.switches, after.switches, 'switchId')
+    || tookFrom(before.platforms, after.platforms) || tookFrom(before.operationalPoints, after.operationalPoints)
+    || tookFrom(before.signalling?.collections?.stoppingPlaces, after.signalling?.collections?.stoppingPlaces)
+  return took ? layersWithoutDangling(after).record : after
+}
+
 function mutate(fn, { undo = true, unlock = false } = {}) {
   if (!_project) return false
   const before = _project, logBefore = _idLog
@@ -109,9 +125,11 @@ function mutate(fn, { undo = true, unlock = false } = {}) {
   // (decision 384). A curve whose length counts takes the radius its
   // gradients ask for now (decision 266).
   // A station a form states as text is the point of that name, found or made
-  // (decision 0028): the record names its stations by their points.
-  const after = withLengthRadii(before, withSwitchHeights(before,
-    withCoupledCants(before, withPrunedMarks(carryAfterWrite(before, repairRoutes(before, withStationPoints(next))))), { design: _switchDesign }))
+  // (decision 0028): the record names its stations by their points. What the
+  // write took away takes along what named it in the layers — a switch its
+  // switch elements, and what is nothing without them (phase C).
+  const after = withoutDanglingAfter(before, withLengthRadii(before, withSwitchHeights(before,
+    withCoupledCants(before, withPrunedMarks(carryAfterWrite(before, repairRoutes(before, withStationPoints(next))))), { design: _switchDesign })))
   // What a lock holds stays (Entscheidung 382): a write that would change it
   // is refused as a whole — and said so, where every step is.
   const parted = new Set(_idLog.slice(logBefore.length).map(e => e.from))

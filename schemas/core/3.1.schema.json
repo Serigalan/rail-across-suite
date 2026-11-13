@@ -1,0 +1,875 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "core",
+  "title": "Rail-Data-Core, domain core 3.1",
+  "description": "The base every module depends on: the net (tracks, switches and connectors), what stands on it for every discipline (platforms, end marks) and the reference data (km lines, the operational point register). Written by the layout tool, carried by the core library. See docs/data-model.md. — 2.0 (decision 0025): the alignment and what every layer places things by; the platforms are civil's, the stopping places came in from signalling, the named runs of tracks from layout. — 3.0 (decision 0028): no construction stages; a lifespan states days. — 3.1 (decision 0028, phase C): every reference names an object of the collection its `x-target` names (the door's rule).",
+  "type": "object",
+  "required": [
+    "fields",
+    "collections"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "fields": {
+      "$ref": "#/$defs/Fields"
+    },
+    "collections": {
+      "type": "object",
+      "required": [
+        "tracks",
+        "switches",
+        "endMarks",
+        "kmLines",
+        "operationalPoints",
+        "stoppingPlaces"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "tracks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Track"
+          }
+        },
+        "switches": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Switch"
+          }
+        },
+        "endMarks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/EndMark"
+          }
+        },
+        "kmLines": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/KmLine"
+          }
+        },
+        "operationalPoints": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/OperationalPoint"
+          }
+        },
+        "stoppingPlaces": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/StoppingPlace"
+          }
+        },
+        "trackPaths": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/NamedTrackPath"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "Id": {
+      "description": "The id of an object, unique in its collection; a UUID in lower case by convention.",
+      "type": "string",
+      "minLength": 1
+    },
+    "Ref": {
+      "description": "A reference to an object by its bare id. Where a property is a Ref, its `x-target` names the collection it points into.",
+      "type": "string",
+      "minLength": 1
+    },
+    "Text": {
+      "type": "string"
+    },
+    "Label": {
+      "description": "A number as people write it: a line or track number, sometimes with letters.",
+      "type": [
+        "string",
+        "number"
+      ]
+    },
+    "Epsg": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "Point": {
+      "description": "[easting, northing] in m, in the plane of the object that states it.",
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 2,
+      "maxItems": 3
+    },
+    "Side": {
+      "enum": [
+        "left",
+        "right"
+      ]
+    },
+    "Endpoint": {
+      "enum": [
+        "BEGIN",
+        "END"
+      ]
+    },
+    "LineCategory": {
+      "enum": [
+        "main",
+        "secondary",
+        "s_bahn"
+      ]
+    },
+    "TrackEnd": {
+      "description": "One end of a track: what a switch port, a connector or an end mark holds.",
+      "type": "object",
+      "required": [
+        "trackId",
+        "endpoint"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "trackId": {
+          "$ref": "#/$defs/Ref",
+          "x-target": "core.tracks"
+        },
+        "endpoint": {
+          "$ref": "#/$defs/Endpoint"
+        }
+      }
+    },
+    "TrackLocation": {
+      "description": "Where an object stands, as one value (R5), stating its anchor (R11): `station` follows the track, `plane` keeps its place. Side and offset are seen in the direction of stationing; `direction` up = towards END.",
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "anchor",
+            "trackId",
+            "station"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "anchor": {
+              "const": "station"
+            },
+            "trackId": {
+              "$ref": "#/$defs/Ref",
+              "x-target": "core.tracks"
+            },
+            "station": {
+              "type": "number"
+            },
+            "side": {
+              "$ref": "#/$defs/Side"
+            },
+            "offset": {
+              "type": "number",
+              "minimum": 0
+            },
+            "direction": {
+              "enum": [
+                "up",
+                "down"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "anchor",
+            "easting",
+            "northing",
+            "epsg"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "anchor": {
+              "const": "plane"
+            },
+            "easting": {
+              "type": "number"
+            },
+            "northing": {
+              "type": "number"
+            },
+            "epsg": {
+              "$ref": "#/$defs/Epsg"
+            },
+            "bearing": {
+              "type": "number"
+            }
+          }
+        }
+      ]
+    },
+    "TrackRange": {
+      "description": "A stretch of one track, as one value (R5): from startStation to endStation, on a side.",
+      "type": "object",
+      "required": [
+        "anchor",
+        "trackId",
+        "startStation",
+        "endStation"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "anchor": {
+          "const": "station"
+        },
+        "trackId": {
+          "$ref": "#/$defs/Ref",
+          "x-target": "core.tracks"
+        },
+        "startStation": {
+          "type": "number"
+        },
+        "endStation": {
+          "type": "number"
+        },
+        "side": {
+          "$ref": "#/$defs/Side"
+        }
+      }
+    },
+    "TrackPath": {
+      "description": "A run of tracks in running order; the direction each one is run is derived from where they meet.",
+      "type": "object",
+      "required": [
+        "trackIds"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "trackIds": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Ref",
+            "x-target": "core.tracks"
+          }
+        }
+      }
+    },
+    "Day": {
+      "description": "A day (ISO 8601).",
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "LifespanDay": {
+      "description": "A day, or the word \"open\" where the day is not known yet.",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/Day"
+        },
+        {
+          "const": "open"
+        }
+      ]
+    },
+    "Lifespan": {
+      "description": "The days an object is in service (decision 0028): `from` the first, `to` the last, \"open\" where the day is not known yet — newly built, removed. No `from`: it exists today; no `to`: it stays; no lifespan at all: existing and staying. A `from` that is a day is not after a `to` that is one (the door's rule).",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": false,
+      "properties": {
+        "from": {
+          "$ref": "#/$defs/LifespanDay"
+        },
+        "to": {
+          "$ref": "#/$defs/LifespanDay"
+        }
+      }
+    },
+    "Fields": {
+      "description": "The project's own fields.",
+      "type": "object",
+      "required": [
+        "id"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "title": {
+          "$ref": "#/$defs/Text"
+        },
+        "description": {
+          "$ref": "#/$defs/Text"
+        },
+        "creator": {
+          "$ref": "#/$defs/Text"
+        },
+        "createdAt": {
+          "$ref": "#/$defs/Text"
+        },
+        "crsSystem": {
+          "$ref": "#/$defs/Text"
+        },
+        "lineCategory": {
+          "$ref": "#/$defs/LineCategory"
+        },
+        "gaugeProfile": {
+          "$ref": "#/$defs/Text"
+        }
+      }
+    },
+    "Element": {
+      "description": "One design element of a track: straight (0), arc (1) or transition (2). No station, no polyline: stations are the running sum of the lengths, drawn geometry is derived.",
+      "type": "object",
+      "required": [
+        "elementType",
+        "startNode",
+        "endNode",
+        "length"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "elementType": {
+          "enum": [
+            0,
+            1,
+            2
+          ]
+        },
+        "epsg": {
+          "$ref": "#/$defs/Epsg",
+          "description": "The plane the element is stated in, where it says so: its track's (a finding of the chain checks where not)."
+        },
+        "startNode": {
+          "$ref": "#/$defs/Point"
+        },
+        "endNode": {
+          "$ref": "#/$defs/Point"
+        },
+        "bearing": {
+          "type": "number"
+        },
+        "endBearing": {
+          "type": "number"
+        },
+        "length": {
+          "type": "number",
+          "minimum": 0
+        },
+        "radius": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "r1": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "r2": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "transitionType": {
+          "enum": [
+            "clothoid",
+            "bloss"
+          ]
+        },
+        "cant": {
+          "type": "number"
+        },
+        "cantStart": {
+          "type": "number"
+        },
+        "cantEnd": {
+          "type": "number"
+        },
+        "cantException": {
+          "$ref": "#/$defs/Text"
+        },
+        "role": {
+          "enum": [
+            "follow",
+            "intermediate"
+          ]
+        },
+        "reasons": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "designSpeed": {
+          "description": "The design speed of the element [km/h], which the layout tool lays it out for and checks it against (the signalling domain states the speeds it signals, signallingSpeed, on its signals).",
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "switchBranch": {
+          "type": "boolean"
+        },
+        "switchRoute": {
+          "enum": [
+            "main",
+            "branch",
+            "cross",
+            "slip1",
+            "slip2"
+          ]
+        },
+        "switchId": {
+          "$ref": "#/$defs/Ref",
+          "x-target": "core.switches"
+        },
+        "switchHint": {
+          "$ref": "#/$defs/Text",
+          "description": "Why an import could not build the switch this element belongs to: form, number, reason."
+        }
+      }
+    },
+    "HeightPoint": {
+      "description": "A point of a track's vertical tangent polygon: station [m], height of the rail that is not raised [m], vertical curve radius and what governs it, and how it depends on another point.",
+      "type": "object",
+      "required": [
+        "station",
+        "z"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "station": {
+          "type": "number"
+        },
+        "z": {
+          "type": "number"
+        },
+        "rv": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "la": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "reason": {
+          "$ref": "#/$defs/Text"
+        },
+        "locked": {
+          "type": "boolean"
+        },
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "dep": {
+          "$ref": "#/$defs/Ref",
+          "x-target": "the id of another height point"
+        },
+        "depMode": {
+          "enum": [
+            "lds",
+            "continueBefore",
+            "continueAfter",
+            "wa",
+            "continue"
+          ]
+        },
+        "free": {
+          "type": "boolean"
+        }
+      }
+    },
+    "Superstructure": {
+      "type": "object",
+      "required": [
+        "type",
+        "from",
+        "to"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "$ref": "#/$defs/Text"
+        },
+        "from": {
+          "type": "number"
+        },
+        "to": {
+          "type": "number"
+        }
+      }
+    },
+    "Track": {
+      "type": "object",
+      "required": [
+        "id",
+        "epsg",
+        "elements"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "name": {
+          "$ref": "#/$defs/Text"
+        },
+        "trackType": {
+          "enum": [
+            1,
+            2
+          ]
+        },
+        "lineNumber": {
+          "$ref": "#/$defs/Label"
+        },
+        "lineName": {
+          "$ref": "#/$defs/Text"
+        },
+        "side": {
+          "type": "integer"
+        },
+        "trackNumber": {
+          "$ref": "#/$defs/Label"
+        },
+        "operationalPoint": {
+          "$ref": "#/$defs/Ref",
+          "x-target": "core.operationalPoints"
+        },
+        "owner": {
+          "$ref": "#/$defs/Text"
+        },
+        "trackUse": {
+          "const": "siding"
+        },
+        "lineCategory": {
+          "$ref": "#/$defs/LineCategory"
+        },
+        "lifespan": {
+          "$ref": "#/$defs/Lifespan"
+        },
+        "epsg": {
+          "$ref": "#/$defs/Epsg"
+        },
+        "heightEpsg": {
+          "$ref": "#/$defs/Epsg"
+        },
+        "elements": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Element"
+          },
+          "minItems": 1
+        },
+        "heights": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/HeightPoint"
+          }
+        },
+        "rails": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Superstructure"
+          }
+        },
+        "sleepers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Superstructure"
+          }
+        },
+        "lagesystem": {
+          "$ref": "#/$defs/Text",
+          "description": "The DB Lagesystem an MDB import took the track from (EA0, DB0, …)."
+        },
+        "proviAxis": {
+          "$ref": "#/$defs/Text",
+          "description": "The ProVI axis an import took the track from."
+        },
+        "osrd": {
+          "type": "object",
+          "description": "What a RailJSON import brought along for the track section that the model does not hold, handed back on export."
+        }
+      }
+    },
+    "Switch": {
+      "description": "A turnout, crossing, slip, two-end connector (`link`) or construction stage connector (`stage_link`) at a node; its ports hold track ends. A link joins two track ends where the plane changes or where a rebuilt part of a track ties in; a stage link joins the track at A to the one at B1 while that exists and to the one at B2 from then on — never both: one track ends, the other begins (decision 0027).",
+      "type": "object",
+      "required": [
+        "id",
+        "kind",
+        "formVersion",
+        "ports"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "kind": {
+          "enum": [
+            "turnout",
+            "crossing",
+            "single_slip",
+            "double_slip",
+            "link",
+            "stage_link"
+          ]
+        },
+        "formVersion": {
+          "type": "integer"
+        },
+        "name": {
+          "$ref": "#/$defs/Text"
+        },
+        "number": {
+          "type": "number"
+        },
+        "label": {
+          "$ref": "#/$defs/Text"
+        },
+        "speed": {
+          "type": "number"
+        },
+        "trailing": {
+          "type": "boolean"
+        },
+        "swapped": {
+          "type": "boolean"
+        },
+        "toeLead": {
+          "const": "branch"
+        },
+        "lifespan": {
+          "$ref": "#/$defs/Lifespan"
+        },
+        "mainRadius": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "mainRadiusEnd": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "pad": {},
+        "ports": {
+          "type": "object",
+          "additionalProperties": false,
+          "patternProperties": {
+            "^(A|B|B1|B2|C|D)$": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/TrackEnd"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "EndMark": {
+      "description": "A buffer stop or the boundary of the planning area at a free track end; a train may begin and end at either.",
+      "type": "object",
+      "required": [
+        "id",
+        "kind",
+        "at"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "kind": {
+          "enum": [
+            "buffer_stop",
+            "boundary"
+          ]
+        },
+        "at": {
+          "$ref": "#/$defs/TrackEnd"
+        },
+        "name": {
+          "$ref": "#/$defs/Text",
+          "description": "What a timetable names the place by."
+        },
+        "type": {
+          "type": [
+            "integer",
+            "string"
+          ]
+        },
+        "brakeLength": {
+          "type": "number"
+        },
+        "speed": {
+          "type": "number",
+          "minimum": 0,
+          "description": "At a boundary: the speed [km/h] a train crosses it at in a simulation, entering or leaving; without one, what the line allows there."
+        },
+        "lifespan": {
+          "$ref": "#/$defs/Lifespan"
+        },
+        "headway": {
+          "type": "number",
+          "minimum": 0,
+          "description": "At a boundary: the least time [s] between two trains crossing it the same way — how close trains follow from the net beyond."
+        }
+      }
+    },
+    "KmLine": {
+      "description": "Foreign reference data: the stretch of a DB line around the project, in WGS84, the third value of each point its kilometrage [m].",
+      "type": "object",
+      "required": [
+        "id",
+        "lineNumber",
+        "runs"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "lineNumber": {
+          "$ref": "#/$defs/Label"
+        },
+        "crs": {
+          "const": "EPSG:4326"
+        },
+        "clip": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "runs": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3
+            }
+          }
+        },
+        "source": {
+          "$ref": "#/$defs/Text",
+          "description": "The import a line was taken from (mdb, vermesn), kept instead of the shipped one."
+        }
+      }
+    },
+    "OperationalPoint": {
+      "description": "A station, halt or other operational point of the register: its identity. Codes are attributes, stated once they exist; boundaries belong to signalling (R10).",
+      "type": "object",
+      "required": [
+        "id"
+      ],
+      "anyOf": [
+        {
+          "required": [
+            "name"
+          ]
+        },
+        {
+          "required": [
+            "rl100"
+          ]
+        },
+        {
+          "required": [
+            "uic"
+          ]
+        }
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "name": {
+          "$ref": "#/$defs/Text"
+        },
+        "rl100": {
+          "$ref": "#/$defs/Text"
+        },
+        "uic": {
+          "$ref": "#/$defs/Label"
+        }
+      }
+    },
+    "StoppingPlace": {
+      "description": "Where trains stop (Halteplatz): a stretch of one track, in a station on one of its tracks or at a platform, on the open line at a platform — for every train. The Signalling-Tool sets it (decision 0024); the Civil-Tool makes or details one where it puts a platform: a passenger stop (passengerStop), named by the platform (civil). Signals and detection points bound it; where one stands within it, a finding says so.",
+      "type": "object",
+      "required": [
+        "id",
+        "at"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "name": {
+          "$ref": "#/$defs/Text"
+        },
+        "operationalPointId": {
+          "$ref": "#/$defs/Ref",
+          "x-target": "core.operationalPoints",
+          "description": "The station it is of; without one it lies on the open line."
+        },
+        "at": {
+          "$ref": "#/$defs/TrackRange"
+        },
+        "passengerStop": {
+          "type": "boolean",
+          "description": "A passenger stop (Personenhalt): passengers board and alight here, at a platform. The Civil-Tool sets it where it puts a platform at the stopping place, which then names it (civil); without it nothing says that passengers board there."
+        },
+        "lifespan": {
+          "$ref": "#/$defs/Lifespan"
+        }
+      }
+    },
+    "NamedTrackPath": {
+      "description": "A named run of tracks (a `route` in the Open-Layout-Tool; the bare word is reserved for the signalling route): the Layout-Tool's, for its profiles and tables.",
+      "type": "object",
+      "required": [
+        "id",
+        "path"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "name": {
+          "$ref": "#/$defs/Text"
+        },
+        "path": {
+          "$ref": "#/$defs/TrackPath"
+        }
+      }
+    }
+  }
+}

@@ -14,8 +14,9 @@ const deepFreeze = (v) => {
   }
   return v
 }
+// The turnout's tracks, a the one before it among them: a document names nothing it lacks (decision 0028).
 const project = () => deepFreeze(hydrateProjects([{
-  id: 'p', title: 'P', tracks: [mainTrack(), branchTrack()], switches: [turnout({ formVersion: 1, name: 'W1' })], platforms: [],
+  id: 'p', title: 'P', tracks: [mainTrack(), branchTrack(), { ...mainTrack(), id: 'a', name: 'a' }], switches: [turnout({ formVersion: 1, name: 'W1' })], platforms: [],
 }])[0])
 
 afterEach(() => holdProject(null))

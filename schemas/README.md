@@ -41,6 +41,10 @@ may carry one; the states a project passes through are worked out of them, never
 | `vectors/infra-data-1.0.json` | infra-data 1.0 documents as the core wrote them, frozen: the inputs of the 1.0 cases of `documents.json` |
 | `vectors/infra-data-2.0-stages.json` | infra-data 2.0 documents as the core wrote them last with a register of stages, frozen: the inputs of the `stages:` cases of `documents.json` |
 
+The format is described for readers, in German, in [`docs/format/rail-across-1.0.typ`](../docs/format/rail-across-1.0.typ)
+(Typst: `typst compile docs/format/rail-across-1.0.typ`); its appendix, every property with its values and meaning,
+is generated from these schemas by `node docs/format/anhang.mjs`, the meanings kept in `docs/format/bedeutungen.mjs`.
+
 The schemas are linked into the core (`packages/core/schemas`) and read by its Rust crates (`crates/doc`); the types of the
 document (`packages/core/types/document.d.ts`) are derived from them by `packages/core/tools/types.mjs`.
 

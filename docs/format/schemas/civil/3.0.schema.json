@@ -1,0 +1,381 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "civil",
+  "title": "Rail-Data-Core, layer civil 3.0",
+  "description": "What stands in the net without being part of it: platforms, engineering structures, measured and reference axes, the plan header and the project picture. A layer on core.",
+  "type": "object",
+  "required": [
+    "fields",
+    "collections"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "fields": {
+      "$ref": "#/$defs/Fields"
+    },
+    "collections": {
+      "type": "object",
+      "required": [
+        "platforms",
+        "axisSurveys",
+        "referenceAxes"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "platforms": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Platform"
+          }
+        },
+        "axisSurveys": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AxisSurvey"
+          }
+        },
+        "referenceAxes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ReferenceAxis"
+          }
+        },
+        "bridges": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Bridge"
+          }
+        },
+        "retainingWalls": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RetainingWall"
+          }
+        },
+        "noiseBarriers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/NoiseBarrier"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "BlobRef": {
+      "description": "A bulk array kept as a blob of its own: the SHA-256 of its canonical JSON.",
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "Fields": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "planHeader": {
+          "type": "object",
+          "description": "The editable title block of the plan export."
+        },
+        "image": {
+          "type": "string",
+          "description": "The project picture as a data URL, where a file or a device keeps it."
+        },
+        "imageHash": {
+          "type": "string",
+          "description": "The project picture as a blob on the server, by its SHA-256."
+        },
+        "osrd": {
+          "type": "object",
+          "description": "RailJSON objects the layout tool does not model, handed back on export."
+        }
+      }
+    },
+    "AxisSurvey": {
+      "description": "A measured track axis traced in point clouds, in a plane of its own; its points are whole millimetres in parallel arrays, a blob.",
+      "type": "object",
+      "required": [
+        "id",
+        "epsg",
+        "points"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "core#/$defs/Id"
+        },
+        "name": {
+          "$ref": "core#/$defs/Text"
+        },
+        "epsg": {
+          "$ref": "core#/$defs/Epsg"
+        },
+        "rail": {
+          "type": "string"
+        },
+        "guide": {
+          "type": "object",
+          "required": [
+            "kind"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "enum": [
+                "track",
+                "line"
+              ]
+            },
+            "trackId": {
+              "$ref": "core#/$defs/Ref",
+              "x-target": "core.tracks"
+            }
+          }
+        },
+        "cloudNames": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "cloudRefs": {
+          "type": "array"
+        },
+        "createdAt": {
+          "$ref": "core#/$defs/Text"
+        },
+        "step": {
+          "type": "number"
+        },
+        "gaps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "from",
+              "to"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "from": {
+                "type": "number"
+              },
+              "to": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "points": {
+          "$ref": "#/$defs/BlobRef"
+        }
+      }
+    },
+    "ReferenceAxis": {
+      "description": "The axis of a surveyed track as points every centimetre (Bestandsachse); its points are a blob.",
+      "type": "object",
+      "required": [
+        "id",
+        "epsg",
+        "points"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "core#/$defs/Id"
+        },
+        "name": {
+          "$ref": "core#/$defs/Text"
+        },
+        "epsg": {
+          "$ref": "core#/$defs/Epsg"
+        },
+        "heightEpsg": {
+          "oneOf": [
+            {
+              "$ref": "core#/$defs/Epsg"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source": {
+          "type": "object"
+        },
+        "points": {
+          "$ref": "#/$defs/BlobRef"
+        }
+      }
+    },
+    "Platform": {
+      "type": "object",
+      "required": [
+        "id",
+        "at"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "core#/$defs/Id"
+        },
+        "at": {
+          "$ref": "core#/$defs/TrackRange"
+        },
+        "frontOffset": {
+          "type": "number"
+        },
+        "backOffset": {
+          "type": "number"
+        },
+        "height": {
+          "type": "number"
+        },
+        "operationalPointId": {
+          "$ref": "core#/$defs/Ref",
+          "x-target": "core.operationalPoints"
+        },
+        "lifespan": {
+          "$ref": "core#/$defs/Lifespan"
+        },
+        "stoppingPlaceIds": {
+          "type": "array",
+          "items": {
+            "$ref": "core#/$defs/Ref",
+            "x-target": "core.stoppingPlaces"
+          },
+          "description": "The stopping places at the platform: the core names nothing above it, so the platform names them."
+        }
+      },
+      "description": "It names the stopping places at it (stoppingPlaceIds)."
+    },
+    "Bridge": {
+      "description": "A railway bridge (Eisenbahnüberführung) the track crosses over on: from where it begins to where it ends along the track.",
+      "type": "object",
+      "required": [
+        "id",
+        "at"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "core#/$defs/Id"
+        },
+        "name": {
+          "$ref": "core#/$defs/Text"
+        },
+        "at": {
+          "$ref": "core#/$defs/TrackRange"
+        },
+        "kind": {
+          "enum": [
+            "beam",
+            "arch",
+            "frame",
+            "truss",
+            "other"
+          ],
+          "description": "Its structure: beam, arch, frame, truss."
+        },
+        "spans": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "How many spans."
+        },
+        "crosses": {
+          "$ref": "core#/$defs/Text"
+        },
+        "clearance": {
+          "type": "number",
+          "minimum": 0,
+          "description": "The clear height under it [m]."
+        },
+        "lifespan": {
+          "$ref": "core#/$defs/Lifespan"
+        }
+      }
+    },
+    "RetainingWall": {
+      "description": "A retaining wall (Stützmauer) beside the track: from where it begins to where it ends along it, on its side.",
+      "type": "object",
+      "required": [
+        "id",
+        "at"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "core#/$defs/Id"
+        },
+        "name": {
+          "$ref": "core#/$defs/Text"
+        },
+        "at": {
+          "$ref": "core#/$defs/TrackRange"
+        },
+        "kind": {
+          "enum": [
+            "cantilever",
+            "gravity",
+            "sheetPile",
+            "gabion",
+            "other"
+          ],
+          "description": "Its build: cantilever (Winkelstützmauer), gravity (Schwergewichtsmauer), sheet pile (Spundwand), gabion."
+        },
+        "offset": {
+          "type": "number",
+          "minimum": 0,
+          "description": "How far from the track's axis [m]."
+        },
+        "height": {
+          "type": "number",
+          "minimum": 0,
+          "description": "How high over the ground in front of it [m]."
+        },
+        "lifespan": {
+          "$ref": "core#/$defs/Lifespan"
+        }
+      }
+    },
+    "NoiseBarrier": {
+      "description": "A noise barrier (Lärmschutzwand) beside the track: from where it begins to where it ends along it, on its side.",
+      "type": "object",
+      "required": [
+        "id",
+        "at"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "core#/$defs/Id"
+        },
+        "name": {
+          "$ref": "core#/$defs/Text"
+        },
+        "at": {
+          "$ref": "core#/$defs/TrackRange"
+        },
+        "kind": {
+          "enum": [
+            "absorbing",
+            "reflecting",
+            "transparent"
+          ],
+          "description": "Its face: highly absorbing, reflecting, transparent."
+        },
+        "offset": {
+          "type": "number",
+          "minimum": 0,
+          "description": "How far from the track's axis [m]."
+        },
+        "height": {
+          "type": "number",
+          "minimum": 0,
+          "description": "How high over top of rail [m]."
+        },
+        "lifespan": {
+          "$ref": "core#/$defs/Lifespan"
+        }
+      }
+    }
+  }
+}

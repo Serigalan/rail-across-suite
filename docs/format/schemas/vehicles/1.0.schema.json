@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "vehicles",
+  "title": "Rail-Data-Core, domain vehicles 1.0",
+  "description": "The vehicles a project's trains run with: each with the traction modes it can run on and its rolling stock. Part of operations-1.0 in rail-across-1.0; the timetables name them by id.",
+  "type": "object",
+  "required": [
+    "fields",
+    "collections"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "fields": {
+      "$ref": "#/$defs/Fields"
+    },
+    "collections": {
+      "type": "object",
+      "required": [
+        "vehicles"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "vehicles": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Vehicle"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "Fields": {
+      "description": "The domain's own fields.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {}
+    },
+    "Vehicle": {
+      "description": "A vehicle (a traction unit or a unit of coaches): its name, where it came from, the traction modes it runs on, and its rolling stock.",
+      "type": "object",
+      "required": [
+        "id",
+        "name",
+        "rollingStock"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "core#/$defs/Id"
+        },
+        "name": {
+          "$ref": "core#/$defs/Text"
+        },
+        "key": {
+          "$ref": "core#/$defs/Text"
+        },
+        "tractionModes": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "15000V",
+              "25000V",
+              "3000V",
+              "1500V",
+              "750V",
+              "600V",
+              "thermal"
+            ]
+          }
+        },
+        "rollingStock": {
+          "$ref": "core#/$defs/BlobRef"
+        }
+      }
+    }
+  }
+}

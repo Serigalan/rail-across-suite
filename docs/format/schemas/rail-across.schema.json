@@ -1,0 +1,170 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "rail-across",
+  "title": "rail-across-1.0: a railway project as one JSON file (.railacross.json)",
+  "description": "A project's infrastructure (infra-data-1.0) and its operations (operations-1.0), each a set of domains with their versions and the hashes of their schemas, and the blobs their objects name.",
+  "type": "object",
+  "required": [
+    "format",
+    "version",
+    "projectId",
+    "blobs"
+  ],
+  "additionalProperties": false,
+  "anyOf": [
+    {
+      "required": [
+        "infraData"
+      ]
+    },
+    {
+      "required": [
+        "operations"
+      ]
+    }
+  ],
+  "properties": {
+    "format": {
+      "const": "rail-across"
+    },
+    "version": {
+      "const": "1.0"
+    },
+    "projectId": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+    },
+    "generator": {
+      "type": "object",
+      "required": [
+        "name",
+        "version"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      }
+    },
+    "savedAt": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T"
+    },
+    "infraData": {
+      "$ref": "#/$defs/InfraData"
+    },
+    "operations": {
+      "$ref": "#/$defs/Operations"
+    },
+    "blobs": {
+      "type": "object",
+      "patternProperties": {
+        "^sha256:[0-9a-f]{64}$": {}
+      },
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "InfraData": {
+      "description": "The part infra-data-1.0: its format, its version and its domains.",
+      "type": "object",
+      "required": [
+        "format",
+        "version",
+        "domains"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "format": {
+          "const": "infra-data"
+        },
+        "version": {
+          "const": "1.0"
+        },
+        "domains": {
+          "type": "object",
+          "required": [
+            "core"
+          ],
+          "patternProperties": {
+            "^[a-z][a-zA-Z0-9]*$": {
+              "$ref": "#/$defs/Domain"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "Operations": {
+      "description": "The part operations-1.0: its format, its version and its domains.",
+      "type": "object",
+      "required": [
+        "format",
+        "version",
+        "domains"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "format": {
+          "const": "operations"
+        },
+        "version": {
+          "const": "1.0"
+        },
+        "domains": {
+          "type": "object",
+          "required": [],
+          "patternProperties": {
+            "^[a-z][a-zA-Z0-9]*$": {
+              "$ref": "#/$defs/Domain"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "Domain": {
+      "description": "A domain in the file: its version, the hash of its schema, the domains it refers into, its fields and collections.",
+      "type": "object",
+      "required": [
+        "version",
+        "schema",
+        "fields",
+        "collections"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+$"
+        },
+        "schema": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "dependsOn": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "fields": {
+          "type": "object"
+        },
+        "collections": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    }
+  }
+}

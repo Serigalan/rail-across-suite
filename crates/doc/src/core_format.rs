@@ -49,6 +49,7 @@ const COLLECTIONS: &[&str] = &[
     "axisSurveys",
     "referenceAxes",
     "operationalPoints",
+    "stoppingPlaces",
     "bridges",
     "retainingWalls",
     "noiseBarriers",
@@ -421,18 +422,14 @@ pub fn record_to_document(record: &Value, schema_hashes: &HashMap<&str, String>)
         })
         .collect();
 
-    // The stopping places come out of the record's signalling into the core; a
-    // boundary marked by a platform is marked by the stopping place at it, and the
-    // platforms (civil) name the stopping places at them.
+    // The stopping places are the core's, the platforms (civil) naming those at them, as in the record
+    // (decision 0028).
     let mut signalling = get(record, "signalling").map(obj);
     let mut sig_cols = signalling
         .as_ref()
         .map(|d| obj(d.get("collections").unwrap_or(&Value::Null)))
         .unwrap_or_default();
-    let mut stopping: Vec<Value> = sig_cols.get("stoppingPlaces").and_then(Value::as_array).cloned().unwrap_or_default();
-    layers::boundaries_by_stopping_place(&mut sig_cols, &mut stopping, &core_platforms);
-    sig_cols.shift_remove("stoppingPlaces");
-    let civil_platforms = layers::platforms_naming(&core_platforms, &stopping);
+    let civil_platforms = core_platforms;
 
     let core_fields = pick(record, CORE_FIELDS);
     let mut core_cols = Object::new();
@@ -442,7 +439,8 @@ pub fn record_to_document(record: &Value, schema_hashes: &HashMap<&str, String>)
     core_cols.insert("kmLines".into(), Value::Array(list(record, "kmLines").to_vec()));
     let points: Vec<Value> = list(record, "operationalPoints").iter().map(|p| Value::Object(without_null(obj(p)))).collect();
     core_cols.insert("operationalPoints".into(), Value::Array(points));
-    core_cols.insert("stoppingPlaces".into(), Value::Array(layers::core_stopping_places(&stopping)));
+    let stopping: Vec<Value> = list(record, "stoppingPlaces").iter().map(|h| Value::Object(without_null(obj(h)))).collect();
+    core_cols.insert("stoppingPlaces".into(), Value::Array(stopping));
 
     let track_paths: Vec<Value> = list(record, "routes")
         .iter()
@@ -574,7 +572,7 @@ pub fn document_to_record(doc: &Value) -> Result<Value> {
     let civil_platforms = list(&l, "platforms");
     let mut platforms = Vec::new();
     for pf in civil_platforms {
-        let mut o = without(&obj(pf), &["at", "stoppingPlaceIds"]);
+        let mut o = without(&obj(pf), &["at"]);
         for (k, v) in without(&obj(pf.get("at").unwrap_or(&Value::Null)), &["anchor"]) {
             o.insert(k, v);
         }
@@ -610,7 +608,6 @@ pub fn document_to_record(doc: &Value) -> Result<Value> {
     let axis_surveys = with_blob(list(&l, "axisSurveys"))?;
     let reference_axes = with_blob(list(&l, "referenceAxes"))?;
 
-    let stopping = layers::record_stopping_places(list(c, "stoppingPlaces"), civil_platforms);
     let operational_points = list(c, "operationalPoints").to_vec();
 
     let mut collections: Vec<(&str, Vec<Value>)> = vec![
@@ -623,6 +620,7 @@ pub fn document_to_record(doc: &Value) -> Result<Value> {
         ("axisSurveys", axis_surveys),
         ("referenceAxes", reference_axes),
         ("operationalPoints", operational_points),
+        ("stoppingPlaces", list(c, "stoppingPlaces").to_vec()),
         ("bridges", list(&l, "bridges").to_vec()),
         ("retainingWalls", list(&l, "retainingWalls").to_vec()),
         ("noiseBarriers", list(&l, "noiseBarriers").to_vec()),
@@ -636,19 +634,10 @@ pub fn document_to_record(doc: &Value) -> Result<Value> {
         }
     }
     for name in CARRIED {
-        let d = doc["domains"].get(name);
-        // The record's signalling holds the stopping places, which the document keeps in the core.
-        let with_stopping = *name == "signalling" && !stopping.is_empty();
-        if d.is_none() && !with_stopping {
-            continue;
-        }
+        let Some(d) = doc["domains"].get(name) else { continue };
         let mut o = Object::new();
-        o.insert("fields".into(), d.and_then(|d| d.get("fields")).cloned().unwrap_or(json!({})));
-        let mut cols = obj(d.and_then(|d| d.get("collections")).unwrap_or(&Value::Null));
-        if *name == "signalling" {
-            cols.insert("stoppingPlaces".into(), Value::Array(stopping.clone()));
-        }
-        o.insert("collections".into(), Value::Object(cols));
+        o.insert("fields".into(), d.get("fields").cloned().unwrap_or(json!({})));
+        o.insert("collections".into(), d.get("collections").cloned().unwrap_or(json!({})));
         record.insert((*name).into(), Value::Object(o));
     }
     Ok(Value::Object(record))

@@ -14,7 +14,7 @@ import {
   canonicalJson, checkDocument, checkOperations, contentHash, documentHash, manifestOf, PayloadError, toDocument, toOperations,
 } from '../src/document/index.js'
 import { loadNativeFile } from '../src/native/node.js'
-import { ksStation } from '../test/signallingFixture.js'
+import { ksStation, ksStoppingPlaces } from '../test/signallingFixture.js'
 
 const OUT = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'schemas', 'vectors')
 
@@ -71,7 +71,7 @@ function sampleRecord({ signalling = false, electrification = false } = {}) {
     switches: [{ switchId: 'w1', kind: 'link', formVersion: 1, name: 'link.001',
       ports: { A: { trackId: 't1', endpoint: 'END' }, B: { trackId: 't2', endpoint: 'BEGIN' } } }],
     platforms: [{ id: 'p1', trackId: 't2', startStation: 10, endStation: 140, side: 'left', frontOffset: 1.67,
-      height: 550, operationalPoint: HALLE_TROTHA }],
+      height: 550, operationalPoint: HALLE_TROTHA, ...(signalling ? { stoppingPlaceIds: ['hp-2'] } : {}) }],
     operationalPoints: [{ id: HALLE_TROTHA, name: 'Halle-Trotha', rl100: 'LHT', uic: '8023111' }],
     endMarks: [{ id: 'e1', kind: 'buffer_stop', trackId: 't3', endpoint: 'END', type: 4, brakeLength: 4 }],
     routes: [{ id: 'r1', name: 'Gleis 1 durch', trackIds: ['t1', 't2'] }],
@@ -81,17 +81,16 @@ function sampleRecord({ signalling = false, electrification = false } = {}) {
       points: { e0: 500000, n0: 5700000, z0: 108, st: [0, 500], de: [0, 500], dn: [0, 0], zl: [550, 560], zr: [550, 561], ga: [1435, 1436], q: [1, 1] } }],
     referenceAxes: [{ id: 'x1', name: 'Bestand', epsg: 25832, heightEpsg: null, source: { tra: 'a.TRA', gra: null },
       points: { s0: 0, step: 0.01, count: 3, e0: 500000, n0: 5700000, de: [0, 10, 10], dn: [0, 0, 0], z: null } }],
-    ...(signalling ? { signalling: atPlatform(ksStation({ operationalPoint: HALLE_TROTHA })) } : {}),
+    ...(signalling ? atPlatform({ signalling: ksStation({ operationalPoint: HALLE_TROTHA }), stoppingPlaces: ksStoppingPlaces({ operationalPoint: HALLE_TROTHA }) }) : {}),
     ...(electrification ? { electrification: { fields: {}, collections: { electrifications: [
       { id: 'el1', name: 'Oberleitung', at: { anchor: 'station', trackId: 't1', startStation: 0, endStation: 250 }, system: '15000V' },
     ] } } } : {}),
   }
 }
 
-/** The station's second stopping place at the sample's platform, as the record names it. */
-function atPlatform(signalling) {
-  const places = signalling.collections.stoppingPlaces.map(h => (h.id === 'hp-2' ? { ...h, platformId: 'p1' } : h))
-  return { ...signalling, collections: { ...signalling.collections, stoppingPlaces: places } }
+/** The station's stopping places, the second a passenger stop at the sample's platform, which names it (stoppingPlaceIds). */
+function atPlatform(parts) {
+  return { ...parts, stoppingPlaces: parts.stoppingPlaces.map(h => (h.id === 'hp-2' ? { ...h, passengerStop: true } : h)) }
 }
 
 // infra-data 1.0 documents as the core wrote them before 2.0, frozen: the door reads them as today's.

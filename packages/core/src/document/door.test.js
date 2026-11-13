@@ -6,15 +6,16 @@ import { checkDocument, fromDocument, SCHEMA_HASHES, toDocument } from './door.j
 import { DOMAIN_VERSIONS } from './coreFormat.js'
 import { documentHash, manifestOf } from './manifest.js'
 import { hasPek, loadPek } from '../../test/pekFixture.js'
-import { ksStation } from '../../test/signallingFixture.js'
+import { ksStation, ksStoppingPlaces } from '../../test/signallingFixture.js'
 
 const el = (x0, x1, extra = {}) => ({
   elementType: 0, startNode: [500000 + x0, 5700000], endNode: [500000 + x1, 5700000], bearing: 90, length: x1 - x0, ...extra,
 })
 const track = (id, extra = {}) => ({ id, name: id, epsg: 25832, elements: [el(0, 100)], ...extra })
 const record = (extra = {}) => ({ id: 'p', title: 'P', tracks: [track('t1')], switches: [], platforms: [], ...extra })
-/** A record with the station of the signalling fixture and what it stands on: tracks t1, t2, the switch w1, the station op1. */
+/** A record with the station of the signalling fixture and what it stands on: tracks t1, t2, the switch w1, the station op1, its stopping places. */
 const station = (extra = {}) => record({
+  stoppingPlaces: ksStoppingPlaces(),
   tracks: [track('t1'), track('t2')],
   switches: [{ switchId: 'w1', kind: 'link', formVersion: 1, name: 'link.001', ports: { A: { trackId: 't1', endpoint: 'END' }, B: { trackId: 't2', endpoint: 'BEGIN' } } }],
   operationalPoints: [{ id: 'op1', name: 'Halle-Trotha' }],

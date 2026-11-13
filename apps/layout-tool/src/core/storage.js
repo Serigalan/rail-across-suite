@@ -107,7 +107,7 @@ function withoutDanglingAfter(before, after) {
   if (!before || !after) return after
   const took = tookFrom(before.tracks, after.tracks) || tookFrom(before.switches, after.switches, 'switchId')
     || tookFrom(before.platforms, after.platforms) || tookFrom(before.operationalPoints, after.operationalPoints)
-    || tookFrom(before.signalling?.collections?.stoppingPlaces, after.signalling?.collections?.stoppingPlaces)
+    || tookFrom(before.stoppingPlaces, after.stoppingPlaces)
   return took ? layersWithoutDangling(after).record : after
 }
 

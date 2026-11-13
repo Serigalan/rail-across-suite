@@ -151,8 +151,10 @@ export function stoppingPlacesAt(record, station) {
   if (!station || station.kind === 'end') return []
   const tracks = new Set(station.tracks.map(tr => tr.id))
   const platforms = new Set(station.platforms.map(p => p.id))
-  const mine = (h) => (station.pointId && h.operationalPointId ? h.operationalPointId === station.pointId : tracks.has(h.at.trackId) || platforms.has(h.platformId))
-  return (record?.signalling?.collections?.stoppingPlaces ?? []).filter(mine)
+  // A stopping place's platform is the one naming it (decision 0028).
+  const named = new Set((record?.platforms ?? []).filter(p => platforms.has(p.id)).flatMap(p => p.stoppingPlaceIds ?? []))
+  const mine = (h) => (station.pointId && h.operationalPointId ? h.operationalPointId === station.pointId : tracks.has(h.at.trackId) || named.has(h.id))
+  return (record?.stoppingPlaces ?? []).filter(mine)
 }
 
 /**
@@ -182,7 +184,7 @@ export function preferredLegs(record, stations, train) {
   const legs = train.points.slice(0, -1).map((p, i) => {
     if (!p.itinerary) return null
     const it = itineraryOptions(record, stations, train, i).find(x => x.id === p.itinerary)
-    const places = record?.signalling?.collections?.stoppingPlaces ?? []
+    const places = record?.stoppingPlaces ?? []
     const from = places.find(h => h.id === it?.startStoppingPlaceId), to = places.find(h => h.id === it?.targetStoppingPlaceId)
     if (!it || !from || !to) { missing.push(i); return null }
     return { from: middleOf(from), to: middleOf(to), trackIds: it.path.trackIds }

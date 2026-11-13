@@ -31,7 +31,7 @@ const record = {
         { id: 's-n', name: 'N1', kind: 'real', at: on('t2', 80),
           logicalSignals: [{ system: 'ks', type: 'mainShunting', function: 'exit', frames: [{ kind: 'screen', aspects: [{ aspect: 'Hp_0' }, { aspect: 'Ks_1' }] }] }] },
       ],
-      detectionPoints: [], trackSections: [], switchElements: [], overlaps: [], flankProtection: [], balises: [], stationBoundaries: [], stoppingPlaces: [], itineraries: [],
+      detectionPoints: [], trackSections: [], switchElements: [], overlaps: [], flankProtection: [], balises: [], stationBoundaries: [], itineraries: [],
       routes: [{ id: 'r-a-n', kind: 'train', trainType: 'ZZ', startSignalId: 's-a', targetSignalId: 's-n', path: { trackIds: ['t1', 't2'] } }],
     },
   },
@@ -203,7 +203,7 @@ describe('the Signalling-Tool', () => {
   it('lists the routes under a menu, and shows a route\'s signalled speed and offers to determine its overlap from it', () => {
     const menu = renderToStaticMarkup(
       <I18n.Provider value={textsFor('de')}>
-        <RoutesPanel domain={record.signalling} net={{ tracks: record.tracks, switches: [] }} findings={{ errors: [], warnings: [] }} extents={new Map()}
+        <RoutesPanel domain={{ ...record.signalling, collections: { ...record.signalling.collections, stoppingPlaces: [] } }} net={{ tracks: record.tracks, switches: [] }} findings={{ errors: [], warnings: [] }} extents={new Map()}
           selection={null} select={() => {}} ops={{}} setMode={() => {}} readOnly={false} {...textsFor('de')} />
       </I18n.Provider>,
     )
@@ -215,7 +215,7 @@ describe('the Signalling-Tool', () => {
     expect(menu).toContain('<span class="ui-grow">Fahrstraßen</span><span class="ui-option-end">1</span>')
     const html = renderToStaticMarkup(
       <I18n.Provider value={textsFor('de')}>
-        <RoutesPanel domain={record.signalling} net={{ tracks: record.tracks, switches: [] }} findings={{ errors: [], warnings: [] }} extents={new Map()}
+        <RoutesPanel domain={{ ...record.signalling, collections: { ...record.signalling.collections, stoppingPlaces: [] } }} net={{ tracks: record.tracks, switches: [] }} findings={{ errors: [], warnings: [] }} extents={new Map()}
           selection={{ collection: 'routes', id: 'r-a-n' }} select={() => {}} ops={{}} setMode={() => {}} readOnly={false} {...textsFor('de')} />
       </I18n.Provider>,
     )
@@ -234,7 +234,7 @@ describe('the Signalling-Tool', () => {
     }
     const core = coreOf(withStation)
     const testdorf = core.collections.operationalPoints.find(p => p.name === 'Testdorf').id
-    const domain = { ...withStation.signalling, collections: { ...withStation.signalling.collections, platforms: withStation.platforms, operationalPoints: withStation.operationalPoints } }
+    const domain = { ...withStation.signalling, collections: { ...withStation.signalling.collections, platforms: withStation.platforms, operationalPoints: withStation.operationalPoints, stoppingPlaces: [] } }
     const panel = (selection, language = 'de') => renderToStaticMarkup(
       <I18n.Provider value={textsFor(language)}>
         <StationsPanel domain={domain} net={{ tracks: record.tracks, switches: [] }} core={core} findings={{ errors: [], warnings: [] }}

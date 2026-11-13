@@ -99,6 +99,9 @@ carried out in phases, each of them released by itself.
   the record states flat as one value; a layer's fields are one value. Two people changing different signals
   no longer conflict on the whole signalling; the civil structures merge object by object and follow a track
   split on the other side. A km line goes by its id (`km-<line number>`, as every source writes it).
+- The rest of point 1, step by step, the document unchanged by each: the stopping places are the record's
+  as they are the document's — in the core, a platform naming those at it (`stoppingPlaceIds`), no
+  `platformId`, none in the record's signalling.
 - `stagesOf` and `recordAtStage` stay, as what is worked out: the states a project passes through — the
   existing one, every day something changes, the final one — and the record as it stands at one, now the civil
   structures by their lifespans too.

@@ -91,8 +91,10 @@ describe('the Fahrplan-Editor', () => {
 
   it('offers the itineraries of the signalling as the way a train prefers to the next point, and says where it ran another', () => {
     const range = (trackId, startStation, endStation) => ({ anchor: 'station', trackId, startStation, endStation })
-    const signalled = { ...net, signalling: { fields: {}, collections: {
-      stoppingPlaces: [{ id: 'hA', name: '1', at: range('A1', 100, 300) }, { id: 'hB', name: 'B', platformId: 'pB', at: range('L', 1000, 1200) }],
+    const signalled = { ...net,
+      platforms: net.platforms.map(p => (p.id === 'pB' ? { ...p, stoppingPlaceIds: ['hB'] } : p)),
+      stoppingPlaces: [{ id: 'hA', name: '1', at: range('A1', 100, 300) }, { id: 'hB', name: 'B', at: range('L', 1000, 1200) }],
+      signalling: { fields: {}, collections: {
       itineraries: [{ id: 'f1', name: 'A-Dorf 1 → B-Halt', startStoppingPlaceId: 'hA', targetStoppingPlaceId: 'hB', routeIds: [], path: { trackIds: ['A1', 'L'] } }],
     } } }
     const html = sheet({ record: signalled })

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { writePlanPro } from './index.js'
 import { straightElement } from '../geometry/index.js'
-import { ksStation } from '../../test/signallingFixture.js'
+import { ksStation, ksStoppingPlaces } from '../../test/signallingFixture.js'
 
 // The Ks station of the signalling tests on a net of its own in UTM: t1 250 m
 // east into the tip of w1, t2 going on straight, t3 branching off north-east.
@@ -18,6 +18,7 @@ const project = () => ({
     ports: { A: { trackId: 't1', endpoint: 'END' }, B1: { trackId: 't3', endpoint: 'BEGIN' }, B2: { trackId: 't2', endpoint: 'BEGIN' } },
   }],
   endMarks: [{ id: 'e1', kind: 'buffer_stop', trackId: 't2', endpoint: 'END' }],
+  stoppingPlaces: ksStoppingPlaces(),
 })
 
 describe('a project as a PlanPro plan', () => {

@@ -659,26 +659,31 @@ describe('a vertical curve whose length counts (decision 266)', () => {
 })
 
 describe('a platform and the stopping places at it (decision 0025)', () => {
-  const stops = () => currentProject().signalling?.collections?.stoppingPlaces ?? []
+  // The stopping places the core's, the platform naming those at it (decision 0028).
+  const stops = () => currentProject().stoppingPlaces ?? []
+  const named = () => currentProject().platforms?.find(p => p.id === 'pf1')?.stoppingPlaceIds ?? []
   const platform = (from, to) => ({ id: 'pf1', trackId: 't1', startStation: from, endStation: to, side: 'left' })
 
   it('makes one over it where none is at it, a passenger stop it names, in the step that puts it', () => {
     openProject({ id: 'p1', tracks: [{ id: 't1', elements: [] }], switches: [] })
     savePlatform(platform(10, 150), { stopName: 'Bstg. 1' })
-    expect(stops()).toMatchObject([{ name: 'Bstg. 1', platformId: 'pf1', passengerStop: true, at: { trackId: 't1', startStation: 10, endStation: 150 } }])
+    expect(stops()).toMatchObject([{ name: 'Bstg. 1', passengerStop: true, at: { trackId: 't1', startStation: 10, endStation: 150 } }])
+    expect(named()).toEqual([stops()[0].id])
     undo()
     expect(stops()).toEqual([])
   })
 
   it('details the one the Signalling-Tool set there, moved away leaves it for every train', () => {
     const hp = { id: 'hp', at: { anchor: 'station', trackId: 't1', startStation: 0, endStation: 120 } }
-    openProject({ id: 'p1', tracks: [{ id: 't1', elements: [] }], switches: [], signalling: { fields: {}, collections: { stoppingPlaces: [hp] } } })
+    openProject({ id: 'p1', tracks: [{ id: 't1', elements: [] }], switches: [], stoppingPlaces: [hp] })
     savePlatform(platform(10, 150))
-    expect(stops()).toEqual([{ ...hp, platformId: 'pf1', passengerStop: true }])
+    expect(stops()).toEqual([{ ...hp, passengerStop: true }])
+    expect(named()).toEqual(['hp'])
     updatePlatform(platform(300, 400))
     expect(stops()[0]).toEqual(hp)
+    expect(named()).toEqual([stops()[1].id])
     deletePlatform('pf1')
-    expect(stops().map(h => h.platformId ?? null)).toEqual([null, null])
+    expect(stops().map(h => h.passengerStop ?? false)).toEqual([false, false])
   })
 })
 
@@ -723,19 +728,19 @@ describe('a station a form states as text (decision 0028)', () => {
     const [point] = currentProject().operationalPoints
     expect(point).toMatchObject({ name: 'Halle-Trotha', rl100: 'LHT' })
     expect(pf.operationalPoint).toBe(point.id)
-    expect(currentProject().signalling.collections.stoppingPlaces[0].operationalPointId).toBe(point.id)
+    expect(currentProject().stoppingPlaces[0].operationalPointId).toBe(point.id)
   })
 })
 
 describe('what a write takes away (decision 0028, phase C)', () => {
   it('takes along what the layers name of it: a switch deleted, its switch element and what needs that', async () => {
-    const { ksStation } = await import('@rail-across/core/test/signallingFixture.js')
+    const { ksStation, ksStoppingPlaces } = await import('@rail-across/core/test/signallingFixture.js')
     const signalling = ksStation()
     const track = (id) => ({ id, epsg: 25832, elements: [{ elementType: 0, startNode: [500000, 5600000], endNode: [500100, 5600000], bearing: 90, length: 100 }] })
     openProject({
       id: 'p1', tracks: [track('t1'), track('t2')], operationalPoints: [{ id: 'op1', name: 'Halle-Trotha' }],
       switches: [{ switchId: 'w1', kind: 'link', formVersion: 1, ports: { A: { trackId: 't1', endpoint: 'END' }, B: { trackId: 't2', endpoint: 'BEGIN' } } }],
-      signalling,
+      signalling, stoppingPlaces: ksStoppingPlaces(),
     })
     const before = currentProject()
     commitSwitchDeletion({ switchId: 'w1', removeTrackIds: [], updateTracks: [], remap: {} })

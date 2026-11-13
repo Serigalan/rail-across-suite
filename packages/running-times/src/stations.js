@@ -91,7 +91,7 @@ export function stationsOf(record) {
  */
 function withRegister(record, points, byId, make) {
   const lengths = new Map((record?.tracks ?? []).map(tr => [tr.id, tr]))
-  const places = record?.signalling?.collections?.stoppingPlaces ?? []
+  const places = record?.stoppingPlaces ?? []
   for (const point of points) {
     const known = byId.get(point.id)
     if (known?.kind === 'station') continue

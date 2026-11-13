@@ -2,10 +2,11 @@ import { describe, it, expect } from 'vitest'
 import { branchSpeedOnRun, checkSignalling } from './index.js'
 import { ksStation, ksStationCore } from '../../test/signallingFixture.js'
 
+// `change` sees the signalling's collections and the core's stopping places beside them, as the tool edits them.
 const check = (change = () => {}) => {
   const signalling = structuredClone(ksStation())
   const core = ksStationCore()
-  change(signalling.collections, core)
+  change({ ...signalling.collections, stoppingPlaces: core.collections.stoppingPlaces }, core)
   return checkSignalling({ core, signalling })
 }
 const codes = (findings) => findings.map(f => f.code).sort()

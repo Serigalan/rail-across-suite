@@ -14,16 +14,17 @@ import { CATALOGUE_REF, baliseKindOf, protectionSystemOf, signalKindOf, signalli
 
 const COLLECTIONS = [
   'signals', 'detectionPoints', 'trackSections', 'switchElements', 'routes', 'overlaps', 'flankProtection', 'balises',
-  'stationBoundaries', 'stoppingPlaces', 'itineraries', 'trainProtection',
+  'stationBoundaries', 'itineraries', 'trainProtection',
 ]
 
 /**
  * The collections of the record's core the tool writes as well: the points of
- * the operational point register the record keeps, and the platforms, which
- * name their station (model/stations.js). The tool's state holds them beside
- * the domain's, so an edit of a station is one step with the rest.
+ * the operational point register, the platforms, which name their station
+ * (model/stations.js) and the stopping places at them, and the stopping places
+ * (decision 0028: the core's, as in the document). The tool's state holds them
+ * beside the domain's, so an edit of a station is one step with the rest.
  */
-const CORE_PARTS = ['operationalPoints', 'platforms']
+const CORE_PARTS = ['operationalPoints', 'platforms', 'stoppingPlaces']
 
 /** An empty domain, planned against the catalogue this build has. */
 export const emptyDomain = () => ({
@@ -55,10 +56,10 @@ export const signallingOf = (state) => ({ fields: state.fields, collections: Obj
  * platforms, which name it by that id, stay as they are (decision 0028).
  */
 export function recordOf(record, state) {
-  const { operationalPoints, platforms } = state.collections
-  // An empty register where the record had none is none: it is no change of the record.
-  const points = operationalPoints.length || record?.operationalPoints ? { operationalPoints } : {}
-  return { ...record, platforms, ...points, signalling: signallingOf(state) }
+  const { operationalPoints, platforms, stoppingPlaces } = state.collections
+  // An empty list where the record had none is none: it is no change of the record.
+  const kept = (name, list) => (list.length || record?.[name] ? { [name]: list } : {})
+  return { ...record, platforms, ...kept('operationalPoints', operationalPoints), ...kept('stoppingPlaces', stoppingPlaces), signalling: signallingOf(state) }
 }
 
 /**
@@ -136,8 +137,15 @@ export function deleted(domain, collection, id) {
     : s))
   c.switchElements = c.switchElements.map(e => (is('signals', e.clearanceMarkerId) ? { ...e, clearanceMarkerId: undefined } : e))
   c.stationBoundaries = c.stationBoundaries
-    .map(b => ({ ...b, marks: b.marks.filter(m => !is('signals', m.signalId)) }))
+    .map(b => ({ ...b, marks: b.marks.filter(m => !is('signals', m.signalId) && !is('stoppingPlaces', m.stoppingPlaceId)) }))
     .filter(b => b.marks.length)
+  // The stopping places are the core's (decision 0028): one deleted goes, and the platform naming it names it no more.
+  if (gone.stoppingPlaces) {
+    c.stoppingPlaces = (domain.collections.stoppingPlaces ?? []).filter(h => !is('stoppingPlaces', h.id))
+    c.platforms = (domain.collections.platforms ?? []).map(p => (p.stoppingPlaceIds?.some(x => is('stoppingPlaces', x))
+      ? withoutEmpty({ ...p, stoppingPlaceIds: p.stoppingPlaceIds.filter(x => !is('stoppingPlaces', x)) })
+      : p))
+  }
   return { ...domain, collections: c }
 }
 

@@ -4,7 +4,8 @@
 //! What infra-data-2.0's layers ask of the stopping places (decision 0025): they
 //! are the core's, a platform (civil) names those at it, passenger stops by that,
 //! and a station boundary is marked by a stopping place where it was marked by a
-//! platform. The door's steps and the record's way into a document go through here.
+//! platform. The record holds them as the document does (decision 0028); the
+//! door's step from infra-data 1.0 and the Civil-Tool's platforms go through here.
 
 use rail_across_js::{Object, get, js_string};
 use serde_json::{Value, json};
@@ -154,26 +155,6 @@ pub fn passenger_stops(stopping: &[Value], platforms: &[Value]) -> Vec<Value> {
         .collect()
 }
 
-/// The stopping places in the record's form: each with the platform that names it.
-pub fn record_stopping_places(stopping: &[Value], platforms: &[Value]) -> Vec<Value> {
-    stopping
-        .iter()
-        .map(|h| {
-            let id = js_string(h.get("id"));
-            let platform = platforms.iter().find(|p| {
-                get(p, "stoppingPlaceIds")
-                    .and_then(Value::as_array)
-                    .is_some_and(|ids| ids.iter().any(|x| js_string(Some(x)) == id))
-            });
-            let mut o = obj(h);
-            if let Some(p) = platform {
-                o.insert("platformId".into(), p.get("id").cloned().unwrap_or(Value::Null));
-            }
-            Value::Object(o)
-        })
-        .collect()
-}
-
 /// Whether a domain's fields and collections hold anything — one that holds nothing is written as missing.
 pub fn holds_anything(fields: &Object, collections: &Object) -> bool {
     !fields.is_empty() || collections.values().any(|v| v.as_array().is_some_and(|a| !a.is_empty()))
@@ -186,7 +167,7 @@ fn num(v: Option<&Value>) -> f64 {
     v.and_then(Value::as_f64).unwrap_or(f64::NAN)
 }
 
-/// Whether the stopping place `h` (record's form) lies at the platform `p` (record's form): on its track, overlapping it.
+/// Whether the stopping place `h` lies at the platform `p` (the record's): on its track, overlapping it.
 fn at_platform(h: &Value, p: &Value) -> bool {
     let at = &h["at"];
     if at.get("trackId").is_none() || at.get("trackId") != p.get("trackId") {
@@ -197,59 +178,77 @@ fn at_platform(h: &Value, p: &Value) -> bool {
     overlap > TOL
 }
 
-/// The record (its form) with the stopping places at the platform `platform_id` as
-/// the Civil-Tool sets them where it puts, moves or deletes a platform (decision
-/// 0025): every stopping place at it a passenger stop, named by it — unless another
-/// platform names it already —; one over the platform, of its station and stage,
-/// called `name`, where none is at it yet; one it named that is no longer at it
-/// named by the platform it is at now, else neither named nor a passenger stop. A
-/// stopping place is never deleted: it is one for every train, the
-/// Signalling-Tool's as much (decision 0024).
+/// The ids of the stopping places a platform names.
+fn named_by(p: &Value) -> Vec<String> {
+    get(p, "stoppingPlaceIds").and_then(Value::as_array).into_iter().flatten().map(|x| js_string(Some(x))).collect()
+}
+
+/// The record with the stopping places at the platform `platform_id` as the
+/// Civil-Tool sets them where it puts, moves or deletes a platform (decision
+/// 0025): every stopping place at it a passenger stop, named by it
+/// (`stoppingPlaceIds`) — unless another platform names it already —; one over
+/// the platform, of its station and stage, called `name`, where none is at it
+/// yet; one it named that is no longer at it named by the platform it is at now,
+/// else no passenger stop — which holds for every passenger stop no platform
+/// names, as after a platform was deleted. A stopping place is never deleted: it
+/// is one for every train, the Signalling-Tool's as much (decision 0024).
 pub fn with_platform_stops(record: &Value, platform_id: &str, name: Option<&str>) -> Value {
-    let platforms: Vec<Value> = record.get("platforms").and_then(Value::as_array).cloned().unwrap_or_default();
-    let ids: Vec<String> = platforms.iter().map(|p| js_string(p.get("id"))).collect();
+    let mut platforms: Vec<Value> = record.get("platforms").and_then(Value::as_array).cloned().unwrap_or_default();
+    let mut places: Vec<Value> = record.get("stoppingPlaces").and_then(Value::as_array).cloned().unwrap_or_default();
     let platform = platforms.iter().position(|p| js_string(p.get("id")) == platform_id);
-    let mut places: Vec<Value> = record["signalling"]["collections"]
-        .get("stoppingPlaces")
-        .and_then(Value::as_array)
-        .cloned()
-        .unwrap_or_default();
-    let mut changed = false;
+    let before = (platforms.clone(), places.clone());
+    let set_ids = |p: &mut Value, ids: Vec<String>| {
+        let o = p.as_object_mut().expect("a platform");
+        if ids.is_empty() {
+            o.shift_remove("stoppingPlaceIds");
+        } else {
+            o.insert("stoppingPlaceIds".into(), json!(ids));
+        }
+    };
     let mut at_it = false;
     for h in places.iter_mut() {
-        let names = get(h, "platformId").map(|v| js_string(Some(v)));
-        let mine = platform.is_some_and(|i| at_platform(h, &platforms[i]));
-        let mut o = obj(h);
-        if mine {
+        let id = js_string(h.get("id"));
+        let namer = platforms.iter().position(|p| named_by(p).contains(&id));
+        if platform.is_some_and(|i| at_platform(h, &platforms[i])) {
             at_it = true;
-            o.insert("passengerStop".into(), json!(true));
+            h["passengerStop"] = json!(true);
             // Named by another platform there is, it stays so.
-            if names.as_deref() != Some(platform_id) && !names.as_ref().is_some_and(|n| ids.contains(n)) {
-                o.insert("platformId".into(), json!(platform_id));
+            if namer.is_none() {
+                let i = platform.expect("the platform");
+                let mut ids = named_by(&platforms[i]);
+                ids.push(id);
+                set_ids(&mut platforms[i], ids);
             }
-        } else if names.as_deref() == Some(platform_id) {
-            match platforms.iter().find(|p| js_string(p.get("id")) != platform_id && at_platform(h, p)) {
-                Some(other) => {
-                    o.insert("platformId".into(), other.get("id").cloned().unwrap_or(Value::Null));
-                }
-                None => {
-                    o.shift_remove("platformId");
+            continue;
+        }
+        if namer.is_some_and(|i| Some(i) == platform) {
+            let i = platform.expect("the platform");
+            let ids: Vec<String> = named_by(&platforms[i]).into_iter().filter(|x| *x != id).collect();
+            set_ids(&mut platforms[i], ids);
+        } else if namer.is_some() || get(h, "passengerStop") != Some(&json!(true)) {
+            continue;
+        }
+        // A passenger stop no platform names: the platform it lies at names it, else it is none.
+        match platforms.iter().position(|p| js_string(p.get("id")) != platform_id && at_platform(h, p)) {
+            Some(j) => {
+                let mut ids = named_by(&platforms[j]);
+                ids.push(id);
+                set_ids(&mut platforms[j], ids);
+            }
+            None => {
+                if let Some(o) = h.as_object_mut() {
                     o.shift_remove("passengerStop");
                 }
             }
-        }
-        let next = Value::Object(o);
-        if next != *h {
-            *h = next;
-            changed = true;
         }
     }
     if let Some(i) = platform.filter(|_| !at_it) {
         let p = &platforms[i];
         let (a, b) = (num(p.get("startStation")), num(p.get("endStation")));
         let point = crate::stations::point_of(record, p).and_then(|o| o.get("id")).and_then(Value::as_str).map(str::to_string);
+        let id = rail_across_js::generate_id();
         let mut h = Object::new();
-        h.insert("id".into(), json!(rail_across_js::generate_id()));
+        h.insert("id".into(), json!(id));
         if let Some(n) = name.filter(|n| !n.is_empty()) {
             h.insert("name".into(), json!(n));
         }
@@ -260,23 +259,20 @@ pub fn with_platform_stops(record: &Value, platform_id: &str, name: Option<&str>
             "at".into(),
             json!({ "anchor": "station", "trackId": p.get("trackId"), "startStation": a.min(b), "endStation": a.max(b) }),
         );
-        h.insert("platformId".into(), json!(platform_id));
         h.insert("passengerStop".into(), json!(true));
         if let Some(lifespan) = get(p, "lifespan") {
             h.insert("lifespan".into(), lifespan.clone());
         }
         places.push(Value::Object(h));
-        changed = true;
+        let mut ids = named_by(&platforms[i]);
+        ids.push(id);
+        set_ids(&mut platforms[i], ids);
     }
-    if !changed {
+    if (platforms.clone(), places.clone()) == before {
         return record.clone();
     }
-    let mut signalling = obj(record.get("signalling").unwrap_or(&Value::Null));
-    let mut cols = obj(signalling.get("collections").unwrap_or(&Value::Null));
-    cols.insert("stoppingPlaces".into(), Value::Array(places));
-    signalling.entry("fields").or_insert(json!({}));
-    signalling.insert("collections".into(), Value::Object(cols));
     let mut out = obj(record);
-    out.insert("signalling".into(), Value::Object(signalling));
+    out.insert("platforms".into(), Value::Array(platforms));
+    out.insert("stoppingPlaces".into(), Value::Array(places));
     Value::Object(out)
 }

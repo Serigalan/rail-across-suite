@@ -127,7 +127,7 @@ export function StoppingPlaceEditor({ place, domain, net, core, findings, ops, m
     },
   })
   const point = (core.collections.operationalPoints ?? []).find(p => p.id === place.operationalPointId)
-  const platform = domain.collections.platforms.find(pf => pf.id === place.platformId)
+  const platform = domain.collections.platforms.find(pf => pf.stoppingPlaceIds?.includes(place.id))
   const itineraries = domain.collections.itineraries.filter(it => it.startStoppingPlaceId === place.id || it.targetStoppingPlaceId === place.id)
   return (
     <div className="tool-editor">

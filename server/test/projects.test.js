@@ -197,7 +197,7 @@ describe('variants and revisions', () => {
       fields: { catalogue: { id: 'db-ril-301', version: '0.4.0' } },
       collections: {
         signals: [signal(at)], detectionPoints: [], trackSections: [], switchElements: [], routes: [], overlaps: [],
-        flankProtection: [], balises: [], stationBoundaries: [], stoppingPlaces: [], itineraries: [],
+        flankProtection: [], balises: [], stationBoundaries: [], itineraries: [],
       },
     })
     const bad = { ...h.payload, signalling: signalling({ anchor: 'station', trackId: 't1', station: 180, direction: 'up' }) }

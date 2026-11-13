@@ -45,7 +45,7 @@ describe('the stations of a net', () => {
     const registered = {
       ...net,
       operationalPoints: [...net.operationalPoints.map(p => (p.id === 'op-b' ? { ...p, rl100: 'LBH' } : p)), { id: 'op-x', name: 'X-Feld' }],
-      signalling: { fields: {}, collections: { stoppingPlaces: [{ id: 'h1', name: '1', operationalPointId: 'op-b', at: { anchor: 'station', trackId: 'L', startStation: 900, endStation: 1150 } }] } },
+      stoppingPlaces: [{ id: 'h1', name: '1', operationalPointId: 'op-b', at: { anchor: 'station', trackId: 'L', startStation: 900, endStation: 1150 } }],
     }
     const all = stationsOf(registered)
     expect(all.map(s => [s.name, s.kind])).toEqual([['A-Dorf', 'station'], ['B-Halt', 'station'], ['C-Stadt', 'station']])

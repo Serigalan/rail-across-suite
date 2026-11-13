@@ -75,16 +75,18 @@ describe('a train of the timetable', () => {
 describe('the way a train prefers', () => {
   // Stopping places on A-Dorf's track 1 and at C-Stadt's two platforms; an itinerary to each, and one whose run does not lead there.
   const range = (trackId, startStation, endStation) => ({ anchor: 'station', trackId, startStation, endStation })
+  // The stopping places the core's, each platform naming the one at it (decision 0028).
   const signalled = {
     ...net,
+    platforms: net.platforms.map(p => ({ pC1: { ...p, stoppingPlaceIds: ['hC1'] }, pC2: { ...p, stoppingPlaceIds: ['hC2'] } }[p.id] ?? p)),
+    stoppingPlaces: [
+      { id: 'hA', name: '1', at: range('A1', 100, 300) },
+      { id: 'hC1', name: '1', at: range('C1', 300, 500) },
+      { id: 'hC2', name: '2', at: range('C2', 300, 500) },
+    ],
     signalling: {
       fields: {},
       collections: {
-        stoppingPlaces: [
-          { id: 'hA', name: '1', at: range('A1', 100, 300) },
-          { id: 'hC1', name: '1', platformId: 'pC1', at: range('C1', 300, 500) },
-          { id: 'hC2', name: '2', platformId: 'pC2', at: range('C2', 300, 500) },
-        ],
         itineraries: [
           { id: 'f1', startStoppingPlaceId: 'hA', targetStoppingPlaceId: 'hC1', routeIds: [], path: { trackIds: ['A1', 'L', 'C1'] } },
           { id: 'f2', startStoppingPlaceId: 'hA', targetStoppingPlaceId: 'hC2', routeIds: [], path: { trackIds: ['A1', 'L', 'C2'] } },

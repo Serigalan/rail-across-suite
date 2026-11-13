@@ -1,17 +1,13 @@
 import { deleted, newId } from './domain.js'
 
 /**
- * The stations, as the tool edits them: points of the core's operational
- * point register (R10), which the tool writes as well as the signalling —
- * the points the record keeps (`operationalPoints`) and which station each
- * platform is of. The register itself is the core's: the points the tracks'
- * and platforms' station names make and those the record keeps
- * (projectDocument); the tool reads it from there (`register`, the core
- * domain's `operationalPoints`) and writes what makes it.
+ * The stations, as the tool edits them: points of the record's operational
+ * point register (R10, `operationalPoints`; decision 0028), which the tool
+ * writes as well as the signalling — the points and which station each
+ * platform is of.
  *
- * A platform is of a station by its name, and states the station's code
- * (`stationName`, `code`); a track the same by its name (`stationName`), which
- * the Layout-Tool sets. A signal is of a station where it names it
+ * A platform and a track are of a station where they name its point
+ * (`operationalPoint`); a track's the Layout-Tool sets. A signal is of a station where it names it
  * (`operationalPointId`), else of the open line; what bounds a station towards
  * the open line is its boundary (`stationBoundaries`): its entry signals or
  * boards Ne 1, else its entry switches (EBO §4).
@@ -52,7 +48,7 @@ const withCollections = (state, patch) => ({ ...state, collections: { ...state.c
 /** A new station of the register: its name and, where there is one, its RL100 code. */
 export const newStation = ({ name, rl100 }) => withoutEmpty({ id: newId(), name: name.trim(), rl100: rl100?.trim() })
 
-/** The state with a station kept as `point` says: a new one, renamed or with other codes — its platforms naming it so. */
+/** The state with a station kept as `point` says: a new one, renamed or with other codes — its platforms naming it. */
 export function withStation(state, point, platformIds = []) {
   const kept = state.collections.operationalPoints
   const next = withoutEmpty({ id: point.id, name: point.name?.trim(), rl100: point.rl100?.trim(), uic: point.uic })
@@ -63,11 +59,10 @@ export function withStation(state, point, platformIds = []) {
   })
 }
 
-/** A platform of a station — or, `point` null, of none: its name, and its code. */
+/** A platform of a station — or, `point` null, of none: the point it names. */
 function platformOf(platform, point) {
-  const { stationName: _n, code: _c, ...rest } = platform
-  if (!point) return rest
-  return withoutEmpty({ ...rest, stationName: point.name, code: point.rl100 ?? platform.code })
+  const { operationalPoint: _p, ...rest } = platform
+  return point ? { ...rest, operationalPoint: point.id } : rest
 }
 
 /** The state with the platforms of `ids` of the station `point`, those of `before` not of it any more. */

@@ -146,7 +146,10 @@ describe('an end mark as a place of the timetable', () => {
   it('is called by its name, else by its kind, track and end', () => {
     expect(endMarkName({ ...newBoundary('t', 'END'), name: ' Grenze Nord ' }, { name: 'x' })).toBe('Grenze Nord')
     expect(endMarkName(newBoundary('t', 'END'), { name: '6344.003' })).toBe('Grenze 6344.003 Ende')
-    expect(endMarkName(newBufferStop('t', 'BEGIN'), { stationName: 'Könnern', trackNumber: '5' })).toBe('Prellbock Könnern Gl. 5 Anfang')
+    // its track's station the point the track names (decision 0028)
+    const track = { operationalPoint: 'op-k', trackNumber: '5' }
+    expect(endMarkName(newBufferStop('t', 'BEGIN'), track, { id: 'op-k', name: 'Könnern' })).toBe('Prellbock Könnern Gl. 5 Anfang')
+    expect(endMarkName(newBufferStop('t', 'BEGIN'), track)).toBe('Prellbock Gl. 5 Anfang')
   })
 
   it('is where a train stands: before a buffer stop\'s face, on a boundary\'s end', () => {

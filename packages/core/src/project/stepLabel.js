@@ -20,7 +20,11 @@ function delta(before, after, key = 'id') {
 const SETTINGS_FIELDS = ['title', 'description', 'lineCategory', 'crsSystem', 'epsg', 'gaugeProfile']
 
 const switchName = (sw) => sw.name || sw.label || sw.switchId?.slice(0, 8) || '?'
-const platformName = (p) => [p.code, p.stationName].filter(Boolean).join(' · ') || p.id?.slice(0, 8) || '?'
+/** A platform by its station, the point it names in `record` (decision 0028). */
+const platformName = (p, record) => {
+  const point = (record?.operationalPoints ?? []).find(o => o.id === p.operationalPoint)
+  return [point?.rl100, point?.name].filter(Boolean).join(' · ') || p.id?.slice(0, 8) || '?'
+}
 
 /**
  * The step from `before` to `after` as { key, params }: a locale key and what
@@ -74,7 +78,7 @@ export function describeStep(before, after) {
   }
   const pf = delta(before.platforms, after.platforms)
   for (const [list, key] of [[pf.added, 'step_platform_added'], [pf.removed, 'step_platform_removed'], [pf.changed, 'step_platform_changed']]) {
-    if (list.length) return { key, params: { name: platformName(list[0]) } }
+    if (list.length) return { key, params: { name: platformName(list[0], list === pf.removed ? before : after) } }
   }
   const as = delta(before.axisSurveys, after.axisSurveys)
   for (const [list, key] of [[as.added, 'step_axis_survey_added'], [as.removed, 'step_axis_survey_removed'], [as.changed, 'step_axis_survey_changed']]) {

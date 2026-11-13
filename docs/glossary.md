@@ -13,7 +13,7 @@ the Layout-Tool's documentation does.
 |---|---|---|---|
 | Gleis | track | `tracks` | a chain of elements in one plane |
 | Streckengleis | line track | `trackType: 1` | carries `lineNumber`, `lineName`, `side` |
-| Bahnhofsgleis | station track | `trackType: 2` | carries `stationName`, `uicStation`, `trackNumber` |
+| Bahnhofsgleis | station track | `trackType: 2` | carries `operationalPoint`, `trackNumber` |
 | Hauptgleis / Nebengleis | main track / siding | `trackUse: "siding"` for a siding | |
 | Strecke, Streckennummer | line, line number | `lineNumber` | |
 | Gleisachse | track axis | — | |
@@ -82,8 +82,8 @@ the Layout-Tool's documentation does.
 | Fahrweg | track path | `TrackPath` | an ordered run of tracks |
 | Bahnsteig, Bahnsteigkante, Bahnsteighöhe | platform, platform edge, platform height | `platforms`, `frontOffset`, `height` | |
 | Bauwerk: Brücke, Tunnel, Bahnübergang | structure: bridge, tunnel, level crossing | — | planned for the core |
-| Betriebsstelle, Bahnhof, Haltepunkt | operational point, station, halt | — | register planned for the core |
-| RL100-Kürzel, UIC-Nummer | RL100 code, UIC number | `code`, `uicStation` | attributes, not ids |
+| Betriebsstelle, Bahnhof, Haltepunkt | operational point, station, halt | `operationalPoints` | objects with ids; a track or platform names its own (`operationalPoint`) |
+| RL100-Kürzel, UIC-Nummer | RL100 code, UIC number | `rl100`, `uic` of an operational point | attributes, not ids |
 | Lichtraum, Lichtraumprofil | clearance, clearance gauge | `gaugeProfile` | |
 | Gleisabstand | track spacing | — | |
 | Querschnitt | cross section | — | |

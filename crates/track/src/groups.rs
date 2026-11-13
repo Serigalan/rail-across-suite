@@ -37,14 +37,15 @@ fn tx(v: Option<&Value>) -> String {
     }
 }
 
-/// A track's kind: line or station (`trackKind`).
+/// A track's kind: line or station (`trackKind`) — as it states it, else a
+/// track naming an operational point is a station track (decision 0028).
 pub fn track_kind(track: &Value) -> Option<&'static str> {
     match num(track, "trackType") {
         Some(1.0) => return Some("line"),
         Some(2.0) => return Some("station"),
         _ => {}
     }
-    if !tx(track.get("stationName")).is_empty() || !tx(track.get("uicStation")).is_empty() {
+    if !tx(track.get("operationalPoint")).is_empty() {
         return Some("station");
     }
     if !tx(track.get("lineNumber")).is_empty() {
@@ -61,7 +62,7 @@ pub fn track_type_name(track: &Value, fallback: &Value) -> Value {
     }
 }
 
-/// The key a track is grouped by (`trackGroupKey`).
+/// The key a track is grouped by (`trackGroupKey`): its line, or its operational point by id.
 pub fn track_group_key(track: &Value) -> Option<String> {
     match track_kind(track) {
         Some("line") => {
@@ -69,15 +70,8 @@ pub fn track_group_key(track: &Value) -> Option<String> {
             (!n.is_empty()).then(|| format!("line:{n}"))
         }
         Some("station") => {
-            let name = tx(track.get("stationName")).to_lowercase();
-            let uic = tx(track.get("uicStation"));
-            if !name.is_empty() {
-                Some(format!("station:{name}"))
-            } else if !uic.is_empty() {
-                Some(format!("station:#{uic}"))
-            } else {
-                None
-            }
+            let point = tx(track.get("operationalPoint"));
+            (!point.is_empty()).then(|| format!("station:{point}"))
         }
         _ => None,
     }
@@ -130,8 +124,10 @@ fn name_or_id(t: &Value) -> String {
     }
 }
 
-/// The tracks in groups by line and station, the rest last (`groupTracks`).
-pub fn group_tracks(tracks: &[Value]) -> Value {
+/// The tracks in groups by line and station, the rest last (`groupTracks`): a
+/// station's group names its point (`operationalPoint`) and shows the point's
+/// name and number (`stationName`, `uicStation`) from `points`, the register.
+pub fn group_tracks(tracks: &[Value], points: &[Value]) -> Value {
     let mut order: Vec<String> = Vec::new();
     let mut groups: HashMap<String, (String, Value, Vec<Value>)> = HashMap::new();
     let mut none = Vec::new();
@@ -149,6 +145,17 @@ pub fn group_tracks(tracks: &[Value]) -> Value {
                 Vec::new(),
             )
         });
+        if g.0 == "station" && g.1.get("operationalPoint").is_none() {
+            let id = tx(t.get("operationalPoint"));
+            let point = points.iter().find(|p| tx(p.get("id")) == id);
+            let field = |k: &str| {
+                let v = tx(point.and_then(|p| p.get(k)));
+                if v.is_empty() { Value::Null } else { json!(v) }
+            };
+            g.1["operationalPoint"] = json!(id);
+            g.1["stationName"] = field("name");
+            g.1["uicStation"] = field("uic");
+        }
         let fill = |g: &mut Value, k: &str| {
             if g[k].is_null() {
                 let v = tx(t.get(k));
@@ -158,9 +165,6 @@ pub fn group_tracks(tracks: &[Value]) -> Value {
         if g.0 == "line" {
             fill(&mut g.1, "lineNumber");
             fill(&mut g.1, "lineName");
-        } else {
-            fill(&mut g.1, "stationName");
-            fill(&mut g.1, "uicStation");
         }
         g.2.push(t.clone());
     }
@@ -227,7 +231,9 @@ pub fn track_list_label(track: &Value) -> String {
     }
 }
 
-/// The fields a track takes when assigned to a group (`assignmentFields`).
+/// The fields a track takes when assigned to a group (`assignmentFields`): a
+/// station's its point, or the station as typed (`stationName`, `uicStation`)
+/// where it is a new one, which the record makes a point of (decision 0028).
 pub fn assignment_fields(target: &Value) -> Value {
     let s = |k: &str| {
         let v = tx(target.get(k));
@@ -235,8 +241,11 @@ pub fn assignment_fields(target: &Value) -> Value {
     };
     match text(target, "kind") {
         Some("line") => json!({ "trackType": 1, "lineNumber": number(js_number(Some(&json!(tx(target.get("lineNumber")))))), "lineName": s("lineName") }),
+        Some("station") if !tx(target.get("operationalPoint")).is_empty() => {
+            json!({ "trackType": 2, "operationalPoint": s("operationalPoint") })
+        }
         Some("station") => json!({ "trackType": 2, "stationName": s("stationName"), "uicStation": s("uicStation") }),
-        _ => json!({ "lineNumber": null, "lineName": null, "stationName": null, "uicStation": null }),
+        _ => json!({ "lineNumber": null, "lineName": null, "operationalPoint": null }),
     }
 }
 
@@ -387,8 +396,9 @@ fn station_text(v: f64) -> String {
     rail_across_js::es_number(js_round(v * 1000.0) / 1000.0)
 }
 
-/// The form of a platform (`platformForm`).
-pub fn platform_form(p: &Value) -> Value {
+/// The form of a platform (`platformForm`), its station the name and code of
+/// `point`, the operational point it names.
+pub fn platform_form(p: &Value, point: Option<&Value>) -> Value {
     let h = js_number(p.get("height"));
     let height = if h.is_finite() { h } else { DEFAULT_PLATFORM_HEIGHT };
     let off = js_number(p.get("frontOffset"));
@@ -397,7 +407,8 @@ pub fn platform_form(p: &Value) -> Value {
         "start": station_text(js_number(p.get("startStation"))), "end": station_text(js_number(p.get("endStation"))),
         "side": get(p, "side").cloned().unwrap_or(json!("right")),
         "height": number(height), "freeHeight": !PLATFORM_HEIGHTS.contains(&height),
-        "stationName": get(p, "stationName").cloned().unwrap_or(json!("")), "code": get(p, "code").cloned().unwrap_or(json!("")),
+        "stationName": point.and_then(|o| get(o, "name")).cloned().unwrap_or(json!("")),
+        "code": point.and_then(|o| get(o, "rl100")).cloned().unwrap_or(json!("")),
         "frontOffset": number(if off.is_finite() { off } else { PLATFORM_FRONT_OFFSET }),
     })
 }
@@ -407,7 +418,8 @@ pub fn picked_station(v: f64) -> String {
     station_text(v)
 }
 
-/// The platform a form describes (`platformDraft`).
+/// The platform a form describes (`platformDraft`), its station as typed — the
+/// record makes it the point of that name and code (decision 0028).
 pub fn platform_draft(f: &Value) -> Value {
     let (s1, s2, front) = (js_number(f.get("start")), js_number(f.get("end")), js_number(f.get("frontOffset")));
     json!({

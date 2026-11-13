@@ -6,8 +6,8 @@ import { directionOf } from './path.js'
  * The stations of a net, as the layout and the register say them, each by
  * its id — the id of its point of the operational point register (R10),
  * which names it; its name is only what it is shown by. A station (Bahnhof)
- * is the station tracks of one point (trackKind 'station', a point by the
- * name or UIC number they state, as the register makes it), with the
+ * is the station tracks of one point (trackKind 'station', the point they
+ * name, decision 0028), with the
  * platforms on them or of it; a halt (Haltepunkt) a point only platforms
  * are of — no track of its own, platforms on the line's tracks. A point of
  * the register with stopping places of the Signalling-Tool is a station too,
@@ -65,18 +65,20 @@ export function stationsOf(record) {
     const station = byId.get(id) ?? make(id, 'station')
     station.tracks.push({ id: track.id, label: trackLabel(track), length: trackLength(track), platforms: [] })
   }
+  const tracksById = new Map((record?.tracks ?? []).map(tr => [tr.id, tr]))
   const trackStation = new Map()
   for (const s of byId.values()) for (const tr of s.tracks) trackStation.set(tr.id, s)
   for (const p of platforms) {
     const id = register.pointOf(p)
     const station = trackStation.get(p.trackId) ?? (id ? byId.get(id) ?? make(id, 'halt') : null)
     if (!station) continue
-    const platform = { id: p.id, code: text(p.code) || null, trackId: p.trackId, at: platformMiddle(p) }
+    // A platform's number is its track's: the format gives a platform none of its own.
+    const platform = { id: p.id, code: text(tracksById.get(p.trackId)?.trackNumber) || null, trackId: p.trackId, at: platformMiddle(p) }
     station.platforms.push(platform)
     station.tracks.find(tr => tr.id === p.trackId)?.platforms.push(platform)
   }
   withRegister(record, register.points, byId, make)
-  withEnds(record, byId)
+  withEnds(record, byId, points)
   for (const s of byId.values()) s.tracks.sort((a, b) => collator.compare(a.label, b.label))
   return [...byId.values()].sort((a, b) => collator.compare(a.name, b.name))
 }
@@ -119,7 +121,7 @@ function withRegister(record, points, byId, make) {
 }
 
 /** The buffer stops and boundaries of the record, made ends: each by its mark's id, shown by its name. */
-function withEnds(record, byId) {
+function withEnds(record, byId, points) {
   const tracks = new Map((record?.tracks ?? []).map(tr => [tr.id, tr]))
   for (const mark of record?.endMarks ?? []) {
     const track = tracks.get(mark.trackId)
@@ -127,7 +129,7 @@ function withEnds(record, byId) {
     const length = trackLength(track)
     const at = endMarkStation(length, mark)
     byId.set(mark.id, {
-      id: mark.id, key: mark.id, name: endMarkName(mark, track), uic: null, kind: 'end', pointId: null, platforms: [],
+      id: mark.id, key: mark.id, name: endMarkName(mark, track, points.get(track.operationalPoint)), uic: null, kind: 'end', pointId: null, platforms: [],
       tracks: [{ id: track.id, label: trackLabel(track), length, platforms: [], from: at, to: at, at }],
       end: { kind: mark.kind, markId: mark.id, speed: mark.kind === BOUNDARY && mark.speed > 0 ? mark.speed : null },
     })

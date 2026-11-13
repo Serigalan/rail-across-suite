@@ -106,7 +106,8 @@ fn close_node_gaps(db: &Connection, now: i64) -> rusqlite::Result<String> {
 /// The document a revision kept before decision 0021 holds: one of the
 /// envelope before it (`schema_version` 3) with today's envelope, one kept as
 /// an oltjson-1.1 record or file (2) turned into one — its planning statuses
-/// lifespans with their days open (decision 0028) —; None where it is neither.
+/// lifespans with their days open, its station texts operational points
+/// (decision 0028) —; None where it is neither.
 pub fn infra_data_of(version: i64, payload: &Value) -> Option<Value> {
     match version {
         3 => {
@@ -118,7 +119,8 @@ pub fn infra_data_of(version: i64, payload: &Value) -> Option<Value> {
                 Some(projects) => projects.first()?.clone(),
                 None => payload.clone(),
             };
-            rail_across_doc::persistence::project_document(&lived(&record), false, true).ok()
+            let record = rail_across_doc::core_format::with_station_points(&lived(&record));
+            rail_across_doc::persistence::project_document(&record, false, true).ok()
         }
         _ => None,
     }

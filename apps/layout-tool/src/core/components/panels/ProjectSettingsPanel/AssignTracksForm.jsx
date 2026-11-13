@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 import { currentProject, loadTracks, replaceAllTracks, updateProject } from '../../../storage'
-import { renamedStation, stationRegister } from '@rail-across/core/document'
+import { renamedStation } from '@rail-across/core/document'
 import useNearbyLines from '../../../hooks/useNearbyLines'
 import useLineNameSuggestion from '../../../hooks/useLineNameSuggestion'
 import {
-  assignTracks, assignmentFields, groupTitle, groupTracks, plannedNames, trackGroupKey,
+  assignTracks, groupTitle, groupTracks, plannedNames, trackGroupKey,
   trackListLabel,
 } from '@rail-across/core/track'
 import { elementsPath, identifyTrackLine } from '../../../utils/km'
@@ -61,7 +61,7 @@ export default function AssignTracksForm({ onCommitted }) {
   const lineOptions = useNearbyLines(map)
 
   const tracks = loadTracks()
-  const groups = groupTracks(tracks)
+  const groups = groupTracks(tracks, project?.operationalPoints ?? [])
   const existing = groups.filter(g => g.kind === kind)
   // An existing line or station that has since gone (its last track moved
   // elsewhere) is no choice any more; the form falls back to a new one.
@@ -171,9 +171,10 @@ export default function AssignTracksForm({ onCommitted }) {
     setSelected(new Set())
     setError(null)
     setDone({ count: ids.length, kind: to.kind ?? null, title: to.kind ? groupTitle(to) : '' })
-    // What was just entered is a line or station of the project now, so the
-    // next tracks are put there by picking it rather than typing it again.
-    setChoice(trackGroupKey(assignmentFields(to)) ?? NEW)
+    // What was just entered is a line or station of the project now — a new
+    // station a point of the record's (decision 0028) —, so the next tracks
+    // are put there by picking it rather than typing it again.
+    setChoice(trackGroupKey(loadTracks().find(tr => tr.id === ids[0]) ?? {}) ?? NEW)
     setEntry({ lineNumber: '', lineName: '', stationName: '', uicStation: '' })
     setNumbers({})
   }
@@ -324,8 +325,8 @@ export default function AssignTracksForm({ onCommitted }) {
 /**
  * Rename the station `station` (a group of groupTracks): its name and UIC
  * number, the same station still — its point of the register keeps its id
- * (renamedStation), its tracks and platforms state the new name. One undo
- * step. `onRenamed` gets the group key it goes by now.
+ * (renamedStation), and its tracks and platforms, which name it by that id,
+ * stay as they are. One undo step. `onRenamed` gets the group key it goes by.
  */
 function StationRename({ station, taken, onRenamed }) {
   const { t } = useI18n()
@@ -342,13 +343,11 @@ function StationRename({ station, taken, onRenamed }) {
     const next = name.trim()
     if (!next) { setError('assign_error_station_name'); return }
     if (taken(next)) { setError('station_rename_taken'); return }
-    const project = currentProject()
-    const id = stationRegister(project).pointOf(station.tracks[0])
-    const changed = id && renamedStation(project, id, { name: next, uic: uic.trim() })
+    const changed = station.operationalPoint && renamedStation(currentProject(), station.operationalPoint, { name: next, uic: uic.trim() })
     if (!changed) return
     updateProject(changed)
     setOpen(false)
-    onRenamed(trackGroupKey(assignmentFields({ kind: 'station', stationName: next, uicStation: uic.trim() })))
+    onRenamed(station.key)
   }
   return (
     <div className="element-form">

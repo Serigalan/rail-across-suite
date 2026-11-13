@@ -1,6 +1,7 @@
 import { PARTIES, STAFF, todayIso } from './planHeader'
 import { findBasemap } from '../../basemaps'
 import { DEFAULT_HEIGHT_EPSG, heightDatumLabel, STATUSES } from '@rail-across/core/track'
+import { withStationTexts } from '@rail-across/core/document'
 import { PAPER_FORMATS, SCALES, TITLE_COLUMN_MM } from './planExport'
 import { planSheets } from './planLayout'
 import { buildPlan } from './planModel'
@@ -118,7 +119,9 @@ export function titleBlockOf({ legend, kind, scale, lines }, { project, header, 
 }
 
 /** The overview: the network as a strip along the kilometrage. */
-export function assembleSchematic(project, o, { t, language }) {
+export function assembleSchematic(record, o, { t, language }) {
+  // The platforms' stations by name, as the plan writes them (decision 0028).
+  const project = withStationTexts(record)
   const plan = buildSchematicPlan({
     tracks: project.tracks ?? [],
     switches: project.switches ?? [],

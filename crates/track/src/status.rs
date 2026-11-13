@@ -64,13 +64,12 @@ fn matches_all(haystack: &[Option<&Value>], query: &str) -> bool {
     norm(query).split_whitespace().all(|w| hay.contains(w))
 }
 
-/// Whether `track` answers `query` (`trackMatches`).
-pub fn track_matches(track: &Value, query: &str) -> bool {
+/// Whether `track` answers `query` (`trackMatches`), its station's name and
+/// number those of `point`, the operational point it names.
+pub fn track_matches(track: &Value, query: &str, point: Option<&Value>) -> bool {
     let f = |k: &str| track.get(k);
-    matches_all(
-        &[f("name"), f("lineNumber"), f("lineName"), f("stationName"), f("uicStation"), f("trackNumber")],
-        query,
-    )
+    let p = |k: &str| point.and_then(|o| o.get(k));
+    matches_all(&[f("name"), f("lineNumber"), f("lineName"), p("name"), p("uic"), f("trackNumber")], query)
 }
 
 /// Whether `sw` answers `query` (`switchMatches`).

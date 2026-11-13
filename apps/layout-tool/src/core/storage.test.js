@@ -10,7 +10,7 @@ import {
   addElementToTrack, redo, canRedo, undoStep, redoStep, hiddenTracks, setTracksHidden, subscribe,
   hiddenKmLines, setKmLinesHidden,
   setTrackHeights, setHeightsForTracks, setSwitchDesignMode, switchDesignMode, addDependentPoint, commitReconnect, loadPlatforms, commitImport, historySteps, travelHistory,
-  savePlatform, updatePlatform, deletePlatform, saveStructure, loadStructures, deleteStructure,
+  savePlatform, updatePlatform, deletePlatform, saveStructure, loadStructures, deleteStructure, updateTrack,
 } from './storage'
 import { newBufferStop, newBoundary } from '@rail-across/core/track'
 import { endPointCurvedUtm, endPointStraightUtm } from '@rail-across/core/src/geometry/elementUtils.js'
@@ -693,5 +693,36 @@ describe('bridges, retaining walls and noise barriers in the store (decision 002
     expect(loadStructures('noiseBarriers')[0].at).toMatchObject({ trackId: 't', startStation: 60, endStation: 90, side: 'right' })
     deleteStructure('noiseBarriers', 'lsw')
     expect(currentProject().noiseBarriers).toBeUndefined()
+  })
+})
+
+describe('a station a form states as text (decision 0028)', () => {
+  it('is the point of that name, found or made, in the same step', () => {
+    openProject({ id: 'p1', tracks: [], switches: [], operationalPoints: [{ id: 'op-k', name: 'Könnern', rl100: 'LKO' }] })
+    saveTrack({ id: 't1', elements: [], trackType: 2, stationName: 'Könnern' })
+    saveTrack({ id: 't2', elements: [], trackType: 2, stationName: 'Wallwitz', uicStation: '8023113' })
+    const [t1, t2] = loadTracks()
+    expect(t1).toEqual({ id: 't1', elements: [], trackType: 2, operationalPoint: 'op-k' })
+    expect(t2).not.toHaveProperty('stationName')
+    expect(currentProject().operationalPoints).toEqual([
+      { id: 'op-k', name: 'Könnern', rl100: 'LKO' },
+      { id: t2.operationalPoint, name: 'Wallwitz', uic: '8023113' },
+    ])
+    // A station typed away names none; the point stays in the register.
+    updateTrack({ ...t1, stationName: '' })
+    expect(loadTracks().find(t => t.id === 't1')).not.toHaveProperty('operationalPoint')
+    expect(currentProject().operationalPoints).toHaveLength(2)
+    undo()
+    expect(loadTracks().find(t => t.id === 't1').operationalPoint).toBe('op-k')
+  })
+
+  it('names a platform\'s station, and the stopping place made over it', () => {
+    openProject({ id: 'p1', tracks: [{ id: 't1', epsg: 25832, elements: [{ elementType: 0, startNode: [500000, 5600000], endNode: [500100, 5600000], bearing: 90, length: 100 }] }], switches: [] })
+    savePlatform({ id: 'pf', trackId: 't1', startStation: 10, endStation: 90, stationName: 'Halle-Trotha', code: 'LHT' }, { stopName: 'Gleis 1' })
+    const [pf] = loadPlatforms()
+    const [point] = currentProject().operationalPoints
+    expect(point).toMatchObject({ name: 'Halle-Trotha', rl100: 'LHT' })
+    expect(pf.operationalPoint).toBe(point.id)
+    expect(currentProject().signalling.collections.stoppingPlaces[0].operationalPointId).toBe(point.id)
   })
 })

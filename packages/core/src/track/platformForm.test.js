@@ -24,8 +24,10 @@ describe('the platform form', () => {
   })
 
   it('fills in a stored platform, an old one without height at the default', () => {
-    expect(platformForm({ trackId: 't', startStation: 10.12345, endStation: 90, side: 'left', height: 420, code: 'A' }))
-      .toMatchObject({ start: '10.123', end: '90', side: 'left', height: 420, freeHeight: true, code: 'A', frontOffset: PLATFORM_FRONT_OFFSET })
+    // Its station is the point it names (decision 0028).
+    const point = { id: 'op-a', name: 'Adorf', rl100: 'A' }
+    expect(platformForm({ trackId: 't', startStation: 10.12345, endStation: 90, side: 'left', height: 420, operationalPoint: 'op-a' }, point))
+      .toMatchObject({ start: '10.123', end: '90', side: 'left', height: 420, freeHeight: true, stationName: 'Adorf', code: 'A', frontOffset: PLATFORM_FRONT_OFFSET })
     const old = platformForm({ trackId: 't', startStation: 0, endStation: 50 })
     expect(old).toMatchObject({ height: DEFAULT_PLATFORM_HEIGHT, freeHeight: false, side: 'right' })
   })

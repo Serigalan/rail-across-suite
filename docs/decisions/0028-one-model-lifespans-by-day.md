@@ -78,6 +78,12 @@ carried out in phases, each of them released by itself.
   yet. The door refuses only a day there is none of and a first day after the last.
 - The exchange file (OSRD railjson, the suite's extension `olt`) carries the lifespan; a file of before with a
   planning status is read as new or removal with the day open.
+- Phase B: the record holds `operationalPoints` and a track or platform its `operationalPoint`; the door copies
+  them, the register is no longer drawn from station texts, and a document is unchanged by it. A station a form
+  or an import states as text is made the point of that name once, where it enters the record (the
+  Layout-Tool's store, `withStationPoints`); a format that names stations by text takes them from the points
+  (`withStationTexts`). A platform's `code` was read as its station's RL100 code but used as its number: a
+  platform has no number of its own, it is its track's.
 - `stagesOf` and `recordAtStage` stay, as what is worked out: the states a project passes through — the
   existing one, every day something changes, the final one — and the record as it stands at one, now the civil
   structures by their lifespans too.

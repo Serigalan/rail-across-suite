@@ -1,4 +1,3 @@
-import { stationRegister } from '@rail-across/core/document'
 import { projectDocument } from '@rail-across/core/project'
 import { CATALOGUE_REF, baliseKindOf, protectionSystemOf, signalKindOf, signallingSpeedOf } from '@rail-across/core/signalling'
 
@@ -52,24 +51,12 @@ export const signallingOf = (state) => ({ fields: state.fields, collections: Obj
 
 /**
  * The record with the state laid on it: its domain and the parts of the core
- * the tool writes. A station renamed keeps its id: the tracks of it state its
- * new name too, as its platforms do (withStation).
+ * the tool writes. A station renamed keeps its id, and its tracks and
+ * platforms, which name it by that id, stay as they are (decision 0028).
  */
 export function recordOf(record, state) {
   const { operationalPoints, platforms } = state.collections
-  const points = new Map(operationalPoints.map(p => [p.id, p]))
-  const register = stationRegister(record)
-  let renamed = false
-  const tracks = (record?.tracks ?? []).map(tr => {
-    const p = points.get(register.pointOf(tr))
-    if (!p?.name || p.name === tr.stationName) return tr
-    renamed = true
-    return { ...tr, stationName: p.name }
-  })
-  return {
-    ...record, ...(renamed ? { tracks } : {}), platforms,
-    operationalPoints: operationalPoints.length ? operationalPoints : undefined, signalling: signallingOf(state),
-  }
+  return { ...record, platforms, operationalPoints, signalling: signallingOf(state) }
 }
 
 /**
@@ -335,15 +322,22 @@ export function newBalise({ at, system = 'pzb', kind = Object.keys(protectionSys
 /** A signal's full designation, its area's number leading (60-A): names repeat from area to area. */
 export const designationOf = (s, t) => labelOf('signals', s, t)
 
-/** A short label of an object for lists and findings; a signal's with its area's number (designationOf). */
-export function labelOf(collection, obj, t) {
+/**
+ * A short label of an object for lists and findings; a signal's with its
+ * area's number (designationOf), a platform's by the station it names among
+ * `points`, the operational points (decision 0028).
+ */
+export function labelOf(collection, obj, t, points = []) {
   if (!obj) return '—'
   const name = obj.name != null && obj.name !== '' ? String(obj.name) : null
   switch (collection) {
     case 'signals': return (name && obj.areaNumber ? `${obj.areaNumber}-${name}` : name) ?? (hasScreen(obj) ? null : boardName(obj)) ?? t('unnamed')
     case 'routes': return name ?? null
     case 'operationalPoints': return name ?? obj.rl100 ?? t('unnamed')
-    case 'platforms': return [obj.stationName, obj.code].filter(Boolean).join(' ') || t('unnamed')
+    case 'platforms': {
+      const point = points.find(p => p.id === obj.operationalPoint)
+      return [point?.name, point?.rl100].filter(Boolean).join(' ') || t('unnamed')
+    }
     default: return name ?? t('unnamed')
   }
 }

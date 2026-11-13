@@ -44,7 +44,7 @@ describe('the stations of a net', () => {
     // B-Halt made a station in the Signalling-Tool, a stopping place of it on the line; a station nothing places is none.
     const registered = {
       ...net,
-      operationalPoints: [{ id: 'op-b', name: 'B-Halt', rl100: 'LBH' }, { id: 'op-x', name: 'X-Feld' }, { id: 'op-c', name: 'C-Stadt' }],
+      operationalPoints: [...net.operationalPoints.map(p => (p.id === 'op-b' ? { ...p, rl100: 'LBH' } : p)), { id: 'op-x', name: 'X-Feld' }],
       signalling: { fields: {}, collections: { stoppingPlaces: [{ id: 'h1', name: '1', operationalPointId: 'op-b', at: { anchor: 'station', trackId: 'L', startStation: 900, endStation: 1150 } }] } },
     }
     const all = stationsOf(registered)
@@ -85,7 +85,7 @@ describe('the stations of a net', () => {
     const project = { ...net, switches: [], id: '5dbd8fed-f8dc-4995-8934-9d71be69cae0', title: 'Netz' }
     const before = stationsOf(project)
     const c = stationNamed(before, 'C-Stadt')
-    expect(c.id).toMatch(/^[0-9a-f-]{36}$/)
+    expect(c.id).toBe('op-c')
     expect(new Set(before.map(s => s.id)).size).toBe(before.length)
     // the same ids from the project's document
     const read = (record) => parseProjectsPayload(JSON.parse(JSON.stringify(projectDocument(record)))).projects[0]

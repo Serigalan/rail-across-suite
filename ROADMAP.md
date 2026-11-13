@@ -138,6 +138,9 @@ the app working on the document instead of its record.
   days, `"open"` where the day is not known yet, and the states of a project are worked out of the lifespans,
   the civil structures and the layers' objects among them.
 - The operational point register (in the format since its first version, drawn from the station texts) edited as such.
+  *Done* ([decision 0028](docs/decisions/0028-one-model-lifespans-by-day.md), phase B): the record holds the points
+  as objects with ids, a track and a platform name theirs; nothing is drawn from texts any more but what an
+  import reads.
 - Domains with ownership: `core` (net, platforms, end marks, structures, operational point register, designed
   kilometrage) and discipline domains that store references only into the core.
 - Storage as a hash tree on the server and in the browser: revision → manifest → domain → collection, the blobs

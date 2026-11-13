@@ -49,7 +49,7 @@ pub fn run(op: &str, input: &Value) -> Option<Result<Value, Failure>> {
         "track.endKey" => ok(json!(em::end_key(a.opt(0), a.opt(1)))),
         "track.newBufferStop" => ok(em::new_buffer_stop(a.v(0), a.v(1), a.opt(2), a.of(3))),
         "track.newBoundary" => ok(em::new_boundary(a.v(0), a.v(1), a.opt(2))),
-        "track.endMarkName" => ok(json!(em::end_mark_name(a.v(0), a.v(1)))),
+        "track.endMarkName" => ok(json!(em::end_mark_name(a.v(0), a.v(1), a.opt(2).filter(|p| !p.is_null())))),
         "track.bufferStopFits" => ok(json!(em::buffer_stop_fits(a.f(0), a.f(1)))),
         "track.bufferStopStations" => ok(em::buffer_stop_stations_json(a.f(0), a.v(1))),
         "track.endMarkStation" => ok(number(em::end_mark_station(a.f(0), a.v(1)))),
@@ -73,7 +73,7 @@ pub fn run(op: &str, input: &Value) -> Option<Result<Value, Failure>> {
             let by_id: HashMap<String, &Value> = tracks.iter().map(|t| (js_string(t.get("id")), t)).collect();
             ok(json!(status::switch_status(a.v(0), &by_id)))
         }
-        "track.trackMatches" => ok(json!(status::track_matches(a.v(0), a.s(1)))),
+        "track.trackMatches" => ok(json!(status::track_matches(a.v(0), a.s(1), a.opt(2).filter(|p| !p.is_null())))),
         "track.switchMatches" => ok(json!(status::switch_matches(a.v(0), a.s(1)))),
         // trackModel
         "track.portTracks" => ok(Value::Array(model::port_tracks(a.v(0)))),
@@ -281,7 +281,7 @@ pub fn run(op: &str, input: &Value) -> Option<Result<Value, Failure>> {
         "track.trackKind" => ok(opt_str(groups::track_kind(a.v(0)))),
         "track.trackTypeName" => ok(groups::track_type_name(a.v(0), a.v(1))),
         "track.trackGroupKey" => ok(opt_str(groups::track_group_key(a.v(0)))),
-        "track.groupTracks" => ok(groups::group_tracks(&a.list(0))),
+        "track.groupTracks" => ok(groups::group_tracks(&a.list(0), &a.list(1))),
         "track.groupTitle" => ok(json!(groups::group_title(a.v(0)))),
         "track.trackListLabel" => ok(json!(groups::track_list_label(a.v(0)))),
         "track.assignmentFields" => ok(groups::assignment_fields(a.v(0))),
@@ -300,7 +300,7 @@ pub fn run(op: &str, input: &Value) -> Option<Result<Value, Failure>> {
             a.option(3, "kmById").unwrap_or(&Value::Null),
             a.option(3, "numberById").unwrap_or(&Value::Null),
         )),
-        "track.platformForm" => ok(groups::platform_form(a.v(0))),
+        "track.platformForm" => ok(groups::platform_form(a.v(0), a.opt(1).filter(|p| !p.is_null()))),
         "track.pickedStation" => ok(json!(groups::picked_station(a.f(0)))),
         "track.platformDraft" => ok(groups::platform_draft(a.v(0))),
         "track.platformFormValid" => ok(json!(groups::platform_form_valid(a.v(0), a.opt(1)))),

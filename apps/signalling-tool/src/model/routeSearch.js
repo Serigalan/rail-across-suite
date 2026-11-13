@@ -1,4 +1,5 @@
 import { BOUNDARY, endMarkName, trackLength, tracksOnFrom } from '@rail-across/core/track'
+import { pointOf } from '@rail-across/core/document'
 import { newId } from './domain.js'
 import { isMainSignal } from './itineraries.js'
 
@@ -110,7 +111,7 @@ export function boundaryStarts(net, signals) {
     const at = { anchor: 'station', trackId: track.id, station: inward === 'down' ? trackLength(track) : 0, direction: inward }
     const there = signals.find(s => s.kind === 'virtual' && s.at?.anchor === 'station' && s.at.trackId === at.trackId
       && actsAlong(s, inward) && Math.abs(s.at.station - at.station) <= AT_BOUNDARY)
-    return [{ mark, signal: there ?? { id: `boundary:${mark.id}`, kind: 'virtual', virtualFunction: 'trainStartWithoutSignal', name: endMarkName(mark, track), at, fresh: true } }]
+    return [{ mark, signal: there ?? { id: `boundary:${mark.id}`, kind: 'virtual', virtualFunction: 'trainStartWithoutSignal', name: endMarkName(mark, track, pointOf(net, track)), at, fresh: true } }]
   })
 }
 
@@ -124,7 +125,7 @@ export const isRouteStart = (s) => isMainSignal(s) || (s.kind === 'virtual' && /
  */
 export function newBoundaryTarget(net, way) {
   const track = net.tracks.find(t => t.id === way.boundary.at.trackId)
-  return { id: newId(), kind: 'virtual', virtualFunction: 'trainTargetLine', name: endMarkName(way.boundary.mark, track), at: way.boundary.at }
+  return { id: newId(), kind: 'virtual', virtualFunction: 'trainTargetLine', name: endMarkName(way.boundary.mark, track, pointOf(net, track)), at: way.boundary.at }
 }
 
 /**

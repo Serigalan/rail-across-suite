@@ -182,18 +182,11 @@ pub fn object_label(name: &str, obj: Option<&Value>, tracks_by_id: Option<&Map<S
             or(&["name", "id"])
         }
         "switches" => or(&["name", "label", "switchId"]),
-        "platforms" => {
-            let parts: Vec<String> = ["stationName", "code"]
-                .iter()
-                .filter_map(|k| obj.get(*k).filter(|v| rail_across_js::truthy(Some(v))))
-                .map(|v| js_string(Some(v)))
-                .collect();
-            if parts.is_empty() {
-                obj.get("id").cloned().unwrap_or(Value::Null)
-            } else {
-                Value::String(parts.join(" "))
-            }
-        }
+        // A platform by its track: its station is a point of its own (decision 0028).
+        "platforms" => match tracks_by_id.and_then(|m| m.get(&js_string(obj.get("trackId")))) {
+            Some(t) => object_label("tracks", Some(t), None),
+            None => obj.get("id").cloned().unwrap_or(Value::Null),
+        },
         "kmLines" => Value::String(js_string(obj.get("lineNumber"))),
         "operationalPoints" => or(&["name", "rl100", "uic", "id"]),
         "axisSurveys" | "referenceAxes" | "routes" => or(&["name", "id"]),

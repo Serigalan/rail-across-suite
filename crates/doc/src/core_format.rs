@@ -4,16 +4,15 @@
 //! The record the tools work on and the infra-data-2.0 document it is kept
 //! as, both ways, nothing lost (`coreFormat.js`): the domain `core` and the
 //! layers on it — `civil`, `signalling`, `electrification` (decision 0025) —,
-//! locations as one value each, a lifespan as the object states it (decision
-//! 0028), station names and codes as an operational point
-//! register, named runs of tracks as the core's `trackPaths`, the bulk point arrays as
-//! blobs named by their hash. The record keeps the platforms at its top and the
+//! locations as one value each, a lifespan and an operational point as the
+//! object states them (decision 0028), named runs of tracks as the core's
+//! `trackPaths`, the bulk point arrays as blobs named by their hash. The record keeps the platforms at its top and the
 //! stopping places in its signalling, each naming its platform; the document
 //! has the stopping places in the core and the platforms, naming them, in civil.
 
 use std::collections::{HashMap, HashSet};
 
-use rail_across_js::{Object, get, has, js_less, js_string, js_trim, strict_eq, without_null};
+use rail_across_js::{Object, get, has, js_less, js_string, js_trim, without_null};
 use serde_json::{Map, Value, json};
 
 use crate::canonical::{content_hash, derived_id};
@@ -279,46 +278,41 @@ pub fn operational_register(project_id: Option<&Value>, tracks: &[Value], platfo
     }
 }
 
-/// What the record keeps of the register (`keptPoints`).
-fn kept_points(project_id: Option<&Value>, tracks: &[Value], platforms: &[Value], points: &[Value], named: &HashSet<String>) -> Vec<Value> {
-    let same = |a: &Value, b: Option<&Value>| -> bool {
-        let Some(b) = b else { return false };
-        ["name", "rl100", "uic"].iter().all(|k| {
-            let x = get(a, k).cloned().unwrap_or(Value::Null);
-            let y = get(b, k).cloned().unwrap_or(Value::Null);
-            strict_eq(Some(&x), Some(&y))
-        })
-    };
-    let made_with = |kept: &[Value]| -> HashMap<String, Value> {
-        operational_register(project_id, tracks, platforms, kept)
-            .points
-            .into_iter()
-            .map(|p| (js_string(p.get("id")), p))
-            .collect()
-    };
-    let made = made_with(&[]);
-    let id_of = |p: &Value| js_string(p.get("id"));
-    let mut kept: Vec<Value> = points
-        .iter()
-        .filter(|p| named.contains(&id_of(p)) || !same(p, made.get(&id_of(p))))
-        .cloned()
-        .collect();
-    let candidates: Vec<Value> = kept.iter().filter(|k| !named.contains(&id_of(k))).cloned().collect();
-    for p in candidates {
-        let others: Vec<Value> = kept.iter().filter(|k| **k != p).cloned().collect();
-        if same(&p, made_with(&others).get(&id_of(&p))) {
-            kept = others;
-        }
+/// A record whose tracks and platforms state their station as text — what an
+/// importer reads from a file that knows no operational points, or a record of
+/// before decision 0028 — with the points those texts make (`withStationPoints`):
+/// `operationalPoints` the register, each track and platform its `operationalPoint`,
+/// the texts gone — one that states its station as no text names none. The points
+/// the record has are kept, and a text names the one of its name and codes. A record
+/// without such texts comes back as it was.
+pub fn with_station_points(record: &Value) -> Value {
+    let tracks = list(record, "tracks");
+    let platforms = list(record, "platforms");
+    let texts = |o: &Value, keys: &[&str]| keys.iter().any(|k| o.get(*k).is_some());
+    if !tracks.iter().any(|t| texts(t, &["stationName", "uicStation"])) && !platforms.iter().any(|p| texts(p, &["stationName", "code"])) {
+        return record.clone();
     }
-    kept.iter()
-        .map(|p| {
-            let mut o = Object::new();
-            for k in ["id", "name", "rl100", "uic"] {
-                o.insert(k.into(), opt(p.get(k).cloned()));
-            }
-            Value::Object(without_null(o))
-        })
-        .collect()
+    let register = operational_register(record.get("id"), tracks, platforms, list(record, "operationalPoints"));
+    let pointed = |o: &Value, source: Source, drop: &[&str]| -> Value {
+        if !texts(o, drop) {
+            return o.clone();
+        }
+        let mut rest = without(&obj(o), drop);
+        rest.shift_remove("operationalPoint");
+        if let Some(id) = register.point_of(source) {
+            rest.insert("operationalPoint".into(), json!(id));
+        }
+        Value::Object(rest)
+    };
+    let mut out = obj(record);
+    let ts: Vec<Value> = tracks.iter().enumerate().map(|(i, t)| pointed(t, Source::Track(i), &["stationName", "uicStation"])).collect();
+    let ps: Vec<Value> = platforms.iter().enumerate().map(|(i, p)| pointed(p, Source::Platform(i), &["stationName", "code"])).collect();
+    out.insert("tracks".into(), Value::Array(ts));
+    if record.get("platforms").is_some() {
+        out.insert("platforms".into(), Value::Array(ps));
+    }
+    out.insert("operationalPoints".into(), Value::Array(register.points));
+    Value::Object(out)
 }
 
 // ── The design speed ────────────────────────────────────────────────────────
@@ -372,35 +366,21 @@ pub fn record_to_document(record: &Value, schema_hashes: &HashMap<&str, String>)
 
     let tracks = list(record, "tracks");
     let platforms = list(record, "platforms");
-    let register = operational_register(record.get("id"), tracks, platforms, list(record, "operationalPoints"));
     let mut blobs = Object::new();
     let mut blob = |value: &Value| -> Value {
         let hash = content_hash(value);
         blobs.insert(hash.clone(), value.clone());
         Value::String(hash)
     };
-    let located = |source: Option<Source>, extra: Object| -> Value {
-        let mut o = extra;
-        o.insert(
-            "operationalPoint".into(),
-            source
-                .and_then(|s| register.point_of(s))
-                .map(|s| Value::String(s.into()))
-                .unwrap_or(Value::Null),
-        );
-        Value::Object(without_null(o))
-    };
-
     let core_tracks: Vec<Value> = tracks
         .iter()
-        .enumerate()
-        .map(|(i, t)| {
-            let mut rest = without(&obj(t), &["stationName", "uicStation"]);
+        .map(|t| {
+            let mut rest = obj(t);
             if let Some(Value::Array(els)) = rest.get("elements").filter(|e| rail_across_js::truthy(Some(e))) {
                 let els: Vec<Value> = els.iter().map(|el| renamed(el, "speed", "designSpeed")).collect();
                 rest.insert("elements".into(), Value::Array(els));
             }
-            located(Some(Source::Track(i)), without_null(rest))
+            Value::Object(without_null(rest))
         })
         .collect();
     let switches: Vec<Value> = list(record, "switches")
@@ -416,17 +396,16 @@ pub fn record_to_document(record: &Value, schema_hashes: &HashMap<&str, String>)
         .collect();
     let core_platforms: Vec<Value> = platforms
         .iter()
-        .enumerate()
-        .map(|(i, p)| {
+        .map(|p| {
             let mut at = Object::new();
             at.insert("anchor".into(), json!("station"));
             for k in ["trackId", "startStation", "endStation", "side"] {
                 at.insert(k.into(), opt(p.get(k).cloned()));
             }
-            let rest = without(&obj(p), &["trackId", "startStation", "endStation", "side", "stationName", "code"]);
+            let rest = without(&obj(p), &["trackId", "startStation", "endStation", "side"]);
             let mut extra = Object::new();
             extra.insert("at".into(), Value::Object(without_null(at)));
-            located(Some(Source::Platform(i)), spread(extra, without_null(rest)))
+            Value::Object(spread(extra, without_null(rest)))
         })
         .collect();
     let end_marks: Vec<Value> = list(record, "endMarks")
@@ -438,7 +417,7 @@ pub fn record_to_document(record: &Value, schema_hashes: &HashMap<&str, String>)
             at.insert("endpoint".into(), opt(m.get("endpoint").cloned()));
             let mut extra = without_null(rest);
             extra.insert("at".into(), Value::Object(without_null(at)));
-            located(None, extra)
+            Value::Object(extra)
         })
         .collect();
 
@@ -461,7 +440,8 @@ pub fn record_to_document(record: &Value, schema_hashes: &HashMap<&str, String>)
     core_cols.insert("switches".into(), Value::Array(switches));
     core_cols.insert("endMarks".into(), Value::Array(end_marks));
     core_cols.insert("kmLines".into(), Value::Array(list(record, "kmLines").to_vec()));
-    core_cols.insert("operationalPoints".into(), Value::Array(register.points.clone()));
+    let points: Vec<Value> = list(record, "operationalPoints").iter().map(|p| Value::Object(without_null(obj(p)))).collect();
+    core_cols.insert("operationalPoints".into(), Value::Array(points));
     core_cols.insert("stoppingPlaces".into(), Value::Array(layers::core_stopping_places(&stopping)));
 
     let track_paths: Vec<Value> = list(record, "routes")
@@ -563,19 +543,6 @@ pub fn document_to_record(doc: &Value) -> Result<Value> {
     let empty_civil = json!({ "fields": {}, "collections": {} });
     let civil = get(&doc["domains"], "civil").unwrap_or(&empty_civil);
     let c = &core["collections"];
-    let mut points: HashMap<String, Value> = HashMap::new();
-    for p in list(c, "operationalPoints") {
-        points.insert(js_string(p.get("id")), p.clone());
-    }
-    let point_of = |o: &Value| -> Result<Value> {
-        match get(o, "operationalPoint") {
-            None => Ok(json!({})),
-            Some(id) => points
-                .get(&js_string(Some(id)))
-                .cloned()
-                .ok_or_else(|| PayloadError::with("invalid_payload", vec![format!("/operationalPoints: lacks {}", js_string(Some(id)))])),
-        }
-    };
     let blobs = doc.get("blobs").cloned().unwrap_or(json!({}));
     let blob = |hash: Option<&Value>| -> Result<Value> {
         let h = js_string(hash);
@@ -588,14 +555,11 @@ pub fn document_to_record(doc: &Value) -> Result<Value> {
 
     let mut tracks = Vec::new();
     for t in list(c, "tracks") {
-        let p = point_of(t)?;
-        let mut rest = without(&obj(t), &["operationalPoint"]);
+        let mut rest = obj(t);
         if let Some(Value::Array(els)) = rest.get("elements").filter(|e| rail_across_js::truthy(Some(e))) {
             let els: Vec<Value> = els.iter().map(|el| renamed(el, "designSpeed", "speed")).collect();
             rest.insert("elements".into(), Value::Array(els));
         }
-        rest.insert("stationName".into(), opt(p.get("name").cloned()));
-        rest.insert("uicStation".into(), opt(p.get("uic").cloned()));
         tracks.push(Value::Object(without_null(rest)));
     }
     let mut switches = Vec::new();
@@ -610,13 +574,10 @@ pub fn document_to_record(doc: &Value) -> Result<Value> {
     let civil_platforms = list(&l, "platforms");
     let mut platforms = Vec::new();
     for pf in civil_platforms {
-        let p = point_of(pf)?;
-        let mut o = without(&obj(pf), &["at", "operationalPoint", "stoppingPlaceIds"]);
+        let mut o = without(&obj(pf), &["at", "stoppingPlaceIds"]);
         for (k, v) in without(&obj(pf.get("at").unwrap_or(&Value::Null)), &["anchor"]) {
             o.insert(k, v);
         }
-        o.insert("stationName".into(), opt(p.get("name").cloned()));
-        o.insert("code".into(), opt(p.get("rl100").cloned()));
         platforms.push(Value::Object(without_null(o)));
     }
     let mut end_marks = Vec::new();
@@ -649,19 +610,8 @@ pub fn document_to_record(doc: &Value) -> Result<Value> {
     let axis_surveys = with_blob(list(&l, "axisSurveys"))?;
     let reference_axes = with_blob(list(&l, "referenceAxes"))?;
 
-    let sc = doc["domains"]
-        .get("signalling")
-        .and_then(|s| s.get("collections"))
-        .cloned()
-        .unwrap_or(json!({}));
     let stopping = layers::record_stopping_places(list(c, "stoppingPlaces"), civil_platforms);
-    let mut named = HashSet::new();
-    for o in list(&sc, "signals").iter().chain(list(&sc, "stationBoundaries")) {
-        if let Some(id) = o.get("operationalPointId").filter(|v| rail_across_js::truthy(Some(v))) {
-            named.insert(js_string(Some(id)));
-        }
-    }
-    let operational_points = kept_points(core["fields"].get("id"), &tracks, &platforms, list(c, "operationalPoints"), &named);
+    let operational_points = list(c, "operationalPoints").to_vec();
 
     let mut collections: Vec<(&str, Vec<Value>)> = vec![
         ("tracks", tracks),

@@ -44,8 +44,8 @@ the plan export of the PEK Bestand asked them 15,000 times and took 4.5 s, here 
 A track is a chain of elements in one plane (`epsg`) plus metadata:
 
 - **Identity and naming:** `id` (UUID), `name`, `trackType` (1 line track, 2 station track); a line
-  track carries `lineNumber`, `lineName`, `side`; a station track `stationName`, `uicStation`,
-  `trackNumber`. A new line track is named from the kilometrage of its middle (`km` module).
+  track carries `lineNumber`, `lineName`, `side`; a station track `operationalPoint` (the id of its
+  station, a point of the record's `operationalPoints`, decision 0028) and `trackNumber`. A new line track is named from the kilometrage of its middle (`km` module).
 - **Use and rules:** `trackUse` (`siding`, otherwise main track), `lineCategory` only where the track
   overrides the project's.
 - **Heights:** `heights` (below) and `heightEpsg`, the vertical datum (DHHN2016 by default).

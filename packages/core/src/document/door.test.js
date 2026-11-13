@@ -3,6 +3,7 @@ import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { canonicalJson, contentHash } from './canonical.js'
 import { checkDocument, fromDocument, SCHEMA_HASHES, toDocument } from './door.js'
+import { DOMAIN_VERSIONS } from './coreFormat.js'
 import { documentHash, manifestOf } from './manifest.js'
 import { hasPek, loadPek } from '../../test/pekFixture.js'
 import { ksStation } from '../../test/signallingFixture.js'
@@ -51,6 +52,7 @@ describe('a record as an infra-data-2.0 document', () => {
     expect(doc).toMatchObject({ format: 'infra-data', version: '2.0' })
     expect(doc.domains.core).toMatchObject({ version: '3.0', schema: SCHEMA_HASHES.core, fields: { id: 'p', title: 'P' } })
     expect(doc.domains.civil).toMatchObject({ version: '2.0', schema: SCHEMA_HASHES.civil, dependsOn: ['core'], fields: { planHeader: { subtitle: 'x' } } })
+    expect([doc.domains.core.version, doc.domains.civil.version]).toEqual([DOMAIN_VERSIONS.core, DOMAIN_VERSIONS.civil])
     expect(doc.domains.core.collections.tracks.map(t => t.id)).toEqual(['t1'])
   })
 
@@ -94,66 +96,24 @@ describe('a record as an infra-data-2.0 document', () => {
     expect(roundTrip(r)).toEqual(r)
   })
 
-  it('names stations in a register: one point per name, the codes stated for it', () => {
+  it('keeps the stations as the record states them: points with ids, named by tracks and platforms (decision 0028)', () => {
+    const operationalPoints = [{ id: 'op-k', name: 'Könnern', rl100: 'LKO', uic: '8010195' }, { id: 'op-w', name: 'Wallwitz' }]
     const r = record({
-      tracks: [track('a', { stationName: 'Halle-Trotha', uicStation: '8023111' }), track('b', { stationName: 'Halle-Trotha' })],
-      platforms: [{ id: 'pf', trackId: 'a', startStation: 0, endStation: 50, stationName: 'Halle-Trotha', code: 'LHT' }],
+      tracks: [track('a', { operationalPoint: 'op-k' }), track('b', { operationalPoint: 'op-k' }), track('c')],
+      platforms: [{ id: 'pf', trackId: 'a', startStation: 0, endStation: 50, operationalPoint: 'op-k' }],
+      operationalPoints,
     })
-    const { tracks, operationalPoints } = toDocument(r).domains.core.collections
-    const { platforms } = toDocument(r).domains.civil.collections
-    expect(operationalPoints).toEqual([{ id: expect.any(String), name: 'Halle-Trotha', rl100: 'LHT', uic: '8023111' }])
-    expect([...tracks, ...platforms].map(o => o.operationalPoint)).toEqual(Array(3).fill(operationalPoints[0].id))
-    // A station's codes are the station's: every track naming it shows them.
-    expect(roundTrip(r).tracks.map(t => t.uicStation)).toEqual(['8023111', '8023111'])
-    expect(roundTrip(r).platforms[0]).toMatchObject({ stationName: 'Halle-Trotha', code: 'LHT' })
+    const doc = toDocument(r)
+    expect(doc.domains.core.collections.operationalPoints).toEqual(operationalPoints)
+    expect(doc.domains.core.collections.tracks.map(t => t.operationalPoint)).toEqual(['op-k', 'op-k', undefined])
+    expect(doc.domains.civil.collections.platforms[0].operationalPoint).toBe('op-k')
+    // a station nothing names stays, under its id
+    expect(roundTrip(r)).toEqual(r)
   })
 
-  it('keeps two codes under one name apart, as two points', () => {
-    const r = record({ tracks: [track('a', { stationName: 'X', uicStation: '1' }), track('b', { stationName: 'X', uicStation: '2' })] })
-    expect(toDocument(r).domains.core.collections.operationalPoints.map(p => p.uic).sort()).toEqual(['1', '2'])
-    expect(roundTrip(r).tracks.map(t => t.uicStation)).toEqual(['1', '2'])
-  })
-
-  it('keeps a station nothing names yet in the register, and only what the names do not make', () => {
-    const r = record({ operationalPoints: [{ id: 'op-k', name: 'Könnern', rl100: 'LKO' }] })
-    expect(toDocument(r).domains.core.collections.operationalPoints).toEqual([{ id: 'op-k', name: 'Könnern', rl100: 'LKO' }])
-    expect(roundTrip(r).operationalPoints).toEqual([{ id: 'op-k', name: 'Könnern', rl100: 'LKO' }])
-    // A platform that names it is of it, and states its code.
-    const named = record({ ...r, platforms: [{ id: 'pf', trackId: 't1', startStation: 0, endStation: 50, stationName: 'Könnern' }] })
-    expect(toDocument(named).domains.civil.collections.platforms[0].operationalPoint).toBe('op-k')
-    expect(roundTrip(named).platforms[0]).toMatchObject({ stationName: 'Könnern', code: 'LKO' })
-    expect(roundTrip(named).operationalPoints).toEqual([{ id: 'op-k', name: 'Könnern', rl100: 'LKO' }])
-    // A point just as the names make it is not kept: a record without one stays without.
-    const made = toDocument(record({ tracks: [track('t1', { stationName: 'Wallwitz' })] })).domains.core.collections.operationalPoints[0]
-    const same = record({ tracks: [track('t1', { stationName: 'Wallwitz' })], operationalPoints: [made] })
-    expect(roundTrip(same).operationalPoints).toBeUndefined()
-  })
-
-  it('keeps a station the signalling names, so it keeps its id when the tracks are named anew', () => {
-    const made = toDocument(record({ tracks: [track('t1', { stationName: 'Wallwitz' })] })).domains.core.collections.operationalPoints[0]
-    const signalling = ksStation({ operationalPoint: made.id })
-    const back = roundTrip(record({ tracks: [track('t1', { stationName: 'Wallwitz' })], signalling }))
-    expect(back.operationalPoints).toEqual([made])
-    const renamed = toDocument({ ...back, tracks: [track('t1', { stationName: 'Wallwitz (Saalkr)' })] }).domains.core.collections.operationalPoints
-    expect(renamed.map(p => p.name).sort()).toEqual(['Wallwitz', 'Wallwitz (Saalkr)'])
-    expect(renamed.find(p => p.name === 'Wallwitz').id).toBe(made.id)
-  })
-
-  it('keeps a kept station\'s id under its name, and its codes where an object states none', () => {
-    const r = record({
-      tracks: [track('t1', { stationName: 'Könnern', uicStation: '8010195' })],
-      platforms: [{ id: 'pf', trackId: 't1', startStation: 0, endStation: 50, stationName: 'Könnern', code: 'XX' }],
-      operationalPoints: [{ id: 'op-k', name: 'Könnern', rl100: 'LKO' }],
-    })
-    const { tracks, operationalPoints } = toDocument(r).domains.core.collections
-    const { platforms } = toDocument(r).domains.civil.collections
-    expect(tracks[0].operationalPoint).toBe('op-k')
-    expect(operationalPoints.find(p => p.id === 'op-k')).toEqual({ id: 'op-k', name: 'Könnern', rl100: 'LKO', uic: '8010195' })
-    // A platform stating another code is a point of its own, as two codes under one name are.
-    expect(platforms[0].operationalPoint).not.toBe('op-k')
-    expect(operationalPoints).toHaveLength(2)
-    expect(roundTrip(r).operationalPoints).toEqual([{ id: 'op-k', name: 'Könnern', rl100: 'LKO', uic: '8010195' }])
-    expect(toDocument(roundTrip(r)).domains.core.collections).toEqual(toDocument(r).domains.core.collections)
+  it('refuses a station stated as text: the record names its point', () => {
+    expect(() => toDocument(record({ tracks: [track('a', { stationName: 'Halle-Trotha' })] }))).toThrow('invalid_payload')
+    expect(() => toDocument(record({ platforms: [{ id: 'pf', trackId: 't1', startStation: 0, endStation: 50, code: 'LHT' }] }))).toThrow('invalid_payload')
   })
 
   it('makes runs of tracks TrackPaths and the bulk point arrays blobs', () => {
@@ -177,8 +137,8 @@ describe('a record as an infra-data-2.0 document', () => {
     expect(a.domains.core.collections.tracks.map(t => t.id)).toEqual(['a', 'b'])
   })
 
-  it('says what is the same in one way: no null fields, no empty station', () => {
-    const r = record({ tracks: [track('a', { lineNumber: null, stationName: '', uicStation: '' })] })
+  it('says what is the same in one way: no null fields', () => {
+    const r = record({ tracks: [track('a', { lineNumber: null, operationalPoint: null })] })
     expect(roundTrip(r).tracks[0]).toEqual(track('a'))
   })
 
@@ -378,7 +338,8 @@ describe.skipIf(!hasPek)('the PEK data set as an infra-data-1.0 document', () =>
     expect(byId(back.tracks)).toEqual(byId(pek.tracks.map(withoutNull)))
     expect(byId(back.switches, 'switchId')).toEqual(byId(pek.switches, 'switchId'))
     expect(byId(back.platforms)).toEqual(byId(pek.platforms))
-    const { tracks: _t, switches: _s, platforms: _p, ...fields } = pek
+    expect(byId(back.operationalPoints)).toEqual(byId(pek.operationalPoints))
+    const { tracks: _t, switches: _s, platforms: _p, operationalPoints: _o, ...fields } = pek
     expect(back).toMatchObject(fields)
     // And the document of what came back is the same bytes.
     expect(canonicalJson(toDocument(back))).toBe(canonicalJson(toDocument(pek)))

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { loadTracks, loadSwitches, loadEndMarks, saveEndMark, deleteEndMark } from '../../../storage'
+import { currentProject, loadTracks, loadSwitches, loadEndMarks, saveEndMark, deleteEndMark } from '../../../storage'
+import { pointOf } from '@rail-across/core/document'
 import {
   classifyTrackEnds, freeEnds, BUFFER_STOP_TYPES, DEFAULT_BUFFER_STOP_TYPE, BUFFER_STOP_LENGTH,
   BUFFER_STOP, BOUNDARY, defaultBrakeLength, bufferStopFits, newBufferStop, newBoundary, endMarkName,
@@ -234,7 +235,7 @@ export default function EndMarkForm({ onCommitted, edit = false, kind = BUFFER_S
           <div className="form-field">
             <label>{t('end_mark_name')}<InfoTip text={t('end_mark_name_hint')} /></label>
             <input type="text" value={name} onChange={e => setName(e.target.value)}
-              placeholder={endMarkName({ kind, trackId: picked.trackId, endpoint: picked.endpoint }, track)} />
+              placeholder={endMarkName({ kind, trackId: picked.trackId, endpoint: picked.endpoint }, track, pointOf(currentProject(), track))} />
           </div>
           {boundary ? (
             <div className="form-field">

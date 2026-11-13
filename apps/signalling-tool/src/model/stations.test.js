@@ -38,14 +38,14 @@ describe('the stations', () => {
     state = withStation(state, station)
     expect(stationsOf(coreOf(state)).get(station.id)).toMatchObject({ point: station, tracks: [], platforms: [] })
     state = withPlatforms(state, station, ['pf1'], [])
-    expect(state.collections.platforms[0]).toMatchObject({ stationName: 'Könnern', code: 'LKO' })
+    expect(state.collections.platforms[0].operationalPoint).toBe(station.id)
     expect(stationsOf(coreOf(state)).get(station.id).platforms).toEqual(['pf1'])
-    // Renamed, its platform follows; taken off, the platform names none.
+    // Renamed, its platform names it still (decision 0028); taken off, the platform names none.
     state = withStation(state, { ...station, name: 'Könnern (Saale)' }, ['pf1'])
-    expect(state.collections.platforms[0].stationName).toBe('Könnern (Saale)')
-    expect(stationsOf(coreOf(state)).get(station.id).platforms).toEqual(['pf1'])
+    expect(state.collections.platforms[0].operationalPoint).toBe(station.id)
+    expect(stationsOf(coreOf(state)).get(station.id)).toMatchObject({ point: { name: 'Könnern (Saale)' }, platforms: ['pf1'] })
     state = withPlatforms(state, station, [], ['pf1'])
-    expect(state.collections.platforms[0]).not.toHaveProperty('stationName')
+    expect(state.collections.platforms[0]).not.toHaveProperty('operationalPoint')
     expect(nameTaken(coreOf(state).collections.operationalPoints, 'könnern (saale)')).toBe(true)
   })
 
@@ -72,7 +72,7 @@ describe('the stations', () => {
     state = withoutStation(state, station.id, ['pf1'])
     expect(state.collections.operationalPoints).toEqual([])
     expect(state.collections.signals.some(s => s.operationalPointId)).toBe(false)
-    expect(state.collections.platforms[0]).not.toHaveProperty('stationName')
+    expect(state.collections.platforms[0]).not.toHaveProperty('operationalPoint')
     expect(state.collections.stationBoundaries).toEqual([])
   })
 
@@ -83,7 +83,7 @@ describe('the stations', () => {
     const doc = JSON.parse(JSON.stringify(projectDocument(recordOf(record, state), { carrySchemas: true })))
     const back = parseProjectsPayload(doc).projects[0]
     expect(back.operationalPoints).toEqual([station])
-    expect(back.platforms[0]).toMatchObject({ stationName: 'Könnern', code: 'LKO' })
+    expect(back.platforms[0].operationalPoint).toBe(station.id)
     expect(back.signalling.collections.signals.find(s => s.id === 's-a').operationalPointId).toBe(station.id)
     // Deleting a signal leaves the parts of the core alone.
     expect(deleted(state, 'signals', 's-a').collections.operationalPoints).toEqual([station])

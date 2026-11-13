@@ -229,8 +229,8 @@ describe('the Signalling-Tool', () => {
   it('creates stations, and gives each its signals, its platforms and its boundary', () => {
     const withStation = {
       ...record,
-      platforms: [{ id: 'pf1', trackId: 't2', startStation: 10, endStation: 150, side: 'right', stationName: 'Testdorf' }],
-      operationalPoints: [{ id: 'op-w', name: 'Wiesenthal' }],
+      platforms: [{ id: 'pf1', trackId: 't2', startStation: 10, endStation: 150, side: 'right', operationalPoint: 'op-t' }],
+      operationalPoints: [{ id: 'op-w', name: 'Wiesenthal' }, { id: 'op-t', name: 'Testdorf' }],
     }
     const core = coreOf(withStation)
     const testdorf = core.collections.operationalPoints.find(p => p.name === 'Testdorf').id

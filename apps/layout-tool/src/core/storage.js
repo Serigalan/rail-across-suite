@@ -8,7 +8,7 @@ import {
   carryPlatforms, flipPlatforms, trackLength,
 } from '@rail-across/core/track'
 import { translateTracks } from '@rail-across/core/commands'
-import { withPlatformStops } from '@rail-across/core/document'
+import { withPlatformStops, withStationPoints } from '@rail-across/core/document'
 import { carryAfterWrite } from '@rail-across/core/merge'
 import { coupleSwitchCants, rebuildSwitchSymbol } from '@rail-across/core/switch'
 import {
@@ -108,8 +108,10 @@ function mutate(fn, { undo = true, unlock = false } = {}) {
   // on their lines and, unless in the design mode, its tracks meet there
   // (decision 384). A curve whose length counts takes the radius its
   // gradients ask for now (decision 266).
+  // A station a form states as text is the point of that name, found or made
+  // (decision 0028): the record names its stations by their points.
   const after = withLengthRadii(before, withSwitchHeights(before,
-    withCoupledCants(before, withPrunedMarks(carryAfterWrite(before, repairRoutes(before, next)))), { design: _switchDesign }))
+    withCoupledCants(before, withPrunedMarks(carryAfterWrite(before, repairRoutes(before, withStationPoints(next))))), { design: _switchDesign }))
   // What a lock holds stays (Entscheidung 382): a write that would change it
   // is refused as a whole — and said so, where every step is.
   const parted = new Set(_idLog.slice(logBefore.length).map(e => e.from))
@@ -1105,12 +1107,13 @@ export function loadPlatforms() {
 // core, one step with it (decision 0025): those at it passenger stops it
 // names, one over it called `stopName` where none is at it yet.
 
+// The station a platform form states as text is its point first, so the stopping place made over it names it too.
 export function savePlatform(platform, { stopName } = {}) {
-  return mutate(p => withPlatformStops({ ...p, platforms: [...(p.platforms ?? []), platform] }, platform.id, { name: stopName }))
+  return mutate(p => withPlatformStops(withStationPoints({ ...p, platforms: [...(p.platforms ?? []), platform] }), platform.id, { name: stopName }))
 }
 
 export function updatePlatform(platform, { stopName } = {}) {
-  return mutate(p => withPlatformStops({ ...p, platforms: (p.platforms ?? []).map(q => (q.id === platform.id ? platform : q)) }, platform.id, { name: stopName }))
+  return mutate(p => withPlatformStops(withStationPoints({ ...p, platforms: (p.platforms ?? []).map(q => (q.id === platform.id ? platform : q)) }), platform.id, { name: stopName }))
 }
 
 export function deletePlatform(platformId) {

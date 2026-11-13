@@ -1,3 +1,4 @@
+import { withStationTexts } from '@rail-across/core/document'
 import {
   exact, round3, buildCoords, totalLength,
   horizontalElements, startAnchor, endAnchor, switchesToPorts,
@@ -45,7 +46,9 @@ const EMPTY_INFRA = {
  * RailJSON for OSRD: what it models in its own fields, the rest in
  * extensions.db. `project` is the project record (hydrated).
  */
-export function exportToOsrd(project) {
+export function exportToOsrd(record) {
+  // RailJSON names a station by its name and number: the points' (decision 0028).
+  const project = record && withStationTexts(record)
   const tracks    = project?.tracks ?? []
   const switches  = project?.switches ?? []
   const platforms = project?.platforms ?? []

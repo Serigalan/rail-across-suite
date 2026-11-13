@@ -76,6 +76,7 @@
         "name": "1",
         "trackType": 2,
         "trackNumber": "1",
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
@@ -94,8 +95,7 @@
           "bearing": 90,
           "length": 150
          }
-        ],
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        ]
        },
        {
         "id": "t3",
@@ -429,6 +429,7 @@
         "name": "1",
         "trackType": 2,
         "trackNumber": "1",
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
@@ -447,8 +448,7 @@
           "bearing": 90,
           "length": 150
          }
-        ],
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        ]
        },
        {
         "id": "t3",
@@ -2040,6 +2040,7 @@
         "name": "1",
         "trackType": 2,
         "trackNumber": "1",
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
@@ -2058,8 +2059,7 @@
           "bearing": 90,
           "length": 150
          }
-        ],
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        ]
        },
        {
         "id": "t3",
@@ -2362,6 +2362,7 @@
         "name": "1",
         "trackType": 2,
         "trackNumber": "1",
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
@@ -2380,8 +2381,7 @@
           "bearing": 90,
           "length": 150
          }
-        ],
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        ]
        },
        {
         "id": "t3",
@@ -2684,6 +2684,7 @@
         "name": "1",
         "trackType": 2,
         "trackNumber": "1",
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
@@ -2702,8 +2703,7 @@
           "bearing": 90,
           "length": 150
          }
-        ],
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        ]
        },
        {
         "id": "t3",
@@ -3006,6 +3006,7 @@
         "name": "1",
         "trackType": 2,
         "trackNumber": "1",
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
@@ -3024,8 +3025,7 @@
           "bearing": 90,
           "length": 150
          }
-        ],
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        ]
        },
        {
         "id": "t3",
@@ -3390,6 +3390,7 @@
         "name": "1",
         "trackType": 2,
         "trackNumber": "1",
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
@@ -3408,8 +3409,7 @@
           "bearing": 90,
           "length": 150
          }
-        ],
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        ]
        },
        {
         "id": "t3",
@@ -3712,6 +3712,7 @@
         "name": "1",
         "trackType": 2,
         "trackNumber": "1",
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
@@ -3730,8 +3731,7 @@
           "bearing": 90,
           "length": 150
          }
-        ],
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        ]
        },
        {
         "id": "t3",
@@ -4420,6 +4420,7 @@
         "name": "1",
         "trackType": 2,
         "trackNumber": "1",
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
@@ -4438,8 +4439,7 @@
           "bearing": 90,
           "length": 150
          }
-        ],
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        ]
        },
        {
         "id": "t3",
@@ -4712,6 +4712,7 @@
         "name": "1",
         "trackType": 2,
         "trackNumber": "1",
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
@@ -4730,8 +4731,7 @@
           "bearing": 90,
           "length": 150
          }
-        ],
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        ]
        },
        {
         "id": "t3",
@@ -5031,6 +5031,7 @@
         "name": "1",
         "trackType": 2,
         "trackNumber": "1",
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
@@ -5049,8 +5050,7 @@
           "bearing": 90,
           "length": 150
          }
-        ],
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        ]
        },
        {
         "id": "t3",
@@ -5405,6 +5405,7 @@
         "name": "1",
         "trackType": 2,
         "trackNumber": "1",
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
@@ -5423,8 +5424,7 @@
           "bearing": 90,
           "length": 150
          }
-        ],
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        ]
        },
        {
         "id": "t3",
@@ -5735,6 +5735,7 @@
         "name": "1",
         "trackType": 2,
         "trackNumber": "1",
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
@@ -5753,8 +5754,7 @@
           "bearing": 90,
           "length": 150
          }
-        ],
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        ]
        },
        {
         "id": "t3",
@@ -6057,6 +6057,7 @@
         "name": "1",
         "trackType": 2,
         "trackNumber": "1",
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "s1"
         },
@@ -6075,8 +6076,7 @@
           "bearing": 90,
           "length": 150
          }
-        ],
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        ]
        },
        {
         "id": "t3",
@@ -6379,6 +6379,7 @@
         "name": "1",
         "trackType": 2,
         "trackNumber": "1",
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01",
          "to": "2027-04-30"
@@ -6398,8 +6399,7 @@
           "bearing": 90,
           "length": 150
          }
-        ],
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        ]
        },
        {
         "id": "t3",
@@ -6702,6 +6702,7 @@
         "name": "1",
         "trackType": 2,
         "trackNumber": "1",
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-02-30"
         },
@@ -6720,8 +6721,7 @@
           "bearing": 90,
           "length": 150
          }
-        ],
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        ]
        },
        {
         "id": "t3",
@@ -7024,6 +7024,7 @@
         "name": "1",
         "trackType": 2,
         "trackNumber": "1",
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "open",
          "to": "open"
@@ -7043,8 +7044,7 @@
           "bearing": 90,
           "length": 150
          }
-        ],
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        ]
        },
        {
         "id": "t3",
@@ -7378,6 +7378,7 @@
         "name": "1",
         "trackType": 2,
         "trackNumber": "1",
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
@@ -7396,8 +7397,7 @@
           "bearing": 90,
           "length": 150
          }
-        ],
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        ]
        },
        {
         "id": "t3",
@@ -7700,6 +7700,7 @@
         "name": "1",
         "trackType": 2,
         "trackNumber": "1",
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
@@ -7718,8 +7719,7 @@
           "bearing": 90,
           "length": 150
          }
-        ],
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        ]
        },
        {
         "id": "t3",
@@ -8023,6 +8023,7 @@
         "name": "1",
         "trackType": 2,
         "trackNumber": "1",
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
@@ -8041,8 +8042,7 @@
           "bearing": 90,
           "length": 150
          }
-        ],
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        ]
        },
        {
         "id": "t3",
@@ -8360,6 +8360,7 @@
         "name": "1",
         "trackType": 2,
         "trackNumber": "1",
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
@@ -8378,8 +8379,7 @@
           "bearing": 90,
           "length": 150
          }
-        ],
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        ]
        },
        {
         "id": "t3",
@@ -8781,6 +8781,7 @@
         "name": "1",
         "trackType": 2,
         "trackNumber": "1",
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
@@ -8799,8 +8800,7 @@
           "bearing": 90,
           "length": 150
          }
-        ],
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        ]
        },
        {
         "id": "t3",
@@ -9059,6 +9059,7 @@
         "name": "1",
         "trackType": 2,
         "trackNumber": "1",
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
@@ -9077,8 +9078,7 @@
           "bearing": 90,
           "length": 150
          }
-        ],
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        ]
        },
        {
         "id": "t3",
@@ -9933,6 +9933,7 @@
         "name": "1",
         "trackType": 2,
         "trackNumber": "1",
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
@@ -9951,8 +9952,7 @@
           "bearing": 90,
           "length": 150
          }
-        ],
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        ]
        },
        {
         "id": "t3",
@@ -13318,6 +13318,7 @@
         "name": "1",
         "trackType": 2,
         "trackNumber": "1",
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
@@ -13336,8 +13337,7 @@
           "bearing": 90,
           "length": 150
          }
-        ],
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        ]
        },
        {
         "id": "t3",
@@ -14138,6 +14138,7 @@
         "name": "1",
         "trackType": 2,
         "trackNumber": "1",
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
@@ -14156,8 +14157,7 @@
           "bearing": 90,
           "length": 150
          }
-        ],
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        ]
        },
        {
         "id": "t3",
@@ -14960,6 +14960,7 @@
         "name": "1",
         "trackType": 2,
         "trackNumber": "1",
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
@@ -14978,8 +14979,7 @@
           "bearing": 90,
           "length": 150
          }
-        ],
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        ]
        },
        {
         "id": "t3",
@@ -15834,6 +15834,7 @@
         "name": "1",
         "trackType": 2,
         "trackNumber": "1",
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
@@ -15852,8 +15853,7 @@
           "bearing": 90,
           "length": 150
          }
-        ],
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        ]
        },
        {
         "id": "t3",
@@ -16627,6 +16627,7 @@
         "name": "1",
         "trackType": 2,
         "trackNumber": "1",
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
@@ -16645,8 +16646,7 @@
           "bearing": 90,
           "length": 150
          }
-        ],
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        ]
        },
        {
         "id": "t3",
@@ -17475,6 +17475,7 @@
         "name": "1",
         "trackType": 2,
         "trackNumber": "1",
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
@@ -17493,8 +17494,7 @@
           "bearing": 90,
           "length": 150
          }
-        ],
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        ]
        },
        {
         "id": "t3",
@@ -18301,6 +18301,7 @@
         "name": "1",
         "trackType": 2,
         "trackNumber": "1",
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
@@ -18319,8 +18320,7 @@
           "bearing": 90,
           "length": 150
          }
-        ],
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        ]
        },
        {
         "id": "t3",
@@ -19193,6 +19193,7 @@
         "name": "1",
         "trackType": 2,
         "trackNumber": "1",
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
@@ -19211,8 +19212,7 @@
           "bearing": 90,
           "length": 150
          }
-        ],
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        ]
        },
        {
         "id": "t3",
@@ -19580,6 +19580,7 @@
         "name": "1",
         "trackType": 2,
         "trackNumber": "1",
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
@@ -19598,8 +19599,7 @@
           "bearing": 90,
           "length": 150
          }
-        ],
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        ]
        },
        {
         "id": "t3",
@@ -19924,6 +19924,7 @@
         "name": "1",
         "trackType": 2,
         "trackNumber": "1",
+        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747",
         "lifespan": {
          "from": "2027-05-01"
         },
@@ -19942,8 +19943,7 @@
           "bearing": 90,
           "length": 150
          }
-        ],
-        "operationalPoint": "b64cfd92-f881-83ad-82d7-f0d78ef78747"
+        ]
        },
        {
         "id": "t3",

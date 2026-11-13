@@ -13,7 +13,7 @@
 
 export { canonicalJson, contentHash, derivedId } from './canonical.js'
 export { DOMAIN_VERSIONS } from './coreFormat.js'
-export { renamedStation, stationRegister, withPlatformStops } from './stations.js'
+export { pointOf, renamedStation, stationPoint, stationRegister, withPlatformStops, withStationPoints, withStationTexts } from './stations.js'
 export { recordAtStage, stagesOf } from './stages.js'
 export { documentHash, manifestOf } from './manifest.js'
 export {

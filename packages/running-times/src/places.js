@@ -16,11 +16,15 @@ export function placesOf(record, t) {
     .filter(s => s.kind !== 'virtual' && s.at?.anchor === 'station' && s.name)
     .map(s => ({ id: `signal:${s.id}`, label: `${t('signal')} ${s.name}`, loc: { trackId: s.at.trackId, station: s.at.station, direction: s.at.direction ?? null } }))
     .sort(byLabel)
+  // A platform by its station — the point it names (decision 0028) — and its track's number.
+  const points = new Map((record?.operationalPoints ?? []).map(p => [p.id, p]))
+  const tracks = new Map((record?.tracks ?? []).map(tr => [tr.id, tr]))
   const platforms = (record?.platforms ?? [])
     .filter(p => p.trackId && Number.isFinite(p.startStation) && Number.isFinite(p.endStation))
-    .map((p, i) => ({
+    .map((p, i) => ({ p, i, point: points.get(p.operationalPoint), number: tracks.get(p.trackId)?.trackNumber }))
+    .map(({ p, i, point, number }) => ({
       id: `platform:${p.id ?? i}`,
-      label: [p.stationName, p.code ? `${t('platform_track')} ${p.code}` : null].filter(Boolean).join(' ') || `${t('platform')} ${i + 1}`,
+      label: [point?.name, number ? `${t('platform_track')} ${number}` : null].filter(Boolean).join(' ') || `${t('platform')} ${i + 1}`,
       loc: { trackId: p.trackId, station: (p.startStation + p.endStation) / 2, direction: null },
     }))
     .sort(byLabel)

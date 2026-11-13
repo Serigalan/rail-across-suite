@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { loadTracks, replaceAllTracks } from '../../../storage'
+import { currentProject, loadTracks, replaceAllTracks } from '../../../storage'
+import { pointOf } from '@rail-across/core/document'
 import { SIDE_NAMES, buildTypeFields, lifespanWithStatus, trackStatus, withLifespan, DEFAULT_HEIGHT_EPSG, trackTypeName } from '@rail-across/core/track'
 import useTrackFields from '../../../hooks/useTrackFields'
 import TrackFields from '../TrackFields'
@@ -36,8 +37,11 @@ export default function EditPropertiesForm({ onCommitted }) {
       setField('lineNumber',  track.lineNumber  ?? '')
       setField('lineName',    track.lineName    ?? '')
       setField('side',        SIDE_NAMES[track.side]        ?? 'sorting')
-      setField('stationName', track.stationName ?? '')
-      setField('uicStation',  track.uicStation  ?? '')
+      // The station is the point the track names (decision 0028); a name typed
+      // is the point of that name, found or made, when the form is taken.
+      const point = pointOf(currentProject(), track)
+      setField('stationName', point?.name ?? '')
+      setField('uicStation',  point?.uic  ?? '')
       setField('trackNumber', track.trackNumber ?? '')
       setField('trackUse',    track.trackUse    ?? 'main')
       setField('heightEpsg',  String(track.heightEpsg ?? DEFAULT_HEIGHT_EPSG))

@@ -50,6 +50,9 @@ const schemaVectors = () => JSON.parse(readFileSync(join(OUT, 'schema.json'), 'u
 // Through the door — the core's module since step 10: --check sees that it
 // still says of each what it said when the JavaScript was the measure.
 
+// The station of the sample, under the id the door drew from its name while the record stated it as text.
+const HALLE_TROTHA = 'b64cfd92-f881-83ad-82d7-f0d78ef78747'
+
 /** A record with one of everything the format holds — with the signalling of a small station, its second stopping place at the platform, and an electrification where asked. */
 function sampleRecord({ signalling = false, electrification = false } = {}) {
   const el = (x0, x1, extra = {}) => ({ elementType: 0, startNode: [500000 + x0, 5700000], endNode: [500000 + x1, 5700000], bearing: 90, length: x1 - x0, ...extra })
@@ -61,14 +64,15 @@ function sampleRecord({ signalling = false, electrification = false } = {}) {
       { id: 't1', name: '6050.001', trackType: 1, lineNumber: 6050, side: 1, epsg: 25832, heightEpsg: 7837,
         elements: [el(0, 100, { speed: 80 }), el(100, 250, { cant: 0, role: 'follow' })],
         heights: [{ station: 0, z: 108.55 }, { station: 250, z: 109.1, rv: 15000 }] },
-      { id: 't2', name: '1', trackType: 2, trackNumber: '1', stationName: 'Halle-Trotha', uicStation: '8023111',
+      { id: 't2', name: '1', trackType: 2, trackNumber: '1', operationalPoint: HALLE_TROTHA,
         lifespan: { from: '2027-05-01' }, epsg: 25832, elements: [el(250, 400)] },
       { id: 't3', name: 'alt', lifespan: { to: 'open' }, epsg: 25832, elements: [el(400, 450)] },
     ],
     switches: [{ switchId: 'w1', kind: 'link', formVersion: 1, name: 'link.001',
       ports: { A: { trackId: 't1', endpoint: 'END' }, B: { trackId: 't2', endpoint: 'BEGIN' } } }],
     platforms: [{ id: 'p1', trackId: 't2', startStation: 10, endStation: 140, side: 'left', frontOffset: 1.67,
-      height: 550, stationName: 'Halle-Trotha', code: 'LHT' }],
+      height: 550, operationalPoint: HALLE_TROTHA }],
+    operationalPoints: [{ id: HALLE_TROTHA, name: 'Halle-Trotha', rl100: 'LHT', uic: '8023111' }],
     endMarks: [{ id: 'e1', kind: 'buffer_stop', trackId: 't3', endpoint: 'END', type: 4, brakeLength: 4 }],
     routes: [{ id: 'r1', name: 'Gleis 1 durch', trackIds: ['t1', 't2'] }],
     kmLines: [{ id: 'km-6050', lineNumber: 6050, crs: 'EPSG:4326', clip: [11.9, 51.5, 12.0, 51.6], runs: [[[11.95, 51.55, 1200.5], [11.96, 51.56, 1300]]] }],

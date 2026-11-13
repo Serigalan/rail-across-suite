@@ -128,6 +128,8 @@ fn run_on(op: &str, input: &Value) -> Result<Value, Failure> {
             let uic = input.as_object().and_then(|o| o.get("uic")).map(|u| if u.is_null() { None } else { Some(u) });
             Ok(stations::renamed_station(&input["record"], id, input.get("name").filter(|n| !n.is_null()), uic))
         }
+        "document.stationPoint" => Ok(stations::station_point(&input["record"], input.get("name"), input.get("uic"), input.get("rl100"))),
+        "document.withStationPoints" => Ok(core_format::with_station_points(input)),
 
         // capacity (K1)
         "capacity.compress" => Ok(rail_across_capacity::compress(input)),

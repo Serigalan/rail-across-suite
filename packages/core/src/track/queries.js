@@ -539,13 +539,13 @@ const text = (v) => (v != null ? String(v).trim() : '')
 
 /**
  * 'line', 'station' or null. The type a track states decides; tracks written
- * before the type was stored say it only through the fields they carry — a
- * station name makes a station track, a line number a line track.
+ * before the type was stored say it only through the fields they carry — an
+ * operational point makes a station track, a line number a line track.
  */
 export function trackKind(track) {
   if (track?.trackType === LINE) return 'line'
   if (track?.trackType === STATION) return 'station'
-  if (text(track?.stationName) || text(track?.uicStation)) return 'station'
+  if (text(track?.operationalPoint)) return 'station'
   if (text(track?.lineNumber)) return 'line'
   return null
 }
@@ -560,10 +560,9 @@ export function trackTypeName(track, fallback) {
 }
 
 /**
- * The group a track falls in: `line:6340`, `station:halle (saale) hbf`, or
- * null where its kind names nothing to group it under. A station is known by
- * its name rather than its UIC number — the number is often missing on some
- * of its tracks, the name never is on a station track that says anything.
+ * The group a track falls in: `line:6340`, `station:<the id of its
+ * operational point>` (decision 0028), or null where its kind names nothing
+ * to group it under.
  */
 export function trackGroupKey(track) {
   const kind = trackKind(track)
@@ -572,10 +571,8 @@ export function trackGroupKey(track) {
     return number ? `line:${number}` : null
   }
   if (kind === 'station') {
-    const name = text(track.stationName).toLowerCase()
-    const uic = text(track.uicStation)
-    if (name) return `station:${name}`
-    return uic ? `station:#${uic}` : null
+    const point = text(track.operationalPoint)
+    return point ? `station:${point}` : null
   }
   return null
 }
@@ -596,12 +593,13 @@ export const endKey = (trackId, endpoint) => `${trackId}|${endpoint}`
  * What a timetable calls the place of a mark — a train may begin and end at
  * a buffer stop and at a boundary: its own name, else one made of its kind
  * and its track's name — or station and number — and end, in the words of
- * the data (German, as the stations').
+ * the data (German, as the stations'). `point` is the operational point the
+ * track names.
  */
-export function endMarkName(mark, track) {
+export function endMarkName(mark, track, point) {
   const own = String(mark?.name ?? '').trim()
   if (own) return own
-  const station = [track?.stationName, track?.trackNumber && `Gl. ${track.trackNumber}`].filter(Boolean).join(' ')
+  const station = [point?.name, track?.trackNumber && `Gl. ${track.trackNumber}`].filter(Boolean).join(' ')
   const where = String(track?.name ?? '').trim() || station || String(mark?.trackId ?? '').slice(0, 8)
   return `${mark?.kind === BOUNDARY ? 'Grenze' : 'Prellbock'} ${where} ${mark?.endpoint === 'BEGIN' ? 'Anfang' : 'Ende'}`
 }

@@ -54,14 +54,15 @@ pub fn new_boundary(track_id: &Value, endpoint: &Value, speed: Option<&Value>) -
     Value::Object(o)
 }
 
-/// What a mark is called (`endMarkName`).
-pub fn end_mark_name(mark: &Value, track: &Value) -> String {
+/// What a mark is called (`endMarkName`), its track's station the name of
+/// `point`, the operational point the track names.
+pub fn end_mark_name(mark: &Value, track: &Value, point: Option<&Value>) -> String {
     let own = js_trim(&get(mark, "name").map(|v| js_string(Some(v))).unwrap_or_default()).to_string();
     if !own.is_empty() {
         return own;
     }
     let parts: Vec<String> = [
-        get(track, "stationName").filter(|v| truthy(Some(v))).map(|v| js_string(Some(v))),
+        point.and_then(|p| get(p, "name")).filter(|v| truthy(Some(v))).map(|v| js_string(Some(v))),
         get(track, "trackNumber")
             .filter(|v| truthy(Some(v)))
             .map(|v| format!("Gl. {}", js_string(Some(v)))),

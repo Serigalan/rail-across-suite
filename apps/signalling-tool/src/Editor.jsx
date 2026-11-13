@@ -129,7 +129,7 @@ export default function Editor({ project, variant, head, copy: opened, readOnly 
   const current = useMemo(() => recordOf(record, committed), [record, committed])
   const shown = useMemo(() => (draft ? recordOf(record, draft) : current), [record, draft, current])
   const pending = useMemo(() => (draft ? changedIds(committed, draft) : NONE), [committed, draft])
-  const net = useMemo(() => ({ tracks: record.tracks ?? [], switches: record.switches ?? [], endMarks: record.endMarks ?? [], kmLines: record.kmLines ?? [] }), [record])
+  const net = useMemo(() => ({ tracks: record.tracks ?? [], switches: record.switches ?? [], endMarks: record.endMarks ?? [], kmLines: record.kmLines ?? [], operationalPoints: record.operationalPoints ?? [] }), [record])
   const drawing = useMemo(() => netDrawing(net.tracks), [net])
   const coreDomain = useMemo(() => coreOf(shown), [shown])
   const findings = useMemo(() => checkSignalling({ core: coreDomain, signalling }), [coreDomain, signalling])
@@ -583,7 +583,7 @@ function CheckInDialog({ t, onCancel, onSubmit }) {
 function DeleteDialog({ t, language, domain, what, onCancel, onConfirm }) {
   const logical = what.collection === 'logicalSignals' ? findLogical(domain, what.id) : null
   const obj = domain.collections[what.collection]?.find(o => o.id === what.id)
-  const title = logical?.signal ? `${labelOf('signals', logical.signal, t)} · ${logicalSignalWord(logical.logical, language)}` : labelOf(what.collection, obj, t) ?? t('unnamed')
+  const title = logical?.signal ? `${labelOf('signals', logical.signal, t)} · ${logicalSignalWord(logical.logical, language)}` : labelOf(what.collection, obj, t, domain.collections.operationalPoints ?? []) ?? t('unnamed')
   const gone = cascadeOf(domain, what.collection, what.id)
   const others = Object.entries(gone).filter(([name]) => name !== what.collection || gone[name].length > 1)
     .map(([name, ids]) => `${ids.length} × ${t(`collection_${name}`)}`)

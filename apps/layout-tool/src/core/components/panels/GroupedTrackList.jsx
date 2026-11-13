@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { groupHeading, groupTracks, trackListLabel, trackMatches } from '@rail-across/core/track'
+import { pointOf } from '@rail-across/core/document'
+import { useProject } from '../../hooks/useStore'
 import { fitToTracks } from '../../map/mapRenderUtils'
 import { useI18n } from '../../locales/i18nContext'
 import { useMap } from '../../map/MapContext'
@@ -31,8 +33,9 @@ export default function GroupedTrackList({ tracks: all, isActive, onPick, onPick
   const own = useTrackSearch()
   const { query, setQuery } = outer ?? own
   const searching = !!query.trim()
-  const tracks = searching ? all.filter(tr => trackMatches(tr, query)) : all
-  const groups = groupTracks(tracks)
+  const project = useProject()
+  const tracks = searching ? all.filter(tr => trackMatches(tr, query, pointOf(project, tr))) : all
+  const groups = groupTracks(tracks, project?.operationalPoints ?? [])
 
   // One track found: the map goes there.
   const only = query.trim() && tracks.length === 1 ? tracks[0] : null

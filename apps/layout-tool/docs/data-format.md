@@ -97,9 +97,10 @@ Collections, each keyed by its own id (which is also how the merge compares them
 }
 ```
 
-- `trackType` 1 = line track (`lineNumber`, `lineName`, `side`), 2 = station track (`stationName`,
-  `uicStation`, `trackNumber`).
-- `status` `existing` | `new` | `removal` (absent = existing); `trackUse` only `siding` (absent = main track);
+- `trackType` 1 = line track (`lineNumber`, `lineName`, `side`), 2 = station track (`operationalPoint`,
+  `trackNumber`). A station is a point of the record's `operationalPoints` (`{ id, name, rl100?, uic? }`), named
+  by its id; a station a form states as text is made the point of that name by the store (decision 0028).
+- `lifespan` `{ from?, to? }`, days or `"open"` (absent = existing and staying); `trackUse` only `siding` (absent = main track);
   `lineCategory` only where the track overrides the project's.
 - `epsg` — the **one** plane all its elements are stated in; `heightEpsg` the vertical datum of its heights
   (default 7837, DHHN2016).
@@ -185,7 +186,7 @@ There is **no station on an element** — stations are the running sum of the le
 
 ```json
 { "id": "12a6…", "trackId": "aa47…", "startStation": 438.2, "endStation": 578.2, "side": "left",
-  "frontOffset": 1.67, "backOffset": 4.67, "height": 550, "stationName": "Halle-Trotha", "code": "LHT" }
+  "frontOffset": 1.67, "backOffset": 4.67, "height": 550, "operationalPoint": "b64c…" }
 
 { "id": "…", "kind": "buffer_stop", "trackId": "…", "endpoint": "END", "type": 4, "brakeLength": 4 }
 { "id": "…", "kind": "boundary",    "trackId": "…", "endpoint": "BEGIN", "name": "Grenze Nord", "speed": 80 }

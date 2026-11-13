@@ -8,26 +8,28 @@ const straight = (x0, y0, x1, y1) => ({
   elementType: 0, startNode: [E0 + x0, N0 + y0], endNode: [E0 + x1, N0 + y1], length: Math.hypot(x1 - x0, y1 - y0),
   bearing: (Math.atan2(x1 - x0, y1 - y0) * 180 / Math.PI + 360) % 360, speed: 100,
 })
-const inStation = (name, number) => ({ trackType: 2, stationName: name, trackNumber: number })
+// The stations are points of the register, each track and platform naming its own (decision 0028).
+const inStation = (point, number) => ({ trackType: 2, operationalPoint: point, trackNumber: number })
 const at = (trackId, station, direction) => ({ anchor: 'station', trackId, station, side: 'right', direction })
 const main = (id, trackId, station, direction) => ({ id, name: id, kind: 'real', at: at(trackId, station, direction), logicalSignals: ks })
 export const crossing = {
   tracks: [
-    { id: 'H1', epsg: 25832, ...inStation('H-Stadt', '1'), elements: [straight(0, 0, 500, 0)] },
+    { id: 'H1', epsg: 25832, ...inStation('op-h', '1'), elements: [straight(0, 0, 500, 0)] },
     { id: 'L1', epsg: 25832, trackType: 1, lineNumber: '6000', elements: [straight(500, 0, 3000, 0)] },
-    { id: 'W1', epsg: 25832, ...inStation('W-Dorf', '1'), elements: [straight(3000, 0, 3600, 0)] },
-    { id: 'W2', epsg: 25832, ...inStation('W-Dorf', '2'), elements: [straight(3000, 0, 3300, 60), straight(3300, 60, 3600, 0)] },
+    { id: 'W1', epsg: 25832, ...inStation('op-w', '1'), elements: [straight(3000, 0, 3600, 0)] },
+    { id: 'W2', epsg: 25832, ...inStation('op-w', '2'), elements: [straight(3000, 0, 3300, 60), straight(3300, 60, 3600, 0)] },
     { id: 'L2', epsg: 25832, trackType: 1, lineNumber: '6000', elements: [straight(3600, 0, 6000, 0)] },
-    { id: 'K1', epsg: 25832, ...inStation('K-Stadt', '1'), elements: [straight(6000, 0, 6500, 0)] },
+    { id: 'K1', epsg: 25832, ...inStation('op-k', '1'), elements: [straight(6000, 0, 6500, 0)] },
   ],
   switches: [
     { switchId: 'Wa', kind: 'turnout', ports: { A: { trackId: 'L1', endpoint: 'END' }, B1: { trackId: 'W2', endpoint: 'BEGIN' }, B2: { trackId: 'W1', endpoint: 'BEGIN' } } },
     { switchId: 'Wb', kind: 'turnout', ports: { A: { trackId: 'L2', endpoint: 'BEGIN' }, B1: { trackId: 'W2', endpoint: 'END' }, B2: { trackId: 'W1', endpoint: 'END' } } },
   ],
   platforms: [
-    { id: 'pH', trackId: 'H1', startStation: 100, endStation: 300, stationName: 'H-Stadt', code: '1' },
-    { id: 'pK', trackId: 'K1', startStation: 200, endStation: 400, stationName: 'K-Stadt', code: '1' },
+    { id: 'pH', trackId: 'H1', startStation: 100, endStation: 300, operationalPoint: 'op-h' },
+    { id: 'pK', trackId: 'K1', startStation: 200, endStation: 400, operationalPoint: 'op-k' },
   ],
+  operationalPoints: [{ id: 'op-h', name: 'H-Stadt' }, { id: 'op-w', name: 'W-Dorf' }, { id: 'op-k', name: 'K-Stadt' }],
   signalling: {
     fields: {},
     collections: {

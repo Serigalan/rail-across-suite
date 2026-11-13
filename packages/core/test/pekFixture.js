@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 import { storedTrackCants } from '../src/geometry/clothoidUtils.js'
+import { withStationPoints } from '../src/document/stations.js'
 
 /**
  * The PEK data set Halle–Könnern (22 tracks, 13 switches, 9 platforms) — real
@@ -13,7 +14,8 @@ import { storedTrackCants } from '../src/geometry/clothoidUtils.js'
  * record the way an import would need it: every switch a
  * `switchId`, `kind`, `formVersion` and its `ports`, every switch element the
  * id of the switch its `switchName` names — and no name of its own after that
- * —, every transition both its cant ends, which it took from its neighbours.
+ * —, every transition both its cant ends, which it took from its neighbours,
+ * and its stations, stated as text, operational points (decision 0028).
  */
 const CANDIDATES = [
   process.env.OLT_PEK_FIXTURE,
@@ -57,7 +59,7 @@ export function loadPek() {
       }
       track.elements = storedTrackCants(track.elements ?? [])
     }
-    cached = JSON.stringify(project)
+    cached = JSON.stringify(withStationPoints(project))
   }
   return JSON.parse(cached)
 }
@@ -78,5 +80,5 @@ export const hasPekExisting = EXISTING_PATH !== null
 /** A fresh copy of the Bestand project record (dehydrated), or null. */
 export function loadPekExisting() {
   if (!EXISTING_PATH) return null
-  return JSON.parse(readFileSync(EXISTING_PATH, 'utf8')).projects[0]
+  return withStationPoints(JSON.parse(readFileSync(EXISTING_PATH, 'utf8')).projects[0])
 }

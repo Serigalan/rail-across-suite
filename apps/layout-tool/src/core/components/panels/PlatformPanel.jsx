@@ -8,7 +8,8 @@ import { wgs84ToUTM } from '@rail-across/core/geometry'
 import { PLATFORM_FILL_COLOR, PLATFORM_FILL_OPACITY } from '../../map/mapRenderUtils'
 import { useI18n } from '../../locales/i18nContext'
 import CommitBar from '../form/CommitBar'
-import { usePlatforms, useTracks } from '../../hooks/useStore'
+import { usePlatforms, useProject, useTracks } from '../../hooks/useStore'
+import { pointOf } from '@rail-across/core/document'
 import usePreview from '../../map/usePreview'
 import useMapPick, { useSelectedOnMap } from '../../map/useMapPick'
 import useMapEvents from '../../map/useMapEvents'
@@ -65,6 +66,7 @@ export default function PlatformPanel() {
   const preview = usePreview(PREVIEW_LAYERS)
   const tracks = useTracks()
   const platforms = usePlatforms()
+  const project = useProject()
   const track = f.trackId ? tracks.find(tr => tr.id === f.trackId) : null
 
   // ── Pick the host track ───────────────────────────────────────────────────
@@ -126,8 +128,8 @@ export default function PlatformPanel() {
             <span className="create-element-section">{t('platform_existing')}</span>
             {platforms.map((p) => (
               <button key={p.id} className="ui-btn ui-btn-option"
-                onClick={() => { setF(platformForm(p)); setEditing({ id: p.id }); setPicking(null) }}>
-                {[p.code, p.stationName].filter(Boolean).join(' · ') || t('platform_unnamed')}
+                onClick={() => { setF(platformForm(p, pointOf(project, p))); setEditing({ id: p.id }); setPicking(null) }}>
+                {[pointOf(project, p)?.rl100, pointOf(project, p)?.name].filter(Boolean).join(' · ') || t('platform_unnamed')}
                 {` — ${platformLength(p).toFixed(1)} m`}
               </button>
             ))}

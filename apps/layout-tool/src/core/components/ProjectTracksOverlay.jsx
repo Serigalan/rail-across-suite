@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { currentProject, setTracksPlane, updateTrack } from '../storage'
 import { useProject } from '../hooks/useStore'
+import { pointOf } from '@rail-across/core/document'
 import {
   LINE_CATEGORIES, trackLength, trackStatus, groupHeading, groupTracks, trackListLabel,
   trackTypeName, trackMatches,
@@ -66,8 +67,8 @@ export default function ProjectTracksOverlay({ onClose }) {
   const categoryCount = tracks.filter(tr => ownLineCategory(tr) != null).length
 
   const searching = !!query.trim() || onlyOwn
-  const listed = tracks.filter(tr => (!query.trim() || trackMatches(tr, query)) && (!onlyOwn || hasOwn(tr)))
-  const groups = groupTracks(listed)
+  const listed = tracks.filter(tr => (!query.trim() || trackMatches(tr, query, pointOf(project, tr))) && (!onlyOwn || hasOwn(tr)))
+  const groups = groupTracks(listed, project?.operationalPoints ?? [])
 
   // A track that went into another system, or away, has no open box to keep.
   useEffect(() => {
@@ -125,7 +126,7 @@ export default function ProjectTracksOverlay({ onClose }) {
   })
 
   const row = (track) => (
-    <TrackRow key={track.id} track={track} active={shown === track.id} onShow={() => show(track)}
+    <TrackRow key={track.id} track={track} station={pointOf(project, track)?.name} active={shown === track.id} onShow={() => show(track)}
       crsOwn={ownCrs(track)} refSystem={refSystem} onToggleCrs={() => toggleCrs(track)}
       onPickSystem={(key) => askPlane(track, planeInSystem(track, key))}
       onPickZone={(epsg) => askPlane(track, epsg)} refCategory={refCategory}
@@ -214,7 +215,7 @@ export default function ProjectTracksOverlay({ onClose }) {
  * between them the meridian strip of the system it lies in.
  */
 function TrackRow({
-  track, active, onShow, crsOwn, refSystem, onToggleCrs, onPickSystem, onPickZone,
+  track, station, active, onShow, crsOwn, refSystem, onToggleCrs, onPickSystem, onPickZone,
   refCategory, onToggleCategory, onPickCategory, busy,
 }) {
   const { t, fill, language } = useI18n()
@@ -225,7 +226,7 @@ function TrackRow({
   const systems = [...new Set([...systemChoices(track.epsg), ownSystem, refSystem].filter(Boolean))]
   const zones = zoneChoices(track)
   const hasZones = zones.some(z => z.zone != null)
-  const where = [track.lineNumber && fill('project_settings_track_line', { n: track.lineNumber }), track.stationName]
+  const where = [track.lineNumber && fill('project_settings_track_line', { n: track.lineNumber }), station]
     .filter(Boolean).join(' · ')
   const kind = [
     t(`type_${trackTypeName(track, 'line_track')}`),

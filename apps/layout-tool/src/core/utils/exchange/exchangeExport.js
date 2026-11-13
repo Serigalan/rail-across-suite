@@ -4,6 +4,7 @@ import {
   endMarksToBufferStops,
 } from './alignmentCodec'
 import { tangentLength, DEFAULT_HEIGHT_EPSG, TYPE_NAMES, SIDE_NAMES } from '@rail-across/core/track'
+import { withStationTexts } from '@rail-across/core/document'
 
 // The alignment exchange file: an infrastructure in the shape of RailJSON —
 // version, track_sections and the infra-level object lists — where a track
@@ -143,8 +144,9 @@ export function buildInfra(tracks, switches, platforms = [], foreign = {}, endMa
   return out
 }
 
-/** The exchange file of a project record (hydrated). */
-export function exportExchange(project) {
+/** The exchange file of a project record (hydrated); its stations by name, as the file names them. */
+export function exportExchange(record) {
+  const project = withStationTexts(record)
   return buildInfra(
     project?.tracks ?? [], project?.switches ?? [], project?.platforms ?? [], project?.osrd ?? {},
     project?.endMarks ?? [])

@@ -231,9 +231,13 @@ pub fn validate_project(project: &Value) -> Value {
 
     // platforms on their track, within its length
     for pf in arr(project, "platforms") {
-        let parts: Vec<String> = ["stationName", "code"]
+        // Named by its station: the operational point it names (decision 0028).
+        let point = pf
+            .get("operationalPoint")
+            .and_then(|id| arr(project, "operationalPoints").iter().find(|p| p.get("id") == Some(id)));
+        let parts: Vec<String> = ["name", "rl100"]
             .iter()
-            .filter_map(|k| pf.get(*k).filter(|v| truthy(Some(v))).map(|v| js_string(Some(v))))
+            .filter_map(|k| point.and_then(|p| p.get(*k)).filter(|v| truthy(Some(v))).map(|v| js_string(Some(v))))
             .collect();
         let joined = parts.join(" ");
         let label = if joined.is_empty() { pf.get("id").cloned() } else { Some(json!(joined)) };

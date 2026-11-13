@@ -33,9 +33,6 @@ export function stationRegister(record) {
 export const renamedStation = (record, id, { name, uic } = {}) =>
   viaNative('document.renamedStation', { record, id, name, ...(uic !== undefined ? { uic } : {}) })
 
-/** The two stages of a project that has none of its own: existing and final, ids drawn from the project's. */
-export const defaultStages = (projectId) => viaNative('document.defaultStages', projectId)
-
 /**
  * The record with the stopping places at the platform `platformId` as the
  * Civil-Tool sets them where it puts, moves or deletes a platform (decision

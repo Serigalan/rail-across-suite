@@ -120,7 +120,8 @@ describe('the answer', () => {
 
   it('becomes a new standing track in the plane of the points', () => {
     const track = trackFromFit(answer, { name: 'Achse Ist', epsg, newId: () => 'new' })
-    expect(track).toMatchObject({ id: 'new', epsg: 5684, name: 'Achse Ist', status: 'existing' })
+    expect(track).toMatchObject({ id: 'new', epsg: 5684, name: 'Achse Ist' })
+    expect(track.lifespan).toBeUndefined()
     expect(track.elements).toHaveLength(5)
     expect(track.elements.every(el => el.speed === 0 && el.geometry?.coordinates?.length >= 2)).toBe(true)
     expect(track.coordinates.length).toBeGreaterThan(5)

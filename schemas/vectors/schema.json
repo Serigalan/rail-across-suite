@@ -127,7 +127,24 @@
  {
   "ref": "core#/$defs/Lifespan",
   "value": {
-   "from": "s1"
+   "from": "2027-05-01"
+  },
+  "valid": true,
+  "paths": []
+ },
+ {
+  "ref": "core#/$defs/Lifespan",
+  "value": {
+   "from": "open"
+  },
+  "valid": true,
+  "paths": []
+ },
+ {
+  "ref": "core#/$defs/Lifespan",
+  "value": {
+   "from": "2027-05-01",
+   "to": "open"
   },
   "valid": true,
   "paths": []
@@ -143,12 +160,32 @@
  {
   "ref": "core#/$defs/Lifespan",
   "value": {
-   "from": "s1",
-   "until": "s2"
+   "from": "2027-05-01",
+   "until": "2031-12-12"
   },
   "valid": false,
   "paths": [
    "/"
+  ]
+ },
+ {
+  "ref": "core#/$defs/Lifespan",
+  "value": {
+   "from": "s1"
+  },
+  "valid": false,
+  "paths": [
+   "/from"
+  ]
+ },
+ {
+  "ref": "core#/$defs/Lifespan",
+  "value": {
+   "to": "1.5.2027"
+  },
+  "valid": false,
+  "paths": [
+   "/to"
   ]
  },
  {

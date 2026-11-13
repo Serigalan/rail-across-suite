@@ -1,29 +1,38 @@
 # schemas
 
 The one format of a project, **infra-data-2.0** ([decision 0021](../docs/decisions/0021-one-format-one-build-the-project-in-the-module.md),
-the layers of [decision 0025](../docs/decisions/0025-layers-on-the-core.md); first called core 1.0): the JSON Schema of its
+the layers of [decision 0025](../docs/decisions/0025-layers-on-the-core.md), the lifespans by day of
+[decision 0028](../docs/decisions/0028-one-model-lifespans-by-day.md); first called core 1.0): the JSON Schema of its
 envelope and of each domain of the Rail-Data-Core, and the test vectors that hold the core's implementations to the same
 results (canonical JSON, the schema check, whole documents). See the [data model](../docs/data-model.md) for the rules
 behind them and [decision 0009](../docs/decisions/0009-core-1-0-in-the-data-model.md) for why the format has its shape.
 
 A document is the core and the layers planned on it, each written in its tool and each free to be missing: `civil`
-(Civil-Tool), `signalling` (Signalling-Tool), `electrification` (Catenary-Tool). The door reads an infra-data 1.0
-document and brings it to 2.0: `layout` and the platforms into `civil`, the stopping places into the core.
+(Civil-Tool), `signalling` (Signalling-Tool), `electrification` (Catenary-Tool). The door brings a document of
+before forward, version by version: an infra-data 1.0 one to 2.0 (`layout` and the platforms into `civil`, the
+stopping places into the core), one with a register of construction stages to lifespans by day (core 3.0 —
+a stage's day the day itself, a `to` the day before it, the final stage `"open"`, the existing one no statement).
+
+A lifespan states days (decision 0028): `from` the first day in service, `to` the last, `"open"` where the day is
+not known yet; no `from` — it exists today, no `to` — it stays, no lifespan — existing and staying. Every object
+may carry one; the states a project passes through are worked out of them, never kept.
 
 | File | What it is |
 |---|---|
 | `infra-data.schema.json` | infra-data-2.0, a project as one JSON file (`.railacross.json`): the domains, the schemas it carries, its blobs |
-| `core/2.0.schema.json` | Domain `core` 2.0: tracks, switches and connectors, end marks, km lines, the operational point register, the stopping places (passenger stops among them), the named runs of tracks (`trackPaths`), the construction stages; the core types `TrackEnd`, `TrackLocation`, `TrackRange`, `TrackPath`, `Lifespan`, `Ref` |
-| `civil/1.0.schema.json` | Domain `civil` 1.0: platforms, each naming the stopping places at it; bridges, retaining walls and noise barriers; measured axes, reference axes, the plan header, the project picture |
-| `signalling/2.0.schema.json` | Domain `signalling` 2.0, after PlanPro 1.10: signals and boards with their logical signals (one per signalling system, as in OSRD), frames and aspects, detection points, track sections, switch elements, train and shunting routes with their setting and release times, overlaps, flank protection, the balises and magnets of train protection, train protection by ranges, station boundaries, itineraries ([decision 0011](../docs/decisions/0011-signalling-domain.md)); which systems, kinds, settings and aspects there are is the catalogue's (`packages/core/constraints/db-ril-301.json`) |
-| `electrification/1.0.schema.json` | Domain `electrification` 1.0: the electrified ranges of the tracks and their systems |
+| `core/3.0.schema.json` | Domain `core` 3.0: tracks, switches and connectors, end marks, km lines, the operational point register, the stopping places (passenger stops among them), the named runs of tracks (`trackPaths`); the core types `TrackEnd`, `TrackLocation`, `TrackRange`, `TrackPath`, `Lifespan` (by day), `Day`, `Ref` |
+| `civil/2.0.schema.json` | Domain `civil` 2.0: platforms, each naming the stopping places at it; bridges, retaining walls and noise barriers; measured axes, reference axes, the plan header, the project picture |
+| `signalling/3.0.schema.json` | Domain `signalling` 3.0, after PlanPro 1.10: signals and boards with their logical signals (one per signalling system, as in OSRD), frames and aspects, detection points, track sections, switch elements, train and shunting routes with their setting and release times, overlaps, flank protection, the balises and magnets of train protection, train protection by ranges, station boundaries, itineraries ([decision 0011](../docs/decisions/0011-signalling-domain.md)); which systems, kinds, settings and aspects there are is the catalogue's (`packages/core/constraints/db-ril-301.json`) |
+| `electrification/2.0.schema.json` | Domain `electrification` 2.0: the electrified ranges of the tracks and their systems |
+| `core/2.0.schema.json`, `civil/1.0.schema.json`, `signalling/2.0.schema.json`, `electrification/1.0.schema.json` | the domains as they were last with a register of construction stages (decision 0027), for reference: the door no longer checks against them, it brings such a document forward |
 | `infra-data-1.0.schema.json`, `core/1.0.schema.json`, `layout/1.0.schema.json`, `signalling/1.0.schema.json` | infra-data 1.0 as it was last, for reference: the door no longer checks against them, it brings such a document to 2.0 |
 | `operations.schema.json`, `operations/1.0.schema.json` | operations-1.0, a project's operations as one JSON file (`.operations.json`) in the envelope of infra-data: the domain `operations` 1.0 — timetables, trains, train kinds, formations, the vehicles they run with (carried as blobs), connections, turnarounds, delay scenarios, studies (the [roadmap](../ROADMAP.md), phase 4) |
 | `vectors/canonical.json` | Values as JSON text, their canonical JSON (RFC 8785) and its hash |
 | `vectors/schema.json` | Values checked against a part of a schema: whether it takes them, and where it does not |
-| `vectors/documents.json` | Whole documents: the door's verdict, and for those it takes the manifest and the document's hash — infra-data 1.0 ones among them |
+| `vectors/documents.json` | Whole documents: the door's verdict, and for those it takes the manifest and the document's hash — infra-data 1.0 ones and ones with stages among them |
 | `vectors/operations.json` | Whole operations documents: the door's verdict, and for those it takes the document's hash |
 | `vectors/infra-data-1.0.json` | infra-data 1.0 documents as the core wrote them, frozen: the inputs of the 1.0 cases of `documents.json` |
+| `vectors/infra-data-2.0-stages.json` | infra-data 2.0 documents as the core wrote them last with a register of stages, frozen: the inputs of the `stages:` cases of `documents.json` |
 
 The schemas are linked into the core (`packages/core/schemas`) and read by its Rust crates (`crates/doc`); the types of the
 document (`packages/core/types/document.d.ts`) are derived from them by `packages/core/tools/types.mjs`.
@@ -35,8 +44,8 @@ document (`packages/core/types/document.d.ts`) are derived from them by `package
   "format": "infra-data",
   "version": "2.0",
   "domains": {
-    "core":  { "version": "2.0", "schema": "sha256:…", "fields": { … }, "collections": { … } },
-    "civil": { "version": "1.0", "schema": "sha256:…", "dependsOn": ["core"], "fields": { … }, "collections": { … } }
+    "core":  { "version": "3.0", "schema": "sha256:…", "fields": { … }, "collections": { … } },
+    "civil": { "version": "2.0", "schema": "sha256:…", "dependsOn": ["core"], "fields": { … }, "collections": { … } }
   },
   "schemas": { "sha256:…": { … } },
   "blobs":   { "sha256:…": { … } }

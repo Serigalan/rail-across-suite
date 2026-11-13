@@ -2136,6 +2136,7 @@
   "stage_link_end": "Ende",
   "stage_link_create": "Verbinder anlegen",
   "stage_link_note_days": "Für B1 fehlt „In Betrieb bis“ oder für B2 „In Betrieb ab“ – im Gleiseditor eintragen.",
+  "stage_link_day_open": "offen",
   "stage_link_note_overlap": "B2 geht in Betrieb, bevor B1 außer Betrieb ist: Beide wären zugleich angeschlossen.",
   "stage_link_note_gap": "Zwischen dem letzten Tag von B1 und dem ersten von B2 liegen Tage: A endet dann dort.",
   "civil_bridges": "Brücken",

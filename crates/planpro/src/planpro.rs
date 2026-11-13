@@ -493,7 +493,7 @@ fn known(set: &[&str], v: Option<String>) -> Option<Value> {
 /// Tracks, switches, end marks, the signalling domain and the report.
 type Converted = (Vec<Value>, Vec<Value>, Vec<Value>, Value, Report);
 
-fn convert(model: &Model, project_id: &str) -> Result<Converted, String> {
+fn convert(model: &Model) -> Result<Converted, String> {
     let mut report = Report {
         notes: vec![],
         skipped: OMap::new(),
@@ -501,24 +501,15 @@ fn convert(model: &Model, project_id: &str) -> Result<Converted, String> {
     let of = |tag: &str| model.objects.iter().filter(|(_, o)| o.tag == tag).map(|(_, o)| o).collect::<Vec<_>>();
     let get = |id: Option<&str>| model.get(id);
     let id_of = |el: &El| lower(val(el, "Identitaet")).unwrap_or_default();
-    let stages = rail_across_doc::core_format::default_stages(project_id);
-    let final_id = stages[1]["id"].clone();
+    // A plan knows two states and no days: what is only in the target is newly built, what is only in the
+    // start removed, the day open (decision 0028).
     let lifespan_of = |o: &Obj| -> Option<Value> {
         if o.start && o.target {
             None
         } else if o.target {
-            Some(json!({ "from": final_id }))
+            Some(json!({ "from": "open" }))
         } else {
-            Some(json!({ "to": final_id }))
-        }
-    };
-    let status_of = |start: bool, target: bool| -> Option<Value> {
-        if start && target {
-            None
-        } else if target {
-            s("new")
-        } else {
-            s("removal")
+            Some(json!({ "to": "open" }))
         }
     };
 
@@ -632,7 +623,7 @@ fn convert(model: &Model, project_id: &str) -> Result<Converted, String> {
             ("name", name.clone()),
             ("trackNumber", name),
             ("lineNumber", lines.get(id).map(|n| json!(n))),
-            ("status", status_of(e.o.start, e.o.target)),
+            ("lifespan", lifespan_of(e.o)),
         ])));
     }
     let track_ids: HashSet<String> = tracks.iter().map(|t| js_string(t.get("id"))).collect();
@@ -732,7 +723,7 @@ fn convert(model: &Model, project_id: &str) -> Result<Converted, String> {
                 installation.and_then(|i| val(i.el, "W_Kr_Anlage_Allg/W_Kr_Grundform")).map(Value::String),
             ),
             ("ports", Some(json!({ "A": port(tip), "B1": port(branch), "B2": port(straight) }))),
-            ("status", state.map(|o| status_of(o.start, o.target)).unwrap_or(None)),
+            ("lifespan", state.and_then(|o| lifespan_of(o))),
         ]);
         if let Some(art) = art.as_deref().filter(|a| !a.is_empty() && m::switch_kind(a).is_none()) {
             report.note("switch_kind_as_turnout", vec![("id", os(node)), ("kind", s(art))]);
@@ -1416,7 +1407,7 @@ pub fn planpro_record(text: &str, id: Option<&str>, title: Option<&str>) -> Resu
     let root = crate::xml::parse_xml(text)?;
     let model = read_planpro(&root)?;
     let project_id = id.unwrap_or("planpro");
-    let (tracks, switches, end_marks, signalling, report) = convert(&model, project_id)?;
+    let (tracks, switches, end_marks, signalling, report) = convert(&model)?;
     let title = title
         .map(|t| json!(t))
         .or_else(|| model.header.get("title").cloned())

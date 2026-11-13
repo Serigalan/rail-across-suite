@@ -307,14 +307,13 @@ pub fn track_from_fit(answer: &Value, name: Option<&Value>, epsg: Option<&Value>
     out.insert("id".into(), json!(generate_id()));
     out.insert("epsg".into(), number(plane));
     put(&mut out, "name", name);
-    out.insert("status".into(), json!("existing"));
     out.insert("coordinates".into(), Value::Array(rebuild_coords(&elements)));
     out.insert("elements".into(), Value::Array(elements));
     if let Some(h) = heights.filter(|h| h.len() >= 2) {
         out.insert("heights".into(), Value::Array(h));
     }
-    // The JavaScript's order of members: id, epsg, name, status, elements, coordinates, heights.
-    let order = ["id", "epsg", "name", "status", "elements", "coordinates", "heights"];
+    // The JavaScript's order of members: id, epsg, name, elements, coordinates, heights.
+    let order = ["id", "epsg", "name", "elements", "coordinates", "heights"];
     Value::Object(order.iter().filter_map(|k| out.remove(*k).map(|v| (k.to_string(), v))).collect())
 }
 

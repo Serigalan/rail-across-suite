@@ -5,7 +5,7 @@ import {
   planElementChange, planIntermediateChange, mergeElementEdits, withRole, inRun, rowOf, tableParts, tableRoles,
   tableRows, trackEdit, writeRows,
 } from '@rail-across/core/commands'
-import { mergeChain, rebuildCoords } from '@rail-across/core/track'
+import { mergeChain, rebuildCoords, withLifespan } from '@rail-across/core/track'
 import { withCantEdit } from '@rail-across/core/geometry'
 import { coupleSwitchCants } from '@rail-across/core/switch'
 import { boundaryScope, cantLimit, checkTrack, clampCant, maxSpeeds, ruleMaxSpeedsOf } from '@rail-across/core/rules'
@@ -27,11 +27,9 @@ const CANT_KEYS = new Set(['cant', 'cantStart', 'cantEnd'])
 // The table's columns — a route's track heading spans all of them.
 const TABLE_COLUMNS = 17
 
-/** A track's planning status and the days it is in service, as the record states them. */
-function lifeOf(tr) {
-  if (!tr) return {}
-  return Object.fromEntries(['status', 'inServiceFrom', 'inServiceTo'].filter(k => tr[k] != null).map(k => [k, tr[k]]))
-}
+/** The days a track is in service, as its lifespan states them (decision 0028). */
+const lifeOf = (tr) => tr?.lifespan ?? {}
+const isDay = (v) => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v)
 
 // Line speed the table starts with — clearing the field lifts it again.
 const DEFAULT_SPEED_CAP = 160
@@ -372,25 +370,25 @@ export default function TrackTableOverlay({
     }
   }
 
-  // When a track is in service (decision 0027): its first day and its last —
-  // the whole track's, so typed in the table's head (in a route's, at each of
-  // its tracks' headings) rather than in a row. A first day
-  // makes it new, a last day alone a removal; a last day before the first is
-  // not taken.
+  // When a track is in service (decisions 0027, 0028): its first day and its
+  // last — the whole track's, so typed in the table's head (in a route's, at
+  // each of its tracks' headings) rather than in a row. A first day makes it
+  // new, a last day alone a removal; a day emptied leaves it so, the day open;
+  // a last day before the first is not taken.
   function setLife(trackId, key, day) {
     const tr = tracks.find(x => x.id === trackId)
     if (!tr) return
-    const { [key]: _old, ...rest } = tr
-    const next = day ? { ...rest, [key]: day } : rest
-    if (next.inServiceFrom && next.inServiceTo && next.inServiceTo < next.inServiceFrom) {
+    const life = { ...lifeOf(tr) }
+    if (day) life[key] = day
+    else if (life[key] != null) life[key] = 'open'
+    if (isDay(life.from) && isDay(life.to) && life.to < life.from) {
       setNotice('table_in_service_order')
       return
     }
-    const status = next.inServiceFrom ? 'new' : next.inServiceTo ? 'removal' : tr.status
     setNotice(null)
     setChanged(prev => (prev.includes(trackId) ? prev : [...prev, trackId]))
     setLifeChanged(prev => (prev.includes(trackId) ? prev : [...prev, trackId]))
-    setTracks(prev => prev.map(x => (x.id !== trackId ? x : { ...next, ...(status ? { status } : {}) })))
+    setTracks(prev => prev.map(x => (x.id !== trackId ? x : withLifespan(x, Object.keys(life).length ? life : undefined))))
   }
 
   // One track's elements replaced by what `change` makes of them.
@@ -480,8 +478,7 @@ export default function TrackTableOverlay({
     const next = merged.map(tr => {
       const typed = lives.get(tr.id)
       if (!typed) return tr
-      const { inServiceFrom: _f, inServiceTo: _t, status: _s, ...rest } = tr
-      return { ...rest, ...lifeOf(typed) }
+      return withLifespan(tr, typed.lifespan)
     })
     commitTrackEdit(next, reached.switchIds)
     setLifeChanged([])

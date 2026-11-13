@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest'
 import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { canonicalJson, contentHash } from './canonical.js'
-import { defaultStages } from './stations.js'
 import { checkDocument, fromDocument, SCHEMA_HASHES, toDocument } from './door.js'
 import { documentHash, manifestOf } from './manifest.js'
 import { hasPek, loadPek } from '../../test/pekFixture.js'
@@ -50,8 +49,8 @@ describe('a record as an infra-data-2.0 document', () => {
   it('holds the domains core and civil, each with its version and schema', () => {
     const doc = toDocument(record({ planHeader: { subtitle: 'x' } }))
     expect(doc).toMatchObject({ format: 'infra-data', version: '2.0' })
-    expect(doc.domains.core).toMatchObject({ version: '2.0', schema: SCHEMA_HASHES.core, fields: { id: 'p', title: 'P' } })
-    expect(doc.domains.civil).toMatchObject({ version: '1.0', schema: SCHEMA_HASHES.civil, dependsOn: ['core'], fields: { planHeader: { subtitle: 'x' } } })
+    expect(doc.domains.core).toMatchObject({ version: '3.0', schema: SCHEMA_HASHES.core, fields: { id: 'p', title: 'P' } })
+    expect(doc.domains.civil).toMatchObject({ version: '2.0', schema: SCHEMA_HASHES.civil, dependsOn: ['core'], fields: { planHeader: { subtitle: 'x' } } })
     expect(doc.domains.core.collections.tracks.map(t => t.id)).toEqual(['t1'])
   })
 
@@ -68,13 +67,19 @@ describe('a record as an infra-data-2.0 document', () => {
     expect(toDocument(record()).schemas).toBeUndefined()
   })
 
-  it('turns the planning status into a lifespan over the two stages, and back', () => {
-    const r = record({ tracks: [track('a'), track('b', { status: 'new' }), track('c', { status: 'removal' }), track('d', { status: 'existing' })] })
+  it('keeps a lifespan as the record states it, by day or open, and no register of stages (decision 0028)', () => {
+    const lives = [undefined, { from: '2027-05-01' }, { to: 'open' }, { from: 'open' }, { from: '2027-05-01', to: '2031-12-12' }]
+    const r = record({ tracks: lives.map((lifespan, i) => track(`t${i}`, lifespan ? { lifespan } : {})) })
     const doc = toDocument(r)
-    const [existing, final] = doc.domains.core.fields.stages
-    expect([existing, final]).toEqual(defaultStages('p'))
-    expect(doc.domains.core.collections.tracks.map(t => t.lifespan)).toEqual([undefined, { from: final.id }, { to: final.id }, undefined])
-    expect(fromDocument(doc).tracks.map(t => t.status)).toEqual([undefined, 'new', 'removal', undefined])
+    expect(doc.domains.core.fields.stages).toBeUndefined()
+    expect(doc.domains.core.collections.tracks.map(t => t.lifespan)).toEqual(lives)
+    expect(fromDocument(doc).tracks.map(t => t.lifespan)).toEqual(lives)
+  })
+
+  it('refuses a lifespan that ends before it begins, or on a day there is none of', () => {
+    for (const lifespan of [{ from: '2027-05-01', to: '2027-04-30' }, { from: '2027-02-30' }, { from: 's1' }]) {
+      expect(() => toDocument(record({ tracks: [track('t', { lifespan })] }))).toThrow('invalid_payload')
+    }
   })
 
   it('gives a platform its location as one value, and an end mark its track end', () => {
@@ -227,7 +232,7 @@ describe('the door', () => {
   it('carries the signalling domain through the record untouched, and carries its schema only where it is', () => {
     const signalling = ksStation()
     const doc = toDocument(record({ signalling }), { carrySchemas: true })
-    expect(doc.domains.signalling).toMatchObject({ version: '2.0', schema: SCHEMA_HASHES.signalling, dependsOn: ['core'] })
+    expect(doc.domains.signalling).toMatchObject({ version: '3.0', schema: SCHEMA_HASHES.signalling, dependsOn: ['core'] })
     expect(Object.keys(doc.schemas)).toContain(SCHEMA_HASHES.signalling)
     expect(roundTrip(record({ signalling }))).toEqual(record({ signalling: {
       fields: signalling.fields,
@@ -340,10 +345,10 @@ describe('the door', () => {
     expect(() => toDocument(record({ signalling }))).toThrow('invalid_payload')
   })
 
-  it('refuses stages of a project\'s own, which this build cannot hold yet', () => {
+  it('refuses a register of stages in a document of today', () => {
     const doc = toDocument(record())
-    doc.domains.core.fields.stages.splice(1, 0, { id: 'stage-2' })
-    expect(() => fromDocument(doc)).toThrow('stages_unsupported')
+    doc.domains.core.fields.stages = [{ id: 's0' }, { id: 's1' }]
+    expect(() => fromDocument(doc)).toThrow('invalid_payload')
   })
 
   it('refuses a document whose blob is not what its hash says', () => {

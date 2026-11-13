@@ -60,9 +60,9 @@ export { PayloadError }
  * instead of each guarding for a field that might be missing.
  *
  * Refused with `unsupported_version` where the file is another format (an
- * oltjson file among them) or another version, with `stages_unsupported` where
- * a document has construction stages of its own, and with `invalid_payload`
- * (its `details` saying what) where it states a format it does not hold.
+ * oltjson file among them) or another version — a later one than this build
+ * reads among them —, and with `invalid_payload` (its `details` saying what)
+ * where it states a format it does not hold.
  */
 export const parseProjectsPayload = (data) => viaNative('project.parseProjectsPayload', data)
 

@@ -8,8 +8,8 @@ import Editor from './Editor.jsx'
 const record = {
   id: 'p', platforms: [],
   tracks: [
-    { id: 'a', name: 'A' }, { id: 'b', name: 'B', status: 'removal', inServiceTo: '2028-06-01' },
-    { id: 'c', name: 'C', status: 'new', inServiceFrom: '2028-06-02' },
+    { id: 'a', name: 'A' }, { id: 'b', name: 'B', lifespan: { to: '2028-06-01' } },
+    { id: 'c', name: 'C', lifespan: { from: '2028-06-02' } },
   ],
   switches: [{ switchId: 'v', kind: 'stage_link', ports: { A: { trackId: 'a', endpoint: 'END' }, B1: { trackId: 'b', endpoint: 'BEGIN' }, B2: { trackId: 'c', endpoint: 'BEGIN' } } }],
 }

@@ -32,14 +32,18 @@ export function endsMeeting(tracks, switches, end) {
   return out.sort((a, b) => a.d - b.d)
 }
 
+const isDay = (v) => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v)
+
 /**
- * The roles the ends take at a stage connector, as their tracks' days say: B1
- * the one that goes (in service until a day, or a removal), B2 the one that
- * comes (in service from a day, or new), A the one that stays.
+ * The roles the ends take at a stage connector, as their tracks' lifespans
+ * say (decision 0028): B1 the one that goes (in service until a day, or a
+ * removal), B2 the one that comes (in service from a day, or new), A the one
+ * that stays.
  */
 export function proposedRoles(ends) {
-  const goes = (e) => Boolean(e.track.inServiceTo) || (e.track.status === 'removal' && !e.track.inServiceFrom)
-  const comes = (e) => Boolean(e.track.inServiceFrom) || e.track.status === 'new'
+  const life = (e) => e.track.lifespan ?? {}
+  const goes = (e) => isDay(life(e).to) || (life(e).to != null && life(e).from == null)
+  const comes = (e) => life(e).from != null
   const b1 = ends.find(goes)
   const b2 = ends.find(e => e !== b1 && comes(e))
   const a = ends.find(e => e !== b1 && e !== b2)
@@ -48,8 +52,8 @@ export function proposedRoles(ends) {
 
 /** What the roles' tracks' days say against a stage connector: the one going should end the day before the other comes. */
 export function stageLinkNote(roles) {
-  const until = roles.B1?.track.inServiceTo, from = roles.B2?.track.inServiceFrom
-  if (!until || !from) return 'stage_link_note_days'
+  const until = roles.B1?.track.lifespan?.to, from = roles.B2?.track.lifespan?.from
+  if (!isDay(until) || !isDay(from)) return 'stage_link_note_days'
   const next = new Date(`${until}T00:00:00Z`)
   next.setUTCDate(next.getUTCDate() + 1)
   const day = next.toISOString().slice(0, 10)

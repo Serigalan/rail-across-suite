@@ -1,5 +1,4 @@
-import { defaultStages } from '@rail-across/core/document'
-import { trackLength } from '@rail-across/core/track'
+import { lifespanWithStatus, trackLength, trackStatus, withLifespan } from '@rail-across/core/track'
 
 /**
  * The layer `electrification` as the tool edits it (decision 0025): pure
@@ -45,22 +44,11 @@ export const added = (domain, obj) => withList(domain, [...domain.collections.el
 export const replaced = (domain, obj) => withList(domain, domain.collections.electrifications.map(e => (e.id === obj.id ? obj : e)))
 export const removed = (domain, id) => withList(domain, domain.collections.electrifications.filter(e => e.id !== id))
 
-/** The planning status of a range, from its lifespan over the project's two stages. */
-export function statusOf(obj, projectId) {
-  const final = defaultStages(projectId)[1].id
-  if (obj.lifespan?.from === final) return 'new'
-  if (obj.lifespan?.to === final) return 'removal'
-  return 'existing'
-}
+/** The planning status of a range, from its lifespan (decision 0028). */
+export const statusOf = (obj) => trackStatus(obj)
 
-/** The range with that planning status. */
-export function withStatus(obj, status, projectId) {
-  const final = defaultStages(projectId)[1].id
-  const { lifespan: _l, ...rest } = obj
-  if (status === 'new') return { ...rest, lifespan: { from: final } }
-  if (status === 'removal') return { ...rest, lifespan: { to: final } }
-  return rest
-}
+/** The range with that planning status: new or removal with the day open where it states none, the days it states kept. */
+export const withStatus = (obj, status) => withLifespan(obj, lifespanWithStatus(obj.lifespan, status))
 
 /** A range's length [m]. */
 export const lengthOf = (obj) => Math.max(0, obj.at.endStation - obj.at.startStation)

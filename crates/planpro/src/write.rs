@@ -238,24 +238,12 @@ fn point(v: Option<&Value>) -> Option<(f64, f64)> {
     Some((a.first()?.as_f64()?, a.get(1)?.as_f64()?))
 }
 
-/// The states of the plan an object is in (start, target), from its
-/// lifespan: the stages it begins and ends in (core.fields.stages), the start
-/// state being the first stage, the target the second.
-struct Stages(Vec<String>);
-
-impl Stages {
-    fn of(&self, v: &Value) -> (bool, bool) {
-        let Some(l) = v.get("lifespan").filter(|l| l.is_object()) else {
-            return (true, true);
-        };
-        let at = |k: &str| -> Option<usize> {
-            let s = str_of(l, k)?;
-            Some(self.0.iter().position(|x| x == s).unwrap_or(usize::MAX))
-        };
-        let (from, to) = (at("from"), at("to"));
-        let exists = |i: usize| from.is_none_or(|f| f <= i) && to.is_none_or(|t| t > i);
-        (exists(0), exists(1))
-    }
+/// The states of the plan an object is in (start, target), from its lifespan (decision 0028): the start
+/// state is the existing one — what states no first day —, the target the final one — what states no last.
+fn states(v: &Value) -> (bool, bool) {
+    use rail_across_doc::stages::{State, stands};
+    let lifespan = v.get("lifespan");
+    (stands(lifespan, State::Existing), stands(lifespan, State::Final))
 }
 
 // ── the plan being written ─────────────────────────────────────────────────
@@ -886,7 +874,6 @@ pub fn write_planpro(project: &Value, options: &Value) -> Result<Value, String> 
     // The platforms are civil's in infra-data-2.0 (decision 0025); a document of 1.0 had them in the core.
     let civil = &doc["domains"]["civil"];
     let platforms: Vec<&Value> = c("platforms").iter().chain(civil.get("collections").map(|c| list(c, "platforms")).unwrap_or(&[])).collect();
-    let stages = Stages(list(fields, "stages").iter().filter_map(|s| str_of(s, "id").map(String::from)).collect());
     let now = str_of(options, "now");
     let date = date_of(now).unwrap_or_else(|| "2026-01-01".into());
     let mut plan = Plan {
@@ -1074,7 +1061,7 @@ pub fn write_planpro(project: &Value, options: &Value) -> Result<Value, String> 
         let id = str_of(t, "id").unwrap_or("");
         let Some(edge_nodes) = edges.get(id).map(|e| e.nodes) else { continue };
         let epsg = num_of(t, "epsg").unwrap_or(0.0) as i64;
-        let state = stages.of(t);
+        let state = states(t);
         let guid = planpro_id(id);
         let mut pieces = Vec::new();
         let mut plain = 0.0;
@@ -1148,7 +1135,7 @@ pub fn write_planpro(project: &Value, options: &Value) -> Result<Value, String> 
     for t in tracks {
         let id = str_of(t, "id").unwrap_or("");
         let Some(edge) = edges.get(id) else { continue };
-        let state = stages.of(t);
+        let state = states(t);
         if let Some(name) = label_of(t, "trackNumber").or_else(|| label_of(t, "name")) {
             let body = [whole(edge), always("Bezeichnung", w("Bez_Gleis_Bezeichnung", Some(name)))].concat();
             plan.put("Gleis_Bezeichnung", &planpro_id(&format!("name:{}", edge.guid)), body, state);
@@ -1223,7 +1210,7 @@ pub fn write_planpro(project: &Value, options: &Value) -> Result<Value, String> 
             always("Oertlichkeit_Allg", w("Oertlichkeit_Art", Some(art.into()))),
         ]
         .concat();
-        plan.put("Oertlichkeit", &planpro_id(id), body, stages.of(p));
+        plan.put("Oertlichkeit", &planpro_id(id), body, states(p));
     }
 
     // Buffer stops: in the middle of the track.
@@ -1238,7 +1225,7 @@ pub fn write_planpro(project: &Value, options: &Value) -> Result<Value, String> 
             "Gleis_Abschluss",
             &planpro_id(&format!("stop:{}", str_of(mark, "id").unwrap_or(""))),
             body,
-            stages.of(mark),
+            states(mark),
         );
     }
 
@@ -1293,7 +1280,7 @@ pub fn write_planpro(project: &Value, options: &Value) -> Result<Value, String> 
                 w("ID_Bahnsteig_Anlage", Some(anlage.clone())),
             ]
             .concat();
-            plan.put("Bahnsteig_Kante", &planpro_id(id), body, stages.of(p));
+            plan.put("Bahnsteig_Kante", &planpro_id(id), body, states(p));
             written += 1;
         }
         if written > 0 {
@@ -1326,7 +1313,7 @@ pub fn write_planpro(project: &Value, options: &Value) -> Result<Value, String> 
         let sid = str_of(sw, "id").unwrap_or("");
         let node = &nodes[k];
         let anlage = planpro_id(&format!("installation:{}", node.guid));
-        let state = stages.of(sw);
+        let state = states(sw);
         // The form as PlanPro names it (`EW 54-300-1:9`): the label, the kind of turnout before it where it has none.
         let form = str_of(sw, "label").map(|l| {
             let l = l.replace(['–', '—'], "-");
@@ -1343,7 +1330,7 @@ pub fn write_planpro(project: &Value, options: &Value) -> Result<Value, String> 
         plan.put("W_Kr_Anlage", &anlage, always("W_Kr_Anlage_Allg", allg), state);
         let element = element_of_switch.get(sid).copied();
         let eid = element.map(gid).unwrap_or_else(|| planpro_id(&format!("element:{}", node.guid)));
-        let estate = element.map(|e| stages.of(e)).unwrap_or(state);
+        let estate = element.map(|e| states(e)).unwrap_or(state);
         let table = str_of(sw, "name")
             .or(element.and_then(|e| str_of(e, "name")))
             .map(String::from)
@@ -1449,7 +1436,7 @@ pub fn write_planpro(project: &Value, options: &Value) -> Result<Value, String> 
             continue;
         };
         let eid = gid(e);
-        let state = stages.of(e);
+        let state = states(e);
         let name = str_of(e, "name").map(String::from).unwrap_or_else(|| {
             let n = format!("Gs {}", id.chars().take(8).collect::<String>());
             plan.defaulted("switchElements", id, "Bezeichnung_Tabelle", &n);
@@ -1499,7 +1486,7 @@ pub fn write_planpro(project: &Value, options: &Value) -> Result<Value, String> 
             continue;
         };
         let guid = gid(sig);
-        let state = stages.of(sig);
+        let state = states(sig);
         signal_at.insert(id.clone(), (at.track.clone(), at.station, at.direction));
         written_signals.insert(id.clone());
         let logical = list(sig, "logicalSignals");
@@ -1681,13 +1668,13 @@ pub fn write_planpro(project: &Value, options: &Value) -> Result<Value, String> 
             kind,
         ]
         .concat();
-        plan.put("FMA_Komponente", &gid(p), body, stages.of(p));
+        plan.put("FMA_Komponente", &gid(p), body, states(p));
     }
     for s in col("trackSections") {
         let id = str_of(s, "id").unwrap_or("");
         let Some(&g) = section_group.get(id) else { continue };
         let guid = gid(s);
-        let state = stages.of(s);
+        let state = states(s);
         let abschnitt = planpro_id(&format!("section:{guid}"));
         let name = str_of(s, "name");
         let letter = name
@@ -1804,7 +1791,7 @@ pub fn write_planpro(project: &Value, options: &Value) -> Result<Value, String> 
         }
         written_overlaps.insert(id.to_string());
         let guid = gid(o);
-        let state = stages.of(o);
+        let state = states(o);
         let point_id = planpro_id(&format!("danger-point:{guid}"));
         let mark = planpro_id(&format!("mark:{guid}"));
         plan.put("Sonstiger_Punkt", &point_id, end.place(None), state);
@@ -1896,7 +1883,7 @@ pub fn write_planpro(project: &Value, options: &Value) -> Result<Value, String> 
         }
         written_routes.insert(id.to_string());
         let guid = gid(r);
-        let state = stages.of(r);
+        let state = states(r);
         let run = planpro_id(&format!("run:{guid}"));
         let body = [
             parts,
@@ -2016,7 +2003,7 @@ pub fn write_planpro(project: &Value, options: &Value) -> Result<Value, String> 
     for f in col("flankProtection") {
         let id = str_of(f, "id").unwrap_or("");
         let guid = gid(f);
-        let state = stages.of(f);
+        let state = states(f);
         let req = f.get("requester").unwrap_or(&Value::Null);
         let p = f.get("protection").unwrap_or(&Value::Null);
         let Some(requester) = gref_in(req, "switchElementId", &written_elements) else {
@@ -2119,7 +2106,7 @@ pub fn write_planpro(project: &Value, options: &Value) -> Result<Value, String> 
             w("Zwieschutz_Art", Some(kind.into())),
         ]
         .concat();
-        plan.put("Fla_Zwieschutz", &planpro_id(&format!("twofold:{eid}")), body, stages.of(element));
+        plan.put("Fla_Zwieschutz", &planpro_id(&format!("twofold:{eid}")), body, states(element));
     }
 
     // PZB: a balise of the system pzb, its assignment to signal and routes.
@@ -2138,7 +2125,7 @@ pub fn write_planpro(project: &Value, options: &Value) -> Result<Value, String> 
             continue;
         };
         let guid = gid(b);
-        let state = stages.of(b);
+        let state = states(b);
         let z = planpro_id(&format!("assignment:{guid}"));
         let settings = b.get("settings").unwrap_or(&Value::Null);
         let frequency = str_of(settings, "frequency").and_then(m::pzb_frequency_key).unwrap_or_else(|| {

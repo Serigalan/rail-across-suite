@@ -22,13 +22,12 @@ describe('a station signalled with Ks and PZB', () => {
       byId(c.switchElements, 'we-1').switchId = 'w9'
       byId(c.routes, 'rt-a-n1').overlaps[0].overlapId = 'ov-9'
       byId(c.stationBoundaries, 'bd-1').operationalPointId = 'op9'
-      byId(c.signals, 'sig-n1').lifespan = { from: 'stage-9' }
       byId(c.signals, 'sig-n1').operationalPointId = 'op8'
     })
     const missing = errors.filter(e => e.code === 'reference_missing').map(e => [e.id, e.params.target, e.params.ref])
     expect(missing).toEqual(expect.arrayContaining([
       ['sig-a', 'core.tracks', 'gone'], ['we-1', 'core.switches', 'w9'], ['rt-a-n1', 'signalling.overlaps', 'ov-9'],
-      ['bd-1', 'core.operationalPoints', 'op9'], ['sig-n1', 'core.fields.stages', 'stage-9'], ['sig-n1', 'core.operationalPoints', 'op8'],
+      ['bd-1', 'core.operationalPoints', 'op9'], ['sig-n1', 'core.operationalPoints', 'op8'],
     ]))
   })
 

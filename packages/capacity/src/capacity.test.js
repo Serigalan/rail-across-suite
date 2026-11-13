@@ -60,7 +60,7 @@ describe('the capacity of a stretch (K1)', () => {
 
 describe('a variant at a stage', () => {
   it('leaves out what is new at the existing stage, what is removed at the final', () => {
-    const record = { id: 'p', tracks: [{ id: 'a' }, { id: 'n', status: 'new' }, { id: 'r', status: 'removal' }], switches: [], platforms: [] }
+    const record = { id: 'p', tracks: [{ id: 'a' }, { id: 'n', lifespan: { from: 'open' } }, { id: 'r', lifespan: { to: 'open' } }], switches: [], platforms: [] }
     expect(recordAtStage(record, 'existing').tracks.map(t => t.id)).toEqual(['a', 'r'])
     expect(recordAtStage(record, 'final').tracks.map(t => t.id)).toEqual(['a', 'n'])
     expect(recordAtStage(record, 'as planned')).toEqual(record)

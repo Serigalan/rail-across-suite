@@ -1,6 +1,8 @@
 # 0027 — Construction stages by their days, and a connector for a track rebuilt
 
-Status: **accepted** · 2026-11-12 · builds on [0003](0003-construction-stages.md) (points 2, 3 and 6)
+Status: **accepted** · 2026-11-12 · builds on [0003](0003-construction-stages.md) (points 2, 3 and 6) · the stages
+and the record's `inServiceFrom`/`inServiceTo` (points 1 and 2) replaced by lifespans that state days:
+[0028](0028-one-model-lifespans-by-day.md)
 
 ## Decision
 

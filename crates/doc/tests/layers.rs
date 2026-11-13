@@ -65,12 +65,12 @@ fn the_stopping_places_in_the_core_and_the_platform_naming_them() {
 }
 
 #[test]
-fn infra_data_1_0_reads_in_as_2_0() {
+fn infra_data_1_0_reads_in_as_of_today() {
     let doc = check_document(&case("infra-data 1.0: a stopping place at a platform, a boundary marked by it")).unwrap();
     assert_eq!(doc["version"], "2.0");
     assert_eq!(domains(&doc), ["core", "civil", "signalling"]);
-    assert_eq!(doc["domains"]["core"]["version"], "2.0");
-    assert_eq!(doc["domains"]["signalling"]["version"], "2.0");
+    assert_eq!(doc["domains"]["core"]["version"], "3.0");
+    assert_eq!(doc["domains"]["signalling"]["version"], "3.0");
     let civil = &doc["domains"]["civil"];
     assert_eq!(civil["fields"]["planHeader"], json!({ "subtitle": "Lageplan" }));
     assert_eq!(
@@ -152,13 +152,18 @@ fn a_2_0_document_of_before_reads_with_the_passenger_stops_and_the_runs_in_the_c
     // The core 2.0 and civil 1.0 as they were first: no passenger stops, the runs civil's.
     let mut doc = check_document(&case("the sample with its signalling")).unwrap();
     let run = json!({ "id": "r", "name": "R", "path": { "trackIds": ["t1"] } });
+    let signalling = &mut doc["domains"]["signalling"];
+    signalling["version"] = json!("2.0");
+    signalling["schema"] = json!("sha256:b46b740ba722a6eae945038d8a6149cd0c540258df478a77b4a9b8988ae7d515");
     let core = &mut doc["domains"]["core"];
+    core["version"] = json!("2.0");
     core["schema"] = json!("sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877");
     core["collections"].as_object_mut().unwrap().remove("trackPaths");
     for h in core["collections"]["stoppingPlaces"].as_array_mut().unwrap() {
         h.as_object_mut().unwrap().remove("passengerStop");
     }
     let civil = &mut doc["domains"]["civil"];
+    civil["version"] = json!("1.0");
     civil["schema"] = json!("sha256:0b73763db4b8ca57f56472f4b8aeef8a8b02369f4f8a9e3f2b4072480c48b1fb");
     civil["collections"]["trackPaths"] = json!([run.clone()]);
     let checked = check_document(&doc).unwrap_or_else(|e| panic!("refused ({e})"));
@@ -213,7 +218,7 @@ mod platform_stops {
 
     #[test]
     fn one_is_made_over_the_platform_where_none_is_at_it() {
-        let p = json!({ "id": "p1", "trackId": "t1", "startStation": 240.0, "endStation": 100.0, "status": "new" });
+        let p = json!({ "id": "p1", "trackId": "t1", "startStation": 240.0, "endStation": 100.0, "lifespan": { "from": "open" } });
         let r = with_platform_stops(&record(json!([]), json!([p])), "p1", Some("Bstg. 1"));
         let h = &places(&r)[0];
         assert_eq!(h["name"], "Bstg. 1");
@@ -222,7 +227,7 @@ mod platform_stops {
             json!({ "anchor": "station", "trackId": "t1", "startStation": 100.0, "endStation": 240.0 })
         );
         assert_eq!((h["platformId"].clone(), h["passengerStop"].clone()), (json!("p1"), json!(true)));
-        assert!(h["lifespan"]["from"].is_string(), "of the platform's stage");
+        assert_eq!(h["lifespan"], json!({ "from": "open" }), "the platform's");
         // and again, nothing more
         assert_eq!(with_platform_stops(&r, "p1", Some("Bstg. 1")), r);
     }
@@ -278,10 +283,11 @@ mod stage_days {
             "id": "p", "switches": [], "platforms": [],
             "tracks": [
                 track("a", json!({})),
-                track("b", json!({ "status": "removal", "inServiceTo": "2028-06-01" })),
-                track("c", json!({ "status": "new", "inServiceFrom": "2028-06-02" })),
-                track("d", json!({ "status": "new" })),
-                track("e", json!({ "status": "new", "inServiceFrom": "2027-03-01", "inServiceTo": "2028-06-01" })),
+                track("b", json!({ "lifespan": { "to": "2028-06-01" } })),
+                track("c", json!({ "lifespan": { "from": "2028-06-02" } })),
+                track("d", json!({ "lifespan": { "from": "open" } })),
+                track("e", json!({ "lifespan": { "from": "2027-03-01", "to": "2028-06-01" } })),
+                track("f", json!({ "lifespan": { "to": "open" } })),
             ],
         })
     }
@@ -296,31 +302,70 @@ mod stage_days {
     }
 
     #[test]
-    fn a_stage_for_each_day_and_the_lifespans_over_them() {
+    fn a_lifespan_is_kept_as_the_record_states_it() {
         let doc = to_document(&record(), false, true).unwrap();
-        let stages = doc["domains"]["core"]["fields"]["stages"].as_array().unwrap().clone();
-        let days: Vec<Value> = stages.iter().map(|s| s.get("date").cloned().unwrap_or(Value::Null)).collect();
-        assert_eq!(days, vec![Value::Null, json!("2027-03-01"), json!("2028-06-02"), Value::Null]);
-        let tracks = doc["domains"]["core"]["collections"]["tracks"].as_array().unwrap().clone();
-        let life = |id: &str| tracks.iter().find(|t| t["id"] == id).unwrap().get("lifespan").cloned().unwrap_or(Value::Null);
-        let (s1, s2, last) = (stages[1]["id"].clone(), stages[2]["id"].clone(), stages[3]["id"].clone());
-        assert_eq!(life("a"), Value::Null);
-        assert_eq!(life("b"), json!({ "to": s2 }), "until 1 June: no longer from the stage of 2 June");
-        assert_eq!(life("c"), json!({ "from": s2 }));
-        assert_eq!(life("d"), json!({ "from": last }));
-        assert_eq!(life("e"), json!({ "from": s1, "to": s2 }));
-        // and back as it was
+        assert!(doc["domains"]["core"]["fields"].get("stages").is_none(), "no list of stages");
         let back = document_to_record(&check_document(&doc).unwrap()).unwrap();
         for t in record()["tracks"].as_array().unwrap() {
-            let b = back["tracks"].as_array().unwrap().iter().find(|x| x["id"] == t["id"]).unwrap();
-            for k in ["status", "inServiceFrom", "inServiceTo"] {
-                assert_eq!(b.get(k), t.get(k), "{} {k}", t["id"]);
+            let of = |list: &Value| list.as_array().unwrap().iter().find(|x| x["id"] == t["id"]).unwrap().get("lifespan").cloned();
+            assert_eq!(of(&doc["domains"]["core"]["collections"]["tracks"]), t.get("lifespan").cloned(), "{} in the document", t["id"]);
+            assert_eq!(of(&back["tracks"]), t.get("lifespan").cloned(), "{} back", t["id"]);
+        }
+    }
+
+    /// The document of `record()` as infra-data 2.0 had it last: a list of stages, the lifespans naming them.
+    fn of_2_0() -> Value {
+        let mut doc = to_document(&record(), false, true).unwrap();
+        let core = &mut doc["domains"]["core"];
+        core["version"] = json!("2.0");
+        core["schema"] = json!("sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3");
+        core["fields"]["stages"] =
+            json!([{ "id": "s0" }, { "id": "s1", "date": "2027-03-01" }, { "id": "s2", "name": "Umbau", "date": "2028-06-02" }, { "id": "s9" }]);
+        let life = [
+            ("b", json!({ "to": "s2" })),
+            ("c", json!({ "from": "s2" })),
+            ("d", json!({ "from": "s9" })),
+            ("e", json!({ "from": "s1", "to": "s2" })),
+            ("f", json!({ "to": "s9" })),
+        ];
+        for t in core["collections"]["tracks"].as_array_mut().unwrap() {
+            if let Some((_, l)) = life.iter().find(|(id, _)| t["id"] == *id) {
+                t["lifespan"] = l.clone();
             }
         }
-        assert_eq!(
-            back["stages"].as_array().unwrap().iter().map(|s| s["date"].clone()).collect::<Vec<_>>(),
-            vec![json!("2027-03-01"), json!("2028-06-02")]
-        );
+        doc
+    }
+
+    #[test]
+    fn a_document_of_2_0_states_its_stages_as_days() {
+        let now = check_document(&of_2_0()).unwrap_or_else(|e| panic!("refused ({e})"));
+        assert_eq!(now, to_document(&record(), false, true).unwrap(), "as the record of today makes it");
+        assert_eq!(now["domains"]["core"]["version"], "3.0");
+        assert_eq!(check_document(&now).unwrap(), now, "and stays as it is");
+    }
+
+    #[test]
+    fn a_stage_the_list_lacks_is_an_open_day() {
+        let mut doc = of_2_0();
+        doc["domains"]["core"]["collections"]["tracks"][2]["lifespan"] = json!({ "from": "of-another-project" });
+        doc["domains"]["core"]["collections"]["tracks"][0]["lifespan"] = json!({ "from": "s0" });
+        let now = check_document(&doc).unwrap_or_else(|e| panic!("refused ({e})"));
+        let tracks = &now["domains"]["core"]["collections"]["tracks"];
+        assert_eq!(tracks[2]["lifespan"], json!({ "from": "open" }));
+        assert!(tracks[0].get("lifespan").is_none(), "from the existing state: no statement");
+    }
+
+    #[test]
+    fn domains_of_versions_that_do_not_belong_together_are_refused() {
+        let mut doc = of_2_0();
+        let civil = rail_across_doc::door::schema_hashes()["civil"].clone();
+        doc["domains"]["civil"] = json!({ "version": "2.0", "schema": civil, "dependsOn": ["core"], "fields": {}, "collections": {} });
+        assert_eq!(check_document(&doc).unwrap_err().code, "unsupported_version");
+        let mut doc = to_document(&record(), false, true).unwrap();
+        doc["domains"]["core"]["version"] = json!("4.0");
+        let e = check_document(&doc).unwrap_err();
+        assert_eq!(e.code, "unsupported_version");
+        assert!(e.details[0].contains("newer than this program reads"), "{:?}", e.details);
     }
 
     #[test]
@@ -334,9 +379,14 @@ mod stage_days {
 
     #[test]
     fn a_day_that_is_none_is_refused() {
+        for l in [json!({ "to": "01.06.2028" }), json!({ "to": "2028-02-30" }), json!({ "from": "2028-06-02", "to": "2028-06-01" }), json!({})] {
+            let mut r = record();
+            r["tracks"][1]["lifespan"] = l.clone();
+            assert_eq!(to_document(&r, false, true).unwrap_err().code, "invalid_payload", "{l}");
+        }
         let mut r = record();
-        r["tracks"][1]["inServiceTo"] = json!("01.06.2028");
-        assert_eq!(to_document(&r, false, true).unwrap_err().code, "invalid_payload");
+        r["tracks"][1]["lifespan"] = json!({ "from": "2028-06-01", "to": "2028-06-01" });
+        assert!(to_document(&r, false, true).is_ok(), "in service for one day");
     }
 }
 
@@ -349,9 +399,11 @@ mod record_at_stage {
         let r = json!({
             "id": "p", "platforms": [],
             "tracks": [
-                { "id": "a" }, { "id": "b", "status": "removal", "inServiceTo": "2028-06-01" },
-                { "id": "c", "status": "new", "inServiceFrom": "2028-06-02" }, { "id": "d", "status": "new" },
+                { "id": "a" }, { "id": "b", "lifespan": { "to": "2028-06-01" } },
+                { "id": "c", "lifespan": { "from": "2028-06-02" } }, { "id": "d", "lifespan": { "from": "open" } },
             ],
+            "bridges": [{ "id": "old", "lifespan": { "to": "open" } }, { "id": "stays" }],
+            "signalling": { "fields": {}, "collections": { "signals": [{ "id": "s", "lifespan": { "from": "2030-01-01" } }] } },
             "switches": [{ "switchId": "v", "kind": "stage_link", "ports": {
                 "A": { "trackId": "a", "endpoint": "END" }, "B1": { "trackId": "b", "endpoint": "BEGIN" }, "B2": { "trackId": "c", "endpoint": "BEGIN" } } }],
         });
@@ -361,7 +413,7 @@ mod record_at_stage {
             .iter()
             .map(|s| s["key"].as_str().unwrap().to_string())
             .collect();
-        assert_eq!(keys, ["existing", "2028-06-02", "final"]);
+        assert_eq!(keys, ["existing", "2028-06-02", "2030-01-01", "final"], "every day something changes, a layer's too");
         let at = |k: &str| {
             let v = record_at_stage(&r, k);
             let ids: Vec<String> = v["tracks"].as_array().unwrap().iter().map(|t| t["id"].as_str().unwrap().to_string()).collect();
@@ -376,7 +428,15 @@ mod record_at_stage {
         assert_eq!(at("final").0, ["a", "c", "d"]);
         assert_eq!(at("1999-01-01").0, ["a", "b"], "a day before every stage: the existing state");
         assert_eq!(at("2028-06-01").0, ["a", "b"], "the last day of the old track");
-        assert_eq!(at("2031-01-01").0, ["a", "c"], "any later day: the stage in force, not the final state");
+        assert_eq!(at("2031-01-01").0, ["a", "c"], "any later day: what is in service then, not the final state");
+        let rest = |k: &str| {
+            let v = record_at_stage(&r, k);
+            let ids = |list: &serde_json::Value| list.as_array().unwrap().iter().map(|o| o["id"].as_str().unwrap().to_string()).collect::<Vec<_>>();
+            (ids(&v["bridges"]), ids(&v["signalling"]["collections"]["signals"]))
+        };
+        assert_eq!(rest("existing"), (vec!["old".to_string(), "stays".to_string()], vec![]));
+        assert_eq!(rest("2030-01-01"), (vec!["old".to_string(), "stays".to_string()], vec!["s".to_string()]), "removed some day: still there");
+        assert_eq!(rest("final"), (vec!["stays".to_string()], vec!["s".to_string()]));
         assert_eq!(record_at_stage(&r, "neither"), r, "no such stage: the record as it is");
     }
 }

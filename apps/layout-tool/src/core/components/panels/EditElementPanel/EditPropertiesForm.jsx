@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { loadTracks, replaceAllTracks } from '../../../storage'
-import { SIDE_NAMES, buildTypeFields, trackStatus, DEFAULT_HEIGHT_EPSG, trackTypeName } from '@rail-across/core/track'
+import { SIDE_NAMES, buildTypeFields, lifespanWithStatus, trackStatus, withLifespan, DEFAULT_HEIGHT_EPSG, trackTypeName } from '@rail-across/core/track'
 import useTrackFields from '../../../hooks/useTrackFields'
 import TrackFields from '../TrackFields'
 import StatusField from '../StatusField'
@@ -63,14 +63,13 @@ export default function EditPropertiesForm({ onCommitted }) {
 
     // Only the selected track is written — the properties describe this track,
     // and a neighbour that happens to connect to it may well be a different line.
-    const newTracks = tracks.map(track => track.id !== selectedTrackId ? track : {
+    // The status is the lifespan's (decision 0028): existing none, the days typed in the track table kept.
+    const newTracks = tracks.map(track => track.id !== selectedTrackId ? track : withLifespan({
       ...track,
       name,
       owner: fields.owner,
       ...buildTypeFields(fields),
-      // Existing is what a track without a status is, so it is not written.
-      status: status === 'existing' ? undefined : status,
-    })
+    }, lifespanWithStatus(track.lifespan, status)))
 
     replaceAllTracks(newTracks)
     onCommitted?.()

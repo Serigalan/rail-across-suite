@@ -62,8 +62,8 @@ function sampleRecord({ signalling = false, electrification = false } = {}) {
         elements: [el(0, 100, { speed: 80 }), el(100, 250, { cant: 0, role: 'follow' })],
         heights: [{ station: 0, z: 108.55 }, { station: 250, z: 109.1, rv: 15000 }] },
       { id: 't2', name: '1', trackType: 2, trackNumber: '1', stationName: 'Halle-Trotha', uicStation: '8023111',
-        status: 'new', epsg: 25832, elements: [el(250, 400)] },
-      { id: 't3', name: 'alt', status: 'removal', epsg: 25832, elements: [el(400, 450)] },
+        lifespan: { from: '2027-05-01' }, epsg: 25832, elements: [el(250, 400)] },
+      { id: 't3', name: 'alt', lifespan: { to: 'open' }, epsg: 25832, elements: [el(400, 450)] },
     ],
     switches: [{ switchId: 'w1', kind: 'link', formVersion: 1, name: 'link.001',
       ports: { A: { trackId: 't1', endpoint: 'END' }, B: { trackId: 't2', endpoint: 'BEGIN' } } }],
@@ -90,8 +90,10 @@ function atPlatform(signalling) {
   return { ...signalling, collections: { ...signalling.collections, stoppingPlaces: places } }
 }
 
-// infra-data 1.0 documents as the core wrote them before 2.0, frozen: the door reads them as 2.0.
+// infra-data 1.0 documents as the core wrote them before 2.0, frozen: the door reads them as today's.
 const BEFORE = JSON.parse(readFileSync(join(OUT, 'infra-data-1.0.json'), 'utf8')).documents
+// infra-data 2.0 documents as the core wrote them last before decision 0028, frozen: a register of stages, the lifespans naming them.
+const STAGES = JSON.parse(readFileSync(join(OUT, 'infra-data-2.0-stages.json'), 'utf8')).documents
 
 /** [name, change, options] — a document made from the sample, changed so the door refuses it (or not). */
 const DOCUMENT_CASES = [
@@ -99,7 +101,7 @@ const DOCUMENT_CASES = [
   ['the sample, carrying its schemas', (d, carry) => carry()],
   ['another format', (d) => { d.format = 'oltjson' }],
   ['a format version this build does not read', (d) => { d.version = '3.0' }],
-  ['a domain version this build does not read', (d) => { d.domains.core.version = '3.0' }],
+  ['a domain version this build does not read', (d) => { d.domains.core.version = '2.5' }],
   ['a domain this build does not read', (d) => { d.domains.catenary = { ...d.domains.civil, version: '0.3' } }],
   ['a schema hash that is not the version\'s', (d) => { d.domains.civil.schema = `sha256:${'0'.repeat(64)}` }],
   ['a carried schema under another hash', (d, carry) => { carry(); d.schemas[d.domains.core.schema] = { $id: 'core' } }],
@@ -107,7 +109,12 @@ const DOCUMENT_CASES = [
   ['civil depending on nothing', (d) => { delete d.domains.civil.dependsOn }],
   ['a track twice', (d) => { d.domains.core.collections.tracks.push(d.domains.core.collections.tracks[0]) }],
   ['an element with derived geometry', (d) => { d.domains.core.collections.tracks[0].elements[0].renderCoords = [] }],
-  ['one stage only', (d) => { d.domains.core.fields.stages.pop() }],
+  ['a register of stages', (d) => { d.domains.core.fields.stages = [{ id: 's0' }, { id: 's1' }] }],
+  ['a lifespan naming a stage', (d) => { d.domains.core.collections.tracks[1].lifespan = { from: 's1' } }],
+  ['a lifespan that ends before it begins', (d) => { d.domains.core.collections.tracks[1].lifespan = { from: '2027-05-01', to: '2027-04-30' } }],
+  ['a lifespan on a day there is none of', (d) => { d.domains.core.collections.tracks[1].lifespan = { from: '2027-02-30' } }],
+  ['built for a while, the days open', (d) => { d.domains.core.collections.tracks[1].lifespan = { from: 'open', to: 'open' } }],
+  ['a domain of a later version', (d) => { d.domains.core.version = '4.0' }],
   ['a platform with its stations loose', (d) => { const p = d.domains.civil.collections.platforms[0]; p.startStation = p.at.startStation }],
   ['a platform in the core', (d) => { d.domains.core.collections.platforms = d.domains.civil.collections.platforms }],
   ['a collection missing', (d) => { delete d.domains.core.collections.kmLines }],
@@ -131,7 +138,7 @@ const DOCUMENT_CASES = [
   ['a boundary\'s headway', (d) => { d.domains.core.collections.endMarks[0].headway = 120 }],
 ]
 
-/** [name, change] — an infra-data 1.0 document (frozen), changed or not: the door reads it as 2.0. */
+/** [name, change] — an infra-data 1.0 document (frozen), changed or not: the door reads it as today's. */
 const BEFORE_CASES = [
   ['infra-data 1.0: the sample', 'the sample', () => {}],
   ['infra-data 1.0: the sample with its signalling', 'the sample with its signalling', () => {}],
@@ -151,6 +158,26 @@ const BEFORE_CASES = [
   ['infra-data 1.0: a domain this build does not read', 'the sample', (d) => { d.domains.catenary = { ...d.domains.layout, version: '0.3' } }],
   ['infra-data 1.0: layout of another schema', 'the sample', (d) => { d.domains.layout.schema = `sha256:${'0'.repeat(64)}` }],
   ['infra-data 1.0: no layout', 'the sample', (d) => { delete d.domains.layout }],
+]
+
+/** [name, change] — a document with its register of stages (frozen), changed or not: the door reads its lifespans by day (decision 0028). */
+const STAGES_CASES = [
+  ['stages: the sample', 'the sample', () => {}],
+  ['stages: the sample, carrying its schemas', 'the sample, carrying its schemas', () => {}],
+  ['stages: the sample with its signalling', 'the sample with its signalling', () => {}],
+  ['stages: the sample with its electrification', 'the sample with its electrification', () => {}],
+  ['stages: a stage with its day, a track out of service with it and one into', 'the sample', (d) => {
+    const core = d.domains.core
+    core.fields.stages.splice(1, 0, { id: 'umbau', name: 'Umbau', date: '2028-06-02' })
+    core.collections.tracks[1].lifespan = { from: 'umbau' }
+    core.collections.tracks[2].lifespan = { to: 'umbau' }
+  }],
+  ['stages: a lifespan naming a stage that is not there', 'the sample', (d) => { d.domains.core.collections.tracks[1].lifespan = { from: 'of-another-project' } }],
+  ['stages: a signal of the final state', 'the sample with its signalling', (d) => {
+    d.domains.signalling.collections.signals[0].lifespan = { from: d.domains.core.fields.stages[1].id }
+  }],
+  ['stages: civil of a version that does not go with the core\'s', 'the sample', (d) => { d.domains.civil.version = '2.0' }],
+  ['stages: the core of another schema', 'the sample', (d) => { d.domains.core.schema = `sha256:${'0'.repeat(64)}` }],
 ]
 
 /** The verdict on a document: the manifest and hash of what the door takes, an earlier schema brought to this one. */
@@ -173,6 +200,11 @@ const documentVectors = () => [
   }),
   ...BEFORE_CASES.map(([name, from, change]) => {
     const doc = structuredClone(BEFORE[from])
+    change(doc)
+    return { name, document: doc, ...verdict(doc) }
+  }),
+  ...STAGES_CASES.map(([name, from, change]) => {
+    const doc = structuredClone(STAGES[from])
     change(doc)
     return { name, document: doc, ...verdict(doc) }
   }),

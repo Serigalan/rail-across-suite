@@ -247,8 +247,6 @@ pub fn with_platform_stops(record: &Value, platform_id: &str, name: Option<&str>
     if let Some(i) = platform.filter(|_| !at_it) {
         let p = &platforms[i];
         let (a, b) = (num(p.get("startStation")), num(p.get("endStation")));
-        let pid = js_string(record.get("id"));
-        let final_id = js_string(crate::core_format::default_stages(&pid)[1].get("id"));
         let point = crate::stations::station_register(record)
             .point_of(crate::core_format::Source::Platform(i))
             .map(str::to_string);
@@ -266,9 +264,8 @@ pub fn with_platform_stops(record: &Value, platform_id: &str, name: Option<&str>
         );
         h.insert("platformId".into(), json!(platform_id));
         h.insert("passengerStop".into(), json!(true));
-        let lifespan = crate::core_format::lifespan_of(p.get("status"), &final_id);
-        if !lifespan.is_null() {
-            h.insert("lifespan".into(), lifespan);
+        if let Some(lifespan) = get(p, "lifespan") {
+            h.insert("lifespan".into(), lifespan.clone());
         }
         places.push(Value::Object(h));
         changed = true;

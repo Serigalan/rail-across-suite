@@ -1,6 +1,6 @@
 /**
  * A payload this build will not take, `code` being the key the UI translates
- * (invalid_payload, unsupported_version, stages_unsupported, …) and `details`
+ * (invalid_payload, unsupported_version, …) and `details`
  * what was found, as "path: what" lines, where there is more to say.
  */
 export class PayloadError extends Error {

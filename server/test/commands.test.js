@@ -128,8 +128,10 @@ describe.skipIf(!SERVER_BIN)('the data steps', () => {
 
 // An infra-data 1.0 document as the core wrote it before 2.0 (schemas/vectors), frozen.
 const BEFORE_2_0 = JSON.parse(readFileSync(new URL('../../schemas/vectors/infra-data-1.0.json', import.meta.url), 'utf8')).documents
-// The same documents as infra-data-2.0 reads them now (schemas/vectors).
-const NOW_2_0 = Object.fromEntries(JSON.parse(readFileSync(new URL('../../schemas/vectors/documents.json', import.meta.url), 'utf8')).map(c => [c.name, c.document]))
+// Documents as the core wrote them last before decision 0028, a register of stages in them (schemas/vectors), frozen.
+const STAGES_2_0 = JSON.parse(readFileSync(new URL('../../schemas/vectors/infra-data-2.0-stages.json', import.meta.url), 'utf8')).documents
+// The same documents as the door reads them now (schemas/vectors).
+const NOW = Object.fromEntries(JSON.parse(readFileSync(new URL('../../schemas/vectors/documents.json', import.meta.url), 'utf8')).map(c => [c.name, c.document]))
 
 /** A database with one project of two revisions, closed again: its file and the revisions' ids. */
 async function twoRevisions() {
@@ -156,7 +158,7 @@ const payloads = (file) => {
 }
 
 describe.skipIf(!SERVER_BIN)('the step to infra-data-1.0 (decision 0021)', () => {
-  it('rewrites the revisions kept as the core 1.0 document and as oltjson-1.1 records, once, in place — as infra-data-2.0 now', async () => {
+  it('rewrites the revisions kept as the core 1.0 document and as oltjson-1.1 records, once, in place — as today\'s documents now', async () => {
     const { file, made, second, track } = await twoRevisions()
     // As the two revisions were kept before: the old envelope, and an oltjson-1.1 record whose track is new.
     const db = new Database(file)
@@ -168,13 +170,13 @@ describe.skipIf(!SERVER_BIN)('the step to infra-data-1.0 (decision 0021)', () =>
     db.close()
     expect(cli(file, ['migrate'])).toMatch(/data step 0021-infra-data: 2 Revisionen umgeschrieben, 0 nicht lesbar/)
     const { versions, docs: [old, kept] } = payloads(file)
-    expect(versions).toEqual([5, 5])
-    expect(old).toMatchObject({ format: 'infra-data', version: '2.0', domains: { core: { version: '2.0' }, civil: { version: '1.0' } } })
+    expect(versions).toEqual([6, 6])
+    expect(old).toMatchObject({ format: 'infra-data', version: '2.0', domains: { core: { version: '3.0' }, civil: { version: '2.0' } } })
     expect(old.domains.core.collections.tracks.map(t => t.id)).toEqual(doc.domains.core.collections.tracks.map(t => t.id))
     expect(old.domains.civil.collections.platforms.map(p => p.id)).toEqual(['p1'])
-    const stages = kept.domains.core.fields.stages
     expect(kept).toMatchObject({ format: 'infra-data', version: '2.0' })
-    expect(kept.domains.core.collections.tracks[0].lifespan).toEqual({ from: stages[1].id })
+    expect(kept.domains.core.fields.stages).toBeUndefined()
+    expect(kept.domains.core.collections.tracks[0].lifespan).toEqual({ from: 'open' })
     expect(cli(file, ['migrate'])).toBe('')
   })
 })
@@ -189,7 +191,7 @@ describe.skipIf(!SERVER_BIN)('the step to infra-data-2.0 (decision 0025)', () =>
     db.close()
     expect(cli(file, ['migrate'])).toMatch(/data step 0025-infra-data-2.0: 2 Revisionen umgeschrieben, 0 nicht lesbar/)
     const { versions, docs: [doc] } = payloads(file)
-    expect(versions).toEqual([5, 5])
+    expect(versions).toEqual([6, 6])
     expect(Object.keys(doc.domains).sort()).toEqual(['civil', 'core', 'signalling'])
     expect(doc.domains.core.collections.stoppingPlaces.map(h => h.id)).toEqual(['hp-1', 'hp-2'])
     expect(doc.domains.signalling.collections.stoppingPlaces).toBeUndefined()
@@ -209,8 +211,8 @@ describe.skipIf(!SERVER_BIN)('the step to infra-data-2.0 (decision 0025)', () =>
 describe.skipIf(!SERVER_BIN)('the passenger stops and the runs in the core (decision 0025)', () => {
   it('makes a stopping place a platform names a passenger stop and the runs the core\'s in the revisions kept before, once, in place', async () => {
     const { file, made } = await twoRevisions()
-    const doc = structuredClone(NOW_2_0['the sample with its signalling'])
-    const now = doc.domains.core.schema
+    const doc = structuredClone(STAGES_2_0['the sample with its signalling'])
+    const now = NOW['the sample with its signalling'].domains.core.schema
     // As a server before it kept the sample: the core's schema of before, no passenger stops.
     doc.domains.core.schema = 'sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877'
     for (const h of doc.domains.core.collections.stoppingPlaces) delete h.passengerStop
@@ -230,6 +232,38 @@ describe.skipIf(!SERVER_BIN)('the passenger stops and the runs in the core (deci
     expect(after.domains.core.collections.trackPaths).toEqual([run])
     expect(after.domains.civil.collections.trackPaths).toBeUndefined()
     expect(cli(file, ['migrate'])).toBe('')
+  })
+})
+
+describe.skipIf(!SERVER_BIN)('the step to lifespans by day (decision 0028)', () => {
+  it('rewrites the revisions kept with a register of stages, once, in place; one left is read through the door', async () => {
+    const { file, made, second } = await twoRevisions()
+    const doc = structuredClone(STAGES_2_0['the sample'])
+    const core = doc.domains.core
+    core.fields.stages.splice(1, 0, { id: 'umbau', name: 'Umbau', date: '2028-06-02' })
+    core.collections.tracks[1].lifespan = { from: 'umbau' }
+    const db = new Database(file)
+    db.prepare('UPDATE revision SET schema_version = 5, payload = ? WHERE id IN (?, ?)').run(gzipSync(JSON.stringify(doc)), made.revisionId, second)
+    db.prepare("DELETE FROM data_migration WHERE name = '0028-lifespans-by-day'").run()
+    db.close()
+    expect(cli(file, ['migrate'])).toMatch(/data step 0028-lifespans-by-day: 2 Revisionen umgeschrieben, 0 nicht lesbar/)
+    const { versions, docs: [after] } = payloads(file)
+    expect(versions).toEqual([6, 6])
+    expect(after.domains.core).toMatchObject({ version: '3.0', schema: NOW['the sample'].domains.core.schema })
+    expect(after.domains.civil.version).toBe('2.0')
+    expect(after.domains.core.fields.stages).toBeUndefined()
+    expect(after.domains.core.collections.tracks.map(t => t.lifespan ?? null)).toEqual([null, { from: '2028-06-02' }, { to: 'open' }])
+    expect(cli(file, ['migrate'])).toBe('')
+    // One kept with its stages still, as a server of before left it: handed out with its days.
+    const again = new Database(file)
+    again.prepare('UPDATE revision SET schema_version = 5, payload = ? WHERE id = ?').run(gzipSync(JSON.stringify(doc)), second)
+    again.close()
+    ctx = await rustServer({ file })
+    await ctx.app.auth.createUser({ login: 'bea', name: 'Bea', password: PW, role: 'admin', mustChangePassword: false })
+    const bea = await signIn(ctx.app, 'bea')
+    const head = (await bea('GET', `/api/variants/${made.variantId}/head`)).json()
+    expect(head.payload.domains.core.version).toBe('3.0')
+    expect(head.payload.domains.core.collections.tracks[1].lifespan).toEqual({ from: '2028-06-02' })
   })
 })
 

@@ -112,7 +112,6 @@ fn run_on(op: &str, input: &Value) -> Result<Value, Failure> {
         "document.manifestOf" => Ok(manifest::manifest_of(input)),
         "document.documentHash" => Ok(json!(manifest::document_hash(input))),
         "document.canonicalJson" => canonical_json(input).map(Value::String).map_err(|e| Failure::new("no_json", Some(e.0))),
-        "document.defaultStages" => Ok(core_format::default_stages(input.as_str().unwrap_or(""))),
         "document.stationRegister" => Ok(stations::station_register_json(input)),
         "document.stagesOf" => Ok(rail_across_doc::stages::stages_of(input)),
         "document.recordAtStage" => Ok(rail_across_doc::stages::record_at_stage(

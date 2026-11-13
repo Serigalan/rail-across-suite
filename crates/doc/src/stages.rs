@@ -1,32 +1,29 @@
 // SPDX-FileCopyrightText: 2026 Serigalan and the Rail-Across-Suite contributors
 // SPDX-License-Identifier: LGPL-3.0-only
 
-//! The construction stages of a project by their days (decision 0027 on
-//! 0003): the existing state first, the final state last, and between them a
-//! stage for every day something is put into or taken out of service. The
-//! record states a track's, switch's, platform's or end mark's days —
-//! `inServiceFrom` the first day it is in service, `inServiceTo` the last —
-//! beside its planning status; the document a lifespan over the stages, each
-//! stage between the first and the last beginning on its `date`.
+//! Lifespans by day, and the states of a project they make (decision 0028):
+//! an object states the days it is in service — `lifespan: { from, to }`, the
+//! first and the last, the word "open" where the day is not known yet — and
+//! nothing keeps a list of stages. A project passes through states: the
+//! existing one, one for every day something is put into or taken out of
+//! service, the final one. They are worked out here, as is the record as it
+//! stands at one.
 //!
-//! | Record | Lifespan |
+//! | Lifespan | Stands |
 //! |---|---|
-//! | `inServiceFrom: d` | `from`: the stage beginning on d |
-//! | `inServiceTo: d` | `to`: the stage beginning the day after d |
-//! | `status: "new"` without `inServiceFrom` | `from`: the final stage |
-//! | `status: "removal"` without `inServiceTo` | `to`: the final stage |
-//!
-//! Back, the status is "new" where the lifespan has a `from`, the final stage
-//! or a dated one, unless it ends at the final stage ("removal"); "removal"
-//! where it has a `to` alone.
+//! | none | always |
+//! | `from: d` | from day d on, and in the final state |
+//! | `to: d` | in the existing state and until day d |
+//! | `from: "open"` | in the final state only |
+//! | `to: "open"` | in the existing state and on every day, not in the final state |
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeSet, HashSet};
 
 use rail_across_js::{Object, js_string};
 use serde_json::{Value, json};
 
-use crate::canonical::derived_id;
-use crate::error::{PayloadError, Result};
+/// The word a lifespan states where the day is not known yet.
+pub const OPEN: &str = "open";
 
 /// Whether `s` is a day as ISO 8601 writes it, and one there is.
 pub fn is_day(s: &str) -> bool {
@@ -84,244 +81,138 @@ pub fn day_before(s: &str) -> Option<String> {
     }))
 }
 
-/// The collections of the record whose objects carry days.
-pub const DATED: &[&str] = &["tracks", "switches", "platforms", "endMarks"];
+/// The collections of the record whose objects may carry a lifespan; the layers' collections do beside them.
+pub const DATED: &[&str] = &["tracks", "switches", "platforms", "endMarks", "bridges", "retainingWalls", "noiseBarriers"];
+/// The layers the record carries as the document has them, every collection's objects with their lifespans.
+pub const LAYERS: &[&str] = &["signalling", "electrification"];
 
-/// The stages of a project: the existing and the final state, and a stage for each day between them.
-pub struct Stages {
-    pub existing: String,
-    pub last: String,
-    /// day → (id, name)
-    days: BTreeMap<String, (String, Option<Value>)>,
+/// One end of a lifespan.
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+enum End<'a> {
+    None,
+    Open,
+    Day(&'a str),
 }
 
-fn text(v: Option<&Value>) -> Option<String> {
-    v.and_then(Value::as_str).map(str::to_string)
-}
-
-impl Stages {
-    /// The stages a record makes: those it keeps (`stages`, [{ id?, date, name? }]) and one for every day its
-    /// objects are put into service or taken out of it — the day after the last a thing is in service.
-    pub fn of_record(record: &Value) -> Result<Stages> {
-        let pid = js_string(record.get("id"));
-        let defaults = crate::core_format::default_stages(&pid);
-        let mut days = BTreeMap::new();
-        let mut bad = Vec::new();
-        for (i, s) in record.get("stages").and_then(Value::as_array).into_iter().flatten().enumerate() {
-            match text(s.get("date")).filter(|d| is_day(d)) {
-                Some(day) => {
-                    let id = text(s.get("id")).unwrap_or_else(|| derived_id(&format!("{pid}\u{0}stage\u{0}{day}")));
-                    days.insert(day, (id, s.get("name").cloned()));
-                }
-                None => bad.push(format!("/stages/{i}/date: is no day")),
-            }
-        }
-        let mut add = |day: String| {
-            days.entry(day.clone())
-                .or_insert_with(|| (derived_id(&format!("{pid}\u{0}stage\u{0}{day}")), None));
-        };
-        for name in DATED {
-            for (i, o) in record.get(*name).and_then(Value::as_array).into_iter().flatten().enumerate() {
-                for (key, shift) in [("inServiceFrom", false), ("inServiceTo", true)] {
-                    let Some(v) = o.get(key).filter(|v| !v.is_null()) else { continue };
-                    let day = v.as_str().filter(|d| is_day(d)).map(|d| if shift { day_after(d) } else { Some(d.to_string()) });
-                    match day.flatten() {
-                        Some(day) => add(day),
-                        None => bad.push(format!("/{name}/{i}/{key}: is no day")),
-                    }
-                }
-            }
-        }
-        if !bad.is_empty() {
-            return Err(PayloadError::with("invalid_payload", bad));
-        }
-        Ok(Stages {
-            existing: js_string(defaults[0].get("id")),
-            last: js_string(defaults[1].get("id")),
-            days,
-        })
-    }
-
-    /// The stages a document holds; `stages_unsupported` where one between the first and the last has no day.
-    pub fn of_document(stages: &[Value]) -> Result<Stages> {
-        if stages.len() < 2 {
-            return Err(PayloadError::new("stages_unsupported"));
-        }
-        let mut days = BTreeMap::new();
-        for s in &stages[1..stages.len() - 1] {
-            let Some(day) = text(s.get("date")).filter(|d| is_day(d)) else {
-                return Err(PayloadError::new("stages_unsupported"));
-            };
-            days.insert(day, (js_string(s.get("id")), s.get("name").cloned()));
-        }
-        Ok(Stages {
-            existing: js_string(stages[0].get("id")),
-            last: js_string(stages[stages.len() - 1].get("id")),
-            days,
-        })
-    }
-
-    /// The stage list of the document: the existing state, the days in their order, the final state.
-    pub fn to_document(&self) -> Value {
-        let mut out = vec![json!({ "id": self.existing })];
-        for (day, (id, name)) in &self.days {
-            let mut o = Object::new();
-            o.insert("id".into(), json!(id));
-            if let Some(n) = name.as_ref().filter(|n| !n.is_null()) {
-                o.insert("name".into(), n.clone());
-            }
-            o.insert("date".into(), json!(day));
-            out.push(Value::Object(o));
-        }
-        out.push(json!({ "id": self.last }));
-        Value::Array(out)
-    }
-
-    /// The stages the record keeps: those between the first and the last, [{ id, date, name? }]; none where there are none.
-    pub fn to_record(&self) -> Option<Value> {
-        if self.days.is_empty() {
-            return None;
-        }
-        Some(Value::Array(
-            self.days
-                .iter()
-                .map(|(day, (id, name))| {
-                    let mut o = Object::new();
-                    o.insert("id".into(), json!(id));
-                    o.insert("date".into(), json!(day));
-                    if let Some(n) = name.as_ref().filter(|n| !n.is_null()) {
-                        o.insert("name".into(), n.clone());
-                    }
-                    Value::Object(o)
-                })
-                .collect(),
-        ))
-    }
-
-    fn of_day(&self, day: &str) -> Option<&String> {
-        self.days.get(day).map(|(id, _)| id)
-    }
-
-    fn day_of(&self, id: &str) -> Option<&String> {
-        self.days.iter().find(|(_, (i, _))| i == id).map(|(d, _)| d)
-    }
-
-    /// The lifespan of a record's object, from its status and days; null where it is existing and stays.
-    pub fn lifespan(&self, o: &Value) -> Value {
-        let status = o.get("status").and_then(Value::as_str);
-        let from = text(o.get("inServiceFrom"))
-            .and_then(|d| self.of_day(&d).cloned())
-            .or_else(|| (status == Some("new")).then(|| self.last.clone()));
-        let to = text(o.get("inServiceTo"))
-            .and_then(|d| day_after(&d))
-            .and_then(|d| self.of_day(&d).cloned())
-            .or_else(|| (status == Some("removal")).then(|| self.last.clone()));
-        let mut l = Object::new();
-        if let Some(f) = from {
-            l.insert("from".into(), json!(f));
-        }
-        if let Some(t) = to {
-            l.insert("to".into(), json!(t));
-        }
-        if l.is_empty() { Value::Null } else { Value::Object(l) }
-    }
-
-    /// What the record states of a lifespan: (status, inServiceFrom, inServiceTo); `stages_unsupported` where it
-    /// names a stage the list lacks, or begins at the existing state.
-    pub fn record_fields(&self, lifespan: Option<&Value>) -> Result<(Value, Value, Value)> {
-        let Some(l) = lifespan.filter(|l| rail_across_js::truthy(Some(l))) else {
-            return Ok((Value::Null, Value::Null, Value::Null));
-        };
-        let day = |v: Option<&Value>| -> Result<Option<Option<String>>> {
-            match v.and_then(Value::as_str) {
-                None => Ok(None),
-                Some(id) if id == self.last => Ok(Some(None)),
-                Some(id) => self
-                    .day_of(id)
-                    .cloned()
-                    .map(|d| Some(Some(d)))
-                    .ok_or_else(|| PayloadError::new("stages_unsupported")),
-            }
-        };
-        let (from, to) = (day(l.get("from"))?, day(l.get("to"))?);
-        let status = match (&from, &to) {
-            (_, Some(None)) => "removal",
-            (Some(_), _) => "new",
-            (None, Some(_)) => "removal",
-            (None, None) => return Ok((Value::Null, Value::Null, Value::Null)),
-        };
-        let from_day = from.flatten().map(Value::String).unwrap_or(Value::Null);
-        let to_day = to.flatten().and_then(|d| day_before(&d)).map(Value::String).unwrap_or(Value::Null);
-        Ok((json!(status), from_day, to_day))
+fn end<'a>(lifespan: Option<&'a Value>, key: &str) -> End<'a> {
+    match lifespan.and_then(|l| l.get(key)).and_then(Value::as_str) {
+        None => End::None,
+        Some(OPEN) => End::Open,
+        Some(day) => End::Day(day),
     }
 }
 
-// ── A record at a stage ─────────────────────────────────────────────────────
-
-/// The stages of a record as a tool offers them: `[{ key, id, date? }]` — `existing`, each day, `final` — in their order.
-pub fn stages_of(record: &Value) -> Value {
-    let Ok(s) = Stages::of_record(record) else { return json!([]) };
-    let mut out = vec![json!({ "key": "existing", "id": s.existing })];
-    for (day, (id, name)) in &s.days {
-        let mut o = Object::new();
-        o.insert("key".into(), json!(day));
-        o.insert("id".into(), json!(id));
-        o.insert("date".into(), json!(day));
-        if let Some(n) = name.as_ref().filter(|n| !n.is_null()) {
-            o.insert("name".into(), n.clone());
+/// What a lifespan states that cannot be: a day there is none of, a first day after the last. Nothing where it is
+/// sound — the door's rule beside the schema's shape. An open beginning may have an end, a day or an open one:
+/// built for a while, the days not known yet.
+pub fn lifespan_breach(lifespan: &Value) -> Option<String> {
+    let (from, to) = (end(Some(lifespan), "from"), end(Some(lifespan), "to"));
+    for (key, e) in [("from", from), ("to", to)] {
+        if let End::Day(d) = e
+            && !is_day(d)
+        {
+            return Some(format!("/{key}: {d} is no day"));
         }
-        out.push(Value::Object(o));
     }
-    out.push(json!({ "key": "final", "id": s.last }));
-    Value::Array(out)
+    match (from, to) {
+        (End::Day(a), End::Day(b)) if a > b => Some(format!(": begins on {a}, after it ends on {b}")),
+        _ => None,
+    }
 }
 
-impl Stages {
-    /// The place of a stage in the list: 0 the existing state, the last the final.
-    fn index_of_id(&self, id: &str) -> Option<usize> {
-        if id == self.existing {
-            return Some(0);
-        }
-        if id == self.last {
-            return Some(self.days.len() + 1);
-        }
-        self.days.values().position(|(i, _)| i == id).map(|i| i + 1)
+/// The planning status a lifespan states: "new" where it begins, "removal" where it only ends, "existing" else.
+pub fn status_of(lifespan: Option<&Value>) -> &'static str {
+    match (end(lifespan, "from"), end(lifespan, "to")) {
+        (End::None, End::None) => "existing",
+        (End::None, _) => "removal",
+        _ => "new",
     }
+}
 
-    fn index_of_key(&self, key: &str) -> Option<usize> {
+/// A state of a project: the existing one, a day, the final one.
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub enum State<'a> {
+    Existing,
+    Day(&'a str),
+    Final,
+}
+
+impl<'a> State<'a> {
+    /// The state `key` names: `existing`, a day (YYYY-MM-DD), `final`.
+    pub fn of(key: &'a str) -> Option<State<'a>> {
         match key {
-            "existing" => Some(0),
-            "final" => Some(self.days.len() + 1),
-            // Any day: the stage in force on it — the last one put into force on or before it, before every one
-            // the existing state. Days compare as text (YYYY-MM-DD).
-            day if is_day(day) => Some(self.days.keys().filter(|d| d.as_str() <= day).count()),
+            "existing" => Some(State::Existing),
+            "final" => Some(State::Final),
+            day if is_day(day) => Some(State::Day(day)),
             _ => None,
         }
     }
+}
 
-    /// Whether an object with that lifespan exists at stage `k`.
-    fn lives_at(&self, lifespan: &Value, k: usize) -> bool {
-        let from = lifespan.get("from").and_then(Value::as_str).and_then(|id| self.index_of_id(id)).unwrap_or(0);
-        let to = lifespan
-            .get("to")
-            .and_then(Value::as_str)
-            .and_then(|id| self.index_of_id(id))
-            .unwrap_or(usize::MAX);
-        from <= k && k < to
+/// Whether an object with that lifespan stands at a state. Days compare as text (YYYY-MM-DD).
+pub fn stands(lifespan: Option<&Value>, at: State) -> bool {
+    let (from, to) = (end(lifespan, "from"), end(lifespan, "to"));
+    match at {
+        State::Existing => from == End::None,
+        State::Final => to == End::None,
+        State::Day(day) => {
+            let begun = match from {
+                End::None => true,
+                End::Open => false,
+                End::Day(d) => d <= day,
+            };
+            let ended = match to {
+                End::None | End::Open => false,
+                End::Day(d) => d < day,
+            };
+            begun && !ended
+        }
     }
 }
 
-/// The record as it stands at the stage `key` (`existing`, a day, `final`): the tracks, switches, platforms and
-/// end marks in service then, a port of a switch whose track is not empty; the layers' objects by their lifespans.
-/// A day that begins no stage stands for the stage in force on it. The record as it is where `key` is none of these.
+/// Every lifespan a record holds: its own collections' and the layers'.
+fn lifespans(record: &Value) -> impl Iterator<Item = &Value> {
+    let own = DATED.iter().filter_map(|name| record.get(*name)?.as_array()).flatten();
+    let layers = LAYERS
+        .iter()
+        .filter_map(|layer| record.get(*layer)?.get("collections")?.as_object())
+        .flat_map(|cols| cols.values().filter_map(Value::as_array).flatten());
+    own.chain(layers).filter_map(|o| o.get("lifespan"))
+}
+
+/// The states a record passes through, as a tool offers them: `[{ key, date? }]` — `existing`, every day
+/// something is put into service or taken out of it (the day after the last it is in service), `final`.
+pub fn stages_of(record: &Value) -> Value {
+    let mut days = BTreeSet::new();
+    for l in lifespans(record) {
+        if let End::Day(d) = end(Some(l), "from")
+            && is_day(d)
+        {
+            days.insert(d.to_string());
+        }
+        if let End::Day(d) = end(Some(l), "to")
+            && let Some(after) = day_after(d)
+        {
+            days.insert(after);
+        }
+    }
+    let mut out = vec![json!({ "key": "existing" })];
+    out.extend(days.into_iter().map(|day| json!({ "key": day, "date": day })));
+    out.push(json!({ "key": "final" }));
+    Value::Array(out)
+}
+
+/// The record as it stands at the state `key` (`existing`, a day, `final`): the tracks, switches, platforms,
+/// end marks and civil structures in service then, a port of a switch whose track is not empty; the layers'
+/// objects by their lifespans. The record as it is where `key` is none of these.
 pub fn record_at_stage(record: &Value, key: &str) -> Value {
-    let Ok(s) = Stages::of_record(record) else { return record.clone() };
-    let Some(k) = s.index_of_key(key) else { return record.clone() };
+    let Some(at) = State::of(key) else { return record.clone() };
+    let standing = |items: &[Value]| -> Vec<Value> { items.iter().filter(|o| stands(o.get("lifespan"), at)).cloned().collect() };
     let mut out = record.as_object().cloned().unwrap_or_default();
-    let mut kept_tracks = std::collections::HashSet::new();
+    let mut kept_tracks = HashSet::new();
     for name in DATED {
         let Some(Value::Array(list)) = record.get(*name) else { continue };
-        let kept: Vec<Value> = list.iter().filter(|o| s.lives_at(&s.lifespan(o), k)).cloned().collect();
+        let kept = standing(list);
         if *name == "tracks" {
             kept_tracks.extend(kept.iter().map(|t| js_string(t.get("id"))));
         }
@@ -343,23 +234,20 @@ pub fn record_at_stage(record: &Value, key: &str) -> Value {
             .collect();
         out.insert("switches".into(), Value::Array(switches));
     }
-    for layer in ["signalling", "electrification"] {
-        let Some(Value::Object(d)) = record.get(layer) else { continue };
+    for layer in LAYERS {
+        let Some(Value::Object(d)) = record.get(*layer) else { continue };
         let mut d = d.clone();
         if let Some(Value::Object(cols)) = d.get("collections").cloned() {
             let cols: Object = cols
                 .into_iter()
                 .map(|(name, v)| match v {
-                    Value::Array(items) => {
-                        let kept = items.into_iter().filter(|o| o.get("lifespan").is_none_or(|l| s.lives_at(l, k))).collect();
-                        (name, Value::Array(kept))
-                    }
+                    Value::Array(items) => (name, Value::Array(standing(&items))),
                     other => (name, other),
                 })
                 .collect();
             d.insert("collections".into(), Value::Object(cols));
         }
-        out.insert(layer.into(), Value::Object(d));
+        out.insert((*layer).into(), Value::Object(d));
     }
     Value::Object(out)
 }

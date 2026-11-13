@@ -21,8 +21,8 @@ itself — every field, and why it is shaped as it is — is described in [the d
 
 `parseProjectsPayload` is **the one place that decides** whether a payload is taken. An infra-data-1.0 document goes
 through the document module's door and comes out as the record. Anything else — an oltjson file among it,
-whose format went with decision 0021 — is refused with `unsupported_version`, `stages_unsupported` or
-`invalid_payload` (with what was found). Everything behind the door
+whose format went with decision 0021, and a document of a later version than this build reads — is refused
+with `unsupported_version` or `invalid_payload` (with what was found). Everything behind the door
 may take the model for granted instead of guarding each field.
 
 `projectDocument` is the other way: the record, dehydrated, as its checked infra-data-1.0 document — what a file and

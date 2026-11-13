@@ -19,7 +19,7 @@ import { groupTitle } from './queries.js'
 
 // The small queries the pages ask point by point stay JavaScript (queries.js).
 export {
-  edgeOffsets, elementAtStation, elementBelongsToSwitch, elementOnSwitchRoute, elementStations, endKey, endMarkName, endOfIndex, gradientAt, groupTitle, heightAt, heightStations, isLinkSwitch, isModelledSwitch, newSwitchFields, platformLength, pointAtStation, pointAtStationUtm, pointGrades, pointOnElement, portEnd, portTrack, portsOf, roundHeight, stationFromClick, stationOnTrack, switchDesignation, switchElementMark, switchKindLabelKey, switchNumberOf, switchPorts, switchRouteLabelKey, switchRoutePorts, switchRoutes, switchStatus, tangentLength, trackGroupKey, trackKind, trackLength, trackSamplePoints, trackStatus, trackTypeName, turnoutDivergingPort, turnoutLinePort, turnoutLineRoute, unmarkSwitchElement, withPort,
+  edgeOffsets, elementAtStation, elementBelongsToSwitch, elementOnSwitchRoute, elementStations, endKey, endMarkName, endOfIndex, gradientAt, groupTitle, heightAt, heightStations, isLinkSwitch, isModelledSwitch, lifespanWithStatus, newSwitchFields, platformLength, pointAtStation, pointAtStationUtm, pointGrades, pointOnElement, portEnd, portTrack, portsOf, roundHeight, stationFromClick, stationOnTrack, switchDesignation, switchElementMark, switchKindLabelKey, switchNumberOf, switchPorts, switchRouteLabelKey, switchRoutePorts, switchRoutes, switchStatus, tangentLength, trackGroupKey, trackKind, trackLength, trackSamplePoints, trackStatus, trackTypeName, turnoutDivergingPort, turnoutLinePort, turnoutLineRoute, unmarkSwitchElement, withLifespan, withPort,
 } from './queries.js'
 
 export {

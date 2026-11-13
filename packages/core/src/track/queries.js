@@ -11,7 +11,7 @@ import {
 } from '../geometry/index.js'
 import {
   BOUNDARY, DEFAULT_SWITCH_KIND, HEIGHT_POINT_SPACING, HEIGHT_SPLIT_MIN, LINK_KIND, PLATFORM_FRONT_OFFSET,
-  PLATFORM_WIDTH, STATUSES, SWITCH_FORM_VERSION, TYPE_CODES,
+  PLATFORM_WIDTH, SWITCH_FORM_VERSION, TYPE_CODES,
 } from './constants.js'
 
 // A height point this close to a track end sits on its joint [m].
@@ -462,18 +462,40 @@ export function edgeOffsets(platform) {
 export const platformLength = (platform) =>
   Math.abs((platform?.endStation ?? 0) - (platform?.startStation ?? 0))
 
-const valid = (s) => (STATUSES.includes(s) ? s : null)
+/**
+ * What an object's lifespan says of it (decision 0028): new where it states a
+ * first day, removal where it states only a last one — null where it states
+ * neither, the object existing and staying.
+ */
+const stated = (o) => (o?.lifespan?.from != null ? 'new' : o?.lifespan?.to != null ? 'removal' : null)
 
-export const trackStatus = (track) => valid(track?.status) ?? 'existing'
+export const trackStatus = (track) => stated(track) ?? 'existing'
 
 /**
- * A switch's own status, or — where it states none — the one its tracks give
- * it: a turnout is built or taken out with its branch, a crossing with any of
- * its roads. New wins over removal, which is what a renewal on an otherwise
+ * The lifespan an object has with the planning status `status`: existing
+ * none, new a first day, removal a last day alone — the days `lifespan`
+ * states kept where its status stays, "open" where it takes one.
+ */
+export function lifespanWithStatus(lifespan, status) {
+  if (status === 'new') return lifespan?.from != null ? lifespan : { from: 'open' }
+  if (status === 'removal') return lifespan?.from == null && lifespan?.to != null ? lifespan : { to: 'open' }
+  return undefined
+}
+
+/** `o` with `lifespan`, or without one where it is none. */
+export function withLifespan(o, lifespan) {
+  const { lifespan: _old, ...rest } = o
+  return lifespan ? { ...rest, lifespan } : rest
+}
+
+/**
+ * A switch's own status — what its lifespan says —, or, where it has none,
+ * the one its tracks give it: a turnout is built or taken out with its branch,
+ * a crossing with any of its roads. New wins over removal, which is what a renewal on an otherwise
  * standing track looks like.
  */
 export function switchStatus(sw, trackById) {
-  const own = valid(sw?.status)
+  const own = stated(sw)
   if (own) return own
   const turnout = (sw.kind ?? DEFAULT_SWITCH_KIND) === 'turnout'
   const ports = portsOf(sw).filter(p => !turnout || p.port === 'B1')

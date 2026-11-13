@@ -2,18 +2,18 @@ import { STATUSES } from '@rail-across/core/track'
 import { useI18n } from '../../locales/i18nContext'
 
 /**
- * Planning status of a track or switch: existing, new or removed. `auto`, when
- * given, adds a first choice that leaves the status to be derived — its label
- * says what it currently comes to.
+ * Planning status of a track or switch: existing, new or removed (`statuses`,
+ * all three where not given). `auto`, when given, adds a first choice that
+ * leaves the status to be derived — its label says what it currently comes to.
  */
-export default function StatusField({ value, onChange, auto }) {
+export default function StatusField({ value, onChange, auto, statuses = STATUSES }) {
   const { t, fill } = useI18n()
   return (
     <div className="form-field">
       <label>{t('status')}</label>
       <select value={value ?? ''} onChange={e => onChange(e.target.value || null)}>
         {auto && <option value="">{fill('status_auto', { s: t(`status_${auto}`) })}</option>}
-        {STATUSES.map(s => <option key={s} value={s}>{t(`status_${s}`)}</option>)}
+        {statuses.map(s => <option key={s} value={s}>{t(`status_${s}`)}</option>)}
       </select>
     </div>
   )

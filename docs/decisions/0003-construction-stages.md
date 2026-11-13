@@ -2,7 +2,8 @@
 
 Status: **accepted** · replaces the Open-Layout-Tool's decision "time stages are variants, not years on tracks" ·
 amended 2026-10-29: who writes the stage list; stages are checked like everything else · the stages by their
-days and a connector of three ends for a track rebuilt: [0027](0027-construction-stages-by-their-days.md)
+days and a connector of three ends for a track rebuilt: [0027](0027-construction-stages-by-their-days.md) ·
+the stage list replaced by lifespans that state days: [0028](0028-one-model-lifespans-by-day.md)
 
 ## Decision
 

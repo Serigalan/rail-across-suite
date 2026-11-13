@@ -16,18 +16,28 @@ use crate::util::text;
 
 pub const STATUSES: [&str; 3] = ["existing", "new", "removal"];
 
-fn valid(s: Option<&str>) -> Option<&str> {
-    s.filter(|s| STATUSES.contains(s))
+/// What an object's lifespan says of it (decision 0028): new where it states a first day, removal where it
+/// states only a last one — nothing where it states neither, the object existing and staying.
+fn stated(o: Option<&Value>) -> Option<&'static str> {
+    let lifespan = o?.get("lifespan")?;
+    let has = |k: &str| lifespan.get(k).is_some_and(|v| !v.is_null());
+    if has("from") {
+        Some("new")
+    } else if has("to") {
+        Some("removal")
+    } else {
+        None
+    }
 }
 
 /// A track's status (`trackStatus`).
-pub fn track_status(track: Option<&Value>) -> &str {
-    track.and_then(|t| valid(text(t, "status"))).unwrap_or("existing")
+pub fn track_status(track: Option<&Value>) -> &'static str {
+    stated(track).unwrap_or("existing")
 }
 
 /// A switch's own status, or the one its tracks give it (`switchStatus`).
-pub fn switch_status<'a>(sw: &'a Value, track_by_id: &HashMap<String, &'a Value>) -> &'a str {
-    if let Some(own) = valid(text(sw, "status")) {
+pub fn switch_status(sw: &Value, track_by_id: &HashMap<String, &Value>) -> &'static str {
+    if let Some(own) = stated(Some(sw)) {
         return own;
     }
     let turnout = text(sw, "kind").unwrap_or(DEFAULT_SWITCH_KIND) == "turnout";

@@ -101,11 +101,11 @@ export function ksStation({ operationalPoint = 'op1' } = {}) {
   }
 }
 
-/** The core the station stands on, as far as the check reads it: two tracks, a switch, a station, two stages. */
+/** The core the station stands on, as far as the check reads it: two tracks, a switch, a station. */
 export function ksStationCore() {
   const track = (id, length) => ({ id, epsg: 25832, elements: [{ elementType: 0, length }] })
   return {
-    fields: { id: 'p', stages: [{ id: 's0' }, { id: 's1' }] },
+    fields: { id: 'p' },
     collections: {
       tracks: [track('t1', 250), track('t2', 150)],
       switches: [{ id: 'w1', kind: 'turnout', formVersion: 1, ports: {} }],

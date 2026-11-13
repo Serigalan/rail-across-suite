@@ -2136,6 +2136,7 @@
   "stage_link_end": "end",
   "stage_link_create": "Create connector",
   "stage_link_note_days": "B1 lacks \"in service until\" or B2 \"in service from\" — enter them in the track editor.",
+  "stage_link_day_open": "open",
   "stage_link_note_overlap": "B2 comes into service before B1 leaves it: both would be joined at once.",
   "stage_link_note_gap": "Days lie between B1's last and B2's first: A ends there meanwhile.",
   "civil_bridges": "Bridges",

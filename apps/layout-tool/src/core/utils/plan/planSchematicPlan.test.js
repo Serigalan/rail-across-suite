@@ -86,7 +86,7 @@ describe('schematic plan', () => {
 })
 
 describe('planning status in the schematic plan', () => {
-  const withStatus = tracks.map(tr => (tr.id === 'X' ? { ...tr, status: 'new' } : tr.id === 'S' ? { ...tr, status: 'removal' } : tr))
+  const withStatus = tracks.map(tr => (tr.id === 'X' ? { ...tr, lifespan: { from: 'open' } } : tr.id === 'S' ? { ...tr, lifespan: { to: '2028-06-01' } } : tr))
   const inner = buildSchematicPlan({
     tracks: withStatus, switches, platforms, paperKey: '297x840', scaleDen: 10000,
     titleBlock: { title: 'Test', rows: [], legend: '' },
@@ -101,13 +101,13 @@ describe('planning status in the schematic plan', () => {
       .toEqual(['#e6b400', '#ff0000', '#ff0000'])
   })
 
-  it('lets a switch state its own status over what its tracks say', () => {
-    const own = switches.map(sw => (sw.name === 'W1' ? { ...sw, status: 'existing' } : sw))
+  it('lets a switch state its own lifespan over what its tracks say', () => {
+    const own = switches.map(sw => (sw.name === 'W1' ? { ...sw, lifespan: { to: 'open' } } : sw))
     const items = buildSchematicPlan({
       tracks: withStatus, switches: own, platforms, paperKey: '297x840', scaleDen: 10000,
     }).sheets[0].items.find(i => i.type === 'group').items
     expect(items.filter(isWedge).map(i => i.fill).sort())
-      .toEqual(['#000000', '#e6b400', '#ff0000'])
+      .toEqual(['#e6b400', '#e6b400', '#ff0000'])
   })
 })
 

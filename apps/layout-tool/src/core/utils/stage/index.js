@@ -1,15 +1,14 @@
 import { recordAtStage, stagesOf } from '@rail-across/core/document'
 
 /**
- * The map at a construction stage (decision 0027): which stages a project
- * has — the existing state, every day something is put into or taken out of
- * service, the final state — and which of its tracks and switches stand at
- * one. The core works it out on what the stages need of the record alone:
- * the ids, the statuses and the days, not the geometry.
+ * The map at a construction stage (decisions 0027, 0028): which stages a
+ * project has — the existing state, every day something is put into or taken
+ * out of service, the final state — and which of its tracks and switches
+ * stand at one. The core works it out on what the stages need of the record
+ * alone: the ids and the lifespans, not the geometry.
  */
 
-const DAYS = ['status', 'inServiceFrom', 'inServiceTo']
-const pick = (o, keys) => Object.fromEntries(keys.filter(k => o[k] != null).map(k => [k, o[k]]))
+const life = (o) => (o.lifespan ? { lifespan: o.lifespan } : {})
 
 const lites = new WeakMap()
 /** What of the project the stages need, kept as long as the project object is. */
@@ -17,17 +16,16 @@ function lite(project) {
   if (!lites.has(project)) {
     lites.set(project, {
       id: project.id,
-      ...(project.stages ? { stages: project.stages } : {}),
-      tracks: (project.tracks ?? []).map(t => ({ id: t.id, ...pick(t, DAYS) })),
-      switches: (project.switches ?? []).map(s => ({ switchId: s.switchId, ...pick(s, DAYS) })),
-      platforms: (project.platforms ?? []).map(p => ({ id: p.id, ...pick(p, DAYS) })),
-      endMarks: (project.endMarks ?? []).map(m => ({ id: m.id, ...pick(m, DAYS) })),
+      tracks: (project.tracks ?? []).map(t => ({ id: t.id, ...life(t) })),
+      switches: (project.switches ?? []).map(s => ({ switchId: s.switchId, ...life(s) })),
+      platforms: (project.platforms ?? []).map(p => ({ id: p.id, ...life(p) })),
+      endMarks: (project.endMarks ?? []).map(m => ({ id: m.id, ...life(m) })),
     })
   }
   return lites.get(project)
 }
 
-/** The stages a project offers: [{ key, id, date? }] — 'existing', each day, 'final'. */
+/** The stages a project offers: [{ key, date? }] — 'existing', each day, 'final'. */
 export const stageOptions = (project) => (project ? stagesOf(lite(project)) : [])
 
 const members = new WeakMap()
@@ -60,8 +58,7 @@ export function dayLabel(day, language = 'de') {
 export function stageLabel(stage, t, language = 'de') {
   if (stage.key === 'existing') return t('stage_existing')
   if (stage.key === 'final') return t('stage_final')
-  const day = dayLabel(stage.date, language)
-  return stage.name ? `${stage.name} (${day})` : `${t('stage_from')} ${day}`
+  return `${t('stage_from')} ${dayLabel(stage.date, language)}`
 }
 
 /** A day (YYYY-MM-DD) of year `y`, month `m` (1–12), day `d`. */

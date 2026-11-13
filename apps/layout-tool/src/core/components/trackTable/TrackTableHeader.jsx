@@ -56,25 +56,27 @@ export function TrackTableBar({ title, length, days, cap, onCap, onMaxSpeeds, on
 }
 
 /**
- * The days a whole track is in service (decision 0027): its first and its
- * last, each a browser date field (ISO 8601), emptied none. They are the
- * track's and not an element's, so they stand in the table's head and not in
- * a column. `onChange(key, day)` with 'inServiceFrom' or 'inServiceTo'.
+ * The days a whole track is in service (decisions 0027, 0028): its lifespan's
+ * first and last, each a browser date field (ISO 8601), empty where the
+ * lifespan states none or "open". They are the track's and not an element's,
+ * so they stand in the table's head and not in a column. `onChange(key, day)`
+ * with 'from' or 'to', `day` undefined where the field was emptied.
  */
 export function TrackDays({ life = {}, onChange }) {
+  const day = (v) => (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : '')
   const { t } = useI18n()
   const field = (key, word, label, hint) => (
     <label className="track-table-day" title={t(hint)}>
       {t(word)}
-      <input type="date" className="track-table-input track-table-input-day" value={life[key] ?? ''} aria-label={t(label)}
+      <input type="date" className="track-table-input track-table-input-day" value={day(life[key])} aria-label={t(label)}
         onChange={e => onChange(key, e.target.value || undefined)} />
     </label>
   )
   return (
     <span className="track-table-days">
       <span className="track-table-days-lead">{t('table_in_service')}</span>
-      {field('inServiceFrom', 'table_in_service_from_word', 'table_in_service_from', 'table_in_service_from_hint')}
-      {field('inServiceTo', 'table_in_service_to_word', 'table_in_service_to', 'table_in_service_to_hint')}
+      {field('from', 'table_in_service_from_word', 'table_in_service_from', 'table_in_service_from_hint')}
+      {field('to', 'table_in_service_to_word', 'table_in_service_to', 'table_in_service_to_hint')}
     </span>
   )
 }

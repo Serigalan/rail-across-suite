@@ -4,10 +4,13 @@
 //! The one door for infra-data documents (`door.js`; decision 0021 — what
 //! was "the core 1.0 document"): what comes in is checked
 //! here — the file's shape, each domain's version and schema, every object
-//! against its domain's schema, the blobs against their hashes — and what is
-//! written is checked the same way before it leaves. A domain of an earlier
-//! schema of its version is brought to this build's first, and an infra-data
-//! 1.0 document to 2.0, the layers of decision 0025 (S-R10).
+//! against its domain's schema, the blobs against their hashes, what a schema
+//! cannot say (a lifespan's days) — and what is written is checked the same
+//! way before it leaves. A document of before is brought forward: an
+//! infra-data 1.0 document to 2.0, the layers of decision 0025 (S-R10), a
+//! domain of an earlier schema of 2.0 to 2.0's last — both told apart by the
+//! schemas' hashes, as they were then —, and from there version by version
+//! (`STEPS`; decision 0028: every change of a schema raises the number).
 
 use std::collections::{HashMap, HashSet};
 use std::sync::OnceLock;
@@ -35,10 +38,10 @@ pub const FORMAT_NAME: &str = "infra-data-2.0";
 pub const OLD_FORMAT: &str = "rail-across";
 
 const ENVELOPE: &str = include_str!("../../../schemas/infra-data.schema.json");
-const CORE: &str = include_str!("../../../schemas/core/2.0.schema.json");
-const CIVIL: &str = include_str!("../../../schemas/civil/1.0.schema.json");
-const SIGNALLING: &str = include_str!("../../../schemas/signalling/2.0.schema.json");
-const ELECTRIFICATION: &str = include_str!("../../../schemas/electrification/1.0.schema.json");
+const CORE: &str = include_str!("../../../schemas/core/3.0.schema.json");
+const CIVIL: &str = include_str!("../../../schemas/civil/2.0.schema.json");
+const SIGNALLING: &str = include_str!("../../../schemas/signalling/3.0.schema.json");
+const ELECTRIFICATION: &str = include_str!("../../../schemas/electrification/2.0.schema.json");
 
 struct Schemas {
     set: SchemaSet,
@@ -108,6 +111,27 @@ const CORE_2_THIRD: &str = "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd1
 const CIVIL_FIRST: &str = "sha256:0b73763db4b8ca57f56472f4b8aeef8a8b02369f4f8a9e3f2b4072480c48b1fb";
 /// Civil 1.0 without the runs, before its bridges, retaining walls and noise barriers.
 const CIVIL_SECOND: &str = "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60";
+/// The domains as infra-data 2.0 had them last, before versions counted (decision 0028): the version and the
+/// schema each went by. What the steps by number start from.
+const CORE_2_LAST: &str = "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3";
+const CIVIL_LAST: &str = "sha256:976db8ee32fc843127777a4a90345dcb074d6cb962916ec0b4856b693a6d241b";
+const SIGNALLING_2_LAST: &str = "sha256:b46b740ba722a6eae945038d8a6149cd0c540258df478a77b4a9b8988ae7d515";
+const ELECTRIFICATION_LAST: &str = "sha256:b7149b613fc281af8623e05eb0fb7924e788f49533d6d0c9e018f1fed37b0b30";
+/// The versions before this build's that a step starts from, with the hash each one's schema goes by.
+const PAST: &[(&str, &str, &str)] = &[
+    ("core", "2.0", CORE_2_LAST),
+    ("civil", "1.0", CIVIL_LAST),
+    ("signalling", "2.0", SIGNALLING_2_LAST),
+    ("electrification", "1.0", ELECTRIFICATION_LAST),
+];
+
+/// The hash the schema of a domain's version goes by: this build's, or one of a version before (`PAST`).
+fn hash_of(name: &str, version: &str) -> Option<&'static str> {
+    if domain_version(name) == Some(version) {
+        return schema_hashes().get(name).map(String::as_str);
+    }
+    PAST.iter().find(|(d, v, _)| *d == name && *v == version).map(|(_, _, h)| *h)
+}
 /// The domains of infra-data 1.0, with the schema each had last.
 const BEFORE: &[(&str, &str)] = &[("core", CORE_THIRD), ("layout", LAYOUT_FIRST), ("signalling", SIGNALLING_SEVENTH)];
 
@@ -350,8 +374,8 @@ fn migrated_within_1_0(doc: &Value) -> Value {
     Value::Object(out)
 }
 
-/// An infra-data 2.0 document with its core and civil of an earlier schema of
-/// 2.0 brought to this build's: a stopping place a platform names is a
+/// An infra-data 2.0 document with its core 2.0 and civil 1.0 of an earlier schema
+/// brought to their last: a stopping place a platform names is a
 /// passenger stop (core's second), the named runs of tracks are the core's, no
 /// longer civil's (core's third, civil's second), stages may have days (core's fourth).
 fn migrated_within_2_0(doc: &Value) -> Value {
@@ -378,7 +402,7 @@ fn migrated_within_2_0(doc: &Value) -> Value {
     }
     // Bridges, retaining walls and noise barriers only add: what was is as it was.
     if let Some(v) = civil.as_mut().filter(|v| schema(Some(v)).as_deref() == Some(CIVIL_SECOND)) {
-        *v = with_schema(v, &schema_hashes()["civil"], None);
+        *v = with_schema(v, CIVIL_LAST, None);
     }
     if let Some(c) = core.as_mut() {
         if schema(Some(c)).as_deref() == Some(CORE_2_SECOND) {
@@ -388,7 +412,7 @@ fn migrated_within_2_0(doc: &Value) -> Value {
         }
         // Days on the stages and the stage link only add: what was is as it was.
         if schema(Some(c)).as_deref() == Some(CORE_2_THIRD) {
-            *c = with_schema(c, &schema_hashes()["core"], None);
+            *c = with_schema(c, CORE_2_LAST, None);
         }
     }
     if schema(core.as_ref()) == core_was && schema(civil.as_ref()) == civil_was {
@@ -402,18 +426,6 @@ fn migrated_within_2_0(doc: &Value) -> Value {
     }
     let mut out = obj(doc);
     out.insert("domains".into(), Value::Object(d));
-    // A document that carries its schemas carries this build's of what it changed.
-    if let Some(Value::Object(carried)) = doc.get("schemas") {
-        let mut carried = carried.clone();
-        for (name, was) in [("core", core_was), ("civil", civil_was)] {
-            let now = &schema_hashes()[name];
-            if let Some(was) = was.filter(|w| w != now && carried.contains_key(w)) {
-                carried.shift_remove(&was);
-                carried.insert(now.clone(), schema_of(name).cloned().unwrap_or(Value::Null));
-            }
-        }
-        out.insert("schemas".into(), Value::Object(carried));
-    }
     Value::Object(out)
 }
 
@@ -426,8 +438,8 @@ fn sorted_by_id(mut items: Vec<Value>) -> Vec<Value> {
 /// `layout` and the platforms into `civil`; the stopping places out of `signalling` into
 /// the core, a stopping place's platform into the platform's `stoppingPlaceIds`; a
 /// boundary marked by a platform marked by the stopping place at it, one made over the
-/// platform where there is none. Schemas it carried, it carries as 2.0's. A domain of
-/// another schema is left as it was, for the check to name.
+/// platform where there is none. The domains are 2.0's as it was last (`PAST`). A
+/// domain of another schema is left as it was, for the check to name.
 fn to_2_0(doc: &Value) -> Value {
     let domains = obj(&doc["domains"]);
     let schema_is = |name: &str, hash: &str| domains.get(name).and_then(|d| d.get("schema")).and_then(Value::as_str) == Some(hash);
@@ -448,8 +460,8 @@ fn to_2_0(doc: &Value) -> Value {
         stopping = cols.shift_remove("stoppingPlaces").and_then(|v| v.as_array().cloned()).unwrap_or_default();
         layers::boundaries_by_stopping_place(&mut cols, &mut stopping, &platforms);
         let mut d = obj(sig);
-        d.insert("version".into(), json!(crate::core_format::domain_version("signalling")));
-        d.insert("schema".into(), json!(schema_hashes()["signalling"]));
+        d.insert("version".into(), json!("2.0"));
+        d.insert("schema".into(), json!(SIGNALLING_2_LAST));
         d.insert("collections".into(), Value::Object(cols));
         signalling = Some(Value::Object(d));
     }
@@ -458,8 +470,8 @@ fn to_2_0(doc: &Value) -> Value {
     let layout_cols = layout.map(|l| obj(l.get("collections").unwrap_or(&Value::Null))).unwrap_or_default();
     core_cols.insert("trackPaths".into(), layout_cols.get("trackPaths").cloned().unwrap_or(json!([])));
     let mut c = obj(&core);
-    c.insert("version".into(), json!(crate::core_format::domain_version("core")));
-    c.insert("schema".into(), json!(schema_hashes()["core"]));
+    c.insert("version".into(), json!("2.0"));
+    c.insert("schema".into(), json!(CORE_2_LAST));
     c.insert("collections".into(), Value::Object(core_cols));
     out_domains.insert("core".into(), Value::Object(c));
 
@@ -471,8 +483,8 @@ fn to_2_0(doc: &Value) -> Value {
     let civil_fields = layout.map(|l| obj(l.get("fields").unwrap_or(&Value::Null))).unwrap_or_default();
     if layout.is_some() || layers::holds_anything(&civil_fields, &civil_cols) {
         let mut d = Object::new();
-        d.insert("version".into(), json!(crate::core_format::domain_version("civil")));
-        d.insert("schema".into(), json!(schema_hashes()["civil"]));
+        d.insert("version".into(), json!("1.0"));
+        d.insert("schema".into(), json!(CIVIL_LAST));
         d.insert("dependsOn".into(), json!(["core"]));
         d.insert("fields".into(), Value::Object(civil_fields));
         d.insert("collections".into(), Value::Object(civil_cols));
@@ -484,17 +496,117 @@ fn to_2_0(doc: &Value) -> Value {
 
     let mut out = obj(doc);
     out.insert("version".into(), json!(VERSION));
-    if doc.get("schemas").is_some() {
-        let mut carried = Object::new();
-        for name in out_domains.keys() {
-            if let (Some(h), Some(s)) = (schema_hashes().get(name.as_str()), schema_of(name)) {
-                carried.insert(h.clone(), s.clone());
-            }
-        }
-        out.insert("schemas".into(), Value::Object(carried));
-    }
     out.insert("domains".into(), Value::Object(out_domains));
     Value::Object(out)
+}
+
+// ── Steps by number ─────────────────────────────────────────────────────────
+
+/// One step of the format: the domains it changes, each from one version to the next, and what it does to a
+/// document that holds them at the versions it starts from.
+struct Step {
+    domains: &'static [(&'static str, &'static str, &'static str)],
+    apply: fn(&Value) -> Value,
+}
+
+/// The steps in their order. A step applies where a domain it names is at the version it starts from; the
+/// others it names are then at theirs too, or the document is of no version this build reads.
+const STEPS: &[Step] = &[Step {
+    domains: LIFESPANS_BY_DAY,
+    apply: lifespans_by_day,
+}];
+
+const LIFESPANS_BY_DAY: &[(&str, &str, &str)] =
+    &[("core", "2.0", "3.0"), ("civil", "1.0", "2.0"), ("signalling", "2.0", "3.0"), ("electrification", "1.0", "2.0")];
+
+fn version_of<'a>(doc: &'a Value, name: &str) -> Option<&'a str> {
+    doc["domains"].get(name)?.get("version")?.as_str()
+}
+
+/// Lifespans by day (decision 0028): a lifespan named construction stages of `core.fields.stages` — the first
+/// the existing state, the last the final one, each between them beginning on its day —, and states days now.
+/// A `from` is the day its stage begins, a `to` the day before its stage does; the final stage is "open", as is
+/// a stage the list lacks or one without a day; a `from` at the existing state is no statement. The list goes.
+fn lifespans_by_day(doc: &Value) -> Value {
+    let mut domains = obj(&doc["domains"]);
+    let stages = list(&doc["domains"]["core"]["fields"], "stages");
+    let first = stages.first().map(|s| js_string(s.get("id")));
+    let day_of = |id: &str| -> Option<String> {
+        let between = stages.get(1..stages.len().saturating_sub(1)).unwrap_or(&[]);
+        let stage = between.iter().find(|s| s.get("id").and_then(Value::as_str) == Some(id))?;
+        stage.get("date").and_then(Value::as_str).filter(|d| crate::stages::is_day(d)).map(str::to_string)
+    };
+    let by_day = |lifespan: &Value| -> Option<Value> {
+        let mut out = Object::new();
+        if let Some(id) = lifespan.get("from").and_then(Value::as_str).filter(|id| Some(*id) != first.as_deref()) {
+            out.insert("from".into(), json!(day_of(id).unwrap_or_else(|| crate::stages::OPEN.into())));
+        }
+        if let Some(id) = lifespan.get("to").and_then(Value::as_str) {
+            let day = day_of(id).and_then(|d| crate::stages::day_before(&d));
+            out.insert("to".into(), json!(day.unwrap_or_else(|| crate::stages::OPEN.into())));
+        }
+        (!out.is_empty()).then_some(Value::Object(out))
+    };
+    for (name, _, to) in LIFESPANS_BY_DAY {
+        let Some(Value::Object(domain)) = domains.get_mut(*name) else { continue };
+        domain.insert("version".into(), json!(to));
+        domain.insert("schema".into(), json!(hash_of(name, to)));
+        if *name == "core"
+            && let Some(Value::Object(fields)) = domain.get_mut("fields")
+        {
+            fields.shift_remove("stages");
+        }
+        let Some(Value::Object(cols)) = domain.get_mut("collections") else { continue };
+        for items in cols.values_mut().filter_map(Value::as_array_mut) {
+            for o in items.iter_mut().filter_map(Value::as_object_mut) {
+                let Some(lifespan) = o.get("lifespan") else { continue };
+                match by_day(lifespan) {
+                    Some(l) => o.insert("lifespan".into(), l),
+                    None => o.shift_remove("lifespan"),
+                };
+            }
+        }
+    }
+    let mut out = obj(doc);
+    out.insert("domains".into(), Value::Object(domains));
+    Value::Object(out)
+}
+
+/// A document of infra-data 2.0 brought forward step by step to the versions this build reads; refused where a
+/// step finds its domains at versions that do not belong together, or of another schema than the version's.
+fn stepped(doc: Value) -> Result<Value> {
+    let mut doc = doc;
+    for step in STEPS {
+        let present: Vec<_> = step.domains.iter().filter(|(name, _, _)| doc["domains"].get(*name).is_some()).collect();
+        if !present.iter().any(|(name, from, _)| version_of(&doc, name) == Some(*from)) {
+            continue;
+        }
+        if let Some((name, _, _)) = present.iter().find(|(name, from, _)| version_of(&doc, name) != Some(*from)) {
+            return Err(PayloadError::with(
+                "unsupported_version",
+                vec![format!("/domains/{name}: {} does not go with the other domains' versions", version_of(&doc, name).unwrap_or(""))],
+            ));
+        }
+        let wrong: Vec<String> = present
+            .iter()
+            .filter(|(name, from, _)| doc["domains"][*name].get("schema").and_then(Value::as_str) != hash_of(name, from))
+            .map(|(name, from, _)| format!("/domains/{name}/schema: is not the schema of {name} {from}"))
+            .collect();
+        if !wrong.is_empty() {
+            return Err(PayloadError::with("invalid_payload", wrong));
+        }
+        doc = (step.apply)(&doc);
+    }
+    Ok(doc)
+}
+
+/// Whether version `a` ("N.M") is later than `b`.
+fn later(a: &str, b: &str) -> bool {
+    let parts = |v: &str| -> Option<(u32, u32)> {
+        let (major, minor) = v.split_once('.')?;
+        Some((major.parse().ok()?, minor.parse().ok()?))
+    };
+    matches!((parts(a), parts(b)), (Some(a), Some(b)) if a > b)
 }
 
 fn breaches(errors: &[Breach], prefix: &str) -> Vec<String> {
@@ -511,9 +623,9 @@ fn check(name: &str, value: &Value) -> Vec<Breach> {
         .unwrap_or_else(|e| vec![Breach { path: "/".into(), message: e }])
 }
 
-/// Check an infra-data document; returns it as infra-data-2.0 — an infra-data 1.0
-/// one brought to it, a domain of an earlier schema of its version first brought to
-/// that version's last —, or a PayloadError (`checkDocument`).
+/// Check an infra-data document; returns it as this build reads it — an infra-data 1.0
+/// one brought to 2.0, a domain of an earlier schema of 2.0 to 2.0's last, and from there
+/// version by version —, or a PayloadError (`checkDocument`).
 pub fn check_document(given: &Value) -> Result<Value> {
     let version = given.get("version").and_then(Value::as_str);
     if given.get("format").and_then(Value::as_str) != Some(FORMAT) || !matches!(version, Some(VERSION | VERSION_BEFORE)) {
@@ -537,6 +649,14 @@ pub fn check_document(given: &Value) -> Result<Value> {
             }
         }
     }
+    // What the file carries is checked as it came: the schemas and the blobs against their hashes.
+    for (member, what) in [("schemas", "another schema"), ("blobs", "other content")] {
+        for (hash, value) in given.get(member).and_then(Value::as_object).into_iter().flatten() {
+            if content_hash(value) != *hash {
+                return Err(PayloadError::with("invalid_payload", vec![format!("/{member}/{hash}: holds {what}")]));
+            }
+        }
+    }
     let doc = if version == Some(VERSION_BEFORE) {
         let within = migrated_within_1_0(given);
         let wrong: Vec<String> = BEFORE
@@ -555,28 +675,24 @@ pub fn check_document(given: &Value) -> Result<Value> {
     } else {
         migrated_within_2_0(given)
     };
-    if let Some(Value::Object(schemas)) = doc.get("schemas") {
-        for (hash, schema) in schemas {
-            if content_hash(schema) != *hash {
-                return Err(PayloadError::with("invalid_payload", vec![format!("/schemas/{hash}: holds another schema")]));
-            }
-        }
-    }
-    if let Some(Value::Object(blobs)) = doc.get("blobs") {
-        for (hash, value) in blobs {
-            if content_hash(value) != *hash {
-                return Err(PayloadError::with("invalid_payload", vec![format!("/blobs/{hash}: holds other content")]));
-            }
-        }
+    let mut doc = stepped(doc)?;
+    // A document brought forward that carried its schemas carries this build's.
+    if doc != *given && given.get("schemas").is_some() {
+        let carried = carried_schemas(&doc);
+        doc.as_object_mut().expect("document").insert("schemas".into(), carried);
     }
     let mut found = Vec::new();
     if let Some(Value::Object(domains)) = doc.get("domains") {
         for (name, domain) in domains {
             let version = domain.get("version");
             if domain_version(name).map(|v| Value::String(v.into())).as_ref() != version {
+                let newer = domain_version(name).zip(version.and_then(Value::as_str)).filter(|(ours, theirs)| later(theirs, ours));
                 return Err(PayloadError::with(
                     "unsupported_version",
-                    vec![format!("/domains/{name}: {}", js_string(version))],
+                    vec![match newer {
+                        Some((ours, theirs)) => format!("/domains/{name}: {theirs} is newer than this program reads ({ours})"),
+                        None => format!("/domains/{name}: {}", js_string(version)),
+                    }],
                 ));
             }
             if domain.get("schema").and_then(Value::as_str) != schema_hashes().get(name.as_str()).map(String::as_str) {
@@ -598,10 +714,14 @@ pub fn check_document(given: &Value) -> Result<Value> {
             if let Some(Value::Object(cols)) = domain.get("collections") {
                 for (cname, list) in cols {
                     let mut seen = HashSet::new();
-                    for o in list.as_array().into_iter().flatten() {
+                    for (i, o) in list.as_array().into_iter().flatten().enumerate() {
                         let id = o.get("id").map(stringify).unwrap_or_else(|| "undefined".into());
                         if !seen.insert(id) {
                             found.push(format!("/domains/{name}/collections/{cname}: holds {} twice", js_string(o.get("id"))));
+                        }
+                        // What the schema cannot say of a lifespan: its days are days, the first not after the last.
+                        if let Some(breach) = o.get("lifespan").filter(|l| l.is_object()).and_then(crate::stages::lifespan_breach) {
+                            found.push(format!("/domains/{name}/collections/{cname}/{i}/lifespan{breach}"));
                         }
                     }
                 }
@@ -632,19 +752,25 @@ fn switch_branches_without_switch(doc: &Value) -> Vec<String> {
     found
 }
 
+/// This build's schemas of the domains a document holds, by their hashes — what a file that travels carries.
+fn carried_schemas(doc: &Value) -> Value {
+    let mut carried = Object::new();
+    for name in doc["domains"].as_object().into_iter().flat_map(|o| o.keys()) {
+        if let (Some(h), Some(s)) = (schema_hashes().get(name.as_str()), schema_of(name)) {
+            carried.insert(h.clone(), s.clone());
+        }
+    }
+    Value::Object(carried)
+}
+
 /// The infra-data-2.0 document of a record (dehydrated), checked as the door checks
 /// what comes in; `carry_schemas` puts the domains' schemas into it, `check:
 /// false` leaves the check out (`toDocument`).
 pub fn to_document(record: &Value, carry_schemas: bool, check: bool) -> Result<Value> {
     let mut doc = record_to_document(record, schema_hashes())?;
     if carry_schemas {
-        let mut carried = Object::new();
-        for d in doc["domains"].as_object().map(|o| o.keys().cloned().collect::<Vec<_>>()).unwrap_or_default() {
-            if let (Some(h), Some(s)) = (schema_hashes().get(d.as_str()), schema_of(&d)) {
-                carried.insert(h.clone(), s.clone());
-            }
-        }
-        doc.as_object_mut().expect("document").insert("schemas".into(), Value::Object(carried));
+        let carried = carried_schemas(&doc);
+        doc.as_object_mut().expect("document").insert("schemas".into(), carried);
     }
     if check { check_document(&doc) } else { Ok(doc) }
 }

@@ -236,11 +236,11 @@ const OSRD_PORT_NAMES = {
 OSRD_PORT_NAMES.single_slip = OSRD_PORT_NAMES.crossing
 OSRD_PORT_NAMES.double_slip = OSRD_PORT_NAMES.crossing
 
-/** A switch's label, and its planning status where it states one of its own. */
+/** A switch's label, and its lifespan where it states one of its own (decision 0028). */
 function switchExtensions(sw) {
   const ext = {}
   if (sw.name) ext.sncf = { label: sw.name }
-  if (sw.status) ext.olt = { status: sw.status }
+  if (sw.lifespan) ext.olt = { lifespan: sw.lifespan }
   return Object.keys(ext).length ? ext : null
 }
 

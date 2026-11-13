@@ -43,12 +43,14 @@ describe('the electrification of a net (decision 0025)', () => {
     expect(cov.bySystem['15000V']).toBeCloseTo(1000, 6)
   })
 
-  it('keeps the planning status as a lifespan over the project\'s two stages', () => {
+  it('keeps the planning status as a lifespan, the day open (decision 0028)', () => {
     const e = newElectrification({ trackId: 't1', from: 0, to: 100, system: '15000V' })
-    expect(statusOf(e, 'p1')).toBe('existing')
-    expect(statusOf(withStatus(e, 'new', 'p1'), 'p1')).toBe('new')
-    expect(statusOf(withStatus(e, 'removal', 'p1'), 'p1')).toBe('removal')
-    expect(withStatus(withStatus(e, 'new', 'p1'), 'existing', 'p1')).toEqual(e)
+    expect(statusOf(e)).toBe('existing')
+    expect(withStatus(e, 'new').lifespan).toEqual({ from: 'open' })
+    expect(statusOf(withStatus(e, 'removal'))).toBe('removal')
+    expect(withStatus(withStatus(e, 'new'), 'existing')).toEqual(e)
+    const dated = { ...e, lifespan: { from: '2027-05-01' } }
+    expect(withStatus(dated, 'new')).toEqual(dated)
   })
 })
 

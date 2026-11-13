@@ -6,7 +6,7 @@
 use serde_json::{Value, json};
 
 /// A payload this build will not take: `code` the key the interface
-/// translates (`invalid_payload`, `unsupported_version`, `stages_unsupported`,
+/// translates (`invalid_payload`, `unsupported_version`,
 /// …) and `details` what was found, as "path: what" lines.
 #[derive(Debug, Clone, PartialEq)]
 pub struct PayloadError {

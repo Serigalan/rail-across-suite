@@ -32,3 +32,4 @@ it costs. A record is not rewritten when a decision changes; a new one replaces 
 | [0025](0025-layers-on-the-core.md) | Layers on the core: the alignment in the Layout-Tool; signalling, electrification and civil each in a tool of its own | accepted |
 | [0026](0026-operations-in-revisions.md) | A project's operations in revisions, as one operations-1.0 document | accepted |
 | [0027](0027-construction-stages-by-their-days.md) | Construction stages by their days, and a connector for a track rebuilt | accepted |
+| [0028](0028-one-model-lifespans-by-day.md) | One model, lifespans by day, and a format that counts its versions | accepted |

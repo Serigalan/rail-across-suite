@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { loadSwitches, loadTracks, updateSwitch } from '../../../storage'
-import { switchStatus } from '@rail-across/core/track'
+import { lifespanWithStatus, switchStatus, trackStatus } from '@rail-across/core/track'
 import StatusField from '../StatusField'
 import { SWITCH_PICK_LAYERS, hasSwitch } from '../../../map/pick'
 import { useI18n } from '../../../locales/i18nContext'
@@ -10,9 +10,10 @@ import useMapPick, { useSelectedOnMap } from '../../../map/useMapPick'
 
 /**
  * The planning status of a switch, picked on the map like a switch to delete.
- * Left open, the status follows the switch's tracks (planStatus.switchStatus),
- * which is what it is for most switches — only one renewed in a standing
- * track, or kept where its branch goes, needs a status of its own.
+ * Left open, the status follows the switch's tracks (switchStatus), which is
+ * what it is for most switches — only one renewed in a standing track, or
+ * taken out where its tracks stay, needs a lifespan of its own (decision
+ * 0028: a switch with none shows what its tracks say).
  */
 export default function SwitchStatusForm({ onCommitted }) {
   const { t, fill } = useI18n()
@@ -26,17 +27,17 @@ export default function SwitchStatusForm({ onCommitted }) {
       const sw = loadSwitches().find(s => s.switchId === switchId)
       if (!sw) return
       setSelected(sw)
-      setStatus(sw.status ?? null)
+      setStatus(sw.lifespan ? trackStatus(sw) : null)
     },
   })
   useSelectedOnMap(selected ? { switchId: selected.switchId } : null)
 
   const derived = selected
-    ? switchStatus({ ...selected, status: null }, new Map(loadTracks().map(tr => [tr.id, tr])))
+    ? switchStatus({ ...selected, lifespan: undefined }, new Map(loadTracks().map(tr => [tr.id, tr])))
     : null
 
   const handleCommit = () => {
-    updateSwitch(selected.switchId, { status: status ?? undefined })
+    updateSwitch(selected.switchId, { lifespan: lifespanWithStatus(selected.lifespan, status) })
     onCommitted?.()
   }
 
@@ -47,7 +48,7 @@ export default function SwitchStatusForm({ onCommitted }) {
       ) : (
         <div className="element-form">
           <p>{fill('switch_status_selected', { name: selected.name || selected.switchId.slice(0, 8) })}</p>
-          <StatusField value={status} onChange={setStatus} auto={derived} />
+          <StatusField value={status} onChange={setStatus} auto={derived} statuses={['new', 'removal']} />
         </div>
       )}
       {selected

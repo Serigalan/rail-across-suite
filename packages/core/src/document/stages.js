@@ -1,21 +1,23 @@
 import { viaNative } from './viaNative.js'
 
 /**
- * The construction stages of a record by their days (decision 0027 on 0003):
- * the existing state, a stage for every day something is put into or taken
- * out of service (`inServiceFrom`, `inServiceTo` of a track, switch, platform
- * or end mark), the final state. The core's module works it out (crates/doc,
- * stages).
+ * The states a project passes through, worked out of its lifespans (decision
+ * 0028): the existing one, one for every day something is put into or taken
+ * out of service (a lifespan's `from`, the day after its `to` — of a track,
+ * switch, platform, end mark, civil structure or an object of a layer), the
+ * final one. Nothing of it is kept: there is no register of stages. The
+ * core's module works it out (crates/doc, stages).
  */
 
-/** The stages of a record as a tool offers them: [{ key, id, date?, name? }] — 'existing', each day, 'final'. */
+/** The states of a record as a tool offers them: [{ key, date? }] — 'existing', each day, 'final'. */
 export const stagesOf = (record) => viaNative('document.stagesOf', record ?? {})
 
 /**
- * The record as it stands at the stage `stage` ('existing', a day 'YYYY-MM-DD',
+ * The record as it stands at the state `stage` ('existing', a day 'YYYY-MM-DD',
  * 'final'): what is in service then, a switch's port whose track is not there
- * empty, the layers' objects by their lifespans. Any day stands for the stage
- * in force on it — before every dated one the existing state, never the final
- * state. The record as it is where `stage` is none of these.
+ * empty, the civil structures and the layers' objects by their lifespans. On
+ * a day stands what has a first day up to it and no last day before it; what
+ * is new or removed with its day open ("open") only tells the final state
+ * from the days. The record as it is where `stage` is none of these.
  */
 export const recordAtStage = (record, stage) => (record ? viaNative('document.recordAtStage', { record, stage }) : record)

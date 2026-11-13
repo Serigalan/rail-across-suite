@@ -34,7 +34,7 @@ writes canonical JSON and content hashes. The `project` module opens the door fo
   "format": "infra-data",
   "version": "1.0",
   "domains": {
-    "core":   { "version": "1.0", "schema": "sha256:…", "fields": { "id": "…", "stages": [ … ] },
+    "core":   { "version": "1.0", "schema": "sha256:…", "fields": { "id": "…" },
                 "collections": { "tracks": [ … ], "switches": [ … ], "platforms": [ … ], "endMarks": [ … ],
                                  "kmLines": [ … ], "operationalPoints": [ … ] } },
     "layout": { "version": "1.0", "schema": "sha256:…", "dependsOn": ["core"], "fields": { … },
@@ -51,8 +51,8 @@ it differs from the record the app works on in memory:
 
 | the record | infra-data-1.0 (the document) |
 |---|---|
-| one object with everything | `core`: the net, what stands on it, reference data, stages; `layout`: what only the layout tool needs |
-| `status`: `existing`, `new`, `removal` | `lifespan`: none, `{ from: final }`, `{ to: final }` over `stages` (existing state, final state) |
+| one object with everything | `core`: the net, what stands on it, reference data; `layout`: what only the layout tool needs |
+| `lifespan` `{ from?, to? }`, days or `"open"` (decision 0028) | `lifespan`, the same |
 | `stationName`, `uicStation` (tracks), `stationName`, `code` (platforms) | `operationalPoint`, a reference into `operationalPoints` `{ id, name, rl100, uic }` |
 | a platform's `trackId`, `startStation`, `endStation`, `side` | `at`: a `TrackRange` `{ anchor: 'station', trackId, startStation, endStation, side }` |
 | an end mark's `trackId`, `endpoint` | `at`: a `TrackEnd` `{ trackId, endpoint }` |
@@ -70,15 +70,16 @@ checks the document it made, so a record with a field the format does not have i
 when someone else opens it.
 
 **Lossless.** A record turned into a document and back is the record; a document turned into a record and back
-is the same bytes. Where the record says one thing two ways, the document says it one way: an explicit status
-`existing` is no lifespan, an empty station text no station, `null` in a field of a track, switch, platform or end
+is the same bytes. Where the record says one thing two ways, the document says it one way: an empty station
+text is no station, `null` in a field of a track, switch, platform or end
 mark an absent field (in an element, `null` keeps its meaning — a straight end).
 
-**What the app does not hold yet is drawn from what it holds.** The record has no stages and no register; the
-document's are drawn from it: two stages with ids drawn from the project's id, one operational point per station
-name with its id drawn from the name and the codes stated for it (two codes under one name: two points). So the
-same record gives the same ids on every device. A document with stages of its own is refused
-(`stages_unsupported`) until the app holds stages (roadmap, phase 2).
+**What the app does not hold yet is drawn from what it holds.** The record has no register of operational
+points; the document's is drawn from it: one operational point per station name with its id drawn from the name
+and the codes stated for it (two codes under one name: two points). So the same record gives the same ids on
+every device. There are no construction stages to keep: a lifespan states its days, and the stages are worked
+out of them (`stagesOf`; decision 0028). A document of before with a register of stages is brought forward by
+the door.
 
 **Schemas by hash.** A domain names its schema by the hash of its canonical JSON; a document of a known version
 must name exactly that schema. A file that travels carries the schemas (`schemas`), each checked against the

@@ -133,7 +133,10 @@ the app working on the document instead of its record.
   *Done* ([decision 0027](docs/decisions/0027-construction-stages-by-their-days.md)): the stages by their days —
   a track's, switch's, platform's or end mark's first and last day in service, typed for a track in the
   Layout-Tool's track editor —, a record at a stage in the core, the Layout-Tool's map at a stage chosen beside
-  the working copy's bar, the construction stage connector of three ends.
+  the working copy's bar, the construction stage connector of three ends. *Done* ([decision
+  0028](docs/decisions/0028-one-model-lifespans-by-day.md), phase A): no stage list at all — a lifespan states
+  days, `"open"` where the day is not known yet, and the states of a project are worked out of the lifespans,
+  the civil structures and the layers' objects among them.
 - The operational point register (in the format since its first version, drawn from the station texts) edited as such.
 - Domains with ownership: `core` (net, platforms, end marks, structures, operational point register, designed
   kilometrage) and discipline domains that store references only into the core.

@@ -113,7 +113,7 @@ export default function Editor({ project, variant, head, copy: opened, readOnly 
   const addRange = () => {
     const obj = withStatus(newElectrification({
       trackId: form.trackId, from: form.from, to: form.to, system: form.system, name: form.name.trim() || undefined,
-    }), form.status, record.id)
+    }), form.status)
     change(d => added(d, obj))
     setForm(f => ({ ...NEW_FORM, system: f.system, status: f.status }))
     setSelection(obj.id)
@@ -344,8 +344,8 @@ function RangeEditor({ range, findings, trackName, record, back, onChange, onDel
           <NumberField compact label={t('to')} value={to} disabled={readOnly} onChange={setTo} onBlur={commitStations} />
           <SelectField compact label={t('system')} value={range.system} disabled={readOnly} options={systemOptions(t)}
             onChange={(system) => system && onChange({ ...range, system })} />
-          <SelectField compact label={t('status')} value={statusOf(range, record.id)} disabled={readOnly} options={statusOptions(t)}
-            onChange={(status) => status && onChange(withStatus(range, status, record.id))} />
+          <SelectField compact label={t('status')} value={statusOf(range)} disabled={readOnly} options={statusOptions(t)}
+            onChange={(status) => status && onChange(withStatus(range, status))} />
           <TextField wide compact label={t('name')} value={range.name ?? ''} disabled={readOnly}
             onChange={(name) => { const { name: _n, ...rest } = range; onChange(name.trim() ? { ...rest, name } : rest) }} />
         </div>

@@ -39,9 +39,9 @@ export namespace Document {
   }
 }
 
-/** Rail-Data-Core, domain core 2.0 */
+/** Rail-Data-Core, domain core 3.0 */
 export namespace Core {
-  /** The base every module depends on: the net (tracks, switches and connectors), what stands on it for every discipline (platforms, end marks), the reference data (km lines, the operational point register) and the construction stages. Written by the layout tool, carried by the core library. See docs/data-model.md. — 2.0 (decision 0025): the alignment and what every layer places things by; the platforms are civil's, the stopping places came in from signalling, the named runs of tracks from layout. */
+  /** The base every module depends on: the net (tracks, switches and connectors), what stands on it for every discipline (platforms, end marks) and the reference data (km lines, the operational point register). Written by the layout tool, carried by the core library. See docs/data-model.md. — 2.0 (decision 0025): the alignment and what every layer places things by; the platforms are civil's, the stopping places came in from signalling, the named runs of tracks from layout. — 3.0 (decision 0028): no construction stages; a lifespan states days. */
   export type Root = {
     fields: Fields
     collections: {
@@ -99,19 +99,16 @@ export namespace Core {
   export type TrackPath = {
     trackIds: Array<Ref>
   }
-  /** The first construction stage an object exists in and the first it no longer exists in; an absent end is open, no lifespan at all means existing and staying (decision 0003). A stage that begins on a day makes the dates of the tools: an object in service from a day exists from the stage that begins that day, one in service until a day no longer from the stage that begins the day after (decision 0027). */
+  /** A day (ISO 8601). */
+  export type Day = string
+  /** A day, or the word "open" where the day is not known yet. */
+  export type LifespanDay = Day | "open"
+  /** The days an object is in service (decision 0028): `from` the first, `to` the last, "open" where the day is not known yet — newly built, removed. No `from`: it exists today; no `to`: it stays; no lifespan at all: existing and staying. A `from` that is a day is not after a `to` that is one (the door's rule). */
   export type Lifespan = {
-    from?: Ref
-    to?: Ref
+    from?: LifespanDay
+    to?: LifespanDay
   }
-  /** A construction stage (decision 0003): the existing state first, the final state last, each between them from the day it begins (`date`), in their order. */
-  export type Stage = {
-    id: Id
-    name?: Text
-    /** The day the stage begins (ISO 8601); a stage between the existing and the final state has one (decision 0027). */
-    date?: string
-  }
-  /** The project's own fields. `stages` is the ordered list of construction stages: the first is the existing state, the last the final state. */
+  /** The project's own fields. */
   export type Fields = {
     id: Id
     title?: Text
@@ -121,7 +118,6 @@ export namespace Core {
     crsSystem?: Text
     lineCategory?: LineCategory
     gaugeProfile?: Text
-    stages: Array<Stage>
   }
   /** One design element of a track: straight (0), arc (1) or transition (2). No station, no polyline: stations are the running sum of the lengths, drawn geometry is derived. */
   export type Element = {
@@ -271,9 +267,9 @@ export namespace Core {
   }
 }
 
-/** Rail-Data-Core, domain civil 1.0 */
+/** Rail-Data-Core, domain civil 2.0 */
 export namespace Civil {
-  /** Civil engineering's layer, edited in the Civil-Tool (decision 0025): platforms, bridges, retaining walls and noise barriers, measured axes traced in point clouds, reference axes from surveys, the plan header and the project picture — what layout 1.0 held but its named runs of tracks, and the platforms from core 1.0. Depends on core; its references go into the core only. Bulk point arrays are blobs, named by their hash (S-R2). */
+  /** Civil engineering's layer, edited in the Civil-Tool (decision 0025): platforms, bridges, retaining walls and noise barriers, measured axes traced in point clouds, reference axes from surveys, the plan header and the project picture — what layout 1.0 held but its named runs of tracks, and the platforms from core 1.0. Depends on core; its references go into the core only. Bulk point arrays are blobs, named by their hash (S-R2). — 2.0 (decision 0028): on core 3.0, a lifespan states days. */
   export type Root = {
     fields: Fields
     collections: {
@@ -386,9 +382,9 @@ export namespace Civil {
   }
 }
 
-/** Rail-Data-Core, domain signalling 2.0 */
+/** Rail-Data-Core, domain signalling 3.0 */
 export namespace Signalling {
-  /** The signalling of a project, as the signalling tool plans it: signals and boards, train detection, the switch elements of the interlocking, train and shunting routes with their overlaps, flank protection, the balises and magnets of train protection, the station boundaries and the itineraries from one to another. Depends on core; its references go into the core or into itself (R2, R9). Its objects follow PlanPro 1.10, and like OSRD it keeps every signalling and train protection system out of the schema (decision 0011): a signal carries a logical signal per system, a balise names its system; which systems, kinds, aspects and settings there are is not in this schema but in the catalogue (packages/core/constraints/db-ril-301.json), which the content check reads. — 2.0 (decision 0025): the stopping places are the core's; routes carry their setting and release times; train protection by ranges. */
+  /** The signalling of a project, as the signalling tool plans it: signals and boards, train detection, the switch elements of the interlocking, train and shunting routes with their overlaps, flank protection, the balises and magnets of train protection, the station boundaries and the itineraries from one to another. Depends on core; its references go into the core or into itself (R2, R9). Its objects follow PlanPro 1.10, and like OSRD it keeps every signalling and train protection system out of the schema (decision 0011): a signal carries a logical signal per system, a balise names its system; which systems, kinds, aspects and settings there are is not in this schema but in the catalogue (packages/core/constraints/db-ril-301.json), which the content check reads. — 2.0 (decision 0025): the stopping places are the core's; routes carry their setting and release times; train protection by ranges. — 3.0 (decision 0028): on core 3.0, a lifespan states days. */
   export type Root = {
     fields: Fields
     collections: {
@@ -658,9 +654,9 @@ export namespace Signalling {
   }
 }
 
-/** Rail-Data-Core, domain electrification 1.0 */
+/** Rail-Data-Core, domain electrification 2.0 */
 export namespace Electrification {
-  /** The electrification of the tracks, planned in the Catenary-Tool (decision 0025): which ranges carry a contact wire, and its system. Depends on core; its references go into the core only. Later the masts, cantilevers, wires and sections. */
+  /** The electrification of the tracks, planned in the Catenary-Tool (decision 0025): which ranges carry a contact wire, and its system. Depends on core; its references go into the core only. Later the masts, cantilevers, wires and sections. — 2.0 (decision 0028): on core 3.0, a lifespan states days. */
   export type Root = {
     fields: Fields
     collections: {

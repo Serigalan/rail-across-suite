@@ -113,14 +113,6 @@ pub fn check_signalling_on(core: &Value, signalling: &Value, civil: &Value) -> V
             .find(|p| arr(p, "stoppingPlaceIds").iter().any(|x| s(Some(x)) == id))
             .and_then(|p| p.get("id").cloned())
     };
-    let stages: HashSet<String> = core
-        .get("fields")
-        .and_then(|f| f.get("stages"))
-        .and_then(Value::as_array)
-        .into_iter()
-        .flatten()
-        .map(|v| s(v.get("id")))
-        .collect();
     let signals: HashMap<String, &Value> = c("signals").iter().map(|x| (s(x.get("id")), x)).collect();
     let known: HashMap<&str, HashSet<String>> = [
         "detectionPoints",
@@ -156,21 +148,6 @@ pub fn check_signalling_on(core: &Value, signalling: &Value, civil: &Value) -> V
                 json!({ "field": field, "target": target, "ref": value }),
                 &format!("{field}:{v}"),
             );
-        }
-    };
-    let lifespan = |out: &mut Out, collection: &str, obj: &Value| {
-        for end in ["from", "to"] {
-            if let Some(stage) = obj.get("lifespan").and_then(|l| l.get(end)).filter(|v| !v.is_null())
-                && !stages.contains(&js_string(Some(stage)))
-            {
-                out.error(
-                    "reference_missing",
-                    collection,
-                    &id_of(obj),
-                    json!({ "field": format!("lifespan.{end}"), "target": "core.fields.stages", "ref": stage }),
-                    &format!("lifespan.{end}"),
-                );
-            }
         }
     };
     let at = |out: &mut Out, collection: &str, obj: &Value, loc: Option<&Value>, field: &str| {
@@ -289,7 +266,6 @@ pub fn check_signalling_on(core: &Value, signalling: &Value, civil: &Value) -> V
         for (i, also) in arr(sg, "alsoAt").iter().enumerate() {
             at(&mut out, "signals", sg, Some(also), &format!("alsoAt.{i}"));
         }
-        lifespan(&mut out, "signals", sg);
         reference(
             &mut out,
             "signals",
@@ -488,14 +464,12 @@ pub fn check_signalling_on(core: &Value, signalling: &Value, civil: &Value) -> V
     let mut bounding: HashSet<String> = HashSet::new();
     for d in c("detectionPoints") {
         at(&mut out, "detectionPoints", d, d.get("at"), "at");
-        lifespan(&mut out, "detectionPoints", d);
     }
     for t in c("trackSections") {
         for p in arr(t, "boundedBy") {
             reference(&mut out, "trackSections", &id_of(t), "signalling.detectionPoints", Some(p), "boundedBy");
             bounding.insert(s(Some(p)));
         }
-        lifespan(&mut out, "trackSections", t);
     }
     for d in c("detectionPoints") {
         if !bounding.contains(&s(d.get("id"))) {
@@ -523,7 +497,6 @@ pub fn check_signalling_on(core: &Value, signalling: &Value, civil: &Value) -> V
             e.get("clearanceMarkerId"),
             "clearanceMarkerId",
         );
-        lifespan(&mut out, "switchElements", e);
     }
 
     // routes and overlaps
@@ -532,7 +505,6 @@ pub fn check_signalling_on(core: &Value, signalling: &Value, civil: &Value) -> V
         reference(&mut out, "routes", &rid, "signalling.signals", r.get("startSignalId"), "startSignalId");
         reference(&mut out, "routes", &rid, "signalling.signals", r.get("targetSignalId"), "targetSignalId");
         path(&mut out, "routes", r, r.get("path"), "path");
-        lifespan(&mut out, "routes", r);
         if strict_eq(r.get("startSignalId"), r.get("targetSignalId")) {
             out.error("route_to_itself", "routes", &rid, json!({}), "");
         }
@@ -660,7 +632,6 @@ pub fn check_signalling_on(core: &Value, signalling: &Value, civil: &Value) -> V
         reference(&mut out, "overlaps", &oid, "signalling.signals", o.get("signalId"), "signalId");
         path(&mut out, "overlaps", o, o.get("path"), "path");
         at(&mut out, "overlaps", o, o.get("end"), "end");
-        lifespan(&mut out, "overlaps", o);
         let run: Vec<Value> = o.get("path").map(|p| arr(p, "trackIds").to_vec()).unwrap_or_default();
         if let (Some(first), Some(t)) = (run.first(), track_of(o.get("signalId")))
             && s(Some(first)) != t
@@ -729,7 +700,6 @@ pub fn check_signalling_on(core: &Value, signalling: &Value, civil: &Value) -> V
         for t in arr(f, "clearSections") {
             reference(&mut out, "flankProtection", &fid, "signalling.trackSections", Some(t), "clearSections");
         }
-        lifespan(&mut out, "flankProtection", f);
     }
 
     // balises and magnets
@@ -743,7 +713,6 @@ pub fn check_signalling_on(core: &Value, signalling: &Value, civil: &Value) -> V
         if b.get("effect").and_then(Value::as_str) == Some("switchedBySignal") && !truthy(b.get("signalId")) {
             out.error("balise_switched_without_signal", "balises", &bid, json!({}), "");
         }
-        lifespan(&mut out, "balises", b);
         let system = b.get("system").and_then(Value::as_str);
         let Some(sys) = protection_system_of(system) else {
             out.error("system_unknown", "balises", &bid, json!({ "system": b.get("system") }), "");
@@ -825,7 +794,6 @@ pub fn check_signalling_on(core: &Value, signalling: &Value, civil: &Value) -> V
                 }
             }
         }
-        lifespan(&mut out, "stationBoundaries", b);
     }
 
     // stopping places
@@ -865,7 +833,6 @@ pub fn check_signalling_on(core: &Value, signalling: &Value, civil: &Value) -> V
             "operationalPointId",
         );
         reference(&mut out, "stoppingPlaces", &hid, "civil.platforms", platform.as_ref(), "platformId");
-        lifespan(&mut out, "stoppingPlaces", h);
         let track = tracks.get(&s(r.get("trackId")));
         let (st, en) = (
             r.get("startStation").and_then(Value::as_f64).unwrap_or(f64::NAN),
@@ -919,7 +886,6 @@ pub fn check_signalling_on(core: &Value, signalling: &Value, civil: &Value) -> V
             reference(&mut out, "itineraries", &iid, "signalling.routes", Some(r), "routeIds");
         }
         path(&mut out, "itineraries", it, it.get("path"), "path");
-        lifespan(&mut out, "itineraries", it);
         let run: Vec<Value> = it.get("path").map(|p| arr(p, "trackIds").to_vec()).unwrap_or_default();
         if run.is_empty() {
             continue;

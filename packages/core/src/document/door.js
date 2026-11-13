@@ -1,18 +1,19 @@
 import ENVELOPE from '../../schemas/infra-data.schema.json' with { type: 'json' }
-import CORE from '../../schemas/core/2.0.schema.json' with { type: 'json' }
-import CIVIL from '../../schemas/civil/1.0.schema.json' with { type: 'json' }
-import SIGNALLING from '../../schemas/signalling/2.0.schema.json' with { type: 'json' }
-import ELECTRIFICATION from '../../schemas/electrification/1.0.schema.json' with { type: 'json' }
+import CORE from '../../schemas/core/3.0.schema.json' with { type: 'json' }
+import CIVIL from '../../schemas/civil/2.0.schema.json' with { type: 'json' }
+import SIGNALLING from '../../schemas/signalling/3.0.schema.json' with { type: 'json' }
+import ELECTRIFICATION from '../../schemas/electrification/2.0.schema.json' with { type: 'json' }
 import { contentHash } from './canonical.js'
 import { viaNative } from './viaNative.js'
 
 // The one door for infra-data documents (decision 0021: the one format of
 // a project, what was "the core 1.0 document"): what comes in is checked here — the
 // file's shape, each domain's version and schema, every object against its
-// domain's schema, the blobs against their hashes, a domain of an earlier
-// schema of its version brought to this build's, an infra-data 1.0 document
-// brought to 2.0 (the layers of decision 0025) — and what is written is
-// checked the same way before it leaves. Behind the door the model is taken
+// domain's schema and the rules a schema cannot state (a lifespan's days), the
+// blobs against their hashes, a document of an earlier version brought to this
+// build's, version by version (an infra-data 1.0 document to the layers of
+// decision 0025, the stages of before to the days of decision 0028) — and
+// what is written is checked the same way before it leaves. Behind the door the model is taken
 // for granted. The door is the core's Rust module (crates/doc; decision 0020,
 // step 10 took its JavaScript out).
 
@@ -29,10 +30,10 @@ export const SCHEMA_HASHES = Object.fromEntries(Object.entries(DOMAIN_SCHEMAS).m
 
 /**
  * Check an infra-data document; returns it — the very object where it was as
- * this build reads it, else brought to infra-data-2.0 (a domain of an earlier
- * schema of its version to this build's, an infra-data 1.0 document to 2.0) —, or throws a PayloadError:
+ * this build reads it, else brought to it (an infra-data 1.0 document to 2.0,
+ * a domain of an earlier version to this build's) —, or throws a PayloadError:
  * `unsupported_version` for another format (an oltjson file among them), a
- * domain or a version this build does not read,
+ * domain or a version this build does not read — a later one among them —,
  * `invalid_payload` (with its `details`) for anything else that is not as the
  * schemas say.
  */

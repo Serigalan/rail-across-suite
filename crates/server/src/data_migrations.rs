@@ -9,7 +9,7 @@ use rusqlite::{Connection, OptionalExtension, params};
 use serde_json::{Value, json};
 
 use crate::checks::{check_kept, normalized_record};
-use crate::store::{STORED_FORMAT, STORED_FORMAT_1_0, Store, pack, unpack};
+use crate::store::{STORED_FORMAT, STORED_FORMAT_1_0, STORED_FORMAT_STAGES, Store, pack, unpack};
 use crate::util::{hex, iso, random_bytes};
 
 /// The login of the user the server's own revisions name.
@@ -105,7 +105,8 @@ fn close_node_gaps(db: &Connection, now: i64) -> rusqlite::Result<String> {
 
 /// The document a revision kept before decision 0021 holds: one of the
 /// envelope before it (`schema_version` 3) with today's envelope, one kept as
-/// an oltjson-1.1 record or file (2) turned into one; None where it is neither.
+/// an oltjson-1.1 record or file (2) turned into one — its planning statuses
+/// lifespans with their days open (decision 0028) —; None where it is neither.
 pub fn infra_data_of(version: i64, payload: &Value) -> Option<Value> {
     match version {
         3 => {
@@ -117,10 +118,27 @@ pub fn infra_data_of(version: i64, payload: &Value) -> Option<Value> {
                 Some(projects) => projects.first()?.clone(),
                 None => payload.clone(),
             };
-            rail_across_doc::persistence::project_document(&record, false, true).ok()
+            rail_across_doc::persistence::project_document(&lived(&record), false, true).ok()
         }
         _ => None,
     }
+}
+
+/// An oltjson-1.1 record's planning statuses as lifespans (decision 0028): new
+/// begins on a day open, removal ends on one, existing states none.
+fn lived(record: &Value) -> Value {
+    let mut out = record.clone();
+    for list in ["tracks", "switches", "platforms", "endMarks"] {
+        for o in out.get_mut(list).and_then(Value::as_array_mut).into_iter().flatten() {
+            let Some(o) = o.as_object_mut() else { continue };
+            match o.remove("status").as_ref().and_then(Value::as_str) {
+                Some("new") => o.insert("lifespan".into(), json!({ "from": "open" })),
+                Some("removal") => o.insert("lifespan".into(), json!({ "to": "open" })),
+                _ => None,
+            };
+        }
+    }
+    out
 }
 
 /// Every revision kept in a format before decision 0021 rewritten as its
@@ -148,14 +166,29 @@ fn to_infra_data(db: &Connection, _now: i64) -> rusqlite::Result<String> {
     Ok(format!("{written} Revisionen umgeschrieben, {left} nicht lesbar"))
 }
 
-/// Every revision kept as an infra-data-1.0 document rewritten as its
-/// infra-data-2.0 one, in place (decision 0025): the platforms and the layout
-/// into civil, the stopping places into the core. One the door cannot read
-/// stays as it was, and is read through the door each time it is asked for.
-fn to_infra_data_2_0(db: &Connection, _now: i64) -> rusqlite::Result<String> {
+/// Every revision kept as an infra-data-1.0 document rewritten as today's,
+/// in place (decision 0025): the platforms and the layout into civil, the
+/// stopping places into the core. One the door cannot read stays as it was,
+/// and is read through the door each time it is asked for.
+fn from_infra_data_1_0(db: &Connection, _now: i64) -> rusqlite::Result<String> {
+    through_the_door(db, STORED_FORMAT_1_0)
+}
+
+/// Every revision kept as an infra-data-2.0 document with its register of
+/// construction stages rewritten as today's, in place: its domains of an
+/// earlier schema of 2.0 brought to 2.0's last (decisions 0025, 0027), and its
+/// lifespans stated by day, without the register (decision 0028). One the door
+/// cannot read stays as it was, and is read through the door each time it is
+/// asked for.
+fn from_infra_data_2_0(db: &Connection, _now: i64) -> rusqlite::Result<String> {
+    through_the_door(db, STORED_FORMAT_STAGES)
+}
+
+/// Every revision kept in the form `from` rewritten as the door reads it, in today's form.
+fn through_the_door(db: &Connection, from: i64) -> rusqlite::Result<String> {
     let rows: Vec<(i64, Vec<u8>)> = db
         .prepare("SELECT id, payload FROM revision WHERE schema_version = ?")?
-        .query_map([STORED_FORMAT_1_0], |r| Ok((r.get(0)?, r.get(1)?)))?
+        .query_map([from], |r| Ok((r.get(0)?, r.get(1)?)))?
         .collect::<Result<_, _>>()?;
     let (mut written, mut left) = (0, 0);
     for (id, payload) in rows {
@@ -168,33 +201,6 @@ fn to_infra_data_2_0(db: &Connection, _now: i64) -> rusqlite::Result<String> {
                 written += 1;
             }
             None => left += 1,
-        }
-    }
-    Ok(format!("{written} Revisionen umgeschrieben, {left} nicht lesbar"))
-}
-
-/// Every infra-data-2.0 revision whose domains are of an earlier schema of 2.0
-/// brought to this build's, in place — the core's stopping places a platform
-/// names made passenger stops (decision 0025). One the door cannot read stays
-/// as it was.
-fn within_infra_data_2_0(db: &Connection, _now: i64) -> rusqlite::Result<String> {
-    let rows: Vec<(i64, Vec<u8>)> = db
-        .prepare("SELECT id, payload FROM revision WHERE schema_version = ?")?
-        .query_map([STORED_FORMAT], |r| Ok((r.get(0)?, r.get(1)?)))?
-        .collect::<Result<_, _>>()?;
-    let (mut written, mut left) = (0, 0);
-    for (id, payload) in rows {
-        let Some(given) = unpack(&payload) else {
-            left += 1;
-            continue;
-        };
-        match rail_across_doc::door::check_document(&given) {
-            Ok(doc) if doc != given => {
-                db.execute("UPDATE revision SET payload = ? WHERE id = ?", params![pack(&doc), id])?;
-                written += 1;
-            }
-            Ok(_) => {}
-            Err(_) => left += 1,
         }
     }
     Ok(format!("{written} Revisionen umgeschrieben, {left} nicht lesbar"))
@@ -268,16 +274,18 @@ pub fn run_data_migrations(db: &Connection, now: i64) -> rusqlite::Result<Vec<(S
         .collect::<Result<_, _>>()?;
     let mut ran = Vec::new();
     // In this order: a later step reads the revisions in the form the first gives them.
-    let steps: [(&str, fn(&Connection, i64) -> rusqlite::Result<String>); 7] = [
+    let steps: [(&str, fn(&Connection, i64) -> rusqlite::Result<String>); 8] = [
         ("0021-infra-data", to_infra_data),
         ("0020-node-tolerance-1um", close_node_gaps),
-        ("0025-infra-data-2.0", to_infra_data_2_0),
-        ("0025-passenger-stops-and-runs", within_infra_data_2_0),
+        ("0025-infra-data-2.0", from_infra_data_1_0),
+        ("0025-passenger-stops-and-runs", from_infra_data_2_0),
         ("0026-operations", to_operations),
         // The core's schema with days on its stages (decision 0027): the revisions named by it, as they were.
-        ("0027-stage-days", within_infra_data_2_0),
+        ("0027-stage-days", from_infra_data_2_0),
         // Civil's schema with bridges, retaining walls and noise barriers: the revisions named by it, as they were.
-        ("0027-civil-structures", within_infra_data_2_0),
+        ("0027-civil-structures", from_infra_data_2_0),
+        // No stages, the lifespans by day (decision 0028): every revision kept before it.
+        ("0028-lifespans-by-day", from_infra_data_2_0),
     ];
     for (name, step) in steps {
         if done.iter().any(|d| d == name) {

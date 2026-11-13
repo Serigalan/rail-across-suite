@@ -43,13 +43,13 @@ describe('projects', () => {
     expect(h.payload).toMatchObject({ id: project.id, title: 'Halle–Könnern', tracks: [] })
   })
 
-  it('keeps a revision as an infra-data-2.0 document and hands it out as one (decisions 0021, 0025)', async () => {
+  it('keeps a revision as an infra-data-2.0 document and hands it out as one (decisions 0021, 0025, 0028)', async () => {
     const { max } = await start()
     const { variantId } = await newProject(max, { tracks: [straight('t1')] })
     const { document } = await head(max, variantId)
-    expect(document).toMatchObject({ format: 'infra-data', version: '2.0', domains: { core: { version: '2.0' } } })
+    expect(document).toMatchObject({ format: 'infra-data', version: '2.0', domains: { core: { version: '3.0' } } })
     expect(document.domains.core.collections.tracks.map(t => t.id)).toEqual(['t1'])
-    expect(ctx.db.prepare('SELECT schema_version FROM revision').pluck().all()).toEqual([5])
+    expect(ctx.db.prepare('SELECT schema_version FROM revision').pluck().all()).toEqual([6])
   })
 
   it('takes documents only: an oltjson-1.1 file is refused', async () => {

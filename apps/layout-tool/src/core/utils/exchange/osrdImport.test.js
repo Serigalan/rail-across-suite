@@ -166,17 +166,28 @@ describe('a crossing switch through the exchange file', () => {
   }
 })
 
-describe('the planning status through the exchange file', () => {
+describe('the lifespans through the exchange file (decision 0028)', () => {
   const form = SWITCH_TYPES.find(f => f.label === '300 – 1:9')
 
-  it('comes back on the tracks and on a switch that states its own', () => {
+  it('come back on the tracks and on a switch that states its own', () => {
     const { tracks, switches } = turnout(form)
-    tracks[0].status = 'new'
-    switches[0].status = 'removal'
+    tracks[0].lifespan = { from: '2027-05-01', to: 'open' }
+    switches[0].lifespan = { to: 'open' }
     const back = parseOsrdRailJson(buildInfra(tracks, switches, [], {}))
-    expect(back.tracks.find(t => t.id === 'branch').status).toBe('new')
-    expect(back.tracks.find(t => t.id === 'through').status).toBeUndefined()
-    expect(back.switches[0].status).toBe('removal')
+    expect(back.tracks.find(t => t.id === 'branch').lifespan).toEqual({ from: '2027-05-01', to: 'open' })
+    expect(back.tracks.find(t => t.id === 'through').lifespan).toBeUndefined()
+    expect(back.switches[0].lifespan).toEqual({ to: 'open' })
+  })
+
+  it('read the planning status a file of before states as a lifespan with its day open', () => {
+    const { tracks, switches } = turnout(form)
+    const infra = buildInfra(tracks, switches, [], {})
+    const branch = infra.track_sections.find(s => s.id === 'branch')
+    branch.extensions.olt = { ...branch.extensions.olt, status: 'new' }
+    infra.switches[0].extensions = { ...infra.switches[0].extensions, olt: { status: 'removal' } }
+    const back = parseOsrdRailJson(infra)
+    expect(back.tracks.find(t => t.id === 'branch').lifespan).toEqual({ from: 'open' })
+    expect(back.switches[0].lifespan).toEqual({ to: 'open' })
   })
 })
 

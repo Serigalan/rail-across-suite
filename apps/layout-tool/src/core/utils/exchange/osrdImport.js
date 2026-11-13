@@ -8,7 +8,7 @@ import {
   switchFillRing, switchLabelGeometry, switchMark,
 } from '@rail-across/core/switch'
 import {
-  newSwitchFields, switchElementMark, LINK_KIND, TYPE_CODES, SIDE_CODES, LINE_CATEGORIES, STATUSES,
+  newSwitchFields, switchElementMark, LINK_KIND, TYPE_CODES, SIDE_CODES, LINE_CATEGORIES, STATUSES, lifespanWithStatus,
 } from '@rail-across/core/track'
 import { kindForOsrdType, bufferStopsToEndMarks } from './alignmentCodec'
 import { withSignedCants } from './fileCants'
@@ -299,6 +299,22 @@ function rebuildSwitch(sw, trackById) {
   }
 }
 
+const LIFESPAN_DAY = /^(\d{4}-\d{2}-\d{2}|open)$/
+
+/**
+ * The lifespan the suite's extension states (decision 0028): its days as they
+ * are, a day or "open" each; a file of before states a planning status
+ * instead, new or removal, which is the day open.
+ */
+function lifespanOf(olt) {
+  const l = olt.lifespan
+  if (l && typeof l === 'object') {
+    const days = Object.fromEntries(['from', 'to'].filter(k => LIFESPAN_DAY.test(l[k] ?? '')).map(k => [k, l[k]]))
+    return Object.keys(days).length ? days : undefined
+  }
+  return STATUSES.includes(olt.status) ? lifespanWithStatus(undefined, olt.status) : undefined
+}
+
 /**
  * Rebuild tracks from a file written by either exporter — the alignment
  * exchange format (exchangeExport) or OSRD's RailJSON (osrdExport).
@@ -332,6 +348,7 @@ function rebuildSwitch(sw, trackById) {
  * switches as app records, rebuilt so they are drawn as switch bodies again
  * (see rebuildSwitch).
  */
+
 export function parseOsrdRailJson(data) {
   const sections = Array.isArray(data?.track_sections) ? data.track_sections : []
   const tracks = []
@@ -486,7 +503,7 @@ export function parseOsrdRailJson(data) {
         uicStation:  olt.uic_station ?? undefined,
         rails:       olt.rails?.length ? olt.rails : undefined,
         sleepers:    olt.sleepers?.length ? olt.sleepers : undefined,
-        status:      STATUSES.includes(olt.status) ? olt.status : undefined,
+        lifespan:    lifespanOf(olt),
         lineCategory: LINE_CATEGORIES.includes(olt.line_category) ? olt.line_category : undefined,
         trackUse:    olt.track_use === 'siding' ? 'siding' : undefined,
         heightEpsg,
@@ -501,8 +518,8 @@ export function parseOsrdRailJson(data) {
   const switches = (Array.isArray(infra.switches) ? infra.switches : [])
     .map(sw => {
       const record = rebuildSwitch(sw, trackById)
-      const status = sw.extensions?.olt?.status
-      return record && STATUSES.includes(status) ? { ...record, status } : record
+      const lifespan = lifespanOf(sw.extensions?.olt ?? {})
+      return record && lifespan ? { ...record, lifespan } : record
     })
     .filter(Boolean)
 

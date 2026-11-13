@@ -40,7 +40,8 @@ export default function StageLinkForm({ onCommitted }) {
   })
 
   const name = (e) => `${e.track.name || e.track.id.slice(0, 8)} ${e.endpoint === 'BEGIN' ? t('stage_link_begin') : t('stage_link_end')}`
-  const days = (e) => [e.track.inServiceFrom && `${t('table_in_service_from')} ${e.track.inServiceFrom}`, e.track.inServiceTo && `${t('table_in_service_to')} ${e.track.inServiceTo}`].filter(Boolean).join(', ')
+  const said = (v) => (v === 'open' ? t('stage_link_day_open') : v)
+  const days = (e) => [e.track.lifespan?.from && `${t('table_in_service_from')} ${said(e.track.lifespan.from)}`, e.track.lifespan?.to && `${t('table_in_service_to')} ${said(e.track.lifespan.to)}`].filter(Boolean).join(', ')
   const swap = (role, end) => setRoles(r => {
     const other = ROLES.find(k => r[k] === end)
     return { ...r, [role]: end, [other]: r[role] }

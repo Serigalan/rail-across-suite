@@ -15,6 +15,8 @@
  * where the kilometrage is actually read off (kmLineUtils).
  */
 
+import { kmLineId } from './kmLineUtils'
+
 // Guarded, so the module also loads outside Vite — the clipping below is what
 // the verification harness exercises.
 const BASE = import.meta.env?.VITE_OLT_KM_LINES ?? 'data/km/'
@@ -158,7 +160,7 @@ export async function ensureKmLines(project) {
       // line for the same tracks get the same record, which a merge then
       // takes as one rather than as two new ones that differ.
       result.save.push({
-        id: `km-${file.lineNumber}`,
+        id: kmLineId(file.lineNumber),
         lineNumber: file.lineNumber,
         crs: file.crs ?? 'EPSG:4326',
         clip: box,

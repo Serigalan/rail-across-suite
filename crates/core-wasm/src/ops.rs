@@ -131,7 +131,10 @@ fn run_on(op: &str, input: &Value) -> Result<Value, Failure> {
         "document.withoutDangling" => {
             let doc = core_format::record_to_document(input, door::schema_hashes())?;
             let (doc, cut) = door::without_dangling(&doc);
-            Ok(json!({ "record": core_format::document_to_record(&doc)?, "cut": cut }))
+            // The record keeps the ids it has; the document names them by UUIDs (decision 0029, phase 2).
+            let mut record = core_format::document_to_record(&doc)?;
+            rail_across_doc::ids::restored_record(&mut record, &rail_across_doc::ids::originals(input));
+            Ok(json!({ "record": record, "cut": cut }))
         }
         "document.stationPoint" => Ok(stations::station_point(&input["record"], input.get("name"), input.get("uic"), input.get("rl100"))),
         "document.withStationPoints" => Ok(core_format::with_station_points(input)),

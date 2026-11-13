@@ -11,7 +11,7 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
-  canonicalJson, checkDocument, checkOperations, contentHash, documentHash, manifestOf, PayloadError, toDocument, toOperations,
+  canonicalJson, checkDocument, checkOperations, contentHash, derivedId, documentHash, manifestOf, PayloadError, toDocument, toOperations,
 } from '../src/document/index.js'
 import { loadNativeFile } from '../src/native/node.js'
 import { ksStation, ksStoppingPlaces } from '../test/signallingFixture.js'
@@ -117,7 +117,7 @@ const DOCUMENT_CASES = [
   ['a lifespan that ends before it begins', (d) => { d.domains.core.collections.tracks[1].lifespan = { from: '2027-05-01', to: '2027-04-30' } }],
   ['a lifespan on a day there is none of', (d) => { d.domains.core.collections.tracks[1].lifespan = { from: '2027-02-30' } }],
   ['built for a while, the days open', (d) => { d.domains.core.collections.tracks[1].lifespan = { from: 'open', to: 'open' } }],
-  ['a domain of a later version', (d) => { d.domains.core.version = '4.0' }],
+  ['a domain of a later version', (d) => { d.domains.core.version = '5.0' }],
   ['a platform with its stations loose', (d) => { const p = d.domains.civil.collections.platforms[0]; p.startStation = p.at.startStation }],
   ['a platform in the core', (d) => { d.domains.core.collections.platforms = d.domains.civil.collections.platforms }],
   ['a collection missing', (d) => { delete d.domains.core.collections.kmLines }],
@@ -126,21 +126,21 @@ const DOCUMENT_CASES = [
   ['the sample with its signalling', () => {}, { signalling: true }],
   ['the sample with its signalling, carrying its schemas', (d, carry) => carry(), { signalling: true }],
   ['signalling depending on nothing', (d) => { delete d.domains.signalling.dependsOn }, { signalling: true }],
-  ['a signal acting in no direction', (d) => { delete d.domains.signalling.collections.signals[0].at.direction }, { signalling: true }],
-  ['a frame that shows nothing', (d) => { d.domains.signalling.collections.signals[0].frames[0].aspects = [] }, { signalling: true }],
+  ['a signal acting in no direction', (d) => { delete d.domains.signalling.collections.signals.find(s => s.at.direction).at.direction }, { signalling: true }],
+  ['a frame that shows nothing', (d) => { d.domains.signalling.collections.signals.find(s => s.frames?.length).frames[0].aspects = [] }, { signalling: true }],
   ['signalling without its overlaps', (d) => { delete d.domains.signalling.collections.overlaps }, { signalling: true }],
   ['stopping places in signalling', (d) => { d.domains.signalling.collections.stoppingPlaces = d.domains.core.collections.stoppingPlaces }, { signalling: true }],
-  ['a boundary marked by a platform', (d) => { d.domains.signalling.collections.stationBoundaries[0].marks.push({ platformId: 'p1' }) }, { signalling: true }],
+  ['a boundary marked by a platform', (d) => { d.domains.signalling.collections.stationBoundaries[0].marks.push({ platformId: derivedId('p1') }) }, { signalling: true }],
   ['a route with its times, train protection', (d) => {
     d.domains.signalling.fields.routeTimes = { setting: 12, release: 6 }
     d.domains.signalling.collections.routes[0].settingTime = 8
-    d.domains.signalling.collections.trainProtection = [{ id: 'zb1', at: { anchor: 'station', trackId: 't1', startStation: 0, endStation: 250 }, system: 'pzb' }]
+    d.domains.signalling.collections.trainProtection = [{ id: derivedId('zb1'), at: { anchor: 'station', trackId: derivedId('t1'), startStation: 0, endStation: 250 }, system: 'pzb' }]
   }, { signalling: true }],
   ['the sample with its electrification', () => {}, { electrification: true }],
   ['an electrification of no system', (d) => { delete d.domains.electrification.collections.electrifications[0].system }, { electrification: true }],
   ['a boundary\'s headway', (d) => { d.domains.core.collections.endMarks[0].headway = 120 }],
-  ['a track of a station that is not there', (d) => { d.domains.core.collections.tracks[1].operationalPoint = 'op-nowhere' }],
-  ['a switch element of a switch that is not there', (d) => { d.domains.signalling.collections.switchElements[0].switchId = 'w9' }, { signalling: true }],
+  ['a track of a station that is not there', (d) => { d.domains.core.collections.tracks[1].operationalPointId = derivedId('op-nowhere') }],
+  ['a switch element of a switch that is not there', (d) => { d.domains.signalling.collections.switchElements[0].switchId = derivedId('w9') }, { signalling: true }],
 ]
 
 /** [name, change] — an infra-data 1.0 document (frozen), changed or not: the door reads it as today's. */

@@ -20,12 +20,15 @@ documents of before forward by a step of the door and, where the project server 
    stored revision holds a version that still changes.
 3. **The phases:**
    1. *Core 4.0, its words and names:* element, track and side kinds as words (`straight`/`arc`/`transition`,
-      `line`/`station`, `regular`/`opposite`), references ending in `Id` (`operationalPointId`, `depId`), no
-      plane of an element's own, the switch kind `switch` with `B1` the main track and `B2` the branch; every
-      id a UUID in lower case, an id of before replaced by a UUID drawn from it (`derivedId`) and every
-      reference to it with it.
-   2. *Km lines in design elements:* runs from km jump to km jump, in one plane, with `kmStart` and
-      `counting`; a line of before as points, held as a blob, until it is fitted with elements.
+      `line`/`station`, `regular`/`opposite`), references ending in `Id` (`operationalPointId`, `depId`,
+      `detectionPointIds`, `clearSectionIds`, `passOn.leftId`/`rightId`), no plane of an element's own, the
+      switch kind `switch` with `B1` the main track and `B2` the branch.
+   2. *Ids and km lines:* every id a UUID in lower case, an id of before replaced by the UUID drawn from it
+      (`derivedId`) and every reference to it with it — after phase 1 every reference ends in `Id` or `Ids`,
+      so the rule needs no list; km lines in one plane — the UTM plane of ETRS89 a line's first point lies in,
+      which needs no grid and gives the same numbers on every device — as runs from km jump to km jump with
+      `kmStart` and `counting`, a line of before as points held as a blob until it is fitted with elements.
+      The project server rewrites what it keeps once (data step `0029-core-4.0`).
    3. *Electrification 3.0:* masts, suspension points, section insulators and contact wires with their voltage.
    4. *Operations as two domains:* vehicles 1.0 with the rolling stock in the object, timetables 1.0 whose train
       points name an operational point or an end mark by id, with the track.
@@ -36,6 +39,8 @@ documents of before forward by a step of the door and, where the project server 
 
 ## Consequences
 
-- Until phase 6 the record keeps its numbers, names and switch ports; the door converts. A tool sees no change
-  before then.
+- Until phase 6 the record keeps its numbers, names, switch ports and km lines in WGS 84; the door converts. A
+  record read from a document holds the UUIDs the document gave it; a tool that reads the core beside its own
+  layer reads it in the record's words and ids (`recordDomains`), and a cut of dangling references keeps the
+  record's ids. A tool sees no change of words before then.
 - The specification's section on the implementation is shortened with every phase.

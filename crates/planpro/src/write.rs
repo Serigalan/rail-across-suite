@@ -1296,11 +1296,16 @@ pub fn write_planpro(project: &Value, options: &Value) -> Result<Value, String> 
 
     // ── signalling ──
     let empty = json!({});
-    let domain = options
-        .get("signalling")
-        .filter(|d| d.is_object())
-        .or(doc["domains"].get("signalling"))
-        .unwrap_or(&empty);
+    // The editor holds its domain in the record's words and ids; the document states them as core 4.0 does
+    // (decision 0029, phases 1 and 2).
+    let given = options.get("signalling").filter(|d| d.is_object()).map(|d| {
+        let mut domains = serde_json::Map::new();
+        domains.insert("signalling".into(), d.clone());
+        rail_across_doc::words::forward(&mut domains);
+        rail_across_doc::ids::forward(&mut domains);
+        domains.remove("signalling").unwrap_or_default()
+    });
+    let domain = given.as_ref().or(doc["domains"].get("signalling")).unwrap_or(&empty);
     let col = |k: &str| domain.get("collections").map(|c| list(c, k)).unwrap_or(&[]);
     let ids_of = |k: &str| -> HashSet<String> { col(k).iter().filter_map(|v| str_of(v, "id").map(String::from)).collect() };
 

@@ -16,8 +16,10 @@ one of 3.0 whose references may name nothing to references that name something (
 cut as deleting it would have cut it), one of 3.1 to the words and names of the specification rail-across-1.0
 (core 4.0, civil 3.0, signalling 4.0 — [decision 0029](../docs/decisions/0029-the-suite-on-rail-across-1.0.md),
 phase 1: the kinds as words, every reference ending in `Id`, no plane of an element's own, a switch with `B1` its
-main track and `B2` its branch). The record the tools work on keeps the words of before until it follows the
-document (decision 0029, phase 6); the conversion converts.
+main track and `B2` its branch; phase 2: every id a UUID in lower case — an id of before the one drawn from it —,
+a km line in one plane as runs from km jump to km jump, its points of before a blob). The record the tools work on
+keeps the words, ids and km lines of before until it follows the document (decision 0029, phase 6); the
+conversion converts.
 
 The door checks what a schema cannot say: a lifespan's days are days, the first not after the last; every
 reference — a member the schema marks with `x-target`, the collection it points into — names an object of that

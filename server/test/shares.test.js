@@ -4,6 +4,7 @@ import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { as, setup, signIn } from './helpers.js'
+import { derivedId } from '@rail-across/core/document'
 import { makeLas } from '@rail-across/pointcloud/test/pointCloudFixture.js'
 
 let ctx, root
@@ -62,7 +63,7 @@ describe('read-only share links to the 3D view', () => {
     const open = (await anon('GET', base)).json()
     expect(open.share).toMatchObject({ projectTitle: 'Strecke', variantName: 'Bestand', label: 'Bauherr' })
     expect(open.clouds.map(c => c.id)).toEqual([ids[0]])            // only the cloud named
-    expect((await anon('GET', `${base}/head`)).json().payload.domains.core.collections.tracks[0].id).toBe('t1')
+    expect((await anon('GET', `${base}/head`)).json().payload.domains.core.collections.tracks[0].id).toBe(derivedId('t1'))
     const index = (await anon('GET', `${base}/clouds/${ids[0]}/L1/index`)).json()
     expect(index.level).toBe(1)
     const seg = index.tiles[0][2][0]

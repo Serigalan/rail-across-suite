@@ -7,6 +7,6 @@
 
 export { formatKm, kmOnPieces, toMercator } from './kmLineMath'
 export { clipRuns, ensureKmLines, projectBox } from './kmLineSource'
-export { kmForTrackPoint } from './kmLineUtils'
+export { kmForTrackPoint, kmLineId } from './kmLineUtils'
 export { KmTileSource } from './kmTileSource'
 export { elementPath, elementsPath, identifyTrackLine, lineNameOf } from './lineLookup'

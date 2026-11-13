@@ -2,6 +2,7 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { setup, signIn } from '../../../../server/test/helpers.js'
 import { commitVariantMerge, prepareVariantMerge } from './variantMerge'
 import { parseProjectsPayload } from '@rail-across/core/project'
+import { derivedId as u } from '@rail-across/core/document'
 
 /** The record a payload of the server (an infra-data-1.0 document) holds. */
 const recordOf = (payload) => parseProjectsPayload(payload).projects[0]
@@ -53,20 +54,20 @@ describe('merging one variant into another (AP 10.8)', () => {
 
     const first = await prepareVariantMerge(existing, v2030)
     expect(first.result.conflicts).toEqual([])
-    expect(first.result.applied.map(a => [a.kind, a.id])).toEqual([['added', 'b1']])
-    expect(first.result.merged.tracks.map(t => t.id).sort()).toEqual(['b1', 'n1', 't1'])
+    expect(first.result.applied.map(a => [a.kind, a.id])).toEqual([['added', u('b1')]])
+    expect(first.result.merged.tracks.map(t => t.id).sort()).toEqual([u('b1'), u('n1'), u('t1')].sort())
     const merged = await commitVariantMerge(first, first.result.merged, 'Bestand → 2030')
     expect(merged.revision.mergeParentId).toBe(first.source.revision.id)
 
     await checkIn(existing, p => ({ ...p, tracks: [...p.tracks, straight('b2', 150)] }), 'Noch eine Korrektur')
     const second = await prepareVariantMerge(existing, v2030)
     expect(second.base.id).toBe(first.source.revision.id)
-    expect(second.result.applied.map(a => [a.kind, a.id])).toEqual([['added', 'b2']])
+    expect(second.result.applied.map(a => [a.kind, a.id])).toEqual([['added', u('b2')]])
     await commitVariantMerge(second, second.result.merged, 'Bestand → 2030')
 
     expect((await prepareVariantMerge(existing, v2030)).upToDate).toBe(true)
     const head = (await user('GET', `/api/variants/${v2030}/head`)).json()
-    expect(recordOf(head.payload).tracks.map(t => t.id).sort()).toEqual(['b1', 'b2', 'n1', 't1'])
+    expect(recordOf(head.payload).tracks.map(t => t.id).sort()).toEqual([u('b1'), u('b2'), u('n1'), u('t1')].sort())
   })
 
   it('shows a conflict where both changed the same thing', async () => {
@@ -76,6 +77,6 @@ describe('merging one variant into another (AP 10.8)', () => {
     await checkIn(existing, p => ({ ...p, tracks: p.tracks.map(t => ({ ...t, name: 'Bestandsname' })) }))
     await checkIn(v2030, p => ({ ...p, tracks: p.tracks.map(t => ({ ...t, name: '2030-Name' })) }))
     const prepared = await prepareVariantMerge(existing, v2030)
-    expect(prepared.result.conflicts).toEqual([expect.objectContaining({ objectId: 't1', field: 'name', mine: '2030-Name', theirs: 'Bestandsname' })])
+    expect(prepared.result.conflicts).toEqual([expect.objectContaining({ objectId: u('t1'), field: 'name', mine: '2030-Name', theirs: 'Bestandsname' })])
   })
 })

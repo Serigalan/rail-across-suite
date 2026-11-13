@@ -5,6 +5,7 @@ import { deleted, domainOf, recordOf, signallingOf, coreOf as coreOfRecord } fro
 import {
   boundaryOf, entryMarks, nameTaken, newStation, stationsOf, withBoundary, withPlatforms, withSignals, withStation, withoutStation,
 } from './stations.js'
+import { derivedId } from '@rail-across/core/document'
 
 const el = { elementType: 0, startNode: [500000, 5700000], endNode: [500200, 5700000], bearing: 90, length: 200 }
 const on = (station) => ({ anchor: 'station', trackId: 't1', station, side: 'right', direction: 'up' })
@@ -84,7 +85,8 @@ describe('the stations', () => {
     const back = parseProjectsPayload(doc).projects[0]
     expect(back.operationalPoints).toEqual([station])
     expect(back.platforms[0].operationalPoint).toBe(station.id)
-    expect(back.signalling.collections.signals.find(s => s.id === 's-a').operationalPointId).toBe(station.id)
+    // The door names every object by a UUID (decision 0029, phase 2): the signal s-a by the one drawn from it.
+    expect(back.signalling.collections.signals.find(s => s.id === derivedId('s-a')).operationalPointId).toBe(station.id)
     // Deleting a signal leaves the parts of the core alone.
     expect(deleted(state, 'signals', 's-a').collections.operationalPoints).toEqual([station])
   })

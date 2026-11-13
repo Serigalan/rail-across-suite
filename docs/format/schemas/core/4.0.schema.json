@@ -709,7 +709,10 @@
           "description": "What a timetable names the place by."
         },
         "type": {
-          "$ref": "#/$defs/Text"
+          "type": [
+            "integer",
+            "string"
+          ]
         },
         "brakeLength": {
           "type": "number"

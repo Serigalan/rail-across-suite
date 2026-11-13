@@ -39,6 +39,7 @@ pub const DOMAIN_VERSION: &str = "1.0";
 
 const ENVELOPE: &str = include_str!("../../../schemas/operations.schema.json");
 const OPERATIONS: &str = include_str!("../../../schemas/operations/1.0.schema.json");
+const CORE_OF_OPERATIONS: &str = include_str!("../../../schemas/core/3.1.schema.json");
 
 /// The collections of the domain, every one there in a document.
 pub const COLLECTIONS: &[&str] = &[
@@ -73,9 +74,9 @@ fn schemas() -> &'static Schemas {
         let domain = parse(OPERATIONS);
         let mut set = SchemaSet::new();
         set.add(parse(ENVELOPE)).expect("the envelope's schema");
-        // The domain names the core's types (core#/$defs/Id, Ref).
-        set.add(crate::door::schema_of("core").cloned().expect("the core's schema"))
-            .expect("the core's schema");
+        // The domain names the core's types (core#/$defs/Id, Ref) as they were when it was made: core 3.1's, an id
+        // of any form (operations 1.0 is not of rail-across-1.0; decision 0029, phase 4).
+        set.add(parse(CORE_OF_OPERATIONS)).expect("the core's schema");
         set.add(domain.clone()).expect("the domain's schema");
         let hash = content_hash(&domain);
         Schemas { set, domain, hash }

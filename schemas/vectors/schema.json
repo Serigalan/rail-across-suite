@@ -2,7 +2,7 @@
  {
   "ref": "core#/$defs/TrackEnd",
   "value": {
-   "trackId": "t1",
+   "trackId": "628b49d9-6dcd-897a-830d-d4f597705899",
    "endpoint": "END"
   },
   "valid": true,
@@ -11,7 +11,7 @@
  {
   "ref": "core#/$defs/TrackEnd",
   "value": {
-   "trackId": "t1",
+   "trackId": "628b49d9-6dcd-897a-830d-d4f597705899",
    "endpoint": "MIDDLE"
   },
   "valid": false,
@@ -22,7 +22,7 @@
  {
   "ref": "core#/$defs/TrackEnd",
   "value": {
-   "trackId": "t1"
+   "trackId": "628b49d9-6dcd-897a-830d-d4f597705899"
   },
   "valid": false,
   "paths": [
@@ -46,7 +46,7 @@
   "ref": "core#/$defs/TrackRange",
   "value": {
    "anchor": "station",
-   "trackId": "t1",
+   "trackId": "628b49d9-6dcd-897a-830d-d4f597705899",
    "startStation": 120,
    "endStation": 260,
    "side": "left"
@@ -58,7 +58,7 @@
   "ref": "core#/$defs/TrackRange",
   "value": {
    "anchor": "plane",
-   "trackId": "t1",
+   "trackId": "628b49d9-6dcd-897a-830d-d4f597705899",
    "startStation": 120,
    "endStation": 260
   },
@@ -71,7 +71,7 @@
   "ref": "core#/$defs/TrackLocation",
   "value": {
    "anchor": "station",
-   "trackId": "t1",
+   "trackId": "628b49d9-6dcd-897a-830d-d4f597705899",
    "station": 812.4,
    "side": "right",
    "offset": 2.9,
@@ -96,7 +96,7 @@
   "ref": "core#/$defs/TrackLocation",
   "value": {
    "anchor": "station",
-   "trackId": "t1",
+   "trackId": "628b49d9-6dcd-897a-830d-d4f597705899",
    "station": "km 3"
   },
   "valid": false,
@@ -192,8 +192,8 @@
   "ref": "core#/$defs/TrackPath",
   "value": {
    "trackIds": [
-    "a",
-    "b"
+    "ca978112-ca1b-8dca-bac2-31b39a23dc4d",
+    "3e23e816-0039-894a-b389-4f6564e1b134"
    ]
   },
   "valid": true,
@@ -202,7 +202,7 @@
  {
   "ref": "core#/$defs/TrackPath",
   "value": {
-   "trackIds": "a"
+   "trackIds": "ca978112-ca1b-8dca-bac2-31b39a23dc4d"
   },
   "valid": false,
   "paths": [
@@ -212,7 +212,7 @@
  {
   "ref": "core#/$defs/Track",
   "value": {
-   "id": "t1",
+   "id": "628b49d9-6dcd-897a-830d-d4f597705899",
    "epsg": 25832,
    "elements": [
     {
@@ -236,7 +236,7 @@
  {
   "ref": "core#/$defs/Track",
   "value": {
-   "id": "t1",
+   "id": "628b49d9-6dcd-897a-830d-d4f597705899",
    "epsg": 25832,
    "elements": []
   },
@@ -248,7 +248,7 @@
  {
   "ref": "core#/$defs/Track",
   "value": {
-   "id": "t1",
+   "id": "628b49d9-6dcd-897a-830d-d4f597705899",
    "epsg": 25832.5,
    "elements": [
     {
@@ -276,7 +276,7 @@
  {
   "ref": "core#/$defs/Track",
   "value": {
-   "id": "t1",
+   "id": "628b49d9-6dcd-897a-830d-d4f597705899",
    "epsg": 25832,
    "elements": [
     {
@@ -306,12 +306,12 @@
  {
   "ref": "core#/$defs/Switch",
   "value": {
-   "id": "s",
+   "id": "043a7187-74c5-82bd-8a25-adbeb1bfcd5c",
    "kind": "switch",
    "formVersion": 1,
    "ports": {
     "A": {
-     "trackId": "t1",
+     "trackId": "628b49d9-6dcd-897a-830d-d4f597705899",
      "endpoint": "END"
     },
     "B2": null
@@ -323,12 +323,12 @@
  {
   "ref": "core#/$defs/Switch",
   "value": {
-   "id": "s",
+   "id": "043a7187-74c5-82bd-8a25-adbeb1bfcd5c",
    "kind": "switch",
    "formVersion": 1,
    "ports": {
     "E": {
-     "trackId": "t1",
+     "trackId": "628b49d9-6dcd-897a-830d-d4f597705899",
      "endpoint": "END"
     }
    }
@@ -341,12 +341,12 @@
  {
   "ref": "core#/$defs/Switch",
   "value": {
-   "id": "s",
+   "id": "043a7187-74c5-82bd-8a25-adbeb1bfcd5c",
    "kind": "switch",
    "formVersion": 1,
    "ports": {
     "A": {
-     "trackId": "t1"
+     "trackId": "628b49d9-6dcd-897a-830d-d4f597705899"
     }
    }
   },
@@ -358,7 +358,7 @@
  {
   "ref": "core#/$defs/OperationalPoint",
   "value": {
-   "id": "o",
+   "id": "65c74c15-a686-887b-b6bb-f9958f494fc6",
    "rl100": "LHT"
   },
   "valid": true,
@@ -367,7 +367,7 @@
  {
   "ref": "core#/$defs/OperationalPoint",
   "value": {
-   "id": "o"
+   "id": "65c74c15-a686-887b-b6bb-f9958f494fc6"
   },
   "valid": false,
   "paths": [
@@ -377,16 +377,15 @@
  {
   "ref": "core#/$defs/KmLine",
   "value": {
-   "id": "km-6050",
+   "id": "1a675d3d-777a-80af-8de7-7fa615e9805f",
    "lineNumber": 6050,
+   "epsg": 25832,
    "runs": [
-    [
-     [
-      11.9,
-      51.5,
-      1200.5
-     ]
-    ]
+    {
+     "kmStart": 1200.5,
+     "counting": "up",
+     "points": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
    ]
   },
   "valid": true,
@@ -395,30 +394,29 @@
  {
   "ref": "core#/$defs/KmLine",
   "value": {
-   "id": "km-6050",
+   "id": "1a675d3d-777a-80af-8de7-7fa615e9805f",
    "lineNumber": 6050,
+   "epsg": 25832,
    "runs": [
-    [
-     [
-      11.9,
-      51.5
-     ]
-    ]
+    {
+     "counting": "up",
+     "points": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
    ]
   },
   "valid": false,
   "paths": [
-   "/runs/0/0"
+   "/runs/0"
   ]
  },
  {
   "ref": "core#/$defs/NamedTrackPath",
   "value": {
-   "id": "r",
+   "id": "454349e4-22f0-8297-991e-ad13e21d3db5",
    "name": "Route 1",
    "path": {
     "trackIds": [
-     "t1"
+     "628b49d9-6dcd-897a-830d-d4f597705899"
     ]
    }
   },
@@ -428,7 +426,7 @@
  {
   "ref": "civil#/$defs/AxisSurvey",
   "value": {
-   "id": "a",
+   "id": "ca978112-ca1b-8dca-bac2-31b39a23dc4d",
    "epsg": 25832,
    "points": "sha256:abc"
   },
@@ -452,14 +450,14 @@
  {
   "ref": "signalling#/$defs/Signal",
   "value": {
-   "id": "sig-a",
+   "id": "888dbab2-d734-8167-b0c3-42b59b729711",
    "name": "A",
    "kind": "real",
    "mounting": "mast",
-   "operationalPointId": "op1",
+   "operationalPointId": "7d3c6b8d-51ac-8ec7-9a2a-dbf98045944f",
    "at": {
     "anchor": "station",
-    "trackId": "t1",
+    "trackId": "628b49d9-6dcd-897a-830d-d4f597705899",
     "station": 20,
     "side": "right",
     "offset": 3.1,
@@ -518,7 +516,7 @@
      ],
      "signallingSpeeds": [
       {
-       "routeId": "rt-a-n1",
+       "routeId": "372c9796-b34f-8341-bd84-4fa3bc2a026d",
        "speed": 60
       }
      ]
@@ -537,14 +535,14 @@
  {
   "ref": "signalling#/$defs/Signal",
   "value": {
-   "id": "sig-a",
+   "id": "888dbab2-d734-8167-b0c3-42b59b729711",
    "name": "A",
    "kind": "real",
    "mounting": "mast",
-   "operationalPointId": "op1",
+   "operationalPointId": "7d3c6b8d-51ac-8ec7-9a2a-dbf98045944f",
    "at": {
     "anchor": "station",
-    "trackId": "t1",
+    "trackId": "628b49d9-6dcd-897a-830d-d4f597705899",
     "station": 20
    },
    "sight": {
@@ -600,7 +598,7 @@
      ],
      "signallingSpeeds": [
       {
-       "routeId": "rt-a-n1",
+       "routeId": "372c9796-b34f-8341-bd84-4fa3bc2a026d",
        "speed": 60
       }
      ]
@@ -621,11 +619,11 @@
  {
   "ref": "signalling#/$defs/Signal",
   "value": {
-   "id": "sig-a",
+   "id": "888dbab2-d734-8167-b0c3-42b59b729711",
    "name": "A",
    "kind": "real",
    "mounting": "mast",
-   "operationalPointId": "op1",
+   "operationalPointId": "7d3c6b8d-51ac-8ec7-9a2a-dbf98045944f",
    "at": {
     "anchor": "plane",
     "easting": 500000,
@@ -686,7 +684,7 @@
      ],
      "signallingSpeeds": [
       {
-       "routeId": "rt-a-n1",
+       "routeId": "372c9796-b34f-8341-bd84-4fa3bc2a026d",
        "speed": 60
       }
      ]
@@ -705,14 +703,14 @@
  {
   "ref": "signalling#/$defs/Signal",
   "value": {
-   "id": "sig-a",
+   "id": "888dbab2-d734-8167-b0c3-42b59b729711",
    "name": "A",
    "kind": "real",
    "mounting": "mast",
-   "operationalPointId": "op1",
+   "operationalPointId": "7d3c6b8d-51ac-8ec7-9a2a-dbf98045944f",
    "at": {
     "anchor": "station",
-    "trackId": "t1",
+    "trackId": "628b49d9-6dcd-897a-830d-d4f597705899",
     "station": 20,
     "side": "right",
     "offset": 3.1,
@@ -771,7 +769,7 @@
      ],
      "signallingSpeeds": [
       {
-       "routeId": "rt-a-n1",
+       "routeId": "372c9796-b34f-8341-bd84-4fa3bc2a026d",
        "speed": 60
       }
      ]
@@ -790,14 +788,14 @@
  {
   "ref": "signalling#/$defs/Signal",
   "value": {
-   "id": "sig-a",
+   "id": "888dbab2-d734-8167-b0c3-42b59b729711",
    "name": "A",
    "kind": "fictive",
    "mounting": "mast",
-   "operationalPointId": "op1",
+   "operationalPointId": "7d3c6b8d-51ac-8ec7-9a2a-dbf98045944f",
    "at": {
     "anchor": "station",
-    "trackId": "t1",
+    "trackId": "628b49d9-6dcd-897a-830d-d4f597705899",
     "station": 20,
     "side": "right",
     "offset": 3.1,
@@ -856,7 +854,7 @@
      ],
      "signallingSpeeds": [
       {
-       "routeId": "rt-a-n1",
+       "routeId": "372c9796-b34f-8341-bd84-4fa3bc2a026d",
        "speed": 60
       }
      ]
@@ -879,30 +877,30 @@
  {
   "ref": "signalling#/$defs/Route",
   "value": {
-   "id": "rt-a-n1",
+   "id": "372c9796-b34f-8341-bd84-4fa3bc2a026d",
    "name": "A–N1",
    "kind": "train",
    "trainType": "ZZ",
-   "startSignalId": "sig-a",
-   "targetSignalId": "sig-n1",
+   "startSignalId": "888dbab2-d734-8167-b0c3-42b59b729711",
+   "targetSignalId": "3ced77f1-79c4-84cf-9efd-6ecf8bd6971e",
    "path": {
     "trackIds": [
-     "t1"
+     "628b49d9-6dcd-897a-830d-d4f597705899"
     ]
    },
    "overlaps": [
     {
-     "overlapId": "ov-n1",
+     "overlapId": "f1d7c029-4188-889a-8262-830983d3fac9",
      "preferred": true
     }
    ],
    "aspects": [
     {
-     "signalId": "sig-a",
+     "signalId": "888dbab2-d734-8167-b0c3-42b59b729711",
      "aspect": "Ks_1"
     },
     {
-     "signalId": "sig-a",
+     "signalId": "888dbab2-d734-8167-b0c3-42b59b729711",
      "aspect": "Zs_3",
      "symbol": "6"
     }
@@ -914,15 +912,15 @@
  {
   "ref": "signalling#/$defs/Route",
   "value": {
-   "id": "rt-a-n1",
+   "id": "372c9796-b34f-8341-bd84-4fa3bc2a026d",
    "name": "A–N1",
    "kind": "train",
    "trainType": "ZZ",
-   "startSignalId": "sig-a",
-   "targetSignalId": "sig-n1",
+   "startSignalId": "888dbab2-d734-8167-b0c3-42b59b729711",
+   "targetSignalId": "3ced77f1-79c4-84cf-9efd-6ecf8bd6971e",
    "path": {
     "trackIds": [
-     "t1"
+     "628b49d9-6dcd-897a-830d-d4f597705899"
     ]
    },
    "overlaps": [
@@ -932,11 +930,11 @@
    ],
    "aspects": [
     {
-     "signalId": "sig-a",
+     "signalId": "888dbab2-d734-8167-b0c3-42b59b729711",
      "aspect": "Ks_1"
     },
     {
-     "signalId": "sig-a",
+     "signalId": "888dbab2-d734-8167-b0c3-42b59b729711",
      "aspect": "Zs_3",
      "symbol": "6"
     }
@@ -950,18 +948,18 @@
  {
   "ref": "signalling#/$defs/Overlap",
   "value": {
-   "id": "ov-n1",
+   "id": "f1d7c029-4188-889a-8262-830983d3fac9",
    "name": "N1/200",
-   "signalId": "sig-n1",
+   "signalId": "3ced77f1-79c4-84cf-9efd-6ecf8bd6971e",
    "path": {
     "trackIds": [
-     "t1",
-     "t2"
+     "628b49d9-6dcd-897a-830d-d4f597705899",
+     "c4447403-8d45-8e40-a471-4afefa7bf8da"
     ]
    },
    "end": {
     "anchor": "station",
-    "trackId": "t2",
+    "trackId": "c4447403-8d45-8e40-a471-4afefa7bf8da",
     "station": 100
    },
    "length": 120,
@@ -969,12 +967,12 @@
    "speed": 60,
    "switches": [
     {
-     "switchElementId": "we-1",
+     "switchElementId": "9e659586-cebb-856f-871c-1164967c5918",
      "locked": true
     }
    ],
    "clearSectionIds": [
-    "ts-1"
+    "29ab4da5-d303-837b-a9ea-0f2111603060"
    ]
   },
   "valid": true,
@@ -983,13 +981,13 @@
  {
   "ref": "signalling#/$defs/FlankProtection",
   "value": {
-   "id": "fla-1",
+   "id": "66319679-5d9f-8f28-a29a-2993d7f1c108",
    "requester": {
-    "switchElementId": "we-1",
+    "switchElementId": "9e659586-cebb-856f-871c-1164967c5918",
     "via": "left"
    },
    "protection": {
-    "signalId": "sig-n1"
+    "signalId": "3ced77f1-79c4-84cf-9efd-6ecf8bd6971e"
    }
   },
   "valid": true,
@@ -998,9 +996,9 @@
  {
   "ref": "signalling#/$defs/FlankProtection",
   "value": {
-   "id": "fla-2",
+   "id": "64e5725b-0c4c-80fc-8dd5-6e850aba5019",
    "requester": {
-    "switchElementId": "we-1",
+    "switchElementId": "9e659586-cebb-856f-871c-1164967c5918",
     "via": "right"
    },
    "protection": {
@@ -1013,14 +1011,14 @@
  {
   "ref": "signalling#/$defs/FlankProtection",
   "value": {
-   "id": "fla-1",
+   "id": "66319679-5d9f-8f28-a29a-2993d7f1c108",
    "requester": {
-    "switchElementId": "we-1",
+    "switchElementId": "9e659586-cebb-856f-871c-1164967c5918",
     "via": "left"
    },
    "protection": {
-    "signalId": "sig-n1",
-    "switchElementId": "we-1",
+    "signalId": "3ced77f1-79c4-84cf-9efd-6ecf8bd6971e",
+    "switchElementId": "9e659586-cebb-856f-871c-1164967c5918",
     "position": "left"
    }
   },
@@ -1032,9 +1030,9 @@
  {
   "ref": "signalling#/$defs/FlankProtection",
   "value": {
-   "id": "fla-1",
+   "id": "66319679-5d9f-8f28-a29a-2993d7f1c108",
    "requester": {
-    "switchElementId": "we-1",
+    "switchElementId": "9e659586-cebb-856f-871c-1164967c5918",
     "via": "left"
    },
    "protection": {
@@ -1049,10 +1047,10 @@
  {
   "ref": "signalling#/$defs/Balise",
   "value": {
-   "id": "pzb-gue",
+   "id": "80d9cced-baff-8518-a617-5c03a9eaf88b",
    "at": {
     "anchor": "station",
-    "trackId": "t1",
+    "trackId": "628b49d9-6dcd-897a-830d-d4f597705899",
     "station": 200,
     "side": "right",
     "offset": 3.1,
@@ -1060,7 +1058,7 @@
    },
    "system": "pzb",
    "kind": "speedCheck",
-   "signalId": "sig-n1",
+   "signalId": "3ced77f1-79c4-84cf-9efd-6ecf8bd6971e",
    "effect": "switchedBySignal",
    "settings": {
     "frequency": "2000",
@@ -1070,7 +1068,7 @@
    },
    "routes": [
     {
-     "routeId": "rt-n1-v",
+     "routeId": "9d7038b0-dc3f-8443-ac76-a6323801b014",
      "effect": "inactiveWhenSet"
     }
    ]
@@ -1081,11 +1079,11 @@
  {
   "ref": "signalling#/$defs/Balise",
   "value": {
-   "id": "etcs-n1",
+   "id": "df5efa40-fe5e-859d-9c6a-25353e847ff3",
    "name": "N1",
    "at": {
     "anchor": "station",
-    "trackId": "t1",
+    "trackId": "628b49d9-6dcd-897a-830d-d4f597705899",
     "station": 226,
     "side": "right",
     "offset": 3.1,
@@ -1097,7 +1095,7 @@
     "group": "N1",
     "position": 1
    },
-   "signalId": "sig-n1",
+   "signalId": "3ced77f1-79c4-84cf-9efd-6ecf8bd6971e",
    "effect": "permanent"
   },
   "valid": true,
@@ -1106,10 +1104,10 @@
  {
   "ref": "signalling#/$defs/Balise",
   "value": {
-   "id": "pzb-a-1000",
+   "id": "76041961-157e-8d98-b63b-f7d168782214",
    "at": {
     "anchor": "station",
-    "trackId": "t1",
+    "trackId": "628b49d9-6dcd-897a-830d-d4f597705899",
     "station": 20,
     "side": "right",
     "offset": 3.1,
@@ -1122,7 +1120,7 @@
      "1000"
     ]
    },
-   "signalId": "sig-a",
+   "signalId": "888dbab2-d734-8167-b0c3-42b59b729711",
    "effect": "switchedBySignal"
   },
   "valid": false,
@@ -1133,10 +1131,10 @@
  {
   "ref": "signalling#/$defs/Balise",
   "value": {
-   "id": "pzb-a-1000",
+   "id": "76041961-157e-8d98-b63b-f7d168782214",
    "at": {
     "anchor": "station",
-    "trackId": "t1",
+    "trackId": "628b49d9-6dcd-897a-830d-d4f597705899",
     "station": 20,
     "side": "right",
     "offset": 3.1,
@@ -1147,7 +1145,7 @@
    "settings": {
     "frequency": "1000"
    },
-   "signalId": "sig-a",
+   "signalId": "888dbab2-d734-8167-b0c3-42b59b729711",
    "effect": "switchedBySignal",
    "frequency": "1000"
   },
@@ -1181,11 +1179,11 @@
  {
   "ref": "signalling#/$defs/StationBoundary",
   "value": {
-   "id": "bd-1",
-   "operationalPointId": "op1",
+   "id": "a23b2813-ba86-878f-828e-3e637d6d58c7",
+   "operationalPointId": "7d3c6b8d-51ac-8ec7-9a2a-dbf98045944f",
    "marks": [
     {
-     "signalId": "sig-a"
+     "signalId": "888dbab2-d734-8167-b0c3-42b59b729711"
     }
    ]
   },
@@ -1195,12 +1193,12 @@
  {
   "ref": "signalling#/$defs/StationBoundary",
   "value": {
-   "id": "bd-1",
-   "operationalPointId": "op1",
+   "id": "a23b2813-ba86-878f-828e-3e637d6d58c7",
+   "operationalPointId": "7d3c6b8d-51ac-8ec7-9a2a-dbf98045944f",
    "marks": [
     {
-     "signalId": "sig-a",
-     "switchId": "w1"
+     "signalId": "888dbab2-d734-8167-b0c3-42b59b729711",
+     "switchId": "60c5590f-72ee-8292-b954-5afc28bf63ca"
     }
    ]
   },
@@ -1212,7 +1210,7 @@
  {
   "ref": "signalling#/$defs/TrackSection",
   "value": {
-   "id": "ts",
+   "id": "44ad63f6-0af0-86db-afdd-e6d5186ef781",
    "kind": "axleCounting",
    "detectionPointIds": []
   },

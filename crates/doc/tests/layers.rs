@@ -17,8 +17,14 @@ fn domains(doc: &Value) -> Vec<String> {
     doc["domains"].as_object().unwrap().keys().cloned().collect()
 }
 
+/// The UUID a short id of a fixture goes by in a document (decision 0029, phase 2).
+fn u(id: &str) -> String {
+    rail_across_doc::ids::uuid_of(id)
+}
+
 fn find<'a>(list: &'a Value, id: &str) -> &'a Value {
-    list.as_array().unwrap().iter().find(|o| o["id"] == id).unwrap_or_else(|| panic!("no {id}"))
+    let id = rail_across_doc::ids::uuid_of(id);
+    list.as_array().unwrap().iter().find(|o| o["id"] == id.as_str()).unwrap_or_else(|| panic!("no {id}"))
 }
 
 #[test]
@@ -54,13 +60,13 @@ fn the_stopping_places_in_the_core_and_the_platform_naming_them() {
     assert!(find(&core["stoppingPlaces"], "hp-2").get("platformId").is_none());
     assert_eq!(
         find(&doc["domains"]["civil"]["collections"]["platforms"], "p1")["stoppingPlaceIds"],
-        json!(["hp-2"])
+        json!([u("hp-2")])
     );
     assert!(doc["domains"]["signalling"]["collections"].get("stoppingPlaces").is_none());
     // and the record holds them as the document does (decision 0028)
     let record = document_to_record(&doc).unwrap();
     assert!(find(&record["stoppingPlaces"], "hp-2").get("platformId").is_none());
-    assert_eq!(find(&record["platforms"], "p1")["stoppingPlaceIds"], json!(["hp-2"]));
+    assert_eq!(find(&record["platforms"], "p1")["stoppingPlaceIds"], json!([u("hp-2")]));
     assert!(record["signalling"]["collections"].get("stoppingPlaces").is_none());
     assert_eq!(to_document(&record, false, true).unwrap(), doc);
 }
@@ -80,9 +86,9 @@ fn infra_data_1_0_reads_in_as_of_today() {
         "the runs the core's"
     );
     assert!(civil["collections"].get("trackPaths").is_none());
-    assert_eq!(find(&civil["collections"]["platforms"], "p1")["stoppingPlaceIds"], json!(["hp-2"]));
+    assert_eq!(find(&civil["collections"]["platforms"], "p1")["stoppingPlaceIds"], json!([u("hp-2")]));
     let marks = &doc["domains"]["signalling"]["collections"]["stationBoundaries"][0]["marks"];
-    assert_eq!(marks, &json!([{ "signalId": "sig-a" }, { "stoppingPlaceId": "hp-2" }]));
+    assert_eq!(marks, &json!([{ "signalId": u("sig-a") }, { "stoppingPlaceId": u("hp-2") }]));
 }
 
 #[test]
@@ -129,7 +135,7 @@ fn a_stopping_place_a_platform_names_is_a_passenger_stop() {
             .as_array()
             .unwrap()
             .iter()
-            .filter(|h| h["id"] != "hp-2")
+            .filter(|h| h["id"] != u("hp-2").as_str())
             .all(|h| h.get("passengerStop").is_none())
     );
 }
@@ -138,7 +144,7 @@ fn a_stopping_place_a_platform_names_is_a_passenger_stop() {
 fn a_2_0_document_of_before_reads_with_the_passenger_stops_and_the_runs_in_the_core() {
     // The core 2.0 and civil 1.0 as they were first: no passenger stops, the runs civil's.
     let mut doc = check_document(&case("the sample with its signalling")).unwrap();
-    let run = json!({ "id": "r", "name": "R", "path": { "trackIds": ["t1"] } });
+    let run = json!({ "id": u("r"), "name": "R", "path": { "trackIds": [u("t1")] } });
     let signalling = &mut doc["domains"]["signalling"];
     signalling["version"] = json!("2.0");
     signalling["schema"] = json!("sha256:b46b740ba722a6eae945038d8a6149cd0c540258df478a77b4a9b8988ae7d515");
@@ -259,6 +265,8 @@ mod stage_days {
     use rail_across_doc::stages::{day_after, day_before};
     use serde_json::{Value, json};
 
+    use super::u;
+
     fn track(id: &str, extra: Value) -> Value {
         let el = json!({ "elementType": 0, "startNode": [500000, 5700000], "endNode": [500100, 5700000], "bearing": 90, "length": 100, "speed": 80 });
         let mut t = json!({ "id": id, "name": id, "epsg": 25832, "elements": [el] });
@@ -297,7 +305,8 @@ mod stage_days {
         assert!(doc["domains"]["core"]["fields"].get("stages").is_none(), "no list of stages");
         let back = document_to_record(&check_document(&doc).unwrap()).unwrap();
         for t in record()["tracks"].as_array().unwrap() {
-            let of = |list: &Value| list.as_array().unwrap().iter().find(|x| x["id"] == t["id"]).unwrap().get("lifespan").cloned();
+            let id = u(t["id"].as_str().unwrap());
+            let of = |list: &Value| list.as_array().unwrap().iter().find(|x| x["id"] == id.as_str()).unwrap().get("lifespan").cloned();
             assert_eq!(of(&doc["domains"]["core"]["collections"]["tracks"]), t.get("lifespan").cloned(), "{} in the document", t["id"]);
             assert_eq!(of(&back["tracks"]), t.get("lifespan").cloned(), "{} back", t["id"]);
         }
@@ -319,7 +328,7 @@ mod stage_days {
             ("f", json!({ "to": "s9" })),
         ];
         for t in core["collections"]["tracks"].as_array_mut().unwrap() {
-            if let Some((_, l)) = life.iter().find(|(id, _)| t["id"] == *id) {
+            if let Some((_, l)) = life.iter().find(|(id, _)| t["id"] == u(id).as_str()) {
                 t["lifespan"] = l.clone();
             }
         }
@@ -436,16 +445,18 @@ mod structures {
     use rail_across_doc::door::{check_document, to_document};
     use serde_json::json;
 
+    use super::u;
+
     #[test]
     fn bridges_walls_and_barriers_are_civil_and_come_back() {
         let el = json!({ "elementType": 0, "startNode": [500000, 5700000], "endNode": [500100, 5700000], "bearing": 90, "length": 100, "speed": 80 });
-        let at = |a: f64, b: f64, side: &str| json!({ "anchor": "station", "trackId": "t", "startStation": a, "endStation": b, "side": side });
+        let at = |a: f64, b: f64, side: &str| json!({ "anchor": "station", "trackId": u("t"), "startStation": a, "endStation": b, "side": side });
         let record = json!({
-            "id": "p", "switches": [], "platforms": [],
-            "tracks": [{ "id": "t", "name": "T", "epsg": 25832, "elements": [el] }],
-            "bridges": [{ "id": "br", "name": "EÜ Bach", "at": at(20.0, 40.0, "left"), "kind": "arch", "spans": 1, "crosses": "Bach" }],
-            "retainingWalls": [{ "id": "sm", "at": at(0.0, 60.0, "right"), "kind": "cantilever", "offset": 4.5, "height": 3 }],
-            "noiseBarriers": [{ "id": "lsw", "at": at(10.0, 90.0, "left"), "kind": "absorbing", "offset": 3.8, "height": 2 }],
+            "id": u("p"), "switches": [], "platforms": [],
+            "tracks": [{ "id": u("t"), "name": "T", "epsg": 25832, "elements": [el] }],
+            "bridges": [{ "id": u("br"), "name": "EÜ Bach", "at": at(20.0, 40.0, "left"), "kind": "arch", "spans": 1, "crosses": "Bach" }],
+            "retainingWalls": [{ "id": u("sm"), "at": at(0.0, 60.0, "right"), "kind": "cantilever", "offset": 4.5, "height": 3 }],
+            "noiseBarriers": [{ "id": u("lsw"), "at": at(10.0, 90.0, "left"), "kind": "absorbing", "offset": 3.8, "height": 2 }],
         });
         let doc = to_document(&record, false, true).unwrap_or_else(|e| panic!("refused ({e})"));
         let civil = &doc["domains"]["civil"]["collections"];
@@ -459,24 +470,27 @@ mod structures {
 }
 
 mod references {
-    use super::case;
+    use super::{case, u};
     use rail_across_doc::door::{check_document, without_dangling};
     use serde_json::json;
 
     #[test]
     fn a_reference_to_nothing_is_refused_and_named() {
         let mut doc = check_document(&case("the sample with its signalling")).unwrap();
-        doc["domains"]["signalling"]["collections"]["switchElements"][0]["switchId"] = json!("w9");
+        doc["domains"]["signalling"]["collections"]["switchElements"][0]["switchId"] = json!(u("w9"));
         let e = check_document(&doc).unwrap_err();
         assert_eq!(e.code, "invalid_payload");
-        assert_eq!(e.details, ["/domains/signalling/collections/switchElements/0/switchId: names w9, which core.switches lacks"]);
+        assert_eq!(
+            e.details,
+            [format!("/domains/signalling/collections/switchElements/0/switchId: names {}, which core.switches lacks", u("w9"))]
+        );
     }
 
     #[test]
     fn what_names_nothing_is_cut_with_what_needs_it() {
         let mut doc = check_document(&case("the sample with its signalling")).unwrap();
         let sig = &mut doc["domains"]["signalling"]["collections"];
-        sig["switchElements"][0]["switchId"] = json!("w9");
+        sig["switchElements"][0]["switchId"] = json!(u("w9"));
         sig["signals"][0]["operationalPointId"] = json!("op-nowhere");
         let (cut, what) = without_dangling(&doc);
         let paths: Vec<&str> = what.iter().filter_map(|c| c["path"].as_str()).collect();

@@ -601,18 +601,24 @@ fn references_resolved(doc: &Value) -> Value {
     out
 }
 
-/// Core 4.0, its words and names (decision 0029, phase 1): the kinds as words, the references ending in `Id`,
-/// no plane of an element's own, a switch with `B1` its main track (`words`). The domains are at the step's
-/// versions after it.
+/// Core 4.0 (decision 0029, phases 1 and 2): the kinds as words, the references ending in `Id`, no plane of an
+/// element's own, a switch with `B1` its main track (`words`); a km line in one plane as runs (`km_lines`), every id
+/// a UUID (`ids`). The domains are at the step's versions after it.
 fn words_and_names(doc: &Value) -> Value {
     let mut out = doc.clone();
+    let mut blobs = obj(&doc["blobs"]);
     let Some(Value::Object(domains)) = out.get_mut("domains") else { return out };
     crate::words::forward(domains);
+    // A km line in one plane, its runs' points as blobs; every id a UUID (decision 0029, phase 2).
+    crate::core_format::km_lines_to_document(domains, &mut blobs);
+    crate::ids::forward(domains);
+    crate::core_format::sorted_collections(domains);
     for (name, _, to) in WORDS_AND_NAMES {
         let Some(Value::Object(domain)) = domains.get_mut(*name) else { continue };
         domain.insert("version".into(), json!(to));
         domain.insert("schema".into(), json!(hash_of(name, to)));
     }
+    out.as_object_mut().expect("document").insert("blobs".into(), Value::Object(blobs));
     out
 }
 

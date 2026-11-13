@@ -5,6 +5,7 @@ import { arcFrom, straightFrom, transitionElement } from '@rail-across/core/geom
 import { axisLine, END_TOL, endMismatch, gradientOnTrack } from './vermEsnKmGradient'
 import { withFileCants } from './fileCants'
 import { snapImportedChain, snapImportedLastEnd } from './importSnap'
+import { kmLineId } from '../km'
 
 const RECORD_SIZE = 78
 const GRA_RECORD_SIZE = 36   // the header is one record long, too
@@ -320,7 +321,7 @@ export function kmLineEntries(kmAxes) {
     })
   }
   return [...byNumber].map(([lineNumber, runs]) => ({
-    id: `km-${lineNumber}`, lineNumber, crs: 'EPSG:4326', runs: runs.filter(r => r.length >= 2), source: 'vermesn',
+    id: kmLineId(lineNumber), lineNumber, crs: 'EPSG:4326', runs: runs.filter(r => r.length >= 2), source: 'vermesn',
   }))
 }
 

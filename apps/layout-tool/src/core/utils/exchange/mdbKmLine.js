@@ -1,7 +1,7 @@
 import { buildElement } from './trackPositionCsvImport'
 import { elementTypeName, epsgForLagesystem, normLine } from './mdbImport'
 import { mdbStation } from './mdbGradient'
-import { clipRuns } from '../km'
+import { clipRuns, kmLineId } from '../km'
 
 /**
  * The kilometrage line of the DB ASCII interface (Satzart 24) as the
@@ -134,7 +134,7 @@ export function mdbKmLines(payload, lines, box) {
     const clipped = box ? clipRuns(runs, box) : runs
     if (!clipped.length) continue
     const lineNumber = /^\d+$/.test(line) ? Number(line) : line
-    out.push({ id: `km-${lineNumber}`, lineNumber, crs: 'EPSG:4326', clip: box, runs: clipped, source: 'mdb' })
+    out.push({ id: kmLineId(lineNumber), lineNumber, crs: 'EPSG:4326', clip: box, runs: clipped, source: 'mdb' })
   }
   return out
 }

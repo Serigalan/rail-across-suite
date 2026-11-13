@@ -330,7 +330,7 @@ fn renamed(el: &Value, from: &str, to: &str) -> Value {
 
 // ── Record → document ───────────────────────────────────────────────────────
 
-pub(crate) fn by_id(list: &mut [Value]) {
+pub fn by_id(list: &mut [Value]) {
     list.sort_by(|a, b| {
         if js_less(a.get("id"), b.get("id")) {
             std::cmp::Ordering::Less
@@ -344,6 +344,32 @@ pub(crate) fn by_id(list: &mut [Value]) {
 
 /// The infra-data-2.0 document of a record (dehydrated), every collection sorted by id (`recordToDocument`).
 pub fn record_to_document(record: &Value, schema_hashes: &HashMap<&str, String>) -> Result<Value> {
+    let (mut domains, mut blobs) = record_domains(record, schema_hashes)?;
+    km_lines_to_document(&mut domains, &mut blobs);
+    // The record keeps the words and names of before and ids of any form (decision 0029, phase 6 takes this out).
+    crate::words::forward(&mut domains);
+    crate::ids::forward(&mut domains);
+    sorted_collections(&mut domains);
+    Ok(json!({ "format": crate::door::FORMAT, "version": crate::door::VERSION, "domains": Value::Object(domains), "blobs": Value::Object(blobs) }))
+}
+
+/// The km lines of a record's domains as core 4.0 states them: in one plane, their runs' points as blobs
+/// (decision 0029, phase 2); one without a point is no line.
+pub(crate) fn km_lines_to_document(domains: &mut Object, blobs: &mut Object) {
+    let Some(Value::Array(lines)) = domains.get_mut("core").and_then(|c| c.get_mut("collections")).and_then(|c| c.get_mut("kmLines")) else {
+        return;
+    };
+    let mut blob = |value: &Value| -> Value {
+        let hash = content_hash(value);
+        blobs.insert(hash.clone(), value.clone());
+        Value::String(hash)
+    };
+    *lines = lines.iter().map(|l| crate::km_lines::to_document(l, &mut blob)).filter(|l| l.get("epsg").is_some()).collect();
+}
+
+/// The domains of a record's document and its blobs, in the words, names and ids the record keeps, every
+/// collection sorted by id: what `record_to_document` states as core 4.0 does.
+pub fn record_domains(record: &Value, schema_hashes: &HashMap<&str, String>) -> Result<(Object, Object)> {
     let known: HashSet<&str> = CORE_FIELDS
         .iter()
         .chain(CIVIL_FIELDS)
@@ -521,6 +547,12 @@ pub fn record_to_document(record: &Value, schema_hashes: &HashMap<&str, String>)
             domains.insert("electrification".into(), layer("electrification", fields, cols));
         }
     }
+    sorted_collections(&mut domains);
+    Ok((domains, blobs))
+}
+
+/// Every collection of the domains sorted by id.
+pub(crate) fn sorted_collections(domains: &mut Object) {
     for domain in domains.values_mut() {
         if let Some(Value::Object(cols)) = domain.get_mut("collections") {
             for v in cols.values_mut() {
@@ -530,9 +562,6 @@ pub fn record_to_document(record: &Value, schema_hashes: &HashMap<&str, String>)
             }
         }
     }
-    // The record keeps the words and names of before (decision 0029, phase 6 takes this out).
-    crate::words::forward(&mut domains);
-    Ok(json!({ "format": crate::door::FORMAT, "version": crate::door::VERSION, "domains": Value::Object(domains), "blobs": Value::Object(blobs) }))
 }
 
 // ── Document → record ───────────────────────────────────────────────────────
@@ -621,7 +650,7 @@ pub fn document_to_record(doc: &Value) -> Result<Value> {
         ("platforms", platforms),
         ("endMarks", end_marks),
         ("routes", routes),
-        ("kmLines", list(c, "kmLines").to_vec()),
+        ("kmLines", list(c, "kmLines").iter().map(|l| crate::km_lines::to_record(l, &blobs)).collect::<Result<Vec<_>>>()?),
         ("axisSurveys", axis_surveys),
         ("referenceAxes", reference_axes),
         ("operationalPoints", operational_points),

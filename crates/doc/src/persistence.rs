@@ -28,12 +28,10 @@ pub fn project_document(record: &Value, carry_schemas: bool, check: bool) -> Res
 }
 
 /// The domains of a project record's document in the words and names the record keeps (decision 0029, phase 1):
-/// what a tool reads of the core beside its own layer until the record follows the document (phase 6). Not
-/// checked: a tool reads it while it works.
+/// what a tool reads of the core beside its own layer until the record follows the document (phase 6), with the
+/// record's ids. Not checked: a tool reads it while it works.
 pub fn record_domains(record: &Value) -> Result<Value> {
-    let doc = to_document(&dehydrate_project(record), false, false)?;
-    let mut domains = doc["domains"].as_object().cloned().unwrap_or_default();
-    crate::words::back(&mut domains);
+    let (domains, _) = crate::core_format::record_domains(&dehydrate_project(record), crate::door::schema_hashes())?;
     Ok(Value::Object(domains))
 }
 

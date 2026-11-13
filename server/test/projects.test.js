@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { PW, setup, signIn } from './helpers.js'
 import { hasPek, loadPek } from '@rail-across/core/test/pekFixture.js'
 import { parseProjectsPayload } from '@rail-across/core/project'
-import { DOMAIN_VERSIONS } from '@rail-across/core/document'
+import { derivedId, DOMAIN_VERSIONS } from '@rail-across/core/document'
 
 let ctx
 afterEach(async () => { await ctx?.app.close(); ctx?.db.close() })
@@ -49,7 +49,7 @@ describe('projects', () => {
     const { variantId } = await newProject(max, { tracks: [straight('t1')] })
     const { document } = await head(max, variantId)
     expect(document).toMatchObject({ format: 'infra-data', version: '2.0', domains: { core: { version: DOMAIN_VERSIONS.core } } })
-    expect(document.domains.core.collections.tracks.map(t => t.id)).toEqual(['t1'])
+    expect(document.domains.core.collections.tracks.map(t => t.id)).toEqual([derivedId('t1')])
     expect(ctx.db.prepare('SELECT schema_version FROM revision').pluck().all()).toEqual([8])
   })
 
@@ -128,7 +128,7 @@ describe('projects', () => {
     expect(copy.project).toMatchObject({ title: 'Meine Strecke', description: 'eine Strecke', template: false, createdBy: expect.objectContaining({ name: expect.any(String) }) })
     expect(copy.timetables).toBe(1)
     const h = await head(max, copy.variantId)
-    expect(h.payload.tracks.map(t => t.id)).toEqual(['t1'])
+    expect(h.payload.tracks.map(t => t.id)).toEqual([derivedId('t1')])
     // Max's own: he checks in on it, and sees its timetable as his.
     expect((await max('POST', `/api/variants/${copy.variantId}/revisions`, { base: copy.revisionId, payload: { ...h.payload, title: 'x' }, remaps: [] })).statusCode).toBe(201)
     expect((await max('GET', `/api/projects/${copy.project.id}/timetables`)).json()).toMatchObject({ mayEdit: true, timetables: [{ name: 'Takt' }] })
@@ -200,14 +200,14 @@ describe('variants and revisions', () => {
         flankProtection: [], balises: [], stationBoundaries: [], itineraries: [],
       },
     })
-    const bad = { ...h.payload, signalling: signalling({ anchor: 'station', trackId: 't1', station: 180, direction: 'up' }) }
+    const bad = { ...h.payload, signalling: signalling({ anchor: 'station', trackId: derivedId('t1'), station: 180, direction: 'up' }) }
     const refused = await max('POST', `/api/variants/${variantId}/revisions`, { base: revisionId, payload: bad, remaps: [] })
     expect(refused.statusCode).toBe(422)
-    expect(refused.json().errors).toEqual([expect.objectContaining({ code: 'off_track', domain: 'signalling', key: 'signalling:off_track:signals:s1:at' })])
-    const good = { ...h.payload, signalling: signalling({ anchor: 'station', trackId: 't1', station: 80, direction: 'up' }) }
+    expect(refused.json().errors).toEqual([expect.objectContaining({ code: 'off_track', domain: 'signalling', key: `signalling:off_track:signals:${derivedId('s1')}:at` })])
+    const good = { ...h.payload, signalling: signalling({ anchor: 'station', trackId: derivedId('t1'), station: 80, direction: 'up' }) }
     const ok = await max('POST', `/api/variants/${variantId}/revisions`, { base: revisionId, payload: good, remaps: [] })
     expect(ok.statusCode).toBe(201)
-    expect((await head(max, variantId)).payload.signalling.collections.signals).toEqual([signal(good.signalling.collections.signals[0].at)])
+    expect((await head(max, variantId)).payload.signalling.collections.signals).toEqual([{ ...signal(good.signalling.collections.signals[0].at), id: derivedId('s1') }])
   })
 
   it('takes errors the base already had: they are not this check-in\'s doing', async () => {

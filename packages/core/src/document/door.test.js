@@ -7,6 +7,7 @@ import { DOMAIN_VERSIONS } from './coreFormat.js'
 import { documentHash, manifestOf } from './manifest.js'
 import { hasPek, loadPek } from '../../test/pekFixture.js'
 import { ksStation, ksStoppingPlaces } from '../../test/signallingFixture.js'
+import { u, withUuids } from '../../test/uuids.js'
 
 const el = (x0, x1, extra = {}) => ({
   elementType: 0, startNode: [500000 + x0, 5700000], endNode: [500000 + x1, 5700000], bearing: 90, length: x1 - x0, ...extra,
@@ -58,15 +59,15 @@ describe('a record as an infra-data-2.0 document', () => {
   it('holds the domains core and civil, each with its version and schema', () => {
     const doc = toDocument(record({ planHeader: { subtitle: 'x' } }))
     expect(doc).toMatchObject({ format: 'infra-data', version: '2.0' })
-    expect(doc.domains.core).toMatchObject({ version: DOMAIN_VERSIONS.core, schema: SCHEMA_HASHES.core, fields: { id: 'p', title: 'P' } })
+    expect(doc.domains.core).toMatchObject({ version: DOMAIN_VERSIONS.core, schema: SCHEMA_HASHES.core, fields: { id: u('p'), title: 'P' } })
     expect(doc.domains.civil).toMatchObject({ version: DOMAIN_VERSIONS.civil, schema: SCHEMA_HASHES.civil, dependsOn: ['core'], fields: { planHeader: { subtitle: 'x' } } })
-    expect(doc.domains.core.collections.tracks.map(t => t.id)).toEqual(['t1'])
+    expect(doc.domains.core.collections.tracks.map(t => t.id)).toEqual([u('t1')])
   })
 
   it('holds the core alone where the record holds nothing of the layers', () => {
     const doc = toDocument(record())
     expect(Object.keys(doc.domains)).toEqual(['core'])
-    expect(fromDocument(doc).tracks.map(t => t.id)).toEqual(['t1'])
+    expect(fromDocument(doc).tracks.map(t => t.id)).toEqual([u('t1')])
   })
 
   it('carries its schemas where it travels, under the hashes its domains name', () => {
@@ -81,8 +82,9 @@ describe('a record as an infra-data-2.0 document', () => {
     const r = record({ tracks: lives.map((lifespan, i) => track(`t${i}`, lifespan ? { lifespan } : {})) })
     const doc = toDocument(r)
     expect(doc.domains.core.fields.stages).toBeUndefined()
-    expect(doc.domains.core.collections.tracks.map(t => t.lifespan)).toEqual(lives)
-    expect(fromDocument(doc).tracks.map(t => t.lifespan)).toEqual(lives)
+    const byName = (tracks) => [...tracks].sort((a, b) => (a.name < b.name ? -1 : 1)).map(t => t.lifespan)
+    expect(byName(doc.domains.core.collections.tracks)).toEqual(lives)
+    expect(byName(fromDocument(doc).tracks)).toEqual(lives)
   })
 
   it('refuses a lifespan that ends before it begins, or on a day there is none of', () => {
@@ -98,9 +100,9 @@ describe('a record as an infra-data-2.0 document', () => {
     })
     const { endMarks } = toDocument(r).domains.core.collections
     const { platforms } = toDocument(r).domains.civil.collections
-    expect(platforms).toEqual([{ id: 'pf', at: { anchor: 'station', trackId: 't1', startStation: 10, endStation: 90, side: 'left' }, frontOffset: 1.67 }])
-    expect(endMarks).toEqual([{ id: 'e', kind: 'buffer_stop', type: 4, brakeLength: 4, at: { trackId: 't1', endpoint: 'END' } }])
-    expect(roundTrip(r)).toEqual(r)
+    expect(platforms).toEqual([{ id: u('pf'), at: { anchor: 'station', trackId: u('t1'), startStation: 10, endStation: 90, side: 'left' }, frontOffset: 1.67 }])
+    expect(endMarks).toEqual([{ id: u('e'), kind: 'buffer_stop', type: 4, brakeLength: 4, at: { trackId: u('t1'), endpoint: 'END' } }])
+    expect(roundTrip(r)).toEqual(withUuids(r))
   })
 
   it('keeps the stations as the record states them: points with ids, named by tracks and platforms (decision 0028)', () => {
@@ -111,11 +113,13 @@ describe('a record as an infra-data-2.0 document', () => {
       operationalPoints,
     })
     const doc = toDocument(r)
-    expect(doc.domains.core.collections.operationalPoints).toEqual(operationalPoints)
-    expect(doc.domains.core.collections.tracks.map(t => t.operationalPointId)).toEqual(['op-k', 'op-k', undefined])
-    expect(doc.domains.civil.collections.platforms[0].operationalPointId).toBe('op-k')
+    const byName = (list) => [...list].sort((a, b) => (a.name < b.name ? -1 : 1))
+    expect(byName(doc.domains.core.collections.operationalPoints)).toEqual(withUuids(operationalPoints))
+    expect(byName(doc.domains.core.collections.tracks).map(t => t.operationalPointId)).toEqual([u('op-k'), u('op-k'), undefined])
+    expect(doc.domains.civil.collections.platforms[0].operationalPointId).toBe(u('op-k'))
     // a station nothing names stays, under its id
-    expect(roundTrip(r)).toEqual(r)
+    const back = roundTrip(r)
+    expect({ ...back, tracks: byName(back.tracks), operationalPoints: byName(back.operationalPoints) }).toEqual(withUuids(r))
   })
 
   it('refuses a station stated as text: the record names its point', () => {
@@ -130,23 +134,23 @@ describe('a record as an infra-data-2.0 document', () => {
       referenceAxes: [{ id: 'x', name: 'X', epsg: 25832, heightEpsg: null, source: { tra: 'a.TRA' }, points }],
     })
     const doc = toDocument(r)
-    expect(doc.domains.core.collections.trackPaths).toEqual([{ id: 'r', name: 'R', path: { trackIds: ['t1'] } }])
+    expect(doc.domains.core.collections.trackPaths).toEqual([{ id: u('r'), name: 'R', path: { trackIds: [u('t1')] } }])
     const [axis] = doc.domains.civil.collections.referenceAxes
     expect(axis.points).toBe(contentHash(points))
     expect(doc.blobs[axis.points]).toEqual(points)
-    expect(roundTrip(r)).toEqual(r)
+    expect(roundTrip(r)).toEqual(withUuids(r))
   })
 
   it('sorts every collection by id, so the same state is the same bytes', () => {
     const a = toDocument(record({ tracks: [track('b'), track('a')] }))
     const b = toDocument(record({ tracks: [track('a'), track('b')] }))
     expect(canonicalJson(a)).toBe(canonicalJson(b))
-    expect(a.domains.core.collections.tracks.map(t => t.id)).toEqual(['a', 'b'])
+    expect(a.domains.core.collections.tracks.map(t => t.id)).toEqual([u('a'), u('b')].sort())
   })
 
   it('says what is the same in one way: no null fields', () => {
     const r = record({ tracks: [track('a', { lineNumber: null, operationalPoint: null })] })
-    expect(roundTrip(r).tracks[0]).toEqual(track('a'))
+    expect(roundTrip(r).tracks[0]).toEqual(withUuids(track('a')))
   })
 
   it('refuses a field the format does not have, whole', () => {
@@ -160,7 +164,7 @@ describe('the door', () => {
   it('takes a document of this build and gives the record back', () => {
     const doc = toDocument(record())
     expect(checkDocument(doc)).toBe(doc)
-    expect(fromDocument(doc)).toEqual(record())
+    expect(fromDocument(doc)).toEqual(withUuids(record()))
   })
 
   it('names an element\'s design speed designSpeed in the document, and speed in the record', () => {
@@ -180,8 +184,8 @@ describe('the door', () => {
   it('keeps an end mark\'s name and a boundary\'s speed, and reads a core from before them', () => {
     const marks = [{ id: 'e1', kind: 'boundary', trackId: 't1', endpoint: 'END', name: 'Grenze Nord', speed: 80 }]
     const doc = toDocument(record({ tracks: [track('t1')], endMarks: marks }))
-    expect(doc.domains.core.collections.endMarks[0]).toMatchObject({ name: 'Grenze Nord', speed: 80, at: { trackId: 't1', endpoint: 'END' } })
-    expect(fromDocument(doc).endMarks).toEqual(marks)
+    expect(doc.domains.core.collections.endMarks[0]).toMatchObject({ name: 'Grenze Nord', speed: 80, at: { trackId: u('t1'), endpoint: 'END' } })
+    expect(fromDocument(doc).endMarks).toEqual(withUuids(marks))
     const before = toDocument(record({ tracks: [track('t1')], endMarks: [{ id: 'e1', kind: 'boundary', trackId: 't1', endpoint: 'END' }] }))
     const now = structuredClone(before)
     const old = oneZero(before)
@@ -201,10 +205,11 @@ describe('the door', () => {
     const doc = toDocument(station({ signalling }), { carrySchemas: true })
     expect(doc.domains.signalling).toMatchObject({ version: DOMAIN_VERSIONS.signalling, schema: SCHEMA_HASHES.signalling, dependsOn: ['core'] })
     expect(Object.keys(doc.schemas)).toContain(SCHEMA_HASHES.signalling)
-    expect(roundTrip(station({ signalling }))).toEqual(station({ signalling: {
+    const kept = withUuids(signalling)
+    expect(roundTrip(station({ signalling }))).toEqual(withUuids(station({ signalling: {
       fields: signalling.fields,
-      collections: Object.fromEntries(Object.entries(signalling.collections).map(([k, v]) => [k, [...v].sort((a, b) => (a.id < b.id ? -1 : 1))])),
-    } }))
+      collections: Object.fromEntries(Object.entries(kept.collections).map(([k, v]) => [k, [...v].sort((a, b) => (a.id < b.id ? -1 : 1))])),
+    } })))
     expect(Object.keys(toDocument(record(), { carrySchemas: true }).schemas)).not.toContain(SCHEMA_HASHES.signalling)
   })
 
@@ -295,7 +300,7 @@ describe('the door', () => {
     expect(checkDocument(asFirst(now))).toEqual(open)
     // and 1.0's last as 2.0: the stopping places in the core
     expect(checkDocument(now)).toEqual(toDocument(fromDocument(now)))
-    expect(checkDocument(now).domains.core.collections.stoppingPlaces.map(h => h.id)).toEqual(['hp-1', 'hp-2'])
+    expect(checkDocument(now).domains.core.collections.stoppingPlaces.map(h => h.id)).toEqual([u('hp-1'), u('hp-2')].sort())
   })
 
   it('leaves out a member of the signalling that is undefined, as a file would', () => {

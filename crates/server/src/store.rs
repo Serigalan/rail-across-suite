@@ -19,9 +19,9 @@ use crate::http::ApiError;
 use crate::util::{iso, uuid};
 
 /// What `revision.schema_version` says of a payload: 8, an infra-data document
-/// in the words and names of core 4.0 (decision 0029, phase 1). 7 (every
-/// reference names an object: core 3.1, decision 0028, phase C) is read through
-/// the door; 6 (lifespans by day, a reference free to name nothing: core 3.0) is migrated
+/// of core 4.0 (decision 0029, phases 1 and 2: words, names, UUIDs, km lines in
+/// a plane). 7 (every reference names an object: core 3.1, decision 0028, phase
+/// C) is migrated into it once (data migration `0029-core-4.0`); 6 (lifespans by day, a reference free to name nothing: core 3.0) is migrated
 /// into it once (data migration `0028-references`), 5 (the document with its
 /// register of construction stages, decision 0025) by `0028-lifespans-by-day`,
 /// 4 (infra-data-1.0) by `0025-infra-data-2.0`, and each is read through the

@@ -3,6 +3,7 @@ import { loadIdLog, saveTrack, undo } from '../core/storage'
 import { closeWorkingCopy, currentWorkingCopy, openWorkingCopy } from './workingCopies'
 import { checkIn, localChanges, prepareUpdate, revertToHead } from './workingCopySync'
 import { parseProjectsPayload, projectDocument } from '@rail-across/core/project'
+import { derivedId as u } from '@rail-across/core/document'
 
 /** What the server holds and sends of a record: its infra-data-1.0 document — and the record it holds again. */
 const doc = (record) => projectDocument(record)
@@ -16,11 +17,12 @@ beforeAll(() => {
   }
 })
 
-const straight = (id, y) => ({
-  id, name: id, epsg: 25832,
+// Ids as a working copy has them from the server: UUIDs (decision 0029, phase 2).
+const straight = (name, y) => ({
+  id: u(name), name, epsg: 25832,
   elements: [{ elementType: 0, bearing: 90, length: 100, startNode: [500000, 5700000 + y], endNode: [500100, 5700000 + y] }],
 })
-const base = { id: 'p', title: 'P', tracks: [straight('t1', 0)], switches: [], platforms: [] }
+const base = { id: u('p'), title: 'P', tracks: [straight('t1', 0)], switches: [], platforms: [] }
 
 /** A fetch that answers from a table of `METHOD path` → [status, body], and records what it was sent. */
 function serve(routes) {
@@ -40,13 +42,13 @@ describe('checking the working copy in', () => {
   it('sends the record, its base and its id log, and rests on the new revision after', async () => {
     openWorkingCopy({ variantId: 'v', project: base, base: { id: 1, number: 1 }, basePayload: base })
     saveTrack(straight('t2', 50))
-    expect(localChanges().map(e => [e.kind, e.id])).toEqual([['added', 't2']])
+    expect(localChanges().map(e => [e.kind, e.id])).toEqual([['added', u('t2')]])
     const sent = serve({ 'POST /api/variants/v/revisions': [201, { revision: { id: 2, number: 2 } }] })
     const res = await checkIn('neu')
     expect(res.revision.id).toBe(2)
     expect(sent[0].body).toMatchObject({ base: 1, message: 'neu', remaps: [], payload: { format: 'infra-data', version: '2.0' } })
-    expect(recordOf(sent[0].body.payload)).toMatchObject({ id: 'p' })
-    expect(recordOf(sent[0].body.payload).tracks.map(t => t.id)).toEqual(['t1', 't2'])
+    expect(recordOf(sent[0].body.payload)).toMatchObject({ id: u('p') })
+    expect(recordOf(sent[0].body.payload).tracks.map(t => t.id)).toEqual([u('t1'), u('t2')].sort())
     expect(currentWorkingCopy().base.id).toBe(2)
     expect(localChanges()).toEqual([])
   })
@@ -65,24 +67,24 @@ describe('checking the working copy in', () => {
     const prepared = await prepareUpdate()
     expect(prepared.head.id).toBe(3)
     expect(prepared.result.conflicts).toEqual([])
-    expect(prepared.result.merged.tracks.map(t => t.id).sort()).toEqual(['mine', 't1', 'theirs'])
+    expect(prepared.result.merged.tracks.map(t => t.id).sort()).toEqual([u('mine'), u('t1'), u('theirs')].sort())
   })
 })
 
 describe('throwing the local changes away', () => {
   it('makes the working copy the server head, with no changes, no id log and nothing to undo', async () => {
     openWorkingCopy({ variantId: 'v', project: base, base: { id: 1, number: 1 }, basePayload: base,
-      idLog: [{ from: 't1', to: ['t1a', 't1b'] }] })
+      idLog: [{ from: u('t1'), to: [u('t1a'), u('t1b')] }] })
     saveTrack(straight('mine', 50))
     const theirs = { ...base, tracks: [...base.tracks, straight('theirs', 100)] }
     serve({ 'GET /api/variants/v/head': [200, { revision: { id: 3, number: 3 }, payload: doc(theirs) }] })
     const revision = await revertToHead()
     expect(revision.id).toBe(3)
     expect(currentWorkingCopy().base.id).toBe(3)
-    expect(currentWorkingCopy().project.tracks.map(t => t.id)).toEqual(['t1', 'theirs'])
+    expect(currentWorkingCopy().project.tracks.map(t => t.id)).toEqual([u('t1'), u('theirs')].sort())
     expect(localChanges()).toEqual([])
     expect(loadIdLog()).toEqual([])
     undo()
-    expect(currentWorkingCopy().project.tracks.map(t => t.id)).toEqual(['t1', 'theirs'])
+    expect(currentWorkingCopy().project.tracks.map(t => t.id)).toEqual([u('t1'), u('theirs')].sort())
   })
 })

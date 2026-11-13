@@ -578,12 +578,11 @@ from it in these points, each to be brought in line by its own step (decision 00
   civil 3.0, signalling 4.0, electrification 2.1), the operation as operations 1.0 (`.operations.json`) with one
   domain `operations`, the vehicles carried in it; a file of before still carries the schemas.
 - A vehicle keeps its rolling stock as a blob and states its traction modes a second time (`tractionModes`).
-- Km lines are polylines in WGS 84 with the kilometrage per point.
 - The record the tools work on keeps the words of before — the kinds as numbers, `operationalPoint`, `dep`, a
-  `turnout` with `B1` its branch —; the door converts it into the document and back (decision 0029, phase 6
-  takes that out).
+  `turnout` with `B1` its branch —, km lines in WGS 84 with the kilometrage per point, and ids of any form; the
+  door converts it into the document and back (decision 0029, phase 6 takes that out). A km line of before is
+  kept as points, not yet fitted with design elements.
 - The layer electrification holds electrified stretches of track with their system, not yet masts, suspension
   points, section insulators and contact wires.
 - The points of a train name their place in one member (`place`) and keep the name it was chosen under.
-- Not every id is a UUID (km lines `km-6050`, objects of older files).
 - A domain the reader does not know is refused, not kept.

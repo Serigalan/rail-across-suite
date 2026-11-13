@@ -76,7 +76,8 @@ fn as_written(record: &Value) -> Value {
     }
     fn walk(v: &Value, ids: &HashSet<String>) -> Value {
         match v {
-            Value::String(s) if ids.contains(s) => json!(planpro_id(s)),
+            // The document names every object by a UUID (decision 0029, phase 2), and PlanPro by that.
+            Value::String(s) if ids.contains(s) => json!(planpro_id(&rail_across_doc::ids::uuid_of(s))),
             Value::Array(a) => Value::Array(a.iter().map(|x| walk(x, ids)).collect()),
             Value::Object(o) => Value::Object(o.iter().map(|(k, x)| (k.clone(), walk(x, ids))).collect()),
             _ => v.clone(),
@@ -95,7 +96,20 @@ fn by_id(v: &Value) -> Value {
             }
             Value::Array(a)
         }
-        Value::Object(o) => Value::Object(o.iter().map(|(k, x)| (k.clone(), by_id(x))).collect()),
+        // A section's points are a set: the writer gives them in the order its points stand by id.
+        Value::Object(o) => Value::Object(
+            o.iter()
+                .map(|(k, x)| {
+                    let mut x = by_id(x);
+                    if k == "boundedBy"
+                        && let Value::Array(points) = &mut x
+                    {
+                        points.sort_by(|p, q| p.as_str().cmp(&q.as_str()));
+                    }
+                    (k.clone(), x)
+                })
+                .collect(),
+        ),
         _ => v.clone(),
     }
 }
@@ -103,7 +117,7 @@ fn by_id(v: &Value) -> Value {
 /// The record as it reads back once the values the report says were filled in are.
 fn with_defaults(mut record: Value, written: &Value) -> Value {
     for n in written["report"]["notes"].as_array().unwrap().iter().filter(|n| n["code"] == "defaulted") {
-        let id = json!(planpro_id(n["id"].as_str().unwrap()));
+        let id = json!(planpro_id(&rail_across_doc::ids::uuid_of(n["id"].as_str().unwrap())));
         if n["field"] == "Signal_Befestigungsart" {
             for s in record["signalling"]["collections"]["signals"].as_array_mut().unwrap() {
                 if s["id"] == id {
@@ -149,12 +163,12 @@ fn the_test_plan_comes_back_as_it_was_read() {
 
 #[test]
 fn ids_become_guids_by_name_and_guids_stay() {
-    let g = planpro_id("sig-a");
-    assert_eq!(g, planpro_id("sig-a"));
-    assert_ne!(g, planpro_id("sig-b"));
+    let g = planpro_id(&rail_across_doc::ids::uuid_of("sig-a"));
+    assert_eq!(g, planpro_id(&rail_across_doc::ids::uuid_of("sig-a")));
+    assert_ne!(g, planpro_id(&rail_across_doc::ids::uuid_of("sig-b")));
     assert_eq!(g.len(), 36);
     assert_eq!(&g[14..15], "8");
-    assert_eq!(planpro_id("B3C4D5E6-0000-4000-8000-000000000001"), "b3c4d5e6-0000-4000-8000-000000000001");
+    assert_eq!(planpro_id(&rail_across_doc::ids::uuid_of("B3C4D5E6-0000-4000-8000-000000000001")), "b3c4d5e6-0000-4000-8000-000000000001");
 }
 
 /// A turnout in UTM: a line running east into a tip, the straight route on
@@ -201,7 +215,7 @@ fn a_project_in_utm_is_written_in_db_ref() {
     assert!(text.contains("<GEO_Koordinatensystem><Wert>ER0</Wert></GEO_Koordinatensystem>"));
     assert_eq!(
         not_written(&written),
-        json!([{ "code": "not_written", "collection": "signals", "id": "orphan", "why": "no_track" }])
+        json!([{ "code": "not_written", "collection": "signals", "id": rail_across_doc::ids::uuid_of("orphan"), "why": "no_track" }])
     );
     let back = planpro_record(text, Some("utm"), None).unwrap()["record"].clone();
     let tracks = back["tracks"].as_array().unwrap();
@@ -209,18 +223,18 @@ fn a_project_in_utm_is_written_in_db_ref() {
     assert!(tracks.iter().all(|t| t["epsg"] == json!(5684)));
     // The scale of the strip: lengths a little different, never much.
     let length = |t: &Value| t["elements"].as_array().unwrap().iter().map(|e| e["length"].as_f64().unwrap()).sum::<f64>();
-    let line = tracks.iter().find(|t| t["id"] == json!(planpro_id("line"))).unwrap();
+    let line = tracks.iter().find(|t| t["id"] == json!(planpro_id(&rail_across_doc::ids::uuid_of("line")))).unwrap();
     assert!((length(line) - 200.0).abs() < 0.2, "{}", length(line));
     // The turnout: its branch the arc, its straight route the line going on.
     let sw = &back["switches"][0];
-    assert_eq!(sw["ports"]["A"]["trackId"], json!(planpro_id("line")));
-    assert_eq!(sw["ports"]["B1"]["trackId"], json!(planpro_id("branch")));
-    assert_eq!(sw["ports"]["B2"]["trackId"], json!(planpro_id("on")));
+    assert_eq!(sw["ports"]["A"]["trackId"], json!(planpro_id(&rail_across_doc::ids::uuid_of("line"))));
+    assert_eq!(sw["ports"]["B1"]["trackId"], json!(planpro_id(&rail_across_doc::ids::uuid_of("branch"))));
+    assert_eq!(sw["ports"]["B2"]["trackId"], json!(planpro_id(&rail_across_doc::ids::uuid_of("on"))));
     assert_eq!(sw["name"], json!("W1"));
     // The form as PlanPro names it: the kind of turnout, radius and ratio.
     assert_eq!(sw["label"], json!("EW 300-1:9"));
     let marks = back["endMarks"].as_array().unwrap();
-    let stop = marks.iter().find(|m| m["id"] == json!(planpro_id("stop"))).unwrap();
+    let stop = marks.iter().find(|m| m["id"] == json!(planpro_id(&rail_across_doc::ids::uuid_of("stop")))).unwrap();
     assert_eq!(stop["kind"], json!("buffer_stop"));
     assert_eq!(marks.len(), 3);
     // The signal at its station, scaled as the track.
@@ -232,3 +246,4 @@ fn a_project_in_utm_is_written_in_db_ref() {
     assert_eq!(sig["logicalSignals"][0]["system"], json!("ks"));
     assert_eq!(sig["logicalSignals"][0]["function"], json!("entry"));
 }
+

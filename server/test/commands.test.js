@@ -3,7 +3,7 @@ import { execFileSync, spawn } from 'node:child_process'
 import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
-import { contentHash, DOMAIN_VERSIONS } from '@rail-across/core/document'
+import { contentHash, derivedId, DOMAIN_VERSIONS } from '@rail-across/core/document'
 import { gunzipSync, gzipSync } from 'node:zlib'
 import Database from 'better-sqlite3'
 import { makeLas } from '@rail-across/pointcloud/test/pointCloudFixture.js'
@@ -173,8 +173,8 @@ describe.skipIf(!SERVER_BIN)('the step to infra-data-1.0 (decision 0021)', () =>
     const { versions, docs: [old, kept] } = payloads(file)
     expect(versions).toEqual([8, 8])
     expect(old).toMatchObject({ format: 'infra-data', version: '2.0', domains: { core: { version: DOMAIN_VERSIONS.core }, civil: { version: DOMAIN_VERSIONS.civil } } })
-    expect(old.domains.core.collections.tracks.map(t => t.id)).toEqual(doc.domains.core.collections.tracks.map(t => t.id))
-    expect(old.domains.civil.collections.platforms.map(p => p.id)).toEqual(['p1'])
+    expect(old.domains.core.collections.tracks.map(t => t.id)).toEqual(doc.domains.core.collections.tracks.map(t => derivedId(t.id)).sort())
+    expect(old.domains.civil.collections.platforms.map(p => p.id)).toEqual([derivedId('p1')])
     expect(kept).toMatchObject({ format: 'infra-data', version: '2.0' })
     expect(kept.domains.core.fields.stages).toBeUndefined()
     expect(kept.domains.core.collections.tracks[0].lifespan).toEqual({ from: 'open' })
@@ -194,7 +194,7 @@ describe.skipIf(!SERVER_BIN)('the step to infra-data-2.0 (decision 0025)', () =>
     const { versions, docs: [doc] } = payloads(file)
     expect(versions).toEqual([8, 8])
     expect(Object.keys(doc.domains).sort()).toEqual(['civil', 'core', 'signalling'])
-    expect(doc.domains.core.collections.stoppingPlaces.map(h => h.id)).toEqual(['hp-1', 'hp-2'])
+    expect(doc.domains.core.collections.stoppingPlaces.map(h => h.id)).toEqual([derivedId('hp-1'), derivedId('hp-2')].sort())
     expect(doc.domains.signalling.collections.stoppingPlaces).toBeUndefined()
     expect(cli(file, ['migrate'])).toBe('')
     // One kept as 1.0 still, as a server of before left it: handed out as 2.0.
@@ -229,8 +229,8 @@ describe.skipIf(!SERVER_BIN)('the passenger stops and the runs in the core (deci
     expect(cli(file, ['migrate'])).toMatch(/data step 0025-passenger-stops-and-runs: 1 Revisionen umgeschrieben, 0 nicht lesbar/)
     const { docs: [after] } = payloads(file)
     expect(after.domains.core.schema).toBe(now)
-    expect(after.domains.core.collections.stoppingPlaces.filter(h => h.passengerStop).map(h => h.id)).toEqual(['hp-2'])
-    expect(after.domains.core.collections.trackPaths).toEqual([run])
+    expect(after.domains.core.collections.stoppingPlaces.filter(h => h.passengerStop).map(h => h.id)).toEqual([derivedId('hp-2')])
+    expect(after.domains.core.collections.trackPaths).toEqual([{ ...run, id: derivedId('r'), path: { trackIds: [derivedId('t1')] } }])
     expect(after.domains.civil.collections.trackPaths).toBeUndefined()
     expect(cli(file, ['migrate'])).toBe('')
   })
@@ -287,6 +287,41 @@ describe.skipIf(!SERVER_BIN)('the step to references that name something (decisi
     expect(versions).toEqual([8, 8])
     expect(after.domains.signalling.version).toBe(DOMAIN_VERSIONS.signalling)
     expect(after.domains.signalling.collections.switchElements).toEqual([])
+    expect(cli(file, ['migrate'])).toBe('')
+  })
+})
+
+describe.skipIf(!SERVER_BIN)('the step to core 4.0 (decision 0029, phases 1 and 2)', () => {
+  it('writes what a revision kept as core 3.1 in the words, names and ids of rail-across-1.0, once, in place', async () => {
+    const { file, made } = await twoRevisions()
+    const schema = (path) => contentHash(JSON.parse(readFileSync(new URL(`../../schemas/${path}.schema.json`, import.meta.url), 'utf8')))
+    // As a build of decision 0028 kept a project: kinds as numbers, short ids, a km line in WGS 84.
+    const el = { elementType: 0, startNode: [500000, 5700000], endNode: [500100, 5700000], bearing: 90, length: 100 }
+    const doc = {
+      format: 'infra-data', version: '2.0', blobs: {},
+      domains: { core: { version: '3.1', schema: schema('core/3.1'), fields: { id: made.project.id }, collections: {
+        tracks: [{ id: 't1', epsg: 25832, trackType: 2, operationalPoint: 'op1', elements: [{ ...el, epsg: 25832 }] }],
+        switches: [], endMarks: [], stoppingPlaces: [], trackPaths: [],
+        operationalPoints: [{ id: 'op1', name: 'Halle-Trotha' }],
+        kmLines: [{ id: 'km-6050', lineNumber: 6050, crs: 'EPSG:4326', runs: [[[11.95, 51.55, 1200.5], [11.96, 51.56, 1300]]] }],
+      } } },
+    }
+    const db = new Database(file)
+    db.prepare('UPDATE revision SET schema_version = 7, payload = ? WHERE id = ?').run(gzipSync(JSON.stringify(doc)), made.revisionId)
+    db.prepare("DELETE FROM data_migration WHERE name = '0029-core-4.0'").run()
+    db.close()
+    expect(cli(file, ['migrate'])).toMatch(/data step 0029-core-4.0: 1 Revisionen umgeschrieben, 0 nicht lesbar/)
+    const { versions, docs: [after] } = payloads(file)
+    expect(versions).toEqual([8, 8])
+    const core = after.domains.core
+    expect(core.version).toBe(DOMAIN_VERSIONS.core)
+    const [track] = core.collections.tracks
+    expect(track).toMatchObject({ id: derivedId('t1'), trackType: 'station', operationalPointId: derivedId('op1') })
+    expect(track.elements[0]).toMatchObject({ elementType: 'straight' })
+    expect(track.elements[0]).not.toHaveProperty('epsg')
+    const [line] = core.collections.kmLines
+    expect(line).toMatchObject({ id: derivedId('km-6050'), lineNumber: 6050, epsg: 25832, runs: [{ kmStart: 1200.5, counting: 'up' }] })
+    expect(after.blobs[line.runs[0].points]).toHaveLength(2)
     expect(cli(file, ['migrate'])).toBe('')
   })
 })

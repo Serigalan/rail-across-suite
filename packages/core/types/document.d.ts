@@ -41,7 +41,7 @@ export namespace Document {
 
 /** Rail-Data-Core, domain core 4.0 */
 export namespace Core {
-  /** The base every module depends on: the net (tracks, switches and connectors), what stands on it for every discipline (platforms, end marks) and the reference data (km lines, the operational point register). Written by the layout tool, carried by the core library. See docs/data-model.md. — 2.0 (decision 0025): the alignment and what every layer places things by; the platforms are civil's, the stopping places came in from signalling, the named runs of tracks from layout. — 3.0 (decision 0028): no construction stages; a lifespan states days. — 3.1 (decision 0028, phase C): every reference names an object of the collection its `x-target` names (the door's rule). — 4.0 (decision 0029, phase 1): the kinds as words, every reference ending in `Id`, no plane of an element's own, a switch with B1 its main track and B2 its branch. */
+  /** The base every module depends on: the net (tracks, switches and connectors), what stands on it for every discipline (platforms, end marks) and the reference data (km lines, the operational point register). Written by the layout tool, carried by the core library. See docs/data-model.md. — 2.0 (decision 0025): the alignment and what every layer places things by; the platforms are civil's, the stopping places came in from signalling, the named runs of tracks from layout. — 3.0 (decision 0028): no construction stages; a lifespan states days. — 3.1 (decision 0028, phase C): every reference names an object of the collection its `x-target` names (the door's rule). — 4.0 (decision 0029, phase 1): the kinds as words, every reference ending in `Id`, no plane of an element's own, a switch with B1 its main track and B2 its branch; (phase 2) every id a UUID in lower case, a km line in one plane as runs from km jump to km jump. */
   export type Root = {
     fields: Fields
     collections: {
@@ -54,9 +54,9 @@ export namespace Core {
       trackPaths?: Array<NamedTrackPath>
     }
   }
-  /** The id of an object, unique in its collection; a UUID in lower case by convention. */
+  /** The id of an object: a UUID in lower case, unique in its collection. */
   export type Id = string
-  /** A reference to an object by its bare id. Where a property is a Ref, its `x-target` names the collection it points into. */
+  /** A reference to an object by its id, a UUID in lower case. Where a property is a Ref, its `x-target` names the collection it points into; the reader checks that the object is there. */
   export type Ref = string
   export type Text = string
   /** A number as people write it: a line or track number, sometimes with letters. */
@@ -156,6 +156,7 @@ export namespace Core {
     reason?: Text
     locked?: boolean
     id?: Id
+    /** The id of the height point of the same track this one depends on. */
     depId?: Ref
     depMode?: "lds" | "continueBefore" | "continueAfter" | "wa" | "continue"
     free?: boolean
@@ -229,14 +230,29 @@ export namespace Core {
     /** At a boundary: the least time [s] between two trains crossing it the same way — how close trains follow from the net beyond. */
     headway?: number
   }
-  /** Foreign reference data: the stretch of a DB line around the project, in WGS84, the third value of each point its kilometrage [m]. */
+  /** Bulk data kept as a blob: the SHA-256 of its canonical JSON. */
+  export type BlobRef = string
+  /** A design element of a km line: what a track element states of its geometry, without the parts that only a track has. */
+  export type KmElement = {
+    elementType: "straight" | "arc" | "transition"
+    startNode: Point
+    endNode: Point
+    bearing?: number
+    endBearing?: number
+    length: number
+    radius?: number | null
+    r1?: number | null
+    r2?: number | null
+    transitionType?: "clothoid" | "bloss"
+  }
+  /** A run of a km line without a km jump: its kilometrage at the start and the way it counts along the run, and the run itself — design elements, or the points a source gave where it gave no elements. */
+  export type KmRun =  | 
+  /** Foreign reference data: the axis of a line around the project, in one plane, as runs from km jump to km jump. */
   export type KmLine = {
     id: Id
     lineNumber: Label
-    crs?: "EPSG:4326"
-    clip?: Array<number>
-    runs: Array<Array<Array<number>>>
-    /** The import a line was taken from (mdb, vermesn), kept instead of the shipped one. */
+    epsg: Epsg
+    runs: Array<KmRun>
     source?: Text
   }
   /** A station, halt or other operational point of the register: its identity. Codes are attributes, stated once they exist; boundaries belong to signalling (R10). */

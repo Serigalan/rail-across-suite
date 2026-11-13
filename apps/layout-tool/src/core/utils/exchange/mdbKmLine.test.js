@@ -4,6 +4,7 @@ import { parseMdbPayload } from './mdbImport'
 import { ALL_LINES, runMdbImport } from './mdbPipeline'
 import { ensureKmLines } from '../km'
 import fixture from '../../test/fixtures/mdb_str1244.json'
+import { kmLineId } from '../km'
 
 /**
  * The kilometrage line of the file (Satzart 24), on the delivered
@@ -52,7 +53,7 @@ describe('mdbKmRuns', () => {
 describe('mdbKmLines', () => {
   it('gives each line the shape a project keeps, marked as from the file', () => {
     const [line] = mdbKmLines(payload, ['1244'], null)
-    expect(line).toMatchObject({ id: 'km-1244', lineNumber: 1244, crs: 'EPSG:4326', source: 'mdb' })
+    expect(line).toMatchObject({ id: kmLineId(1244), lineNumber: 1244, crs: 'EPSG:4326', source: 'mdb' })
     expect(line.runs).toHaveLength(1)
   })
 

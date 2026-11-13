@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "core",
   "title": "Rail-Data-Core, domain core 4.0",
-  "description": "The base every module depends on: the net (tracks, switches and connectors), what stands on it for every discipline (platforms, end marks) and the reference data (km lines, the operational point register). Written by the layout tool, carried by the core library. See docs/data-model.md. — 2.0 (decision 0025): the alignment and what every layer places things by; the platforms are civil's, the stopping places came in from signalling, the named runs of tracks from layout. — 3.0 (decision 0028): no construction stages; a lifespan states days. — 3.1 (decision 0028, phase C): every reference names an object of the collection its `x-target` names (the door's rule). — 4.0 (decision 0029, phase 1): the kinds as words, every reference ending in `Id`, no plane of an element's own, a switch with B1 its main track and B2 its branch.",
+  "description": "The base every module depends on: the net (tracks, switches and connectors), what stands on it for every discipline (platforms, end marks) and the reference data (km lines, the operational point register). Written by the layout tool, carried by the core library. See docs/data-model.md. — 2.0 (decision 0025): the alignment and what every layer places things by; the platforms are civil's, the stopping places came in from signalling, the named runs of tracks from layout. — 3.0 (decision 0028): no construction stages; a lifespan states days. — 3.1 (decision 0028, phase C): every reference names an object of the collection its `x-target` names (the door's rule). — 4.0 (decision 0029, phase 1): the kinds as words, every reference ending in `Id`, no plane of an element's own, a switch with B1 its main track and B2 its branch; (phase 2) every id a UUID in lower case, a km line in one plane as runs from km jump to km jump.",
   "type": "object",
   "required": [
     "fields",
@@ -72,14 +72,14 @@
   },
   "$defs": {
     "Id": {
-      "description": "The id of an object, unique in its collection; a UUID in lower case by convention.",
+      "description": "The id of an object: a UUID in lower case, unique in its collection.",
       "type": "string",
-      "minLength": 1
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
     },
     "Ref": {
-      "description": "A reference to an object by its bare id. Where a property is a Ref, its `x-target` names the collection it points into.",
+      "description": "A reference to an object by its id, a UUID in lower case. Where a property is a Ref, its `x-target` names the collection it points into; the reader checks that the object is there.",
       "type": "string",
-      "minLength": 1
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
     },
     "Text": {
       "type": "string"
@@ -466,8 +466,8 @@
           "$ref": "#/$defs/Id"
         },
         "depId": {
-          "$ref": "#/$defs/Ref",
-          "x-target": "the id of another height point"
+          "$ref": "core#/$defs/Ref",
+          "description": "The id of the height point of the same track this one depends on."
         },
         "depMode": {
           "enum": [
@@ -732,12 +732,119 @@
         }
       }
     },
+    "BlobRef": {
+      "description": "Bulk data kept as a blob: the SHA-256 of its canonical JSON.",
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "KmElement": {
+      "description": "A design element of a km line: what a track element states of its geometry, without the parts that only a track has.",
+      "type": "object",
+      "required": [
+        "elementType",
+        "startNode",
+        "endNode",
+        "length"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "elementType": {
+          "enum": [
+            "straight",
+            "arc",
+            "transition"
+          ]
+        },
+        "startNode": {
+          "$ref": "#/$defs/Point"
+        },
+        "endNode": {
+          "$ref": "#/$defs/Point"
+        },
+        "bearing": {
+          "type": "number"
+        },
+        "endBearing": {
+          "type": "number"
+        },
+        "length": {
+          "type": "number",
+          "minimum": 0
+        },
+        "radius": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "r1": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "r2": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "transitionType": {
+          "enum": [
+            "clothoid",
+            "bloss"
+          ]
+        }
+      }
+    },
+    "KmRun": {
+      "description": "A run of a km line without a km jump: its kilometrage at the start and the way it counts along the run, and the run itself — design elements, or the points a source gave where it gave no elements.",
+      "type": "object",
+      "required": [
+        "kmStart"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "kmStart": {
+          "type": "number"
+        },
+        "counting": {
+          "enum": [
+            "up",
+            "down"
+          ]
+        },
+        "elements": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/KmElement"
+          },
+          "minItems": 1
+        },
+        "points": {
+          "$ref": "#/$defs/BlobRef"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "elements"
+          ]
+        },
+        {
+          "required": [
+            "points"
+          ]
+        }
+      ]
+    },
     "KmLine": {
-      "description": "Foreign reference data: the stretch of a DB line around the project, in WGS84, the third value of each point its kilometrage [m].",
+      "description": "Foreign reference data: the axis of a line around the project, in one plane, as runs from km jump to km jump.",
       "type": "object",
       "required": [
         "id",
         "lineNumber",
+        "epsg",
         "runs"
       ],
       "additionalProperties": false,
@@ -748,34 +855,18 @@
         "lineNumber": {
           "$ref": "#/$defs/Label"
         },
-        "crs": {
-          "const": "EPSG:4326"
-        },
-        "clip": {
-          "type": "array",
-          "items": {
-            "type": "number"
-          },
-          "minItems": 4,
-          "maxItems": 4
+        "epsg": {
+          "$ref": "#/$defs/Epsg"
         },
         "runs": {
           "type": "array",
           "items": {
-            "type": "array",
-            "items": {
-              "type": "array",
-              "items": {
-                "type": "number"
-              },
-              "minItems": 3,
-              "maxItems": 3
-            }
-          }
+            "$ref": "#/$defs/KmRun"
+          },
+          "minItems": 1
         },
         "source": {
-          "$ref": "#/$defs/Text",
-          "description": "The import a line was taken from (mdb, vermesn), kept instead of the shipped one."
+          "$ref": "#/$defs/Text"
         }
       }
     },

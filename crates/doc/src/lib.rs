@@ -14,6 +14,8 @@ pub mod canonical;
 pub mod core_format;
 pub mod door;
 pub mod error;
+pub mod ids;
+pub mod km_lines;
 pub mod layers;
 pub mod manifest;
 pub mod operations;

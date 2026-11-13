@@ -4,6 +4,7 @@ import {
   parseRecords, buildElements, parseGradient, gradientHeights, gradientHeightCode, readVermEsnArchive, buildVermEsnBatch,
   readAxis, gradientReferences, referencedHeights, readKmLines, batchReferences, kmLineEntries, kmLineNumber,
 } from './vermEsnImport'
+import { kmLineId } from '../km'
 
 /** A GRA file: header (num = number of points), then station, height, radius, tangent length, point number. */
 function graBuffer(rows, num = rows.length) {
@@ -220,7 +221,7 @@ describe('Verm.ESN gradient along the kilometrage line', () => {
     expect(kmLineNumber('63400164S')).toBe(6340)
     expect(kmLineNumber('6311-001S')).toBe(6311)
     const [entry] = kmLineEntries([km()])
-    expect(entry).toMatchObject({ id: 'km-6340', lineNumber: 6340, source: 'vermesn' })
+    expect(entry).toMatchObject({ id: kmLineId(6340), lineNumber: 6340, source: 'vermesn' })
     expect(entry.runs).toHaveLength(1)
     expect(entry.runs[0][0][2]).toBe(165400)
     expect(entry.runs[0][entry.runs[0].length - 1][2]).toBe(165800)

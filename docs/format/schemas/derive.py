@@ -73,8 +73,6 @@ sw['description'] = ('A switch, crossing, slip, two-end connector (`link`) or co
                      'a track ties in; a stage link joins the track at A to the one at B1 while that is in service '
                      'and to the one at B2 from then on.')
 sw['properties']['kind'] = {'enum': ['switch', 'crossing', 'single_slip', 'double_slip', 'link', 'stage_link']}
-em = d['EndMark']
-em['properties']['type'] = {'$ref': '#/$defs/Text'}
 # A km line in design elements, in a plane: far smaller than points, and exact where the source states elements.
 d['KmElement'] = {
     'description': 'A design element of a km line: what a track element states of its geometry, without the parts that '

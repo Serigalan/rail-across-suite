@@ -9,7 +9,7 @@ use rusqlite::{Connection, OptionalExtension, params};
 use serde_json::{Value, json};
 
 use crate::checks::{check_kept, normalized_record};
-use crate::store::{STORED_FORMAT, STORED_FORMAT_1_0, STORED_FORMAT_LIFESPANS, STORED_FORMAT_STAGES, Store, pack, unpack};
+use crate::store::{STORED_FORMAT, STORED_FORMAT_1_0, STORED_FORMAT_LIFESPANS, STORED_FORMAT_REFERENCES, STORED_FORMAT_STAGES, Store, pack, unpack};
 use crate::util::{hex, iso, random_bytes};
 
 /// The login of the user the server's own revisions name.
@@ -195,6 +195,14 @@ fn from_lifespans_by_day(db: &Connection, _now: i64) -> rusqlite::Result<String>
     through_the_door(db, STORED_FORMAT_LIFESPANS)
 }
 
+/// Every revision kept with its references naming something rewritten as core 4.0 states it, in place
+/// (decision 0029, phases 1 and 2): the kinds as words, the references ending in `Id`, a switch with `B1` its
+/// main track, every id a UUID, a km line in one plane as runs. One the door cannot read stays as it was, and
+/// is read through the door each time it is asked for.
+fn from_references(db: &Connection, _now: i64) -> rusqlite::Result<String> {
+    through_the_door(db, STORED_FORMAT_REFERENCES)
+}
+
 /// Every revision kept in the form `from` rewritten as the door reads it, in today's form.
 fn through_the_door(db: &Connection, from: i64) -> rusqlite::Result<String> {
     let rows: Vec<(i64, Vec<u8>)> = db
@@ -285,7 +293,7 @@ pub fn run_data_migrations(db: &Connection, now: i64) -> rusqlite::Result<Vec<(S
         .collect::<Result<_, _>>()?;
     let mut ran = Vec::new();
     // In this order: a later step reads the revisions in the form the first gives them.
-    let steps: [(&str, fn(&Connection, i64) -> rusqlite::Result<String>); 9] = [
+    let steps: [(&str, fn(&Connection, i64) -> rusqlite::Result<String>); 10] = [
         ("0021-infra-data", to_infra_data),
         ("0020-node-tolerance-1um", close_node_gaps),
         ("0025-infra-data-2.0", from_infra_data_1_0),
@@ -299,6 +307,8 @@ pub fn run_data_migrations(db: &Connection, now: i64) -> rusqlite::Result<Vec<(S
         ("0028-lifespans-by-day", from_infra_data_2_0),
         // A reference names something (decision 0028, phase C): every revision a build of phase A or B kept.
         ("0028-references", from_lifespans_by_day),
+        // Core 4.0 of rail-across-1.0 (decision 0029, phases 1 and 2): every revision kept before it.
+        ("0029-core-4.0", from_references),
     ];
     for (name, step) in steps {
         if done.iter().any(|d| d == name) {

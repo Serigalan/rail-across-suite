@@ -477,11 +477,9 @@ This specification is the target of the data model. As of 13 November 2026 the s
 
 - Two files instead of one: the infrastructure as infra-data 2.0 (`.railacross.json`, domains core 4.0, civil 3.0, signalling 4.0, electrification 2.1), the operation as operations 1.0 (`.operations.json`) with one domain `operations`, the vehicles carried in it; a file of before still carries the schemas.
 - A vehicle keeps its rolling stock as a blob and states its traction modes a second time (`tractionModes`).
-- Km lines are polylines in WGS 84 with the kilometrage per point.
-- The record the tools work on keeps the words of before — the kinds as numbers, `operationalPoint`, `dep`, a `turnout` with `B1` its branch —; the door converts it into the document and back (decision 0029, phase 6 takes that out).
+- The record the tools work on keeps the words of before — the kinds as numbers, `operationalPoint`, `dep`, a `turnout` with `B1` its branch —, km lines in WGS 84 with the kilometrage per point, and ids of any form; the door converts it into the document and back (decision 0029, phase 6 takes that out). A km line of before is kept as points, not yet fitted with design elements.
 - The layer electrification holds electrified stretches of track with their system, not yet masts, suspension points, section insulators and contact wires.
 - The points of a train name their place in one member (`place`) and keep the name it was chosen under.
-- Not every id is a UUID (km lines `km-6050`, objects of older files).
 - A domain the reader does not know is refused, not kept.
 
 #pagebreak()
@@ -868,7 +866,7 @@ _No further properties are allowed._
   [`kind`], [yes], [one of the values under Meaning], [Kind #linebreak() `buffer_stop` buffer stop #linebreak() `boundary` boundary of the planning area],
   [`at`], [yes], [#link(<core-TrackEnd>)[`TrackEnd`]], [The free track end],
   [`name`], [], [#link(<core-Text>)[`Text`]], [Name of the place for timetables],
-  [`type`], [], [#link(<core-Text>)[`Text`]], [Type of the buffer stop],
+  [`type`], [], [integer or text], [Type of the buffer stop],
   [`brakeLength`], [], [number], [Braking distance of the buffer stop \[m\]],
   [`speed`], [], [number; ≥ 0], [At a boundary: the speed trains cross it at, entering or leaving \[km/h\]; without one, what the line allows there],
   [`lifespan`], [], [#link(<core-Lifespan>)[`Lifespan`]], [Lifespan: the days in service; without one, the object exists and stays],

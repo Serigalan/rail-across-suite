@@ -596,14 +596,14 @@ in diesen Punkten ab; jeder wird in einem eigenen Schritt angeglichen (Entscheid
   signalling 4.0, electrification 2.1), der Betrieb als operations 1.0 (`.operations.json`) mit einer Domäne
   `operations`, in der die Fahrzeuge mitgeführt werden; eine Datei von vorher führt noch die Schemas mit.
 - Ein Fahrzeug hält sein Rollmaterial als Blob und nennt seine Traktionsarten ein zweites Mal (`tractionModes`).
-- Kilometrierungslinien sind Polylinien in WGS 84 mit dem Kilometer je Punkt.
 - Der Record, mit dem die Werkzeuge arbeiten, behält das Vokabular von vorher — die Arten als Zahlen,
-  `operationalPoint`, `dep`, eine `turnout` mit `B1` als Zweiggleis —; die Tür wandelt ihn ins Dokument und zurück
-  (Entscheidung 0029, Phase 6 nimmt das heraus).
+  `operationalPoint`, `dep`, eine `turnout` mit `B1` als Zweiggleis —, Kilometrierungslinien in WGS 84 mit dem
+  Kilometer je Punkt und Kennungen jeder Form; die Tür wandelt ihn ins Dokument und zurück (Entscheidung 0029,
+  Phase 6 nimmt das heraus). Eine Kilometrierungslinie von vorher steht als Punkte da, noch nicht mit
+  Trassierungselementen angenähert.
 - Der Layer electrification hält elektrifizierte Gleisabschnitte mit ihrem System, noch keine Masten, Aufhängepunkte,
   Streckentrennungen und Fahrdrähte.
 - Die Punkte eines Zugs nennen ihren Ort in einem Feld (`place`) und behalten den Namen, unter dem er gewählt wurde.
-- Nicht jede Kennung ist eine UUID (Kilometrierungslinien `km-6050`, Objekte älterer Dateien).
 - Eine Domäne, die der Leser nicht kennt, wird abgelehnt, nicht erhalten.
 
 <a id="appendix"></a>
@@ -1030,7 +1030,7 @@ _Weitere Properties sind nicht erlaubt._
 | `kind` | ja | eins der Werte unter Bedeutung | Art<br>`buffer_stop` Prellbock<br>`boundary` Betrachtungsgrenze |
 | `at` | ja | [`TrackEnd`](#core-TrackEnd) | das freie Gleisende |
 | `name` |  | [`Text`](#core-Text) | Name des Orts für Fahrpläne |
-| `type` |  | [`Text`](#core-Text) | Bauart des Prellbocks |
+| `type` |  | ganze Zahl oder Text | Bauart des Prellbocks |
 | `brakeLength` |  | Zahl | Bremsweg des Prellbocks [m] |
 | `speed` |  | Zahl; ≥ 0 | an einer Betrachtungsgrenze: Geschwindigkeit, mit der Züge sie ein- oder ausfahrend überqueren [km/h]; ohne sie, was die Strecke dort zulässt |
 | `lifespan` |  | [`Lifespan`](#core-Lifespan) | Lebensdauer: die Tage im Betrieb; fehlt sie, besteht das Objekt und bleibt |

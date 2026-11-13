@@ -72,11 +72,13 @@ const WORDS = {
 
 // ── The appendix as a neutral structure ─────────────────────────────────────
 // Cell text is plain text with `code` spans; LINK(schema-Def|Def) a link to a type; BR a line break;
-// SOFT between two code spans a place where a long name may break.
+// SOFT inside a code span a place where a long name may break.
 const LINK = (schema, def) => `\u27e6${schema}-${def}|${def}\u27e7`
 const BR = '\u23ce'
 const SOFT = '\u200b'
 const code = (v) => `\`${typeof v === 'string' ? v : JSON.stringify(v)}\``
+// A property path may break after each dot.
+const pathCode = (path) => code(path.replaceAll('.', `.${SOFT}`))
 
 function resolveRef(ref, schema) {
   const [file, pointer] = ref.split('#')
@@ -100,8 +102,7 @@ function appendixOf(lang) {
   const hasValues = (key, values) => values.some(v => M[valueKey(key, v)] != null)
   const target = (node) => {
     if (!node['x-target']) return ''
-    const [domain, collection] = node['x-target'].split('.')
-    return ` → ${code(`${domain}.`)}${SOFT}${code(collection)}`
+    return ` → ${pathCode(node['x-target'])}`
   }
 
   function describe(node, schema, key) {
@@ -171,7 +172,7 @@ function appendixOf(lang) {
       const path = prefix + name
       if (!seen.has(path)) {
         seen.add(path)
-        out.push([code(path), required.has(name) ? W.yes : '', describe(prop, schema, `${schema}:${def}.${path}`), propertyMeaning(prop, schema, def, path, name)])
+        out.push([pathCode(path), required.has(name) ? W.yes : '', describe(prop, schema, `${schema}:${def}.${path}`), propertyMeaning(prop, schema, def, path, name)])
       }
       if (isObj(prop) && Object.keys(prop.properties).length) rows(prop, schema, def, `${path}.`, out, seen)
       for (const alt of prop.oneOf ?? []) if (isObj(alt)) rows(alt, schema, def, `${path}.`, out, seen)
@@ -356,7 +357,7 @@ ${appendixTyp(lang, a)}`.replace(/\n{3,}/g, '\n\n').trimEnd() + '\n'
 // ── Markdown ────────────────────────────────────────────────────────────────
 
 function md(text) {
-  return String(text ?? '').replaceAll(`\`${SOFT}\``, '').split(/(`[^`]*`|\u27e6[^\u27e7]*\u27e7)/).map((part, i) => {
+  return String(text ?? '').replaceAll(SOFT, '').split(/(`[^`]*`|\u27e6[^\u27e7]*\u27e7)/).map((part, i) => {
     if (!(i % 2)) return part.replaceAll('|', '\\|').replace(/([*_<>])/g, '\\$1').replaceAll(BR, '<br>')
     if (part.startsWith('`')) return part.replaceAll('|', '\\|')
     const [label, name] = part.slice(1, -1).split('|')

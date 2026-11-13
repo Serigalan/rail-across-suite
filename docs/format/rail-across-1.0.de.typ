@@ -101,7 +101,7 @@ Eine Datei hält einen Teil oder beide. Ein Projektserver hält sie getrennt —
   [`generator`, `savedAt`], [Programm und Version, die die Datei geschrieben haben, und wann (ISO 8601, UTC)],
   [`infraData`], [der Teil infra-data-1.0: Format, Version und seine Domänen; `core` ist Pflicht],
   [`operations`], [der Teil operations-1.0: Format, Version und seine Domänen],
-  [`blobs`], [große Datenmengen (Messpunkte, Rollmaterial), je unter der Prüfsumme ihres Inhalts, gemeinsam für beide Teile],
+  [`blobs`], [große Datenmengen (Messpunkte, Punkte von Kilometrierungslinien), je unter der Prüfsumme ihres Inhalts, gemeinsam für beide Teile],
 )
 
 Die Datei führt keine Schemas mit: Eine Domäne nennt ihr Schema über seine Prüfsumme, und ein Leser kennt die Versionen, die er liest.
@@ -116,7 +116,7 @@ Eine *Domäne* ist ein Fachgebiet mit eigenem Schema und eigener Version. Sie ha
   [], [`civil` 3.0], [Bahnsteige und Ingenieurbauwerke (Eisenbahnüberführungen, Stützwände, Lärmschutzwände), in Punktwolken gemessene Achsen, Bestandsachsen, Schriftfeld, Projektbild],
   [], [`signalling` 4.0], [Signale mit logischen Signalen, Gleisfreimeldung, Weichenelemente, Fahrstraßen, Durchrutschwege, Flankenschutz, Zugbeeinflussung, Bahnhofsgrenzen, Fahrwege — nach PlanPro exportierbar],
   [], [`electrification` 3.0], [Masten, Aufhängepunkte, Streckentrennungen und die Fahrdrähte mit ihrer Spannung],
-  [operations-1.0], [`vehicles` 1.0], [die Fahrzeuge: ihre Traktionsarten und ihr Rollmaterial],
+  [operations-1.0], [`vehicles` 1.0], [die Fahrzeuge mit ihrem Rollmaterial als RailJSON],
   [], [`timetables` 1.0], [Fahrpläne, Züge, Zuggattungen, Zugbildungen, Anschlüsse, Wenden, Verspätungsszenarien, Untersuchungen],
 )
 
@@ -178,7 +178,7 @@ Bei beiden Angaben müssen beide Bedingungen gelten. Der angezeigte Status folgt
 
 == Blobs
 
-Große Datenmengen stehen nicht im Objekt, sondern in `blobs`: die Punkte gemessener Achsen und Bestandsachsen (`civil`), die Punkte einer Kilometrierungslinie, wo eine Quelle keine Trassierungselemente geliefert hat (`core`), das Rollmaterial der Fahrzeuge (`vehicles`). Das Objekt nennt den Blob über die Prüfsumme seines kanonischen JSON. Gleiche Inhalte stehen so nur einmal in der Datei.
+Große Datenmengen stehen nicht im Objekt, sondern in `blobs`: die Punkte gemessener Achsen und Bestandsachsen (`civil`), die Punkte einer Kilometrierungslinie, wo eine Quelle keine Trassierungselemente geliefert hat (`core`). Das Objekt nennt den Blob über die Prüfsumme seines kanonischen JSON. Gleiche Inhalte stehen so nur einmal in der Datei.
 
 == Unbekanntes bleibt erhalten
 
@@ -281,7 +281,9 @@ Wo ein Fahrdraht verläuft, wird nicht gespeichert: Auf einem Gleis verläuft er
 
 == Fahrzeuge (Domäne `vehicles`)
 
-Die Fahrzeuge sind eine eigene Domäne. Ein Fahrzeug (`vehicles`) hat einen Namen, den Schlüssel, unter dem es aus einem Katalog kam (`key`), seine *Traktionsarten* (`tractionModes`: die Spannungen, die es abnehmen kann, und `thermal` für eigenen Antrieb) und sein Rollmaterial als RailJSON, als Blob. Die Fahrpläne nennen Fahrzeuge über ihre Kennung. Eine Datei fährt so mit den Fahrzeugen, die sie hält, nicht mit einem Katalog, der sich inzwischen geändert haben kann; ein geändertes Fahrzeug ist eine neue Version der Domäne wie jede andere Änderung.
+Die Fahrzeuge sind eine eigene Domäne. Ein Fahrzeug (`vehicles`) hat den Schlüssel, unter dem es aus einem Katalog kam (`key`), und sein *Rollmaterial* als RailJSON (`rollingStock`), dem Format von OSRD — im Objekt gehalten, nicht als Blob: Ein Fahrzeug hat wenige Kilobyte, und im Objekt lassen sich zwei Stände Feld für Feld vergleichen und zusammenführen. Das Schema prüft, was die Suite daraus liest — die RailJSON-Version, den Namen und die Zugkraftkurven —, und übernimmt jedes weitere RailJSON-Property, wie es kommt, in den Einheiten von RailJSON (m, kg, m/s, N).
+
+Die *Traktionsarten* eines Fahrzeugs sind die Betriebsarten seiner Zugkraftkurven (`effort_curves.modes`): die Spannungen, die es abnehmen kann, benannt wie die Spannungen der Fahrdrähte, und `thermal` für eigenen Antrieb. Sie werden kein zweites Mal gespeichert. Die Fahrpläne nennen Fahrzeuge über ihre Kennung. Eine Datei fährt so mit den Fahrzeugen, die sie hält, nicht mit einem Katalog, der sich inzwischen geändert haben kann; ein geändertes Fahrzeug ist eine neue Version der Domäne wie jede andere Änderung.
 
 == Fahrpläne (Domäne `timetables`)
 
@@ -303,7 +305,7 @@ Ein Zug findet seine Betriebsstellen, Gleisenden, Gleise und Fahrwege über ihre
   [Höhen `z`], [m], [0,1 mm (4 Nachkommastellen)],
   [Richtungswinkel], [°, von Gitternord im Uhrzeigersinn], [10⁻⁹ °],
   [Überhöhung], [mm], [0,001 mm],
-  [Geschwindigkeiten], [km/h; bei Fahrzeugen m/s], [wie angegeben],
+  [Geschwindigkeiten], [km/h; bei Fahrzeugen (RailJSON) m/s], [wie angegeben],
   [Zeiten im Betrieb], [s], [wie angegeben],
   [Spannung], [V, als Name], [—],
   [Kilometrierung], [m], [wie geliefert],
@@ -321,7 +323,7 @@ Ein Leser nimmt eine Datei erst nach einer Prüfung an:
 + Die Prüfsummen der Blobs.
 + Die Version jeder Domäne. Eine ältere Version wird auf den Stand des Lesers gebracht (unten); eine spätere Nebenversion wird gelesen, Unbekanntes bleibt erhalten; eine spätere Hauptversion wird mit diesem Hinweis abgelehnt.
 + Jede Domäne gegen ihr Schema, jede Kennung eine UUID und nur einmal in ihrer Sammlung.
-+ Was ein Schema nicht ausdrücken kann: Die Tage einer Lebensdauer sind Tage, der erste liegt nicht nach dem letzten; ein als Weichenstrecke markiertes Element nennt seine Weiche; *jeder Verweis findet sein Objekt* — innerhalb des Teils, in dem er steht; die des Betriebs in die Infrastruktur, wo der Betrieb auf sie gelegt wird.
++ Was ein Schema nicht ausdrücken kann: Die Tage einer Lebensdauer sind Tage, der erste liegt nicht nach dem letzten; ein als Weichenstrecke markiertes Element nennt seine Weiche; eine Traktionsart eines Fahrzeugs ist genau dann elektrisch, wenn sie eine Spannung ist; *jeder Verweis findet sein Objekt* — innerhalb des Teils, in dem er steht; die des Betriebs in die Infrastruktur, wo der Betrieb auf sie gelegt wird.
 
 Fehler der Schritte 2, 4 und 5 werden als `invalid_payload` mit den gefundenen Stellen gemeldet, z. B. `/infraData/domains/signalling/collections/switchElements/0/switchId: names …, which core.switches lacks`. Was ein Leser schreibt, prüft er genauso, bevor es die Hand verlässt.
 
@@ -419,9 +421,18 @@ Eine Datei mit einem Gleis aus einer Geraden und einem Bogen, neu ab dem 1. Mai 
       "vehicles": {
         "version": "1.0", "schema": "sha256:3333…", "fields": {},
         "collections": { "vehicles": [ {
-          "id": "a7b8c9d0-e1f2-4a3b-8c4d-5e6f7a8b9c0d", "name": "BR 1440",
-          "key": "osrd:br1440",
-          "tractionModes": ["15000V"], "rollingStock": "sha256:4444…"
+          "id": "a7b8c9d0-e1f2-4a3b-8c4d-5e6f7a8b9c0d", "key": "osrd:br1440",
+          "rollingStock": {
+            "railjson_version": "3.3", "name": "BR 1440", "mass": 84000, "max_speed": 44.44,
+            "effort_curves": {
+              "default_mode": "15000V",
+              "modes": { "15000V": { "is_electric": true, "curves": [ {
+                "cond": { "comfort": "STANDARD" },
+                "curve": { "speeds": [0, 20, 44.44],
+                           "max_efforts": [300000, 300000, 135000] }
+              } ] } }
+            }
+          }
         } ] }
       },
       "timetables": {
@@ -454,7 +465,7 @@ Eine Datei mit einem Gleis aus einer Geraden und einem Bogen, neu ab dem 1. Mai 
       }
     }
   },
-  "blobs": { "sha256:4444…": { "name": "BR 1440", "mass": 84000 } }
+  "blobs": {}
 }
 ```
 
@@ -465,6 +476,7 @@ Die Prüfsummen sind hier gekürzt; in einer Datei hat jede ihre 64 Hexziffern.
 Diese Spezifikation ist das Ziel des Datenmodells. Mit Stand 13. November 2026 weicht die Implementierung der Suite in diesen Punkten ab; jeder wird in einem eigenen Schritt angeglichen (Entscheidung 0028 und die folgenden):
 
 - Zwei Dateien statt einer: die Infrastruktur als infra-data 2.0 (`.railacross.json`, Domänen core 3.1, civil 2.1, signalling 3.1, electrification 2.1), der Betrieb als operations 1.0 (`.operations.json`) mit einer Domäne `operations`, in der die Fahrzeuge mitgeführt werden; eine Datei von vorher führt noch die Schemas mit.
+- Ein Fahrzeug hält sein Rollmaterial als Blob und nennt seine Traktionsarten ein zweites Mal (`tractionModes`).
 - Die Weichenart heißt `turnout`, ihr Zweiggleis ist `B1`, ihr Stammgleis `B2`.
 - Kilometrierungslinien sind Polylinien in WGS 84 mit dem Kilometer je Punkt.
 - Element- und Gleisarten sind Zahlen (`elementType` 0/1/2, `trackType` 1/2, `side` 1/2); ein Element kann eine eigene Ebene nennen; einige Verweise heißen ohne `Id` (`operationalPoint`, `dep`).
@@ -494,8 +506,8 @@ genau eins von `infraData`, `operations` ist angegeben
   [`version`], [ja], [genau `1.0`], [Version des Formats],
   [`projectId`], [ja], [Text; Muster `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`], [Kennung des Projekts],
   [`generator`], [], [Objekt (Properties unten)], [das Programm, das die Datei geschrieben hat],
-  [`generator.name`], [ja], [Text], [Name des Programms],
-  [`generator.version`], [ja], [Text], [seine Version],
+  [`generator.​name`], [ja], [Text], [Name des Programms],
+  [`generator.​version`], [ja], [Text], [seine Version],
   [`savedAt`], [], [Text; Muster `^[0-9]{4}-[0-9]{2}-[0-9]{2}T`], [Zeitpunkt des Speicherns (ISO 8601, UTC)],
   [`infraData`], [], [#link(<rail-across-InfraData>)[`InfraData`]], [die Infrastruktur einer Variante],
   [`operations`], [], [#link(<rail-across-Operations>)[`Operations`]], [der Betrieb des Projekts],
@@ -555,13 +567,13 @@ _Weitere Properties sind nicht erlaubt._
   [Property], [Pflicht], [Typ und zulässige Werte], [Bedeutung],
   [`fields`], [ja], [#link(<core-Fields>)[`Fields`]], [Die Felder der Domäne],
   [`collections`], [ja], [Objekt (Properties unten)], [Die Sammlungen der Domäne],
-  [`collections.tracks`], [ja], [Liste von #link(<core-Track>)[`Track`]], [Gleise],
-  [`collections.switches`], [ja], [Liste von #link(<core-Switch>)[`Switch`]], [Weichen, Kreuzungen und Verbinder],
-  [`collections.endMarks`], [ja], [Liste von #link(<core-EndMark>)[`EndMark`]], [Prellböcke und Betrachtungsgrenzen],
-  [`collections.kmLines`], [ja], [Liste von #link(<core-KmLine>)[`KmLine`]], [Kilometrierungslinien],
-  [`collections.operationalPoints`], [ja], [Liste von #link(<core-OperationalPoint>)[`OperationalPoint`]], [Betriebsstellen-Verzeichnis],
-  [`collections.stoppingPlaces`], [ja], [Liste von #link(<core-StoppingPlace>)[`StoppingPlace`]], [Halteplätze],
-  [`collections.trackPaths`], [], [Liste von #link(<core-NamedTrackPath>)[`NamedTrackPath`]], [benannte Gleisfolgen],
+  [`collections.​tracks`], [ja], [Liste von #link(<core-Track>)[`Track`]], [Gleise],
+  [`collections.​switches`], [ja], [Liste von #link(<core-Switch>)[`Switch`]], [Weichen, Kreuzungen und Verbinder],
+  [`collections.​endMarks`], [ja], [Liste von #link(<core-EndMark>)[`EndMark`]], [Prellböcke und Betrachtungsgrenzen],
+  [`collections.​kmLines`], [ja], [Liste von #link(<core-KmLine>)[`KmLine`]], [Kilometrierungslinien],
+  [`collections.​operationalPoints`], [ja], [Liste von #link(<core-OperationalPoint>)[`OperationalPoint`]], [Betriebsstellen-Verzeichnis],
+  [`collections.​stoppingPlaces`], [ja], [Liste von #link(<core-StoppingPlace>)[`StoppingPlace`]], [Halteplätze],
+  [`collections.​trackPaths`], [], [Liste von #link(<core-NamedTrackPath>)[`NamedTrackPath`]], [benannte Gleisfolgen],
 )
 
 === Id <core-Id>
@@ -626,7 +638,7 @@ _Weitere Properties sind nicht erlaubt._
 
 #table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
   [Property], [Pflicht], [Typ und zulässige Werte], [Bedeutung],
-  [`trackId`], [ja], [#link(<core-Ref>)[`Ref`] → `core.`​`tracks`], [das Gleis],
+  [`trackId`], [ja], [#link(<core-Ref>)[`Ref`] → `core.​tracks`], [das Gleis],
   [`endpoint`], [ja], [#link(<core-Endpoint>)[`Endpoint`]], [welches seiner Enden],
 )
 
@@ -639,7 +651,7 @@ Wo ein Objekt steht, als ein Wert. Der Anker sagt, ob es dem Gleis folgt (`stati
 #table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
   [Property], [Pflicht], [Typ und zulässige Werte], [Bedeutung],
   [`anchor`], [ja], [genau `station`], [Anker des Orts — `station` folgt dem Gleis],
-  [`trackId`], [ja], [#link(<core-Ref>)[`Ref`] → `core.`​`tracks`], [das Gleis],
+  [`trackId`], [ja], [#link(<core-Ref>)[`Ref`] → `core.​tracks`], [das Gleis],
   [`station`], [ja], [Zahl], [Station ab Gleisanfang \[m\]],
   [`side`], [], [#link(<core-Side>)[`Side`]], [Seite, gesehen in Stationierungsrichtung],
   [`offset`], [], [Zahl; ≥ 0], [Abstand von der Gleisachse \[m\]],
@@ -666,7 +678,7 @@ _Weitere Properties sind nicht erlaubt._
 #table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
   [Property], [Pflicht], [Typ und zulässige Werte], [Bedeutung],
   [`anchor`], [ja], [genau `station`], [folgt dem Gleis],
-  [`trackId`], [ja], [#link(<core-Ref>)[`Ref`] → `core.`​`tracks`], [das Gleis],
+  [`trackId`], [ja], [#link(<core-Ref>)[`Ref`] → `core.​tracks`], [das Gleis],
   [`startStation`], [ja], [Zahl], [Anfang \[m ab Gleisanfang\]],
   [`endStation`], [ja], [Zahl], [Ende \[m ab Gleisanfang\]],
   [`side`], [], [#link(<core-Side>)[`Side`]], [Seite, gesehen in Stationierungsrichtung],
@@ -680,7 +692,7 @@ _Weitere Properties sind nicht erlaubt._
 
 #table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
   [Property], [Pflicht], [Typ und zulässige Werte], [Bedeutung],
-  [`trackIds`], [ja], [Liste von #link(<core-Ref>)[`Ref`] → `core.`​`tracks`], [die Gleise in Fahrtrichtung],
+  [`trackIds`], [ja], [Liste von #link(<core-Ref>)[`Ref`] → `core.​tracks`], [die Gleise in Fahrtrichtung],
 )
 
 === Day <core-Day>
@@ -752,7 +764,7 @@ _Weitere Properties sind nicht erlaubt._
   [`designSpeed`], [], [Zahl; ≥ 0 oder null], [Entwurfsgeschwindigkeit \[km/h\], für die das Element entworfen und gegen die es geprüft ist; `null` oder fehlend = unbekannt],
   [`switchBranch`], [], [Wahrheitswert], [gehört zu einer Weichenstrecke],
   [`switchRoute`], [], [eins der Werte unter Bedeutung], [welche Strecke der Weiche #linebreak() `main` Stammgleis #linebreak() `branch` Zweiggleis #linebreak() `cross` Kreuzungsstrang #linebreak() `slip1` erster Bogen einer Kreuzungsweiche #linebreak() `slip2` zweiter Bogen],
-  [`switchId`], [], [#link(<core-Ref>)[`Ref`] → `core.`​`switches`], [die Weiche],
+  [`switchId`], [], [#link(<core-Ref>)[`Ref`] → `core.​switches`], [die Weiche],
   [`switchHint`], [], [#link(<core-Text>)[`Text`]], [warum ein Import die Weiche nicht bilden konnte: Form, Nummer, Grund],
 )
 
@@ -804,7 +816,7 @@ _Weitere Properties sind nicht erlaubt._
   [`lineName`], [], [#link(<core-Text>)[`Text`]], [Streckenname],
   [`side`], [], [eins der Werte unter Bedeutung], [Lage eines Streckengleises #linebreak() `regular` Richtungsgleis #linebreak() `opposite` Gegenrichtungsgleis],
   [`trackNumber`], [], [#link(<core-Label>)[`Label`]], [Gleisnummer im Bahnhof],
-  [`operationalPointId`], [], [#link(<core-Ref>)[`Ref`] → `core.`​`operationalPoints`], [Bahnhof, zu dem das Gleis gehört],
+  [`operationalPointId`], [], [#link(<core-Ref>)[`Ref`] → `core.​operationalPoints`], [Bahnhof, zu dem das Gleis gehört],
   [`owner`], [], [#link(<core-Text>)[`Text`]], [Eigentümer],
   [`trackUse`], [], [genau `siding`], [Nebengleis; fehlt es, ist es ein Hauptgleis — `siding` Nebengleis],
   [`lineCategory`], [], [#link(<core-LineCategory>)[`LineCategory`]], [Streckenkategorie, wo sie von der des Projekts abweicht],
@@ -905,7 +917,7 @@ _Weitere Properties sind nicht erlaubt._
   [Property], [Pflicht], [Typ und zulässige Werte], [Bedeutung],
   [`id`], [ja], [#link(<core-Id>)[`Id`]], [Kennung des Objekts],
   [`name`], [], [#link(<core-Text>)[`Text`]], [Name],
-  [`operationalPointId`], [], [#link(<core-Ref>)[`Ref`] → `core.`​`operationalPoints`], [Bahnhof, zu dem er gehört; ohne: freie Strecke],
+  [`operationalPointId`], [], [#link(<core-Ref>)[`Ref`] → `core.​operationalPoints`], [Bahnhof, zu dem er gehört; ohne: freie Strecke],
   [`at`], [ja], [#link(<core-TrackRange>)[`TrackRange`]], [Abschnitt des Gleises],
   [`passengerStop`], [], [Wahrheitswert], [Personenhalt: hier steigen Reisende ein und aus, an einem Bahnsteig],
   [`lifespan`], [], [#link(<core-Lifespan>)[`Lifespan`]], [Lebensdauer: die Tage im Betrieb; fehlt sie, besteht das Objekt und bleibt],
@@ -978,12 +990,12 @@ _Weitere Properties sind nicht erlaubt._
   [Property], [Pflicht], [Typ und zulässige Werte], [Bedeutung],
   [`fields`], [ja], [#link(<civil-Fields>)[`Fields`]], [Die Felder des Layers],
   [`collections`], [ja], [Objekt (Properties unten)], [Die Sammlungen des Layers],
-  [`collections.platforms`], [ja], [Liste von #link(<civil-Platform>)[`Platform`]], [Bahnsteige],
-  [`collections.axisSurveys`], [ja], [Liste von #link(<civil-AxisSurvey>)[`AxisSurvey`]], [gemessene Achsen],
-  [`collections.referenceAxes`], [ja], [Liste von #link(<civil-ReferenceAxis>)[`ReferenceAxis`]], [Bestandsachsen],
-  [`collections.bridges`], [], [Liste von #link(<civil-Bridge>)[`Bridge`]], [Eisenbahnüberführungen],
-  [`collections.retainingWalls`], [], [Liste von #link(<civil-RetainingWall>)[`RetainingWall`]], [Stützwände],
-  [`collections.noiseBarriers`], [], [Liste von #link(<civil-NoiseBarrier>)[`NoiseBarrier`]], [Lärmschutzwände],
+  [`collections.​platforms`], [ja], [Liste von #link(<civil-Platform>)[`Platform`]], [Bahnsteige],
+  [`collections.​axisSurveys`], [ja], [Liste von #link(<civil-AxisSurvey>)[`AxisSurvey`]], [gemessene Achsen],
+  [`collections.​referenceAxes`], [ja], [Liste von #link(<civil-ReferenceAxis>)[`ReferenceAxis`]], [Bestandsachsen],
+  [`collections.​bridges`], [], [Liste von #link(<civil-Bridge>)[`Bridge`]], [Eisenbahnüberführungen],
+  [`collections.​retainingWalls`], [], [Liste von #link(<civil-RetainingWall>)[`RetainingWall`]], [Stützwände],
+  [`collections.​noiseBarriers`], [], [Liste von #link(<civil-NoiseBarrier>)[`NoiseBarrier`]], [Lärmschutzwände],
 )
 
 === BlobRef <civil-BlobRef>
@@ -1019,15 +1031,15 @@ _Weitere Properties sind nicht erlaubt._
   [`epsg`], [ja], [#link(<core-Epsg>)[`Epsg`]], [Ebene der Punkte],
   [`rail`], [], [Text], [gemessene Schiene],
   [`guide`], [], [Objekt (Properties unten)], [woran die Messung geführt wurde],
-  [`guide.kind`], [ja], [eins der Werte unter Bedeutung], [an einem Gleis oder einer gezeichneten Linie #linebreak() `track` Gleis #linebreak() `line` gezeichnete Linie],
-  [`guide.trackId`], [], [#link(<core-Ref>)[`Ref`] → `core.`​`tracks`], [das führende Gleis],
+  [`guide.​kind`], [ja], [eins der Werte unter Bedeutung], [an einem Gleis oder einer gezeichneten Linie #linebreak() `track` Gleis #linebreak() `line` gezeichnete Linie],
+  [`guide.​trackId`], [], [#link(<core-Ref>)[`Ref`] → `core.​tracks`], [das führende Gleis],
   [`cloudNames`], [], [Liste von Text], [Namen der Punktwolken],
   [`cloudRefs`], [], [Liste von beliebigen Werten], [Verweise auf die Punktwolken],
   [`createdAt`], [], [#link(<core-Text>)[`Text`]], [Erstellzeitpunkt],
   [`step`], [], [Zahl], [Punktabstand \[m\]],
   [`gaps`], [], [Liste von Objekten (Properties unten)], [Lücken der Messung],
-  [`gaps[].from`], [ja], [Zahl], [Anfang \[m\]],
-  [`gaps[].to`], [ja], [Zahl], [Ende \[m\]],
+  [`gaps[].​from`], [ja], [Zahl], [Anfang \[m\]],
+  [`gaps[].​to`], [ja], [Zahl], [Ende \[m\]],
   [`points`], [ja], [#link(<civil-BlobRef>)[`BlobRef`]], [die Punkte, als Blob],
 )
 
@@ -1060,9 +1072,9 @@ _Weitere Properties sind nicht erlaubt._
   [`frontOffset`], [], [Zahl], [Abstand der Bahnsteigkante von der Gleisachse \[m\]],
   [`backOffset`], [], [Zahl], [Abstand der Bahnsteigrückseite von der Gleisachse \[m\]],
   [`height`], [], [Zahl], [Bahnsteighöhe \[mm über SO\]],
-  [`operationalPointId`], [], [#link(<core-Ref>)[`Ref`] → `core.`​`operationalPoints`], [Bahnhof oder Haltepunkt des Bahnsteigs],
+  [`operationalPointId`], [], [#link(<core-Ref>)[`Ref`] → `core.​operationalPoints`], [Bahnhof oder Haltepunkt des Bahnsteigs],
   [`lifespan`], [], [#link(<core-Lifespan>)[`Lifespan`]], [Lebensdauer: die Tage im Betrieb; fehlt sie, besteht das Objekt und bleibt],
-  [`stoppingPlaceIds`], [], [Liste von #link(<core-Ref>)[`Ref`] → `core.`​`stoppingPlaces`], [die Halteplätze an ihm],
+  [`stoppingPlaceIds`], [], [Liste von #link(<core-Ref>)[`Ref`] → `core.​stoppingPlaces`], [die Halteplätze an ihm],
 )
 
 === Bridge <civil-Bridge>
@@ -1129,17 +1141,17 @@ _Weitere Properties sind nicht erlaubt._
   [Property], [Pflicht], [Typ und zulässige Werte], [Bedeutung],
   [`fields`], [ja], [#link(<signalling-Fields>)[`Fields`]], [Die Felder des Layers],
   [`collections`], [ja], [Objekt (Properties unten)], [Die Sammlungen des Layers],
-  [`collections.signals`], [ja], [Liste von #link(<signalling-Signal>)[`Signal`]], [Signale],
-  [`collections.detectionPoints`], [ja], [Liste von #link(<signalling-DetectionPoint>)[`DetectionPoint`]], [Freimeldepunkte],
-  [`collections.trackSections`], [ja], [Liste von #link(<signalling-TrackSection>)[`TrackSection`]], [Freimeldeabschnitte],
-  [`collections.switchElements`], [ja], [Liste von #link(<signalling-SwitchElement>)[`SwitchElement`]], [Weichen- und Gleissperrenelemente],
-  [`collections.routes`], [ja], [Liste von #link(<signalling-Route>)[`Route`]], [Fahrstraßen],
-  [`collections.overlaps`], [ja], [Liste von #link(<signalling-Overlap>)[`Overlap`]], [Durchrutschwege],
-  [`collections.flankProtection`], [ja], [Liste von #link(<signalling-FlankProtection>)[`FlankProtection`]], [Flankenschutz],
-  [`collections.balises`], [ja], [Liste von #link(<signalling-Balise>)[`Balise`]], [Magnete und Balisen],
-  [`collections.stationBoundaries`], [ja], [Liste von #link(<signalling-StationBoundary>)[`StationBoundary`]], [Bahnhofsgrenzen],
-  [`collections.itineraries`], [ja], [Liste von #link(<signalling-Itinerary>)[`Itinerary`]], [Fahrwege],
-  [`collections.trainProtection`], [], [Liste von #link(<signalling-TrainProtection>)[`TrainProtection`]], [linienförmige Zugbeeinflussung über Gleisabschnitte],
+  [`collections.​signals`], [ja], [Liste von #link(<signalling-Signal>)[`Signal`]], [Signale],
+  [`collections.​detectionPoints`], [ja], [Liste von #link(<signalling-DetectionPoint>)[`DetectionPoint`]], [Freimeldepunkte],
+  [`collections.​trackSections`], [ja], [Liste von #link(<signalling-TrackSection>)[`TrackSection`]], [Freimeldeabschnitte],
+  [`collections.​switchElements`], [ja], [Liste von #link(<signalling-SwitchElement>)[`SwitchElement`]], [Weichen- und Gleissperrenelemente],
+  [`collections.​routes`], [ja], [Liste von #link(<signalling-Route>)[`Route`]], [Fahrstraßen],
+  [`collections.​overlaps`], [ja], [Liste von #link(<signalling-Overlap>)[`Overlap`]], [Durchrutschwege],
+  [`collections.​flankProtection`], [ja], [Liste von #link(<signalling-FlankProtection>)[`FlankProtection`]], [Flankenschutz],
+  [`collections.​balises`], [ja], [Liste von #link(<signalling-Balise>)[`Balise`]], [Magnete und Balisen],
+  [`collections.​stationBoundaries`], [ja], [Liste von #link(<signalling-StationBoundary>)[`StationBoundary`]], [Bahnhofsgrenzen],
+  [`collections.​itineraries`], [ja], [Liste von #link(<signalling-Itinerary>)[`Itinerary`]], [Fahrwege],
+  [`collections.​trainProtection`], [], [Liste von #link(<signalling-TrainProtection>)[`TrainProtection`]], [linienförmige Zugbeeinflussung über Gleisabschnitte],
 )
 
 === Fields <signalling-Fields>
@@ -1151,11 +1163,11 @@ _Weitere Properties sind nicht erlaubt._
 #table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
   [Property], [Pflicht], [Typ und zulässige Werte], [Bedeutung],
   [`catalogue`], [], [Objekt (Properties unten)], [der Katalog der Signalbegriffe],
-  [`catalogue.id`], [ja], [Text; mindestens 1 Zeichen], [Kennung des Katalogs],
-  [`catalogue.version`], [ja], [Text; mindestens 1 Zeichen], [Version des Katalogs],
+  [`catalogue.​id`], [ja], [Text; mindestens 1 Zeichen], [Kennung des Katalogs],
+  [`catalogue.​version`], [ja], [Text; mindestens 1 Zeichen], [Version des Katalogs],
   [`routeTimes`], [], [Objekt (Properties unten)], [Zeiten, die für jede Fahrstraße gelten, die keine eigenen nennt],
-  [`routeTimes.setting`], [], [Zahl; ≥ 0], [Fahrstraßenbildezeit \[s\]],
-  [`routeTimes.release`], [], [Zahl; ≥ 0], [Auflösezeit \[s\]],
+  [`routeTimes.​setting`], [], [Zahl; ≥ 0], [Fahrstraßenbildezeit \[s\]],
+  [`routeTimes.​release`], [], [Zahl; ≥ 0], [Auflösezeit \[s\]],
 )
 
 === Directed <signalling-Directed>
@@ -1181,7 +1193,7 @@ _Weitere Properties sind nicht erlaubt._
   [`id`], [ja], [#link(<core-Id>)[`Id`]], [Kennung des Objekts],
   [`name`], [], [#link(<core-Label>)[`Label`]], [Name (ohne Kennzahl)],
   [`areaNumber`], [], [#link(<core-Label>)[`Label`]], [Kennzahl des Stellbereichs, die der vollen Bezeichnung vorangeht (PlanPro Kennzahl: 60 in 60A)],
-  [`operationalPointId`], [], [#link(<core-Ref>)[`Ref`] → `core.`​`operationalPoints`], [Bahnhof, zu dem es gehört; ohne: Signal der freien Strecke],
+  [`operationalPointId`], [], [#link(<core-Ref>)[`Ref`] → `core.​operationalPoints`], [Bahnhof, zu dem es gehört; ohne: Signal der freien Strecke],
   [`kind`], [ja], [eins der Werte unter Bedeutung], [real oder fiktiv #linebreak() `real` reales Signal #linebreak() `virtual` fiktives Signal],
   [`at`], [ja], [#link(<signalling-Directed>)[`Directed`]], [Standort und Wirkrichtung],
   [`alsoAt`], [], [Liste von #link(<core-TrackLocation>)[`TrackLocation`]], [weitere Gleise am selben Ort (Grenzzeichen zwischen zwei Gleisen)],
@@ -1191,12 +1203,12 @@ _Weitere Properties sind nicht erlaubt._
   [`logicalSignals`], [], [Liste von #link(<signalling-LogicalSignal>)[`LogicalSignal`]], [die logischen Signale, eines je Signalsystem],
   [`mounting`], [], [eins der Werte unter Bedeutung], [Befestigungsart (PlanPro Signal\_Befestigungsart) #linebreak() `mast` Mast #linebreak() `bracket` Signalausleger #linebreak() `gantry` Signalbrücke #linebreak() `foundation` Fundament #linebreak() `special` Sonderkonstruktion #linebreak() `other` andere],
   [`foundation`], [], [Objekt (Properties unten)], [Fundament eines Signals auf Signalbrücke oder -ausleger],
-  [`foundation.side`], [], [#link(<core-Side>)[`Side`]], [Seite, gesehen in Wirkrichtung],
-  [`foundation.offset`], [ja], [Zahl; ≥ 0], [Abstand von der Gleisachse \[m\]],
+  [`foundation.​side`], [], [#link(<core-Side>)[`Side`]], [Seite, gesehen in Wirkrichtung],
+  [`foundation.​offset`], [ja], [Zahl; ≥ 0], [Abstand von der Gleisachse \[m\]],
   [`sight`], [], [Objekt (Properties unten)], [Signalsicht \[m\] (PlanPro Signalsicht\_Soll, \_Mindest, \_Erreichbar)],
-  [`sight.required`], [], [Zahl; ≥ 0], [erforderlich],
-  [`sight.minimum`], [], [Zahl; ≥ 0], [mindestens],
-  [`sight.achievable`], [], [Zahl; ≥ 0], [erreichbar],
+  [`sight.​required`], [], [Zahl; ≥ 0], [erforderlich],
+  [`sight.​minimum`], [], [Zahl; ≥ 0], [mindestens],
+  [`sight.​achievable`], [], [Zahl; ≥ 0], [erreichbar],
   [`frames`], [], [Liste von #link(<signalling-Frame>)[`Frame`]], [was es ohne System zeigt: Tafeln, Grenzzeichen-Körper, Namensschild, Schirm eines Signals ohne System],
   [`lifespan`], [], [#link(<core-Lifespan>)[`Lifespan`]], [Lebensdauer: die Tage im Betrieb; fehlt sie, besteht das Objekt und bleibt],
 )
@@ -1214,14 +1226,14 @@ _Weitere Properties sind nicht erlaubt._
   [`function`], [], [eins der Werte unter Bedeutung], [Funktion (PlanPro Signal\_Funktion) #linebreak() `entry` Einfahrsignal #linebreak() `exit` Ausfahrsignal #linebreak() `entryExit` Ein- und Ausfahrsignal #linebreak() `intermediate` Zwischensignal #linebreak() `exitIntermediate` Ausfahr- und Zwischensignal #linebreak() `entryBlock` Einfahr- und Blocksignal #linebreak() `block` Blocksignal #linebreak() `groupExit` Gruppenausfahrsignal #linebreak() `groupIntermediate` Gruppenzwischensignal #linebreak() `groupExitIntermediate` Gruppenausfahr- und Zwischensignal #linebreak() `followUp` Folgesignal #linebreak() `cover` Deckungssignal #linebreak() `trainCover` Zugdeckungssignal #linebreak() `trainTarget` Zugzielsignal #linebreak() `levelCrossing` Überwachungssignal Bahnübergang #linebreak() `distant` Vorsignal #linebreak() `standaloneIndicator` alleinstehender Anzeiger (Tafel) #linebreak() `other` sonstige],
   [`frames`], [], [Liste von #link(<signalling-Frame>)[`Frame`]], [Schirm und Zusatzanzeiger],
   [`signallingSpeeds`], [], [Liste von Objekten (Properties unten)], [signalisierte Geschwindigkeit je Fahrstraße, die an diesem Standort beginnt (PlanPro Fstr\_V\_Hg)],
-  [`signallingSpeeds[].routeId`], [ja], [#link(<core-Ref>)[`Ref`] → `signalling.`​`routes`], [die Fahrstraße],
-  [`signallingSpeeds[].speed`], [ja], [Zahl; ≥ 0], [Geschwindigkeit \[km/h\]],
+  [`signallingSpeeds[].​routeId`], [ja], [#link(<core-Ref>)[`Ref`] → `signalling.​routes`], [die Fahrstraße],
+  [`signallingSpeeds[].​speed`], [ja], [Zahl; ≥ 0], [Geschwindigkeit \[km/h\]],
   [`settings`], [], [#link(<signalling-Settings>)[`Settings`]], [Einstellungen nach dem Katalog],
   [`nextSystems`], [], [Liste von Text; mindestens 1 Zeichen], [Systeme, die die angekündigten Signale haben dürfen],
   [`defaultParameters`], [], [#link(<signalling-Settings>)[`Settings`]], [Parameter, mit denen es standardmäßig zeigt],
   [`conditionalParameters`], [], [Liste von Objekten (Properties unten)], [Parameter je Fahrstraße],
-  [`conditionalParameters[].routeId`], [ja], [#link(<core-Ref>)[`Ref`] → `signalling.`​`routes`], [die Fahrstraße],
-  [`conditionalParameters[].parameters`], [ja], [#link(<signalling-Settings>)[`Settings`]], [ihre Parameter],
+  [`conditionalParameters[].​routeId`], [ja], [#link(<core-Ref>)[`Ref`] → `signalling.​routes`], [die Fahrstraße],
+  [`conditionalParameters[].​parameters`], [ja], [#link(<signalling-Settings>)[`Settings`]], [ihre Parameter],
 )
 
 === Settings <signalling-Settings>
@@ -1283,7 +1295,7 @@ _Weitere Properties sind nicht erlaubt._
   [`name`], [], [#link(<core-Label>)[`Label`]], [Name],
   [`areaNumber`], [], [#link(<core-Label>)[`Label`]], [Kennzahl des Stellbereichs, die der vollen Bezeichnung vorangeht (PlanPro Kennzahl: 60 in 60A)],
   [`kind`], [ja], [eins der Werte unter Bedeutung], [Art der Freimeldung #linebreak() `axleCounting` Achszählung #linebreak() `audioFrequencyCircuit` Tonfrequenz-Gleisstromkreis #linebreak() `lowFrequencyCircuit` Niederfrequenz-Gleisstromkreis #linebreak() `ftgs` FTGS #linebreak() `other` sonstige],
-  [`boundedBy`], [ja], [Liste von #link(<core-Ref>)[`Ref`] → `signalling.`​`detectionPoints`; mindestens 1 Eintrag], [die begrenzenden Freimeldepunkte],
+  [`boundedBy`], [ja], [Liste von #link(<core-Ref>)[`Ref`] → `signalling.​detectionPoints`; mindestens 1 Eintrag], [die begrenzenden Freimeldepunkte],
   [`auxiliaryClearing`], [], [Wahrheitswert], [Hilfsfreimeldung (PlanPro FMA\_Hilffreimeldung)],
   [`lifespan`], [], [#link(<core-Lifespan>)[`Lifespan`]], [Lebensdauer: die Tage im Betrieb; fehlt sie, besteht das Objekt und bleibt],
 )
@@ -1301,21 +1313,21 @@ genau eins von `switchId`, `derailer` ist angegeben
   [`id`], [ja], [#link(<core-Id>)[`Id`]], [Kennung des Objekts],
   [`name`], [], [#link(<core-Label>)[`Label`]], [Name],
   [`areaNumber`], [], [#link(<core-Label>)[`Label`]], [Kennzahl des Stellbereichs, die der vollen Bezeichnung vorangeht (PlanPro Kennzahl: 60 in 60A)],
-  [`switchId`], [], [#link(<core-Ref>)[`Ref`] → `core.`​`switches`], [die Weiche des Kerns],
+  [`switchId`], [], [#link(<core-Ref>)[`Ref`] → `core.​switches`], [die Weiche des Kerns],
   [`derailer`], [], [Objekt (Properties unten)], [eine Gleissperre (PlanPro Gleissperre\_Element)],
-  [`derailer.at`], [ja], [#link(<signalling-Directed>)[`Directed`]], [Standort],
-  [`derailer.preferredPosition`], [], [eins der Werte unter Bedeutung], [Grundstellung #linebreak() `applied` aufgelegt #linebreak() `removed` abgelegt],
+  [`derailer.​at`], [ja], [#link(<signalling-Directed>)[`Directed`]], [Standort],
+  [`derailer.​preferredPosition`], [], [eins der Werte unter Bedeutung], [Grundstellung #linebreak() `applied` aufgelegt #linebreak() `removed` abgelegt],
   [`part`], [], [eins der Werte unter Bedeutung], [welches Zungenpaar einer Kreuzungsweiche #linebreak() `a` Zungenpaar a #linebreak() `b` Zungenpaar b],
   [`operation`], [ja], [eins der Werte unter Bedeutung], [Stellart (PlanPro W\_Kr\_Gsp\_Stellart) #linebreak() `electricRemote` elektrisch ferngestellt #linebreak() `electricLocal` elektrisch ortsgestellt #linebreak() `mechanicalRemote` mechanisch ferngestellt #linebreak() `mechanicalLocal` mechanisch ortsgestellt #linebreak() `notWorked` nicht gestellt #linebreak() `springBack` Rückfallweiche #linebreak() `disabledLeft` außer Betrieb links #linebreak() `disabledRight` außer Betrieb rechts #linebreak() `other` sonstige],
   [`preferredPosition`], [], [#link(<signalling-SwitchPosition>)[`SwitchPosition`]], [Vorzugslage],
   [`preferredAutomatic`], [], [Wahrheitswert], [kehrt selbst in die Vorzugslage zurück],
   [`trailable`], [], [Wahrheitswert], [auffahrbar (PlanPro Auffahrortung)],
-  [`clearanceMarkerId`], [], [#link(<core-Ref>)[`Ref`] → `signalling.`​`signals`], [Grenzzeichen (Ra 12) der Weiche, ein Signal des Layers],
+  [`clearanceMarkerId`], [], [#link(<core-Ref>)[`Ref`] → `signalling.​signals`], [Grenzzeichen (Ra 12) der Weiche, ein Signal des Layers],
   [`twofoldProtection`], [], [Objekt (Properties unten)], [Zwieschutz (PlanPro Fla\_Zwieschutz)],
-  [`twofoldProtection.kind`], [], [eins der Werte unter Bedeutung], [Art des Zwieschutzes #linebreak() `genuine` echter Zwieschutz #linebreak() `genuineOwn` echter und Eigenzwieschutz #linebreak() `own` Eigenzwieschutz],
-  [`twofoldProtection.left`], [], [eins der Werte unter Bedeutung], [Maßnahme für die Lage links #linebreak() `locking` Verschluss #linebreak() `substitute` Ersatzmaßnahme],
-  [`twofoldProtection.right`], [], [eins der Werte unter Bedeutung], [Maßnahme für die Lage rechts #linebreak() `locking` Verschluss #linebreak() `substitute` Ersatzmaßnahme],
-  [`twofoldProtection.preventsRunOn`], [], [Wahrheitswert], [verhindert das Weiterfahren],
+  [`twofoldProtection.​kind`], [], [eins der Werte unter Bedeutung], [Art des Zwieschutzes #linebreak() `genuine` echter Zwieschutz #linebreak() `genuineOwn` echter und Eigenzwieschutz #linebreak() `own` Eigenzwieschutz],
+  [`twofoldProtection.​left`], [], [eins der Werte unter Bedeutung], [Maßnahme für die Lage links #linebreak() `locking` Verschluss #linebreak() `substitute` Ersatzmaßnahme],
+  [`twofoldProtection.​right`], [], [eins der Werte unter Bedeutung], [Maßnahme für die Lage rechts #linebreak() `locking` Verschluss #linebreak() `substitute` Ersatzmaßnahme],
+  [`twofoldProtection.​preventsRunOn`], [], [Wahrheitswert], [verhindert das Weiterfahren],
   [`lifespan`], [], [#link(<core-Lifespan>)[`Lifespan`]], [Lebensdauer: die Tage im Betrieb; fehlt sie, besteht das Objekt und bleibt],
 )
 
@@ -1334,19 +1346,19 @@ _Weitere Properties sind nicht erlaubt._
   [`shuntingType`], [], [eins von `RR`, `RT`, `RTU`, `RU`], [Art der Rangierstraße (PlanPro Fstr\_Rangier\_Art)],
   [`middleType`], [], [eins von `ZM`, `ZUM`], [Art der Mittelweichenstraße (PlanPro Fstr\_Mittel\_Art)],
   [`rank`], [], [ganze Zahl; ≥ 0], [Rang unter den Fahrstraßen zwischen denselben Signalen, 0 die Regelfahrstraße],
-  [`startSignalId`], [ja], [#link(<core-Ref>)[`Ref`] → `signalling.`​`signals`], [Startsignal],
-  [`targetSignalId`], [ja], [#link(<core-Ref>)[`Ref`] → `signalling.`​`signals`], [Zielsignal],
+  [`startSignalId`], [ja], [#link(<core-Ref>)[`Ref`] → `signalling.​signals`], [Startsignal],
+  [`targetSignalId`], [ja], [#link(<core-Ref>)[`Ref`] → `signalling.​signals`], [Zielsignal],
   [`path`], [ja], [#link(<core-TrackPath>)[`TrackPath`]], [die Gleisfolge],
   [`autoSetting`], [], [Wahrheitswert], [durch Selbststellbetrieb eingestellt],
   [`shortDistantSpacing`], [], [Wahrheitswert], [Vorsignal im verkürzten Bremswegabstand],
-  [`clearSections`], [], [Liste von #link(<core-Ref>)[`Ref`] → `signalling.`​`trackSections`], [Gleisfreimeldeabschnitte, die frei sein müssen],
+  [`clearSections`], [], [Liste von #link(<core-Ref>)[`Ref`] → `signalling.​trackSections`], [Gleisfreimeldeabschnitte, die frei sein müssen],
   [`overlaps`], [], [Liste von Objekten (Properties unten)], [Durchrutschwege, in denen sie enden darf],
-  [`overlaps[].overlapId`], [ja], [#link(<core-Ref>)[`Ref`] → `signalling.`​`overlaps`], [der Durchrutschweg],
-  [`overlaps[].preferred`], [], [Wahrheitswert], [der bevorzugte],
+  [`overlaps[].​overlapId`], [ja], [#link(<core-Ref>)[`Ref`] → `signalling.​overlaps`], [der Durchrutschweg],
+  [`overlaps[].​preferred`], [], [Wahrheitswert], [der bevorzugte],
   [`aspects`], [], [Liste von Objekten (Properties unten)], [was die Fahrstraße zeigt: an welchem Signal welcher Begriff (PlanPro Fstr\_Signalisierung)],
-  [`aspects[].signalId`], [ja], [#link(<core-Ref>)[`Ref`] → `signalling.`​`signals`], [das Signal],
-  [`aspects[].aspect`], [ja], [Text; mindestens 1 Zeichen], [der Begriff],
-  [`aspects[].symbol`], [], [Text; mindestens 1 Zeichen], [sein Symbol],
+  [`aspects[].​signalId`], [ja], [#link(<core-Ref>)[`Ref`] → `signalling.​signals`], [das Signal],
+  [`aspects[].​aspect`], [ja], [Text; mindestens 1 Zeichen], [der Begriff],
+  [`aspects[].​symbol`], [], [Text; mindestens 1 Zeichen], [sein Symbol],
   [`lifespan`], [], [#link(<core-Lifespan>)[`Lifespan`]], [Lebensdauer: die Tage im Betrieb; fehlt sie, besteht das Objekt und bleibt],
   [`settingTime`], [], [Zahl; ≥ 0], [Fahrstraßenbildezeit \[s\]; ohne sie die des Layers],
   [`releaseTime`], [], [Zahl; ≥ 0], [Auflösezeit, nachdem der Zug sie verlassen hat \[s\]; ohne sie die des Layers],
@@ -1362,17 +1374,17 @@ _Weitere Properties sind nicht erlaubt._
   [Property], [Pflicht], [Typ und zulässige Werte], [Bedeutung],
   [`id`], [ja], [#link(<core-Id>)[`Id`]], [Kennung des Objekts],
   [`name`], [], [#link(<core-Text>)[`Text`]], [Name],
-  [`signalId`], [ja], [#link(<core-Ref>)[`Ref`] → `signalling.`​`signals`], [das Signal, hinter dem er liegt],
+  [`signalId`], [ja], [#link(<core-Ref>)[`Ref`] → `signalling.​signals`], [das Signal, hinter dem er liegt],
   [`path`], [ja], [#link(<core-TrackPath>)[`TrackPath`]], [die Gleisfolge],
   [`end`], [ja], [#link(<core-TrackLocation>)[`TrackLocation`]], [Gefahrpunkt (PlanPro ID\_PZB\_Gefahrpunkt)],
   [`length`], [ja], [Zahl; ≥ 0], [Soll-Länge \[m\]],
   [`gradient`], [], [Zahl], [maßgebende Neigung \[‰\], negativ im Gefälle],
   [`speed`], [], [Zahl; ≥ 0], [zulässige Geschwindigkeit \[km/h\]],
   [`releaseDelay`], [], [Zahl; ≥ 0], [Auflösungsverzögerung \[s\]],
-  [`clearSections`], [], [Liste von #link(<core-Ref>)[`Ref`] → `signalling.`​`trackSections`], [Gleisfreimeldeabschnitte, die frei sein müssen],
+  [`clearSections`], [], [Liste von #link(<core-Ref>)[`Ref`] → `signalling.​trackSections`], [Gleisfreimeldeabschnitte, die frei sein müssen],
   [`switches`], [], [Liste von Objekten (Properties unten)], [Weichen im Durchrutschweg],
-  [`switches[].switchElementId`], [ja], [#link(<core-Ref>)[`Ref`] → `signalling.`​`switchElements`], [das Weichenelement],
-  [`switches[].locked`], [ja], [Wahrheitswert], [verschlossen],
+  [`switches[].​switchElementId`], [ja], [#link(<core-Ref>)[`Ref`] → `signalling.​switchElements`], [das Weichenelement],
+  [`switches[].​locked`], [ja], [Wahrheitswert], [verschlossen],
   [`lifespan`], [], [#link(<core-Lifespan>)[`Lifespan`]], [Lebensdauer: die Tage im Betrieb; fehlt sie, besteht das Objekt und bleibt],
 )
 
@@ -1386,18 +1398,18 @@ _Weitere Properties sind nicht erlaubt._
   [Property], [Pflicht], [Typ und zulässige Werte], [Bedeutung],
   [`id`], [ja], [#link(<core-Id>)[`Id`]], [Kennung des Objekts],
   [`requester`], [ja], [Objekt (Properties unten)], [wer ihn verlangt],
-  [`requester.switchElementId`], [ja], [#link(<core-Ref>)[`Ref`] → `signalling.`​`switchElements`], [das Weichenelement],
-  [`requester.via`], [ja], [eins der Werte unter Bedeutung], [befahren in welcher Lage, oder von der Spitze #linebreak() `left` in Lage links #linebreak() `right` in Lage rechts #linebreak() `tip` von der Spitze],
+  [`requester.​switchElementId`], [ja], [#link(<core-Ref>)[`Ref`] → `signalling.​switchElements`], [das Weichenelement],
+  [`requester.​via`], [ja], [eins der Werte unter Bedeutung], [befahren in welcher Lage, oder von der Spitze #linebreak() `left` in Lage links #linebreak() `right` in Lage rechts #linebreak() `tip` von der Spitze],
   [`protection`], [ja], [eins von: Objekt (Properties unten); Objekt (Properties unten); Objekt (Properties unten)], [wer ihn gibt: ein Signal in Haltstellung, ein Weichenelement in einer Lage, oder verzichtet],
-  [`protection.signalId`], [ja], [#link(<core-Ref>)[`Ref`] → `signalling.`​`signals`], [das schützende Signal],
-  [`protection.targetLock`], [], [Wahrheitswert], [Zielsperrung (PlanPro Fla\_Signal\_Zielsperrung)],
-  [`protection.switchElementId`], [ja], [#link(<core-Ref>)[`Ref`] → `signalling.`​`switchElements`], [das schützende Weichenelement],
-  [`protection.position`], [], [#link(<signalling-SwitchPosition>)[`SwitchPosition`]], [seine Lage; eine Gleissperre gibt ihn aufgelegt und nennt keine],
-  [`protection.waived`], [ja], [genau `true`], [auf Flankenschutz verzichtet],
+  [`protection.​signalId`], [ja], [#link(<core-Ref>)[`Ref`] → `signalling.​signals`], [das schützende Signal],
+  [`protection.​targetLock`], [], [Wahrheitswert], [Zielsperrung (PlanPro Fla\_Signal\_Zielsperrung)],
+  [`protection.​switchElementId`], [ja], [#link(<core-Ref>)[`Ref`] → `signalling.​switchElements`], [das schützende Weichenelement],
+  [`protection.​position`], [], [#link(<signalling-SwitchPosition>)[`SwitchPosition`]], [seine Lage; eine Gleissperre gibt ihn aufgelegt und nennt keine],
+  [`protection.​waived`], [ja], [genau `true`], [auf Flankenschutz verzichtet],
   [`passOn`], [], [Objekt (Properties unten)], [Flankenschutz, den das schützende Element seinerseits verlangt (PlanPro Fla\_Schutz\_Weitergabe)],
-  [`passOn.left`], [], [#link(<core-Ref>)[`Ref`] → `signalling.`​`flankProtection`], [für seine Lage links],
-  [`passOn.right`], [], [#link(<core-Ref>)[`Ref`] → `signalling.`​`flankProtection`], [für seine Lage rechts],
-  [`clearSections`], [], [Liste von #link(<core-Ref>)[`Ref`] → `signalling.`​`trackSections`], [Gleisfreimeldeabschnitte, die frei sein müssen],
+  [`passOn.​left`], [], [#link(<core-Ref>)[`Ref`] → `signalling.​flankProtection`], [für seine Lage links],
+  [`passOn.​right`], [], [#link(<core-Ref>)[`Ref`] → `signalling.​flankProtection`], [für seine Lage rechts],
+  [`clearSections`], [], [Liste von #link(<core-Ref>)[`Ref`] → `signalling.​trackSections`], [Gleisfreimeldeabschnitte, die frei sein müssen],
   [`lifespan`], [], [#link(<core-Lifespan>)[`Lifespan`]], [Lebensdauer: die Tage im Betrieb; fehlt sie, besteht das Objekt und bleibt],
 )
 
@@ -1415,11 +1427,11 @@ _Weitere Properties sind nicht erlaubt._
   [`system`], [ja], [Text; mindestens 1 Zeichen], [System der Zugbeeinflussung, ein Schlüssel des Katalogs (`pzb`, `etcs`)],
   [`kind`], [ja], [Text; mindestens 1 Zeichen], [Art im System, ein Schlüssel des Katalogs],
   [`settings`], [], [#link(<signalling-Settings>)[`Settings`]], [Einstellungen nach dem Katalog],
-  [`signalId`], [], [#link(<core-Ref>)[`Ref`] → `signalling.`​`signals`], [zugehöriges Signal (PlanPro PZB\_Element\_Bezugspunkt)],
+  [`signalId`], [], [#link(<core-Ref>)[`Ref`] → `signalling.​signals`], [zugehöriges Signal (PlanPro PZB\_Element\_Bezugspunkt)],
   [`effect`], [ja], [eins der Werte unter Bedeutung], [Wirksamkeit (PlanPro Wirksamkeit) #linebreak() `permanent` dauernd wirksam #linebreak() `switchedBySignal` vom Signal geschaltet #linebreak() `other` sonstige],
   [`routes`], [], [Liste von Objekten (Properties unten)], [Fahrstraßen, die es schalten (PlanPro PZB\_Element\_Zuordnung\_Fstr)],
-  [`routes[].routeId`], [ja], [#link(<core-Ref>)[`Ref`] → `signalling.`​`routes`], [die Fahrstraße],
-  [`routes[].effect`], [ja], [eins der Werte unter Bedeutung], [wie sie es schaltet #linebreak() `activeWhenSet` wirksam bei eingestellter Fahrstraße #linebreak() `inactiveWhenSet` unwirksam bei eingestellter Fahrstraße #linebreak() `other` sonstige],
+  [`routes[].​routeId`], [ja], [#link(<core-Ref>)[`Ref`] → `signalling.​routes`], [die Fahrstraße],
+  [`routes[].​effect`], [ja], [eins der Werte unter Bedeutung], [wie sie es schaltet #linebreak() `activeWhenSet` wirksam bei eingestellter Fahrstraße #linebreak() `inactiveWhenSet` unwirksam bei eingestellter Fahrstraße #linebreak() `other` sonstige],
   [`lifespan`], [], [#link(<core-Lifespan>)[`Lifespan`]], [Lebensdauer: die Tage im Betrieb; fehlt sie, besteht das Objekt und bleibt],
 )
 
@@ -1432,11 +1444,11 @@ _Weitere Properties sind nicht erlaubt._
 #table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
   [Property], [Pflicht], [Typ und zulässige Werte], [Bedeutung],
   [`id`], [ja], [#link(<core-Id>)[`Id`]], [Kennung des Objekts],
-  [`operationalPointId`], [ja], [#link(<core-Ref>)[`Ref`] → `core.`​`operationalPoints`], [der Bahnhof],
+  [`operationalPointId`], [ja], [#link(<core-Ref>)[`Ref`] → `core.​operationalPoints`], [der Bahnhof],
   [`marks`], [ja], [Liste von eins der Objekte unten; mindestens 1 Eintrag], [was die Grenze markiert: ein Signal, eine Weiche oder ein Halteplatz],
-  [`marks[].signalId`], [ja], [#link(<core-Ref>)[`Ref`] → `signalling.`​`signals`], [Einfahrsignal oder Tafel],
-  [`marks[].switchId`], [ja], [#link(<core-Ref>)[`Ref`] → `core.`​`switches`], [Einfahrweiche],
-  [`marks[].stoppingPlaceId`], [ja], [#link(<core-Ref>)[`Ref`] → `core.`​`stoppingPlaces`], [Halteplatz eines Haltepunkts],
+  [`marks[].​signalId`], [ja], [#link(<core-Ref>)[`Ref`] → `signalling.​signals`], [Einfahrsignal oder Tafel],
+  [`marks[].​switchId`], [ja], [#link(<core-Ref>)[`Ref`] → `core.​switches`], [Einfahrweiche],
+  [`marks[].​stoppingPlaceId`], [ja], [#link(<core-Ref>)[`Ref`] → `core.​stoppingPlaces`], [Halteplatz eines Haltepunkts],
   [`lifespan`], [], [#link(<core-Lifespan>)[`Lifespan`]], [Lebensdauer: die Tage im Betrieb; fehlt sie, besteht das Objekt und bleibt],
 )
 
@@ -1450,9 +1462,9 @@ _Weitere Properties sind nicht erlaubt._
   [Property], [Pflicht], [Typ und zulässige Werte], [Bedeutung],
   [`id`], [ja], [#link(<core-Id>)[`Id`]], [Kennung des Objekts],
   [`name`], [], [#link(<core-Text>)[`Text`]], [Name],
-  [`startStoppingPlaceId`], [ja], [#link(<core-Ref>)[`Ref`] → `core.`​`stoppingPlaces`], [Start-Halteplatz],
-  [`targetStoppingPlaceId`], [ja], [#link(<core-Ref>)[`Ref`] → `core.`​`stoppingPlaces`], [Ziel-Halteplatz],
-  [`routeIds`], [ja], [Liste von #link(<core-Ref>)[`Ref`] → `signalling.`​`routes`], [die Zugstraßen in Fahrtrichtung],
+  [`startStoppingPlaceId`], [ja], [#link(<core-Ref>)[`Ref`] → `core.​stoppingPlaces`], [Start-Halteplatz],
+  [`targetStoppingPlaceId`], [ja], [#link(<core-Ref>)[`Ref`] → `core.​stoppingPlaces`], [Ziel-Halteplatz],
+  [`routeIds`], [ja], [Liste von #link(<core-Ref>)[`Ref`] → `signalling.​routes`], [die Zugstraßen in Fahrtrichtung],
   [`path`], [ja], [#link(<core-TrackPath>)[`TrackPath`]], [die Gleisfolge],
   [`lifespan`], [], [#link(<core-Lifespan>)[`Lifespan`]], [Lebensdauer: die Tage im Betrieb; fehlt sie, besteht das Objekt und bleibt],
 )
@@ -1485,10 +1497,10 @@ _Weitere Properties sind nicht erlaubt._
   [Property], [Pflicht], [Typ und zulässige Werte], [Bedeutung],
   [`fields`], [ja], [#link(<electrification-Fields>)[`Fields`]], [Die Felder des Layers],
   [`collections`], [ja], [Objekt (Properties unten)], [Die Sammlungen des Layers],
-  [`collections.contactWires`], [ja], [Liste von #link(<electrification-ContactWire>)[`ContactWire`]], [Fahrdrähte],
-  [`collections.masts`], [ja], [Liste von #link(<electrification-Mast>)[`Mast`]], [Masten],
-  [`collections.suspensionPoints`], [ja], [Liste von #link(<electrification-SuspensionPoint>)[`SuspensionPoint`]], [Aufhängepunkte],
-  [`collections.sectionInsulators`], [ja], [Liste von #link(<electrification-SectionInsulator>)[`SectionInsulator`]], [Streckentrennungen],
+  [`collections.​contactWires`], [ja], [Liste von #link(<electrification-ContactWire>)[`ContactWire`]], [Fahrdrähte],
+  [`collections.​masts`], [ja], [Liste von #link(<electrification-Mast>)[`Mast`]], [Masten],
+  [`collections.​suspensionPoints`], [ja], [Liste von #link(<electrification-SuspensionPoint>)[`SuspensionPoint`]], [Aufhängepunkte],
+  [`collections.​sectionInsulators`], [ja], [Liste von #link(<electrification-SectionInsulator>)[`SectionInsulator`]], [Streckentrennungen],
 )
 
 === Fields <electrification-Fields>
@@ -1541,9 +1553,9 @@ _Weitere Properties sind nicht erlaubt._
 #table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
   [Property], [Pflicht], [Typ und zulässige Werte], [Bedeutung],
   [`id`], [ja], [#link(<core-Id>)[`Id`]], [Kennung des Objekts],
-  [`mastId`], [ja], [#link(<core-Ref>)[`Ref`] → `electrification.`​`masts`], [der Mast, der ihn trägt],
+  [`mastId`], [ja], [#link(<core-Ref>)[`Ref`] → `electrification.​masts`], [der Mast, der ihn trägt],
   [`at`], [ja], [#link(<core-TrackLocation>)[`TrackLocation`]], [die Stelle über dem Gleis],
-  [`contactWireId`], [ja], [#link(<core-Ref>)[`Ref`] → `electrification.`​`contactWires`], [der Fahrdraht, den er führt],
+  [`contactWireId`], [ja], [#link(<core-Ref>)[`Ref`] → `electrification.​contactWires`], [der Fahrdraht, den er führt],
   [`height`], [], [Zahl; ≥ 0], [Fahrdrahthöhe über Schienenoberkante \[m\]],
   [`stagger`], [], [Zahl], [Seitenverschiebung des Fahrdrahts gegen die Gleisachse \[m\], positiv nach rechts in Stationierungsrichtung],
   [`lifespan`], [], [#link(<core-Lifespan>)[`Lifespan`]], [Lebensdauer: die Tage im Betrieb; fehlt sie, besteht das Objekt und bleibt],
@@ -1561,8 +1573,8 @@ _Weitere Properties sind nicht erlaubt._
   [`name`], [], [#link(<core-Label>)[`Label`]], [Name],
   [`kind`], [], [eins der Werte unter Bedeutung], [Art #linebreak() `insulator` Streckentrenner #linebreak() `neutralSection` Schutzstrecke],
   [`at`], [ja], [#link(<core-TrackLocation>)[`TrackLocation`]], [die Stelle auf dem Gleis],
-  [`contactWireBeforeId`], [ja], [#link(<core-Ref>)[`Ref`] → `electrification.`​`contactWires`], [der Fahrdraht davor (gegen die Stationierung)],
-  [`contactWireAfterId`], [ja], [#link(<core-Ref>)[`Ref`] → `electrification.`​`contactWires`], [der Fahrdraht dahinter (in Stationierungsrichtung)],
+  [`contactWireBeforeId`], [ja], [#link(<core-Ref>)[`Ref`] → `electrification.​contactWires`], [der Fahrdraht davor (gegen die Stationierung)],
+  [`contactWireAfterId`], [ja], [#link(<core-Ref>)[`Ref`] → `electrification.​contactWires`], [der Fahrdraht dahinter (in Stationierungsrichtung)],
   [`lifespan`], [], [#link(<core-Lifespan>)[`Lifespan`]], [Lebensdauer: die Tage im Betrieb; fehlt sie, besteht das Objekt und bleibt],
 )
 
@@ -1578,7 +1590,7 @@ _Weitere Properties sind nicht erlaubt._
   [Property], [Pflicht], [Typ und zulässige Werte], [Bedeutung],
   [`fields`], [ja], [#link(<vehicles-Fields>)[`Fields`]], [Die Felder der Domäne],
   [`collections`], [ja], [Objekt (Properties unten)], [Die Sammlungen der Domäne],
-  [`collections.vehicles`], [ja], [Liste von #link(<vehicles-Vehicle>)[`Vehicle`]], [Fahrzeuge],
+  [`collections.​vehicles`], [ja], [Liste von #link(<vehicles-Vehicle>)[`Vehicle`]], [Fahrzeuge],
 )
 
 === Fields <vehicles-Fields>
@@ -1589,17 +1601,46 @@ Wert: Objekt
 
 === Vehicle <vehicles-Vehicle>
 
-Ein Fahrzeug (Triebfahrzeug oder Wageneinheit): sein Name, woher es stammt, die Traktionsarten, mit denen es fährt, und sein Rollmaterial.
+Ein Fahrzeug (Triebfahrzeug oder Wageneinheit): woher es stammt und sein Rollmaterial. Sein Name und seine Traktionsarten sind die seines Rollmaterials.
 
 _Weitere Properties sind nicht erlaubt._
 
 #table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
   [Property], [Pflicht], [Typ und zulässige Werte], [Bedeutung],
   [`id`], [ja], [#link(<core-Id>)[`Id`]], [Kennung des Objekts],
-  [`name`], [ja], [#link(<core-Text>)[`Text`]], [Name],
   [`key`], [], [#link(<core-Text>)[`Text`]], [Schlüssel im Katalog, aus dem es stammt],
-  [`tractionModes`], [], [Liste von eins von `15000V`, `25000V`, `3000V`, `1500V`, `750V`, `600V`, `thermal`], [die Traktionsarten, mit denen es fahren kann: die Spannungen, die es abnehmen kann, und `thermal` für eigenen Antrieb],
-  [`rollingStock`], [ja], [#link(<core-BlobRef>)[`BlobRef`]], [das Fahrzeug als RailJSON-Rollmaterial, als Blob],
+  [`rollingStock`], [ja], [#link(<vehicles-RollingStock>)[`RollingStock`]], [das Fahrzeug als RailJSON-Rollmaterial],
+)
+
+=== RollingStock <vehicles-RollingStock>
+
+Das Fahrzeug als RailJSON-Rollmaterial (OSRD), im Objekt gehalten, nicht als Blob. Das Schema prüft, was die Suite daraus liest; jedes weitere RailJSON-Property (Länge, Masse, Höchstgeschwindigkeit, Fahrwiderstand …) ist erlaubt und wird übernommen, wie es kommt. Einheiten wie in RailJSON: m, kg, m/s, N.
+
+#table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
+  [Property], [Pflicht], [Typ und zulässige Werte], [Bedeutung],
+  [`railjson_version`], [ja], [#link(<core-Text>)[`Text`]], [RailJSON-Version des Rollmaterials],
+  [`name`], [ja], [#link(<core-Text>)[`Text`]], [Name des Fahrzeugs],
+  [`effort_curves`], [ja], [Objekt (Properties unten)], [die Zugkraftkurven],
+  [`effort_curves.​modes`], [ja], [Objekt (Properties unten)], [die Traktionsarten, mit denen es fahren kann, je mit ihrer Zugkraft: die Spannungen, die es abnehmen kann, und `thermal` für eigenen Antrieb. Der Betrieb vergleicht sie mit der Spannung des Fahrdrahts],
+  [`effort_curves.​modes.​15000V`], [], [#link(<vehicles-EffortMode>)[`EffortMode`]], [Fahrt mit 15000V (15 kV 16,7 Hz)],
+  [`effort_curves.​modes.​25000V`], [], [#link(<vehicles-EffortMode>)[`EffortMode`]], [Fahrt mit 25000V (25 kV 50 Hz)],
+  [`effort_curves.​modes.​3000V`], [], [#link(<vehicles-EffortMode>)[`EffortMode`]], [Fahrt mit 3000V (3 kV Gleichstrom)],
+  [`effort_curves.​modes.​1500V`], [], [#link(<vehicles-EffortMode>)[`EffortMode`]], [Fahrt mit 1500V (1,5 kV Gleichstrom)],
+  [`effort_curves.​modes.​750V`], [], [#link(<vehicles-EffortMode>)[`EffortMode`]], [Fahrt mit 750V (750 V Gleichstrom)],
+  [`effort_curves.​modes.​600V`], [], [#link(<vehicles-EffortMode>)[`EffortMode`]], [Fahrt mit 600V (600 V Gleichstrom)],
+  [`effort_curves.​modes.​thermal`], [], [#link(<vehicles-EffortMode>)[`EffortMode`]], [Fahrt mit eigenem Antrieb (Diesel, Akku …)],
+  [`effort_curves.​default_mode`], [], [eins von `15000V`, `25000V`, `3000V`, `1500V`, `750V`, `600V`, `thermal`], [die Traktionsart, mit der es fährt, wo mehrere möglich sind],
+)
+
+=== EffortMode <vehicles-EffortMode>
+
+Die Zugkraft einer Traktionsart, wie RailJSON sie angibt. `is_electric` ist genau bei einer Spannung wahr, bei `thermal` falsch.
+
+#table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
+  [Property], [Pflicht], [Typ und zulässige Werte], [Bedeutung],
+  [`is_electric`], [ja], [Wahrheitswert], [ob die Traktionsart Strom aus dem Fahrdraht abnimmt],
+  [`curves`], [ja], [Liste von Objekt; mindestens 1 Eintrag], [die Kurven der Zugkraft über der Geschwindigkeit, je für ihre Bedingungen (Komfort, elektrisches Profil, Leistungsbegrenzung)],
+  [`default_curve`], [], [Objekt], [die Kurve, wo keine Bedingung zutrifft],
 )
 
 == Domäne timetables 1.0
@@ -1614,14 +1655,14 @@ _Weitere Properties sind nicht erlaubt._
   [Property], [Pflicht], [Typ und zulässige Werte], [Bedeutung],
   [`fields`], [ja], [#link(<timetables-Fields>)[`Fields`]], [Die Felder der Domäne],
   [`collections`], [ja], [Objekt (Properties unten)], [Die Sammlungen der Domäne],
-  [`collections.timetables`], [ja], [Liste von #link(<timetables-Timetable>)[`Timetable`]], [Fahrpläne],
-  [`collections.trains`], [ja], [Liste von #link(<timetables-Train>)[`Train`]], [Züge],
-  [`collections.trainKinds`], [ja], [Liste von #link(<timetables-TrainKind>)[`TrainKind`]], [Zuggattungen],
-  [`collections.formations`], [ja], [Liste von #link(<timetables-Formation>)[`Formation`]], [Zugbildungen],
-  [`collections.connections`], [ja], [Liste von #link(<timetables-Connection>)[`Connection`]], [Anschlüsse],
-  [`collections.turnarounds`], [ja], [Liste von #link(<timetables-Turnaround>)[`Turnaround`]], [Wenden],
-  [`collections.delayScenarios`], [ja], [Liste von #link(<timetables-DelayScenario>)[`DelayScenario`]], [Verspätungsszenarien],
-  [`collections.studies`], [ja], [Liste von #link(<timetables-Study>)[`Study`]], [Kapazitätsuntersuchungen],
+  [`collections.​timetables`], [ja], [Liste von #link(<timetables-Timetable>)[`Timetable`]], [Fahrpläne],
+  [`collections.​trains`], [ja], [Liste von #link(<timetables-Train>)[`Train`]], [Züge],
+  [`collections.​trainKinds`], [ja], [Liste von #link(<timetables-TrainKind>)[`TrainKind`]], [Zuggattungen],
+  [`collections.​formations`], [ja], [Liste von #link(<timetables-Formation>)[`Formation`]], [Zugbildungen],
+  [`collections.​connections`], [ja], [Liste von #link(<timetables-Connection>)[`Connection`]], [Anschlüsse],
+  [`collections.​turnarounds`], [ja], [Liste von #link(<timetables-Turnaround>)[`Turnaround`]], [Wenden],
+  [`collections.​delayScenarios`], [ja], [Liste von #link(<timetables-DelayScenario>)[`DelayScenario`]], [Verspätungsszenarien],
+  [`collections.​studies`], [ja], [Liste von #link(<timetables-Study>)[`Study`]], [Kapazitätsuntersuchungen],
 )
 
 === Fields <timetables-Fields>
@@ -1654,7 +1695,7 @@ _Weitere Properties sind nicht erlaubt._
   [Property], [Pflicht], [Typ und zulässige Werte], [Bedeutung],
   [`mode`], [], [eins der Werte unter Bedeutung], [Art der Disposition #linebreak() `show` nur die Konflikte zeigen, jeder Zug fährt für sich #linebreak() `wait` die Züge nacheinander ins Netz geben, jeder wartet auf einen freien Abschnitt],
   [`priority`], [], [eins der Werte unter Bedeutung], [in welcher Reihenfolge die Züge ins Netz gegeben werden #linebreak() `departure` nach Abfahrt #linebreak() `kind` nach Zuggattung (`kindOrder`)],
-  [`kindOrder`], [], [Liste von #link(<core-Ref>)[`Ref`] → `operations.`​`trainKinds`; höchstens 100 Einträge], [die Zuggattungen, die zuerst ins Netz gegeben werden, in ihrer Reihenfolge],
+  [`kindOrder`], [], [Liste von #link(<core-Ref>)[`Ref`] → `operations.​trainKinds`; höchstens 100 Einträge], [die Zuggattungen, die zuerst ins Netz gegeben werden, in ihrer Reihenfolge],
 )
 
 === BlockingTimes <timetables-BlockingTimes>
@@ -1680,11 +1721,11 @@ _Weitere Properties sind nicht erlaubt._
 #table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
   [Property], [Pflicht], [Typ und zulässige Werte], [Bedeutung],
   [`id`], [ja], [#link(<core-Id>)[`Id`]], [Kennung des Objekts],
-  [`timetableId`], [ja], [#link(<core-Ref>)[`Ref`] → `operations.`​`timetables`], [der Fahrplan],
+  [`timetableId`], [ja], [#link(<core-Ref>)[`Ref`] → `operations.​timetables`], [der Fahrplan],
   [`number`], [], [Text], [Zugnummer],
   [`name`], [], [Text], [Name],
-  [`trainKindId`], [], [#link(<core-Ref>)[`Ref`] → `operations.`​`trainKinds`], [die Zuggattung],
-  [`formationId`], [], [#link(<core-Ref>)[`Ref`] → `operations.`​`formations`], [die Zugbildung],
+  [`trainKindId`], [], [#link(<core-Ref>)[`Ref`] → `operations.​trainKinds`], [die Zuggattung],
+  [`formationId`], [], [#link(<core-Ref>)[`Ref`] → `operations.​formations`], [die Zugbildung],
   [`mode`], [], [Text], [Traktionsart; ohne sie die, die die Fahrdrähte auf seinem Weg und seine Fahrzeuge zulassen],
   [`comfort`], [], [Text], [Komfortstufe nach OSRD: STANDARD, AIR\_CONDITIONING, HEATING],
   [`departure`], [ja], [Zahl; ≥ 0; ≤ 172799.999], [Abfahrt in Sekunden ab Mitternacht des Fahrplantags; über 24:00 der nächste Tag],
@@ -1704,14 +1745,14 @@ genau eins von `operationalPointId`, `endMarkId` ist angegeben
 #table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
   [Property], [Pflicht], [Typ und zulässige Werte], [Bedeutung],
   [`id`], [ja], [#link(<core-Id>)[`Id`]], [Kennung des Objekts],
-  [`operationalPointId`], [], [#link(<core-Ref>)[`Ref`] → `core.`​`operationalPoints`], [die Betriebsstelle],
-  [`endMarkId`], [], [#link(<core-Ref>)[`Ref`] → `core.`​`endMarks`], [oder das Gleisende (Prellbock, Betrachtungsgrenze)],
-  [`trackId`], [], [#link(<core-Ref>)[`Ref`] → `core.`​`tracks`], [das Gleis, auf dem er dort fährt; ohne: beliebig],
+  [`operationalPointId`], [], [#link(<core-Ref>)[`Ref`] → `core.​operationalPoints`], [die Betriebsstelle],
+  [`endMarkId`], [], [#link(<core-Ref>)[`Ref`] → `core.​endMarks`], [oder das Gleisende (Prellbock, Betrachtungsgrenze)],
+  [`trackId`], [], [#link(<core-Ref>)[`Ref`] → `core.​tracks`], [das Gleis, auf dem er dort fährt; ohne: beliebig],
   [`stop`], [ja], [Wahrheitswert], [hält dort],
   [`dwell`], [], [Zahl; ≥ 0; ≤ 86400], [Haltezeit \[s\]],
   [`leastDwell`], [], [Zahl; ≥ 0; ≤ 86400], [Mindesthaltezeit \[s\], die die Disposition einhält],
   [`departure`], [], [Zahl; ≥ 0; ≤ 172799.999], [Abfahrt in Sekunden ab Mitternacht des Fahrplantags; über 24:00 der nächste Tag],
-  [`itineraryId`], [], [#link(<core-Ref>)[`Ref`] → `signalling.`​`itineraries`], [der Fahrweg, den er zum nächsten Punkt bevorzugt],
+  [`itineraryId`], [], [#link(<core-Ref>)[`Ref`] → `signalling.​itineraries`], [der Fahrweg, den er zum nächsten Punkt bevorzugt],
 )
 
 === TrainKind <timetables-TrainKind>
@@ -1740,9 +1781,9 @@ _Weitere Properties sind nicht erlaubt._
   [`name`], [], [Text], [Name],
   [`tractionUnits`], [ja], [Liste von #link(<timetables-TractionUnit>)[`TractionUnit`]], [die Fahrzeuge, von vorn nach hinten],
   [`hauledLoad`], [], [Objekt (Properties unten)], [die Wagenzuglast, als eine],
-  [`hauledLoad.mass`], [], [Zahl; ≥ 0], [Masse \[kg\]],
-  [`hauledLoad.length`], [], [Zahl; ≥ 0], [Länge \[m\]],
-  [`hauledLoad.maxSpeed`], [], [Zahl; ≥ 0], [Höchstgeschwindigkeit \[m/s\]],
+  [`hauledLoad.​mass`], [], [Zahl; ≥ 0], [Masse \[kg\]],
+  [`hauledLoad.​length`], [], [Zahl; ≥ 0], [Länge \[m\]],
+  [`hauledLoad.​maxSpeed`], [], [Zahl; ≥ 0], [Höchstgeschwindigkeit \[m/s\]],
   [`brakePosition`], [], [eins von `G`, `P`, `R`, `R+Mg`], [Bremsstellung],
   [`brakedWeightPercentage`], [], [Zahl; ≥ 0; ≤ 300], [Bremshundertstel \[%\]],
 )
@@ -1755,7 +1796,7 @@ _Weitere Properties sind nicht erlaubt._
 
 #table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
   [Property], [Pflicht], [Typ und zulässige Werte], [Bedeutung],
-  [`vehicleId`], [ja], [#link(<core-Ref>)[`Ref`] → `vehicles.`​`vehicles`], [das Fahrzeug],
+  [`vehicleId`], [ja], [#link(<core-Ref>)[`Ref`] → `vehicles.​vehicles`], [das Fahrzeug],
 )
 
 === Connection <timetables-Connection>
@@ -1767,9 +1808,9 @@ _Weitere Properties sind nicht erlaubt._
 #table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
   [Property], [Pflicht], [Typ und zulässige Werte], [Bedeutung],
   [`id`], [ja], [#link(<core-Id>)[`Id`]], [Kennung des Objekts],
-  [`fromTrainId`], [ja], [#link(<core-Ref>)[`Ref`] → `operations.`​`trains`], [der ankommende Zug],
-  [`toTrainId`], [ja], [#link(<core-Ref>)[`Ref`] → `operations.`​`trains`], [der abfahrende Zug],
-  [`operationalPointId`], [ja], [#link(<core-Ref>)[`Ref`] → `core.`​`operationalPoints`], [die Betriebsstelle],
+  [`fromTrainId`], [ja], [#link(<core-Ref>)[`Ref`] → `operations.​trains`], [der ankommende Zug],
+  [`toTrainId`], [ja], [#link(<core-Ref>)[`Ref`] → `operations.​trains`], [der abfahrende Zug],
+  [`operationalPointId`], [ja], [#link(<core-Ref>)[`Ref`] → `core.​operationalPoints`], [die Betriebsstelle],
   [`changeTime`], [], [Zahl; ≥ 0; ≤ 86400], [Übergangszeit \[s\]],
   [`waitUpTo`], [], [Zahl; ≥ 0; ≤ 86400], [wie lange der abfahrende Zug wartet \[s\]],
 )
@@ -1783,8 +1824,8 @@ _Weitere Properties sind nicht erlaubt._
 #table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
   [Property], [Pflicht], [Typ und zulässige Werte], [Bedeutung],
   [`id`], [ja], [#link(<core-Id>)[`Id`]], [Kennung des Objekts],
-  [`fromTrainId`], [ja], [#link(<core-Ref>)[`Ref`] → `operations.`​`trains`], [der endende Zug],
-  [`toTrainId`], [ja], [#link(<core-Ref>)[`Ref`] → `operations.`​`trains`], [der folgende Zug],
+  [`fromTrainId`], [ja], [#link(<core-Ref>)[`Ref`] → `operations.​trains`], [der endende Zug],
+  [`toTrainId`], [ja], [#link(<core-Ref>)[`Ref`] → `operations.​trains`], [der folgende Zug],
   [`leastTime`], [], [Zahl; ≥ 0; ≤ 86400], [Mindestwendezeit \[s\]],
 )
 
@@ -1810,8 +1851,8 @@ _Weitere Properties sind nicht erlaubt._
 
 #table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
   [Property], [Pflicht], [Typ und zulässige Werte], [Bedeutung],
-  [`operationalPointId`], [], [#link(<core-Ref>)[`Ref`] → `core.`​`operationalPoints`], [wo sie gilt; ohne: überall],
-  [`trainKindId`], [], [#link(<core-Ref>)[`Ref`] → `operations.`​`trainKinds`], [für welche Zuggattung; ohne: für jede],
+  [`operationalPointId`], [], [#link(<core-Ref>)[`Ref`] → `core.​operationalPoints`], [wo sie gilt; ohne: überall],
+  [`trainKindId`], [], [#link(<core-Ref>)[`Ref`] → `operations.​trainKinds`], [für welche Zuggattung; ohne: für jede],
   [`share`], [ja], [Zahl; ≥ 0; ≤ 1], [Anteil der verspäteten Züge],
   [`distribution`], [ja], [#link(<timetables-Distribution>)[`Distribution`]], [Verteilung der Verspätungen],
   [`source`], [], [Text], [woher die Zahlen stammen: Startwert der Suite oder eine Messung],
@@ -1842,17 +1883,17 @@ _Weitere Properties sind nicht erlaubt._
   [Property], [Pflicht], [Typ und zulässige Werte], [Bedeutung],
   [`id`], [ja], [#link(<core-Id>)[`Id`]], [Kennung des Objekts],
   [`name`], [ja], [Text], [Name],
-  [`timetableId`], [ja], [#link(<core-Ref>)[`Ref`] → `operations.`​`timetables`], [der Fahrplan],
+  [`timetableId`], [ja], [#link(<core-Ref>)[`Ref`] → `operations.​timetables`], [der Fahrplan],
   [`period`], [], [Objekt (Properties unten)], [der untersuchte Zeitraum],
-  [`period.from`], [ja], [Zahl; ≥ 0; ≤ 172799.999], [Anfang in Sekunden ab Mitternacht des Fahrplantags],
-  [`period.to`], [ja], [Zahl; ≥ 0; ≤ 172799.999], [Ende in Sekunden ab Mitternacht des Fahrplantags],
+  [`period.​from`], [ja], [Zahl; ≥ 0; ≤ 172799.999], [Anfang in Sekunden ab Mitternacht des Fahrplantags],
+  [`period.​to`], [ja], [Zahl; ≥ 0; ≤ 172799.999], [Ende in Sekunden ab Mitternacht des Fahrplantags],
   [`stretches`], [], [Liste von Objekten (Properties unten)], [die Abschnitte, von Ort zu Ort],
-  [`stretches[].fromOperationalPointId`], [ja], [#link(<core-Ref>)[`Ref`] → `core.`​`operationalPoints`], [von dieser Betriebsstelle],
-  [`stretches[].toOperationalPointId`], [ja], [#link(<core-Ref>)[`Ref`] → `core.`​`operationalPoints`], [bis zu dieser],
+  [`stretches[].​fromOperationalPointId`], [ja], [#link(<core-Ref>)[`Ref`] → `core.​operationalPoints`], [von dieser Betriebsstelle],
+  [`stretches[].​toOperationalPointId`], [ja], [#link(<core-Ref>)[`Ref`] → `core.​operationalPoints`], [bis zu dieser],
   [`bounds`], [], [Objekt (Properties unten)], [die Grenzwerte, wo die Untersuchung sie ändert],
-  [`bounds.occupancyRate`], [], [Zahl; ≥ 0; ≤ 1], [Grenze des Belegungsgrads (UIC-Merkblatt 406)],
-  [`bounds.punctualityThreshold`], [], [Zahl; ≥ 0; ≤ 3600], [ab welcher Verspätung ein Zug nicht mehr pünktlich ist \[s\]],
-  [`delayScenarioId`], [], [#link(<core-Ref>)[`Ref`] → `operations.`​`delayScenarios`], [das Verspätungsszenario],
+  [`bounds.​occupancyRate`], [], [Zahl; ≥ 0; ≤ 1], [Grenze des Belegungsgrads (UIC-Merkblatt 406)],
+  [`bounds.​punctualityThreshold`], [], [Zahl; ≥ 0; ≤ 3600], [ab welcher Verspätung ein Zug nicht mehr pünktlich ist \[s\]],
+  [`delayScenarioId`], [], [#link(<core-Ref>)[`Ref`] → `operations.​delayScenarios`], [das Verspätungsszenario],
   [`runs`], [], [ganze Zahl; ≥ 1; ≤ 100000], [Anzahl der Durchläufe],
   [`seed`], [], [ganze Zahl; ≥ 0], [Startwert des Zufallsgenerators],
 )

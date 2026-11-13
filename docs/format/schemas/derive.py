@@ -192,8 +192,8 @@ write('electrification/3.0.schema.json', electrification)
 ops = load('operations/1.0.schema.json')
 vehicles = {
     '$schema': DRAFT, '$id': 'vehicles', 'title': 'Rail-Data-Core, domain vehicles 1.0',
-    'description': ('The vehicles a project\'s trains run with: each with the traction modes it can run on and its '
-                    'rolling stock. Part of operations-1.0 in rail-across-1.0; the timetables name them by id.'),
+    'description': ('The vehicles a project\'s trains run with, each with its rolling stock as RailJSON. Part of '
+                    'operations-1.0 in rail-across-1.0; the timetables name them by id.'),
     'type': 'object', 'required': ['fields', 'collections'], 'additionalProperties': False,
     'properties': {
         'fields': {'$ref': '#/$defs/Fields'},
@@ -203,14 +203,38 @@ vehicles = {
     '$defs': {
         'Fields': {'description': 'The domain\'s own fields.', 'type': 'object', 'additionalProperties': False, 'properties': {}},
         'Vehicle': {
-            'description': 'A vehicle (a traction unit or a unit of coaches): its name, where it came from, the traction '
-                           'modes it runs on, and its rolling stock.',
-            'type': 'object', 'required': ['id', 'name', 'rollingStock'], 'additionalProperties': False,
+            'description': 'A vehicle (a traction unit or a unit of coaches): where it came from and its rolling stock.',
+            'type': 'object', 'required': ['id', 'rollingStock'], 'additionalProperties': False,
             'properties': {
-                'id': {'$ref': 'core#/$defs/Id'}, 'name': {'$ref': 'core#/$defs/Text'},
+                'id': {'$ref': 'core#/$defs/Id'},
                 'key': {'$ref': 'core#/$defs/Text'},
-                'tractionModes': {'type': 'array', 'items': {'enum': VOLTAGES + ['thermal']}},
-                'rollingStock': {'$ref': 'core#/$defs/BlobRef'},
+                'rollingStock': {'$ref': '#/$defs/RollingStock'},
+            },
+        },
+        # RailJSON belongs to OSRD: the schema checks what the suite reads from it and takes the rest as it comes.
+        'RollingStock': {
+            'description': 'The vehicle as RailJSON rolling stock, kept in the object.',
+            'type': 'object', 'required': ['railjson_version', 'name', 'effort_curves'],
+            'properties': {
+                'railjson_version': {'$ref': 'core#/$defs/Text'},
+                'name': {'$ref': 'core#/$defs/Text'},
+                'effort_curves': {
+                    'type': 'object', 'required': ['modes'],
+                    'properties': {
+                        'modes': {'type': 'object', 'minProperties': 1, 'additionalProperties': False,
+                                  'properties': {m: {'$ref': '#/$defs/EffortMode'} for m in VOLTAGES + ['thermal']}},
+                        'default_mode': {'enum': VOLTAGES + ['thermal']},
+                    },
+                },
+            },
+        },
+        'EffortMode': {
+            'description': 'The tractive effort of one traction mode.',
+            'type': 'object', 'required': ['is_electric', 'curves'],
+            'properties': {
+                'is_electric': {'type': 'boolean'},
+                'curves': {'type': 'array', 'minItems': 1, 'items': {'type': 'object'}},
+                'default_curve': {'type': 'object'},
             },
         },
     },

@@ -91,7 +91,7 @@ Variante, den Betrieb in eigenen Revisionen —, eine Datei führt sie für den 
 | `generator`, `savedAt` | Programm und Version, die die Datei geschrieben haben, und wann (ISO 8601, UTC) |
 | `infraData` | der Teil infra-data-1.0: Format, Version und seine Domänen; `core` ist Pflicht |
 | `operations` | der Teil operations-1.0: Format, Version und seine Domänen |
-| `blobs` | große Datenmengen (Messpunkte, Rollmaterial), je unter der Prüfsumme ihres Inhalts, gemeinsam für beide Teile |
+| `blobs` | große Datenmengen (Messpunkte, Punkte von Kilometrierungslinien), je unter der Prüfsumme ihres Inhalts, gemeinsam für beide Teile |
 
 Die Datei führt keine Schemas mit: Eine Domäne nennt ihr Schema über seine Prüfsumme, und ein Leser kennt die
 Versionen, die er liest.
@@ -110,7 +110,7 @@ Werkzeug bearbeitet.
 | | `civil` 3.0 | Bahnsteige und Ingenieurbauwerke (Eisenbahnüberführungen, Stützwände, Lärmschutzwände), in Punktwolken gemessene Achsen, Bestandsachsen, Schriftfeld, Projektbild |
 | | `signalling` 4.0 | Signale mit logischen Signalen, Gleisfreimeldung, Weichenelemente, Fahrstraßen, Durchrutschwege, Flankenschutz, Zugbeeinflussung, Bahnhofsgrenzen, Fahrwege — nach PlanPro exportierbar |
 | | `electrification` 3.0 | Masten, Aufhängepunkte, Streckentrennungen und die Fahrdrähte mit ihrer Spannung |
-| operations-1.0 | `vehicles` 1.0 | die Fahrzeuge: ihre Traktionsarten und ihr Rollmaterial |
+| operations-1.0 | `vehicles` 1.0 | die Fahrzeuge mit ihrem Rollmaterial als RailJSON |
 | | `timetables` 1.0 | Fahrpläne, Züge, Zuggattungen, Zugbildungen, Anschlüsse, Wenden, Verspätungsszenarien, Untersuchungen |
 
 Die Domänen von operations nennen die Infrastruktur über Kennungen: Betriebsstellen, Gleisenden, Gleise,
@@ -194,7 +194,7 @@ allein *Rückbau*, sonst *Bestand*. Eine Weiche ohne eigene Lebensdauer zeigt, w
 
 Große Datenmengen stehen nicht im Objekt, sondern in `blobs`: die Punkte gemessener Achsen und Bestandsachsen
 (`civil`), die Punkte einer Kilometrierungslinie, wo eine Quelle keine Trassierungselemente geliefert hat
-(`core`), das Rollmaterial der Fahrzeuge (`vehicles`). Das Objekt nennt den Blob über die Prüfsumme seines
+(`core`). Das Objekt nennt den Blob über die Prüfsumme seines
 kanonischen JSON. Gleiche Inhalte stehen so nur einmal in der Datei.
 
 ## Unbekanntes bleibt erhalten
@@ -359,10 +359,16 @@ elektrisch, dessen Spannung unter seinen Traktionsarten ist; anderswo braucht es
 
 ## Fahrzeuge (Domäne `vehicles`)
 
-Die Fahrzeuge sind eine eigene Domäne. Ein Fahrzeug (`vehicles`) hat einen Namen, den Schlüssel, unter dem es aus
-einem Katalog kam (`key`), seine **Traktionsarten** (`tractionModes`: die Spannungen, die es abnehmen kann, und
-`thermal` für eigenen Antrieb) und sein Rollmaterial als RailJSON, als Blob. Die Fahrpläne nennen Fahrzeuge über
-ihre Kennung. Eine Datei fährt so mit den Fahrzeugen, die sie hält, nicht mit einem Katalog, der sich inzwischen
+Die Fahrzeuge sind eine eigene Domäne. Ein Fahrzeug (`vehicles`) hat den Schlüssel, unter dem es aus einem Katalog
+kam (`key`), und sein **Rollmaterial** als RailJSON (`rollingStock`), dem Format von OSRD — im Objekt gehalten,
+nicht als Blob: Ein Fahrzeug hat wenige Kilobyte, und im Objekt lassen sich zwei Stände Feld für Feld vergleichen
+und zusammenführen. Das Schema prüft, was die Suite daraus liest — die RailJSON-Version, den Namen und die
+Zugkraftkurven —, und übernimmt jedes weitere RailJSON-Property, wie es kommt, in den Einheiten von RailJSON
+(m, kg, m/s, N).
+
+Die **Traktionsarten** eines Fahrzeugs sind die Betriebsarten seiner Zugkraftkurven (`effort_curves.modes`): die
+Spannungen, die es abnehmen kann, benannt wie die Spannungen der Fahrdrähte, und `thermal` für eigenen Antrieb. Sie
+werden kein zweites Mal gespeichert. Die Fahrpläne nennen Fahrzeuge über ihre Kennung. Eine Datei fährt so mit den Fahrzeugen, die sie hält, nicht mit einem Katalog, der sich inzwischen
 geändert haben kann; ein geändertes Fahrzeug ist eine neue Version der Domäne wie jede andere Änderung.
 
 ## Fahrpläne (Domäne `timetables`)
@@ -396,7 +402,7 @@ seiner Fahrzeuge.
 | Höhen `z` | m | 0,1 mm (4 Nachkommastellen) |
 | Richtungswinkel | °, von Gitternord im Uhrzeigersinn | 10⁻⁹ ° |
 | Überhöhung | mm | 0,001 mm |
-| Geschwindigkeiten | km/h; bei Fahrzeugen m/s | wie angegeben |
+| Geschwindigkeiten | km/h; bei Fahrzeugen (RailJSON) m/s | wie angegeben |
 | Zeiten im Betrieb | s | wie angegeben |
 | Spannung | V, als Name | — |
 | Kilometrierung | m | wie geliefert |
@@ -418,7 +424,8 @@ Ein Leser nimmt eine Datei erst nach einer Prüfung an:
    abgelehnt.
 4. Jede Domäne gegen ihr Schema, jede Kennung eine UUID und nur einmal in ihrer Sammlung.
 5. Was ein Schema nicht ausdrücken kann: Die Tage einer Lebensdauer sind Tage, der erste liegt nicht nach dem
-   letzten; ein als Weichenstrecke markiertes Element nennt seine Weiche; **jeder Verweis findet sein Objekt** —
+   letzten; ein als Weichenstrecke markiertes Element nennt seine Weiche; eine Traktionsart eines Fahrzeugs ist genau dann elektrisch, wenn
+   sie eine Spannung ist; **jeder Verweis findet sein Objekt** —
    innerhalb des Teils, in dem er steht; die des Betriebs in die Infrastruktur, wo der Betrieb auf sie gelegt wird.
 
 Fehler der Schritte 2, 4 und 5 werden als `invalid_payload` mit den gefundenen Stellen gemeldet, z. B.
@@ -530,9 +537,18 @@ einem Fahrzeug und einem Zug von der Grenze nach Halle-Trotha, wo er auf diesem 
       "vehicles": {
         "version": "1.0", "schema": "sha256:3333…", "fields": {},
         "collections": { "vehicles": [ {
-          "id": "a7b8c9d0-e1f2-4a3b-8c4d-5e6f7a8b9c0d", "name": "BR 1440",
-          "key": "osrd:br1440",
-          "tractionModes": ["15000V"], "rollingStock": "sha256:4444…"
+          "id": "a7b8c9d0-e1f2-4a3b-8c4d-5e6f7a8b9c0d", "key": "osrd:br1440",
+          "rollingStock": {
+            "railjson_version": "3.3", "name": "BR 1440", "mass": 84000, "max_speed": 44.44,
+            "effort_curves": {
+              "default_mode": "15000V",
+              "modes": { "15000V": { "is_electric": true, "curves": [ {
+                "cond": { "comfort": "STANDARD" },
+                "curve": { "speeds": [0, 20, 44.44],
+                           "max_efforts": [300000, 300000, 135000] }
+              } ] } }
+            }
+          }
         } ] }
       },
       "timetables": {
@@ -565,7 +581,7 @@ einem Fahrzeug und einem Zug von der Grenze nach Halle-Trotha, wo er auf diesem 
       }
     }
   },
-  "blobs": { "sha256:4444…": { "name": "BR 1440", "mass": 84000 } }
+  "blobs": {}
 }
 ```
 
@@ -579,6 +595,7 @@ in diesen Punkten ab; jeder wird in einem eigenen Schritt angeglichen (Entscheid
 - Zwei Dateien statt einer: die Infrastruktur als infra-data 2.0 (`.railacross.json`, Domänen core 3.1, civil 2.1,
   signalling 3.1, electrification 2.1), der Betrieb als operations 1.0 (`.operations.json`) mit einer Domäne
   `operations`, in der die Fahrzeuge mitgeführt werden; eine Datei von vorher führt noch die Schemas mit.
+- Ein Fahrzeug hält sein Rollmaterial als Blob und nennt seine Traktionsarten ein zweites Mal (`tractionModes`).
 - Die Weichenart heißt `turnout`, ihr Zweiggleis ist `B1`, ihr Stammgleis `B2`.
 - Kilometrierungslinien sind Polylinien in WGS 84 mit dem Kilometer je Punkt.
 - Element- und Gleisarten sind Zahlen (`elementType` 0/1/2, `trackType` 1/2, `side` 1/2); ein Element kann eine

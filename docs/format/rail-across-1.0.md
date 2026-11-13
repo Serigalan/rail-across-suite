@@ -94,7 +94,7 @@ variant, the operation in revisions of its own — and a file brings them togeth
 | `generator`, `savedAt` | the program and version that wrote the file, and when (ISO 8601, UTC) |
 | `infraData` | the part infra-data-1.0: format, version and its domains; `core` is required |
 | `operations` | the part operations-1.0: format, version and its domains |
-| `blobs` | bulk data (measured points, rolling stock), each under the hash of its content, shared by both parts |
+| `blobs` | bulk data (measured points, points of km lines), each under the hash of its content, shared by both parts |
 
 The file carries no schemas: a domain names its schema by hash, and a reader knows the versions it reads.
 
@@ -110,7 +110,7 @@ and collections (`collections`). A **layer** is a domain of infra-data on top of
 | | `civil` 3.0 | platforms and engineering structures (railway bridges, retaining walls, noise barriers), axes measured in point clouds, reference axes, title block, project picture |
 | | `signalling` 4.0 | signals with their logical signals, train detection, switch elements, routes, overlaps, flank protection, train protection, station boundaries, itineraries — exportable to PlanPro |
 | | `electrification` 3.0 | masts, suspension points, section insulators and the contact wires with their voltage |
-| operations-1.0 | `vehicles` 1.0 | the vehicles: their traction modes and rolling stock |
+| operations-1.0 | `vehicles` 1.0 | the vehicles with their rolling stock as RailJSON |
 | | `timetables` 1.0 | timetables, trains, kinds of trains, formations, connections, turnarounds, delay scenarios, studies |
 
 The domains of operations name the infrastructure by id: operational points, track ends, tracks, itineraries.
@@ -188,8 +188,7 @@ Where both are stated, both conditions must hold. The status shown follows likew
 ### Blobs
 
 Bulk data is not kept in the object but in `blobs`: the points of measured and reference axes (`civil`), the
-points of a km line where a source gave no design elements (`core`), the rolling stock of the vehicles
-(`vehicles`). The object names the blob by the hash of its canonical JSON. Equal content thus stands in the file
+points of a km line where a source gave no design elements (`core`). The object names the blob by the hash of its canonical JSON. Equal content thus stands in the file
 once.
 
 ### What is unknown is kept
@@ -346,9 +345,15 @@ modes; elsewhere it needs a mode of its own (`thermal`), or cannot run there.
 
 ### Vehicles (domain `vehicles`)
 
-The vehicles are a domain of their own. A vehicle (`vehicles`) has a name, the key it came under from a
-catalogue (`key`), its **traction modes** (`tractionModes`: the voltages it can draw, and `thermal` for a drive of
-its own) and its rolling stock as RailJSON, as a blob. The timetables name vehicles by their id. A file thus runs
+The vehicles are a domain of their own. A vehicle (`vehicles`) has the key it came under from a catalogue
+(`key`) and its **rolling stock** as RailJSON (`rollingStock`), the format of OSRD — kept in the object, not as a
+blob: a vehicle is a few kilobytes, and kept in place two states of it can be compared and merged field by field.
+The schema checks what the suite reads from it — the RailJSON version, the name and the tractive effort curves —
+and takes every further RailJSON property as it comes, in the units of RailJSON (m, kg, m/s, N).
+
+The **traction modes** of a vehicle are the modes of its effort curves (`effort_curves.modes`): the voltages it can
+draw, named as the voltages of the contact wires, and `thermal` for a drive of its own. They are not stored a second
+time. The timetables name vehicles by their id. A file thus runs
 with the vehicles it holds, not with a catalogue that may have changed since; a changed vehicle is a new version
 of the domain, as any other change.
 
@@ -381,7 +386,7 @@ electrically, the voltages of the contact wires along its way and the traction m
 | heights `z` | m | 0.1 mm (4 decimals) |
 | bearings | °, clockwise from grid north | 10⁻⁹ ° |
 | cant | mm | 0.001 mm |
-| speeds | km/h; of vehicles m/s | as stated |
+| speeds | km/h; of vehicles (RailJSON) m/s | as stated |
 | times of the operation | s | as stated |
 | voltage | V, as named | — |
 | kilometrage | m | as delivered |
@@ -401,7 +406,8 @@ A reader accepts a file only after a check:
    with what is unknown kept; a later major version is refused, saying so.
 4. Each domain against its schema, every id a UUID and only once in its collection.
 5. What a schema cannot express: the days of a lifespan are days, the first not after the last; an element marked
-   as a route of a switch names its switch; **every reference finds its object** — within the part it is in;
+   as a route of a switch names its switch; a traction mode of a vehicle is electric exactly when it is a voltage;
+   **every reference finds its object** — within the part it is in;
    those of the operation into the infrastructure where the operation is laid on it.
 
 Faults of steps 2, 4 and 5 are reported as `invalid_payload` with the places found, e.g.
@@ -513,9 +519,18 @@ Halle-Trotha, where it stops on that track:
       "vehicles": {
         "version": "1.0", "schema": "sha256:3333…", "fields": {},
         "collections": { "vehicles": [ {
-          "id": "a7b8c9d0-e1f2-4a3b-8c4d-5e6f7a8b9c0d", "name": "BR 1440",
-          "key": "osrd:br1440",
-          "tractionModes": ["15000V"], "rollingStock": "sha256:4444…"
+          "id": "a7b8c9d0-e1f2-4a3b-8c4d-5e6f7a8b9c0d", "key": "osrd:br1440",
+          "rollingStock": {
+            "railjson_version": "3.3", "name": "BR 1440", "mass": 84000, "max_speed": 44.44,
+            "effort_curves": {
+              "default_mode": "15000V",
+              "modes": { "15000V": { "is_electric": true, "curves": [ {
+                "cond": { "comfort": "STANDARD" },
+                "curve": { "speeds": [0, 20, 44.44],
+                           "max_efforts": [300000, 300000, 135000] }
+              } ] } }
+            }
+          }
         } ] }
       },
       "timetables": {
@@ -548,7 +563,7 @@ Halle-Trotha, where it stops on that track:
       }
     }
   },
-  "blobs": { "sha256:4444…": { "name": "BR 1440", "mass": 84000 } }
+  "blobs": {}
 }
 ```
 
@@ -562,6 +577,7 @@ from it in these points, each to be brought in line by its own step (decision 00
 - Two files instead of one: the infrastructure as infra-data 2.0 (`.railacross.json`, domains core 3.1,
   civil 2.1, signalling 3.1, electrification 2.1), the operation as operations 1.0 (`.operations.json`) with one
   domain `operations`, the vehicles carried in it; a file of before still carries the schemas.
+- A vehicle keeps its rolling stock as a blob and states its traction modes a second time (`tractionModes`).
 - The switch kind is `turnout`, its branch `B1` and its main track `B2`.
 - Km lines are polylines in WGS 84 with the kilometrage per point.
 - Element and track kinds are numbers (`elementType` 0/1/2, `trackType` 1/2, `side` 1/2); an element may state a
@@ -1781,17 +1797,48 @@ Value: object
 
 #### Vehicle
 
-A vehicle (a traction unit or a unit of coaches): its name, where it came from, the traction modes it runs on, and its rolling stock.
+A vehicle (a traction unit or a unit of coaches): where it came from and its rolling stock. Its name and its traction modes are those of its rolling stock.
 
 _No further properties are allowed._
 
 | Property | Required | Type and allowed values | Meaning |
 |---|---|---|---|
 | `id` | yes | [`Id`](#core-Id) | Id of the object |
-| `name` | yes | [`Text`](#core-Text) | Name |
 | `key` |  | [`Text`](#core-Text) | Key in the catalogue it came from |
-| `tractionModes` |  | list of one of `15000V`, `25000V`, `3000V`, `1500V`, `750V`, `600V`, `thermal` | The traction modes it can run on: the voltages it can draw, and `thermal` for a drive of its own |
-| `rollingStock` | yes | [`BlobRef`](#core-BlobRef) | The vehicle as RailJSON rolling stock, as a blob |
+| `rollingStock` | yes | [`RollingStock`](#vehicles-RollingStock) | The vehicle as RailJSON rolling stock |
+
+<a id="vehicles-RollingStock"></a>
+
+#### RollingStock
+
+The vehicle as RailJSON rolling stock (OSRD), kept in the object, not as a blob. The schema checks what the suite reads from it; every further RailJSON property (length, mass, maximum speed, resistance to motion, …) is allowed and taken as it comes. Units as in RailJSON: m, kg, m/s, N.
+
+| Property | Required | Type and allowed values | Meaning |
+|---|---|---|---|
+| `railjson_version` | yes | [`Text`](#core-Text) | RailJSON version of the rolling stock |
+| `name` | yes | [`Text`](#core-Text) | Name of the vehicle |
+| `effort_curves` | yes | object (properties below) | The tractive effort curves |
+| `effort_curves.modes` | yes | object (properties below) | The traction modes it can run on, each with its tractive effort: the voltages it can draw, and `thermal` for a drive of its own. Operations compare them with the voltage of the contact wire |
+| `effort_curves.modes.15000V` |  | [`EffortMode`](#vehicles-EffortMode) | Running on 15000V (15 kV 16.7 Hz) |
+| `effort_curves.modes.25000V` |  | [`EffortMode`](#vehicles-EffortMode) | Running on 25000V (25 kV 50 Hz) |
+| `effort_curves.modes.3000V` |  | [`EffortMode`](#vehicles-EffortMode) | Running on 3000V (3 kV DC) |
+| `effort_curves.modes.1500V` |  | [`EffortMode`](#vehicles-EffortMode) | Running on 1500V (1.5 kV DC) |
+| `effort_curves.modes.750V` |  | [`EffortMode`](#vehicles-EffortMode) | Running on 750V (750 V DC) |
+| `effort_curves.modes.600V` |  | [`EffortMode`](#vehicles-EffortMode) | Running on 600V (600 V DC) |
+| `effort_curves.modes.thermal` |  | [`EffortMode`](#vehicles-EffortMode) | Running on a drive of its own (diesel, battery, …) |
+| `effort_curves.default_mode` |  | one of `15000V`, `25000V`, `3000V`, `1500V`, `750V`, `600V`, `thermal` | The mode it runs with where several are possible |
+
+<a id="vehicles-EffortMode"></a>
+
+#### EffortMode
+
+The tractive effort of one traction mode, as RailJSON states it. `is_electric` is true exactly for a voltage, false for `thermal`.
+
+| Property | Required | Type and allowed values | Meaning |
+|---|---|---|---|
+| `is_electric` | yes | boolean | Whether the mode draws current from the contact wire |
+| `curves` | yes | list of object; at least 1 entry | The curves of tractive effort over speed, each for its conditions (comfort, electrical profile, power restriction) |
+| `default_curve` |  | object | The curve where no condition applies |
 
 ### Domain timetables 1.0
 

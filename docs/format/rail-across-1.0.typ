@@ -101,7 +101,7 @@ A file holds one part or both. A project server keeps them apart — the infrast
   [`generator`, `savedAt`], [the program and version that wrote the file, and when (ISO 8601, UTC)],
   [`infraData`], [the part infra-data-1.0: format, version and its domains; `core` is required],
   [`operations`], [the part operations-1.0: format, version and its domains],
-  [`blobs`], [bulk data (measured points, rolling stock), each under the hash of its content, shared by both parts],
+  [`blobs`], [bulk data (measured points, points of km lines), each under the hash of its content, shared by both parts],
 )
 
 The file carries no schemas: a domain names its schema by hash, and a reader knows the versions it reads.
@@ -116,7 +116,7 @@ A *domain* is a field of its own, with its own schema and its own version. It ha
   [], [`civil` 3.0], [platforms and engineering structures (railway bridges, retaining walls, noise barriers), axes measured in point clouds, reference axes, title block, project picture],
   [], [`signalling` 4.0], [signals with their logical signals, train detection, switch elements, routes, overlaps, flank protection, train protection, station boundaries, itineraries — exportable to PlanPro],
   [], [`electrification` 3.0], [masts, suspension points, section insulators and the contact wires with their voltage],
-  [operations-1.0], [`vehicles` 1.0], [the vehicles: their traction modes and rolling stock],
+  [operations-1.0], [`vehicles` 1.0], [the vehicles with their rolling stock as RailJSON],
   [], [`timetables` 1.0], [timetables, trains, kinds of trains, formations, connections, turnarounds, delay scenarios, studies],
 )
 
@@ -178,7 +178,7 @@ Where both are stated, both conditions must hold. The status shown follows likew
 
 == Blobs
 
-Bulk data is not kept in the object but in `blobs`: the points of measured and reference axes (`civil`), the points of a km line where a source gave no design elements (`core`), the rolling stock of the vehicles (`vehicles`). The object names the blob by the hash of its canonical JSON. Equal content thus stands in the file once.
+Bulk data is not kept in the object but in `blobs`: the points of measured and reference axes (`civil`), the points of a km line where a source gave no design elements (`core`). The object names the blob by the hash of its canonical JSON. Equal content thus stands in the file once.
 
 == What is unknown is kept
 
@@ -281,7 +281,9 @@ Where a wire runs is not stored: on a track, it runs from its first to its last 
 
 == Vehicles (domain `vehicles`)
 
-The vehicles are a domain of their own. A vehicle (`vehicles`) has a name, the key it came under from a catalogue (`key`), its *traction modes* (`tractionModes`: the voltages it can draw, and `thermal` for a drive of its own) and its rolling stock as RailJSON, as a blob. The timetables name vehicles by their id. A file thus runs with the vehicles it holds, not with a catalogue that may have changed since; a changed vehicle is a new version of the domain, as any other change.
+The vehicles are a domain of their own. A vehicle (`vehicles`) has the key it came under from a catalogue (`key`) and its *rolling stock* as RailJSON (`rollingStock`), the format of OSRD — kept in the object, not as a blob: a vehicle is a few kilobytes, and kept in place two states of it can be compared and merged field by field. The schema checks what the suite reads from it — the RailJSON version, the name and the tractive effort curves — and takes every further RailJSON property as it comes, in the units of RailJSON (m, kg, m/s, N).
+
+The *traction modes* of a vehicle are the modes of its effort curves (`effort_curves.modes`): the voltages it can draw, named as the voltages of the contact wires, and `thermal` for a drive of its own. They are not stored a second time. The timetables name vehicles by their id. A file thus runs with the vehicles it holds, not with a catalogue that may have changed since; a changed vehicle is a new version of the domain, as any other change.
 
 == Timetables (domain `timetables`)
 
@@ -303,7 +305,7 @@ A train finds its operational points, track ends, tracks and itineraries by thei
   [heights `z`], [m], [0.1 mm (4 decimals)],
   [bearings], [°, clockwise from grid north], [10⁻⁹ °],
   [cant], [mm], [0.001 mm],
-  [speeds], [km/h; of vehicles m/s], [as stated],
+  [speeds], [km/h; of vehicles (RailJSON) m/s], [as stated],
   [times of the operation], [s], [as stated],
   [voltage], [V, as named], [—],
   [kilometrage], [m], [as delivered],
@@ -321,7 +323,7 @@ A reader accepts a file only after a check:
 + The hashes of the blobs.
 + The version of each domain. An earlier version is brought forward (below); a later minor version is read with what is unknown kept; a later major version is refused, saying so.
 + Each domain against its schema, every id a UUID and only once in its collection.
-+ What a schema cannot express: the days of a lifespan are days, the first not after the last; an element marked as a route of a switch names its switch; *every reference finds its object* — within the part it is in; those of the operation into the infrastructure where the operation is laid on it.
++ What a schema cannot express: the days of a lifespan are days, the first not after the last; an element marked as a route of a switch names its switch; a traction mode of a vehicle is electric exactly when it is a voltage; *every reference finds its object* — within the part it is in; those of the operation into the infrastructure where the operation is laid on it.
 
 Faults of steps 2, 4 and 5 are reported as `invalid_payload` with the places found, e.g. `/infraData/domains/signalling/collections/switchElements/0/switchId: names …, which core.switches lacks`. What a reader writes it checks the same way before it leaves.
 
@@ -419,9 +421,18 @@ A file with a track of a straight and an arc, new from 1 May 2027, a boundary at
       "vehicles": {
         "version": "1.0", "schema": "sha256:3333…", "fields": {},
         "collections": { "vehicles": [ {
-          "id": "a7b8c9d0-e1f2-4a3b-8c4d-5e6f7a8b9c0d", "name": "BR 1440",
-          "key": "osrd:br1440",
-          "tractionModes": ["15000V"], "rollingStock": "sha256:4444…"
+          "id": "a7b8c9d0-e1f2-4a3b-8c4d-5e6f7a8b9c0d", "key": "osrd:br1440",
+          "rollingStock": {
+            "railjson_version": "3.3", "name": "BR 1440", "mass": 84000, "max_speed": 44.44,
+            "effort_curves": {
+              "default_mode": "15000V",
+              "modes": { "15000V": { "is_electric": true, "curves": [ {
+                "cond": { "comfort": "STANDARD" },
+                "curve": { "speeds": [0, 20, 44.44],
+                           "max_efforts": [300000, 300000, 135000] }
+              } ] } }
+            }
+          }
         } ] }
       },
       "timetables": {
@@ -454,7 +465,7 @@ A file with a track of a straight and an arc, new from 1 May 2027, a boundary at
       }
     }
   },
-  "blobs": { "sha256:4444…": { "name": "BR 1440", "mass": 84000 } }
+  "blobs": {}
 }
 ```
 
@@ -465,6 +476,7 @@ The hashes are shortened here; in a file each has its 64 hex digits.
 This specification is the target of the data model. As of 13 November 2026 the suite's implementation differs from it in these points, each to be brought in line by its own step (decision 0028 and those after it):
 
 - Two files instead of one: the infrastructure as infra-data 2.0 (`.railacross.json`, domains core 3.1, civil 2.1, signalling 3.1, electrification 2.1), the operation as operations 1.0 (`.operations.json`) with one domain `operations`, the vehicles carried in it; a file of before still carries the schemas.
+- A vehicle keeps its rolling stock as a blob and states its traction modes a second time (`tractionModes`).
 - The switch kind is `turnout`, its branch `B1` and its main track `B2`.
 - Km lines are polylines in WGS 84 with the kilometrage per point.
 - Element and track kinds are numbers (`elementType` 0/1/2, `trackType` 1/2, `side` 1/2); an element may state a plane of its own; some references are named without `Id` (`operationalPoint`, `dep`).
@@ -494,8 +506,8 @@ exactly one of `infraData`, `operations` is stated
   [`version`], [yes], [exactly `1.0`], [Version of the format],
   [`projectId`], [yes], [text; pattern `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`], [Id of the project],
   [`generator`], [], [object (properties below)], [The program that wrote the file],
-  [`generator.name`], [yes], [text], [Name of the program],
-  [`generator.version`], [yes], [text], [Its version],
+  [`generator.​name`], [yes], [text], [Name of the program],
+  [`generator.​version`], [yes], [text], [Its version],
   [`savedAt`], [], [text; pattern `^[0-9]{4}-[0-9]{2}-[0-9]{2}T`], [When it was saved (ISO 8601, UTC)],
   [`infraData`], [], [#link(<rail-across-InfraData>)[`InfraData`]], [The infrastructure of one variant],
   [`operations`], [], [#link(<rail-across-Operations>)[`Operations`]], [The operation of the project],
@@ -555,13 +567,13 @@ _No further properties are allowed._
   [Property], [Required], [Type and allowed values], [Meaning],
   [`fields`], [yes], [#link(<core-Fields>)[`Fields`]], [The domain's fields],
   [`collections`], [yes], [object (properties below)], [The domain's collections],
-  [`collections.tracks`], [yes], [list of #link(<core-Track>)[`Track`]], [Tracks],
-  [`collections.switches`], [yes], [list of #link(<core-Switch>)[`Switch`]], [Switches, crossings and connectors],
-  [`collections.endMarks`], [yes], [list of #link(<core-EndMark>)[`EndMark`]], [Buffer stops and boundaries of the planning area],
-  [`collections.kmLines`], [yes], [list of #link(<core-KmLine>)[`KmLine`]], [Km lines],
-  [`collections.operationalPoints`], [yes], [list of #link(<core-OperationalPoint>)[`OperationalPoint`]], [The operational point register],
-  [`collections.stoppingPlaces`], [yes], [list of #link(<core-StoppingPlace>)[`StoppingPlace`]], [Stopping places],
-  [`collections.trackPaths`], [], [list of #link(<core-NamedTrackPath>)[`NamedTrackPath`]], [Named runs of tracks],
+  [`collections.​tracks`], [yes], [list of #link(<core-Track>)[`Track`]], [Tracks],
+  [`collections.​switches`], [yes], [list of #link(<core-Switch>)[`Switch`]], [Switches, crossings and connectors],
+  [`collections.​endMarks`], [yes], [list of #link(<core-EndMark>)[`EndMark`]], [Buffer stops and boundaries of the planning area],
+  [`collections.​kmLines`], [yes], [list of #link(<core-KmLine>)[`KmLine`]], [Km lines],
+  [`collections.​operationalPoints`], [yes], [list of #link(<core-OperationalPoint>)[`OperationalPoint`]], [The operational point register],
+  [`collections.​stoppingPlaces`], [yes], [list of #link(<core-StoppingPlace>)[`StoppingPlace`]], [Stopping places],
+  [`collections.​trackPaths`], [], [list of #link(<core-NamedTrackPath>)[`NamedTrackPath`]], [Named runs of tracks],
 )
 
 === Id <core-Id>
@@ -626,7 +638,7 @@ _No further properties are allowed._
 
 #table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
   [Property], [Required], [Type and allowed values], [Meaning],
-  [`trackId`], [yes], [#link(<core-Ref>)[`Ref`] → `core.`​`tracks`], [The track],
+  [`trackId`], [yes], [#link(<core-Ref>)[`Ref`] → `core.​tracks`], [The track],
   [`endpoint`], [yes], [#link(<core-Endpoint>)[`Endpoint`]], [Which of its ends],
 )
 
@@ -639,7 +651,7 @@ Where an object stands, as one value. The anchor says whether it follows the tra
 #table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
   [Property], [Required], [Type and allowed values], [Meaning],
   [`anchor`], [yes], [exactly `station`], [Anchor of the location — `station` follows the track],
-  [`trackId`], [yes], [#link(<core-Ref>)[`Ref`] → `core.`​`tracks`], [The track],
+  [`trackId`], [yes], [#link(<core-Ref>)[`Ref`] → `core.​tracks`], [The track],
   [`station`], [yes], [number], [Station from the beginning of the track \[m\]],
   [`side`], [], [#link(<core-Side>)[`Side`]], [Side, seen in the direction of stationing],
   [`offset`], [], [number; ≥ 0], [Distance from the track axis \[m\]],
@@ -666,7 +678,7 @@ _No further properties are allowed._
 #table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
   [Property], [Required], [Type and allowed values], [Meaning],
   [`anchor`], [yes], [exactly `station`], [Follows the track],
-  [`trackId`], [yes], [#link(<core-Ref>)[`Ref`] → `core.`​`tracks`], [The track],
+  [`trackId`], [yes], [#link(<core-Ref>)[`Ref`] → `core.​tracks`], [The track],
   [`startStation`], [yes], [number], [Start \[m from the beginning of the track\]],
   [`endStation`], [yes], [number], [End \[m from the beginning of the track\]],
   [`side`], [], [#link(<core-Side>)[`Side`]], [Side, seen in the direction of stationing],
@@ -680,7 +692,7 @@ _No further properties are allowed._
 
 #table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
   [Property], [Required], [Type and allowed values], [Meaning],
-  [`trackIds`], [yes], [list of #link(<core-Ref>)[`Ref`] → `core.`​`tracks`], [The tracks in running order],
+  [`trackIds`], [yes], [list of #link(<core-Ref>)[`Ref`] → `core.​tracks`], [The tracks in running order],
 )
 
 === Day <core-Day>
@@ -752,7 +764,7 @@ _No further properties are allowed._
   [`designSpeed`], [], [number; ≥ 0 or null], [Design speed \[km/h\] the element is laid out for and checked against; `null` or missing = unknown],
   [`switchBranch`], [], [boolean], [Belongs to a route of a switch],
   [`switchRoute`], [], [one of the values under Meaning], [Which route of the switch #linebreak() `main` main track #linebreak() `branch` branch track #linebreak() `cross` crossing leg #linebreak() `slip1` first curve of a slip #linebreak() `slip2` second curve of a slip],
-  [`switchId`], [], [#link(<core-Ref>)[`Ref`] → `core.`​`switches`], [The switch],
+  [`switchId`], [], [#link(<core-Ref>)[`Ref`] → `core.​switches`], [The switch],
   [`switchHint`], [], [#link(<core-Text>)[`Text`]], [Why an import could not build the switch: form, number, reason],
 )
 
@@ -804,7 +816,7 @@ _No further properties are allowed._
   [`lineName`], [], [#link(<core-Text>)[`Text`]], [Line name],
   [`side`], [], [one of the values under Meaning], [Which track of a double-track line #linebreak() `regular` the track of the regular direction #linebreak() `opposite` the track of the opposite direction],
   [`trackNumber`], [], [#link(<core-Label>)[`Label`]], [Track number in the station],
-  [`operationalPointId`], [], [#link(<core-Ref>)[`Ref`] → `core.`​`operationalPoints`], [The station the track belongs to],
+  [`operationalPointId`], [], [#link(<core-Ref>)[`Ref`] → `core.​operationalPoints`], [The station the track belongs to],
   [`owner`], [], [#link(<core-Text>)[`Text`]], [Owner],
   [`trackUse`], [], [exactly `siding`], [Siding; without it a main track — `siding` siding],
   [`lineCategory`], [], [#link(<core-LineCategory>)[`LineCategory`]], [Line category, where it differs from the project's],
@@ -905,7 +917,7 @@ _No further properties are allowed._
   [Property], [Required], [Type and allowed values], [Meaning],
   [`id`], [yes], [#link(<core-Id>)[`Id`]], [Id of the object],
   [`name`], [], [#link(<core-Text>)[`Text`]], [Name],
-  [`operationalPointId`], [], [#link(<core-Ref>)[`Ref`] → `core.`​`operationalPoints`], [The station it belongs to; without one, the open line],
+  [`operationalPointId`], [], [#link(<core-Ref>)[`Ref`] → `core.​operationalPoints`], [The station it belongs to; without one, the open line],
   [`at`], [yes], [#link(<core-TrackRange>)[`TrackRange`]], [Stretch of the track],
   [`passengerStop`], [], [boolean], [Passenger stop: passengers board and alight here, at a platform],
   [`lifespan`], [], [#link(<core-Lifespan>)[`Lifespan`]], [Lifespan: the days in service; without one, the object exists and stays],
@@ -978,12 +990,12 @@ _No further properties are allowed._
   [Property], [Required], [Type and allowed values], [Meaning],
   [`fields`], [yes], [#link(<civil-Fields>)[`Fields`]], [The layer's fields],
   [`collections`], [yes], [object (properties below)], [The layer's collections],
-  [`collections.platforms`], [yes], [list of #link(<civil-Platform>)[`Platform`]], [Platforms],
-  [`collections.axisSurveys`], [yes], [list of #link(<civil-AxisSurvey>)[`AxisSurvey`]], [Measured axes],
-  [`collections.referenceAxes`], [yes], [list of #link(<civil-ReferenceAxis>)[`ReferenceAxis`]], [Reference axes],
-  [`collections.bridges`], [], [list of #link(<civil-Bridge>)[`Bridge`]], [Railway bridges],
-  [`collections.retainingWalls`], [], [list of #link(<civil-RetainingWall>)[`RetainingWall`]], [Retaining walls],
-  [`collections.noiseBarriers`], [], [list of #link(<civil-NoiseBarrier>)[`NoiseBarrier`]], [Noise barriers],
+  [`collections.​platforms`], [yes], [list of #link(<civil-Platform>)[`Platform`]], [Platforms],
+  [`collections.​axisSurveys`], [yes], [list of #link(<civil-AxisSurvey>)[`AxisSurvey`]], [Measured axes],
+  [`collections.​referenceAxes`], [yes], [list of #link(<civil-ReferenceAxis>)[`ReferenceAxis`]], [Reference axes],
+  [`collections.​bridges`], [], [list of #link(<civil-Bridge>)[`Bridge`]], [Railway bridges],
+  [`collections.​retainingWalls`], [], [list of #link(<civil-RetainingWall>)[`RetainingWall`]], [Retaining walls],
+  [`collections.​noiseBarriers`], [], [list of #link(<civil-NoiseBarrier>)[`NoiseBarrier`]], [Noise barriers],
 )
 
 === BlobRef <civil-BlobRef>
@@ -1019,15 +1031,15 @@ _No further properties are allowed._
   [`epsg`], [yes], [#link(<core-Epsg>)[`Epsg`]], [Plane of the points],
   [`rail`], [], [text], [The rail measured],
   [`guide`], [], [object (properties below)], [What the measurement was guided by],
-  [`guide.kind`], [yes], [one of the values under Meaning], [By a track or a drawn line #linebreak() `track` track #linebreak() `line` drawn line],
-  [`guide.trackId`], [], [#link(<core-Ref>)[`Ref`] → `core.`​`tracks`], [The guiding track],
+  [`guide.​kind`], [yes], [one of the values under Meaning], [By a track or a drawn line #linebreak() `track` track #linebreak() `line` drawn line],
+  [`guide.​trackId`], [], [#link(<core-Ref>)[`Ref`] → `core.​tracks`], [The guiding track],
   [`cloudNames`], [], [list of text], [Names of the point clouds],
   [`cloudRefs`], [], [list of any values], [References to the point clouds],
   [`createdAt`], [], [#link(<core-Text>)[`Text`]], [When it was created],
   [`step`], [], [number], [Spacing of the points \[m\]],
   [`gaps`], [], [list of objects (properties below)], [Gaps of the measurement],
-  [`gaps[].from`], [yes], [number], [Start \[m\]],
-  [`gaps[].to`], [yes], [number], [End \[m\]],
+  [`gaps[].​from`], [yes], [number], [Start \[m\]],
+  [`gaps[].​to`], [yes], [number], [End \[m\]],
   [`points`], [yes], [#link(<civil-BlobRef>)[`BlobRef`]], [The points, as a blob],
 )
 
@@ -1060,9 +1072,9 @@ _No further properties are allowed._
   [`frontOffset`], [], [number], [Distance of the platform edge from the track axis \[m\]],
   [`backOffset`], [], [number], [Distance of the back of the platform from the track axis \[m\]],
   [`height`], [], [number], [Platform height \[mm above top of rail\]],
-  [`operationalPointId`], [], [#link(<core-Ref>)[`Ref`] → `core.`​`operationalPoints`], [Station or halt of the platform],
+  [`operationalPointId`], [], [#link(<core-Ref>)[`Ref`] → `core.​operationalPoints`], [Station or halt of the platform],
   [`lifespan`], [], [#link(<core-Lifespan>)[`Lifespan`]], [Lifespan: the days in service; without one, the object exists and stays],
-  [`stoppingPlaceIds`], [], [list of #link(<core-Ref>)[`Ref`] → `core.`​`stoppingPlaces`], [The stopping places at it],
+  [`stoppingPlaceIds`], [], [list of #link(<core-Ref>)[`Ref`] → `core.​stoppingPlaces`], [The stopping places at it],
 )
 
 === Bridge <civil-Bridge>
@@ -1129,17 +1141,17 @@ _No further properties are allowed._
   [Property], [Required], [Type and allowed values], [Meaning],
   [`fields`], [yes], [#link(<signalling-Fields>)[`Fields`]], [The layer's fields],
   [`collections`], [yes], [object (properties below)], [The layer's collections],
-  [`collections.signals`], [yes], [list of #link(<signalling-Signal>)[`Signal`]], [Signals],
-  [`collections.detectionPoints`], [yes], [list of #link(<signalling-DetectionPoint>)[`DetectionPoint`]], [Detection points],
-  [`collections.trackSections`], [yes], [list of #link(<signalling-TrackSection>)[`TrackSection`]], [Track sections],
-  [`collections.switchElements`], [yes], [list of #link(<signalling-SwitchElement>)[`SwitchElement`]], [Switch and derailer elements],
-  [`collections.routes`], [yes], [list of #link(<signalling-Route>)[`Route`]], [Routes],
-  [`collections.overlaps`], [yes], [list of #link(<signalling-Overlap>)[`Overlap`]], [Overlaps],
-  [`collections.flankProtection`], [yes], [list of #link(<signalling-FlankProtection>)[`FlankProtection`]], [Flank protection],
-  [`collections.balises`], [yes], [list of #link(<signalling-Balise>)[`Balise`]], [Magnets and balises],
-  [`collections.stationBoundaries`], [yes], [list of #link(<signalling-StationBoundary>)[`StationBoundary`]], [Station boundaries],
-  [`collections.itineraries`], [yes], [list of #link(<signalling-Itinerary>)[`Itinerary`]], [Itineraries],
-  [`collections.trainProtection`], [], [list of #link(<signalling-TrainProtection>)[`TrainProtection`]], [Continuous train protection over stretches of track],
+  [`collections.​signals`], [yes], [list of #link(<signalling-Signal>)[`Signal`]], [Signals],
+  [`collections.​detectionPoints`], [yes], [list of #link(<signalling-DetectionPoint>)[`DetectionPoint`]], [Detection points],
+  [`collections.​trackSections`], [yes], [list of #link(<signalling-TrackSection>)[`TrackSection`]], [Track sections],
+  [`collections.​switchElements`], [yes], [list of #link(<signalling-SwitchElement>)[`SwitchElement`]], [Switch and derailer elements],
+  [`collections.​routes`], [yes], [list of #link(<signalling-Route>)[`Route`]], [Routes],
+  [`collections.​overlaps`], [yes], [list of #link(<signalling-Overlap>)[`Overlap`]], [Overlaps],
+  [`collections.​flankProtection`], [yes], [list of #link(<signalling-FlankProtection>)[`FlankProtection`]], [Flank protection],
+  [`collections.​balises`], [yes], [list of #link(<signalling-Balise>)[`Balise`]], [Magnets and balises],
+  [`collections.​stationBoundaries`], [yes], [list of #link(<signalling-StationBoundary>)[`StationBoundary`]], [Station boundaries],
+  [`collections.​itineraries`], [yes], [list of #link(<signalling-Itinerary>)[`Itinerary`]], [Itineraries],
+  [`collections.​trainProtection`], [], [list of #link(<signalling-TrainProtection>)[`TrainProtection`]], [Continuous train protection over stretches of track],
 )
 
 === Fields <signalling-Fields>
@@ -1151,11 +1163,11 @@ _No further properties are allowed._
 #table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
   [Property], [Required], [Type and allowed values], [Meaning],
   [`catalogue`], [], [object (properties below)], [The catalogue of signal aspects],
-  [`catalogue.id`], [yes], [text; at least 1 characters], [Id of the catalogue],
-  [`catalogue.version`], [yes], [text; at least 1 characters], [Version of the catalogue],
+  [`catalogue.​id`], [yes], [text; at least 1 characters], [Id of the catalogue],
+  [`catalogue.​version`], [yes], [text; at least 1 characters], [Version of the catalogue],
   [`routeTimes`], [], [object (properties below)], [Times that hold for every route that states none of its own],
-  [`routeTimes.setting`], [], [number; ≥ 0], [Route setting time \[s\]],
-  [`routeTimes.release`], [], [number; ≥ 0], [Route release time \[s\]],
+  [`routeTimes.​setting`], [], [number; ≥ 0], [Route setting time \[s\]],
+  [`routeTimes.​release`], [], [number; ≥ 0], [Route release time \[s\]],
 )
 
 === Directed <signalling-Directed>
@@ -1181,7 +1193,7 @@ _No further properties are allowed._
   [`id`], [yes], [#link(<core-Id>)[`Id`]], [Id of the object],
   [`name`], [], [#link(<core-Label>)[`Label`]], [Name (without the area number)],
   [`areaNumber`], [], [#link(<core-Label>)[`Label`]], [Number of the interlocking area that precedes the full designation (PlanPro Kennzahl: 60 in 60A)],
-  [`operationalPointId`], [], [#link(<core-Ref>)[`Ref`] → `core.`​`operationalPoints`], [The station it belongs to; without one, a signal of the open line],
+  [`operationalPointId`], [], [#link(<core-Ref>)[`Ref`] → `core.​operationalPoints`], [The station it belongs to; without one, a signal of the open line],
   [`kind`], [yes], [one of the values under Meaning], [Real or virtual #linebreak() `real` real signal #linebreak() `virtual` virtual signal],
   [`at`], [yes], [#link(<signalling-Directed>)[`Directed`]], [Location and direction],
   [`alsoAt`], [], [list of #link(<core-TrackLocation>)[`TrackLocation`]], [Further tracks at the same place (a clearance marker between two tracks)],
@@ -1191,12 +1203,12 @@ _No further properties are allowed._
   [`logicalSignals`], [], [list of #link(<signalling-LogicalSignal>)[`LogicalSignal`]], [The logical signals, one per signalling system],
   [`mounting`], [], [one of the values under Meaning], [Mounting (PlanPro Signal\_Befestigungsart) #linebreak() `mast` mast #linebreak() `bracket` signal bracket #linebreak() `gantry` signal gantry #linebreak() `foundation` foundation #linebreak() `special` special structure #linebreak() `other` other],
   [`foundation`], [], [object (properties below)], [Foundation of a signal on a gantry or bracket],
-  [`foundation.side`], [], [#link(<core-Side>)[`Side`]], [Side, seen in the direction it acts in],
-  [`foundation.offset`], [yes], [number; ≥ 0], [Distance from the track axis \[m\]],
+  [`foundation.​side`], [], [#link(<core-Side>)[`Side`]], [Side, seen in the direction it acts in],
+  [`foundation.​offset`], [yes], [number; ≥ 0], [Distance from the track axis \[m\]],
   [`sight`], [], [object (properties below)], [Signal sighting \[m\] (PlanPro Signalsicht\_Soll, \_Mindest, \_Erreichbar)],
-  [`sight.required`], [], [number; ≥ 0], [required],
-  [`sight.minimum`], [], [number; ≥ 0], [minimum],
-  [`sight.achievable`], [], [number; ≥ 0], [achievable],
+  [`sight.​required`], [], [number; ≥ 0], [required],
+  [`sight.​minimum`], [], [number; ≥ 0], [minimum],
+  [`sight.​achievable`], [], [number; ≥ 0], [achievable],
   [`frames`], [], [list of #link(<signalling-Frame>)[`Frame`]], [What it shows without a system: boards, clearance marker bodies, name plate, the screen of a signal without a system],
   [`lifespan`], [], [#link(<core-Lifespan>)[`Lifespan`]], [Lifespan: the days in service; without one, the object exists and stays],
 )
@@ -1214,14 +1226,14 @@ _No further properties are allowed._
   [`function`], [], [one of the values under Meaning], [Function (PlanPro Signal\_Funktion) #linebreak() `entry` entry signal #linebreak() `exit` exit signal #linebreak() `entryExit` entry and exit signal #linebreak() `intermediate` intermediate signal #linebreak() `exitIntermediate` exit and intermediate signal #linebreak() `entryBlock` entry and block signal #linebreak() `block` block signal #linebreak() `groupExit` group exit signal #linebreak() `groupIntermediate` group intermediate signal #linebreak() `groupExitIntermediate` group exit and intermediate signal #linebreak() `followUp` repeating signal #linebreak() `cover` protecting signal #linebreak() `trainCover` train protecting signal #linebreak() `trainTarget` train target signal #linebreak() `levelCrossing` level crossing signal #linebreak() `distant` distant signal #linebreak() `standaloneIndicator` stand-alone indicator (board) #linebreak() `other` other],
   [`frames`], [], [list of #link(<signalling-Frame>)[`Frame`]], [Screen and indicators],
   [`signallingSpeeds`], [], [list of objects (properties below)], [Signalled speed per route beginning at this location (PlanPro Fstr\_V\_Hg)],
-  [`signallingSpeeds[].routeId`], [yes], [#link(<core-Ref>)[`Ref`] → `signalling.`​`routes`], [The route],
-  [`signallingSpeeds[].speed`], [yes], [number; ≥ 0], [Speed \[km/h\]],
+  [`signallingSpeeds[].​routeId`], [yes], [#link(<core-Ref>)[`Ref`] → `signalling.​routes`], [The route],
+  [`signallingSpeeds[].​speed`], [yes], [number; ≥ 0], [Speed \[km/h\]],
   [`settings`], [], [#link(<signalling-Settings>)[`Settings`]], [Settings after the catalogue],
   [`nextSystems`], [], [list of text; at least 1 characters], [Systems the announced signals may have],
   [`defaultParameters`], [], [#link(<signalling-Settings>)[`Settings`]], [Parameters it shows with by default],
   [`conditionalParameters`], [], [list of objects (properties below)], [Parameters per route],
-  [`conditionalParameters[].routeId`], [yes], [#link(<core-Ref>)[`Ref`] → `signalling.`​`routes`], [The route],
-  [`conditionalParameters[].parameters`], [yes], [#link(<signalling-Settings>)[`Settings`]], [Its parameters],
+  [`conditionalParameters[].​routeId`], [yes], [#link(<core-Ref>)[`Ref`] → `signalling.​routes`], [The route],
+  [`conditionalParameters[].​parameters`], [yes], [#link(<signalling-Settings>)[`Settings`]], [Its parameters],
 )
 
 === Settings <signalling-Settings>
@@ -1283,7 +1295,7 @@ _No further properties are allowed._
   [`name`], [], [#link(<core-Label>)[`Label`]], [Name],
   [`areaNumber`], [], [#link(<core-Label>)[`Label`]], [Number of the interlocking area that precedes the full designation (PlanPro Kennzahl: 60 in 60A)],
   [`kind`], [yes], [one of the values under Meaning], [Kind of detection #linebreak() `axleCounting` axle counting #linebreak() `audioFrequencyCircuit` audio frequency track circuit #linebreak() `lowFrequencyCircuit` low frequency track circuit #linebreak() `ftgs` FTGS #linebreak() `other` other],
-  [`boundedBy`], [yes], [list of #link(<core-Ref>)[`Ref`] → `signalling.`​`detectionPoints`; at least 1 entry], [The detection points that bound it],
+  [`boundedBy`], [yes], [list of #link(<core-Ref>)[`Ref`] → `signalling.​detectionPoints`; at least 1 entry], [The detection points that bound it],
   [`auxiliaryClearing`], [], [boolean], [Auxiliary clearing (PlanPro FMA\_Hilffreimeldung)],
   [`lifespan`], [], [#link(<core-Lifespan>)[`Lifespan`]], [Lifespan: the days in service; without one, the object exists and stays],
 )
@@ -1301,21 +1313,21 @@ exactly one of `switchId`, `derailer` is stated
   [`id`], [yes], [#link(<core-Id>)[`Id`]], [Id of the object],
   [`name`], [], [#link(<core-Label>)[`Label`]], [Name],
   [`areaNumber`], [], [#link(<core-Label>)[`Label`]], [Number of the interlocking area that precedes the full designation (PlanPro Kennzahl: 60 in 60A)],
-  [`switchId`], [], [#link(<core-Ref>)[`Ref`] → `core.`​`switches`], [The switch of the core],
+  [`switchId`], [], [#link(<core-Ref>)[`Ref`] → `core.​switches`], [The switch of the core],
   [`derailer`], [], [object (properties below)], [A derailer (PlanPro Gleissperre\_Element)],
-  [`derailer.at`], [yes], [#link(<signalling-Directed>)[`Directed`]], [Location],
-  [`derailer.preferredPosition`], [], [one of the values under Meaning], [Normal position #linebreak() `applied` applied #linebreak() `removed` removed],
+  [`derailer.​at`], [yes], [#link(<signalling-Directed>)[`Directed`]], [Location],
+  [`derailer.​preferredPosition`], [], [one of the values under Meaning], [Normal position #linebreak() `applied` applied #linebreak() `removed` removed],
   [`part`], [], [one of the values under Meaning], [Which pair of blades of a slip #linebreak() `a` pair of blades a #linebreak() `b` pair of blades b],
   [`operation`], [yes], [one of the values under Meaning], [Operation (PlanPro W\_Kr\_Gsp\_Stellart) #linebreak() `electricRemote` electric, remote #linebreak() `electricLocal` electric, local #linebreak() `mechanicalRemote` mechanical, remote #linebreak() `mechanicalLocal` mechanical, local #linebreak() `notWorked` not worked #linebreak() `springBack` spring switch #linebreak() `disabledLeft` out of use, left #linebreak() `disabledRight` out of use, right #linebreak() `other` other],
   [`preferredPosition`], [], [#link(<signalling-SwitchPosition>)[`SwitchPosition`]], [Preferred position],
   [`preferredAutomatic`], [], [boolean], [Returns to its preferred position by itself],
   [`trailable`], [], [boolean], [Trailable (PlanPro Auffahrortung)],
-  [`clearanceMarkerId`], [], [#link(<core-Ref>)[`Ref`] → `signalling.`​`signals`], [Clearance marker (Ra 12) of the switch, a signal of the layer],
+  [`clearanceMarkerId`], [], [#link(<core-Ref>)[`Ref`] → `signalling.​signals`], [Clearance marker (Ra 12) of the switch, a signal of the layer],
   [`twofoldProtection`], [], [object (properties below)], [Twofold protection (PlanPro Fla\_Zwieschutz)],
-  [`twofoldProtection.kind`], [], [one of the values under Meaning], [Kind of twofold protection #linebreak() `genuine` genuine twofold protection #linebreak() `genuineOwn` genuine and own twofold protection #linebreak() `own` own twofold protection],
-  [`twofoldProtection.left`], [], [one of the values under Meaning], [Measure for the left position #linebreak() `locking` locking #linebreak() `substitute` substitute measure],
-  [`twofoldProtection.right`], [], [one of the values under Meaning], [Measure for the right position #linebreak() `locking` locking #linebreak() `substitute` substitute measure],
-  [`twofoldProtection.preventsRunOn`], [], [boolean], [Prevents running on],
+  [`twofoldProtection.​kind`], [], [one of the values under Meaning], [Kind of twofold protection #linebreak() `genuine` genuine twofold protection #linebreak() `genuineOwn` genuine and own twofold protection #linebreak() `own` own twofold protection],
+  [`twofoldProtection.​left`], [], [one of the values under Meaning], [Measure for the left position #linebreak() `locking` locking #linebreak() `substitute` substitute measure],
+  [`twofoldProtection.​right`], [], [one of the values under Meaning], [Measure for the right position #linebreak() `locking` locking #linebreak() `substitute` substitute measure],
+  [`twofoldProtection.​preventsRunOn`], [], [boolean], [Prevents running on],
   [`lifespan`], [], [#link(<core-Lifespan>)[`Lifespan`]], [Lifespan: the days in service; without one, the object exists and stays],
 )
 
@@ -1334,19 +1346,19 @@ _No further properties are allowed._
   [`shuntingType`], [], [one of `RR`, `RT`, `RTU`, `RU`], [Kind of shunting route (PlanPro Fstr\_Rangier\_Art)],
   [`middleType`], [], [one of `ZM`, `ZUM`], [Kind of middle switch route (PlanPro Fstr\_Mittel\_Art)],
   [`rank`], [], [integer; ≥ 0], [Rank among the routes between the same signals, 0 the regular one],
-  [`startSignalId`], [yes], [#link(<core-Ref>)[`Ref`] → `signalling.`​`signals`], [Start signal],
-  [`targetSignalId`], [yes], [#link(<core-Ref>)[`Ref`] → `signalling.`​`signals`], [Target signal],
+  [`startSignalId`], [yes], [#link(<core-Ref>)[`Ref`] → `signalling.​signals`], [Start signal],
+  [`targetSignalId`], [yes], [#link(<core-Ref>)[`Ref`] → `signalling.​signals`], [Target signal],
   [`path`], [yes], [#link(<core-TrackPath>)[`TrackPath`]], [The run of tracks],
   [`autoSetting`], [], [boolean], [Set by automatic route setting],
   [`shortDistantSpacing`], [], [boolean], [Distant signal at a shortened braking distance],
-  [`clearSections`], [], [list of #link(<core-Ref>)[`Ref`] → `signalling.`​`trackSections`], [Track sections that must be clear],
+  [`clearSections`], [], [list of #link(<core-Ref>)[`Ref`] → `signalling.​trackSections`], [Track sections that must be clear],
   [`overlaps`], [], [list of objects (properties below)], [Overlaps it may end in],
-  [`overlaps[].overlapId`], [yes], [#link(<core-Ref>)[`Ref`] → `signalling.`​`overlaps`], [The overlap],
-  [`overlaps[].preferred`], [], [boolean], [The preferred one],
+  [`overlaps[].​overlapId`], [yes], [#link(<core-Ref>)[`Ref`] → `signalling.​overlaps`], [The overlap],
+  [`overlaps[].​preferred`], [], [boolean], [The preferred one],
   [`aspects`], [], [list of objects (properties below)], [What the route shows: which aspect at which signal (PlanPro Fstr\_Signalisierung)],
-  [`aspects[].signalId`], [yes], [#link(<core-Ref>)[`Ref`] → `signalling.`​`signals`], [The signal],
-  [`aspects[].aspect`], [yes], [text; at least 1 characters], [The aspect],
-  [`aspects[].symbol`], [], [text; at least 1 characters], [Its symbol],
+  [`aspects[].​signalId`], [yes], [#link(<core-Ref>)[`Ref`] → `signalling.​signals`], [The signal],
+  [`aspects[].​aspect`], [yes], [text; at least 1 characters], [The aspect],
+  [`aspects[].​symbol`], [], [text; at least 1 characters], [Its symbol],
   [`lifespan`], [], [#link(<core-Lifespan>)[`Lifespan`]], [Lifespan: the days in service; without one, the object exists and stays],
   [`settingTime`], [], [number; ≥ 0], [Route setting time \[s\]; without one, the layer's],
   [`releaseTime`], [], [number; ≥ 0], [Release time once the train has left it \[s\]; without one, the layer's],
@@ -1362,17 +1374,17 @@ _No further properties are allowed._
   [Property], [Required], [Type and allowed values], [Meaning],
   [`id`], [yes], [#link(<core-Id>)[`Id`]], [Id of the object],
   [`name`], [], [#link(<core-Text>)[`Text`]], [Name],
-  [`signalId`], [yes], [#link(<core-Ref>)[`Ref`] → `signalling.`​`signals`], [The signal it lies beyond],
+  [`signalId`], [yes], [#link(<core-Ref>)[`Ref`] → `signalling.​signals`], [The signal it lies beyond],
   [`path`], [yes], [#link(<core-TrackPath>)[`TrackPath`]], [The run of tracks],
   [`end`], [yes], [#link(<core-TrackLocation>)[`TrackLocation`]], [Danger point (PlanPro ID\_PZB\_Gefahrpunkt)],
   [`length`], [yes], [number; ≥ 0], [Required length \[m\]],
   [`gradient`], [], [number], [Governing gradient \[‰\], negative downhill],
   [`speed`], [], [number; ≥ 0], [Permitted speed \[km/h\]],
   [`releaseDelay`], [], [number; ≥ 0], [Release delay \[s\]],
-  [`clearSections`], [], [list of #link(<core-Ref>)[`Ref`] → `signalling.`​`trackSections`], [Track sections that must be clear],
+  [`clearSections`], [], [list of #link(<core-Ref>)[`Ref`] → `signalling.​trackSections`], [Track sections that must be clear],
   [`switches`], [], [list of objects (properties below)], [Switches in the overlap],
-  [`switches[].switchElementId`], [yes], [#link(<core-Ref>)[`Ref`] → `signalling.`​`switchElements`], [The switch element],
-  [`switches[].locked`], [yes], [boolean], [Locked],
+  [`switches[].​switchElementId`], [yes], [#link(<core-Ref>)[`Ref`] → `signalling.​switchElements`], [The switch element],
+  [`switches[].​locked`], [yes], [boolean], [Locked],
   [`lifespan`], [], [#link(<core-Lifespan>)[`Lifespan`]], [Lifespan: the days in service; without one, the object exists and stays],
 )
 
@@ -1386,18 +1398,18 @@ _No further properties are allowed._
   [Property], [Required], [Type and allowed values], [Meaning],
   [`id`], [yes], [#link(<core-Id>)[`Id`]], [Id of the object],
   [`requester`], [yes], [object (properties below)], [Who asks for it],
-  [`requester.switchElementId`], [yes], [#link(<core-Ref>)[`Ref`] → `signalling.`​`switchElements`], [The switch element],
-  [`requester.via`], [yes], [one of the values under Meaning], [Run over in which position, or from the toe #linebreak() `left` in the left position #linebreak() `right` in the right position #linebreak() `tip` from the toe],
+  [`requester.​switchElementId`], [yes], [#link(<core-Ref>)[`Ref`] → `signalling.​switchElements`], [The switch element],
+  [`requester.​via`], [yes], [one of the values under Meaning], [Run over in which position, or from the toe #linebreak() `left` in the left position #linebreak() `right` in the right position #linebreak() `tip` from the toe],
   [`protection`], [yes], [one of: object (properties below); object (properties below); object (properties below)], [Who gives it: a signal at danger, a switch element in a position, or it is waived],
-  [`protection.signalId`], [yes], [#link(<core-Ref>)[`Ref`] → `signalling.`​`signals`], [The protecting signal],
-  [`protection.targetLock`], [], [boolean], [Target lock (PlanPro Fla\_Signal\_Zielsperrung)],
-  [`protection.switchElementId`], [yes], [#link(<core-Ref>)[`Ref`] → `signalling.`​`switchElements`], [The protecting switch element],
-  [`protection.position`], [], [#link(<signalling-SwitchPosition>)[`SwitchPosition`]], [Its position; a derailer gives it applied and names none],
-  [`protection.waived`], [yes], [exactly `true`], [Flank protection waived],
+  [`protection.​signalId`], [yes], [#link(<core-Ref>)[`Ref`] → `signalling.​signals`], [The protecting signal],
+  [`protection.​targetLock`], [], [boolean], [Target lock (PlanPro Fla\_Signal\_Zielsperrung)],
+  [`protection.​switchElementId`], [yes], [#link(<core-Ref>)[`Ref`] → `signalling.​switchElements`], [The protecting switch element],
+  [`protection.​position`], [], [#link(<signalling-SwitchPosition>)[`SwitchPosition`]], [Its position; a derailer gives it applied and names none],
+  [`protection.​waived`], [yes], [exactly `true`], [Flank protection waived],
   [`passOn`], [], [object (properties below)], [Flank protection the protecting element asks for in turn (PlanPro Fla\_Schutz\_Weitergabe)],
-  [`passOn.left`], [], [#link(<core-Ref>)[`Ref`] → `signalling.`​`flankProtection`], [For its left position],
-  [`passOn.right`], [], [#link(<core-Ref>)[`Ref`] → `signalling.`​`flankProtection`], [For its right position],
-  [`clearSections`], [], [list of #link(<core-Ref>)[`Ref`] → `signalling.`​`trackSections`], [Track sections that must be clear],
+  [`passOn.​left`], [], [#link(<core-Ref>)[`Ref`] → `signalling.​flankProtection`], [For its left position],
+  [`passOn.​right`], [], [#link(<core-Ref>)[`Ref`] → `signalling.​flankProtection`], [For its right position],
+  [`clearSections`], [], [list of #link(<core-Ref>)[`Ref`] → `signalling.​trackSections`], [Track sections that must be clear],
   [`lifespan`], [], [#link(<core-Lifespan>)[`Lifespan`]], [Lifespan: the days in service; without one, the object exists and stays],
 )
 
@@ -1415,11 +1427,11 @@ _No further properties are allowed._
   [`system`], [yes], [text; at least 1 characters], [System of train protection, a key of the catalogue (`pzb`, `etcs`)],
   [`kind`], [yes], [text; at least 1 characters], [Kind in the system, a key of the catalogue],
   [`settings`], [], [#link(<signalling-Settings>)[`Settings`]], [Settings after the catalogue],
-  [`signalId`], [], [#link(<core-Ref>)[`Ref`] → `signalling.`​`signals`], [The signal it belongs to (PlanPro PZB\_Element\_Bezugspunkt)],
+  [`signalId`], [], [#link(<core-Ref>)[`Ref`] → `signalling.​signals`], [The signal it belongs to (PlanPro PZB\_Element\_Bezugspunkt)],
   [`effect`], [yes], [one of the values under Meaning], [Effect (PlanPro Wirksamkeit) #linebreak() `permanent` permanently active #linebreak() `switchedBySignal` switched by the signal #linebreak() `other` other],
   [`routes`], [], [list of objects (properties below)], [Routes that switch it (PlanPro PZB\_Element\_Zuordnung\_Fstr)],
-  [`routes[].routeId`], [yes], [#link(<core-Ref>)[`Ref`] → `signalling.`​`routes`], [The route],
-  [`routes[].effect`], [yes], [one of the values under Meaning], [How it switches it #linebreak() `activeWhenSet` active when the route is set #linebreak() `inactiveWhenSet` inactive when the route is set #linebreak() `other` other],
+  [`routes[].​routeId`], [yes], [#link(<core-Ref>)[`Ref`] → `signalling.​routes`], [The route],
+  [`routes[].​effect`], [yes], [one of the values under Meaning], [How it switches it #linebreak() `activeWhenSet` active when the route is set #linebreak() `inactiveWhenSet` inactive when the route is set #linebreak() `other` other],
   [`lifespan`], [], [#link(<core-Lifespan>)[`Lifespan`]], [Lifespan: the days in service; without one, the object exists and stays],
 )
 
@@ -1432,11 +1444,11 @@ _No further properties are allowed._
 #table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
   [Property], [Required], [Type and allowed values], [Meaning],
   [`id`], [yes], [#link(<core-Id>)[`Id`]], [Id of the object],
-  [`operationalPointId`], [yes], [#link(<core-Ref>)[`Ref`] → `core.`​`operationalPoints`], [The station],
+  [`operationalPointId`], [yes], [#link(<core-Ref>)[`Ref`] → `core.​operationalPoints`], [The station],
   [`marks`], [yes], [list of one of the objects below; at least 1 entry], [What marks the boundary: a signal, a switch or a stopping place],
-  [`marks[].signalId`], [yes], [#link(<core-Ref>)[`Ref`] → `signalling.`​`signals`], [Entry signal or board],
-  [`marks[].switchId`], [yes], [#link(<core-Ref>)[`Ref`] → `core.`​`switches`], [Entry switch],
-  [`marks[].stoppingPlaceId`], [yes], [#link(<core-Ref>)[`Ref`] → `core.`​`stoppingPlaces`], [Stopping place of a halt],
+  [`marks[].​signalId`], [yes], [#link(<core-Ref>)[`Ref`] → `signalling.​signals`], [Entry signal or board],
+  [`marks[].​switchId`], [yes], [#link(<core-Ref>)[`Ref`] → `core.​switches`], [Entry switch],
+  [`marks[].​stoppingPlaceId`], [yes], [#link(<core-Ref>)[`Ref`] → `core.​stoppingPlaces`], [Stopping place of a halt],
   [`lifespan`], [], [#link(<core-Lifespan>)[`Lifespan`]], [Lifespan: the days in service; without one, the object exists and stays],
 )
 
@@ -1450,9 +1462,9 @@ _No further properties are allowed._
   [Property], [Required], [Type and allowed values], [Meaning],
   [`id`], [yes], [#link(<core-Id>)[`Id`]], [Id of the object],
   [`name`], [], [#link(<core-Text>)[`Text`]], [Name],
-  [`startStoppingPlaceId`], [yes], [#link(<core-Ref>)[`Ref`] → `core.`​`stoppingPlaces`], [Start stopping place],
-  [`targetStoppingPlaceId`], [yes], [#link(<core-Ref>)[`Ref`] → `core.`​`stoppingPlaces`], [Target stopping place],
-  [`routeIds`], [yes], [list of #link(<core-Ref>)[`Ref`] → `signalling.`​`routes`], [The train routes in running order],
+  [`startStoppingPlaceId`], [yes], [#link(<core-Ref>)[`Ref`] → `core.​stoppingPlaces`], [Start stopping place],
+  [`targetStoppingPlaceId`], [yes], [#link(<core-Ref>)[`Ref`] → `core.​stoppingPlaces`], [Target stopping place],
+  [`routeIds`], [yes], [list of #link(<core-Ref>)[`Ref`] → `signalling.​routes`], [The train routes in running order],
   [`path`], [yes], [#link(<core-TrackPath>)[`TrackPath`]], [The run of tracks],
   [`lifespan`], [], [#link(<core-Lifespan>)[`Lifespan`]], [Lifespan: the days in service; without one, the object exists and stays],
 )
@@ -1485,10 +1497,10 @@ _No further properties are allowed._
   [Property], [Required], [Type and allowed values], [Meaning],
   [`fields`], [yes], [#link(<electrification-Fields>)[`Fields`]], [The layer's fields],
   [`collections`], [yes], [object (properties below)], [The layer's collections],
-  [`collections.contactWires`], [yes], [list of #link(<electrification-ContactWire>)[`ContactWire`]], [Contact wires],
-  [`collections.masts`], [yes], [list of #link(<electrification-Mast>)[`Mast`]], [Masts],
-  [`collections.suspensionPoints`], [yes], [list of #link(<electrification-SuspensionPoint>)[`SuspensionPoint`]], [Suspension points],
-  [`collections.sectionInsulators`], [yes], [list of #link(<electrification-SectionInsulator>)[`SectionInsulator`]], [Section insulators],
+  [`collections.​contactWires`], [yes], [list of #link(<electrification-ContactWire>)[`ContactWire`]], [Contact wires],
+  [`collections.​masts`], [yes], [list of #link(<electrification-Mast>)[`Mast`]], [Masts],
+  [`collections.​suspensionPoints`], [yes], [list of #link(<electrification-SuspensionPoint>)[`SuspensionPoint`]], [Suspension points],
+  [`collections.​sectionInsulators`], [yes], [list of #link(<electrification-SectionInsulator>)[`SectionInsulator`]], [Section insulators],
 )
 
 === Fields <electrification-Fields>
@@ -1541,9 +1553,9 @@ _No further properties are allowed._
 #table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
   [Property], [Required], [Type and allowed values], [Meaning],
   [`id`], [yes], [#link(<core-Id>)[`Id`]], [Id of the object],
-  [`mastId`], [yes], [#link(<core-Ref>)[`Ref`] → `electrification.`​`masts`], [The mast that holds it],
+  [`mastId`], [yes], [#link(<core-Ref>)[`Ref`] → `electrification.​masts`], [The mast that holds it],
   [`at`], [yes], [#link(<core-TrackLocation>)[`TrackLocation`]], [The place over the track],
-  [`contactWireId`], [yes], [#link(<core-Ref>)[`Ref`] → `electrification.`​`contactWires`], [The contact wire it carries],
+  [`contactWireId`], [yes], [#link(<core-Ref>)[`Ref`] → `electrification.​contactWires`], [The contact wire it carries],
   [`height`], [], [number; ≥ 0], [Contact wire height above top of rail \[m\]],
   [`stagger`], [], [number], [Stagger of the contact wire from the track axis \[m\], positive to the right in the direction of stationing],
   [`lifespan`], [], [#link(<core-Lifespan>)[`Lifespan`]], [Lifespan: the days in service; without one, the object exists and stays],
@@ -1561,8 +1573,8 @@ _No further properties are allowed._
   [`name`], [], [#link(<core-Label>)[`Label`]], [Name],
   [`kind`], [], [one of the values under Meaning], [Kind #linebreak() `insulator` section insulator #linebreak() `neutralSection` neutral section],
   [`at`], [yes], [#link(<core-TrackLocation>)[`TrackLocation`]], [The place on the track],
-  [`contactWireBeforeId`], [yes], [#link(<core-Ref>)[`Ref`] → `electrification.`​`contactWires`], [The wire before it (against the stationing)],
-  [`contactWireAfterId`], [yes], [#link(<core-Ref>)[`Ref`] → `electrification.`​`contactWires`], [The wire after it (in the direction of stationing)],
+  [`contactWireBeforeId`], [yes], [#link(<core-Ref>)[`Ref`] → `electrification.​contactWires`], [The wire before it (against the stationing)],
+  [`contactWireAfterId`], [yes], [#link(<core-Ref>)[`Ref`] → `electrification.​contactWires`], [The wire after it (in the direction of stationing)],
   [`lifespan`], [], [#link(<core-Lifespan>)[`Lifespan`]], [Lifespan: the days in service; without one, the object exists and stays],
 )
 
@@ -1578,7 +1590,7 @@ _No further properties are allowed._
   [Property], [Required], [Type and allowed values], [Meaning],
   [`fields`], [yes], [#link(<vehicles-Fields>)[`Fields`]], [The domain's fields],
   [`collections`], [yes], [object (properties below)], [The domain's collections],
-  [`collections.vehicles`], [yes], [list of #link(<vehicles-Vehicle>)[`Vehicle`]], [Vehicles],
+  [`collections.​vehicles`], [yes], [list of #link(<vehicles-Vehicle>)[`Vehicle`]], [Vehicles],
 )
 
 === Fields <vehicles-Fields>
@@ -1589,17 +1601,46 @@ Value: object
 
 === Vehicle <vehicles-Vehicle>
 
-A vehicle (a traction unit or a unit of coaches): its name, where it came from, the traction modes it runs on, and its rolling stock.
+A vehicle (a traction unit or a unit of coaches): where it came from and its rolling stock. Its name and its traction modes are those of its rolling stock.
 
 _No further properties are allowed._
 
 #table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
   [Property], [Required], [Type and allowed values], [Meaning],
   [`id`], [yes], [#link(<core-Id>)[`Id`]], [Id of the object],
-  [`name`], [yes], [#link(<core-Text>)[`Text`]], [Name],
   [`key`], [], [#link(<core-Text>)[`Text`]], [Key in the catalogue it came from],
-  [`tractionModes`], [], [list of one of `15000V`, `25000V`, `3000V`, `1500V`, `750V`, `600V`, `thermal`], [The traction modes it can run on: the voltages it can draw, and `thermal` for a drive of its own],
-  [`rollingStock`], [yes], [#link(<core-BlobRef>)[`BlobRef`]], [The vehicle as RailJSON rolling stock, as a blob],
+  [`rollingStock`], [yes], [#link(<vehicles-RollingStock>)[`RollingStock`]], [The vehicle as RailJSON rolling stock],
+)
+
+=== RollingStock <vehicles-RollingStock>
+
+The vehicle as RailJSON rolling stock (OSRD), kept in the object, not as a blob. The schema checks what the suite reads from it; every further RailJSON property (length, mass, maximum speed, resistance to motion, …) is allowed and taken as it comes. Units as in RailJSON: m, kg, m/s, N.
+
+#table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
+  [Property], [Required], [Type and allowed values], [Meaning],
+  [`railjson_version`], [yes], [#link(<core-Text>)[`Text`]], [RailJSON version of the rolling stock],
+  [`name`], [yes], [#link(<core-Text>)[`Text`]], [Name of the vehicle],
+  [`effort_curves`], [yes], [object (properties below)], [The tractive effort curves],
+  [`effort_curves.​modes`], [yes], [object (properties below)], [The traction modes it can run on, each with its tractive effort: the voltages it can draw, and `thermal` for a drive of its own. Operations compare them with the voltage of the contact wire],
+  [`effort_curves.​modes.​15000V`], [], [#link(<vehicles-EffortMode>)[`EffortMode`]], [Running on 15000V (15 kV 16.7 Hz)],
+  [`effort_curves.​modes.​25000V`], [], [#link(<vehicles-EffortMode>)[`EffortMode`]], [Running on 25000V (25 kV 50 Hz)],
+  [`effort_curves.​modes.​3000V`], [], [#link(<vehicles-EffortMode>)[`EffortMode`]], [Running on 3000V (3 kV DC)],
+  [`effort_curves.​modes.​1500V`], [], [#link(<vehicles-EffortMode>)[`EffortMode`]], [Running on 1500V (1.5 kV DC)],
+  [`effort_curves.​modes.​750V`], [], [#link(<vehicles-EffortMode>)[`EffortMode`]], [Running on 750V (750 V DC)],
+  [`effort_curves.​modes.​600V`], [], [#link(<vehicles-EffortMode>)[`EffortMode`]], [Running on 600V (600 V DC)],
+  [`effort_curves.​modes.​thermal`], [], [#link(<vehicles-EffortMode>)[`EffortMode`]], [Running on a drive of its own (diesel, battery, …)],
+  [`effort_curves.​default_mode`], [], [one of `15000V`, `25000V`, `3000V`, `1500V`, `750V`, `600V`, `thermal`], [The mode it runs with where several are possible],
+)
+
+=== EffortMode <vehicles-EffortMode>
+
+The tractive effort of one traction mode, as RailJSON states it. `is_electric` is true exactly for a voltage, false for `thermal`.
+
+#table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
+  [Property], [Required], [Type and allowed values], [Meaning],
+  [`is_electric`], [yes], [boolean], [Whether the mode draws current from the contact wire],
+  [`curves`], [yes], [list of object; at least 1 entry], [The curves of tractive effort over speed, each for its conditions (comfort, electrical profile, power restriction)],
+  [`default_curve`], [], [object], [The curve where no condition applies],
 )
 
 == Domain timetables 1.0
@@ -1614,14 +1655,14 @@ _No further properties are allowed._
   [Property], [Required], [Type and allowed values], [Meaning],
   [`fields`], [yes], [#link(<timetables-Fields>)[`Fields`]], [The domain's fields],
   [`collections`], [yes], [object (properties below)], [The domain's collections],
-  [`collections.timetables`], [yes], [list of #link(<timetables-Timetable>)[`Timetable`]], [Timetables],
-  [`collections.trains`], [yes], [list of #link(<timetables-Train>)[`Train`]], [Trains],
-  [`collections.trainKinds`], [yes], [list of #link(<timetables-TrainKind>)[`TrainKind`]], [Kinds of trains],
-  [`collections.formations`], [yes], [list of #link(<timetables-Formation>)[`Formation`]], [Formations],
-  [`collections.connections`], [yes], [list of #link(<timetables-Connection>)[`Connection`]], [Connections],
-  [`collections.turnarounds`], [yes], [list of #link(<timetables-Turnaround>)[`Turnaround`]], [Turnarounds],
-  [`collections.delayScenarios`], [yes], [list of #link(<timetables-DelayScenario>)[`DelayScenario`]], [Delay scenarios],
-  [`collections.studies`], [yes], [list of #link(<timetables-Study>)[`Study`]], [Capacity studies],
+  [`collections.​timetables`], [yes], [list of #link(<timetables-Timetable>)[`Timetable`]], [Timetables],
+  [`collections.​trains`], [yes], [list of #link(<timetables-Train>)[`Train`]], [Trains],
+  [`collections.​trainKinds`], [yes], [list of #link(<timetables-TrainKind>)[`TrainKind`]], [Kinds of trains],
+  [`collections.​formations`], [yes], [list of #link(<timetables-Formation>)[`Formation`]], [Formations],
+  [`collections.​connections`], [yes], [list of #link(<timetables-Connection>)[`Connection`]], [Connections],
+  [`collections.​turnarounds`], [yes], [list of #link(<timetables-Turnaround>)[`Turnaround`]], [Turnarounds],
+  [`collections.​delayScenarios`], [yes], [list of #link(<timetables-DelayScenario>)[`DelayScenario`]], [Delay scenarios],
+  [`collections.​studies`], [yes], [list of #link(<timetables-Study>)[`Study`]], [Capacity studies],
 )
 
 === Fields <timetables-Fields>
@@ -1654,7 +1695,7 @@ _No further properties are allowed._
   [Property], [Required], [Type and allowed values], [Meaning],
   [`mode`], [], [one of the values under Meaning], [Kind of dispatching #linebreak() `show` only show the conflicts, each train runs for itself #linebreak() `wait` give the trains the net one after the other, each waiting for a free block],
   [`priority`], [], [one of the values under Meaning], [In which order the trains are given the net #linebreak() `departure` by departure #linebreak() `kind` by kind of train (`kindOrder`)],
-  [`kindOrder`], [], [list of #link(<core-Ref>)[`Ref`] → `operations.`​`trainKinds`; at most 100 entries], [The kinds of trains first given the net, in their order],
+  [`kindOrder`], [], [list of #link(<core-Ref>)[`Ref`] → `operations.​trainKinds`; at most 100 entries], [The kinds of trains first given the net, in their order],
 )
 
 === BlockingTimes <timetables-BlockingTimes>
@@ -1680,11 +1721,11 @@ _No further properties are allowed._
 #table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
   [Property], [Required], [Type and allowed values], [Meaning],
   [`id`], [yes], [#link(<core-Id>)[`Id`]], [Id of the object],
-  [`timetableId`], [yes], [#link(<core-Ref>)[`Ref`] → `operations.`​`timetables`], [The timetable],
+  [`timetableId`], [yes], [#link(<core-Ref>)[`Ref`] → `operations.​timetables`], [The timetable],
   [`number`], [], [text], [Train number],
   [`name`], [], [text], [Name],
-  [`trainKindId`], [], [#link(<core-Ref>)[`Ref`] → `operations.`​`trainKinds`], [The kind of train],
-  [`formationId`], [], [#link(<core-Ref>)[`Ref`] → `operations.`​`formations`], [The formation],
+  [`trainKindId`], [], [#link(<core-Ref>)[`Ref`] → `operations.​trainKinds`], [The kind of train],
+  [`formationId`], [], [#link(<core-Ref>)[`Ref`] → `operations.​formations`], [The formation],
   [`mode`], [], [text], [Traction mode; without one, what the contact wires along its way and its vehicles allow],
   [`comfort`], [], [text], [Comfort after OSRD: STANDARD, AIR\_CONDITIONING, HEATING],
   [`departure`], [yes], [number; ≥ 0; ≤ 172799.999], [Departure in seconds from midnight of the timetable's day; past 24:00 the next day],
@@ -1704,14 +1745,14 @@ exactly one of `operationalPointId`, `endMarkId` is stated
 #table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
   [Property], [Required], [Type and allowed values], [Meaning],
   [`id`], [yes], [#link(<core-Id>)[`Id`]], [Id of the object],
-  [`operationalPointId`], [], [#link(<core-Ref>)[`Ref`] → `core.`​`operationalPoints`], [The operational point],
-  [`endMarkId`], [], [#link(<core-Ref>)[`Ref`] → `core.`​`endMarks`], [Or the track end (buffer stop, boundary)],
-  [`trackId`], [], [#link(<core-Ref>)[`Ref`] → `core.`​`tracks`], [The track it runs on there; without one, any],
+  [`operationalPointId`], [], [#link(<core-Ref>)[`Ref`] → `core.​operationalPoints`], [The operational point],
+  [`endMarkId`], [], [#link(<core-Ref>)[`Ref`] → `core.​endMarks`], [Or the track end (buffer stop, boundary)],
+  [`trackId`], [], [#link(<core-Ref>)[`Ref`] → `core.​tracks`], [The track it runs on there; without one, any],
   [`stop`], [yes], [boolean], [Stops there],
   [`dwell`], [], [number; ≥ 0; ≤ 86400], [Dwell time \[s\]],
   [`leastDwell`], [], [number; ≥ 0; ≤ 86400], [Least dwell time \[s\], which the dispatching keeps],
   [`departure`], [], [number; ≥ 0; ≤ 172799.999], [Departure in seconds from midnight of the timetable's day; past 24:00 the next day],
-  [`itineraryId`], [], [#link(<core-Ref>)[`Ref`] → `signalling.`​`itineraries`], [The itinerary it prefers to the next point],
+  [`itineraryId`], [], [#link(<core-Ref>)[`Ref`] → `signalling.​itineraries`], [The itinerary it prefers to the next point],
 )
 
 === TrainKind <timetables-TrainKind>
@@ -1740,9 +1781,9 @@ _No further properties are allowed._
   [`name`], [], [text], [Name],
   [`tractionUnits`], [yes], [list of #link(<timetables-TractionUnit>)[`TractionUnit`]], [The vehicles, front to back],
   [`hauledLoad`], [], [object (properties below)], [The hauled load, as one],
-  [`hauledLoad.mass`], [], [number; ≥ 0], [Mass \[kg\]],
-  [`hauledLoad.length`], [], [number; ≥ 0], [Length \[m\]],
-  [`hauledLoad.maxSpeed`], [], [number; ≥ 0], [Maximum speed \[m/s\]],
+  [`hauledLoad.​mass`], [], [number; ≥ 0], [Mass \[kg\]],
+  [`hauledLoad.​length`], [], [number; ≥ 0], [Length \[m\]],
+  [`hauledLoad.​maxSpeed`], [], [number; ≥ 0], [Maximum speed \[m/s\]],
   [`brakePosition`], [], [one of `G`, `P`, `R`, `R+Mg`], [Brake position],
   [`brakedWeightPercentage`], [], [number; ≥ 0; ≤ 300], [Braked weight percentage \[%\]],
 )
@@ -1755,7 +1796,7 @@ _No further properties are allowed._
 
 #table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
   [Property], [Required], [Type and allowed values], [Meaning],
-  [`vehicleId`], [yes], [#link(<core-Ref>)[`Ref`] → `vehicles.`​`vehicles`], [The vehicle],
+  [`vehicleId`], [yes], [#link(<core-Ref>)[`Ref`] → `vehicles.​vehicles`], [The vehicle],
 )
 
 === Connection <timetables-Connection>
@@ -1767,9 +1808,9 @@ _No further properties are allowed._
 #table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
   [Property], [Required], [Type and allowed values], [Meaning],
   [`id`], [yes], [#link(<core-Id>)[`Id`]], [Id of the object],
-  [`fromTrainId`], [yes], [#link(<core-Ref>)[`Ref`] → `operations.`​`trains`], [The arriving train],
-  [`toTrainId`], [yes], [#link(<core-Ref>)[`Ref`] → `operations.`​`trains`], [The departing train],
-  [`operationalPointId`], [yes], [#link(<core-Ref>)[`Ref`] → `core.`​`operationalPoints`], [The operational point],
+  [`fromTrainId`], [yes], [#link(<core-Ref>)[`Ref`] → `operations.​trains`], [The arriving train],
+  [`toTrainId`], [yes], [#link(<core-Ref>)[`Ref`] → `operations.​trains`], [The departing train],
+  [`operationalPointId`], [yes], [#link(<core-Ref>)[`Ref`] → `core.​operationalPoints`], [The operational point],
   [`changeTime`], [], [number; ≥ 0; ≤ 86400], [Time to change trains \[s\]],
   [`waitUpTo`], [], [number; ≥ 0; ≤ 86400], [How long the departing train waits \[s\]],
 )
@@ -1783,8 +1824,8 @@ _No further properties are allowed._
 #table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
   [Property], [Required], [Type and allowed values], [Meaning],
   [`id`], [yes], [#link(<core-Id>)[`Id`]], [Id of the object],
-  [`fromTrainId`], [yes], [#link(<core-Ref>)[`Ref`] → `operations.`​`trains`], [The ending train],
-  [`toTrainId`], [yes], [#link(<core-Ref>)[`Ref`] → `operations.`​`trains`], [The following train],
+  [`fromTrainId`], [yes], [#link(<core-Ref>)[`Ref`] → `operations.​trains`], [The ending train],
+  [`toTrainId`], [yes], [#link(<core-Ref>)[`Ref`] → `operations.​trains`], [The following train],
   [`leastTime`], [], [number; ≥ 0; ≤ 86400], [Least turnaround time \[s\]],
 )
 
@@ -1810,8 +1851,8 @@ _No further properties are allowed._
 
 #table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
   [Property], [Required], [Type and allowed values], [Meaning],
-  [`operationalPointId`], [], [#link(<core-Ref>)[`Ref`] → `core.`​`operationalPoints`], [Where it holds; without one, everywhere],
-  [`trainKindId`], [], [#link(<core-Ref>)[`Ref`] → `operations.`​`trainKinds`], [For which kind of train; without one, for every kind],
+  [`operationalPointId`], [], [#link(<core-Ref>)[`Ref`] → `core.​operationalPoints`], [Where it holds; without one, everywhere],
+  [`trainKindId`], [], [#link(<core-Ref>)[`Ref`] → `operations.​trainKinds`], [For which kind of train; without one, for every kind],
   [`share`], [yes], [number; ≥ 0; ≤ 1], [Share of the trains delayed],
   [`distribution`], [yes], [#link(<timetables-Distribution>)[`Distribution`]], [Distribution of the delays],
   [`source`], [], [text], [Where the figures come from: the suite's starting value or a measurement],
@@ -1842,17 +1883,17 @@ _No further properties are allowed._
   [Property], [Required], [Type and allowed values], [Meaning],
   [`id`], [yes], [#link(<core-Id>)[`Id`]], [Id of the object],
   [`name`], [yes], [text], [Name],
-  [`timetableId`], [yes], [#link(<core-Ref>)[`Ref`] → `operations.`​`timetables`], [The timetable],
+  [`timetableId`], [yes], [#link(<core-Ref>)[`Ref`] → `operations.​timetables`], [The timetable],
   [`period`], [], [object (properties below)], [The period studied],
-  [`period.from`], [yes], [number; ≥ 0; ≤ 172799.999], [Start in seconds from midnight of the timetable's day],
-  [`period.to`], [yes], [number; ≥ 0; ≤ 172799.999], [End in seconds from midnight of the timetable's day],
+  [`period.​from`], [yes], [number; ≥ 0; ≤ 172799.999], [Start in seconds from midnight of the timetable's day],
+  [`period.​to`], [yes], [number; ≥ 0; ≤ 172799.999], [End in seconds from midnight of the timetable's day],
   [`stretches`], [], [list of objects (properties below)], [The stretches, from operational point to operational point],
-  [`stretches[].fromOperationalPointId`], [yes], [#link(<core-Ref>)[`Ref`] → `core.`​`operationalPoints`], [From this operational point],
-  [`stretches[].toOperationalPointId`], [yes], [#link(<core-Ref>)[`Ref`] → `core.`​`operationalPoints`], [To this one],
+  [`stretches[].​fromOperationalPointId`], [yes], [#link(<core-Ref>)[`Ref`] → `core.​operationalPoints`], [From this operational point],
+  [`stretches[].​toOperationalPointId`], [yes], [#link(<core-Ref>)[`Ref`] → `core.​operationalPoints`], [To this one],
   [`bounds`], [], [object (properties below)], [The bounds, where the study changes them],
-  [`bounds.occupancyRate`], [], [number; ≥ 0; ≤ 1], [Bound of the occupancy rate (UIC Code 406)],
-  [`bounds.punctualityThreshold`], [], [number; ≥ 0; ≤ 3600], [Delay beyond which a train is not punctual \[s\]],
-  [`delayScenarioId`], [], [#link(<core-Ref>)[`Ref`] → `operations.`​`delayScenarios`], [The delay scenario],
+  [`bounds.​occupancyRate`], [], [number; ≥ 0; ≤ 1], [Bound of the occupancy rate (UIC Code 406)],
+  [`bounds.​punctualityThreshold`], [], [number; ≥ 0; ≤ 3600], [Delay beyond which a train is not punctual \[s\]],
+  [`delayScenarioId`], [], [#link(<core-Ref>)[`Ref`] → `operations.​delayScenarios`], [The delay scenario],
   [`runs`], [], [integer; ≥ 1; ≤ 100000], [Number of runs],
   [`seed`], [], [integer; ≥ 0], [Seed of the random generator],
 )

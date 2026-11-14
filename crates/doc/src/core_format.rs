@@ -350,6 +350,12 @@ pub fn record_to_document(record: &Value, schema_hashes: &HashMap<&str, String>)
     crate::words::forward(&mut domains);
     crate::ids::forward(&mut domains);
     sorted_collections(&mut domains);
+    // The domains this build does not know, as they came (rail-across-1.0): written back unchanged.
+    for (name, domain) in get(record, "keptDomains").and_then(Value::as_object).into_iter().flatten() {
+        if domain_version(name).is_none() {
+            domains.insert(name.clone(), domain.clone());
+        }
+    }
     Ok(json!({ "format": crate::door::FORMAT, "version": crate::door::VERSION, "domains": Value::Object(domains), "blobs": Value::Object(blobs) }))
 }
 
@@ -375,6 +381,7 @@ pub fn record_domains(record: &Value, schema_hashes: &HashMap<&str, String>) -> 
         .chain(CIVIL_FIELDS)
         .chain(COLLECTIONS)
         .chain(CARRIED)
+        .chain(&["keptDomains"])
         .copied()
         .collect();
     let unknown: Vec<String> = record
@@ -668,6 +675,16 @@ pub fn document_to_record(doc: &Value) -> Result<Value> {
         if ALWAYS.contains(name) || !items.is_empty() {
             record.insert((*name).into(), Value::Array(items));
         }
+    }
+    let kept: Object = doc["domains"]
+        .as_object()
+        .into_iter()
+        .flatten()
+        .filter(|(name, _)| domain_version(name).is_none())
+        .map(|(k, v)| (k.clone(), v.clone()))
+        .collect();
+    if !kept.is_empty() {
+        record.insert("keptDomains".into(), Value::Object(kept));
     }
     for name in CARRIED {
         let Some(d) = doc["domains"].get(name) else { continue };

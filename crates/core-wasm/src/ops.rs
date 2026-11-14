@@ -152,6 +152,13 @@ fn run_on(op: &str, input: &Value) -> Result<Value, Failure> {
         }
         "operations.toOperations" => Ok(rail_across_doc::operations::to_operations(&input["record"], flag(input, "check", true))?),
         "operations.fromOperations" => Ok(rail_across_doc::operations::from_operations(input)?),
+        // the file rail-across-1.0 (decision 0029, phase 5)
+        "file.toFile" => Ok(rail_across_doc::file::to_file(
+            input.get("infra").filter(|v| v.is_object()),
+            input.get("operations").filter(|v| v.is_object()),
+            input.get("meta").unwrap_or(&Value::Null),
+        )?),
+        "file.fromFile" => Ok(rail_across_doc::file::from_file(input)?),
         "operations.schemaHashes" => Ok(json!(rail_across_doc::operations::schema_hashes())),
 
         // project

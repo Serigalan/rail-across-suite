@@ -1,4 +1,4 @@
-import { checkOperations, contentHash, fromOperations, isOperationsFile, toOperations } from '@rail-across/core/document'
+import { checkOperations, contentHash, fileParts, fromOperations, isOperationsFile, isProjectFile, projectFile, toOperations } from '@rail-across/core/document'
 
 /**
  * A project's timetables as a file of their own, beside the project's backup
@@ -92,8 +92,16 @@ export function operationsFile(timetables, entries = []) {
   return toOperations(record)
 }
 
-/** The name a project's operations are saved under. */
-export const operationsFileName = (title) => `${title} – Fahrpläne.operations.json`
+/**
+ * The file rail-across-1.0 of a project's operations alone (decision 0029,
+ * phase 5): `timetables` and the vehicles of `entries` as operationsFile has
+ * them, the envelope naming the project (`projectId`) and when it was saved.
+ */
+export const operationsProjectFile = (timetables, entries = [], meta = {}) =>
+  projectFile({ operations: operationsFile(timetables, entries) }, { savedAt: new Date().toISOString(), ...meta })
+
+/** The name a project's operations are saved under, alone. */
+export const operationsFileName = (title) => `${title} – Fahrpläne.railacross.json`
 
 /**
  * What a parsed file of timetables brings — an operations file, or one of
@@ -102,10 +110,11 @@ export const operationsFileName = (title) => `${title} – Fahrpläne.operations
  * version, `timetables_invalid` for one that is not one to read.
  */
 export function timetablesOf(data) {
-  if (isOperationsFile(data)) {
+  if (isOperationsFile(data) || isProjectFile(data)) {
     let record
     try {
-      record = fromOperations(checkOperations(data))
+      const doc = isProjectFile(data) ? fileParts(data).operations : data
+      record = doc ? fromOperations(checkOperations(doc)) : { timetables: [], vehicles: [] }
     } catch (err) {
       throw new TimetablesFileError(err.code === 'unsupported_version' ? 'timetables_version' : 'timetables_invalid')
     }
@@ -123,7 +132,7 @@ export function readTimetables(text) {
 }
 
 /** Whether a parsed file is one of timetables — an operations file or one of before. */
-export const isTimetablesData = (data) => isTimetablesFile(data) || isOperationsFile(data)
+export const isTimetablesData = (data) => isTimetablesFile(data) || isOperationsFile(data) || (isProjectFile(data) && !data.infraData)
 
 /**
  * The timetables with the vehicles a file carried taken into the catalogue:

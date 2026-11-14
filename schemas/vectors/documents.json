@@ -3394,8 +3394,52 @@
     ]
    }
   },
-  "valid": false,
-  "code": "unsupported_version"
+  "valid": true,
+  "manifest": {
+   "domains": {
+    "catenary": {
+     "version": "0.3",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
+     "dependsOn": [
+      "core"
+     ],
+     "fields": "sha256:8d9ae941998100a45679076ed67feb55eaf5c06dc028c5ff9396bbe93de06ffb",
+     "collections": {
+      "axisSurveys": "sha256:d7ce074b7e6d87cbab6ac452bb3263f675080ef60fc89845e04446175dc4d77d",
+      "platforms": "sha256:6171d4d2efa6edacc52514026c8128862b98973497abd3cd47722d617fdfbeba",
+      "referenceAxes": "sha256:e3b59b3d91e0c06f1645b0a4207446e6a24e11db78cb5a158adc0365e0977607"
+     }
+    },
+    "civil": {
+     "version": "3.0",
+     "schema": "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d",
+     "dependsOn": [
+      "core"
+     ],
+     "fields": "sha256:8d9ae941998100a45679076ed67feb55eaf5c06dc028c5ff9396bbe93de06ffb",
+     "collections": {
+      "axisSurveys": "sha256:d7ce074b7e6d87cbab6ac452bb3263f675080ef60fc89845e04446175dc4d77d",
+      "platforms": "sha256:6171d4d2efa6edacc52514026c8128862b98973497abd3cd47722d617fdfbeba",
+      "referenceAxes": "sha256:e3b59b3d91e0c06f1645b0a4207446e6a24e11db78cb5a158adc0365e0977607"
+     }
+    },
+    "core": {
+     "version": "4.0",
+     "schema": "sha256:2dd6dee14dc22be99741f2b095a314185273f3662f809433d7639fe4c59f6abf",
+     "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
+     "collections": {
+      "endMarks": "sha256:5408144d512d65e415a7b577d171b1ca743d2ed18a701b0d8b0632d7657bc286",
+      "kmLines": "sha256:f2a1c4b1980331d217c29e2a79e22df5d1e5a3e5001ff3ba98bd1c648b991f3d",
+      "operationalPoints": "sha256:6a6eb5b21cdb3c39939da851281a7a8b9c968d36cea93d44d383d292b33beb34",
+      "stoppingPlaces": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "switches": "sha256:baea07f54926aaf8fda41d01c6ab4b04f878f4db9126a3646f653b7d29d7bfd5",
+      "trackPaths": "sha256:e5dd047fdd95fc9876fa4fc7d263d693027fa38498aa84e7bb98825c1390bd37",
+      "tracks": "sha256:7421cd1294a91c22655cf6bef3bac9bb9ff8098e63c4f2b2ce68561c43af0e88"
+     }
+    }
+   }
+  },
+  "hash": "sha256:fb37b0bc823265237ede05a1e60e84f1c6e7b61912c57410c919e5a5ba2e88d6"
  },
  {
   "name": "a schema hash that is not the version's",

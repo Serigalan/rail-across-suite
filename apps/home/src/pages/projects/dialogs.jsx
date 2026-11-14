@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { operationsFile, operationsFileName } from '@rail-across/timetables/exchange'
+import { operationsFile } from '@rail-across/timetables/exchange'
 import { catalogueEntries } from '../../vehicleCatalogue'
 import { api, blobUrl } from '../../api'
 import { download } from '../../download'
@@ -118,8 +118,9 @@ export function ExportDialog({ project, onCancel, onDone }) {
   const submit = () => run(async () => {
     const { payload, variant } = await api.head(variantId)
     const image = payload.imageHash ? await imageAsDataUrl(payload.imageHash) : null
-    download(exportedDocument(payload, { title: project.title, image }), exportFileName(project, variant))
-    if (withTimetables && timetables.length) download(operationsFile(timetables, await catalogueEntries()), operationsFileName(project.title))
+    // one file: the variant, and the project's operations in it where they go along (rail-across-1.0)
+    const operations = withTimetables && timetables.length ? operationsFile(timetables, await catalogueEntries()) : null
+    download(exportedDocument(payload, { title: project.title, image, operations }), exportFileName(project, variant))
     onDone()
   })
   return (

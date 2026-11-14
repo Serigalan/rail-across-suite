@@ -595,15 +595,17 @@ Die Prüfsummen sind hier gekürzt; in einer Datei hat jede ihre 64 Hexziffern.
 Diese Spezifikation ist das Ziel des Datenmodells. Mit Stand 13. November 2026 weicht die Implementierung der Suite
 in diesen Punkten ab; jeder wird in einem eigenen Schritt angeglichen (Entscheidung 0028 und die folgenden):
 
-- Zwei Dateien statt einer: die Infrastruktur als infra-data 2.0 (`.railacross.json`, Domänen core 4.0, civil 3.0,
-  signalling 4.0, electrification 3.0), der Betrieb als operations 1.0 (`.operations.json`, Domänen vehicles 1.0
-  und timetables 1.0); eine Datei von vorher führt noch die Schemas mit.
+- Der Projektserver hält die Infrastruktur einer Variante als Dokument der Hülle von vorher (infra-data 2.0: ihre
+  Domänen und ihre Blobs, core 4.0, civil 3.0, signalling 4.0, electrification 3.0) und den Betrieb als Dokument
+  operations (vehicles 1.0, timetables 1.0); die Datei rail-across-1.0 führt sie zusammen, eine Datei von vorher
+  wird weiter gelesen.
 - Der Record, mit dem die Werkzeuge arbeiten, behält das Vokabular von vorher — die Arten als Zahlen,
   `operationalPoint`, `dep`, eine `turnout` mit `B1` als Zweiggleis —, Kilometrierungslinien in WGS 84 mit dem
   Kilometer je Punkt und Kennungen jeder Form; die Tür wandelt ihn ins Dokument und zurück (Entscheidung 0029,
   Phase 6 nimmt das heraus). Eine Kilometrierungslinie von vorher steht als Punkte da, noch nicht mit
   Trassierungselementen angenähert.
-- Eine Domäne, die der Leser nicht kennt, wird abgelehnt, nicht erhalten.
+- Eine Domäne, die der Leser nicht kennt, bleibt erhalten; eine spätere Version einer Domäne, die er kennt, lehnt er
+  ab, statt sie mit der Version zu lesen, die er kennt.
 
 <a id="appendix"></a>
 

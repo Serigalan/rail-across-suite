@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { operationsFile, operationsFileName, readTimetables, withCarriedVehicles } from '@rail-across/timetables/exchange'
+import { operationsFileName, operationsProjectFile, readTimetables, withCarriedVehicles } from '@rail-across/timetables/exchange'
 import { catalogueEntries, createVehicle } from '../vehicleCatalogue'
 import { MODULES, simulationUrl } from '../modules'
 import { ModuleIcon } from '../icons'
@@ -44,7 +44,7 @@ export default function Simulation({ route, user, projects, onReload = async () 
     try {
       const { timetables } = await api.timetables(project.id)
       if (!timetables.length) { say(fill('timetables_none', { title: project.title })); return }
-      download(operationsFile(timetables, await catalogueEntries()), operationsFileName(project.title))
+      download(operationsProjectFile(timetables, await catalogueEntries(), { projectId: project.id }), operationsFileName(project.title))
     } catch (err) {
       setError(errorText(t, err.code))
     }

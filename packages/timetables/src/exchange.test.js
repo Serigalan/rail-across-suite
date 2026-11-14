@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { derivedId } from '@rail-across/core/document'
 import {
-  isTimetablesData, isTimetablesFile, operationsFile, operationsFileName, parseTimetablesFile, readTimetables, timetablesFile, timetablesFileName,
+  isTimetablesData, isTimetablesFile, operationsFile, operationsFileName, operationsProjectFile, parseTimetablesFile, readTimetables, timetablesFile, timetablesFileName,
   timetablesOf, timetablesOfText, withCarriedVehicles,
 } from './exchange.js'
 
@@ -56,7 +56,7 @@ describe('an operations file (operations-1.0, decisions 0026, 0029)', () => {
     const read = readTimetables(JSON.stringify(file))
     expect(read.timetables).toEqual([{ name: 'Takt', data: { trains: [train('t1', 'osrd:loco'), train('t2', 'own-1')] } }])
     expect(read.vehicles.map(v => v.key).sort()).toEqual(['osrd:loco', 'own-1'])
-    expect(operationsFileName('Halle')).toBe('Halle – Fahrpläne.operations.json')
+    expect(operationsFileName('Halle')).toBe('Halle – Fahrpläne.railacross.json')
     // the file of before is still read
     expect(readTimetables(JSON.stringify(timetablesFile(timetables))).timetables).toEqual([{ name: 'Takt', data: timetables[0].data }])
   })
@@ -70,6 +70,14 @@ describe('an operations file (operations-1.0, decisions 0026, 0029)', () => {
     expect(made).toEqual([own])
     expect(added).toEqual([{ key: 'own-1', id: 'new-1', name: 'Eigener Triebwagen' }])
     expect(taken[0].data.trains.map(t => t.vehicle)).toEqual(['osrd:loco', 'new-1'])
+  })
+
+  it('goes out as a file rail-across-1.0 of the operations alone, and reads back (decision 0029, phase 5)', () => {
+    const file = operationsProjectFile(timetables, entries, { projectId: derivedId('p'), savedAt: '2026-11-14T08:00:00Z' })
+    expect(file).toMatchObject({ format: 'rail-across', version: '1.0', projectId: derivedId('p'), savedAt: '2026-11-14T08:00:00Z' })
+    expect(file.infraData).toBeUndefined()
+    expect(isTimetablesData(file)).toBe(true)
+    expect(readTimetables(JSON.stringify(file)).timetables).toEqual([{ name: 'Takt', data: { trains: [train('t1', 'osrd:loco'), train('t2', 'own-1')] } }])
   })
 
   it('is refused where it is not one to read', () => {

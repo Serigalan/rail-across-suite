@@ -193,10 +193,13 @@ describe('the door', () => {
     expect(checkDocument(old)).toEqual(now)
   })
 
-  it('refuses a version or a domain it does not read', () => {
+  it('refuses a version it does not read, and keeps a domain it does not know (rail-across-1.0)', () => {
     const doc = toDocument(record({ planHeader: { subtitle: 'x' } }))
     expect(() => checkDocument({ ...doc, domains: { ...doc.domains, core: { ...doc.domains.core, version: '2.1' } } })).toThrow('unsupported_version')
-    expect(() => checkDocument({ ...doc, domains: { ...doc.domains, catenary: doc.domains.civil } })).toThrow('unsupported_version')
+    const noise = { version: '1.0', schema: `sha256:${'a'.repeat(64)}`, dependsOn: ['core'], fields: {}, collections: {} }
+    const kept = checkDocument({ ...doc, domains: { ...doc.domains, noise } })
+    expect(kept.domains.noise).toEqual(noise)
+    expect(fromDocument(kept).keptDomains).toEqual({ noise })
     expect(() => checkDocument({ ...doc, version: '3.0' })).toThrow('unsupported_version')
   })
 

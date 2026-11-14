@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { derivedId } from '@rail-across/core/document'
 import { operationsFile, timetablesFile } from '@rail-across/timetables/exchange'
 import { projectDocument } from '@rail-across/core/project'
-import { importedFiles } from './projects'
+import { exportedDocument, importedFiles } from './projects'
 
 const record = { id: 'p', title: 'Strecke', tracks: [], switches: [], platforms: [] }
 const backup = projectDocument(record, { carrySchemas: true })
@@ -28,6 +28,19 @@ describe('the files chosen to import', () => {
     ])
     expect(projects).toHaveLength(1)
     expect(tt).toEqual([{ name: 'Takt', data: { trains: [{ ...train, id: derivedId(train.id) }] } }])
+    expect(vehicles).toMatchObject([{ key: 'osrd:loco', vehicle: loco }])
+  })
+
+  it('read one file rail-across-1.0 that holds the project and its operations (decision 0029, phase 5)', () => {
+    const loco = { railjson_version: '3.3', name: 'Lok', effort_curves: { modes: { thermal: { is_electric: false, curves: [{}] } } } }
+    const train = { id: derivedId('t1'), number: '1', category: 'RE', name: '', vehicle: 'osrd:loco', mode: null, comfort: 'STANDARD', departure: 3600, margin: '', distribution: 'mareco', points: [] }
+    const operations = operationsFile([{ id: 'x', name: 'Takt', data: { trains: [train] } }], [{ key: 'osrd:loco', vehicle: loco }])
+    const file = exportedDocument(record, { title: 'Strecke', operations })
+    expect(file).toMatchObject({ format: 'rail-across', version: '1.0', projectId: derivedId('p') })
+    expect(file.schemas).toBeUndefined()
+    const { projects, timetables: tt, vehicles } = importedFiles([{ name: 'Strecke – Bestand.railacross.json', text: JSON.stringify(file) }])
+    expect(projects.map(p => p.title)).toEqual(['Strecke'])
+    expect(tt).toEqual([{ name: 'Takt', data: { trains: [train] } }])
     expect(vehicles).toMatchObject([{ key: 'osrd:loco', vehicle: loco }])
   })
 

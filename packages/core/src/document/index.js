@@ -20,6 +20,7 @@ export {
   checkDocument, FORMAT, FORMAT_NAME, FORMAT_VERSION, fromDocument, SCHEMA_HASHES, schemaOf, toDocument,
 } from './door.js'
 export { PayloadError } from './payloadError.js'
+export { FILE_FORMAT, FILE_VERSION, fileParts, isProjectFile, projectFile } from './file.js'
 export { sha256Hex, sha256OfText } from './sha256.js'
 export { viaNative } from './viaNative.js'
 export {

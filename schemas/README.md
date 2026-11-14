@@ -31,6 +31,7 @@ may carry one; the states a project passes through are worked out of them, never
 
 | File | What it is |
 |---|---|
+| `rail-across.schema.json` | rail-across-1.0, one project as one JSON file (`.railacross.json`; [decision 0029](../docs/decisions/0029-the-suite-on-rail-across-1.0.md), phase 5): the project, the program that wrote it and when, the part infra-data-1.0 (the domains of `infra-data.schema.json`) and the part operations-1.0 (those of `operations.schema.json`), the blobs of both; no schemas carried, a domain the reader does not know kept |
 | `infra-data.schema.json` | infra-data-2.0, a project as one JSON file (`.railacross.json`): the domains, the schemas it carries, its blobs |
 | `core/4.0.schema.json` | Domain `core` 4.0: tracks, switches and connectors, end marks, km lines, the operational point register, the stopping places (passenger stops among them), the named runs of tracks (`trackPaths`); the core types `TrackEnd`, `TrackLocation`, `TrackRange`, `TrackPath`, `Lifespan` (by day), `Day`, `Ref` |
 | `civil/3.0.schema.json` | Domain `civil` 3.0: platforms, each naming the stopping places at it; bridges, retaining walls and noise barriers; measured axes, reference axes, the plan header, the project picture |

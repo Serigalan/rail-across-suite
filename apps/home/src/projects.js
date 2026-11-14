@@ -3,6 +3,7 @@
 // variants, who may change what, and the backup files a project goes out
 // and comes in as — its timetables in a file beside. All of it is the
 // server's, the core's and the timetables'; nothing here knows a tool.
+import { fileParts, isProjectFile, projectFile } from '@rail-across/core/document'
 import { parseProjectsPayload, PayloadError, projectDocument, withImportSystem } from '@rail-across/core/project'
 import { isTimetablesData, timetablesOf } from '@rail-across/timetables/exchange'
 
@@ -76,7 +77,9 @@ export function pairDefaults(variants) {
 function importedProjects(text, fileName = '') {
   let incoming
   try {
-    incoming = parseProjectsPayload(JSON.parse(text)).projects
+    const data = JSON.parse(text)
+    // a file rail-across-1.0 brings its infrastructure as a part (decision 0029, phase 5)
+    incoming = parseProjectsPayload(isProjectFile(data) ? fileParts(data).infra : data).projects
   } catch (err) {
     const code = err instanceof PayloadError && err.code === 'unsupported_version' ? 'import_version' : 'import_invalid'
     throw Object.assign(new Error(code), { code })
@@ -108,22 +111,27 @@ export function importedFiles(files) {
   for (const { name, text } of files) {
     let data = null
     try { data = JSON.parse(text) } catch { /* not JSON: importedProjects says so */ }
-    if (isTimetablesData(data)) {
+    // a file rail-across-1.0 may hold both: its project, and its timetables beside
+    if (isTimetablesData(data) || (isProjectFile(data) && data.operations)) {
       const read = timetablesOf(data)
       timetables.push(...read.timetables)
       vehicles.push(...read.vehicles)
-    } else projects.push(...importedProjects(text, name))
+    }
+    if (!isTimetablesData(data)) projects.push(...importedProjects(text, name))
   }
   return { projects, timetables, vehicles }
 }
 
 /**
- * A variant's head as a backup file: self-contained, the schemas carried,
- * the picture embedded (a data URL, or none) instead of its hash on the server.
+ * A variant's head as a backup file, the file rail-across-1.0 (decision 0029,
+ * phase 5): self-contained, the picture embedded (a data URL, or none)
+ * instead of its hash on the server, the project's operations beside where
+ * given (an operations document, operationsFile).
  */
-export function exportedDocument(record, { title, image = null }) {
+export function exportedDocument(record, { title, image = null, operations = null }) {
   const { imageHash: _hash, ...rest } = record
-  return projectDocument({ ...rest, title, ...(image ? { image } : {}) }, { carrySchemas: true })
+  const infra = projectDocument({ ...rest, title, ...(image ? { image } : {}) })
+  return projectFile({ infra, operations }, { savedAt: new Date().toISOString() })
 }
 
 /** The name a backup file is saved under. */

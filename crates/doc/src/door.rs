@@ -950,6 +950,10 @@ pub fn check_document(given: &Value) -> Result<Value> {
     if let Some(Value::Object(domains)) = doc.get("domains") {
         for (name, domain) in domains {
             let version = domain.get("version");
+            // A domain this build does not know is kept as it came, and written back (rail-across-1.0).
+            if domain_version(name).is_none() {
+                continue;
+            }
             if domain_version(name).map(|v| Value::String(v.into())).as_ref() != version {
                 let newer = domain_version(name).zip(version.and_then(Value::as_str)).filter(|(ours, theirs)| later(theirs, ours));
                 return Err(PayloadError::with(

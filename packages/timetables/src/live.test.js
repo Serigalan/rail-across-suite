@@ -10,7 +10,7 @@ const record = {
     fields: {},
     collections: {
       signals: [], detectionPoints: [point('p1', 300), point('p2', 700)],
-      trackSections: [{ id: 'S0', kind: 'axleCounting', boundedBy: ['p1'] }, { id: 'S1', kind: 'axleCounting', boundedBy: ['p1', 'p2'] }, { id: 'S2', kind: 'axleCounting', boundedBy: ['p2'] }],
+      trackSections: [{ id: 'S0', kind: 'axleCounting', detectionPointIds: ['p1'] }, { id: 'S1', kind: 'axleCounting', detectionPointIds: ['p1', 'p2'] }, { id: 'S2', kind: 'axleCounting', detectionPointIds: ['p2'] }],
     },
   },
 }

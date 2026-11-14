@@ -196,12 +196,12 @@ export function detectionLayout(net, domain, { kmLines, layout = LAYOUT, t } = {
   const parts = netParts({ core: { collections: net }, signalling: { collections: { detectionPoints: [...detectionPoints, ...points] } } })
     .filter(p => p.boundary.length)
   const key = (ids) => [...ids].sort().join('|')
-  const byBounds = new Map(trackSections.map(s => [key(s.boundedBy), s]))
+  const byBounds = new Map(trackSections.map(s => [key(s.detectionPointIds), s]))
   const kept = [], sections = []
   for (const part of parts) {
     const same = byBounds.get(key(part.boundary))
     if (same) kept.push(same)
-    else sections.push({ id: newId(), name: sectionName(net, part, t), kind: 'axleCounting', boundedBy: part.boundary })
+    else sections.push({ id: newId(), name: sectionName(net, part, t), kind: 'axleCounting', detectionPointIds: part.boundary })
   }
   numberAlike(sections, new Set(kept.map(s => s.name)))
   const keptIds = new Set(kept.map(s => s.id))

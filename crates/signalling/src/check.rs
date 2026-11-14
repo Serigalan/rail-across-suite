@@ -466,8 +466,8 @@ pub fn check_signalling_on(core: &Value, signalling: &Value, civil: &Value) -> V
         at(&mut out, "detectionPoints", d, d.get("at"), "at");
     }
     for t in c("trackSections") {
-        for p in arr(t, "boundedBy") {
-            reference(&mut out, "trackSections", &id_of(t), "signalling.detectionPoints", Some(p), "boundedBy");
+        for p in arr(t, "detectionPointIds") {
+            reference(&mut out, "trackSections", &id_of(t), "signalling.detectionPoints", Some(p), "detectionPointIds");
             bounding.insert(s(Some(p)));
         }
     }
@@ -529,8 +529,8 @@ pub fn check_signalling_on(core: &Value, signalling: &Value, civil: &Value) -> V
         if kind == Some("middle") && !truthy(r.get("middleType")) {
             out.warning("route_type_missing", "routes", &rid, json!({}), "");
         }
-        for t in arr(r, "clearSections") {
-            reference(&mut out, "routes", &rid, "signalling.trackSections", Some(t), "clearSections");
+        for t in arr(r, "clearSectionIds") {
+            reference(&mut out, "routes", &rid, "signalling.trackSections", Some(t), "clearSectionIds");
         }
         let ovs = arr(r, "overlaps");
         if kind == Some("shunting") && !ovs.is_empty() {
@@ -645,8 +645,8 @@ pub fn check_signalling_on(core: &Value, signalling: &Value, civil: &Value) -> V
         {
             out.error("overlap_end_off_path", "overlaps", &oid, json!({}), "");
         }
-        for t in arr(o, "clearSections") {
-            reference(&mut out, "overlaps", &oid, "signalling.trackSections", Some(t), "clearSections");
+        for t in arr(o, "clearSectionIds") {
+            reference(&mut out, "overlaps", &oid, "signalling.trackSections", Some(t), "clearSectionIds");
         }
         for sw in arr(o, "switches") {
             reference(&mut out, "overlaps", &oid, "signalling.switchElements", sw.get("switchElementId"), "switches");
@@ -687,7 +687,7 @@ pub fn check_signalling_on(core: &Value, signalling: &Value, civil: &Value) -> V
                 out.error("flank_position_missing", "flankProtection", &fid, json!({}), "");
             }
         }
-        for side in ["left", "right"] {
+        for side in ["leftId", "rightId"] {
             reference(
                 &mut out,
                 "flankProtection",
@@ -697,8 +697,8 @@ pub fn check_signalling_on(core: &Value, signalling: &Value, civil: &Value) -> V
                 &format!("passOn.{side}"),
             );
         }
-        for t in arr(f, "clearSections") {
-            reference(&mut out, "flankProtection", &fid, "signalling.trackSections", Some(t), "clearSections");
+        for t in arr(f, "clearSectionIds") {
+            reference(&mut out, "flankProtection", &fid, "signalling.trackSections", Some(t), "clearSectionIds");
         }
     }
 

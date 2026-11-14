@@ -55,7 +55,7 @@ export function ksStation({ operationalPoint = 'op1' } = {}) {
         { id: 'dp-1', name: '1', kind: 'axleCounter', at: on('t1', 15) },
         { id: 'dp-2', name: '2', kind: 'axleCounter', at: on('t1', 240) },
       ],
-      trackSections: [{ id: 'ts-1', name: '1', kind: 'axleCounting', boundedBy: ['dp-1', 'dp-2'] }],
+      trackSections: [{ id: 'ts-1', name: '1', kind: 'axleCounting', detectionPointIds: ['dp-1', 'dp-2'] }],
       switchElements: [{ id: 'we-1', name: 'W1', switchId: 'w1', operation: 'electricRemote', preferredPosition: 'left' }],
       routes: [
         {
@@ -73,7 +73,7 @@ export function ksStation({ operationalPoint = 'op1' } = {}) {
         {
           id: 'ov-n1', name: 'N1/200', signalId: 'sig-n1', path: { trackIds: ['t1', 't2'] },
           end: { anchor: 'station', trackId: 't2', station: 100 }, length: 120, gradient: -2.5, speed: 60,
-          clearSections: ['ts-1'], switches: [{ switchElementId: 'we-1', locked: true }],
+          clearSectionIds: ['ts-1'], switches: [{ switchElementId: 'we-1', locked: true }],
         },
       ],
       flankProtection: [

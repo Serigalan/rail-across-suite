@@ -976,7 +976,7 @@ fn convert(model: &Model) -> Result<Converted, String> {
                 "kind",
                 s(val(o.el, "FMA_Anlage_Allg/FMA_Art").as_deref().and_then(m::section_kind).unwrap_or("other")),
             ),
-            ("boundedBy", Some(arr(unique))),
+            ("detectionPointIds", Some(arr(unique))),
             (
                 "auxiliaryClearing",
                 (boolean(val(o.el, "FMA_Anlage_Allg/FMA_Hilffreimeldung")) == Some(true)).then(|| json!(true)),
@@ -1151,7 +1151,7 @@ fn convert(model: &Model) -> Result<Converted, String> {
             ("gradient", on(num(val(o.el, "Fstr_DWeg_Allg/Massgebende_Neigung")))),
             ("speed", on(num(val(o.el, "Fstr_DWeg_Spezifisch/DWeg_V")))),
             ("releaseDelay", on(num(val(o.el, "Fstr_DWeg_Spezifisch/Aufloesung_Verzoegerung")))),
-            ("clearSections", non_empty(arr(section_refs(Some(o.el), "ID_FMA_Anlage_Freimeldung")))),
+            ("clearSectionIds", non_empty(arr(section_refs(Some(o.el), "ID_FMA_Anlage_Freimeldung")))),
             (
                 "switches",
                 overlap_switches.get(&Some(id.clone())).and_then(|l| non_empty(Value::Array(l.clone()))),
@@ -1221,7 +1221,7 @@ fn convert(model: &Model) -> Result<Converted, String> {
                 "shortDistantSpacing",
                 (boolean(value(train, "Fstr_Vsigabstand_Verkuerzt")) == Some(true)).then(|| json!(true)),
             ),
-            ("clearSections", non_empty(arr(section_refs(shunting, "ID_FMA_Anlage_Rangier_Frei")))),
+            ("clearSectionIds", non_empty(arr(section_refs(shunting, "ID_FMA_Anlage_Rangier_Frei")))),
             ("overlaps", non_empty(Value::Array(ovl))),
             ("aspects", shown.get(&Some(id.clone())).and_then(|l| non_empty(Value::Array(l.clone())))),
             ("lifespan", lifespan_of(o)),
@@ -1284,11 +1284,11 @@ fn convert(model: &Model) -> Result<Converted, String> {
             (
                 "passOn",
                 non_empty(Value::Object(obj(vec![
-                    ("left", os(&lower(val(o.el, "Fla_Schutz_Weitergabe/ID_Fla_Weitergabe_L")))),
-                    ("right", os(&lower(val(o.el, "Fla_Schutz_Weitergabe/ID_Fla_Weitergabe_R")))),
+                    ("leftId", os(&lower(val(o.el, "Fla_Schutz_Weitergabe/ID_Fla_Weitergabe_L")))),
+                    ("rightId", os(&lower(val(o.el, "Fla_Schutz_Weitergabe/ID_Fla_Weitergabe_R")))),
                 ]))),
             ),
-            ("clearSections", flank_clear.get(&Some(id.clone())).map(|l| arr(l.clone()))),
+            ("clearSectionIds", flank_clear.get(&Some(id.clone())).map(|l| arr(l.clone()))),
             ("lifespan", lifespan_of(o)),
         ]));
     }
@@ -1298,7 +1298,7 @@ fn convert(model: &Model) -> Result<Converted, String> {
         let Some(pass) = f.get_mut("passOn").and_then(Value::as_object_mut) else {
             continue;
         };
-        for side in ["left", "right"] {
+        for side in ["leftId", "rightId"] {
             let gone = pass.get(side).is_some_and(|v| {
                 let id = js_string(Some(v));
                 !id.is_empty() && !flank_ids.contains(&id)

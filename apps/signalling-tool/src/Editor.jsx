@@ -488,7 +488,7 @@ function placeToShow(domain, sel) {
     case 'switchElements': return obj?.derailer?.at ?? null
     case 'routes': return obj && signalAt(obj.startSignalId)
     case 'overlaps': return obj && signalAt(obj.signalId)
-    case 'trackSections': return obj && c.detectionPoints.find(d => d.id === obj.boundedBy[0])?.at
+    case 'trackSections': return obj && c.detectionPoints.find(d => d.id === obj.detectionPointIds[0])?.at
     case 'flankProtection': return obj?.protection.signalId ? signalAt(obj.protection.signalId) : null
     case 'operationalPoints': return c.signals.find(s => s.operationalPointId === sel.id)?.at ?? null
     case 'stoppingPlaces': return obj ? middleOf(obj.at) : null
@@ -530,7 +530,7 @@ function highlightOf(domain, net, selection, extents) {
       const s = find('trackSections')
       if (!s) return null
       const ext = extents.get(s.id)
-      return { stretches: (ext?.parts ?? []).map(p => ({ ...p, tone: ext.matches ? null : 'warn' })), ids: s.boundedBy }
+      return { stretches: (ext?.parts ?? []).map(p => ({ ...p, tone: ext.matches ? null : 'warn' })), ids: s.detectionPointIds }
     }
     case 'flankProtection': {
       const f = find('flankProtection')

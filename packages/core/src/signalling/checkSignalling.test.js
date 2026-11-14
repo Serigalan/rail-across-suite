@@ -337,20 +337,20 @@ describe('flank protection, balises and magnets, station boundaries', () => {
     // A point of another section inside it is no boundary of its: sections overlap where they meet.
     const inside = check((c) => {
       c.detectionPoints.push({ id: 'dp-3', kind: 'axleCounter', at: { anchor: 'station', trackId: 't1', station: 235 } })
-      c.trackSections.push({ id: 'ts-2', kind: 'axleCounting', boundedBy: ['dp-3', 'dp-2'] })
+      c.trackSections.push({ id: 'ts-2', kind: 'axleCounting', detectionPointIds: ['dp-3', 'dp-2'] })
     })
     expect(inside).toEqual({ errors: [], warnings: [] })
     // t2 is not connected to t1: no part of the net lies between a point on each.
     const { warnings } = check((c) => {
       c.detectionPoints.push({ id: 'dp-3', kind: 'axleCounter', at: { anchor: 'station', trackId: 't2', station: 145 } })
-      c.trackSections[0].boundedBy = ['dp-1', 'dp-3']
+      c.trackSections[0].detectionPointIds = ['dp-1', 'dp-3']
     })
     expect(warnings.map(w => [w.code, w.id])).toEqual([['detection_point_unused', 'dp-2'], ['section_extent_differs', 'ts-1']])
     expect(warnings[1].params.missing).toHaveLength(1)
   })
 
   it('warns of a detection point that bounds no section', () => {
-    const { warnings } = check((c) => { c.trackSections[0].boundedBy = ['dp-1'] })
+    const { warnings } = check((c) => { c.trackSections[0].detectionPointIds = ['dp-1'] })
     expect(warnings.map(w => [w.code, w.id])).toEqual([['detection_point_unused', 'dp-2']])
   })
 })

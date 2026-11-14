@@ -19,6 +19,11 @@ const SIDES: &[(i64, &str)] = &[(1, "regular"), (2, "opposite")];
 const NAMES: &[(&str, &str, &str, &str)] = &[
     ("core", "tracks", "operationalPoint", "operationalPointId"),
     ("civil", "platforms", "operationalPoint", "operationalPointId"),
+];
+
+/// The references the record names as the document does since it follows it (decision 0029, phase 6): renamed
+/// on the way in only, for a record of before — a working copy may still hold one.
+const NAMES_FOLLOWED: &[(&str, &str, &str, &str)] = &[
     ("signalling", "trackSections", "boundedBy", "detectionPointIds"),
     ("signalling", "routes", "clearSections", "clearSectionIds"),
     ("signalling", "overlaps", "clearSections", "clearSectionIds"),
@@ -127,11 +132,16 @@ fn convert(domains: &mut Object, way: Way) {
             rename(o, from, to);
         }
     }
-    for fp in items(domains, "signalling", "flankProtection") {
-        if let Some(Value::Object(pass_on)) = fp.get_mut("passOn") {
-            for (old, new) in [("left", "leftId"), ("right", "rightId")] {
-                let (from, to) = names(old, new);
-                rename(pass_on, from, to);
+    if way == Way::Forward {
+        for (domain, collection, old, new) in NAMES_FOLLOWED {
+            for o in items(domains, domain, collection) {
+                rename(o, old, new);
+            }
+        }
+        for fp in items(domains, "signalling", "flankProtection") {
+            if let Some(Value::Object(pass_on)) = fp.get_mut("passOn") {
+                rename(pass_on, "left", "leftId");
+                rename(pass_on, "right", "rightId");
             }
         }
     }

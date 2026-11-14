@@ -101,7 +101,7 @@ fn by_id(v: &Value) -> Value {
             o.iter()
                 .map(|(k, x)| {
                     let mut x = by_id(x);
-                    if k == "boundedBy"
+                    if k == "detectionPointIds"
                         && let Value::Array(points) = &mut x
                     {
                         points.sort_by(|p, q| p.as_str().cmp(&q.as_str()));

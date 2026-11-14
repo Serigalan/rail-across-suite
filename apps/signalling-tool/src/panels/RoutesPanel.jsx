@@ -652,7 +652,7 @@ function OverlapEditor({ overlap, domain, net, findings, extents, signalOptions,
         </Section>
       )}
       <Section title={t('clear_sections')}>
-        <CheckList readOnly={readOnly} value={overlap.clearSections} onChange={(v) => set({ clearSections: v.length ? v : undefined })}
+        <CheckList readOnly={readOnly} value={overlap.clearSectionIds} onChange={(v) => set({ clearSectionIds: v.length ? v : undefined })}
           options={near.map(s => ({ value: s.id, label: labelOf('trackSections', s, t) }))} />
       </Section>
     </div>

@@ -264,7 +264,7 @@ describe('editing the domain', () => {
     expect(laid.merged).toBe(1)
     expect(laid.points.map(p => [p.at.trackId, Math.round(p.at.station * 10) / 10]).sort()).toEqual([['t1', 182.5], ['t2', 16], ['t3', 16]])
     expect(laid.sections).toHaveLength(4)
-    const atSwitch = laid.sections.find(x => x.boundedBy.length === 3)
+    const atSwitch = laid.sections.find(x => x.detectionPointIds.length === 3)
     expect(atSwitch.name).toBe('W')
     expect(laid.sections.filter(x => x.name.startsWith('t')).map(x => x.name).sort()).toEqual(['t1', 't2', 't3'])
 

@@ -38,7 +38,7 @@ describe('the parts the detection points cut the net into', () => {
 
 describe('the extent of a stored section', () => {
   it('is the part bounded by all of its points', () => {
-    const extents = trackSectionExtents({ core, signalling: signalling([{ id: 'W1', kind: 'axleCounting', boundedBy: ['a', 'b', 'c'] }]) })
+    const extents = trackSectionExtents({ core, signalling: signalling([{ id: 'W1', kind: 'axleCounting', detectionPointIds: ['a', 'b', 'c'] }]) })
     expect(extents.get('W1')).toMatchObject({ matches: true, missing: [] })
     expect(extents.get('W1').parts.map(p => p.trackId)).toEqual(['t1', 't2', 't3'])
   })
@@ -46,7 +46,7 @@ describe('the extent of a stored section', () => {
   it('is cut by its own points only, and runs to a track end where it has none', () => {
     // c bounds no section: W1 runs past it, up t3 to its end.
     const extents = trackSectionExtents({ core, signalling: signalling([
-      { id: 'W1', kind: 'axleCounting', boundedBy: ['a', 'b'] }, { id: 'G2', kind: 'axleCounting', boundedBy: ['b', 'd'] },
+      { id: 'W1', kind: 'axleCounting', detectionPointIds: ['a', 'b'] }, { id: 'G2', kind: 'axleCounting', detectionPointIds: ['b', 'd'] },
     ]) })
     expect(extents.get('W1')).toMatchObject({ matches: true })
     expect(extents.get('W1').parts.find(p => p.trackId === 't3')).toEqual({ trackId: 't3', from: 0, to: expect.closeTo(Math.hypot(180, 40), 6) })
@@ -55,7 +55,7 @@ describe('the extent of a stored section', () => {
 
   it('names the points that enclose nothing with the others', () => {
     const apart = { ...core, collections: { ...core.collections, tracks: [...core.collections.tracks, track('t4', [0, 500], [100, 500])] } }
-    const sig = signalling([{ id: 'X', kind: 'axleCounting', boundedBy: ['a', 'e'] }])
+    const sig = signalling([{ id: 'X', kind: 'axleCounting', detectionPointIds: ['a', 'e'] }])
     sig.collections.detectionPoints.push(point('e', 't4', 50))
     expect(trackSectionExtents({ core: apart, signalling: sig }).get('X')).toMatchObject({ matches: false, missing: [expect.any(String)] })
   })

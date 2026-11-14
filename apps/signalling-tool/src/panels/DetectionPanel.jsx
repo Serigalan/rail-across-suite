@@ -50,7 +50,7 @@ export default function DetectionPanel({ domain, net, record, ops, select, mode,
         <div className="ui-row">
           <Button variant="primary" disabled={!points.length}
             onClick={() => {
-              const s = { id: newId(), name: name || undefined, kind: sectionKind, boundedBy: [] }
+              const s = { id: newId(), name: name || undefined, kind: sectionKind, detectionPointIds: [] }
               ops.add('trackSections', s)
               select({ collection: 'trackSections', id: s.id })
               setMode(pickingPoints(ops, s.id))

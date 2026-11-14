@@ -190,7 +190,7 @@ pub fn track_section_extents(core: &Value, signalling: &Value) -> Vec<(Value, Ex
     let sections = coll(signalling, "trackSections");
     let mut points_of: HashMap<String, Vec<String>> = HashMap::new();
     for s in sections {
-        for p in s.get("boundedBy").and_then(Value::as_array).into_iter().flatten() {
+        for p in s.get("detectionPointIds").and_then(Value::as_array).into_iter().flatten() {
             points_of.entry(js_string(Some(p))).or_default().push(js_string(s.get("id")));
         }
     }
@@ -220,7 +220,7 @@ pub fn track_section_extents(core: &Value, signalling: &Value) -> Vec<(Value, Ex
     let mut out = Vec::new();
     for s in sections {
         let own: HashSet<String> = s
-            .get("boundedBy")
+            .get("detectionPointIds")
             .and_then(Value::as_array)
             .into_iter()
             .flatten()

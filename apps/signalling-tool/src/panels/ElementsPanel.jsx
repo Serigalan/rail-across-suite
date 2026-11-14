@@ -227,7 +227,7 @@ function FlankSection({ element, domain, net, findings, ops, readOnly, t, select
                 )}
               </>}
             </div>
-            <CheckList readOnly={readOnly} value={f.clearSections} onChange={(v) => set({ clearSections: v.length ? v : undefined })}
+            <CheckList readOnly={readOnly} value={f.clearSectionIds} onChange={(v) => set({ clearSectionIds: v.length ? v : undefined })}
               options={trackSections.map(x => ({ value: x.id, label: `${t('clear_sections')}: ${labelOf('trackSections', x, t)}` }))
                 .sort((a, b) => String(a.label).localeCompare(String(b.label), 'de', { numeric: true }))} />
           </div>

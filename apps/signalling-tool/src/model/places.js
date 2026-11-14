@@ -142,7 +142,7 @@ export const pickingSignal = (signals, t, apply) => {
 export const pickingPoints = (ops, sectionId) => ({
   kind: 'pick-points',
   toggle: (id) => ops.modify('trackSections', sectionId, (now) => ({
-    ...now, boundedBy: now.boundedBy.includes(id) ? now.boundedBy.filter(x => x !== id) : [...now.boundedBy, id],
+    ...now, detectionPointIds: now.detectionPointIds.includes(id) ? now.detectionPointIds.filter(x => x !== id) : [...now.detectionPointIds, id],
   })),
 })
 

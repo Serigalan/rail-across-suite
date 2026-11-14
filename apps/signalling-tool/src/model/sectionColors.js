@@ -26,7 +26,7 @@ export function apartColors(ids, near, colors = SECTION_COLORS) {
 /** Each section's colour: Map id → colour. */
 export function sectionColors(sections, colors = SECTION_COLORS) {
   const byPoint = new Map()
-  for (const s of sections) for (const p of s.boundedBy ?? []) byPoint.set(p, [...(byPoint.get(p) ?? []), s.id])
-  const near = new Map(sections.map(s => [s.id, new Set((s.boundedBy ?? []).flatMap(p => byPoint.get(p)).filter(id => id !== s.id))]))
+  for (const s of sections) for (const p of s.detectionPointIds ?? []) byPoint.set(p, [...(byPoint.get(p) ?? []), s.id])
+  const near = new Map(sections.map(s => [s.id, new Set((s.detectionPointIds ?? []).flatMap(p => byPoint.get(p)).filter(id => id !== s.id))]))
   return apartColors(sections.map(s => s.id), near, colors)
 }

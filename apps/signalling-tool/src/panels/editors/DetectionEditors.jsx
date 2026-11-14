@@ -33,10 +33,10 @@ export function SectionEditor({ section, domain, findings, extents, ops, mode, s
       <Section title={t('bounded_by')} actions={!readOnly && (
         <Button size="small" active={picking} onClick={() => setMode(picking ? null : pickingPoints(ops, section.id))}>{t('pick_points')}</Button>
       )}>
-        <CheckList readOnly={readOnly} value={section.boundedBy}
+        <CheckList readOnly={readOnly} value={section.detectionPointIds}
           options={[...points].sort((a, b) => String(pointName.get(a.id)).localeCompare(String(pointName.get(b.id)), 'de', { numeric: true }))
             .map(p => ({ value: p.id, label: pointName.get(p.id) }))}
-          onChange={(boundedBy) => set({ boundedBy })} />
+          onChange={(detectionPointIds) => set({ detectionPointIds })} />
       </Section>
     </div>
   )
@@ -45,7 +45,7 @@ export function SectionEditor({ section, domain, findings, extents, ops, mode, s
 /** A detection point — an axle counter, a joint: its kind, where it lies, the sections it bounds. */
 export function PointEditor({ point, domain, net, findings, ops, setMode, readOnly, t, language }) {
   const set = (patch) => ops.update('detectionPoints', { ...point, ...patch })
-  const bounds = domain.collections.trackSections.filter(s => s.boundedBy.includes(point.id))
+  const bounds = domain.collections.trackSections.filter(s => s.detectionPointIds.includes(point.id))
   return (
     <div className="tool-editor">
       <EditorHead title={labelOf('detectionPoints', point, t)} readOnly={readOnly} t={t} onDelete={() => ops.remove('detectionPoints', point.id)} />

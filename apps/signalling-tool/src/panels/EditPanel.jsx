@@ -129,7 +129,7 @@ export default function EditPanel({ domain, net, core, findings, extents, select
         const m = ext ? Math.round(ext.parts.reduce((sum, p) => sum + (p.to - p.from), 0)) : 0
         return {
           id: `trackSections:${s.id}`, label: labelOf('trackSections', s, t), color: colors.get(s.id),
-          sub: `${word(SECTION_KIND, s.kind, language)} · ${s.boundedBy.length} × · ${m} m`, end: bad.sections.has(s.id) ? <Badge tone="warn">!</Badge> : null,
+          sub: `${word(SECTION_KIND, s.kind, language)} · ${s.detectionPointIds.length} × · ${m} m`, end: bad.sections.has(s.id) ? <Badge tone="warn">!</Badge> : null,
         }
       }).sort(byName),
     },

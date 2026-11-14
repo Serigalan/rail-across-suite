@@ -36,7 +36,7 @@ describe('the blocks of a way', () => {
       ...signalled,
       signalling: {
         ...signalled.signalling,
-        collections: { ...signalled.signalling.collections, detectionPoints: [point('p1', 300), point('p2', 700)], trackSections: [{ id: 'S1', kind: 'axleCounting', boundedBy: ['p1', 'p2'] }] },
+        collections: { ...signalled.signalling.collections, detectionPoints: [point('p1', 300), point('p2', 700)], trackSections: [{ id: 'S1', kind: 'axleCounting', detectionPointIds: ['p1', 'p2'] }] },
       },
     }
     const path = [{ trackId: 'A1', start: 200, end: 500 }, { trackId: 'L', start: 0, end: 2500 }, { trackId: 'C1', start: 0, end: 400 }]

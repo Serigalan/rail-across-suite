@@ -119,7 +119,7 @@ export function deleted(domain, collection, id) {
   const gone = cascadeOf(domain, collection, id)
   const is = (name, oid) => gone[name]?.includes(oid)
   const c = { ...domain.collections, ...Object.fromEntries(COLLECTIONS.map(name => [name, domain.collections[name].filter(o => !is(name, o.id))])) }
-  c.trackSections = c.trackSections.map(t => (t.boundedBy.some(p => is('detectionPoints', p)) ? { ...t, boundedBy: t.boundedBy.filter(p => !is('detectionPoints', p)) } : t))
+  c.trackSections = c.trackSections.map(t => (t.detectionPointIds.some(p => is('detectionPoints', p)) ? { ...t, detectionPointIds: t.detectionPointIds.filter(p => !is('detectionPoints', p)) } : t))
   c.routes = c.routes.map(r => {
     const overlaps = r.overlaps?.filter(o => !is('overlaps', o.overlapId))
     const aspects = r.aspects?.filter(a => !is('signals', a.signalId))

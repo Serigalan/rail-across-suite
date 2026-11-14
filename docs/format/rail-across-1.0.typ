@@ -283,7 +283,7 @@ Where a wire runs is not stored: on a track, it runs from its first to its last 
 
 The vehicles are a domain of their own. A vehicle (`vehicles`) has the key it came under from a catalogue (`key`) and its *rolling stock* as RailJSON (`rollingStock`), the format of OSRD — kept in the object, not as a blob: a vehicle is a few kilobytes, and kept in place two states of it can be compared and merged field by field. The schema checks what the suite reads from it — the RailJSON version, the name and the tractive effort curves — and takes every further RailJSON property as it comes, in the units of RailJSON (m, kg, m/s, N).
 
-The *traction modes* of a vehicle are the modes of its effort curves (`effort_curves.modes`): the voltages it can draw, named as the voltages of the contact wires, and `thermal` for a drive of its own. They are not stored a second time. The timetables name vehicles by their id. A file thus runs with the vehicles it holds, not with a catalogue that may have changed since; a changed vehicle is a new version of the domain, as any other change.
+The *traction modes* of a vehicle are the modes of its effort curves (`effort_curves.modes`): the voltages it can draw, named as the voltages of the contact wires, and `thermal` for a drive of its own. They are not stored a second time. The timetables name vehicles by their id. A file thus runs with the vehicles it holds, not with a catalogue that may have changed since; a changed vehicle is a new version of the domain, as any other change. A vehicle without its rolling stock is one of the suite's catalogue, named by its key — what a project server keeps where its trains run with the catalogue's vehicles; a file that travels carries the rolling stock.
 
 == Timetables (domain `timetables`)
 
@@ -475,10 +475,8 @@ The hashes are shortened here; in a file each has its 64 hex digits.
 
 This specification is the target of the data model. As of 13 November 2026 the suite's implementation differs from it in these points, each to be brought in line by its own step (decision 0028 and those after it):
 
-- Two files instead of one: the infrastructure as infra-data 2.0 (`.railacross.json`, domains core 4.0, civil 3.0, signalling 4.0, electrification 3.0), the operation as operations 1.0 (`.operations.json`) with one domain `operations`, the vehicles carried in it; a file of before still carries the schemas.
-- A vehicle keeps its rolling stock as a blob and states its traction modes a second time (`tractionModes`).
+- Two files instead of one: the infrastructure as infra-data 2.0 (`.railacross.json`, domains core 4.0, civil 3.0, signalling 4.0, electrification 3.0), the operation as operations 1.0 (`.operations.json`, domains vehicles 1.0 and timetables 1.0); a file of before still carries the schemas.
 - The record the tools work on keeps the words of before — the kinds as numbers, `operationalPoint`, `dep`, a `turnout` with `B1` its branch —, km lines in WGS 84 with the kilometrage per point, and ids of any form; the door converts it into the document and back (decision 0029, phase 6 takes that out). A km line of before is kept as points, not yet fitted with design elements.
-- The points of a train name their place in one member (`place`) and keep the name it was chosen under.
 - A domain the reader does not know is refused, not kept.
 
 #pagebreak()
@@ -1597,15 +1595,17 @@ Value: object
 
 === Vehicle <vehicles-Vehicle>
 
-A vehicle (a traction unit or a unit of coaches): where it came from and its rolling stock. Its name and its traction modes are those of its rolling stock.
+A vehicle (a traction unit or a unit of coaches): where it came from and its rolling stock. Its name and its traction modes are those of its rolling stock; without one, it is a vehicle of the suite's catalogue named by its key.
 
 _No further properties are allowed._
+
+exactly one of `rollingStock`, `key` is stated
 
 #table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
   [Property], [Required], [Type and allowed values], [Meaning],
   [`id`], [yes], [#link(<core-Id>)[`Id`]], [Id of the object],
   [`key`], [], [#link(<core-Text>)[`Text`]], [Key in the catalogue it came from],
-  [`rollingStock`], [yes], [#link(<vehicles-RollingStock>)[`RollingStock`]], [The vehicle as RailJSON rolling stock],
+  [`rollingStock`], [], [#link(<vehicles-RollingStock>)[`RollingStock`]], [The vehicle as RailJSON rolling stock],
 )
 
 === RollingStock <vehicles-RollingStock>
@@ -1691,7 +1691,7 @@ _No further properties are allowed._
   [Property], [Required], [Type and allowed values], [Meaning],
   [`mode`], [], [one of the values under Meaning], [Kind of dispatching #linebreak() `show` only show the conflicts, each train runs for itself #linebreak() `wait` give the trains the net one after the other, each waiting for a free block],
   [`priority`], [], [one of the values under Meaning], [In which order the trains are given the net #linebreak() `departure` by departure #linebreak() `kind` by kind of train (`kindOrder`)],
-  [`kindOrder`], [], [list of #link(<core-Ref>)[`Ref`] → `operations.​trainKinds`; at most 100 entries], [The kinds of trains first given the net, in their order],
+  [`kindOrder`], [], [list of #link(<core-Ref>)[`Ref`] → `timetables.​trainKinds`; at most 100 entries], [The kinds of trains first given the net, in their order],
 )
 
 === BlockingTimes <timetables-BlockingTimes>
@@ -1717,11 +1717,11 @@ _No further properties are allowed._
 #table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
   [Property], [Required], [Type and allowed values], [Meaning],
   [`id`], [yes], [#link(<core-Id>)[`Id`]], [Id of the object],
-  [`timetableId`], [yes], [#link(<core-Ref>)[`Ref`] → `operations.​timetables`], [The timetable],
+  [`timetableId`], [yes], [#link(<core-Ref>)[`Ref`] → `timetables.​timetables`], [The timetable],
   [`number`], [], [text], [Train number],
   [`name`], [], [text], [Name],
-  [`trainKindId`], [], [#link(<core-Ref>)[`Ref`] → `operations.​trainKinds`], [The kind of train],
-  [`formationId`], [], [#link(<core-Ref>)[`Ref`] → `operations.​formations`], [The formation],
+  [`trainKindId`], [], [#link(<core-Ref>)[`Ref`] → `timetables.​trainKinds`], [The kind of train],
+  [`formationId`], [], [#link(<core-Ref>)[`Ref`] → `timetables.​formations`], [The formation],
   [`mode`], [], [text], [Traction mode; without one, what the contact wires along its way and its vehicles allow],
   [`comfort`], [], [text], [Comfort after OSRD: STANDARD, AIR\_CONDITIONING, HEATING],
   [`departure`], [yes], [number; ≥ 0; ≤ 172799.999], [Departure in seconds from midnight of the timetable's day; past 24:00 the next day],
@@ -1804,8 +1804,8 @@ _No further properties are allowed._
 #table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
   [Property], [Required], [Type and allowed values], [Meaning],
   [`id`], [yes], [#link(<core-Id>)[`Id`]], [Id of the object],
-  [`fromTrainId`], [yes], [#link(<core-Ref>)[`Ref`] → `operations.​trains`], [The arriving train],
-  [`toTrainId`], [yes], [#link(<core-Ref>)[`Ref`] → `operations.​trains`], [The departing train],
+  [`fromTrainId`], [yes], [#link(<core-Ref>)[`Ref`] → `timetables.​trains`], [The arriving train],
+  [`toTrainId`], [yes], [#link(<core-Ref>)[`Ref`] → `timetables.​trains`], [The departing train],
   [`operationalPointId`], [yes], [#link(<core-Ref>)[`Ref`] → `core.​operationalPoints`], [The operational point],
   [`changeTime`], [], [number; ≥ 0; ≤ 86400], [Time to change trains \[s\]],
   [`waitUpTo`], [], [number; ≥ 0; ≤ 86400], [How long the departing train waits \[s\]],
@@ -1820,8 +1820,8 @@ _No further properties are allowed._
 #table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
   [Property], [Required], [Type and allowed values], [Meaning],
   [`id`], [yes], [#link(<core-Id>)[`Id`]], [Id of the object],
-  [`fromTrainId`], [yes], [#link(<core-Ref>)[`Ref`] → `operations.​trains`], [The ending train],
-  [`toTrainId`], [yes], [#link(<core-Ref>)[`Ref`] → `operations.​trains`], [The following train],
+  [`fromTrainId`], [yes], [#link(<core-Ref>)[`Ref`] → `timetables.​trains`], [The ending train],
+  [`toTrainId`], [yes], [#link(<core-Ref>)[`Ref`] → `timetables.​trains`], [The following train],
   [`leastTime`], [], [number; ≥ 0; ≤ 86400], [Least turnaround time \[s\]],
 )
 
@@ -1848,7 +1848,7 @@ _No further properties are allowed._
 #table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
   [Property], [Required], [Type and allowed values], [Meaning],
   [`operationalPointId`], [], [#link(<core-Ref>)[`Ref`] → `core.​operationalPoints`], [Where it holds; without one, everywhere],
-  [`trainKindId`], [], [#link(<core-Ref>)[`Ref`] → `operations.​trainKinds`], [For which kind of train; without one, for every kind],
+  [`trainKindId`], [], [#link(<core-Ref>)[`Ref`] → `timetables.​trainKinds`], [For which kind of train; without one, for every kind],
   [`share`], [yes], [number; ≥ 0; ≤ 1], [Share of the trains delayed],
   [`distribution`], [yes], [#link(<timetables-Distribution>)[`Distribution`]], [Distribution of the delays],
   [`source`], [], [text], [Where the figures come from: the suite's starting value or a measurement],
@@ -1879,7 +1879,7 @@ _No further properties are allowed._
   [Property], [Required], [Type and allowed values], [Meaning],
   [`id`], [yes], [#link(<core-Id>)[`Id`]], [Id of the object],
   [`name`], [yes], [text], [Name],
-  [`timetableId`], [yes], [#link(<core-Ref>)[`Ref`] → `operations.​timetables`], [The timetable],
+  [`timetableId`], [yes], [#link(<core-Ref>)[`Ref`] → `timetables.​timetables`], [The timetable],
   [`period`], [], [object (properties below)], [The period studied],
   [`period.​from`], [yes], [number; ≥ 0; ≤ 172799.999], [Start in seconds from midnight of the timetable's day],
   [`period.​to`], [yes], [number; ≥ 0; ≤ 172799.999], [End in seconds from midnight of the timetable's day],
@@ -1889,7 +1889,7 @@ _No further properties are allowed._
   [`bounds`], [], [object (properties below)], [The bounds, where the study changes them],
   [`bounds.​occupancyRate`], [], [number; ≥ 0; ≤ 1], [Bound of the occupancy rate (UIC Code 406)],
   [`bounds.​punctualityThreshold`], [], [number; ≥ 0; ≤ 3600], [Delay beyond which a train is not punctual \[s\]],
-  [`delayScenarioId`], [], [#link(<core-Ref>)[`Ref`] → `operations.​delayScenarios`], [The delay scenario],
+  [`delayScenarioId`], [], [#link(<core-Ref>)[`Ref`] → `timetables.​delayScenarios`], [The delay scenario],
   [`runs`], [], [integer; ≥ 1; ≤ 100000], [Number of runs],
   [`seed`], [], [integer; ≥ 0], [Seed of the random generator],
 )

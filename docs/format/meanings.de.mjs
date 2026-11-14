@@ -581,7 +581,7 @@ export default {
   'vehicles:root.collections': 'Die Sammlungen der Domäne',
   'vehicles:root.collections.vehicles': 'Fahrzeuge',
   'TYPE:vehicles:Fields': 'Die Felder der Domäne (noch keine).',
-  'TYPE:vehicles:Vehicle': 'Ein Fahrzeug (Triebfahrzeug oder Wageneinheit): woher es stammt und sein Rollmaterial. Sein Name und seine Traktionsarten sind die seines Rollmaterials.',
+  'TYPE:vehicles:Vehicle': 'Ein Fahrzeug (Triebfahrzeug oder Wageneinheit): woher es stammt und sein Rollmaterial. Sein Name und seine Traktionsarten sind die seines Rollmaterials; ohne Rollmaterial ist es ein Fahrzeug aus dem Katalog der Suite, genannt über seinen Schlüssel.',
   'vehicles:Vehicle.key': 'Schlüssel im Katalog, aus dem es stammt',
   'vehicles:Vehicle.rollingStock': 'das Fahrzeug als RailJSON-Rollmaterial',
   'TYPE:vehicles:RollingStock': 'Das Fahrzeug als RailJSON-Rollmaterial (OSRD), im Objekt gehalten, nicht als Blob. Das Schema prüft, was die Suite daraus liest; jedes weitere RailJSON-Property (Länge, Masse, Höchstgeschwindigkeit, Fahrwiderstand …) ist erlaubt und wird übernommen, wie es kommt. Einheiten wie in RailJSON: m, kg, m/s, N.',

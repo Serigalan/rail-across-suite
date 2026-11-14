@@ -112,11 +112,11 @@ describe('timetables', () => {
     const head = (await max('GET', `/api/projects/${project.id}/operations`)).json()
     expect(head).toMatchObject({ number: 3, document: { format: 'operations', version: '1.0' } })
     expect(head.hash).toMatch(/^sha256:/)
-    expect(head.document.domains.operations.collections.timetables.map(t => t.name).sort()).toEqual(['A', 'B'])
+    expect(head.document.domains.timetables.collections.timetables.map(t => t.name).sort()).toEqual(['A', 'B'])
     const { revisions } = (await max('GET', `/api/projects/${project.id}/operations/revisions`)).json()
     expect(revisions.map(r => [r.number, r.changed])).toEqual([[3, [a.id]], [2, [b.id]], [1, [a.id]]])
     const first = (await max('GET', `/api/projects/${project.id}/operations/revisions/1`)).json()
-    expect(first.document.domains.operations.collections.trains.map(t => t.number)).toEqual(['16001'])
+    expect(first.document.domains.timetables.collections.trains.map(t => t.number)).toEqual(['16001'])
     expect((await max('GET', `/api/projects/${project.id}/operations/revisions/9`)).statusCode).toBe(404)
   })
 

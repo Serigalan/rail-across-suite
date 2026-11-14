@@ -1,5 +1,5 @@
 import { trackSectionExtents } from '@rail-across/core/signalling'
-import { directionOf, pathLength } from '@rail-across/running-times'
+import { directionOf, pathLength, placeIdOf } from '@rail-across/running-times'
 
 /**
  * The occupancy of the net by the trains of a timetable: a train runs only
@@ -395,7 +395,7 @@ export function withHeadways(record, trains, runs) {
   if (!least.size) return runs
   const entering = new Map()
   for (const train of trains) {
-    const place = train.points?.[0]?.place
+    const place = placeIdOf(train.points?.[0])
     const run = runs.get(train.id)
     if (!least.has(place) || !Number.isFinite(run?.clock?.at0)) continue
     entering.set(place, [...(entering.get(place) ?? []), { train, at: run.clock.at0 }])

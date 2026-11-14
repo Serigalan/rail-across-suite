@@ -1,3 +1,4 @@
+import { placeOf } from '@rail-across/running-times'
 import { formatClock } from '@rail-across/timetables'
 
 /**
@@ -9,8 +10,8 @@ import { formatClock } from '@rail-across/timetables'
 /** Trains by their departure, then by number. */
 export const byDeparture = (trains) => [...trains].sort((a, b) => a.departure - b.departure || String(a.number).localeCompare(String(b.number), 'de', { numeric: true }))
 
-/** `A-Dorf 07:00 → C-Stadt 07:42`: from its run where it has one, else its points and departure. */
-export function trainLine(train, run) {
+/** `A-Dorf 07:00 → C-Stadt 07:42`: from its run where it has one, else its points (by `stations`) and departure. */
+export function trainLine(train, run, stations = []) {
   const rows = run?.rows
   if (rows?.length) {
     const first = rows[0], last = rows[rows.length - 1]
@@ -18,7 +19,8 @@ export function trainLine(train, run) {
   }
   const points = train.points ?? []
   if (!points.length) return `${formatClock(train.departure)}`
-  return `${points[0].station} ${formatClock(train.departure)}${points.length > 1 ? ` → ${points[points.length - 1].station}` : ''}`
+  const name = (p) => placeOf(stations, p)?.name ?? '?'
+  return `${name(points[0])} ${formatClock(train.departure)}${points.length > 1 ? ` → ${name(points[points.length - 1])}` : ''}`
 }
 
 /** Where a stop at a station the train passes goes among its points: after those before it along the way. */

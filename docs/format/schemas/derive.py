@@ -208,8 +208,11 @@ vehicles = {
     '$defs': {
         'Fields': {'description': 'The domain\'s own fields.', 'type': 'object', 'additionalProperties': False, 'properties': {}},
         'Vehicle': {
-            'description': 'A vehicle (a traction unit or a unit of coaches): where it came from and its rolling stock.',
-            'type': 'object', 'required': ['id', 'rollingStock'], 'additionalProperties': False,
+            'description': ('A vehicle (a traction unit or a unit of coaches): where it came from and its rolling stock — without '
+                            'one, a vehicle of the suite\'s catalogue named by its key; a file that travels carries it.'),
+            'type': 'object', 'required': ['id'], 'additionalProperties': False,
+            # Without its rolling stock a vehicle is one of the suite's catalogue, named by its key (decision 0029, phase 4).
+            'anyOf': [{'required': ['rollingStock']}, {'required': ['key']}],
             'properties': {
                 'id': {'$ref': 'core#/$defs/Id'},
                 'key': {'$ref': 'core#/$defs/Text'},
@@ -289,6 +292,17 @@ for name in ['Connection', 'DelayRule']:
 st = td['Study']['properties']['stretches']['items']
 rename(st['properties'], 'from', 'fromOperationalPointId', st.get('required'))
 rename(st['properties'], 'to', 'toOperationalPointId', st.get('required'))
+# Its own collections are the domain timetables' now.
+def retarget(v):
+    if isinstance(v, dict):
+        if str(v.get('x-target', '')).startswith('operations.'):
+            v['x-target'] = 'timetables.' + v['x-target'].split('.', 1)[1]
+        for x in v.values():
+            retarget(x)
+    elif isinstance(v, list):
+        for x in v:
+            retarget(x)
+retarget(tt)
 write('timetables/1.0.schema.json', tt)
 
 # ── rail-across-1.0: the file ─────────────────────────────────────────────────────────────────────────────

@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "operations-document",
-  "title": "operations-1.0: a Rail-Across-Suite project's operations as one JSON file (.operations.json)",
-  "description": "The domain operations of one project with its version and the hash of its schema; the schemas the file carries, by hash; and the blobs its objects name, by hash — the envelope of infra-data (decision 0021), for what is the operation's. What the domain holds, its schema says.",
+  "title": "operations-1.0: a Rail-Across-Suite project's operations, the part of rail-across-1.0 (.operations.json on its own)",
+  "description": "The domains vehicles and timetables of one project, each with its version and the hash of its schema; the schemas the file carries, by hash; and the blobs its objects name, by hash. What a domain holds, its schema says (decision 0029, phase 4).",
   "type": "object",
   "required": [
     "format",
@@ -21,11 +21,15 @@
     "domains": {
       "type": "object",
       "required": [
-        "operations"
+        "vehicles",
+        "timetables"
       ],
       "additionalProperties": false,
       "properties": {
-        "operations": {
+        "vehicles": {
+          "$ref": "#/$defs/Domain"
+        },
+        "timetables": {
           "$ref": "#/$defs/Domain"
         }
       }

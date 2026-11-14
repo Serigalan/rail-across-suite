@@ -5,14 +5,30 @@
    "format": "operations",
    "version": "1.0",
    "domains": {
-    "operations": {
+    "vehicles": {
      "version": "1.0",
-     "schema": "sha256:6ee7221f2991714a6b4bf2e9ea282d378c764e5e3e5acb8cbff25ce49a488b61",
+     "schema": "sha256:69c14605ce0b0e02a482d9956dc43506fd1cc1668e380682851bb6a395753316",
+     "fields": {},
+     "collections": {
+      "vehicles": [
+       {
+        "id": "eac5bf47-71bd-8b74-9eb4-e0cb6cc62b15",
+        "key": "osrd:loco"
+       }
+      ]
+     }
+    },
+    "timetables": {
+     "version": "1.0",
+     "schema": "sha256:6a9cee758cee4cb11e8fc735c728f5f615c556b5d8f0036f3188f83b44569eda",
+     "dependsOn": [
+      "vehicles"
+     ],
      "fields": {},
      "collections": {
       "timetables": [
        {
-        "id": "tt-1",
+        "id": "be389a7b-05f5-8e47-92df-b7131ec905b1",
         "name": "Grundtakt",
         "dispatching": {
          "mode": "wait",
@@ -29,67 +45,14 @@
         }
        },
        {
-        "id": "tt-2",
+        "id": "e4a93598-513b-815d-b5af-6722092b91d3",
         "name": "Güterverkehr"
        }
       ],
       "trains": [
        {
-        "id": "g-1",
-        "timetableId": "tt-2",
-        "name": "Kies",
-        "trainKindId": "ebf496d8-0315-8505-affa-29e08cddc349",
-        "comfort": "STANDARD",
-        "departure": 3600,
-        "distribution": "linear",
-        "points": [
-         {
-          "id": "e",
-          "place": "leipzig",
-          "station": "LEIPZIG",
-          "stop": false,
-          "dwell": 60
-         },
-         {
-          "id": "f",
-          "place": "halle",
-          "station": "HALLE",
-          "stop": true,
-          "dwell": 60
-         }
-        ]
-       },
-       {
-        "id": "z-1",
-        "timetableId": "tt-1",
-        "number": "16001",
-        "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
-        "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
-        "comfort": "STANDARD",
-        "departure": 28800,
-        "margin": "5 %",
-        "distribution": "mareco",
-        "points": [
-         {
-          "id": "a",
-          "place": "halle",
-          "station": "HALLE",
-          "stop": true,
-          "dwell": 60
-         },
-         {
-          "id": "b",
-          "place": "leipzig",
-          "station": "LEIPZIG",
-          "track": "t2",
-          "stop": true,
-          "dwell": 120
-         }
-        ]
-       },
-       {
-        "id": "z-2",
-        "timetableId": "tt-1",
+        "id": "96a835f6-51a5-80e9-b088-9d28c3d9a254",
+        "timetableId": "be389a7b-05f5-8e47-92df-b7131ec905b1",
         "number": "16003",
         "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
         "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
@@ -99,18 +62,65 @@
         "distribution": "mareco",
         "points": [
          {
-          "id": "c",
-          "place": "halle",
-          "station": "HALLE",
+          "id": "2e7d2c03-a950-8ae2-a5ec-f5b5356885a5",
+          "operationalPointId": "34c9eb78-441b-83ae-9ef5-c27762d98cab",
           "stop": true,
           "dwell": 60
          },
          {
-          "id": "d",
-          "place": "leipzig",
-          "station": "LEIPZIG",
+          "id": "18ac3e73-43f0-8689-8c51-0e93f9352611",
+          "operationalPointId": "3e6958a7-7209-87df-893f-53145de26074",
           "stop": true,
           "dwell": 60
+         }
+        ]
+       },
+       {
+        "id": "b9817549-cc54-8b0e-a549-a42a97b94811",
+        "timetableId": "e4a93598-513b-815d-b5af-6722092b91d3",
+        "name": "Kies",
+        "trainKindId": "ebf496d8-0315-8505-affa-29e08cddc349",
+        "comfort": "STANDARD",
+        "departure": 3600,
+        "distribution": "linear",
+        "points": [
+         {
+          "id": "3f79bb7b-435b-8532-9651-daefd374cdc6",
+          "operationalPointId": "3e6958a7-7209-87df-893f-53145de26074",
+          "stop": false,
+          "dwell": 60
+         },
+         {
+          "id": "252f10c8-3610-8bca-9a05-9c0bae8255eb",
+          "operationalPointId": "34c9eb78-441b-83ae-9ef5-c27762d98cab",
+          "stop": true,
+          "dwell": 60
+         }
+        ]
+       },
+       {
+        "id": "d7efd1b0-b0f9-8082-b4de-54eb49380e84",
+        "timetableId": "be389a7b-05f5-8e47-92df-b7131ec905b1",
+        "number": "16001",
+        "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
+        "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
+        "comfort": "STANDARD",
+        "departure": 28800,
+        "margin": "5 %",
+        "distribution": "mareco",
+        "points": [
+         {
+          "id": "ca978112-ca1b-8dca-bac2-31b39a23dc4d",
+          "operationalPointId": "34c9eb78-441b-83ae-9ef5-c27762d98cab",
+          "stop": true,
+          "dwell": 60
+         },
+         {
+          "id": "3e23e816-0039-894a-b389-4f6564e1b134",
+          "operationalPointId": "3e6958a7-7209-87df-893f-53145de26074",
+          "trackId": "c4447403-8d45-8e40-a471-4afefa7bf8da",
+          "stop": true,
+          "dwell": 120
          }
         ]
        }
@@ -137,12 +147,11 @@
         "id": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
         "tractionUnits": [
          {
-          "vehicle": "osrd:loco"
+          "vehicleId": "eac5bf47-71bd-8b74-9eb4-e0cb6cc62b15"
          }
         ]
        }
       ],
-      "vehicles": [],
       "connections": [],
       "turnarounds": [],
       "delayScenarios": [],
@@ -153,7 +162,7 @@
    "blobs": {}
   },
   "valid": true,
-  "hash": "sha256:878b26809e71964c07acb7ed14a3cc7c3a0c44c0e37b1eda89cf94a843bffea5"
+  "hash": "sha256:b1c6247143809d9889eaff453584682937a8c928c1e0964055e47c3dcd293c98"
  },
  {
   "name": "with its vehicle carried",
@@ -161,14 +170,46 @@
    "format": "operations",
    "version": "1.0",
    "domains": {
-    "operations": {
+    "vehicles": {
      "version": "1.0",
-     "schema": "sha256:6ee7221f2991714a6b4bf2e9ea282d378c764e5e3e5acb8cbff25ce49a488b61",
+     "schema": "sha256:69c14605ce0b0e02a482d9956dc43506fd1cc1668e380682851bb6a395753316",
+     "fields": {},
+     "collections": {
+      "vehicles": [
+       {
+        "id": "eac5bf47-71bd-8b74-9eb4-e0cb6cc62b15",
+        "key": "osrd:loco",
+        "rollingStock": {
+         "railjson_version": "3.3",
+         "name": "Lok",
+         "mass": 84000,
+         "length": 19.5,
+         "effort_curves": {
+          "modes": {
+           "15000V": {
+            "is_electric": true,
+            "curves": [
+             {}
+            ]
+           }
+          }
+         }
+        }
+       }
+      ]
+     }
+    },
+    "timetables": {
+     "version": "1.0",
+     "schema": "sha256:6a9cee758cee4cb11e8fc735c728f5f615c556b5d8f0036f3188f83b44569eda",
+     "dependsOn": [
+      "vehicles"
+     ],
      "fields": {},
      "collections": {
       "timetables": [
        {
-        "id": "tt-1",
+        "id": "be389a7b-05f5-8e47-92df-b7131ec905b1",
         "name": "Grundtakt",
         "dispatching": {
          "mode": "wait",
@@ -185,67 +226,14 @@
         }
        },
        {
-        "id": "tt-2",
+        "id": "e4a93598-513b-815d-b5af-6722092b91d3",
         "name": "Güterverkehr"
        }
       ],
       "trains": [
        {
-        "id": "g-1",
-        "timetableId": "tt-2",
-        "name": "Kies",
-        "trainKindId": "ebf496d8-0315-8505-affa-29e08cddc349",
-        "comfort": "STANDARD",
-        "departure": 3600,
-        "distribution": "linear",
-        "points": [
-         {
-          "id": "e",
-          "place": "leipzig",
-          "station": "LEIPZIG",
-          "stop": false,
-          "dwell": 60
-         },
-         {
-          "id": "f",
-          "place": "halle",
-          "station": "HALLE",
-          "stop": true,
-          "dwell": 60
-         }
-        ]
-       },
-       {
-        "id": "z-1",
-        "timetableId": "tt-1",
-        "number": "16001",
-        "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
-        "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
-        "comfort": "STANDARD",
-        "departure": 28800,
-        "margin": "5 %",
-        "distribution": "mareco",
-        "points": [
-         {
-          "id": "a",
-          "place": "halle",
-          "station": "HALLE",
-          "stop": true,
-          "dwell": 60
-         },
-         {
-          "id": "b",
-          "place": "leipzig",
-          "station": "LEIPZIG",
-          "track": "t2",
-          "stop": true,
-          "dwell": 120
-         }
-        ]
-       },
-       {
-        "id": "z-2",
-        "timetableId": "tt-1",
+        "id": "96a835f6-51a5-80e9-b088-9d28c3d9a254",
+        "timetableId": "be389a7b-05f5-8e47-92df-b7131ec905b1",
         "number": "16003",
         "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
         "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
@@ -255,18 +243,65 @@
         "distribution": "mareco",
         "points": [
          {
-          "id": "c",
-          "place": "halle",
-          "station": "HALLE",
+          "id": "2e7d2c03-a950-8ae2-a5ec-f5b5356885a5",
+          "operationalPointId": "34c9eb78-441b-83ae-9ef5-c27762d98cab",
           "stop": true,
           "dwell": 60
          },
          {
-          "id": "d",
-          "place": "leipzig",
-          "station": "LEIPZIG",
+          "id": "18ac3e73-43f0-8689-8c51-0e93f9352611",
+          "operationalPointId": "3e6958a7-7209-87df-893f-53145de26074",
           "stop": true,
           "dwell": 60
+         }
+        ]
+       },
+       {
+        "id": "b9817549-cc54-8b0e-a549-a42a97b94811",
+        "timetableId": "e4a93598-513b-815d-b5af-6722092b91d3",
+        "name": "Kies",
+        "trainKindId": "ebf496d8-0315-8505-affa-29e08cddc349",
+        "comfort": "STANDARD",
+        "departure": 3600,
+        "distribution": "linear",
+        "points": [
+         {
+          "id": "3f79bb7b-435b-8532-9651-daefd374cdc6",
+          "operationalPointId": "3e6958a7-7209-87df-893f-53145de26074",
+          "stop": false,
+          "dwell": 60
+         },
+         {
+          "id": "252f10c8-3610-8bca-9a05-9c0bae8255eb",
+          "operationalPointId": "34c9eb78-441b-83ae-9ef5-c27762d98cab",
+          "stop": true,
+          "dwell": 60
+         }
+        ]
+       },
+       {
+        "id": "d7efd1b0-b0f9-8082-b4de-54eb49380e84",
+        "timetableId": "be389a7b-05f5-8e47-92df-b7131ec905b1",
+        "number": "16001",
+        "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
+        "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
+        "comfort": "STANDARD",
+        "departure": 28800,
+        "margin": "5 %",
+        "distribution": "mareco",
+        "points": [
+         {
+          "id": "ca978112-ca1b-8dca-bac2-31b39a23dc4d",
+          "operationalPointId": "34c9eb78-441b-83ae-9ef5-c27762d98cab",
+          "stop": true,
+          "dwell": 60
+         },
+         {
+          "id": "3e23e816-0039-894a-b389-4f6564e1b134",
+          "operationalPointId": "3e6958a7-7209-87df-893f-53145de26074",
+          "trackId": "c4447403-8d45-8e40-a471-4afefa7bf8da",
+          "stop": true,
+          "dwell": 120
          }
         ]
        }
@@ -293,54 +328,11 @@
         "id": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
         "tractionUnits": [
          {
-          "vehicle": "osrd:loco",
-          "hash": "sha256:56cf850de652b3633c568b7954c449ce0bd5744815c4ebbbb9b3b39d563e4164"
+          "vehicleId": "eac5bf47-71bd-8b74-9eb4-e0cb6cc62b15"
          }
         ]
        }
       ],
-      "vehicles": [
-       {
-        "id": "1f54f341-2114-80ac-a632-67bddd35de29",
-        "key": "osrd:loco",
-        "hash": "sha256:56cf850de652b3633c568b7954c449ce0bd5744815c4ebbbb9b3b39d563e4164",
-        "rollingStock": "sha256:56cf850de652b3633c568b7954c449ce0bd5744815c4ebbbb9b3b39d563e4164"
-       }
-      ],
-      "connections": [],
-      "turnarounds": [],
-      "delayScenarios": [],
-      "studies": []
-     }
-    }
-   },
-   "blobs": {
-    "sha256:56cf850de652b3633c568b7954c449ce0bd5744815c4ebbbb9b3b39d563e4164": {
-     "name": "Lok",
-     "mass": 84000,
-     "length": 19.5
-    }
-   }
-  },
-  "valid": true,
-  "hash": "sha256:ff6db385cc02b678dabcae5baa80021397233b273adcdaed552161fba181d32c"
- },
- {
-  "name": "no timetables",
-  "document": {
-   "format": "operations",
-   "version": "1.0",
-   "domains": {
-    "operations": {
-     "version": "1.0",
-     "schema": "sha256:6ee7221f2991714a6b4bf2e9ea282d378c764e5e3e5acb8cbff25ce49a488b61",
-     "fields": {},
-     "collections": {
-      "timetables": [],
-      "trains": [],
-      "trainKinds": [],
-      "formations": [],
-      "vehicles": [],
       "connections": [],
       "turnarounds": [],
       "delayScenarios": [],
@@ -351,7 +343,45 @@
    "blobs": {}
   },
   "valid": true,
-  "hash": "sha256:24220492066b9a821cd1ba1c7df0f61f47b689ceae7633ee94599fb626729410"
+  "hash": "sha256:df326d50b9ac3f79231a790e65e81497919ef6d75f73419680c222ae4012d2a0"
+ },
+ {
+  "name": "no timetables",
+  "document": {
+   "format": "operations",
+   "version": "1.0",
+   "domains": {
+    "vehicles": {
+     "version": "1.0",
+     "schema": "sha256:69c14605ce0b0e02a482d9956dc43506fd1cc1668e380682851bb6a395753316",
+     "fields": {},
+     "collections": {
+      "vehicles": []
+     }
+    },
+    "timetables": {
+     "version": "1.0",
+     "schema": "sha256:6a9cee758cee4cb11e8fc735c728f5f615c556b5d8f0036f3188f83b44569eda",
+     "dependsOn": [
+      "vehicles"
+     ],
+     "fields": {},
+     "collections": {
+      "timetables": [],
+      "trains": [],
+      "trainKinds": [],
+      "formations": [],
+      "connections": [],
+      "turnarounds": [],
+      "delayScenarios": [],
+      "studies": []
+     }
+    }
+   },
+   "blobs": {}
+  },
+  "valid": true,
+  "hash": "sha256:078b55f075d60694417674ade6e46de5c05bd8bc3fedb6c1761482fc83a9aed7"
  },
  {
   "name": "a connection and a turnaround",
@@ -359,14 +389,30 @@
    "format": "operations",
    "version": "1.0",
    "domains": {
-    "operations": {
+    "vehicles": {
      "version": "1.0",
-     "schema": "sha256:6ee7221f2991714a6b4bf2e9ea282d378c764e5e3e5acb8cbff25ce49a488b61",
+     "schema": "sha256:69c14605ce0b0e02a482d9956dc43506fd1cc1668e380682851bb6a395753316",
+     "fields": {},
+     "collections": {
+      "vehicles": [
+       {
+        "id": "eac5bf47-71bd-8b74-9eb4-e0cb6cc62b15",
+        "key": "osrd:loco"
+       }
+      ]
+     }
+    },
+    "timetables": {
+     "version": "1.0",
+     "schema": "sha256:6a9cee758cee4cb11e8fc735c728f5f615c556b5d8f0036f3188f83b44569eda",
+     "dependsOn": [
+      "vehicles"
+     ],
      "fields": {},
      "collections": {
       "timetables": [
        {
-        "id": "tt-1",
+        "id": "be389a7b-05f5-8e47-92df-b7131ec905b1",
         "name": "Grundtakt",
         "dispatching": {
          "mode": "wait",
@@ -383,67 +429,14 @@
         }
        },
        {
-        "id": "tt-2",
+        "id": "e4a93598-513b-815d-b5af-6722092b91d3",
         "name": "Güterverkehr"
        }
       ],
       "trains": [
        {
-        "id": "g-1",
-        "timetableId": "tt-2",
-        "name": "Kies",
-        "trainKindId": "ebf496d8-0315-8505-affa-29e08cddc349",
-        "comfort": "STANDARD",
-        "departure": 3600,
-        "distribution": "linear",
-        "points": [
-         {
-          "id": "e",
-          "place": "leipzig",
-          "station": "LEIPZIG",
-          "stop": false,
-          "dwell": 60
-         },
-         {
-          "id": "f",
-          "place": "halle",
-          "station": "HALLE",
-          "stop": true,
-          "dwell": 60
-         }
-        ]
-       },
-       {
-        "id": "z-1",
-        "timetableId": "tt-1",
-        "number": "16001",
-        "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
-        "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
-        "comfort": "STANDARD",
-        "departure": 28800,
-        "margin": "5 %",
-        "distribution": "mareco",
-        "points": [
-         {
-          "id": "a",
-          "place": "halle",
-          "station": "HALLE",
-          "stop": true,
-          "dwell": 60
-         },
-         {
-          "id": "b",
-          "place": "leipzig",
-          "station": "LEIPZIG",
-          "track": "t2",
-          "stop": true,
-          "dwell": 120
-         }
-        ]
-       },
-       {
-        "id": "z-2",
-        "timetableId": "tt-1",
+        "id": "96a835f6-51a5-80e9-b088-9d28c3d9a254",
+        "timetableId": "be389a7b-05f5-8e47-92df-b7131ec905b1",
         "number": "16003",
         "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
         "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
@@ -453,18 +446,65 @@
         "distribution": "mareco",
         "points": [
          {
-          "id": "c",
-          "place": "halle",
-          "station": "HALLE",
+          "id": "2e7d2c03-a950-8ae2-a5ec-f5b5356885a5",
+          "operationalPointId": "34c9eb78-441b-83ae-9ef5-c27762d98cab",
           "stop": true,
           "dwell": 60
          },
          {
-          "id": "d",
-          "place": "leipzig",
-          "station": "LEIPZIG",
+          "id": "18ac3e73-43f0-8689-8c51-0e93f9352611",
+          "operationalPointId": "3e6958a7-7209-87df-893f-53145de26074",
           "stop": true,
           "dwell": 60
+         }
+        ]
+       },
+       {
+        "id": "b9817549-cc54-8b0e-a549-a42a97b94811",
+        "timetableId": "e4a93598-513b-815d-b5af-6722092b91d3",
+        "name": "Kies",
+        "trainKindId": "ebf496d8-0315-8505-affa-29e08cddc349",
+        "comfort": "STANDARD",
+        "departure": 3600,
+        "distribution": "linear",
+        "points": [
+         {
+          "id": "3f79bb7b-435b-8532-9651-daefd374cdc6",
+          "operationalPointId": "3e6958a7-7209-87df-893f-53145de26074",
+          "stop": false,
+          "dwell": 60
+         },
+         {
+          "id": "252f10c8-3610-8bca-9a05-9c0bae8255eb",
+          "operationalPointId": "34c9eb78-441b-83ae-9ef5-c27762d98cab",
+          "stop": true,
+          "dwell": 60
+         }
+        ]
+       },
+       {
+        "id": "d7efd1b0-b0f9-8082-b4de-54eb49380e84",
+        "timetableId": "be389a7b-05f5-8e47-92df-b7131ec905b1",
+        "number": "16001",
+        "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
+        "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
+        "comfort": "STANDARD",
+        "departure": 28800,
+        "margin": "5 %",
+        "distribution": "mareco",
+        "points": [
+         {
+          "id": "ca978112-ca1b-8dca-bac2-31b39a23dc4d",
+          "operationalPointId": "34c9eb78-441b-83ae-9ef5-c27762d98cab",
+          "stop": true,
+          "dwell": 60
+         },
+         {
+          "id": "3e23e816-0039-894a-b389-4f6564e1b134",
+          "operationalPointId": "3e6958a7-7209-87df-893f-53145de26074",
+          "trackId": "c4447403-8d45-8e40-a471-4afefa7bf8da",
+          "stop": true,
+          "dwell": 120
          }
         ]
        }
@@ -491,27 +531,26 @@
         "id": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
         "tractionUnits": [
          {
-          "vehicle": "osrd:loco"
+          "vehicleId": "eac5bf47-71bd-8b74-9eb4-e0cb6cc62b15"
          }
         ]
        }
       ],
-      "vehicles": [],
       "connections": [
        {
-        "id": "an-1",
-        "fromTrainId": "z-1",
-        "toTrainId": "g-1",
-        "place": "leipzig",
+        "id": "7abd72a8-c487-87be-9d38-cacde0b47f50",
+        "fromTrainId": "d7efd1b0-b0f9-8082-b4de-54eb49380e84",
+        "toTrainId": "b9817549-cc54-8b0e-a549-a42a97b94811",
+        "operationalPointId": "3e6958a7-7209-87df-893f-53145de26074",
         "changeTime": 300,
         "waitUpTo": 180
        }
       ],
       "turnarounds": [
        {
-        "id": "w-1",
-        "fromTrainId": "z-1",
-        "toTrainId": "z-2",
+        "id": "0065abd0-0978-8926-b78f-5e00851728b3",
+        "fromTrainId": "d7efd1b0-b0f9-8082-b4de-54eb49380e84",
+        "toTrainId": "96a835f6-51a5-80e9-b088-9d28c3d9a254",
         "leastTime": 600
        }
       ],
@@ -523,7 +562,7 @@
    "blobs": {}
   },
   "valid": true,
-  "hash": "sha256:a29c6800d06ed75d9b967cd6aeab25e970a91626ebff48139b8850243d44962c"
+  "hash": "sha256:3ff5548c0390bc8f64eb06043da78d8424e4b1fd8dcaef6eeff3f5dbc7294b04"
  },
  {
   "name": "another version",
@@ -531,14 +570,30 @@
    "format": "operations",
    "version": "2.0",
    "domains": {
-    "operations": {
+    "vehicles": {
      "version": "1.0",
-     "schema": "sha256:6ee7221f2991714a6b4bf2e9ea282d378c764e5e3e5acb8cbff25ce49a488b61",
+     "schema": "sha256:69c14605ce0b0e02a482d9956dc43506fd1cc1668e380682851bb6a395753316",
+     "fields": {},
+     "collections": {
+      "vehicles": [
+       {
+        "id": "eac5bf47-71bd-8b74-9eb4-e0cb6cc62b15",
+        "key": "osrd:loco"
+       }
+      ]
+     }
+    },
+    "timetables": {
+     "version": "1.0",
+     "schema": "sha256:6a9cee758cee4cb11e8fc735c728f5f615c556b5d8f0036f3188f83b44569eda",
+     "dependsOn": [
+      "vehicles"
+     ],
      "fields": {},
      "collections": {
       "timetables": [
        {
-        "id": "tt-1",
+        "id": "be389a7b-05f5-8e47-92df-b7131ec905b1",
         "name": "Grundtakt",
         "dispatching": {
          "mode": "wait",
@@ -555,67 +610,14 @@
         }
        },
        {
-        "id": "tt-2",
+        "id": "e4a93598-513b-815d-b5af-6722092b91d3",
         "name": "Güterverkehr"
        }
       ],
       "trains": [
        {
-        "id": "g-1",
-        "timetableId": "tt-2",
-        "name": "Kies",
-        "trainKindId": "ebf496d8-0315-8505-affa-29e08cddc349",
-        "comfort": "STANDARD",
-        "departure": 3600,
-        "distribution": "linear",
-        "points": [
-         {
-          "id": "e",
-          "place": "leipzig",
-          "station": "LEIPZIG",
-          "stop": false,
-          "dwell": 60
-         },
-         {
-          "id": "f",
-          "place": "halle",
-          "station": "HALLE",
-          "stop": true,
-          "dwell": 60
-         }
-        ]
-       },
-       {
-        "id": "z-1",
-        "timetableId": "tt-1",
-        "number": "16001",
-        "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
-        "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
-        "comfort": "STANDARD",
-        "departure": 28800,
-        "margin": "5 %",
-        "distribution": "mareco",
-        "points": [
-         {
-          "id": "a",
-          "place": "halle",
-          "station": "HALLE",
-          "stop": true,
-          "dwell": 60
-         },
-         {
-          "id": "b",
-          "place": "leipzig",
-          "station": "LEIPZIG",
-          "track": "t2",
-          "stop": true,
-          "dwell": 120
-         }
-        ]
-       },
-       {
-        "id": "z-2",
-        "timetableId": "tt-1",
+        "id": "96a835f6-51a5-80e9-b088-9d28c3d9a254",
+        "timetableId": "be389a7b-05f5-8e47-92df-b7131ec905b1",
         "number": "16003",
         "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
         "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
@@ -625,18 +627,65 @@
         "distribution": "mareco",
         "points": [
          {
-          "id": "c",
-          "place": "halle",
-          "station": "HALLE",
+          "id": "2e7d2c03-a950-8ae2-a5ec-f5b5356885a5",
+          "operationalPointId": "34c9eb78-441b-83ae-9ef5-c27762d98cab",
           "stop": true,
           "dwell": 60
          },
          {
-          "id": "d",
-          "place": "leipzig",
-          "station": "LEIPZIG",
+          "id": "18ac3e73-43f0-8689-8c51-0e93f9352611",
+          "operationalPointId": "3e6958a7-7209-87df-893f-53145de26074",
           "stop": true,
           "dwell": 60
+         }
+        ]
+       },
+       {
+        "id": "b9817549-cc54-8b0e-a549-a42a97b94811",
+        "timetableId": "e4a93598-513b-815d-b5af-6722092b91d3",
+        "name": "Kies",
+        "trainKindId": "ebf496d8-0315-8505-affa-29e08cddc349",
+        "comfort": "STANDARD",
+        "departure": 3600,
+        "distribution": "linear",
+        "points": [
+         {
+          "id": "3f79bb7b-435b-8532-9651-daefd374cdc6",
+          "operationalPointId": "3e6958a7-7209-87df-893f-53145de26074",
+          "stop": false,
+          "dwell": 60
+         },
+         {
+          "id": "252f10c8-3610-8bca-9a05-9c0bae8255eb",
+          "operationalPointId": "34c9eb78-441b-83ae-9ef5-c27762d98cab",
+          "stop": true,
+          "dwell": 60
+         }
+        ]
+       },
+       {
+        "id": "d7efd1b0-b0f9-8082-b4de-54eb49380e84",
+        "timetableId": "be389a7b-05f5-8e47-92df-b7131ec905b1",
+        "number": "16001",
+        "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
+        "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
+        "comfort": "STANDARD",
+        "departure": 28800,
+        "margin": "5 %",
+        "distribution": "mareco",
+        "points": [
+         {
+          "id": "ca978112-ca1b-8dca-bac2-31b39a23dc4d",
+          "operationalPointId": "34c9eb78-441b-83ae-9ef5-c27762d98cab",
+          "stop": true,
+          "dwell": 60
+         },
+         {
+          "id": "3e23e816-0039-894a-b389-4f6564e1b134",
+          "operationalPointId": "3e6958a7-7209-87df-893f-53145de26074",
+          "trackId": "c4447403-8d45-8e40-a471-4afefa7bf8da",
+          "stop": true,
+          "dwell": 120
          }
         ]
        }
@@ -663,12 +712,11 @@
         "id": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
         "tractionUnits": [
          {
-          "vehicle": "osrd:loco"
+          "vehicleId": "eac5bf47-71bd-8b74-9eb4-e0cb6cc62b15"
          }
         ]
        }
       ],
-      "vehicles": [],
       "connections": [],
       "turnarounds": [],
       "delayScenarios": [],
@@ -687,14 +735,30 @@
    "format": "operations",
    "version": "1.0",
    "domains": {
-    "operations": {
+    "vehicles": {
      "version": "1.0",
-     "schema": "sha256:6ee7221f2991714a6b4bf2e9ea282d378c764e5e3e5acb8cbff25ce49a488b61",
+     "schema": "sha256:69c14605ce0b0e02a482d9956dc43506fd1cc1668e380682851bb6a395753316",
+     "fields": {},
+     "collections": {
+      "vehicles": [
+       {
+        "id": "eac5bf47-71bd-8b74-9eb4-e0cb6cc62b15",
+        "key": "osrd:loco"
+       }
+      ]
+     }
+    },
+    "timetables": {
+     "version": "1.0",
+     "schema": "sha256:6a9cee758cee4cb11e8fc735c728f5f615c556b5d8f0036f3188f83b44569eda",
+     "dependsOn": [
+      "vehicles"
+     ],
      "fields": {},
      "collections": {
       "timetables": [
        {
-        "id": "tt-1",
+        "id": "be389a7b-05f5-8e47-92df-b7131ec905b1",
         "name": "Grundtakt",
         "dispatching": {
          "mode": "wait",
@@ -711,67 +775,14 @@
         }
        },
        {
-        "id": "tt-2",
+        "id": "e4a93598-513b-815d-b5af-6722092b91d3",
         "name": "Güterverkehr"
        }
       ],
       "trains": [
        {
-        "id": "g-1",
-        "timetableId": "tt-9",
-        "name": "Kies",
-        "trainKindId": "ebf496d8-0315-8505-affa-29e08cddc349",
-        "comfort": "STANDARD",
-        "departure": 3600,
-        "distribution": "linear",
-        "points": [
-         {
-          "id": "e",
-          "place": "leipzig",
-          "station": "LEIPZIG",
-          "stop": false,
-          "dwell": 60
-         },
-         {
-          "id": "f",
-          "place": "halle",
-          "station": "HALLE",
-          "stop": true,
-          "dwell": 60
-         }
-        ]
-       },
-       {
-        "id": "z-1",
-        "timetableId": "tt-1",
-        "number": "16001",
-        "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
-        "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
-        "comfort": "STANDARD",
-        "departure": 28800,
-        "margin": "5 %",
-        "distribution": "mareco",
-        "points": [
-         {
-          "id": "a",
-          "place": "halle",
-          "station": "HALLE",
-          "stop": true,
-          "dwell": 60
-         },
-         {
-          "id": "b",
-          "place": "leipzig",
-          "station": "LEIPZIG",
-          "track": "t2",
-          "stop": true,
-          "dwell": 120
-         }
-        ]
-       },
-       {
-        "id": "z-2",
-        "timetableId": "tt-1",
+        "id": "96a835f6-51a5-80e9-b088-9d28c3d9a254",
+        "timetableId": "4e892131-3b73-88e0-9257-3f9629797634",
         "number": "16003",
         "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
         "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
@@ -781,18 +792,65 @@
         "distribution": "mareco",
         "points": [
          {
-          "id": "c",
-          "place": "halle",
-          "station": "HALLE",
+          "id": "2e7d2c03-a950-8ae2-a5ec-f5b5356885a5",
+          "operationalPointId": "34c9eb78-441b-83ae-9ef5-c27762d98cab",
           "stop": true,
           "dwell": 60
          },
          {
-          "id": "d",
-          "place": "leipzig",
-          "station": "LEIPZIG",
+          "id": "18ac3e73-43f0-8689-8c51-0e93f9352611",
+          "operationalPointId": "3e6958a7-7209-87df-893f-53145de26074",
           "stop": true,
           "dwell": 60
+         }
+        ]
+       },
+       {
+        "id": "b9817549-cc54-8b0e-a549-a42a97b94811",
+        "timetableId": "e4a93598-513b-815d-b5af-6722092b91d3",
+        "name": "Kies",
+        "trainKindId": "ebf496d8-0315-8505-affa-29e08cddc349",
+        "comfort": "STANDARD",
+        "departure": 3600,
+        "distribution": "linear",
+        "points": [
+         {
+          "id": "3f79bb7b-435b-8532-9651-daefd374cdc6",
+          "operationalPointId": "3e6958a7-7209-87df-893f-53145de26074",
+          "stop": false,
+          "dwell": 60
+         },
+         {
+          "id": "252f10c8-3610-8bca-9a05-9c0bae8255eb",
+          "operationalPointId": "34c9eb78-441b-83ae-9ef5-c27762d98cab",
+          "stop": true,
+          "dwell": 60
+         }
+        ]
+       },
+       {
+        "id": "d7efd1b0-b0f9-8082-b4de-54eb49380e84",
+        "timetableId": "be389a7b-05f5-8e47-92df-b7131ec905b1",
+        "number": "16001",
+        "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
+        "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
+        "comfort": "STANDARD",
+        "departure": 28800,
+        "margin": "5 %",
+        "distribution": "mareco",
+        "points": [
+         {
+          "id": "ca978112-ca1b-8dca-bac2-31b39a23dc4d",
+          "operationalPointId": "34c9eb78-441b-83ae-9ef5-c27762d98cab",
+          "stop": true,
+          "dwell": 60
+         },
+         {
+          "id": "3e23e816-0039-894a-b389-4f6564e1b134",
+          "operationalPointId": "3e6958a7-7209-87df-893f-53145de26074",
+          "trackId": "c4447403-8d45-8e40-a471-4afefa7bf8da",
+          "stop": true,
+          "dwell": 120
          }
         ]
        }
@@ -819,12 +877,11 @@
         "id": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
         "tractionUnits": [
          {
-          "vehicle": "osrd:loco"
+          "vehicleId": "eac5bf47-71bd-8b74-9eb4-e0cb6cc62b15"
          }
         ]
        }
       ],
-      "vehicles": [],
       "connections": [],
       "turnarounds": [],
       "delayScenarios": [],
@@ -843,14 +900,30 @@
    "format": "operations",
    "version": "1.0",
    "domains": {
-    "operations": {
+    "vehicles": {
      "version": "1.0",
-     "schema": "sha256:6ee7221f2991714a6b4bf2e9ea282d378c764e5e3e5acb8cbff25ce49a488b61",
+     "schema": "sha256:69c14605ce0b0e02a482d9956dc43506fd1cc1668e380682851bb6a395753316",
+     "fields": {},
+     "collections": {
+      "vehicles": [
+       {
+        "id": "eac5bf47-71bd-8b74-9eb4-e0cb6cc62b15",
+        "key": "osrd:loco"
+       }
+      ]
+     }
+    },
+    "timetables": {
+     "version": "1.0",
+     "schema": "sha256:6a9cee758cee4cb11e8fc735c728f5f615c556b5d8f0036f3188f83b44569eda",
+     "dependsOn": [
+      "vehicles"
+     ],
      "fields": {},
      "collections": {
       "timetables": [
        {
-        "id": "tt-1",
+        "id": "be389a7b-05f5-8e47-92df-b7131ec905b1",
         "name": "Grundtakt",
         "dispatching": {
          "mode": "wait",
@@ -867,39 +940,62 @@
         }
        },
        {
-        "id": "tt-2",
+        "id": "e4a93598-513b-815d-b5af-6722092b91d3",
         "name": "Güterverkehr"
        }
       ],
       "trains": [
        {
-        "id": "g-1",
-        "timetableId": "tt-2",
-        "name": "Kies",
-        "trainKindId": "ebf496d8-0315-8505-affa-29e08cddc349",
+        "id": "96a835f6-51a5-80e9-b088-9d28c3d9a254",
+        "timetableId": "be389a7b-05f5-8e47-92df-b7131ec905b1",
+        "number": "16003",
+        "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
+        "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
         "comfort": "STANDARD",
         "departure": "8:00",
-        "distribution": "linear",
+        "margin": "5 %",
+        "distribution": "mareco",
         "points": [
          {
-          "id": "e",
-          "place": "leipzig",
-          "station": "LEIPZIG",
-          "stop": false,
+          "id": "2e7d2c03-a950-8ae2-a5ec-f5b5356885a5",
+          "operationalPointId": "34c9eb78-441b-83ae-9ef5-c27762d98cab",
+          "stop": true,
           "dwell": 60
          },
          {
-          "id": "f",
-          "place": "halle",
-          "station": "HALLE",
+          "id": "18ac3e73-43f0-8689-8c51-0e93f9352611",
+          "operationalPointId": "3e6958a7-7209-87df-893f-53145de26074",
           "stop": true,
           "dwell": 60
          }
         ]
        },
        {
-        "id": "z-1",
-        "timetableId": "tt-1",
+        "id": "b9817549-cc54-8b0e-a549-a42a97b94811",
+        "timetableId": "e4a93598-513b-815d-b5af-6722092b91d3",
+        "name": "Kies",
+        "trainKindId": "ebf496d8-0315-8505-affa-29e08cddc349",
+        "comfort": "STANDARD",
+        "departure": 3600,
+        "distribution": "linear",
+        "points": [
+         {
+          "id": "3f79bb7b-435b-8532-9651-daefd374cdc6",
+          "operationalPointId": "3e6958a7-7209-87df-893f-53145de26074",
+          "stop": false,
+          "dwell": 60
+         },
+         {
+          "id": "252f10c8-3610-8bca-9a05-9c0bae8255eb",
+          "operationalPointId": "34c9eb78-441b-83ae-9ef5-c27762d98cab",
+          "stop": true,
+          "dwell": 60
+         }
+        ]
+       },
+       {
+        "id": "d7efd1b0-b0f9-8082-b4de-54eb49380e84",
+        "timetableId": "be389a7b-05f5-8e47-92df-b7131ec905b1",
         "number": "16001",
         "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
         "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
@@ -909,46 +1005,17 @@
         "distribution": "mareco",
         "points": [
          {
-          "id": "a",
-          "place": "halle",
-          "station": "HALLE",
+          "id": "ca978112-ca1b-8dca-bac2-31b39a23dc4d",
+          "operationalPointId": "34c9eb78-441b-83ae-9ef5-c27762d98cab",
           "stop": true,
           "dwell": 60
          },
          {
-          "id": "b",
-          "place": "leipzig",
-          "station": "LEIPZIG",
-          "track": "t2",
+          "id": "3e23e816-0039-894a-b389-4f6564e1b134",
+          "operationalPointId": "3e6958a7-7209-87df-893f-53145de26074",
+          "trackId": "c4447403-8d45-8e40-a471-4afefa7bf8da",
           "stop": true,
           "dwell": 120
-         }
-        ]
-       },
-       {
-        "id": "z-2",
-        "timetableId": "tt-1",
-        "number": "16003",
-        "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
-        "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
-        "comfort": "STANDARD",
-        "departure": 32400,
-        "margin": "5 %",
-        "distribution": "mareco",
-        "points": [
-         {
-          "id": "c",
-          "place": "halle",
-          "station": "HALLE",
-          "stop": true,
-          "dwell": 60
-         },
-         {
-          "id": "d",
-          "place": "leipzig",
-          "station": "LEIPZIG",
-          "stop": true,
-          "dwell": 60
          }
         ]
        }
@@ -975,12 +1042,11 @@
         "id": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
         "tractionUnits": [
          {
-          "vehicle": "osrd:loco"
+          "vehicleId": "eac5bf47-71bd-8b74-9eb4-e0cb6cc62b15"
          }
         ]
        }
       ],
-      "vehicles": [],
       "connections": [],
       "turnarounds": [],
       "delayScenarios": [],
@@ -994,19 +1060,34 @@
   "code": "invalid_payload"
  },
  {
-  "name": "a vehicle that is not its hash",
+  "name": "a vehicle without its rolling stock and its key",
   "document": {
    "format": "operations",
    "version": "1.0",
    "domains": {
-    "operations": {
+    "vehicles": {
      "version": "1.0",
-     "schema": "sha256:6ee7221f2991714a6b4bf2e9ea282d378c764e5e3e5acb8cbff25ce49a488b61",
+     "schema": "sha256:69c14605ce0b0e02a482d9956dc43506fd1cc1668e380682851bb6a395753316",
+     "fields": {},
+     "collections": {
+      "vehicles": [
+       {
+        "id": "eac5bf47-71bd-8b74-9eb4-e0cb6cc62b15"
+       }
+      ]
+     }
+    },
+    "timetables": {
+     "version": "1.0",
+     "schema": "sha256:6a9cee758cee4cb11e8fc735c728f5f615c556b5d8f0036f3188f83b44569eda",
+     "dependsOn": [
+      "vehicles"
+     ],
      "fields": {},
      "collections": {
       "timetables": [
        {
-        "id": "tt-1",
+        "id": "be389a7b-05f5-8e47-92df-b7131ec905b1",
         "name": "Grundtakt",
         "dispatching": {
          "mode": "wait",
@@ -1023,67 +1104,14 @@
         }
        },
        {
-        "id": "tt-2",
+        "id": "e4a93598-513b-815d-b5af-6722092b91d3",
         "name": "Güterverkehr"
        }
       ],
       "trains": [
        {
-        "id": "g-1",
-        "timetableId": "tt-2",
-        "name": "Kies",
-        "trainKindId": "ebf496d8-0315-8505-affa-29e08cddc349",
-        "comfort": "STANDARD",
-        "departure": 3600,
-        "distribution": "linear",
-        "points": [
-         {
-          "id": "e",
-          "place": "leipzig",
-          "station": "LEIPZIG",
-          "stop": false,
-          "dwell": 60
-         },
-         {
-          "id": "f",
-          "place": "halle",
-          "station": "HALLE",
-          "stop": true,
-          "dwell": 60
-         }
-        ]
-       },
-       {
-        "id": "z-1",
-        "timetableId": "tt-1",
-        "number": "16001",
-        "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
-        "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
-        "comfort": "STANDARD",
-        "departure": 28800,
-        "margin": "5 %",
-        "distribution": "mareco",
-        "points": [
-         {
-          "id": "a",
-          "place": "halle",
-          "station": "HALLE",
-          "stop": true,
-          "dwell": 60
-         },
-         {
-          "id": "b",
-          "place": "leipzig",
-          "station": "LEIPZIG",
-          "track": "t2",
-          "stop": true,
-          "dwell": 120
-         }
-        ]
-       },
-       {
-        "id": "z-2",
-        "timetableId": "tt-1",
+        "id": "96a835f6-51a5-80e9-b088-9d28c3d9a254",
+        "timetableId": "be389a7b-05f5-8e47-92df-b7131ec905b1",
         "number": "16003",
         "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
         "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
@@ -1093,18 +1121,65 @@
         "distribution": "mareco",
         "points": [
          {
-          "id": "c",
-          "place": "halle",
-          "station": "HALLE",
+          "id": "2e7d2c03-a950-8ae2-a5ec-f5b5356885a5",
+          "operationalPointId": "34c9eb78-441b-83ae-9ef5-c27762d98cab",
           "stop": true,
           "dwell": 60
          },
          {
-          "id": "d",
-          "place": "leipzig",
-          "station": "LEIPZIG",
+          "id": "18ac3e73-43f0-8689-8c51-0e93f9352611",
+          "operationalPointId": "3e6958a7-7209-87df-893f-53145de26074",
           "stop": true,
           "dwell": 60
+         }
+        ]
+       },
+       {
+        "id": "b9817549-cc54-8b0e-a549-a42a97b94811",
+        "timetableId": "e4a93598-513b-815d-b5af-6722092b91d3",
+        "name": "Kies",
+        "trainKindId": "ebf496d8-0315-8505-affa-29e08cddc349",
+        "comfort": "STANDARD",
+        "departure": 3600,
+        "distribution": "linear",
+        "points": [
+         {
+          "id": "3f79bb7b-435b-8532-9651-daefd374cdc6",
+          "operationalPointId": "3e6958a7-7209-87df-893f-53145de26074",
+          "stop": false,
+          "dwell": 60
+         },
+         {
+          "id": "252f10c8-3610-8bca-9a05-9c0bae8255eb",
+          "operationalPointId": "34c9eb78-441b-83ae-9ef5-c27762d98cab",
+          "stop": true,
+          "dwell": 60
+         }
+        ]
+       },
+       {
+        "id": "d7efd1b0-b0f9-8082-b4de-54eb49380e84",
+        "timetableId": "be389a7b-05f5-8e47-92df-b7131ec905b1",
+        "number": "16001",
+        "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
+        "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
+        "comfort": "STANDARD",
+        "departure": 28800,
+        "margin": "5 %",
+        "distribution": "mareco",
+        "points": [
+         {
+          "id": "ca978112-ca1b-8dca-bac2-31b39a23dc4d",
+          "operationalPointId": "34c9eb78-441b-83ae-9ef5-c27762d98cab",
+          "stop": true,
+          "dwell": 60
+         },
+         {
+          "id": "3e23e816-0039-894a-b389-4f6564e1b134",
+          "operationalPointId": "3e6958a7-7209-87df-893f-53145de26074",
+          "trackId": "c4447403-8d45-8e40-a471-4afefa7bf8da",
+          "stop": true,
+          "dwell": 120
          }
         ]
        }
@@ -1131,18 +1206,9 @@
         "id": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
         "tractionUnits": [
          {
-          "vehicle": "osrd:loco",
-          "hash": "sha256:56cf850de652b3633c568b7954c449ce0bd5744815c4ebbbb9b3b39d563e4164"
+          "vehicleId": "eac5bf47-71bd-8b74-9eb4-e0cb6cc62b15"
          }
         ]
-       }
-      ],
-      "vehicles": [
-       {
-        "id": "1f54f341-2114-80ac-a632-67bddd35de29",
-        "key": "osrd:loco",
-        "hash": "sha256:56cf850de652b3633c568b7954c449ce0bd5744815c4ebbbb9b3b39d563e4164",
-        "rollingStock": "sha256:56cf850de652b3633c568b7954c449ce0bd5744815c4ebbbb9b3b39d563e4164"
        }
       ],
       "connections": [],
@@ -1152,13 +1218,172 @@
      }
     }
    },
-   "blobs": {
-    "sha256:56cf850de652b3633c568b7954c449ce0bd5744815c4ebbbb9b3b39d563e4164": {
-     "name": "Lok",
-     "mass": 1,
-     "length": 19.5
+   "blobs": {}
+  },
+  "valid": false,
+  "code": "invalid_payload"
+ },
+ {
+  "name": "a formation of a vehicle that is not there",
+  "document": {
+   "format": "operations",
+   "version": "1.0",
+   "domains": {
+    "vehicles": {
+     "version": "1.0",
+     "schema": "sha256:69c14605ce0b0e02a482d9956dc43506fd1cc1668e380682851bb6a395753316",
+     "fields": {},
+     "collections": {
+      "vehicles": [
+       {
+        "id": "eac5bf47-71bd-8b74-9eb4-e0cb6cc62b15",
+        "key": "osrd:loco"
+       }
+      ]
+     }
+    },
+    "timetables": {
+     "version": "1.0",
+     "schema": "sha256:6a9cee758cee4cb11e8fc735c728f5f615c556b5d8f0036f3188f83b44569eda",
+     "dependsOn": [
+      "vehicles"
+     ],
+     "fields": {},
+     "collections": {
+      "timetables": [
+       {
+        "id": "be389a7b-05f5-8e47-92df-b7131ec905b1",
+        "name": "Grundtakt",
+        "dispatching": {
+         "mode": "wait",
+         "priority": "kind",
+         "kindOrder": [
+          "ee078fe5-7f79-823b-9cb5-24300d98887c",
+          "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400"
+         ]
+        },
+        "blockingTimes": {
+         "setup": 12,
+         "approach": 1000,
+         "release": 6
+        }
+       },
+       {
+        "id": "e4a93598-513b-815d-b5af-6722092b91d3",
+        "name": "Güterverkehr"
+       }
+      ],
+      "trains": [
+       {
+        "id": "96a835f6-51a5-80e9-b088-9d28c3d9a254",
+        "timetableId": "be389a7b-05f5-8e47-92df-b7131ec905b1",
+        "number": "16003",
+        "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
+        "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
+        "comfort": "STANDARD",
+        "departure": 32400,
+        "margin": "5 %",
+        "distribution": "mareco",
+        "points": [
+         {
+          "id": "2e7d2c03-a950-8ae2-a5ec-f5b5356885a5",
+          "operationalPointId": "34c9eb78-441b-83ae-9ef5-c27762d98cab",
+          "stop": true,
+          "dwell": 60
+         },
+         {
+          "id": "18ac3e73-43f0-8689-8c51-0e93f9352611",
+          "operationalPointId": "3e6958a7-7209-87df-893f-53145de26074",
+          "stop": true,
+          "dwell": 60
+         }
+        ]
+       },
+       {
+        "id": "b9817549-cc54-8b0e-a549-a42a97b94811",
+        "timetableId": "e4a93598-513b-815d-b5af-6722092b91d3",
+        "name": "Kies",
+        "trainKindId": "ebf496d8-0315-8505-affa-29e08cddc349",
+        "comfort": "STANDARD",
+        "departure": 3600,
+        "distribution": "linear",
+        "points": [
+         {
+          "id": "3f79bb7b-435b-8532-9651-daefd374cdc6",
+          "operationalPointId": "3e6958a7-7209-87df-893f-53145de26074",
+          "stop": false,
+          "dwell": 60
+         },
+         {
+          "id": "252f10c8-3610-8bca-9a05-9c0bae8255eb",
+          "operationalPointId": "34c9eb78-441b-83ae-9ef5-c27762d98cab",
+          "stop": true,
+          "dwell": 60
+         }
+        ]
+       },
+       {
+        "id": "d7efd1b0-b0f9-8082-b4de-54eb49380e84",
+        "timetableId": "be389a7b-05f5-8e47-92df-b7131ec905b1",
+        "number": "16001",
+        "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
+        "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
+        "comfort": "STANDARD",
+        "departure": 28800,
+        "margin": "5 %",
+        "distribution": "mareco",
+        "points": [
+         {
+          "id": "ca978112-ca1b-8dca-bac2-31b39a23dc4d",
+          "operationalPointId": "34c9eb78-441b-83ae-9ef5-c27762d98cab",
+          "stop": true,
+          "dwell": 60
+         },
+         {
+          "id": "3e23e816-0039-894a-b389-4f6564e1b134",
+          "operationalPointId": "3e6958a7-7209-87df-893f-53145de26074",
+          "trackId": "c4447403-8d45-8e40-a471-4afefa7bf8da",
+          "stop": true,
+          "dwell": 120
+         }
+        ]
+       }
+      ],
+      "trainKinds": [
+       {
+        "id": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
+        "name": "RB",
+        "rank": 4
+       },
+       {
+        "id": "ebf496d8-0315-8505-affa-29e08cddc349",
+        "name": "Gz",
+        "rank": 7
+       },
+       {
+        "id": "ee078fe5-7f79-823b-9cb5-24300d98887c",
+        "name": "ICE",
+        "rank": 0
+       }
+      ],
+      "formations": [
+       {
+        "id": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
+        "tractionUnits": [
+         {
+          "vehicleId": "59405bc2-4d0c-8461-9fb6-b7db7dc8f5cf"
+         }
+        ]
+       }
+      ],
+      "connections": [],
+      "turnarounds": [],
+      "delayScenarios": [],
+      "studies": []
+     }
     }
-   }
+   },
+   "blobs": {}
   },
   "valid": false,
   "code": "invalid_payload"
@@ -1169,14 +1394,30 @@
    "format": "operations",
    "version": "1.0",
    "domains": {
-    "operations": {
+    "vehicles": {
      "version": "1.0",
-     "schema": "sha256:6ee7221f2991714a6b4bf2e9ea282d378c764e5e3e5acb8cbff25ce49a488b61",
+     "schema": "sha256:69c14605ce0b0e02a482d9956dc43506fd1cc1668e380682851bb6a395753316",
+     "fields": {},
+     "collections": {
+      "vehicles": [
+       {
+        "id": "eac5bf47-71bd-8b74-9eb4-e0cb6cc62b15",
+        "key": "osrd:loco"
+       }
+      ]
+     }
+    },
+    "timetables": {
+     "version": "1.0",
+     "schema": "sha256:6a9cee758cee4cb11e8fc735c728f5f615c556b5d8f0036f3188f83b44569eda",
+     "dependsOn": [
+      "vehicles"
+     ],
      "fields": {},
      "collections": {
       "timetables": [
        {
-        "id": "tt-1",
+        "id": "be389a7b-05f5-8e47-92df-b7131ec905b1",
         "name": "Grundtakt",
         "dispatching": {
          "mode": "wait",
@@ -1193,67 +1434,14 @@
         }
        },
        {
-        "id": "tt-2",
+        "id": "e4a93598-513b-815d-b5af-6722092b91d3",
         "name": "Güterverkehr"
        }
       ],
       "trains": [
        {
-        "id": "g-1",
-        "timetableId": "tt-2",
-        "name": "Kies",
-        "trainKindId": "ebf496d8-0315-8505-affa-29e08cddc349",
-        "comfort": "STANDARD",
-        "departure": 3600,
-        "distribution": "linear",
-        "points": [
-         {
-          "id": "e",
-          "place": "leipzig",
-          "station": "LEIPZIG",
-          "stop": false,
-          "dwell": 60
-         },
-         {
-          "id": "f",
-          "place": "halle",
-          "station": "HALLE",
-          "stop": true,
-          "dwell": 60
-         }
-        ]
-       },
-       {
-        "id": "z-1",
-        "timetableId": "tt-1",
-        "number": "16001",
-        "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
-        "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
-        "comfort": "STANDARD",
-        "departure": 28800,
-        "margin": "5 %",
-        "distribution": "mareco",
-        "points": [
-         {
-          "id": "a",
-          "place": "halle",
-          "station": "HALLE",
-          "stop": true,
-          "dwell": 60
-         },
-         {
-          "id": "b",
-          "place": "leipzig",
-          "station": "LEIPZIG",
-          "track": "t2",
-          "stop": true,
-          "dwell": 120
-         }
-        ]
-       },
-       {
-        "id": "z-2",
-        "timetableId": "tt-1",
+        "id": "96a835f6-51a5-80e9-b088-9d28c3d9a254",
+        "timetableId": "be389a7b-05f5-8e47-92df-b7131ec905b1",
         "number": "16003",
         "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
         "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
@@ -1263,18 +1451,65 @@
         "distribution": "mareco",
         "points": [
          {
-          "id": "c",
-          "place": "halle",
-          "station": "HALLE",
+          "id": "2e7d2c03-a950-8ae2-a5ec-f5b5356885a5",
+          "operationalPointId": "34c9eb78-441b-83ae-9ef5-c27762d98cab",
           "stop": true,
           "dwell": 60
          },
          {
-          "id": "d",
-          "place": "leipzig",
-          "station": "LEIPZIG",
+          "id": "18ac3e73-43f0-8689-8c51-0e93f9352611",
+          "operationalPointId": "3e6958a7-7209-87df-893f-53145de26074",
           "stop": true,
           "dwell": 60
+         }
+        ]
+       },
+       {
+        "id": "b9817549-cc54-8b0e-a549-a42a97b94811",
+        "timetableId": "e4a93598-513b-815d-b5af-6722092b91d3",
+        "name": "Kies",
+        "trainKindId": "ebf496d8-0315-8505-affa-29e08cddc349",
+        "comfort": "STANDARD",
+        "departure": 3600,
+        "distribution": "linear",
+        "points": [
+         {
+          "id": "3f79bb7b-435b-8532-9651-daefd374cdc6",
+          "operationalPointId": "3e6958a7-7209-87df-893f-53145de26074",
+          "stop": false,
+          "dwell": 60
+         },
+         {
+          "id": "252f10c8-3610-8bca-9a05-9c0bae8255eb",
+          "operationalPointId": "34c9eb78-441b-83ae-9ef5-c27762d98cab",
+          "stop": true,
+          "dwell": 60
+         }
+        ]
+       },
+       {
+        "id": "d7efd1b0-b0f9-8082-b4de-54eb49380e84",
+        "timetableId": "be389a7b-05f5-8e47-92df-b7131ec905b1",
+        "number": "16001",
+        "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
+        "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
+        "comfort": "STANDARD",
+        "departure": 28800,
+        "margin": "5 %",
+        "distribution": "mareco",
+        "points": [
+         {
+          "id": "ca978112-ca1b-8dca-bac2-31b39a23dc4d",
+          "operationalPointId": "34c9eb78-441b-83ae-9ef5-c27762d98cab",
+          "stop": true,
+          "dwell": 60
+         },
+         {
+          "id": "3e23e816-0039-894a-b389-4f6564e1b134",
+          "operationalPointId": "3e6958a7-7209-87df-893f-53145de26074",
+          "trackId": "c4447403-8d45-8e40-a471-4afefa7bf8da",
+          "stop": true,
+          "dwell": 120
          }
         ]
        }
@@ -1301,12 +1536,11 @@
         "id": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
         "tractionUnits": [
          {
-          "vehicle": "osrd:loco"
+          "vehicleId": "eac5bf47-71bd-8b74-9eb4-e0cb6cc62b15"
          }
         ]
        }
       ],
-      "vehicles": [],
       "connections": [],
       "turnarounds": [],
       "delayScenarios": []

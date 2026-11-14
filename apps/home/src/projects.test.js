@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { derivedId } from '@rail-across/core/document'
 import { operationsFile, timetablesFile } from '@rail-across/timetables/exchange'
 import { projectDocument } from '@rail-across/core/project'
 import { importedFiles } from './projects'
@@ -18,7 +19,7 @@ describe('the files chosen to import', () => {
   })
 
   it('read an operations file beside a backup file, with the vehicles it carries (decision 0026)', () => {
-    const loco = { name: 'Lok', mass: 84000 }
+    const loco = { railjson_version: '3.3', name: 'Lok', mass: 84000, effort_curves: { modes: { '15000V': { is_electric: true, curves: [{}] } } } }
     const train = { id: 't1', number: '1', category: 'RE', name: '', vehicle: 'osrd:loco', mode: null, comfort: 'STANDARD', departure: 3600, margin: '', distribution: 'mareco', points: [] }
     const file = operationsFile([{ id: 'x', name: 'Takt', data: { trains: [train] } }], [{ key: 'osrd:loco', vehicle: loco }])
     const { projects, timetables: tt, vehicles } = importedFiles([
@@ -26,7 +27,7 @@ describe('the files chosen to import', () => {
       { name: 'Strecke – Bestand.railacross.json', text: JSON.stringify(backup) },
     ])
     expect(projects).toHaveLength(1)
-    expect(tt).toEqual([{ name: 'Takt', data: { trains: [train] } }])
+    expect(tt).toEqual([{ name: 'Takt', data: { trains: [{ ...train, id: derivedId(train.id) }] } }])
     expect(vehicles).toMatchObject([{ key: 'osrd:loco', vehicle: loco }])
   })
 

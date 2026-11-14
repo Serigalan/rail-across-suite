@@ -15,7 +15,9 @@ const signalled = {
   signalling: { fields: {}, collections: { signals: [signal('N1', 'A1', 450), signal('B', 'L', 1000), signal('A', 'L', 2400)], overlaps: [{ id: 'd', signalId: 'B', length: 100 }] } },
 }
 const stations = stationsOf(signalled)
-const train = (number, clock, patch = {}) => newTrain({ number, vehicle: 'v', departure: parseClock(clock), points: [newPoint('A-Dorf'), newPoint('C-Stadt')], ...patch })
+// A point names its place by id (timetables 1.0): the place of that name in the nets of the tests.
+const named = (name) => [...stations, ...stationsOf(crossing)].find(s => s.name === name)
+const train = (number, clock, patch = {}) => newTrain({ number, vehicle: 'v', departure: parseClock(clock), points: [newPoint(named('A-Dorf')), newPoint(named('C-Stadt'))], ...patch })
 const vehicle = newVehicle('Triebzug')
 
 describe('the blocks of a way', () => {
@@ -99,7 +101,7 @@ describe('the blocks of a way', () => {
 
   it('says of a train entering at a boundary sooner after the one before than its least headway', () => {
     const record = { endMarks: [{ id: 'g', kind: 'boundary', trackId: 'L', endpoint: 'BEGIN', headway: 180 }] }
-    const at = (id, place) => ({ id, points: [{ place }] })
+    const at = (id, place) => ({ id, points: [place === 'g' ? { endMarkId: place } : { operationalPointId: place }] })
     const trains = [at('1', 'g'), at('2', 'g'), at('3', 'g'), at('4', 'A-Dorf')]
     const runs = new Map([['1', { clock: { at0: 600 } }], ['2', { clock: { at0: 720 } }], ['3', { clock: { at0: 1000 } }], ['4', { clock: { at0: 610 } }]])
     const out = withHeadways(record, trains, runs)
@@ -165,8 +167,8 @@ describe.skipIf(!existsSync(WASM))('trains meeting on a single line', () => {
   }
   const places = stationsOf(crossing)
   const runOf = (t, holds, routes) => runTrain(crossing, places, t, vehicle, simulate, holds, routes)
-  const there = train('1', '7:00', { points: [newPoint('H-Stadt'), newPoint('K-Stadt')] })
-  const back = train('2', '7:00', { points: [newPoint('K-Stadt'), newPoint('H-Stadt')] })
+  const there = train('1', '7:00', { points: [newPoint(named('H-Stadt')), newPoint(named('K-Stadt'))] })
+  const back = train('2', '7:00', { points: [newPoint(named('K-Stadt')), newPoint(named('H-Stadt'))] })
 
   it('cross in the station between, the one taking its other track, route by route', async () => {
     const runs = await occupancy(crossing, [there, back], runOf, DISPATCH)

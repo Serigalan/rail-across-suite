@@ -152,7 +152,7 @@ fn run_on(op: &str, input: &Value) -> Result<Value, Failure> {
         }
         "operations.toOperations" => Ok(rail_across_doc::operations::to_operations(&input["record"], flag(input, "check", true))?),
         "operations.fromOperations" => Ok(rail_across_doc::operations::from_operations(input)?),
-        "operations.schemaHash" => Ok(json!(rail_across_doc::operations::schema_hash())),
+        "operations.schemaHashes" => Ok(json!(rail_across_doc::operations::schema_hashes())),
 
         // project
         "project.parseProjectsPayload" => Ok(json!({ "projects": persistence::parse_projects_payload(input)? })),

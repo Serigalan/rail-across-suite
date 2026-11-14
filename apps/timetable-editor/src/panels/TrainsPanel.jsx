@@ -19,7 +19,7 @@ export default function TrainsPanel({ t, timetables, sorted, train, setTrainId, 
       id: tr.id,
       mark: <span className="tt-dot" style={{ background: categoryColor(tr.category) }} />,
       title: trainTitle(tr) || t('train_unnamed'),
-      sub: trainLine(tr, run),
+      sub: trainLine(tr, run, stations),
       end: bad ? <Badge tone="warn" title={t('train_cannot_run')}>!</Badge>
         : run?.conflicts?.length ? <Badge tone="danger" title={t('conflicts_n', { n: run.conflicts.length })}>!</Badge>
           : run?.waits?.length ? <Badge title={t('waits_blocks', { time: Math.round(run.delay ?? 0) })}>+{Math.round((run.delay ?? 0) / 60)}′</Badge> : null,

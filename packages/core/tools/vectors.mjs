@@ -230,7 +230,7 @@ const documentVectors = () => [
 
 // ── operations-1.0 ──────────────────────────────────────────────────────────
 
-const stop = (id, place, extra = {}) => ({ id, place, station: place.toUpperCase(), track: null, stop: true, dwell: 60, departure: null, itinerary: null, ...extra })
+const stop = (id, place, extra = {}) => ({ id, operationalPointId: place, trackId: null, stop: true, dwell: 60, departure: null, itineraryId: null, ...extra })
 
 /** A project's timetables as the suite keeps them: a Takt of two trains and a freight train, a vehicle carried. */
 const operationsRecord = ({ vehicles = false } = {}) => ({
@@ -239,7 +239,7 @@ const operationsRecord = ({ vehicles = false } = {}) => ({
       dispatch: { mode: 'wait', priority: 'category', categories: ['ICE', 'RB'], times: { setup: 12, approach: 1000, release: 6 } },
       trains: [
         { id: 'z-1', number: '16001', category: 'RB', name: '', vehicle: 'osrd:loco', mode: null, comfort: 'STANDARD',
-          departure: 28800, margin: '5 %', distribution: 'mareco', points: [stop('a', 'halle'), stop('b', 'leipzig', { track: 't2', dwell: 120 })] },
+          departure: 28800, margin: '5 %', distribution: 'mareco', points: [stop('a', 'halle'), stop('b', 'leipzig', { trackId: 't2', dwell: 120 })] },
         { id: 'z-2', number: '16003', category: 'RB', name: '', vehicle: 'osrd:loco', mode: null, comfort: 'STANDARD',
           departure: 32400, margin: '5 %', distribution: 'mareco', points: [stop('c', 'halle'), stop('d', 'leipzig')] },
       ] } },
@@ -248,23 +248,26 @@ const operationsRecord = ({ vehicles = false } = {}) => ({
         departure: 3600, margin: '', distribution: 'linear', points: [stop('e', 'leipzig', { stop: false }), stop('f', 'halle')] },
     ] } },
   ],
-  ...(vehicles ? { vehicles: [{ key: 'osrd:loco', vehicle: { name: 'Lok', mass: 84000, length: 19.5 } }] } : {}),
+  ...(vehicles ? { vehicles: [{ key: 'osrd:loco', vehicle: {
+    railjson_version: '3.3', name: 'Lok', mass: 84000, length: 19.5, effort_curves: { modes: { '15000V': { is_electric: true, curves: [{}] } } },
+  } }] } : {}),
 })
 
 const OPERATIONS_CASES = [
   ['the timetables of a project', () => {}],
   ['with its vehicle carried', () => {}, { vehicles: true }],
-  ['no timetables', (doc) => { for (const c of Object.values(doc.domains.operations.collections)) c.length = 0 }],
+  ['no timetables', (doc) => { for (const d of Object.values(doc.domains)) for (const c of Object.values(d.collections)) c.length = 0 }],
   ['a connection and a turnaround', (doc) => {
-    const c = doc.domains.operations.collections
-    c.connections.push({ id: 'an-1', fromTrainId: 'z-1', toTrainId: 'g-1', place: 'leipzig', changeTime: 300, waitUpTo: 180 })
-    c.turnarounds.push({ id: 'w-1', fromTrainId: 'z-1', toTrainId: 'z-2', leastTime: 600 })
+    const c = doc.domains.timetables.collections
+    c.connections.push({ id: derivedId('an-1'), fromTrainId: derivedId('z-1'), toTrainId: derivedId('g-1'), operationalPointId: derivedId('leipzig'), changeTime: 300, waitUpTo: 180 })
+    c.turnarounds.push({ id: derivedId('w-1'), fromTrainId: derivedId('z-1'), toTrainId: derivedId('z-2'), leastTime: 600 })
   }],
   ['another version', (doc) => { doc.version = '2.0' }],
-  ['a train of no timetable', (doc) => { doc.domains.operations.collections.trains[0].timetableId = 'tt-9' }],
-  ['a departure as text', (doc) => { doc.domains.operations.collections.trains[0].departure = '8:00' }],
-  ['a vehicle that is not its hash', (doc) => { doc.blobs[Object.keys(doc.blobs)[0]].mass = 1 }, { vehicles: true }],
-  ['a collection missing', (doc) => { delete doc.domains.operations.collections.studies }],
+  ['a train of no timetable', (doc) => { doc.domains.timetables.collections.trains[0].timetableId = derivedId('tt-9') }],
+  ['a departure as text', (doc) => { doc.domains.timetables.collections.trains[0].departure = '8:00' }],
+  ['a vehicle without its rolling stock and its key', (doc) => { delete doc.domains.vehicles.collections.vehicles[0].key; delete doc.domains.vehicles.collections.vehicles[0].rollingStock }],
+  ['a formation of a vehicle that is not there', (doc) => { doc.domains.timetables.collections.formations[0].tractionUnits[0].vehicleId = derivedId('v-9') }],
+  ['a collection missing', (doc) => { delete doc.domains.timetables.collections.studies }],
 ]
 
 function operationsVerdict(doc) {

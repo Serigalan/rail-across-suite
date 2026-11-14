@@ -1,0 +1,158 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "vehicles",
+  "title": "Rail-Data-Core, domain vehicles 1.0",
+  "description": "The vehicles a project's trains run with, each with its rolling stock as RailJSON. Part of operations-1.0 in rail-across-1.0; the timetables name them by id.",
+  "type": "object",
+  "required": [
+    "fields",
+    "collections"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "fields": {
+      "$ref": "#/$defs/Fields"
+    },
+    "collections": {
+      "type": "object",
+      "required": [
+        "vehicles"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "vehicles": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Vehicle"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "Fields": {
+      "description": "The domain's own fields.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {}
+    },
+    "Vehicle": {
+      "description": "A vehicle (a traction unit or a unit of coaches): where it came from and its rolling stock — without one, a vehicle of the suite's catalogue named by its key; a file that travels carries it.",
+      "type": "object",
+      "required": [
+        "id"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "core#/$defs/Id"
+        },
+        "key": {
+          "$ref": "core#/$defs/Text"
+        },
+        "rollingStock": {
+          "$ref": "#/$defs/RollingStock"
+        }
+      },
+      "anyOf": [
+        {
+          "required": [
+            "rollingStock"
+          ]
+        },
+        {
+          "required": [
+            "key"
+          ]
+        }
+      ]
+    },
+    "RollingStock": {
+      "description": "The vehicle as RailJSON rolling stock, kept in the object.",
+      "type": "object",
+      "required": [
+        "railjson_version",
+        "name",
+        "effort_curves"
+      ],
+      "properties": {
+        "railjson_version": {
+          "$ref": "core#/$defs/Text"
+        },
+        "name": {
+          "$ref": "core#/$defs/Text"
+        },
+        "effort_curves": {
+          "type": "object",
+          "required": [
+            "modes"
+          ],
+          "properties": {
+            "modes": {
+              "type": "object",
+              "minProperties": 1,
+              "additionalProperties": false,
+              "properties": {
+                "15000V": {
+                  "$ref": "#/$defs/EffortMode"
+                },
+                "25000V": {
+                  "$ref": "#/$defs/EffortMode"
+                },
+                "3000V": {
+                  "$ref": "#/$defs/EffortMode"
+                },
+                "1500V": {
+                  "$ref": "#/$defs/EffortMode"
+                },
+                "750V": {
+                  "$ref": "#/$defs/EffortMode"
+                },
+                "600V": {
+                  "$ref": "#/$defs/EffortMode"
+                },
+                "thermal": {
+                  "$ref": "#/$defs/EffortMode"
+                }
+              }
+            },
+            "default_mode": {
+              "enum": [
+                "15000V",
+                "25000V",
+                "3000V",
+                "1500V",
+                "750V",
+                "600V",
+                "thermal"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "EffortMode": {
+      "description": "The tractive effort of one traction mode.",
+      "type": "object",
+      "required": [
+        "is_electric",
+        "curves"
+      ],
+      "properties": {
+        "is_electric": {
+          "type": "boolean"
+        },
+        "curves": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object"
+          }
+        },
+        "default_curve": {
+          "type": "object"
+        }
+      }
+    }
+  }
+}

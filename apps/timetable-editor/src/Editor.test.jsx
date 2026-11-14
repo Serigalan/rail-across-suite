@@ -17,7 +17,9 @@ const de = (node) => renderToStaticMarkup(<I18n.Provider value={textsFor('de')}>
 const { t } = textsFor('de')
 const stations = stationsOf(net)
 
-const train = newTrain({ number: '16001', vehicle: 'osrd:emu-regional-train', departure: 7 * 3600, points: [newPoint('A-Dorf'), newPoint('B-Halt', { stop: false }), newPoint('C-Stadt')] })
+// A point names its place by id (timetables 1.0): the station of that name.
+const named = (name) => stations.find(s => s.name === name)
+const train = newTrain({ number: '16001', vehicle: 'osrd:emu-regional-train', departure: 7 * 3600, points: [newPoint(named('A-Dorf')), newPoint(named('B-Halt'), { stop: false }), newPoint(named('C-Stadt'))] })
 const rows = [
   { key: 'station:a-dorf', name: 'A-Dorf', offset: 0, point: 0, stop: true, track: 'A1', arrival: null, departure: 25200 },
   { key: 'station:b-halt', name: 'B-Halt', offset: 1400, point: 1, stop: false, track: 'L', arrival: 25290, departure: 25290 },
@@ -107,7 +109,7 @@ describe('the Fahrplan-Editor', () => {
   })
 
   it('says what keeps a train from running', () => {
-    const lonely = { ...train, points: [newPoint('A-Dorf'), newPoint('B-Halt')] }
+    const lonely = { ...train, points: [newPoint(named('A-Dorf')), newPoint(named('B-Halt'))] }
     const html = sheet({ train: lonely, run: { key: 'k', problems: [{ key: 'end_not_station', point: 1 }] } })
     expect(html).toContain('Ein Zug endet nur in einem Bahnhof')
     expect(html).toContain('1 offen')
@@ -152,7 +154,7 @@ describe('what it shows of runs', () => {
     expect(insertionIndex(run, 1400)).toBe(2)
     expect(insertionIndex(run, 700)).toBe(1)
     expect(trainLine(train, run)).toBe('A-Dorf 07:00 → C-Stadt 07:03')
-    expect(trainLine(train, null)).toBe('A-Dorf 07:00 → C-Stadt')
+    expect(trainLine(train, null, stations)).toBe('A-Dorf 07:00 → C-Stadt')
   })
 
   it('reads its address', () => {

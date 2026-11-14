@@ -352,9 +352,10 @@ and takes every further RailJSON property as it comes, in the units of RailJSON 
 
 The **traction modes** of a vehicle are the modes of its effort curves (`effort_curves.modes`): the voltages it can
 draw, named as the voltages of the contact wires, and `thermal` for a drive of its own. They are not stored a second
-time. The timetables name vehicles by their id. A file thus runs
-with the vehicles it holds, not with a catalogue that may have changed since; a changed vehicle is a new version
-of the domain, as any other change.
+time. The timetables name vehicles by their id. A file thus runs with the vehicles it holds, not with a catalogue
+that may have changed since; a changed vehicle is a new version of the domain, as any other change. A vehicle without
+its rolling stock is one of the suite's catalogue, named by its key — what a project server keeps where its trains
+run with the catalogue's vehicles; a file that travels carries the rolling stock.
 
 ## Timetables (domain `timetables`)
 
@@ -575,12 +576,10 @@ This specification is the target of the data model. As of 13 November 2026 the s
 from it in these points, each to be brought in line by its own step (decision 0028 and those after it):
 
 - Two files instead of one: the infrastructure as infra-data 2.0 (`.railacross.json`, domains core 4.0,
-  civil 3.0, signalling 4.0, electrification 3.0), the operation as operations 1.0 (`.operations.json`) with one
-  domain `operations`, the vehicles carried in it; a file of before still carries the schemas.
-- A vehicle keeps its rolling stock as a blob and states its traction modes a second time (`tractionModes`).
+  civil 3.0, signalling 4.0, electrification 3.0), the operation as operations 1.0 (`.operations.json`, domains
+  vehicles 1.0 and timetables 1.0); a file of before still carries the schemas.
 - The record the tools work on keeps the words of before — the kinds as numbers, `operationalPoint`, `dep`, a
   `turnout` with `B1` its branch —, km lines in WGS 84 with the kilometrage per point, and ids of any form; the
   door converts it into the document and back (decision 0029, phase 6 takes that out). A km line of before is
   kept as points, not yet fitted with design elements.
-- The points of a train name their place in one member (`place`) and keep the name it was chosen under.
 - A domain the reader does not know is refused, not kept.

@@ -154,11 +154,11 @@ export const stationNamed = (stations, name) => {
 /** The station of that id among `stations`, or null. */
 export const stationById = (stations, id) => (id ? stations.find(s => s.id === id) ?? null : null)
 
-/**
- * The place a train's point names: by its id (`place`); a point written
- * before places had ids, by its name (`station`).
- */
-export const placeOf = (stations, point) => (point?.place ? stationById(stations, point.place) : stationNamed(stations, point?.station))
+/** The id of the place a train's point names: its operational point's, or its end mark's (timetables 1.0, decision 0029). */
+export const placeIdOf = (point) => point?.operationalPointId ?? point?.endMarkId ?? null
+
+/** The place a train's point names, by its id. */
+export const placeOf = (stations, point) => stationById(stations, placeIdOf(point))
 
 /**
  * Where a train may be at a station, for its way over the net: on the track

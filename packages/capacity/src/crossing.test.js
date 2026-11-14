@@ -18,7 +18,9 @@ describe.skipIf(!existsSync(WASM))('the capacity of a single line with a crossin
   const stations = stationsOf(record)
   const vehicle = newVehicle('Triebzug')
   const runOf = (t, holds, routes) => runTrain(record, stations, t, vehicle, simulate, holds, routes)
-  const train = (id, clock, from, to, category) => newTrain({ id, number: id, category, vehicle: 'v', departure: parseClock(clock), points: [newPoint(from), newPoint(to)] })
+  // A point names its place by id (timetables 1.0): the station of that name.
+  const named = (name) => stations.find(s => s.name === name)
+  const train = (id, clock, from, to, category) => newTrain({ id, number: id, category, vehicle: 'v', departure: parseClock(clock), points: [newPoint(named(from)), newPoint(named(to))] })
   const trains = [
     train('1', '7:00', 'H-Stadt', 'K-Stadt', 'RB'), train('2', '7:00', 'K-Stadt', 'H-Stadt', 'RB'),
     train('3', '7:30', 'H-Stadt', 'K-Stadt', 'Gz'), train('4', '7:40', 'K-Stadt', 'H-Stadt', 'RB'),

@@ -134,7 +134,7 @@
           "type": "array",
           "items": {
             "$ref": "core#/$defs/Ref",
-            "x-target": "operations.trainKinds"
+            "x-target": "timetables.trainKinds"
           },
           "maxItems": 100,
           "description": "The kinds of trains first given the net, in order; the timetable's own order, before the kinds' rank."
@@ -189,7 +189,7 @@
         },
         "timetableId": {
           "$ref": "core#/$defs/Ref",
-          "x-target": "operations.timetables"
+          "x-target": "timetables.timetables"
         },
         "number": {
           "type": "string"
@@ -199,11 +199,11 @@
         },
         "trainKindId": {
           "$ref": "core#/$defs/Ref",
-          "x-target": "operations.trainKinds"
+          "x-target": "timetables.trainKinds"
         },
         "formationId": {
           "$ref": "core#/$defs/Ref",
-          "x-target": "operations.formations"
+          "x-target": "timetables.formations"
         },
         "mode": {
           "type": "string",
@@ -422,11 +422,11 @@
         },
         "fromTrainId": {
           "$ref": "core#/$defs/Ref",
-          "x-target": "operations.trains"
+          "x-target": "timetables.trains"
         },
         "toTrainId": {
           "$ref": "core#/$defs/Ref",
-          "x-target": "operations.trains"
+          "x-target": "timetables.trains"
         },
         "operationalPointId": {
           "$ref": "core#/$defs/Ref",
@@ -461,11 +461,11 @@
         },
         "fromTrainId": {
           "$ref": "core#/$defs/Ref",
-          "x-target": "operations.trains"
+          "x-target": "timetables.trains"
         },
         "toTrainId": {
           "$ref": "core#/$defs/Ref",
-          "x-target": "operations.trains"
+          "x-target": "timetables.trains"
         },
         "leastTime": {
           "type": "number",
@@ -520,7 +520,7 @@
         },
         "trainKindId": {
           "$ref": "core#/$defs/Ref",
-          "x-target": "operations.trainKinds",
+          "x-target": "timetables.trainKinds",
           "description": "For which kind; without, every kind."
         },
         "share": {
@@ -595,7 +595,7 @@
         },
         "timetableId": {
           "$ref": "core#/$defs/Ref",
-          "x-target": "operations.timetables"
+          "x-target": "timetables.timetables"
         },
         "period": {
           "description": "The period studied.",
@@ -663,7 +663,7 @@
         },
         "delayScenarioId": {
           "$ref": "core#/$defs/Ref",
-          "x-target": "operations.delayScenarios"
+          "x-target": "timetables.delayScenarios"
         },
         "runs": {
           "type": "integer",

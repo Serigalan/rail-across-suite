@@ -1,7 +1,7 @@
 import { Fragment, useMemo, useState } from 'react'
 import { Badge, Button, Checkbox, IconButton, Message, NumberField, PlusIcon, SelectField, TextField, TrashIcon } from '@rail-across/ui'
-import { atPlace, CATEGORIES, categoryColor, formatClock, itineraryOptions, newPoint, parseClock, trainProblems, trainTitle, withPlaces } from '@rail-across/timetables'
-import { formatDistance, heightProfile, lngLatAt, marginValue, placeOf, stationById } from '@rail-across/running-times'
+import { atPlace, CATEGORIES, categoryColor, formatClock, itineraryOptions, newPoint, parseClock, trainProblems, trainTitle } from '@rail-across/timetables'
+import { formatDistance, heightProfile, lngLatAt, marginValue, placeIdOf, placeOf, stationById } from '@rail-across/running-times'
 import { comfortsOf, curveFor, modeLabel, powerOf } from '@rail-across/vehicles'
 import { CopyIcon, DownIcon, IntervalIcon, UpIcon } from './icons.jsx'
 import MapView from './map/MapView.jsx'
@@ -174,7 +174,7 @@ function VehicleFields({ t, train, entry, catalogue, ro, set }) {
 }
 
 /** What a point is shown by: its place's name, else the name it was given. */
-const shown = (stations, point) => (point ? placeOf(stations, point)?.name ?? point.station : '?')
+const shown = (stations, point) => (point ? placeOf(stations, point)?.name ?? '?' : '?')
 
 /** The choice of a station's track: any, or one of its tracks — for a halt, the tracks of its platforms. */
 function trackOptions(t, station) {
@@ -201,27 +201,26 @@ function RouteCard({ t, train, stations, record, run, problems, ro, update }) {
   const endOptions = ends.map(s => ({ value: s.id, label: nameOf(s) }))
   // a buffer stop or a boundary is no place to pass
   const allOptions = stations.filter(s => s.kind !== 'end').map(s => ({ value: s.id, label: nameOf(s) }))
-  // An edit of the way names every place of the train by its id, those named by their names before too.
-  const setPoints = (fn) => update(tr => withPlaces({ ...tr, points: fn(tr.points) }, stations))
+  const setPoints = (fn) => update(tr => ({ ...tr, points: fn(tr.points) }))
   // A point's place or track changed: the ways preferred to and from it are no longer its.
-  const setPoint = (i, patch) => setPoints(ps => ps.map((p, j) => {
-    const moved = 'place' in patch || 'track' in patch
-    if (j === i) return { ...p, ...patch, ...(moved ? { itinerary: null } : {}) }
-    return moved && j === i - 1 ? { ...p, itinerary: null } : p
+  const setPoint = (i, patch, at = null) => setPoints(ps => ps.map((p, j) => {
+    const moved = !!at || 'trackId' in patch
+    if (j === i) return { ...(at ? atPlace(p, at) : p), ...patch, ...(moved ? { itineraryId: null } : {}) }
+    return moved && j === i - 1 ? { ...p, itineraryId: null } : p
   }))
   const problemAt = (i) => problems.find(p => p.point === i)
-  // a place the variant does not have stays in the choice, by the name it was given
-  const valueOf = (p) => (p ? placeOf(stations, p)?.id ?? p.place ?? p.station : null)
+  // a place the variant does not have stays in the choice, by its id
+  const valueOf = (p) => (p ? placeIdOf(p) : null)
   const withMissing = (options, p) => {
     const value = valueOf(p)
-    return value && !options.some(o => o.value === value) ? [{ value, label: t('station_not_in_net', { name: p.station }) }, ...options] : options
+    return value && !options.some(o => o.value === value) ? [{ value, label: t('station_not_in_net', { name: value.slice(0, 8) }) }, ...options] : options
   }
   const place = (id) => stationById(stations, id)
 
   const start = points[0] ?? null
   const end = points.length >= 2 ? points[last] : null
-  const setStart = (id) => setPoints(ps => (ps.length ? [atPlace({ ...ps[0], track: null }, place(id)), ...ps.slice(1)] : [newPoint(place(id))]))
-  const setEnd = (id) => setPoints(ps => (ps.length >= 2 ? [...ps.slice(0, -1), atPlace({ ...ps[ps.length - 1], track: null }, place(id))] : [...ps, newPoint(place(id))]))
+  const setStart = (id) => setPoints(ps => (ps.length ? [atPlace({ ...ps[0], trackId: null }, place(id)), ...ps.slice(1)] : [newPoint(place(id))]))
+  const setEnd = (id) => setPoints(ps => (ps.length >= 2 ? [...ps.slice(0, -1), atPlace({ ...ps[ps.length - 1], trackId: null }, place(id))] : [...ps, newPoint(place(id))]))
   const addVia = (id) => setPoints(ps => [...ps.slice(0, -1), newPoint(place(id), { dwell: 30 }), ps[ps.length - 1]])
   const move = (i, by) => setPoints(ps => { const out = [...ps]; [out[i], out[i + by]] = [out[i + by], out[i]]; return out })
   const remove = (i) => setPoints(ps => ps.filter((_, j) => j !== i))
@@ -231,14 +230,14 @@ function RouteCard({ t, train, stations, record, run, problems, ro, update }) {
     if (i >= last || !points[i + 1]) return null
     const p = points[i]
     const options = itineraryOptions(record, stations, train, i)
-    if (!options.length && !p.itinerary) return null
+    if (!options.length && !p.itineraryId) return null
     const choices = options.map(o => ({ value: o.id, label: o.name ?? o.id.slice(0, 8) }))
     if (p.itinerary && !options.some(o => o.id === p.itinerary)) choices.unshift({ value: p.itinerary, label: t('itinerary_not_in_net') })
     const state = run?.route?.preferred?.[i]
     return (
       <div className="tt-point tt-point-leg">
         <div className="ui-fields tt-point-fields">
-          <SelectField compact wide label={t('preferred_way', { to: placeOf(stations, points[i + 1])?.name ?? points[i + 1].station })} value={p.itinerary ?? null} empty={t('shortest_way')}
+          <SelectField compact wide label={t('preferred_way', { to: placeOf(stations, points[i + 1])?.name ?? '?' })} value={p.itineraryId ?? null} empty={t('shortest_way')}
             options={choices} disabled={ro} onChange={(v) => setPoints(ps => ps.map((x, j) => (j === i ? { ...x, itinerary: v } : x)))} />
         </div>
         {(state === 'other' || state === 'missing') && <p className="ui-muted tt-point-problem">{t(`preferred_${state}`)}</p>}
@@ -254,8 +253,8 @@ function RouteCard({ t, train, stations, record, run, problems, ro, update }) {
         <div className="ui-fields tt-point-fields">
           <SelectField compact label={t(kind === 'start' ? 'start' : 'end')} value={valueOf(point)} empty={t('choose_station')} disabled={ro || (kind === 'end' && !start)}
             options={withMissing(endOptions, point)} onChange={(v) => v && place(v) && onStation(v)} />
-          {point && <SelectField compact label={t('track')} value={point.track} empty={t('track_any')} disabled={ro || !station} options={trackOptions(t, station)}
-            onChange={(v) => setPoint(i, { track: v })} />}
+          {point && <SelectField compact label={t('track')} value={point.trackId} empty={t('track_any')} disabled={ro || !station} options={trackOptions(t, station)}
+            onChange={(v) => setPoint(i, { trackId: v })} />}
         </div>
         {point && problemAt(i) && <p className="ui-error tt-point-problem">{t(`problem_${problemAt(i).key}`)}</p>}
       </div>
@@ -278,9 +277,9 @@ function RouteCard({ t, train, stations, record, run, problems, ro, update }) {
             <span className="tt-point-mark" aria-hidden="true" />
             <div className="ui-fields tt-point-fields">
               <SelectField compact label={t('via')} value={valueOf(p)} disabled={ro} options={withMissing(allOptions, p)}
-                onChange={(v) => v && place(v) && setPoint(i, { place: v, station: place(v).name, track: null })} />
-              <SelectField compact label={t('track')} value={p.track} empty={t('track_any')} disabled={ro || !station} options={trackOptions(t, station)}
-                onChange={(v) => setPoint(i, { track: v })} />
+                onChange={(v) => v && place(v) && setPoint(i, { trackId: null }, place(v))} />
+              <SelectField compact label={t('track')} value={p.trackId} empty={t('track_any')} disabled={ro || !station} options={trackOptions(t, station)}
+                onChange={(v) => setPoint(i, { trackId: v })} />
             </div>
             <div className="tt-point-more">
               <Checkbox label={t('stops_here')} checked={p.stop} disabled={ro} onChange={(v) => setPoint(i, { stop: v })} />
@@ -408,7 +407,8 @@ function TimesCard({ t, language, train, run, stations, problems, ro, update }) 
     if (row.point != null) return { ...tr, points: tr.points.map((p, i) => (i === row.point ? { ...p, stop: true, dwell: p.dwell || 30 } : p)) }
     const at = insertionIndex(run, row.offset)
     const points = [...tr.points]
-    points.splice(at, 0, newPoint(stationById(stations, row.key) ?? row.name, { dwell: 30, track: null }))
+    const station = stationById(stations, row.key)
+    if (station) points.splice(at, 0, newPoint(station, { dwell: 30 }))
     return { ...tr, points }
   })
   let body

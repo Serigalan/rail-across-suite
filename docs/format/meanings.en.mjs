@@ -581,7 +581,7 @@ export default {
   'vehicles:root.collections': 'The domain\'s collections',
   'vehicles:root.collections.vehicles': 'Vehicles',
   'TYPE:vehicles:Fields': 'The domain\'s fields (none yet).',
-  'TYPE:vehicles:Vehicle': 'A vehicle (a traction unit or a unit of coaches): where it came from and its rolling stock. Its name and its traction modes are those of its rolling stock.',
+  'TYPE:vehicles:Vehicle': 'A vehicle (a traction unit or a unit of coaches): where it came from and its rolling stock. Its name and its traction modes are those of its rolling stock; without one, it is a vehicle of the suite\'s catalogue named by its key.',
   'vehicles:Vehicle.key': 'Key in the catalogue it came from',
   'vehicles:Vehicle.rollingStock': 'The vehicle as RailJSON rolling stock',
   'TYPE:vehicles:RollingStock': 'The vehicle as RailJSON rolling stock (OSRD), kept in the object, not as a blob. The schema checks what the suite reads from it; every further RailJSON property (length, mass, maximum speed, resistance to motion, …) is allowed and taken as it comes. Units as in RailJSON: m, kg, m/s, N.',

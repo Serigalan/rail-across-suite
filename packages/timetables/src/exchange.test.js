@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { derivedId } from '@rail-across/core/document'
 import {
   isTimetablesData, isTimetablesFile, operationsFile, operationsFileName, parseTimetablesFile, readTimetables, timetablesFile, timetablesFileName,
   timetablesOf, timetablesOfText, withCarriedVehicles,
@@ -33,22 +34,25 @@ describe('a file of timetables', () => {
   })
 })
 
-describe('an operations file (operations-1.0, decision 0026)', () => {
-  const point = (id, place) => ({ id, place, station: place, track: null, stop: true, dwell: 60, departure: null, itinerary: null })
+describe('an operations file (operations-1.0, decisions 0026, 0029)', () => {
+  // Ids as the door writes them: UUIDs (decision 0029, phase 2); a point names its place by id.
+  const point = (id, place) => ({ id: derivedId(id), operationalPointId: derivedId(place), trackId: null, stop: true, dwell: 60, departure: null, itineraryId: null })
   const train = (id, vehicle) => ({
-    id, number: '1', category: 'RE', name: '', vehicle, mode: null, comfort: 'STANDARD', departure: 3600, margin: '5 %', distribution: 'mareco',
+    id: derivedId(id), number: '1', category: 'RE', name: '', vehicle, mode: null, comfort: 'STANDARD', departure: 3600, margin: '5 %', distribution: 'mareco',
     points: [point(`${id}a`, 'a'), point(`${id}b`, 'b')],
   })
   const timetables = [{ id: 'x', name: 'Takt', version: 4, data: { trains: [train('t1', 'osrd:loco'), train('t2', 'own-1')] } }]
-  const loco = { name: 'Lok', mass: 84000 }
-  const own = { name: 'Eigener Triebwagen', mass: 50000 }
-  const entries = [{ key: 'osrd:loco', vehicle: loco }, { key: 'own-1', vehicle: own }, { key: 'osrd:other', vehicle: { name: 'X' } }]
+  const stock = (name, mass) => ({ railjson_version: '3.3', name, mass, effort_curves: { modes: { '15000V': { is_electric: true, curves: [{}] } } } })
+  const loco = stock('Lok', 84000)
+  const own = stock('Eigener Triebwagen', 50000)
+  const entries = [{ key: 'osrd:loco', vehicle: loco }, { key: 'own-1', vehicle: own }, { key: 'osrd:other', vehicle: stock('X', 1) }]
 
   it('carries the vehicles its trains run with, and reads back as it went out', () => {
     const file = operationsFile(timetables, entries)
     expect(file).toMatchObject({ format: 'operations', version: '1.0' })
-    expect(Object.values(file.blobs)).toEqual(expect.arrayContaining([loco, own]))
-    expect(Object.values(file.blobs)).toHaveLength(2)
+    // the vehicles carried with their rolling stock in the object (vehicles 1.0)
+    expect(file.domains.vehicles.collections.vehicles.map(v => v.rollingStock)).toEqual(expect.arrayContaining([loco, own]))
+    expect(file.domains.vehicles.collections.vehicles).toHaveLength(2)
     const read = readTimetables(JSON.stringify(file))
     expect(read.timetables).toEqual([{ name: 'Takt', data: { trains: [train('t1', 'osrd:loco'), train('t2', 'own-1')] } }])
     expect(read.vehicles.map(v => v.key).sort()).toEqual(['osrd:loco', 'own-1'])
@@ -72,7 +76,7 @@ describe('an operations file (operations-1.0, decision 0026)', () => {
     const file = operationsFile(timetables, entries)
     const code = (f) => { try { f(); return null } catch (err) { return err.code } }
     expect(code(() => timetablesOf({ ...file, version: '2.0' }))).toBe('timetables_version')
-    expect(code(() => timetablesOf({ ...file, blobs: {} }))).toBe('timetables_invalid')
+    expect(code(() => timetablesOf({ ...file, domains: { timetables: file.domains.timetables } }))).toBe('timetables_invalid')
     expect(isTimetablesData(file)).toBe(true)
   })
 })

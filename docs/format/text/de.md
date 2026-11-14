@@ -368,8 +368,11 @@ Zugkraftkurven —, und übernimmt jedes weitere RailJSON-Property, wie es kommt
 
 Die **Traktionsarten** eines Fahrzeugs sind die Betriebsarten seiner Zugkraftkurven (`effort_curves.modes`): die
 Spannungen, die es abnehmen kann, benannt wie die Spannungen der Fahrdrähte, und `thermal` für eigenen Antrieb. Sie
-werden kein zweites Mal gespeichert. Die Fahrpläne nennen Fahrzeuge über ihre Kennung. Eine Datei fährt so mit den Fahrzeugen, die sie hält, nicht mit einem Katalog, der sich inzwischen
-geändert haben kann; ein geändertes Fahrzeug ist eine neue Version der Domäne wie jede andere Änderung.
+werden kein zweites Mal gespeichert. Die Fahrpläne nennen Fahrzeuge über ihre Kennung. Eine Datei fährt so mit den
+Fahrzeugen, die sie hält, nicht mit einem Katalog, der sich inzwischen geändert haben kann; ein geändertes Fahrzeug
+ist eine neue Version der Domäne wie jede andere Änderung. Ein Fahrzeug ohne Rollmaterial ist eines aus dem Katalog
+der Suite, genannt über seinen Schlüssel — so hält ein Projektserver Fahrzeuge, mit denen seine Züge aus dem Katalog
+fahren; eine Datei, die reist, führt das Rollmaterial mit.
 
 ## Fahrpläne (Domäne `timetables`)
 
@@ -593,13 +596,11 @@ Diese Spezifikation ist das Ziel des Datenmodells. Mit Stand 13. November 2026 w
 in diesen Punkten ab; jeder wird in einem eigenen Schritt angeglichen (Entscheidung 0028 und die folgenden):
 
 - Zwei Dateien statt einer: die Infrastruktur als infra-data 2.0 (`.railacross.json`, Domänen core 4.0, civil 3.0,
-  signalling 4.0, electrification 3.0), der Betrieb als operations 1.0 (`.operations.json`) mit einer Domäne
-  `operations`, in der die Fahrzeuge mitgeführt werden; eine Datei von vorher führt noch die Schemas mit.
-- Ein Fahrzeug hält sein Rollmaterial als Blob und nennt seine Traktionsarten ein zweites Mal (`tractionModes`).
+  signalling 4.0, electrification 3.0), der Betrieb als operations 1.0 (`.operations.json`, Domänen vehicles 1.0
+  und timetables 1.0); eine Datei von vorher führt noch die Schemas mit.
 - Der Record, mit dem die Werkzeuge arbeiten, behält das Vokabular von vorher — die Arten als Zahlen,
   `operationalPoint`, `dep`, eine `turnout` mit `B1` als Zweiggleis —, Kilometrierungslinien in WGS 84 mit dem
   Kilometer je Punkt und Kennungen jeder Form; die Tür wandelt ihn ins Dokument und zurück (Entscheidung 0029,
   Phase 6 nimmt das heraus). Eine Kilometrierungslinie von vorher steht als Punkte da, noch nicht mit
   Trassierungselementen angenähert.
-- Die Punkte eines Zugs nennen ihren Ort in einem Feld (`place`) und behalten den Namen, unter dem er gewählt wurde.
 - Eine Domäne, die der Leser nicht kennt, wird abgelehnt, nicht erhalten.

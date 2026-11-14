@@ -37,13 +37,24 @@
       "properties": {}
     },
     "Vehicle": {
-      "description": "A vehicle (a traction unit or a unit of coaches): where it came from and its rolling stock.",
+      "description": "A vehicle (a traction unit or a unit of coaches): where it came from and its rolling stock — without one, a vehicle of the suite's catalogue named by its key; a file that travels carries it.",
       "type": "object",
       "required": [
-        "id",
-        "rollingStock"
+        "id"
       ],
       "additionalProperties": false,
+      "anyOf": [
+        {
+          "required": [
+            "rollingStock"
+          ]
+        },
+        {
+          "required": [
+            "key"
+          ]
+        }
+      ],
       "properties": {
         "id": {
           "$ref": "core#/$defs/Id"

@@ -4,11 +4,15 @@ import { newVehicle } from '@rail-across/vehicles'
 import { runWith, stationTargets, stationsOf } from '@rail-across/running-times'
 import { marked, net, WASM } from '../../running-times/test/net.js'
 import {
-  copyTrain, formatClock, itineraryOptions, newPoint, newTrain, numberAfter, parseClock, routePoints, runTrain, intervalCopies, trainProblems, trainRequest, trainTitle, withPlaces,
+  copyTrain, formatClock, itineraryOptions, newPoint, newTrain, numberAfter, parseClock, routePoints, runTrain, intervalCopies, trainProblems, trainRequest, trainTitle,
 } from './timetable.js'
 
 const stations = stationsOf(net)
-const train = (points, patch = {}) => newTrain({ number: '16001', vehicle: 'v', departure: parseClock('7:00'), points: points.map(([station, p]) => newPoint(station, p)), ...patch })
+// A point names its place by id (timetables 1.0): the place of that name in the nets of the tests, else one no net has.
+const known = [...stations, ...stationsOf(marked)]
+const placeNamed = (name) => known.find(s => s.name === name) ?? { id: `missing:${name}`, kind: 'station' }
+const asPoint = ({ track, itinerary, ...rest } = {}) => ({ ...rest, ...(track !== undefined ? { trackId: track } : {}), ...(itinerary !== undefined ? { itineraryId: itinerary } : {}) })
+const train = (points, patch = {}) => newTrain({ number: '16001', vehicle: 'v', departure: parseClock('7:00'), points: points.map(([station, p]) => newPoint(placeNamed(station), asPoint(p))), ...patch })
 
 describe('a train of the timetable', () => {
   it('begins and ends at a station only', () => {
@@ -26,20 +30,17 @@ describe('a train of the timetable', () => {
     expect(trainProblems(train([['A-Dorf'], ['West'], ['C-Stadt']]), ends)).toEqual([{ key: 'end_on_the_way', point: 1 }])
   })
 
-  it('names its places by their ids, shown by their names, and finds those of a timetable written before by name', () => {
+  it('names its places by their ids, shown by their names (timetables 1.0)', () => {
     const a = stations.find(s => s.name === 'A-Dorf'), c = stations.find(s => s.name === 'C-Stadt')
     const byId = newTrain({ vehicle: 'v', points: [newPoint(a), newPoint(c)] })
-    expect(byId.points.map(p => [p.place, p.station])).toEqual([[a.id, 'A-Dorf'], [c.id, 'C-Stadt']])
+    expect(byId.points.map(p => p.operationalPointId)).toEqual([a.id, c.id])
+    expect(newPoint(stationsOf(marked).find(s => s.name === 'West'))).toMatchObject({ endMarkId: 'mW' })
     // renamed on the variant: the point still finds it by its id, and is shown by the name it was given
     const renamed = stations.map(s => (s.id === c.id ? { ...s, name: 'C-City' } : s))
     expect(trainProblems(byId, renamed)).toEqual([])
     expect(routePoints(byId, renamed)[1]).toEqual(stationTargets(c))
     // a place the variant lacks is missing, whatever its name
     expect(trainProblems(byId, stations.filter(s => s.id !== c.id))).toEqual([{ key: 'station_missing', point: 1 }])
-    const old = train([['A-Dorf'], ['C-Stadt']])
-    expect(trainProblems(old, stations)).toEqual([])
-    expect(withPlaces(old, stations).points.map(p => p.place)).toEqual([a.id, c.id])
-    expect(withPlaces(byId, stations)).toBe(byId)
   })
 
   it('names stations and tracks the variant has, a vehicle and a margin that reads', () => {

@@ -203,6 +203,56 @@ fn from_references(db: &Connection, _now: i64) -> rusqlite::Result<String> {
     through_the_door(db, STORED_FORMAT_REFERENCES)
 }
 
+/// Every revision of a project's operations kept with one domain `operations` rewritten in the two domains
+/// `vehicles` and `timetables`, in place (decision 0029, phase 4): a train's point naming an end mark of the
+/// project's infrastructure — any revision of any variant — by `endMarkId`, else its operational point. One the
+/// door cannot read stays as it was, and is read through the door each time it is asked for.
+fn to_two_domains(db: &Connection, _now: i64) -> rusqlite::Result<String> {
+    let rows: Vec<(i64, String, Vec<u8>)> = db
+        .prepare("SELECT id, project_id, payload FROM operations_revision")?
+        .query_map([], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)))?
+        .collect::<Result<_, _>>()?;
+    let mut marks_of: std::collections::HashMap<String, std::collections::HashSet<String>> = std::collections::HashMap::new();
+    let (mut written, mut left) = (0, 0);
+    for (id, project, payload) in rows {
+        let Some(doc) = unpack(&payload) else {
+            left += 1;
+            continue;
+        };
+        if doc["domains"].get("operations").is_none() {
+            continue;
+        }
+        if !marks_of.contains_key(&project) {
+            let payloads: Vec<Vec<u8>> = db
+                .prepare("SELECT payload FROM revision WHERE project_id = ?")?
+                .query_map([&project], |r| r.get(0))?
+                .collect::<Result<_, _>>()?;
+            let mut marks = std::collections::HashSet::new();
+            for p in payloads {
+                let Some(infra) = unpack(&p).and_then(|p| rail_across_doc::door::check_document(&p).ok()) else { continue };
+                for m in infra["domains"]["core"]["collections"]["endMarks"].as_array().into_iter().flatten() {
+                    if let Some(mark) = m.get("id").and_then(Value::as_str) {
+                        marks.insert(mark.to_string());
+                    }
+                }
+            }
+            marks_of.insert(project.clone(), marks);
+        }
+        let next = rail_across_doc::operations::from_before(&doc, &marks_of[&project]);
+        match rail_across_doc::operations::check_operations(&next) {
+            Ok(next) => {
+                db.execute(
+                    "UPDATE operations_revision SET payload = ?, hash = ? WHERE id = ?",
+                    params![pack(&next), rail_across_doc::manifest::document_hash(&next), id],
+                )?;
+                written += 1;
+            }
+            Err(_) => left += 1,
+        }
+    }
+    Ok(format!("{written} Revisionen des Betriebs umgeschrieben, {left} nicht lesbar"))
+}
+
 /// Every revision kept in the form `from` rewritten as the door reads it, in today's form.
 fn through_the_door(db: &Connection, from: i64) -> rusqlite::Result<String> {
     let rows: Vec<(i64, Vec<u8>)> = db
@@ -262,8 +312,10 @@ fn to_operations(db: &Connection, now: i64) -> rusqlite::Result<String> {
                 left += 1;
                 continue;
             }
+            // The timetable under the id its document names it by (decision 0029, phase 2).
+            let id = rail_across_doc::ids::uuid_of(id);
             list.push(json!({ "id": id, "name": name, "data": data }));
-            ids.push(id.clone());
+            ids.push(id);
         }
         if list.is_empty() {
             continue;
@@ -276,7 +328,7 @@ fn to_operations(db: &Connection, now: i64) -> rusqlite::Result<String> {
         for (id, _, _, _, created_by, created_at, updated_by, updated_at) in &mine {
             db.execute(
                 "UPDATE operations_timetable SET created_by = ?, created_at = ?, updated_by = ?, updated_at = ? WHERE project_id = ? AND timetable_id = ?",
-                params![created_by, created_at, updated_by, updated_at, project, id],
+                params![created_by, created_at, updated_by, updated_at, project, rail_across_doc::ids::uuid_of(id)],
             )?;
         }
         projects += 1;
@@ -293,7 +345,7 @@ pub fn run_data_migrations(db: &Connection, now: i64) -> rusqlite::Result<Vec<(S
         .collect::<Result<_, _>>()?;
     let mut ran = Vec::new();
     // In this order: a later step reads the revisions in the form the first gives them.
-    let steps: [(&str, fn(&Connection, i64) -> rusqlite::Result<String>); 10] = [
+    let steps: [(&str, fn(&Connection, i64) -> rusqlite::Result<String>); 11] = [
         ("0021-infra-data", to_infra_data),
         ("0020-node-tolerance-1um", close_node_gaps),
         ("0025-infra-data-2.0", from_infra_data_1_0),
@@ -309,6 +361,8 @@ pub fn run_data_migrations(db: &Connection, now: i64) -> rusqlite::Result<Vec<(S
         ("0028-references", from_lifespans_by_day),
         // Core 4.0 of rail-across-1.0 (decision 0029, phases 1 and 2): every revision kept before it.
         ("0029-core-4.0", from_references),
+        // Operations in the domains vehicles and timetables (decision 0029, phase 4): every revision of operations.
+        ("0029-operations", to_two_domains),
     ];
     for (name, step) in steps {
         if done.iter().any(|d| d == name) {

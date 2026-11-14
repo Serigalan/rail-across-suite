@@ -96,9 +96,8 @@ describe('the stations of a net', () => {
     const after = stationById(stationsOf(renamed), derivedId(c.id))
     expect(after).toMatchObject({ name: 'C-City', kind: 'station' })
     expect(after.tracks.map(tr => tr.id).sort()).toEqual(['C1', 'C2'].map(derivedId).sort())
-    // a point finds it by its id, an old one by its name
-    expect(placeOf(stationsOf(renamed), { place: derivedId(c.id), station: 'C-Stadt' })?.name).toBe('C-City')
-    expect(placeOf(stationsOf(renamed), { station: 'C-Stadt' })).toBeNull()
-    expect(placeOf(before, { station: 'c-stadt' })?.id).toBe(c.id)
+    // a point finds it by its id (timetables 1.0)
+    expect(placeOf(stationsOf(renamed), { operationalPointId: derivedId(c.id) })?.name).toBe('C-City')
+    expect(placeOf(stationsOf(renamed), { operationalPointId: 'nowhere' })).toBeNull()
   })
 })

@@ -283,7 +283,7 @@ Wo ein Fahrdraht verläuft, wird nicht gespeichert: Auf einem Gleis verläuft er
 
 Die Fahrzeuge sind eine eigene Domäne. Ein Fahrzeug (`vehicles`) hat den Schlüssel, unter dem es aus einem Katalog kam (`key`), und sein *Rollmaterial* als RailJSON (`rollingStock`), dem Format von OSRD — im Objekt gehalten, nicht als Blob: Ein Fahrzeug hat wenige Kilobyte, und im Objekt lassen sich zwei Stände Feld für Feld vergleichen und zusammenführen. Das Schema prüft, was die Suite daraus liest — die RailJSON-Version, den Namen und die Zugkraftkurven —, und übernimmt jedes weitere RailJSON-Property, wie es kommt, in den Einheiten von RailJSON (m, kg, m/s, N).
 
-Die *Traktionsarten* eines Fahrzeugs sind die Betriebsarten seiner Zugkraftkurven (`effort_curves.modes`): die Spannungen, die es abnehmen kann, benannt wie die Spannungen der Fahrdrähte, und `thermal` für eigenen Antrieb. Sie werden kein zweites Mal gespeichert. Die Fahrpläne nennen Fahrzeuge über ihre Kennung. Eine Datei fährt so mit den Fahrzeugen, die sie hält, nicht mit einem Katalog, der sich inzwischen geändert haben kann; ein geändertes Fahrzeug ist eine neue Version der Domäne wie jede andere Änderung.
+Die *Traktionsarten* eines Fahrzeugs sind die Betriebsarten seiner Zugkraftkurven (`effort_curves.modes`): die Spannungen, die es abnehmen kann, benannt wie die Spannungen der Fahrdrähte, und `thermal` für eigenen Antrieb. Sie werden kein zweites Mal gespeichert. Die Fahrpläne nennen Fahrzeuge über ihre Kennung. Eine Datei fährt so mit den Fahrzeugen, die sie hält, nicht mit einem Katalog, der sich inzwischen geändert haben kann; ein geändertes Fahrzeug ist eine neue Version der Domäne wie jede andere Änderung. Ein Fahrzeug ohne Rollmaterial ist eines aus dem Katalog der Suite, genannt über seinen Schlüssel — so hält ein Projektserver Fahrzeuge, mit denen seine Züge aus dem Katalog fahren; eine Datei, die reist, führt das Rollmaterial mit.
 
 == Fahrpläne (Domäne `timetables`)
 
@@ -475,10 +475,8 @@ Die Prüfsummen sind hier gekürzt; in einer Datei hat jede ihre 64 Hexziffern.
 
 Diese Spezifikation ist das Ziel des Datenmodells. Mit Stand 13. November 2026 weicht die Implementierung der Suite in diesen Punkten ab; jeder wird in einem eigenen Schritt angeglichen (Entscheidung 0028 und die folgenden):
 
-- Zwei Dateien statt einer: die Infrastruktur als infra-data 2.0 (`.railacross.json`, Domänen core 4.0, civil 3.0, signalling 4.0, electrification 3.0), der Betrieb als operations 1.0 (`.operations.json`) mit einer Domäne `operations`, in der die Fahrzeuge mitgeführt werden; eine Datei von vorher führt noch die Schemas mit.
-- Ein Fahrzeug hält sein Rollmaterial als Blob und nennt seine Traktionsarten ein zweites Mal (`tractionModes`).
+- Zwei Dateien statt einer: die Infrastruktur als infra-data 2.0 (`.railacross.json`, Domänen core 4.0, civil 3.0, signalling 4.0, electrification 3.0), der Betrieb als operations 1.0 (`.operations.json`, Domänen vehicles 1.0 und timetables 1.0); eine Datei von vorher führt noch die Schemas mit.
 - Der Record, mit dem die Werkzeuge arbeiten, behält das Vokabular von vorher — die Arten als Zahlen, `operationalPoint`, `dep`, eine `turnout` mit `B1` als Zweiggleis —, Kilometrierungslinien in WGS 84 mit dem Kilometer je Punkt und Kennungen jeder Form; die Tür wandelt ihn ins Dokument und zurück (Entscheidung 0029, Phase 6 nimmt das heraus). Eine Kilometrierungslinie von vorher steht als Punkte da, noch nicht mit Trassierungselementen angenähert.
-- Die Punkte eines Zugs nennen ihren Ort in einem Feld (`place`) und behalten den Namen, unter dem er gewählt wurde.
 - Eine Domäne, die der Leser nicht kennt, wird abgelehnt, nicht erhalten.
 
 #pagebreak()
@@ -1597,15 +1595,17 @@ Wert: Objekt
 
 === Vehicle <vehicles-Vehicle>
 
-Ein Fahrzeug (Triebfahrzeug oder Wageneinheit): woher es stammt und sein Rollmaterial. Sein Name und seine Traktionsarten sind die seines Rollmaterials.
+Ein Fahrzeug (Triebfahrzeug oder Wageneinheit): woher es stammt und sein Rollmaterial. Sein Name und seine Traktionsarten sind die seines Rollmaterials; ohne Rollmaterial ist es ein Fahrzeug aus dem Katalog der Suite, genannt über seinen Schlüssel.
 
 _Weitere Properties sind nicht erlaubt._
+
+genau eins von `rollingStock`, `key` ist angegeben
 
 #table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
   [Property], [Pflicht], [Typ und zulässige Werte], [Bedeutung],
   [`id`], [ja], [#link(<core-Id>)[`Id`]], [Kennung des Objekts],
   [`key`], [], [#link(<core-Text>)[`Text`]], [Schlüssel im Katalog, aus dem es stammt],
-  [`rollingStock`], [ja], [#link(<vehicles-RollingStock>)[`RollingStock`]], [das Fahrzeug als RailJSON-Rollmaterial],
+  [`rollingStock`], [], [#link(<vehicles-RollingStock>)[`RollingStock`]], [das Fahrzeug als RailJSON-Rollmaterial],
 )
 
 === RollingStock <vehicles-RollingStock>
@@ -1691,7 +1691,7 @@ _Weitere Properties sind nicht erlaubt._
   [Property], [Pflicht], [Typ und zulässige Werte], [Bedeutung],
   [`mode`], [], [eins der Werte unter Bedeutung], [Art der Disposition #linebreak() `show` nur die Konflikte zeigen, jeder Zug fährt für sich #linebreak() `wait` die Züge nacheinander ins Netz geben, jeder wartet auf einen freien Abschnitt],
   [`priority`], [], [eins der Werte unter Bedeutung], [in welcher Reihenfolge die Züge ins Netz gegeben werden #linebreak() `departure` nach Abfahrt #linebreak() `kind` nach Zuggattung (`kindOrder`)],
-  [`kindOrder`], [], [Liste von #link(<core-Ref>)[`Ref`] → `operations.​trainKinds`; höchstens 100 Einträge], [die Zuggattungen, die zuerst ins Netz gegeben werden, in ihrer Reihenfolge],
+  [`kindOrder`], [], [Liste von #link(<core-Ref>)[`Ref`] → `timetables.​trainKinds`; höchstens 100 Einträge], [die Zuggattungen, die zuerst ins Netz gegeben werden, in ihrer Reihenfolge],
 )
 
 === BlockingTimes <timetables-BlockingTimes>
@@ -1717,11 +1717,11 @@ _Weitere Properties sind nicht erlaubt._
 #table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
   [Property], [Pflicht], [Typ und zulässige Werte], [Bedeutung],
   [`id`], [ja], [#link(<core-Id>)[`Id`]], [Kennung des Objekts],
-  [`timetableId`], [ja], [#link(<core-Ref>)[`Ref`] → `operations.​timetables`], [der Fahrplan],
+  [`timetableId`], [ja], [#link(<core-Ref>)[`Ref`] → `timetables.​timetables`], [der Fahrplan],
   [`number`], [], [Text], [Zugnummer],
   [`name`], [], [Text], [Name],
-  [`trainKindId`], [], [#link(<core-Ref>)[`Ref`] → `operations.​trainKinds`], [die Zuggattung],
-  [`formationId`], [], [#link(<core-Ref>)[`Ref`] → `operations.​formations`], [die Zugbildung],
+  [`trainKindId`], [], [#link(<core-Ref>)[`Ref`] → `timetables.​trainKinds`], [die Zuggattung],
+  [`formationId`], [], [#link(<core-Ref>)[`Ref`] → `timetables.​formations`], [die Zugbildung],
   [`mode`], [], [Text], [Traktionsart; ohne sie die, die die Fahrdrähte auf seinem Weg und seine Fahrzeuge zulassen],
   [`comfort`], [], [Text], [Komfortstufe nach OSRD: STANDARD, AIR\_CONDITIONING, HEATING],
   [`departure`], [ja], [Zahl; ≥ 0; ≤ 172799.999], [Abfahrt in Sekunden ab Mitternacht des Fahrplantags; über 24:00 der nächste Tag],
@@ -1804,8 +1804,8 @@ _Weitere Properties sind nicht erlaubt._
 #table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
   [Property], [Pflicht], [Typ und zulässige Werte], [Bedeutung],
   [`id`], [ja], [#link(<core-Id>)[`Id`]], [Kennung des Objekts],
-  [`fromTrainId`], [ja], [#link(<core-Ref>)[`Ref`] → `operations.​trains`], [der ankommende Zug],
-  [`toTrainId`], [ja], [#link(<core-Ref>)[`Ref`] → `operations.​trains`], [der abfahrende Zug],
+  [`fromTrainId`], [ja], [#link(<core-Ref>)[`Ref`] → `timetables.​trains`], [der ankommende Zug],
+  [`toTrainId`], [ja], [#link(<core-Ref>)[`Ref`] → `timetables.​trains`], [der abfahrende Zug],
   [`operationalPointId`], [ja], [#link(<core-Ref>)[`Ref`] → `core.​operationalPoints`], [die Betriebsstelle],
   [`changeTime`], [], [Zahl; ≥ 0; ≤ 86400], [Übergangszeit \[s\]],
   [`waitUpTo`], [], [Zahl; ≥ 0; ≤ 86400], [wie lange der abfahrende Zug wartet \[s\]],
@@ -1820,8 +1820,8 @@ _Weitere Properties sind nicht erlaubt._
 #table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
   [Property], [Pflicht], [Typ und zulässige Werte], [Bedeutung],
   [`id`], [ja], [#link(<core-Id>)[`Id`]], [Kennung des Objekts],
-  [`fromTrainId`], [ja], [#link(<core-Ref>)[`Ref`] → `operations.​trains`], [der endende Zug],
-  [`toTrainId`], [ja], [#link(<core-Ref>)[`Ref`] → `operations.​trains`], [der folgende Zug],
+  [`fromTrainId`], [ja], [#link(<core-Ref>)[`Ref`] → `timetables.​trains`], [der endende Zug],
+  [`toTrainId`], [ja], [#link(<core-Ref>)[`Ref`] → `timetables.​trains`], [der folgende Zug],
   [`leastTime`], [], [Zahl; ≥ 0; ≤ 86400], [Mindestwendezeit \[s\]],
 )
 
@@ -1848,7 +1848,7 @@ _Weitere Properties sind nicht erlaubt._
 #table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
   [Property], [Pflicht], [Typ und zulässige Werte], [Bedeutung],
   [`operationalPointId`], [], [#link(<core-Ref>)[`Ref`] → `core.​operationalPoints`], [wo sie gilt; ohne: überall],
-  [`trainKindId`], [], [#link(<core-Ref>)[`Ref`] → `operations.​trainKinds`], [für welche Zuggattung; ohne: für jede],
+  [`trainKindId`], [], [#link(<core-Ref>)[`Ref`] → `timetables.​trainKinds`], [für welche Zuggattung; ohne: für jede],
   [`share`], [ja], [Zahl; ≥ 0; ≤ 1], [Anteil der verspäteten Züge],
   [`distribution`], [ja], [#link(<timetables-Distribution>)[`Distribution`]], [Verteilung der Verspätungen],
   [`source`], [], [Text], [woher die Zahlen stammen: Startwert der Suite oder eine Messung],
@@ -1879,7 +1879,7 @@ _Weitere Properties sind nicht erlaubt._
   [Property], [Pflicht], [Typ und zulässige Werte], [Bedeutung],
   [`id`], [ja], [#link(<core-Id>)[`Id`]], [Kennung des Objekts],
   [`name`], [ja], [Text], [Name],
-  [`timetableId`], [ja], [#link(<core-Ref>)[`Ref`] → `operations.​timetables`], [der Fahrplan],
+  [`timetableId`], [ja], [#link(<core-Ref>)[`Ref`] → `timetables.​timetables`], [der Fahrplan],
   [`period`], [], [Objekt (Properties unten)], [der untersuchte Zeitraum],
   [`period.​from`], [ja], [Zahl; ≥ 0; ≤ 172799.999], [Anfang in Sekunden ab Mitternacht des Fahrplantags],
   [`period.​to`], [ja], [Zahl; ≥ 0; ≤ 172799.999], [Ende in Sekunden ab Mitternacht des Fahrplantags],
@@ -1889,7 +1889,7 @@ _Weitere Properties sind nicht erlaubt._
   [`bounds`], [], [Objekt (Properties unten)], [die Grenzwerte, wo die Untersuchung sie ändert],
   [`bounds.​occupancyRate`], [], [Zahl; ≥ 0; ≤ 1], [Grenze des Belegungsgrads (UIC-Merkblatt 406)],
   [`bounds.​punctualityThreshold`], [], [Zahl; ≥ 0; ≤ 3600], [ab welcher Verspätung ein Zug nicht mehr pünktlich ist \[s\]],
-  [`delayScenarioId`], [], [#link(<core-Ref>)[`Ref`] → `operations.​delayScenarios`], [das Verspätungsszenario],
+  [`delayScenarioId`], [], [#link(<core-Ref>)[`Ref`] → `timetables.​delayScenarios`], [das Verspätungsszenario],
   [`runs`], [], [ganze Zahl; ≥ 1; ≤ 100000], [Anzahl der Durchläufe],
   [`seed`], [], [ganze Zahl; ≥ 0], [Startwert des Zufallsgenerators],
 )

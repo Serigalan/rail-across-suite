@@ -16,7 +16,7 @@ use unicode_normalization::char::is_combining_mark;
 use crate::heights::track_length;
 use crate::model::next_track_name;
 use crate::platforms::{DEFAULT_PLATFORM_HEIGHT, PLATFORM_FRONT_OFFSET, PLATFORM_HEIGHTS, PLATFORM_WIDTH};
-use crate::util::{num, obj, text};
+use crate::util::{obj, text};
 
 const KM_NAME_DIGITS: usize = 5;
 
@@ -40,9 +40,9 @@ fn tx(v: Option<&Value>) -> String {
 /// A track's kind: line or station (`trackKind`) — as it states it, else a
 /// track naming an operational point is a station track (decision 0028).
 pub fn track_kind(track: &Value) -> Option<&'static str> {
-    match num(track, "trackType") {
-        Some(1.0) => return Some("line"),
-        Some(2.0) => return Some("station"),
+    match track.get("trackType").and_then(Value::as_str) {
+        Some("line") => return Some("line"),
+        Some("station") => return Some("station"),
         _ => {}
     }
     if !tx(track.get("operationalPointId")).is_empty() {
@@ -240,11 +240,11 @@ pub fn assignment_fields(target: &Value) -> Value {
         if v.is_empty() { Value::Null } else { json!(v) }
     };
     match text(target, "kind") {
-        Some("line") => json!({ "trackType": 1, "lineNumber": number(js_number(Some(&json!(tx(target.get("lineNumber")))))), "lineName": s("lineName") }),
+        Some("line") => json!({ "trackType": "line", "lineNumber": number(js_number(Some(&json!(tx(target.get("lineNumber")))))), "lineName": s("lineName") }),
         Some("station") if !tx(target.get("operationalPointId")).is_empty() => {
-            json!({ "trackType": 2, "operationalPointId": s("operationalPointId") })
+            json!({ "trackType": "station", "operationalPointId": s("operationalPointId") })
         }
-        Some("station") => json!({ "trackType": 2, "stationName": s("stationName"), "uicStation": s("uicStation") }),
+        Some("station") => json!({ "trackType": "station", "stationName": s("stationName"), "uicStation": s("uicStation") }),
         _ => json!({ "lineNumber": null, "lineName": null, "operationalPointId": null }),
     }
 }

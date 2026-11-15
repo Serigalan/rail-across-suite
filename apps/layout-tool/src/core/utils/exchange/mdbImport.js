@@ -311,11 +311,11 @@ const RIKZ = { RICHTUNG: 1, GEGENRICHTUNG: 2, KM_LINIE: 3, BAHNHOF: 4, SONST: 5 
 export function trackTypeFields(strecke, richtung) {
   const text = String(strecke ?? '').trim()
   const num = /^\d+$/.test(text) ? Number(text) : null
-  const line = { trackType: 1, lineNumber: num ?? text }
-  const station = { trackType: 2, lineNumber: undefined, ...(num ? { trackNumber: num } : {}) }
+  const line = { trackType: 'line', lineNumber: num ?? text }
+  const station = { trackType: 'station', lineNumber: undefined, ...(num ? { trackNumber: num } : {}) }
   switch (Number(richtung)) {
-    case RIKZ.RICHTUNG: return { ...line, side: 1 }
-    case RIKZ.GEGENRICHTUNG: return { ...line, side: 2 }
+    case RIKZ.RICHTUNG: return { ...line, side: 'regular' }
+    case RIKZ.GEGENRICHTUNG: return { ...line, side: 'opposite' }
     case RIKZ.BAHNHOF: return station
     case RIKZ.SONST: return num != null && num >= 1000 ? line : station
     default: return {}

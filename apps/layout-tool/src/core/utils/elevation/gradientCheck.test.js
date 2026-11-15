@@ -5,7 +5,7 @@ import { ruleById, evaluateRule } from '@rail-across/core/src/rules/ruleCatalogu
 // A straight line track of `length` metres at `speed`, with the given height points.
 const line = (heights, { speed = 100, length = 2000, ...rest } = {}) => ({
   id: 't1',
-  trackType: 1,
+  trackType: 'line',
   elements: [{ elementType: 0, length, speed }],
   heights,
   ...rest,
@@ -50,7 +50,7 @@ describe('HP.LN · gradient of a stretch', () => {
   })
 
   it('holds a station track to 2.5 ‰ over its whole length, whatever line it is on', () => {
-    const station = { ...line(twoPoints(3)), trackType: 2, stationName: 'Halle' }
+    const station = { ...line(twoPoints(3)), trackType: 'station', stationName: 'Halle' }
     const s = checkVertical(station).stretches[0]
     expect(sev(s, 'HP.LN.02')).toBe('warning')
     expect(sev(s, 'HP.LN.01')).toBeNull()
@@ -168,7 +168,7 @@ describe('HP.AR · rounding of a gradient change', () => {
   it('wants changes kept out of cant ramps and switches, with the Regelwert where they cannot be', () => {
     // straight 0–900, transition ramping the cant 900–1100, arc after.
     const ramped = (rv) => ({
-      id: 't1', trackType: 1,
+      id: 't1', trackType: 'line',
       elements: [
         { elementType: 0, length: 900, speed: 100 },
         { elementType: 2, length: 200, speed: 100, r1: null, r2: 1000, cantStart: 0, cantEnd: 60 },
@@ -184,7 +184,7 @@ describe('HP.AR · rounding of a gradient change', () => {
   it('warns of any change between WA and WE where the form states no ldS, curve or not', () => {
     // A switch whose elements run from 900 to 1100 m.
     const inSwitch = (heights) => ({
-      id: 't1', trackType: 1,
+      id: 't1', trackType: 'line',
       elements: [
         { elementType: 0, length: 900, speed: 100 },
         { elementType: 0, length: 200, speed: 100, switchId: 's1' },

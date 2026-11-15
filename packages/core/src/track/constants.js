@@ -56,8 +56,11 @@ export const GIVEN_MODES = {
 /** The codes of the track ids' type and side parts, and their names. */
 export const TYPE_CODES = { line_track: 1n, station_track: 2n }
 export const SIDE_CODES = { sorting: 1n, non_sorting: 2n }
-export const TYPE_NAMES = { 1: 'line_track', 2: 'station_track' }
-export const SIDE_NAMES = { 1: 'sorting', 2: 'non_sorting' }
+/** A track's kind and side as the record states them (core 4.0, decision 0029, phase 6), and the names a form and oltjson give them. */
+export const TYPE_NAMES = { line: 'line_track', station: 'station_track' }
+export const SIDE_NAMES = { regular: 'sorting', opposite: 'non_sorting' }
+export const TRACK_TYPE_OF = { line_track: 'line', station_track: 'station' }
+export const TRACK_SIDE_OF = { sorting: 'regular', non_sorting: 'opposite' }
 export const LINE_CATEGORIES = ['main', 'secondary', 's_bahn']
 export const TRACK_USES = ['main', 'siding']
 

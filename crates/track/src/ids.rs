@@ -53,13 +53,13 @@ pub fn build_type_fields(fields: &Value) -> Value {
     let siding = text(fields, "trackUse") == Some("siding");
     let mut o = rail_across_js::Object::new();
     if text(fields, "type") == Some("line_track") {
-        o.insert("trackType".into(), json!(1));
+        o.insert("trackType".into(), json!("line"));
         o.insert("lineNumber".into(), n("lineNumber"));
         o.insert("lineName".into(), s("lineName"));
         let side = if truthy(fields.get("side")) {
             match fields.get("side").and_then(Value::as_str) {
-                Some("sorting") => json!(1),
-                Some("non_sorting") => json!(2),
+                Some("sorting") => json!("regular"),
+                Some("non_sorting") => json!("opposite"),
                 _ => Value::Null,
             }
         } else {
@@ -67,7 +67,7 @@ pub fn build_type_fields(fields: &Value) -> Value {
         };
         o.insert("side".into(), side);
     } else {
-        o.insert("trackType".into(), json!(2));
+        o.insert("trackType".into(), json!("station"));
         o.insert("stationName".into(), s("stationName"));
         o.insert("uicStation".into(), s("uicStation"));
         o.insert("trackNumber".into(), n("trackNumber"));

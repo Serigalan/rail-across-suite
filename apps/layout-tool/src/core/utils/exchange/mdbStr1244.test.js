@@ -15,19 +15,19 @@ const payload = parseMdbPayload(fixture)
 
 describe('trackTypeFields', () => {
   it('makes 1 and 2 the two tracks of a line, with their side', () => {
-    expect(trackTypeFields('1244', 1)).toEqual({ trackType: 1, lineNumber: 1244, side: 1 })
-    expect(trackTypeFields('1244', 2)).toEqual({ trackType: 1, lineNumber: 1244, side: 2 })
+    expect(trackTypeFields('1244', 1)).toEqual({ trackType: 'line', lineNumber: 1244, side: 'regular' })
+    expect(trackTypeFields('1244', 2)).toEqual({ trackType: 'line', lineNumber: 1244, side: 'opposite' })
   })
 
   it('makes 4 a station track, numbered where its number is one', () => {
-    expect(trackTypeFields('14', 4)).toEqual({ trackType: 2, lineNumber: undefined, trackNumber: 14 })
-    expect(trackTypeFields('1A', 4)).toEqual({ trackType: 2, lineNumber: undefined })
-    expect(trackTypeFields('0', 4)).toEqual({ trackType: 2, lineNumber: undefined })
+    expect(trackTypeFields('14', 4)).toEqual({ trackType: 'station', lineNumber: undefined, trackNumber: 14 })
+    expect(trackTypeFields('1A', 4)).toEqual({ trackType: 'station', lineNumber: undefined })
+    expect(trackTypeFields('0', 4)).toEqual({ trackType: 'station', lineNumber: undefined })
   })
 
   it('makes 5 a line track where the number is a line, else a station track', () => {
-    expect(trackTypeFields('5546', 5)).toEqual({ trackType: 1, lineNumber: 5546 })
-    expect(trackTypeFields('12', 5)).toMatchObject({ trackType: 2, trackNumber: 12 })
+    expect(trackTypeFields('5546', 5)).toEqual({ trackType: 'line', lineNumber: 5546 })
+    expect(trackTypeFields('12', 5)).toMatchObject({ trackType: 'station', trackNumber: 12 })
   })
 
   it('says nothing for a code it does not know', () => {
@@ -49,10 +49,10 @@ describe('a delivery without Gleisabschnitte', () => {
   it('builds each line as its two tracks, Richtungsgleis and Gegenrichtungsgleis', () => {
     const { tracks } = buildAllTracksFromMdb(payload)
     expect(tracks.map(t => [t.name, t.trackType, t.lineNumber, t.side])).toEqual([
-      ['1244.001', 1, 1244, 1],
-      ['1244.002', 1, 1244, 2],
-      ['6100.001', 1, 6100, 1],
-      ['6100.002', 1, 6100, 2],
+      ['1244.001', 'line', 1244, 'regular'],
+      ['1244.002', 'line', 1244, 'opposite'],
+      ['6100.001', 'line', 6100, 'regular'],
+      ['6100.002', 'line', 6100, 'opposite'],
     ])
     expect(tracks.reduce((n, t) => n + t.elements.length, 0)).toBe(15)
   })
@@ -77,7 +77,7 @@ describe('a delivery with Gleisabschnitte', () => {
   it('takes the Richtungskennzeichen of the section', () => {
     const { tracks } = buildAllTracksFromMdb(sectioned)
     const own = tracks.find(t => t.lineNumber === 1244)
-    expect(own).toMatchObject({ trackType: 1, side: 2 })
+    expect(own).toMatchObject({ trackType: 'line', side: 'opposite' })
   })
 
   it('files the leftovers under their Trasse, not under the numbers of their points', () => {

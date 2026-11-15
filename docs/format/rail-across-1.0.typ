@@ -476,7 +476,7 @@ The hashes are shortened here; in a file each has its 64 hex digits.
 This specification is the target of the data model. As of 13 November 2026 the suite's implementation differs from it in these points, each to be brought in line by its own step (decision 0028 and those after it):
 
 - The project server keeps a variant's infrastructure as a document of the envelope of before (infra-data 2.0: its domains and its blobs, core 4.0, civil 3.0, signalling 4.0, electrification 3.0) and the operation as an operations document (vehicles 1.0, timetables 1.0); the file rail-across-1.0 brings them together, and a file of before is still read.
-- The record the tools work on keeps the words of before — the kinds as numbers, `dep`, a `turnout` with `B1` its branch —, km lines in WGS 84 with the kilometrage per point, and ids of any form; the door converts it into the document and back (decision 0029, phase 6 takes that out). A km line of before is kept as points, not yet fitted with design elements.
+- The record the tools work on keeps the words of before — an element's kind as a number, `dep`, a `turnout` with `B1` its branch —, km lines in WGS 84 with the kilometrage per point, and ids of any form; the door converts it into the document and back (decision 0029, phase 6 takes that out). A km line of before is kept as points, not yet fitted with design elements.
 - A domain the reader does not know is kept; one of a later version of a domain it knows is refused, not read with the version it knows.
 
 #pagebreak()

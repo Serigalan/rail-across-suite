@@ -11,7 +11,7 @@ import {
 } from '../geometry/index.js'
 import {
   BOUNDARY, DEFAULT_SWITCH_KIND, HEIGHT_POINT_SPACING, HEIGHT_SPLIT_MIN, LINK_KIND, PLATFORM_FRONT_OFFSET,
-  PLATFORM_WIDTH, SWITCH_FORM_VERSION, TYPE_CODES,
+  PLATFORM_WIDTH, SWITCH_FORM_VERSION,
 } from './constants.js'
 
 // A height point this close to a track end sits on its joint [m].
@@ -531,9 +531,9 @@ export function switchNumberOf(sw) {
   return match ? Number(match[1]) : null
 }
 
-const LINE    = Number(TYPE_CODES.line_track)
-
-const STATION = Number(TYPE_CODES.station_track)
+// A track's kind as the record states it (core 4.0, decision 0029, phase 6).
+const LINE = 'line'
+const STATION = 'station'
 
 const text = (v) => (v != null ? String(v).trim() : '')
 

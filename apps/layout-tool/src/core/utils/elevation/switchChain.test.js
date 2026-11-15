@@ -24,7 +24,7 @@ const arc = (from, bearing, length, r, extra = {}) => ({
   bearing, endBearing: turn(bearing, length, r), radius: r, length, speed: 80, ...extra,
 })
 const endOf = (el) => ({ easting: el.endNode[0], northing: el.endNode[1], zone: 5684 })
-const track = (id, elements, heights) => ({ id, epsg: 5684, trackType: 1, elements, heights })
+const track = (id, elements, heights) => ({ id, epsg: 5684, trackType: 'line', elements, heights })
 const opts = { formOf }
 const t = (p, id) => p.tracks.find(x => x.id === id).heights
 const zAt = (h, s) => h.find(p => Math.abs(p.station - s) < 0.011)?.z

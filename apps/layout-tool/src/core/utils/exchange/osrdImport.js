@@ -8,7 +8,7 @@ import {
   switchFillRing, switchLabelGeometry, switchMark,
 } from '@rail-across/core/switch'
 import {
-  newSwitchFields, switchElementMark, LINK_KIND, TYPE_CODES, SIDE_CODES, LINE_CATEGORIES, STATUSES, lifespanWithStatus,
+  newSwitchFields, switchElementMark, LINK_KIND, TRACK_SIDE_OF, TRACK_TYPE_OF, LINE_CATEGORIES, STATUSES, lifespanWithStatus,
 } from '@rail-across/core/track'
 import { kindForOsrdType, bufferStopsToEndMarks } from './alignmentCodec'
 import { withSignedCants } from './fileCants'
@@ -497,8 +497,8 @@ export function parseOsrdRailJson(data) {
         lineName: sncf.line_name && sncf.line_name !== 'default_name' ? sncf.line_name : undefined,
         trackNumber: sncf.track_number != null ? String(sncf.track_number) : undefined,
         owner:       olt.owner ?? undefined,
-        trackType:   TYPE_CODES[olt.track_type] != null ? Number(TYPE_CODES[olt.track_type]) : undefined,
-        side:        SIDE_CODES[olt.side] != null ? Number(SIDE_CODES[olt.side]) : undefined,
+        trackType:   TRACK_TYPE_OF[olt.track_type],
+        side:        TRACK_SIDE_OF[olt.side],
         stationName: olt.station_name ?? undefined,
         uicStation:  olt.uic_station ?? undefined,
         rails:       olt.rails?.length ? olt.rails : undefined,

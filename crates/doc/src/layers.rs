@@ -72,7 +72,8 @@ pub fn boundaries_by_stopping_place(signalling: &mut Object, stopping: &mut Vec<
                             let mut h = Object::new();
                             h.insert("id".into(), json!(id));
                             if let Some(p) = platform {
-                                for (k, to) in [("operationalPointId", "operationalPointId"), ("at", "at"), ("lifespan", "lifespan")] {
+                                // A platform of infra-data 1.0 named its point by `operationalPoint`.
+                                for (k, to) in [("operationalPoint", "operationalPointId"), ("at", "at"), ("lifespan", "lifespan")] {
                                     if let Some(v) = get(p, k) {
                                         h.insert(to.into(), v.clone());
                                     }

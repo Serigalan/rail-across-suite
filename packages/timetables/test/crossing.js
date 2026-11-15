@@ -9,16 +9,16 @@ const straight = (x0, y0, x1, y1) => ({
   bearing: (Math.atan2(x1 - x0, y1 - y0) * 180 / Math.PI + 360) % 360, speed: 100,
 })
 // The stations are points of the register, each track and platform naming its own (decision 0028).
-const inStation = (point, number) => ({ trackType: 2, operationalPointId: point, trackNumber: number })
+const inStation = (point, number) => ({ trackType: 'station', operationalPointId: point, trackNumber: number })
 const at = (trackId, station, direction) => ({ anchor: 'station', trackId, station, side: 'right', direction })
 const main = (id, trackId, station, direction) => ({ id, name: id, kind: 'real', at: at(trackId, station, direction), logicalSignals: ks })
 export const crossing = {
   tracks: [
     { id: 'H1', epsg: 25832, ...inStation('op-h', '1'), elements: [straight(0, 0, 500, 0)] },
-    { id: 'L1', epsg: 25832, trackType: 1, lineNumber: '6000', elements: [straight(500, 0, 3000, 0)] },
+    { id: 'L1', epsg: 25832, trackType: 'line', lineNumber: '6000', elements: [straight(500, 0, 3000, 0)] },
     { id: 'W1', epsg: 25832, ...inStation('op-w', '1'), elements: [straight(3000, 0, 3600, 0)] },
     { id: 'W2', epsg: 25832, ...inStation('op-w', '2'), elements: [straight(3000, 0, 3300, 60), straight(3300, 60, 3600, 0)] },
-    { id: 'L2', epsg: 25832, trackType: 1, lineNumber: '6000', elements: [straight(3600, 0, 6000, 0)] },
+    { id: 'L2', epsg: 25832, trackType: 'line', lineNumber: '6000', elements: [straight(3600, 0, 6000, 0)] },
     { id: 'K1', epsg: 25832, ...inStation('op-k', '1'), elements: [straight(6000, 0, 6500, 0)] },
   ],
   switches: [

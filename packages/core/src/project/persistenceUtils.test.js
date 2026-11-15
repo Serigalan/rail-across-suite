@@ -252,7 +252,7 @@ describe('parseProjectsPayload', () => {
 
 describe('parseTracksPayload (R0.5)', () => {
   const el = (extra = {}) => ({ elementType: 0, startNode: [0, 0], endNode: [10, 0], bearing: 90, length: 10, ...extra })
-  const track = (extra = {}) => ({ id: 't1', epsg: 25832, trackType: 1, elements: [el()], ...extra })
+  const track = (extra = {}) => ({ id: 't1', epsg: 25832, trackType: 'line', elements: [el()], ...extra })
   const code = (fn) => { try { fn() } catch (e) { return e instanceof PayloadError ? e.code : 'other' } return null }
 
   it('takes the tracks of a tracks document — one track or several', () => {

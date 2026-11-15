@@ -9,12 +9,12 @@ const straight = (x0, y0, x1, y1) => ({
   elementType: 0, startNode: [E0 + x0, N0 + y0], endNode: [E0 + x1, N0 + y1], length: Math.hypot(x1 - x0, y1 - y0),
   bearing: (Math.atan2(x1 - x0, y1 - y0) * 180 / Math.PI + 360) % 360, speed: 100,
 })
-const station = (point, number) => ({ trackType: 2, operationalPointId: point, trackNumber: number })
+const station = (point, number) => ({ trackType: 'station', operationalPointId: point, trackNumber: number })
 
 export const net = {
   tracks: [
     { id: 'A1', epsg: 25832, ...station('op-a', '1'), elements: [straight(0, 0, 500, 0)] },
-    { id: 'L', epsg: 25832, trackType: 1, lineNumber: '6000', elements: [straight(500, 0, 3000, 0)], heights: [{ station: 0, z: 100 }, { station: 2500, z: 110 }] },
+    { id: 'L', epsg: 25832, trackType: 'line', lineNumber: '6000', elements: [straight(500, 0, 3000, 0)], heights: [{ station: 0, z: 100 }, { station: 2500, z: 110 }] },
     { id: 'C1', epsg: 25832, ...station('op-c', '1'), elements: [straight(3000, 0, 3600, 0)] },
     { id: 'C2', epsg: 25832, ...station('op-c', '2'), elements: [straight(3000, 0, 3580, 150)] },
   ],

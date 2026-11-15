@@ -350,7 +350,10 @@ describe.skipIf(!hasPek)('the PEK data set as an infra-data-1.0 document', () =>
     const back = roundTrip(pek)
     const withoutNull = (o) => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== null))
     const byId = (list, key = 'id') => Object.fromEntries(list.map(o => [o[key], o]))
-    expect(byId(back.tracks)).toEqual(byId(pek.tracks.map(withoutNull)))
+    // a track's kind and side as words: the record states them so since it follows the document (decision 0029, phase 6)
+    const KIND = { 1: 'line', 2: 'station' }, SIDE = { 1: 'regular', 2: 'opposite' }
+    const asNow = (t) => ({ ...t, ...(KIND[t.trackType] ? { trackType: KIND[t.trackType] } : {}), ...(SIDE[t.side] ? { side: SIDE[t.side] } : {}) })
+    expect(byId(back.tracks)).toEqual(byId(pek.tracks.map(withoutNull).map(asNow)))
     expect(byId(back.switches, 'switchId')).toEqual(byId(pek.switches, 'switchId'))
     expect(byId(back.platforms)).toEqual(byId(pek.platforms))
     expect(byId(back.operationalPoints)).toEqual(byId(pek.operationalPoints))

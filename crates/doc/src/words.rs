@@ -84,8 +84,12 @@ fn convert(domains: &mut Object, way: Way) {
     let names = |from: &'static str, to: &'static str| if way == Way::Forward { (from, to) } else { (to, from) };
 
     for track in items(domains, "core", "tracks") {
-        translate(track, "trackType", TRACK_TYPES, way);
-        translate(track, "side", SIDES, way);
+        // The record states a track's kind and side as words since it follows the document (phase 6); numbers of
+        // before are read on the way in, as a working copy may hold them.
+        if way == Way::Forward {
+            translate(track, "trackType", TRACK_TYPES, way);
+            translate(track, "side", SIDES, way);
+        }
         for el in track
             .get_mut("elements")
             .and_then(Value::as_array_mut)

@@ -704,10 +704,10 @@ describe('bridges, retaining walls and noise barriers in the store (decision 002
 describe('a station a form states as text (decision 0028)', () => {
   it('is the point of that name, found or made, in the same step', () => {
     openProject({ id: 'p1', tracks: [], switches: [], operationalPoints: [{ id: 'op-k', name: 'Könnern', rl100: 'LKO' }] })
-    saveTrack({ id: 't1', elements: [], trackType: 2, stationName: 'Könnern' })
-    saveTrack({ id: 't2', elements: [], trackType: 2, stationName: 'Wallwitz', uicStation: '8023113' })
+    saveTrack({ id: 't1', elements: [], trackType: 'station', stationName: 'Könnern' })
+    saveTrack({ id: 't2', elements: [], trackType: 'station', stationName: 'Wallwitz', uicStation: '8023113' })
     const [t1, t2] = loadTracks()
-    expect(t1).toEqual({ id: 't1', elements: [], trackType: 2, operationalPointId: 'op-k' })
+    expect(t1).toEqual({ id: 't1', elements: [], trackType: 'station', operationalPointId: 'op-k' })
     expect(t2).not.toHaveProperty('stationName')
     expect(currentProject().operationalPoints).toEqual([
       { id: 'op-k', name: 'Könnern', rl100: 'LKO' },

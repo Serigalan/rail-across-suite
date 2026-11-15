@@ -61,10 +61,10 @@ function sampleRecord({ signalling = false, electrification = false } = {}) {
     createdAt: '2026-10-29T13:21:07.630Z', crsSystem: 'ETRS89_UTM', lineCategory: 'secondary', gaugeProfile: 'hauptgleis',
     planHeader: { subtitle: 'Lageplan' }, imageHash: 'a'.repeat(64),
     tracks: [
-      { id: 't1', name: '6050.001', trackType: 1, lineNumber: 6050, side: 1, epsg: 25832, heightEpsg: 7837,
+      { id: 't1', name: '6050.001', trackType: 'line', lineNumber: 6050, side: 'regular', epsg: 25832, heightEpsg: 7837,
         elements: [el(0, 100, { speed: 80 }), el(100, 250, { cant: 0, role: 'follow' })],
         heights: [{ station: 0, z: 108.55 }, { station: 250, z: 109.1, rv: 15000 }] },
-      { id: 't2', name: '1', trackType: 2, trackNumber: '1', operationalPointId: HALLE_TROTHA,
+      { id: 't2', name: '1', trackType: 'station', trackNumber: '1', operationalPointId: HALLE_TROTHA,
         lifespan: { from: '2027-05-01' }, epsg: 25832, elements: [el(250, 400)] },
       { id: 't3', name: 'alt', lifespan: { to: 'open' }, epsg: 25832, elements: [el(400, 450)] },
     ],

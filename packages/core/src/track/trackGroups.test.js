@@ -5,17 +5,17 @@ import {
 import { groupHeading, kmTrackName } from './index.js'
 import { buildTypeFields } from './index.js'
 
-const line = (id, lineNumber, extra = {}) => ({ id, name: id, trackType: 1, lineNumber, ...extra })
+const line = (id, lineNumber, extra = {}) => ({ id, name: id, trackType: 'line', lineNumber, ...extra })
 // A station track names its operational point (decision 0028); the points of these tests by their ids.
-const station = (id, operationalPointId, extra = {}) => ({ id, name: id, trackType: 2, operationalPointId, ...extra })
+const station = (id, operationalPointId, extra = {}) => ({ id, name: id, trackType: 'station', operationalPointId, ...extra })
 const POINTS = [
   { id: 'op-k', name: 'Könnern', uic: '8010205' }, { id: 'op-h', name: 'Halle (Saale) Hbf' }, { id: 'op-w', name: 'Wallwitz' },
 ]
 
 describe('what a track belongs to', () => {
   it('is what its type says', () => {
-    expect(trackKind({ trackType: 1 })).toBe('line')
-    expect(trackKind({ trackType: 2, lineNumber: 6340 })).toBe('station')
+    expect(trackKind({ trackType: 'line' })).toBe('line')
+    expect(trackKind({ trackType: 'station', lineNumber: 6340 })).toBe('station')
   })
 
   it('is read off its fields where it states no type', () => {
@@ -89,7 +89,7 @@ describe('the tracks in groups', () => {
 
 describe('assigning tracks', () => {
   const tracks = [
-    line('a', 6340, { lineName: 'Halle–Könnern', side: 1 }),
+    line('a', 6340, { lineName: 'Halle–Könnern', side: 'regular' }),
     station('b', 'op-k', { lineNumber: 6340, trackNumber: 3 }),
     { id: 'c' },
   ]
@@ -98,7 +98,7 @@ describe('assigning tracks', () => {
     const out = assignTracks(tracks, ['b', 'c'], { kind: 'line', lineNumber: ' 6343 ', lineName: '' })
     expect(out[0]).toBe(tracks[0])
     expect(trackGroupKey(out[1])).toBe('line:6343')
-    expect(out[2]).toMatchObject({ trackType: 1, lineNumber: 6343, lineName: null })
+    expect(out[2]).toMatchObject({ trackType: 'line', lineNumber: 6343, lineName: null })
     // What only the other kind states stays: it may be wanted back.
     expect(out[1].trackNumber).toBe(3)
   })
@@ -110,7 +110,7 @@ describe('assigning tracks', () => {
     expect(a.lineNumber).toBe(6340)
     // a station typed anew stays as typed, for the record to make its point of
     const [b] = assignTracks(tracks, ['a'], { kind: 'station', stationName: 'Wallwitz (Saalkr)', uicStation: '' })
-    expect(b).toMatchObject({ trackType: 2, stationName: 'Wallwitz (Saalkr)', uicStation: null })
+    expect(b).toMatchObject({ trackType: 'station', stationName: 'Wallwitz (Saalkr)', uicStation: null })
   })
 
   it('takes them out of what they were in', () => {

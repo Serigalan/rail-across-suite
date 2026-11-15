@@ -25006,7 +25006,7 @@
       "endMarks": "sha256:5408144d512d65e415a7b577d171b1ca743d2ed18a701b0d8b0632d7657bc286",
       "kmLines": "sha256:f2a1c4b1980331d217c29e2a79e22df5d1e5a3e5001ff3ba98bd1c648b991f3d",
       "operationalPoints": "sha256:6a6eb5b21cdb3c39939da851281a7a8b9c968d36cea93d44d383d292b33beb34",
-      "stoppingPlaces": "sha256:fdca65867246392ca266002a10588ee86886322401501ad37a0b6cbe10f241bd",
+      "stoppingPlaces": "sha256:123f6c976b323c3b7f1839d81e387fa329c78680109a5b122c8e6f92d00f3c4a",
       "switches": "sha256:baea07f54926aaf8fda41d01c6ab4b04f878f4db9126a3646f653b7d29d7bfd5",
       "trackPaths": "sha256:e5dd047fdd95fc9876fa4fc7d263d693027fa38498aa84e7bb98825c1390bd37",
       "tracks": "sha256:adfd68511e279e0f9d4567af0a5e59b734cdde9cb79f2cf0c93d12dcd70679cf"
@@ -25034,7 +25034,7 @@
     }
    }
   },
-  "hash": "sha256:ce1ce421e43170325c453e383b3f4e6e101fcde4488565cfec8c8c26d349a4b6"
+  "hash": "sha256:7497d301aa764267c53cc8d21f98dd92425dff01830b840bd9829f0afd51abeb"
  },
  {
   "name": "infra-data 1.0: core as written before the design speed took its name",

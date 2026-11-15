@@ -15,7 +15,7 @@
  *   only which toe leads is chosen (setToeLead).
  * - Standard (outside the design mode): its branch's ldS lies in the plane
  *   over the main route's (switchGradient.ldsLift). The main route leads.
- * - Own (`dep` on a point: the id of the point it follows; kept in the
+ * - Own (`depId` on a point: the id of the point it follows; kept in the
  *   project), the way `depMode` says (decisions 390, 392): 'lds' — the
  *   source's cant over the offset between the two (switchGradient.planeFrom;
  *   across a turnout's ldS its sleeper's plane, ldsLift); 'continueBefore' /
@@ -301,7 +301,7 @@ function followZ(project, src, dst, pairOf, mode) {
 
 /**
  * Every point of a project whose height depends on others: Map(key → { ref,
- * kind, mode, sources, z }) — `kind` 'own' (its `dep`), 'standard' (a
+ * kind, mode, sources, z }) — `kind` 'own' (its `depId`), 'standard' (a
  * turnout's branch on its main route, outside the design mode) or 'line'
  * (between two points: decision 270 on a main route, the neighbours on a
  * branch), `mode` how (DEPENDENCY_MODES, or 'line'), and `z(project)` the
@@ -320,7 +320,7 @@ function dependencies(ix, project, { design = false } = {}) {
   const ids = pointIds(project)
   for (const t of project.tracks) {
     (t.heights ?? []).forEach((p, index) => {
-      const src = p.dep && ids.get(p.dep)
+      const src = p.depId && ids.get(p.depId)
       if (!src) return
       const ref = canon(ix, project, { trackId: t.id, index })
       const from = canon(ix, project, src)
@@ -491,16 +491,16 @@ export function withAllLdsPoints(project, opts) {
   return ix.entries.reduce((p, e) => withLdsPoints(p, e), project)
 }
 
-/** The project without a `dep` that names no point any more. */
+/** The project without a `depId` that names no point any more. */
 function withoutLostLinks(project) {
   const ids = new Set(pointIds(project).keys())
   let changed = false
   const tracks = project.tracks.map(t => {
-    if (!t.heights?.some(p => p.dep && !ids.has(p.dep))) return t
+    if (!t.heights?.some(p => p.depId && !ids.has(p.depId))) return t
     changed = true
     return { ...t, heights: t.heights.map(p => {
-      if (!p.dep || ids.has(p.dep)) return p
-      const { dep: _d, ...rest } = p
+      if (!p.depId || ids.has(p.depId)) return p
+      const { depId: _d, ...rest } = p
       return rest
     }) }
   })
@@ -620,10 +620,10 @@ export function dependOn(project, dst, src, { mode = null, design = true, opts }
     p = patchPoint(ix, p, s, { id })
   }
   const had = heightsOf(p, d.trackId)[d.index]
-  if (had.dep === id && (had.depMode ?? null) === (mode ?? null)) return { project: p }
+  if (had.depId === id && (had.depMode ?? null) === (mode ?? null)) return { project: p }
   const dstId = heightsOf(p, d.trackId)[d.index].id
-  if (dstId && heightsOf(p, s.trackId)[s.index].dep === dstId) p = patchPoint(ix, p, s, { dep: null })
-  p = patchPoint(ix, p, d, { dep: id, depMode: KNOWN_MODES.has(mode) ? mode : null, free: null })
+  if (dstId && heightsOf(p, s.trackId)[s.index].depId === dstId) p = patchPoint(ix, p, s, { depId: null })
+  p = patchPoint(ix, p, d, { depId: id, depMode: KNOWN_MODES.has(mode) ? mode : null, free: null })
   if (ordered(dependencies(ix, p, { design })).ring.has(keyOf(d))) return { error: 'ring' }
   return { project: p }
 }
@@ -639,7 +639,7 @@ export function releaseDependency(project, ref, { design = true, opts } = {}) {
   const r = canon(ix, project, ref)
   const p = heightsOf(project, r.trackId)?.[r.index]
   if (!p) return project
-  if (p.dep) return patchPoint(ix, project, r, { dep: null, depMode: null })
+  if (p.depId) return patchPoint(ix, project, r, { depId: null, depMode: null })
   // The toe's one height is not let go of (decision 393).
   const n = dependencies(ix, project, { design }).get(keyOf(r))
   return n && n.kind !== 'toe' ? patchPoint(ix, project, r, { free: true }) : project
@@ -688,7 +688,7 @@ export function restoreDependency(project, ref, opts) {
 export function setDependencyMode(project, ref, mode, opts) {
   const ix = indexOf(project.tracks, project.switches ?? [], opts)
   const r = canon(ix, project, ref)
-  if (!heightsOf(project, r.trackId)?.[r.index]?.dep || !DEPENDENCY_MODES.includes(mode)) return project
+  if (!heightsOf(project, r.trackId)?.[r.index]?.depId || !DEPENDENCY_MODES.includes(mode)) return project
   return patchPoint(ix, project, r, { depMode: mode })
 }
 
@@ -783,7 +783,7 @@ export function heightRoles(project, opts) {
     if (!out.has(trackId)) out.set(trackId, new Map())
     out.get(trackId).set(index, role)
   }
-  for (const t of project.tracks) (t.heights ?? []).forEach((p, index) => { if (p.dep) put(t.id, index, { kind: 'own' }) })
+  for (const t of project.tracks) (t.heights ?? []).forEach((p, index) => { if (p.depId) put(t.id, index, { kind: 'own' }) })
   // A WA or ldS let go (decision 387) says so: it is entered like a free point.
   const free = (trackId, index) => (heightsOf(project, trackId)?.[index]?.free ? { free: true } : {})
   for (const e of ix.entries) {

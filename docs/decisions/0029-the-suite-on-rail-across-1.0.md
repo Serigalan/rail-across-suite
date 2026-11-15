@@ -48,5 +48,5 @@ documents of before forward by a step of the door and, where the project server 
   are named as the document's (`detectionPointIds`, `clearSectionIds`, `passOn.leftId`/`rightId`); the door still
   takes the names of before on the way in, as a working copy may hold them. Tracks and platforms followed: they name
   their operational point by `operationalPointId`, and state their kind and side as words (`line`/`station`,
-  `regular`/`opposite`). An element's kind, `dep`, the switch
+  `regular`/`opposite`); a height point names its dependency `depId`. An element's kind, the switch
   ports, the km lines and the ids of any form follow in pieces of their own.

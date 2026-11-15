@@ -102,15 +102,18 @@ fn convert(domains: &mut Object, way: Way) {
                 el.shift_remove("epsg");
             }
         }
-        let (from, to) = names("dep", "depId");
-        for h in track
-            .get_mut("heights")
-            .and_then(Value::as_array_mut)
-            .into_iter()
-            .flatten()
-            .filter_map(Value::as_object_mut)
-        {
-            rename(h, from, to);
+        // The record names a height point's dependency `depId` since it follows the document (phase 6); `dep` of
+        // before is read on the way in, as a working copy may hold it.
+        if way == Way::Forward {
+            for h in track
+                .get_mut("heights")
+                .and_then(Value::as_array_mut)
+                .into_iter()
+                .flatten()
+                .filter_map(Value::as_object_mut)
+            {
+                rename(h, "dep", "depId");
+            }
         }
     }
     let (from_kind, to_kind) = names("turnout", "switch");

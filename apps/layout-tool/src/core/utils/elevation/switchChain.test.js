@@ -284,7 +284,7 @@ describe('the design mode: dependencies of one\'s own (decision 385)', () => {
     const after = withSwitchHeights(p, r.project, { opts })
     const twin = t(after, 'b')[r.twin.index]
     expect(twin.station).toBeCloseTo(20, 0)
-    expect(twin).toMatchObject({ dep: t(after, 'm')[index].id, depMode: 'lds' })
+    expect(twin).toMatchObject({ depId: t(after, 'm')[index].id, depMode: 'lds' })
     // Without cant: the same height.
     expect(twin.z).toBeCloseTo(t(after, 'm')[index].z, 3)
     // Beyond the ldS, or on the approach, there is nothing to twin.
@@ -300,7 +300,7 @@ describe('the design mode: dependencies of one\'s own (decision 385)', () => {
     expect(r).toEqual({ error: 'ring' })
     expect(dependOn(p, { trackId: 'm', index: 0 }, { trackId: 'a', index: 2 }, { opts })).toEqual({ error: 'same' })
     const freed = releaseDependency(p, { trackId: 'b', index: 1 }, opts)
-    expect(t(freed, 'b')[1].dep).toBeUndefined()
+    expect(t(freed, 'b')[1].depId).toBeUndefined()
     const bare = settle(single({ a: [{ station: 0, z: 100 }, { station: 100, z: 100 }], m: [{ station: 0, z: 100 }, { station: 60, z: 100.6 }] }))
     expect(addDependentAt(bare, { trackId: 'm', index: 1 }, { trackId: 'b', station: 30 }, { opts })).toEqual({ error: 'no_height' })
   })
@@ -331,7 +331,7 @@ describe('letting a WA or ldS go of its rule (decision 387)', () => {
     // An own dependency is let go first, the rule under it after.
     const own = take(apart(), 'lds', 'main')
     const once = releaseDependency(own, { trackId: 'b', index: 1 }, { opts })
-    expect(t(once, 'b')[1].dep).toBeUndefined()
+    expect(t(once, 'b')[1].depId).toBeUndefined()
     expect(t(once, 'b')[1].free).toBeUndefined()
     expect(t(releaseDependency(once, { trackId: 'b', index: 1 }, { opts }), 'b')[1].free).toBe(true)
     // A free point depends on nothing to let go of.
@@ -468,7 +468,7 @@ describe('a crossover: the connecting track the branch of both', () => {
     const r = addDependentAt(p, src, { trackId: 'm2', station: across.station }, { mode: 'lds', opts })
     const after = withSwitchHeights(p, r.project, { opts })
     const dep = t(after, 'm2')[r.ref.index]
-    expect(dep).toMatchObject({ dep: t(after, 'm1')[1].id, depMode: 'lds' })
+    expect(dep).toMatchObject({ depId: t(after, 'm1')[1].id, depMode: 'lds' })
     // Without cant, across a straight: the same height.
     expect(dep.z).toBeCloseTo(t(after, 'm1')[1].z, 4)
     // It holds outside the design mode too, and moves with its source.

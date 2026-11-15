@@ -129,7 +129,7 @@ function withEnds(record, byId, points) {
     const length = trackLength(track)
     const at = endMarkStation(length, mark)
     byId.set(mark.id, {
-      id: mark.id, key: mark.id, name: endMarkName(mark, track, points.get(track.operationalPoint)), uic: null, kind: 'end', pointId: null, platforms: [],
+      id: mark.id, key: mark.id, name: endMarkName(mark, track, points.get(track.operationalPointId)), uic: null, kind: 'end', pointId: null, platforms: [],
       tracks: [{ id: track.id, label: trackLabel(track), length, platforms: [], from: at, to: at, at }],
       end: { kind: mark.kind, markId: mark.id, speed: mark.kind === BOUNDARY && mark.speed > 0 ? mark.speed : null },
     })

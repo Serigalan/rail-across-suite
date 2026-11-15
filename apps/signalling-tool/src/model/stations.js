@@ -7,7 +7,7 @@ import { deleted, newId } from './domain.js'
  * platform is of.
  *
  * A platform and a track are of a station where they name its point
- * (`operationalPoint`); a track's the Layout-Tool sets. A signal is of a station where it names it
+ * (`operationalPointId`); a track's the Layout-Tool sets. A signal is of a station where it names it
  * (`operationalPointId`), else of the open line; what bounds a station towards
  * the open line is its boundary (`stationBoundaries`): its entry signals or
  * boards Ne 1, else its entry switches (EBO §4).
@@ -29,8 +29,8 @@ function marksEntry(signal) {
 export function stationsOf(core) {
   const c = core?.collections ?? {}
   const out = new Map((c.operationalPoints ?? []).map(p => [p.id, { point: p, tracks: [], platforms: [] }]))
-  for (const tr of c.tracks ?? []) if (tr.operationalPoint) out.get(tr.operationalPoint)?.tracks.push(tr.id)
-  for (const pf of c.platforms ?? []) if (pf.operationalPoint) out.get(pf.operationalPoint)?.platforms.push(pf.id)
+  for (const tr of c.tracks ?? []) if (tr.operationalPointId) out.get(tr.operationalPointId)?.tracks.push(tr.id)
+  for (const pf of c.platforms ?? []) if (pf.operationalPointId) out.get(pf.operationalPointId)?.platforms.push(pf.id)
   return out
 }
 
@@ -61,8 +61,8 @@ export function withStation(state, point, platformIds = []) {
 
 /** A platform of a station — or, `point` null, of none: the point it names. */
 function platformOf(platform, point) {
-  const { operationalPoint: _p, ...rest } = platform
-  return point ? { ...rest, operationalPoint: point.id } : rest
+  const { operationalPointId: _p, ...rest } = platform
+  return point ? { ...rest, operationalPointId: point.id } : rest
 }
 
 /** The state with the platforms of `ids` of the station `point`, those of `before` not of it any more. */

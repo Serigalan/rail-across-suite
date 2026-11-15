@@ -600,7 +600,7 @@ in diesen Punkten ab; jeder wird in einem eigenen Schritt angeglichen (Entscheid
   operations (vehicles 1.0, timetables 1.0); die Datei rail-across-1.0 führt sie zusammen, eine Datei von vorher
   wird weiter gelesen.
 - Der Record, mit dem die Werkzeuge arbeiten, behält das Vokabular von vorher — die Arten als Zahlen,
-  `operationalPoint`, `dep`, eine `turnout` mit `B1` als Zweiggleis —, Kilometrierungslinien in WGS 84 mit dem
+  `dep`, eine `turnout` mit `B1` als Zweiggleis —, Kilometrierungslinien in WGS 84 mit dem
   Kilometer je Punkt und Kennungen jeder Form; die Tür wandelt ihn ins Dokument und zurück (Entscheidung 0029,
   Phase 6 nimmt das heraus). Eine Kilometrierungslinie von vorher steht als Punkte da, noch nicht mit
   Trassierungselementen angenähert.

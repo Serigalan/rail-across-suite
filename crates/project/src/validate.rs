@@ -233,7 +233,7 @@ pub fn validate_project(project: &Value) -> Value {
     for pf in arr(project, "platforms") {
         // Named by its station: the operational point it names (decision 0028).
         let point = pf
-            .get("operationalPoint")
+            .get("operationalPointId")
             .and_then(|id| arr(project, "operationalPoints").iter().find(|p| p.get("id") == Some(id)));
         let parts: Vec<String> = ["name", "rl100"]
             .iter()

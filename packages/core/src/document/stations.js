@@ -4,7 +4,7 @@ import { viaNative } from './viaNative.js'
  * The stations of a record by their ids (decision 0028). A station or halt is
  * a point of the record's operational point register (`operationalPoints`,
  * R10), an object with an id of its own; a track or platform names its point
- * by `operationalPoint`. Its name and codes are the point's, stated once. The
+ * by `operationalPointId`. Its name and codes are the point's, stated once. The
  * core's module answers (crates/doc, stations).
  */
 
@@ -41,13 +41,13 @@ export const stationPoint = (record, { name, uic, rl100 } = {}) =>
 
 /** The point of the record's register a track or platform names, where it names one. */
 export const pointOf = (record, obj) =>
-  (obj?.operationalPoint ? (record?.operationalPoints ?? []).find(p => p.id === obj.operationalPoint) : undefined)
+  (obj?.operationalPointId ? (record?.operationalPoints ?? []).find(p => p.id === obj.operationalPointId) : undefined)
 
 /**
  * A record whose tracks and platforms state their station as text
  * (`stationName`, `uicStation`, a platform's `code`) — what an importer reads
  * from a file that knows no operational points — with the points those texts
- * make: `operationalPoints`, each track and platform its `operationalPoint` —
+ * make: `operationalPoints`, each track and platform its `operationalPointId` —
  * one stating its station as no text names none. The record's points are
  * kept, and a text names the one of its name and codes. The record itself
  * where nothing states a station as text.
@@ -60,7 +60,7 @@ export const pointOf = (record, obj) =>
 export function withStationTexts(record) {
   const points = new Map((record?.operationalPoints ?? []).map(p => [p.id, p]))
   const stated = (o, texts) => {
-    const p = points.get(o?.operationalPoint)
+    const p = points.get(o?.operationalPointId)
     if (!p) return o
     return { ...o, ...Object.fromEntries(Object.entries(texts(p)).filter(([, v]) => v != null)) }
   }

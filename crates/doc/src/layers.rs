@@ -39,7 +39,7 @@ fn made_id(platform: &str) -> String {
 /// platform, marked by the stopping place at it instead: the first of `stopping` that
 /// names it (`platformId`, the record's form), or one made over the platform where
 /// none does — pushed onto `stopping`. `platforms` are in the document's form (`at`,
-/// `operationalPoint`, `lifespan`).
+/// `operationalPointId`, `lifespan`).
 pub fn boundaries_by_stopping_place(signalling: &mut Object, stopping: &mut Vec<Value>, platforms: &[Value]) {
     let Some(Value::Array(boundaries)) = signalling.get("stationBoundaries").cloned() else {
         return;
@@ -72,7 +72,7 @@ pub fn boundaries_by_stopping_place(signalling: &mut Object, stopping: &mut Vec<
                             let mut h = Object::new();
                             h.insert("id".into(), json!(id));
                             if let Some(p) = platform {
-                                for (k, to) in [("operationalPoint", "operationalPointId"), ("at", "at"), ("lifespan", "lifespan")] {
+                                for (k, to) in [("operationalPointId", "operationalPointId"), ("at", "at"), ("lifespan", "lifespan")] {
                                     if let Some(v) = get(p, k) {
                                         h.insert(to.into(), v.clone());
                                     }

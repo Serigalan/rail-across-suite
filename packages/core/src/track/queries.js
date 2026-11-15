@@ -545,7 +545,7 @@ const text = (v) => (v != null ? String(v).trim() : '')
 export function trackKind(track) {
   if (track?.trackType === LINE) return 'line'
   if (track?.trackType === STATION) return 'station'
-  if (text(track?.operationalPoint)) return 'station'
+  if (text(track?.operationalPointId)) return 'station'
   if (text(track?.lineNumber)) return 'line'
   return null
 }
@@ -571,7 +571,7 @@ export function trackGroupKey(track) {
     return number ? `line:${number}` : null
   }
   if (kind === 'station') {
-    const point = text(track.operationalPoint)
+    const point = text(track.operationalPointId)
     return point ? `station:${point}` : null
   }
   return null

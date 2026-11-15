@@ -345,7 +345,7 @@ export function labelOf(collection, obj, t, points = []) {
     case 'routes': return name ?? null
     case 'operationalPoints': return name ?? obj.rl100 ?? t('unnamed')
     case 'platforms': {
-      const point = points.find(p => p.id === obj.operationalPoint)
+      const point = points.find(p => p.id === obj.operationalPointId)
       return [point?.name, point?.rl100].filter(Boolean).join(' ') || t('unnamed')
     }
     default: return name ?? t('unnamed')

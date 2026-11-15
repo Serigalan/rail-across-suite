@@ -9,16 +9,16 @@
 // places: track 1 between A and N1, and t2 up to the target; an itinerary from the one to the other (the stopping places the core's: ksStoppingPlaces). A signals 60 km/h for
 // its route to N1, whose overlap is long enough for that. The tests of the check and the shared vectors start from it.
 //
-// `operationalPoint` names the station of the core's register it bounds and A, N1 and Ne 1 belong to.
+// `operationalPointId` names the station of the core's register it bounds and A, N1 and Ne 1 belong to.
 
-export function ksStation({ operationalPoint = 'op1' } = {}) {
+export function ksStation({ operationalPointId = 'op1' } = {}) {
   const on = (trackId, station, extra = {}) => ({ anchor: 'station', trackId, station, side: 'right', offset: 3.1, direction: 'up', ...extra })
   return {
     fields: { catalogue: { id: 'db-ril-301', version: '0.4.0' } },
     collections: {
       signals: [
         {
-          id: 'sig-a', name: 'A', kind: 'real', mounting: 'mast', operationalPointId: operationalPoint,
+          id: 'sig-a', name: 'A', kind: 'real', mounting: 'mast', operationalPointId: operationalPointId,
           at: on('t1', 20), sight: { required: 300, achievable: 420 },
           logicalSignals: [{
             system: 'ks', type: 'multiSection', function: 'entry',
@@ -33,7 +33,7 @@ export function ksStation({ operationalPoint = 'op1' } = {}) {
           frames: [{ kind: 'nameplate', aspects: [] }],
         },
         {
-          id: 'sig-n1', name: 'N1', kind: 'real', mounting: 'gantry', operationalPointId: operationalPoint,
+          id: 'sig-n1', name: 'N1', kind: 'real', mounting: 'gantry', operationalPointId: operationalPointId,
           at: { anchor: 'station', trackId: 't1', station: 230, direction: 'up' }, foundation: { side: 'right', offset: 3.8 },
           logicalSignals: [{
             system: 'ks', type: 'mainShunting', function: 'exit',
@@ -46,7 +46,7 @@ export function ksStation({ operationalPoint = 'op1' } = {}) {
           frames: [],
         },
         {
-          id: 'sig-ne1', kind: 'real', function: 'standaloneIndicator', mounting: 'foundation', at: on('t1', 5), operationalPointId: operationalPoint,
+          id: 'sig-ne1', kind: 'real', function: 'standaloneIndicator', mounting: 'foundation', at: on('t1', 5), operationalPointId: operationalPointId,
           frames: [{ kind: 'plate', aspects: [{ aspect: 'Ne_1' }] }],
         },
         { id: 'sig-v', kind: 'virtual', virtualFunction: 'trainTargetLine', at: on('t2', 140) },
@@ -91,7 +91,7 @@ export function ksStation({ operationalPoint = 'op1' } = {}) {
         },
         { id: 'etcs-n1', name: 'N1', at: on('t1', 226), system: 'etcs', kind: 'fixed', settings: { group: 'N1', position: 1 }, signalId: 'sig-n1', effect: 'permanent' },
       ],
-      stationBoundaries: [{ id: 'bd-1', operationalPointId: operationalPoint, marks: [{ signalId: 'sig-a' }] }],
+      stationBoundaries: [{ id: 'bd-1', operationalPointId: operationalPointId, marks: [{ signalId: 'sig-a' }] }],
       itineraries: [{ id: 'fw-1', name: '1 → 2', startStoppingPlaceId: 'hp-1', targetStoppingPlaceId: 'hp-2', routeIds: ['rt-n1-v'], path: { trackIds: ['t1', 't2'] } }],
     },
   }
@@ -101,10 +101,10 @@ export function ksStation({ operationalPoint = 'op1' } = {}) {
  * The station's stopping places — the core's, as the record and the document
  * hold them (decision 0028): track 1 between A and N1, and t2 up to the target.
  */
-export function ksStoppingPlaces({ operationalPoint = 'op1' } = {}) {
+export function ksStoppingPlaces({ operationalPointId = 'op1' } = {}) {
   return [
-    { id: 'hp-1', name: 'Gleis 1', operationalPointId: operationalPoint, at: { anchor: 'station', trackId: 't1', startStation: 20, endStation: 230 } },
-    { id: 'hp-2', name: 'Gleis 2', operationalPointId: operationalPoint, at: { anchor: 'station', trackId: 't2', startStation: 0, endStation: 140 } },
+    { id: 'hp-1', name: 'Gleis 1', operationalPointId: operationalPointId, at: { anchor: 'station', trackId: 't1', startStation: 20, endStation: 230 } },
+    { id: 'hp-2', name: 'Gleis 2', operationalPointId: operationalPointId, at: { anchor: 'station', trackId: 't2', startStation: 0, endStation: 140 } },
   ]
 }
 

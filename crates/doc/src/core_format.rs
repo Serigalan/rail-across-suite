@@ -282,7 +282,7 @@ pub fn operational_register(project_id: Option<&Value>, tracks: &[Value], platfo
 /// A record whose tracks and platforms state their station as text — what an
 /// importer reads from a file that knows no operational points, or a record of
 /// before decision 0028 — with the points those texts make (`withStationPoints`):
-/// `operationalPoints` the register, each track and platform its `operationalPoint`,
+/// `operationalPoints` the register, each track and platform its `operationalPointId`,
 /// the texts gone — one that states its station as no text names none. The points
 /// the record has are kept, and a text names the one of its name and codes. A record
 /// without such texts comes back as it was.
@@ -299,9 +299,9 @@ pub fn with_station_points(record: &Value) -> Value {
             return o.clone();
         }
         let mut rest = without(&obj(o), drop);
-        rest.shift_remove("operationalPoint");
+        rest.shift_remove("operationalPointId");
         if let Some(id) = register.point_of(source) {
-            rest.insert("operationalPoint".into(), json!(id));
+            rest.insert("operationalPointId".into(), json!(id));
         }
         Value::Object(rest)
     };

@@ -7,7 +7,7 @@ import { buildTypeFields } from './index.js'
 
 const line = (id, lineNumber, extra = {}) => ({ id, name: id, trackType: 1, lineNumber, ...extra })
 // A station track names its operational point (decision 0028); the points of these tests by their ids.
-const station = (id, operationalPoint, extra = {}) => ({ id, name: id, trackType: 2, operationalPoint, ...extra })
+const station = (id, operationalPointId, extra = {}) => ({ id, name: id, trackType: 2, operationalPointId, ...extra })
 const POINTS = [
   { id: 'op-k', name: 'Könnern', uic: '8010205' }, { id: 'op-h', name: 'Halle (Saale) Hbf' }, { id: 'op-w', name: 'Wallwitz' },
 ]
@@ -21,12 +21,12 @@ describe('what a track belongs to', () => {
   it('is read off its fields where it states no type', () => {
     expect(trackKind({ lineNumber: '6340' })).toBe('line')
     // A station track keeps the line number its kilometrage is read off.
-    expect(trackKind({ lineNumber: 6340, operationalPoint: 'op-k' })).toBe('station')
+    expect(trackKind({ lineNumber: 6340, operationalPointId: 'op-k' })).toBe('station')
     expect(trackKind({ name: 'track 1' })).toBe(null)
   })
 
   it('opens the forms on the type it has', () => {
-    expect(trackTypeName({ operationalPoint: 'op-k' }, 'line_track')).toBe('station_track')
+    expect(trackTypeName({ operationalPointId: 'op-k' }, 'line_track')).toBe('station_track')
     expect(trackTypeName({}, 'line_track')).toBe('line_track')
   })
 
@@ -61,7 +61,7 @@ describe('the tracks in groups', () => {
     expect(groups.map(g => g.key)).toEqual([
       'line:6340', 'line:6343', 'station:op-h', 'station:op-k', 'none',
     ])
-    expect(groups[3]).toMatchObject({ operationalPoint: 'op-k' })
+    expect(groups[3]).toMatchObject({ operationalPointId: 'op-k' })
   })
 
   it('hold their tracks sorted by name, numbers counted', () => {
@@ -104,7 +104,7 @@ describe('assigning tracks', () => {
   })
 
   it('puts them into a station, keeping the line their kilometrage is read off', () => {
-    const [a] = assignTracks(tracks, ['a'], { kind: 'station', operationalPoint: 'op-h', stationName: 'Halle (Saale) Hbf' })
+    const [a] = assignTracks(tracks, ['a'], { kind: 'station', operationalPointId: 'op-h', stationName: 'Halle (Saale) Hbf' })
     expect(trackGroupKey(a)).toBe('station:op-h')
     expect(a).not.toHaveProperty('stationName')
     expect(a.lineNumber).toBe(6340)
@@ -116,7 +116,7 @@ describe('assigning tracks', () => {
   it('takes them out of what they were in', () => {
     const out = assignTracks(tracks, ['a', 'b'], { kind: null })
     expect(out.slice(0, 2).map(trackGroupKey)).toEqual([null, null])
-    expect(out[1].operationalPoint).toBeNull()
+    expect(out[1].operationalPointId).toBeNull()
     expect(groupTracks(out, POINTS).map(g => g.key)).toEqual(['none'])
   })
 })

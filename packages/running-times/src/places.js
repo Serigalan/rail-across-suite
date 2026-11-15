@@ -21,7 +21,7 @@ export function placesOf(record, t) {
   const tracks = new Map((record?.tracks ?? []).map(tr => [tr.id, tr]))
   const platforms = (record?.platforms ?? [])
     .filter(p => p.trackId && Number.isFinite(p.startStation) && Number.isFinite(p.endStation))
-    .map((p, i) => ({ p, i, point: points.get(p.operationalPoint), number: tracks.get(p.trackId)?.trackNumber }))
+    .map((p, i) => ({ p, i, point: points.get(p.operationalPointId), number: tracks.get(p.trackId)?.trackNumber }))
     .map(({ p, i, point, number }) => ({
       id: `platform:${p.id ?? i}`,
       label: [point?.name, number ? `${t('platform_track')} ${number}` : null].filter(Boolean).join(' ') || `${t('platform')} ${i + 1}`,

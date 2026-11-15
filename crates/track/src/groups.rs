@@ -45,7 +45,7 @@ pub fn track_kind(track: &Value) -> Option<&'static str> {
         Some(2.0) => return Some("station"),
         _ => {}
     }
-    if !tx(track.get("operationalPoint")).is_empty() {
+    if !tx(track.get("operationalPointId")).is_empty() {
         return Some("station");
     }
     if !tx(track.get("lineNumber")).is_empty() {
@@ -70,7 +70,7 @@ pub fn track_group_key(track: &Value) -> Option<String> {
             (!n.is_empty()).then(|| format!("line:{n}"))
         }
         Some("station") => {
-            let point = tx(track.get("operationalPoint"));
+            let point = tx(track.get("operationalPointId"));
             (!point.is_empty()).then(|| format!("station:{point}"))
         }
         _ => None,
@@ -125,7 +125,7 @@ fn name_or_id(t: &Value) -> String {
 }
 
 /// The tracks in groups by line and station, the rest last (`groupTracks`): a
-/// station's group names its point (`operationalPoint`) and shows the point's
+/// station's group names its point (`operationalPointId`) and shows the point's
 /// name and number (`stationName`, `uicStation`) from `points`, the register.
 pub fn group_tracks(tracks: &[Value], points: &[Value]) -> Value {
     let mut order: Vec<String> = Vec::new();
@@ -145,14 +145,14 @@ pub fn group_tracks(tracks: &[Value], points: &[Value]) -> Value {
                 Vec::new(),
             )
         });
-        if g.0 == "station" && g.1.get("operationalPoint").is_none() {
-            let id = tx(t.get("operationalPoint"));
+        if g.0 == "station" && g.1.get("operationalPointId").is_none() {
+            let id = tx(t.get("operationalPointId"));
             let point = points.iter().find(|p| tx(p.get("id")) == id);
             let field = |k: &str| {
                 let v = tx(point.and_then(|p| p.get(k)));
                 if v.is_empty() { Value::Null } else { json!(v) }
             };
-            g.1["operationalPoint"] = json!(id);
+            g.1["operationalPointId"] = json!(id);
             g.1["stationName"] = field("name");
             g.1["uicStation"] = field("uic");
         }
@@ -241,11 +241,11 @@ pub fn assignment_fields(target: &Value) -> Value {
     };
     match text(target, "kind") {
         Some("line") => json!({ "trackType": 1, "lineNumber": number(js_number(Some(&json!(tx(target.get("lineNumber")))))), "lineName": s("lineName") }),
-        Some("station") if !tx(target.get("operationalPoint")).is_empty() => {
-            json!({ "trackType": 2, "operationalPoint": s("operationalPoint") })
+        Some("station") if !tx(target.get("operationalPointId")).is_empty() => {
+            json!({ "trackType": 2, "operationalPointId": s("operationalPointId") })
         }
         Some("station") => json!({ "trackType": 2, "stationName": s("stationName"), "uicStation": s("uicStation") }),
-        _ => json!({ "lineNumber": null, "lineName": null, "operationalPoint": null }),
+        _ => json!({ "lineNumber": null, "lineName": null, "operationalPointId": null }),
     }
 }
 

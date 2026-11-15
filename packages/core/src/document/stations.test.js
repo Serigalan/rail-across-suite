@@ -5,10 +5,10 @@ const record = {
   id: 'p1',
   operationalPoints: [{ id: 'op-a', name: 'A-Dorf' }, { id: 'op-b', name: 'B-Halt', rl100: 'BH' }],
   tracks: [
-    { id: 't1', operationalPoint: 'op-a', trackNumber: '1' }, { id: 't2', operationalPoint: 'op-a', trackNumber: '2' },
+    { id: 't1', operationalPointId: 'op-a', trackNumber: '1' }, { id: 't2', operationalPointId: 'op-a', trackNumber: '2' },
     { id: 't3', lineNumber: '6000' },
   ],
-  platforms: [{ id: 'p1', trackId: 't3', operationalPoint: 'op-b' }],
+  platforms: [{ id: 'p1', trackId: 't3', operationalPointId: 'op-b' }],
 }
 
 describe('the stations of a record by their ids (decision 0028)', () => {
@@ -44,8 +44,8 @@ describe('the stations of a record by their ids (decision 0028)', () => {
       tracks: [{ id: 't1', stationName: 'A-Dorf', uicStation: '8000001' }, { id: 't2', stationName: 'A-Dorf' }, { id: 't3', lineNumber: '6000' }],
       platforms: [{ id: 'p1', trackId: 't3', stationName: 'B-Halt', code: 'BH' }],
     })
-    expect(read.tracks[0].operationalPoint).toBe(read.tracks[1].operationalPoint)
-    expect(read.tracks[2].operationalPoint).toBeUndefined()
+    expect(read.tracks[0].operationalPointId).toBe(read.tracks[1].operationalPointId)
+    expect(read.tracks[2].operationalPointId).toBeUndefined()
     expect(read.tracks.some(t => 'stationName' in t || 'uicStation' in t)).toBe(false)
     expect(pointOf(read, read.tracks[0])).toMatchObject({ name: 'A-Dorf', uic: '8000001' })
     expect(pointOf(read, read.platforms[0])).toMatchObject({ name: 'B-Halt', rl100: 'BH' })

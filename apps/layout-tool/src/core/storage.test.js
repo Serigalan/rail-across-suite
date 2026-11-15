@@ -707,18 +707,18 @@ describe('a station a form states as text (decision 0028)', () => {
     saveTrack({ id: 't1', elements: [], trackType: 2, stationName: 'Könnern' })
     saveTrack({ id: 't2', elements: [], trackType: 2, stationName: 'Wallwitz', uicStation: '8023113' })
     const [t1, t2] = loadTracks()
-    expect(t1).toEqual({ id: 't1', elements: [], trackType: 2, operationalPoint: 'op-k' })
+    expect(t1).toEqual({ id: 't1', elements: [], trackType: 2, operationalPointId: 'op-k' })
     expect(t2).not.toHaveProperty('stationName')
     expect(currentProject().operationalPoints).toEqual([
       { id: 'op-k', name: 'Könnern', rl100: 'LKO' },
-      { id: t2.operationalPoint, name: 'Wallwitz', uic: '8023113' },
+      { id: t2.operationalPointId, name: 'Wallwitz', uic: '8023113' },
     ])
     // A station typed away names none; the point stays in the register.
     updateTrack({ ...t1, stationName: '' })
-    expect(loadTracks().find(t => t.id === 't1')).not.toHaveProperty('operationalPoint')
+    expect(loadTracks().find(t => t.id === 't1')).not.toHaveProperty('operationalPointId')
     expect(currentProject().operationalPoints).toHaveLength(2)
     undo()
-    expect(loadTracks().find(t => t.id === 't1').operationalPoint).toBe('op-k')
+    expect(loadTracks().find(t => t.id === 't1').operationalPointId).toBe('op-k')
   })
 
   it('names a platform\'s station, and the stopping place made over it', () => {
@@ -727,7 +727,7 @@ describe('a station a form states as text (decision 0028)', () => {
     const [pf] = loadPlatforms()
     const [point] = currentProject().operationalPoints
     expect(point).toMatchObject({ name: 'Halle-Trotha', rl100: 'LHT' })
-    expect(pf.operationalPoint).toBe(point.id)
+    expect(pf.operationalPointId).toBe(point.id)
     expect(currentProject().stoppingPlaces[0].operationalPointId).toBe(point.id)
   })
 })

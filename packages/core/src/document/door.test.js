@@ -108,8 +108,8 @@ describe('a record as an infra-data-2.0 document', () => {
   it('keeps the stations as the record states them: points with ids, named by tracks and platforms (decision 0028)', () => {
     const operationalPoints = [{ id: 'op-k', name: 'Könnern', rl100: 'LKO', uic: '8010195' }, { id: 'op-w', name: 'Wallwitz' }]
     const r = record({
-      tracks: [track('a', { operationalPoint: 'op-k' }), track('b', { operationalPoint: 'op-k' }), track('c')],
-      platforms: [{ id: 'pf', trackId: 'a', startStation: 0, endStation: 50, operationalPoint: 'op-k' }],
+      tracks: [track('a', { operationalPointId: 'op-k' }), track('b', { operationalPointId: 'op-k' }), track('c')],
+      platforms: [{ id: 'pf', trackId: 'a', startStation: 0, endStation: 50, operationalPointId: 'op-k' }],
       operationalPoints,
     })
     const doc = toDocument(r)
@@ -149,7 +149,7 @@ describe('a record as an infra-data-2.0 document', () => {
   })
 
   it('says what is the same in one way: no null fields', () => {
-    const r = record({ tracks: [track('a', { lineNumber: null, operationalPoint: null })] })
+    const r = record({ tracks: [track('a', { lineNumber: null, operationalPointId: null })] })
     expect(roundTrip(r).tracks[0]).toEqual(withUuids(track('a')))
   })
 

@@ -31,7 +31,7 @@ describe('describing a step', () => {
   })
 
   it('names platforms and end marks, and falls back on the project', () => {
-    const p = { id: 'p1', operationalPoint: 'op-h' }
+    const p = { id: 'p1', operationalPointId: 'op-h' }
     const operationalPoints = [{ id: 'op-h', name: 'Halle', rl100: 'B' }]
     expect(describeStep(base, { ...base, platforms: [p], operationalPoints })).toEqual({ key: 'step_platform_added', params: { name: 'B · Halle' } })
     expect(describeStep(base, { ...base, endMarks: [{ id: 'e', trackId: 'a' }] })).toEqual({ key: 'step_end_mark_added', params: {} })

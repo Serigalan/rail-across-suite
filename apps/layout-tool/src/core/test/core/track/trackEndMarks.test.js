@@ -147,7 +147,7 @@ describe('an end mark as a place of the timetable', () => {
     expect(endMarkName({ ...newBoundary('t', 'END'), name: ' Grenze Nord ' }, { name: 'x' })).toBe('Grenze Nord')
     expect(endMarkName(newBoundary('t', 'END'), { name: '6344.003' })).toBe('Grenze 6344.003 Ende')
     // its track's station the point the track names (decision 0028)
-    const track = { operationalPoint: 'op-k', trackNumber: '5' }
+    const track = { operationalPointId: 'op-k', trackNumber: '5' }
     expect(endMarkName(newBufferStop('t', 'BEGIN'), track, { id: 'op-k', name: 'Könnern' })).toBe('Prellbock Könnern Gl. 5 Anfang')
     expect(endMarkName(newBufferStop('t', 'BEGIN'), track)).toBe('Prellbock Gl. 5 Anfang')
   })

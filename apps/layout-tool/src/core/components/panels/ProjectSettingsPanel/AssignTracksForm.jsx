@@ -343,7 +343,7 @@ function StationRename({ station, taken, onRenamed }) {
     const next = name.trim()
     if (!next) { setError('assign_error_station_name'); return }
     if (taken(next)) { setError('station_rename_taken'); return }
-    const changed = station.operationalPoint && renamedStation(currentProject(), station.operationalPoint, { name: next, uic: uic.trim() })
+    const changed = station.operationalPointId && renamedStation(currentProject(), station.operationalPointId, { name: next, uic: uic.trim() })
     if (!changed) return
     updateProject(changed)
     setOpen(false)

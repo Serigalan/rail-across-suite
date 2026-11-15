@@ -16,14 +16,13 @@ const TRACK_TYPES: &[(i64, &str)] = &[(1, "line"), (2, "station")];
 const SIDES: &[(i64, &str)] = &[(1, "regular"), (2, "opposite")];
 
 /// The references renamed: (domain, collection, old name, new name).
-const NAMES: &[(&str, &str, &str, &str)] = &[
-    ("core", "tracks", "operationalPoint", "operationalPointId"),
-    ("civil", "platforms", "operationalPoint", "operationalPointId"),
-];
+const NAMES: &[(&str, &str, &str, &str)] = &[];
 
 /// The references the record names as the document does since it follows it (decision 0029, phase 6): renamed
 /// on the way in only, for a record of before — a working copy may still hold one.
 const NAMES_FOLLOWED: &[(&str, &str, &str, &str)] = &[
+    ("core", "tracks", "operationalPoint", "operationalPointId"),
+    ("civil", "platforms", "operationalPoint", "operationalPointId"),
     ("signalling", "trackSections", "boundedBy", "detectionPointIds"),
     ("signalling", "routes", "clearSections", "clearSectionIds"),
     ("signalling", "overlaps", "clearSections", "clearSectionIds"),

@@ -9,7 +9,7 @@ const straight = (x0, y0, x1, y1) => ({
   elementType: 0, startNode: [E0 + x0, N0 + y0], endNode: [E0 + x1, N0 + y1], length: Math.hypot(x1 - x0, y1 - y0),
   bearing: (Math.atan2(x1 - x0, y1 - y0) * 180 / Math.PI + 360) % 360, speed: 100,
 })
-const station = (point, number) => ({ trackType: 2, operationalPoint: point, trackNumber: number })
+const station = (point, number) => ({ trackType: 2, operationalPointId: point, trackNumber: number })
 
 export const net = {
   tracks: [
@@ -20,10 +20,10 @@ export const net = {
   ],
   switches: [{ switchId: 'W1', kind: 'turnout', ports: { A: { trackId: 'L', endpoint: 'END' }, B1: { trackId: 'C1', endpoint: 'BEGIN' }, B2: { trackId: 'C2', endpoint: 'BEGIN' } } }],
   platforms: [
-    { id: 'pA', trackId: 'A1', startStation: 100, endStation: 300, operationalPoint: 'op-a' },
-    { id: 'pB', trackId: 'L', startStation: 1000, endStation: 1200, operationalPoint: 'op-b' },
-    { id: 'pC1', trackId: 'C1', startStation: 300, endStation: 500, operationalPoint: 'op-c' },
-    { id: 'pC2', trackId: 'C2', startStation: 300, endStation: 500, operationalPoint: 'op-c' },
+    { id: 'pA', trackId: 'A1', startStation: 100, endStation: 300, operationalPointId: 'op-a' },
+    { id: 'pB', trackId: 'L', startStation: 1000, endStation: 1200, operationalPointId: 'op-b' },
+    { id: 'pC1', trackId: 'C1', startStation: 300, endStation: 500, operationalPointId: 'op-c' },
+    { id: 'pC2', trackId: 'C2', startStation: 300, endStation: 500, operationalPointId: 'op-c' },
   ],
   operationalPoints: [{ id: 'op-a', name: 'A-Dorf' }, { id: 'op-b', name: 'B-Halt' }, { id: 'op-c', name: 'C-Stadt' }],
 }

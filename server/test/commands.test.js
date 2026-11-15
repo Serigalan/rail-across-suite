@@ -300,7 +300,7 @@ describe.skipIf(!SERVER_BIN)('the step to core 4.0 (decision 0029, phases 1 and 
     const doc = {
       format: 'infra-data', version: '2.0', blobs: {},
       domains: { core: { version: '3.1', schema: schema('core/3.1'), fields: { id: made.project.id }, collections: {
-        tracks: [{ id: 't1', epsg: 25832, trackType: 2, operationalPoint: 'op1', elements: [{ ...el, epsg: 25832 }] }],
+        tracks: [{ id: 't1', epsg: 25832, trackType: 2, operationalPointId: 'op1', elements: [{ ...el, epsg: 25832 }] }],
         switches: [], endMarks: [], stoppingPlaces: [], trackPaths: [],
         operationalPoints: [{ id: 'op1', name: 'Halle-Trotha' }],
         kmLines: [{ id: 'km-6050', lineNumber: 6050, crs: 'EPSG:4326', runs: [[[11.95, 51.55, 1200.5], [11.96, 51.56, 1300]]] }],

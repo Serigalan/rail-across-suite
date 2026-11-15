@@ -3,7 +3,7 @@
 
 //! The stations of a record (`stations.js`; decision 0028): a station or halt
 //! is a point of the record's operational point register, an object with an id
-//! of its own, and a track or platform names its point by `operationalPoint`.
+//! of its own, and a track or platform names its point by `operationalPointId`.
 //! Its name and codes are the point's, stated once.
 
 use rail_across_js::{Object, js_string, js_trim};
@@ -15,7 +15,7 @@ fn list<'a>(v: &'a Value, key: &str) -> &'a [Value] {
 
 /// The point a track or platform of `record` names, where the register has it.
 pub fn point_of<'a>(record: &'a Value, obj: &Value) -> Option<&'a Value> {
-    let id = obj.get("operationalPoint").and_then(Value::as_str)?;
+    let id = obj.get("operationalPointId").and_then(Value::as_str)?;
     list(record, "operationalPoints").iter().find(|p| p.get("id").and_then(Value::as_str) == Some(id))
 }
 

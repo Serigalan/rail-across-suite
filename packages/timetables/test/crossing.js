@@ -9,7 +9,7 @@ const straight = (x0, y0, x1, y1) => ({
   bearing: (Math.atan2(x1 - x0, y1 - y0) * 180 / Math.PI + 360) % 360, speed: 100,
 })
 // The stations are points of the register, each track and platform naming its own (decision 0028).
-const inStation = (point, number) => ({ trackType: 2, operationalPoint: point, trackNumber: number })
+const inStation = (point, number) => ({ trackType: 2, operationalPointId: point, trackNumber: number })
 const at = (trackId, station, direction) => ({ anchor: 'station', trackId, station, side: 'right', direction })
 const main = (id, trackId, station, direction) => ({ id, name: id, kind: 'real', at: at(trackId, station, direction), logicalSignals: ks })
 export const crossing = {
@@ -26,8 +26,8 @@ export const crossing = {
     { switchId: 'Wb', kind: 'turnout', ports: { A: { trackId: 'L2', endpoint: 'BEGIN' }, B1: { trackId: 'W2', endpoint: 'END' }, B2: { trackId: 'W1', endpoint: 'END' } } },
   ],
   platforms: [
-    { id: 'pH', trackId: 'H1', startStation: 100, endStation: 300, operationalPoint: 'op-h' },
-    { id: 'pK', trackId: 'K1', startStation: 200, endStation: 400, operationalPoint: 'op-k' },
+    { id: 'pH', trackId: 'H1', startStation: 100, endStation: 300, operationalPointId: 'op-h' },
+    { id: 'pK', trackId: 'K1', startStation: 200, endStation: 400, operationalPointId: 'op-k' },
   ],
   operationalPoints: [{ id: 'op-h', name: 'H-Stadt' }, { id: 'op-w', name: 'W-Dorf' }, { id: 'op-k', name: 'K-Stadt' }],
   signalling: {

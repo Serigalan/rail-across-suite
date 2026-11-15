@@ -46,5 +46,6 @@ documents of before forward by a step of the door and, where the project server 
 - The specification's section on the implementation is shortened with every phase.
 - Phase 6 began with the signalling layer, which the record already kept as the document has it: its references
   are named as the document's (`detectionPointIds`, `clearSectionIds`, `passOn.leftId`/`rightId`); the door still
-  takes the names of before on the way in, as a working copy may hold them. The core's words and names, the switch
+  takes the names of before on the way in, as a working copy may hold them. Tracks and platforms followed: they name
+  their operational point by `operationalPointId`. The core's other words and names, the switch
   ports, the km lines and the ids of any form follow in pieces of their own.

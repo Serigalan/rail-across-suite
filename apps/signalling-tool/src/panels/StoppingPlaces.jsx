@@ -31,7 +31,7 @@ export function StoppingPlacesSection({ entry, domain, net, core, ops, select, m
   useOwnMode(setMode, owner)
   const mine = stoppingPlacesOf(domain, pointId)
   const platforms = domain.collections.platforms.filter(pf => pf.trackId && Number.isFinite(pf.startStation) && Number.isFinite(pf.endStation))
-  const coreOf = new Map((core.collections.platforms ?? []).map(p => [p.id, p.operationalPoint ?? null]))
+  const coreOf = new Map((core.collections.platforms ?? []).map(p => [p.id, p.operationalPointId ?? null]))
   const ownPlatforms = entry ? platforms.filter(pf => entry.platforms.includes(pf.id)) : platforms.filter(pf => !coreOf.get(pf.id))
   const tracks = !entry ? [] : (entry.tracks.length ? net.tracks.filter(tr => entry.tracks.includes(tr.id)) : net.tracks)
   const sources = [

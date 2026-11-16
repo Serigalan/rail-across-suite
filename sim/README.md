@@ -25,6 +25,9 @@ sections, the driver behaviour of SNCF's signalling systems, the signalling simu
 detection and STDCM. The path comes in as its length, grades and speed limits; the request and the result are
 this crate's own JSON.
 
+What the whole simulation assumes — the way, the grades and curves, the speeds, blocks, blocking times, dispatching
+and capacity around this crate — is set out in [`docs/simulation`](../docs/simulation/simulation-assumptions.md).
+
 The vehicles it is run with are OSRD's RailJSON rolling stock; OSRD's example vehicles are in
 `packages/vehicles/data/osrd/`.
 

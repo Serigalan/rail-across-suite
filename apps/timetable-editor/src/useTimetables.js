@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { newTimetable, timetableApi } from '@rail-across/timetables'
+import { newTimetable, timetableApi, withScenariosOfItsTrains } from '@rail-across/timetables'
 
 /** No trains, one and the same list every time: the runs are made again only when the trains are others. */
 const NO_TRAINS = []
@@ -85,7 +85,7 @@ export function useTimetables(projectId, initial = null) {
     dismiss: () => setAsk(null),
     select: (id) => guard(() => open(list.find(tt => tt.id === id) ?? null)),
     /** The trains changed: `fn(trains)` gives them as they are to be. */
-    changeTrains: (fn) => setDraft(d => (d ? { ...d, data: { ...d.data, trains: fn(d.data.trains) } } : d)),
+    changeTrains: (fn) => setDraft(d => (d ? { ...d, data: withScenariosOfItsTrains({ ...d.data, trains: fn(d.data.trains) }) } : d)),
     rename: (name) => setDraft(d => (d ? { ...d, name } : d)),
     /** How conflicts of blocks are dealt with (occupancy.js): the timetable's `dispatch`. */
     changeDispatch: (dispatch) => setDraft(d => (d ? { ...d, data: { ...d.data, dispatch } } : d)),

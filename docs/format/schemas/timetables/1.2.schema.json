@@ -1,0 +1,811 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "timetables",
+  "title": "Rail-Data-Core, domain timetables 1.2",
+  "description": "A project's timetables and their trains, the kinds of trains, the formations, connections and turnarounds, delay scenarios, studies and construction scenarios. Part of operations-1.0 in rail-across-1.0; it belongs to no variant of the infrastructure and names it by id — operational points, end marks, tracks, itineraries —, checked where it is laid on a variant.",
+  "type": "object",
+  "required": [
+    "fields",
+    "collections"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "fields": {
+      "$ref": "#/$defs/Fields"
+    },
+    "collections": {
+      "type": "object",
+      "required": [
+        "timetables",
+        "trains",
+        "trainKinds",
+        "formations",
+        "connections",
+        "turnarounds",
+        "delayScenarios",
+        "studies",
+        "constructionScenarios"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "timetables": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Timetable"
+          }
+        },
+        "trains": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Train"
+          }
+        },
+        "trainKinds": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TrainKind"
+          }
+        },
+        "formations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Formation"
+          }
+        },
+        "connections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Connection"
+          }
+        },
+        "turnarounds": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Turnaround"
+          }
+        },
+        "delayScenarios": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DelayScenario"
+          }
+        },
+        "studies": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Study"
+          }
+        },
+        "constructionScenarios": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ConstructionScenario"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "Fields": {
+      "description": "Nothing yet: what holds for all of a project's operations comes here.",
+      "type": "object",
+      "required": [],
+      "additionalProperties": false,
+      "properties": {}
+    },
+    "Timetable": {
+      "description": "A timetable: its trains name it (trains[].timetableId).",
+      "type": "object",
+      "required": [
+        "id",
+        "name"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "core#/$defs/Id"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dispatching": {
+          "$ref": "#/$defs/Dispatching"
+        },
+        "blockingTimes": {
+          "$ref": "#/$defs/BlockingTimes"
+        }
+      }
+    },
+    "Dispatching": {
+      "description": "What is done where trains meet (decision 0016, point 7).",
+      "type": "object",
+      "required": [],
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "enum": [
+            "show",
+            "wait"
+          ],
+          "description": "show: only the conflicts, each train run for itself; wait: the trains given the net one after the other, each waiting for a free block (decision 0016, point 7)."
+        },
+        "priority": {
+          "enum": [
+            "departure",
+            "kind"
+          ],
+          "description": "In which order the trains are given the net: by departure, or by their kinds in kindOrder."
+        },
+        "kindOrder": {
+          "type": "array",
+          "items": {
+            "$ref": "core#/$defs/Ref",
+            "x-target": "timetables.trainKinds"
+          },
+          "maxItems": 100,
+          "description": "The kinds of trains first given the net, in order; the timetable's own order, before the kinds' rank."
+        }
+      }
+    },
+    "BlockingTimes": {
+      "description": "The parts of the blocking time that are the operation's: what stands in where the infrastructure says nothing, and the sight time.",
+      "type": "object",
+      "required": [],
+      "additionalProperties": false,
+      "properties": {
+        "setup": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 10000,
+          "description": "The time to set a route [s], where the infrastructure says none."
+        },
+        "approach": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 10000,
+          "description": "How far before its signal a block is asked for [m], where no signal announces it."
+        },
+        "release": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 10000,
+          "description": "The time to release a route [s], where the infrastructure says none."
+        },
+        "sight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 10000,
+          "description": "The sight time [s]: the driver's, before the announcing signal, apart from its sight distance."
+        }
+      }
+    },
+    "Train": {
+      "description": "A train of a timetable.",
+      "type": "object",
+      "required": [
+        "id",
+        "timetableId",
+        "departure",
+        "points"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "core#/$defs/Id"
+        },
+        "timetableId": {
+          "$ref": "core#/$defs/Ref",
+          "x-target": "timetables.timetables"
+        },
+        "number": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "trainKindId": {
+          "$ref": "core#/$defs/Ref",
+          "x-target": "timetables.trainKinds"
+        },
+        "formationId": {
+          "$ref": "core#/$defs/Ref",
+          "x-target": "timetables.formations"
+        },
+        "mode": {
+          "type": "string",
+          "description": "The traction mode it runs with; without one, what the contact wire along its way and its vehicles allow."
+        },
+        "comfort": {
+          "type": "string",
+          "description": "OSRD's comfort: STANDARD, AIR_CONDITIONING, HEATING."
+        },
+        "departure": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 172799.999,
+          "description": "Seconds from midnight of the timetable's day; past 24:00 is the next day."
+        },
+        "margin": {
+          "type": "string",
+          "description": "The running time margin, as OSRD writes it: 5 %, 3 min/100km."
+        },
+        "distribution": {
+          "enum": [
+            "mareco",
+            "linear"
+          ],
+          "description": "How the margin is spread."
+        },
+        "points": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TrainPoint"
+          },
+          "maxItems": 300,
+          "description": "Where it runs: from its first point to its last, through the others in order."
+        }
+      }
+    },
+    "TrainPoint": {
+      "description": "A point of a train: an operational point or an end mark by its id, the track, whether it stops there, a departure it waits for, whether it turns there.",
+      "type": "object",
+      "required": [
+        "id",
+        "stop"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "core#/$defs/Id"
+        },
+        "operationalPointId": {
+          "$ref": "core#/$defs/Ref",
+          "x-target": "core.operationalPoints"
+        },
+        "endMarkId": {
+          "$ref": "core#/$defs/Ref",
+          "x-target": "core.endMarks"
+        },
+        "trackId": {
+          "$ref": "core#/$defs/Ref",
+          "x-target": "core.tracks"
+        },
+        "stop": {
+          "type": "boolean"
+        },
+        "dwell": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 86400,
+          "description": "How long it stops [s]."
+        },
+        "leastDwell": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 86400,
+          "description": "The least it stops [s], which the dispatching keeps (O4)."
+        },
+        "departure": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 172799.999,
+          "description": "Seconds from midnight of the timetable's day; past 24:00 is the next day."
+        },
+        "itineraryId": {
+          "$ref": "core#/$defs/Ref",
+          "x-target": "signalling.itineraries"
+        },
+        "reverse": {
+          "type": "boolean",
+          "description": "It turns here (Richtungswechsel): it stops, stands its turnaround and runs on the other way, from where its tail stood. Only on the way, not at its first or last point."
+        },
+        "turnaround": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 86400,
+          "description": "How long it stands where it turns [s]: its turnaround time; without, 300 s."
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "operationalPointId"
+          ]
+        },
+        {
+          "required": [
+            "endMarkId"
+          ]
+        }
+      ]
+    },
+    "TrainKind": {
+      "description": "A kind of train (Zuggattung).",
+      "type": "object",
+      "required": [
+        "id",
+        "name"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "core#/$defs/Id"
+        },
+        "name": {
+          "type": "string"
+        },
+        "rank": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Its rank in the dispatching: the lower, the earlier given the net."
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "description": "Its colour in the graphical timetable."
+        }
+      }
+    },
+    "Formation": {
+      "description": "A formation (Zugbildung): its vehicles front to back, the hauled load, the brake.",
+      "type": "object",
+      "required": [
+        "id",
+        "tractionUnits"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "core#/$defs/Id"
+        },
+        "name": {
+          "type": "string"
+        },
+        "tractionUnits": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TractionUnit"
+          },
+          "description": "The traction units, front to back."
+        },
+        "hauledLoad": {
+          "description": "What the traction units haul, as one.",
+          "type": "object",
+          "required": [],
+          "additionalProperties": false,
+          "properties": {
+            "mass": {
+              "type": "number",
+              "minimum": 0,
+              "description": "[kg]"
+            },
+            "length": {
+              "type": "number",
+              "minimum": 0,
+              "description": "[m]"
+            },
+            "maxSpeed": {
+              "type": "number",
+              "description": "[m/s]",
+              "minimum": 0
+            }
+          }
+        },
+        "brakePosition": {
+          "enum": [
+            "G",
+            "P",
+            "R",
+            "R+Mg"
+          ],
+          "description": "Bremsstellung."
+        },
+        "brakedWeightPercentage": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 300,
+          "description": "Bremshundertstel [%]."
+        }
+      }
+    },
+    "TractionUnit": {
+      "description": "A vehicle of a formation, by its id in the domain vehicles.",
+      "type": "object",
+      "required": [
+        "vehicleId"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "vehicleId": {
+          "$ref": "core#/$defs/Ref",
+          "x-target": "vehicles.vehicles"
+        }
+      }
+    },
+    "Connection": {
+      "description": "A connection (Anschluss): from a train's arrival to another's departure at a place.",
+      "type": "object",
+      "required": [
+        "id",
+        "fromTrainId",
+        "toTrainId",
+        "operationalPointId"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "core#/$defs/Id"
+        },
+        "fromTrainId": {
+          "$ref": "core#/$defs/Ref",
+          "x-target": "timetables.trains"
+        },
+        "toTrainId": {
+          "$ref": "core#/$defs/Ref",
+          "x-target": "timetables.trains"
+        },
+        "operationalPointId": {
+          "$ref": "core#/$defs/Ref",
+          "x-target": "core.operationalPoints"
+        },
+        "changeTime": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 86400,
+          "description": "The time to change trains [s]."
+        },
+        "waitUpTo": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 86400,
+          "description": "How long the departing train waits for the arriving one [s]."
+        }
+      }
+    },
+    "Turnaround": {
+      "description": "A turnaround (Wende): from a train's end to the train its vehicles run as next.",
+      "type": "object",
+      "required": [
+        "id",
+        "fromTrainId",
+        "toTrainId"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "core#/$defs/Id"
+        },
+        "fromTrainId": {
+          "$ref": "core#/$defs/Ref",
+          "x-target": "timetables.trains"
+        },
+        "toTrainId": {
+          "$ref": "core#/$defs/Ref",
+          "x-target": "timetables.trains"
+        },
+        "leastTime": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 86400,
+          "description": "The least time to turn [s]."
+        }
+      }
+    },
+    "DelayScenario": {
+      "description": "A delay scenario: each rule a share of trains delayed and a distribution of their delays.",
+      "type": "object",
+      "required": [
+        "id",
+        "name"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "core#/$defs/Id"
+        },
+        "name": {
+          "type": "string"
+        },
+        "entryDelays": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DelayRule"
+          },
+          "description": "Delays at the entry into the planning area."
+        },
+        "dwellDelays": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DelayRule"
+          },
+          "description": "Longer dwells at stops."
+        }
+      }
+    },
+    "DelayRule": {
+      "type": "object",
+      "required": [
+        "share",
+        "distribution"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "operationalPointId": {
+          "$ref": "core#/$defs/Ref",
+          "x-target": "core.operationalPoints"
+        },
+        "trainKindId": {
+          "$ref": "core#/$defs/Ref",
+          "x-target": "timetables.trainKinds",
+          "description": "For which kind; without, every kind."
+        },
+        "share": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "The share of trains delayed."
+        },
+        "distribution": {
+          "$ref": "#/$defs/Distribution"
+        },
+        "source": {
+          "type": "string",
+          "description": "Where the figures come from: the suite's starting value, or a measurement."
+        }
+      }
+    },
+    "Distribution": {
+      "type": "object",
+      "required": [
+        "kind"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "exponential",
+            "uniform",
+            "empirical"
+          ]
+        },
+        "mean": {
+          "type": "number",
+          "minimum": 0,
+          "description": "[s], exponential."
+        },
+        "min": {
+          "type": "number",
+          "minimum": 0,
+          "description": "[s], uniform."
+        },
+        "max": {
+          "type": "number",
+          "minimum": 0,
+          "description": "[s], uniform."
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "minimum": 0
+          },
+          "description": "[s], empirical: drawn from with equal weight."
+        }
+      }
+    },
+    "Study": {
+      "description": "A study: a timetable, a period, stretches, bounds, a scenario, its runs and seed (K1 to K3).",
+      "type": "object",
+      "required": [
+        "id",
+        "name",
+        "timetableId"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "core#/$defs/Id"
+        },
+        "name": {
+          "type": "string"
+        },
+        "timetableId": {
+          "$ref": "core#/$defs/Ref",
+          "x-target": "timetables.timetables"
+        },
+        "period": {
+          "description": "The period studied.",
+          "type": "object",
+          "required": [
+            "from",
+            "to"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "from": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 172799.999,
+              "description": "Seconds from midnight of the timetable's day; past 24:00 is the next day."
+            },
+            "to": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 172799.999,
+              "description": "Seconds from midnight of the timetable's day; past 24:00 is the next day."
+            }
+          }
+        },
+        "stretches": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "fromOperationalPointId",
+              "toOperationalPointId"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "fromOperationalPointId": {
+                "$ref": "core#/$defs/Ref",
+                "x-target": "core.operationalPoints"
+              },
+              "toOperationalPointId": {
+                "$ref": "core#/$defs/Ref",
+                "x-target": "core.operationalPoints"
+              }
+            }
+          },
+          "description": "The stretches, from place to place."
+        },
+        "bounds": {
+          "type": "object",
+          "required": [],
+          "additionalProperties": false,
+          "properties": {
+            "occupancyRate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "The bound of the occupancy rate (UIC Code 406), where the study changes it."
+            },
+            "punctualityThreshold": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 3600,
+              "description": "Late beyond it [s] is not punctual."
+            }
+          }
+        },
+        "delayScenarioId": {
+          "$ref": "core#/$defs/Ref",
+          "x-target": "timetables.delayScenarios"
+        },
+        "runs": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000
+        },
+        "seed": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "ConstructionScenario": {
+      "description": "A construction scenario (Bauszenario) of a timetable (decision 0030): stretches of track closed for a while, the trains taken out, the trains diverted by hand. It changes no infrastructure, only how the timetable is run while it holds.",
+      "type": "object",
+      "required": [
+        "id",
+        "timetableId",
+        "name"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "core#/$defs/Id"
+        },
+        "timetableId": {
+          "$ref": "core#/$defs/Ref",
+          "x-target": "timetables.timetables"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "closures": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Closure"
+          }
+        },
+        "cancelledTrainIds": {
+          "type": "array",
+          "items": {
+            "$ref": "core#/$defs/Ref",
+            "x-target": "timetables.trains"
+          },
+          "description": "The trains taken out: they do not run."
+        },
+        "diversions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Diversion"
+          }
+        }
+      }
+    },
+    "Closure": {
+      "description": "A stretch of a track closed for a while (Sperrung): from its first to its last day, all day or in a daily window (Sperrpause). No train runs over it while it holds.",
+      "type": "object",
+      "required": [
+        "id",
+        "at",
+        "firstDay",
+        "lastDay"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "core#/$defs/Id"
+        },
+        "name": {
+          "type": "string"
+        },
+        "at": {
+          "$ref": "core#/$defs/TrackRange"
+        },
+        "firstDay": {
+          "$ref": "core#/$defs/Day"
+        },
+        "lastDay": {
+          "$ref": "core#/$defs/Day"
+        },
+        "window": {
+          "description": "The daily window it holds in, seconds from midnight; `to` before `from`: past midnight into the next day. Without, all day.",
+          "type": "object",
+          "required": [
+            "from",
+            "to"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "from": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 86400
+            },
+            "to": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 86400
+            }
+          }
+        }
+      }
+    },
+    "Diversion": {
+      "description": "A train diverted by hand in a construction scenario: its points as it runs then — its way, its stops, the itineraries it prefers.",
+      "type": "object",
+      "required": [
+        "trainId",
+        "points"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "trainId": {
+          "$ref": "core#/$defs/Ref",
+          "x-target": "timetables.trains"
+        },
+        "points": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TrainPoint"
+          },
+          "minItems": 2
+        }
+      }
+    }
+  }
+}

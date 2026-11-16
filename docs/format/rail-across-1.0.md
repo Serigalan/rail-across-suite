@@ -80,7 +80,7 @@ variant, the operation in revisions of its own — and a file brings them togeth
     "format": "operations", "version": "1.0",
     "domains": {
       "vehicles":   { "version": "1.0", … },
-      "timetables": { "version": "1.1", "dependsOn": ["vehicles"], … }
+      "timetables": { "version": "1.2", "dependsOn": ["vehicles"], … }
     }
   },
   "blobs": { "sha256:…": … }
@@ -111,7 +111,7 @@ and collections (`collections`). A **layer** is a domain of infra-data on top of
 | | `signalling` 4.0 | signals with their logical signals, train detection, switch elements, routes, overlaps, flank protection, train protection, station boundaries, itineraries — exportable to PlanPro |
 | | `electrification` 3.0 | masts, suspension points, section insulators and the contact wires with their voltage |
 | operations-1.0 | `vehicles` 1.0 | the vehicles with their rolling stock as RailJSON |
-| | `timetables` 1.1 | timetables, trains, kinds of trains, formations, connections, turnarounds, delay scenarios, studies |
+| | `timetables` 1.2 | timetables, trains, kinds of trains, formations, connections, turnarounds, delay scenarios, studies, construction scenarios |
 
 The domains of operations name the infrastructure by id: operational points, track ends, tracks, itineraries.
 These references are checked where the operation is laid on the infrastructure — the infra-data part of the
@@ -372,6 +372,9 @@ run with the catalogue's vehicles; a file that travels carries the rolling stock
   (`vehicleId`), hauled load and brake.
 - **Connections** (`connections`) and **turnarounds** (`turnarounds`) between trains.
 - **Delay scenarios** (`delayScenarios`) and **capacity studies** (`studies`) after UIC 406.
+- **Construction scenarios** (`constructionScenarios`) of a timetable (`timetableId`): stretches of track closed for a
+  while (`closures`: a track range, a first and a last day, a daily window), the trains taken out
+  (`cancelledTrainIds`) and the trains diverted by hand with their points (`diversions`).
 
 ### How the operation reads the infrastructure
 
@@ -435,7 +438,8 @@ The versions of the domains continue the suite's counting: core 5.0, civil 3.0, 
 3.0; vehicles 1.0 and timetables 1.0 are the domain operations 1.0 of before, split in two. Core 4.0 had a switch's
 `B1` its main track; 5.0 has it the branch again, and a reader brings a 4.0 file forward by swapping the two.
 Timetables 1.1 adds a train's reversal to its point (`reverse`, `turnaround`); a reader brings a 1.0 file forward
-as it is.
+as it is. Timetables 1.2 adds the construction scenarios (`constructionScenarios`); a reader brings a 1.1 file forward
+with none.
 
 ## An example
 
@@ -538,7 +542,7 @@ Halle-Trotha, where it stops on that track:
         } ] }
       },
       "timetables": {
-        "version": "1.1", "schema": "sha256:5555…", "dependsOn": ["vehicles"], "fields": {},
+        "version": "1.2", "schema": "sha256:5555…", "dependsOn": ["vehicles"], "fields": {},
         "collections": {
           "timetables": [ {
             "id": "f0e1d2c3-b4a5-4968-8776-655443322110", "name": "Grundtakt"
@@ -562,7 +566,8 @@ Halle-Trotha, where it stops on that track:
             "id": "8b7c6d5e-4f3a-4b2c-9d1e-0f9a8b7c6d5e", "name": "Lok mit 5 Wagen",
             "tractionUnits": [ { "vehicleId": "a7b8c9d0-e1f2-4a3b-8c4d-5e6f7a8b9c0d" } ]
           } ],
-          "connections": [], "turnarounds": [], "delayScenarios": [], "studies": []
+          "connections": [], "turnarounds": [], "delayScenarios": [], "studies": [],
+          "constructionScenarios": []
         }
       }
     }
@@ -580,7 +585,7 @@ from it in these points, each to be brought in line by its own step (decision 00
 
 - The project server keeps a variant's infrastructure as a document of the envelope of before (infra-data 2.0:
   its domains and its blobs, core 5.0, civil 3.0, signalling 4.0, electrification 3.0) and the operation as an
-  operations document (vehicles 1.0, timetables 1.1); the file rail-across-1.0 brings them together, and a file of
+  operations document (vehicles 1.0, timetables 1.2); the file rail-across-1.0 brings them together, and a file of
   before is still read.
 - The record the tools work on keeps km lines in WGS 84 with the kilometrage per point; the door converts them into
   the document and back (decision 0029, phase 6 takes that out). A km line of before is
@@ -592,7 +597,7 @@ from it in these points, each to be brought in line by its own step (decision 00
 
 ## Appendix: every property and its values
 
-The appendix is generated from the specification's schemas (`rail-across.schema.json`, `core/5.0.schema.json`, `civil/3.0.schema.json`, `signalling/4.0.schema.json`, `electrification/3.0.schema.json`, `vehicles/1.0.schema.json`, `timetables/1.1.schema.json`, in `docs/format/schemas`). For every type it names every property with its path (nested objects with a dot, list entries with `[]`), whether it is required, its type with every value it allows, and its meaning. A reference to a type leads to its section; `→ core.tracks` names the collection an id points into — the check on reading makes sure the object is there.
+The appendix is generated from the specification's schemas (`rail-across.schema.json`, `core/5.0.schema.json`, `civil/3.0.schema.json`, `signalling/4.0.schema.json`, `electrification/3.0.schema.json`, `vehicles/1.0.schema.json`, `timetables/1.2.schema.json`, in `docs/format/schemas`). For every type it names every property with its path (nested objects with a dot, list entries with `[]`), whether it is required, its type with every value it allows, and its meaning. A reference to a type leads to its section; `→ core.tracks` names the collection an id points into — the check on reading makes sure the object is there.
 
 ### The file rail-across-1.0
 
@@ -1842,7 +1847,7 @@ The tractive effort of one traction mode, as RailJSON states it. `is_electric` i
 | `curves` | yes | list of object; at least 1 entry | The curves of tractive effort over speed, each for its conditions (comfort, electrical profile, power restriction) |
 | `default_curve` |  | object | The curve where no condition applies |
 
-### Domain timetables 1.1
+### Domain timetables 1.2
 
 <a id="timetables-root"></a>
 
@@ -1864,6 +1869,7 @@ _No further properties are allowed._
 | `collections.turnarounds` | yes | list of [`Turnaround`](#timetables-Turnaround) | Turnarounds |
 | `collections.delayScenarios` | yes | list of [`DelayScenario`](#timetables-DelayScenario) | Delay scenarios |
 | `collections.studies` | yes | list of [`Study`](#timetables-Study) | Capacity studies |
+| `collections.constructionScenarios` | yes | list of [`ConstructionScenario`](#timetables-ConstructionScenario) | Construction scenarios (timetables 1.2) |
 
 <a id="timetables-Fields"></a>
 
@@ -2115,3 +2121,52 @@ _No further properties are allowed._
 | `delayScenarioId` |  | [`Ref`](#core-Ref) → `timetables.delayScenarios` | The delay scenario |
 | `runs` |  | integer; ≥ 1; ≤ 100000 | Number of runs |
 | `seed` |  | integer; ≥ 0 | Seed of the random generator |
+
+<a id="timetables-ConstructionScenario"></a>
+
+#### ConstructionScenario
+
+A construction scenario of a timetable (decision 0030): stretches of track closed for a while, the trains taken out, the trains diverted by hand. It changes no infrastructure, only how the timetable is run while it holds.
+
+_No further properties are allowed._
+
+| Property | Required | Type and allowed values | Meaning |
+|---|---|---|---|
+| `id` | yes | [`Id`](#core-Id) | Id of the object |
+| `timetableId` | yes | [`Ref`](#core-Ref) → `timetables.timetables` | The timetable it is of |
+| `name` | yes | text; at least 1 characters | Name |
+| `closures` |  | list of [`Closure`](#timetables-Closure) | The stretches of track closed |
+| `cancelledTrainIds` |  | list of [`Ref`](#core-Ref) → `timetables.trains` | The trains taken out: they do not run |
+| `diversions` |  | list of [`Diversion`](#timetables-Diversion) | The trains diverted by hand |
+
+<a id="timetables-Closure"></a>
+
+#### Closure
+
+A stretch of a track closed for a while: from its first to its last day, all day or in a daily window (possession). No train runs over it while it holds.
+
+_No further properties are allowed._
+
+| Property | Required | Type and allowed values | Meaning |
+|---|---|---|---|
+| `id` | yes | [`Id`](#core-Id) | Id of the object |
+| `name` |  | text | Name |
+| `at` | yes | [`TrackRange`](#core-TrackRange) | The stretch of track |
+| `firstDay` | yes | [`Day`](#core-Day) | First day it holds |
+| `lastDay` | yes | [`Day`](#core-Day) | Last day it holds |
+| `window` |  | object (properties below) | The daily window it holds in; without, all day |
+| `window.from` | yes | number; ≥ 0; ≤ 86400 | Beginning, seconds from midnight |
+| `window.to` | yes | number; ≥ 0; ≤ 86400 | End, seconds from midnight; before the beginning: past midnight into the next day |
+
+<a id="timetables-Diversion"></a>
+
+#### Diversion
+
+A train diverted by hand in a construction scenario: its points as it runs then.
+
+_No further properties are allowed._
+
+| Property | Required | Type and allowed values | Meaning |
+|---|---|---|---|
+| `trainId` | yes | [`Ref`](#core-Ref) → `timetables.trains` | The train |
+| `points` | yes | list of [`TrainPoint`](#timetables-TrainPoint); at least 2 entries | Its points as it runs then — its way, its stops, the itineraries it prefers |

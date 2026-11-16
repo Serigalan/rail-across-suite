@@ -76,7 +76,7 @@ Variante, den Betrieb in eigenen Revisionen —, eine Datei führt sie für den 
     "format": "operations", "version": "1.0",
     "domains": {
       "vehicles":   { "version": "1.0", … },
-      "timetables": { "version": "1.1", "dependsOn": ["vehicles"], … }
+      "timetables": { "version": "1.2", "dependsOn": ["vehicles"], … }
     }
   },
   "blobs": { "sha256:…": … }
@@ -111,7 +111,7 @@ Werkzeug bearbeitet.
 | | `signalling` 4.0 | Signale mit logischen Signalen, Gleisfreimeldung, Weichenelemente, Fahrstraßen, Durchrutschwege, Flankenschutz, Zugbeeinflussung, Bahnhofsgrenzen, Fahrwege — nach PlanPro exportierbar |
 | | `electrification` 3.0 | Masten, Aufhängepunkte, Streckentrennungen und die Fahrdrähte mit ihrer Spannung |
 | operations-1.0 | `vehicles` 1.0 | die Fahrzeuge mit ihrem Rollmaterial als RailJSON |
-| | `timetables` 1.1 | Fahrpläne, Züge, Zuggattungen, Zugbildungen, Anschlüsse, Wenden, Verspätungsszenarien, Untersuchungen |
+| | `timetables` 1.2 | Fahrpläne, Züge, Zuggattungen, Zugbildungen, Anschlüsse, Wenden, Verspätungsszenarien, Untersuchungen, Bauszenarien |
 
 Die Domänen von operations nennen die Infrastruktur über Kennungen: Betriebsstellen, Gleisenden, Gleise,
 Fahrwege. Diese Verweise werden geprüft, wo der Betrieb auf die Infrastruktur gelegt wird — auf den Teil
@@ -388,6 +388,9 @@ fahren; eine Datei, die reist, führt das Rollmaterial mit.
   hinten (`vehicleId`), Wagenzuglast und Bremse.
 - **Anschlüsse** (`connections`) und **Wenden** (`turnarounds`) zwischen Zügen.
 - **Verspätungsszenarien** (`delayScenarios`) und **Kapazitätsuntersuchungen** (`studies`) nach UIC 406.
+- **Bauszenarien** (`constructionScenarios`) eines Fahrplans (`timetableId`): Gleisstücke, die eine Zeit lang gesperrt
+  sind (`closures`: ein Gleisbereich, ein erster und ein letzter Tag, ein tägliches Zeitfenster), die herausgenommenen
+  Züge (`cancelledTrainIds`) und die von Hand umgeleiteten Züge mit ihren Punkten (`diversions`).
 
 ## Wie der Betrieb die Infrastruktur liest
 
@@ -455,7 +458,8 @@ Die Versionen der Domänen setzen die Zählung der Suite fort: core 5.0, civil 3
 3.0; vehicles 1.0 und timetables 1.0 sind die bisherige Domäne operations 1.0, in zwei geteilt. In core 4.0 war `B1`
 einer Weiche ihr Stammgleis; 5.0 macht es wieder zum Zweiggleis, und ein Leser bringt eine Datei in 4.0 auf den Stand,
 indem er beide tauscht. Timetables 1.1 ergänzt den Punkt eines Zuges um den Richtungswechsel (`reverse`,
-`turnaround`); ein Leser übernimmt eine Datei in 1.0 unverändert.
+`turnaround`); ein Leser übernimmt eine Datei in 1.0 unverändert. Timetables 1.2 ergänzt die Bauszenarien
+(`constructionScenarios`); ein Leser übernimmt eine Datei in 1.1 ohne welche.
 
 # Ein Beispiel
 
@@ -558,7 +562,7 @@ einem Fahrzeug und einem Zug von der Grenze nach Halle-Trotha, wo er auf diesem 
         } ] }
       },
       "timetables": {
-        "version": "1.1", "schema": "sha256:5555…", "dependsOn": ["vehicles"], "fields": {},
+        "version": "1.2", "schema": "sha256:5555…", "dependsOn": ["vehicles"], "fields": {},
         "collections": {
           "timetables": [ {
             "id": "f0e1d2c3-b4a5-4968-8776-655443322110", "name": "Grundtakt"
@@ -582,7 +586,8 @@ einem Fahrzeug und einem Zug von der Grenze nach Halle-Trotha, wo er auf diesem 
             "id": "8b7c6d5e-4f3a-4b2c-9d1e-0f9a8b7c6d5e", "name": "Lok mit 5 Wagen",
             "tractionUnits": [ { "vehicleId": "a7b8c9d0-e1f2-4a3b-8c4d-5e6f7a8b9c0d" } ]
           } ],
-          "connections": [], "turnarounds": [], "delayScenarios": [], "studies": []
+          "connections": [], "turnarounds": [], "delayScenarios": [], "studies": [],
+          "constructionScenarios": []
         }
       }
     }
@@ -600,7 +605,7 @@ in diesen Punkten ab; jeder wird in einem eigenen Schritt angeglichen (Entscheid
 
 - Der Projektserver hält die Infrastruktur einer Variante als Dokument der Hülle von vorher (infra-data 2.0: ihre
   Domänen und ihre Blobs, core 5.0, civil 3.0, signalling 4.0, electrification 3.0) und den Betrieb als Dokument
-  operations (vehicles 1.0, timetables 1.1); die Datei rail-across-1.0 führt sie zusammen, eine Datei von vorher
+  operations (vehicles 1.0, timetables 1.2); die Datei rail-across-1.0 führt sie zusammen, eine Datei von vorher
   wird weiter gelesen.
 - Der Record, mit dem die Werkzeuge arbeiten, behält Kilometrierungslinien in WGS 84 mit dem Kilometer je Punkt;
   die Tür wandelt sie ins Dokument und zurück (Entscheidung 0029, Phase 6 nimmt das heraus). Eine

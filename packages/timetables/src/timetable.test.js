@@ -4,7 +4,7 @@ import { newVehicle } from '@rail-across/vehicles'
 import { runWith, stationTargets, stationsOf } from '@rail-across/running-times'
 import { marked, net, WASM } from '../../running-times/test/net.js'
 import {
-  copyTrain, formatClock, itineraryOptions, newPoint, newTrain, numberAfter, parseClock, routePoints, runTrain, intervalCopies, stopsIn, trainProblems, trainRequest, trainTitle, TURNAROUND,
+  copyTrain, formatClock, itineraryOptions, newPoint, newTrain, numberAfter, parseClock, routePoints, runTrain, intervalCopies, stopsIn, trainProblems, trainRequest, trainTitle, TURNAROUND, withScenariosOfItsTrains,
 } from './timetable.js'
 
 const stations = stationsOf(net)
@@ -48,6 +48,12 @@ describe('a train of the timetable', () => {
     expect(trainProblems(train([['A-Dorf'], ['Z-Ort']]), stations)).toEqual([{ key: 'station_missing', point: 1 }])
     expect(trainProblems(train([['A-Dorf', { track: 'C2' }], ['C-Stadt']]), stations)).toEqual([{ key: 'track_missing', point: 0 }])
     expect(trainProblems(train([['A-Dorf'], ['C-Stadt']], { margin: 'viel' }), stations, { vehicle: false }).map(p => p.key)).toEqual(['no_vehicle', 'margin_invalid'])
+  })
+
+  it('keeps its construction scenarios naming only trains it has', () => {
+    const data = { trains: [{ id: 'a' }], scenarios: [{ id: 's', name: 'S', cancelledTrainIds: ['a', 'gone'], diversions: [{ trainId: 'gone', points: [] }] }] }
+    expect(withScenariosOfItsTrains(data).scenarios).toEqual([{ id: 's', name: 'S', cancelledTrainIds: ['a'], diversions: [] }])
+    expect(withScenariosOfItsTrains({ trains: [] })).toEqual({ trains: [] })
   })
 
   it('reads and writes clock times', () => {

@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "timetables",
-  "title": "Rail-Data-Core, domain timetables 1.1",
-  "description": "A project's timetables and their trains, the kinds of trains, the formations, connections and turnarounds, delay scenarios and studies. Part of operations-1.0 in rail-across-1.0; it belongs to no variant of the infrastructure and names it by id — operational points, end marks, tracks, itineraries —, checked where it is laid on a variant.",
+  "title": "Rail-Data-Core, domain timetables 1.2",
+  "description": "A project's timetables and their trains, the kinds of trains, the formations, connections and turnarounds, delay scenarios, studies and construction scenarios. Part of operations-1.0 in rail-across-1.0; it belongs to no variant of the infrastructure and names it by id — operational points, end marks, tracks, itineraries —, checked where it is laid on a variant.",
   "type": "object",
   "required": [
     "fields",
@@ -23,7 +23,8 @@
         "connections",
         "turnarounds",
         "delayScenarios",
-        "studies"
+        "studies",
+        "constructionScenarios"
       ],
       "additionalProperties": false,
       "properties": {
@@ -73,6 +74,12 @@
           "type": "array",
           "items": {
             "$ref": "#/$defs/Study"
+          }
+        },
+        "constructionScenarios": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ConstructionScenario"
           }
         }
       }
@@ -683,6 +690,120 @@
         "seed": {
           "type": "integer",
           "minimum": 0
+        }
+      }
+    },
+    "ConstructionScenario": {
+      "description": "A construction scenario (Bauszenario) of a timetable (decision 0030): stretches of track closed for a while, the trains taken out, the trains diverted by hand. It changes no infrastructure, only how the timetable is run while it holds.",
+      "type": "object",
+      "required": [
+        "id",
+        "timetableId",
+        "name"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "core#/$defs/Id"
+        },
+        "timetableId": {
+          "$ref": "core#/$defs/Ref",
+          "x-target": "timetables.timetables"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "closures": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Closure"
+          }
+        },
+        "cancelledTrainIds": {
+          "type": "array",
+          "items": {
+            "$ref": "core#/$defs/Ref",
+            "x-target": "timetables.trains"
+          },
+          "description": "The trains taken out: they do not run."
+        },
+        "diversions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Diversion"
+          }
+        }
+      }
+    },
+    "Closure": {
+      "description": "A stretch of a track closed for a while (Sperrung): from its first to its last day, all day or in a daily window (Sperrpause). No train runs over it while it holds.",
+      "type": "object",
+      "required": [
+        "id",
+        "at",
+        "firstDay",
+        "lastDay"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "core#/$defs/Id"
+        },
+        "name": {
+          "type": "string"
+        },
+        "at": {
+          "$ref": "core#/$defs/TrackRange"
+        },
+        "firstDay": {
+          "$ref": "core#/$defs/Day"
+        },
+        "lastDay": {
+          "$ref": "core#/$defs/Day"
+        },
+        "window": {
+          "description": "The daily window it holds in, seconds from midnight; `to` before `from`: past midnight into the next day. Without, all day.",
+          "type": "object",
+          "required": [
+            "from",
+            "to"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "from": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 86400
+            },
+            "to": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 86400
+            }
+          }
+        }
+      }
+    },
+    "Diversion": {
+      "description": "A train diverted by hand in a construction scenario: its points as it runs then — its way, its stops, the itineraries it prefers.",
+      "type": "object",
+      "required": [
+        "trainId",
+        "points"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "trainId": {
+          "$ref": "core#/$defs/Ref",
+          "x-target": "timetables.trains"
+        },
+        "points": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TrainPoint"
+          },
+          "minItems": 2
         }
       }
     }

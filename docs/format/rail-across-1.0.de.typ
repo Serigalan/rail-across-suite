@@ -87,7 +87,7 @@ Eine Datei hält einen Teil oder beide. Ein Projektserver hält sie getrennt —
     "format": "operations", "version": "1.0",
     "domains": {
       "vehicles":   { "version": "1.0", … },
-      "timetables": { "version": "1.1", "dependsOn": ["vehicles"], … }
+      "timetables": { "version": "1.2", "dependsOn": ["vehicles"], … }
     }
   },
   "blobs": { "sha256:…": … }
@@ -117,7 +117,7 @@ Eine *Domäne* ist ein Fachgebiet mit eigenem Schema und eigener Version. Sie ha
   [], [`signalling` 4.0], [Signale mit logischen Signalen, Gleisfreimeldung, Weichenelemente, Fahrstraßen, Durchrutschwege, Flankenschutz, Zugbeeinflussung, Bahnhofsgrenzen, Fahrwege — nach PlanPro exportierbar],
   [], [`electrification` 3.0], [Masten, Aufhängepunkte, Streckentrennungen und die Fahrdrähte mit ihrer Spannung],
   [operations-1.0], [`vehicles` 1.0], [die Fahrzeuge mit ihrem Rollmaterial als RailJSON],
-  [], [`timetables` 1.1], [Fahrpläne, Züge, Zuggattungen, Zugbildungen, Anschlüsse, Wenden, Verspätungsszenarien, Untersuchungen],
+  [], [`timetables` 1.2], [Fahrpläne, Züge, Zuggattungen, Zugbildungen, Anschlüsse, Wenden, Verspätungsszenarien, Untersuchungen, Bauszenarien],
 )
 
 Die Domänen von operations nennen die Infrastruktur über Kennungen: Betriebsstellen, Gleisenden, Gleise, Fahrwege. Diese Verweise werden geprüft, wo der Betrieb auf die Infrastruktur gelegt wird — auf den Teil infra-data derselben Datei oder eine Variante auf einem Server.
@@ -292,6 +292,7 @@ Die *Traktionsarten* eines Fahrzeugs sind die Betriebsarten seiner Zugkraftkurve
 - *Zuggattungen* (`trainKinds`) mit Rang und Farbe; *Zugbildungen* (`formations`) aus Fahrzeugen von vorn nach hinten (`vehicleId`), Wagenzuglast und Bremse.
 - *Anschlüsse* (`connections`) und *Wenden* (`turnarounds`) zwischen Zügen.
 - *Verspätungsszenarien* (`delayScenarios`) und *Kapazitätsuntersuchungen* (`studies`) nach UIC 406.
+- *Bauszenarien* (`constructionScenarios`) eines Fahrplans (`timetableId`): Gleisstücke, die eine Zeit lang gesperrt sind (`closures`: ein Gleisbereich, ein erster und ein letzter Tag, ein tägliches Zeitfenster), die herausgenommenen Züge (`cancelledTrainIds`) und die von Hand umgeleiteten Züge mit ihren Punkten (`diversions`).
 
 == Wie der Betrieb die Infrastruktur liest
 
@@ -335,7 +336,7 @@ Darüber hinaus prüfen die Werkzeuge den Inhalt fachlich: ob Orte auf ihrem Gle
 
 *Ein Schema ist eine Version.* Jede Änderung eines Schemas — auch eine, die nur eine Regel ändert, die das Schema benennt — erhöht die Version seiner Domäne: die Nebenversion für Ergänzungen, die ein älterer Leser übergehen darf, sonst die Hauptversion. Ein Leser bringt eine ältere Datei Schritt für Schritt auf seinen Stand, von Nummer zu Nummer; ältere Stände werden einmal umgestellt, nicht dauerhaft nachsichtig gelesen.
 
-Die Versionen der Domänen setzen die Zählung der Suite fort: core 5.0, civil 3.0, signalling 4.0, electrification 3.0; vehicles 1.0 und timetables 1.0 sind die bisherige Domäne operations 1.0, in zwei geteilt. In core 4.0 war `B1` einer Weiche ihr Stammgleis; 5.0 macht es wieder zum Zweiggleis, und ein Leser bringt eine Datei in 4.0 auf den Stand, indem er beide tauscht. Timetables 1.1 ergänzt den Punkt eines Zuges um den Richtungswechsel (`reverse`, `turnaround`); ein Leser übernimmt eine Datei in 1.0 unverändert.
+Die Versionen der Domänen setzen die Zählung der Suite fort: core 5.0, civil 3.0, signalling 4.0, electrification 3.0; vehicles 1.0 und timetables 1.0 sind die bisherige Domäne operations 1.0, in zwei geteilt. In core 4.0 war `B1` einer Weiche ihr Stammgleis; 5.0 macht es wieder zum Zweiggleis, und ein Leser bringt eine Datei in 4.0 auf den Stand, indem er beide tauscht. Timetables 1.1 ergänzt den Punkt eines Zuges um den Richtungswechsel (`reverse`, `turnaround`); ein Leser übernimmt eine Datei in 1.0 unverändert. Timetables 1.2 ergänzt die Bauszenarien (`constructionScenarios`); ein Leser übernimmt eine Datei in 1.1 ohne welche.
 
 = Ein Beispiel
 
@@ -436,7 +437,7 @@ Eine Datei mit einem Gleis aus einer Geraden und einem Bogen, neu ab dem 1. Mai 
         } ] }
       },
       "timetables": {
-        "version": "1.1", "schema": "sha256:5555…", "dependsOn": ["vehicles"], "fields": {},
+        "version": "1.2", "schema": "sha256:5555…", "dependsOn": ["vehicles"], "fields": {},
         "collections": {
           "timetables": [ {
             "id": "f0e1d2c3-b4a5-4968-8776-655443322110", "name": "Grundtakt"
@@ -460,7 +461,8 @@ Eine Datei mit einem Gleis aus einer Geraden und einem Bogen, neu ab dem 1. Mai 
             "id": "8b7c6d5e-4f3a-4b2c-9d1e-0f9a8b7c6d5e", "name": "Lok mit 5 Wagen",
             "tractionUnits": [ { "vehicleId": "a7b8c9d0-e1f2-4a3b-8c4d-5e6f7a8b9c0d" } ]
           } ],
-          "connections": [], "turnarounds": [], "delayScenarios": [], "studies": []
+          "connections": [], "turnarounds": [], "delayScenarios": [], "studies": [],
+          "constructionScenarios": []
         }
       }
     }
@@ -475,14 +477,14 @@ Die Prüfsummen sind hier gekürzt; in einer Datei hat jede ihre 64 Hexziffern.
 
 Diese Spezifikation ist das Ziel des Datenmodells. Mit Stand 13. November 2026 weicht die Implementierung der Suite in diesen Punkten ab; jeder wird in einem eigenen Schritt angeglichen (Entscheidung 0028 und die folgenden):
 
-- Der Projektserver hält die Infrastruktur einer Variante als Dokument der Hülle von vorher (infra-data 2.0: ihre Domänen und ihre Blobs, core 5.0, civil 3.0, signalling 4.0, electrification 3.0) und den Betrieb als Dokument operations (vehicles 1.0, timetables 1.1); die Datei rail-across-1.0 führt sie zusammen, eine Datei von vorher wird weiter gelesen.
+- Der Projektserver hält die Infrastruktur einer Variante als Dokument der Hülle von vorher (infra-data 2.0: ihre Domänen und ihre Blobs, core 5.0, civil 3.0, signalling 4.0, electrification 3.0) und den Betrieb als Dokument operations (vehicles 1.0, timetables 1.2); die Datei rail-across-1.0 führt sie zusammen, eine Datei von vorher wird weiter gelesen.
 - Der Record, mit dem die Werkzeuge arbeiten, behält Kilometrierungslinien in WGS 84 mit dem Kilometer je Punkt; die Tür wandelt sie ins Dokument und zurück (Entscheidung 0029, Phase 6 nimmt das heraus). Eine Kilometrierungslinie von vorher steht als Punkte da, noch nicht mit Trassierungselementen angenähert.
 - Eine Domäne, die der Leser nicht kennt, bleibt erhalten; eine spätere Version einer Domäne, die er kennt, lehnt er ab, statt sie mit der Version zu lesen, die er kennt.
 
 #pagebreak()
 = Anhang: alle Properties und ihre Werte <appendix>
 
-Der Anhang ist aus den Schemas der Spezifikation erzeugt (`rail-across.schema.json`, `core/5.0.schema.json`, `civil/3.0.schema.json`, `signalling/4.0.schema.json`, `electrification/3.0.schema.json`, `vehicles/1.0.schema.json`, `timetables/1.1.schema.json`, in `docs/format/schemas`). Für jeden Objekttyp nennt er jedes Property mit seinem Pfad (verschachtelte Objekte mit Punkt, Listeneinträge mit `[]`), ob es Pflicht ist, seinen Typ mit allen zulässigen Werten und seine Bedeutung. Ein Verweis auf einen Typ führt zu dessen Abschnitt; `→ core.tracks` nennt die Sammlung, in die eine Kennung zeigt — die Prüfung beim Einlesen stellt sicher, dass es das Objekt gibt.
+Der Anhang ist aus den Schemas der Spezifikation erzeugt (`rail-across.schema.json`, `core/5.0.schema.json`, `civil/3.0.schema.json`, `signalling/4.0.schema.json`, `electrification/3.0.schema.json`, `vehicles/1.0.schema.json`, `timetables/1.2.schema.json`, in `docs/format/schemas`). Für jeden Objekttyp nennt er jedes Property mit seinem Pfad (verschachtelte Objekte mit Punkt, Listeneinträge mit `[]`), ob es Pflicht ist, seinen Typ mit allen zulässigen Werten und seine Bedeutung. Ein Verweis auf einen Typ führt zu dessen Abschnitt; `→ core.tracks` nennt die Sammlung, in die eine Kennung zeigt — die Prüfung beim Einlesen stellt sicher, dass es das Objekt gibt.
 
 == Die Datei rail-across-1.0
 
@@ -1639,7 +1641,7 @@ Die Zugkraft einer Traktionsart, wie RailJSON sie angibt. `is_electric` ist gena
   [`default_curve`], [], [Objekt], [die Kurve, wo keine Bedingung zutrifft],
 )
 
-== Domäne timetables 1.1
+== Domäne timetables 1.2
 
 === Domänendokument <timetables-root>
 
@@ -1659,6 +1661,7 @@ _Weitere Properties sind nicht erlaubt._
   [`collections.​turnarounds`], [ja], [Liste von #link(<timetables-Turnaround>)[`Turnaround`]], [Wenden],
   [`collections.​delayScenarios`], [ja], [Liste von #link(<timetables-DelayScenario>)[`DelayScenario`]], [Verspätungsszenarien],
   [`collections.​studies`], [ja], [Liste von #link(<timetables-Study>)[`Study`]], [Kapazitätsuntersuchungen],
+  [`collections.​constructionScenarios`], [ja], [Liste von #link(<timetables-ConstructionScenario>)[`ConstructionScenario`]], [Bauszenarien (timetables 1.2)],
 )
 
 === Fields <timetables-Fields>
@@ -1894,4 +1897,50 @@ _Weitere Properties sind nicht erlaubt._
   [`delayScenarioId`], [], [#link(<core-Ref>)[`Ref`] → `timetables.​delayScenarios`], [das Verspätungsszenario],
   [`runs`], [], [ganze Zahl; ≥ 1; ≤ 100000], [Anzahl der Durchläufe],
   [`seed`], [], [ganze Zahl; ≥ 0], [Startwert des Zufallsgenerators],
+)
+
+=== ConstructionScenario <timetables-ConstructionScenario>
+
+Ein Bauszenario eines Fahrplans (Entscheidung 0030): Gleisstücke, die eine Zeit lang gesperrt sind, die herausgenommenen Züge, die von Hand umgeleiteten Züge. Es ändert keine Infrastruktur, nur wie der Fahrplan gefahren wird, solange es gilt.
+
+_Weitere Properties sind nicht erlaubt._
+
+#table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
+  [Property], [Pflicht], [Typ und zulässige Werte], [Bedeutung],
+  [`id`], [ja], [#link(<core-Id>)[`Id`]], [Kennung des Objekts],
+  [`timetableId`], [ja], [#link(<core-Ref>)[`Ref`] → `timetables.​timetables`], [der Fahrplan, zu dem es gehört],
+  [`name`], [ja], [Text; mindestens 1 Zeichen], [Name],
+  [`closures`], [], [Liste von #link(<timetables-Closure>)[`Closure`]], [die gesperrten Gleisstücke],
+  [`cancelledTrainIds`], [], [Liste von #link(<core-Ref>)[`Ref`] → `timetables.​trains`], [die herausgenommenen Züge: sie fahren nicht],
+  [`diversions`], [], [Liste von #link(<timetables-Diversion>)[`Diversion`]], [die von Hand umgeleiteten Züge],
+)
+
+=== Closure <timetables-Closure>
+
+Ein Gleisstück, das eine Zeit lang gesperrt ist: vom ersten bis zum letzten Tag, ganztägig oder in einem täglichen Zeitfenster (Sperrpause). Solange die Sperrung gilt, fährt kein Zug darüber.
+
+_Weitere Properties sind nicht erlaubt._
+
+#table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
+  [Property], [Pflicht], [Typ und zulässige Werte], [Bedeutung],
+  [`id`], [ja], [#link(<core-Id>)[`Id`]], [Kennung des Objekts],
+  [`name`], [], [Text], [Name],
+  [`at`], [ja], [#link(<core-TrackRange>)[`TrackRange`]], [das Gleisstück],
+  [`firstDay`], [ja], [#link(<core-Day>)[`Day`]], [erster Tag, an dem sie gilt],
+  [`lastDay`], [ja], [#link(<core-Day>)[`Day`]], [letzter Tag, an dem sie gilt],
+  [`window`], [], [Objekt (Properties unten)], [das tägliche Zeitfenster, in dem sie gilt; ohne: ganztägig],
+  [`window.​from`], [ja], [Zahl; ≥ 0; ≤ 86400], [Beginn, Sekunden ab Mitternacht],
+  [`window.​to`], [ja], [Zahl; ≥ 0; ≤ 86400], [Ende, Sekunden ab Mitternacht; vor dem Beginn: über Mitternacht in den nächsten Tag],
+)
+
+=== Diversion <timetables-Diversion>
+
+Ein von Hand umgeleiteter Zug in einem Bauszenario: seine Punkte, wie er dann fährt.
+
+_Weitere Properties sind nicht erlaubt._
+
+#table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
+  [Property], [Pflicht], [Typ und zulässige Werte], [Bedeutung],
+  [`trainId`], [ja], [#link(<core-Ref>)[`Ref`] → `timetables.​trains`], [der Zug],
+  [`points`], [ja], [Liste von #link(<timetables-TrainPoint>)[`TrainPoint`]\; mindestens 2 Einträge], [seine Punkte, wie er dann fährt: sein Weg, seine Halte, die bevorzugten Fahrwege],
 )

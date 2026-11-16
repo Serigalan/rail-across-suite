@@ -71,6 +71,22 @@ const newId = () => globalThis.crypto?.randomUUID?.() ?? '10000000-1000-4000-800
 
 export const newTimetable = () => ({ trains: [] })
 
+/**
+ * A timetable's data with its construction scenarios (decision 0030) naming
+ * only trains it has: a train taken out or diverted that is no longer there
+ * is dropped from them, so that the timetable can be kept.
+ */
+export function withScenariosOfItsTrains(data) {
+  if (!data?.scenarios?.length) return data
+  const ids = new Set((data.trains ?? []).map(t => t.id))
+  const scenarios = data.scenarios.map(sc => ({
+    ...sc,
+    ...(sc.cancelledTrainIds ? { cancelledTrainIds: sc.cancelledTrainIds.filter(id => ids.has(id)) } : {}),
+    ...(sc.diversions ? { diversions: sc.diversions.filter(d => ids.has(d.trainId)) } : {}),
+  }))
+  return { ...data, scenarios }
+}
+
 /** What a point names a place of stationsOf by (timetables 1.0, decision 0029): an end of the net its end mark, else its operational point. */
 const placeRef = (place) => (place.kind === 'end' ? { endMarkId: place.id } : { operationalPointId: place.id })
 

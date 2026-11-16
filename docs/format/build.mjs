@@ -27,7 +27,7 @@ const PARTS = [
   ['signalling', 'signalling/4.0.schema.json', 'layer', 'layerDocument'],
   ['electrification', 'electrification/3.0.schema.json', 'layer', 'layerDocument'],
   ['vehicles', 'vehicles/1.0.schema.json', 'domain', 'domainDocument'],
-  ['timetables', 'timetables/1.1.schema.json', 'domain', 'domainDocument'],
+  ['timetables', 'timetables/1.2.schema.json', 'domain', 'domainDocument'],
 ]
 const schemas = Object.fromEntries(PARTS.map(([name, file]) => [name, JSON.parse(readFileSync(join(HERE, 'schemas', file), 'utf8'))]))
 const versionOf = (file) => file.match(/(\d+\.\d+)\.schema\.json$/)?.[1] ?? '1.0'

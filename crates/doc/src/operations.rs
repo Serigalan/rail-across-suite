@@ -38,21 +38,32 @@ pub const VERSION: &str = "1.0";
 /// The format's name as it is spoken of.
 pub const FORMAT_NAME: &str = "operations-1.0";
 /// The domains and their versions.
-pub const DOMAINS: &[(&str, &str)] = &[("vehicles", "1.0"), ("timetables", "1.1")];
+pub const DOMAINS: &[(&str, &str)] = &[("vehicles", "1.0"), ("timetables", "1.2")];
 
 const ENVELOPE: &str = include_str!("../../../schemas/operations.schema.json");
 const VEHICLES: &str = include_str!("../../../schemas/vehicles/1.0.schema.json");
-const TIMETABLES: &str = include_str!("../../../schemas/timetables/1.1.schema.json");
-/// Timetables 1.0, which 1.1 only adds to (a point's `reverse`, `turnaround`): a domain of it is brought forward as
-/// it is.
+const TIMETABLES: &str = include_str!("../../../schemas/timetables/1.2.schema.json");
+/// Timetables 1.0 and 1.1, each of which the next only adds to — 1.1 a point's `reverse`, `turnaround`; 1.2 the
+/// construction scenarios (decision 0030) —: a domain of either is brought forward step by step.
 const TIMETABLES_1_0: &str = include_str!("../../../schemas/timetables/1.0.schema.json");
+const TIMETABLES_1_1: &str = include_str!("../../../schemas/timetables/1.1.schema.json");
 /// The operations of before: one domain `operations` 1.0, named by core 3.1's types.
 const ENVELOPE_BEFORE: &str = include_str!("../../../schemas/operations-before.schema.json");
 const OPERATIONS_BEFORE: &str = include_str!("../../../schemas/operations/1.0.schema.json");
 const CORE_OF_BEFORE: &str = include_str!("../../../schemas/core/3.1.schema.json");
 
 /// The collections of the domain timetables, every one there in a document.
-pub const COLLECTIONS: &[&str] = &["timetables", "trains", "trainKinds", "formations", "connections", "turnarounds", "delayScenarios", "studies"];
+pub const COLLECTIONS: &[&str] = &[
+    "timetables",
+    "trains",
+    "trainKinds",
+    "formations",
+    "connections",
+    "turnarounds",
+    "delayScenarios",
+    "studies",
+    "constructionScenarios",
+];
 
 /// The collections the record keeps as the document has them.
 const AS_THEY_ARE: &[&str] = &["connections", "turnarounds", "delayScenarios", "studies"];
@@ -179,29 +190,49 @@ pub fn check_operations(given: &Value) -> Result<Value> {
     Ok(doc)
 }
 
-/// A document of timetables 1.0 brought to 1.1: the domain as it is, its version and schema those of 1.1 — 1.1
-/// only adds to 1.0, so a point of 1.0 that states what 1.1 adds is refused. Any other document as it is.
+/// A document of timetables 1.0 or 1.1 brought to 1.2, step by step, each version only adding to the one before:
+/// 1.0 to 1.1 as it is, a point that states what 1.1 adds refused; 1.1 to 1.2 with no construction scenarios, a
+/// domain of 1.1 that holds them refused. Any other document as it is.
 fn forward(given: &Value) -> Result<Value> {
-    static HASH_1_0: OnceLock<String> = OnceLock::new();
-    let before = HASH_1_0.get_or_init(|| content_hash(&serde_json::from_str::<Value>(TIMETABLES_1_0).expect("a schema of this build")));
-    let domain = &given["domains"]["timetables"];
-    if domain.get("version").and_then(Value::as_str) != Some("1.0") || domain.get("schema").and_then(Value::as_str) != Some(before.as_str()) {
-        return Ok(given.clone());
-    }
-    let mut found = Vec::new();
-    for (i, tr) in list(&domain["collections"], "trains").iter().enumerate() {
-        for (j, p) in list(tr, "points").iter().enumerate() {
-            for k in ["reverse", "turnaround"].iter().filter(|k| p.get(**k).is_some()) {
-                found.push(format!("/domains/timetables/collections/trains/{i}/points/{j}/{k}: is not of timetables 1.0"));
+    static HASHES: OnceLock<(String, String)> = OnceLock::new();
+    let (h10, h11) = HASHES.get_or_init(|| {
+        let hash = |text: &str| content_hash(&serde_json::from_str::<Value>(text).expect("a schema of this build"));
+        (hash(TIMETABLES_1_0), hash(TIMETABLES_1_1))
+    });
+    let mut doc = given.clone();
+    let is = |doc: &Value, version: &str, hash: &str| {
+        let d = &doc["domains"]["timetables"];
+        d.get("version").and_then(Value::as_str) == Some(version) && d.get("schema").and_then(Value::as_str) == Some(hash)
+    };
+    if is(&doc, "1.0", h10) {
+        let mut found = Vec::new();
+        for (i, tr) in list(&doc["domains"]["timetables"]["collections"], "trains").iter().enumerate() {
+            for (j, p) in list(tr, "points").iter().enumerate() {
+                for k in ["reverse", "turnaround"].iter().filter(|k| p.get(**k).is_some()) {
+                    found.push(format!("/domains/timetables/collections/trains/{i}/points/{j}/{k}: is not of timetables 1.0"));
+                }
             }
         }
+        if !found.is_empty() {
+            return Err(PayloadError::with("invalid_payload", found));
+        }
+        doc["domains"]["timetables"]["version"] = json!("1.1");
+        doc["domains"]["timetables"]["schema"] = json!(h11);
     }
-    if !found.is_empty() {
-        return Err(PayloadError::with("invalid_payload", found));
+    if is(&doc, "1.1", h11) {
+        let collections = &mut doc["domains"]["timetables"]["collections"];
+        if collections.get("constructionScenarios").is_some() {
+            return Err(PayloadError::with(
+                "invalid_payload",
+                vec!["/domains/timetables/collections/constructionScenarios: is not of timetables 1.1".into()],
+            ));
+        }
+        if let Some(o) = collections.as_object_mut() {
+            o.insert("constructionScenarios".into(), json!([]));
+        }
+        doc["domains"]["timetables"]["version"] = json!("1.2");
+        doc["domains"]["timetables"]["schema"] = json!(schema_hashes()["timetables"]);
     }
-    let mut doc = given.clone();
-    doc["domains"]["timetables"]["version"] = json!("1.1");
-    doc["domains"]["timetables"]["schema"] = json!(schema_hashes()["timetables"]);
     Ok(doc)
 }
 
@@ -377,6 +408,7 @@ pub fn from_before(doc: &Value, end_marks: &HashSet<String>) -> Value {
     tcols.insert("turnarounds".into(), json!(list(cols, "turnarounds")));
     tcols.insert("delayScenarios".into(), Value::Array(scenarios));
     tcols.insert("studies".into(), Value::Array(studies));
+    tcols.insert("constructionScenarios".into(), json!([]));
     let mut vcols = Object::new();
     vcols.insert("vehicles".into(), Value::Array(vehicles));
     documented(vcols, tcols)
@@ -681,6 +713,7 @@ pub fn to_operations(record: &Value, check: bool) -> Result<Value> {
 
     let mut timetables = Vec::new();
     let mut trains = Vec::new();
+    let mut scenarios = Vec::new();
     let mut train_ids = HashSet::new();
     for t in list(record, "timetables") {
         // Ids as the document states them, so that one given twice is found twice (decision 0029, phase 2).
@@ -693,6 +726,19 @@ pub fn to_operations(record: &Value, check: bool) -> Result<Value> {
         put(&mut o, "dispatching", dispatching);
         put(&mut o, "blockingTimes", times);
         timetables.push(Value::Object(o));
+        // Its construction scenarios (decision 0030), naming it; a diversion's points as a train's.
+        for sc in list(&data, "scenarios") {
+            let mut o = obj(sc);
+            o.insert("timetableId".into(), json!(tid));
+            if let Some(Value::Array(diversions)) = o.get_mut("diversions") {
+                for d in diversions.iter_mut() {
+                    if let Some(Value::Array(points)) = d.get_mut("points") {
+                        *points = points.iter().map(point_to_document).collect();
+                    }
+                }
+            }
+            scenarios.push(Value::Object(o));
+        }
         for tr in list(&data, "trains") {
             if !tr.is_object() {
                 trains.push(tr.clone());
@@ -757,6 +803,7 @@ pub fn to_operations(record: &Value, check: bool) -> Result<Value> {
     for name in AS_THEY_ARE {
         tcols.insert((*name).into(), Value::Array(list(record, name).to_vec()));
     }
+    tcols.insert("constructionScenarios".into(), Value::Array(scenarios));
     let mut vcols = Object::new();
     vcols.insert("vehicles".into(), Value::Array(vehicles));
     let doc = documented(vcols, tcols);
@@ -842,6 +889,19 @@ pub fn from_operations(doc: &Value) -> Result<Value> {
             kept_formations.push(Value::Object(o));
         }
     }
+    let mut scenarios_of: HashMap<String, Vec<Value>> = HashMap::new();
+    for sc in list(cols, "constructionScenarios") {
+        let mut o = obj(sc);
+        let tid = o.shift_remove("timetableId").map(|v| js_string(Some(&v))).unwrap_or_default();
+        if let Some(Value::Array(diversions)) = o.get_mut("diversions") {
+            for d in diversions.iter_mut() {
+                if let Some(Value::Array(points)) = d.get_mut("points") {
+                    *points = points.iter().map(point_to_record).collect();
+                }
+            }
+        }
+        scenarios_of.entry(tid).or_default().push(Value::Object(o));
+    }
     let mut timetables = Vec::new();
     for t in list(cols, "timetables") {
         let tid = js_string(t.get("id"));
@@ -873,6 +933,10 @@ pub fn from_operations(doc: &Value) -> Result<Value> {
         }
         if !dispatch.is_empty() {
             data.insert("dispatch".into(), Value::Object(dispatch));
+        }
+        // its construction scenarios, where it has any (decision 0030)
+        if let Some(scenarios) = scenarios_of.remove(&tid) {
+            data.insert("scenarios".into(), Value::Array(scenarios));
         }
         timetables.push(json!({ "id": tid, "name": t["name"], "data": data }));
     }

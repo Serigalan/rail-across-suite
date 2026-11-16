@@ -15,6 +15,7 @@ import {
 } from '../src/document/index.js'
 import { loadNativeFile } from '../src/native/node.js'
 import TIMETABLES_1_0 from '../schemas/timetables/1.0.schema.json' with { type: 'json' }
+import TIMETABLES_1_1 from '../schemas/timetables/1.1.schema.json' with { type: 'json' }
 import { ksStation, ksStoppingPlaces } from '../test/signallingFixture.js'
 
 const OUT = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'schemas', 'vectors')
@@ -267,10 +268,33 @@ const OPERATIONS_CASES = [
     const points = doc.domains.timetables.collections.trains[0].points
     Object.assign(points[Math.min(1, points.length - 1)], { stop: true, reverse: true, turnaround: 420 })
   }],
-  ['timetables 1.0, brought forward', (doc) => { Object.assign(doc.domains.timetables, { version: '1.0', schema: contentHash(TIMETABLES_1_0) }) }],
+  ['timetables 1.0, brought forward', (doc) => {
+    Object.assign(doc.domains.timetables, { version: '1.0', schema: contentHash(TIMETABLES_1_0) })
+    delete doc.domains.timetables.collections.constructionScenarios
+  }],
   ['timetables 1.0 with a turn', (doc) => {
     Object.assign(doc.domains.timetables, { version: '1.0', schema: contentHash(TIMETABLES_1_0) })
+    delete doc.domains.timetables.collections.constructionScenarios
     doc.domains.timetables.collections.trains[0].points[0].reverse = true
+  }],
+  ['timetables 1.1, brought forward', (doc) => {
+    Object.assign(doc.domains.timetables, { version: '1.1', schema: contentHash(TIMETABLES_1_1) })
+    delete doc.domains.timetables.collections.constructionScenarios
+  }],
+  ['timetables 1.1 with a construction scenario', (doc) => {
+    Object.assign(doc.domains.timetables, { version: '1.1', schema: contentHash(TIMETABLES_1_1) })
+  }],
+  ['a construction scenario (timetables 1.2)', (doc) => {
+    const c = doc.domains.timetables.collections
+    c.constructionScenarios.push({
+      id: derivedId('bs-1'), timetableId: c.timetables[0].id, name: 'Sperrung Gleis 1',
+      closures: [{ id: derivedId('sp-1'), at: { anchor: 'station', trackId: derivedId('t-1'), startStation: 100, endStation: 400 }, firstDay: '2027-05-03', lastDay: '2027-05-07', window: { from: 79200, to: 18000 } }],
+      cancelledTrainIds: [c.trains[0].id], diversions: [{ trainId: c.trains[0].id, points: c.trains[0].points }],
+    })
+  }],
+  ['a construction scenario of a train that is not there', (doc) => {
+    const c = doc.domains.timetables.collections
+    c.constructionScenarios.push({ id: derivedId('bs-2'), timetableId: c.timetables[0].id, name: 'x', cancelledTrainIds: [derivedId('z-9')] })
   }],
   ['another version', (doc) => { doc.version = '2.0' }],
   ['a train of no timetable', (doc) => { doc.domains.timetables.collections.trains[0].timetableId = derivedId('tt-9') }],

@@ -19,8 +19,8 @@
      }
     },
     "timetables": {
-     "version": "1.1",
-     "schema": "sha256:4d878e270c2fac0f38aaa77cbdf0438014bb57d633b7577d0800981adaeb10b1",
+     "version": "1.2",
+     "schema": "sha256:956b6863cd85912dd6cf218e117b741c55c6d47e60d089d160ac4aebbdba6066",
      "dependsOn": [
       "vehicles"
      ],
@@ -155,14 +155,15 @@
       "connections": [],
       "turnarounds": [],
       "delayScenarios": [],
-      "studies": []
+      "studies": [],
+      "constructionScenarios": []
      }
     }
    },
    "blobs": {}
   },
   "valid": true,
-  "hash": "sha256:1a41671e9231abf8c57fdb01efbddb6f3a86751dbebdd55cae35bcd37627522b"
+  "hash": "sha256:5b5506189722f38b21b2243ae653dbce829d94bd6589a168ad976201369d30c6"
  },
  {
   "name": "with its vehicle carried",
@@ -200,8 +201,8 @@
      }
     },
     "timetables": {
-     "version": "1.1",
-     "schema": "sha256:4d878e270c2fac0f38aaa77cbdf0438014bb57d633b7577d0800981adaeb10b1",
+     "version": "1.2",
+     "schema": "sha256:956b6863cd85912dd6cf218e117b741c55c6d47e60d089d160ac4aebbdba6066",
      "dependsOn": [
       "vehicles"
      ],
@@ -336,14 +337,15 @@
       "connections": [],
       "turnarounds": [],
       "delayScenarios": [],
-      "studies": []
+      "studies": [],
+      "constructionScenarios": []
      }
     }
    },
    "blobs": {}
   },
   "valid": true,
-  "hash": "sha256:2039139fc320b3ad8bbded01f5c03258fd5ab1bd143ab78f722d5a06f1e43614"
+  "hash": "sha256:f436911901ad9a84daa1aa319375b79bd3d4fde7bc105e049a2621f39179701e"
  },
  {
   "name": "no timetables",
@@ -360,8 +362,8 @@
      }
     },
     "timetables": {
-     "version": "1.1",
-     "schema": "sha256:4d878e270c2fac0f38aaa77cbdf0438014bb57d633b7577d0800981adaeb10b1",
+     "version": "1.2",
+     "schema": "sha256:956b6863cd85912dd6cf218e117b741c55c6d47e60d089d160ac4aebbdba6066",
      "dependsOn": [
       "vehicles"
      ],
@@ -374,14 +376,15 @@
       "connections": [],
       "turnarounds": [],
       "delayScenarios": [],
-      "studies": []
+      "studies": [],
+      "constructionScenarios": []
      }
     }
    },
    "blobs": {}
   },
   "valid": true,
-  "hash": "sha256:6185c571c48d98f30654621435f483727b15cb6a011b1b34f825d072de049717"
+  "hash": "sha256:23deea489f96eb05b41c868ce8d22815ec3a8a296df450fccbaf730bba3604b4"
  },
  {
   "name": "a connection and a turnaround",
@@ -403,8 +406,8 @@
      }
     },
     "timetables": {
-     "version": "1.1",
-     "schema": "sha256:4d878e270c2fac0f38aaa77cbdf0438014bb57d633b7577d0800981adaeb10b1",
+     "version": "1.2",
+     "schema": "sha256:956b6863cd85912dd6cf218e117b741c55c6d47e60d089d160ac4aebbdba6066",
      "dependsOn": [
       "vehicles"
      ],
@@ -555,14 +558,15 @@
        }
       ],
       "delayScenarios": [],
-      "studies": []
+      "studies": [],
+      "constructionScenarios": []
      }
     }
    },
    "blobs": {}
   },
   "valid": true,
-  "hash": "sha256:68a04d8cd51caa3c4e494b4206698c94f5a6b5f2ffa50dac1632146784620003"
+  "hash": "sha256:f766b689333692b6fad9a4d52be1ef8f27614ce06f184afc859762b49c61ad3b"
  },
  {
   "name": "a train that turns on the way (timetables 1.1)",
@@ -584,8 +588,8 @@
      }
     },
     "timetables": {
-     "version": "1.1",
-     "schema": "sha256:4d878e270c2fac0f38aaa77cbdf0438014bb57d633b7577d0800981adaeb10b1",
+     "version": "1.2",
+     "schema": "sha256:956b6863cd85912dd6cf218e117b741c55c6d47e60d089d160ac4aebbdba6066",
      "dependsOn": [
       "vehicles"
      ],
@@ -722,14 +726,15 @@
       "connections": [],
       "turnarounds": [],
       "delayScenarios": [],
-      "studies": []
+      "studies": [],
+      "constructionScenarios": []
      }
     }
    },
    "blobs": {}
   },
   "valid": true,
-  "hash": "sha256:733c7fef618a9e39cc666a6a8d4362b340263a93605471d2b9b29d8f3c22b892"
+  "hash": "sha256:21bc5eba2cdba7ad8d9ef36ed7ef2f531ad036bfc57e66b0bbf1a88c45bc90b0"
  },
  {
   "name": "timetables 1.0, brought forward",
@@ -894,7 +899,7 @@
    "blobs": {}
   },
   "valid": true,
-  "hash": "sha256:1a41671e9231abf8c57fdb01efbddb6f3a86751dbebdd55cae35bcd37627522b"
+  "hash": "sha256:5b5506189722f38b21b2243ae653dbce829d94bd6589a168ad976201369d30c6"
  },
  {
   "name": "timetables 1.0 with a turn",
@@ -1063,10 +1068,10 @@
   "code": "invalid_payload"
  },
  {
-  "name": "another version",
+  "name": "timetables 1.1, brought forward",
   "document": {
    "format": "operations",
-   "version": "2.0",
+   "version": "1.0",
    "domains": {
     "vehicles": {
      "version": "1.0",
@@ -1224,6 +1229,724 @@
    },
    "blobs": {}
   },
+  "valid": true,
+  "hash": "sha256:5b5506189722f38b21b2243ae653dbce829d94bd6589a168ad976201369d30c6"
+ },
+ {
+  "name": "timetables 1.1 with a construction scenario",
+  "document": {
+   "format": "operations",
+   "version": "1.0",
+   "domains": {
+    "vehicles": {
+     "version": "1.0",
+     "schema": "sha256:69c14605ce0b0e02a482d9956dc43506fd1cc1668e380682851bb6a395753316",
+     "fields": {},
+     "collections": {
+      "vehicles": [
+       {
+        "id": "eac5bf47-71bd-8b74-9eb4-e0cb6cc62b15",
+        "key": "osrd:loco"
+       }
+      ]
+     }
+    },
+    "timetables": {
+     "version": "1.1",
+     "schema": "sha256:4d878e270c2fac0f38aaa77cbdf0438014bb57d633b7577d0800981adaeb10b1",
+     "dependsOn": [
+      "vehicles"
+     ],
+     "fields": {},
+     "collections": {
+      "timetables": [
+       {
+        "id": "be389a7b-05f5-8e47-92df-b7131ec905b1",
+        "name": "Grundtakt",
+        "dispatching": {
+         "mode": "wait",
+         "priority": "kind",
+         "kindOrder": [
+          "ee078fe5-7f79-823b-9cb5-24300d98887c",
+          "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400"
+         ]
+        },
+        "blockingTimes": {
+         "setup": 12,
+         "approach": 1000,
+         "release": 6
+        }
+       },
+       {
+        "id": "e4a93598-513b-815d-b5af-6722092b91d3",
+        "name": "Güterverkehr"
+       }
+      ],
+      "trains": [
+       {
+        "id": "96a835f6-51a5-80e9-b088-9d28c3d9a254",
+        "timetableId": "be389a7b-05f5-8e47-92df-b7131ec905b1",
+        "number": "16003",
+        "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
+        "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
+        "comfort": "STANDARD",
+        "departure": 32400,
+        "margin": "5 %",
+        "distribution": "mareco",
+        "points": [
+         {
+          "id": "2e7d2c03-a950-8ae2-a5ec-f5b5356885a5",
+          "operationalPointId": "34c9eb78-441b-83ae-9ef5-c27762d98cab",
+          "stop": true,
+          "dwell": 60
+         },
+         {
+          "id": "18ac3e73-43f0-8689-8c51-0e93f9352611",
+          "operationalPointId": "3e6958a7-7209-87df-893f-53145de26074",
+          "stop": true,
+          "dwell": 60
+         }
+        ]
+       },
+       {
+        "id": "b9817549-cc54-8b0e-a549-a42a97b94811",
+        "timetableId": "e4a93598-513b-815d-b5af-6722092b91d3",
+        "name": "Kies",
+        "trainKindId": "ebf496d8-0315-8505-affa-29e08cddc349",
+        "comfort": "STANDARD",
+        "departure": 3600,
+        "distribution": "linear",
+        "points": [
+         {
+          "id": "3f79bb7b-435b-8532-9651-daefd374cdc6",
+          "operationalPointId": "3e6958a7-7209-87df-893f-53145de26074",
+          "stop": false,
+          "dwell": 60
+         },
+         {
+          "id": "252f10c8-3610-8bca-9a05-9c0bae8255eb",
+          "operationalPointId": "34c9eb78-441b-83ae-9ef5-c27762d98cab",
+          "stop": true,
+          "dwell": 60
+         }
+        ]
+       },
+       {
+        "id": "d7efd1b0-b0f9-8082-b4de-54eb49380e84",
+        "timetableId": "be389a7b-05f5-8e47-92df-b7131ec905b1",
+        "number": "16001",
+        "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
+        "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
+        "comfort": "STANDARD",
+        "departure": 28800,
+        "margin": "5 %",
+        "distribution": "mareco",
+        "points": [
+         {
+          "id": "ca978112-ca1b-8dca-bac2-31b39a23dc4d",
+          "operationalPointId": "34c9eb78-441b-83ae-9ef5-c27762d98cab",
+          "stop": true,
+          "dwell": 60
+         },
+         {
+          "id": "3e23e816-0039-894a-b389-4f6564e1b134",
+          "operationalPointId": "3e6958a7-7209-87df-893f-53145de26074",
+          "trackId": "c4447403-8d45-8e40-a471-4afefa7bf8da",
+          "stop": true,
+          "dwell": 120
+         }
+        ]
+       }
+      ],
+      "trainKinds": [
+       {
+        "id": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
+        "name": "RB",
+        "rank": 4
+       },
+       {
+        "id": "ebf496d8-0315-8505-affa-29e08cddc349",
+        "name": "Gz",
+        "rank": 7
+       },
+       {
+        "id": "ee078fe5-7f79-823b-9cb5-24300d98887c",
+        "name": "ICE",
+        "rank": 0
+       }
+      ],
+      "formations": [
+       {
+        "id": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
+        "tractionUnits": [
+         {
+          "vehicleId": "eac5bf47-71bd-8b74-9eb4-e0cb6cc62b15"
+         }
+        ]
+       }
+      ],
+      "connections": [],
+      "turnarounds": [],
+      "delayScenarios": [],
+      "studies": [],
+      "constructionScenarios": []
+     }
+    }
+   },
+   "blobs": {}
+  },
+  "valid": false,
+  "code": "invalid_payload"
+ },
+ {
+  "name": "a construction scenario (timetables 1.2)",
+  "document": {
+   "format": "operations",
+   "version": "1.0",
+   "domains": {
+    "vehicles": {
+     "version": "1.0",
+     "schema": "sha256:69c14605ce0b0e02a482d9956dc43506fd1cc1668e380682851bb6a395753316",
+     "fields": {},
+     "collections": {
+      "vehicles": [
+       {
+        "id": "eac5bf47-71bd-8b74-9eb4-e0cb6cc62b15",
+        "key": "osrd:loco"
+       }
+      ]
+     }
+    },
+    "timetables": {
+     "version": "1.2",
+     "schema": "sha256:956b6863cd85912dd6cf218e117b741c55c6d47e60d089d160ac4aebbdba6066",
+     "dependsOn": [
+      "vehicles"
+     ],
+     "fields": {},
+     "collections": {
+      "timetables": [
+       {
+        "id": "be389a7b-05f5-8e47-92df-b7131ec905b1",
+        "name": "Grundtakt",
+        "dispatching": {
+         "mode": "wait",
+         "priority": "kind",
+         "kindOrder": [
+          "ee078fe5-7f79-823b-9cb5-24300d98887c",
+          "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400"
+         ]
+        },
+        "blockingTimes": {
+         "setup": 12,
+         "approach": 1000,
+         "release": 6
+        }
+       },
+       {
+        "id": "e4a93598-513b-815d-b5af-6722092b91d3",
+        "name": "Güterverkehr"
+       }
+      ],
+      "trains": [
+       {
+        "id": "96a835f6-51a5-80e9-b088-9d28c3d9a254",
+        "timetableId": "be389a7b-05f5-8e47-92df-b7131ec905b1",
+        "number": "16003",
+        "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
+        "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
+        "comfort": "STANDARD",
+        "departure": 32400,
+        "margin": "5 %",
+        "distribution": "mareco",
+        "points": [
+         {
+          "id": "2e7d2c03-a950-8ae2-a5ec-f5b5356885a5",
+          "operationalPointId": "34c9eb78-441b-83ae-9ef5-c27762d98cab",
+          "stop": true,
+          "dwell": 60
+         },
+         {
+          "id": "18ac3e73-43f0-8689-8c51-0e93f9352611",
+          "operationalPointId": "3e6958a7-7209-87df-893f-53145de26074",
+          "stop": true,
+          "dwell": 60
+         }
+        ]
+       },
+       {
+        "id": "b9817549-cc54-8b0e-a549-a42a97b94811",
+        "timetableId": "e4a93598-513b-815d-b5af-6722092b91d3",
+        "name": "Kies",
+        "trainKindId": "ebf496d8-0315-8505-affa-29e08cddc349",
+        "comfort": "STANDARD",
+        "departure": 3600,
+        "distribution": "linear",
+        "points": [
+         {
+          "id": "3f79bb7b-435b-8532-9651-daefd374cdc6",
+          "operationalPointId": "3e6958a7-7209-87df-893f-53145de26074",
+          "stop": false,
+          "dwell": 60
+         },
+         {
+          "id": "252f10c8-3610-8bca-9a05-9c0bae8255eb",
+          "operationalPointId": "34c9eb78-441b-83ae-9ef5-c27762d98cab",
+          "stop": true,
+          "dwell": 60
+         }
+        ]
+       },
+       {
+        "id": "d7efd1b0-b0f9-8082-b4de-54eb49380e84",
+        "timetableId": "be389a7b-05f5-8e47-92df-b7131ec905b1",
+        "number": "16001",
+        "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
+        "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
+        "comfort": "STANDARD",
+        "departure": 28800,
+        "margin": "5 %",
+        "distribution": "mareco",
+        "points": [
+         {
+          "id": "ca978112-ca1b-8dca-bac2-31b39a23dc4d",
+          "operationalPointId": "34c9eb78-441b-83ae-9ef5-c27762d98cab",
+          "stop": true,
+          "dwell": 60
+         },
+         {
+          "id": "3e23e816-0039-894a-b389-4f6564e1b134",
+          "operationalPointId": "3e6958a7-7209-87df-893f-53145de26074",
+          "trackId": "c4447403-8d45-8e40-a471-4afefa7bf8da",
+          "stop": true,
+          "dwell": 120
+         }
+        ]
+       }
+      ],
+      "trainKinds": [
+       {
+        "id": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
+        "name": "RB",
+        "rank": 4
+       },
+       {
+        "id": "ebf496d8-0315-8505-affa-29e08cddc349",
+        "name": "Gz",
+        "rank": 7
+       },
+       {
+        "id": "ee078fe5-7f79-823b-9cb5-24300d98887c",
+        "name": "ICE",
+        "rank": 0
+       }
+      ],
+      "formations": [
+       {
+        "id": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
+        "tractionUnits": [
+         {
+          "vehicleId": "eac5bf47-71bd-8b74-9eb4-e0cb6cc62b15"
+         }
+        ]
+       }
+      ],
+      "connections": [],
+      "turnarounds": [],
+      "delayScenarios": [],
+      "studies": [],
+      "constructionScenarios": [
+       {
+        "id": "c29a86aa-db1a-8092-8da7-0465b283799e",
+        "timetableId": "be389a7b-05f5-8e47-92df-b7131ec905b1",
+        "name": "Sperrung Gleis 1",
+        "closures": [
+         {
+          "id": "2f632d7b-c738-8834-9489-b534668a7e7e",
+          "at": {
+           "anchor": "station",
+           "trackId": "46e9bc34-76c9-8ea2-8fb1-7adac6cd9cda",
+           "startStation": 100,
+           "endStation": 400
+          },
+          "firstDay": "2027-05-03",
+          "lastDay": "2027-05-07",
+          "window": {
+           "from": 79200,
+           "to": 18000
+          }
+         }
+        ],
+        "cancelledTrainIds": [
+         "96a835f6-51a5-80e9-b088-9d28c3d9a254"
+        ],
+        "diversions": [
+         {
+          "trainId": "96a835f6-51a5-80e9-b088-9d28c3d9a254",
+          "points": [
+           {
+            "id": "2e7d2c03-a950-8ae2-a5ec-f5b5356885a5",
+            "operationalPointId": "34c9eb78-441b-83ae-9ef5-c27762d98cab",
+            "stop": true,
+            "dwell": 60
+           },
+           {
+            "id": "18ac3e73-43f0-8689-8c51-0e93f9352611",
+            "operationalPointId": "3e6958a7-7209-87df-893f-53145de26074",
+            "stop": true,
+            "dwell": 60
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    }
+   },
+   "blobs": {}
+  },
+  "valid": true,
+  "hash": "sha256:fa1f667ac5b6dc9cb76c284ddc3a2a86d500f30f55796a414e7834c58644eb2b"
+ },
+ {
+  "name": "a construction scenario of a train that is not there",
+  "document": {
+   "format": "operations",
+   "version": "1.0",
+   "domains": {
+    "vehicles": {
+     "version": "1.0",
+     "schema": "sha256:69c14605ce0b0e02a482d9956dc43506fd1cc1668e380682851bb6a395753316",
+     "fields": {},
+     "collections": {
+      "vehicles": [
+       {
+        "id": "eac5bf47-71bd-8b74-9eb4-e0cb6cc62b15",
+        "key": "osrd:loco"
+       }
+      ]
+     }
+    },
+    "timetables": {
+     "version": "1.2",
+     "schema": "sha256:956b6863cd85912dd6cf218e117b741c55c6d47e60d089d160ac4aebbdba6066",
+     "dependsOn": [
+      "vehicles"
+     ],
+     "fields": {},
+     "collections": {
+      "timetables": [
+       {
+        "id": "be389a7b-05f5-8e47-92df-b7131ec905b1",
+        "name": "Grundtakt",
+        "dispatching": {
+         "mode": "wait",
+         "priority": "kind",
+         "kindOrder": [
+          "ee078fe5-7f79-823b-9cb5-24300d98887c",
+          "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400"
+         ]
+        },
+        "blockingTimes": {
+         "setup": 12,
+         "approach": 1000,
+         "release": 6
+        }
+       },
+       {
+        "id": "e4a93598-513b-815d-b5af-6722092b91d3",
+        "name": "Güterverkehr"
+       }
+      ],
+      "trains": [
+       {
+        "id": "96a835f6-51a5-80e9-b088-9d28c3d9a254",
+        "timetableId": "be389a7b-05f5-8e47-92df-b7131ec905b1",
+        "number": "16003",
+        "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
+        "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
+        "comfort": "STANDARD",
+        "departure": 32400,
+        "margin": "5 %",
+        "distribution": "mareco",
+        "points": [
+         {
+          "id": "2e7d2c03-a950-8ae2-a5ec-f5b5356885a5",
+          "operationalPointId": "34c9eb78-441b-83ae-9ef5-c27762d98cab",
+          "stop": true,
+          "dwell": 60
+         },
+         {
+          "id": "18ac3e73-43f0-8689-8c51-0e93f9352611",
+          "operationalPointId": "3e6958a7-7209-87df-893f-53145de26074",
+          "stop": true,
+          "dwell": 60
+         }
+        ]
+       },
+       {
+        "id": "b9817549-cc54-8b0e-a549-a42a97b94811",
+        "timetableId": "e4a93598-513b-815d-b5af-6722092b91d3",
+        "name": "Kies",
+        "trainKindId": "ebf496d8-0315-8505-affa-29e08cddc349",
+        "comfort": "STANDARD",
+        "departure": 3600,
+        "distribution": "linear",
+        "points": [
+         {
+          "id": "3f79bb7b-435b-8532-9651-daefd374cdc6",
+          "operationalPointId": "3e6958a7-7209-87df-893f-53145de26074",
+          "stop": false,
+          "dwell": 60
+         },
+         {
+          "id": "252f10c8-3610-8bca-9a05-9c0bae8255eb",
+          "operationalPointId": "34c9eb78-441b-83ae-9ef5-c27762d98cab",
+          "stop": true,
+          "dwell": 60
+         }
+        ]
+       },
+       {
+        "id": "d7efd1b0-b0f9-8082-b4de-54eb49380e84",
+        "timetableId": "be389a7b-05f5-8e47-92df-b7131ec905b1",
+        "number": "16001",
+        "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
+        "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
+        "comfort": "STANDARD",
+        "departure": 28800,
+        "margin": "5 %",
+        "distribution": "mareco",
+        "points": [
+         {
+          "id": "ca978112-ca1b-8dca-bac2-31b39a23dc4d",
+          "operationalPointId": "34c9eb78-441b-83ae-9ef5-c27762d98cab",
+          "stop": true,
+          "dwell": 60
+         },
+         {
+          "id": "3e23e816-0039-894a-b389-4f6564e1b134",
+          "operationalPointId": "3e6958a7-7209-87df-893f-53145de26074",
+          "trackId": "c4447403-8d45-8e40-a471-4afefa7bf8da",
+          "stop": true,
+          "dwell": 120
+         }
+        ]
+       }
+      ],
+      "trainKinds": [
+       {
+        "id": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
+        "name": "RB",
+        "rank": 4
+       },
+       {
+        "id": "ebf496d8-0315-8505-affa-29e08cddc349",
+        "name": "Gz",
+        "rank": 7
+       },
+       {
+        "id": "ee078fe5-7f79-823b-9cb5-24300d98887c",
+        "name": "ICE",
+        "rank": 0
+       }
+      ],
+      "formations": [
+       {
+        "id": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
+        "tractionUnits": [
+         {
+          "vehicleId": "eac5bf47-71bd-8b74-9eb4-e0cb6cc62b15"
+         }
+        ]
+       }
+      ],
+      "connections": [],
+      "turnarounds": [],
+      "delayScenarios": [],
+      "studies": [],
+      "constructionScenarios": [
+       {
+        "id": "029e7d77-b90f-8b9f-abf0-65d3b87fc064",
+        "timetableId": "be389a7b-05f5-8e47-92df-b7131ec905b1",
+        "name": "x",
+        "cancelledTrainIds": [
+         "88ebaffb-b3fc-8224-9f7f-4b028d0dbce5"
+        ]
+       }
+      ]
+     }
+    }
+   },
+   "blobs": {}
+  },
+  "valid": false,
+  "code": "invalid_payload"
+ },
+ {
+  "name": "another version",
+  "document": {
+   "format": "operations",
+   "version": "2.0",
+   "domains": {
+    "vehicles": {
+     "version": "1.0",
+     "schema": "sha256:69c14605ce0b0e02a482d9956dc43506fd1cc1668e380682851bb6a395753316",
+     "fields": {},
+     "collections": {
+      "vehicles": [
+       {
+        "id": "eac5bf47-71bd-8b74-9eb4-e0cb6cc62b15",
+        "key": "osrd:loco"
+       }
+      ]
+     }
+    },
+    "timetables": {
+     "version": "1.2",
+     "schema": "sha256:956b6863cd85912dd6cf218e117b741c55c6d47e60d089d160ac4aebbdba6066",
+     "dependsOn": [
+      "vehicles"
+     ],
+     "fields": {},
+     "collections": {
+      "timetables": [
+       {
+        "id": "be389a7b-05f5-8e47-92df-b7131ec905b1",
+        "name": "Grundtakt",
+        "dispatching": {
+         "mode": "wait",
+         "priority": "kind",
+         "kindOrder": [
+          "ee078fe5-7f79-823b-9cb5-24300d98887c",
+          "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400"
+         ]
+        },
+        "blockingTimes": {
+         "setup": 12,
+         "approach": 1000,
+         "release": 6
+        }
+       },
+       {
+        "id": "e4a93598-513b-815d-b5af-6722092b91d3",
+        "name": "Güterverkehr"
+       }
+      ],
+      "trains": [
+       {
+        "id": "96a835f6-51a5-80e9-b088-9d28c3d9a254",
+        "timetableId": "be389a7b-05f5-8e47-92df-b7131ec905b1",
+        "number": "16003",
+        "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
+        "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
+        "comfort": "STANDARD",
+        "departure": 32400,
+        "margin": "5 %",
+        "distribution": "mareco",
+        "points": [
+         {
+          "id": "2e7d2c03-a950-8ae2-a5ec-f5b5356885a5",
+          "operationalPointId": "34c9eb78-441b-83ae-9ef5-c27762d98cab",
+          "stop": true,
+          "dwell": 60
+         },
+         {
+          "id": "18ac3e73-43f0-8689-8c51-0e93f9352611",
+          "operationalPointId": "3e6958a7-7209-87df-893f-53145de26074",
+          "stop": true,
+          "dwell": 60
+         }
+        ]
+       },
+       {
+        "id": "b9817549-cc54-8b0e-a549-a42a97b94811",
+        "timetableId": "e4a93598-513b-815d-b5af-6722092b91d3",
+        "name": "Kies",
+        "trainKindId": "ebf496d8-0315-8505-affa-29e08cddc349",
+        "comfort": "STANDARD",
+        "departure": 3600,
+        "distribution": "linear",
+        "points": [
+         {
+          "id": "3f79bb7b-435b-8532-9651-daefd374cdc6",
+          "operationalPointId": "3e6958a7-7209-87df-893f-53145de26074",
+          "stop": false,
+          "dwell": 60
+         },
+         {
+          "id": "252f10c8-3610-8bca-9a05-9c0bae8255eb",
+          "operationalPointId": "34c9eb78-441b-83ae-9ef5-c27762d98cab",
+          "stop": true,
+          "dwell": 60
+         }
+        ]
+       },
+       {
+        "id": "d7efd1b0-b0f9-8082-b4de-54eb49380e84",
+        "timetableId": "be389a7b-05f5-8e47-92df-b7131ec905b1",
+        "number": "16001",
+        "trainKindId": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
+        "formationId": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
+        "comfort": "STANDARD",
+        "departure": 28800,
+        "margin": "5 %",
+        "distribution": "mareco",
+        "points": [
+         {
+          "id": "ca978112-ca1b-8dca-bac2-31b39a23dc4d",
+          "operationalPointId": "34c9eb78-441b-83ae-9ef5-c27762d98cab",
+          "stop": true,
+          "dwell": 60
+         },
+         {
+          "id": "3e23e816-0039-894a-b389-4f6564e1b134",
+          "operationalPointId": "3e6958a7-7209-87df-893f-53145de26074",
+          "trackId": "c4447403-8d45-8e40-a471-4afefa7bf8da",
+          "stop": true,
+          "dwell": 120
+         }
+        ]
+       }
+      ],
+      "trainKinds": [
+       {
+        "id": "97fb742b-7d57-8bc3-8e0f-a0ec4fba0400",
+        "name": "RB",
+        "rank": 4
+       },
+       {
+        "id": "ebf496d8-0315-8505-affa-29e08cddc349",
+        "name": "Gz",
+        "rank": 7
+       },
+       {
+        "id": "ee078fe5-7f79-823b-9cb5-24300d98887c",
+        "name": "ICE",
+        "rank": 0
+       }
+      ],
+      "formations": [
+       {
+        "id": "c5f0e863-40bc-80b7-b131-ca576b3475e1",
+        "tractionUnits": [
+         {
+          "vehicleId": "eac5bf47-71bd-8b74-9eb4-e0cb6cc62b15"
+         }
+        ]
+       }
+      ],
+      "connections": [],
+      "turnarounds": [],
+      "delayScenarios": [],
+      "studies": [],
+      "constructionScenarios": []
+     }
+    }
+   },
+   "blobs": {}
+  },
   "valid": false,
   "code": "unsupported_version"
  },
@@ -1247,8 +1970,8 @@
      }
     },
     "timetables": {
-     "version": "1.1",
-     "schema": "sha256:4d878e270c2fac0f38aaa77cbdf0438014bb57d633b7577d0800981adaeb10b1",
+     "version": "1.2",
+     "schema": "sha256:956b6863cd85912dd6cf218e117b741c55c6d47e60d089d160ac4aebbdba6066",
      "dependsOn": [
       "vehicles"
      ],
@@ -1383,7 +2106,8 @@
       "connections": [],
       "turnarounds": [],
       "delayScenarios": [],
-      "studies": []
+      "studies": [],
+      "constructionScenarios": []
      }
     }
    },
@@ -1412,8 +2136,8 @@
      }
     },
     "timetables": {
-     "version": "1.1",
-     "schema": "sha256:4d878e270c2fac0f38aaa77cbdf0438014bb57d633b7577d0800981adaeb10b1",
+     "version": "1.2",
+     "schema": "sha256:956b6863cd85912dd6cf218e117b741c55c6d47e60d089d160ac4aebbdba6066",
      "dependsOn": [
       "vehicles"
      ],
@@ -1548,7 +2272,8 @@
       "connections": [],
       "turnarounds": [],
       "delayScenarios": [],
-      "studies": []
+      "studies": [],
+      "constructionScenarios": []
      }
     }
    },
@@ -1576,8 +2301,8 @@
      }
     },
     "timetables": {
-     "version": "1.1",
-     "schema": "sha256:4d878e270c2fac0f38aaa77cbdf0438014bb57d633b7577d0800981adaeb10b1",
+     "version": "1.2",
+     "schema": "sha256:956b6863cd85912dd6cf218e117b741c55c6d47e60d089d160ac4aebbdba6066",
      "dependsOn": [
       "vehicles"
      ],
@@ -1712,7 +2437,8 @@
       "connections": [],
       "turnarounds": [],
       "delayScenarios": [],
-      "studies": []
+      "studies": [],
+      "constructionScenarios": []
      }
     }
    },
@@ -1741,8 +2467,8 @@
      }
     },
     "timetables": {
-     "version": "1.1",
-     "schema": "sha256:4d878e270c2fac0f38aaa77cbdf0438014bb57d633b7577d0800981adaeb10b1",
+     "version": "1.2",
+     "schema": "sha256:956b6863cd85912dd6cf218e117b741c55c6d47e60d089d160ac4aebbdba6066",
      "dependsOn": [
       "vehicles"
      ],
@@ -1877,7 +2603,8 @@
       "connections": [],
       "turnarounds": [],
       "delayScenarios": [],
-      "studies": []
+      "studies": [],
+      "constructionScenarios": []
      }
     }
    },
@@ -1906,8 +2633,8 @@
      }
     },
     "timetables": {
-     "version": "1.1",
-     "schema": "sha256:4d878e270c2fac0f38aaa77cbdf0438014bb57d633b7577d0800981adaeb10b1",
+     "version": "1.2",
+     "schema": "sha256:956b6863cd85912dd6cf218e117b741c55c6d47e60d089d160ac4aebbdba6066",
      "dependsOn": [
       "vehicles"
      ],
@@ -2041,7 +2768,8 @@
       ],
       "connections": [],
       "turnarounds": [],
-      "delayScenarios": []
+      "delayScenarios": [],
+      "constructionScenarios": []
      }
     }
    },

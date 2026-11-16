@@ -3,11 +3,12 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 //
 // Ported from OSRD core/osrd-mp/.../envelope_sim/TrainPhysicsIntegrator.kt,
-// IntegrationStep.kt and Action.kt, with constant braking only.
+// IntegrationStep.kt and Action.kt, with constant braking — and the suite's
+// braking on the grade: the deceleration on the level, the weight force added.
 
 use super::EnvelopeSimContext;
 use super::path::SimPath;
-use super::rolling_stock::{RollingStock, max_effort};
+use super::rolling_stock::{Braking, MIN_BRAKING_SHARE, RollingStock, max_effort};
 use crate::units::{POSITION_EPSILON, SPEED_EPSILON, are_speeds_equal};
 
 /// Gravity acceleration, in m/s².
@@ -86,7 +87,12 @@ struct Integrator<'a> {
 impl Integrator<'_> {
     fn step(&self, time_step: f64, position: f64, speed: f64) -> IntegrationStep {
         if self.action == Action::Brake {
-            return newton_step(time_step, speed, self.rolling_stock.deceleration, self.direction_sign);
+            return newton_step(
+                time_step,
+                speed,
+                braking_deceleration(self.rolling_stock, self.path, position),
+                self.direction_sign,
+            );
         }
         let mut traction_force = 0.0;
         let max_traction_force = max_effort(speed, &self.rolling_stock.tractive_effort_curve);
@@ -106,6 +112,21 @@ impl Integrator<'_> {
         }
         let acceleration = compute_acceleration(self.rolling_stock, rolling_resistance, weight_force, speed, traction_force, self.direction_sign);
         newton_step(time_step, speed, acceleration, self.direction_sign)
+    }
+}
+
+/// The deceleration of a train braking with its head at a position, in m/s²
+/// (negative): constant, or on the grade its deceleration on the level and
+/// the weight force over its inertia — a rise braking it more, a fall less,
+/// but never less than MIN_BRAKING_SHARE of it on the level.
+pub fn braking_deceleration(rolling_stock: &RollingStock, path: &SimPath, head_position: f64) -> f64 {
+    let level = rolling_stock.deceleration;
+    match rolling_stock.braking {
+        Braking::Constant => level,
+        Braking::Grade => {
+            let weight = weight_force(rolling_stock, average_grade(rolling_stock, path, head_position));
+            (level + weight / rolling_stock.inertia).min(level * MIN_BRAKING_SHARE)
+        }
     }
 }
 

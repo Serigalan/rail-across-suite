@@ -25,6 +25,10 @@ sections, the driver behaviour of SNCF's signalling systems, the signalling simu
 detection and STDCM. The path comes in as its length, grades and speed limits; the request and the result are
 this crate's own JSON.
 
+One thing goes beyond OSRD: a train brakes at its deceleration on the level plus the weight force of the grade
+under it (`braking` `grade`, the default; `integrator.rs`), so that a fall lengthens the braking distance. OSRD's
+constant deceleration stays as `braking` `constant`; OSRD's own test cases run with it.
+
 What the whole simulation assumes — the way, the grades and curves, the speeds, blocks, blocking times, dispatching
 and capacity around this crate — is set out in [`docs/simulation`](../docs/simulation/simulation-assumptions.md).
 

@@ -18,7 +18,7 @@ use crate::SimError;
 use crate::allowances::{Allowance, AllowanceRange, AllowanceValue, Distribution};
 use crate::envelope::{Envelope, EnvelopeProfile, LimitKind};
 use crate::physics::integrator::GRAVITY_ACCELERATION;
-use crate::physics::{EnvelopeSimContext, RollingStock, SimPath, TractiveEffortPoint};
+use crate::physics::{Braking, EnvelopeSimContext, RollingStock, SimPath, TractiveEffortPoint};
 use crate::pipelines::{SpeedLimit, compute_mrsp, max_effort_envelope_from, max_speed_envelope_from};
 use crate::units::are_positions_equal;
 
@@ -80,8 +80,11 @@ pub struct RollingStockInput {
     #[serde(default = "default_inertia_coefficient")]
     pub inertia_coefficient: f64,
     pub rolling_resistance: RollingResistance,
-    /// The constant braking deceleration, in m/s² (positive).
+    /// The braking deceleration on the level, in m/s² (positive).
     pub const_gamma: f64,
+    /// Whether the grade adds to it (`grade`, the default) or not (`constant`, as OSRD's).
+    #[serde(default)]
+    pub braking: Braking,
     /// The tractive effort over speed, by increasing speed.
     pub effort_curve: Vec<TractiveEffortPoint>,
 }
@@ -304,7 +307,7 @@ fn rolling_stock_from(input: &RollingStockInput) -> Result<RollingStock, SimErro
         return Err(SimError::InvalidInput("the effort curve needs points by increasing speed".into()));
     }
     let r = input.rolling_resistance;
-    Ok(RollingStock::new(
+    let mut rolling_stock = RollingStock::new(
         input.mass,
         input.inertia_coefficient,
         input.length,
@@ -314,7 +317,9 @@ fn rolling_stock_from(input: &RollingStockInput) -> Result<RollingStock, SimErro
         r.c,
         input.const_gamma,
         input.effort_curve.clone(),
-    ))
+    );
+    rolling_stock.braking = input.braking;
+    Ok(rolling_stock)
 }
 
 /// The grades as positions and values over the whole path: the ranges

@@ -18,7 +18,7 @@ pub mod rolling_stock;
 
 pub use integrator::{Action, IntegrationStep, step};
 pub use path::SimPath;
-pub use rolling_stock::{RollingStock, TractiveEffortPoint};
+pub use rolling_stock::{Braking, RollingStock, TractiveEffortPoint};
 
 /// Everything a simulation of one train needs about it and its path.
 #[derive(Clone, Debug)]

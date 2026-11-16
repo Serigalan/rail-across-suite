@@ -17,6 +17,20 @@ pub struct TractiveEffortPoint {
     pub max_effort: f64,
 }
 
+/// How a train brakes: at OSRD's constant deceleration, whatever the grade,
+/// or — the suite's — at its deceleration on the level, the grade under it
+/// adding to it or taking from it.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum Braking {
+    Constant,
+    #[default]
+    Grade,
+}
+
+/// The share of its deceleration on the level a train keeps braking on any fall.
+pub const MIN_BRAKING_SHARE: f64 = 0.1;
+
 /// The physical model of a train.
 #[derive(Clone, Debug)]
 pub struct RollingStock {
@@ -32,8 +46,10 @@ pub struct RollingStock {
     pub a: f64,
     pub b: f64,
     pub c: f64,
-    /// The constant deceleration of the train, in m/s² (negative).
+    /// The deceleration of the train on the level, in m/s² (negative).
     pub deceleration: f64,
+    /// Whether the grade adds to its deceleration, or not.
+    pub braking: Braking,
     /// Its tractive effort curve, by increasing speed.
     pub tractive_effort_curve: Vec<TractiveEffortPoint>,
 }
@@ -64,6 +80,7 @@ impl RollingStock {
             b,
             c,
             deceleration: -const_gamma,
+            braking: Braking::Constant,
             tractive_effort_curve,
         }
     }

@@ -117,3 +117,33 @@ fn errors_come_back_as_json() {
     let result: Value = serde_json::from_str(&simulate_json("{")).unwrap();
     assert_eq!(result["error"]["code"], "invalid_input");
 }
+
+/// Where the train starts braking for its end on a path of one grade, braking as `braking` says: the last position
+/// it still runs at its top speed.
+fn braking_starts(grade: f64, braking: &str) -> f64 {
+    let mut r = request();
+    r["path"]["gradients"] = json!([{ "begin": 0.0, "end": 20000.0, "value": grade }]);
+    r["path"]["speed_limits"] = json!([{ "begin": 0.0, "end": 20000.0, "speed": 100.0 / 3.6, "source": "track" }]);
+    r["rolling_stock"]["braking"] = json!(braking);
+    r["schedule"] = json!([{ "path_offset": 20000.0, "stop_duration": 0.0 }]);
+    let base = &simulate(&r)["base"];
+    let positions = base["positions"].as_array().unwrap().iter().map(|p| p.as_f64().unwrap());
+    let speeds: Vec<f64> = base["speeds"].as_array().unwrap().iter().map(|s| s.as_f64().unwrap()).collect();
+    positions
+        .zip(speeds)
+        .filter(|(_, v)| *v >= 100.0 / 3.6 - 1e-6)
+        .map(|(p, _)| p)
+        .fold(0.0, f64::max)
+}
+
+#[test]
+fn a_fall_lengthens_the_braking_distance_a_rise_shortens_it() {
+    let (fall, level, rise) = (braking_starts(-10.0, "grade"), braking_starts(0.0, "grade"), braking_starts(10.0, "grade"));
+    assert!(fall < level && level < rise, "{fall} {level} {rise}");
+    // on the level as before; braked at OSRD's constant deceleration the grade makes no difference
+    assert!((level - braking_starts(0.0, "constant")).abs() < 1e-6);
+    assert!((braking_starts(-10.0, "constant") - level).abs() < 1.0);
+    // v²/2a: 643 m at 0.6 m/s² on the level, about 760 m on the fall of 10 ‰
+    assert!((20000.0 - level - 643.0).abs() < 15.0, "{level}");
+    assert!((20000.0 - fall - 761.0).abs() < 20.0, "{fall}");
+}

@@ -1,5 +1,5 @@
 import VEHICLES from '../../schemas/vehicles/1.0.schema.json' with { type: 'json' }
-import TIMETABLES from '../../schemas/timetables/1.0.schema.json' with { type: 'json' }
+import TIMETABLES from '../../schemas/timetables/1.1.schema.json' with { type: 'json' }
 import ENVELOPE from '../../schemas/operations.schema.json' with { type: 'json' }
 import { contentHash } from './canonical.js'
 import { viaNative } from './viaNative.js'

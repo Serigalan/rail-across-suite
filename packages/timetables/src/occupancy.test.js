@@ -30,6 +30,22 @@ describe('the blocks of a way', () => {
     expect(blocksAlong(signalled, [{ trackId: 'L', start: 2500, end: 0 }]).map(b => [b.from, b.to])).toEqual([[0, 2500]])
   })
 
+  it('is cut where the train turns, as at an end and a start', () => {
+    // in to C-Stadt's track 1, out from 100 m back the other way, back to A-Dorf
+    const path = [{ trackId: 'A1', start: 200, end: 500 }, { trackId: 'L', start: 0, end: 2500 }, { trackId: 'C1', start: 0, end: 490 },
+      { trackId: 'C1', start: 390, end: 0 }, { trackId: 'L', start: 2500, end: 0 }, { trackId: 'A1', start: 500, end: 110 }]
+    const blocks = blocksAlong(signalled, path, [3290])
+    expect(blocks.map(b => [b.signalId, b.targetId, b.from, b.to, b.reach, Boolean(b.turnIn), Boolean(b.turnOut)])).toEqual([
+      [null, 'N1', 0, 250, 250, false, false], ['N1', 'B', 250, 1300, 1400, false, false], ['B', 'A', 1300, 2700, 2700, false, false],
+      ['A', null, 2700, 3290, 3290, true, false], [null, null, 3290, 6570, 6570, false, true],
+    ])
+    // held in until it has run its length on out; out from as it leaves
+    const clock = { at0: 0, length: 6570, end: 1000, first: (o) => o / 10, last: (o) => (o >= 3290 - 1e-6 ? o / 10 + 300 : o / 10), standstills: [{ offset: 3290, leave: 629 }] }
+    const [, , , turnIn, turnOut] = blockingTimes(blocks, clock, 100, { setup: 12, approach: 1000, release: 6, overlap: 60 })
+    expect(turnIn.end).toBeCloseTo((3290 + 100) / 10 + 6, 6)
+    expect(turnOut.begin).toBeCloseTo(329 + 300 - 12, 6)
+  })
+
   it('holds its track sections each until the train has left it, those of the overlap with the block', () => {
     const point = (id, station) => ({ id, kind: 'axleCounter', at: { anchor: 'station', trackId: 'L', station } })
     const sectioned = {

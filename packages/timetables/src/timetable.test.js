@@ -4,7 +4,7 @@ import { newVehicle } from '@rail-across/vehicles'
 import { runWith, stationTargets, stationsOf } from '@rail-across/running-times'
 import { marked, net, WASM } from '../../running-times/test/net.js'
 import {
-  copyTrain, formatClock, itineraryOptions, newPoint, newTrain, numberAfter, parseClock, routePoints, runTrain, intervalCopies, stopsIn, trainProblems, trainRequest, trainTitle,
+  copyTrain, formatClock, itineraryOptions, newPoint, newTrain, numberAfter, parseClock, routePoints, runTrain, intervalCopies, stopsIn, trainProblems, trainRequest, trainTitle, TURNAROUND,
 } from './timetable.js'
 
 const stations = stationsOf(net)
@@ -164,6 +164,24 @@ describe.skipIf(!existsSync(WASM))('a train run', () => {
     expect(b.arrival).toBeGreaterThan(25200 + 60)
     expect(c.departure).toBeNull()
     expect(c.arrival).toBeGreaterThan(b.departure)
+  })
+
+  it('turns where its point says so, standing its turnaround, and runs back from where its tail stood', async () => {
+    const t = train([['A-Dorf'], ['C-Stadt', { track: 'C1', stop: false, reverse: true }], ['A-Dorf']])
+    const run = await runTrain(net, stations, t, vehicle, simulate)
+    expect(run.rows.map(r => [r.name, r.point, r.stop])).toEqual([['A-Dorf', 0, true], ['B-Halt', null, false], ['C-Stadt', 1, true], ['B-Halt', null, false], ['A-Dorf', 2, true]])
+    const c = run.rows[2]
+    // five minutes where the point says none
+    expect(c.departure - c.arrival).toBeCloseTo(TURNAROUND, 6)
+    // in on track 1 to 10 m before its stopping place's end, out the other way from the train's length behind it
+    const turn = run.route.path.findIndex((p, i) => i > 0 && p.trackId === 'C1' && p.end < p.start)
+    expect(run.route.path[turn - 1]).toMatchObject({ trackId: 'C1', end: 490 })
+    expect(run.route.path[turn].start).toBeCloseTo(490 - vehicle.length, 6)
+    expect(run.route.turns).toEqual([run.route.offsets[1]])
+    // back at A-Dorf 10 m past its stopping place's lower end; a turnaround of its own
+    expect(run.route.chosen[2]).toMatchObject({ trackId: 'A1', station: 110, direction: 'down' })
+    const longer = await runTrain(net, stations, train([['A-Dorf'], ['C-Stadt', { reverse: true, turnaround: 600 }], ['A-Dorf']]), vehicle, simulate)
+    expect(longer.rows[2].departure - longer.rows[2].arrival).toBeCloseTo(600, 6)
   })
 
   it('passes where it does not stop, and waits for a departure', async () => {

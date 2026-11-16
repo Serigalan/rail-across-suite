@@ -38,11 +38,14 @@ pub const VERSION: &str = "1.0";
 /// The format's name as it is spoken of.
 pub const FORMAT_NAME: &str = "operations-1.0";
 /// The domains and their versions.
-pub const DOMAINS: &[(&str, &str)] = &[("vehicles", "1.0"), ("timetables", "1.0")];
+pub const DOMAINS: &[(&str, &str)] = &[("vehicles", "1.0"), ("timetables", "1.1")];
 
 const ENVELOPE: &str = include_str!("../../../schemas/operations.schema.json");
 const VEHICLES: &str = include_str!("../../../schemas/vehicles/1.0.schema.json");
-const TIMETABLES: &str = include_str!("../../../schemas/timetables/1.0.schema.json");
+const TIMETABLES: &str = include_str!("../../../schemas/timetables/1.1.schema.json");
+/// Timetables 1.0, which 1.1 only adds to (a point's `reverse`, `turnaround`): a domain of it is brought forward as
+/// it is.
+const TIMETABLES_1_0: &str = include_str!("../../../schemas/timetables/1.0.schema.json");
 /// The operations of before: one domain `operations` 1.0, named by core 3.1's types.
 const ENVELOPE_BEFORE: &str = include_str!("../../../schemas/operations-before.schema.json");
 const OPERATIONS_BEFORE: &str = include_str!("../../../schemas/operations/1.0.schema.json");
@@ -171,8 +174,35 @@ pub fn check_operations(given: &Value) -> Result<Value> {
         check_now(&doc)?;
         return Ok(doc);
     }
-    check_now(given)?;
-    Ok(given.clone())
+    let doc = forward(given)?;
+    check_now(&doc)?;
+    Ok(doc)
+}
+
+/// A document of timetables 1.0 brought to 1.1: the domain as it is, its version and schema those of 1.1 — 1.1
+/// only adds to 1.0, so a point of 1.0 that states what 1.1 adds is refused. Any other document as it is.
+fn forward(given: &Value) -> Result<Value> {
+    static HASH_1_0: OnceLock<String> = OnceLock::new();
+    let before = HASH_1_0.get_or_init(|| content_hash(&serde_json::from_str::<Value>(TIMETABLES_1_0).expect("a schema of this build")));
+    let domain = &given["domains"]["timetables"];
+    if domain.get("version").and_then(Value::as_str) != Some("1.0") || domain.get("schema").and_then(Value::as_str) != Some(before.as_str()) {
+        return Ok(given.clone());
+    }
+    let mut found = Vec::new();
+    for (i, tr) in list(&domain["collections"], "trains").iter().enumerate() {
+        for (j, p) in list(tr, "points").iter().enumerate() {
+            for k in ["reverse", "turnaround"].iter().filter(|k| p.get(**k).is_some()) {
+                found.push(format!("/domains/timetables/collections/trains/{i}/points/{j}/{k}: is not of timetables 1.0"));
+            }
+        }
+    }
+    if !found.is_empty() {
+        return Err(PayloadError::with("invalid_payload", found));
+    }
+    let mut doc = given.clone();
+    doc["domains"]["timetables"]["version"] = json!("1.1");
+    doc["domains"]["timetables"]["schema"] = json!(schema_hashes()["timetables"]);
+    Ok(doc)
 }
 
 /// A document of the two domains checked: its shape, each domain's version and schema, the carried schemas and
@@ -356,10 +386,11 @@ pub fn from_before(doc: &Value, end_marks: &HashSet<String>) -> Value {
 /// every collection sorted by id.
 fn documented(vehicles: Object, timetables: Object) -> Value {
     let mut domains = Object::new();
-    domains.insert("vehicles".into(), json!({ "version": "1.0", "schema": schema_hashes()["vehicles"], "fields": {}, "collections": vehicles }));
+    let version = |name: &str| DOMAINS.iter().find(|(d, _)| *d == name).map(|(_, v)| *v).unwrap_or_default();
+    domains.insert("vehicles".into(), json!({ "version": version("vehicles"), "schema": schema_hashes()["vehicles"], "fields": {}, "collections": vehicles }));
     domains.insert(
         "timetables".into(),
-        json!({ "version": "1.0", "schema": schema_hashes()["timetables"], "dependsOn": ["vehicles"], "fields": {}, "collections": timetables }),
+        json!({ "version": version("timetables"), "schema": schema_hashes()["timetables"], "dependsOn": ["vehicles"], "fields": {}, "collections": timetables }),
     );
     crate::ids::forward(&mut domains);
     for t in domains["timetables"]["collections"]["timetables"].as_array_mut().into_iter().flatten() {
@@ -530,6 +561,11 @@ fn point_to_document(p: &Value) -> Value {
         put(&mut o, k, p.get(k).cloned());
     }
     put(&mut o, "itineraryId", given(p.get("itineraryId")));
+    // where it turns, and how long it stands there (timetables 1.1)
+    if p.get("reverse") == Some(&json!(true)) {
+        o.insert("reverse".into(), json!(true));
+        put(&mut o, "turnaround", p.get("turnaround").cloned());
+    }
     Value::Object(o)
 }
 

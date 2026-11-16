@@ -73,7 +73,7 @@ variant, the operation in revisions of its own — and a file brings them togeth
     "format": "operations", "version": "1.0",
     "domains": {
       "vehicles":   { "version": "1.0", … },
-      "timetables": { "version": "1.0", "dependsOn": ["vehicles"], … }
+      "timetables": { "version": "1.1", "dependsOn": ["vehicles"], … }
     }
   },
   "blobs": { "sha256:…": … }
@@ -106,7 +106,7 @@ and collections (`collections`). A **layer** is a domain of infra-data on top of
 | | `signalling` 4.0 | signals with their logical signals, train detection, switch elements, routes, overlaps, flank protection, train protection, station boundaries, itineraries — exportable to PlanPro |
 | | `electrification` 3.0 | masts, suspension points, section insulators and the contact wires with their voltage |
 | operations-1.0 | `vehicles` 1.0 | the vehicles with their rolling stock as RailJSON |
-| | `timetables` 1.0 | timetables, trains, kinds of trains, formations, connections, turnarounds, delay scenarios, studies |
+| | `timetables` 1.1 | timetables, trains, kinds of trains, formations, connections, turnarounds, delay scenarios, studies |
 
 The domains of operations name the infrastructure by id: operational points, track ends, tracks, itineraries.
 These references are checked where the operation is laid on the infrastructure — the infra-data part of the
@@ -434,6 +434,8 @@ once, not read leniently for ever.
 The versions of the domains continue the suite's counting: core 5.0, civil 3.0, signalling 4.0, electrification
 3.0; vehicles 1.0 and timetables 1.0 are the domain operations 1.0 of before, split in two. Core 4.0 had a switch's
 `B1` its main track; 5.0 has it the branch again, and a reader brings a 4.0 file forward by swapping the two.
+Timetables 1.1 adds a train's reversal to its point (`reverse`, `turnaround`); a reader brings a 1.0 file forward
+as it is.
 
 # An example
 
@@ -536,7 +538,7 @@ Halle-Trotha, where it stops on that track:
         } ] }
       },
       "timetables": {
-        "version": "1.0", "schema": "sha256:5555…", "dependsOn": ["vehicles"], "fields": {},
+        "version": "1.1", "schema": "sha256:5555…", "dependsOn": ["vehicles"], "fields": {},
         "collections": {
           "timetables": [ {
             "id": "f0e1d2c3-b4a5-4968-8776-655443322110", "name": "Grundtakt"
@@ -578,7 +580,7 @@ from it in these points, each to be brought in line by its own step (decision 00
 
 - The project server keeps a variant's infrastructure as a document of the envelope of before (infra-data 2.0:
   its domains and its blobs, core 5.0, civil 3.0, signalling 4.0, electrification 3.0) and the operation as an
-  operations document (vehicles 1.0, timetables 1.0); the file rail-across-1.0 brings them together, and a file of
+  operations document (vehicles 1.0, timetables 1.1); the file rail-across-1.0 brings them together, and a file of
   before is still read.
 - The record the tools work on keeps km lines in WGS 84 with the kilometrage per point; the door converts them into
   the document and back (decision 0029, phase 6 takes that out). A km line of before is

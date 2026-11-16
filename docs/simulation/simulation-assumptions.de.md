@@ -24,7 +24,8 @@ Die Simulation folgt fünf Grundsätzen:
 
 - **Die Physik von OSRD.** Die Fahrzeitrechnung ist die Hüllkurvensimulation von OSRD, dem Open Source Railway
   Designer der OpenRail Association, nach Rust portiert (`sim/`, Stand OSRD `fda69ee1`). Was OSRD rechnet, rechnet
-  die Suite gleich; was nicht portiert ist, steht in Abschnitt „Grenzen“.
+  die Suite gleich, mit einer Ausnahme: Gebremst wird abhängig von der Neigung. Was nicht portiert ist, steht in
+  Abschnitt „Grenzen“.
 - **Die Infrastruktur, wie sie entworfen ist.** Neigungen, Bögen und Geschwindigkeiten kommen aus den
   Entwurfswerten der Gleise, nicht aus gezeichneten Linien. Wo Daten fehlen, rechnet die Simulation mit einem
   neutralen Wert (eben, ohne Grenze) und **meldet die Lücke**, statt etwas zu erfinden.
@@ -91,8 +92,16 @@ Dafür gelten diese Regeln:
 - **Kürzester Weg.** Der Weg von Punkt zu Punkt ist der nach Länge kürzeste. Gesucht wird nach Dijkstra über Paare
   aus Gleis und Fahrtrichtung, weiter über Weichen entlang ihrer Fahrwege, über Verbinder und Stöße. Die Kosten sind
   die gefahrenen Meter. Abzweige, Weichen und Geschwindigkeiten kosten nichts zusätzlich.
-- **Kein Richtungswechsel.** Ab einem Halt fährt der Zug in der Richtung weiter, in der er ankam. Ein Zug, der
-  wenden soll, sind zwei Züge.
+- **Kein Richtungswechsel, außer er ist verlangt.** Ab einem Halt fährt der Zug in der Richtung weiter, in der er
+  ankam.
+- **Richtungswechsel.** Ein Punkt unterwegs kann einen verlangen (`reverse`). Der Zug hält dort, steht seine
+  Wendezeit (`turnaround`, ohne Angabe 300 s; die Haltezeit zählt dann nicht) und fährt in Gegenrichtung weiter.
+  Seine neue Spitze ist dort, wo sein Schluss stand, eine Zuglänge zurück auf dem Weg, auf dem er kam. Der Weg
+  springt deshalb an dieser Stelle, und das Stück, auf dem der Zug stand, wird nicht noch einmal befahren. Am ersten
+  und letzten Punkt gibt es keinen Richtungswechsel.
+  Die Fahrzeitrechnung sieht die ganze Fahrt als einen Weg. Für die erste Zuglänge nach dem Richtungswechsel gelten
+  deshalb als Neigung unter dem Zug und als Grenzen, die der Zugschluss räumen muss, die des Stücks, wie der Zug
+  hineingefahren ist. Die signalisierten Geschwindigkeiten werden auf jedem Teil für sich gesucht.
 - **Mehrere Gleise oder Halteplätze eines Bahnhofs** werden der Reihe nach versucht, zuerst der Kandidat, der auf
   dem kürzesten Weg erreicht wird. Ein anderer kommt nur dann in Frage, wenn vom ersten aus kein Weg weiterführt. Höchstens 200 Teilwege werden versucht.
 - **Bevorzugter Fahrweg.** Nennt ein Punkt einen Fahrweg der Leit- und Sicherungstechnik (`itineraryId`), fährt der
@@ -169,7 +178,7 @@ g = 9,81 m/s².
 - **Eine Grenze gilt, bis der Zugschluss sie verlassen hat.** Hinter einer Langsamfahrstelle beschleunigt der Zug
   also erst, wenn er sie mit ganzer Länge verlassen hat.
 - **Vor einer niedrigeren Grenze bremst der Zug so**, dass die Spitze sie an ihrem Beginn erreicht. Die Bremskurve
-  rechnet mit konstanter Verzögerung (siehe „Die Fahrzeitrechnung“).
+  hängt von der Neigung ab (siehe „Die Fahrzeitrechnung“).
 - Der Fahrer gilt als **ideal**: Er bremst im letztmöglichen Augenblick, beschleunigt mit voller Zugkraft und hat
   keine Reaktionszeit. Ankündigungen (Lf 6, Zs 3v, Vorsignale) brauchen keine eigene Wirkung, denn der Bremseinsatz
   folgt aus der Physik.
@@ -192,7 +201,7 @@ Ein Fahrzeug ist Rollmaterial im RailJSON von OSRD. Die Simulation liest daraus:
 | `max_speed` | Höchstgeschwindigkeit in m/s |
 | `inertia_coefficient` | Massenfaktor ρ für die drehenden Massen, sonst 1,05 |
 | `rolling_resistance` | Laufwiderstand nach Davis: `A + B · v + C · v²` in N, v in m/s |
-| `const_gamma` | Betriebsbremsverzögerung in m/s², konstant |
+| `const_gamma` | Betriebsbremsverzögerung in der Ebene in m/s² |
 | `effort_curves` | Zugkraft über Geschwindigkeit, je Traktionsart und Komfort |
 
 - **Zugkraftkurve:** zwischen ihren Punkten linear. Unter dem ersten Punkt gilt dessen Zugkraft, über dem letzten
@@ -234,8 +243,12 @@ a = (F + G − R(v)) / (m · ρ)
 - **Halten:** gerade so viel Zugkraft, wie Widerstand und Neigung verlangen. Reicht die volle Zugkraft nicht, wird
   der Zug langsamer und holt danach wieder auf.
 - **Rollen:** ohne Zugkraft.
-- **Bremsen:** mit der **konstanten Verzögerung** γ des Fahrzeugs, unabhängig von Geschwindigkeit und Neigung. Ein
-  Gefälle verlängert den Bremsweg also nicht.
+- **Bremsen:** mit der Verzögerung γ des Fahrzeugs in der Ebene, **zuzüglich der Neigung unter dem Zug**:
+  `a = −γ + G / (m · ρ)`, mit G der Hangabtriebskraft wie beim Beschleunigen (unter dem Zug gemittelt). Eine Steigung
+  verkürzt den Bremsweg, ein Gefälle verlängert ihn: Mit 0,6 m/s² aus 100 km/h braucht der Zug in der Ebene etwa
+  643 m, in einem Gefälle von 10 ‰ etwa 760 m. In jedem Gefälle bleibt mindestens ein Zehntel von γ. Von der
+  Geschwindigkeit hängt die Verzögerung nicht ab. OSRDs konstante Bremsung, die die Neigung nicht beachtet, bleibt in
+  der Rechnung wählbar (`braking` `constant`); die Suite nutzt sie nicht.
 - Im Stand bleibt der Zug stehen, solange Zugkraft und Hangabtrieb den Widerstand nicht überwinden. Bleibt ein Zug auf
   einer Steigung liegen, bricht die Rechnung mit `impossible_simulation` und der Stelle ab.
 
@@ -263,9 +276,9 @@ Zuschlag. Die Abfahrtszeiten des Fahrplans wirken erst danach (siehe „Uhr“).
 
 ### Halte
 
-- Ein Zug hält an jedem Punkt, der einen Halt verlangt, und immer an seinem Ende, außer er fährt dort über eine Grenze
-  aus. Er bremst auf null, steht die Haltezeit (`dwell`, bei einem neuen Punkt 60 s) und fährt mit voller Zugkraft
-  wieder an.
+- Ein Zug hält an jedem Punkt, der einen Halt oder einen Richtungswechsel verlangt, und immer an seinem Ende, außer
+  er fährt dort über eine Grenze aus. Er bremst auf null, steht die Haltezeit (`dwell`, bei einem neuen Punkt 60 s)
+  oder beim Richtungswechsel die Wendezeit (ohne Angabe 300 s) und fährt mit voller Zugkraft wieder an.
 - Zwei Halte an derselben Stelle werden einer, mit der längeren Haltezeit.
 - Die Mindesthaltezeit eines Punktes (`leastDwell`) wird gespeichert, aber noch nicht gerechnet.
 - Die Rechnung gibt die mechanische Energie am Rad aus, ohne Rückspeisung und ohne Wirkungsgrade.
@@ -329,6 +342,11 @@ aufgelöst ist. Das folgt der Sperrzeit nach Ril 405 und den Belegungsanforderun
 - **Erster Block:** ab der Abfahrt, abzüglich der Bildezeit. **Halt in der Annäherung:** Steht der Zug innerhalb der
   Annäherung, fordert er den Block erst bei seiner Abfahrt dort an.
 - **Letzter Block:** bis zur Ankunft am Ziel und der Auflösezeit.
+- **Richtungswechsel:** Die Blöcke werden dort getrennt wie an einem Ende und einem Anfang. Der Block davor endet am
+  Wendepunkt, ohne Zielsignal und ohne Durchrutschweg. Er bleibt belegt, bis der Zug in Gegenrichtung das Stück
+  verlassen hat, auf dem er stand (eine Zuglänge), dazu die Auflösezeit. Der Block danach beginnt dort ohne Signal
+  und wird bei der Abfahrt verlangt, abzüglich der Bildezeit. Ein dort aufgehaltener Zug wartet am Wendepunkt und
+  steht länger.
 - **Teilfahrstraßenauflösung:** Mit Freimeldeabschnitten wird jeder Abschnitt aufgelöst, sobald der Zugschluss ihn
   verlassen hat, zuzüglich der Auflösezeit. Eine Fahrstraße wartet so nur auf den Abschnitt, den ein anderer noch
   hält.
@@ -404,11 +422,10 @@ Nicht gerechnet werden, teils weil OSRD-Teile nicht portiert sind, teils weil di
 - Bremskurven von ETCS und LZB, Fahrerverhalten an Signalen, Signalbegriffe, die Signalisierungssimulation;
 - Wechsel der Traktionsart unterwegs, elektrische Profile, Leistungsgrenzen, Schutzstrecken;
 - Zugbildungen aus mehreren Fahrzeugen, Wagenzuglast, Bremsstellung und Bremshundertstel;
-- Ausrundungen in der Neigung, eine Neigung in der Bremsverzögerung, der Haftwert;
+- Ausrundungen in der Neigung, eine Bremsverzögerung abhängig von der Geschwindigkeit, der Haftwert;
 - Anschlüsse, Wenden, Verspätungsszenarien und stochastische Läufe einer Untersuchung (`runs`, `seed`) — sie werden
   gespeichert;
 - die Mindesthaltezeit (`leastDwell`) und die Sichtzeit (`sight`);
-- Richtungswechsel innerhalb eines Zuges;
 - vorgegebene Ankunftszeiten in der Fahrzeitrechnung.
 
 ## Vorgabewerte
@@ -421,6 +438,8 @@ Nicht gerechnet werden, teils weil OSRD-Teile nicht portiert sind, teils weil di
 | Fahrzeitzuschlag eines neuen Zuges | 5 %, MARECO | Zug |
 | Haltezeit eines neuen Punktes | 60 s | Punkt `dwell` |
 | Halt vor dem Ende eines Halteplatzes | 10 m, in Fahrtrichtung | — |
+| Wendezeit beim Richtungswechsel | 300 s | Punkt `turnaround` |
+| Bremsverzögerung, die in jedem Gefälle bleibt | ein Zehntel von γ | — |
 | Fahrstraßenbildezeit | 12 s | Fahrstraße, Layer `routeTimes`, Fahrplan `blockingTimes.setup` |
 | Fahrstraßenauflösezeit | 6 s | Fahrstraße, Layer `routeTimes`, Fahrplan `blockingTimes.release` |
 | Annäherung ohne ankündigendes Signal | 1000 m | Fahrplan `blockingTimes.approach` |
@@ -439,6 +458,8 @@ Nicht gerechnet werden, teils weil OSRD-Teile nicht portiert sind, teils weil di
 |---|---|
 | Fahrzeitrechnung | `sim/crates/sim` (Physik, Hüllkurven, Zuschläge, eine Zugfahrt) |
 | Weg, Neigungen, Bögen, Geschwindigkeiten | `packages/running-times/src/path.js`, `route.js`, `request.js` |
+| Bremsen auf der Neigung | `sim/crates/sim/src/physics/integrator.rs` (`braking_deceleration`) |
+| Richtungswechsel | `packages/running-times/src/route.js` (`routeVia`, `backAlong`), `packages/timetables/src/occupancy.js` (`blocksAlong`) |
 | Traktionsart | `packages/running-times/src/traction.js` |
 | Orte | `packages/running-times/src/stations.js` |
 | Wo ein Zug hält | `packages/timetables/src/timetable.js` (`routePoints`, `stoppingPlacesFor`, `stopsIn`) |

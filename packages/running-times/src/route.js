@@ -7,7 +7,7 @@ const LF7 = aspectOf('Lf_7')
 const boardSpeed = (s) => aspectSpeed(LF7, [...(s.frames ?? []), ...(s.logicalSignals ?? []).flatMap(l => l.frames ?? [])]
   .flatMap(f => f.aspects ?? []).find(a => a.aspect === 'Lf_7')?.symbol)
 
-/** A path with a leg run on: the leg's pieces after it, a piece that goes on the last one's track merged into it. */
+/** A path with a leg run on: the leg's pieces after it, a piece that goes on the last one's track merged into it — the way it ran, from where it ended. */
 function joined(path, leg) {
   const out = path.map(p => ({ ...p }))
   for (const piece of leg) {
@@ -16,6 +16,24 @@ function joined(path, leg) {
     else out.push({ ...piece })
   }
   return out
+}
+
+/** The other way along a track. */
+const flipped = (direction) => (direction === 'up' ? 'down' : direction === 'down' ? 'up' : null)
+
+/**
+ * The location `length` back along a path from its end, the way the path
+ * runs there — its start, where the path is shorter: where the tail of a
+ * train is whose head stands at the path's end.
+ */
+export function backAlong(path, length) {
+  let left = length
+  for (let k = path.length - 1; k >= 0; k--) {
+    const p = path[k], len = Math.abs(p.end - p.start)
+    if (len >= left - 1e-9) return { trackId: p.trackId, station: p.end >= p.start ? p.end - left : p.end + left, direction: directionOf(p) }
+    left -= len
+  }
+  return path.length ? { trackId: path[0].trackId, station: path[0].start, direction: directionOf(path[0]) } : null
 }
 
 /**
@@ -41,8 +59,14 @@ export function routeThrough(record, points) {
  * `legPath(i, from, direction, to)`, where given, is asked first for the leg
  * to point `i`: a path, nothing where that leg takes the shortest way, or
  * false where it has no way there.
+ *
+ * At a point in `reverses` (indices) the train turns: the leg on runs the
+ * other way, from where its tail stood — `length` [m] back along the way
+ * (backAlong) —, so that the path jumps there: the stretch the train stood on
+ * is not run again.
  */
-export function routeVia(record, points, { tries = 200, legPath = null } = {}) {
+export function routeVia(record, points, { tries = 200, legPath = null, reverses = [], length = 0 } = {}) {
+  const turns = new Set(reverses)
   let failedAt = 1
   let left = tries
   const legs = new Map()
@@ -53,15 +77,19 @@ export function routeVia(record, points, { tries = 200, legPath = null } = {}) {
   }
   const go = (i, path, offsets, chosen, direction) => {
     if (i === points.length) return { path, offsets, chosen }
+    // where it turns, it leaves from its tail, the other way
+    const turned = turns.has(i - 1) && path.length
+    const from = turned ? backAlong(path, length) : chosen[i - 1]
+    const leaving = turned ? flipped(direction) : direction
     const options = (points[i] ?? [])
-      .map(to => ({ to, leg: legOf(i, chosen[i - 1], direction, to) }))
+      .map(to => ({ to, leg: legOf(i, from, leaving, to) }))
       .filter(o => o.leg)
       .sort((a, b) => pathLength(a.leg) - pathLength(b.leg))
     if (!options.length) { failedAt = Math.max(failedAt, i); return null }
     for (const { to, leg } of options) {
       if (left-- <= 0) return null
       const next = joined(path, leg)
-      const found = go(i + 1, next, [...offsets, pathLength(next)], [...chosen, to], next.length ? directionOf(next[next.length - 1]) : direction)
+      const found = go(i + 1, next, [...offsets, pathLength(next)], [...chosen, to], leg.length ? directionOf(leg[leg.length - 1]) : leaving)
       if (found) return found
     }
     return null
@@ -104,6 +132,22 @@ export function legThrough(record, from, direction, routes, to) {
   }
   const tail = findPath(record, at, to)
   return tail ? joined(path, tail) : null
+}
+
+/**
+ * A path cut where the train turns (`turns`, offsets along it): [{ path,
+ * offset }] — each part with the offset it begins at —, each run one way.
+ */
+export function turnsApart(path, turns = []) {
+  const cuts = [...turns].filter(t => t > 1e-6).sort((a, b) => a - b)
+  const out = [{ path: [], offset: 0 }]
+  let at = 0
+  for (const p of path) {
+    if (cuts.length && at >= cuts[0] - 1e-6) { cuts.shift(); out.push({ path: [], offset: at }) }
+    out[out.length - 1].path.push(p)
+    at += Math.abs(p.end - p.start)
+  }
+  return out.filter(part => part.path.length)
 }
 
 /**

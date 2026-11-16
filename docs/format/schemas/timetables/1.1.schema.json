@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "timetables",
-  "title": "Rail-Data-Core, domain timetables 1.0",
+  "title": "Rail-Data-Core, domain timetables 1.1",
   "description": "A project's timetables and their trains, the kinds of trains, the formations, connections and turnarounds, delay scenarios and studies. Part of operations-1.0 in rail-across-1.0; it belongs to no variant of the infrastructure and names it by id — operational points, end marks, tracks, itineraries —, checked where it is laid on a variant.",
   "type": "object",
   "required": [
@@ -241,7 +241,7 @@
       }
     },
     "TrainPoint": {
-      "description": "A point of a train: an operational point or an end mark by its id, the track, whether it stops there, a departure it waits for.",
+      "description": "A point of a train: an operational point or an end mark by its id, the track, whether it stops there, a departure it waits for, whether it turns there.",
       "type": "object",
       "required": [
         "id",
@@ -288,6 +288,16 @@
         "itineraryId": {
           "$ref": "core#/$defs/Ref",
           "x-target": "signalling.itineraries"
+        },
+        "reverse": {
+          "type": "boolean",
+          "description": "It turns here (Richtungswechsel): it stops, stands its turnaround and runs on the other way, from where its tail stood. Only on the way, not at its first or last point."
+        },
+        "turnaround": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 86400,
+          "description": "How long it stands where it turns [s]: its turnaround time; without, 300 s."
         }
       },
       "oneOf": [

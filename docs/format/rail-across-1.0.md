@@ -80,7 +80,7 @@ variant, the operation in revisions of its own — and a file brings them togeth
     "format": "operations", "version": "1.0",
     "domains": {
       "vehicles":   { "version": "1.0", … },
-      "timetables": { "version": "1.0", "dependsOn": ["vehicles"], … }
+      "timetables": { "version": "1.1", "dependsOn": ["vehicles"], … }
     }
   },
   "blobs": { "sha256:…": … }
@@ -111,7 +111,7 @@ and collections (`collections`). A **layer** is a domain of infra-data on top of
 | | `signalling` 4.0 | signals with their logical signals, train detection, switch elements, routes, overlaps, flank protection, train protection, station boundaries, itineraries — exportable to PlanPro |
 | | `electrification` 3.0 | masts, suspension points, section insulators and the contact wires with their voltage |
 | operations-1.0 | `vehicles` 1.0 | the vehicles with their rolling stock as RailJSON |
-| | `timetables` 1.0 | timetables, trains, kinds of trains, formations, connections, turnarounds, delay scenarios, studies |
+| | `timetables` 1.1 | timetables, trains, kinds of trains, formations, connections, turnarounds, delay scenarios, studies |
 
 The domains of operations name the infrastructure by id: operational points, track ends, tracks, itineraries.
 These references are checked where the operation is laid on the infrastructure — the infra-data part of the
@@ -434,6 +434,8 @@ once, not read leniently for ever.
 The versions of the domains continue the suite's counting: core 5.0, civil 3.0, signalling 4.0, electrification
 3.0; vehicles 1.0 and timetables 1.0 are the domain operations 1.0 of before, split in two. Core 4.0 had a switch's
 `B1` its main track; 5.0 has it the branch again, and a reader brings a 4.0 file forward by swapping the two.
+Timetables 1.1 adds a train's reversal to its point (`reverse`, `turnaround`); a reader brings a 1.0 file forward
+as it is.
 
 ## An example
 
@@ -536,7 +538,7 @@ Halle-Trotha, where it stops on that track:
         } ] }
       },
       "timetables": {
-        "version": "1.0", "schema": "sha256:5555…", "dependsOn": ["vehicles"], "fields": {},
+        "version": "1.1", "schema": "sha256:5555…", "dependsOn": ["vehicles"], "fields": {},
         "collections": {
           "timetables": [ {
             "id": "f0e1d2c3-b4a5-4968-8776-655443322110", "name": "Grundtakt"
@@ -578,7 +580,7 @@ from it in these points, each to be brought in line by its own step (decision 00
 
 - The project server keeps a variant's infrastructure as a document of the envelope of before (infra-data 2.0:
   its domains and its blobs, core 5.0, civil 3.0, signalling 4.0, electrification 3.0) and the operation as an
-  operations document (vehicles 1.0, timetables 1.0); the file rail-across-1.0 brings them together, and a file of
+  operations document (vehicles 1.0, timetables 1.1); the file rail-across-1.0 brings them together, and a file of
   before is still read.
 - The record the tools work on keeps km lines in WGS 84 with the kilometrage per point; the door converts them into
   the document and back (decision 0029, phase 6 takes that out). A km line of before is
@@ -590,7 +592,7 @@ from it in these points, each to be brought in line by its own step (decision 00
 
 ## Appendix: every property and its values
 
-The appendix is generated from the specification's schemas (`rail-across.schema.json`, `core/5.0.schema.json`, `civil/3.0.schema.json`, `signalling/4.0.schema.json`, `electrification/3.0.schema.json`, `vehicles/1.0.schema.json`, `timetables/1.0.schema.json`, in `docs/format/schemas`). For every type it names every property with its path (nested objects with a dot, list entries with `[]`), whether it is required, its type with every value it allows, and its meaning. A reference to a type leads to its section; `→ core.tracks` names the collection an id points into — the check on reading makes sure the object is there.
+The appendix is generated from the specification's schemas (`rail-across.schema.json`, `core/5.0.schema.json`, `civil/3.0.schema.json`, `signalling/4.0.schema.json`, `electrification/3.0.schema.json`, `vehicles/1.0.schema.json`, `timetables/1.1.schema.json`, in `docs/format/schemas`). For every type it names every property with its path (nested objects with a dot, list entries with `[]`), whether it is required, its type with every value it allows, and its meaning. A reference to a type leads to its section; `→ core.tracks` names the collection an id points into — the check on reading makes sure the object is there.
 
 ### The file rail-across-1.0
 
@@ -1840,7 +1842,7 @@ The tractive effort of one traction mode, as RailJSON states it. `is_electric` i
 | `curves` | yes | list of object; at least 1 entry | The curves of tractive effort over speed, each for its conditions (comfort, electrical profile, power restriction) |
 | `default_curve` |  | object | The curve where no condition applies |
 
-### Domain timetables 1.0
+### Domain timetables 1.1
 
 <a id="timetables-root"></a>
 
@@ -1942,7 +1944,7 @@ _No further properties are allowed._
 
 #### TrainPoint
 
-A point of a train: an operational point or a track end by its id, the track, whether it stops there, a departure it waits for.
+A point of a train: an operational point or a track end by its id, the track, whether it stops there, a departure it waits for, whether it reverses there.
 
 _No further properties are allowed._
 
@@ -1959,6 +1961,8 @@ exactly one of `operationalPointId`, `endMarkId` is stated
 | `leastDwell` |  | number; ≥ 0; ≤ 86400 | Least dwell time [s], which the dispatching keeps |
 | `departure` |  | number; ≥ 0; ≤ 172799.999 | Departure in seconds from midnight of the timetable's day; past 24:00 the next day |
 | `itineraryId` |  | [`Ref`](#core-Ref) → `signalling.itineraries` | The itinerary it prefers to the next point |
+| `reverse` |  | boolean | Reverses there: it stops, stands its turnaround time and runs on in the other direction; on the way only (timetables 1.1) |
+| `turnaround` |  | number; ≥ 0; ≤ 86400 | Turnaround time [s] where it reverses; without, 300 s (timetables 1.1) |
 
 <a id="timetables-TrainKind"></a>
 

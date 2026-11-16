@@ -1,5 +1,5 @@
 import { pathProperties } from './path.js'
-import { signalledSpeeds } from './route.js'
+import { signalledSpeeds, turnsApart } from './route.js'
 import { rollingStockOf } from '@rail-across/vehicles'
 import { electrifiedAlong, tractionFor } from './traction.js'
 
@@ -18,11 +18,13 @@ import { electrifiedAlong, tractionFor } from './traction.js'
  * `startSpeed` [m/s] the speed it has at the start — Infinity: what the line
  * and the train allow there —, `endSpeed` [m/s] the speed it leaves the
  * path's end at, at the most, or null; where it crosses a boundary of the
- * planning area.
+ * planning area. `turns` the offsets where the train turns: the signals'
+ * speeds are found on each part run one way.
  */
-export function simulationRequest(record, path, { vehicle, traction = {}, stops = [], margin = null, startSpeed = 0, endSpeed = null, timeStep = 2 }) {
+export function simulationRequest(record, path, { vehicle, traction = {}, stops = [], margin = null, startSpeed = 0, endSpeed = null, timeStep = 2, turns = [] }) {
   const properties = pathProperties(record, path)
-  const signalled = signalledSpeeds(record, path)
+  const signalled = turnsApart(path, turns)
+    .flatMap(part => signalledSpeeds(record, part.path).map(l => ({ ...l, begin: l.begin + part.offset, end: l.end + part.offset })))
   const length = properties.length
   const limits = governedLimits(properties.speedLimits, signalled)
   if (endSpeed != null && Number.isFinite(endSpeed)) limits.push({ begin: Math.max(0, length - 1), end: length, speed: endSpeed, source: 'boundary' })

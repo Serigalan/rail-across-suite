@@ -87,7 +87,7 @@ A file holds one part or both. A project server keeps them apart — the infrast
     "format": "operations", "version": "1.0",
     "domains": {
       "vehicles":   { "version": "1.0", … },
-      "timetables": { "version": "1.0", "dependsOn": ["vehicles"], … }
+      "timetables": { "version": "1.1", "dependsOn": ["vehicles"], … }
     }
   },
   "blobs": { "sha256:…": … }
@@ -117,7 +117,7 @@ A *domain* is a field of its own, with its own schema and its own version. It ha
   [], [`signalling` 4.0], [signals with their logical signals, train detection, switch elements, routes, overlaps, flank protection, train protection, station boundaries, itineraries — exportable to PlanPro],
   [], [`electrification` 3.0], [masts, suspension points, section insulators and the contact wires with their voltage],
   [operations-1.0], [`vehicles` 1.0], [the vehicles with their rolling stock as RailJSON],
-  [], [`timetables` 1.0], [timetables, trains, kinds of trains, formations, connections, turnarounds, delay scenarios, studies],
+  [], [`timetables` 1.1], [timetables, trains, kinds of trains, formations, connections, turnarounds, delay scenarios, studies],
 )
 
 The domains of operations name the infrastructure by id: operational points, track ends, tracks, itineraries. These references are checked where the operation is laid on the infrastructure — the infra-data part of the same file, or a variant on a server.
@@ -335,7 +335,7 @@ Besides, the tools check the content as engineering asks: whether locations lie 
 
 *A schema is a version.* Every change of a schema — also one that only changes a rule the schema names — raises the version of its domain: the minor version for additions an older reader may skip, else the major version. A reader brings an older file forward step by step, number by number; older states are brought forward once, not read leniently for ever.
 
-The versions of the domains continue the suite's counting: core 5.0, civil 3.0, signalling 4.0, electrification 3.0; vehicles 1.0 and timetables 1.0 are the domain operations 1.0 of before, split in two. Core 4.0 had a switch's `B1` its main track; 5.0 has it the branch again, and a reader brings a 4.0 file forward by swapping the two.
+The versions of the domains continue the suite's counting: core 5.0, civil 3.0, signalling 4.0, electrification 3.0; vehicles 1.0 and timetables 1.0 are the domain operations 1.0 of before, split in two. Core 4.0 had a switch's `B1` its main track; 5.0 has it the branch again, and a reader brings a 4.0 file forward by swapping the two. Timetables 1.1 adds a train's reversal to its point (`reverse`, `turnaround`); a reader brings a 1.0 file forward as it is.
 
 = An example
 
@@ -436,7 +436,7 @@ A file with a track of a straight and an arc, new from 1 May 2027, a boundary at
         } ] }
       },
       "timetables": {
-        "version": "1.0", "schema": "sha256:5555…", "dependsOn": ["vehicles"], "fields": {},
+        "version": "1.1", "schema": "sha256:5555…", "dependsOn": ["vehicles"], "fields": {},
         "collections": {
           "timetables": [ {
             "id": "f0e1d2c3-b4a5-4968-8776-655443322110", "name": "Grundtakt"
@@ -475,14 +475,14 @@ The hashes are shortened here; in a file each has its 64 hex digits.
 
 This specification is the target of the data model. As of 13 November 2026 the suite's implementation differs from it in these points, each to be brought in line by its own step (decision 0028 and those after it):
 
-- The project server keeps a variant's infrastructure as a document of the envelope of before (infra-data 2.0: its domains and its blobs, core 5.0, civil 3.0, signalling 4.0, electrification 3.0) and the operation as an operations document (vehicles 1.0, timetables 1.0); the file rail-across-1.0 brings them together, and a file of before is still read.
+- The project server keeps a variant's infrastructure as a document of the envelope of before (infra-data 2.0: its domains and its blobs, core 5.0, civil 3.0, signalling 4.0, electrification 3.0) and the operation as an operations document (vehicles 1.0, timetables 1.1); the file rail-across-1.0 brings them together, and a file of before is still read.
 - The record the tools work on keeps km lines in WGS 84 with the kilometrage per point; the door converts them into the document and back (decision 0029, phase 6 takes that out). A km line of before is kept as points, not yet fitted with design elements.
 - A domain the reader does not know is kept; one of a later version of a domain it knows is refused, not read with the version it knows.
 
 #pagebreak()
 = Appendix: every property and its values <appendix>
 
-The appendix is generated from the specification's schemas (`rail-across.schema.json`, `core/5.0.schema.json`, `civil/3.0.schema.json`, `signalling/4.0.schema.json`, `electrification/3.0.schema.json`, `vehicles/1.0.schema.json`, `timetables/1.0.schema.json`, in `docs/format/schemas`). For every type it names every property with its path (nested objects with a dot, list entries with `[]`), whether it is required, its type with every value it allows, and its meaning. A reference to a type leads to its section; `→ core.tracks` names the collection an id points into — the check on reading makes sure the object is there.
+The appendix is generated from the specification's schemas (`rail-across.schema.json`, `core/5.0.schema.json`, `civil/3.0.schema.json`, `signalling/4.0.schema.json`, `electrification/3.0.schema.json`, `vehicles/1.0.schema.json`, `timetables/1.1.schema.json`, in `docs/format/schemas`). For every type it names every property with its path (nested objects with a dot, list entries with `[]`), whether it is required, its type with every value it allows, and its meaning. A reference to a type leads to its section; `→ core.tracks` names the collection an id points into — the check on reading makes sure the object is there.
 
 == The file rail-across-1.0
 
@@ -1639,7 +1639,7 @@ The tractive effort of one traction mode, as RailJSON states it. `is_electric` i
   [`default_curve`], [], [object], [The curve where no condition applies],
 )
 
-== Domain timetables 1.0
+== Domain timetables 1.1
 
 === Domain document <timetables-root>
 
@@ -1732,7 +1732,7 @@ _No further properties are allowed._
 
 === TrainPoint <timetables-TrainPoint>
 
-A point of a train: an operational point or a track end by its id, the track, whether it stops there, a departure it waits for.
+A point of a train: an operational point or a track end by its id, the track, whether it stops there, a departure it waits for, whether it reverses there.
 
 _No further properties are allowed._
 
@@ -1749,6 +1749,8 @@ exactly one of `operationalPointId`, `endMarkId` is stated
   [`leastDwell`], [], [number; ≥ 0; ≤ 86400], [Least dwell time \[s\], which the dispatching keeps],
   [`departure`], [], [number; ≥ 0; ≤ 172799.999], [Departure in seconds from midnight of the timetable's day; past 24:00 the next day],
   [`itineraryId`], [], [#link(<core-Ref>)[`Ref`] → `signalling.​itineraries`], [The itinerary it prefers to the next point],
+  [`reverse`], [], [boolean], [Reverses there: it stops, stands its turnaround time and runs on in the other direction; on the way only (timetables 1.1)],
+  [`turnaround`], [], [number; ≥ 0; ≤ 86400], [Turnaround time \[s\] where it reverses; without, 300 s (timetables 1.1)],
 )
 
 === TrainKind <timetables-TrainKind>

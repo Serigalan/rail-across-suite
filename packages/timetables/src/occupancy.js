@@ -174,8 +174,12 @@ function uncovered(spans, from, to) {
  * the next signal stays set once a train stands before it (its `releaseDelay`);
  * `approachFrom` the offset where the block is asked for — the sight distance
  * before the signal that announces its own —, null where none along the way does.
+ *
+ * Where the train turns (`turns`, offsets along the path), the blocks are cut
+ * as at an end and a start: the one before ends there without a signal and an
+ * overlap (`turnIn`), the one after begins there without a signal (`turnOut`).
  */
-export function blocksAlong(record, path) {
+export function blocksAlong(record, path, turns = []) {
   const length = pathLength(path)
   const signalling = record?.signalling
   const overlaps = signalling?.collections?.overlaps ?? []
@@ -190,12 +194,17 @@ export function blocksAlong(record, path) {
     const route = from && to ? routes.find(r => r.startSignalId === from && r.targetSignalId === to && r.kind !== 'shunting') : null
     return { setting: route?.settingTime ?? routeTimes.setting ?? null, release: route?.releaseTime ?? routeTimes.release ?? null }
   }
-  const cuts = [{ offset: 0, signal: null }, ...signalsAlong(record, path).filter(s => s.offset > 1 && s.offset < length - 1)]
+  const turned = turns.filter(t => t > 1 && t < length - 1)
+  const cuts = [
+    { offset: 0, signal: null },
+    ...signalsAlong(record, path).filter(s => s.offset > 1 && s.offset < length - 1 && !turned.some(t => Math.abs(t - s.offset) <= 1)),
+    ...turned.map(offset => ({ offset, signal: null, turn: true })),
+  ].sort((a, b) => a.offset - b.offset)
   const announcing = signalsAlong(record, path, announces)
   // Where a block is asked for: the point its signal is first seen from — the sight distance before the
   // signal that announces it, the farthest back since the main signal before (Ril 405) —, or null.
   const approachOf = (i) => {
-    const before = cuts[i - 1]?.signal ? cuts[i - 1].offset : -Infinity
+    const before = cuts[i - 1]?.signal || cuts[i - 1]?.turn ? cuts[i - 1].offset : -Infinity
     const by = announcing.filter(a => a.offset < cuts[i].offset - 1 && a.offset >= before - 1)
     if (!by.length) return null
     const first = by[0]
@@ -206,12 +215,13 @@ export function blocksAlong(record, path) {
   return cuts.map((c, i) => {
     const next = cuts[i + 1]
     const to = next ? next.offset : length
-    const reach = next ? Math.min(length, to + overlapOf(next.signal.id)) : length
+    const reach = next?.signal ? Math.min(length, to + overlapOf(next.signal.id)) : to
     const held = spans.filter(s => Math.min(s.to, reach) - Math.max(s.from, c.offset) > 0.5)
-    const { setting, release } = c.signal ? timesOf(c.signal.id, next?.signal.id) : { setting: null, release: null }
+    const { setting, release } = c.signal ? timesOf(c.signal.id, next?.signal?.id) : { setting: null, release: null }
     return {
-      index: i, signalId: c.signal?.id ?? null, targetId: next?.signal.id ?? null, from: c.offset, to, reach,
-      setting, release, overlapRelease: next ? delayOf(next.signal.id) : null, approachFrom: c.signal ? approachOf(i) : null,
+      index: i, signalId: c.signal?.id ?? null, targetId: next?.signal?.id ?? null, from: c.offset, to, reach,
+      setting, release, overlapRelease: next?.signal ? delayOf(next.signal.id) : null, approachFrom: c.signal ? approachOf(i) : null,
+      ...(next?.turn ? { turnIn: true } : {}), ...(c.turn ? { turnOut: true } : {}),
       stretches: stretchesOf(path, c.offset, reach),
       sections: held.map(s => ({ id: s.id, from: Math.max(s.from, c.offset), to: Math.min(s.to, reach) })),
       free: uncovered(held, c.offset, reach).flatMap(([a, b]) => stretchesOf(path, a, b)),
@@ -231,13 +241,15 @@ export function blockingTimes(blocks, clock, trainLength, given = BLOCKING) {
       ...given, setup: b.setting ?? given.setup, release: b.release ?? given.release, overlap: b.overlapRelease ?? given.overlap ?? BLOCKING.overlap,
     }
     const approach = Math.max(0, b.approachFrom ?? b.from - times.approach)
-    let begin = b.from <= 1e-6 ? clock.at0 : clock.first(approach)
+    // the first block from its start, one after it turns as it leaves there
+    let begin = b.from <= 1e-6 ? clock.at0 : b.turnOut ? clock.last(b.from) : clock.first(approach)
     // where it stands within the approach, the block is asked for as it leaves
     for (const s of clock.standstills) if (s.offset >= approach - 1e-6 && s.offset < b.from - 1e-6) begin = Math.max(begin, s.leave)
-    // Until the train has run through `at` with its whole length: the block's end, else that moment.
+    // Until the train has run through `at` with its whole length: the block's end, else that moment — where it turns,
+    // until it has run its length on the other way, off the stretch it stood on.
     const leftAt = (at) => {
       const clear = at + trainLength
-      return (b.targetId == null || clear >= clock.length - 1e-6 ? clock.end : clock.first(clear)) + times.release
+      return ((b.targetId == null && !b.turnIn) || clear >= clock.length - 1e-6 ? clock.end : clock.first(clear)) + times.release
     }
     const end = leftAt(b.to)
     // Where it comes to a stand before the block's end signal, its overlap is released a while after.
@@ -306,13 +318,14 @@ export function byPriority(trains, dispatch) {
 }
 
 /**
- * Where a train waits for a block: at its start for the first; else at the
- * last point it stops at within the block's approach — between the signal
+ * Where a train waits for a block: at its start for the first, where it turns
+ * for the one after; else at the last point it stops at within the block's approach — between the signal
  * before and the block's, its start among them —, longer; else a few metres
  * before the block's signal. { offset, point } — `point` the index of the train's point, or null.
  */
 export function holdBefore(run, block, blocks, approach) {
   if (block.from <= 1e-6) return { offset: 0, point: 0, signalId: null }
+  if (block.turnOut) return { offset: block.from, point: run.schedule.find(s => s.point != null && Math.abs(s.offset - block.from) < 1e-3)?.point ?? null, signalId: null }
   const before = blocks[block.index - 1]
   const from = Math.max(before ? before.from : 0, block.from - approach)
   // its start is where it stands first: it leaves later rather than wait at the signal ahead
@@ -343,7 +356,7 @@ export async function occupancy(record, trains, runOf, dispatch = DISPATCH) {
   const times = dispatch.times ?? BLOCKING
   const timed = (run) => {
     if (!run?.rows) return run
-    const blocks = blockingTimes(blocksAlong(record, run.route.path), run.clock, run.request.rolling_stock.length, times)
+    const blocks = blockingTimes(blocksAlong(record, run.route.path, run.route.turns), run.clock, run.request.rolling_stock.length, times)
     return { ...run, blocks }
   }
   const out = new Map()

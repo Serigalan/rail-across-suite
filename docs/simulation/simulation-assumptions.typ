@@ -42,7 +42,7 @@ Four tools compute:
 
 The simulation follows five principles:
 
-- *OSRD's physics.* The running time calculation is the envelope simulation of OSRD, the Open Source Railway Designer of the OpenRail Association, ported to Rust (`sim/`, at OSRD `fda69ee1`). What OSRD computes, the suite computes the same way; what is not ported is listed under "Limits".
+- *OSRD's physics.* The running time calculation is the envelope simulation of OSRD, the Open Source Railway Designer of the OpenRail Association, ported to Rust (`sim/`, at OSRD `fda69ee1`). What OSRD computes, the suite computes the same way, with one exception: braking depends on the grade. What is not ported is listed under "Limits".
 - *The infrastructure as designed.* Grades, curves and speeds come from the tracks' design values, not from drawn lines. Where data is missing, the simulation runs with a neutral value (level, no limit) and *reports the gap* instead of inventing something.
 - *Each train for itself first, then all together.* Each train is first run alone. Its run gives its blocking times; only the dispatching brings the trains together, and runs a train again where it has to wait or is sent another way.
 - *Determined, not random.* The same inputs give the same results. There are no random variables and no spread.
@@ -89,7 +89,8 @@ These rules apply:
 = The way over the net
 
 - *Shortest way.* The way from point to point is the shortest by length. It is searched after Dijkstra over pairs of track and direction, on over switches along their routes, links and joints. The cost is the metres run. Diverging, switches and speeds cost nothing more.
-- *No reversing.* From a stop on, the train runs on in the direction it arrived in. A train that is to reverse is two trains.
+- *No reversing, unless asked for.* From a stop on, the train runs on in the direction it arrived in.
+- *Reversal (Richtungswechsel).* A point on the way can ask for one (`reverse`). The train stops there, stands its turnaround time (`turnaround`, 300 s where none is given; its dwell does not count) and runs on in the other direction. Its new head is where its tail stood, one train length back along the way it came in. The way therefore jumps there, and the stretch the train stood on is not run again. Its first and last point cannot reverse. The running time calculation sees the whole run as one way. For the first train length after the reversal, the grade under the train and the limits its tail must clear are therefore those of the stretch as the train came in on it. The speeds the signals signal are found on each part for itself.
 - *Several tracks or stopping places of a station* are tried in turn, the one reached the shortest way first. Another is taken only where no way leads on from the first. At most 200 legs are tried.
 - *Preferred itinerary.* Where a point names an itinerary of the signalling (`itineraryId`), the train runs along its tracks, where the variant has it and it leads there. Else it runs the shortest way and says so.
 - *Sent another way by the dispatching.* Where the dispatching sends a train over another route (see "Dispatching"), it runs to that route's start signal, along its tracks to the target signal, and on from there the shortest way.
@@ -142,7 +143,7 @@ The running time calculation takes not the grade under the head but the *mean gr
 
 - All limits make the *most restrictive speed profile* (MRSP).
 - *A limit holds until the train's tail has left it.* Behind a speed restriction, the train accelerates only once it has left it with its whole length.
-- *Before a lower limit the train brakes* so that its head reaches it at its beginning. The braking curve runs at a constant deceleration (see "The running time calculation").
+- *Before a lower limit the train brakes* so that its head reaches it at its beginning. The braking curve depends on the grade (see "The running time calculation").
 - The driver is *ideal*: they brake at the last possible moment, accelerate with full effort and have no reaction time. Announcements (Lf 6, Zs 3v, distant signals) need no effect of their own: where braking begins follows from the physics.
 - *Entry speed* at a boundary: the boundary's, at most the train's top speed, and at most so fast that it can still brake down to every limit along the way: `√(v² + 2 · 0.8 · γ · s)` with γ the vehicle's braking deceleration and s the distance to the limit. The factor 0.8 leaves room for a fall.
 - The speed profile shown is the one without the train's length.
@@ -160,7 +161,7 @@ A vehicle is rolling stock in OSRD's RailJSON. The simulation reads of it:
   [`max_speed`], [top speed in m/s],
   [`inertia_coefficient`], [mass factor ρ for the rotating masses, else 1.05],
   [`rolling_resistance`], [resistance to movement after Davis: `A + B · v + C · v²` in N, v in m/s],
-  [`const_gamma`], [service braking deceleration in m/s², constant],
+  [`const_gamma`], [service braking deceleration on the level in m/s²],
   [`effort_curves`], [tractive effort over speed, per traction mode and comfort],
 )
 
@@ -190,7 +191,7 @@ a = (F + G − R(v)) / (m · ρ)
 - *Accelerating:* full tractive effort.
 - *Holding:* just as much effort as resistance and grade ask for. Where full effort is not enough, the train slows down and catches up afterwards.
 - *Coasting:* no tractive effort.
-- *Braking:* at the vehicle's *constant deceleration* γ, whatever the speed and the grade. A fall therefore does not lengthen the braking distance.
+- *Braking:* at the vehicle's deceleration γ on the level, *plus the grade under the train*: `a = −γ + G / (m · ρ)`, with G the weight force as in accelerating (averaged under the train). A rise shortens the braking distance, a fall lengthens it: at 0.6 m/s² from 100 km/h the train needs about 643 m on the level and about 760 m on a fall of 10 ‰. On any fall, at least a tenth of γ is left. The deceleration does not depend on the speed. OSRD's constant braking, which ignores the grade, stays selectable in the calculation (`braking` `constant`); the suite does not use it.
 - At a stand the train stays standing as long as effort and grade do not overcome the resistance. Where a train stalls on a rise, the calculation stops with `impossible_simulation` and the position.
 
 == The three runs
@@ -213,7 +214,7 @@ The suite gives the calculation no arrival times, only stops with their dwell. `
 
 == Stops
 
-- A train stops at every point that asks for a stop, and always at its end, unless it leaves over a boundary there. It brakes to zero, stands its dwell (`dwell`, 60 s for a new point) and starts again with full effort.
+- A train stops at every point that asks for a stop or a reversal, and always at its end, unless it leaves over a boundary there. It brakes to zero, stands its dwell (`dwell`, 60 s for a new point) or, where it reverses, its turnaround time (300 s where none is given), and starts again with full effort.
 - Two stops at the same position become one, with the longer dwell.
 - A point's least dwell (`leastDwell`) is stored but not computed yet.
 - The calculation gives the mechanical energy at the wheel, without recuperation and without efficiencies.
@@ -259,6 +260,7 @@ A train holds a block from the moment it must find it free until the block is re
 - The *approach time* is that of the train's actual run. A sight time in seconds (`sight` in `blockingTimes`) is stored but not computed yet.
 - *First block:* from the departure, less the setting time. *Stop in the approach:* where the train stands within the approach, it asks for the block only as it leaves there.
 - *Last block:* until the arrival at the end and the release time.
+- *Reversal:* the blocks are cut there as at an end and a start. The block before ends at the reversal point, without an end signal and without an overlap. It is held until the train, running the other way, has left the stretch it stood on (one train length), plus the release time. The block after begins there without a signal and is asked for as the train leaves, less the setting time. A train held there waits at the reversal point and stands longer.
 - *Sectional release:* with track sections, each section is released as soon as the train's tail has left it, plus the release time. A route then waits only for the section another still holds.
 - *Overlap:* its sections are released with the block. Where the train comes to a stand within 200 m before the end signal, they are released a while after it stops: after the overlap's release delay (`releaseDelay`), else after 60 s.
 
@@ -306,10 +308,9 @@ Not computed, partly because parts of OSRD are not ported, partly because the su
 - ETCS and LZB braking curves, driver behaviour at signals, aspects, the signalling simulation;
 - a change of traction mode on the way, electrical profiles, power restrictions, neutral sections;
 - formations of several vehicles, hauled load, brake position and braked weight percentage;
-- vertical curves in the grade, a grade in the braking deceleration, adhesion;
+- vertical curves in the grade, a braking deceleration depending on the speed, adhesion;
 - connections, turnarounds, delay scenarios and a study's stochastic runs (`runs`, `seed`) — they are stored;
 - the least dwell (`leastDwell`) and the sight time (`sight`);
-- reversing within a train;
 - given arrival times in the running time calculation.
 
 = Defaults
@@ -322,6 +323,8 @@ Not computed, partly because parts of OSRD are not ported, partly because the su
   [Running time margin of a new train], [5 %, MARECO], [train],
   [Dwell of a new point], [60 s], [point `dwell`],
   [Stop before the end of a stopping place], [10 m, in the direction of travel], [—],
+  [Turnaround time where a train reverses], [300 s], [point `turnaround`],
+  [Braking deceleration left on any fall], [a tenth of γ], [—],
   [Route setting time], [12 s], [route, layer `routeTimes`, timetable `blockingTimes.setup`],
   [Route release time], [6 s], [route, layer `routeTimes`, timetable `blockingTimes.release`],
   [Approach without an announcing signal], [1000 m], [timetable `blockingTimes.approach`],
@@ -341,6 +344,8 @@ Not computed, partly because parts of OSRD are not ported, partly because the su
   [Topic], [Source],
   [Running time calculation], [`sim/crates/sim` (physics, envelopes, margins, one train's run)],
   [Way, grades, curves, speeds], [`packages/running-times/src/path.js`, `route.js`, `request.js`],
+  [Braking on the grade], [`sim/crates/sim/src/physics/integrator.rs` (`braking_deceleration`)],
+  [Reversal], [`packages/running-times/src/route.js` (`routeVia`, `backAlong`), `packages/timetables/src/occupancy.js` (`blocksAlong`)],
   [Traction mode], [`packages/running-times/src/traction.js`],
   [Places], [`packages/running-times/src/stations.js`],
   [Where a train stops], [`packages/timetables/src/timetable.js` (`routePoints`, `stoppingPlacesFor`, `stopsIn`)],

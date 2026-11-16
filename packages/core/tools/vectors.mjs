@@ -14,6 +14,7 @@ import {
   canonicalJson, checkDocument, checkOperations, contentHash, derivedId, documentHash, manifestOf, PayloadError, toDocument, toOperations,
 } from '../src/document/index.js'
 import { loadNativeFile } from '../src/native/node.js'
+import TIMETABLES_1_0 from '../schemas/timetables/1.0.schema.json' with { type: 'json' }
 import { ksStation, ksStoppingPlaces } from '../test/signallingFixture.js'
 
 const OUT = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'schemas', 'vectors')
@@ -261,6 +262,15 @@ const OPERATIONS_CASES = [
     const c = doc.domains.timetables.collections
     c.connections.push({ id: derivedId('an-1'), fromTrainId: derivedId('z-1'), toTrainId: derivedId('g-1'), operationalPointId: derivedId('leipzig'), changeTime: 300, waitUpTo: 180 })
     c.turnarounds.push({ id: derivedId('w-1'), fromTrainId: derivedId('z-1'), toTrainId: derivedId('z-2'), leastTime: 600 })
+  }],
+  ['a train that turns on the way (timetables 1.1)', (doc) => {
+    const points = doc.domains.timetables.collections.trains[0].points
+    Object.assign(points[Math.min(1, points.length - 1)], { stop: true, reverse: true, turnaround: 420 })
+  }],
+  ['timetables 1.0, brought forward', (doc) => { Object.assign(doc.domains.timetables, { version: '1.0', schema: contentHash(TIMETABLES_1_0) }) }],
+  ['timetables 1.0 with a turn', (doc) => {
+    Object.assign(doc.domains.timetables, { version: '1.0', schema: contentHash(TIMETABLES_1_0) })
+    doc.domains.timetables.collections.trains[0].points[0].reverse = true
   }],
   ['another version', (doc) => { doc.version = '2.0' }],
   ['a train of no timetable', (doc) => { doc.domains.timetables.collections.trains[0].timetableId = derivedId('tt-9') }],

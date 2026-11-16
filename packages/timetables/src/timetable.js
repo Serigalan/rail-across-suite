@@ -14,7 +14,8 @@ import { crossingSpeed, directionOf, legThrough, marginValue, pathAlong, pathLen
  *
  * train = { id, number, category, name, vehicle, mode, comfort, departure,
  *           margin, distribution, points }
- * point = { id, place, station, track, stop, dwell, departure, itinerary }
+ * point = { id, place, station, track, stop, dwell, departure, itinerary,
+ *           reverse, turnaround }
  *
  * `place` the id of the place (stationsOf: a station's or halt's point of
  * the register, an end's mark), `station` its name as it was when chosen —
@@ -23,13 +24,27 @@ import { crossingSpeed, directionOf, legThrough, marginValue, pathAlong, pathLen
  * `departure` [s from midnight] at the first point; a point's `track` the
  * station's track it uses (an id of the variant's tracks), or null for any;
  * `stop` whether it stops there (it always does at its ends), `dwell` how
- * long [s], `departure` the time it waits for there before leaving, or null;
+ * long [s]; `reverse` whether it turns there (Richtungswechsel) — it stops,
+ * standing its `turnaround` [s] (TURNAROUND where none is given), and runs on
+ * the other way —, `departure` the time it waits for there before leaving, or null;
  * `itinerary` the way it prefers from there to the next point — an itinerary
  * of the variant's signalling, from a stopping place of the one station to
  * one of the other —, or null for the shortest. A way preferred is taken
  * where the variant has it and it leads there; else the train runs the
  * shortest way, and says so.
  */
+
+/** How long a train stands where it turns, where its point says not [s]. */
+export const TURNAROUND = 300
+
+/** Whether a train stops at a point of the way: where it says so, and where it turns. */
+export const stopsAt = (p) => Boolean(p?.stop || p?.reverse)
+
+/** How long a train stands at a point it stops at [s]: its turnaround where it turns, else its dwell. */
+export const standsAt = (p) => (p?.reverse ? p.turnaround ?? TURNAROUND : p?.dwell ?? 0)
+
+/** The points of a train where it turns: their indices, those on the way only. */
+export const turnsOf = (train) => (train.points ?? []).map((p, i) => i).filter(i => i > 0 && i < train.points.length - 1 && train.points[i].reverse)
 
 /** The kinds of trains offered; any other is written as it is. */
 export const CATEGORIES = ['ICE', 'IC', 'EC', 'RE', 'RB', 'S', 'IRE', 'Gz', 'Lz', 'Dz']
@@ -140,7 +155,7 @@ export function trainProblems(train, stations, { vehicle = true, record = null }
     else if (end && points.length >= 2 && station.kind === 'halt') out.push({ key: i === 0 ? 'start_not_station' : 'end_not_station', point: i })
     else if (!end && station.kind === 'end') out.push({ key: 'end_on_the_way', point: i })
     else if (p.trackId && !station.tracks.some(tr => tr.id === p.trackId) && !station.platforms.some(pl => pl.trackId === p.trackId)) out.push({ key: 'track_missing', point: i })
-    else if (record && station.kind !== 'end' && (p.stop || end) && !stoppingPlacesFor(record, station, train, p.trackId).length) {
+    else if (record && station.kind !== 'end' && (stopsAt(p) || end) && !stoppingPlacesFor(record, station, train, p.trackId).length) {
       out.push({ key: carriesPassengers(train) ? 'no_platform_stop' : 'no_stopping_place', point: i })
     }
   })
@@ -250,7 +265,7 @@ export function routePoints(record, stations, train) {
   const last = train.points.length - 1
   return train.points.map((p, i) => {
     const place = placeOf(stations, p)
-    const stop = p.stop || i === 0 || i === last
+    const stop = stopsAt(p) || i === 0 || i === last
     if (!stop || !place || place.kind === 'end') return stationTargets(place, { trackId: p.trackId, stop })
     return stoppingPlacesFor(record, place, train, p.trackId).flatMap(stopsIn)
   })
@@ -282,6 +297,7 @@ export function trainRequest(record, stations, train, vehicle, holds = [], route
   })
   const taken = new Map()
   const route = routeVia(record, points, {
+    reverses: turnsOf(train), length: vehicle?.length ?? 0,
     legPath: (i, from, direction, to) => {
       const sent = routes.filter(r => r.leg === i - 1)
       if (sent.length) return legThrough(record, from, direction, sent, to) ?? false
@@ -293,21 +309,24 @@ export function trainRequest(record, stations, train, vehicle, holds = [], route
     },
   })
   if (!route.path) return { failedAt: route.failedAt }
+  // the offsets where it turns, where its blocks are cut as at a start and an end
+  route.turns = turnsOf(train).map(i => route.offsets[i])
   route.preferred = legs.map((leg, i) => (leg ? (taken.get(i) ? 'taken' : 'other') : missing.includes(i) ? 'missing' : null))
   const last = train.points.length - 1
-  const stops = train.points.map((p, i) => i).filter(i => i > 0 && (i === last || train.points[i].stop))
+  const stops = train.points.map((p, i) => i).filter(i => i > 0 && (i === last || stopsAt(train.points[i])))
   const waitAt = (i) => holds.filter(h => h.point === i).reduce((sum, h) => sum + h.wait, 0)
   // at a boundary it runs in, and on out
   const startSpeed = crossingSpeed(placeOf(stations, train.points[0]))
   const endSpeed = crossingSpeed(placeOf(stations, train.points[last]))
   const schedule = [
-    ...stops.map(i => ({ offset: route.offsets[i], duration: i < last ? (train.points[i].dwell ?? 0) + waitAt(i) : endSpeed > 0 ? null : 0, point: i })),
+    ...stops.map(i => ({ offset: route.offsets[i], duration: i < last ? standsAt(train.points[i]) + waitAt(i) : endSpeed > 0 ? null : 0, point: i })),
     ...holds.filter(h => h.point == null).map(h => ({ offset: h.offset, duration: h.wait, point: null })),
   ].sort((a, b) => a.offset - b.offset)
   const { request, properties } = simulationRequest(record, route.path, {
     vehicle, traction: { mode: train.mode, comfort: train.comfort ?? 'STANDARD' },
     stops: schedule.map(s => ({ offset: s.offset, duration: s.duration })),
     margin: { value: marginValue(train.margin), distribution: train.distribution ?? 'mareco' },
+    turns: turnsOf(train).map(i => route.offsets[i]),
     startSpeed, endSpeed: endSpeed > 0 ? endSpeed : null,
   })
   return { route, request, properties, stops, schedule, startWait: waitAt(0) }
@@ -385,7 +404,7 @@ export function trainTimes(train, stations, made, result) {
   })
   rows.sort((a, b) => a.offset - b.offset || (a.point ?? 0) - (b.point ?? 0))
   return rows.map(r => {
-    const stopping = r.point != null && (r.point === 0 || r.point === last || train.points[r.point].stop)
+    const stopping = r.point != null && (r.point === 0 || r.point === last || stopsAt(train.points[r.point]))
     let arrival, departure
     if (r.point === 0) { arrival = null; departure = at0 }
     else if (stopping) {

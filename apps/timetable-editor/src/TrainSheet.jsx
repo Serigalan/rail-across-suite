@@ -1,6 +1,6 @@
 import { Fragment, useMemo, useState } from 'react'
 import { Badge, Button, Checkbox, IconButton, Message, NumberField, PlusIcon, SelectField, TextField, TrashIcon } from '@rail-across/ui'
-import { atPlace, CATEGORIES, categoryColor, formatClock, itineraryOptions, newPoint, parseClock, trainProblems, trainTitle } from '@rail-across/timetables'
+import { atPlace, CATEGORIES, categoryColor, formatClock, itineraryOptions, newPoint, parseClock, stopsAt, trainProblems, trainTitle, TURNAROUND } from '@rail-across/timetables'
 import { formatDistance, heightProfile, lngLatAt, marginValue, placeIdOf, placeOf, stationById } from '@rail-across/running-times'
 import { comfortsOf, curveFor, modeLabel, powerOf } from '@rail-across/vehicles'
 import { CopyIcon, DownIcon, IntervalIcon, UpIcon } from './icons.jsx'
@@ -282,9 +282,11 @@ function RouteCard({ t, train, stations, record, run, problems, ro, update }) {
                 onChange={(v) => setPoint(i, { trackId: v })} />
             </div>
             <div className="tt-point-more">
-              <Checkbox label={t('stops_here')} checked={p.stop} disabled={ro} onChange={(v) => setPoint(i, { stop: v })} />
-              {p.stop && <NumberField compact label={t('dwell_s')} value={p.dwell} min={0} step={15} disabled={ro} onChange={(v) => setPoint(i, { dwell: v ?? 0 })} />}
-              {p.stop && <ClockField t={t} label={t('waits_for')} value={p.departure} empty disabled={ro} onChange={(v) => setPoint(i, { departure: v })} />}
+              <Checkbox label={t('stops_here')} checked={stopsAt(p)} disabled={ro || p.reverse} onChange={(v) => setPoint(i, { stop: v })} />
+              <Checkbox label={t('reverses_here')} checked={Boolean(p.reverse)} disabled={ro} onChange={(v) => setPoint(i, v ? { reverse: true, turnaround: p.turnaround ?? TURNAROUND } : { reverse: false, turnaround: undefined })} />
+              {p.reverse && <NumberField compact label={t('turnaround_s')} value={p.turnaround ?? TURNAROUND} min={0} step={60} disabled={ro} onChange={(v) => setPoint(i, { turnaround: v ?? TURNAROUND })} />}
+              {p.stop && !p.reverse && <NumberField compact label={t('dwell_s')} value={p.dwell} min={0} step={15} disabled={ro} onChange={(v) => setPoint(i, { dwell: v ?? 0 })} />}
+              {stopsAt(p) && <ClockField t={t} label={t('waits_for')} value={p.departure} empty disabled={ro} onChange={(v) => setPoint(i, { departure: v })} />}
               {!ro && (
                 <span className="ui-row tt-point-tools">
                   <IconButton label={t('move_up')} icon={<UpIcon />} variant="ghost" size="small" disabled={i <= 1} onClick={() => move(i, -1)} />

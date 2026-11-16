@@ -76,7 +76,7 @@ Variante, den Betrieb in eigenen Revisionen —, eine Datei führt sie für den 
     "format": "operations", "version": "1.0",
     "domains": {
       "vehicles":   { "version": "1.0", … },
-      "timetables": { "version": "1.0", "dependsOn": ["vehicles"], … }
+      "timetables": { "version": "1.1", "dependsOn": ["vehicles"], … }
     }
   },
   "blobs": { "sha256:…": … }
@@ -111,7 +111,7 @@ Werkzeug bearbeitet.
 | | `signalling` 4.0 | Signale mit logischen Signalen, Gleisfreimeldung, Weichenelemente, Fahrstraßen, Durchrutschwege, Flankenschutz, Zugbeeinflussung, Bahnhofsgrenzen, Fahrwege — nach PlanPro exportierbar |
 | | `electrification` 3.0 | Masten, Aufhängepunkte, Streckentrennungen und die Fahrdrähte mit ihrer Spannung |
 | operations-1.0 | `vehicles` 1.0 | die Fahrzeuge mit ihrem Rollmaterial als RailJSON |
-| | `timetables` 1.0 | Fahrpläne, Züge, Zuggattungen, Zugbildungen, Anschlüsse, Wenden, Verspätungsszenarien, Untersuchungen |
+| | `timetables` 1.1 | Fahrpläne, Züge, Zuggattungen, Zugbildungen, Anschlüsse, Wenden, Verspätungsszenarien, Untersuchungen |
 
 Die Domänen von operations nennen die Infrastruktur über Kennungen: Betriebsstellen, Gleisenden, Gleise,
 Fahrwege. Diese Verweise werden geprüft, wo der Betrieb auf die Infrastruktur gelegt wird — auf den Teil
@@ -454,7 +454,8 @@ Nummer; ältere Stände werden einmal umgestellt, nicht dauerhaft nachsichtig ge
 Die Versionen der Domänen setzen die Zählung der Suite fort: core 5.0, civil 3.0, signalling 4.0, electrification
 3.0; vehicles 1.0 und timetables 1.0 sind die bisherige Domäne operations 1.0, in zwei geteilt. In core 4.0 war `B1`
 einer Weiche ihr Stammgleis; 5.0 macht es wieder zum Zweiggleis, und ein Leser bringt eine Datei in 4.0 auf den Stand,
-indem er beide tauscht.
+indem er beide tauscht. Timetables 1.1 ergänzt den Punkt eines Zuges um den Richtungswechsel (`reverse`,
+`turnaround`); ein Leser übernimmt eine Datei in 1.0 unverändert.
 
 # Ein Beispiel
 
@@ -557,7 +558,7 @@ einem Fahrzeug und einem Zug von der Grenze nach Halle-Trotha, wo er auf diesem 
         } ] }
       },
       "timetables": {
-        "version": "1.0", "schema": "sha256:5555…", "dependsOn": ["vehicles"], "fields": {},
+        "version": "1.1", "schema": "sha256:5555…", "dependsOn": ["vehicles"], "fields": {},
         "collections": {
           "timetables": [ {
             "id": "f0e1d2c3-b4a5-4968-8776-655443322110", "name": "Grundtakt"
@@ -599,7 +600,7 @@ in diesen Punkten ab; jeder wird in einem eigenen Schritt angeglichen (Entscheid
 
 - Der Projektserver hält die Infrastruktur einer Variante als Dokument der Hülle von vorher (infra-data 2.0: ihre
   Domänen und ihre Blobs, core 5.0, civil 3.0, signalling 4.0, electrification 3.0) und den Betrieb als Dokument
-  operations (vehicles 1.0, timetables 1.0); die Datei rail-across-1.0 führt sie zusammen, eine Datei von vorher
+  operations (vehicles 1.0, timetables 1.1); die Datei rail-across-1.0 führt sie zusammen, eine Datei von vorher
   wird weiter gelesen.
 - Der Record, mit dem die Werkzeuge arbeiten, behält Kilometrierungslinien in WGS 84 mit dem Kilometer je Punkt;
   die Tür wandelt sie ins Dokument und zurück (Entscheidung 0029, Phase 6 nimmt das heraus). Eine

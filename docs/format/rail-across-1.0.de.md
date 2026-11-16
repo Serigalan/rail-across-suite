@@ -83,7 +83,7 @@ Variante, den Betrieb in eigenen Revisionen —, eine Datei führt sie für den 
     "format": "operations", "version": "1.0",
     "domains": {
       "vehicles":   { "version": "1.0", … },
-      "timetables": { "version": "1.0", "dependsOn": ["vehicles"], … }
+      "timetables": { "version": "1.1", "dependsOn": ["vehicles"], … }
     }
   },
   "blobs": { "sha256:…": … }
@@ -116,7 +116,7 @@ Werkzeug bearbeitet.
 | | `signalling` 4.0 | Signale mit logischen Signalen, Gleisfreimeldung, Weichenelemente, Fahrstraßen, Durchrutschwege, Flankenschutz, Zugbeeinflussung, Bahnhofsgrenzen, Fahrwege — nach PlanPro exportierbar |
 | | `electrification` 3.0 | Masten, Aufhängepunkte, Streckentrennungen und die Fahrdrähte mit ihrer Spannung |
 | operations-1.0 | `vehicles` 1.0 | die Fahrzeuge mit ihrem Rollmaterial als RailJSON |
-| | `timetables` 1.0 | Fahrpläne, Züge, Zuggattungen, Zugbildungen, Anschlüsse, Wenden, Verspätungsszenarien, Untersuchungen |
+| | `timetables` 1.1 | Fahrpläne, Züge, Zuggattungen, Zugbildungen, Anschlüsse, Wenden, Verspätungsszenarien, Untersuchungen |
 
 Die Domänen von operations nennen die Infrastruktur über Kennungen: Betriebsstellen, Gleisenden, Gleise,
 Fahrwege. Diese Verweise werden geprüft, wo der Betrieb auf die Infrastruktur gelegt wird — auf den Teil
@@ -454,7 +454,8 @@ Nummer; ältere Stände werden einmal umgestellt, nicht dauerhaft nachsichtig ge
 Die Versionen der Domänen setzen die Zählung der Suite fort: core 5.0, civil 3.0, signalling 4.0, electrification
 3.0; vehicles 1.0 und timetables 1.0 sind die bisherige Domäne operations 1.0, in zwei geteilt. In core 4.0 war `B1`
 einer Weiche ihr Stammgleis; 5.0 macht es wieder zum Zweiggleis, und ein Leser bringt eine Datei in 4.0 auf den Stand,
-indem er beide tauscht.
+indem er beide tauscht. Timetables 1.1 ergänzt den Punkt eines Zuges um den Richtungswechsel (`reverse`,
+`turnaround`); ein Leser übernimmt eine Datei in 1.0 unverändert.
 
 ## Ein Beispiel
 
@@ -557,7 +558,7 @@ einem Fahrzeug und einem Zug von der Grenze nach Halle-Trotha, wo er auf diesem 
         } ] }
       },
       "timetables": {
-        "version": "1.0", "schema": "sha256:5555…", "dependsOn": ["vehicles"], "fields": {},
+        "version": "1.1", "schema": "sha256:5555…", "dependsOn": ["vehicles"], "fields": {},
         "collections": {
           "timetables": [ {
             "id": "f0e1d2c3-b4a5-4968-8776-655443322110", "name": "Grundtakt"
@@ -599,7 +600,7 @@ in diesen Punkten ab; jeder wird in einem eigenen Schritt angeglichen (Entscheid
 
 - Der Projektserver hält die Infrastruktur einer Variante als Dokument der Hülle von vorher (infra-data 2.0: ihre
   Domänen und ihre Blobs, core 5.0, civil 3.0, signalling 4.0, electrification 3.0) und den Betrieb als Dokument
-  operations (vehicles 1.0, timetables 1.0); die Datei rail-across-1.0 führt sie zusammen, eine Datei von vorher
+  operations (vehicles 1.0, timetables 1.1); die Datei rail-across-1.0 führt sie zusammen, eine Datei von vorher
   wird weiter gelesen.
 - Der Record, mit dem die Werkzeuge arbeiten, behält Kilometrierungslinien in WGS 84 mit dem Kilometer je Punkt;
   die Tür wandelt sie ins Dokument und zurück (Entscheidung 0029, Phase 6 nimmt das heraus). Eine
@@ -611,7 +612,7 @@ in diesen Punkten ab; jeder wird in einem eigenen Schritt angeglichen (Entscheid
 
 ## Anhang: alle Properties und ihre Werte
 
-Der Anhang ist aus den Schemas der Spezifikation erzeugt (`rail-across.schema.json`, `core/5.0.schema.json`, `civil/3.0.schema.json`, `signalling/4.0.schema.json`, `electrification/3.0.schema.json`, `vehicles/1.0.schema.json`, `timetables/1.0.schema.json`, in `docs/format/schemas`). Für jeden Objekttyp nennt er jedes Property mit seinem Pfad (verschachtelte Objekte mit Punkt, Listeneinträge mit `[]`), ob es Pflicht ist, seinen Typ mit allen zulässigen Werten und seine Bedeutung. Ein Verweis auf einen Typ führt zu dessen Abschnitt; `→ core.tracks` nennt die Sammlung, in die eine Kennung zeigt — die Prüfung beim Einlesen stellt sicher, dass es das Objekt gibt.
+Der Anhang ist aus den Schemas der Spezifikation erzeugt (`rail-across.schema.json`, `core/5.0.schema.json`, `civil/3.0.schema.json`, `signalling/4.0.schema.json`, `electrification/3.0.schema.json`, `vehicles/1.0.schema.json`, `timetables/1.1.schema.json`, in `docs/format/schemas`). Für jeden Objekttyp nennt er jedes Property mit seinem Pfad (verschachtelte Objekte mit Punkt, Listeneinträge mit `[]`), ob es Pflicht ist, seinen Typ mit allen zulässigen Werten und seine Bedeutung. Ein Verweis auf einen Typ führt zu dessen Abschnitt; `→ core.tracks` nennt die Sammlung, in die eine Kennung zeigt — die Prüfung beim Einlesen stellt sicher, dass es das Objekt gibt.
 
 ### Die Datei rail-across-1.0
 
@@ -1861,7 +1862,7 @@ Die Zugkraft einer Traktionsart, wie RailJSON sie angibt. `is_electric` ist gena
 | `curves` | ja | Liste von Objekt; mindestens 1 Eintrag | die Kurven der Zugkraft über der Geschwindigkeit, je für ihre Bedingungen (Komfort, elektrisches Profil, Leistungsbegrenzung) |
 | `default_curve` |  | Objekt | die Kurve, wo keine Bedingung zutrifft |
 
-### Domäne timetables 1.0
+### Domäne timetables 1.1
 
 <a id="timetables-root"></a>
 
@@ -1963,7 +1964,7 @@ _Weitere Properties sind nicht erlaubt._
 
 #### TrainPoint
 
-Ein Punkt eines Zugs: eine Betriebsstelle oder ein Gleisende über seine Kennung, das Gleis, ob er dort hält, eine Abfahrt, auf die er wartet.
+Ein Punkt eines Zugs: eine Betriebsstelle oder ein Gleisende über seine Kennung, das Gleis, ob er dort hält, eine Abfahrt, auf die er wartet, ob er dort die Richtung wechselt.
 
 _Weitere Properties sind nicht erlaubt._
 
@@ -1980,6 +1981,8 @@ genau eins von `operationalPointId`, `endMarkId` ist angegeben
 | `leastDwell` |  | Zahl; ≥ 0; ≤ 86400 | Mindesthaltezeit [s], die die Disposition einhält |
 | `departure` |  | Zahl; ≥ 0; ≤ 172799.999 | Abfahrt in Sekunden ab Mitternacht des Fahrplantags; über 24:00 der nächste Tag |
 | `itineraryId` |  | [`Ref`](#core-Ref) → `signalling.itineraries` | der Fahrweg, den er zum nächsten Punkt bevorzugt |
+| `reverse` |  | Wahrheitswert | wechselt dort die Richtung: hält, steht seine Wendezeit und fährt in Gegenrichtung weiter; nur unterwegs (timetables 1.1) |
+| `turnaround` |  | Zahl; ≥ 0; ≤ 86400 | Wendezeit [s], wo er die Richtung wechselt; ohne: 300 s (timetables 1.1) |
 
 <a id="timetables-TrainKind"></a>
 

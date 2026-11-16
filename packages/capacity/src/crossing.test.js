@@ -38,6 +38,13 @@ describe.skipIf(!existsSync(WASM))('the capacity of a single line with a crossin
       expect(r.rate).toBeGreaterThan(0)
       expect(r.rate).toBeLessThan(1)
       expect(r.critical.length).toBeGreaterThan(1)
+      // each train of the critical chain after the first bound by an element both hold, the areas held by two or more
+      expect(r.binding.map(b => b.after)).toEqual(r.critical.slice(1))
+      for (const b of r.binding) {
+        expect(b.resource).toMatch(/^(section|track):/)
+        expect(r.areas.some(a => a.resource === b.resource || a.trains.includes(b.after))).toBe(true)
+      }
+      expect(r.areas.every(a => a.trains.length >= 2)).toBe(true)
       expect(r.headways.map(h => `${h.before}>${h.after}`)).toEqual(expect.arrayContaining(['RB>RB', 'RB>Gz', 'Gz>RB']))
       // A train is never compressed to before the one before it.
       const at = r.trains.map(t => t.compressedAt)

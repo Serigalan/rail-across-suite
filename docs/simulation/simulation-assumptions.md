@@ -394,6 +394,14 @@ In mode `wait`:
 - **Minimum headway:** for every two trains that hold something the same, in both orders, how soon after the first
   the second may be at the beginning without their blocking times overlapping. The values are summed up by kinds of
   trains.
+- **Binding elements:** for each train of the critical chain after the first, the element where its blocking time
+  touches that of the train it is bound to: of all that the two both hold, the one where it could come least
+  earlier. It is shown with the block of each of the two trains and the moment one releases it and the other takes
+  it, as compressed.
+- **Conflict areas:** what two or more trains of the period hold: a track section, or a stretch of track where the
+  stretches they hold overlap by more than 0.5 m, taken as one. Each area has the trains that hold it and the union
+  of the times it is held. The Kapazitäts-Sim draws the areas and the binding elements on a schematic plan of the
+  variant.
 - **Stations:** for every track and section of a station, the union of the times it is held and its share of the
   period.
 - **Construction stages:** the capacity is computed on a variant's net at a construction stage: the existing state,

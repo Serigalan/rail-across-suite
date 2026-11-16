@@ -137,13 +137,19 @@ fn run_on(op: &str, input: &Value) -> Result<Value, Failure> {
             rail_across_doc::ids::in_order_of(&mut record, input);
             Ok(json!({ "record": record, "cut": cut }))
         }
-        "document.stationPoint" => Ok(stations::station_point(&input["record"], input.get("name"), input.get("uic"), input.get("rl100"))),
+        "document.stationPoint" => Ok(stations::station_point(
+            &input["record"],
+            input.get("name"),
+            input.get("uic"),
+            input.get("rl100"),
+        )),
         "document.withStationPoints" => Ok(core_format::with_station_points(input)),
 
         // capacity (K1)
         "capacity.compress" => Ok(rail_across_capacity::compress(input)),
         "capacity.headways" => Ok(rail_across_capacity::headways(input)),
         "capacity.resourceOccupancy" => Ok(rail_across_capacity::resource_occupancy(input)),
+        "capacity.conflictAreas" => Ok(rail_across_capacity::conflict_areas(input)),
         "capacity.bounds" => Ok(rail_across_capacity::bounds()),
 
         // operations (operations-1.0)

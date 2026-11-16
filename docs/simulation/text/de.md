@@ -407,6 +407,14 @@ Im Modus `wait` gilt:
 - **Mindestzugfolgezeit:** für je zwei Züge, die etwas gemeinsam halten, in beiden Reihenfolgen, wie früh der zweite
   nach dem ersten am Anfang sein darf, ohne dass sich ihre Sperrzeiten überdecken. Die Werte werden nach Gattungen
   zusammengefasst.
+- **Ausschlaggebende Belegungselemente:** Für jeden Zug der kritischen Kette nach dem ersten das Element, an dem
+  seine Sperrzeit die des Zuges berührt, an den er gebunden ist: von allem, was beide belegen, das, an dem er am
+  wenigsten früher kommen könnte. Es wird mit dem Block beider Züge gezeigt und mit dem Augenblick, in dem der eine
+  es freigibt und der andere es belegt, wie komprimiert.
+- **Konfliktbereiche:** was zwei oder mehr Züge des Zeitraums belegen: ein Freimeldeabschnitt oder ein Gleisstück,
+  in dem sich die belegten Stücke um mehr als 0,5 m überlappen, als eines genommen. Zu jedem Bereich gehören die
+  Züge, die ihn belegen, und die Vereinigung der Zeiten, in denen er belegt ist. Die Kapazitäts-Sim zeichnet die
+  Bereiche und die ausschlaggebenden Elemente in einen schematischen Lageplan der Variante.
 - **Bahnhöfe:** Für jedes Gleis und jeden Abschnitt eines Bahnhofs zählt die Vereinigung der Zeiten, in denen er
   gehalten wird, und ihr Anteil am Zeitraum.
 - **Bauzustände:** Die Kapazität wird auf dem Netz einer Variante an einem Bauzustand gerechnet: dem Bestand, jedem Tag,

@@ -24,3 +24,8 @@ html, body { margin: 0; background: var(--ui-surface); }
 .cap-rate { font-variant-numeric: tabular-nums; }
 .cap-rate.over { color: var(--ui-danger, #c0392b); font-weight: 600; }
 .cap-swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+.cap-plan { background: var(--ui-bg); border-radius: 10px; box-shadow: var(--ui-shadow); padding: 8px; }
+.cap-plan svg { display: block; width: 100%; height: auto; cursor: grab; touch-action: none; }
+.cap-plan-name { font-size: 11px; fill: var(--ui-muted, #5f6473); }
+.cap-plan-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; padding: 6px 4px 0; font-size: var(--ui-fs-s, 12px); }
+.cap-plan-legend i { display: inline-block; width: 18px; height: 5px; border-radius: 2px; margin-right: 6px; vertical-align: 2px; }

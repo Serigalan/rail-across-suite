@@ -12,6 +12,8 @@ import { useTexts } from './i18n.js'
 import { api } from './api.js'
 import { projectsUrl } from './suite.js'
 import Diagram from './Diagram.jsx'
+import ConflictPlan from './ConflictPlan.jsx'
+import { planMarks } from './plan.js'
 import { busiestHour, minutes, percent, periodText, resourceLabel, stageName } from './study.js'
 import { HomeIcon, LogoIcon, SettingsIcon, StationIcon, StretchIcon, StudyIcon } from './icons.jsx'
 
@@ -148,7 +150,7 @@ export default function Editor({ project, variants, initialVariant }) {
           {trains.length > 0 && done < trains.length - failed && <Message tone="info">{t('running', { n: done, m: trains.length })}</Message>}
           {failed > 0 && <Message tone="warn">{t('run_problems', { n: failed })}</Message>}
           {stretch && (
-            <StretchView {...{ t, language, stretch, titles, compressed, setCompressed }} a={analysesA.get(stretch.id)}
+            <StretchView {...{ t, language, stretch, titles, compressed, setCompressed, trackName }} side={a} a={analysesA.get(stretch.id)}
               b={study.compareId ? analysesB.get(stretch.id) : null} names={[sideName(study.variantId, study.stage), sideName(study.compareId, study.compareStage)]} />
           )}
           {station && (
@@ -239,8 +241,12 @@ function Figures({ t, language, r, name }) {
   )
 }
 
-function StretchView({ t, language, stretch, a, b, names, titles, compressed, setCompressed }) {
+function StretchView({ t, language, stretch, a, b, names, titles, compressed, setCompressed, side, trackName }) {
+  const marks = useMemo(() => planMarks(a, side.record), [a, side.record])
   if (!a) return null
+  const signals = new Map((side.record?.signalling?.collections?.signals ?? []).map(s => [s.id, s]))
+  const signalName = (id) => (id ? signals.get(id)?.name || id.slice(0, 8) : t('block_open'))
+  const blockText = (b) => (b ? `${signalName(b.signalId)} → ${signalName(b.targetId)}` : '—')
   return (
     <>
       <h2>{stretch.fromName} – {stretch.toName} <span className="ui-muted">{t('stretch_trains', { n: a.trains.length })}</span></h2>
@@ -257,6 +263,30 @@ function StretchView({ t, language, stretch, a, b, names, titles, compressed, se
         </div>
         <Diagram analysis={a} compressed={compressed} fromName={stretch.fromName} toName={stretch.toName} />
       </div>
+      <h3>{t('plan')}</h3>
+      <ConflictPlan record={side.record} stations={side.stations} marks={marks} t={t} />
+      <h3>{t('binding')}</h3>
+      {marks.binding.length ? (
+        <table className="cap-table">
+          <thead><tr><th className="num">#</th><th>{t('binding_trains')}</th><th>{t('resource')}</th><th>{t('binding_block')}</th><th className="num">{t('binding_at')}</th></tr></thead>
+          <tbody>{marks.binding.map(b => (
+            <tr key={b.after}>
+              <td className="num">{b.n}</td><td>{titles.get(b.before) ?? b.before} → {titles.get(b.after) ?? b.after}</td>
+              <td>{resourceLabel(b.key, trackName, t)}</td><td>{blockText(b.beforeBlock)} / {blockText(b.block)}</td>
+              <td className="num">{formatClock(b.at, { seconds: true })}</td>
+            </tr>
+          ))}</tbody>
+        </table>
+      ) : <p className="ui-muted">{t('binding_none')}</p>}
+      <h3>{t('areas')}</h3>
+      {marks.areas.length ? (
+        <table className="cap-table">
+          <thead><tr><th>{t('resource')}</th><th className="num">{t('stretch_trains', { n: '' }).trim()}</th><th className="num">{t('held')}</th><th className="num">{t('rate')}</th></tr></thead>
+          <tbody>{(a.areas ?? []).map(r => (
+            <tr key={r.resource}><td>{resourceLabel(r.resource, trackName, t)}</td><td className="num">{r.trains.length}</td><td className="num">{minutes(r.held)}</td><td className="num">{percent(r.rate, language)}</td></tr>
+          ))}</tbody>
+        </table>
+      ) : <p className="ui-muted">{t('areas_none')}</p>}
       <h3>{t('headways')}</h3>
       {a.headways.length ? (
         <table className="cap-table">

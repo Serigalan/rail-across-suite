@@ -34,3 +34,4 @@ it costs. A record is not rewritten when a decision changes; a new one replaces 
 | [0027](0027-construction-stages-by-their-days.md) | Construction stages by their days, and a connector for a track rebuilt | accepted |
 | [0028](0028-one-model-lifespans-by-day.md) | One model, lifespans by day, and a format that counts its versions | accepted |
 | [0029](0029-the-suite-on-rail-across-1.0.md) | The suite on rail-across-1.0: the door first, the record after, in six phases | accepted |
+| [0030](0030-conflict-areas-and-construction-scenarios.md) | Conflict areas in the Kapazitäts-Sim, construction scenarios with closures in the Baubetriebs-Sim | accepted |

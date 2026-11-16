@@ -8,6 +8,9 @@ blocking times
   UIC Code 406 over a period: the occupancy time, the occupancy rate with its additional times and without, held
   against the recommended bound for its kind of line, and the trains that set it;
 - the **minimum headways** of the trains that follow each other there, by kind;
+- the **conflict areas** — what two or more trains of the period hold — and the **binding elements** of the
+  critical chain — where each train's blocking time touches the one's before —, on a schematic plan of the variant
+  ([decision 0030](../../docs/decisions/0030-conflict-areas-and-construction-scenarios.md), point 1);
 - how long each track and track section of a **station** is held;
 - the same for **another variant or stage** beside it.
 

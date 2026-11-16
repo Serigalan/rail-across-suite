@@ -3,7 +3,10 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { busiestHour, minutes, percent, periodText, resourceLabel, stageName } from './study.js'
 import { linkedRequest, projectsUrl } from './suite.js'
 import Diagram from './Diagram.jsx'
+import ConflictPlan from './ConflictPlan.jsx'
+import { planMarks, resourceStretches } from './plan.js'
 import { textsFor } from './i18n.js'
+import { net } from '../../../packages/running-times/test/net.js'
 
 describe('the Kapazitäts-Sim\'s figures as it shows them', () => {
   it('says rates, durations and periods as one reads them', () => {
@@ -47,5 +50,28 @@ describe('the Kapazitäts-Sim\'s figures as it shows them', () => {
     const svg = renderToStaticMarkup(<Diagram analysis={analysis} compressed fromName="X" toName="Y" />)
     expect(svg.match(/<rect/g)).toHaveLength(3)
     expect(svg).toContain('>X<')
+  })
+
+  it('marks the conflict areas and the binding elements on the schematic plan, numbered along the critical chain', () => {
+    expect(resourceStretches('track:L:1500-2400', net)).toEqual([{ trackId: 'L', lo: 1500, hi: 2400 }])
+    expect(resourceStretches('elsewhere', net)).toEqual([])
+    const analysis = {
+      areas: [{ resource: 'track:L:1500-2400', trains: ['a', 'b', 'c'], held: 300 }, { resource: 'track:C1:0-300', trains: ['a', 'b'], held: 100 }],
+      binding: [
+        { before: 'a', after: 'b', resource: 'track:L:1500-2400', at: 100 },
+        { before: 'b', after: 'c', resource: 'track:C1:0-300', at: 200 },
+        { before: 'c', after: 'd', resource: 'track:L:1500-2400', at: 300 },
+      ],
+    }
+    const marks = planMarks(analysis, net)
+    expect(marks.areas.map(a => a.trains)).toEqual([3, 2])
+    expect(marks.binding.map(b => b.n)).toEqual([1, 2, 1])
+    const { t } = textsFor('de')
+    const svg = renderToStaticMarkup(<ConflictPlan record={net} stations={[]} marks={marks} t={t} />)
+    // the net's lines, the two areas, the binding elements drawn over them, two numbers
+    expect(svg).toContain('<svg')
+    expect(svg.match(/stroke="#6f2dbd"/g)).toHaveLength(3)
+    expect(svg).toContain('>1<')
+    expect(svg).toContain('>2<')
   })
 })

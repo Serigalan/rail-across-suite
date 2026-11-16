@@ -60,7 +60,7 @@ const asTrain = (train, at, blocks, place = null) => ({
   id: train.id, kind: String(train.category ?? '').trim(), at,
   ...(place ? { reversed: place.reversed } : {}),
   blocks: blocks.map(b => ({
-    begin: b.begin, end: b.end, resources: resourcesOf(b),
+    begin: b.begin, end: b.end, resources: resourcesOf(b), signalId: b.signalId ?? null, targetId: b.targetId ?? null,
     ...(place ? { span: spanOf(b, place.lo, place.hi, place.reversed) } : {}),
   })),
 })

@@ -2,7 +2,7 @@
 //! headways of two trains on a two-track line and an hour's timetable compressed
 //! after UIC Code 406, as worked out by hand.
 
-use rail_across_capacity::{Train, compress, headways, least_headway, resource_occupancy};
+use rail_across_capacity::{Train, compress, conflict_areas, headways, least_headway, resource_occupancy};
 use serde_json::{Value, json};
 
 /// A train's blocks on track L, each from its signal to the next with the overlap: [from, reach, begin, end].
@@ -58,6 +58,12 @@ fn the_hour_compressed_as_worked_out_by_hand() {
     assert_eq!(r["occupancy"], 1436.0);
     assert!((r["rate"].as_f64().unwrap() - 1436.0 / 3600.0).abs() < 1e-12);
     assert_eq!(r["critical"], json!(["A1", "B1", "A2", "A3"]));
+    // B1 bound to A1 where its block 1 (1500–3700) meets A1's block 2 (3500–5700 with the overlap), at 288.5
+    assert_eq!(r["trains"][0]["binding"], Value::Null);
+    assert_eq!(
+        r["trains"][1]["binding"],
+        json!({ "resource": "track:L:3500-5700", "beforeBlock": 2, "block": 1, "released": 288.5, "taken": 288.5 })
+    );
     // the additional times on top
     let with = compress(&json!({ "trains": trains, "from": 0, "to": 3600, "additional": { "perTrain": 60, "fixed": 120 } }));
     assert_eq!(with["additional"], 360.0);
@@ -92,4 +98,20 @@ fn trains_that_hold_nothing_the_same_follow_at_once() {
     assert_eq!(r["trains"][1]["compressedAt"], 0.0);
     assert_eq!(r["trains"][1]["headway"], Value::Null);
     assert_eq!(r["critical"], json!(["A1"]));
+}
+
+#[test]
+fn the_areas_two_trains_both_hold() {
+    let other = json!({ "id": "x", "at": 10.0, "blocks": [{ "begin": 0, "end": 50, "resources": [{ "section": "elsewhere" }] }] });
+    let trains = json!([train("A1", "A", 0.0, &A), train("B1", "B", 300.0, &B), other]);
+    let areas = conflict_areas(&json!({ "trains": trains, "from": 0, "to": 3600 }));
+    // the blocks' stretches that overlap, one area; the first block's apart (they only touch); the section only x holds none
+    assert_eq!(
+        areas,
+        json!([
+            // A1 from 5 to 306, B1 from 320 to 906
+            { "resource": "track:L:1500-6000", "trains": ["A1", "B1"], "held": 887.0, "rate": 887.0 / 3600.0 },
+            { "resource": "track:L:0-1500", "trains": ["A1", "B1"], "held": 271.5, "rate": 271.5 / 3600.0 },
+        ])
+    );
 }

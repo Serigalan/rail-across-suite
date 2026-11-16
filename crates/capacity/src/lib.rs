@@ -6,7 +6,8 @@
 //! each other, the timetable compressed after UIC Code 406 — each train as
 //! early after the ones before as their blocking times let it, in the order
 //! they run —, the occupancy time and rate it gives, the trains that set it,
-//! and how long each resource of a station is held.
+//! the element that binds each of them to the one before, the areas two
+//! trains both hold, and how long each resource of a station is held.
 //!
 //! A train comes as `{ id, kind?, at, blocks: [{ begin, end, resources }] }`:
 //! `at` its time at the stretch's start [s], each block its blocking time and
@@ -32,6 +33,16 @@ struct Held {
     resource: Resource,
     begin: f64,
     end: f64,
+    /// The index of the block it is held by, in the train's `blocks`.
+    block: usize,
+}
+
+/// A resource as a list names it: `section:<id>`, or `track:<id>:<lo>-<hi>` to the metre.
+fn key_of(resource: &Resource) -> String {
+    match resource {
+        Resource::Section(s) => format!("section:{s}"),
+        Resource::Track(tr, a, b) => format!("track:{tr}:{}-{}", a.round(), b.round()),
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -56,7 +67,7 @@ impl Train {
     /// A train as it comes (see the crate's text); None where it holds nothing.
     pub fn from_json(v: &Value) -> Option<Train> {
         let mut held = Vec::new();
-        for b in v.get("blocks").and_then(Value::as_array).into_iter().flatten() {
+        for (block, b) in v.get("blocks").and_then(Value::as_array).into_iter().flatten().enumerate() {
             let (begin, end) = (num(&b["begin"]), num(&b["end"]));
             if !(begin.is_finite() && end.is_finite()) {
                 continue;
@@ -70,7 +81,12 @@ impl Train {
                         Resource::Track(text(r.get("track")), a.min(b), a.max(b))
                     }
                 };
-                held.push(Held { resource, begin, end: until });
+                held.push(Held {
+                    resource,
+                    begin,
+                    end: until,
+                    block,
+                });
             }
         }
         if held.is_empty() {
@@ -126,6 +142,25 @@ fn slack(before: &Train, after: &Train) -> Option<f64> {
     least
 }
 
+/// What binds `after` to `before` (Belegungselement): the resource both hold
+/// where `after` could come least earlier — the one that sets the minimum
+/// headway —, held by `before` until `end`, by `after` from `begin`, each by a
+/// block of its own; None where the two hold nothing the same.
+fn binding<'a>(before: &'a Train, after: &'a Train) -> Option<(&'a Held, &'a Held)> {
+    let mut least: Option<(f64, &Held, &Held)> = None;
+    for a in &before.held {
+        for b in &after.held {
+            if conflict(&a.resource, &b.resource) {
+                let s = b.begin - a.end;
+                if least.is_none_or(|(l, _, _)| s < l) {
+                    least = Some((s, a, b));
+                }
+            }
+        }
+    }
+    least.map(|(_, a, b)| (a, b))
+}
+
 /// The minimum headway of `after` behind `before` (Mindestzugfolgezeit) [s]:
 /// how soon after `before` at the stretch's start it may be there, its
 /// blocking times touching but not overlapping; None where they hold nothing the same.
@@ -153,6 +188,9 @@ pub fn bounds() -> Value {
 /// the rate it gives of the period, with the additional times (`perTrain` for
 /// each train, `fixed` once) and without, and the trains that set it — the
 /// chain from the first to the one ending last, each bound to the one before it.
+/// A train bound to one before says what binds it (`binding`): the resource,
+/// the block of each of the two it is held by, the moment the one releases it
+/// and the other takes it, as compressed.
 pub fn compress(input: &Value) -> Value {
     let (from, to) = (num(&input["from"]), num(&input["to"]));
     let period = to - from;
@@ -183,9 +221,12 @@ pub fn compress(input: &Value) -> Value {
         }
         let c = t.shifted(at - t.at);
         let headway = placed.last().and_then(|p| least_headway(p, t).map(|h| json!(h)));
+        let binds = by
+            .and_then(|k| binding(&placed[k], &c))
+            .map(|(a, b)| json!({ "resource": key_of(&a.resource), "beforeBlock": a.block, "block": b.block, "released": a.end, "taken": b.begin }));
         out.push(json!({
             "id": t.id, "kind": t.kind, "at": t.at, "compressedAt": at, "shift": t.at - at,
-            "begin": c.begin, "end": c.end, "headway": headway, "boundBy": by.map(|k| json!(trains[k].id)),
+            "begin": c.begin, "end": c.end, "headway": headway, "boundBy": by.map(|k| json!(trains[k].id)), "binding": binds,
         }));
         placed.push(c);
         bound_by.push(by);
@@ -259,10 +300,7 @@ pub fn resource_occupancy(input: &Value) -> Value {
     let mut keyed: Vec<Keyed> = Vec::new();
     for t in &trains {
         for h in &t.held {
-            let key = match &h.resource {
-                Resource::Section(s) => format!("section:{s}"),
-                Resource::Track(tr, a, b) => format!("track:{tr}:{}-{}", a.round(), b.round()),
-            };
+            let key = key_of(&h.resource);
             let (a, b) = (h.begin.max(from), h.end.min(to));
             if b <= a {
                 continue;
@@ -298,4 +336,78 @@ pub fn resource_occupancy(input: &Value) -> Value {
         .collect();
     out.sort_by(|a, b| b.0.total_cmp(&a.0));
     Value::Array(out.into_iter().map(|(_, v)| v).collect())
+}
+
+/// A conflict area as it is gathered: what is held, the trains that hold it, the times they hold it.
+type Area = (Resource, Vec<String>, Vec<(f64, f64)>);
+
+/// The conflict areas of the trains of `input.trains` in the period [from, to):
+/// what two or more of them hold — a track section, or a stretch of a track
+/// where the stretches they hold overlap by more than half a metre, as one —,
+/// `[{ resource, trains, held, rate }]`, the trains that hold it, the union of
+/// the times held [s] and its share of the period; those held by most trains
+/// first, then the most held.
+pub fn conflict_areas(input: &Value) -> Value {
+    let (from, to) = (num(&input["from"]), num(&input["to"]));
+    let period = to - from;
+    let trains: Vec<Train> = input
+        .get("trains")
+        .and_then(Value::as_array)
+        .into_iter()
+        .flatten()
+        .filter_map(Train::from_json)
+        .collect();
+    let mut areas: Vec<Area> = Vec::new();
+    for t in &trains {
+        for h in &t.held {
+            let (a, b) = (h.begin.max(from), h.end.min(to));
+            if b <= a {
+                continue;
+            }
+            let at = areas.iter().position(|(r, _, _)| match (r, &h.resource) {
+                (Resource::Section(x), Resource::Section(y)) => x == y,
+                (Resource::Track(x, a0, a1), Resource::Track(y, b0, b1)) => x == y && a1.min(*b1) - a0.max(*b0) > SHARE,
+                _ => false,
+            });
+            match at {
+                Some(i) => {
+                    let area = &mut areas[i];
+                    if let (Resource::Track(_, a0, a1), Resource::Track(_, b0, b1)) = (&mut area.0, &h.resource) {
+                        *a0 = a0.min(*b0);
+                        *a1 = a1.max(*b1);
+                    }
+                    if !area.1.contains(&t.id) {
+                        area.1.push(t.id.clone());
+                    }
+                    area.2.push((a, b));
+                }
+                None => areas.push((h.resource.clone(), vec![t.id.clone()], vec![(a, b)])),
+            }
+        }
+    }
+    let mut out: Vec<(usize, f64, Value)> = areas
+        .into_iter()
+        .filter(|(_, ids, _)| ids.len() >= 2)
+        .map(|(resource, ids, mut spans)| {
+            spans.sort_by(|x, y| x.0.total_cmp(&y.0));
+            let (mut held, mut end) = (0.0, f64::NEG_INFINITY);
+            for (a, b) in spans {
+                if a > end {
+                    held += b - a;
+                    end = b;
+                } else if b > end {
+                    held += b - end;
+                    end = b;
+                }
+            }
+            let rate = if period > 0.0 { json!(held / period) } else { Value::Null };
+            (
+                ids.len(),
+                held,
+                json!({ "resource": key_of(&resource), "trains": ids, "held": held, "rate": rate }),
+            )
+        })
+        .collect();
+    out.sort_by(|a, b| b.0.cmp(&a.0).then_with(|| b.1.total_cmp(&a.1)));
+    Value::Array(out.into_iter().map(|(_, _, v)| v).collect())
 }

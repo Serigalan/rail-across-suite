@@ -41,15 +41,39 @@ export function headwayTable(headways) {
  * A stretch compressed after UIC Code 406 over the period [from, to): what
  * the crate gives (the trains compressed, the occupancy time, the rates, the
  * trains that set it) with `headways` by kind, `bound`, the recommended
- * rate for `line`, and `input`, the trains as they run there (their blocks
- * with where each lies on the stretch, to draw them).
+ * rate for `line`, `input`, the trains as they run there (their blocks
+ * with where each lies on the stretch, to draw them), `areas`, what two or
+ * more of them hold (conflictAreas), and `binding`, the elements that bind the
+ * critical chain (bindingElements).
  */
 export function analyseStretch(stretch, trains, runs, { from, to, additional = {}, line = 'mixed' } = {}) {
   const input = trainsOnStretch(stretch, trains, runs)
   const compressed = callNative('capacity.compress', { trains: input, from, to, additional })
   const inPeriod = input.filter(t => t.at >= from && t.at < to)
   const headways = headwayTable(callNative('capacity.headways', { trains: inPeriod }))
-  return { ...compressed, headways, bound: boundOf(line, to - from), input: inPeriod }
+  const areas = callNative('capacity.conflictAreas', { trains: inPeriod, from, to })
+  return { ...compressed, headways, bound: boundOf(line, to - from), input: inPeriod, areas, binding: bindingElements(compressed, inPeriod) }
+}
+
+/**
+ * The elements that bind the critical chain of a compressed stretch
+ * (Belegungselemente): for each train of it after the first, [{ before,
+ * after, resource, block, beforeBlock, at }] — the resource where its blocking
+ * time touches the one's before (a key of the crate: `section:<id>`,
+ * `track:<id>:<lo>-<hi>`), the block of each it is held by ({ signalId,
+ * targetId }), the moment as compressed [s].
+ */
+export function bindingElements(compressed, input) {
+  const byId = new Map(compressed.trains.map(t => [t.id, t]))
+  const blocksOf = new Map(input.map(t => [t.id, t.blocks]))
+  const blockOf = (id, i) => {
+    const b = blocksOf.get(id)?.[i]
+    return b ? { signalId: b.signalId ?? null, targetId: b.targetId ?? null } : null
+  }
+  return (compressed.critical ?? []).slice(1).map(id => byId.get(id)).filter(t => t?.binding && t.boundBy).map(t => ({
+    before: t.boundBy, after: t.id, resource: t.binding.resource, at: t.binding.taken,
+    block: blockOf(t.id, t.binding.block), beforeBlock: blockOf(t.boundBy, t.binding.beforeBlock),
+  }))
 }
 
 /** How long each track and track section of a station is held over the period [from, to): [{ resource, held, rate, trains }]. */

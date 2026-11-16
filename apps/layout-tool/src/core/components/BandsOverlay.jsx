@@ -165,7 +165,7 @@ export default function BandsOverlay({ trackId, onClose }) {
   }
   const pick = (band, i, add) => {
     // Transitions and the others are set differently, so a pick of the other kind starts afresh.
-    const ends = band === 'cant' && elements[i].elementType === 2
+    const ends = band === 'cant' && elements[i].elementType === 'transition'
     const base = add && sel?.band === band && !!sel.ends === ends ? sel.indices : []
     const indices = base.includes(i) ? base.filter(j => j !== i) : [...base, i]
     if (!indices.length) return unpick()
@@ -354,8 +354,8 @@ export default function BandsOverlay({ trackId, onClose }) {
     // transition, the cant where it holds, the gradient of every stretch, the
     // speed of each run.
     const labels = {
-      curvature: bands.spans.filter(sp => sp.el.elementType === 2 || sp.el.radius).flatMap(sp => label(sp.from, sp.to,
-        sp.el.elementType === 2 ? `L ${sp.el.length.toFixed(1)}` : `R ${Math.round(Math.abs(sp.el.radius))}`,
+      curvature: bands.spans.filter(sp => sp.el.elementType === 'transition' || sp.el.radius).flatMap(sp => label(sp.from, sp.to,
+        sp.el.elementType === 'transition' ? `L ${sp.el.length.toFixed(1)}` : `R ${Math.round(Math.abs(sp.el.radius))}`,
         (s) => bandValueAt(bands.curvature, s))),
       cant: bandRuns(bands.cant).filter(r => r.v !== 0)
         .flatMap(r => label(r.from, r.to, `u ${Math.round(Math.abs(r.v))}`, () => r.v)),

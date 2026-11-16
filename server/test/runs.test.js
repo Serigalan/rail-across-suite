@@ -36,7 +36,7 @@ function trackCloud() {
 
 const TRACK = {
   id: 't1', name: 'Gleis 1', epsg: 5678,
-  elements: [{ elementType: 0, startNode: [E0, N0], endNode: [E0, N0 + 30], bearing: 0, length: 30, cant: 0 }],
+  elements: [{ elementType: 'straight', startNode: [E0, N0], endNode: [E0, N0 + 30], bearing: 0, length: 30, cant: 0 }],
   heights: [{ station: 0, z: 100 }, { station: 30, z: 100 }],
 }
 const profile = gaugeProfile('hauptgleis')

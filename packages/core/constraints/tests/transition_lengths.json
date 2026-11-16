@@ -5,12 +5,12 @@
   {
    "name": "into a canted curve",
    "prev": {
-    "elementType": 0,
+    "elementType": "straight",
     "cant": 0,
     "speed": 120
    },
    "next": {
-    "elementType": 1,
+    "elementType": "arc",
     "radius": 1000,
     "cant": 100,
     "speed": 120
@@ -68,13 +68,13 @@
   {
    "name": "out of a canted curve",
    "prev": {
-    "elementType": 1,
+    "elementType": "arc",
     "radius": 1000,
     "cant": 100,
     "speed": 120
    },
    "next": {
-    "elementType": 0,
+    "elementType": "straight",
     "cant": 0,
     "speed": 120
    },
@@ -131,12 +131,12 @@
   {
    "name": "deficiency only, no cant",
    "prev": {
-    "elementType": 0,
+    "elementType": "straight",
     "cant": 0,
     "speed": 120
    },
    "next": {
-    "elementType": 1,
+    "elementType": "arc",
     "radius": 1000,
     "cant": 0,
     "speed": 120
@@ -174,12 +174,12 @@
   {
    "name": "Bloss into a canted curve",
    "prev": {
-    "elementType": 0,
+    "elementType": "straight",
     "cant": 0,
     "speed": 120
    },
    "next": {
-    "elementType": 1,
+    "elementType": "arc",
     "radius": 1000,
     "cant": 100,
     "speed": 120
@@ -237,12 +237,12 @@
   {
    "name": "rounded up to a decimetre",
    "prev": {
-    "elementType": 0,
+    "elementType": "straight",
     "cant": 0,
     "speed": 120
    },
    "next": {
-    "elementType": 1,
+    "elementType": "arc",
     "radius": 1234,
     "cant": 0,
     "speed": 120
@@ -280,12 +280,12 @@
   {
    "name": "ramp and slope equal at 60 km/h",
    "prev": {
-    "elementType": 0,
+    "elementType": "straight",
     "cant": 0,
     "speed": 60
    },
    "next": {
-    "elementType": 1,
+    "elementType": "arc",
     "radius": 3000,
     "cant": 20,
     "speed": 60
@@ -343,12 +343,12 @@
   {
    "name": "minimum element length at 60 km/h",
    "prev": {
-    "elementType": 0,
+    "elementType": "straight",
     "cant": 0,
     "speed": 60
    },
    "next": {
-    "elementType": 1,
+    "elementType": "arc",
     "radius": 5000,
     "cant": 0,
     "speed": 60
@@ -386,13 +386,13 @@
   {
    "name": "SBSS: compound R 410 / 80 into R 750 / 45 at 80 km/h",
    "prev": {
-    "elementType": 1,
+    "elementType": "arc",
     "radius": 410,
     "cant": 80,
     "speed": 80
    },
    "next": {
-    "elementType": 1,
+    "elementType": "arc",
     "radius": 750,
     "cant": 45,
     "speed": 80
@@ -450,13 +450,13 @@
   {
    "name": "SBSS: R 750 / 45 out into a straight at 80 km/h",
    "prev": {
-    "elementType": 1,
+    "elementType": "arc",
     "radius": 750,
     "cant": 45,
     "speed": 80
    },
    "next": {
-    "elementType": 0,
+    "elementType": "straight",
     "cant": 0,
     "speed": 80
    },
@@ -513,13 +513,13 @@
   {
    "name": "SBSS read as a reverse curve",
    "prev": {
-    "elementType": 1,
+    "elementType": "arc",
     "radius": 410,
     "cant": 80,
     "speed": 80
    },
    "next": {
-    "elementType": 1,
+    "elementType": "arc",
     "radius": -750,
     "cant": -45,
     "speed": 80
@@ -577,13 +577,13 @@
   {
    "name": "reverse curve, left into right",
    "prev": {
-    "elementType": 1,
+    "elementType": "arc",
     "radius": -600,
     "cant": -60,
     "speed": 100
    },
    "next": {
-    "elementType": 1,
+    "elementType": "arc",
     "radius": 800,
     "cant": 40,
     "speed": 100
@@ -641,13 +641,13 @@
   {
    "name": "Bloss compound",
    "prev": {
-    "elementType": 1,
+    "elementType": "arc",
     "radius": 500,
     "cant": 120,
     "speed": 90
    },
    "next": {
-    "elementType": 1,
+    "elementType": "arc",
     "radius": 900,
     "cant": 60,
     "speed": 90
@@ -705,12 +705,12 @@
   {
    "name": "slowest design speed",
    "prev": {
-    "elementType": 0,
+    "elementType": "straight",
     "cant": 0,
     "speed": 40
    },
    "next": {
-    "elementType": 1,
+    "elementType": "arc",
     "radius": 300,
     "cant": 30,
     "speed": 40
@@ -768,12 +768,12 @@
   {
    "name": "fastest design speed",
    "prev": {
-    "elementType": 0,
+    "elementType": "straight",
     "cant": 0,
     "speed": 300
    },
    "next": {
-    "elementType": 1,
+    "elementType": "arc",
     "radius": 7000,
     "cant": 160,
     "speed": 300
@@ -831,12 +831,12 @@
   {
    "name": "no design speed",
    "prev": {
-    "elementType": 0,
+    "elementType": "straight",
     "cant": 0,
     "speed": 0
    },
    "next": {
-    "elementType": 1,
+    "elementType": "arc",
     "radius": 1000,
     "cant": 100,
     "speed": 0

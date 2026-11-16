@@ -12,7 +12,7 @@ export function straight(id, x, y, bearing, length) {
   return {
     id, name: id, epsg: EPSG,
     elements: [{
-      elementType: 0, length, bearing, endBearing: bearing,
+      elementType: 'straight', length, bearing, endBearing: bearing,
       startNode: [start.easting, start.northing],
       endNode: [end.easting, end.northing],
       geometry: { type: 'LineString', coordinates: [

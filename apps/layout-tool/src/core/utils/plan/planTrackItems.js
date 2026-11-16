@@ -72,7 +72,7 @@ function elementParts(el, comma, { brief = false, switchText = SWITCH_TEXT } = {
   if (isArc(el)) add({ t: `r = ${n(Math.abs(el.radius))} m` })
   add({ t: `l = ${n(el.length)} m` })
   // A cant that changes along the element is stated from end to end (decision 355).
-  if (!brief && el.elementType !== 2 && (el.cantStart != null || el.cantEnd != null)) {
+  if (!brief && el.elementType !== 'transition' && (el.cantStart != null || el.cantEnd != null)) {
     add({ t: `u = ${n(Math.abs(el.cantStart ?? el.cant ?? 0), 0)} → ${n(Math.abs(el.cantEnd ?? el.cant ?? 0), 0)} mm` })
   } else if (!brief && el.cant) add({ t: `u = ${n(Math.abs(el.cant), 0)} mm` })
   if (!brief && isArc(el) && el.speed) {

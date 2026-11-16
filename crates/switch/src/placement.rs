@@ -3,6 +3,7 @@
 
 //! Where a turnout may lie on a track (`switchPlacement.js`).
 
+use rail_across_geom::kind::{kind_of, is_transition, TRANSITION};
 use rail_across_geom::cant::cant_ends;
 use rail_across_geom::element::{Utm, node_utm, project_on_arc, resolve_end_bearing, reverse_element};
 use rail_across_geom::tolerances::NODE_TOL;
@@ -29,11 +30,11 @@ fn refusal(el: &Value) -> Option<&'static str> {
     if truthy(el.get("switchBranch")) {
         return Some("switch_on_track_over_switch");
     }
-    let t = el.get("elementType").and_then(Value::as_f64);
-    if t == Some(2.0) && (el.get("transitionType").and_then(Value::as_str) == Some("bloss") || !has(el, "r1")) {
+    let t = kind_of(el);
+    if t == Some(TRANSITION) && (el.get("transitionType").and_then(Value::as_str) == Some("bloss") || !has(el, "r1")) {
         return Some("switch_on_track_bloss");
     }
-    if t != Some(2.0)
+    if t != Some(TRANSITION)
         && f(el, "radius").is_none()
         && let Some(eb) = f(el, "endBearing")
         && angle_between(eb, f(el, "bearing").unwrap_or(f64::NAN)) > KINK_TOL
@@ -80,7 +81,7 @@ pub fn click_station(track: &Value, el_idx: usize, click: Utm) -> f64 {
     });
     let bearing = f(el, "bearing").unwrap_or(f64::NAN);
     let len = el.get("length").and_then(Value::as_f64).unwrap_or(f64::NAN);
-    let (along, _) = if el.get("elementType").and_then(Value::as_f64) == Some(2.0) {
+    let (along, _) = if is_transition(el) {
         project_on_transition(
             start.e,
             start.n,
@@ -289,7 +290,7 @@ pub fn place_switch_on_track(track: &Value, station: f64, reversed: bool, length
         joint,
         el_idx: joint.is_none().then_some(hit_idx),
         s: joint.is_none().then_some(hit_s),
-        cuts_clothoid: joint.is_none() && hit.get("elementType").and_then(Value::as_f64) == Some(2.0),
+        cuts_clothoid: joint.is_none() && is_transition(hit),
         pieces,
         spans,
         end,

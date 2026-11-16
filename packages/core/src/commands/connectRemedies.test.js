@@ -51,7 +51,7 @@ describe('suggestions where the rules reject the refitted element', () => {
     const transition = list.find(r => r.kind === 'transition')
     expect(transition.lead).toBeGreaterThan(0)
     expect(transition.outcome.ruleError).toBe(false)
-    expect(transition.outcome.lead.elementType).toBe(2)
+    expect(transition.outcome.lead.elementType).toBe('transition')
   })
 
   it('what is taken over is what is committed', { timeout: 30000 }, () => {

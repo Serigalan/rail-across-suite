@@ -135,12 +135,12 @@ function switchProject(identity = { switchId: 'sw-1', kind: DEFAULT_SWITCH_KIND,
     id: 'p1',
     tracks: [
       { id: 'through', epsg: SWITCH_EPSG, elements: [{
-        elementType: 0, ...mark('main'),
+        elementType: 'straight', ...mark('main'),
         startNode: g.portA, endNode: g.portB2,
         bearing: 30, length: switchStraightLength(FORM),
       }] },
       { id: 'branch', epsg: SWITCH_EPSG, elements: [{
-        elementType: 1, ...mark('branch'),
+        elementType: 'arc', ...mark('branch'),
         startNode: g.portA, endNode: g.portB1,
         bearing: 30, endBearing: g.branchEndBearing,
         length: switchArcLength(FORM.R, FORM.ratio), radius: g.signedR,
@@ -251,7 +251,7 @@ describe('parseProjectsPayload', () => {
 })
 
 describe('parseTracksPayload (R0.5)', () => {
-  const el = (extra = {}) => ({ elementType: 0, startNode: [0, 0], endNode: [10, 0], bearing: 90, length: 10, ...extra })
+  const el = (extra = {}) => ({ elementType: 'straight', startNode: [0, 0], endNode: [10, 0], bearing: 90, length: 10, ...extra })
   const track = (extra = {}) => ({ id: 't1', epsg: 25832, trackType: 'line', elements: [el()], ...extra })
   const code = (fn) => { try { fn() } catch (e) { return e instanceof PayloadError ? e.code : 'other' } return null }
 
@@ -282,7 +282,7 @@ describe('parseTracksPayload (R0.5)', () => {
 // ── What a record keeps (decisions 333 and 371) ──────────────────────────
 
 describe('a record as it is kept', () => {
-  const arc = { elementType: 1, startNode: [500000.1234567891, 5600000], endNode: [500100, 5600010], bearing: 84.12345678912345, length: 100.12345678912, radius: 500.00000004 }
+  const arc = { elementType: 'arc', startNode: [500000.1234567891, 5600000], endNode: [500100, 5600010], bearing: 84.12345678912345, length: 100.12345678912, radius: 500.00000004 }
   const kept = (el, heights) => dehydrateProjects([{ id: 'p', tracks: [{ id: 't', epsg: 25832, elements: [el], ...(heights ? { heights } : {}) }] }])[0].tracks[0]
 
   it('leaves out an end bearing its bearing, length and radius give, and the load puts it back', () => {
@@ -294,7 +294,7 @@ describe('a record as it is kept', () => {
   })
 
   it('keeps an end bearing that does not follow — a kinked straight', () => {
-    const straight = { elementType: 0, startNode: [0, 0], endNode: [100, 0], bearing: 90, length: 100, endBearing: 90.5 }
+    const straight = { elementType: 'straight', startNode: [0, 0], endNode: [100, 0], bearing: 90, length: 100, endBearing: 90.5 }
     expect(kept(straight).elements[0].endBearing).toBe(90.5)
     expect(kept({ ...straight, endBearing: 90 }).elements[0]).not.toHaveProperty('endBearing')
   })
@@ -329,7 +329,7 @@ describe('a record as it is kept', () => {
 
     it('leaves one cant alone, and a transition\'s ends without a cant beside them', () => {
       expect(kept({ ...arc, cant: 30 }).elements[0]).toMatchObject({ cant: 30 })
-      const transition = { elementType: 2, transitionType: 'clothoid', startNode: [0, 0], endNode: [60, 0], bearing: 90, length: 60, r1: null, r2: 500, cant: 40, cantStart: 0, cantEnd: 40 }
+      const transition = { elementType: 'transition', transitionType: 'clothoid', startNode: [0, 0], endNode: [60, 0], bearing: 90, length: 60, r1: null, r2: 500, cant: 40, cantStart: 0, cantEnd: 40 }
       const [el] = kept(transition).elements
       expect(el).not.toHaveProperty('cant')
       expect(el).toMatchObject({ cantStart: 0, cantEnd: 40 })
@@ -338,8 +338,8 @@ describe('a record as it is kept', () => {
   })
 
   describe('a transition states both its ends, an absent cant is 0 (Entscheidung 371)', () => {
-    const tr = (more = {}) => ({ elementType: 2, transitionType: 'clothoid', startNode: [0, 0], endNode: [60, 0], bearing: 90, length: 60, r1: null, r2: 500, ...more })
-    const chain = [{ ...arc, radius: null, elementType: 0, cant: 0 }, tr(), { ...arc, cant: 60 }]
+    const tr = (more = {}) => ({ elementType: 'transition', transitionType: 'clothoid', startNode: [0, 0], endNode: [60, 0], bearing: 90, length: 60, r1: null, r2: 500, ...more })
+    const chain = [{ ...arc, radius: null, elementType: 'straight', cant: 0 }, tr(), { ...arc, cant: 60 }]
     const keptChain = (elements) => dehydrateProjects([{ id: 'p', tracks: [{ id: 't', epsg: 25832, elements }] }])[0].tracks[0].elements
     const loadChain = (elements) => hydrateProjects([{ id: 'p', tracks: [{ id: 't', epsg: 25832, elements }] }])[0].tracks[0].elements
 

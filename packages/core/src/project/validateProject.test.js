@@ -11,7 +11,7 @@ function straightTrack(id, { x = 0, y = 0, n = 2, len = 50, epsg = 25832 } = {})
   const elements = []
   for (let i = 0; i < n; i++) {
     elements.push({
-      elementType: 0, bearing: 90, length: len,
+      elementType: 'straight', bearing: 90, length: len,
       startNode: [x + i * len, y], endNode: [x + (i + 1) * len, y],
     })
   }
@@ -155,7 +155,7 @@ describe('overlappingTracks — tracks parting from a common end', () => {
     const curve = { id: 'b', name: 'b', epsg: 25832, elements: [] }
     const R = 300, L = 150
     const end = [R * Math.sin(L / R), R - R * Math.cos(L / R)]
-    curve.elements.push({ elementType: 1, bearing: 90, radius: -R, length: L, startNode: [0, 0], endNode: [end[0], end[1]] })
+    curve.elements.push({ elementType: 'arc', bearing: 90, radius: -R, length: L, startNode: [0, 0], endNode: [end[0], end[1]] })
     expect(overlappingTracks([straightA, curve], [])).toEqual([])
     // A copy of `a` from the same node is a track drawn twice.
     expect(overlappingTracks([straightA, { ...straightTrack('a2', { n: 4, len: 50 }) }], [])).toHaveLength(1)

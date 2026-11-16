@@ -6,6 +6,7 @@
 //! them — `geometry` (SAGITTA_ELEMENT) and, for arcs and transitions,
 //! `renderCoords` (SAGITTA_TRACK). `extra` is merged in last.
 
+use crate::kind::{STRAIGHT, ARC, TRANSITION};
 use rail_across_js::{Object, number};
 use serde_json::{Value, json};
 
@@ -34,7 +35,7 @@ fn with_extra(mut o: Object, extra: &Object) -> Value {
 pub fn straight_element(s: Utm, e: Utm, extra: &Object) -> Result<Value, Unsupported> {
     let (length, bearing) = straight_values(s, e);
     let mut o = Object::new();
-    o.insert("elementType".into(), json!(0));
+    o.insert("elementType".into(), json!(STRAIGHT));
     o.insert("startNode".into(), json!([number(s.e), number(s.n)]));
     o.insert("endNode".into(), json!([number(e.e), number(e.n)]));
     o.insert("bearing".into(), number(bearing));
@@ -53,7 +54,7 @@ pub fn arc_element(s: Utm, e: Utm, signed_r: f64, extra: &Object) -> Result<Valu
     let (length, bearing, end_bearing) = curved_values(s, e, signed_r);
     let chord = vec![wgs(s)?, wgs(e)?];
     let mut o = Object::new();
-    o.insert("elementType".into(), json!(1));
+    o.insert("elementType".into(), json!(ARC));
     o.insert("startNode".into(), json!([number(s.e), number(s.n)]));
     o.insert("endNode".into(), json!([number(e.e), number(e.n)]));
     o.insert("bearing".into(), number(bearing));
@@ -113,7 +114,7 @@ pub fn transition_element(
     }
     let opt = |r: Option<f64>| r.map(number).unwrap_or(Value::Null);
     let mut o = Object::new();
-    o.insert("elementType".into(), json!(2));
+    o.insert("elementType".into(), json!(TRANSITION));
     o.insert("transitionType".into(), transition_type.clone());
     o.insert("r1".into(), opt(r1));
     o.insert("r2".into(), opt(r2));

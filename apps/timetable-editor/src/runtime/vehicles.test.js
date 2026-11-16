@@ -8,7 +8,7 @@ const WASM = new URL('../../public/sim/rail_across_sim.wasm', import.meta.url)
 describe.skipIf(!existsSync(WASM))('OSRD\'s example vehicles', () => {
   const E0 = 500000, N0 = 5600000
   const record = {
-    tracks: [{ id: 'T1', epsg: 25832, elements: [{ elementType: 0, startNode: [E0, N0], endNode: [E0 + 8000, N0], bearing: 90, length: 8000, speed: 300 }], heights: [{ station: 0, z: 100 }, { station: 8000, z: 140 }] }],
+    tracks: [{ id: 'T1', epsg: 25832, elements: [{ elementType: 'straight', startNode: [E0, N0], endNode: [E0 + 8000, N0], bearing: 90, length: 8000, speed: 300 }], heights: [{ station: 0, z: 100 }, { station: 8000, z: 140 }] }],
     switches: [],
   }
 

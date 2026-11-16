@@ -67,7 +67,7 @@ export function traRecords(track) {
       bearing: norm2pi((el.bearing ?? 0) * DEG2RAD), station, length,
     }
     const { start: cantB, end: cantE } = cants[i]
-    if (el.elementType === 2) {
+    if (el.elementType === 'transition') {
       out.push({
         ...base, type: el.transitionType === 'bloss' ? TYPE_BLOSS : TYPE_CLOTHOID,
         radiusB: el.r1 ?? 0, radiusE: el.r2 ?? 0, cantB, cantE,
@@ -181,7 +181,7 @@ export function routeAsTrack(resolved) {
     const at = elements.findLastIndex(el => (el.length ?? 0) > 0)
     const last = elements[at]
     const first = els.find(el => (el.length ?? 0) > 0)
-    if (last && first && !last.radius && last.elementType !== 2
+    if (last && first && !last.radius && last.elementType !== 'transition'
       && Math.abs(((((first.bearing - (last.endBearing ?? last.bearing)) + 540) % 360) - 180)) > SAME_BEARING) {
       elements[at] = { ...last, endBearing: first.bearing }
     }

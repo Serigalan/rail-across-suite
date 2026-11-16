@@ -99,8 +99,10 @@ fn convert(domains: &mut Object, way: Way) {
             .flatten()
             .filter_map(Value::as_object_mut)
         {
-            translate(el, "elementType", ELEMENT_TYPES, way);
+            // The record states an element's kind as a word since it follows the document (phase 6); a number of
+            // before is read on the way in, as a working copy may hold one.
             if way == Way::Forward {
+                translate(el, "elementType", ELEMENT_TYPES, way);
                 el.shift_remove("epsg");
             }
         }

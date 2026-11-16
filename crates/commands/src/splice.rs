@@ -4,6 +4,7 @@
 //! Splicing two tracks into one: what a picked element offers, the request,
 //! and the commit around the chain the optimizer answers with (`splice.js`).
 
+use rail_across_geom::kind::{is_arc, is_transition};
 use rail_across_geom::coords::transform_plane_point;
 use rail_across_geom::element::{Utm, node_utm, resolve_end_bearing, reverse_element};
 use rail_across_geom::reconstruct::reconstruct_elements;
@@ -50,7 +51,7 @@ pub fn splice_pick(track: &Value, el_idx: usize) -> Value {
     let es = els(track);
     let Some(el) = es.get(el_idx) else { return Value::Null };
     let last = el_idx == es.len() - 1;
-    let transition = el.get("elementType").and_then(Value::as_f64) == Some(2.0);
+    let transition = is_transition(el);
     if transition && !last && el_idx != 0 {
         return json!({ "error": "splice_hint_transition_end" });
     }
@@ -576,7 +577,7 @@ fn merged_chain(solution: &Value, dep_track: &Value, arr_track: &Value, speed: &
     let built_on = |el: &Value, p: &Value| -> Value {
         let mut o = plane(el);
         o.insert("speed".into(), p.get("speed").cloned().unwrap_or(Value::Null));
-        if el.get("elementType").and_then(Value::as_f64) == Some(1.0) {
+        if is_arc(el) {
             o.insert(
                 "cant".into(),
                 number(cant_sign(js_number(el.get("radius"))) * f(p, "cant").unwrap_or(0.0).abs()),
@@ -594,7 +595,7 @@ fn merged_chain(solution: &Value, dep_track: &Value, arr_track: &Value, speed: &
             _ => {
                 let mut o = plane(el);
                 o.insert("speed".into(), speed.clone());
-                if el.get("elementType").and_then(Value::as_f64) == Some(1.0) {
+                if is_arc(el) {
                     o.insert("cant".into(), number(cant_sign(js_number(el.get("radius"))) * cant.abs()));
                 }
                 Value::Object(o)

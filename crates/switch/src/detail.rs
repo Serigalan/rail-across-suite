@@ -386,15 +386,15 @@ fn chain_elements(start: Utm, bearing: f64, chain: &[Value], fields: &Object) ->
             let [e, n] = transition_point_at(p.e, p.n, b, length, signed_r, r2, false, length);
             end = Utm { e, n, zone: p.zone };
             end_bearing = transition_bearing_at(b, length, signed_r, r2, false, length);
-            el = json!({ "elementType": 2, "transitionType": "clothoid", "r1": signed_r.map(number), "r2": r2.map(number), "startNode": node(p), "endNode": node(end), "bearing": number(b), "endBearing": number(end_bearing), "length": number(length) });
+            el = json!({ "elementType": "transition", "transitionType": "clothoid", "r1": signed_r.map(number), "r2": r2.map(number), "startNode": node(p), "endNode": node(end), "bearing": number(b), "endBearing": number(end_bearing), "length": number(length) });
         } else if let Some(r) = signed_r.filter(|r| *r != 0.0) {
             end = end_point_curved(p, b, length, r);
             end_bearing = bearing_after(b, length, Some(r));
-            el = json!({ "elementType": 1, "startNode": node(p), "endNode": node(end), "bearing": number(b), "endBearing": number(end_bearing), "radius": number(r), "length": number(length) });
+            el = json!({ "elementType": "arc", "startNode": node(p), "endNode": node(end), "bearing": number(b), "endBearing": number(end_bearing), "radius": number(r), "length": number(length) });
         } else {
             end = end_point_straight(p, b, length);
             end_bearing = b;
-            el = json!({ "elementType": 0, "startNode": node(p), "endNode": node(end), "bearing": number(b), "length": number(length) });
+            el = json!({ "elementType": "straight", "startNode": node(p), "endNode": node(end), "bearing": number(b), "length": number(length) });
         }
         for (k, v) in fields {
             el[k] = v.clone();

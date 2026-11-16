@@ -22,8 +22,8 @@ const times = (side, value) => side * value || 0
 
 /** The side a curve-relative cant at `end` of `el` raises: ±1, or 0 where the element has no curve. */
 function curveSide(el, end) {
-  if (el.elementType === 1) return el.radius ? cantSign(el.radius) : 0
-  if (el.elementType === 2) {
+  if (el.elementType === 'arc') return el.radius ? cantSign(el.radius) : 0
+  if (el.elementType === 'transition') {
     const r = end === 'start' ? (el.r1 ?? el.r2) : (el.r2 ?? el.r1)
     return r ? cantSign(r) : 0
   }
@@ -72,12 +72,12 @@ export const withFileCants = (elements, ends) => withSignedCants(elements, signe
 /** `elements` with the cants `signed` ([{ start, end }], by the raised rail) put on them, as withFileCants does. */
 export function withSignedCants(elements, signed) {
   const out = elements.map((el, i) => {
-    if (el.elementType !== 2) return withCantRamp(el, r3(signed[i].start), r3(signed[i].end))
+    if (el.elementType !== 'transition') return withCantRamp(el, r3(signed[i].start), r3(signed[i].end))
     const { cant: _cant, cantStart: _s, cantEnd: _e, ...rest } = el
     return rest
   })
   return out.map((el, i) => {
-    if (el.elementType !== 2) return el
+    if (el.elementType !== 'transition') return el
     const implied = transitionCantEnds(out, i)
     const start = r3(signed[i].start), end = r3(signed[i].end)
     return {

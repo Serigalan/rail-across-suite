@@ -263,7 +263,7 @@ describe('the three elements of a connection', () => {
     const track = asTrack(solveSwitchConnection(
       stem(ORIGIN, 0, null), stem(P(ORIGIN.easting - 4.5, ORIGIN.northing), 0, null), SPEED))
     expectValidTrack(track)
-    expect(track.elements.map(el => el.elementType)).toEqual([1, 0, 1])
+    expect(track.elements.map(el => el.elementType)).toEqual(['arc', 'straight', 'arc'])
     expect(track.elements.every(el => el.cant === undefined)).toBe(true)
   })
 
@@ -313,7 +313,7 @@ describe('committing a connection in a curve', () => {
     const end = endPointCurvedUtm(start, bearing, length, radius)
     const v = computeCurvedValuesUtm(start, end, radius)
     const el = {
-      elementType: 1,
+      elementType: 'arc',
       startNode: v.startNode, endNode: v.endNode,
       bearing: v.bearing, endBearing: v.endBearing,
       length: v.length,
@@ -406,10 +406,10 @@ describe('the two tracks need not be the same kind of element', () => {
     expect(res.chain2[0].r1).toBe(res.chain2[0].r2)    // track 2 is straight
 
     const { branch1, midEl, branch2 } = buildConnectionElements(res, SPEED)
-    expect(branch1[0].elementType).toBe(2)
+    expect(branch1[0].elementType).toBe('transition')
     expect(branch1[0].transitionType).toBe('clothoid')
-    expect(midEl.elementType).toBeLessThan(2)
-    expect(branch2[branch2.length - 1].elementType).toBe(1)
+    expect(midEl.elementType).not.toBe('transition')
+    expect(branch2[branch2.length - 1].elementType).toBe('arc')
     expectValidTrack({ id: 't', epsg: EPSG, elements: [...branch1, midEl, ...branch2] })
   })
 
@@ -488,11 +488,11 @@ describe('a connection built from a form with a straight end piece', () => {
     expect(branch1).toHaveLength(2)
     expect(branch1[0].radius).toBe(res.signedR1)
     expect(branch1[0].length).toBeCloseTo(switchArcLength(FORM_40.R, FORM_40.ratio), 9)
-    expect(branch1[1].elementType).toBe(0)               // the end piece, on a straight stem
+    expect(branch1[1].elementType).toBe('straight')               // the end piece, on a straight stem
     expect(branch1[1].length).toBeCloseTo(6.092, 9)
     // Turnout 2 opens against the connection, so its branch runs end piece first.
     expect(branch2).toHaveLength(2)
-    expect(branch2[0].elementType).toBe(0)
+    expect(branch2[0].elementType).toBe('straight')
     expect(branch2[1].radius).toBe(res.signedR2)
     expect(midEl.length).toBeCloseTo(res.Lg, 6)
   })

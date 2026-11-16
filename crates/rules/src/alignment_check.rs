@@ -148,7 +148,7 @@ pub fn element_scope(els: &[Element], i: usize, context: Context) -> Vec<(&'stat
         0.0
     };
     let length = el.length.unwrap_or(0.0);
-    let reverse = el.element_type == Some(0)
+    let reverse = el.element_type.as_deref() == Some("straight")
         && match (prev, next) {
             (Some(p), Some(n)) => {
                 let (a, b) = (k_end(p), k_start(n));

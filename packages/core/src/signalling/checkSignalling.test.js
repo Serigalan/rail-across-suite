@@ -187,13 +187,13 @@ describe('routes and overlaps', () => {
 
   it('ends an overlap on its run, or just beside its end', () => {
     const { errors } = check((c, core) => {
-      core.collections.tracks.push({ id: 't3', epsg: 25832, elements: [{ elementType: 0, length: 80 }] })
+      core.collections.tracks.push({ id: 't3', epsg: 25832, elements: [{ elementType: 'straight', length: 80 }] })
       byId(c.overlaps, 'ov-n1').end = { anchor: 'station', trackId: 't3', station: 10 }
     })
     expect(codes(errors)).toEqual(['overlap_end_off_path'])
     // The clearance marker of a switch at its end, on the other branch: beside it.
     const { errors: beside } = check((c, core) => {
-      core.collections.tracks.push({ id: 't3', epsg: 25832, elements: [{ elementType: 0, length: 80 }] })
+      core.collections.tracks.push({ id: 't3', epsg: 25832, elements: [{ elementType: 'straight', length: 80 }] })
       core.collections.switches[0].ports = { A: { trackId: 't2', endpoint: 'BEGIN' }, B1: { trackId: 't3', endpoint: 'BEGIN' } }
       byId(c.overlaps, 'ov-n1').end = { anchor: 'station', trackId: 't3', station: 10 }
     })

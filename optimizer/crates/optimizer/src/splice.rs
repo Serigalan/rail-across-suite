@@ -131,6 +131,15 @@ pub struct El {
 }
 
 impl El {
+    /// The kind as the record states it (decision 0029, phase 6): 0 a straight, 1 an arc, 2 a transition.
+    pub fn kind_word(&self) -> &'static str {
+        match self.kind {
+            1 => "arc",
+            2 => "transition",
+            _ => "straight",
+        }
+    }
+
     pub fn end_bearing(&self) -> f64 {
         self.end_bearing.unwrap_or(self.bearing)
     }
@@ -138,7 +147,7 @@ impl El {
     /// The element as the rule check reads it.
     pub fn element(&self) -> Element {
         Element {
-            element_type: Some(i64::from(self.kind)),
+            element_type: Some(self.kind_word().into()),
             transition_type: (self.kind == 2).then(|| self.profile.id().to_string()),
             radius: self.radius,
             r1: self.r1,
@@ -152,7 +161,7 @@ impl El {
 
     pub fn to_json(&self) -> Json {
         let mut out = Map::new();
-        out.insert("elementType".into(), json!(self.kind));
+        out.insert("elementType".into(), json!(self.kind_word()));
         out.insert("role".into(), json!(self.role.id()));
         if self.kind == 2 {
             out.insert("transitionType".into(), json!(self.profile.id()));
@@ -1350,14 +1359,14 @@ fn unsolved_lengths(rules: &Rules, picks: &[Pick; 2], spec: &Spec) -> [Side; 2] 
         }
         let own = match p.radius {
             Some(r) => Element {
-                element_type: Some(1),
+                element_type: Some("arc".into()),
                 radius: Some(r.abs()),
                 cant: Some(p.cant),
                 speed: Some(p.speed),
                 ..Element::default()
             },
             None => Element {
-                element_type: Some(0),
+                element_type: Some("straight".into()),
                 cant: Some(0.0),
                 speed: Some(p.speed),
                 ..Element::default()
@@ -1365,7 +1374,7 @@ fn unsolved_lengths(rules: &Rules, picks: &[Pick; 2], spec: &Spec) -> [Side; 2] 
         };
         let body = if two_arcs {
             Element {
-                element_type: Some(0),
+                element_type: Some("straight".into()),
                 cant: Some(0.0),
                 speed: Some(spec.speed),
                 ..Element::default()
@@ -1373,7 +1382,7 @@ fn unsolved_lengths(rules: &Rules, picks: &[Pick; 2], spec: &Spec) -> [Side; 2] 
         } else {
             let hand = if p.radius.is_none() || same { 1.0 } else { -1.0 };
             Element {
-                element_type: Some(1),
+                element_type: Some("arc".into()),
                 radius: Some(hand * spec.radius),
                 cant: Some(hand * spec.cant),
                 speed: Some(spec.speed),
@@ -1439,7 +1448,7 @@ fn run_context(sol: &Solution, picks: &[Pick; 2]) -> [Option<Element>; 2] {
     let (dep, arr) = (&picks[sol.dep_pick], &picks[1 - sol.dep_pick]);
     let run = |p: &Pick, reversed: bool, length: f64| -> Option<Element> {
         (length > 0.0).then(|| Element {
-            element_type: Some(if p.radius.is_none() { 0 } else { 1 }),
+            element_type: Some(if p.radius.is_none() { "straight" } else { "arc" }.into()),
             radius: p.radius.map(|r| if reversed { -r } else { r }),
             length: Some(length),
             ..Element::default()

@@ -7,7 +7,7 @@ use rail_across_js::get;
 use serde_json::{Value, json};
 
 fn is_transition(el: Option<&Value>) -> bool {
-    el.and_then(|e| e.get("elementType")).and_then(Value::as_f64) == Some(2.0)
+    el.is_some_and(rail_across_geom::kind::is_transition)
 }
 
 fn in_switch(el: Option<&Value>) -> bool {

@@ -20,7 +20,7 @@ beforeAll(() => {
 // Ids as a working copy has them from the server: UUIDs (decision 0029, phase 2).
 const straight = (name, y) => ({
   id: u(name), name, epsg: 25832,
-  elements: [{ elementType: 0, bearing: 90, length: 100, startNode: [500000, 5700000 + y], endNode: [500100, 5700000 + y] }],
+  elements: [{ elementType: 'straight', bearing: 90, length: 100, startNode: [500000, 5700000 + y], endNode: [500100, 5700000 + y] }],
 })
 const base = { id: u('p'), title: 'P', tracks: [straight('t1', 0)], switches: [], platforms: [] }
 

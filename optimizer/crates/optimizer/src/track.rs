@@ -24,7 +24,7 @@ fn node(el: &Json, key: &str) -> Pt {
 }
 
 pub fn is_transition(el: &Json) -> bool {
-    el.get("elementType").and_then(Json::as_i64) == Some(2)
+    rail_across_geom::kind::is_transition(el)
 }
 
 pub fn is_arc(el: &Json) -> bool {
@@ -292,7 +292,7 @@ fn build_group(els: &[Json], entry_idx: usize, arc_idxs: Vec<usize>, t_idxs: Vec
 
 fn straight_element(frm: Pt, to: Pt, epsg: &Json, speed: &Json, cant: Option<&Json>) -> Json {
     let mut el = json!({
-        "elementType": 0, "epsg": epsg,
+        "elementType": "straight", "epsg": epsg,
         "startNode": [frm.0, frm.1], "endNode": [to.0, to.1],
         "bearing": (to.0 - frm.0).atan2(to.1 - frm.1).to_degrees().rem_euclid(360.0),
         "length": (to.0 - frm.0).hypot(to.1 - frm.1), "speed": speed,
@@ -317,7 +317,7 @@ pub fn segment_element(seg: &crate::geometry::Segment, epsg: &Json, speed: &Json
         } => {
             let (e, n, end_bearing) = transition_end(start.0, start.1, bearing, length, r1, r2, profile);
             json!({
-                "elementType": 2, "transitionType": profile.id(), "r1": r1, "r2": r2, "epsg": epsg,
+                "elementType": "transition", "transitionType": profile.id(), "r1": r1, "r2": r2, "epsg": epsg,
                 "startNode": [start.0, start.1], "endNode": [e, n],
                 "bearing": bearing, "endBearing": end_bearing, "length": length, "speed": speed,
             })
@@ -330,7 +330,7 @@ pub fn segment_element(seg: &crate::geometry::Segment, epsg: &Json, speed: &Json
             bearing,
             end_bearing,
         } => json!({
-            "elementType": 1, "epsg": epsg, "radius": signed_r,
+            "elementType": "arc", "epsg": epsg, "radius": signed_r,
             "startNode": [start.0, start.1], "endNode": [end.0, end.1],
             "bearing": bearing, "endBearing": end_bearing,
             "length": (sweep * signed_r).abs(), "speed": speed,

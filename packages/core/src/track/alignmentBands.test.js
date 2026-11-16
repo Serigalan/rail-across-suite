@@ -5,11 +5,11 @@ import { curvatureBand, cantBand, speedBand, bandValueAt, bandRuns, bandRange, w
 // Straight 100 m, clothoid 50 m into a right arc R 500 of 200 m with 80 mm
 // cant, a Bloss transition 40 m out of it, and a straight of 60 m.
 const elements = [
-  { elementType: 0, length: 100, speed: 120 },
-  { elementType: 2, length: 50, r1: null, r2: 500, speed: 120 },
-  { elementType: 1, length: 200, radius: 500, cant: 80, speed: 100 },
-  { elementType: 2, length: 40, r1: 500, r2: null, transitionType: 'bloss', speed: 100 },
-  { elementType: 0, length: 60 },
+  { elementType: 'straight', length: 100, speed: 120 },
+  { elementType: 'transition', length: 50, r1: null, r2: 500, speed: 120 },
+  { elementType: 'arc', length: 200, radius: 500, cant: 80, speed: 100 },
+  { elementType: 'transition', length: 40, r1: 500, r2: null, transitionType: 'bloss', speed: 100 },
+  { elementType: 'straight', length: 60 },
 ]
 
 describe('curvatureBand', () => {
@@ -23,7 +23,7 @@ describe('curvatureBand', () => {
     expect(bandValueAt(band, 400)).toBe(0)
   })
   it('signs a left curve below the line', () => {
-    expect(bandValueAt(curvatureBand([{ elementType: 1, length: 10, radius: -250 }]), 5)).toBeCloseTo(-4)
+    expect(bandValueAt(curvatureBand([{ elementType: 'arc', length: 10, radius: -250 }]), 5)).toBeCloseTo(-4)
   })
 })
 
@@ -37,7 +37,7 @@ describe('cantBand', () => {
     expect(bandValueAt(band, 420)).toBe(0)
   })
   it('keeps the ramp ends a cut transition carries', () => {
-    const band = cantBand([{ elementType: 2, length: 10, r1: null, r2: 300, cantStart: 20, cantEnd: 60 }])
+    const band = cantBand([{ elementType: 'transition', length: 10, r1: null, r2: 300, cantStart: 20, cantEnd: 60 }])
     expect(bandValueAt(band, 0)).toBe(20)
     expect(bandValueAt(band, 10)).toBe(60)
   })
@@ -76,13 +76,13 @@ describe('withBandValue', () => {
     expect('speed' in withBandValue(elements, [0], 'speed', null)[0]).toBe(false)
   })
   it('sets a cant on its 5 mm step, signed by the curve, and leaves a transition alone', () => {
-    const left = [{ elementType: 1, length: 10, radius: -400 }, { elementType: 2, length: 10, r1: -400, r2: null }]
+    const left = [{ elementType: 'arc', length: 10, radius: -400 }, { elementType: 'transition', length: 10, r1: -400, r2: null }]
     const next = withBandValue(left, [0, 1], 'cant', 83)
     expect(next[0].cant).toBe(-85)
     expect(next[1]).toBe(left[1])
   })
   it('keeps the side of a straight\'s cant and caps it at the limit', () => {
-    const next = withBandValue([{ elementType: 0, length: 10, cant: -20 }], [0], 'cant', 500)
+    const next = withBandValue([{ elementType: 'straight', length: 10, cant: -20 }], [0], 'cant', 500)
     expect(next[0].cant).toBeLessThan(0)
     expect(Math.abs(next[0].cant)).toBeLessThanOrEqual(170)
   })
@@ -91,9 +91,9 @@ describe('withBandValue', () => {
 describe('withCantEnds', () => {
   // A left-hand arc at −60, a ramp on its radius to −80, the next arc at −80.
   const els = [
-    { elementType: 1, length: 10, radius: -400, cant: -60 },
-    { elementType: 2, length: 10, r1: -400, r2: -400 },
-    { elementType: 1, length: 10, radius: -400, cant: -80 },
+    { elementType: 'arc', length: 10, radius: -400, cant: -60 },
+    { elementType: 'transition', length: 10, r1: -400, r2: -400 },
+    { elementType: 'arc', length: 10, radius: -400, cant: -80 },
   ]
   it('sets the ends a transition is given, on the side they raise, to the 0.001 mm — and the arc before takes it', () => {
     const next = withCantEnds(els, [0, 1], { start: 21.8751, end: undefined })
@@ -116,10 +116,10 @@ describe('withCantEnds', () => {
 
 describe('a cant set in the band runs on over the joints (Entscheidung 373)', () => {
   const chain = [
-    { elementType: 0, length: 10 },
-    { elementType: 2, length: 10, r1: null, r2: 500, cantStart: 0, cantEnd: 60 },
-    { elementType: 1, length: 10, radius: 500, cant: 60 },
-    { elementType: 2, length: 10, r1: 500, r2: null, cantStart: 60, cantEnd: 0 },
+    { elementType: 'straight', length: 10 },
+    { elementType: 'transition', length: 10, r1: null, r2: 500, cantStart: 0, cantEnd: 60 },
+    { elementType: 'arc', length: 10, radius: 500, cant: 60 },
+    { elementType: 'transition', length: 10, r1: 500, r2: null, cantStart: 60, cantEnd: 0 },
   ]
   it('takes an arc\'s cant to the transitions at both its ends', () => {
     const next = withBandValue(chain, [2], 'cant', 80)

@@ -177,7 +177,7 @@ describe('the title block of a project\'s plans', () => {
 })
 
 describe('buffer stops and boundaries in the store', () => {
-  const el = (length) => ({ elementType: 0, length, bearing: 90, startNode: [0, 0], endNode: [length, 0] })
+  const el = (length) => ({ elementType: 'straight', length, bearing: 90, startNode: [0, 0], endNode: [length, 0] })
   const setup = (id) => {
     openProject({ id, tracks: [{ id: 't', elements: [el(10), el(20), el(30)] }], switches: [] })
     saveEndMark(newBufferStop('t', 'BEGIN', 4))
@@ -229,7 +229,7 @@ describe('buffer stops and boundaries in the store', () => {
 // Case F3 of the data model: a platform is stationed along its track, so a
 // track reversed or spliced into another takes it along.
 describe('platforms when their track is reversed or spliced (data model, case F3)', () => {
-  const el = (x0, length) => ({ elementType: 0, length, bearing: 90, startNode: [x0, 0], endNode: [x0 + length, 0] })
+  const el = (x0, length) => ({ elementType: 'straight', length, bearing: 90, startNode: [x0, 0], endNode: [x0 + length, 0] })
   const platform = (id, trackId, startStation, endStation, side) =>
     ({ id, trackId, startStation, endStation, side, frontOffset: 1.68, height: 550 })
 
@@ -268,7 +268,7 @@ describe('platforms when their track is reversed or spliced (data model, case F3
 })
 
 describe('the id log of splits and joins (decision 93)', () => {
-  const el = (length) => ({ elementType: 0, length, bearing: 90, startNode: [0, 0], endNode: [length, 0] })
+  const el = (length) => ({ elementType: 'straight', length, bearing: 90, startNode: [0, 0], endNode: [length, 0] })
 
   it('a split logs the old id and both pieces, and undo takes the entry back', () => {
     openProject({ id: 'log1', tracks: [{ id: 't', elements: [el(10), el(20), el(30)] }], switches: [] })
@@ -314,7 +314,7 @@ describe('the id log of splits and joins (decision 93)', () => {
 describe('deleting several elements at once', () => {
   // Five straights of 100 m end to end, climbing 1 m per 100 m; one point at
   // 250 m rounds a change from 10 to 20 per mille with R 10000 (T = 50 m).
-  const el = (i) => ({ elementType: 0, length: 100, bearing: 90, startNode: [i * 100, 0], endNode: [i * 100 + 100, 0] })
+  const el = (i) => ({ elementType: 'straight', length: 100, bearing: 90, startNode: [i * 100, 0], endNode: [i * 100 + 100, 0] })
   const heights = [{ station: 0, z: 100 }, { station: 250, z: 102.5, rv: 10000 }, { station: 500, z: 107.5 }]
   const setup = (id, extra = {}) => openProject({
     id, tracks: [{ id: 't', name: '5550.00200', elements: [0, 1, 2, 3, 4].map(el), heights }], switches: [], ...extra,
@@ -367,7 +367,7 @@ describe('deleting several elements at once', () => {
 
 describe('reconnecting a stretch (Paket N)', () => {
   it('writes the track back and re-stations the platforms along it, in one undo step', () => {
-    const el = (i) => ({ elementType: 0, length: 100, bearing: 90, startNode: [i * 100, 0], endNode: [i * 100 + 100, 0] })
+    const el = (i) => ({ elementType: 'straight', length: 100, bearing: 90, startNode: [i * 100, 0], endNode: [i * 100 + 100, 0] })
     openProject({
       id: 'rc1', tracks: [{ id: 't', name: 't', elements: [0, 1, 2].map(el) }, { id: 'u', name: 'u', elements: [el(5)] }],
       switches: [],
@@ -385,7 +385,7 @@ describe('reconnecting a stretch (Paket N)', () => {
 
 describe('deleting a track with a switch on it', () => {
   it('leaves no element on the tracks that stay naming the switch that went', () => {
-    const el = (props = {}) => ({ elementType: 0, length: 10, bearing: 90, startNode: [0, 0], endNode: [10, 0], ...props })
+    const el = (props = {}) => ({ elementType: 'straight', length: 10, bearing: 90, startNode: [0, 0], endNode: [10, 0], ...props })
     openProject({ id: 'unmark', tracks: [
       { id: 'a', elements: [el()] },
       { id: 'b', elements: [el({ switchBranch: true, switchId: 'w', switchRoute: 'branch' })] },
@@ -401,7 +401,7 @@ describe('deleting a track with a switch on it', () => {
 })
 
 describe('a project kept where its opener says', () => {
-  const el = (length) => ({ elementType: 0, length, bearing: 90, startNode: [0, 0], endNode: [length, 0] })
+  const el = (length) => ({ elementType: 'straight', length, bearing: 90, startNode: [0, 0], endNode: [length, 0] })
   const record = () => ({ id: 'kp', title: 'K', tracks: [{ id: 't', epsg: 25832, elements: [el(10), el(20)] }], switches: [] })
 
   it('writes the project\'s document with its meta behind every change, and says what it keeps', async () => {
@@ -445,7 +445,7 @@ describe('the store works on the open project, immutably (R1.3)', () => {
   })
 
   it('makes a new project per write and leaves the old one as it was', () => {
-    const el = { elementType: 0, length: 10, bearing: 90, startNode: [0, 0], endNode: [10, 0] }
+    const el = { elementType: 'straight', length: 10, bearing: 90, startNode: [0, 0], endNode: [10, 0] }
     openProject({ id: 'imm', tracks: [{ id: 't', elements: [el] }], switches: [] })
     const before = currentProject()
     addElementToTrack('t', { ...el, startNode: [10, 0], endNode: [20, 0] })
@@ -562,15 +562,15 @@ describe('the heights at a turnout\'s WA and ldS (decision 384)', () => {
     id: 'coupled',
     tracks: [
       { id: 'm', epsg: 5684, elements: [
-        { elementType: 0, startNode: node(START), endNode: node(WE), bearing: 90, length: 30, cant: 60,
+        { elementType: 'straight', startNode: node(START), endNode: node(WE), bearing: 90, length: 30, cant: 60,
           switchId: 's1', switchRoute: 'main' },
-        { elementType: 0, startNode: node(WE), endNode: node(endPointStraightUtm(WE, 90, 30)), bearing: 90,
+        { elementType: 'straight', startNode: node(WE), endNode: node(endPointStraightUtm(WE, 90, 30)), bearing: 90,
           length: 30, cant: 60 },
       ], heights: [{ station: 0, z: 100 }, { station: 60, z: 100.6 }] },
       { id: 'b', epsg: 5684, elements: [
-        { elementType: 1, startNode: node(START), endNode: node(BE), bearing: 90, endBearing: turned, radius: -500,
+        { elementType: 'arc', startNode: node(START), endNode: node(BE), bearing: 90, endBearing: turned, radius: -500,
           length: 30, switchId: 's1', switchRoute: 'branch' },
-        { elementType: 1, startNode: node(BE), endNode: node(endPointCurvedUtm(BE, turned, 30, -500)),
+        { elementType: 'arc', startNode: node(BE), endNode: node(endPointCurvedUtm(BE, turned, 30, -500)),
           bearing: turned, radius: -500, length: 30 },
       ], heights: [{ station: 0, z: 100 }, { station: 60, z: 100.2 }] },
     ],
@@ -635,7 +635,7 @@ describe('the heights at a turnout\'s WA and ldS (decision 384)', () => {
 
 
 describe('a vertical curve whose length counts (decision 266)', () => {
-  const track = (heights) => ({ id: 'g', elements: [{ elementType: 0, length: 2000, speed: 100 }], heights })
+  const track = (heights) => ({ id: 'g', elements: [{ elementType: 'straight', length: 2000, speed: 100 }], heights })
   const heights = () => loadTracks().find(t => t.id === 'g').heights
 
   it('takes the radius its gradients ask for whenever one beside it changes, in the same step', () => {
@@ -688,7 +688,7 @@ describe('a platform and the stopping places at it (decision 0025)', () => {
 })
 
 describe('bridges, retaining walls and noise barriers in the store (decision 0025)', () => {
-  const el = (length) => ({ elementType: 0, length, bearing: 90, startNode: [500000, 5600000], endNode: [500000 + length, 5600000] })
+  const el = (length) => ({ elementType: 'straight', length, bearing: 90, startNode: [500000, 5600000], endNode: [500000 + length, 5600000] })
 
   it('keeps them, and carries them with their track when it is turned round', () => {
     openProject({ id: 'cs1', tracks: [{ id: 't', epsg: 25832, elements: [el(100)] }], switches: [] })
@@ -722,7 +722,7 @@ describe('a station a form states as text (decision 0028)', () => {
   })
 
   it('names a platform\'s station, and the stopping place made over it', () => {
-    openProject({ id: 'p1', tracks: [{ id: 't1', epsg: 25832, elements: [{ elementType: 0, startNode: [500000, 5600000], endNode: [500100, 5600000], bearing: 90, length: 100 }] }], switches: [] })
+    openProject({ id: 'p1', tracks: [{ id: 't1', epsg: 25832, elements: [{ elementType: 'straight', startNode: [500000, 5600000], endNode: [500100, 5600000], bearing: 90, length: 100 }] }], switches: [] })
     savePlatform({ id: 'pf', trackId: 't1', startStation: 10, endStation: 90, stationName: 'Halle-Trotha', code: 'LHT' }, { stopName: 'Gleis 1' })
     const [pf] = loadPlatforms()
     const [point] = currentProject().operationalPoints
@@ -736,7 +736,7 @@ describe('what a write takes away (decision 0028, phase C)', () => {
   it('takes along what the layers name of it: a switch deleted, its switch element and what needs that', async () => {
     const { ksStation, ksStoppingPlaces } = await import('@rail-across/core/test/signallingFixture.js')
     const signalling = ksStation()
-    const track = (id) => ({ id, epsg: 25832, elements: [{ elementType: 0, startNode: [500000, 5600000], endNode: [500100, 5600000], bearing: 90, length: 100 }] })
+    const track = (id) => ({ id, epsg: 25832, elements: [{ elementType: 'straight', startNode: [500000, 5600000], endNode: [500100, 5600000], bearing: 90, length: 100 }] })
     openProject({
       id: 'p1', tracks: [track('t1'), track('t2')], operationalPoints: [{ id: 'op1', name: 'Halle-Trotha' }],
       switches: [{ switchId: 'w1', kind: 'link', formVersion: 1, ports: { A: { trackId: 't1', endpoint: 'END' }, B: { trackId: 't2', endpoint: 'BEGIN' } } }],

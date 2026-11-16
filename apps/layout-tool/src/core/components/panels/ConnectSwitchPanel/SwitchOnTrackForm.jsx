@@ -217,7 +217,7 @@ export default function SwitchOnTrackForm({ onCommitted }) {
   const elementsText = place && track
     ? place.spans.map(sp => {
       const el = track.elements[sp.elIdx]
-      const kind = el.elementType === 2 ? 'table_type_transition' : el.radius ? 'table_type_arc' : 'table_type_straight'
+      const kind = el.elementType === 'transition' ? 'table_type_transition' : el.radius ? 'table_type_arc' : 'table_type_straight'
       return `${t(kind)} ${sp.length.toFixed(2)} m`
     }).join(' · ')
     : '–'

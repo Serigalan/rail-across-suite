@@ -109,7 +109,7 @@ describe('the track refitted and joined', () => {
     const out = refitTrackEnd(track, anchor, fit, port)
     expectValidTrack(out)
     const last = out.elements[1]
-    expect(last.elementType).toBe(1)
+    expect(last.elementType).toBe('arc')
     expect(last.radius).toBeCloseTo(900, 6)
     expect(last.speed).toBe(80)
     expect(last.endNode[0]).toBe(port.easting)
@@ -138,7 +138,7 @@ describe('the track refitted and joined', () => {
     const fit = fitConnectingElement(anchor, port, switchRouteBearingAt(anchor.bearing, route))
     const out = refitTrackEnd(track, anchor, fit, port)
     expectValidTrack(out)
-    expect(out.elements[1]).toMatchObject({ elementType: 2, transitionType: 'clothoid', r1: null, cantStart: 0, cantEnd: 60 })
+    expect(out.elements[1]).toMatchObject({ elementType: 'transition', transitionType: 'clothoid', r1: null, cantStart: 0, cantEnd: 60 })
     expect(out.elements[1].r2).toBeCloseTo(600, 3)
   })
 
@@ -157,7 +157,7 @@ describe('the track refitted and joined', () => {
     const track = trackOf([first, straightFrom(at(first.endNode), first.endBearing, 50, { speed: 80, cant: 0 })], EPSG, {}, 'c')
     const { anchor, port, bearingIn } = portFor(track, 'END')
     const out = refitTrackEnd(track, anchor, fitConnectingElement(anchor, port, bearingIn), port)
-    expect(out.elements[1].elementType).toBe(1)
+    expect(out.elements[1].elementType).toBe('arc')
     expect(out.elements[1].cant).toBe(40)
   })
 
@@ -201,8 +201,8 @@ describe('a transition before the refitted arc (Entscheidung 314)', () => {
       expectValidTrack(out)
       expect(out.elements).toHaveLength(3)
       const [lead, arc] = endpoint === 'END' ? out.elements.slice(1) : [out.elements[1], out.elements[0]]
-      expect(lead.elementType).toBe(2)
-      expect(arc.elementType).toBe(1)
+      expect(lead.elementType).toBe('transition')
+      expect(arc.elementType).toBe('arc')
       expect(out.elements.every(el => el.speed === 60)).toBe(true)
       const end = endpoint === 'END' ? arc.endNode : arc.startNode
       expect(Math.hypot(end[0] - port.easting, end[1] - port.northing)).toBeLessThan(1e-6)

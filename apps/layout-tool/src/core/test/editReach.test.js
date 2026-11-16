@@ -33,7 +33,7 @@ function straight(startUtm, bearing, length, extra = {}) {
   const endUtm = endPointStraightUtm(startUtm, bearing, length)
   const v = computeStraightValuesUtm(startUtm, endUtm)
   return {
-    elementType: 0,
+    elementType: 'straight',
     startNode: v.startNode, endNode: v.endNode,
     bearing: v.bearing, length: v.length, speed: 100, ...extra,
     geometry: { type: 'LineString', coordinates: [toWgs(startUtm), toWgs(endUtm)] },
@@ -44,7 +44,7 @@ function arc(startUtm, bearing, length, radius, extra = {}) {
   const endUtm = endPointCurvedUtm(startUtm, bearing, length, radius)
   const v = computeCurvedValuesUtm(startUtm, endUtm, radius)
   return {
-    elementType: 1,
+    elementType: 'arc',
     startNode: v.startNode, endNode: v.endNode,
     bearing: v.bearing, endBearing: v.endBearing,
     length: v.length, radius, cant: 0, speed: 100, ...extra,
@@ -195,7 +195,7 @@ describe('planElementChange is a dry run', () => {
  * next press of Save.
  */
 describe('mergeElementEdits', () => {
-  const el = (length) => ({ elementType: 0, length, bearing: 0 })
+  const el = (length) => ({ elementType: 'straight', length, bearing: 0 })
   const store = () => ([
     { id: 't1', name: 'one', epsg: 25832, elements: [el(100)], coordinates: [[1, 1]], heights: [{ station: 0, z: 100 }] },
     { id: 't2', name: 'two', epsg: 25832, elements: [el(200)], coordinates: [[2, 2]] },

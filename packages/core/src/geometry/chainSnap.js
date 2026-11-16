@@ -15,7 +15,7 @@ export function refitToNodes(el, epsg, lengthChange = 0) {
   if (el.radius != null) {
     const { length, bearing, endBearing } = computeCurvedValuesUtm(startUtm, endUtm, el.radius)
     if (length > 0) out = { ...el, length, bearing, ...(el.endBearing != null ? { endBearing } : {}) }
-  } else if (el.elementType !== 2) {
+  } else if (el.elementType !== 'transition') {
     const { length, bearing } = computeStraightValuesUtm(startUtm, endUtm)
     out = { ...el, length, bearing }
   } else if (lengthChange) {

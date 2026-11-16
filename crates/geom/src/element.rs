@@ -3,6 +3,7 @@
 
 //! Element values (`elementUtils.js`): bearings an element's design values give.
 
+use crate::kind::is_transition;
 use rail_across_js::{get, has, num, str_of};
 use serde_json::Value;
 
@@ -30,7 +31,7 @@ pub fn derived_end_bearing(el: &Value) -> Option<f64> {
     if radius.is_some() {
         return Some(bearing_after(bearing, length, radius));
     }
-    if num(el, "elementType") == Some(2.0) && has(el, "r1") {
+    if is_transition(el) && has(el, "r1") {
         let r1 = num(el, "r1");
         let r2 = num(el, "r2");
         return Some(transition_bearing_at(bearing, length, r1, r2, is_bloss(str_of(el, "transitionType")), length));
@@ -230,7 +231,7 @@ pub fn display_coords(el: &Value, epsg: i64, spacing: f64) -> Result<Vec<Value>,
     let radius = num(el, "radius").filter(|r| *r != 0.0 && !r.is_nan());
     let plane: Option<Vec<[f64; 2]>> = if let Some(r) = radius {
         arc_plane_points(s, e, r, SAGITTA_DISPLAY, min_segments)
-    } else if num(el, "elementType") == Some(2.0) && has(el, "r1") {
+    } else if is_transition(el) && has(el, "r1") {
         let bearing = num(el, "bearing").filter(|b| b.is_finite());
         let Some(bearing) = bearing.filter(|_| length > 0.0) else { return Ok(coords) };
         Some(transition_plane_points(
@@ -394,7 +395,7 @@ pub fn reverse_element(el: &Value) -> Value {
     if get(el, "cant").is_some() {
         out.insert("cant".into(), flip(el.get("cant")));
     }
-    if num(el, "elementType") == Some(2.0) && has(el, "r1") {
+    if is_transition(el) && has(el, "r1") {
         out.insert("r1".into(), flip(get(el, "r2")));
         out.insert("r2".into(), flip(get(el, "r1")));
     }
@@ -428,7 +429,7 @@ pub fn element_points(el: &Value, epsg: i64, step: f64) -> Result<Vec<[f64; 2]>,
     let start = node_utm(el.get("startNode"), first, epsg)?;
     let n = 1usize.max((len / step - 1e-9).ceil() as usize);
     let bearing = num(el, "bearing").unwrap_or(f64::NAN);
-    if num(el, "elementType") == Some(2.0) {
+    if is_transition(el) {
         return Ok(crate::transition::sample_transition(
             start.e,
             start.n,

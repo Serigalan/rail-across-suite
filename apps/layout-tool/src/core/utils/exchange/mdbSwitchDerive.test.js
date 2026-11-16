@@ -293,7 +293,7 @@ describe('how far a point is from a track', () => {
     // centimetres a projection stopped at the end would read square to it.
     const start = { easting: 1000, northing: 2000, zone: 25832 }
     const cl = computeClothoidUtm(start, 90, 60, null, 500)
-    const el = { elementType: 2, transitionType: 'clothoid', r1: null, r2: 500, bearing: 90, length: 60,
+    const el = { elementType: 'transition', transitionType: 'clothoid', r1: null, r2: 500, bearing: 90, length: 60,
       startNode: [1000, 2000], endNode: [cl.endUtm.easting, cl.endUtm.northing], geometry: { coordinates: cl.coords } }
     const [ex, ey] = el.endNode
     const beyond = offsetOnElement(el, [ex + 30, ey], 25832)

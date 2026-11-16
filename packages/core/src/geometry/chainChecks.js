@@ -51,7 +51,7 @@ export function untrueLengths(elements, tol = NODE_TOL) {
       const absR = Math.abs(el.radius)
       const expected = 2 * absR * Math.asin(Math.min(1, chord / (2 * absR)))
       if (!(Math.abs(el.length - expected) < 0.5e-3)) out.push({ index: i, length: el.length, expected })
-    } else if (el.elementType === 2) {
+    } else if (el.elementType === 'transition') {
       if (!(el.length >= chord - tol)) out.push({ index: i, length: el.length, expected: chord })
     } else if (!(Math.abs(el.length - chord) < 0.5e-6)) {
       out.push({ index: i, length: el.length, expected: chord })

@@ -3,6 +3,7 @@
 
 //! The display geometry of elements from their plane data (`elementReconstruct.js`).
 
+use crate::kind::is_transition;
 use rail_across_js::{get, has, number, str_of};
 use serde_json::{Value, json};
 
@@ -43,7 +44,7 @@ fn reconstruct_one(el: &Value, epsg: i64) -> Option<Value> {
         out.insert("renderCoords".into(), Value::Array(render));
         return Some(Value::Object(out));
     }
-    if el.get("elementType").and_then(Value::as_f64) == Some(2.0) && has(el, "r1") {
+    if is_transition(el) && has(el, "r1") {
         let bearing = el.get("bearing").and_then(Value::as_f64).unwrap_or(f64::NAN);
         let length = el.get("length").and_then(Value::as_f64).unwrap_or(f64::NAN);
         let r1 = get(el, "r1").and_then(Value::as_f64);

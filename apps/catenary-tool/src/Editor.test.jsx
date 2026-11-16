@@ -5,7 +5,7 @@ import Editor from './Editor.jsx'
 
 const straight = (id, y, length) => ({
   id, name: id, epsg: 25832,
-  elements: [{ elementType: 0, length, bearing: 90, startNode: [500000, 5700000 + y], endNode: [500000 + length, 5700000 + y] }],
+  elements: [{ elementType: 'straight', length, bearing: 90, startNode: [500000, 5700000 + y], endNode: [500000 + length, 5700000 + y] }],
 })
 const record = {
   id: 'p1', title: 'P', tracks: [straight('t1', 0, 1000)], switches: [], platforms: [],

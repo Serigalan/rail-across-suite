@@ -6,15 +6,12 @@
 //! changes along an element, never both; a transition takes its ends from its
 //! neighbours unless it states its own.
 
-use rail_across_js::{Object, get, num, number, truthy};
+use crate::kind::is_transition;
+use rail_across_js::{Object, get, number, truthy};
 use serde_json::Value;
 
 /// Two cants this close are one [mm] — the thousandth a record keeps.
 pub const SAME_CANT: f64 = 0.001;
-
-fn is_transition(el: &Value) -> bool {
-    num(el, "elementType") == Some(2.0)
-}
 
 /// `a ?? b` on a number member.
 fn member_or(el: &Value, key: &str, otherwise: f64) -> f64 {

@@ -3,6 +3,7 @@
 
 //! What the create and connect dialogs commit (`tracks.js`).
 
+use rail_across_geom::kind::is_transition;
 use std::collections::HashSet;
 
 use rail_across_geom::element::Utm;
@@ -135,7 +136,7 @@ pub fn build_connect_straight(o: &Value) -> Vec<Value> {
 /// The cant an arc appended without a transition is proposed with (`cantAtTrackEnd`).
 pub fn cant_at_track_end(last: Option<&Value>) -> Option<f64> {
     let Some(el) = last.filter(|v| truthy(Some(v))) else { return Some(0.0) };
-    if el.get("elementType").and_then(Value::as_f64) == Some(2.0) {
+    if is_transition(el) {
         return get(el, "cantEnd").and_then(Value::as_f64);
     }
     Some(get(el, "cant").and_then(Value::as_f64).unwrap_or(0.0))

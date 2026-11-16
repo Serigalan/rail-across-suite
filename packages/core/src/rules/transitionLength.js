@@ -17,9 +17,9 @@ const LONGEST = 100000
  */
 export function transitionChain({ prev, next, r1 = null, length, type = 'clothoid', speed }) {
   const transition = {
-    elementType: 2, transitionType: type, r1, r2: next?.radius ?? null, length, speed,
+    elementType: 'transition', transitionType: type, r1, r2: next?.radius ?? null, length, speed,
   }
-  return [prev ?? { elementType: 0, cant: 0, speed }, transition, next ?? { elementType: 0, cant: 0, speed }]
+  return [prev ?? { elementType: 'straight', cant: 0, speed }, transition, next ?? { elementType: 'straight', cant: 0, speed }]
 }
 
 /** The findings on the transition of such a chain: its own rules and its joint with `prev`. */
@@ -154,8 +154,8 @@ export function transitionLengths({ prev, next, r1 = null, type = 'clothoid', sp
  */
 export const connectTransitionLengths = ({ prevCant = 0, nextRadius = null, nextCant = 0, r1 = null, type, speed }) =>
   transitionLengths({
-    prev: { elementType: 0, cant: prevCant, speed },
-    next: { elementType: nextRadius ? 1 : 0, radius: nextRadius, cant: nextCant, speed },
+    prev: { elementType: 'straight', cant: prevCant, speed },
+    next: { elementType: nextRadius ? 'arc' : 'straight', radius: nextRadius, cant: nextCant, speed },
     r1, type, speed,
   })
 

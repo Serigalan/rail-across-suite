@@ -4,6 +4,7 @@
 //! The invariants an element chain has to hold (`chainChecks.js`), and the
 //! closing of what misses by less than a tolerance (`chainSnap.js`).
 
+use crate::kind::is_transition;
 use rail_across_js::{get, number, strict_eq};
 use serde_json::{Value, json};
 
@@ -70,7 +71,7 @@ pub fn untrue_lengths(elements: &[Value], tol: f64) -> Vec<(usize, f64, f64)> {
             if !((length - expected).abs() < 0.5e-3) {
                 out.push((i, length, expected));
             }
-        } else if el.get("elementType").and_then(Value::as_f64) == Some(2.0) {
+        } else if is_transition(el) {
             if !(length >= chord - tol) {
                 out.push((i, length, chord));
             }
@@ -119,7 +120,7 @@ pub fn refit_to_nodes(el: &Value, epsg: i64, length_change: f64) -> Value {
                 out.insert("endBearing".into(), number(end_bearing));
             }
         }
-    } else if el.get("elementType").and_then(Value::as_f64) != Some(2.0) {
+    } else if !is_transition(el) {
         let (length, bearing) = straight_values(su, eu);
         out.insert("length".into(), number(length));
         out.insert("bearing".into(), number(bearing));

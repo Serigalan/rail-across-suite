@@ -14,8 +14,8 @@ use serde::Deserialize;
 #[derive(Debug, Clone, Default, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Element {
-    /// 0 straight, 1 arc, 2 transition.
-    pub element_type: Option<i64>,
+    /// `straight`, `arc` or `transition` (decision 0029, phase 6).
+    pub element_type: Option<String>,
     pub transition_type: Option<String>,
     pub radius: Option<f64>,
     pub r1: Option<f64>,
@@ -33,7 +33,7 @@ pub struct Element {
 
 impl Element {
     pub fn is_transition(&self) -> bool {
-        self.element_type == Some(2)
+        self.element_type.as_deref() == Some("transition")
     }
 
     /// The form of a transition — 'bloss' or 'clothoid' — and None for any other element.
@@ -50,9 +50,9 @@ impl Element {
 
     /// The type the catalogue names it by.
     pub fn type_id(&self) -> &'static str {
-        match self.element_type {
-            Some(1) => "circular_arc",
-            Some(2) => "transition_curve",
+        match self.element_type.as_deref() {
+            Some("arc") => "circular_arc",
+            Some("transition") => "transition_curve",
             _ => "straight",
         }
     }

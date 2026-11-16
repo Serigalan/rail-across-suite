@@ -20,7 +20,7 @@ function elementLine(el, epsg) {
   const len = el.length ?? 0
   const start = nodeUtm(el.startNode, el.geometry?.coordinates?.[0], epsg)
   const n = Math.max(1, Math.ceil(len / STEP - 1e-9))
-  if (el.elementType === 2) {
+  if (el.elementType === 'transition') {
     return sampleTransitionUtm(start, el.bearing, len, el.r1 ?? null, el.r2 ?? null, el.transitionType, { steps: n })
   }
   const out = []

@@ -29,7 +29,7 @@ function straight(id, epsg, easting, northing, bearing, length, name = id) {
   return {
     id, name, epsg,
     elements: [{
-      elementType: 0, length, bearing, endBearing: bearing,
+      elementType: 'straight', length, bearing, endBearing: bearing,
       startNode: [start.easting, start.northing],
       endNode:   [end.easting, end.northing],
       geometry: { type: 'LineString', coordinates: [

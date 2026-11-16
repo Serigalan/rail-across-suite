@@ -45,7 +45,7 @@ describe.skipIf(!built)('an optimized compound curve', () => {
     const second = els.findIndex((el, i) => el.radius != null && i > first)
     const between = els.slice(first + 1, second)
     expect(between).toHaveLength(1)
-    expect(between[0].elementType).toBe(2)
+    expect(between[0].elementType).toBe('transition')
 
     const deltaU = Math.abs(Math.abs(els[first].cant) - Math.abs(els[second].cant))
     const k = between[0].transitionType === 'bloss' ? 6 : 8

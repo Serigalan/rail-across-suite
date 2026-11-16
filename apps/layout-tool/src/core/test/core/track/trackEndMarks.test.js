@@ -24,7 +24,7 @@ function straight(id, easting, northing, bearing, length, epsg = UTM) {
   return {
     id, name: id, epsg,
     elements: [{
-      elementType: 0, length, bearing, endBearing: bearing,
+      elementType: 'straight', length, bearing, endBearing: bearing,
       startNode: [start.easting, start.northing],
       endNode:   [end.easting, end.northing],
       geometry: { type: 'LineString', coordinates: [
@@ -109,7 +109,7 @@ describe('buffer stop shape', () => {
     const tr = {
       id: 'c', epsg: UTM,
       elements: [{
-        elementType: 1, length: L, bearing: 0, radius: R,
+        elementType: 'arc', length: L, bearing: 0, radius: R,
         startNode: [E0, N0], endNode: [end.easting, end.northing],
         geometry: { type: 'LineString', coordinates: [utmToWgs84(E0, N0, UTM), utmToWgs84(end.easting, end.northing, UTM)] },
       }],

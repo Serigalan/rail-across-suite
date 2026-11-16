@@ -145,9 +145,9 @@ fn the_optimizer_on_the_services_test_tracks() {
 fn what_a_run_cannot_take_is_said() {
     let catalogue = common::catalogue();
     let rules = Rules::new(&catalogue).unwrap();
-    let straight = |a: [f64; 2], b: [f64; 2]| serde_json::json!({"elementType": 0, "startNode": a, "endNode": b, "length": 1.0});
-    let arc = |r: f64| serde_json::json!({"elementType": 1, "radius": r, "startNode": [1, 1], "endNode": [2, 2], "length": 1.0});
-    let transition = serde_json::json!({"elementType": 2, "startNode": [1, 1], "endNode": [2, 2], "length": 1.0});
+    let straight = |a: [f64; 2], b: [f64; 2]| serde_json::json!({"elementType": "straight", "startNode": a, "endNode": b, "length": 1.0});
+    let arc = |r: f64| serde_json::json!({"elementType": "arc", "radius": r, "startNode": [1, 1], "endNode": [2, 2], "length": 1.0});
+    let transition = serde_json::json!({"elementType": "transition", "startNode": [1, 1], "endNode": [2, 2], "length": 1.0});
     for els in [
         vec![straight([0.0, 0.0], [1.0, 1.0]), transition, straight([2.0, 2.0], [3.0, 3.0])],
         vec![

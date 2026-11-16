@@ -21,7 +21,7 @@ const LAS = makeLas(Array.from({ length: 2000 }, (_, k) => ({
 
 const track = {
   id: 't1', name: 't1', epsg: 25832,
-  elements: [{ elementType: 0, bearing: 90, length: 100, startNode: [500000, 5700000], endNode: [500100, 5700000] }],
+  elements: [{ elementType: 'straight', bearing: 90, length: 100, startNode: [500000, 5700000], endNode: [500100, 5700000] }],
 }
 
 /** A project of max's with one variant, and `n` ready clouds in it. */

@@ -204,7 +204,7 @@ describe('the branch a switch dialog commits', () => {
     expect(elements.length).toBeGreaterThan(1)
     expectNodesJoin(elements)
     expectTangentsContinuous(elements, EPSG)
-    expect(elements.some(el => el.elementType === 2)).toBe(true)
+    expect(elements.some(el => el.elementType === 'transition')).toBe(true)
     commit.addTracks.forEach(t => expectValidTrack(t))
   })
 
@@ -270,7 +270,7 @@ describe('the branch a switch dialog commits', () => {
       const { branch, atWe } = lay([arc], 50)
       const cantAt = (s) => -20 - 40 * s / 200
       expect(branch).toHaveLength(1)
-      expect(branch[0].elementType).toBe(1)
+      expect(branch[0].elementType).toBe('arc')
       expect(branch[0].cantStart).toBeCloseTo(cantAt(50), 9)
       expect(branch[0].cantEnd).toBeCloseTo(cantAt(50 + straightLen), 9)
       expect(branch[0].cantEnd).toBeCloseTo(atWe, 9)

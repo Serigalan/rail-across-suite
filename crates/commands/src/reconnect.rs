@@ -4,6 +4,7 @@
 //! Reconnecting existing elements: a stretch taken out and its neighbours
 //! joined again by the splice construction (`reconnect.js`).
 
+use rail_across_geom::kind::{is_arc, is_transition};
 use rail_across_geom::element::{Utm, end_point_curved, end_point_straight, node_utm, resolve_end_bearing};
 use rail_across_geom::transition::{is_bloss, sample_transition};
 use rail_across_js::{Object, get, js_number, js_round, number, truthy};
@@ -31,10 +32,6 @@ fn length_of(es: &[Value]) -> f64 {
 
 fn in_switch(el: &Value) -> bool {
     get(el, "switchId").is_some() || el.get("switchBranch") == Some(&json!(true))
-}
-
-fn is_transition(el: &Value) -> bool {
-    el.get("elementType").and_then(Value::as_f64) == Some(2.0)
 }
 
 /// The stretch two clicks choose (`reconnectRange`).
@@ -331,7 +328,7 @@ pub fn build_reconnect(track: &Value, range: &Value, solution: &Value, speed: Op
         let mut o = plane(el);
         o.insert("speed".into(), orig.get("speed").cloned().unwrap_or(Value::Null));
         slowed(orig, &mut o);
-        if el.get("elementType").and_then(Value::as_f64) == Some(1.0) {
+        if is_arc(el) {
             o.insert(
                 "cant".into(),
                 number(cant_sign(js_number(el.get("radius"))) * f(orig, "cant").unwrap_or(0.0).abs()),
@@ -365,7 +362,7 @@ pub fn build_reconnect(track: &Value, range: &Value, solution: &Value, speed: Op
             _ => {
                 let mut o = plane(el);
                 o.insert("speed".into(), number(v));
-                if el.get("elementType").and_then(Value::as_f64) == Some(1.0) {
+                if is_arc(el) {
                     o.insert("cant".into(), number(cant_sign(js_number(el.get("radius"))) * cant));
                 }
                 Value::Object(o)

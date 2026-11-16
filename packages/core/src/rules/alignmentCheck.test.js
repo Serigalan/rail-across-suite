@@ -9,9 +9,9 @@ import { computeCantDefSigned } from './cant.js'
 // cant ramp and the change in deficiency, and no jump in curvature or cant
 // anywhere along it.
 const clean = () => [
-  { elementType: 0, length: 100, speed: 100, cant: 0 },
-  { elementType: 2, length: 65, speed: 100, r1: null, r2: 1000, transitionType: 'clothoid' },
-  { elementType: 1, length: 200, speed: 100, radius: 1000, cant: 65 },
+  { elementType: 'straight', length: 100, speed: 100, cant: 0 },
+  { elementType: 'transition', length: 65, speed: 100, r1: null, r2: 1000, transitionType: 'clothoid' },
+  { elementType: 'arc', length: 200, speed: 100, radius: 1000, cant: 65 },
 ]
 
 const ids = (entry) => entry.results.map(r => `${r.id}:${r.severity}`)
@@ -48,9 +48,9 @@ describe('what the scopes take from an element', () => {
   it('measures the cross level over a reverse transition from rail to rail', () => {
     // +50 to −50 is a hundred millimetres of cross level, not none.
     const reverse = [
-      { elementType: 1, length: 100, speed: 100, radius: 1000, cant: 50 },
-      { elementType: 2, length: 100, speed: 100, r1: 1000, r2: -1000, transitionType: 'clothoid' },
-      { elementType: 1, length: 100, speed: 100, radius: -1000, cant: -50 },
+      { elementType: 'arc', length: 100, speed: 100, radius: 1000, cant: 50 },
+      { elementType: 'transition', length: 100, speed: 100, r1: 1000, r2: -1000, transitionType: 'clothoid' },
+      { elementType: 'arc', length: 100, speed: 100, radius: -1000, cant: -50 },
     ]
     expect(elementScope(reverse, 1)['physics.delta_u']).toBe(100)
   })
@@ -59,33 +59,33 @@ describe('what the scopes take from an element', () => {
     // Each end lacks 68 mm toward the outside of its own curve — and the
     // outsides lie on opposite rails, so the ramp carries 136 mm, not none.
     const reverse = [
-      { elementType: 1, length: 100, speed: 100, radius: 1000, cant: 50 },
-      { elementType: 2, length: 100, speed: 100, r1: 1000, r2: -1000, transitionType: 'clothoid' },
-      { elementType: 1, length: 100, speed: 100, radius: -1000, cant: -50 },
+      { elementType: 'arc', length: 100, speed: 100, radius: 1000, cant: 50 },
+      { elementType: 'transition', length: 100, speed: 100, r1: 1000, r2: -1000, transitionType: 'clothoid' },
+      { elementType: 'arc', length: 100, speed: 100, radius: -1000, cant: -50 },
     ]
     const uf = computeCantDefSigned(100, 1000, 50)
     expect(uf).toBe(68)
     expect(elementScope(reverse, 1)['physics.delta_u_f']).toBe(2 * uf)
     // Two curves the same way: the plain difference, as before.
     const compound = [
-      { elementType: 1, length: 100, speed: 100, radius: 1000, cant: 50 },
-      { elementType: 2, length: 100, speed: 100, r1: 1000, r2: 800, transitionType: 'clothoid' },
-      { elementType: 1, length: 100, speed: 100, radius: 800, cant: 50 },
+      { elementType: 'arc', length: 100, speed: 100, radius: 1000, cant: 50 },
+      { elementType: 'transition', length: 100, speed: 100, r1: 1000, r2: 800, transitionType: 'clothoid' },
+      { elementType: 'arc', length: 100, speed: 100, radius: 800, cant: 50 },
     ]
     expect(elementScope(compound, 1)['physics.delta_u_f'])
       .toBe(computeCantDefSigned(100, 800, 50) - uf)
   })
 
   it('states the cant as a magnitude, whichever rail the curve raises', () => {
-    const left = [{ elementType: 1, length: 100, speed: 100, radius: -1000, cant: -65 }]
+    const left = [{ elementType: 'arc', length: 100, speed: 100, radius: -1000, cant: -65 }]
     expect(elementScope(left, 0)['element.cant']).toBe(65)
   })
 
   it('calls a straight between opposed curves a reverse-curve straight, and nothing else', () => {
     const between = [
-      { elementType: 1, length: 100, speed: 40, radius: 300, cant: 0 },
-      { elementType: 0, length: 5, speed: 40, cant: 0 },
-      { elementType: 1, length: 100, speed: 40, radius: -300, cant: 0 },
+      { elementType: 'arc', length: 100, speed: 40, radius: 300, cant: 0 },
+      { elementType: 'straight', length: 5, speed: 40, cant: 0 },
+      { elementType: 'arc', length: 100, speed: 40, radius: -300, cant: 0 },
     ]
     expect(elementScope(between, 1)['model.reverse_curve_straight']).toBe(true)
     const same = [...between]
@@ -96,8 +96,8 @@ describe('what the scopes take from an element', () => {
 
   it('reads a boundary as the two curvatures that meet there', () => {
     const jumped = [
-      { elementType: 0, length: 100, speed: 100, cant: 0 },
-      { elementType: 1, length: 100, speed: 100, radius: 1000, cant: 0 },
+      { elementType: 'straight', length: 100, speed: 100, cant: 0 },
+      { elementType: 'arc', length: 100, speed: 100, radius: 1000, cant: 0 },
     ]
     const scope = boundaryScope(jumped, 0)
     expect(scope['physics.curvature_jump']).toBe(true)
@@ -108,8 +108,8 @@ describe('what the scopes take from an element', () => {
 
   it('gives two curves in the same sense the larger comparison radius', () => {
     const els2 = [
-      { elementType: 1, length: 100, speed: 100, radius: 1000, cant: 0 },
-      { elementType: 1, length: 100, speed: 100, radius: 800, cant: 0 },
+      { elementType: 'arc', length: 100, speed: 100, radius: 1000, cant: 0 },
+      { elementType: 'arc', length: 100, speed: 100, radius: 800, cant: 0 },
     ]
     // 1/r_w = |1/1000 − 1/800| → r_w = 1000·800/200
     expect(boundaryScope(els2, 0)['physics.r_w']).toBeCloseTo(4000, 6)
@@ -117,16 +117,16 @@ describe('what the scopes take from an element', () => {
 
   it('gives two curves against each other the smaller one', () => {
     const els2 = [
-      { elementType: 1, length: 100, speed: 100, radius: 1000, cant: 0 },
-      { elementType: 1, length: 100, speed: 100, radius: -1000, cant: 0 },
+      { elementType: 'arc', length: 100, speed: 100, radius: 1000, cant: 0 },
+      { elementType: 'arc', length: 100, speed: 100, radius: -1000, cant: 0 },
     ]
     expect(boundaryScope(els2, 0)['physics.r_w']).toBeCloseTo(500, 6)
   })
 
   it('knows the form of a transition and that the ramp on it is straight', () => {
-    expect(formOf({ elementType: 2 })).toBe('clothoid')
-    expect(formOf({ elementType: 2, transitionType: 'bloss' })).toBe('bloss')
-    expect(formOf({ elementType: 1 })).toBe(null)
+    expect(formOf({ elementType: 'transition' })).toBe('clothoid')
+    expect(formOf({ elementType: 'transition', transitionType: 'bloss' })).toBe('bloss')
+    expect(formOf({ elementType: 'arc' })).toBe(null)
     expect(rampScope(clean(), 1)).toEqual({
       'model.ramp_on_transition': true, 'model.ramp_form_matches': true,
     })
@@ -144,14 +144,14 @@ describe('what the checker finds', () => {
     // Two straights of 10 m are one straight of 20 m on the ground; beside an
     // arc each is its own element again.
     const straights = [
-      { elementType: 0, length: 10, speed: 100, cant: 0 },
-      { elementType: 0, length: 10, speed: 100, cant: 0 },
+      { elementType: 'straight', length: 10, speed: 100, cant: 0 },
+      { elementType: 'straight', length: 10, speed: 100, cant: 0 },
     ]
     expect(firing(checkTrack(straights).perElement[0])).not.toContain('LP.EL.01:error')
     const arcs = [
-      { elementType: 1, length: 10, speed: 100, radius: 3000, cant: 0 },
-      { elementType: 1, length: 10, speed: 100, radius: 3000, cant: 0 },
-      { elementType: 1, length: 10, speed: 100, radius: 2500, cant: 0 },
+      { elementType: 'arc', length: 10, speed: 100, radius: 3000, cant: 0 },
+      { elementType: 'arc', length: 10, speed: 100, radius: 3000, cant: 0 },
+      { elementType: 'arc', length: 10, speed: 100, radius: 2500, cant: 0 },
     ]
     const out = checkTrack(arcs).perElement
     expect(firing(out[0])).not.toContain('LP.EL.01:error')
@@ -163,8 +163,8 @@ describe('what the checker finds', () => {
     // Test_Achsen 55501R: 10.25 m with a ramp from −15 to 0 mm, then 10.25 m
     // from 0 to 15 mm, at 80 km/h (l_min 12 m).
     const ramps = [
-      { elementType: 0, length: 10.25, speed: 80, cant: -15.018, cantStart: -15.018, cantEnd: 0 },
-      { elementType: 0, length: 10.25, speed: 80, cant: 0, cantStart: 0, cantEnd: 15.018 },
+      { elementType: 'straight', length: 10.25, speed: 80, cant: -15.018, cantStart: -15.018, cantEnd: 0 },
+      { elementType: 'straight', length: 10.25, speed: 80, cant: 0, cantStart: 0, cantEnd: 15.018 },
     ]
     expect(elementScope(ramps, 0)['element.length']).toBeCloseTo(20.5, 9)
     expect(checkTrack(ramps).perElement.map(firing).flat()).not.toContain('LP.EL.01:error')
@@ -172,15 +172,15 @@ describe('what the checker finds', () => {
 
   it('a chain that is part of its track runs on into what lies beside it (Entscheidung 363)', () => {
     const track = [
-      { elementType: 1, length: 50, speed: 80, radius: 500, cant: 0 },
-      { elementType: 0, length: 10.25, speed: 80, cant: 0 },
-      { elementType: 0, length: 10.25, speed: 80, cant: 0 },
-      { elementType: 0, length: 4, speed: 80, cant: 0 },
+      { elementType: 'arc', length: 50, speed: 80, radius: 500, cant: 0 },
+      { elementType: 'straight', length: 10.25, speed: 80, cant: 0 },
+      { elementType: 'straight', length: 10.25, speed: 80, cant: 0 },
+      { elementType: 'straight', length: 4, speed: 80, cant: 0 },
     ]
-    expect(runBeside(track, 2, 'before')).toEqual({ elementType: 0, radius: null, length: 10.25 })
-    expect(runBeside(track, 2, 'after')).toEqual({ elementType: 0, radius: null, length: 4 })
+    expect(runBeside(track, 2, 'before')).toEqual({ elementType: 'straight', radius: null, length: 10.25 })
+    expect(runBeside(track, 2, 'after')).toEqual({ elementType: 'straight', radius: null, length: 4 })
     expect(runBeside(track, 0, 'before')).toBeNull()
-    expect(endRun(track)).toEqual({ elementType: 0, radius: null, length: 24.5 })
+    expect(endRun(track)).toEqual({ elementType: 'straight', radius: null, length: 24.5 })
     // The last straight alone is short at 80 km/h, with the run before it not.
     const piece = [track[2]]
     expect(firing(checkTrack(piece).perElement[0])).toContain('LP.EL.01:error')
@@ -188,7 +188,7 @@ describe('what the checker finds', () => {
     expect(firing(checkTrack(piece, { context }).perElement[0])).not.toContain('LP.EL.01:error')
     expect(hasRuleError(piece, { context })).toBe(false)
     // A run of another curvature beside it is no help.
-    expect(firing(checkTrack(piece, { context: [{ elementType: 1, radius: 500, length: 50 }, null] }).perElement[0]))
+    expect(firing(checkTrack(piece, { context: [{ elementType: 'arc', radius: 500, length: 50 }, null] }).perElement[0]))
       .toContain('LP.EL.01:error')
   })
 
@@ -212,8 +212,8 @@ describe('what the checker finds', () => {
 
   it('a curvature that jumps, and how sharp the jump is allowed to be', () => {
     const sharp = [
-      { elementType: 0, length: 100, speed: 100, cant: 0 },
-      { elementType: 1, length: 100, speed: 100, radius: 1000, cant: 0 },
+      { elementType: 'straight', length: 100, speed: 100, cant: 0 },
+      { elementType: 'arc', length: 100, speed: 100, radius: 1000, cant: 0 },
     ]
     // r_w = 1000 m against a Regelwert of 1370 and an Ermessensgrenze of 1110.
     expect(firing(checkTrack(sharp).perElement[1])).toContain('LP.KS.01:error')
@@ -226,15 +226,15 @@ describe('what the checker finds', () => {
 
   it('leaves a curvature jump inside one turnout to the turnout\'s own catalogue', () => {
     const inside = [
-      { elementType: 0, length: 20, speed: 40, cant: 0, switchId: 'sw-1' },
-      { elementType: 1, length: 20, speed: 40, radius: 190, cant: 0, switchId: 'sw-1' },
+      { elementType: 'straight', length: 20, speed: 40, cant: 0, switchId: 'sw-1' },
+      { elementType: 'arc', length: 20, speed: 40, radius: 190, cant: 0, switchId: 'sw-1' },
     ]
     const applied = checkTrack(inside).boundaries[0].results.map(r => r.id)
     expect(applied).toEqual(['LP.UB.01'])
   })
 
   it('a turnout canted past what a turnout may carry', () => {
-    const els = [{ elementType: 1, length: 30, speed: 60, radius: 300, cant: 110, switchId: 'sw-1' }]
+    const els = [{ elementType: 'arc', length: 30, speed: 60, radius: 300, cant: 110, switchId: 'sw-1' }]
     const found = firing(checkTrack(els).perElement[0])
     expect(found).toContain('LP.KB.05:warning')       // past 100, inside 120
     els[0] = { ...els[0], cant: 130 }
@@ -293,7 +293,7 @@ describe('hasRuleError', () => {
   })
 
   it('is true where any rule of the catalogue says error', () => {
-    const short = [{ elementType: 0, length: 3, speed: 100, cant: 0 }]
+    const short = [{ elementType: 'straight', length: 3, speed: 100, cant: 0 }]
     expect(hasRuleError(short)).toBe(true)                     // LP.EL.01
     expect(hasRuleError([{ ...short[0], length: 100, speed: 83 }])).toBe(true)   // LP.ALL.02
     expect(hasRuleError([{ ...short[0], length: 100, speed: 320 }])).toBe(true)  // LP.ALL.01
@@ -316,7 +316,7 @@ describe('hasRuleError', () => {
   })
 
   it('is false where there is no design speed to judge by, and for nothing at all', () => {
-    expect(hasRuleError([{ elementType: 0, length: 3, speed: 0 }])).toBe(false)
+    expect(hasRuleError([{ elementType: 'straight', length: 3, speed: 0 }])).toBe(false)
     expect(hasRuleError([])).toBe(false)
     expect(hasRuleError()).toBe(false)
   })

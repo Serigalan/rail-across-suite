@@ -74,7 +74,7 @@ describe('which pick departs', () => {
     const [merged] = commit.addTracks
     expectValidTrack(merged)
     expect(merged.name).toBe('b')
-    expect(merged.elements.map(e => e.elementType)).toEqual([0, 1, 0])
+    expect(merged.elements.map(e => e.elementType)).toEqual(['straight', 'arc', 'straight'])
     // Run backwards, a2 is track a: it runs east and turns north into b.
     expect(merged.elements[0].bearing).toBeCloseTo(90, 6)
     expect(merged.elements[0].startNode[0]).toBeCloseTo(500000, 6)
@@ -112,8 +112,8 @@ describe('a transition at the end of its track (AP S.7)', () => {
     expectValidTrack(merged)
     expect(merged.name).toBe('k')
     // The straight and the transition of k, then 50 m more of R 500, the new R 800 the other way, the straight.
-    expect(merged.elements.map(e => e.elementType)).toEqual([0, 2, 1, 1, 0])
-    expect(merged.elements[1]).toMatchObject({ elementType: 2, length: 60, r2: 500 })
+    expect(merged.elements.map(e => e.elementType)).toEqual(['straight', 'transition', 'arc', 'arc', 'straight'])
+    expect(merged.elements[1]).toMatchObject({ elementType: 'transition', length: 60, r2: 500 })
     expect(merged.elements[2]).toMatchObject({ radius: 500, speed: 80 })
     expect(merged.elements[2].length).toBeCloseTo(50, 3)
     expect(merged.elements[3].radius).toBe(-800)
@@ -171,7 +171,7 @@ describe('the track built from the answer', () => {
     expect(commit.removeTrackIds).toEqual(['a', 'b'])
     const [merged] = commit.addTracks
     expectValidTrack(merged)
-    expect(merged.elements.map(e => e.elementType)).toEqual([0, 1, 0])
+    expect(merged.elements.map(e => e.elementType)).toEqual(['straight', 'arc', 'straight'])
     expect(merged.elements[1]).toMatchObject({ radius: -300, cant: -40, speed: 60 })   // a left turn
     // What is left of the picked straights keeps their speed.
     expect(merged.elements[0].speed).toBe(80)
@@ -195,7 +195,7 @@ describe('the track built from the answer', () => {
   it('puts transitions either side when asked', () => {
     const splice = best(answers.cornerTransitions.answer, [dep, arr])
     const commit = buildSplice({ tracks: [a, b], solution: splice, speed: 60, cant: 40, newId })
-    expect(commit.addTracks[0].elements.map(e => e.elementType)).toEqual([0, 2, 1, 2, 0])
+    expect(commit.addTracks[0].elements.map(e => e.elementType)).toEqual(['straight', 'transition', 'arc', 'transition', 'straight'])
     expectValidTrack(commit.addTracks[0])
   })
 
@@ -222,7 +222,7 @@ describe('the track built from the answer', () => {
     const commit = buildSplice({ tracks: [g, h], solution: sol, speed: 80, cant: 45, newId })
     const [merged] = commit.addTracks
     expectValidTrack(merged)
-    expect(merged.elements.filter(e => e.elementType === 2).map(e => e.length)).toEqual([28, 36])
+    expect(merged.elements.filter(e => e.elementType === 'transition').map(e => e.length)).toEqual([28, 36])
   })
 
   it('offers two arcs joined the other way too, and says why the way asked for does not fit', () => {
@@ -278,7 +278,7 @@ describe('the track built from the answer', () => {
     const commit = buildSplice({ tracks: [c, d], solution: splice, speed: 70, cant: 0, newId })
     const [merged] = commit.addTracks
     expectValidTrack(merged)
-    expect(merged.elements.map(e => e.elementType)).toEqual([1, 2, 0, 2, 1])
+    expect(merged.elements.map(e => e.elementType)).toEqual(['arc', 'transition', 'straight', 'transition', 'arc'])
     expect(merged.elements[0]).toMatchObject({ radius: 600, cant: 50, speed: 100 })
     // stored as a right arc running back, it is run forwards as the left arc it
     // is — and its cant changes side with it
@@ -304,7 +304,7 @@ describe('the track built from the answer', () => {
     const commit = buildSplice({ tracks: [e, f], solution: splice, speed: 70, cant: 30, newId })
     const [merged] = commit.addTracks
     expectValidTrack(merged)
-    expect(merged.elements.map(el => el.elementType)).toEqual([1, 1, 0, 0])
+    expect(merged.elements.map(el => el.elementType)).toEqual(['arc', 'arc', 'straight', 'straight'])
     expect(merged.elements[1]).toMatchObject({ radius: -400, cant: -30, speed: 70 })
     // The arrival track runs on in its own direction, its next element kept.
     expect(merged.elements[2].speed).toBe(90)

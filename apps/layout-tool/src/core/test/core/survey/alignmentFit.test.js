@@ -115,7 +115,7 @@ describe('the answer', () => {
     expect(answer.error).toBeUndefined()
     expect(answer.curves).toHaveLength(1)
     expect(answer.curves[0].radius).toBeCloseTo(-400, 0)
-    expect(answer.elements.map(el => el.elementType)).toEqual([0, 2, 1, 2, 0])
+    expect(answer.elements.map(el => el.elementType)).toEqual(['straight', 'transition', 'arc', 'transition', 'straight'])
   })
 
   it('becomes a new standing track in the plane of the points', () => {

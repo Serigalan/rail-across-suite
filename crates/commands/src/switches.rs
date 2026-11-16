@@ -305,11 +305,11 @@ fn constant_branch_element(seg: &Value, cant_a: f64, cant_b: f64) -> Value {
     let el = match r {
         Some(r) => {
             let (length, bearing, end_bearing) = curved_values(s, e, r);
-            json!({ "elementType": 1, "startNode": node(s), "endNode": node(e), "bearing": number(bearing), "length": number(length), "endBearing": number(end_bearing), "radius": number(r) })
+            json!({ "elementType": "arc", "startNode": node(s), "endNode": node(e), "bearing": number(bearing), "length": number(length), "endBearing": number(end_bearing), "radius": number(r) })
         }
         None => {
             let (length, bearing) = straight_values(s, e);
-            json!({ "elementType": 0, "startNode": node(s), "endNode": node(e), "bearing": number(bearing), "length": number(length) })
+            json!({ "elementType": "straight", "startNode": node(s), "endNode": node(e), "bearing": number(bearing), "length": number(length) })
         }
     };
     with_cant_ramp(&el, cant_a, cant_b)
@@ -436,7 +436,7 @@ pub fn build_switch_on_track(o: &Value, place: &Placement) -> Value {
                 let s = Utm::from_json(&seg["startUtm"]);
                 let e = Utm::from_json(&seg["endUtm"]);
                 json!({
-                    "elementType": 2, "transitionType": "clothoid", "r1": seg.get("r1"), "r2": seg.get("r2"),
+                    "elementType": "transition", "transitionType": "clothoid", "r1": seg.get("r1"), "r2": seg.get("r2"),
                     "startNode": [number(s.e), number(s.n)], "endNode": [number(e.e), number(e.n)],
                     "bearing": seg.get("bearing"), "endBearing": seg.get("endBearing"), "length": seg.get("length"),
                     "cantStart": number(cant_beside(s0, seg)), "cantEnd": number(cant_beside(s0 + l, seg)),

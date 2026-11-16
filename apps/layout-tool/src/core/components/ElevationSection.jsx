@@ -177,7 +177,7 @@ export default function ElevationSection({ s }) {
   const X = (station) => MARGIN.left + (station - view.x0) * view.k
   const Y = (z) => plotBottom - (z - view.z0) * view.k * exaggeration
   const typeLabel = (el) => {
-    if (el.elementType === 2) return t(el.transitionType === 'bloss' ? 'table_type_bloss' : 'table_type_transition')
+    if (el.elementType === 'transition') return t(el.transitionType === 'bloss' ? 'table_type_bloss' : 'table_type_transition')
     if (el.radius != null) return `R ${Math.round(Math.abs(el.radius))}`
     return t('table_type_straight')
   }

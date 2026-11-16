@@ -78,7 +78,7 @@ export default function record() {
   const checks = []
   for (const elements of chains) {
     checks.push(call('rules.checkTrack', { elements }, () => r.checkTrack(elements)))
-    const context = [{ elementType: 0, radius: null, length: 40 }, { elementType: 1, radius: 900, length: 30 }]
+    const context = [{ elementType: 'straight', radius: null, length: 40 }, { elementType: 'arc', radius: 900, length: 30 }]
     checks.push(call('rules.checkTrack', { elements, context }, () => r.checkTrack(elements, { context })))
     checks.push(call('rules.hasRuleError', { elements }, () => r.hasRuleError(elements)))
     for (let i = 0; i < elements.length; i++) {

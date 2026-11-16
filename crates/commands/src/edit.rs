@@ -4,6 +4,7 @@
 //! Geometry of an element edit: plan, apply and merge length, bearing and
 //! radius changes (`editGeometry.js`).
 
+use rail_across_geom::kind::is_transition;
 use std::collections::{HashSet, VecDeque};
 
 use rail_across_geom::element::{Utm, node_utm};
@@ -41,7 +42,7 @@ fn f(v: &Value, k: &str) -> Option<f64> {
 }
 
 fn shifted_kink(el: &Value, new_bearing: f64) -> Option<f64> {
-    if get(el, "radius").is_some() || f(el, "elementType") == Some(2.0) {
+    if get(el, "radius").is_some() || is_transition(el) {
         return None;
     }
     let eb = f(el, "endBearing")?;
@@ -70,7 +71,7 @@ fn build_element(el: &Value, start: Utm, g: Given) -> Value {
     let length = g.length.unwrap_or_else(|| js_number(el.get("length")));
     let radius = g.radius.unwrap_or_else(|| f(el, "radius"));
     let none = Object::new();
-    if f(el, "elementType") == Some(2.0) && has(el, "r1") {
+    if is_transition(el) && has(el, "r1") {
         let tt = el.get("transitionType").cloned().unwrap_or(json!("clothoid"));
         let tt = if tt.is_null() { json!("clothoid") } else { tt };
         let built = transition_element(start, bearing, length, f(el, "r1"), f(el, "r2"), &tt, None, &none)
@@ -111,7 +112,7 @@ fn same_radius(a: Option<f64>, b: Option<f64>) -> bool {
 
 fn joined_transition<'a>(el: Option<&'a Value>, key: &str, radius: Option<f64>) -> Option<&'a Value> {
     let el = el?;
-    (f(el, "elementType") == Some(2.0) && has(el, "r1") && get(el, "switchId").is_none() && same_radius(f(el, key), radius)).then_some(el)
+    (is_transition(el) && has(el, "r1") && get(el, "switchId").is_none() && same_radius(f(el, key), radius)).then_some(el)
 }
 
 fn end_utm_of(el: &Value, epsg: i64) -> Utm {
@@ -280,7 +281,7 @@ fn plan_element_change_written(
     };
     let epsg = js_number(tracks[ti].get("epsg"));
     let el_radius = f(&el, "radius");
-    let follows = radius.is_some_and(|r| !same_radius(r, el_radius)) && f(&el, "elementType") != Some(2.0);
+    let follows = radius.is_some_and(|r| !same_radius(r, el_radius)) && !is_transition(&el);
     let elements: &[Value] = tracks[ti]["elements"].as_array().map(Vec::as_slice).unwrap_or(&[]);
     let before = if follows {
         el_idx.checked_sub(1).and_then(|i| joined_transition(elements.get(i), "r2", el_radius)).cloned()

@@ -10,7 +10,7 @@ import { ksStation, ksStoppingPlaces } from '../../test/signallingFixture.js'
 import { u, withUuids } from '../../test/uuids.js'
 
 const el = (x0, x1, extra = {}) => ({
-  elementType: 0, startNode: [500000 + x0, 5700000], endNode: [500000 + x1, 5700000], bearing: 90, length: x1 - x0, ...extra,
+  elementType: 'straight', startNode: [500000 + x0, 5700000], endNode: [500000 + x1, 5700000], bearing: 90, length: x1 - x0, ...extra,
 })
 const track = (id, extra = {}) => ({ id, name: id, epsg: 25832, elements: [el(0, 100)], ...extra })
 const record = (extra = {}) => ({ id: 'p', title: 'P', tracks: [track('t1')], switches: [], platforms: [], ...extra })
@@ -350,10 +350,7 @@ describe.skipIf(!hasPek)('the PEK data set as an infra-data-1.0 document', () =>
     const back = roundTrip(pek)
     const withoutNull = (o) => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== null))
     const byId = (list, key = 'id') => Object.fromEntries(list.map(o => [o[key], o]))
-    // a track's kind and side as words: the record states them so since it follows the document (decision 0029, phase 6)
-    const KIND = { 1: 'line', 2: 'station' }, SIDE = { 1: 'regular', 2: 'opposite' }
-    const asNow = (t) => ({ ...t, ...(KIND[t.trackType] ? { trackType: KIND[t.trackType] } : {}), ...(SIDE[t.side] ? { side: SIDE[t.side] } : {}) })
-    expect(byId(back.tracks)).toEqual(byId(pek.tracks.map(withoutNull).map(asNow)))
+    expect(byId(back.tracks)).toEqual(byId(pek.tracks.map(withoutNull)))
     expect(byId(back.switches, 'switchId')).toEqual(byId(pek.switches, 'switchId'))
     expect(byId(back.platforms)).toEqual(byId(pek.platforms))
     expect(byId(back.operationalPoints)).toEqual(byId(pek.operationalPoints))

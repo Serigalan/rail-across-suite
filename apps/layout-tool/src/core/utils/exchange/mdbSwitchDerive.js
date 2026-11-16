@@ -73,7 +73,7 @@ const trackLength = (t) => (t.elements ?? []).reduce((s, e) => s + (e.length ?? 
 export function offsetOnElement(el, pt, epsg) {
   const start = { easting: el.startNode[0], northing: el.startNode[1], zone: epsg }
   const p = { easting: pt[0], northing: pt[1], zone: epsg }
-  const hit = el.elementType === 2 && el.r1 !== undefined
+  const hit = el.elementType === 'transition' && el.r1 !== undefined
     ? projectOnTransitionUtm(start, p, el.bearing, el.length, el.r1, el.r2 ?? null, el.transitionType)
     : projectOnArcUtm(start, p, el.bearing, asRadius(el.radius))
   const s = Math.min(el.length ?? 0, Math.max(0, hit.along))
@@ -81,7 +81,7 @@ export function offsetOnElement(el, pt, epsg) {
   // is measured is the distance to the end itself. A transition's projection
   // stops at its ends instead of running past them, so for it an end says
   // nothing about the point lying square to it — it is measured to the end too.
-  const atEnd = el.elementType === 2 && (s <= 0 || s >= (el.length ?? 0))
+  const atEnd = el.elementType === 'transition' && (s <= 0 || s >= (el.length ?? 0))
   if (!atEnd && hit.along >= 0 && hit.along <= (el.length ?? 0)) return { s, dist: Math.abs(hit.perp) }
   const foot = pointAtStationUtm(el, s, epsg)
   return { s, dist: Math.hypot(foot.easting - pt[0], foot.northing - pt[1]) }
@@ -184,7 +184,7 @@ function throughTrackAt(grid, epsg, pt, skip, tol = ON_TOL) {
  * only a transition needs: its curvature runs from one end to the other.
  */
 function signedRadius(el, forward, s = null) {
-  const r = el.elementType === 2 && el.r1 !== undefined
+  const r = el.elementType === 'transition' && el.r1 !== undefined
     ? (s == null ? (forward ? el.r1 : el.r2) : clothoidRadiusAt(el.r1, el.r2 ?? null, el.length, s))
     : el.radius
   const v = asRadius(r)

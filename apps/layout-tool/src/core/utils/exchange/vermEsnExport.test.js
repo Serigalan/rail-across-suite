@@ -151,7 +151,7 @@ describe('graBytes', () => {
 })
 
 describe('exportVermEsn', () => {
-  const straight = { elementType: 0, startNode: [4470000, 5332000], endNode: [4470100, 5332000], bearing: 90, length: 100 }
+  const straight = { elementType: 'straight', startNode: [4470000, 5332000], endNode: [4470100, 5332000], bearing: 90, length: 100 }
 
   it('names the files after the track — its own name first, in ASCII — and its Lagesystem, and notes plane and datum', () => {
     const tracks = [
@@ -348,8 +348,8 @@ describe.skipIf(!cantFiles.length)('a cant ramp of one radius', () => {
     const bytes = readFileSync(path)
     const { elements } = buildElements(parseRecords(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength)), 5684)
     // #14: R −950 at both ends, 21.875 → 40.625 mm; #18/#19: the reverse ramp between two straights.
-    expect(elements[13]).toMatchObject({ elementType: 1, radius: -950, cantStart: -21.875, cantEnd: -40.625 })
-    expect(elements[17]).toMatchObject({ elementType: 0, cantStart: -15.018, cantEnd: 0 })
-    expect(elements[18]).toMatchObject({ elementType: 0, cantStart: 0, cantEnd: 15.018 })
+    expect(elements[13]).toMatchObject({ elementType: 'arc', radius: -950, cantStart: -21.875, cantEnd: -40.625 })
+    expect(elements[17]).toMatchObject({ elementType: 'straight', cantStart: -15.018, cantEnd: 0 })
+    expect(elements[18]).toMatchObject({ elementType: 'straight', cantStart: 0, cantEnd: 15.018 })
   })
 })

@@ -188,7 +188,7 @@ describe('carrying tracks into another plane', () => {
 
   it('refuses where an element has no nodes to carry over', () => {
     const before = project()
-    before.tracks[0].elements.push({ elementType: 0, length: 10 })
+    before.tracks[0].elements.push({ elementType: 'straight', length: 10 })
     const res = moveTracksToPlane(before, ['a'], UTM33)
     expect(res.project).toBeNull()
     expect(res.report.refused).toBe(1)

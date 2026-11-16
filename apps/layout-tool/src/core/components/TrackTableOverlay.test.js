@@ -26,8 +26,8 @@ beforeAll(() => {
 })
 
 const GEOM = { coordinates: [[11.0, 51.0], [11.001, 51.001]] }
-const straight = (props) => ({ elementType: 0, bearing: 30.1, endBearing: 30.1, length: 100, speed: 100, geometry: GEOM, ...props })
-const arc      = (props) => ({ elementType: 1, bearing: 12.3456, endBearing: 30.1, length: 150, speed: 100, geometry: GEOM, ...props })
+const straight = (props) => ({ elementType: 'straight', bearing: 30.1, endBearing: 30.1, length: 100, speed: 100, geometry: GEOM, ...props })
+const arc      = (props) => ({ elementType: 'arc', bearing: 12.3456, endBearing: 30.1, length: 150, speed: 100, geometry: GEOM, ...props })
 
 const TRACK = {
   id: 't1', name: 'Gleis 1', epsg: 5678,
@@ -165,7 +165,7 @@ describe('V_max (Entscheidung 372)', () => {
 })
 
 describe('the cant: one, or one at each end — never both (Entscheidung 373)', () => {
-  const clothoid = (props) => ({ elementType: 2, bearing: 30.1, length: 60, speed: 100, geometry: GEOM, transitionType: 'clothoid', ...props })
+  const clothoid = (props) => ({ elementType: 'transition', bearing: 30.1, length: 60, speed: 100, geometry: GEOM, transitionType: 'clothoid', ...props })
   const track = {
     id: 't-cant', name: 'Gleis 6', epsg: 5678,
     elements: [straight({}), clothoid({ r1: null, r2: 500 }), arc({ radius: 500, cant: 60 }), arc({ radius: 800, cant: 40, cantStart: 40, cantEnd: 20 })],
@@ -361,7 +361,7 @@ describe('the rule column', () => {
       elements: [
         straight({ cant: 0 }),
         // A clothoid long enough for the cant ramp it carries (65 mm at 100 km/h).
-        { elementType: 2, bearing: 30.1, endBearing: 30.1, length: 65, speed: 100, r1: null, r2: 1000, geometry: GEOM },
+        { elementType: 'transition', bearing: 30.1, endBearing: 30.1, length: 65, speed: 100, r1: null, r2: 1000, geometry: GEOM },
         arc({ radius: 1000, cant: 65 }),
       ],
     }

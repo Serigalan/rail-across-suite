@@ -62,7 +62,7 @@ export function exportToOsrd(record) {
     for (const el of track.elements ?? []) {
       const begin = station
       station += el.length
-      if (el.elementType === 1) curves.push({ end: round3(station), begin: round3(begin), radius: Math.abs(el.radius) })
+      if (el.elementType === 'arc') curves.push({ end: round3(station), begin: round3(begin), radius: Math.abs(el.radius) })
     }
 
     // Anything carried over from an import (loading gauge, foreign extensions)

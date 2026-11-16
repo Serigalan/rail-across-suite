@@ -85,7 +85,7 @@ export async function spliceRemedies({ request, key, elements = [], findings = [
 
   // The radius of the arc the splice inserts, where a rejected joint is beside it.
   const arcJoints = findings.filter(isJumpError)
-    .filter(f => f.index.some(i => elements[i]?.role === 'new' && elements[i]?.elementType === 1))
+    .filter(f => f.index.some(i => elements[i]?.role === 'new' && elements[i]?.elementType === 'arc'))
   if (request.radius > 0 && arcJoints.length) {
     const needed = Math.max(...arcJoints.map(f => smallestComparisonRadius(
       Math.max(...f.index.map(i => elements[i]?.speed || 0)),

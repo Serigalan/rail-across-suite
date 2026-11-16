@@ -128,7 +128,7 @@ describe('a switch connection, edited (Entscheidung 364)', () => {
     const p = applyConnection({ tracks: [t1, u2], switches: [] }, c)
     const cn = c.addTracks[c.addTracks.length - 1]
     const found = switchConnectionOf({ trackId: cn.id, ...p })
-    expect(found.mids.map(el => el.elementType)).toEqual([2, 1, 2])
+    expect(found.mids.map(el => el.elementType)).toEqual(['transition', 'arc', 'transition'])
     const apart = takeApart(found, p)
     const start = editStart(found, apart)
     expect(start).not.toBeNull()

@@ -24,6 +24,26 @@ const CANDIDATES = [
 
 const PATH = CANDIDATES.find(p => existsSync(p)) ?? null
 
+const KINDS = { 0: 'straight', 1: 'arc', 2: 'transition' }
+const TRACK_TYPES = { 1: 'line', 2: 'station' }
+const SIDES = { 1: 'regular', 2: 'opposite' }
+
+/**
+ * A record of before in the words the record states since it follows the
+ * document (decision 0029, phase 6) — what the door would make of it: an
+ * element's kind, a track's kind and side as words, a switch `switch` where
+ * it says `turnout`.
+ */
+function inTodaysWords(project) {
+  for (const track of project.tracks ?? []) {
+    if (TRACK_TYPES[track.trackType]) track.trackType = TRACK_TYPES[track.trackType]
+    if (SIDES[track.side]) track.side = SIDES[track.side]
+    for (const el of track.elements ?? []) if (KINDS[el.elementType]) el.elementType = KINDS[el.elementType]
+  }
+  for (const sw of project.switches ?? []) if (sw.kind === 'turnout') sw.kind = 'switch'
+  return project
+}
+
 export const hasPek = PATH !== null
 
 let cached = null
@@ -59,7 +79,7 @@ export function loadPek() {
       }
       track.elements = storedTrackCants(track.elements ?? [])
     }
-    cached = JSON.stringify(withStationPoints(project))
+    cached = JSON.stringify(withStationPoints(inTodaysWords(project)))
   }
   return JSON.parse(cached)
 }
@@ -77,14 +97,8 @@ const EXISTING_PATH = [
 
 export const hasPekExisting = EXISTING_PATH !== null
 
-/**
- * A fresh copy of the Bestand project record (dehydrated), or null — its
- * switches named `switch`, as the record names them since decision 0029,
- * phase 6, where the file says `turnout`.
- */
+/** A fresh copy of the Bestand project record (dehydrated) in today's words, or null. */
 export function loadPekExisting() {
   if (!EXISTING_PATH) return null
-  const project = JSON.parse(readFileSync(EXISTING_PATH, 'utf8')).projects[0]
-  for (const sw of project.switches ?? []) if (sw.kind === 'turnout') sw.kind = 'switch'
-  return withStationPoints(project)
+  return withStationPoints(inTodaysWords(JSON.parse(readFileSync(EXISTING_PATH, 'utf8')).projects[0]))
 }

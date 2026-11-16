@@ -24,7 +24,7 @@ function segment(id, [e1, n1], [e2, n2]) {
   return {
     id, name: id, epsg: UTM,
     elements: [{
-      elementType: 0, length, bearing, endBearing: bearing,
+      elementType: 'straight', length, bearing, endBearing: bearing,
       startNode: [start.easting, start.northing],
       endNode: [end.easting, end.northing],
       geometry: { type: 'LineString', coordinates: [

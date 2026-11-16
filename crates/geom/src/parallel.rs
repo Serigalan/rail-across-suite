@@ -3,6 +3,7 @@
 
 //! A whole track offset into a continuous parallel (`parallelUtils.js`).
 
+use crate::kind::is_transition;
 use rail_across_js::{Object, get, has};
 use serde_json::{Value, json};
 
@@ -70,7 +71,7 @@ pub fn offset_track_elements(elements: &[Value], dist: f64, epsg: i64) -> Result
                 return Ok(None);
             }
             out.push(arc_element(start, end, signed_r, &speed_cant(el))?);
-        } else if el.get("elementType").and_then(Value::as_f64) == Some(2.0) {
+        } else if is_transition(el) {
             let r1o = get(el, "r1").and_then(Value::as_f64);
             let r2o = get(el, "r2").and_then(Value::as_f64);
             let r1 = r1o.map(|r| r - dist);

@@ -3,6 +3,7 @@
 
 //! Runs of elements that are one element (`mergeElements.js`).
 
+use rail_across_geom::kind::{kind_of, is_transition, STRAIGHT};
 use std::collections::BTreeSet;
 
 use rail_across_geom::element::{Utm, curved_values, resolve_end_bearing, straight_values};
@@ -58,10 +59,10 @@ fn cant_pair(el: &Value) -> (f64, f64) {
 }
 
 fn same_kind(a: &Value, b: &Value) -> bool {
-    if num(a, "elementType").unwrap_or(0.0) != num(b, "elementType").unwrap_or(0.0) {
+    if kind_of(a).unwrap_or(STRAIGHT) != kind_of(b).unwrap_or(STRAIGHT) {
         return false;
     }
-    if num(a, "elementType") == Some(2.0) {
+    if is_transition(a) {
         return text(a, "transitionType").unwrap_or("clothoid") == text(b, "transitionType").unwrap_or("clothoid");
     }
     let ((a0, a1), (b0, b1)) = (cant_pair(a), cant_pair(b));
@@ -92,7 +93,7 @@ pub fn mergeable_run(els: &[Value], epsg: i64, equal: bool) -> bool {
         return false;
     }
     let radius_tol = if equal { EQUAL_RADIUS_TOL } else { RADIUS_TOL };
-    if num(first, "elementType") == Some(2.0) {
+    if is_transition(first) {
         if text(first, "transitionType") == Some("bloss") || !has(first, "r1") {
             return false;
         }
@@ -154,7 +155,7 @@ fn merge_run(els: &[Value], epsg: i64) -> Value {
         zone: epsg,
     };
     let mut merged = without(first, &["endBearing", "geometry", "renderCoords"]);
-    if num(first, "elementType") == Some(2.0) {
+    if is_transition(first) {
         merged.insert("r1".into(), get(first, "r1").cloned().unwrap_or(Value::Null));
         merged.insert("r2".into(), get(last, "r2").cloned().unwrap_or(Value::Null));
         merged.insert("endNode".into(), last["endNode"].clone());

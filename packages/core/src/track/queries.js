@@ -242,7 +242,7 @@ export function pointAtStationUtm(el, s, epsg) {
   if (s >= el.length && el.endNode) return nodeUtm(el.endNode, coords[coords.length - 1], epsg)
   const start = nodeUtm(el.startNode, coords[0], epsg)
   if (s <= 0) return start
-  if (el.elementType === 2 && el.r1 !== undefined) {
+  if (el.elementType === 'transition' && el.r1 !== undefined) {
     return transitionPointAtUtm(start, el.bearing, el.length, el.r1, el.r2 ?? null, el.transitionType, s)
   }
   if (el.radius != null) return endPointCurvedUtm(start, el.bearing, s, el.radius)
@@ -367,7 +367,7 @@ export function elementStations(track) {
 /** Point and tangent bearing at station `s` within one element, in the plane. */
 export function pointOnElement(el, epsg, s) {
   const startUtm = nodeUtm(el.startNode, el.geometry?.coordinates?.[0], epsg)
-  if (el.elementType === 2) {
+  if (el.elementType === 'transition') {
     return {
       utm:     transitionPointAtUtm(startUtm, el.bearing, el.length, el.r1 ?? null, el.r2 ?? null, el.transitionType, s),
       bearing: transitionBearingAtUtm(el.bearing, el.length, el.r1 ?? null, el.r2 ?? null, el.transitionType, s),
@@ -418,7 +418,7 @@ export function stationFromClick(track, elIdx, clickUtm) {
   if (!row || !track?.epsg) return null
   const { el } = row
   let along
-  if (el.elementType === 2) {
+  if (el.elementType === 'transition') {
     const distAt = (s) => {
       const { utm } = pointOnElement(el, track.epsg, s)
       return Math.hypot(utm.easting - clickUtm.easting, utm.northing - clickUtm.northing)

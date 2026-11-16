@@ -60,7 +60,7 @@ describe('arcCenter', () => {
 
 describe('reverseElement is self-inverse', () => {
   const base = {
-    elementType: 0,
+    elementType: 'straight',
     epsg: EPSG,
     startNode: [500000, 5600000],
     endNode: [500250, 5600250],
@@ -72,14 +72,14 @@ describe('reverseElement is self-inverse', () => {
 
   const arc = {
     ...base,
-    elementType: 1,
+    elementType: 'arc',
     radius: -600,
     endBearing: 20,
   }
 
   const transition = {
     ...base,
-    elementType: 2,
+    elementType: 'transition',
     r1: null,
     r2: -601.04,
     endBearing: 40.1,

@@ -101,17 +101,7 @@ fn run_points(run: &Value, epsg: i64, blobs: &Value) -> Result<Vec<(f64, f64, f6
     let mut along = 0.0;
     for el in run.get("elements").and_then(Value::as_array).into_iter().flatten() {
         let length = el.get("length").and_then(Value::as_f64).unwrap_or(0.0);
-        // The geometry reads an element's kind as the record states it.
-        let mut as_record = el.clone();
-        if let Some(o) = as_record.as_object_mut() {
-            let kind = match o.get("elementType").and_then(Value::as_str) {
-                Some("arc") => 1,
-                Some("transition") => 2,
-                _ => 0,
-            };
-            o.insert("elementType".into(), json!(kind));
-        }
-        let pts = element_points(&as_record, epsg, STEP).unwrap_or_default();
+        let pts = element_points(el, epsg, STEP).unwrap_or_default();
         let n = pts.len().saturating_sub(1).max(1) as f64;
         for (i, [e, north]) in pts.iter().enumerate() {
             if i == 0 && !out.is_empty() {

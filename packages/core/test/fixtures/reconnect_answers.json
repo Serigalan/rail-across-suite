@@ -1,7 +1,7 @@
 {
  "elements": [
   {
-   "elementType": 0,
+   "elementType": "straight",
    "startNode": [
     500000.0,
     5700000.0
@@ -15,7 +15,7 @@
    "speed": 80
   },
   {
-   "elementType": 0,
+   "elementType": "straight",
    "startNode": [
     500050.0,
     5700000.0
@@ -29,7 +29,7 @@
    "speed": 80
   },
   {
-   "elementType": 2,
+   "elementType": "transition",
    "transitionType": "clothoid",
    "r1": null,
    "r2": 800.0,
@@ -47,7 +47,7 @@
    "speed": 80
   },
   {
-   "elementType": 1,
+   "elementType": "arc",
    "radius": 800.0,
    "startNode": [
     500309.9915630493,
@@ -64,7 +64,7 @@
    "cant": 50
   },
   {
-   "elementType": 2,
+   "elementType": "transition",
    "transitionType": "clothoid",
    "r1": 800.0,
    "r2": null,
@@ -82,7 +82,7 @@
    "speed": 80
   },
   {
-   "elementType": 0,
+   "elementType": "straight",
    "startNode": [
     500655.0647199022,
     5699907.290662275
@@ -96,7 +96,7 @@
    "speed": 80
   },
   {
-   "elementType": 0,
+   "elementType": "straight",
    "startNode": [
     500835.1541403727,
     5699820.297555452
@@ -251,7 +251,7 @@
      {
       "elements": [
        {
-        "elementType": 0,
+        "elementType": "straight",
         "role": "dep",
         "startNode": [
          500050.0,
@@ -267,7 +267,7 @@
         "cant": 0.0
        },
        {
-        "elementType": 2,
+        "elementType": "transition",
         "role": "new",
         "transitionType": "clothoid",
         "r1": null,
@@ -286,7 +286,7 @@
         "speed": 100.0
        },
        {
-        "elementType": 1,
+        "elementType": "arc",
         "role": "new",
         "radius": 791.0,
         "startNode": [
@@ -304,7 +304,7 @@
         "cant": 80.0
        },
        {
-        "elementType": 2,
+        "elementType": "transition",
         "role": "new",
         "transitionType": "clothoid",
         "r1": 791.0,
@@ -323,7 +323,7 @@
         "speed": 100.0
        },
        {
-        "elementType": 0,
+        "elementType": "straight",
         "role": "arr",
         "startNode": [
          500662.24340773554,
@@ -812,7 +812,7 @@
      {
       "elements": [
        {
-        "elementType": 0,
+        "elementType": "straight",
         "role": "dep",
         "startNode": [
          500050.0,
@@ -828,7 +828,7 @@
         "cant": 0.0
        },
        {
-        "elementType": 2,
+        "elementType": "transition",
         "role": "new",
         "transitionType": "clothoid",
         "r1": null,
@@ -847,7 +847,7 @@
         "speed": 100.0
        },
        {
-        "elementType": 1,
+        "elementType": "arc",
         "role": "new",
         "radius": 799.0,
         "startNode": [
@@ -865,7 +865,7 @@
         "cant": 80.0
        },
        {
-        "elementType": 2,
+        "elementType": "transition",
         "role": "new",
         "transitionType": "clothoid",
         "r1": 799.0,
@@ -884,7 +884,7 @@
         "speed": 100.0
        },
        {
-        "elementType": 0,
+        "elementType": "straight",
         "role": "arr",
         "startNode": [
          500656.66462804616,
@@ -1390,7 +1390,7 @@
      {
       "elements": [
        {
-        "elementType": 0,
+        "elementType": "straight",
         "role": "dep",
         "startNode": [
          500050.0,
@@ -1406,7 +1406,7 @@
         "cant": 0.0
        },
        {
-        "elementType": 2,
+        "elementType": "transition",
         "role": "new",
         "transitionType": "clothoid",
         "r1": null,
@@ -1425,7 +1425,7 @@
         "speed": 100.0
        },
        {
-        "elementType": 1,
+        "elementType": "arc",
         "role": "new",
         "radius": 800,
         "startNode": [
@@ -1443,7 +1443,7 @@
         "cant": 80.0
        },
        {
-        "elementType": 2,
+        "elementType": "transition",
         "role": "new",
         "transitionType": "clothoid",
         "r1": 800,
@@ -1462,7 +1462,7 @@
         "speed": 100.0
        },
        {
-        "elementType": 0,
+        "elementType": "straight",
         "role": "arr",
         "startNode": [
          500655.064719902,
@@ -1969,7 +1969,7 @@
      {
       "elements": [
        {
-        "elementType": 0,
+        "elementType": "straight",
         "role": "dep",
         "startNode": [
          500050.0,
@@ -1985,7 +1985,7 @@
         "cant": 0.0
        },
        {
-        "elementType": 1,
+        "elementType": "arc",
         "role": "new",
         "radius": 812.0,
         "startNode": [
@@ -2003,7 +2003,7 @@
         "cant": 80.0
        },
        {
-        "elementType": 0,
+        "elementType": "straight",
         "role": "arr",
         "startNode": [
          500630.4870150389,
@@ -2521,7 +2521,7 @@
      {
       "elements": [
        {
-        "elementType": 0,
+        "elementType": "straight",
         "role": "dep",
         "startNode": [
          500250.0,
@@ -2537,7 +2537,7 @@
         "cant": 0.0
        },
        {
-        "elementType": 1,
+        "elementType": "arc",
         "role": "new",
         "radius": 812.0,
         "startNode": [
@@ -2555,7 +2555,7 @@
         "cant": 80.0
        },
        {
-        "elementType": 0,
+        "elementType": "straight",
         "role": "arr",
         "startNode": [
          500630.4870150389,
@@ -2872,7 +2872,7 @@
      {
       "elements": [
        {
-        "elementType": 2,
+        "elementType": "transition",
         "role": "new",
         "transitionType": "clothoid",
         "r1": null,
@@ -2891,7 +2891,7 @@
         "speed": 100.0
        },
        {
-        "elementType": 1,
+        "elementType": "arc",
         "role": "new",
         "radius": 800,
         "startNode": [
@@ -2909,7 +2909,7 @@
         "cant": 80.0
        },
        {
-        "elementType": 2,
+        "elementType": "transition",
         "role": "new",
         "transitionType": "clothoid",
         "r1": 800,
@@ -2928,7 +2928,7 @@
         "speed": 100.0
        },
        {
-        "elementType": 0,
+        "elementType": "straight",
         "role": "arr",
         "startNode": [
          500655.064719902,
@@ -3355,7 +3355,7 @@
      {
       "elements": [
        {
-        "elementType": 0,
+        "elementType": "straight",
         "role": "dep",
         "startNode": [
          500250.0,
@@ -3371,7 +3371,7 @@
         "cant": 0.0
        },
        {
-        "elementType": 2,
+        "elementType": "transition",
         "role": "new",
         "transitionType": "clothoid",
         "r1": null,
@@ -3390,7 +3390,7 @@
         "speed": 100.0
        },
        {
-        "elementType": 1,
+        "elementType": "arc",
         "role": "new",
         "radius": 791.0,
         "startNode": [
@@ -3408,7 +3408,7 @@
         "cant": 80.0
        },
        {
-        "elementType": 2,
+        "elementType": "transition",
         "role": "new",
         "transitionType": "clothoid",
         "r1": 791.0,
@@ -3427,7 +3427,7 @@
         "speed": 100.0
        },
        {
-        "elementType": 0,
+        "elementType": "straight",
         "role": "arr",
         "startNode": [
          500655.01632055757,
@@ -3853,7 +3853,7 @@
      {
       "elements": [
        {
-        "elementType": 0,
+        "elementType": "straight",
         "role": "dep",
         "startNode": [
          500250.0,
@@ -3869,7 +3869,7 @@
         "cant": 0.0
        },
        {
-        "elementType": 2,
+        "elementType": "transition",
         "role": "new",
         "transitionType": "clothoid",
         "r1": null,
@@ -3888,7 +3888,7 @@
         "speed": 100.0
        },
        {
-        "elementType": 1,
+        "elementType": "arc",
         "role": "new",
         "radius": 745.0,
         "startNode": [
@@ -3906,7 +3906,7 @@
         "cant": 85.0
        },
        {
-        "elementType": 2,
+        "elementType": "transition",
         "role": "new",
         "transitionType": "clothoid",
         "r1": 745.0,
@@ -3925,7 +3925,7 @@
         "speed": 100.0
        },
        {
-        "elementType": 0,
+        "elementType": "straight",
         "role": "arr",
         "startNode": [
          500655.02709272155,

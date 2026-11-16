@@ -255,7 +255,7 @@ export default function CurvedLineForm({ onDone }) {
         // a fixed 150 mm, which the deficiency limit stopped being when it
         // became LP.KB.02's step over the speed.
         const element = {
-          elementType: 1, radius: Number(signedRadius), cant: curveCant(Number(signedRadius), cant), speed, length: Number(arcLength),
+          elementType: 'arc', radius: Number(signedRadius), cant: curveCant(Number(signedRadius), cant), speed, length: Number(arcLength),
         }
         const blocked = hasRuleError([element])
         return (

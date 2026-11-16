@@ -37,7 +37,7 @@ const START = { easting: 500000, northing: 5600000, zone: EPSG }
 function element(start, bearing, length, radius = null, cant = 0) {
   const end = utmEndRoute(start, bearing, length, radius)
   return {
-    elementType: radius ? 1 : 0,
+    elementType: radius ? 'arc' : 'straight',
     startNode: [start.easting, start.northing], endNode: [end.easting, end.northing],
     bearing, length, speed: 60,
     ...(radius ? { radius, endBearing: bearingAfterUtm(bearing, length, radius), cant } : {}),

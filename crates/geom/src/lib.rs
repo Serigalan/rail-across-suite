@@ -17,6 +17,7 @@ pub mod chain;
 pub mod coords;
 pub mod element;
 pub mod factory;
+pub mod kind;
 pub mod parallel;
 pub mod plane_transform;
 pub mod precision;

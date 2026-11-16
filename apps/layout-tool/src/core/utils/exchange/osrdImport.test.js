@@ -23,8 +23,8 @@ const BEARING = 30
 /** The elements of one route of a turnout, as a dialog commits them. */
 const routeElements = (segments) => segments.map(seg => ({
   ...(switchRouteVaries(seg)
-    ? { elementType: 2, transitionType: 'clothoid', r1: seg.r1, r2: seg.r2 }
-    : { elementType: seg.r1 ? 1 : 0, ...(seg.r1 ? { radius: seg.r1 } : {}) }),
+    ? { elementType: 'transition', transitionType: 'clothoid', r1: seg.r1, r2: seg.r2 }
+    : { elementType: seg.r1 ? 'arc' : 'straight', ...(seg.r1 ? { radius: seg.r1 } : {}) }),
   startNode: [seg.startUtm.easting, seg.startUtm.northing],
   endNode:   [seg.endUtm.easting, seg.endUtm.northing],
   bearing: seg.bearing, endBearing: seg.endBearing, length: seg.length,
@@ -204,7 +204,7 @@ describe('cant ramps not between a straight and an arc (decision 355)', () => {
   it('keep the ends of each transition through the exchange file', () => {
     const { tracks } = parseOsrdRailJson(buildInfra([{ id: 't', name: 'T', epsg: EPSG, elements }], [], [], {}))
     const back = tracks[0].elements
-    expect(back.map((el, i) => (el.elementType === 2 ? transitionCantEnds(back, i) : el.cant ?? 0)))
+    expect(back.map((el, i) => (el.elementType === 'transition' ? transitionCantEnds(back, i) : el.cant ?? 0)))
       .toEqual([0, { start: 0, end: 40 }, { start: 40, end: 80 }, 80])
   })
 })

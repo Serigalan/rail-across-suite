@@ -9,10 +9,10 @@ import { formOf } from '@rail-across/core/test/turnoutFixture.js'
 const R = 500
 const node = (p) => [p.easting, p.northing]
 const straight = (from, bearing, length, extra = {}) => ({
-  elementType: 0, startNode: node(from), endNode: node(endPointStraightUtm(from, bearing, length)), bearing, length, speed: 80, ...extra,
+  elementType: 'straight', startNode: node(from), endNode: node(endPointStraightUtm(from, bearing, length)), bearing, length, speed: 80, ...extra,
 })
 const arc = (from, bearing, length, r, extra = {}) => ({
-  elementType: 1, startNode: node(from), endNode: node(endPointCurvedUtm(from, bearing, length, r)),
+  elementType: 'arc', startNode: node(from), endNode: node(endPointCurvedUtm(from, bearing, length, r)),
   bearing, endBearing: bearing - Math.sign(-r) * (length / R) * 180 / Math.PI, radius: r, length, speed: 80, ...extra,
 })
 const endOf = (el) => ({ easting: el.endNode[0], northing: el.endNode[1], zone: 5684 })

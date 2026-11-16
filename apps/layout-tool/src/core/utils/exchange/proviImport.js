@@ -236,8 +236,8 @@ function cantOf(body) {
 function applyCant(elements, cant) {
   if (!cant) return
   for (const el of elements) {
-    if (el.elementType === 1) el.cant = cantSign(el.radius) * Math.abs(cant)
-    else if (el.elementType === 0) el.cant = cant
+    if (el.elementType === 'arc') el.cant = cantSign(el.radius) * Math.abs(cant)
+    else if (el.elementType === 'straight') el.cant = cant
   }
 }
 

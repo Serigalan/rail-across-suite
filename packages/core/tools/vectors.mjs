@@ -55,7 +55,7 @@ const HALLE_TROTHA = 'b64cfd92-f881-83ad-82d7-f0d78ef78747'
 
 /** A record with one of everything the format holds — with the signalling of a small station, its second stopping place at the platform, and an electrification where asked. */
 function sampleRecord({ signalling = false, electrification = false } = {}) {
-  const el = (x0, x1, extra = {}) => ({ elementType: 0, startNode: [500000 + x0, 5700000], endNode: [500000 + x1, 5700000], bearing: 90, length: x1 - x0, ...extra })
+  const el = (x0, x1, extra = {}) => ({ elementType: 'straight', startNode: [500000 + x0, 5700000], endNode: [500000 + x1, 5700000], bearing: 90, length: x1 - x0, ...extra })
   return {
     id: 'b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69', title: 'Halle-Trotha', description: 'vectors', creator: 'core',
     createdAt: '2026-10-29T13:21:07.630Z', crsSystem: 'ETRS89_UTM', lineCategory: 'secondary', gaugeProfile: 'hauptgleis',

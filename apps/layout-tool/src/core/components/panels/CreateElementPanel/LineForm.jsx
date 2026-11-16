@@ -216,7 +216,7 @@ export default function LineForm({ onDone }) {
       <MessageList items={errors} className="form-error-list" small={false} />
 
       {points.length === 2 && !selecting && (() => {
-        const element = { elementType: 0, speed, length: Number(length), cant: 0 }
+        const element = { elementType: 'straight', speed, length: Number(length), cant: 0 }
         const blocked = hasRuleError([element])
         return (
           <>

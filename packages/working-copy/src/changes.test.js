@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { domainChanges, localChangeCount } from './changes.js'
 
-const track = (id, extra = {}) => ({ id, name: id, epsg: 25832, elements: [{ elementType: 0, length: 100 }], ...extra })
+const track = (id, extra = {}) => ({ id, name: id, epsg: 25832, elements: [{ elementType: 'straight', length: 100 }], ...extra })
 const signalling = (signals) => ({ fields: {}, collections: { signals } })
 
 describe('the changes a working copy holds', () => {

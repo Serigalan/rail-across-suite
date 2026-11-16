@@ -57,7 +57,7 @@ function switchElementLabel(tr, el) {
   const r     = (v) => (v == null ? '∞' : `${Math.round(Math.abs(v) * 100) / 100} m`)
   // A route of a turnout laid into a clothoid is a clothoid itself: it has no
   // single radius but runs from one to the other.
-  const value = el.elementType === 2 ? `${r(el.r1)} → ${r(el.r2)}` : r(el.radius)
+  const value = el.elementType === 'transition' ? `${r(el.r1)} → ${r(el.r2)}` : r(el.radius)
   return [{ t: 'r' }, { t: sub, sub: true }, { t: ` = ${value}` }]
 }
 
@@ -92,7 +92,7 @@ function drawTrack(map, track, tr, switchOf) {
       let labelText
       if (el.radius != null) {
         labelText = `r = ${fmt(Math.abs(el.radius))}m | l = ${fmt(el.length)}m`
-      } else if (el.elementType === 2) {
+      } else if (el.elementType === 'transition') {
         const subscript = el.transitionType === 'bloss' ? 'ub' : 'u'
         labelText = [{ t: 'l' }, { t: subscript, sub: true }, { t: ` = ${fmt(el.length)}m` }]
       } else {

@@ -175,7 +175,7 @@ export default function ConnectCurvedForm({ onCommitted }) {
   // The arc once it has a radius, and the transition in front of it — judged
   // in the chain it is laid into.
   const nextEl = Number(signedRadius)
-    ? { elementType: 1, radius: Number(signedRadius), cant: curveCant(Number(signedRadius), cant), speed, length: Number(arcLength) }
+    ? { elementType: 'arc', radius: Number(signedRadius), cant: curveCant(Number(signedRadius), cant), speed, length: Number(arcLength) }
     : null
   const transitionChainNow = transitionEnabled && nextEl
     ? transitionChain({ prev: lastEl, next: nextEl, r1: prevRadius, length: transitionLength, type: transitionType, speed })
@@ -276,7 +276,7 @@ export default function ConnectCurvedForm({ onCommitted }) {
         // Judged once, shown and acted on: the findings say what the catalogue
         // found, and anything it calls an error stops the commit.
         const element = nextEl ?? {
-          elementType: 1, radius: Number(signedRadius), cant: curveCant(Number(signedRadius), cant), speed, length: Number(arcLength),
+          elementType: 'arc', radius: Number(signedRadius), cant: curveCant(Number(signedRadius), cant), speed, length: Number(arcLength),
         }
         // Straight on from where the track ends, the new element runs on in
         // its run of one curvature (Entscheidung 363).

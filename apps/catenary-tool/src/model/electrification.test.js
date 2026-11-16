@@ -7,7 +7,7 @@ import { nearest, netLines, stretch } from './net.js'
 // Two straight tracks in UTM 32, 1000 m and 500 m, side by side.
 const straight = (id, y, length) => ({
   id, name: id, epsg: 25832,
-  elements: [{ elementType: 0, length, bearing: 90, startNode: [500000, 5700000 + y], endNode: [500000 + length, 5700000 + y] }],
+  elements: [{ elementType: 'straight', length, bearing: 90, startNode: [500000, 5700000 + y], endNode: [500000 + length, 5700000 + y] }],
 })
 const tracks = [straight('t1', 0, 1000), straight('t2', 50, 500)]
 const record = { id: 'p1', tracks, switches: [], platforms: [] }

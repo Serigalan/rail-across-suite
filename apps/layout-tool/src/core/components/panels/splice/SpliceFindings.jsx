@@ -3,7 +3,7 @@ import { fieldFindings, ruleById, severityLabelKey } from '@rail-across/core/rul
 import { RuleFieldsContext } from '../../form/ruleFieldsContext'
 import { useI18n } from '../../../locales/i18nContext'
 
-const TYPE_KEY = { 0: 'table_type_straight', 1: 'table_type_arc', 2: 'transition_curve' }
+const TYPE_KEY = { straight: 'table_type_straight', arc: 'table_type_arc', transition: 'transition_curve' }
 const ROLE_KEY = { dep: 'splice_departure', arr: 'splice_arrival', new: 'splice_inserted' }
 
 /**
@@ -19,7 +19,7 @@ const ROLE_KEY = { dep: 'splice_departure', arr: 'splice_arrival', new: 'splice_
 export default function SpliceFindings({ result }) {
   const { t, num } = useI18n()
   const { elements = [], findings = [], judged } = result ?? {}
-  const arc = elements.findIndex(el => el.role === 'new' && el.elementType === 1)
+  const arc = elements.findIndex(el => el.role === 'new' && el.elementType === 'arc')
   const scope = useContext(RuleFieldsContext)
   const fieldsKey = JSON.stringify(fieldFindings(findings.filter(f => f.at === `#${arc}`)))
   const setFields = scope?.setFields

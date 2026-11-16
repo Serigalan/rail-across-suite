@@ -18,7 +18,7 @@ function Computing({ record }) {
 }
 
 const record = {
-  tracks: [{ id: 'T1', epsg: 25832, name: '1', trackNumber: '1', elements: [{ elementType: 0, startNode: [500000, 5600000], endNode: [501000, 5600000], bearing: 90, length: 1000 }] }],
+  tracks: [{ id: 'T1', epsg: 25832, name: '1', trackNumber: '1', elements: [{ elementType: 'straight', startNode: [500000, 5600000], endNode: [501000, 5600000], bearing: 90, length: 1000 }] }],
   switches: [],
   platforms: [{ id: 'P1', trackId: 'T1', startStation: 400, endStation: 600, operationalPointId: 'op-h' }],
   operationalPoints: [{ id: 'op-h', name: 'Hausen' }],

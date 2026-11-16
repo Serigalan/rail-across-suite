@@ -10,7 +10,7 @@ describe('findings at their fields', () => {
   })
 
   it('puts an out-of-range speed at the speed field, and nothing at the others', () => {
-    const { perElement } = checkTrack([{ elementType: 0, speed: 333, length: 500, cant: 0 }])
+    const { perElement } = checkTrack([{ elementType: 'straight', speed: 333, length: 500, cant: 0 }])
     const found = fieldFindings(perElement[0].results)
     expect(found.speed.severity).toBe('error')
     expect(found.speed.ids).toContain('LP.ALL.01')

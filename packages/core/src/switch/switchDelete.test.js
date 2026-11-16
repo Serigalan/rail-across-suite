@@ -38,7 +38,7 @@ function arcElement(startUtm, bearing, length, radius, extra = {}) {
   const endUtm = endPointCurvedUtm(startUtm, bearing, length, radius)
   const v = computeCurvedValuesUtm(startUtm, endUtm, radius)
   return {
-    elementType: 1,
+    elementType: 'arc',
     startNode: v.startNode, endNode: v.endNode,
     bearing: v.bearing, endBearing: v.endBearing,
     length: v.length,
@@ -53,7 +53,7 @@ function straightElement(startUtm, bearing, length, extra = {}) {
   const endUtm = endPointStraightUtm(startUtm, bearing, length)
   const v = computeStraightValuesUtm(startUtm, endUtm)
   return {
-    elementType: 0,
+    elementType: 'straight',
     startNode: v.startNode, endNode: v.endNode,
     bearing: v.bearing, length: v.length, speed: 100, ...extra,
     geometry: { type: 'LineString', coordinates: [toWgs(startUtm), toWgs(endUtm)] },
@@ -297,7 +297,7 @@ describe('deleting the switch undoes the carve', () => {
     const L = 90, R = -800
     const cl = computeClothoidUtm(START, 20, L, null, R, SAGITTA_ELEMENT)
     const transition = {
-      elementType: 2, transitionType: 'clothoid', r1: null, r2: R,
+      elementType: 'transition', transitionType: 'clothoid', r1: null, r2: R,
       startNode: [START.easting, START.northing],
       endNode: [cl.endUtm.easting, cl.endUtm.northing],
       bearing: 20, endBearing: cl.endBearing, length: L, speed: 100,
@@ -331,7 +331,7 @@ describe('deleting the switch undoes the carve', () => {
     const L = 90, R = -800
     const cl = computeClothoidUtm(START, 20, L, null, R, SAGITTA_ELEMENT)
     const el = {
-      elementType: 2, transitionType: 'clothoid', r1: null, r2: R,
+      elementType: 'transition', transitionType: 'clothoid', r1: null, r2: R,
       startNode: [START.easting, START.northing],
       endNode: [cl.endUtm.easting, cl.endUtm.northing],
       bearing: 20, endBearing: cl.endBearing, length: L, speed: 100,
@@ -383,7 +383,7 @@ describe('mergeableRun', () => {
   })
 
   it('refuses two Bloss curves — neither is a piece of the other', () => {
-    const bloss = { elementType: 2, transitionType: 'bloss', r1: null, r2: -800, length: 50,
+    const bloss = { elementType: 'transition', transitionType: 'bloss', r1: null, r2: -800, length: 50,
       startNode: [0, 0], endNode: [0, 50], bearing: 0, speed: 100 }
     expect(mergeableRun([bloss, { ...bloss, startNode: [0, 50], endNode: [0, 100] }], EPSG)).toBe(false)
   })

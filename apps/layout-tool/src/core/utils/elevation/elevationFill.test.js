@@ -33,7 +33,7 @@ describe('stationsToRead — where the terrain still has to be read', () => {
 
 describe('fillHeights — reads, never writes (R1.2)', () => {
   const straight = (x0, x1) => ({
-    elementType: 0, startNode: [x0, 5600000], endNode: [x1, 5600000], bearing: 90, length: x1 - x0,
+    elementType: 'straight', startNode: [x0, 5600000], endNode: [x1, 5600000], bearing: 90, length: x1 - x0,
   })
   const track = (id, x0, x1, heights) => ({ id, epsg: 25832, elements: [straight(x0, x1)], ...(heights ? { heights } : {}) })
 

@@ -3,6 +3,7 @@
 
 //! The speeds the rules let an element carry (`rules/speed.js`).
 
+use rail_across_geom::kind::is_transition;
 use std::collections::BTreeSet;
 
 use rail_across_geom::cant::transition_cant_ends;
@@ -25,7 +26,7 @@ pub fn governing(elements: &[Json], i: usize) -> Option<(f64, f64)> {
     if let Some(r) = n("radius").filter(|r| *r != 0.0 && !r.is_nan()) {
         return Some((r, n("cant").unwrap_or(0.0)));
     }
-    if el.get("elementType").and_then(Json::as_f64) == Some(2.0) {
+    if is_transition(el) {
         let r1 = n("r1").filter(|r| *r != 0.0).map(f64::abs).unwrap_or(f64::INFINITY);
         let r2 = n("r2").filter(|r| *r != 0.0).map(f64::abs).unwrap_or(f64::INFINITY);
         if !r1.min(r2).is_finite() {

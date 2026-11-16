@@ -785,7 +785,7 @@ pub fn transition_lengths(
         return Ok(TransitionLengths::default());
     }
     let straight = Element {
-        element_type: Some(0),
+        element_type: Some("straight".into()),
         cant: Some(0.0),
         speed: Some(speed),
         ..Element::default()
@@ -796,7 +796,7 @@ pub fn transition_lengths(
         None => None,
     };
     let transition = Element {
-        element_type: Some(2),
+        element_type: Some("transition".into()),
         transition_type: Some(form.to_string()),
         r1,
         r2,

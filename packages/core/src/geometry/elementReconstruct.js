@@ -25,7 +25,7 @@ export function reconstructElements(elements, epsg) {
         const renderCoords = arcCoordsFromRadiusUtm(startUtm, endUtm, el.radius, SAGITTA_TRACK)   ?? [startWgs, endWgs]
         return { ...el, geometry: { type: 'LineString', coordinates: coords }, renderCoords }
       }
-      if (el.elementType === 2 && el.r1 !== undefined) {
+      if (el.elementType === 'transition' && el.r1 !== undefined) {
         const cl  = computeClothoidUtm(startUtm, el.bearing, el.length, el.r1, el.r2 ?? null, SAGITTA_ELEMENT, el.transitionType)
         const clR = computeClothoidUtm(startUtm, el.bearing, el.length, el.r1, el.r2 ?? null, SAGITTA_TRACK, el.transitionType)
         // The last vertex is the stored end node, so the join with the next

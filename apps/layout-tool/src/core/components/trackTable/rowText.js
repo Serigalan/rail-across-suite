@@ -7,7 +7,7 @@ import { formatNum } from '../../locales/i18n'
 // What the cells of the element table say — the words and marks of one row,
 // worked out from the element, apart from the table that lays them out.
 
-export const isTransition = (el) => el.elementType === 2
+export const isTransition = (el) => el.elementType === 'transition'
 
 /**
  * A transition is neither straight nor arc — it is named by its own curvature

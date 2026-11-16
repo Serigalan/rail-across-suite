@@ -10,7 +10,7 @@ afterEach(async () => { await ctx?.app.close(); ctx?.db.close() })
 
 const straight = (id, y = 0) => ({
   id, name: id, epsg: 25832,
-  elements: [{ elementType: 0, bearing: 90, length: 100, startNode: [500000, 5700000 + y], endNode: [500100, 5700000 + y] }],
+  elements: [{ elementType: 'straight', bearing: 90, length: 100, startNode: [500000, 5700000 + y], endNode: [500100, 5700000 + y] }],
 })
 
 async function start() {

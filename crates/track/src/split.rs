@@ -4,6 +4,7 @@
 //! Parting a track: at a joint, inside an element, and carving a turnout's
 //! route out of it (`trackSplitUtils.js`).
 
+use rail_across_geom::kind::is_transition;
 use std::collections::HashSet;
 
 use rail_across_geom::cant::{transition_cant_ends, with_cant_ramp};
@@ -52,7 +53,7 @@ pub struct Halves {
 
 /// An element cut at a plane point, a transition at its station (`splitElement`).
 pub fn split_element(el: &Value, epsg: i64, cut: &Value, ramp: Option<(f64, f64)>) -> Option<Halves> {
-    if num(el, "elementType") == Some(2.0) && cut.get("station").and_then(Value::as_f64).is_some_and(f64::is_finite) {
+    if is_transition(el) && cut.get("station").and_then(Value::as_f64).is_some_and(f64::is_finite) {
         return split_clothoid(el, epsg, cut, ramp);
     }
     let radius = num(el, "radius").filter(|r| *r != 0.0);
@@ -233,7 +234,7 @@ pub fn carve_switch_route(track: &Value, endpoint: &str, cut: &Value, mark: &Val
         if !truthy(el.get("geometry")) {
             return None;
         }
-        if num(el, "elementType") == Some(2.0) && (text(el, "transitionType") == Some("bloss") || !has(el, "r1")) {
+        if is_transition(el) && (text(el, "transitionType") == Some("bloss") || !has(el, "r1")) {
             return None;
         }
         let remaining = route_length - total;
@@ -246,12 +247,12 @@ pub fn carve_switch_route(track: &Value, endpoint: &str, cut: &Value, mark: &Val
             vec![marked(el, mark)]
         } else {
             let station = if endpoint == "BEGIN" { remaining } else { length(el) - remaining };
-            let ramp = if num(el, "elementType") == Some(2.0) {
+            let ramp = if is_transition(el) {
                 Some(transition_cant_ends(els, idx))
             } else {
                 None
             };
-            let c = if num(el, "elementType") == Some(2.0) {
+            let c = if is_transition(el) {
                 let mut c = obj(cut);
                 c.insert("station".into(), number(station));
                 Value::Object(c)
@@ -293,7 +294,7 @@ fn carve_terminal(track: &Value, endpoint: &str, cut: &Value, mark: &Value) -> O
     let els = elements(track);
     let idx = if endpoint == "BEGIN" { 0 } else { els.len().checked_sub(1)? };
     let el = els.get(idx)?;
-    if num(el, "elementType") == Some(2.0) || !truthy(el.get("geometry")) {
+    if is_transition(el) || !truthy(el.get("geometry")) {
         return None;
     }
     let h = split_element(el, epsg(track), cut, None)?;
@@ -344,7 +345,7 @@ fn split_result(track_a: Value, track_b: Value, junction_wgs: Value, ahead_is_b:
 pub fn split_track_at_joint(track: &Value, j: usize, bearing: f64, existing: &mut Vec<String>) -> Value {
     let els = elements(track);
     let keep_ramp = |el: &Value, i: usize| -> Value {
-        if num(el, "elementType") != Some(2.0) {
+        if !is_transition(el) {
             return el.clone();
         }
         let (s, e) = transition_cant_ends(els, i);
@@ -383,7 +384,7 @@ pub fn split_track_at_joint(track: &Value, j: usize, bearing: f64, existing: &mu
 pub fn split_element_at(track: &Value, el_idx: usize, junction: &Value, bearing: f64, existing: &mut Vec<String>) -> Option<Value> {
     let els = elements(track);
     let el = els.get(el_idx)?;
-    let ramp = if num(el, "elementType") == Some(2.0) && junction.get("station").and_then(Value::as_f64).is_some_and(f64::is_finite) {
+    let ramp = if is_transition(el) && junction.get("station").and_then(Value::as_f64).is_some_and(f64::is_finite) {
         Some(transition_cant_ends(els, el_idx))
     } else {
         None

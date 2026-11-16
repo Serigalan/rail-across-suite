@@ -168,7 +168,7 @@ export default function ConnectStraightForm({ onCommitted }) {
 
   // What the line is, and the transition in front of it — judged in the chain
   // it is laid into.
-  const nextEl = { elementType: 0, speed, length: Number(length), cant: 0 }
+  const nextEl = { elementType: 'straight', speed, length: Number(length), cant: 0 }
   const transitionChainNow = transitionEnabled && prevRadius !== null
     ? transitionChain({ prev: lastEl, next: nextEl, r1: prevRadius, length: transitionLength, type: transitionType, speed })
     : null

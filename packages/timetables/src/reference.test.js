@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { blockingTimes, blocksAlong } from './occupancy.js'
 
 // Reference case A (docs/reference-cases/a-two-track-line.md): the figures worked out by hand there.
-const track = { id: 'L', name: 'L', epsg: 25832, elements: [{ elementType: 0, length: 6000, bearing: 90, startNode: [500000, 5700000], endNode: [506000, 5700000] }] }
+const track = { id: 'L', name: 'L', epsg: 25832, elements: [{ elementType: 'straight', length: 6000, bearing: 90, startNode: [500000, 5700000], endNode: [506000, 5700000] }] }
 const logical = (type, fn) => [{ system: 'ks', type, function: fn, frames: [] }]
 const at = (station) => ({ anchor: 'station', trackId: 'L', station, side: 'right', direction: 'up' })
 const record = {

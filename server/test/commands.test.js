@@ -31,7 +31,7 @@ const cli = (file, args, env = {}) => execFileSync(SERVER_BIN, args, {
 })
 
 const straight = (a, b) => ({
-  elementType: 0, startNode: a, endNode: b, length: Math.hypot(b[0] - a[0], b[1] - a[1]),
+  elementType: 'straight', startNode: a, endNode: b, length: Math.hypot(b[0] - a[0], b[1] - a[1]),
   bearing: (Math.atan2(b[0] - a[0], b[1] - a[1]) * 180 / Math.PI + 360) % 360,
 })
 
@@ -296,7 +296,7 @@ describe.skipIf(!SERVER_BIN)('the step to core 4.0 (decision 0029, phases 1 and 
     const { file, made } = await twoRevisions()
     const schema = (path) => contentHash(JSON.parse(readFileSync(new URL(`../../schemas/${path}.schema.json`, import.meta.url), 'utf8')))
     // As a build of decision 0028 kept a project: kinds as numbers, short ids, a km line in WGS 84.
-    const el = { elementType: 0, startNode: [500000, 5700000], endNode: [500100, 5700000], bearing: 90, length: 100 }
+    const el = { elementType: 'straight', startNode: [500000, 5700000], endNode: [500100, 5700000], bearing: 90, length: 100 }
     const doc = {
       format: 'infra-data', version: '2.0', blobs: {},
       domains: { core: { version: '3.1', schema: schema('core/3.1'), fields: { id: made.project.id }, collections: {
@@ -448,7 +448,7 @@ function trackCloud() {
 
 const TRACK = {
   id: 't1', name: 'Gleis 1', epsg: 5678,
-  elements: [{ elementType: 0, startNode: [E0, N0], endNode: [E0, N0 + 30], bearing: 0, length: 30, cant: 0 }],
+  elements: [{ elementType: 'straight', startNode: [E0, N0], endNode: [E0, N0 + 30], bearing: 0, length: 30, cant: 0 }],
   heights: [{ station: 0, z: 100 }, { station: 30, z: 100 }],
 }
 

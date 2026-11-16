@@ -298,8 +298,8 @@ export default function ParallelLineForm({ onDone }) {
         // A parallel is a straight or an arc, exactly as the element it was
         // drawn beside is — so it is judged as whichever it turned out.
         const element = isArc
-          ? { elementType: 1, radius: signedR, cant: 0, speed, length: Number(length) }
-          : { elementType: 0, cant: 0, speed, length: Number(length) }
+          ? { elementType: 'arc', radius: signedR, cant: 0, speed, length: Number(length) }
+          : { elementType: 'straight', cant: 0, speed, length: Number(length) }
         const blocked = hasRuleError([element])
         return (
         <>

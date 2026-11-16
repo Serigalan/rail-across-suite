@@ -53,7 +53,7 @@ describe('a turnout connected to the end of another track', () => {
     const { track, anchor, preferred } = solve(tgt)
     const out = switchConnectOutcome({ track, target: tgt, anchor, solution: preferred, speed: 80 })
     expectValidTrack(out.refitted)
-    expect(out.element.elementType).toBe(1)
+    expect(out.element.elementType).toBe('arc')
     expect(out.element.speed).toBe(80)
     const end = out.element.endNode
     expect(Math.hypot(end[0] - preferred.at.port.easting, end[1] - preferred.at.port.northing)).toBeLessThan(1e-6)
@@ -108,7 +108,7 @@ describe('a turnout connected to the end of another track', () => {
     const { track, anchor, preferred } = solve(tgt)
     const out = switchConnectOutcome({ track, target: tgt, anchor, solution: preferred, speed: 80 })
     expectValidTrack(out.refitted)
-    expect(out.element.elementType).toBe(1)
+    expect(out.element.elementType).toBe('arc')
   })
 
   it('finds nothing where the end points away from the host', () => {
@@ -147,7 +147,7 @@ describe('a turnout connected with the last two elements of the track laid anew'
     expect(out.refitted.elements).toHaveLength(2)
     expect(out.judged).toEqual([0, 1])
     const [a, b] = out.refitted.elements
-    expect(a.elementType).toBe(0)
+    expect(a.elementType).toBe('straight')
     expect(b.radius).toBe(500)
     expect(b.cant).toBe(20)
     expect(a.startNode).toEqual(tgt.elements[0].startNode)
@@ -187,7 +187,7 @@ describe('a turnout connected with the last two elements of the track laid anew'
     const out = switchConnectOutcome({ track, target: tgt, anchor, solution: preferred, speed: 80 })
     expectValidTrack(out.refitted)
     const [arc, tr] = out.refitted.elements
-    expect(tr.elementType).toBe(2)
+    expect(tr.elementType).toBe('transition')
     expect(tr.length).toBeCloseTo(30, 6)
     expect(tr.r1).toBeCloseTo(arc.radius, 3)
     expect(tr.cant).toBeUndefined()

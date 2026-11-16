@@ -150,7 +150,7 @@ export default function CrossingOnTrackForm({ onCommitted, initialKind = 'crossi
   const elementsText = ahead && back && track
     ? [...back.spans, ...ahead.spans].sort((a, b) => a.elIdx - b.elIdx).map(sp => {
       const el = track.elements[sp.elIdx]
-      const kind = el.elementType === 2 ? 'table_type_transition' : el.radius ? 'table_type_arc' : 'table_type_straight'
+      const kind = el.elementType === 'transition' ? 'table_type_transition' : el.radius ? 'table_type_arc' : 'table_type_straight'
       return `${t(kind)} ${sp.length.toFixed(2)} m`
     }).join(' · ')
     : '–'

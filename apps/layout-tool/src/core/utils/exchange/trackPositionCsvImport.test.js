@@ -77,9 +77,9 @@ describe('building the tracks of one line', () => {
     expect(tracks.map(t => [t.name, t.elements.length])).toEqual([['6340.001', 3], ['6340.002', 1]])
     expect(tracks[0]).toMatchObject({ lineNumber: '6340', epsg: CSV_EPSG })
     const [s, a, c] = tracks[0].elements
-    expect(s).toMatchObject({ elementType: 0, length: 100 })
-    expect(a).toMatchObject({ elementType: 1, radius: 500 })
-    expect(c).toMatchObject({ elementType: 2, r1: 500, r2: null, transitionType: 'clothoid' })
+    expect(s).toMatchObject({ elementType: 'straight', length: 100 })
+    expect(a).toMatchObject({ elementType: 'arc', radius: 500 })
+    expect(c).toMatchObject({ elementType: 'transition', r1: 500, r2: null, transitionType: 'clothoid' })
     // The clothoid took the arc's end tangent, so it meets it without a gap.
     expect(c.bearing).toBeCloseTo(arc.endBearing, 6)
   })

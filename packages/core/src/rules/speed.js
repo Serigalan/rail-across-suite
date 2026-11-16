@@ -7,7 +7,7 @@ import { nativeRuleMaxSpeed } from './viaNative.js'
 // Speed is designed in 5 km/h steps, like cant is in 5 mm ones.
 export const SPEED_STEP = 5
 
-const isTransition = (el) => el.elementType === 2
+const isTransition = (el) => el.elementType === 'transition'
 
 /**
  * Radius (m) and signed cant (mm) that govern an element's cant physics.

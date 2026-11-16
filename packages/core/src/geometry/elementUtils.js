@@ -145,7 +145,7 @@ export function displayCoords(el, epsg, spacing = STRAIGHT_VERTEX_SPACING) {
   let plane
   if (el.radius) {
     plane = arcPlanePoints(startUtm, endUtm, el.radius, SAGITTA_DISPLAY, minSegments)
-  } else if (el.elementType === 2 && el.r1 !== undefined) {
+  } else if (el.elementType === 'transition' && el.r1 !== undefined) {
     if (!(el.length > 0) || !Number.isFinite(el.bearing)) return coords
     plane = transitionPlanePoints(startUtm, el.bearing, el.length, el.r1, el.r2 ?? null,
       el.transitionType ?? 'clothoid', SAGITTA_DISPLAY, minSegments)
@@ -249,7 +249,7 @@ export function signedRadiusFrom3PointsUtm(p1, p2, p3) {
 export function derivedEndBearing(element) {
   if (element?.bearing == null || !(element.length >= 0)) return null
   if (element.radius) return bearingAfterUtm(element.bearing, element.length, element.radius)
-  if (element.elementType === 2 && element.r1 !== undefined) {
+  if (element.elementType === 'transition' && element.r1 !== undefined) {
     return transitionBearingAtUtm(element.bearing, element.length, element.r1, element.r2 ?? null, element.transitionType)
   }
   return null
@@ -291,7 +291,7 @@ export function reverseElement(el) {
     // from its other end and bends to the other side. Both are rebuilt from
     // these scalars (project load, length/bearing edit), so leaving them as
     // they were makes the element contradict its own direction.
-    ...(el.elementType === 2 && el.r1 !== undefined
+    ...(el.elementType === 'transition' && el.r1 !== undefined
       ? { r1: flipR(el.r2 ?? null), r2: flipR(el.r1 ?? null) }
       : {}),
     // A cut transition keeps the cant ramp at its own ends (see

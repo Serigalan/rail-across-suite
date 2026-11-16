@@ -4,6 +4,7 @@
 //! The cross section of a track at a station: running plane, superstructure
 //! and the clearance contours of DB Ril 800.0130 (`crossSection/`).
 
+use rail_across_geom::kind::is_transition;
 use std::sync::LazyLock;
 
 use rail_across_geom::cant::{cant_ends, transition_cant_ends};
@@ -351,7 +352,7 @@ pub fn section_at_station(track: &Value, station: f64) -> Value {
         }
         let s = clamp(station - start, 0.0, len);
         let t = if len > 0.0 { s / len } else { 0.0 };
-        if el.get("elementType").and_then(Value::as_f64) == Some(2.0) {
+        if is_transition(el) {
             let (c1, c2) = transition_cant_ends(els, i);
             let k = |key: &str| get(el, key).map(|r| 1.0 / js_number(Some(r))).unwrap_or(0.0);
             let (k1, k2) = (k("r1"), k("r2"));

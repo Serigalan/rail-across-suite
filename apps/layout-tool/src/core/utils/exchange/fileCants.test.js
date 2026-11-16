@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import { fileCants, signedCants, withFileCants } from './fileCants'
 
-const straight = { elementType: 0 }
-const arc = (radius) => ({ elementType: 1, radius })
-const transition = (r1, r2) => ({ elementType: 2, r1, r2 })
+const straight = { elementType: 'straight' }
+const arc = (radius) => ({ elementType: 'arc', radius })
+const transition = (r1, r2) => ({ elementType: 'transition', r1, r2 })
 
 describe('the cants of an exchange file', () => {
   // W12 of the test axes: a right-hand curve ramps up to 25 mm, a straight
@@ -44,8 +44,8 @@ describe('the cants of an exchange file', () => {
   it('keep an arc an arc where its cant changes along it, the worse end as its cant', () => {
     // W34: a right-hand arc ramping to −5.696 mm (canted against its curve), and a left-hand one up to −40.
     const [right, left] = withFileCants([arc(310), arc(-400)], [{ start: 0, end: -5.696 }, { start: 30, end: 40 }])
-    expect(right).toMatchObject({ elementType: 1, cantStart: 0, cantEnd: -5.696, cant: -5.696 })
-    expect(left).toMatchObject({ elementType: 1, cantStart: -30, cantEnd: -40, cant: -30 })
+    expect(right).toMatchObject({ elementType: 'arc', cantStart: 0, cantEnd: -5.696, cant: -5.696 })
+    expect(left).toMatchObject({ elementType: 'arc', cantStart: -30, cantEnd: -40, cant: -30 })
     const flat = withFileCants([arc(-400)], [{ start: 30, end: 30 }])[0]
     expect(flat.cant).toBe(-30)
     expect(flat).not.toHaveProperty('cantStart')

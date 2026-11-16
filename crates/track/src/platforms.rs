@@ -3,6 +3,7 @@
 
 //! Platforms, and points along a track by station (`platformUtils.js`).
 
+use rail_across_geom::kind::is_transition;
 use rail_across_geom::coords::plane_to_wgs84;
 use rail_across_geom::element::{Utm, bearing_after, end_point_curved, end_point_straight, node_utm, project_on_arc};
 use rail_across_geom::precision::{SAGITTA_ELEMENT, STRAIGHT_VERTEX_SPACING};
@@ -44,7 +45,7 @@ pub fn point_on_element(el: &Value, epsg: i64, s: f64) -> Option<(Utm, f64)> {
     let start = node_utm(el.get("startNode"), first, epsg).ok()?;
     let bearing = el.get("bearing").and_then(Value::as_f64).unwrap_or(f64::NAN);
     let length = el.get("length").and_then(Value::as_f64).unwrap_or(f64::NAN);
-    if num(el, "elementType") == Some(2.0) {
+    if is_transition(el) {
         let bloss = is_bloss(text(el, "transitionType"));
         let [e, n] = transition_point_at(start.e, start.n, bearing, length, num(el, "r1"), num(el, "r2"), bloss, s);
         return Some((
@@ -103,7 +104,7 @@ fn sample_step(el: &Value, dist: f64) -> f64 {
     if let Some(r) = num(el, "radius") {
         return step_for(r - dist).unwrap_or(STRAIGHT_VERTEX_SPACING);
     }
-    if num(el, "elementType") == Some(2.0) {
+    if is_transition(el) {
         let steps: Vec<f64> = ["r1", "r2"]
             .iter()
             .filter_map(|k| num(el, k).filter(|r| r.is_finite()))
@@ -210,7 +211,7 @@ pub fn station_from_click(track: &Value, el_idx: usize, click: Utm) -> Option<f6
     let el = &elements(track)[el_idx];
     let e = epsg(track);
     let length = el.get("length").and_then(Value::as_f64).unwrap_or(f64::NAN);
-    let along = if num(el, "elementType") == Some(2.0) {
+    let along = if is_transition(el) {
         let dist_at = |s: f64| {
             point_on_element(el, e, s)
                 .map(|(p, _)| (p.e - click.e).hypot(p.n - click.n))

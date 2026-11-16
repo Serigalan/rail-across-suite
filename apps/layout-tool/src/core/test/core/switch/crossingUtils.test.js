@@ -198,7 +198,7 @@ describe('crossingRoutesFromTracks — the legs read back', () => {
     const straight = (fromUtm, toUtm, route) => {
       const v = computeStraightValuesUtm(fromUtm, toUtm)
       return {
-        elementType: 0, startNode: v.startNode, endNode: v.endNode,
+        elementType: 'straight', startNode: v.startNode, endNode: v.endNode,
         bearing: v.bearing, length: v.length,
         ...switchElementMark(identity, route),
       }
@@ -232,7 +232,7 @@ describe('crossingRoutesFromTracks — the legs read back', () => {
   it('returns null where the legs do not meet in one point', () => {
     const identity = { ...newSwitchFields('crossing'), label: 'Kr 1:9' }
     const els = (e) => [{
-      elementType: 0, startNode: [e, 0], endNode: [e, 100],
+      elementType: 'straight', startNode: [e, 0], endNode: [e, 100],
       bearing: 0, length: 100,
       ...switchElementMark(identity, 'main'),
     }]
@@ -262,7 +262,7 @@ describe('rebuildSwitchSymbol — the wedges come back', () => {
     const straight = (fromUtm, toUtm, route) => {
       const v = computeStraightValuesUtm(fromUtm, toUtm)
       return {
-        elementType: 0, startNode: v.startNode, endNode: v.endNode,
+        elementType: 'straight', startNode: v.startNode, endNode: v.endNode,
         bearing: v.bearing, length: v.length,
         ...switchElementMark(identity, route),
       }
@@ -302,7 +302,7 @@ describe('planSwitchDeletion — the crossing kinds', () => {
     const v = computeStraightValuesUtm(
       { easting: 0, northing: 0, zone: EPSG }, { easting: 0, northing: 16.727, zone: EPSG })
     return [{
-      elementType: 0, startNode: v.startNode, endNode: v.endNode,
+      elementType: 'straight', startNode: v.startNode, endNode: v.endNode,
       bearing: 0, length: v.length,
       ...switchElementMark(identity, route),
     }]
@@ -368,7 +368,7 @@ describe('planSwitchDeletion — the crossing kinds', () => {
       const v = computeStraightValuesUtm(
         { easting: 0, northing: 0, zone: EPSG }, { easting: 0, northing: 16.727, zone: EPSG })
       return {
-        elementType: 0, startNode: v.startNode, endNode: v.endNode,
+        elementType: 'straight', startNode: v.startNode, endNode: v.endNode,
         bearing: 0, length: v.length,
         ...switchElementMark(slipIdentity, route),
       }
@@ -485,7 +485,7 @@ function straightElement(startUtm, bearing, length) {
   const endUtm = endPointStraightUtm(startUtm, bearing, length)
   const v = computeStraightValuesUtm(startUtm, endUtm)
   return {
-    elementType: 0,
+    elementType: 'straight',
     startNode: v.startNode, endNode: v.endNode,
     bearing: v.bearing, length: v.length,
     geometry: { type: 'LineString', coordinates: [toWgs(startUtm), toWgs(endUtm)] },
@@ -496,7 +496,7 @@ function arcElement(startUtm, bearing, signedR, length) {
   const endUtm = endPointCurvedUtm(startUtm, bearing, length, signedR)
   const v = computeCurvedValuesUtm(startUtm, endUtm, signedR)
   return {
-    elementType: 1,
+    elementType: 'arc',
     startNode: v.startNode, endNode: v.endNode,
     bearing: v.bearing, endBearing: v.endBearing,
     length: v.length, radius: signedR,
@@ -691,7 +691,7 @@ describe('the Bogenkreuzungsweichen (AP 3.4)', () => {
       const g = computeCrossingGeometryUtm(CENTRE, BEARING, type, alpha)
       const els = crossingElements(g, identity(type))
       for (const port of ['A', 'B', 'C', 'D']) {
-        expect(els[port].elementType, `${type.label} leg ${port}`).toBe(1)
+        expect(els[port].elementType, `${type.label} leg ${port}`).toBe('arc')
         expect(els[port].radius).toBe(-500.86)
         expect(els[port].length, `${type.label} leg ${port}`).toBeCloseTo(27.6584, 6)
       }
@@ -718,12 +718,12 @@ describe('the Bogenkreuzungsweichen (AP 3.4)', () => {
 
     const g = computeCrossingGeometryUtm(CENTRE, BEARING, dbkw, alpha)
     const els = crossingElements(g, identity(dbkw))
-    expect(els.slip1.elementType).toBe(0)
+    expect(els.slip1.elementType).toBe('straight')
     expect(els.slip1.length).toBeCloseTo(55.2885, 4)
     expect(dist(els.slip1.startNode, g.portA)).toBeLessThan(1e-9)
     expect(dist(els.slip1.endNode, g.portD)).toBeLessThan(1e-9)
     // The inner arc is on its catalogue radius, turning the way the legs do.
-    expect(els.slip2.elementType).toBe(1)
+    expect(els.slip2.elementType).toBe('arc')
     expect(els.slip2.radius).toBe(-249.763)
     expect(dist(els.slip2.startNode, g.portB)).toBeLessThan(1e-9)
     expect(dist(els.slip2.endNode, g.portC)).toBeLessThan(1e-9)

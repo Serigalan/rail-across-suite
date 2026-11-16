@@ -95,7 +95,7 @@ export function elementsPath(elements, epsg) {
     if (!Array.isArray(el.startNode) || !Array.isArray(el.endNode)) continue
     const start = { easting: el.startNode[0], northing: el.startNode[1], zone: epsg }
     const end   = { easting: el.endNode[0],   northing: el.endNode[1],   zone: epsg }
-    const piece = elementPath(start, end, el.elementType === 2 ? null : el.radius).path
+    const piece = elementPath(start, end, el.elementType === 'transition' ? null : el.radius).path
     path.push(...(path.length ? piece.slice(1) : piece))
   }
   return epsg && path.length >= 2 ? { epsg, path } : null

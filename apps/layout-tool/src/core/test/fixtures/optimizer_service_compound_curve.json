@@ -6,7 +6,7 @@
       "epsg": 25832,
       "elements": [
         {
-          "elementType": 0,
+          "elementType": "straight",
           "epsg": 25832,
           "startNode": [
             600000.0,
@@ -21,7 +21,7 @@
           "speed": 100
         },
         {
-          "elementType": 2,
+          "elementType": "transition",
           "transitionType": "clothoid",
           "r1": null,
           "r2": 900.0,
@@ -40,7 +40,7 @@
           "speed": 100
         },
         {
-          "elementType": 1,
+          "elementType": "arc",
           "epsg": 25832,
           "radius": 900.0,
           "startNode": [
@@ -58,7 +58,7 @@
           "cant": 60.0
         },
         {
-          "elementType": 2,
+          "elementType": "transition",
           "transitionType": "clothoid",
           "r1": 900.0,
           "r2": 600.0,
@@ -77,7 +77,7 @@
           "speed": 100
         },
         {
-          "elementType": 1,
+          "elementType": "arc",
           "epsg": 25832,
           "radius": 600.0,
           "startNode": [
@@ -95,7 +95,7 @@
           "cant": 100.0
         },
         {
-          "elementType": 2,
+          "elementType": "transition",
           "transitionType": "clothoid",
           "r1": 600.0,
           "r2": null,
@@ -114,7 +114,7 @@
           "speed": 100
         },
         {
-          "elementType": 0,
+          "elementType": "straight",
           "epsg": 25832,
           "startNode": [
             600584.4157950411,
@@ -137,7 +137,7 @@
   "response": {
     "elements": [
       {
-        "elementType": 0,
+        "elementType": "straight",
         "epsg": 25832,
         "startNode": [
           600000.0,
@@ -152,7 +152,7 @@
         "speed": 100
       },
       {
-        "elementType": 2,
+        "elementType": "transition",
         "transitionType": "clothoid",
         "r1": null,
         "r2": 791.1064634692532,
@@ -171,7 +171,7 @@
         "speed": 110
       },
       {
-        "elementType": 1,
+        "elementType": "arc",
         "epsg": 25832,
         "radius": 791.1064634692532,
         "startNode": [
@@ -189,7 +189,7 @@
         "cant": 90.0
       },
       {
-        "elementType": 2,
+        "elementType": "transition",
         "transitionType": "clothoid",
         "r1": 791.1064634692532,
         "r2": 624.1238062826144,
@@ -208,7 +208,7 @@
         "speed": 110
       },
       {
-        "elementType": 1,
+        "elementType": "arc",
         "epsg": 25832,
         "radius": 624.1238062826144,
         "startNode": [
@@ -226,7 +226,7 @@
         "cant": 100.0
       },
       {
-        "elementType": 2,
+        "elementType": "transition",
         "transitionType": "clothoid",
         "r1": 624.1238062826144,
         "r2": null,
@@ -245,7 +245,7 @@
         "speed": 110
       },
       {
-        "elementType": 0,
+        "elementType": "straight",
         "epsg": 25832,
         "startNode": [
           600599.7685742256,

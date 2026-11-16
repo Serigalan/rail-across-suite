@@ -39,7 +39,7 @@ function straightElement(startUtm, bearing, length) {
   const endUtm = endPointStraightUtm(startUtm, bearing, length)
   const v = computeStraightValuesUtm(startUtm, endUtm)
   return {
-    elementType: 0,
+    elementType: 'straight',
     startNode: v.startNode, endNode: v.endNode,
     bearing: v.bearing, length: v.length, speed: 100,
     geometry: { type: 'LineString', coordinates: [toWgs(startUtm), toWgs(endUtm)] },
@@ -143,7 +143,7 @@ describe('a turnout attached at a track end', () => {
 
 describe('the through route a junction switch needs beside it', () => {
   const mark = { switchBranch: true, switchRoute: 'main', switchId: 'x' }
-  const isPlainStraight = (el) => el.elementType !== 2 && el.radius == null
+  const isPlainStraight = (el) => el.elementType !== 'transition' && el.radius == null
 
   it('carves where there is straight enough ahead', () => {
     const track = lineTrack(1, 20, 200)

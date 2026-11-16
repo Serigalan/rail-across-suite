@@ -3,9 +3,9 @@ import { governing, maxSpeeds, ruleMaxSpeed, ruleMaxSpeedsOf, SPEED_STEP } from 
 import { maxSpeedFor } from './cant.js'
 import { checkTrack, elementVerdict } from './alignmentCheck.js'
 
-const straight = (extra = {}) => ({ elementType: 0, length: 100, ...extra })
-const arc = (radius, cant, extra = {}) => ({ elementType: 1, length: 100, radius, cant, ...extra })
-const clothoid = (r1, r2, extra = {}) => ({ elementType: 2, length: 60, r1, r2, ...extra })
+const straight = (extra = {}) => ({ elementType: 'straight', length: 100, ...extra })
+const arc = (radius, cant, extra = {}) => ({ elementType: 'arc', length: 100, radius, cant, ...extra })
+const clothoid = (r1, r2, extra = {}) => ({ elementType: 'transition', length: 60, r1, r2, ...extra })
 
 describe('what governs an element', () => {
   it('is the arc itself, with its signed radius and cant', () => {

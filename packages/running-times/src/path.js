@@ -165,12 +165,12 @@ function elementSpans(track) {
   for (const el of track.elements ?? []) {
     const len = el.length ?? 0
     const speed = el.speed > 0 ? el.speed : null
-    if (len > 0 && el.elementType === 2) {
+    if (len > 0 && el.elementType === 'transition') {
       const n = Math.ceil(len / TRANSITION_PIECE)
       for (let i = 0; i < n; i++) {
         out.push({ from: s + len * i / n, to: s + len * (i + 1) / n, speed, radius: transitionRadius(el, len * (i + 0.5) / n) })
       }
-    } else if (len > 0) out.push({ from: s, to: s + len, speed, radius: el.elementType === 1 ? el.radius : null })
+    } else if (len > 0) out.push({ from: s, to: s + len, speed, radius: el.elementType === 'arc' ? el.radius : null })
     s += len
   }
   return out

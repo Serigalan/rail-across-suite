@@ -200,9 +200,9 @@ describe('solveHeightPoint — a gradient point from two of its values', () => {
 
 describe('jointHeightUpdates', () => {
   // Two tracks end to end at (100, 0): a's END is b's BEGIN.
-  const a = { id: 'a', epsg: 5684, elements: [{ elementType: 0, startNode: [0, 0], endNode: [100, 0], bearing: 90, length: 100 }],
+  const a = { id: 'a', epsg: 5684, elements: [{ elementType: 'straight', startNode: [0, 0], endNode: [100, 0], bearing: 90, length: 100 }],
     heights: [{ station: 0, z: 10 }, { station: 50, z: 10.5 }, { station: 100, z: 11 }] }
-  const b = { id: 'b', epsg: 5684, elements: [{ elementType: 0, startNode: [100, 0], endNode: [200, 0], bearing: 90, length: 100 }],
+  const b = { id: 'b', epsg: 5684, elements: [{ elementType: 'straight', startNode: [100, 0], endNode: [200, 0], bearing: 90, length: 100 }],
     heights: [{ station: 0, z: 11 }, { station: 100, z: 12 }] }
 
   it('gives a reason to the point and to every point joined to it, and takes it away again', () => {

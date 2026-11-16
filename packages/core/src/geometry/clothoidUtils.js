@@ -287,7 +287,7 @@ function endCant(el, end) {
  */
 export function cantEnds(elements, i) {
   const el = elements[i]
-  if (el.elementType === 2) return transitionCantEnds(elements, i)
+  if (el.elementType === 'transition') return transitionCantEnds(elements, i)
   return { start: endCant(el, 'start'), end: endCant(el, 'end') }
 }
 
@@ -322,7 +322,7 @@ export function withCantRamp(el, start, end) {
 function storedCants(el) {
   const { cant: _c, ...rest } = el
   const hasStart = el.cantStart != null, hasEnd = el.cantEnd != null
-  if (el.elementType === 2) return hasStart || hasEnd ? rest : el
+  if (el.elementType === 'transition') return hasStart || hasEnd ? rest : el
   if (!hasStart || !hasEnd) return el
   const { cantStart, cantEnd, ...bare } = rest
   if (Math.abs(cantStart - cantEnd) > SAME_CANT) return rest
@@ -338,7 +338,7 @@ function storedCants(el) {
  */
 export function storedTrackCants(elements = []) {
   return elements.map((el, i) => {
-    if (el.elementType !== 2) return storedCants(el)
+    if (el.elementType !== 'transition') return storedCants(el)
     const { cant: _c, ...rest } = el
     const ends = transitionCantEnds(elements, i)
     return { ...rest, cantStart: ends.start || 0, cantEnd: ends.end || 0 }
@@ -353,7 +353,7 @@ export function storedTrackCants(elements = []) {
  * an end that differs stays its own.
  */
 export function loadedTrackCants(elements = []) {
-  return followingCants(elements.map(el => (el.elementType === 2
+  return followingCants(elements.map(el => (el.elementType === 'transition'
     ? { ...el, cantStart: el.cantStart ?? 0, cantEnd: el.cantEnd ?? 0 }
     : loadedCants(el))))
 }
@@ -362,7 +362,7 @@ export function loadedTrackCants(elements = []) {
 function followingCants(elements) {
   const out = elements.slice()
   out.forEach((el, i) => {
-    if (el.elementType !== 2) return
+    if (el.elementType !== 'transition') return
     let next = el
     if (next.cantStart != null && Math.abs(next.cantStart - endCant(out[i - 1], 'end')) <= SAME_CANT) {
       const { cantStart: _s, ...rest } = next
@@ -383,11 +383,11 @@ function followingCants(elements) {
  * `cant`? What the element table shows and lets be typed for it (Entscheidung
  * 373): one or the other, never both.
  */
-export const hasCantEnds = (el) => el?.elementType === 2 || el?.cantStart != null || el?.cantEnd != null
+export const hasCantEnds = (el) => el?.elementType === 'transition' || el?.cantStart != null || el?.cantEnd != null
 
 /** An element with its cant at `end` ('start' or 'end') set to `value`: one with ends as a ramp, the other its one cant. */
 function withEndCant(el, end, value) {
-  if (el.elementType === 2) return { ...el, [end === 'start' ? 'cantStart' : 'cantEnd']: value }
+  if (el.elementType === 'transition') return { ...el, [end === 'start' ? 'cantStart' : 'cantEnd']: value }
   if (!hasCantEnds(el)) return { ...el, cant: value }
   const start = end === 'start' ? value : (el.cantStart ?? el.cant ?? 0)
   const last = end === 'end' ? value : (el.cantEnd ?? el.cant ?? 0)
@@ -435,7 +435,7 @@ export function withCantsOver(elements, from, to, ends) {
   for (let i = from; i <= to; i++) {
     const [start, end] = ends[i - from]
     const el = out[i]
-    out[i] = el.elementType === 2 ? { ...el, cantStart: start, cantEnd: end } : withCantRamp(el, start, end)
+    out[i] = el.elementType === 'transition' ? { ...el, cantStart: start, cantEnd: end } : withCantRamp(el, start, end)
   }
   carryCant(out, from - 1, -1, ends[0][0])
   carryCant(out, to + 1, 1, ends[ends.length - 1][1])
@@ -477,6 +477,6 @@ export function withCantEdit(elements, i, key, value) {
  * least (withCantRamp).
  */
 function loadedCants(el) {
-  if (el.elementType === 2 || el.cant != null || el.cantStart == null || el.cantEnd == null) return el
+  if (el.elementType === 'transition' || el.cant != null || el.cantStart == null || el.cantEnd == null) return el
   return withCantRamp(el, el.cantStart, el.cantEnd)
 }

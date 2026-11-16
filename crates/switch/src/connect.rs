@@ -4,6 +4,7 @@
 //! Connecting a turnout's branch, or a crossing's cross leg, to an open
 //! track end (`connectToTrack.js`).
 
+use rail_across_geom::kind::{ARC, STRAIGHT, TRANSITION, is_arc, is_transition, kind_of};
 use std::cell::RefCell;
 use std::collections::HashMap;
 
@@ -133,7 +134,7 @@ pub fn connection_anchor(
     }
     if own
         .iter()
-        .any(|el| f(el, "elementType") == Some(2.0) && get(el, "transitionType").and_then(Value::as_str).unwrap_or("clothoid") != "clothoid")
+        .any(|el| is_transition(el) && get(el, "transitionType").and_then(Value::as_str).unwrap_or("clothoid") != "clothoid")
     {
         return Err("connect_end_bloss");
     }
@@ -143,11 +144,7 @@ pub fn connection_anchor(
         own.iter().rev().map(reverse_element).collect()
     };
     let run = &runs[0];
-    let kind = match f(run, "elementType") {
-        Some(2.0) => "transition",
-        Some(1.0) => "arc",
-        _ => "straight",
-    };
+    let kind = kind_of(run).unwrap_or(STRAIGHT);
     let epsg = js_number(track.get("epsg")) as i64;
     let neighbour_idx = if at_end {
         el_idx.checked_sub(1)
@@ -161,13 +158,13 @@ pub fn connection_anchor(
         Some(n) => (f(n, "bearing").unwrap_or(f64::NAN) + 180.0) % 360.0,
     };
     let before: Option<Value> = neighbour.map(|n| if at_end { n.clone() } else { reverse_element(n) });
-    let end_radius = |e: &Value| match f(e, "elementType") {
-        Some(2.0) => f(e, "r2"),
-        Some(1.0) => e.get("radius").and_then(Value::as_f64),
+    let end_radius = |e: &Value| match kind_of(e) {
+        Some(TRANSITION) => f(e, "r2"),
+        Some(ARC) => e.get("radius").and_then(Value::as_f64),
         _ => None,
     };
     let end_cant = |e: &Value| {
-        if f(e, "elementType") == Some(2.0) {
+        if is_transition(e) {
             f(e, "cantEnd").unwrap_or(0.0)
         } else {
             f(e, "cant").unwrap_or(0.0)
@@ -182,7 +179,7 @@ pub fn connection_anchor(
     };
     let k0 = curvature_of(match &before {
         Some(b) => end_radius(b),
-        None if f(run, "elementType") == Some(2.0) => f(run, "r1"),
+        None if is_transition(run) => f(run, "r1"),
         None => f(run, "radius"),
     });
     Ok(Anchor {
@@ -202,7 +199,7 @@ pub fn connection_anchor(
         r0: before.as_ref().and_then(end_radius),
         cant0: before.as_ref().map(end_cant).unwrap_or(0.0),
         cant_on: before.as_ref().and_then(|b| {
-            if f(b, "elementType") == Some(2.0) {
+            if is_transition(b) {
                 f(b, "cantEnd")
             } else {
                 Some(f(b, "cant").unwrap_or(0.0))
@@ -432,9 +429,9 @@ pub fn connection_roots(a: &Anchor, port_at: &dyn Fn(f64) -> Option<PortAt>, fro
 }
 
 fn spec_type(el: &Value) -> MidKind {
-    match f(el, "elementType") {
-        Some(2.0) => MidKind::Transition,
-        Some(1.0) => MidKind::Arc,
+    match kind_of(el) {
+        Some(TRANSITION) => MidKind::Transition,
+        Some(ARC) => MidKind::Arc,
         _ => MidKind::Straight,
     }
 }
@@ -523,7 +520,7 @@ pub fn solve_end_chain(
         .runs
         .iter()
         .map(|el| {
-            curvature_of(if f(el, "elementType") == Some(1.0) {
+            curvature_of(if is_arc(el) {
                 el.get("radius").and_then(Value::as_f64)
             } else {
                 None
@@ -619,7 +616,7 @@ fn refitted_elements(track: &Value, a: &Anchor, fit: &Fit, port: Utm) -> Vec<Val
     let cant_at = |u: f64| if a.endpoint == "END" { u } else { -u };
     if let Some(lead) = fit.lead {
         let plain = without_cants(&keep);
-        let arc_cant = if f(old, "elementType") == Some(2.0) {
+        let arc_cant = if is_transition(old) {
             f(old, "cantEnd").unwrap_or(0.0)
         } else {
             f(old, "cant").unwrap_or(0.0)
@@ -668,8 +665,8 @@ fn chain_elements(a: &Anchor, pieces: &[Route], port: Utm) -> Vec<Value> {
         } else {
             switch_chain_point_utm(start, bearing, &[*piece], None).unwrap_or(start)
         };
-        let is_transition = piece.r1 != piece.r2;
-        let el = if is_transition {
+        let transition = piece.r1 != piece.r2;
+        let el = if transition {
             transition_element(start, bearing, piece.length, piece.r1, piece.r2, &clothoid(), Some(end), &none).map(|t| t.0)
         } else if let Some(r) = piece.r1.filter(|r| *r != 0.0) {
             arc_element(start, end, r, &none)
@@ -679,16 +676,16 @@ fn chain_elements(a: &Anchor, pieces: &[Route], port: Utm) -> Vec<Value> {
         .unwrap_or(Value::Null);
         let keep = keep_of(old);
         let plain = without_cants(&keep);
-        let kind = if is_transition {
-            2.0
+        let kind = if transition {
+            TRANSITION
         } else if piece.r1.is_some_and(|r| r != 0.0) {
-            1.0
+            ARC
         } else {
-            0.0
+            STRAIGHT
         };
-        let fields = if kind == f(old, "elementType").unwrap_or(0.0) {
+        let fields = if kind == kind_of(old).unwrap_or(STRAIGHT) {
             keep
-        } else if is_transition {
+        } else if transition {
             let mut p = plain;
             if keep.contains_key("cantStart") {
                 p.insert("cantStart".into(), keep["cantStart"].clone());
@@ -701,7 +698,7 @@ fn chain_elements(a: &Anchor, pieces: &[Route], port: Utm) -> Vec<Value> {
             p
         };
         let made = merged(el, &fields);
-        cant_in = if f(&made, "elementType") == Some(2.0) {
+        cant_in = if is_transition(&made) {
             f(&made, "cantEnd").unwrap_or(cant_in)
         } else {
             f(&made, "cantEnd").or_else(|| f(&made, "cant")).unwrap_or(0.0)

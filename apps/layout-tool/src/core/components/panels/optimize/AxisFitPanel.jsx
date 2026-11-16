@@ -71,8 +71,8 @@ const mm = (m) => (m == null ? '–' : (m * 1000).toFixed(1))
 
 /** What one element of the fit is called in the report. */
 function elementLabel(t, r) {
-  if (r.elementType === 0) return t('align_el_straight')
-  if (r.elementType === 1) return `${t('align_el_arc')} R ${fmt(r.radius, 1)}`
+  if (r.elementType === 'straight') return t('align_el_straight')
+  if (r.elementType === 'arc') return `${t('align_el_arc')} R ${fmt(r.radius, 1)}`
   return `${t('align_el_transition')} ${r.r1 ? fmt(r.r1, 0) : '∞'} → ${r.r2 ? fmt(r.r2, 0) : '∞'}`
 }
 
@@ -225,7 +225,7 @@ export default function AxisFitPanel({ backButton }) {
   const sourceHeights = source?.points.some(p => Number.isFinite(p.z))
   const sourceCant = source?.points.some(p => Number.isFinite(p.cant))
   /** The cant of the arc of a curve of the answer. */
-  const curveCant = (c) => report.find(r => r.elementType === 1 && r.index >= c.elements?.[0] && r.index <= c.elements?.[1])?.cant
+  const curveCant = (c) => report.find(r => r.elementType === 'arc' && r.index >= c.elements?.[0] && r.index <= c.elements?.[1])?.cant
   const canCommit = !!data?.elements && !running && answer?.key === requestKey
 
   return (

@@ -3,6 +3,7 @@
 
 //! `validateProject`, `newFindings` and `overlappingTracks`.
 
+use rail_across_geom::kind::is_transition;
 use std::collections::{HashMap, HashSet};
 
 use rail_across_geom::chain::{epsg_mismatches, node_gaps, untrue_lengths};
@@ -409,7 +410,7 @@ fn sample_plane(track: &Value) -> Vec<Pt> {
         };
         let n = 1usize.max((l / SAMPLE_STEP).ceil() as usize);
         let f = |k: &str| get(el, k).and_then(Value::as_f64);
-        let run = (el.get("elementType").and_then(Value::as_f64) == Some(2.0)).then(|| {
+        let run = (is_transition(el)).then(|| {
             let s = |i: usize| start.get(i).and_then(Value::as_f64).unwrap_or(f64::NAN);
             sample_transition(
                 s(0),

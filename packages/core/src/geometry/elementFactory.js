@@ -23,7 +23,7 @@ const line = (coordinates) => ({ type: 'LineString', coordinates })
 export function straightElement(startUtm, endUtm, extra = {}) {
   const v = computeStraightValuesUtm(startUtm, endUtm)
   return {
-    elementType: 0,
+    elementType: 'straight',
     startNode: v.startNode,
     endNode: v.endNode,
     bearing: v.bearing,
@@ -43,7 +43,7 @@ export function arcElement(startUtm, endUtm, signedR, extra = {}) {
   const v = computeCurvedValuesUtm(startUtm, endUtm, signedR)
   const chord = [wgs(startUtm), wgs(endUtm)]
   return {
-    elementType: 1,
+    elementType: 'arc',
     startNode: v.startNode,
     endNode: v.endNode,
     bearing: v.bearing,
@@ -74,7 +74,7 @@ export function transitionElement(startUtm, bearing, length, r1, r2, { transitio
   const end = endUtm ?? cl.endUtm
   const endWgs = endUtm ? wgs(endUtm) : null
   const element = {
-    elementType: 2,
+    elementType: 'transition',
     transitionType,
     r1,
     r2,

@@ -114,10 +114,10 @@ describe('buildProviAxis — the elements between the main points', () => {
     expect(built.errors).toEqual([])
     expectNodesJoin(built.elements)
     expect(near(built.elements.at(-1).endNode, lastHp(records))).toBeLessThan(0.001)
-    const canted = built.elements.filter(e => e.elementType === 1 && e.cant)
+    const canted = built.elements.filter(e => e.elementType === 'arc' && e.cant)
     expect(canted.length).toBeGreaterThan(20)
     for (const el of canted) expect(Math.sign(el.cant)).toBe(Math.sign(el.radius))
-    expect(built.elements.filter(e => e.elementType === 2 && e.cant)).toEqual([])
+    expect(built.elements.filter(e => e.elementType === 'transition' && e.cant)).toEqual([])
   })
 
   it('splits a reverse curve at its inflection', () => {
@@ -132,8 +132,8 @@ describe('buildProviAxis — the elements between the main points', () => {
     )).records
     const built = buildProviAxis('63401L', records, 5684)
     expect(built.errors).toEqual([])
-    expect(built.elements.map(e => (e.elementType === 2 ? [2, e.r1, e.r2] : [e.elementType, e.radius])))
-      .toEqual([[1, 1200], [2, 1200, null], [2, null, -1200]])
+    expect(built.elements.map(e => (e.elementType === 'transition' ? [e.elementType, e.r1, e.r2] : [e.elementType, e.radius])))
+      .toEqual([['arc', 1200], ['transition', 1200, null], ['transition', null, -1200]])
     expect(built.elements[0].cant).toBe(30)
     expectNodesJoin(built.elements)
     expect(near(built.elements.at(-1).endNode, [4432309.798606, 5648864.893777])).toBeLessThan(0.001)
@@ -148,7 +148,7 @@ describe('buildProviAxis — the elements between the main points', () => {
     )).records
     const built = buildProviAxis('6001B', records, 5683)
     expect(built.elements).toHaveLength(1)
-    expect(built.elements[0]).toMatchObject({ elementType: 2, transitionType: 'bloss', r1: null, r2: 752 })
+    expect(built.elements[0]).toMatchObject({ elementType: 'transition', transitionType: 'bloss', r1: null, r2: 752 })
     expect(near(built.elements[0].endNode, [3566321.006738, 5644849.281125])).toBeLessThan(0.001)
   })
 
@@ -167,7 +167,7 @@ describe('buildProviAxis — the elements between the main points', () => {
     expect(built.errors).toEqual([])
     // The first part is a fifth of a millimetre and carries no geometry.
     expect(built.elements.map(e => [e.elementType, e.r1, e.r2]))
-      .toEqual([[2, 1346.183508, 1609.793197], [2, -4283.961138, -5112.664464]])
+      .toEqual([['transition', 1346.183508, 1609.793197], ['transition', -4283.961138, -5112.664464]])
     expect(near(built.elements.at(-1).endNode, [3597720.306928, 5648061.830083])).toBeLessThan(0.001)
     expect(built.units[0]).toMatchObject({ name: '2034', host: '63402L', radius: 1200, slope: 18.5 })
   })

@@ -5,6 +5,7 @@
 //! and the buffer stops and boundaries as the map draws them
 //! (`bufferStopGeometry.js`).
 
+use rail_across_geom::kind::is_transition;
 use std::collections::HashMap;
 
 use rail_across_geom::cant::{cant_ends, transition_cant_ends, with_cant_edit};
@@ -51,7 +52,7 @@ pub fn curvature_band(els: &[Value]) -> Vec<Value> {
     let mut out = Vec::new();
     for (i, from, to) in element_spans(els) {
         let el = &els[i];
-        if num(el, "elementType") == Some(2.0) {
+        if is_transition(el) {
             let (k1, k2) = (k(num(el, "r1")), k(num(el, "r2")));
             if text(el, "transitionType") == Some("bloss") {
                 for n in 0..=BLOSS_STEPS {
@@ -221,7 +222,7 @@ pub fn with_band_value(els: &[Value], indices: &[usize], band: &str, value: Opti
         let mut out = els.to_vec();
         for &i in indices {
             let Some(el) = out.get(i).cloned() else { continue };
-            if num(&el, "elementType") == Some(2.0) {
+            if is_transition(&el) {
                 continue;
             }
             let flat = Value::Object(crate::util::without(&el, &["cantStart", "cantEnd"]));
@@ -268,7 +269,7 @@ pub fn with_cant_ends(els: &[Value], indices: &[usize], ends: &Value) -> Vec<Val
     let mut out = els.to_vec();
     for &i in indices {
         let Some(el) = out.get(i).cloned() else { continue };
-        if num(&el, "elementType") != Some(2.0) {
+        if !is_transition(&el) {
             continue;
         }
         for (key, field) in [("start", "cantStart"), ("end", "cantEnd")] {

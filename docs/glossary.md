@@ -23,9 +23,9 @@ the Layout-Tool's documentation does.
 | Lageplan | plan; horizontal alignment | `elements` | |
 | *Höhenplan* | vertical alignment | `heights` | the tangent polygon with vertical curves |
 | Element | element | `elements[]` | |
-| Gerade | straight | `elementType: 0` | |
-| Bogen, Kreisbogen | arc, circular curve | `elementType: 1` | |
-| Übergangsbogen | transition (curve) | `elementType: 2` | |
+| Gerade | straight | `elementType: 'straight'` | |
+| Bogen, Kreisbogen | arc, circular curve | `elementType: 'arc'` | |
+| Übergangsbogen | transition (curve) | `elementType: 'transition'` | |
 | Klothoide / Bloss-Kurve | clothoid / Bloss curve | `transitionType` | |
 | Radius | radius | `radius`, `r1`, `r2` | signed, + = right-hand curve |
 | Richtungswinkel | bearing | `bearing` | degrees from grid north, clockwise |
@@ -59,7 +59,7 @@ the Layout-Tool's documentation does.
 
 | German | English | In the model | Note |
 |---|---|---|---|
-| Weiche | turnout | `kind: "turnout"` | ports A, B1, B2 |
+| Weiche | switch, turnout | `kind: "switch"` | ports A (toe), B1 (branch), B2 (main track), as OSRD writes a point switch |
 | Kreuzung | crossing | `kind: "crossing"` | |
 | Einfache / Doppelte Kreuzungsweiche | single / double slip | `single_slip` / `double_slip` | |
 | Weichenanfang (WA) | toe of the turnout | port `A` | |

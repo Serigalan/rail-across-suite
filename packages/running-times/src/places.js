@@ -45,7 +45,7 @@ function stationsOf(track) {
   const set = new Set([0, length])
   let s = 0
   for (const el of track.elements ?? []) {
-    const n = el.elementType === 0 ? 1 : Math.max(1, Math.ceil(el.length / STEP))
+    const n = el.elementType === 'straight' ? 1 : Math.max(1, Math.ceil(el.length / STEP))
     for (let i = 0; i <= n; i++) set.add(Math.min(length, s + el.length * i / n))
     s += el.length
   }

@@ -11,7 +11,7 @@ const B = { easting: 500300, northing: 5600400, zone: EPSG }
 describe('the element factory (R4.1)', () => {
   it('makes a straight with the plane data and the geometry a reload would give it', () => {
     const el = straightElement(A, B, { speed: 100 })
-    expect(el).toMatchObject({ elementType: 0, length: 500, speed: 100, startNode: [500000, 5600000], endNode: [500300, 5600400] })
+    expect(el).toMatchObject({ elementType: 'straight', length: 500, speed: 100, startNode: [500000, 5600000], endNode: [500300, 5600400] })
     const again = reconstructElements([el], EPSG)[0]
     expect(again.geometry.coordinates).toEqual(el.geometry.coordinates)
   })

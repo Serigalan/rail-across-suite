@@ -4,6 +4,7 @@
 //! Editing a switch connection: taken apart in memory and laid again by the
 //! connection's own construction (`crossoverEdit.js`).
 
+use rail_across_geom::kind::{kind_of, TRANSITION};
 use std::collections::HashSet;
 
 use rail_across_geom::element::Utm;
@@ -230,8 +231,8 @@ pub fn edit_start(found: &Value, apart: &Value) -> Value {
         let closes = truthy(r.get("valid")) || truthy(r.get("overridable"));
         return json!({ "shift": number(if closes { settled.shift } else { 0.0 }), "mids": defaults(), "seed": null, "closes": closes });
     }
-    let kind = |el: &Value| match el.get("elementType").and_then(Value::as_f64) {
-        Some(2.0) => "transition",
+    let kind = |el: &Value| match kind_of(el) {
+        Some(TRANSITION) => "transition",
         _ if get(el, "radius").is_none() => "straight",
         _ => "arc",
     };

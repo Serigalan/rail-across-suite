@@ -2,9 +2,9 @@ import { describe, it, expect } from 'vitest'
 import { cantEnds, hasCantEnds, loadedTrackCants, storedTrackCants, withCantEdit } from './clothoidUtils.js'
 
 // The cant typed in the element table and carried over the joints (Entscheidung 373).
-const straight = (more = {}) => ({ elementType: 0, length: 100, ...more })
-const arc = (radius, cant, more = {}) => ({ elementType: 1, length: 100, radius, cant, ...more })
-const clothoid = (r1, r2, more = {}) => ({ elementType: 2, length: 60, r1, r2, ...more })
+const straight = (more = {}) => ({ elementType: 'straight', length: 100, ...more })
+const arc = (radius, cant, more = {}) => ({ elementType: 'arc', length: 100, radius, cant, ...more })
+const clothoid = (r1, r2, more = {}) => ({ elementType: 'transition', length: 60, r1, r2, ...more })
 const ends = (els) => els.map((el, i) => { const e = cantEnds(els, i); return [e.start, e.end] })
 
 describe('the cant an element states', () => {

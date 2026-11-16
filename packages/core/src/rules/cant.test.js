@@ -140,15 +140,15 @@ describe('switchCantError — what stands between a cant and being built', () =>
 describe('worstCantOf', () => {
   it('reads the one value of an arc, and both ends of a cant ramp', () => {
     expect(worstCantOf({ cant: -95 })).toBe(95)
-    expect(worstCantOf({ elementType: 2, cantStart: 40, cantEnd: -130 })).toBe(130)
-    expect(worstCantOf({ elementType: 2, cantStart: 0, cantEnd: 60 })).toBe(60)
+    expect(worstCantOf({ elementType: 'transition', cantStart: 40, cantEnd: -130 })).toBe(130)
+    expect(worstCantOf({ elementType: 'transition', cantStart: 0, cantEnd: 60 })).toBe(60)
     expect(worstCantOf({})).toBe(0)
   })
 
   // A turnout laid into a cant ramp runs on the whole ramp, not on its value at
   // the toe — so the far end has to be able to fail the check.
   it('lets a ramp exceed the switch limit at its far end', () => {
-    const el = { switchBranch: true, elementType: 2, cantStart: 60, cantEnd: 130 }
+    const el = { switchBranch: true, elementType: 'transition', cantStart: 60, cantEnd: 130 }
     expect(cantExceedsLimit(el)).toBe(true)
     expect(cantExceedsLimit({ ...el, cantEnd: 100 })).toBe(false)
   })

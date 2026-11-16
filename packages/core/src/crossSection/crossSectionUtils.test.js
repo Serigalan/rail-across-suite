@@ -97,7 +97,7 @@ describe('sectionAtStation', () => {
     elements: [
       { length: 100 },                                        // straight, no cant
       { length: 40, cant: 80, radius: -500 },                 // arc, cant throughout
-      { elementType: 2, cantStart: 0, cantEnd: 120, r1: null, r2: 300, length: 60 },
+      { elementType: 'transition', cantStart: 0, cantEnd: 120, r1: null, r2: 300, length: 60 },
     ],
   }
 
@@ -138,7 +138,7 @@ describe('sectionAtStation', () => {
     const joined = {
       elements: [
         { length: 100, cant: 40, radius: -400 },
-        { elementType: 2, r1: -400, r2: 500, length: 60 },
+        { elementType: 'transition', r1: -400, r2: 500, length: 60 },
         { length: 50, cant: 120, radius: 500 },
       ],
     }
@@ -152,7 +152,7 @@ describe('sectionAtStation', () => {
     const cut = {
       elements: [
         { length: 100, cant: 40, radius: -400 },
-        { elementType: 2, r1: -400, r2: 500, length: 60, cantStart: 0, cantEnd: 90 },
+        { elementType: 'transition', r1: -400, r2: 500, length: 60, cantStart: 0, cantEnd: 90 },
       ],
     }
     expect(sectionAtStation(cut, 100).cant).toBeCloseTo(0, 9)

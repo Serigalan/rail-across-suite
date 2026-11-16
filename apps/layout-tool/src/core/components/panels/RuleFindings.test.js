@@ -10,7 +10,7 @@ import RuleFindings from './RuleFindings'
  */
 const render = (element) => renderToStaticMarkup(inGerman(createElement(RuleFindings, { element })))
 
-const arc = (props) => ({ elementType: 1, radius: 1000, cant: 65, speed: 100, length: 200, ...props })
+const arc = (props) => ({ elementType: 'arc', radius: 1000, cant: 65, speed: 100, length: 200, ...props })
 
 describe('RuleFindings', () => {
   it('says so when the element keeps every rule it was measured against', () => {
@@ -35,8 +35,8 @@ describe('RuleFindings', () => {
   })
 
   it('judges a straight by the rules a straight has', () => {
-    expect(render({ elementType: 0, speed: 100, length: 10, cant: 0 })).toContain('LP.EL.01')
-    expect(render({ elementType: 0, speed: 100, length: 100, cant: 0 })).toContain(t('table_rules_ok'))
+    expect(render({ elementType: 'straight', speed: 100, length: 10, cant: 0 })).toContain('LP.EL.01')
+    expect(render({ elementType: 'straight', speed: 100, length: 100, cant: 0 })).toContain(t('table_rules_ok'))
   })
 
   it('shows nothing at all while there is no design speed to judge by', () => {
@@ -50,7 +50,7 @@ describe('RuleFindings', () => {
 })
 
 describe('a whole chain at once', () => {
-  const short = (speed) => ({ elementType: 0, speed, length: 3, cant: 0 })
+  const short = (speed) => ({ elementType: 'straight', speed, length: 3, cant: 0 })
 
   it('reports a rule once, with the number of places it was found', () => {
     const html = renderToStaticMarkup(createElement(RuleFindings, {
@@ -63,7 +63,7 @@ describe('a whole chain at once', () => {
   it('leaves the count off where a rule was found in one place only', () => {
     const html = renderToStaticMarkup(createElement(RuleFindings, {
       // An arc beside it: a straight next to it would run on as one straight (LP.EL.01 reads the run).
-      t, elements: [short(100), { elementType: 1, speed: 100, length: 100, radius: 5000, cant: 0 }],
+      t, elements: [short(100), { elementType: 'arc', speed: 100, length: 100, radius: 5000, cant: 0 }],
     }))
     expect(html).toContain('LP.EL.01')
     expect(html).not.toContain('×)')
@@ -74,8 +74,8 @@ describe('a whole chain at once', () => {
     const html = renderToStaticMarkup(createElement(RuleFindings, {
       t,
       elements: [
-        { elementType: 0, speed: 100, length: 100, cant: 0 },
-        { elementType: 1, speed: 100, length: 100, radius: 1000, cant: 65 },
+        { elementType: 'straight', speed: 100, length: 100, cant: 0 },
+        { elementType: 'arc', speed: 100, length: 100, radius: 1000, cant: 65 },
       ],
     }))
     expect(html).toContain('LP.KS.01')

@@ -54,7 +54,7 @@ describe('the stretch', () => {
   it('starts with the fastest element chosen and the form its transitions had', () => {
     const fast = makeTrack(fixture.elements.map((el, i) => (i === 3 ? { ...el, speed: 120 } : el)))
     expect(stretchDefaults(fast, reconnectRange(fast, 2, 4))).toEqual({ speed: 120, transitionType: 'clothoid' })
-    const bloss = makeTrack(fixture.elements.map(el => (el.elementType === 2 ? { ...el, transitionType: 'bloss' } : el)))
+    const bloss = makeTrack(fixture.elements.map(el => (el.elementType === 'transition' ? { ...el, transitionType: 'bloss' } : el)))
     expect(stretchDefaults(bloss, reconnectRange(bloss, 3, 3)).transitionType).toBe('bloss')
   })
 })
@@ -140,15 +140,15 @@ describe('the track written back', () => {
     expect(out.id).toBe('t')
     expect(out.elements[0]).toMatchObject({ length: track.elements[0].length, speed: 80 })
     expect(out.elements.at(-1).length).toBeCloseTo(track.elements.at(-1).length, 9)
-    const arc = out.elements.find(el => el.elementType === 1)
+    const arc = out.elements.find(el => el.elementType === 'arc')
     expect(arc.speed).toBe(100)
     expect(Math.abs(arc.cant)).toBe(sol.reconnect.cant)
     expect(Math.abs(arc.radius)).toBe(sol.reconnect.radius)
     // The neighbours re-shaped keep their own speed.
-    expect(out.elements[1]).toMatchObject({ elementType: 0, speed: 80 })
+    expect(out.elements[1]).toMatchObject({ elementType: 'straight', speed: 80 })
     // …down to the panel's, where it is lower: judged and built at it.
     const { track: slow } = buildReconnect({ track, range: r, solution: sol, speed: 60 })
-    expect(slow.elements[1]).toMatchObject({ elementType: 0, speed: 60 })
+    expect(slow.elements[1]).toMatchObject({ elementType: 'straight', speed: 60 })
     expect(slow.elements[0].speed).toBe(80)
     // Starts and ends where the old one did.
     expect(out.elements[0].startNode).toEqual(track.elements[0].startNode)

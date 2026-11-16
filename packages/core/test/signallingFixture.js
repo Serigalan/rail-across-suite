@@ -110,7 +110,7 @@ export function ksStoppingPlaces({ operationalPointId = 'op1' } = {}) {
 
 /** The core the station stands on, as far as the check reads it: two tracks, a switch, a station, its stopping places. */
 export function ksStationCore() {
-  const track = (id, length) => ({ id, epsg: 25832, elements: [{ elementType: 0, length }] })
+  const track = (id, length) => ({ id, epsg: 25832, elements: [{ elementType: 'straight', length }] })
   return {
     fields: { id: 'p' },
     collections: {

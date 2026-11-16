@@ -4,6 +4,7 @@
 //! The S-curve between two line tracks: solving the connection for a shift,
 //! the range of shifts it stands over, and the commit (`sCurve.js`).
 
+use rail_across_geom::kind::is_transition;
 use rail_across_geom::cant::cant_ends;
 use rail_across_geom::coords::{plane_to_wgs84, transform_grid_bearing, wgs84_to_plane};
 use rail_across_geom::element::{Utm, node_utm};
@@ -39,10 +40,6 @@ fn curvature(r: Option<f64>) -> f64 {
         Some(r) if r != 0.0 && !r.is_nan() => 1.0 / r,
         _ => 0.0,
     }
-}
-
-fn is_transition(el: &Value) -> bool {
-    el.get("elementType").and_then(Value::as_f64) == Some(2.0)
 }
 
 fn same_geometry(a: Option<&Value>, b: &Value) -> bool {

@@ -52,7 +52,7 @@ export function offsetTrackElements(elements, dist, epsg) {
       if ((el.radius >= 0 ? 1 : -1) * signedR < 0.5) return null
       const arc = arcElement(start, end, signedR, { speed: el.speed, cant: el.cant })
       out.push({ ...arc })
-    } else if (el.elementType === 2) {
+    } else if (el.elementType === 'transition') {
       // ── Clothoid → re-fitted clothoid, endpoints snapped to the parallel ──
       const r1 = el.r1 != null ? el.r1 - dist : null
       const r2 = el.r2 != null ? el.r2 - dist : null

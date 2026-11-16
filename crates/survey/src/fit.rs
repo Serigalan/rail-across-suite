@@ -5,6 +5,7 @@
 //! and the track built from the answer (`alignmentFit.js`). The fit itself is
 //! the optimizer's.
 
+use rail_across_geom::kind::{kind_of, ARC, TRANSITION};
 use std::sync::LazyLock;
 
 use rail_across_geom::coords::crs_name;
@@ -189,15 +190,15 @@ pub fn fitted_curvature(answer: &Value) -> Vec<Value> {
         .iter()
         .enumerate()
         .map(|(i, el)| {
-            let t = el.get("elementType").and_then(Value::as_f64);
+            let t = kind_of(el);
             let k1 = match t {
-                Some(1.0) => curvature_of(el.get("radius")),
-                Some(2.0) => curvature_of(el.get("r1")),
+                Some(ARC) => curvature_of(el.get("radius")),
+                Some(TRANSITION) => curvature_of(el.get("r1")),
                 _ => 0.0,
             };
             let k2 = match t {
-                Some(1.0) => k1,
-                Some(2.0) => curvature_of(el.get("r2")),
+                Some(ARC) => k1,
+                Some(TRANSITION) => curvature_of(el.get("r2")),
                 _ => 0.0,
             };
             let mut m = Map::new();

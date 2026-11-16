@@ -30,7 +30,7 @@ import {
 const MAX_BEZIER_ANGLE = Math.PI / 6      // 30°
 /** Vertex spacing of a transition curve [m]; its curvature has no closed form. */
 const TRANSITION_STEP = 1
-export const isTransition = (el) => el.elementType === 2
+export const isTransition = (el) => el.elementType === 'transition'
 export const isArc        = (el) => el.radius != null
 
 /** Unit vector of a compass bearing in the plane: [east, north]. */

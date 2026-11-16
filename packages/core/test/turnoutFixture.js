@@ -16,9 +16,9 @@ const WE = endPointStraightUtm(START, 90, 30)
 export const mainTrack = (cant = 0, heights = null) => ({
   id: 'm', epsg: 5684, trackType: 'line',
   elements: [
-    { elementType: 0, startNode: node(START), endNode: node(WE),
+    { elementType: 'straight', startNode: node(START), endNode: node(WE),
       bearing: 90, length: 30, speed: 80, cant, switchId: 's1', switchRoute: 'main' },
-    { elementType: 0, startNode: node(WE), endNode: node(endPointStraightUtm(WE, 90, 30)),
+    { elementType: 'straight', startNode: node(WE), endNode: node(endPointStraightUtm(WE, 90, 30)),
       bearing: 90, length: 30, speed: 80, cant },
   ],
   ...(heights ? { heights } : {}),
@@ -29,9 +29,9 @@ const turned = (L) => 90 - (L / R) * 180 / Math.PI
 export const branchTrack = (heights = null) => ({
   id: 'b', epsg: 5684, trackType: 'line',
   elements: [
-    { elementType: 1, startNode: node(START), endNode: node(branchEnd), bearing: 90, endBearing: turned(30),
+    { elementType: 'arc', startNode: node(START), endNode: node(branchEnd), bearing: 90, endBearing: turned(30),
       radius: -R, length: 30, speed: 80, switchId: 's1', switchRoute: 'branch' },
-    { elementType: 1, startNode: node(branchEnd), endNode: node(endPointCurvedUtm(branchEnd, turned(30), 30, -R)),
+    { elementType: 'arc', startNode: node(branchEnd), endNode: node(endPointCurvedUtm(branchEnd, turned(30), 30, -R)),
       bearing: turned(30), endBearing: turned(60), radius: -R, length: 30, speed: 80 },
   ],
   ...(heights ? { heights } : {}),

@@ -21,7 +21,7 @@ const START = { easting: 4461843.4865, northing: 5334777.1542, zone: FROM }
 /** Where an element actually ends, walked from its own start node. */
 function walk(el, epsg) {
   const start = { easting: el.startNode[0], northing: el.startNode[1], zone: epsg }
-  if (el.elementType === 2 && el.r1 !== undefined) {
+  if (el.elementType === 'transition' && el.r1 !== undefined) {
     return computeClothoidUtm(start, el.bearing, el.length, el.r1, el.r2 ?? null, 1, el.transitionType).endUtm
   }
   if (el.radius) return endPointCurvedUtm(start, el.bearing, el.length, el.radius)
@@ -37,7 +37,7 @@ const straight = (start, bearing, length) => {
   const end = endPointStraightUtm(start, bearing, length)
   return {
     el: {
-      elementType: 0, bearing, length, endBearing: bearing,
+      elementType: 'straight', bearing, length, endBearing: bearing,
       startNode: [start.easting, start.northing], endNode: [end.easting, end.northing],
     },
     end,
@@ -49,7 +49,7 @@ const arc = (start, bearing, length, radius) => {
   const v = computeCurvedValuesUtm(start, end, radius)
   return {
     el: {
-      elementType: 1, bearing, length, radius, endBearing: v.endBearing,
+      elementType: 'arc', bearing, length, radius, endBearing: v.endBearing,
       startNode: [start.easting, start.northing], endNode: [v.endNode[0], v.endNode[1]],
     },
     end: { easting: v.endNode[0], northing: v.endNode[1], zone: start.zone },
@@ -60,7 +60,7 @@ const transition = (start, bearing, length, r1, r2) => {
   const cl = computeClothoidUtm(start, bearing, length, r1, r2, 1, 'clothoid')
   return {
     el: {
-      elementType: 2, transitionType: 'clothoid', bearing, length, r1, r2,
+      elementType: 'transition', transitionType: 'clothoid', bearing, length, r1, r2,
       endBearing: cl.endBearing,
       startNode: [start.easting, start.northing], endNode: [cl.endUtm.easting, cl.endUtm.northing],
     },

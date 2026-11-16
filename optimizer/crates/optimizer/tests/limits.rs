@@ -138,7 +138,7 @@ fn a_ramp_on_an_arc_reads_its_cant_from_its_ends() {
     // (decision 369): the check reads its one cant from them as
     // geometry.withCantRamp does — the end that helps the curve least.
     let ramp = Element {
-        element_type: Some(1),
+        element_type: Some("arc".into()),
         radius: Some(-950.0),
         length: Some(12.0),
         speed: Some(80.0),

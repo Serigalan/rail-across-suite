@@ -23,9 +23,9 @@ import { CANT_DEFICIENCY_COEFF } from './rulebookDefaults.js'
 const PHYSICS = { u0_factor: CANT_DEFICIENCY_COEFF }
 
 // The catalogue's element types, by the number the store keeps.
-const TYPE_BY_ELEMENT_TYPE = { 0: 'straight', 1: 'circular_arc', 2: 'transition_curve' }
+const TYPE_BY_ELEMENT_TYPE = { straight: 'straight', arc: 'circular_arc', transition: 'transition_curve' }
 
-const isTransition = (el) => el.elementType === 2
+const isTransition = (el) => el.elementType === 'transition'
 
 /** The catalogue's form id of a transition — everything that is not Bloß is a clothoid. */
 export const formOf = (el) =>
@@ -156,7 +156,7 @@ export function elementScope(elements, i, context = null) {
     // The mean ramp gradient 1:m. With no cant change there is no ramp, and
     // the two rules that read it say so themselves (`condition: delta_u > 0`).
     'physics.ramp_slope': deltaU > 0 ? (1000 * (el.length ?? 0)) / deltaU : Infinity,
-    'model.reverse_curve_straight': el.elementType === 0 && !!prev && !!next
+    'model.reverse_curve_straight': el.elementType === 'straight' && !!prev && !!next
       && Math.abs(curvatureAtEnd(prev)) > CURVATURE_EPS
       && Math.abs(curvatureAtStart(next)) > CURVATURE_EPS
       && Math.sign(curvatureAtEnd(prev)) !== Math.sign(curvatureAtStart(next)),

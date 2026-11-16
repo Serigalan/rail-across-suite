@@ -10,13 +10,13 @@ describe('what the element table shows', () => {
 
   it('gives the comparison radius of a joint, and none where the curvature runs on', () => {
     // R 500 into R 1000 the same way: 1/r_w = 1/500 − 1/1000, so 1000 m.
-    const arcs = [{ elementType: 1, radius: 500 }, { elementType: 1, radius: 1000 }]
+    const arcs = [{ elementType: 'arc', radius: 500 }, { elementType: 'arc', radius: 1000 }]
     expect(comparisonRadiusText(boundaryScope(arcs, 0)['physics.r_w'], 'de')).toBe('1000')
     // Against each other: 1/500 + 1/1000, so 333.333 m.
-    const reverse = [{ elementType: 1, radius: 500 }, { elementType: 1, radius: -1000 }]
+    const reverse = [{ elementType: 'arc', radius: 500 }, { elementType: 'arc', radius: -1000 }]
     expect(comparisonRadiusText(boundaryScope(reverse, 0)['physics.r_w'], 'de')).toBe('333,333')
     // A clothoid out of the arc runs on from its radius.
-    const ramp = [{ elementType: 1, radius: 500 }, { elementType: 2, r1: 500, r2: null }]
+    const ramp = [{ elementType: 'arc', radius: 500 }, { elementType: 'transition', r1: 500, r2: null }]
     expect(comparisonRadiusText(boundaryScope(ramp, 0)['physics.r_w'], 'de')).toBe('–')
   })
 })

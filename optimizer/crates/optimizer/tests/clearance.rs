@@ -160,13 +160,13 @@ fn two_straights_kept_off_the_inner_track() {
     let (r, u) = (c["radius"].as_f64().unwrap(), c["cant"].as_f64().unwrap());
     assert!(c["kept"] == true && u == auto_cant(80.0, r, &m));
     let straight = Element {
-        element_type: Some(0),
+        element_type: Some("straight".into()),
         cant: Some(0.0),
         speed: Some(80.0),
         ..Element::default()
     };
     let curve = Element {
-        element_type: Some(1),
+        element_type: Some("arc".into()),
         radius: Some(r),
         cant: Some(u),
         speed: Some(80.0),
@@ -182,7 +182,7 @@ fn two_straights_kept_off_the_inner_track() {
         .as_array()
         .unwrap()
         .iter()
-        .find(|el| el["role"] == "new" && el["elementType"] == 1)
+        .find(|el| el["role"] == "new" && el["elementType"] == "arc")
         .unwrap();
     assert_eq!(arc["cant"].as_f64().unwrap().abs(), u);
     assert!(took < 5.0, "{took}");

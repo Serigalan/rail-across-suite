@@ -6,7 +6,7 @@ import { ruleById, evaluateRule } from '@rail-across/core/src/rules/ruleCatalogu
 const line = (heights, { speed = 100, length = 2000, ...rest } = {}) => ({
   id: 't1',
   trackType: 'line',
-  elements: [{ elementType: 0, length, speed }],
+  elements: [{ elementType: 'straight', length, speed }],
   heights,
   ...rest,
 })
@@ -100,9 +100,9 @@ describe('HP.AR · rounding of a gradient change', () => {
     // The turnouts' own branches on it do not count: 30 m of track, 10 of them between the switches.
     const crossover = connecting(4.5, null, { length: 30 })
     crossover.elements = [
-      { elementType: 0, length: 10, speed: 100, switchId: 'w1' },
-      { elementType: 0, length: 10, speed: 100 },
-      { elementType: 0, length: 10, speed: 100, switchId: 'w2' },
+      { elementType: 'straight', length: 10, speed: 100, switchId: 'w1' },
+      { elementType: 'straight', length: 10, speed: 100 },
+      { elementType: 'straight', length: 10, speed: 100, switchId: 'w2' },
     ]
     const own = [{ ...switches[0], switchId: 'w1' }, { ...switches[1], switchId: 'w2' }]
     expect(sev(curveOf(crossover, { switches: own }), 'HP.AR.01')).toBe('ok')
@@ -170,9 +170,9 @@ describe('HP.AR · rounding of a gradient change', () => {
     const ramped = (rv) => ({
       id: 't1', trackType: 'line',
       elements: [
-        { elementType: 0, length: 900, speed: 100 },
-        { elementType: 2, length: 200, speed: 100, r1: null, r2: 1000, cantStart: 0, cantEnd: 60 },
-        { elementType: 1, length: 900, speed: 100, radius: 1000, cant: 60 },
+        { elementType: 'straight', length: 900, speed: 100 },
+        { elementType: 'transition', length: 200, speed: 100, r1: null, r2: 1000, cantStart: 0, cantEnd: 60 },
+        { elementType: 'arc', length: 900, speed: 100, radius: 1000, cant: 60 },
       ],
       heights: [{ station: 0, z: 100 }, { station: 1000, z: 110, ...(rv ? { rv } : {}) }, { station: 2000, z: 100 }],
     })
@@ -186,9 +186,9 @@ describe('HP.AR · rounding of a gradient change', () => {
     const inSwitch = (heights) => ({
       id: 't1', trackType: 'line',
       elements: [
-        { elementType: 0, length: 900, speed: 100 },
-        { elementType: 0, length: 200, speed: 100, switchId: 's1' },
-        { elementType: 0, length: 900, speed: 100 },
+        { elementType: 'straight', length: 900, speed: 100 },
+        { elementType: 'straight', length: 200, speed: 100, switchId: 's1' },
+        { elementType: 'straight', length: 900, speed: 100 },
       ],
       heights,
     })
@@ -256,7 +256,7 @@ describe('the rounding the rules ask for', () => {
     // At 980 m the track runs at 100 km/h; the 4000 m curve reaches 40 m on
     // either side, onto the 200 km/h element from 990 m.
     const track = change(10, 10, { at: 980 })
-    track.elements = [{ elementType: 0, length: 990, speed: 100 }, { elementType: 0, length: 1010, speed: 200 }]
+    track.elements = [{ elementType: 'straight', length: 990, speed: 100 }, { elementType: 'straight', length: 1010, speed: 200 }]
     expect(regularVerticalRadius(track, 1)).toEqual({ rv: 16000, la: null, speed: 200 })
   })
 

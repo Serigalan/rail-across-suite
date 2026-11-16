@@ -44,7 +44,7 @@ export function expectLengthsTrue(elements, tol = NODE_TOL) {
   for (const { index, length, expected } of untrueLengths(elements, tol)) {
     const el = elements[index]
     if (el.radius != null) expect(length, `arc length of element ${index}`).toBeCloseTo(expected, 3)
-    else if (el.elementType === 2) expect(length, `transition ${index} is at least its chord`).toBeGreaterThanOrEqual(expected - tol)
+    else if (el.elementType === 'transition') expect(length, `transition ${index} is at least its chord`).toBeGreaterThanOrEqual(expected - tol)
     else expect(length, `straight length of element ${index}`).toBeCloseTo(expected, 6)
   }
 }

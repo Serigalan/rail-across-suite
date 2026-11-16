@@ -7,7 +7,7 @@ import {
 } from './stations.js'
 import { derivedId } from '@rail-across/core/document'
 
-const el = { elementType: 0, startNode: [500000, 5700000], endNode: [500200, 5700000], bearing: 90, length: 200 }
+const el = { elementType: 'straight', startNode: [500000, 5700000], endNode: [500200, 5700000], bearing: 90, length: 200 }
 const on = (station) => ({ anchor: 'station', trackId: 't1', station, side: 'right', direction: 'up' })
 const ks = (fn) => [{ system: 'ks', type: 'multiSection', function: fn, frames: [{ kind: 'screen', aspects: [{ aspect: 'Hp_0' }, { aspect: 'Ks_1' }] }] }]
 

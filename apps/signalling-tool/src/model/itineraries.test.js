@@ -7,7 +7,7 @@ const t = (k) => k
 // A station X with a passing loop between two turnouts, a line to the next station Y:
 //   a (0–200) ─ w1 ─┬─ m (0–400) ─┬─ w2 ─ b (0–300)
 //                   └─ l (0–420) ─┘
-const el = (length) => ({ elementType: 0, startNode: [500000, 5700000], endNode: [500000 + length, 5700000], bearing: 90, length })
+const el = (length) => ({ elementType: 'straight', startNode: [500000, 5700000], endNode: [500000 + length, 5700000], bearing: 90, length })
 const track = (id, length) => ({ id, name: id, epsg: 25832, elements: [el(length)] })
 const port = (trackId, endpoint) => ({ trackId, endpoint })
 const net = {

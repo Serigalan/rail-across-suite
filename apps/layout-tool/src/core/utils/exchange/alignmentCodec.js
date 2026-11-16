@@ -32,7 +32,7 @@ export function totalLength(track) {
 }
 
 function elementType(el) {
-  if (el.elementType === 2) return el.transitionType === 'bloss' ? 'bloss' : 'clothoid'
+  if (el.elementType === 'transition') return el.transitionType === 'bloss' ? 'bloss' : 'clothoid'
   return el.radius != null ? 'curve' : 'straight'
 }
 

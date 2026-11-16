@@ -5,6 +5,7 @@
 //! track, height points with their vertical curves, splitting and joining
 //! them, the tracks joined at an end and the joint groups of height points.
 
+use rail_across_geom::kind::is_transition;
 use std::collections::{HashMap, HashSet, VecDeque};
 
 use rail_across_geom::coords::plane_to_wgs84;
@@ -58,7 +59,7 @@ pub fn point_at_station_utm(el: &Value, s: f64, epsg: i64) -> Option<Utm> {
         return Some(start);
     }
     let bearing = el.get("bearing").and_then(Value::as_f64).unwrap_or(f64::NAN);
-    if num(el, "elementType") == Some(2.0) && has(el, "r1") {
+    if is_transition(el) && has(el, "r1") {
         let [e, n] = transition_point_at(
             start.e,
             start.n,

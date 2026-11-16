@@ -4,6 +4,7 @@
 //! Switch routes and chains: a route or a chain of pieces as it runs away
 //! from the point it starts at (`route.js`).
 
+use rail_across_geom::kind::is_transition;
 use rail_across_geom::coords::plane_to_wgs84;
 use rail_across_geom::element::{Utm, bearing_after};
 use rail_across_geom::precision::SWITCH_ROUTE_STEP;
@@ -190,7 +191,7 @@ pub fn switch_stem_route(sw: &Value, length: f64) -> Route {
 /// The route an element describes (`switchElementRoute`).
 pub fn switch_element_route(el: &Value) -> Route {
     let length = fv(el, "length").unwrap_or(f64::NAN);
-    if fv(el, "elementType") == Some(2.0) {
+    if is_transition(el) {
         let r1 = as_radius(fv(el, "r1"));
         return Route {
             length,

@@ -12,13 +12,13 @@ import { runWith } from './engine.js'
 // 120 km/h on T1, 80 on T2, none on T4.
 const E0 = 500000, N0 = 5600000
 const straight = (x0, y0, x1, y1, extra = {}) => ({
-  elementType: 0, startNode: [x0, y0], endNode: [x1, y1], length: Math.hypot(x1 - x0, y1 - y0),
+  elementType: 'straight', startNode: [x0, y0], endNode: [x1, y1], length: Math.hypot(x1 - x0, y1 - y0),
   bearing: (Math.atan2(x1 - x0, y1 - y0) * 180 / Math.PI + 360) % 360, ...extra,
 })
 const record = {
   tracks: [
     { id: 'T1', epsg: 25832, elements: [straight(E0, N0, E0 + 1000, N0, { speed: 120 })], heights: [{ station: 0, z: 100 }, { station: 1000, z: 110 }] },
-    { id: 'T2', epsg: 25832, elements: [straight(E0 + 1000, N0, E0 + 1500, N0, { speed: 80 }), { ...straight(E0 + 1500, N0, E0 + 2000, N0, { speed: 80 }), elementType: 1, radius: -1000 }] },
+    { id: 'T2', epsg: 25832, elements: [straight(E0 + 1000, N0, E0 + 1500, N0, { speed: 80 }), { ...straight(E0 + 1500, N0, E0 + 2000, N0, { speed: 80 }), elementType: 'arc', radius: -1000 }] },
     { id: 'T3', epsg: 25832, elements: [straight(E0 + 1000, N0, E0 + 1600, N0 + 300)] },
     { id: 'T4', epsg: 25832, elements: [straight(E0 + 2000, N0, E0 + 3000, N0)] },
   ],
@@ -93,8 +93,8 @@ describe('what the physics needs of it', () => {
   it('has the resistance of a transition rising piece by piece to its arc\'s', () => {
     // 120 m of clothoid from straight into a curve of 600 m, the arc after it, both down the track
     const track = { id: 'K', epsg: 25832, elements: [
-      { ...straight(E0, N0, E0 + 120, N0), elementType: 2, transitionType: 'clothoid', r1: null, r2: 600 },
-      { ...straight(E0 + 120, N0, E0 + 220, N0), elementType: 1, radius: 600 },
+      { ...straight(E0, N0, E0 + 120, N0), elementType: 'transition', transitionType: 'clothoid', r1: null, r2: 600 },
+      { ...straight(E0 + 120, N0, E0 + 220, N0), elementType: 'arc', radius: 600 },
     ] }
     const net = { tracks: [track] }
     const up = pathProperties(net, [{ trackId: 'K', start: 0, end: 220 }]).gradients

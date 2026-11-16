@@ -21,7 +21,7 @@ function straight(id, easting, northing, bearing, length) {
   return {
     id, name: id, epsg: UTM,
     elements: [{
-      elementType: 0, length, bearing, endBearing: bearing,
+      elementType: 'straight', length, bearing, endBearing: bearing,
       startNode: [start.easting, start.northing],
       endNode:   [end.easting, end.northing],
       geometry: { type: 'LineString', coordinates: [

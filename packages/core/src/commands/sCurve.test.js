@@ -375,7 +375,7 @@ describe('a turnout of the connection laid into a transition curve', () => {
   const S = P(500000, 5600000)
   const straight = (start, bearing, length) => {
     const end = utmEndRoute(start, bearing, length, null)
-    return { elementType: 0, startNode: [start.easting, start.northing], endNode: [end.easting, end.northing],
+    return { elementType: 'straight', startNode: [start.easting, start.northing], endNode: [end.easting, end.northing],
       bearing, length, speed: 80 }
   }
   const S2 = P(500000, 5600004.5)
@@ -384,7 +384,7 @@ describe('a turnout of the connection laid into a transition curve', () => {
   const project = hydrateProjects(JSON.parse(JSON.stringify(dehydrateProjects([{ id: 'p', switches: [], tracks: [
     { id: 't1', name: 'line.001', epsg: EPSG, elements: [straight(S, 90, 400)] },
     { id: 't2', name: 'line.002', epsg: EPSG, elements: [straight(S2, 90, 150), {
-      elementType: 2, transitionType: 'clothoid', r1: null, r2: R,
+      elementType: 'transition', transitionType: 'clothoid', r1: null, r2: R,
       startNode: [T2.easting, T2.northing], endNode: [c.endUtm.easting, c.endUtm.northing],
       bearing: 90, endBearing: c.endBearing, length: 100, speed: 80,
     }] },
@@ -396,7 +396,7 @@ describe('a turnout of the connection laid into a transition curve', () => {
   const commit = buildSCurve({ result: res, picks, tracks: project.tracks, switches: [], speed })
   // Track 2 as the commit parts it, in its own order.
   const line2 = commit.remap.find(r => r.oldId === 't2').newId.map(id => commit.addTracks.find(tr => tr.id === id))
-  const transitions = line2.flatMap(tr => tr.elements.filter(el => el.elementType === 2))
+  const transitions = line2.flatMap(tr => tr.elements.filter(el => el.elementType === 'transition'))
 
   it('parts the clothoid at the toe into clothoids of its own, radii running on', () => {
     expect(res.valid).toBe(true)
@@ -454,7 +454,7 @@ describe('a turnout of the connection across an element change (Entscheidung 366
     expect(res.chain1[0].r2).toBeCloseTo(500, 6)
     expect(res.chain1[1]).toMatchObject({ r1: 500, r2: 500 })
     const branch = commit.addTracks[commit.addTracks.length - 1].elements.filter(el => el.switchId)
-    expect(branch.map(el => el.elementType)).toEqual([2, 1, 1])
+    expect(branch.map(el => el.elementType)).toEqual(['transition', 'arc', 'arc'])
     expect(branch[1].radius).toBe(500)
   })
 
@@ -462,7 +462,7 @@ describe('a turnout of the connection across an element change (Entscheidung 366
     expect(commit.carveError).toBeUndefined()
     const line1 = commit.remap.find(r => r.oldId === 't1').newId.map(id => commit.addTracks.find(tr => tr.id === id))
     const route = line1.flatMap(tr => tr.elements.filter(el => el.switchId))
-    expect(route.map(el => el.elementType)).toEqual([2, 0])
+    expect(route.map(el => el.elementType)).toEqual(['transition', 'straight'])
     expect(route.reduce((sum, el) => sum + el.length, 0)).toBeCloseTo(switchStraightLength(form), 6)
     for (const tr of commit.addTracks) {
       expectNodesJoin(tr.elements)
@@ -555,7 +555,7 @@ describe('a connection only the rulebook refuses (Entscheidung 361)', () => {
 describe('a connection of two turnouts of different forms (Entscheidung 0018)', () => {
   const straight = (start, bearing, length) => {
     const end = utmEndRoute(start, bearing, length, null)
-    return { elementType: 0, startNode: [start.easting, start.northing], endNode: [end.easting, end.northing],
+    return { elementType: 'straight', startNode: [start.easting, start.northing], endNode: [end.easting, end.northing],
       bearing, length, speed: 100 }
   }
   const project = hydrateProjects(JSON.parse(JSON.stringify(dehydrateProjects([{ id: 'p', switches: [], tracks: [

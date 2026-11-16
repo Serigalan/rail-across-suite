@@ -115,6 +115,10 @@ if [ "$build" = 1 ]; then
   if ! (cd apps/capacity-sim && node ../../packages/running-times/scripts/sim.mjs); then
     echo "WARNING: no simulation module — the Kapazitäts-Sim cannot run trains" >&2
   fi
+  # The Baubetriebs-Sim runs them in a construction scenario (decision 0030).
+  if ! (cd apps/construction-sim && node ../../packages/running-times/scripts/sim.mjs); then
+    echo "WARNING: no simulation module — the Baubetriebs-Sim cannot run trains" >&2
+  fi
 
   step "Crossover module (crossover/)"
   # The search of the Layout-Tool's extended switch connection in Rust, built

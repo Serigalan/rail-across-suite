@@ -2,7 +2,7 @@
   "name": "rail-across-construction-sim",
   "private": true,
   "version": "0.1.0",
-  "description": "The Construction-Sim of Rail-Across-Suite: a project's net construction stage by construction stage — what is in service on each day, what comes and what goes (decision 0027; roadmap, phase 5)",
+  "description": "The Construction-Sim of Rail-Across-Suite: a project's net construction stage by construction stage — what is in service on each day, what comes and what goes (decision 0027; roadmap, phase 5) —, and its timetable run in construction scenarios with stretches of track closed for a while, trains taken out and diverted (decision 0030)",
   "license": "LGPL-3.0-only",
   "type": "module",
   "engines": {
@@ -12,13 +12,17 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "sim": "node ../../packages/running-times/scripts/sim.mjs",
     "test": "vitest run",
     "lint": "eslint ."
   },
   "dependencies": {
     "@rail-across/basemaps": "*",
     "@rail-across/core": "*",
+    "@rail-across/running-times": "*",
+    "@rail-across/timetables": "*",
     "@rail-across/ui": "*",
+    "@rail-across/vehicles": "*",
     "@rail-across/working-copy": "*",
     "maplibre-gl": "^5.21.0",
     "react": "^19.2.4",

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { simulate } from '@rail-across/running-times'
 import { occupancy } from './occupancy.js'
+import { scenarioRuns } from './scenario.js'
 import { runKey, runTrain } from './timetable.js'
 
 /** Runs kept for a net: beyond them the oldest are made again when asked for. */
@@ -74,4 +75,55 @@ export function useRuns(record, stations, trains, catalogue, dispatch) {
   }, [record, stations, trains, entries, vehicles, settled])
 
   return runs
+}
+
+/** Whether every train of a timetable has its regular run as useRuns makes it: its blocks known, or why it cannot run. */
+export const runsSettled = (trains, runs) => trains.every(t => {
+  const r = runs.get(t.id)
+  return r && (r.blocks || r.problems || r.error || r.failedAt != null)
+})
+
+/**
+ * The runs of a timetable in a construction scenario on a day (decision 0030;
+ * the Baubetriebs-Sim's), made in the background once the regular runs are
+ * settled (`regular`, useRuns's on the same net): { runs, busy } — `runs` as
+ * scenarioRuns gives them, or null until made. A train run on the net with
+ * what is closed for it is kept by what it is run with, so that changing the
+ * scenario runs again only what it changes.
+ */
+export function useScenarioRuns(record, stations, trains, scenario, day, catalogue, dispatch, regular) {
+  const [made, setMade] = useState({ key: null, runs: null })
+  const kept = useRef({ record: null, byKey: new Map() })
+  const vehicles = catalogue.loading ? null : catalogue.entries.map(e => `${e.key}@${e.version ?? 0}`).join('|')
+  const entries = useMemo(() => catalogue.entries, [vehicles])
+  const settled = runsSettled(trains, regular)
+  const key = settled && vehicles != null && scenario && day ? JSON.stringify([scenario, day, dispatch, vehicles]) : null
+
+  useEffect(() => {
+    if (key == null) return undefined
+    if (kept.current.record !== record) kept.current = { record, byKey: new Map() }
+    const byKey = kept.current.byKey
+    const entryOf = (train) => entries.find(e => e.key === train.vehicle) ?? null
+    let gone = false
+    const run = async (rec, train, holds = [], routes = []) => {
+      if (gone) throw new Error('gone')
+      const k = JSON.stringify([runKey(train, entryOf(train)), rec.closed ?? [], holds, routes])
+      if (byKey.has(k)) return byKey.get(k)
+      let out
+      try {
+        out = { key: k, ...await runTrain(rec, stations, train, entryOf(train)?.vehicle ?? null, simulate, holds, routes) }
+      } catch (err) {
+        out = { key: k, error: { code: err.code ?? 'internal', message: String(err.message ?? err) } }
+      }
+      if (byKey.size >= KEPT) byKey.delete(byKey.keys().next().value)
+      byKey.set(k, out)
+      return out
+    }
+    scenarioRuns(record, trains, scenario, day, { run, regular, dispatch })
+      .then(runs => { if (!gone) setMade({ key, runs }) }, err => { if (!gone) throw err })
+    return () => { gone = true }
+    // the scenario, the day and the dispatch as they read (`key`), not as the objects they are on each render
+  }, [key, record, stations, trains, entries, regular])
+
+  return { runs: made.key === key ? made.runs : null, busy: key != null && made.key !== key }
 }

@@ -6,9 +6,10 @@ import {
 import { useTexts } from './i18n.js'
 import { projectsUrl } from './suite.js'
 import PlanView from './PlanView.jsx'
+import Scenarios from './Scenarios.jsx'
 import { netLines, switchPoint } from './model/net.js'
 import { STATE_COLORS, stageLabel, timeline, trackState } from './model/stages.js'
-import { HomeIcon, LogoIcon, SettingsIcon, StagesIcon } from './icons.jsx'
+import { HomeIcon, LogoIcon, ScenarioIcon, SettingsIcon, StagesIcon } from './icons.jsx'
 
 /**
  * The Construction-Sim (decision 0027; roadmap, phase 5): a variant's net
@@ -46,6 +47,22 @@ export default function Editor({ project, variant, revision, record, local }) {
     .map(sw => ({ at: switchPoint(sw, record.tracks), color: '#7048e8' }))
     .filter(p => p.at), [record, stage])
 
+  const rail = (
+    <Rail label={t('tool')}
+      brand={<RailBrand href={projectsUrl()} label={t('to_projects')} name={t('tool')}><LogoIcon /></RailBrand>}
+      top={<>
+        <RailButton icon={<StagesIcon />} label={t('section_stages')} pressed={section === 'stages'} onClick={() => setSection('stages')} />
+        <RailButton icon={<ScenarioIcon />} label={t('section_scenarios')} pressed={section === 'scenarios'} onClick={() => setSection('scenarios')} />
+      </>}
+      bottom={<>
+        <RailDivider />
+        <RailButton icon={<HomeIcon />} label={t('to_projects')} onClick={() => location.assign(projectsUrl())} />
+        <RailButton icon={<SettingsIcon />} label={t('section_settings')} pressed={section === 'settings'} onClick={() => setSection('settings')} />
+      </>}
+    />
+  )
+  if (section === 'scenarios') return <Scenarios t={t} rail={rail} project={project} record={record} />
+
   const panel = section === 'settings'
     ? <Panel title={t('section_settings')}>
       <Section title={t('language')}>
@@ -73,15 +90,7 @@ export default function Editor({ project, variant, revision, record, local }) {
 
   return (
     <Shell>
-      <Rail label={t('tool')}
-        brand={<RailBrand href={projectsUrl()} label={t('to_projects')} name={t('tool')}><LogoIcon /></RailBrand>}
-        top={<RailButton icon={<StagesIcon />} label={t('section_stages')} pressed={section === 'stages'} onClick={() => setSection('stages')} />}
-        bottom={<>
-          <RailDivider />
-          <RailButton icon={<HomeIcon />} label={t('to_projects')} onClick={() => location.assign(projectsUrl())} />
-          <RailButton icon={<SettingsIcon />} label={t('section_settings')} pressed={section === 'settings'} onClick={() => setSection('settings')} />
-        </>}
-      />
+      {rail}
       {panel}
       <Workspace>
         <WorkingCopyBar title={project.title} subtitle={variant.name} revision={t('revision_n', { n: revision?.number ?? '—' })}

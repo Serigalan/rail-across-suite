@@ -4,6 +4,7 @@ import { stageLabel, timeline, trackState } from './model/stages.js'
 import { linkedRequest, projectsUrl } from './suite.js'
 import { I18n, textsFor } from './i18n.js'
 import Editor from './Editor.jsx'
+import { changedClosure, closureLabel, closureWhen, diversionOf, firstDayOf, isCancelled, newClosure, newScenario, toggledCancel, withClosure, withDiversion, withoutClosure, withoutScenario, withScenario } from './model/scenario.js'
 
 const record = {
   id: 'p', platforms: [],
@@ -43,5 +44,34 @@ describe('the Construction-Sim (decision 0027)', () => {
     expect(html).toContain('ab 02.06.2028')
     expect(html).toContain('Endzustand')
     expect(html).toContain('Umbau')
+  })
+})
+
+describe('a construction scenario as the Baubetriebs-Sim changes it (decision 0030)', () => {
+  it('closes a stretch of a track on a day, all day or in a possession, and names it', () => {
+    let sc = newScenario('S')
+    const c = newClosure({ trackId: 't1', from: 412.34, to: 100 }, '2027-05-03')
+    expect(c).toMatchObject({ at: { anchor: 'station', trackId: 't1', startStation: 100, endStation: 412.3 }, firstDay: '2027-05-03', lastDay: '2027-05-03' })
+    sc = withClosure(sc, c)
+    sc = changedClosure(sc, c.id, { window: { from: 79200, to: 18000 }, lastDay: '2027-05-07' })
+    const { t } = textsFor('de')
+    expect(closureLabel(sc.closures[0], () => 'Gl. 1')).toBe('Gl. 1 · 100–412 m')
+    expect(closureWhen(sc.closures[0], t)).toBe('2027-05-03 – 2027-05-07, 22:00–05:00')
+    expect(closureWhen(changedClosure(sc, c.id, { window: null }).closures[0], t)).toBe('2027-05-03 – 2027-05-07, ganztägig')
+    expect(firstDayOf(sc, 'x')).toBe('2027-05-03')
+    expect(firstDayOf(newScenario('E'), 'x')).toBe('x')
+    expect(withoutClosure(sc, c.id).closures).toEqual([])
+  })
+
+  it('takes trains out and puts them back, diverts them by hand, and is kept in its timetable\'s data', () => {
+    let sc = toggledCancel(newScenario('S'), 'a')
+    expect(isCancelled(sc, 'a')).toBe(true)
+    expect(isCancelled(toggledCancel(sc, 'a'), 'a')).toBe(false)
+    sc = withDiversion(sc, 'b', [{ id: 'p1' }, { id: 'p2' }])
+    expect(diversionOf(sc, 'b').points).toHaveLength(2)
+    expect(diversionOf(withDiversion(sc, 'b', null), 'b')).toBeNull()
+    const data = withScenario({ trains: [] }, sc)
+    expect(withScenario(data, { ...sc, name: 'T' }).scenarios.map(s => s.name)).toEqual(['T'])
+    expect(withoutScenario(data, sc.id).scenarios).toEqual([])
   })
 })

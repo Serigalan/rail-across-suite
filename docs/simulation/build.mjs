@@ -17,12 +17,12 @@ const SOURCE = (lang) => `docs/simulation/build.mjs from text/${lang}.md`
 
 const WORDS = {
   en: {
-    title: 'Assumptions of the simulation', subtitle: 'How the Rail-Across-Suite runs trains, holds blocks and works out capacity',
+    title: 'Assumptions of the simulation', subtitle: 'How the Rail-Across-Suite runs trains, holds blocks, works out capacity and tries construction scenarios',
     docTitle: 'Rail-Across-Suite — Assumptions of the simulation', status: `As of ${DATE.en} · companion of rail-across-1.0`,
     header: `As of ${DATE.short.en}`, lang: 'en',
   },
   de: {
-    title: 'Annahmen der Simulation', subtitle: 'Wie die Rail-Across-Suite Züge fährt, Blöcke belegt und Kapazität rechnet',
+    title: 'Annahmen der Simulation', subtitle: 'Wie die Rail-Across-Suite Züge fährt, Blöcke belegt, Kapazität rechnet und Bauszenarien prüft',
     docTitle: 'Rail-Across-Suite — Annahmen der Simulation', status: `Stand ${DATE.de} · Begleitdokument zu rail-across-1.0 · Übersetzung des englischen Originals`,
     header: `Stand ${DATE.short.de}`, lang: 'de',
   },

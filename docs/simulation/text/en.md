@@ -1,45 +1,55 @@
 # Purpose
 
 This document states the **assumptions of the simulation** of the Rail-Across-Suite: what it reads of a project in
-rail-across-1.0, how it works out runs, occupancies and capacities from it, and what it simplifies on the way. It
-complements the format description rail-across-1.0: that one says what is stored, this one what the tools compute
-from it.
+rail-across-1.0, how it works out runs, occupancies, capacities and construction scenarios from it, and what it
+simplifies on the way. It complements the format description rail-across-1.0 (timetables domain 1.2): that one says
+what is stored, this one what the tools compute from it.
 
 Four tools compute:
 
-- the **Fahrplan-Editor** and the **Simulation-Tool**: each train's run, its times and what it occupies;
-- the **Kapazitäts-Sim**: the capacity of stretches and stations after UIC 406;
-- the **Baubetriebs-Sim**: which tracks and switches are in service at a construction stage (it runs no trains).
+- the **Fahrplan-Editor** and the **Simulation-Tool**: each train's run, its times and what it occupies, and how the
+  trains get along with each other;
+- the **Kapazitäts-Sim**: the capacity of stretches and stations after UIC 406, with the conflict areas and the
+  binding elements on a schematic plan;
+- the **Baubetriebs-Sim**: which tracks and switches are in service at a construction stage, and how a timetable
+  runs in a construction scenario, with stretches of track closed, trains taken out and trains diverted.
 
-The simulation follows five principles:
+The simulation follows six principles:
 
 - **OSRD's physics.** The running time calculation is the envelope simulation of OSRD, the Open Source Railway
   Designer of the OpenRail Association, ported to Rust (`sim/`, at OSRD `fda69ee1`). What OSRD computes, the suite
   computes the same way, with one exception: braking depends on the grade. What is not ported is listed under
   "Limits".
-- **The infrastructure as designed.** Grades, curves and speeds come from the tracks' design values, not from drawn
-  lines. Where data is missing, the simulation runs with a neutral value (level, no limit) and **reports the gap**
-  instead of inventing something.
+- **The infrastructure as designed.** Grades, curves, speeds, stopping places and platforms come from the design
+  values of the Layout-Tool and the Signalling-Tool, not from drawn lines. Where data is missing, the simulation runs
+  with a neutral value (level, no limit) and **reports the gap** instead of inventing something. Only where a train
+  cannot stop at all is it not run.
+- **The net of a day.** What exists is what the lifespans of the Layout-Tool put in service on that day. A
+  construction scenario closes, on top of that, stretches of track for a while.
 - **Each train for itself first, then all together.** Each train is first run alone. Its run gives its blocking
   times; only the dispatching brings the trains together, and runs a train again where it has to wait or is sent
   another way.
 - **Determined, not random.** The same inputs give the same results. There are no random variables and no spread.
-- **SI units.** Metres, seconds, m/s, kg, N; grades in ‰ (m/km), rising positive in the direction of travel. Clock
-  times are seconds from midnight of the timetable day. The format's speeds in km/h are converted to m/s on reading.
+- **SI units.** Metres, seconds, m/s, m/s², kg, N; grades in ‰ (m/km), rising positive in the direction of travel.
+  Clock times are seconds from midnight of the timetable day. The format's speeds in km/h are converted to m/s on
+  reading.
 
 # From the timetable to the occupancy
 
-A train goes through nine steps. The sections of this document follow them.
+A train goes through ten steps. The sections of this document follow them.
 
-1. **Places:** the train's points are matched to operational points and track ends of the net.
-2. **Way:** the way over the net through all points.
+1. **Places and stops:** the train's points are matched to stations, halts and track ends of the net, and each stop
+   to a stopping place the train may use.
+2. **Way:** the way over the net through all points, with the reversals asked for.
 3. **Properties of the way:** length, grades (with the curves) and permitted speeds along it.
 4. **Train:** vehicle and traction mode.
-5. **Running time calculation:** the fastest run, the run with the margin, and the run the timetable keeps.
+5. **Running time calculation:** the fastest run, the run with the margin, and the run the timetable keeps, braking
+   on the grade.
 6. **Clock:** the run in clock time, with the departures the train waits for.
 7. **Blocks and blocking times:** what the train holds, and when.
 8. **Dispatching:** show the conflicts, or give the trains the net one after the other.
-9. **Capacity:** the blocking times compressed after UIC 406.
+9. **Capacity:** the blocking times compressed after UIC 406, with what binds the trains and where they meet.
+10. **Construction scenario:** the timetable once more on a day with stretches closed, the trains touched diverted.
 
 # Places: stations, halts and track ends
 
@@ -53,49 +63,68 @@ simulation makes places of them:
 | Halt | an operational point with platforms on the line's tracks only, no tracks of its own |
 | Track end | a buffer stop or a boundary of the planning area, a place at the end of a track |
 
-These rules apply:
-
 - A train **begins and ends** at a station or a track end only. A halt is no beginning and no end; a track end never
   lies on the way.
-- **A train stops at a stopping place only** (`stoppingPlaces`), on the track asked for where a track is asked for.
-  This holds for its start and its end too.
-  - A **passenger train** stops only at a stopping place at a platform: one a platform names (`stoppingPlaceIds`), one
-    marked a passenger stop (`passengerStop`), or one along which a platform lies on its track.
-  - A **train without passengers** stops at any stopping place. These are the kinds Gz, Lz and Dz and the freight
-    kinds GC, KLV, EK and DGS; every other kind counts as a passenger train.
-  - Where a station has no such stopping place (on the track asked for), the train is not run and the point says
-    so.
-- **Where in the stopping place:** 10 m before its end, seen in the direction of travel. A stopping place shorter
-  than 20 m is stopped at in its middle. At a start, "the end" is the one the train leaves towards. The direction
-  follows from the way, so each stopping place gives two candidates, one per direction. With several candidates,
-  the one reached the shortest way is taken; at the start, the one with the shortest first leg.
-- **Where it only passes,** any track of the station will do.
-- **The train's head is what is computed.** A stopping train stands with its head at that point. Whether its rear
-  reaches beyond the stopping place or the platform is not checked.
-- **A pass** is timed at the middle of what the station covers along the way.
+- **Where it only passes,** any track of the station will do. A pass is timed at the middle of what the station
+  covers along the way.
 - **At a boundary of the planning area** a train runs in at the boundary's speed and out at most at it. Where the
   boundary has no speed, what the line and the train allow there applies. At a buffer stop it stands.
+
+# Where a train stops
+
+A train stops only at a **stopping place** (`stoppingPlaces` of the Signalling-Tool), on the track asked for where a
+point asks for one. This holds for its start, its stops, its reversals and its end.
+
+## Which stopping places
+
+<!-- cols: 26%, 1fr -->
+| Train | Where it may stop |
+|---|---|
+| Passenger train | only at a stopping place at a platform: one a platform names (`stoppingPlaceIds`), one marked a passenger stop (`passengerStop`), or one along which a platform lies on the same track |
+| Train without passengers | at any stopping place |
+
+- **Trains without passengers** are the kinds Gz, Lz and Dz and the freight kinds GC, KLV, EK and DGS. Every other
+  kind counts as a passenger train.
+- Where a station has no stopping place the train may use (on the track asked for), the train is not run, and the
+  point says so.
+
+## Where in the stopping place
+
+- **10 m before its end, seen in the direction of travel.** A stopping place shorter than 20 m is stopped at in its
+  middle. At a start, "the end" is the one the train leaves towards.
+- The direction follows from the way, so each stopping place gives **two candidates**, one per direction.
+- With several candidates, the one reached the shortest way is taken; at the start, the one with the shortest first
+  leg. Another is taken only where no way leads on from the first. At most 200 legs are tried.
+- **The train's head is what is computed.** A stopping train stands with its head at that point. Whether its rear
+  reaches beyond the stopping place or the platform is not checked.
 
 # The way over the net
 
 - **Shortest way.** The way from point to point is the shortest by length. It is searched after Dijkstra over pairs
   of track and direction, on over switches along their routes, links and joints. The cost is the metres run.
   Diverging, switches and speeds cost nothing more.
+- **Every track in both directions.** The way does not ask whether a track is signalled for its direction.
 - **No reversing, unless asked for.** From a stop on, the train runs on in the direction it arrived in.
-- **Reversal (Richtungswechsel).** A point on the way can ask for one (`reverse`). The train stops there, stands its
-  turnaround time (`turnaround`, 300 s where none is given; its dwell does not count) and runs on in the other
-  direction. Its new head is where its tail stood, one train length back along the way it came in. The way therefore
-  jumps there, and the stretch the train stood on is not run again. Its first and last point cannot reverse.
-  The running time calculation sees the whole run as one way. For the first train length after the reversal, the
-  grade under the train and the limits its tail must clear are therefore those of the stretch as the train came in
-  on it. The speeds the signals signal are found on each part for itself.
-- **Several tracks or stopping places of a station** are tried in turn, the one reached the shortest way first. Another is taken only
-  where no way leads on from the first. At most 200 legs are tried.
 - **Preferred itinerary.** Where a point names an itinerary of the signalling (`itineraryId`), the train runs along
   its tracks, where the variant has it and it leads there. Else it runs the shortest way and says so.
 - **Sent another way by the dispatching.** Where the dispatching sends a train over another route (see
   "Dispatching"), it runs to that route's start signal, along its tracks to the target signal, and on from there the
   shortest way.
+- **Closed stretches.** In a construction scenario, no way runs over a closed stretch of track by more than 0.5 m
+  (see "Construction scenarios"). This holds for the shortest way, for a preferred itinerary and for a route the
+  dispatching sends a train over.
+
+## Reversal
+
+- A point on the way can ask for a reversal (Richtungswechsel, `reverse`). Its first and last point cannot.
+- The train **stops there** (at a stopping place, as any stop), stands its **turnaround time** (`turnaround`, 300 s
+  where none is given; its dwell does not count) and runs on in the other direction.
+- **Its new head is where its tail stood,** one train length back along the way it came in. The way therefore jumps
+  there, and the stretch the train stood on is not run again.
+- The running time calculation sees the whole run as one way. For the first train length after the reversal, the
+  grade under the train and the limits its tail must clear are therefore those of the stretch as the train came in
+  on it. The speeds the signals signal are found on each part for itself.
+- How the blocks are cut at a reversal is said under "Blocking times".
 
 # Grades
 
@@ -133,8 +162,8 @@ gauge:
 
 The running time calculation takes not the grade under the head but the **mean grade under the whole train**, from
 its tail to its head. The train is taken as a band of mass spread evenly over its length. Before the start of the
-way, the tail is cut off at the way's beginning. The force of the grade is `−m · g · sin(arctan(i / 1000))` with
-g = 9.81 m/s².
+way, the tail is cut off at the way's beginning. The force of the grade is `G = −m · g · sin(arctan(i / 1000))` with
+g = 9.81 m/s². It acts in accelerating, holding, coasting and braking alike.
 
 # Speeds
 
@@ -162,7 +191,7 @@ g = 9.81 m/s².
 - **A limit holds until the train's tail has left it.** Behind a speed restriction, the train accelerates only once it
   has left it with its whole length.
 - **Before a lower limit the train brakes** so that its head reaches it at its beginning. The braking curve depends
-  on the grade (see "The running time calculation").
+  on the grade (see "Braking").
 - The driver is **ideal**: they brake at the last possible moment, accelerate with full effort and have no reaction
   time. Announcements (Lf 6, Zs 3v, distant signals) need no effect of their own: where braking begins follows from
   the physics.
@@ -181,11 +210,11 @@ A vehicle is rolling stock in OSRD's RailJSON. The simulation reads of it:
 | Value | Meaning |
 |---|---|
 | `mass` | mass in kg |
-| `length` | length in m (for averaging the grade, for the limits and for clearing the blocks) |
+| `length` | length in m (for averaging the grade, for the limits, for clearing the blocks and for a reversal) |
 | `max_speed` | top speed in m/s |
 | `inertia_coefficient` | mass factor ρ for the rotating masses, else 1.05 |
 | `rolling_resistance` | resistance to movement after Davis: `A + B · v + C · v²` in N, v in m/s |
-| `const_gamma` | service braking deceleration on the level in m/s² |
+| `const_gamma` | service braking deceleration γ on the level in m/s² |
 | `effort_curves` | tractive effort over speed, per traction mode and comfort |
 
 - **Tractive effort curve:** straight between its points. Below the first point its effort holds, above the last
@@ -206,7 +235,7 @@ A vehicle is rolling stock in OSRD's RailJSON. The simulation reads of it:
   else its thermal one; else the vehicle's default. Where the net has no contact wire planned at all, every vehicle
   runs in its default.
 - **One mode for the whole way.** There is no change on the way. Where a train runs electric over a stretch without a
-  matching wire, it runs there all the same, and the stretches are reported.
+  matching wire, it runs there all the same, and the stretches are reported. This holds for a diversion too.
 - Under wire lies what a contact wire's suspension points and section insulators carry. The wire's voltage must equal
   the mode's name (`15000V`).
 
@@ -227,14 +256,25 @@ a = (F + G − R(v)) / (m · ρ)
 - **Holding:** just as much effort as resistance and grade ask for. Where full effort is not enough, the train slows
   down and catches up afterwards.
 - **Coasting:** no tractive effort.
-- **Braking:** at the vehicle's deceleration γ on the level, **plus the grade under the train**:
-  `a = −γ + G / (m · ρ)`, with G the weight force as in accelerating (averaged under the train). A rise shortens
-  the braking distance, a fall lengthens it: at 0.6 m/s² from 100 km/h the train needs about 643 m on the level and
-  about 760 m on a fall of 10 ‰. On any fall, at least a tenth of γ is left. The deceleration does not depend on
-  the speed. OSRD's constant braking, which ignores the grade, stays selectable in the calculation (`braking`
-  `constant`); the suite does not use it.
 - At a stand the train stays standing as long as effort and grade do not overcome the resistance. Where a train stalls
   on a rise, the calculation stops with `impossible_simulation` and the position.
+
+## Braking
+
+The train brakes at the vehicle's service deceleration γ on the level, **plus the grade under the train**:
+
+```
+a = −γ + G / (m · ρ)
+```
+
+- G is the force of the grade as in accelerating, averaged under the train, with the curves. A rise shortens the
+  braking distance, a fall lengthens it.
+- **Example:** at γ = 0.6 m/s² from 100 km/h the train needs about 643 m on the level and about 760 m on a fall of
+  10 ‰.
+- **On any fall, at least a tenth of γ is left**, so that a train always comes to a stand.
+- The deceleration does not depend on the speed. Resistance to movement does not help braking.
+- OSRD's constant braking, which ignores the grade (`a = −γ`), stays selectable in the calculation (`braking`
+  `constant`); the suite does not use it.
 
 ## The three runs
 
@@ -245,8 +285,8 @@ a = (F + G − R(v)) / (m · ρ)
 | `provisional` | the run with the train's standard margin |
 | `final` | the run that also keeps given arrival times; the timetable takes this one |
 
-The suite gives the calculation no arrival times, only stops with their dwell. `final` is therefore the run with the
-margin. The timetable's departures act only afterwards (see "Clock").
+The suite gives the calculation no arrival times, only stops with how long the train stands. `final` is therefore the
+run with the margin. The timetable's departures act only afterwards (see "Clock").
 
 ## Margin
 
@@ -261,9 +301,10 @@ margin. The timetable's departures act only afterwards (see "Clock").
 ## Stops
 
 - A train stops at every point that asks for a stop or a reversal, and always at its end, unless it leaves over a
-  boundary there. It brakes to zero, stands its dwell (`dwell`, 60 s for a new point) or, where it reverses, its
-  turnaround time (300 s where none is given), and starts again with full effort.
-- Two stops at the same position become one, with the longer dwell.
+  boundary there. It brakes to zero at the stopping position (see "Where a train stops").
+- It stands its **dwell** (`dwell`, 60 s for a new point), or where it reverses its **turnaround time**
+  (`turnaround`, 300 s where none is given), and starts again with full effort.
+- Two stops at the same position become one, with the longer time.
 - A point's least dwell (`leastDwell`) is stored but not computed yet.
 - The calculation gives the mechanical energy at the wheel, without recuperation and without efficiencies.
 
@@ -271,7 +312,8 @@ margin. The timetable's departures act only afterwards (see "Clock").
 
 - A train leaves at the departure of its first point.
 - **Departure at a point:** where the train would leave earlier, it waits for it. The rest of its run moves by the
-  wait. Nothing is computed again for that, as a longer stop does not change the run.
+  wait. Nothing is computed again for that, as a longer stop does not change the run. This holds at a reversal too:
+  the turnaround time is the least it stands there.
 - Every place along the way has an arrival and a departure. For a pass, both are the same.
 - Clock times past 24:00 belong to the next day and are not wrapped.
 
@@ -294,7 +336,8 @@ margin. The timetable's departures act only afterwards (see "Clock").
 # Blocks
 
 - **A block** is the stretch of a train's way from one main signal acting in its direction of travel to the next.
-  The first block begins at the start, the last ends at the end. Without main signals the whole way is one block.
+  The first block begins at the start, the last ends at the end; a reversal ends one block and begins the next.
+  Without main signals the whole way is one block.
 - **Overlap:** a block reaches beyond its end signal by the longest of the overlaps stored for that signal. The
   simulation does not work out their length itself. The catalogue after Ril 301 proposes it in the Signalling-Tool:
   50 m up to 40 km/h, 100 m up to 60 km/h, 200 m above; longer on a fall steeper than 5 ‰
@@ -327,11 +370,11 @@ This follows the blocking time after Ril 405 and OSRD's spacing requirements:
 - **First block:** from the departure, less the setting time. **Stop in the approach:** where the train stands
   within the approach, it asks for the block only as it leaves there.
 - **Last block:** until the arrival at the end and the release time.
-- **Reversal:** the blocks are cut there as at an end and a start. The block before ends at the reversal point,
-  without an end signal and without an overlap. It is held until the train, running the other way, has left the
-  stretch it stood on (one train length), plus the release time. The block after begins there without a signal and
-  is asked for as the train leaves, less the setting time. A train held there waits at the reversal point and stands
-  longer.
+- **Reversal:** the blocks are cut there as at an end and a start.
+  - The block before ends at the reversal point, without an end signal and without an overlap. It is held until the
+    train, running the other way, has left the stretch it stood on (one train length), plus the release time.
+  - The block after begins there without a signal and is asked for as the train leaves, less the setting time.
+  - A train held there waits at the reversal point and stands longer.
 - **Sectional release:** with track sections, each section is released as soon as the train's tail has left it, plus
   the release time. A route then waits only for the section another still holds.
 - **Overlap:** its sections are released with the block. Where the train comes to a stand within 200 m before the end
@@ -365,10 +408,12 @@ In mode `wait`:
 - **Delay** is how much later a train arrives than run alone.
 - **Headway at a boundary:** where a boundary of the planning area has a least headway (`headway`), a train entering
   there sooner after the one before is reported. It is not moved for it.
-- The dispatching does not optimise. It changes no order beyond "who asks first" and keeps no connections and
-  turnarounds.
+- The dispatching does not optimise. It changes no order beyond "who asks first" and keeps no connections and no
+  turnarounds from one train into another.
 
 # Capacity after UIC 406
+
+## Stretches and compression
 
 - **Stretches:** a stretch runs from one node to the next along the trains' ways, the same for both directions. A
   node is a station of at least two tracks, or a place where a train begins or ends.
@@ -392,14 +437,23 @@ In mode `wait`:
 - **Minimum headway:** for every two trains that hold something the same, in both orders, how soon after the first
   the second may be at the beginning without their blocking times overlapping. The values are summed up by kinds of
   trains.
-- **Binding elements:** for each train of the critical chain after the first, the element where its blocking time
-  touches that of the train it is bound to: of all that the two both hold, the one where it could come least
-  earlier. It is shown with the block of each of the two trains and the moment one releases it and the other takes
-  it, as compressed.
-- **Conflict areas:** what two or more trains of the period hold: a track section, or a stretch of track where the
-  stretches they hold overlap by more than 0.5 m, taken as one. Each area has the trains that hold it and the union
-  of the times it is held. The Kapazitäts-Sim draws the areas and the binding elements on a schematic plan of the
-  variant.
+
+## Binding elements and conflict areas
+
+- **The critical chain** is the compressed trains one behind the other: each lies as early as the one before lets
+  it.
+- **Binding element:** for each train of the chain after the first, the element where its blocking time touches that
+  of the train it is bound to. Of all that the two both hold, it is the one where it could come least earlier. It is
+  given with the block of each of the two trains and the moment one releases it and the other takes it, as
+  compressed. An element is a track section, or a stretch of track where there are no sections.
+- **Conflict area:** what two or more trains of the period hold. That is a track section, or a stretch of track where
+  the stretches they hold overlap by more than 0.5 m, taken as one. Each area has the trains that hold it and the
+  union of the times it is held.
+- **On the plan:** the Kapazitäts-Sim draws the areas and the binding elements on a schematic plan of the variant's
+  tracks: each area coloured by how many trains hold it, the binding elements numbered.
+
+## Stations and construction stages
+
 - **Stations:** for every track and section of a station, the union of the times it is held and its share of the
   period.
 - **Construction stages:** the capacity is computed on a variant's net at a construction stage: the existing state,
@@ -408,29 +462,61 @@ In mode `wait`:
 
 # Construction scenarios
 
-A construction scenario of a timetable (decision 0030) closes stretches of track for a while, takes trains out and
-diverts trains by hand. The Baubetriebs-Sim runs the timetable in it for one day:
+A construction scenario belongs to one timetable (decision 0030; `constructionScenarios` in timetables 1.2). It
+closes stretches of track for a while, takes trains out and diverts trains by hand. The Baubetriebs-Sim runs the
+timetable in it for one day and sets each train beside its regular run.
 
-- **The net of the day** is the variant at the stage of that day, as the lifespans of the Layout-Tool make it.
-- **A closure** holds from its first to its last day, all day or in a daily window (possession). A window whose end
-  lies before its beginning runs past midnight into the next day; a closure of the day before therefore reaches into
-  the early hours of the day.
+## The net of the day
+
+- **What exists** is the variant at the stage of that day, as the lifespans of the Layout-Tool make it. A track not
+  yet or no longer in service is not there; a scenario does not need to close it.
+- **The regular runs** are the timetable's trains on that net, dispatched as in the Fahrplan-Editor, without any
+  closure.
+
+## Closures
+
+- **A closure** closes one stretch of one track, from one stationing to another.
+- **When:** from its first to its last day, all day or in a daily window (possession). A window whose end lies before
+  its beginning runs past midnight into the next day. A closure of the day before therefore reaches into the early
+  hours of the day; one that holds the day after too counts for the runs past midnight.
 - **No way runs over a closed stretch**, not by more than 0.5 m. The rest of the track stays usable: a train may stop
-  in front of the closure or start behind it. This holds for the shortest way, for a preferred itinerary and for a
-  route the dispatching sends a train over.
-- **A train is touched** by a closure where its way, as it runs in the timetable, runs over the closed stretch while
-  the closure holds: from its head entering the stretch to its tail leaving it. A train not touched runs as it is.
-- **A touched train is diverted:** it runs the shortest way with what touches it closed, keeping its points. Where
-  the way around touches another closure, that one is closed for it too, three times at the most.
-- **By hand:** a diversion set by hand runs the train on its own points — its way, its stops, its itineraries — and
-  comes before the computed one; what it touches is closed for it as for any.
+  in front of the closure or start behind it.
+
+## Which trains are touched
+
+- **A train is touched** by a closure where its regular run runs over the closed stretch while the closure holds:
+  from its head entering the stretch to its tail leaving it.
+- A train **not touched** keeps its way. A closure in a window does not close a track for the trains outside it.
+
+## Diversion
+
+- **Automatic:** a touched train runs the shortest way with what touches it closed, keeping its points: its stops,
+  reversals and departures. Where the way around touches another closure, that one is closed for it too, three times
+  at the most.
+- **By hand:** a diversion set by hand runs the train on its own points — its way, its stops, its reversals, its
+  itineraries — and comes before the computed one. What it touches is closed for it as for any.
 - **Not runnable:** a train for which no way is left says at which point it found none. A point on a closed stretch,
   or one that can only be reached over it, cannot be kept; a diversion by hand without it can.
 - **Taken out:** a train taken out does not run and holds nothing.
-- **Dispatching:** the trains that run are given the net as in the Fahrplan-Editor (see "Dispatching"), each on its
-  net with what is closed for it. A closure in a window does not close a track for the trains outside it.
-- **Beside the timetable:** each train is set beside its regular run on the same net of the day: arrival, running
-  time and delay, waits and conflicts.
+
+## Running the scenario
+
+- The trains that run, the regular ones among them, are given the net by the dispatching as in the Fahrplan-Editor
+  (see "Dispatching"), each on its net with what is closed for it. A diverted train can therefore hold up a train
+  that is not touched.
+- Each train ends in one state:
+
+<!-- cols: 22%, 1fr -->
+| State | Meaning |
+|---|---|
+| regular | not touched; runs its way, perhaps later through the dispatching |
+| diverted | touched; runs the way around computed for it |
+| by hand | runs the diversion set by hand |
+| not runnable | no way is left; the point where none was found |
+| taken out | does not run |
+
+- **Beside the timetable:** for each train, its arrival in the scenario and as regular, the change of its running
+  time, its delay (how much later it arrives than its regular run), its waits and its conflicts.
 
 # Limits
 
@@ -440,9 +526,14 @@ Not computed, partly because parts of OSRD are not ported, partly because the su
 - a change of traction mode on the way, electrical profiles, power restrictions, neutral sections;
 - formations of several vehicles, hauled load, brake position and braked weight percentage;
 - vertical curves in the grade, a braking deceleration depending on the speed, adhesion;
-- connections, turnarounds, delay scenarios and a study's stochastic runs (`runs`, `seed`) — they are stored;
+- whether a stopping train's rear fits the stopping place or the platform;
+- whether a track may be run in a direction (working on the opposite track);
+- connections, turnarounds from one train into another, delay scenarios and a study's stochastic runs (`runs`,
+  `seed`) — they are stored;
 - the least dwell (`leastDwell`) and the sight time (`sight`);
-- given arrival times in the running time calculation.
+- given arrival times in the running time calculation;
+- in a construction scenario: speed restrictions at the site, works trains, and whether a diversion is fit for the
+  train beyond its way, its traction and its stops.
 
 # Defaults
 
@@ -452,40 +543,43 @@ Not computed, partly because parts of OSRD are not ported, partly because the su
 | Integration time step | 2 s | — |
 | Mass factor | 1.05 | vehicle `inertia_coefficient` |
 | Gravity | 9.81 m/s² | — |
+| Braking deceleration left on any fall | a tenth of γ | — |
 | Running time margin of a new train | 5 %, MARECO | train |
 | Dwell of a new point | 60 s | point `dwell` |
-| Stop before the end of a stopping place | 10 m, in the direction of travel | — |
 | Turnaround time where a train reverses | 300 s | point `turnaround` |
-| Braking deceleration left on any fall | a tenth of γ | — |
+| Stop before the end of a stopping place | 10 m, in the direction of travel | — |
+| Stopping place stopped at in its middle | shorter than 20 m | — |
 | Route setting time | 12 s | route, layer `routeTimes`, timetable `blockingTimes.setup` |
 | Route release time | 6 s | route, layer `routeTimes`, timetable `blockingTimes.release` |
 | Approach without an announcing signal | 1000 m | timetable `blockingTimes.approach` |
 | Overlap release after a stop | 60 s | overlap `releaseDelay` |
 | Stop before the end signal that releases the overlap | 200 m | — |
 | Waiting before a signal | 10 m before it | — |
-| Shared stretch of track for a conflict | 0.5 m | — |
+| Shared stretch of track for a conflict, an area or a closure | 0.5 m | — |
 | Pieces of a transition | at most 10 m | — |
 | Reserve of the entry speed | 0.8 · γ | — |
 | Legs tried in choosing tracks | 200 | — |
 | Dispatching decisions per train | 80 | — |
+| Rounds of a diversion | 3 | — |
 
 # Where it is in the code
 
 <!-- cols: 34%, 1fr -->
 | Topic | Source |
 |---|---|
-| Running time calculation | `sim/crates/sim` (physics, envelopes, margins, one train's run) |
-| Way, grades, curves, speeds | `packages/running-times/src/path.js`, `route.js`, `request.js` |
-| Braking on the grade | `sim/crates/sim/src/physics/integrator.rs` (`braking_deceleration`) |
-| Construction scenarios | `packages/timetables/src/scenario.js`, `packages/running-times/src/path.js` (`closed`) |
-| Reversal | `packages/running-times/src/route.js` (`routeVia`, `backAlong`), `packages/timetables/src/occupancy.js` (`blocksAlong`) |
-| Traction mode | `packages/running-times/src/traction.js` |
 | Places | `packages/running-times/src/stations.js` |
 | Where a train stops | `packages/timetables/src/timetable.js` (`routePoints`, `stoppingPlacesFor`, `stopsIn`) |
+| Way, closed stretches | `packages/running-times/src/path.js` (`findPath`, `pathAlong`, `closed`) |
+| Reversal | `packages/running-times/src/route.js` (`routeVia`, `backAlong`), `packages/timetables/src/occupancy.js` (`blocksAlong`) |
+| Grades, curves, speeds | `packages/running-times/src/route.js`, `request.js` |
 | Vehicle | `packages/vehicles/src/vehicles.js` |
+| Traction mode | `packages/running-times/src/traction.js` |
+| Running time calculation | `sim/crates/sim` (physics, envelopes, margins, one train's run) |
+| Braking on the grade | `sim/crates/sim/src/physics/integrator.rs` (`braking_deceleration`) |
 | Clock, timetable times | `packages/timetables/src/timetable.js` |
 | Blocks, blocking times, dispatching | `packages/timetables/src/occupancy.js` |
 | Overlap, route speed | `packages/core/src/signalling/overlaps.js`, `packages/core/constraints/db-ril-301.json` |
 | Track sections | `crates/signalling/src/sections.rs` |
-| Capacity | `crates/capacity`, `packages/capacity` |
+| Capacity, binding elements, conflict areas | `crates/capacity`, `packages/capacity`, `apps/capacity-sim/src/ConflictPlan.jsx` |
 | Construction stages | `apps/construction-sim/src/model/stages.js`, `packages/core` (`recordAtStage`) |
+| Construction scenarios | `packages/timetables/src/scenario.js`, `apps/construction-sim/src/Scenarios.jsx` |

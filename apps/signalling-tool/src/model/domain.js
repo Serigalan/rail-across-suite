@@ -75,7 +75,8 @@ export function coreOf(record) {
 /** The state with another domain — the parts of the core as they are. */
 export const withSignalling = (state, domain) => ({ fields: domain.fields, collections: { ...state.collections, ...signallingOf(domain).collections } })
 
-export const newId = () => (globalThis.crypto?.randomUUID?.() ?? `id-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`)
+// A UUID, as every id of the record (decision 0029, phase 6) — drawn by hand where the browser draws none.
+export const newId = () => (globalThis.crypto?.randomUUID?.() ?? '10000000-1000-4000-8000-100000000000'.replace(/[018]/g, c => (c ^ (Math.random() * 16) >> (c / 4)).toString(16)))
 
 const withCollection = (domain, name, list) => ({ ...domain, collections: { ...domain.collections, [name]: list } })
 

@@ -44,7 +44,8 @@ export function recordOf(record, domain) {
   return { ...record, electrification: empty ? undefined : domain }
 }
 
-export const newId = () => (globalThis.crypto?.randomUUID?.() ?? `id-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`)
+// A UUID, as every id of the record (decision 0029, phase 6) — drawn by hand where the browser draws none.
+export const newId = () => (globalThis.crypto?.randomUUID?.() ?? '10000000-1000-4000-8000-100000000000'.replace(/[018]/g, c => (c ^ (Math.random() * 16) >> (c / 4)).toString(16)))
 
 const station = (trackId, at, extra = {}) => ({ anchor: 'station', trackId, station: at, ...extra })
 

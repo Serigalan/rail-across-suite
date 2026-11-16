@@ -12,6 +12,7 @@
 // the module's own business. See docs/document.md.
 
 export { canonicalJson, contentHash, derivedId } from './canonical.js'
+export { isUuid, uuidOf } from './ids.js'
 export { DOMAIN_VERSIONS } from './coreFormat.js'
 export { pointOf, renamedStation, stationPoint, stationRegister, withPlatformStops, withStationPoints, withStationTexts } from './stations.js'
 export { recordAtStage, stagesOf } from './stages.js'

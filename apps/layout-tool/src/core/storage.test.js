@@ -735,21 +735,23 @@ describe('a station a form states as text (decision 0028)', () => {
 describe('what a write takes away (decision 0028, phase C)', () => {
   it('takes along what the layers name of it: a switch deleted, its switch element and what needs that', async () => {
     const { ksStation, ksStoppingPlaces } = await import('@rail-across/core/test/signallingFixture.js')
+    const { u, withUuids } = await import('@rail-across/core/test/uuids.js')
     const signalling = ksStation()
     const track = (id) => ({ id, epsg: 25832, elements: [{ elementType: 'straight', startNode: [500000, 5600000], endNode: [500100, 5600000], bearing: 90, length: 100 }] })
-    openProject({
+    // The record holds UUIDs, as one read from its document does (decision 0029, phase 6).
+    openProject(withUuids({
       id: 'p1', tracks: [track('t1'), track('t2')], operationalPoints: [{ id: 'op1', name: 'Halle-Trotha' }],
       switches: [{ switchId: 'w1', kind: 'link', formVersion: 1, ports: { A: { trackId: 't1', endpoint: 'END' }, B: { trackId: 't2', endpoint: 'BEGIN' } } }],
       signalling, stoppingPlaces: ksStoppingPlaces(),
-    })
+    }))
     const before = currentProject()
-    commitSwitchDeletion({ switchId: 'w1', removeTrackIds: [], updateTracks: [], remap: {} })
+    commitSwitchDeletion({ switchId: u('w1'), removeTrackIds: [], updateTracks: [], remap: {} })
     const after = currentProject().signalling.collections
     expect(after.switchElements).toEqual([])
     // the flank protection the switch element asked for went with it; the signals stayed, as they were
     expect(after.flankProtection).toEqual([])
     expect(after.signals).toBe(before.signalling.collections.signals)
-    expect(currentProject().tracks.map(t => t.id)).toEqual(['t1', 't2'])
+    expect(currentProject().tracks.map(t => t.id)).toEqual([u('t1'), u('t2')])
     undo()
     expect(currentProject().signalling.collections.switchElements).toHaveLength(1)
   })

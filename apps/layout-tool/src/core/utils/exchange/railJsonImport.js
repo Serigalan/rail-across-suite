@@ -1,11 +1,14 @@
 import { generateId, nextTrackName, rebuildCoords } from '@rail-across/core/track'
+import { uuidOf } from '@rail-across/core/document'
 
 /**
  * What a parsed RailJSON or alignment exchange file (osrdImport) adds to a
- * project: its tracks — under a fresh id where the project already has one,
- * renamed where the name is taken — the switches and buffer stops on them,
- * repointed to those ids, and the passthrough of everything the app does not
- * model (`osrd`), so an export hands it back.
+ * project: its tracks — under the UUID drawn from the file's id, as every id
+ * of the record is one (decision 0029, phase 6), or a fresh one where the
+ * project already has it; renamed where the name is taken — the switches and
+ * buffer stops on them, repointed to those ids, and the passthrough of
+ * everything the app does not model (`osrd`), its references to those tracks
+ * and stops repointed too, so an export hands it back.
  *
  * Returns { addTracks, addSwitches, addEndMarks, osrd }.
  */
@@ -21,7 +24,8 @@ export function planRailJsonImport({ tracks, switches = [], endMarks = [], infra
       ? tr.name
       : nextTrackName(tr.name?.split('.')[0] || 'track', names)
     names.add(name)
-    const id = existingIds.has(tr.id) ? newId() : (tr.id ?? newId())
+    const own = tr.id ? uuidOf(tr.id) : newId()
+    const id = existingIds.has(own) ? newId() : own
     if (tr.id && id !== tr.id) idMap[tr.id] = id
     return { ...tr, id, name, elements, coordinates: rebuildCoords(elements) }
   })
@@ -40,17 +44,27 @@ export function planRailJsonImport({ tracks, switches = [], endMarks = [], infra
   // already uses (the same file imported twice) gets a new one, or it would
   // take the place of the first.
   const markIds = new Set(existingMarks.map(m => m.id))
-  const addEndMarks = endMarks.map(mark => ({
-    ...mark, id: markIds.has(mark.id) ? newId() : mark.id, trackId: remapId(mark.trackId),
-  }))
-
-  // Ports of carried-over switches follow tracks that had to be re-id'd.
-  const remapPorts = (sw) => ({
-    ...sw,
-    ports: Object.fromEntries(Object.entries(sw.ports ?? {}).map(([k, p]) =>
-      [k, idMap[p?.track] ? { ...p, track: idMap[p.track] } : p])),
+  const markMap = {}
+  const addEndMarks = endMarks.map(mark => {
+    const own = mark.id ? uuidOf(mark.id) : newId()
+    const id = markIds.has(own) ? newId() : own
+    if (mark.id && id !== mark.id) markMap[mark.id] = id
+    return { ...mark, id, trackId: remapId(mark.trackId) }
   })
-  const osrd = { ...infra, ...(infra.switches ? { switches: infra.switches.map(remapPorts) } : {}) }
+
+  // What is carried over names the tracks by the ids they have now, and a
+  // buffer stop that became a mark by the mark's, so the export's own takes
+  // its place.
+  const repointed = (value) => {
+    if (Array.isArray(value)) return value.map(repointed)
+    if (!value || typeof value !== 'object') return value
+    return Object.fromEntries(Object.entries(value).map(([k, v]) =>
+      [k, k === 'track' && idMap[v] ? idMap[v] : repointed(v)]))
+  }
+  const osrd = repointed({
+    ...infra,
+    ...(infra.buffer_stops ? { buffer_stops: infra.buffer_stops.map(b => (markMap[b.id] ? { ...b, id: markMap[b.id] } : b)) } : {}),
+  })
 
   return { addTracks, addSwitches, addEndMarks, osrd }
 }

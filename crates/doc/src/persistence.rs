@@ -27,9 +27,9 @@ pub fn project_document(record: &Value, carry_schemas: bool, check: bool) -> Res
     to_document(&dehydrate_project(record), carry_schemas, check)
 }
 
-/// The domains of a project record's document in the words and names the record keeps (decision 0029, phase 1):
-/// what a tool reads of the core beside its own layer until the record follows the document (phase 6), with the
-/// record's ids. Not checked: a tool reads it while it works.
+/// The domains of a project record's document as the record holds them (decision 0029): what a tool reads of the
+/// core beside its own layer, with the record's ids and its km lines in WGS 84. Not checked: a tool reads it while
+/// it works.
 pub fn record_domains(record: &Value) -> Result<Value> {
     let (domains, _) = crate::core_format::record_domains(&dehydrate_project(record), crate::door::schema_hashes())?;
     Ok(Value::Object(domains))

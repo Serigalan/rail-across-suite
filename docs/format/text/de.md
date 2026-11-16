@@ -601,9 +601,8 @@ in diesen Punkten ab; jeder wird in einem eigenen Schritt angeglichen (Entscheid
   Domänen und ihre Blobs, core 5.0, civil 3.0, signalling 4.0, electrification 3.0) und den Betrieb als Dokument
   operations (vehicles 1.0, timetables 1.0); die Datei rail-across-1.0 führt sie zusammen, eine Datei von vorher
   wird weiter gelesen.
-- Der Record, mit dem die Werkzeuge arbeiten, behält Kilometrierungslinien in WGS 84 mit dem
-  Kilometer je Punkt und Kennungen jeder Form; die Tür wandelt ihn ins Dokument und zurück (Entscheidung 0029,
-  Phase 6 nimmt das heraus). Eine Kilometrierungslinie von vorher steht als Punkte da, noch nicht mit
-  Trassierungselementen angenähert.
+- Der Record, mit dem die Werkzeuge arbeiten, behält Kilometrierungslinien in WGS 84 mit dem Kilometer je Punkt;
+  die Tür wandelt sie ins Dokument und zurück (Entscheidung 0029, Phase 6 nimmt das heraus). Eine
+  Kilometrierungslinie von vorher steht als Punkte da, noch nicht mit Trassierungselementen angenähert.
 - Eine Domäne, die der Leser nicht kennt, bleibt erhalten; eine spätere Version einer Domäne, die er kennt, lehnt er
   ab, statt sie mit der Version zu lesen, die er kennt.

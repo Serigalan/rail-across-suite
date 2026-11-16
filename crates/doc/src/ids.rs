@@ -74,74 +74,24 @@ pub fn forward(domains: &mut Object) {
     }
 }
 
-// The record names some references as before (decision 0029, phase 1): not ending in `Id`.
-const BEFORE: &[&str] = &["operationalPoint", "dep", "boundedBy", "clearSections"];
-
-fn collect(value: &Value, parent: &str, out: &mut std::collections::HashMap<String, String>) {
-    let take = |out: &mut std::collections::HashMap<String, String>, s: &str| {
-        out.insert(uuid_of(s), s.to_string());
-    };
-    match value {
-        Value::Object(o) => {
-            for (k, v) in o {
-                let reference = is_reference(k) || BEFORE.contains(&k.as_str()) || (parent == "passOn" && (k == "left" || k == "right"));
-                match v {
-                    Value::String(s) if reference => take(out, s),
-                    Value::Array(items) if reference && items.iter().all(Value::is_string) => {
-                        items.iter().filter_map(Value::as_str).for_each(|s| take(out, s));
-                    }
-                    _ if k == "catalogue" || k == "osrd" => {}
-                    _ => collect(v, k, out),
-                }
-            }
-        }
-        Value::Array(items) => items.iter().for_each(|v| collect(v, parent, out)),
-        _ => {}
+/// A record come back from its document with each collection in the order the record had it: what was there before
+/// keeps its place, what is new follows (decision 0029, phase 6 — the document sorts by id, the record keeps the
+/// order it was given).
+pub fn in_order_of(record: &mut Value, before: &Value) {
+    fn order(list: &mut Value, before: Option<&Value>) {
+        let (Value::Array(items), Some(Value::Array(was))) = (list, before) else { return };
+        let key = |x: &Value| x.get("id").or_else(|| x.get("switchId")).and_then(Value::as_str).map(str::to_string);
+        let place: std::collections::HashMap<String, usize> = was.iter().enumerate().filter_map(|(i, x)| Some((key(x)?, i))).collect();
+        items.sort_by_key(|x| key(x).and_then(|k| place.get(&k).copied()).unwrap_or(usize::MAX));
     }
-}
-
-/// The ids a record holds, by the UUID each goes by in its document: what `restored` gives back.
-pub fn originals(record: &Value) -> std::collections::HashMap<String, String> {
-    let mut out = std::collections::HashMap::new();
-    collect(record, "", &mut out);
-    out.retain(|uuid, id| uuid != id);
-    out
-}
-
-/// A record come back from its document with the ids it had before (`originals`), each collection in the order of
-/// those ids as the document had them before: what the record works on, until it follows the document (decision
-/// 0029, phase 6).
-pub fn restored_record(record: &mut Value, originals: &std::collections::HashMap<String, String>) {
-    restored(record, originals);
     let Some(o) = record.as_object_mut() else { return };
     for (k, v) in o.iter_mut() {
-        let lists: Vec<&mut Value> = if matches!(k.as_str(), "signalling" | "electrification") {
-            v.get_mut("collections")
-                .and_then(Value::as_object_mut)
-                .map(|c| c.values_mut().collect())
-                .unwrap_or_default()
+        if matches!(k.as_str(), "signalling" | "electrification") {
+            for (c, list) in v.get_mut("collections").and_then(Value::as_object_mut).into_iter().flatten() {
+                order(list, before.get(k).and_then(|d| d.get("collections")).and_then(|cs| cs.get(c)));
+            }
         } else {
-            vec![v]
-        };
-        for list in lists {
-            if let Value::Array(items) = list
-                && items.iter().all(|x| x.get("id").is_some())
-            {
-                crate::core_format::by_id(items);
-            }
+            order(v, before.get(k));
         }
-    }
-}
-
-fn restored(value: &mut Value, originals: &std::collections::HashMap<String, String>) {
-    match value {
-        Value::String(s) => {
-            if let Some(id) = originals.get(s.as_str()) {
-                *s = id.clone();
-            }
-        }
-        Value::Array(items) => items.iter_mut().for_each(|v| restored(v, originals)),
-        Value::Object(o) => o.values_mut().for_each(|v| restored(v, originals)),
-        _ => {}
     }
 }

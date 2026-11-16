@@ -131,9 +131,10 @@ fn run_on(op: &str, input: &Value) -> Result<Value, Failure> {
         "document.withoutDangling" => {
             let doc = core_format::record_to_document(input, door::schema_hashes())?;
             let (doc, cut) = door::without_dangling(&doc);
-            // The record keeps the ids it has; the document names them by UUIDs (decision 0029, phase 2).
+            // The record holds the UUIDs its document names things by (decision 0029, phase 6); an id of before
+            // comes back as the one drawn from it, as from any save. Its collections keep their order.
             let mut record = core_format::document_to_record(&doc)?;
-            rail_across_doc::ids::restored_record(&mut record, &rail_across_doc::ids::originals(input));
+            rail_across_doc::ids::in_order_of(&mut record, input);
             Ok(json!({ "record": record, "cut": cut }))
         }
         "document.stationPoint" => Ok(stations::station_point(&input["record"], input.get("name"), input.get("uic"), input.get("rl100"))),

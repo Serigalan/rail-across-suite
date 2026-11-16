@@ -47,7 +47,7 @@
 
 import {
   endOfIndex, heightAt, jointGroup, pointAtStation, roundHeight, stationOnTrack, trackLength, turnoutDivergingPort, turnoutLinePort,
-  portTrack, portEnd,
+  portTrack, portEnd, generateId,
 } from '@rail-across/core/track'
 import { ldsLift, planeFrom, roundMm, STATION_TOL, switchCouplings, Z_TOL } from '@rail-across/core/switch'
 
@@ -589,12 +589,12 @@ export function switchMisfits(project, opts) {
 
 // ── Making and taking away dependencies (the design mode) ───────────────────
 
-/** A point id not yet in the project. */
+/** A point id not yet in the project: a UUID, as every id of the record (decision 0029, phase 6). */
 function newPointId(project) {
   const ids = pointIds(project)
   for (;;) {
-    const id = Math.random().toString(36).slice(2, 10)
-    if (id.length === 8 && !ids.has(id)) return id
+    const id = generateId()
+    if (!ids.has(id)) return id
   }
 }
 

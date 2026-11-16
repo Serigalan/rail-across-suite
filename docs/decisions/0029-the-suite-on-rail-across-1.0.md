@@ -41,16 +41,18 @@ documents of before forward by a step of the door and, where the project server 
 
 - Until phase 6 the record keeps its numbers, names, switch ports and km lines in WGS 84; the door converts. A
   record read from a document holds the UUIDs the document gave it; a tool that reads the core beside its own
-  layer reads it in the record's words and ids (`recordDomains`), and a cut of dangling references keeps the
-  record's ids. A tool sees no change of words before then.
+  layer reads it in the record's words and ids (`recordDomains`). A tool sees no change of words before then.
 - The specification's section on the implementation is shortened with every phase.
 - Phase 6 began with the signalling layer, which the record already kept as the document has it: its references
   are named as the document's (`detectionPointIds`, `clearSectionIds`, `passOn.leftId`/`rightId`); the door still
   takes the names of before on the way in, as a working copy may hold them. Tracks and platforms followed: they name
   their operational point by `operationalPointId`, and state their kind and side as words (`line`/`station`,
   `regular`/`opposite`); a height point names its dependency `depId`; an element states its kind as a word
-  (`straight`/`arc`/`transition`), and so do the rules and the track optimizer that read elements. The km lines and
-  the ids of any form follow in pieces of their own.
+  (`straight`/`arc`/`transition`), and so do the rules and the track optimizer that read elements. Every id of the
+  record is a UUID: what a tool makes draws one, a RailJSON import takes the UUID drawn from the file's id (as the
+  door would on saving) and repoints what it carries over, and a cut of dangling references gives the record back
+  as its document names it, its collections in their order; an id of before is drawn into one on the way in. The
+  km lines follow in a piece of their own.
 - A switch keeps its ports as the suite always had them and as OSRD writes a point switch: `B1` the branch, `B2` the
   main track (2026-11-16). Phase 1 had turned them round; core 5.0 turns them back — a major version, as a reader of
   4.0 would misread them —, the door brings a document of 4.0 forward by swapping the two, the project server its

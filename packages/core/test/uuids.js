@@ -1,12 +1,10 @@
 // What the door makes of a fixture's short ids (decision 0029, phase 2): every
 // id a UUID, the one drawn from it (derivedId), every reference to it the same.
 // For tests that state a record with ids like 't1' and expect it back.
-import { derivedId } from '../src/document/canonical.js'
-
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
+import { uuidOf } from '../src/document/ids.js'
 
 /** The UUID an id goes by in a document. */
-export const u = (id) => (UUID.test(id) ? id : UUID.test(id.toLowerCase()) ? id.toLowerCase() : derivedId(id))
+export const u = uuidOf
 
 // The record names some references as before (decision 0029, phase 1): not ending in Id.
 const BEFORE = new Set(['operationalPoint', 'dep', 'boundedBy', 'clearSections'])

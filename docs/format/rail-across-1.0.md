@@ -580,8 +580,8 @@ from it in these points, each to be brought in line by its own step (decision 00
   its domains and its blobs, core 5.0, civil 3.0, signalling 4.0, electrification 3.0) and the operation as an
   operations document (vehicles 1.0, timetables 1.0); the file rail-across-1.0 brings them together, and a file of
   before is still read.
-- The record the tools work on keeps km lines in WGS 84 with the kilometrage per point, and ids of any form; the
-  door converts it into the document and back (decision 0029, phase 6 takes that out). A km line of before is
+- The record the tools work on keeps km lines in WGS 84 with the kilometrage per point; the door converts them into
+  the document and back (decision 0029, phase 6 takes that out). A km line of before is
   kept as points, not yet fitted with design elements.
 - A domain the reader does not know is kept; one of a later version of a domain it knows is refused, not read
   with the version it knows.

@@ -346,7 +346,8 @@ pub fn by_id(list: &mut [Value]) {
 pub fn record_to_document(record: &Value, schema_hashes: &HashMap<&str, String>) -> Result<Value> {
     let (mut domains, mut blobs) = record_domains(record, schema_hashes)?;
     km_lines_to_document(&mut domains, &mut blobs);
-    // The record keeps the words and names of before and ids of any form (decision 0029, phase 6 takes this out).
+    // A record of before — a working copy, a test's fixture — may still hold the words and names of before or an id
+    // that is no UUID: the door takes them on the way in (decision 0029, phase 6).
     crate::words::forward(&mut domains);
     crate::ids::forward(&mut domains);
     sorted_collections(&mut domains);

@@ -45,7 +45,8 @@ export function categoryColor(category) {
   return '#5f6473'
 }
 
-const newId = () => globalThis.crypto?.randomUUID?.() ?? `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
+// A UUID, as every id of the record (decision 0029, phase 6) — drawn by hand where the browser draws none.
+const newId = () => globalThis.crypto?.randomUUID?.() ?? '10000000-1000-4000-8000-100000000000'.replace(/[018]/g, c => (c ^ (Math.random() * 16) >> (c / 4)).toString(16))
 
 export const newTimetable = () => ({ trains: [] })
 

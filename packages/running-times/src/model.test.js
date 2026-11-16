@@ -69,6 +69,17 @@ describe('a path over the net', () => {
     expect(via.path.map(p => p.trackId)).toEqual(['T1', 'T2'])
   })
 
+  it('runs over nothing closed, stopping before a closed stretch or starting behind it (decision 0030)', () => {
+    const closed = { ...record, closed: [{ trackId: 'T2', lo: 400, hi: 600 }] }
+    expect(findPath(closed, { trackId: 'T1', station: 100, direction: 'up' }, { trackId: 'T4', station: 500 })).toBeNull()
+    expect(findPath(closed, { trackId: 'T1', station: 100, direction: 'up' }, { trackId: 'T2', station: 400 })).not.toBeNull()
+    expect(findPath(closed, { trackId: 'T2', station: 600, direction: 'up' }, { trackId: 'T4', station: 500 })).not.toBeNull()
+    expect(findPath(closed, { trackId: 'T2', station: 300, direction: 'up' }, { trackId: 'T2', station: 700 })).toBeNull()
+    // the branch is still open; a given run over the closed stretch is not
+    expect(findPath(closed, { trackId: 'T1', station: 100, direction: 'up' }, { trackId: 'T3', station: 100 })).not.toBeNull()
+    expect(pathAlong(closed, ['T1', 'T2'], { trackId: 'T1', station: 500 }, { trackId: 'T2', station: 900 })).toBeNull()
+  })
+
   it('finds offsets and locations along it', () => {
     const path = findPath(record, { trackId: 'T1', station: 100, direction: 'up' }, { trackId: 'T4', station: 500 })
     expect(offsetOnPath(path, { trackId: 'T2', station: 250 })).toBeCloseTo(1150, 6)

@@ -423,6 +423,37 @@ Im Modus `wait` gilt:
   an dem etwas in Betrieb geht oder außer Betrieb kommt, oder dem Endzustand. Der Stand an einem Bauzustand folgt aus
   den Lebensdauern; eine andere Variante oder ein anderer Bauzustand lässt sich daneben legen.
 
+## Bauszenarien
+
+Ein Bauszenario eines Fahrplans (Entscheidung 0030) sperrt Gleisstücke eine Zeit lang, nimmt Züge heraus und leitet
+Züge von Hand um. Die Baubetriebs-Sim fährt den Fahrplan darin für einen Tag:
+
+- **Das Netz des Tages** ist die Variante im Bauzustand dieses Tages, wie die Lebensdauern aus dem Layout-Tool ihn
+  ergeben.
+- **Eine Sperrung** gilt vom ersten bis zum letzten Tag, ganztägig oder in einem täglichen Zeitfenster (Sperrpause).
+  Ein Fenster, dessen Ende vor seinem Beginn liegt, reicht über Mitternacht in den nächsten Tag; eine Sperrung des
+  Vortags reicht deshalb in die frühen Stunden des Tages.
+- **Kein Weg führt über ein gesperrtes Stück**, nicht um mehr als 0,5 m. Der Rest des Gleises bleibt nutzbar: Ein
+  Zug kann vor der Sperrung halten oder hinter ihr beginnen. Das gilt für den kürzesten Weg, für einen bevorzugten
+  Fahrweg und für eine Fahrstraße, über die die Disposition einen Zug schickt.
+- **Ein Zug ist betroffen**, wo sein Weg, wie er im Fahrplan fährt, über das gesperrte Stück führt, während die
+  Sperrung gilt: von der Spitze, die in das Stück einfährt, bis zum Schluss, der es verlässt. Ein nicht betroffener
+  Zug fährt wie er ist.
+- **Ein betroffener Zug wird umgeleitet:** Er fährt den kürzesten Weg, mit dem gesperrt, was ihn betrifft, und
+  behält seine Punkte. Wo der Umweg eine weitere Sperrung berührt, wird auch diese für ihn gesperrt, höchstens
+  dreimal.
+- **Von Hand:** Eine von Hand gesetzte Umleitung fährt den Zug auf ihren eigenen Punkten — Weg, Halte, Fahrwege —
+  und geht der gerechneten vor; was sie berührt, wird für ihn gesperrt wie für jeden.
+- **Nicht fahrbar:** Ein Zug, für den kein Weg bleibt, sagt, an welchem Punkt er keinen fand. Ein Punkt auf einem
+  gesperrten Stück oder einer, der nur darüber erreichbar ist, lässt sich nicht halten; eine Umleitung von Hand ohne
+  ihn schon.
+- **Herausgenommen:** Ein herausgenommener Zug fährt nicht und belegt nichts.
+- **Disposition:** Die fahrenden Züge bekommen das Netz wie im Fahrplan-Editor (siehe „Disposition“), jeder auf
+  seinem Netz mit dem, was für ihn gesperrt ist. Eine Sperrung in einem Zeitfenster sperrt ein Gleis nicht für die
+  Züge außerhalb davon.
+- **Neben dem Fahrplan:** Jeder Zug steht neben seiner Regelfahrt auf demselben Netz des Tages: Ankunft, Fahrzeit
+  und Verspätung, Warten und Konflikte.
+
 ## Grenzen
 
 Nicht gerechnet werden, teils weil OSRD-Teile nicht portiert sind, teils weil die Suite sie noch nicht nutzt:
@@ -467,6 +498,7 @@ Nicht gerechnet werden, teils weil OSRD-Teile nicht portiert sind, teils weil di
 | Fahrzeitrechnung | `sim/crates/sim` (Physik, Hüllkurven, Zuschläge, eine Zugfahrt) |
 | Weg, Neigungen, Bögen, Geschwindigkeiten | `packages/running-times/src/path.js`, `route.js`, `request.js` |
 | Bremsen auf der Neigung | `sim/crates/sim/src/physics/integrator.rs` (`braking_deceleration`) |
+| Bauszenarien | `packages/timetables/src/scenario.js`, `packages/running-times/src/path.js` (`closed`) |
 | Richtungswechsel | `packages/running-times/src/route.js` (`routeVia`, `backAlong`), `packages/timetables/src/occupancy.js` (`blocksAlong`) |
 | Traktionsart | `packages/running-times/src/traction.js` |
 | Orte | `packages/running-times/src/stations.js` |

@@ -7,11 +7,27 @@ import { heightAt, trackLength, tracksOnFrom } from '@rail-across/core/track'
  * up (with the stationing) or down, or none where either will do. A path is
  * [{ trackId, start, end }] in running order: each piece is run from `start`
  * to `end`, up where end > start.
+ *
+ * What is closed (decision 0030) a record states as `closed`, [{ trackId, lo,
+ * hi }]: no path runs over a closed stretch — more than half a metre of it —,
+ * a train may stop before it or start behind it.
  */
 
 const away = (direction) => (direction === 'down' ? 'BEGIN' : 'END')
 const pieceLength = (p) => Math.abs(p.end - p.start)
 export const directionOf = (p) => (p.end >= p.start ? 'up' : 'down')
+
+/** How far a path may run into a closed stretch and still be open [m]. */
+const CLOSED_SHARE = 0.5
+
+/** Whether the stretch of a track from `a` to `b` runs over none of what `closed` holds. */
+const openWay = (closed, trackId, a, b) => !closed.some(c => c.trackId === trackId && Math.min(Math.max(a, b), c.hi) - Math.max(Math.min(a, b), c.lo) > CLOSED_SHARE)
+
+/** Whether a path runs over none of what a record states as closed. */
+export const pathOpen = (record, path) => {
+  const closed = record?.closed ?? []
+  return !closed.length || path.every(p => openWay(closed, p.trackId, p.start, p.end))
+}
 
 /**
  * The shortest path from one location to another — over switches along
@@ -24,6 +40,8 @@ export function findPath(record, from, to) {
   const lengths = new Map(tracks.map(t => [t.id, trackLength(t)]))
   if (!lengths.has(from?.trackId) || !lengths.has(to?.trackId)) return null
   const fits = (want, direction) => !want || want === direction
+  const closed = record?.closed ?? []
+  const open = (trackId, a, b) => !closed.length || openWay(closed, trackId, a, b)
   let best = null
   for (const direction of from.direction ? [from.direction] : ['up', 'down']) {
     // Dijkstra over (track, the way it is run); the cost what is run.
@@ -33,11 +51,11 @@ export function findPath(record, from, to) {
     const tryTarget = (trackId, dir, enter, path, cost) => {
       if (trackId !== to.trackId || !fits(to.direction, dir)) return
       const ahead = dir === 'up' ? to.station - enter : enter - to.station
-      if (ahead >= 0) reach([...path, { trackId, start: enter, end: to.station }], cost + ahead)
+      if (ahead >= 0 && open(trackId, enter, to.station)) reach([...path, { trackId, start: enter, end: to.station }], cost + ahead)
     }
     tryTarget(from.trackId, direction, from.station, [], 0)
     const leaveAt = direction === 'up' ? lengths.get(from.trackId) : 0
-    queue.push({ trackId: from.trackId, direction, cost: Math.abs(leaveAt - from.station), path: [{ trackId: from.trackId, start: from.station, end: leaveAt }] })
+    if (open(from.trackId, from.station, leaveAt)) queue.push({ trackId: from.trackId, direction, cost: Math.abs(leaveAt - from.station), path: [{ trackId: from.trackId, start: from.station, end: leaveAt }] })
     while (queue.length) {
       queue.sort((a, b) => a.cost - b.cost)
       const cur = queue.shift()
@@ -51,7 +69,7 @@ export function findPath(record, from, to) {
         const dir = next.endpoint === 'BEGIN' ? 'up' : 'down'
         const enter = dir === 'up' ? 0 : length
         tryTarget(next.trackId, dir, enter, cur.path, cur.cost)
-        if (cur.path.length > 400) continue
+        if (cur.path.length > 400 || !open(next.trackId, 0, length)) continue
         queue.push({ trackId: next.trackId, direction: dir, cost: cur.cost + length, path: [...cur.path, { trackId: next.trackId, start: enter, end: length - enter }] })
       }
     }
@@ -77,7 +95,8 @@ export function pathAlong(record, trackIds, from, to, direction = null) {
   if (trackIds.length === 1) {
     const dir = to.station >= from.station ? 'up' : 'down'
     if ((direction && direction !== dir) || (to.direction && to.direction !== dir)) return null
-    return [{ trackId: from.trackId, start: from.station, end: to.station }].filter(p => pieceLength(p) > 1e-6)
+    const one = [{ trackId: from.trackId, start: from.station, end: to.station }].filter(p => pieceLength(p) > 1e-6)
+    return pathOpen(record, one) ? one : null
   }
   // The way the first track is left: by the end the second meets it at.
   const leaveBy = ['END', 'BEGIN'].find(end => tracksOnFrom(trackIds[0], end, tracks, switches).some(n => n.trackId === trackIds[1]))
@@ -94,7 +113,8 @@ export function pathAlong(record, trackIds, from, to, direction = null) {
     path.push({ trackId: trackIds[i], start: enter, end: last ? to.station : lengths.get(trackIds[i]) - enter })
   }
   if (to.direction && to.direction !== dir) return null
-  return path.filter(p => pieceLength(p) > 1e-6)
+  const out = path.filter(p => pieceLength(p) > 1e-6)
+  return pathOpen(record, out) ? out : null
 }
 
 /** The length of a path [m]. */

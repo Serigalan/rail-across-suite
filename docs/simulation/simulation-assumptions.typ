@@ -303,6 +303,21 @@ In mode `wait`:
 - *Stations:* for every track and section of a station, the union of the times it is held and its share of the period.
 - *Construction stages:* the capacity is computed on a variant's net at a construction stage: the existing state, every day something is put into or taken out of service, or the final state. The state at a stage follows from the lifespans; another variant or stage can be laid beside it.
 
+= Construction scenarios
+
+A construction scenario of a timetable (decision 0030) closes stretches of track for a while, takes trains out and diverts trains by hand. The Baubetriebs-Sim runs the timetable in it for one day:
+
+- *The net of the day* is the variant at the stage of that day, as the lifespans of the Layout-Tool make it.
+- *A closure* holds from its first to its last day, all day or in a daily window (possession). A window whose end lies before its beginning runs past midnight into the next day; a closure of the day before therefore reaches into the early hours of the day.
+- *No way runs over a closed stretch*, not by more than 0.5 m. The rest of the track stays usable: a train may stop in front of the closure or start behind it. This holds for the shortest way, for a preferred itinerary and for a route the dispatching sends a train over.
+- *A train is touched* by a closure where its way, as it runs in the timetable, runs over the closed stretch while the closure holds: from its head entering the stretch to its tail leaving it. A train not touched runs as it is.
+- *A touched train is diverted:* it runs the shortest way with what touches it closed, keeping its points. Where the way around touches another closure, that one is closed for it too, three times at the most.
+- *By hand:* a diversion set by hand runs the train on its own points — its way, its stops, its itineraries — and comes before the computed one; what it touches is closed for it as for any.
+- *Not runnable:* a train for which no way is left says at which point it found none. A point on a closed stretch, or one that can only be reached over it, cannot be kept; a diversion by hand without it can.
+- *Taken out:* a train taken out does not run and holds nothing.
+- *Dispatching:* the trains that run are given the net as in the Fahrplan-Editor (see "Dispatching"), each on its net with what is closed for it. A closure in a window does not close a track for the trains outside it.
+- *Beside the timetable:* each train is set beside its regular run on the same net of the day: arrival, running time and delay, waits and conflicts.
+
 = Limits
 
 Not computed, partly because parts of OSRD are not ported, partly because the suite does not use them yet:
@@ -347,6 +362,7 @@ Not computed, partly because parts of OSRD are not ported, partly because the su
   [Running time calculation], [`sim/crates/sim` (physics, envelopes, margins, one train's run)],
   [Way, grades, curves, speeds], [`packages/running-times/src/path.js`, `route.js`, `request.js`],
   [Braking on the grade], [`sim/crates/sim/src/physics/integrator.rs` (`braking_deceleration`)],
+  [Construction scenarios], [`packages/timetables/src/scenario.js`, `packages/running-times/src/path.js` (`closed`)],
   [Reversal], [`packages/running-times/src/route.js` (`routeVia`, `backAlong`), `packages/timetables/src/occupancy.js` (`blocksAlong`)],
   [Traction mode], [`packages/running-times/src/traction.js`],
   [Places], [`packages/running-times/src/stations.js`],

@@ -3,7 +3,7 @@
 
 //! Runs of elements that are one element (`mergeElements.js`).
 
-use rail_across_geom::kind::{kind_of, is_transition, STRAIGHT};
+use rail_across_geom::kind::{STRAIGHT, is_transition, kind_of};
 use std::collections::BTreeSet;
 
 use rail_across_geom::element::{Utm, curved_values, resolve_end_bearing, straight_values};

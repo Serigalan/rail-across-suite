@@ -13,7 +13,7 @@
   },
   "scripts": {
     "lint": "eslint -c packages/eslint.config.js packages",
-    "check": "npm run -s lint && node tools/boundaries.mjs && node --test 'tools/*.test.mjs'"
+    "check": "npm run -s lint && node tools/boundaries.mjs && node docs/format/build.mjs --check && node docs/simulation/build.mjs --check && node --test 'tools/*.test.mjs'"
   },
   "allowScripts": {
     "esbuild": true,

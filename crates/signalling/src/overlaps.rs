@@ -40,7 +40,13 @@ pub fn boundary_start_speed(core: &Value, signal: &Value) -> Option<f64> {
     }
     let at = signal.get("at")?;
     let (track_id, station) = (at.get("trackId")?, at.get("station")?.as_f64()?);
-    let list = |k: &str| core.get("collections").and_then(|c| c.get(k)).and_then(Value::as_array).map(Vec::as_slice).unwrap_or(&[]);
+    let list = |k: &str| {
+        core.get("collections")
+            .and_then(|c| c.get(k))
+            .and_then(Value::as_array)
+            .map(Vec::as_slice)
+            .unwrap_or(&[])
+    };
     let track = list("tracks").iter().find(|t| strict_eq(t.get("id"), Some(track_id)))?;
     let length = track_length(track);
     list("endMarks").iter().find_map(|m| {
@@ -48,9 +54,15 @@ pub fn boundary_start_speed(core: &Value, signal: &Value) -> Option<f64> {
         if m.get("kind").and_then(Value::as_str) != Some("boundary") || !strict_eq(end.get("trackId"), Some(track_id)) {
             return None;
         }
-        let (edge, inward) = if end.get("endpoint").and_then(Value::as_str) == Some("END") { (length, "down") } else { (0.0, "up") };
+        let (edge, inward) = if end.get("endpoint").and_then(Value::as_str) == Some("END") {
+            (length, "down")
+        } else {
+            (0.0, "up")
+        };
         let acts = truthy(signal.get("bothDirections")) || at.get("direction").and_then(Value::as_str).unwrap_or("up") == inward;
-        (acts && (station - edge).abs() <= AT_BOUNDARY).then(|| m.get("speed").and_then(Value::as_f64).filter(|v| *v > 0.0)).flatten()
+        (acts && (station - edge).abs() <= AT_BOUNDARY)
+            .then(|| m.get("speed").and_then(Value::as_f64).filter(|v| *v > 0.0))
+            .flatten()
     })
 }
 

@@ -13,12 +13,12 @@ const LAYERS = ['civil-bridge-band', 'civil-bridge-edge', 'civil-wall', 'civil-b
 const EMPTY = { type: 'FeatureCollection', features: [] }
 
 /** The colour each kind of structure is drawn in. */
-export const STRUCTURE_COLORS = { bridges: '#6b7280', retainingWalls: '#8a5a2b', noiseBarriers: '#2f8f5b' }
+const STRUCTURE_COLORS = { bridges: '#6b7280', retainingWalls: '#8a5a2b', noiseBarriers: '#2f8f5b' }
 /** How far from the axis a wall or a barrier stands where it says nothing [m]. */
 export const DEFAULT_OFFSETS = { retainingWalls: 4.5, noiseBarriers: 3.8 }
 
 /** The line a structure is drawn as, in WGS 84, or null where its track is not there. */
-export function structureLine(kind, obj, trackById) {
+function structureLine(kind, obj, trackById) {
   const at = obj.at ?? {}
   const track = trackById.get(at.trackId)
   if (!track || !Number.isFinite(at.startStation) || !Number.isFinite(at.endStation)) return null
@@ -30,7 +30,7 @@ export function structureLine(kind, obj, trackById) {
 }
 
 /** The structures of a project as features: [{ kind, id, coords }] — on the tracks `tracks` (the project's by default). */
-export function structureFeatures(project, tracks = project?.tracks ?? []) {
+function structureFeatures(project, tracks = project?.tracks ?? []) {
   const trackById = new Map(tracks.map(t => [t.id, t]))
   const features = []
   for (const kind of Object.keys(STRUCTURE_COLORS)) {

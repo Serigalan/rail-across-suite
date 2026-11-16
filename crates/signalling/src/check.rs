@@ -101,7 +101,11 @@ pub fn check_signalling_on(core: &Value, signalling: &Value, civil: &Value) -> V
     let points = ids(coll(core, "operationalPoints"));
     let civil_platforms: Vec<&Value> = coll(core, "platforms").iter().chain(coll(civil, "platforms").iter()).collect();
     let platforms: HashSet<String> = civil_platforms.iter().map(|p| s(p.get("id"))).collect();
-    let stopping_places: &[Value] = if c("stoppingPlaces").is_empty() { coll(core, "stoppingPlaces") } else { c("stoppingPlaces") };
+    let stopping_places: &[Value] = if c("stoppingPlaces").is_empty() {
+        coll(core, "stoppingPlaces")
+    } else {
+        c("stoppingPlaces")
+    };
     // The platform a stopping place is at: the one it names, or the one naming it.
     let platform_of = |h: &Value| -> Option<Value> {
         if let Some(p) = h.get("platformId").filter(|v| truthy(Some(v))) {
@@ -114,17 +118,10 @@ pub fn check_signalling_on(core: &Value, signalling: &Value, civil: &Value) -> V
             .and_then(|p| p.get("id").cloned())
     };
     let signals: HashMap<String, &Value> = c("signals").iter().map(|x| (s(x.get("id")), x)).collect();
-    let known: HashMap<&str, HashSet<String>> = [
-        "detectionPoints",
-        "trackSections",
-        "switchElements",
-        "routes",
-        "overlaps",
-        "flankProtection",
-    ]
-    .into_iter()
-    .map(|n| (n, ids(c(n))))
-    .collect();
+    let known: HashMap<&str, HashSet<String>> = ["detectionPoints", "trackSections", "switchElements", "routes", "overlaps", "flankProtection"]
+        .into_iter()
+        .map(|n| (n, ids(c(n))))
+        .collect();
     let stopping_ids = ids(stopping_places);
     let overlaps: HashMap<String, &Value> = c("overlaps").iter().map(|o| (s(o.get("id")), o)).collect();
 

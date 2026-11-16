@@ -461,6 +461,8 @@ function RouteSectionList({ sections, t }) {
 const searchFrom = (net, signals, start) => searchWays(net, signals, start, { boundaries: true })
 const waysFrom = (net, signals, start) => searchFrom(net, signals, start).ways
   .map(f => (f.boundary ? { ...f, target: boundaryTarget(signals, f) } : f))
+/** The ways from a start, found again only where the net, the signals or the start change. */
+const useSearch = (net, signals, start) => useMemo(() => (start ? searchFrom(net, signals, start) : { ways: [], cutOff: [] }), [net, signals, start])
 
 /**
  * Finding routes from a signal — chosen in the list or on the plan —: every
@@ -484,7 +486,7 @@ function FindRoutes({ domain, net, extents, ops, setMode, setSketch, t }) {
   const [done, setDone] = useState(null)
   const start = mains.find(s => s.id === startId) ?? null
   const keyOf = (f) => `${f.target?.id ?? f.boundary.mark.id}|${f.trackIds.join()}`
-  const search = useMemo(() => (start ? searchFrom(net, signals, start) : { ways: [], cutOff: [] }), [net, signals, start])
+  const search = useSearch(net, signals, start)
   const found = search.ways
   // A start that is not there yet is reckoned with as though it were.
   const withStart = start?.fresh ? [...signals, start] : signals

@@ -4,9 +4,9 @@
 //! Splicing two tracks into one: what a picked element offers, the request,
 //! and the commit around the chain the optimizer answers with (`splice.js`).
 
-use rail_across_geom::kind::{is_arc, is_transition};
 use rail_across_geom::coords::transform_plane_point;
 use rail_across_geom::element::{Utm, node_utm, resolve_end_bearing, reverse_element};
+use rail_across_geom::kind::{is_arc, is_transition};
 use rail_across_geom::reconstruct::reconstruct_elements;
 use rail_across_geom::tolerances::NODE_TOL;
 use rail_across_js::{Object, generate_id, get, js_number, js_round, number, strict_eq, truthy};

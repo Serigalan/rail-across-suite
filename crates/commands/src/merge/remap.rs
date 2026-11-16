@@ -305,7 +305,12 @@ pub fn carry_references(project: &Value, logs: &[&[Value]], old_tracks: &dyn Fn(
         }
         out[&name] = domain["collections"][&name].clone();
         for m in moved {
-            carried.push(Carried { collection: name.clone(), id: m.id, from: m.from, to: m.to });
+            carried.push(Carried {
+                collection: name.clone(),
+                id: m.id,
+                from: m.from,
+                to: m.to,
+            });
         }
     }
     if rail_across_js::truthy(project.get("routes")) {

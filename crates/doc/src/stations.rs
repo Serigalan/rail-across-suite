@@ -16,7 +16,9 @@ fn list<'a>(v: &'a Value, key: &str) -> &'a [Value] {
 /// The point a track or platform of `record` names, where the register has it.
 pub fn point_of<'a>(record: &'a Value, obj: &Value) -> Option<&'a Value> {
     let id = obj.get("operationalPointId").and_then(Value::as_str)?;
-    list(record, "operationalPoints").iter().find(|p| p.get("id").and_then(Value::as_str) == Some(id))
+    list(record, "operationalPoints")
+        .iter()
+        .find(|p| p.get("id").and_then(Value::as_str) == Some(id))
 }
 
 /// `stationRegister(record)` as the face answers it: the points, and the point of each track and platform.

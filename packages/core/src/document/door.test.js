@@ -373,8 +373,4 @@ describe('what is written from the schemas and the core', () => {
   }
   it('the shared vectors (schemas/vectors) are what the core makes now', current('vectors.mjs'))
   it('the types (types/document.d.ts) are what the schemas give now', current('types.mjs'))
-  it('the format description (docs/format) is what its text and schemas give now', () => {
-    const tool = fileURLToPath(new URL('../../../../docs/format/build.mjs', import.meta.url))
-    expect(() => execFileSync(process.execPath, [tool, '--check'], { encoding: 'utf8' })).not.toThrow()
-  })
 })

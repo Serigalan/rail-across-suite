@@ -4,10 +4,10 @@
 //! The S-curve between two line tracks: solving the connection for a shift,
 //! the range of shifts it stands over, and the commit (`sCurve.js`).
 
-use rail_across_geom::kind::is_transition;
 use rail_across_geom::cant::cant_ends;
 use rail_across_geom::coords::{plane_to_wgs84, transform_grid_bearing, wgs84_to_plane};
 use rail_across_geom::element::{Utm, node_utm};
+use rail_across_geom::kind::is_transition;
 use rail_across_geom::tolerances::NODE_TOL;
 use rail_across_js::{Object, generate_id, get, js_number, js_string, number, strict_eq, truthy};
 use rail_across_rules::element_length::min_element_length;

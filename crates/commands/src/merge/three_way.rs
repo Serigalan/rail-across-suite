@@ -9,8 +9,7 @@ use rail_across_track::switch_model::{port_track, ports_of};
 use serde_json::{Map, Value, json};
 
 use super::collections::{
-    WHOLE, collections_in, fields_of, index_collection, key_of, layers_in, list_of, object_from_fields, object_label, project_fields, same_value,
-    set_list,
+    WHOLE, collections_in, fields_of, index_collection, key_of, layers_in, list_of, object_from_fields, object_label, project_fields, same_value, set_list,
 };
 use super::diff::primary;
 use super::remap::{carry_references, remap_kind};

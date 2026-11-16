@@ -18,7 +18,10 @@ pub fn valid_intervals(valid: &dyn Fn(f64) -> bool, from: f64, to: f64, step: f6
     let mut out = sampled.clone();
     for p in points.iter().copied().filter(|&p| p >= from && p <= to && !inside(p) && valid(p)) {
         // A point just past a stretch's end, which the millimetre grid fell short of, ends it.
-        match out.iter_mut().find(|(a, b)| (p > *b && p - *b <= GRID + 1e-9) || (p < *a && *a - p <= GRID + 1e-9)) {
+        match out
+            .iter_mut()
+            .find(|(a, b)| (p > *b && p - *b <= GRID + 1e-9) || (p < *a && *a - p <= GRID + 1e-9))
+        {
             Some(iv) => *iv = (iv.0.min(p), iv.1.max(p)),
             None => out.push((p, p)),
         }

@@ -4,8 +4,8 @@
 //! Reconnecting existing elements: a stretch taken out and its neighbours
 //! joined again by the splice construction (`reconnect.js`).
 
-use rail_across_geom::kind::{is_arc, is_transition};
 use rail_across_geom::element::{Utm, end_point_curved, end_point_straight, node_utm, resolve_end_bearing};
+use rail_across_geom::kind::{is_arc, is_transition};
 use rail_across_geom::transition::{is_bloss, sample_transition};
 use rail_across_js::{Object, get, js_number, js_round, number, truthy};
 use rail_across_rules::cant::{auto_cant_model, cant_sign};

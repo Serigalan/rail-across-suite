@@ -4,7 +4,7 @@
 //! Editing a switch connection: taken apart in memory and laid again by the
 //! connection's own construction (`crossoverEdit.js`).
 
-use rail_across_geom::kind::{kind_of, TRANSITION};
+use rail_across_geom::kind::{TRANSITION, kind_of};
 use std::collections::HashSet;
 
 use rail_across_geom::element::Utm;

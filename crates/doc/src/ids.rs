@@ -79,7 +79,9 @@ pub fn forward(domains: &mut Object) {
 /// order it was given).
 pub fn in_order_of(record: &mut Value, before: &Value) {
     fn order(list: &mut Value, before: Option<&Value>) {
-        let (Value::Array(items), Some(Value::Array(was))) = (list, before) else { return };
+        let (Value::Array(items), Some(Value::Array(was))) = (list, before) else {
+            return;
+        };
         let key = |x: &Value| x.get("id").or_else(|| x.get("switchId")).and_then(Value::as_str).map(str::to_string);
         let place: std::collections::HashMap<String, usize> = was.iter().enumerate().filter_map(|(i, x)| Some((key(x)?, i))).collect();
         items.sort_by_key(|x| key(x).and_then(|k| place.get(&k).copied()).unwrap_or(usize::MAX));

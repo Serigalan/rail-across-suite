@@ -519,13 +519,7 @@ pub fn solve_end_chain(
     let old_k: Vec<f64> = a
         .runs
         .iter()
-        .map(|el| {
-            curvature_of(if is_arc(el) {
-                el.get("radius").and_then(Value::as_f64)
-            } else {
-                None
-            })
-        })
+        .map(|el| curvature_of(if is_arc(el) { el.get("radius").and_then(Value::as_f64) } else { None }))
         .collect();
     let value = |u: &crate::mid_chain::Unknown, scale_l: f64, k: Option<f64>| -> f64 {
         if u.length {

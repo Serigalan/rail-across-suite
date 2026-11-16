@@ -30,7 +30,8 @@ fn envelope() -> &'static SchemaSet {
     static SET: OnceLock<SchemaSet> = OnceLock::new();
     SET.get_or_init(|| {
         let mut set = SchemaSet::new();
-        set.add(serde_json::from_str(ENVELOPE).expect("the envelope's schema")).expect("the envelope's schema");
+        set.add(serde_json::from_str(ENVELOPE).expect("the envelope's schema"))
+            .expect("the envelope's schema");
         set
     })
 }
@@ -101,7 +102,10 @@ fn check_envelope(file: &Value) -> Result<()> {
     }
     let found = envelope().check("rail-across", file, 20).unwrap_or_default();
     if !found.is_empty() {
-        let details = found.iter().map(|b| format!("{}: {}", if b.path == "/" { "" } else { &b.path }, b.message)).collect();
+        let details = found
+            .iter()
+            .map(|b| format!("{}: {}", if b.path == "/" { "" } else { &b.path }, b.message))
+            .collect();
         return Err(PayloadError::with("invalid_payload", details));
     }
     for (hash, value) in file["blobs"].as_object().into_iter().flatten() {
@@ -130,18 +134,26 @@ pub fn from_file(file: &Value) -> Result<Value> {
         }
     }
     if let Some(part) = file.get("infraData") {
-        let doc = json!({ "format": "infra-data", "version": crate::door::VERSION, "domains": part["domains"], "blobs": named_blobs(&part["domains"], &blobs) });
+        let doc =
+            json!({ "format": "infra-data", "version": crate::door::VERSION, "domains": part["domains"], "blobs": named_blobs(&part["domains"], &blobs) });
         out.insert("infra".into(), crate::door::check_document(&doc).map_err(|e| prefixed(e, "/infraData"))?);
     }
     if let Some(part) = file.get("operations") {
         let doc = json!({ "format": "operations", "version": "1.0", "domains": part["domains"], "blobs": named_blobs(&part["domains"], &blobs) });
-        out.insert("operations".into(), crate::operations::check_operations(&doc).map_err(|e| prefixed(e, "/operations"))?);
+        out.insert(
+            "operations".into(),
+            crate::operations::check_operations(&doc).map_err(|e| prefixed(e, "/operations"))?,
+        );
     }
     Ok(Value::Object(out))
 }
 
 /// A part's refusal with its place in the file.
 fn prefixed(e: PayloadError, at: &str) -> PayloadError {
-    let details = e.details.iter().map(|d| if d.starts_with('/') { format!("{at}{d}") } else { d.clone() }).collect();
+    let details = e
+        .details
+        .iter()
+        .map(|d| if d.starts_with('/') { format!("{at}{d}") } else { d.clone() })
+        .collect();
     PayloadError::with(&e.code, details)
 }

@@ -6,7 +6,7 @@
 //! them — `geometry` (SAGITTA_ELEMENT) and, for arcs and transitions,
 //! `renderCoords` (SAGITTA_TRACK). `extra` is merged in last.
 
-use crate::kind::{STRAIGHT, ARC, TRANSITION};
+use crate::kind::{ARC, STRAIGHT, TRANSITION};
 use rail_across_js::{Object, number};
 use serde_json::{Value, json};
 

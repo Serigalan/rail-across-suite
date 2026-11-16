@@ -877,7 +877,10 @@ pub fn write_planpro(project: &Value, options: &Value) -> Result<Value, String> 
     let c = |k: &str| core.get("collections").map(|c| list(c, k)).unwrap_or(&[]);
     // The platforms are civil's in infra-data-2.0 (decision 0025); a document of 1.0 had them in the core.
     let civil = &doc["domains"]["civil"];
-    let platforms: Vec<&Value> = c("platforms").iter().chain(civil.get("collections").map(|c| list(c, "platforms")).unwrap_or(&[])).collect();
+    let platforms: Vec<&Value> = c("platforms")
+        .iter()
+        .chain(civil.get("collections").map(|c| list(c, "platforms")).unwrap_or(&[]))
+        .collect();
     let now = str_of(options, "now");
     let date = date_of(now).unwrap_or_else(|| "2026-01-01".into());
     let mut plan = Plan {
@@ -1340,7 +1343,7 @@ pub fn write_planpro(project: &Value, options: &Value) -> Result<Value, String> 
         plan.put("W_Kr_Anlage", &anlage, always("W_Kr_Anlage_Allg", allg), state);
         let element = element_of_switch.get(sid).copied();
         let eid = element.map(gid).unwrap_or_else(|| planpro_id(&format!("element:{}", node.guid)));
-        let estate = element.map(|e| states(e)).unwrap_or(state);
+        let estate = element.map(states).unwrap_or(state);
         let table = str_of(sw, "name")
             .or(element.and_then(|e| str_of(e, "name")))
             .map(String::from)

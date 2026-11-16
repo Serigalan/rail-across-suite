@@ -4,9 +4,9 @@
 //! Switch routes and chains: a route or a chain of pieces as it runs away
 //! from the point it starts at (`route.js`).
 
-use rail_across_geom::kind::is_transition;
 use rail_across_geom::coords::plane_to_wgs84;
 use rail_across_geom::element::{Utm, bearing_after};
+use rail_across_geom::kind::is_transition;
 use rail_across_geom::precision::SWITCH_ROUTE_STEP;
 use rail_across_geom::tolerances::NODE_TOL;
 use rail_across_geom::transition::{clothoid_radius_at, curvature_of, radius_of_curvature, sample_transition, transition_bearing_at, transition_point_at};

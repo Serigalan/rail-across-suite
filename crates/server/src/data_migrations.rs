@@ -9,7 +9,9 @@ use rusqlite::{Connection, OptionalExtension, params};
 use serde_json::{Value, json};
 
 use crate::checks::{check_kept, normalized_record};
-use crate::store::{STORED_FORMAT, STORED_FORMAT_1_0, STORED_FORMAT_CORE_4_0, STORED_FORMAT_LIFESPANS, STORED_FORMAT_REFERENCES, STORED_FORMAT_STAGES, Store, pack, unpack};
+use crate::store::{
+    STORED_FORMAT, STORED_FORMAT_1_0, STORED_FORMAT_CORE_4_0, STORED_FORMAT_LIFESPANS, STORED_FORMAT_REFERENCES, STORED_FORMAT_STAGES, Store, pack, unpack,
+};
 use crate::util::{hex, iso, random_bytes};
 
 /// The login of the user the server's own revisions name.
@@ -236,7 +238,9 @@ fn to_two_domains(db: &Connection, _now: i64) -> rusqlite::Result<String> {
                 .collect::<Result<_, _>>()?;
             let mut marks = std::collections::HashSet::new();
             for p in payloads {
-                let Some(infra) = unpack(&p).and_then(|p| rail_across_doc::door::check_document(&p).ok()) else { continue };
+                let Some(infra) = unpack(&p).and_then(|p| rail_across_doc::door::check_document(&p).ok()) else {
+                    continue;
+                };
                 for m in infra["domains"]["core"]["collections"]["endMarks"].as_array().into_iter().flatten() {
                     if let Some(mark) = m.get("id").and_then(Value::as_str) {
                         marks.insert(mark.to_string());

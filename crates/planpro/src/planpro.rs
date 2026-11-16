@@ -723,7 +723,7 @@ fn convert(model: &Model) -> Result<Converted, String> {
                 installation.and_then(|i| val(i.el, "W_Kr_Anlage_Allg/W_Kr_Grundform")).map(Value::String),
             ),
             ("ports", Some(json!({ "A": port(tip), "B1": port(branch), "B2": port(straight) }))),
-            ("lifespan", state.and_then(|o| lifespan_of(o))),
+            ("lifespan", state.and_then(lifespan_of)),
         ]);
         if let Some(art) = art.as_deref().filter(|a| !a.is_empty() && m::switch_kind(a).is_none()) {
             report.note("switch_kind_as_turnout", vec![("id", os(node)), ("kind", s(art))]);

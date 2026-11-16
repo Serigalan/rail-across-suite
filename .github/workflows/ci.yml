@@ -5,7 +5,8 @@ on:
   pull_request:
 
 jobs:
-  # The repository's own rules: the packages' lint and the import boundaries between apps and packages.
+  # The repository's own rules: the packages' lint, the import boundaries between apps and packages, and the
+  # documents written from their texts (docs/format, docs/simulation) as their sources make them.
   check:
     runs-on: ubuntu-24.04
     steps:

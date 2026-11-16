@@ -20,9 +20,8 @@ fn is_layer(v: &Value) -> bool {
 
 /// Whether a member is a list of objects each with an id (`id`, a switch's `switchId`).
 fn is_collection(v: &Value) -> bool {
-    v.as_array().is_some_and(|items| {
-        !items.is_empty() && items.iter().all(|o| o.get("id").is_some() || o.get("switchId").is_some())
-    })
+    v.as_array()
+        .is_some_and(|items| !items.is_empty() && items.iter().all(|o| o.get("id").is_some() || o.get("switchId").is_some()))
 }
 
 /// The collections the records hold, in the order they first come (`collectionsIn`; decision 0028, phase
@@ -156,7 +155,16 @@ pub fn project_fields(project: &Value, collections: &[String]) -> Map<String, Va
         .into_iter()
         .flatten()
         .filter(|(k, _)| !collections.contains(k))
-        .map(|(k, v)| (k.clone(), if is_layer(v) { v.get("fields").cloned().unwrap_or(serde_json::json!({})) } else { v.clone() }))
+        .map(|(k, v)| {
+            (
+                k.clone(),
+                if is_layer(v) {
+                    v.get("fields").cloned().unwrap_or(serde_json::json!({}))
+                } else {
+                    v.clone()
+                },
+            )
+        })
         .collect()
 }
 

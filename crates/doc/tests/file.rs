@@ -29,7 +29,10 @@ fn a_project_goes_into_one_file_and_comes_out_as_it_was() {
     assert_eq!(file["format"], "rail-across");
     assert_eq!(file["projectId"], infra["domains"]["core"]["fields"]["id"]);
     assert_eq!(file["generator"]["name"], "Rail-Across-Suite");
-    assert_eq!(file["infraData"], json!({ "format": "infra-data", "version": "1.0", "domains": infra["domains"] }));
+    assert_eq!(
+        file["infraData"],
+        json!({ "format": "infra-data", "version": "1.0", "domains": infra["domains"] })
+    );
     assert!(file.get("schemas").is_none(), "a file carries no schemas");
     let parts = from_file(&file).unwrap();
     assert_eq!(parts["infra"], infra);

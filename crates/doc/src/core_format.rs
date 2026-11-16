@@ -306,8 +306,16 @@ pub fn with_station_points(record: &Value) -> Value {
         Value::Object(rest)
     };
     let mut out = obj(record);
-    let ts: Vec<Value> = tracks.iter().enumerate().map(|(i, t)| pointed(t, Source::Track(i), &["stationName", "uicStation"])).collect();
-    let ps: Vec<Value> = platforms.iter().enumerate().map(|(i, p)| pointed(p, Source::Platform(i), &["stationName", "code"])).collect();
+    let ts: Vec<Value> = tracks
+        .iter()
+        .enumerate()
+        .map(|(i, t)| pointed(t, Source::Track(i), &["stationName", "uicStation"]))
+        .collect();
+    let ps: Vec<Value> = platforms
+        .iter()
+        .enumerate()
+        .map(|(i, p)| pointed(p, Source::Platform(i), &["stationName", "code"]))
+        .collect();
     out.insert("tracks".into(), Value::Array(ts));
     if record.get("platforms").is_some() {
         out.insert("platforms".into(), Value::Array(ps));
@@ -363,7 +371,11 @@ pub fn record_to_document(record: &Value, schema_hashes: &HashMap<&str, String>)
 /// The km lines of a record's domains as core 4.0 states them: in one plane, their runs' points as blobs
 /// (decision 0029, phase 2); one without a point is no line.
 pub(crate) fn km_lines_to_document(domains: &mut Object, blobs: &mut Object) {
-    let Some(Value::Array(lines)) = domains.get_mut("core").and_then(|c| c.get_mut("collections")).and_then(|c| c.get_mut("kmLines")) else {
+    let Some(Value::Array(lines)) = domains
+        .get_mut("core")
+        .and_then(|c| c.get_mut("collections"))
+        .and_then(|c| c.get_mut("kmLines"))
+    else {
         return;
     };
     let mut blob = |value: &Value| -> Value {
@@ -371,7 +383,11 @@ pub(crate) fn km_lines_to_document(domains: &mut Object, blobs: &mut Object) {
         blobs.insert(hash.clone(), value.clone());
         Value::String(hash)
     };
-    *lines = lines.iter().map(|l| crate::km_lines::to_document(l, &mut blob)).filter(|l| l.get("epsg").is_some()).collect();
+    *lines = lines
+        .iter()
+        .map(|l| crate::km_lines::to_document(l, &mut blob))
+        .filter(|l| l.get("epsg").is_some())
+        .collect();
 }
 
 /// The domains of a record's document and its blobs, in the words, names and ids the record keeps, every
@@ -660,7 +676,13 @@ pub fn document_to_record(doc: &Value) -> Result<Value> {
         ("platforms", platforms),
         ("endMarks", end_marks),
         ("routes", routes),
-        ("kmLines", list(c, "kmLines").iter().map(|l| crate::km_lines::to_record(l, &blobs)).collect::<Result<Vec<_>>>()?),
+        (
+            "kmLines",
+            list(c, "kmLines")
+                .iter()
+                .map(|l| crate::km_lines::to_record(l, &blobs))
+                .collect::<Result<Vec<_>>>()?,
+        ),
         ("axisSurveys", axis_surveys),
         ("referenceAxes", reference_axes),
         ("operationalPoints", operational_points),

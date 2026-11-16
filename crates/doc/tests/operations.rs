@@ -76,7 +76,15 @@ fn the_timetables_become_a_document_of_train_kinds_and_formations() {
 fn the_document_comes_back_as_the_timetables_were() {
     let rec = record();
     let back = from_operations(&to_operations(&rec, true).unwrap()).unwrap();
-    let of = |id: &str| back["timetables"].as_array().unwrap().iter().find(|t| t["id"] == u(id).as_str()).unwrap().clone();
+    let of = |id: &str| {
+        back["timetables"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|t| t["id"] == u(id).as_str())
+            .unwrap()
+            .clone()
+    };
     let tt1 = of("tt1");
     assert_eq!(tt1["data"]["dispatch"], rec["timetables"][0]["data"]["dispatch"]);
     // the trains by departure
@@ -100,7 +108,8 @@ fn the_document_comes_back_as_the_timetables_were() {
 #[test]
 fn a_vehicle_carried_keeps_its_rolling_stock_in_the_object() {
     let mut rec = record();
-    let stock = json!({ "railjson_version": "3.3", "name": "Lok", "mass": 84000, "effort_curves": { "modes": { "15000V": { "is_electric": true, "curves": [{}] } } } });
+    let stock =
+        json!({ "railjson_version": "3.3", "name": "Lok", "mass": 84000, "effort_curves": { "modes": { "15000V": { "is_electric": true, "curves": [{}] } } } });
     rec["vehicles"] = json!([{ "key": "osrd:loco", "vehicle": stock }]);
     let doc = to_operations(&rec, true).unwrap();
     assert_eq!(vehicles(&doc)[0]["rollingStock"], stock);
@@ -117,7 +126,8 @@ fn a_document_of_before_comes_in_the_two_domains() {
     // operations 1.0 as it was: one domain, a point naming its place in one member, the vehicle a blob
     let stock = json!({ "railjson_version": "3.3", "name": "Lok", "effort_curves": { "modes": { "thermal": { "is_electric": false, "curves": [{}] } } } });
     let hash = rail_across_doc::canonical::content_hash(&stock);
-    let before_point = |id: &str, place: &str| json!({ "id": id, "place": place, "station": place, "track": "t1", "stop": true, "dwell": 30, "itinerary": "it" });
+    let before_point =
+        |id: &str, place: &str| json!({ "id": id, "place": place, "station": place, "track": "t1", "stop": true, "dwell": 30, "itinerary": "it" });
     let schema: Value = serde_json::from_str(include_str!("../../../schemas/operations/1.0.schema.json")).unwrap();
     let doc = json!({
         "format": "operations", "version": "1.0", "blobs": { hash.clone(): stock },
@@ -136,7 +146,10 @@ fn a_document_of_before_comes_in_the_two_domains() {
     let marks: HashSet<String> = ["end-b".to_string()].into();
     let with = from_before(&doc, &marks);
     let point = &with["domains"]["timetables"]["collections"]["trains"][0]["points"][1];
-    assert_eq!(point, &json!({ "id": u("p2"), "endMarkId": u("end-b"), "trackId": u("t1"), "stop": true, "dwell": 30, "itineraryId": u("it") }));
+    assert_eq!(
+        point,
+        &json!({ "id": u("p2"), "endMarkId": u("end-b"), "trackId": u("t1"), "stop": true, "dwell": 30, "itineraryId": u("it") })
+    );
     assert!(check_operations(&with).is_ok());
 }
 

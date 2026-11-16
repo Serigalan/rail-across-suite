@@ -168,7 +168,10 @@ fn ids_become_guids_by_name_and_guids_stay() {
     assert_ne!(g, planpro_id(&rail_across_doc::ids::uuid_of("sig-b")));
     assert_eq!(g.len(), 36);
     assert_eq!(&g[14..15], "8");
-    assert_eq!(planpro_id(&rail_across_doc::ids::uuid_of("B3C4D5E6-0000-4000-8000-000000000001")), "b3c4d5e6-0000-4000-8000-000000000001");
+    assert_eq!(
+        planpro_id(&rail_across_doc::ids::uuid_of("B3C4D5E6-0000-4000-8000-000000000001")),
+        "b3c4d5e6-0000-4000-8000-000000000001"
+    );
 }
 
 /// A turnout in UTM: a line running east into a tip, the straight route on
@@ -223,7 +226,10 @@ fn a_project_in_utm_is_written_in_db_ref() {
     assert!(tracks.iter().all(|t| t["epsg"] == json!(5684)));
     // The scale of the strip: lengths a little different, never much.
     let length = |t: &Value| t["elements"].as_array().unwrap().iter().map(|e| e["length"].as_f64().unwrap()).sum::<f64>();
-    let line = tracks.iter().find(|t| t["id"] == json!(planpro_id(&rail_across_doc::ids::uuid_of("line")))).unwrap();
+    let line = tracks
+        .iter()
+        .find(|t| t["id"] == json!(planpro_id(&rail_across_doc::ids::uuid_of("line"))))
+        .unwrap();
     assert!((length(line) - 200.0).abs() < 0.2, "{}", length(line));
     // The turnout: its branch the arc, its straight route the line going on.
     let sw = &back["switches"][0];
@@ -234,7 +240,10 @@ fn a_project_in_utm_is_written_in_db_ref() {
     // The form as PlanPro names it: the kind of turnout, radius and ratio.
     assert_eq!(sw["label"], json!("EW 300-1:9"));
     let marks = back["endMarks"].as_array().unwrap();
-    let stop = marks.iter().find(|m| m["id"] == json!(planpro_id(&rail_across_doc::ids::uuid_of("stop")))).unwrap();
+    let stop = marks
+        .iter()
+        .find(|m| m["id"] == json!(planpro_id(&rail_across_doc::ids::uuid_of("stop"))))
+        .unwrap();
     assert_eq!(stop["kind"], json!("buffer_stop"));
     assert_eq!(marks.len(), 3);
     // The signal at its station, scaled as the track.
@@ -246,4 +255,3 @@ fn a_project_in_utm_is_written_in_db_ref() {
     assert_eq!(sig["logicalSignals"][0]["system"], json!("ks"));
     assert_eq!(sig["logicalSignals"][0]["function"], json!("entry"));
 }
-

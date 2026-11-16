@@ -248,7 +248,12 @@ impl SchemaSet {
         if let (Some(target), Some(id)) = (schema.get("x-target").and_then(Value::as_str), value.as_str())
             && target.split_once('.').is_some_and(|(d, c)| !d.is_empty() && !c.is_empty() && !c.contains(' '))
         {
-            out.push(Reference { path: path_of(steps), target: target.into(), id: id.into(), cut: cut_of(steps) });
+            out.push(Reference {
+                path: path_of(steps),
+                target: target.into(),
+                id: id.into(),
+                cut: cut_of(steps),
+            });
         }
         if let Some(r) = schema.get("$ref").and_then(Value::as_str).filter(|r| !r.is_empty()) {
             let (r_root, node) = self.resolve(Some(root), r)?;
@@ -267,7 +272,10 @@ impl SchemaSet {
             let patterns = schema.get("patternProperties").and_then(Value::as_object).unwrap_or(&empty);
             let additional = schema.as_object().and_then(|o| o.get("additionalProperties")).filter(|a| a.is_object());
             let required = |k: &str| {
-                schema.get("required").and_then(Value::as_array).is_some_and(|r| r.iter().any(|x| x.as_str() == Some(k)))
+                schema
+                    .get("required")
+                    .and_then(Value::as_array)
+                    .is_some_and(|r| r.iter().any(|x| x.as_str() == Some(k)))
             };
             for (k, v) in obj {
                 let mut subs: Vec<&Value> = props.get(k).into_iter().collect();

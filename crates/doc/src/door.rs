@@ -127,13 +127,21 @@ const PAST: &[(&str, &str, &str)] = &[
     ("core", "3.0", "sha256:72e2181866b52fa05ca684e66c5b2e4fcc91fdf46f57ad63a0690ccfec210805"),
     ("civil", "2.0", "sha256:b96345ebf422de4fb8d7c1bf426b6db7468f5f85f36d531df86a2e0d17f4e03c"),
     ("signalling", "3.0", "sha256:cb1bad694c35458f33858b91d4893c137da0c378ce92a7a7217addbc13d27083"),
-    ("electrification", "2.0", "sha256:812af795a72e4fec5e9f15cfec93bf2180907775ee98db987a9d8c92dfec2eb9"),
+    (
+        "electrification",
+        "2.0",
+        "sha256:812af795a72e4fec5e9f15cfec93bf2180907775ee98db987a9d8c92dfec2eb9",
+    ),
     // Every reference names an object, the kinds still numbers (decision 0028, phase C).
     ("core", "3.1", "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c"),
     ("civil", "2.1", "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879"),
     ("signalling", "3.1", "sha256:2b365df5f72c616a99c70729f50afd5fdd243f14cff4798f78a70f0855a1e14d"),
     // Electrified ranges of tracks with their systems, before masts and contact wires (decision 0029, phase 3).
-    ("electrification", "2.1", "sha256:45c09436f949eb966d091985b23378eb9736d0db4f2991957f78209f07dbf8a1"),
+    (
+        "electrification",
+        "2.1",
+        "sha256:45c09436f949eb966d091985b23378eb9736d0db4f2991957f78209f07dbf8a1",
+    ),
     // A switch with B1 its main track (decision 0029, phase 1), before core 5.0 had B1 its branch again.
     ("core", "4.0", "sha256:2dd6dee14dc22be99741f2b095a314185273f3662f809433d7639fe4c59f6abf"),
 ];
@@ -525,18 +533,41 @@ struct Step {
 /// The steps in their order. A step applies where a domain it names is at the version it starts from; the
 /// others it names are then at theirs too, or the document is of no version this build reads.
 const STEPS: &[Step] = &[
-    Step { domains: LIFESPANS_BY_DAY, apply: lifespans_by_day },
-    Step { domains: REFERENCES_RESOLVED, apply: references_resolved },
-    Step { domains: WORDS_AND_NAMES, apply: words_and_names },
-    Step { domains: CONTACT_WIRES, apply: contact_wires },
-    Step { domains: SWITCH_PORTS, apply: switch_ports },
+    Step {
+        domains: LIFESPANS_BY_DAY,
+        apply: lifespans_by_day,
+    },
+    Step {
+        domains: REFERENCES_RESOLVED,
+        apply: references_resolved,
+    },
+    Step {
+        domains: WORDS_AND_NAMES,
+        apply: words_and_names,
+    },
+    Step {
+        domains: CONTACT_WIRES,
+        apply: contact_wires,
+    },
+    Step {
+        domains: SWITCH_PORTS,
+        apply: switch_ports,
+    },
 ];
 
-const LIFESPANS_BY_DAY: &[(&str, &str, &str)] =
-    &[("core", "2.0", "3.0"), ("civil", "1.0", "2.0"), ("signalling", "2.0", "3.0"), ("electrification", "1.0", "2.0")];
+const LIFESPANS_BY_DAY: &[(&str, &str, &str)] = &[
+    ("core", "2.0", "3.0"),
+    ("civil", "1.0", "2.0"),
+    ("signalling", "2.0", "3.0"),
+    ("electrification", "1.0", "2.0"),
+];
 
-const REFERENCES_RESOLVED: &[(&str, &str, &str)] =
-    &[("core", "3.0", "3.1"), ("civil", "2.0", "2.1"), ("signalling", "3.0", "3.1"), ("electrification", "2.0", "2.1")];
+const REFERENCES_RESOLVED: &[(&str, &str, &str)] = &[
+    ("core", "3.0", "3.1"),
+    ("civil", "2.0", "2.1"),
+    ("signalling", "3.0", "3.1"),
+    ("electrification", "2.0", "2.1"),
+];
 
 const WORDS_AND_NAMES: &[(&str, &str, &str)] = &[("core", "3.1", "4.0"), ("civil", "2.1", "3.0"), ("signalling", "3.1", "4.0")];
 
@@ -559,7 +590,11 @@ fn lifespans_by_day(doc: &Value) -> Value {
     let day_of = |id: &str| -> Option<String> {
         let between = stages.get(1..stages.len().saturating_sub(1)).unwrap_or(&[]);
         let stage = between.iter().find(|s| s.get("id").and_then(Value::as_str) == Some(id))?;
-        stage.get("date").and_then(Value::as_str).filter(|d| crate::stages::is_day(d)).map(str::to_string)
+        stage
+            .get("date")
+            .and_then(Value::as_str)
+            .filter(|d| crate::stages::is_day(d))
+            .map(str::to_string)
     };
     let by_day = |lifespan: &Value| -> Option<Value> {
         let mut out = Object::new();
@@ -639,7 +674,9 @@ fn words_and_names(doc: &Value) -> Value {
 /// the lifespan with the masts and points too; their ids are drawn from the range's.
 fn contact_wires(doc: &Value) -> Value {
     let mut out = doc.clone();
-    let Some(Value::Object(domain)) = out.get_mut("domains").and_then(|d| d.get_mut("electrification")) else { return out };
+    let Some(Value::Object(domain)) = out.get_mut("domains").and_then(|d| d.get_mut("electrification")) else {
+        return out;
+    };
     let ranges = list(domain.get("collections").unwrap_or(&Value::Null), "electrifications");
     let (mut wires, mut masts, mut points) = (Vec::new(), Vec::new(), Vec::new());
     for r in &ranges {
@@ -717,7 +754,10 @@ pub fn references_of(doc: &Value) -> Vec<DomainReference> {
         part.insert("fields".into(), domain.get("fields").cloned().unwrap_or(json!({})));
         part.insert("collections".into(), domain.get("collections").cloned().unwrap_or(json!({})));
         for reference in schemas().set.references(name, &Value::Object(part)).unwrap_or_default() {
-            out.push(DomainReference { domain: name.clone(), reference });
+            out.push(DomainReference {
+                domain: name.clone(),
+                reference,
+            });
         }
     }
     out
@@ -733,7 +773,10 @@ pub fn dangling(doc: &Value) -> Vec<DomainReference> {
             let target = r.reference.target.clone();
             let have = ids.entry(target.clone()).or_insert_with(|| {
                 let (d, c) = target.split_once('.').unwrap_or(("", ""));
-                list(&doc["domains"][d]["collections"], c).iter().filter_map(|o| o.get("id").map(|v| stringify(v))).collect()
+                list(&doc["domains"][d]["collections"], c)
+                    .iter()
+                    .filter_map(|o| o.get("id").map(stringify))
+                    .collect()
             });
             !have.contains(&stringify(&json!(r.reference.id)))
         })
@@ -816,8 +859,11 @@ pub fn without_dangling(doc: &Value) -> (Value, Vec<Value>) {
                 .filter(|p| !paths.iter().any(|q| q.len() < p.len() && p.starts_with(q)))
                 .cloned()
                 .collect();
-            let Some(domain) = doc.get_mut("domains").and_then(|d| d.get_mut(&name)) else { continue };
-            let mut part = json!({ "fields": domain.get("fields").cloned().unwrap_or(json!({})), "collections": domain.get("collections").cloned().unwrap_or(json!({})) });
+            let Some(domain) = doc.get_mut("domains").and_then(|d| d.get_mut(&name)) else {
+                continue;
+            };
+            let mut part =
+                json!({ "fields": domain.get("fields").cloned().unwrap_or(json!({})), "collections": domain.get("collections").cloned().unwrap_or(json!({})) });
             for p in &kept {
                 remove_at(&mut part, p);
             }
@@ -849,7 +895,10 @@ pub fn without_dangling(doc: &Value) -> (Value, Vec<Value>) {
     // An element that was a branch of a switch cut away is no branch any more: a branch names its switch.
     for track in doc["domains"]["core"]["collections"]["tracks"].as_array_mut().into_iter().flatten() {
         for el in track.get_mut("elements").and_then(Value::as_array_mut).into_iter().flatten() {
-            if let Some(o) = el.as_object_mut().filter(|o| o.get("switchBranch") == Some(&Value::Bool(true)) && !o.contains_key("switchId")) {
+            if let Some(o) = el
+                .as_object_mut()
+                .filter(|o| o.get("switchBranch") == Some(&Value::Bool(true)) && !o.contains_key("switchId"))
+            {
                 o.shift_remove("switchBranch");
             }
         }
@@ -869,7 +918,10 @@ fn stepped(doc: Value) -> Result<Value> {
         if let Some((name, _, _)) = present.iter().find(|(name, from, _)| version_of(&doc, name) != Some(*from)) {
             return Err(PayloadError::with(
                 "unsupported_version",
-                vec![format!("/domains/{name}: {} does not go with the other domains' versions", version_of(&doc, name).unwrap_or(""))],
+                vec![format!(
+                    "/domains/{name}: {} does not go with the other domains' versions",
+                    version_of(&doc, name).unwrap_or("")
+                )],
             ));
         }
         let wrong: Vec<String> = present
@@ -975,7 +1027,9 @@ pub fn check_document(given: &Value) -> Result<Value> {
                 continue;
             }
             if domain_version(name).map(|v| Value::String(v.into())).as_ref() != version {
-                let newer = domain_version(name).zip(version.and_then(Value::as_str)).filter(|(ours, theirs)| later(theirs, ours));
+                let newer = domain_version(name)
+                    .zip(version.and_then(Value::as_str))
+                    .filter(|(ours, theirs)| later(theirs, ours));
                 return Err(PayloadError::with(
                     "unsupported_version",
                     vec![match newer {
@@ -1023,7 +1077,10 @@ pub fn check_document(given: &Value) -> Result<Value> {
         for r in dangling(&doc) {
             found.push(format!(
                 "/domains/{}{}: names {}, which {} lacks",
-                r.domain, r.reference.path, js_string(Some(&json!(r.reference.id))), r.reference.target
+                r.domain,
+                r.reference.path,
+                js_string(Some(&json!(r.reference.id))),
+                r.reference.target
             ));
         }
     }

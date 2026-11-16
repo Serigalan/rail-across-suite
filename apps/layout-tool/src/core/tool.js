@@ -15,9 +15,6 @@ export function toolOf(loc = globalThis.location) {
 /** The tool this page is. */
 export const TOOL = toolOf()
 
-/** Whether this page edits the alignment (the Layout-Tool). */
-export const EDITS_ALIGNMENT = TOOL === 'layout'
-
 /** Whether this page edits the civil layer (the Civil-Tool). */
 export const EDITS_CIVIL = TOOL === 'civil'
 

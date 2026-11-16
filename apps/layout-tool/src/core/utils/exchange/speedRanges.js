@@ -114,7 +114,7 @@ export function speedRanges(design, { min = MIN_RANGE, step = STEP, speedStep = 
  * A profile with its speeds rounded down to steps of `speedStep` km/h — never
  * above the design speed; one below the first step keeps its own.
  */
-export function steppedProfile(profile, speedStep = 1) {
+function steppedProfile(profile, speedStep = 1) {
   if (!(speedStep > 1)) return profile
   const down = (v) => (v == null ? null : Math.floor(v / speedStep) * speedStep || v)
   return profile.map(p => ({ ...p, speed: down(p.speed) }))
@@ -141,7 +141,7 @@ export function averageSpeed(ranges) {
  * The kilometrage at a station along the run [m], or null: of the line the
  * track there lies on, where the project keeps it.
  */
-export function kmAlong(run, s, kmLines) {
+function kmAlong(run, s, kmLines) {
   if (!kmLines?.length) return null
   const parts = run.parts ?? []
   const part = parts.find(p => s <= p.offset + p.length + 1e-6) ?? parts[parts.length - 1]

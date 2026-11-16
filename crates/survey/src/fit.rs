@@ -5,7 +5,7 @@
 //! and the track built from the answer (`alignmentFit.js`). The fit itself is
 //! the optimizer's.
 
-use rail_across_geom::kind::{kind_of, ARC, TRANSITION};
+use rail_across_geom::kind::{ARC, TRANSITION, kind_of};
 use std::sync::LazyLock;
 
 use rail_across_geom::coords::crs_name;

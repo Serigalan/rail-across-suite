@@ -3,9 +3,9 @@
 
 //! Platforms, and points along a track by station (`platformUtils.js`).
 
-use rail_across_geom::kind::is_transition;
 use rail_across_geom::coords::plane_to_wgs84;
 use rail_across_geom::element::{Utm, bearing_after, end_point_curved, end_point_straight, node_utm, project_on_arc};
+use rail_across_geom::kind::is_transition;
 use rail_across_geom::precision::{SAGITTA_ELEMENT, STRAIGHT_VERTEX_SPACING};
 use rail_across_geom::transition::{is_bloss, transition_bearing_at, transition_point_at};
 use rail_across_js::{get, js_number, number, strict_eq, truthy};

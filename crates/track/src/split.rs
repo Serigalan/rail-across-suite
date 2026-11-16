@@ -247,11 +247,7 @@ pub fn carve_switch_route(track: &Value, endpoint: &str, cut: &Value, mark: &Val
             vec![marked(el, mark)]
         } else {
             let station = if endpoint == "BEGIN" { remaining } else { length(el) - remaining };
-            let ramp = if is_transition(el) {
-                Some(transition_cant_ends(els, idx))
-            } else {
-                None
-            };
+            let ramp = if is_transition(el) { Some(transition_cant_ends(els, idx)) } else { None };
             let c = if is_transition(el) {
                 let mut c = obj(cut);
                 c.insert("station".into(), number(station));

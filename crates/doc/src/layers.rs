@@ -181,7 +181,12 @@ fn at_platform(h: &Value, p: &Value) -> bool {
 
 /// The ids of the stopping places a platform names.
 fn named_by(p: &Value) -> Vec<String> {
-    get(p, "stoppingPlaceIds").and_then(Value::as_array).into_iter().flatten().map(|x| js_string(Some(x))).collect()
+    get(p, "stoppingPlaceIds")
+        .and_then(Value::as_array)
+        .into_iter()
+        .flatten()
+        .map(|x| js_string(Some(x)))
+        .collect()
 }
 
 /// The record with the stopping places at the platform `platform_id` as the
@@ -246,7 +251,10 @@ pub fn with_platform_stops(record: &Value, platform_id: &str, name: Option<&str>
     if let Some(i) = platform.filter(|_| !at_it) {
         let p = &platforms[i];
         let (a, b) = (num(p.get("startStation")), num(p.get("endStation")));
-        let point = crate::stations::point_of(record, p).and_then(|o| o.get("id")).and_then(Value::as_str).map(str::to_string);
+        let point = crate::stations::point_of(record, p)
+            .and_then(|o| o.get("id"))
+            .and_then(Value::as_str)
+            .map(str::to_string);
         let id = rail_across_js::generate_id();
         let mut h = Object::new();
         h.insert("id".into(), json!(id));

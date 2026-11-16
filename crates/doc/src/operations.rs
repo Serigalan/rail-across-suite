@@ -86,7 +86,8 @@ fn schemas() -> &'static Schemas {
         let mut set = SchemaSet::new();
         set.add(parse(ENVELOPE)).expect("the envelope's schema");
         // The domains name the core's types (core#/$defs/Id, Ref): an id a UUID in lower case.
-        set.add(crate::door::schema_of("core").cloned().expect("the core's schema")).expect("the core's schema");
+        set.add(crate::door::schema_of("core").cloned().expect("the core's schema"))
+            .expect("the core's schema");
         for (_, s) in &domains {
             set.add(s.clone()).expect("a domain's schema");
         }
@@ -161,7 +162,10 @@ fn check(name: &str, value: &Value) -> Vec<Breach> {
 }
 
 fn check_before(name: &str, value: &Value) -> Vec<Breach> {
-    before().0.check(name, value, 20).unwrap_or_else(|e| vec![Breach { path: "/".into(), message: e }])
+    before()
+        .0
+        .check(name, value, 20)
+        .unwrap_or_else(|e| vec![Breach { path: "/".into(), message: e }])
 }
 
 /// The id of a vehicle drawn from its key: one vehicle of a key in a document.
@@ -271,7 +275,8 @@ fn check_now(given: &Value) -> Result<()> {
         if deps != want {
             found.push(format!("/domains/{name}/dependsOn: is not {want}"));
         }
-        let part = json!({ "fields": domain.get("fields").cloned().unwrap_or(json!({})), "collections": domain.get("collections").cloned().unwrap_or(json!({})) });
+        let part =
+            json!({ "fields": domain.get("fields").cloned().unwrap_or(json!({})), "collections": domain.get("collections").cloned().unwrap_or(json!({})) });
         found.extend(breaches(&check(name, &part), &format!("/domains/{name}")));
         for (cname, items) in domain["collections"].as_object().into_iter().flatten() {
             let seen = ids.entry(format!("{name}.{cname}")).or_default();
@@ -311,7 +316,11 @@ fn point_from_before(p: &Value, end_marks: &HashSet<String>) -> Value {
         Some(place) => {
             o.insert("operationalPointId".into(), place);
         }
-        None => put(&mut o, "operationalPointId", filled(p.get("station")).map(|n| json!(derived_id(&format!("station\u{0}{n}"))))),
+        None => put(
+            &mut o,
+            "operationalPointId",
+            filled(p.get("station")).map(|n| json!(derived_id(&format!("station\u{0}{n}")))),
+        ),
     }
     put(&mut o, "trackId", given(p.get("track")));
     put(&mut o, "stop", p.get("stop").cloned());
@@ -371,7 +380,10 @@ pub fn from_before(doc: &Value, end_marks: &HashSet<String>) -> Value {
         .iter()
         .map(|t| {
             let mut o = obj(t);
-            o.insert("points".into(), Value::Array(list(t, "points").iter().map(|p| point_from_before(p, end_marks)).collect()));
+            o.insert(
+                "points".into(),
+                Value::Array(list(t, "points").iter().map(|p| point_from_before(p, end_marks)).collect()),
+            );
             Value::Object(o)
         })
         .collect();
@@ -382,7 +394,10 @@ pub fn from_before(doc: &Value, end_marks: &HashSet<String>) -> Value {
             let mut o = obj(s);
             for key in ["entryDelays", "dwellDelays"] {
                 if let Some(Value::Array(rules)) = s.get(key) {
-                    o.insert(key.into(), Value::Array(rules.iter().map(|r| renamed(r, "place", "operationalPointId")).collect()));
+                    o.insert(
+                        key.into(),
+                        Value::Array(rules.iter().map(|r| renamed(r, "place", "operationalPointId")).collect()),
+                    );
                 }
             }
             Value::Object(o)
@@ -393,7 +408,10 @@ pub fn from_before(doc: &Value, end_marks: &HashSet<String>) -> Value {
         .map(|s| {
             let mut o = obj(s);
             if let Some(Value::Array(stretches)) = s.get("stretches") {
-                let next = stretches.iter().map(|x| renamed(&renamed(x, "from", "fromOperationalPointId"), "to", "toOperationalPointId")).collect();
+                let next = stretches
+                    .iter()
+                    .map(|x| renamed(&renamed(x, "from", "fromOperationalPointId"), "to", "toOperationalPointId"))
+                    .collect();
                 o.insert("stretches".into(), Value::Array(next));
             }
             Value::Object(o)
@@ -419,7 +437,10 @@ pub fn from_before(doc: &Value, end_marks: &HashSet<String>) -> Value {
 fn documented(vehicles: Object, timetables: Object) -> Value {
     let mut domains = Object::new();
     let version = |name: &str| DOMAINS.iter().find(|(d, _)| *d == name).map(|(_, v)| *v).unwrap_or_default();
-    domains.insert("vehicles".into(), json!({ "version": version("vehicles"), "schema": schema_hashes()["vehicles"], "fields": {}, "collections": vehicles }));
+    domains.insert(
+        "vehicles".into(),
+        json!({ "version": version("vehicles"), "schema": schema_hashes()["vehicles"], "fields": {}, "collections": vehicles }),
+    );
     domains.insert(
         "timetables".into(),
         json!({ "version": version("timetables"), "schema": schema_hashes()["timetables"], "dependsOn": ["vehicles"], "fields": {}, "collections": timetables }),
@@ -443,7 +464,17 @@ fn documented(vehicles: Object, timetables: Object) -> Value {
 fn check_before_document(given: &Value) -> Result<()> {
     const DOMAIN: &str = "operations";
     const DOMAIN_VERSION: &str = "1.0";
-    const COLLECTIONS: &[&str] = &["timetables", "trains", "trainKinds", "formations", "vehicles", "connections", "turnarounds", "delayScenarios", "studies"];
+    const COLLECTIONS: &[&str] = &[
+        "timetables",
+        "trains",
+        "trainKinds",
+        "formations",
+        "vehicles",
+        "connections",
+        "turnarounds",
+        "delayScenarios",
+        "studies",
+    ];
     let shape = check_before("operations-document-before", given);
     if !shape.is_empty() {
         return Err(PayloadError::with("invalid_payload", breaches(&shape, "")));
@@ -831,10 +862,16 @@ fn point_to_record(p: &Value) -> Value {
 pub fn from_operations(doc: &Value) -> Result<Value> {
     let doc = check_operations(doc)?;
     let cols = &doc["domains"]["timetables"]["collections"];
-    let vehicles_by_id: HashMap<String, &Value> =
-        list(&doc["domains"]["vehicles"]["collections"], "vehicles").iter().map(|v| (js_string(v.get("id")), v)).collect();
+    let vehicles_by_id: HashMap<String, &Value> = list(&doc["domains"]["vehicles"]["collections"], "vehicles")
+        .iter()
+        .map(|v| (js_string(v.get("id")), v))
+        .collect();
     let key_of = |u: &Value| -> Value {
-        vehicles_by_id.get(&js_string(u.get("vehicleId"))).and_then(|v| v.get("key")).cloned().unwrap_or(Value::Null)
+        vehicles_by_id
+            .get(&js_string(u.get("vehicleId")))
+            .and_then(|v| v.get("key"))
+            .cloned()
+            .unwrap_or(Value::Null)
     };
     let kinds: HashMap<String, &Value> = list(cols, "trainKinds").iter().map(|k| (js_string(k.get("id")), k)).collect();
     let formations: HashMap<String, &Value> = list(cols, "formations").iter().map(|f| (js_string(f.get("id")), f)).collect();
@@ -943,7 +980,10 @@ pub fn from_operations(doc: &Value) -> Result<Value> {
     // The vehicles carried: those with their rolling stock.
     let vehicles: Vec<Value> = list(&doc["domains"]["vehicles"]["collections"], "vehicles")
         .iter()
-        .filter_map(|v| v.get("rollingStock").map(|stock| json!({ "key": v["key"], "hash": content_hash(stock), "vehicle": stock })))
+        .filter_map(|v| {
+            v.get("rollingStock")
+                .map(|stock| json!({ "key": v["key"], "hash": content_hash(stock), "vehicle": stock }))
+        })
         .collect();
     let mut record = Object::new();
     record.insert("timetables".into(), Value::Array(timetables));

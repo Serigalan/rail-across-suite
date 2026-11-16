@@ -29,7 +29,7 @@ describe('carrying references across a split', () => {
   const pieces = [track('a1', 0, 100), track('a2', 100, 200)]
   const project = {
     tracks: pieces,
-    switches: [{ kind: 'turnout', switchId: 'w1', ports: { A: { trackId: 'a', endpoint: 'END' } }}],
+    switches: [{ kind: 'switch', switchId: 'w1', ports: { A: { trackId: 'a', endpoint: 'END' } }}],
     endMarks: [{ id: 'm1', kind: 'buffer_stop', trackId: 'a', endpoint: 'BEGIN' }],
     platforms: [
       { id: 'p1', trackId: 'a', startStation: 20, endStation: 60, side: 'left' },
@@ -69,7 +69,7 @@ describe('what it cannot carry', () => {
   it('follows the log through several steps, from both sides', () => {
     const project = {
       tracks: [track('a1', 0, 100), track('b', 100, 200)],
-      switches: [{ kind: 'turnout', switchId: 'w1', ports: { A: { trackId: 'a', endpoint: 'END' } }}],
+      switches: [{ kind: 'switch', switchId: 'w1', ports: { A: { trackId: 'a', endpoint: 'END' } }}],
     }
     const theirs = [{ from: 'a2', to: ['b'] }]
     const { project: out } = carryReferences(project, [splitLog, theirs], oldTracks)
@@ -79,7 +79,7 @@ describe('what it cannot carry', () => {
   it('leaves a reference when two pieces end at the same point', () => {
     const project = {
       tracks: [track('a1', 0, 200), track('a2', 200, 300)],
-      switches: [{ kind: 'turnout', switchId: 'w1', ports: { A: { trackId: 'a', endpoint: 'END' } }}],
+      switches: [{ kind: 'switch', switchId: 'w1', ports: { A: { trackId: 'a', endpoint: 'END' } }}],
     }
     const { project: out, carried } = carryReferences(project, [splitLog], oldTracks)
     expect(out.switches[0].ports?.A?.trackId).toBe('a')

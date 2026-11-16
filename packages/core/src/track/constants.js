@@ -68,11 +68,11 @@ export const TRACK_USES = ['main', 'siding']
 export const JOINT_TOL = 1.5
 
 /** The kinds of switch record: a turnout by default, a link joining two tracks. */
-export const DEFAULT_SWITCH_KIND = 'turnout'
+export const DEFAULT_SWITCH_KIND = 'switch'
 export const LINK_KIND = 'link'
 /** A construction stage connector (decision 0027): A joined to B1 while that exists and to B2 from then on — no switch. */
 export const STAGE_LINK_KIND = 'stage_link'
-export const SWITCH_KINDS = ['turnout', 'crossing', 'single_slip', 'double_slip', LINK_KIND, STAGE_LINK_KIND]
+export const SWITCH_KINDS = ['switch', 'crossing', 'single_slip', 'double_slip', LINK_KIND, STAGE_LINK_KIND]
 /** The version of the switch forms a switch record is built on. */
 export const SWITCH_FORM_VERSION = 1
 /** A turnout's routes and its ports with the route each carries (switchRoutes, switchPorts of a turnout). */

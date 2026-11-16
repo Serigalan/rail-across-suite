@@ -3,10 +3,12 @@
 
 //! Core 4.0, its words and names (decision 0029, phase 1): what core 3.1, civil 2.1 and signalling 3.1 stated
 //! as numbers is stated as words — an element's, a track's and a side's kind —, every reference is named for
-//! what it names and ends in `Id`, an element has no plane of its own, and a switch is a `switch` with `B1`
-//! its main track and `B2` its branch (a `turnout` had them the other way round). `forward` makes the
-//! domains of a document so, `back` undoes it: the door's step from 3.1 takes the one, the record — which
-//! keeps the old words until it follows the document (decision 0029, phase 6) — both.
+//! what it names and ends in `Id`, an element has no plane of its own, and a switch is a `switch`, no longer a
+//! `turnout`. `forward` makes the domains of a document so, `back` undoes what the record has not taken over
+//! yet: the door's step from 3.1 takes the one, the record — which keeps the old words until it follows the
+//! document (decision 0029, phase 6) — both. Core 4.0 had a switch's `B1` its main track and `B2` its branch;
+//! core 5.0 has them as the suite always did and as the OSRD export writes them, `B1` the branch
+//! (`swap_switch_ports`).
 
 use rail_across_js::Object;
 use serde_json::{Value, json};
@@ -116,19 +118,12 @@ fn convert(domains: &mut Object, way: Way) {
             }
         }
     }
-    let (from_kind, to_kind) = names("turnout", "switch");
-    for sw in items(domains, "core", "switches") {
-        if sw.get("kind").and_then(Value::as_str) != Some(from_kind) {
-            continue;
-        }
-        sw.insert("kind".into(), json!(to_kind));
-        if let Some(Value::Object(ports)) = sw.get_mut("ports") {
-            let (b1, b2) = (ports.shift_remove("B1"), ports.shift_remove("B2"));
-            if let Some(v) = b2 {
-                ports.insert("B1".into(), v);
-            }
-            if let Some(v) = b1 {
-                ports.insert("B2".into(), v);
+    // The record names a switch `switch` since it follows the document (phase 6); `turnout` of before is read on
+    // the way in, as a working copy may hold it. The ports stay: `B1` the branch, as core 5.0 has it.
+    if way == Way::Forward {
+        for sw in items(domains, "core", "switches") {
+            if sw.get("kind").and_then(Value::as_str) == Some("turnout") {
+                sw.insert("kind".into(), json!("switch"));
             }
         }
     }
@@ -156,6 +151,25 @@ fn convert(domains: &mut Object, way: Way) {
 /// The domains of a document in the words and names of core 4.0.
 pub fn forward(domains: &mut Object) {
     convert(domains, Way::Forward);
+}
+
+/// A switch's `B1` and `B2` the other way round: between core 4.0, which had `B1` its main track, and the
+/// record and core 5.0, which have `B1` its branch.
+pub fn swap_switch_ports(domains: &mut Object) {
+    for sw in items(domains, "core", "switches") {
+        if sw.get("kind").and_then(Value::as_str) != Some("switch") {
+            continue;
+        }
+        if let Some(Value::Object(ports)) = sw.get_mut("ports") {
+            let (b1, b2) = (ports.shift_remove("B1"), ports.shift_remove("B2"));
+            if let Some(v) = b2 {
+                ports.insert("B1".into(), v);
+            }
+            if let Some(v) = b1 {
+                ports.insert("B2".into(), v);
+            }
+        }
+    }
 }
 
 /// The domains of a document in the words and names of before, as the record keeps them.

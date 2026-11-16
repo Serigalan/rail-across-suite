@@ -6,7 +6,7 @@ import { useSwitches } from '../../../hooks/useStore'
 import useMapPick, { useSelectedOnMap } from '../../../map/useMapPick'
 import { SWITCH_PICK_LAYERS, hasSwitch } from '../../../map/pick'
 
-const isTurnout = (sw) => (sw?.kind ?? 'turnout') === 'turnout'
+const isTurnout = (sw) => (sw?.kind ?? 'switch') === 'switch'
 
 /**
  * Which turnout the detail shows (Paket WD, decision 341): one clicked on the

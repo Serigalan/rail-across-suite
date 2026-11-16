@@ -30,7 +30,7 @@ export default function Editor({ project, variant, revision, record, local }) {
   const stage = stages[at]
   const trackName = (id) => record.tracks.find(tr => tr.id === id)?.name ?? id.slice(0, 8)
   const switchOf = (id) => (record.switches ?? []).find(sw => sw.switchId === id)
-  const switchName = (id) => { const sw = switchOf(id); return sw?.name || `${t(`kind_${sw?.kind ?? 'turnout'}`)} ${id.slice(0, 6)}` }
+  const switchName = (id) => { const sw = switchOf(id); return sw?.name || `${t(`kind_${sw?.kind ?? 'switch'}`)} ${id.slice(0, 6)}` }
 
   const states = useMemo(() => {
     const out = new Map()

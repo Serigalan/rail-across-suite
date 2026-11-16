@@ -18,16 +18,20 @@ use crate::auth::User;
 use crate::http::ApiError;
 use crate::util::{iso, uuid};
 
-/// What `revision.schema_version` says of a payload: 8, an infra-data document
-/// of core 4.0 and electrification 3.0 (decision 0029, phases 1 to 3: words,
-/// names, UUIDs, km lines in a plane, masts and contact wires). 7 (every reference names an object: core 3.1, decision 0028, phase
-/// C) is migrated into it once (data migration `0029-core-4.0`); 6 (lifespans by day, a reference free to name nothing: core 3.0) is migrated
+/// What `revision.schema_version` says of a payload: 9, an infra-data document
+/// of core 5.0 and electrification 3.0 (decision 0029, phases 1 to 3 and 6: words,
+/// names, UUIDs, km lines in a plane, masts and contact wires, a switch's B1 its
+/// branch). 8 (core 4.0, B1 a switch's main track) is migrated into it once (data
+/// migration `0029-switch-ports`); 7 (every reference names an object: core 3.1, decision 0028, phase
+/// C) once by `0029-core-4.0`; 6 (lifespans by day, a reference free to name nothing: core 3.0) is migrated
 /// into it once (data migration `0028-references`), 5 (the document with its
 /// register of construction stages, decision 0025) by `0028-lifespans-by-day`,
 /// 4 (infra-data-1.0) by `0025-infra-data-2.0`, and each is read through the
 /// door where one is left; 3 (the core 1.0 document) and 2 (oltjson-1.1) once
 /// by `0021-infra-data`; anything else is refused as `format_outdated`.
-pub const STORED_FORMAT: i64 = 8;
+pub const STORED_FORMAT: i64 = 9;
+/// Core 4.0, a switch's B1 its main track (decision 0029, phases 1 to 3).
+pub const STORED_FORMAT_CORE_4_0: i64 = 8;
 /// Every reference names an object, the kinds still numbers (decision 0028, phase C: core 3.1).
 pub const STORED_FORMAT_REFERENCES: i64 = 7;
 /// Lifespans by day, before references had to name something (decision 0028, phase A).
@@ -239,7 +243,7 @@ impl<'a> Store<'a> {
         };
         let payload = match version {
             STORED_FORMAT => unpack(&payload).ok_or_else(|| ApiError::new(500, "internal"))?,
-            STORED_FORMAT_REFERENCES | STORED_FORMAT_LIFESPANS | STORED_FORMAT_STAGES | STORED_FORMAT_1_0 => unpack(&payload)
+            STORED_FORMAT_CORE_4_0 | STORED_FORMAT_REFERENCES | STORED_FORMAT_LIFESPANS | STORED_FORMAT_STAGES | STORED_FORMAT_1_0 => unpack(&payload)
                 .and_then(|p| rail_across_doc::door::check_document(&p).ok())
                 .ok_or_else(|| ApiError::new(409, "format_outdated"))?,
             _ => return Err(ApiError::new(409, "format_outdated")),

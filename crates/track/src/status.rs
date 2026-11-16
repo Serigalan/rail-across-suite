@@ -40,7 +40,7 @@ pub fn switch_status(sw: &Value, track_by_id: &HashMap<String, &Value>) -> &'sta
     if let Some(own) = stated(Some(sw)) {
         return own;
     }
-    let turnout = text(sw, "kind").unwrap_or(DEFAULT_SWITCH_KIND) == "turnout";
+    let turnout = text(sw, "kind").unwrap_or(DEFAULT_SWITCH_KIND) == "switch";
     let found: Vec<&str> = ports_of(sw)
         .iter()
         .filter(|(p, _)| !turnout || *p == "B1")

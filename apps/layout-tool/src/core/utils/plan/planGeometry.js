@@ -228,7 +228,7 @@ export function switchSymbolUtm(sw, trackById) {
   // (crossingBodyUtm), the crossing point as its node, and the main leg's middle as where the label
   // belongs. There is no branch and no toe, so branchTurn is 0 and the LCS
   // mark is absent — the forms carry no dLcs.
-  if (sw.kind && sw.kind !== 'turnout') {
+  if (sw.kind && sw.kind !== 'switch') {
     const routes = crossingRoutesFromTracks(sw, trackById)
     if (!routes) return null
     const { type, centre, mainBearing, main } = routes

@@ -21,7 +21,7 @@ const track = (id, a, b) => ({ id, epsg: EPSG, elements: [straightElement(P(...a
 // t1 runs 200 m east into the toe of w1; t2 goes on straight, t3 branches north-east.
 const net = {
   tracks: [track('t1', [0, 0], [200, 0]), track('t2', [200, 0], [400, 0]), track('t3', [200, 0], [380, 40])],
-  switches: [{ switchId: 'w1', kind: 'turnout', formVersion: 1, ports: {
+  switches: [{ switchId: 'w1', kind: 'switch', formVersion: 1, ports: {
     A: { trackId: 't1', endpoint: 'END' }, B1: { trackId: 't3', endpoint: 'BEGIN' }, B2: { trackId: 't2', endpoint: 'BEGIN' },
   } }],
 }

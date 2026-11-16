@@ -30,7 +30,7 @@ const HEIGHT_JOINT_TOL = 0.01
  * switchDelete).
  */
 const ROUTE_PORTS = {
-  turnout:     { main: ['A', 'B2'], branch: ['A', 'B1'] },
+  switch:     { main: ['A', 'B2'], branch: ['A', 'B1'] },
   crossing:    { main: ['A', 'C'],  cross: ['B', 'D'] },
   single_slip: { main: ['A', 'C'],  cross: ['B', 'D'], slip1: ['A', 'D'] },
   double_slip: { main: ['A', 'C'],  cross: ['B', 'D'], slip1: ['A', 'D'], slip2: ['B', 'C'] },
@@ -72,7 +72,7 @@ export const turnoutLineRoute = (sw) => (sw?.swapped ? 'branch' : 'main')
  * switchRoutePorts does.
  */
 const KIND_LABEL_KEY = {
-  turnout:     'table_type_switch',
+  switch:     'table_type_switch',
   crossing:    'table_type_crossing',
   single_slip: 'table_type_crossing_switch',
   double_slip: 'table_type_crossing_switch',
@@ -80,7 +80,7 @@ const KIND_LABEL_KEY = {
 }
 
 const ROUTE_LABEL_KEY = {
-  turnout:  { main: 'table_route_stem',    branch: 'table_route_branch' },
+  switch:  { main: 'table_route_stem',    branch: 'table_route_branch' },
   crossing: { main: 'table_route_through', cross:  'table_route_cross',
     slip1: 'table_route_slip', slip2: 'table_route_slip' },
 }
@@ -101,7 +101,7 @@ export const switchRouteLabelKey = (kind, route) => {
   if (ROUTE_PORTS[kind] && !ROUTE_PORTS[kind][route]) return null
   const names = kind !== DEFAULT_SWITCH_KIND && ROUTE_PORTS[kind]
     ? ROUTE_LABEL_KEY.crossing
-    : ROUTE_LABEL_KEY.turnout
+    : ROUTE_LABEL_KEY.switch
   return names[route] ?? null
 }
 
@@ -161,7 +161,7 @@ export function isModelledSwitch(sw) {
  * with more of them is a further entry here and nothing else.
  */
 const PORTS_BY_KIND = {
-  turnout: [
+  switch: [
     { port: 'A', route: 'main' },
     { port: 'B1', route: 'branch' },
     { port: 'B2', route: 'main' },
@@ -497,7 +497,7 @@ export function withLifespan(o, lifespan) {
 export function switchStatus(sw, trackById) {
   const own = stated(sw)
   if (own) return own
-  const turnout = (sw.kind ?? DEFAULT_SWITCH_KIND) === 'turnout'
+  const turnout = (sw.kind ?? DEFAULT_SWITCH_KIND) === 'switch'
   const ports = portsOf(sw).filter(p => !turnout || p.port === 'B1')
   const found = ports.map(p => trackStatus(trackById.get(portTrack(sw, p.port))))
   if (found.includes('new')) return 'new'
@@ -516,7 +516,7 @@ const CROSSING_PREFIX = 'crossing'
 
 /** The prefix a kind's designation carries. */
 const switchPrefix = (kind) =>
-  (kind && kind !== 'turnout' ? CROSSING_PREFIX : SWITCH_PREFIX)
+  (kind && kind !== 'switch' ? CROSSING_PREFIX : SWITCH_PREFIX)
 
 export const switchDesignation = (number, kind = null) =>
   `${switchPrefix(kind)}.${String(number).padStart(3, '0')}`

@@ -376,7 +376,7 @@ pub fn build_switch_on_track(o: &Value, place: &Placement) -> Value {
         }
     };
     let Some(split) = split else { return Value::Null };
-    let identity = identity_of("turnout", o.get("switchName").unwrap_or(&Value::Null), sw.get("label"));
+    let identity = identity_of("switch", o.get("switchName").unwrap_or(&Value::Null), sw.get("label"));
     let swapped = g.get("swapped").filter(|v| !v.is_null());
     let shown = swapped.unwrap_or(g);
     let line_route = if swapped.is_some() { "branch" } else { "main" };
@@ -555,7 +555,7 @@ pub fn build_switch_at_track_end(o: &Value) -> Value {
         r
     };
     if let Some(sg) = geom.get("swapped").filter(|v| !v.is_null()) {
-        let identity = identity_of("turnout", o.get("switchName").unwrap_or(&Value::Null), sw.get("label"));
+        let identity = identity_of("switch", o.get("switchName").unwrap_or(&Value::Null), sw.get("label"));
         let through_el = route_element(
             Utm::from_json(&sg["startUtm"]),
             Utm::from_json(&sg["straightUtm"]),
@@ -606,7 +606,7 @@ pub fn build_switch_at_track_end(o: &Value) -> Value {
         });
     }
     let main_cant = if trailing { -cant } else { cant };
-    let identity = identity_of("turnout", o.get("switchName").unwrap_or(&Value::Null), sw.get("label"));
+    let identity = identity_of("switch", o.get("switchName").unwrap_or(&Value::Null), sw.get("label"));
     let main_signed = f(&geom, "mainSignedR");
     let mut straight_extra = switch_element_mark(&identity, "main");
     if main_signed.is_some_and(|r| r != 0.0) {

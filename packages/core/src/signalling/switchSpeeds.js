@@ -14,7 +14,7 @@ export function branchSpeedOnRun(switches, trackIds) {
   for (let i = 0; i + 1 < (trackIds?.length ?? 0); i++) {
     const pair = [trackIds[i], trackIds[i + 1]]
     for (const sw of switches ?? []) {
-      if ((sw.kind ?? 'turnout') !== 'turnout') continue
+      if ((sw.kind ?? 'switch') !== 'switch') continue
       const toe = portTrack(sw, 'A'), branch = portTrack(sw, 'B1')
       if (!toe || !branch || toe === branch || !pair.includes(toe) || !pair.includes(branch)) continue
       const id = sw.id ?? sw.switchId

@@ -75,7 +75,7 @@ Eine Datei hält einen Teil oder beide. Ein Projektserver hält sie getrennt —
     "format": "infra-data", "version": "1.0",
     "domains": {
       "core": {
-        "version": "4.0", "schema": "sha256:…",
+        "version": "5.0", "schema": "sha256:…",
         "fields": { … }, "collections": { … }
       },
       "civil":           { "version": "3.0", "dependsOn": ["core"], … },
@@ -112,7 +112,7 @@ Eine *Domäne* ist ein Fachgebiet mit eigenem Schema und eigener Version. Sie ha
 
 #tbl((16%, 22%, 1fr),
   [Teil], [Domäne], [Inhalt],
-  [infra-data-1.0], [`core` 4.0], [das Netz: Gleise, Weichen und Verbinder, Gleisenden (Prellböcke, Betrachtungsgrenzen), Kilometrierungslinien, Betriebsstellen, Halteplätze, benannte Gleisfolgen. Die Grundlage aller anderen],
+  [infra-data-1.0], [`core` 5.0], [das Netz: Gleise, Weichen und Verbinder, Gleisenden (Prellböcke, Betrachtungsgrenzen), Kilometrierungslinien, Betriebsstellen, Halteplätze, benannte Gleisfolgen. Die Grundlage aller anderen],
   [], [`civil` 3.0], [Bahnsteige und Ingenieurbauwerke (Eisenbahnüberführungen, Stützwände, Lärmschutzwände), in Punktwolken gemessene Achsen, Bestandsachsen, Schriftfeld, Projektbild],
   [], [`signalling` 4.0], [Signale mit logischen Signalen, Gleisfreimeldung, Weichenelemente, Fahrstraßen, Durchrutschwege, Flankenschutz, Zugbeeinflussung, Bahnhofsgrenzen, Fahrwege — nach PlanPro exportierbar],
   [], [`electrification` 3.0], [Masten, Aufhängepunkte, Streckentrennungen und die Fahrdrähte mit ihrer Spannung],
@@ -217,7 +217,7 @@ Ein Objekt der Sammlung `switches` sitzt an einem Knoten. Seine *Ports* halten G
 
 #tbl((26%, 18%, 1fr),
   [`kind`], [Ports], [Bedeutung],
-  [`switch`], [`A`, `B1`, `B2`], [Weiche: `A` Weichenanfang, `B1` Stammgleis, `B2` Zweiggleis],
+  [`switch`], [`A`, `B1`, `B2`], [Weiche: `A` Weichenanfang, `B1` Zweiggleis, `B2` Stammgleis — wie OSRD eine Weiche (`point_switch`) schreibt, sodass ein Export die Ports unverändert weitergibt],
   [`crossing`], [`A`, `B`, `C`, `D`], [Kreuzung],
   [`single_slip`, `double_slip`], [`A`, `B`, `C`, `D`], [einfache und doppelte Kreuzungsweiche],
   [`link`], [`A`, `B`], [Verbinder: zwei Gleisenden, wo die Ebene wechselt oder ein umgebautes Stück anschließt],
@@ -335,7 +335,7 @@ Darüber hinaus prüfen die Werkzeuge den Inhalt fachlich: ob Orte auf ihrem Gle
 
 *Ein Schema ist eine Version.* Jede Änderung eines Schemas — auch eine, die nur eine Regel ändert, die das Schema benennt — erhöht die Version seiner Domäne: die Nebenversion für Ergänzungen, die ein älterer Leser übergehen darf, sonst die Hauptversion. Ein Leser bringt eine ältere Datei Schritt für Schritt auf seinen Stand, von Nummer zu Nummer; ältere Stände werden einmal umgestellt, nicht dauerhaft nachsichtig gelesen.
 
-Die Versionen der Domänen setzen die Zählung der Suite fort: core 4.0, civil 3.0, signalling 4.0, electrification 3.0; vehicles 1.0 und timetables 1.0 sind die bisherige Domäne operations 1.0, in zwei geteilt.
+Die Versionen der Domänen setzen die Zählung der Suite fort: core 5.0, civil 3.0, signalling 4.0, electrification 3.0; vehicles 1.0 und timetables 1.0 sind die bisherige Domäne operations 1.0, in zwei geteilt. In core 4.0 war `B1` einer Weiche ihr Stammgleis; 5.0 macht es wieder zum Zweiggleis, und ein Leser bringt eine Datei in 4.0 auf den Stand, indem er beide tauscht.
 
 = Ein Beispiel
 
@@ -351,7 +351,7 @@ Eine Datei mit einem Gleis aus einer Geraden und einem Bogen, neu ab dem 1. Mai 
     "format": "infra-data", "version": "1.0",
     "domains": {
       "core": {
-        "version": "4.0", "schema": "sha256:1111…",
+        "version": "5.0", "schema": "sha256:1111…",
         "fields": { "id": "5dbd8fed-f8dc-4995-8934-9d71be69cae0", "title": "Halle-Trotha" },
         "collections": {
           "tracks": [ {
@@ -475,14 +475,14 @@ Die Prüfsummen sind hier gekürzt; in einer Datei hat jede ihre 64 Hexziffern.
 
 Diese Spezifikation ist das Ziel des Datenmodells. Mit Stand 13. November 2026 weicht die Implementierung der Suite in diesen Punkten ab; jeder wird in einem eigenen Schritt angeglichen (Entscheidung 0028 und die folgenden):
 
-- Der Projektserver hält die Infrastruktur einer Variante als Dokument der Hülle von vorher (infra-data 2.0: ihre Domänen und ihre Blobs, core 4.0, civil 3.0, signalling 4.0, electrification 3.0) und den Betrieb als Dokument operations (vehicles 1.0, timetables 1.0); die Datei rail-across-1.0 führt sie zusammen, eine Datei von vorher wird weiter gelesen.
-- Der Record, mit dem die Werkzeuge arbeiten, behält das Vokabular von vorher — die Art eines Elements als Zahl, eine `turnout` mit `B1` als Zweiggleis —, Kilometrierungslinien in WGS 84 mit dem Kilometer je Punkt und Kennungen jeder Form; die Tür wandelt ihn ins Dokument und zurück (Entscheidung 0029, Phase 6 nimmt das heraus). Eine Kilometrierungslinie von vorher steht als Punkte da, noch nicht mit Trassierungselementen angenähert.
+- Der Projektserver hält die Infrastruktur einer Variante als Dokument der Hülle von vorher (infra-data 2.0: ihre Domänen und ihre Blobs, core 5.0, civil 3.0, signalling 4.0, electrification 3.0) und den Betrieb als Dokument operations (vehicles 1.0, timetables 1.0); die Datei rail-across-1.0 führt sie zusammen, eine Datei von vorher wird weiter gelesen.
+- Der Record, mit dem die Werkzeuge arbeiten, behält das Vokabular von vorher — die Art eines Elements als Zahl —, Kilometrierungslinien in WGS 84 mit dem Kilometer je Punkt und Kennungen jeder Form; die Tür wandelt ihn ins Dokument und zurück (Entscheidung 0029, Phase 6 nimmt das heraus). Eine Kilometrierungslinie von vorher steht als Punkte da, noch nicht mit Trassierungselementen angenähert.
 - Eine Domäne, die der Leser nicht kennt, bleibt erhalten; eine spätere Version einer Domäne, die er kennt, lehnt er ab, statt sie mit der Version zu lesen, die er kennt.
 
 #pagebreak()
 = Anhang: alle Properties und ihre Werte <appendix>
 
-Der Anhang ist aus den Schemas der Spezifikation erzeugt (`rail-across.schema.json`, `core/4.0.schema.json`, `civil/3.0.schema.json`, `signalling/4.0.schema.json`, `electrification/3.0.schema.json`, `vehicles/1.0.schema.json`, `timetables/1.0.schema.json`, in `docs/format/schemas`). Für jeden Objekttyp nennt er jedes Property mit seinem Pfad (verschachtelte Objekte mit Punkt, Listeneinträge mit `[]`), ob es Pflicht ist, seinen Typ mit allen zulässigen Werten und seine Bedeutung. Ein Verweis auf einen Typ führt zu dessen Abschnitt; `→ core.tracks` nennt die Sammlung, in die eine Kennung zeigt — die Prüfung beim Einlesen stellt sicher, dass es das Objekt gibt.
+Der Anhang ist aus den Schemas der Spezifikation erzeugt (`rail-across.schema.json`, `core/5.0.schema.json`, `civil/3.0.schema.json`, `signalling/4.0.schema.json`, `electrification/3.0.schema.json`, `vehicles/1.0.schema.json`, `timetables/1.0.schema.json`, in `docs/format/schemas`). Für jeden Objekttyp nennt er jedes Property mit seinem Pfad (verschachtelte Objekte mit Punkt, Listeneinträge mit `[]`), ob es Pflicht ist, seinen Typ mit allen zulässigen Werten und seine Bedeutung. Ein Verweis auf einen Typ führt zu dessen Abschnitt; `→ core.tracks` nennt die Sammlung, in die eine Kennung zeigt — die Prüfung beim Einlesen stellt sicher, dass es das Objekt gibt.
 
 == Die Datei rail-across-1.0
 
@@ -549,7 +549,7 @@ _Weitere Properties sind nicht erlaubt._
   [`collections`], [ja], [Objekt; Schlüssel frei, Werte: Liste von Objekt], [Die Sammlungen: je eine Liste von Objekten mit `id`, sortiert nach `id`],
 )
 
-== Domäne core 4.0
+== Domäne core 5.0
 
 === Domänendokument <core-root>
 
@@ -828,14 +828,14 @@ _Weitere Properties sind nicht erlaubt._
 
 === Switch <core-Switch>
 
-Eine Weiche, Kreuzung, Kreuzungsweiche, ein Verbinder (`link`) oder ein Bauzustandsverbinder (`stage_link`) an einem Knoten. Die Ports halten Gleisenden. Bei einer Weiche ist A der Weichenanfang, B1 das Stammgleis, B2 das Zweiggleis. Ein Verbinder verbindet zwei Gleisenden, wo die Ebene wechselt oder ein umgebauter Gleisteil anschließt; ein Bauzustandsverbinder verbindet das Gleis an A mit dem an B1, solange es in Betrieb ist, und danach mit dem an B2.
+Eine Weiche, Kreuzung, Kreuzungsweiche, ein Verbinder (`link`) oder ein Bauzustandsverbinder (`stage_link`) an einem Knoten. Die Ports halten Gleisenden. Bei einer Weiche ist A der Weichenanfang, B1 das Zweiggleis, B2 das Stammgleis, wie OSRD eine Weiche schreibt. Ein Verbinder verbindet zwei Gleisenden, wo die Ebene wechselt oder ein umgebauter Gleisteil anschließt; ein Bauzustandsverbinder verbindet das Gleis an A mit dem an B1, solange es in Betrieb ist, und danach mit dem an B2.
 
 _Weitere Properties sind nicht erlaubt._
 
 #table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
   [Property], [Pflicht], [Typ und zulässige Werte], [Bedeutung],
   [`id`], [ja], [#link(<core-Id>)[`Id`]], [Kennung des Objekts],
-  [`kind`], [ja], [eins der Werte unter Bedeutung], [Art; sie legt die Ports fest: Weiche A, B1, B2; Kreuzung und Kreuzungsweichen A, B, C, D; Verbinder A, B; Bauzustandsverbinder A, B1, B2 #linebreak() `switch` Weiche: A Weichenanfang, B1 Stammgleis, B2 Zweiggleis #linebreak() `crossing` Kreuzung #linebreak() `single_slip` einfache Kreuzungsweiche #linebreak() `double_slip` doppelte Kreuzungsweiche #linebreak() `link` Verbinder zweier Gleisenden #linebreak() `stage_link` Bauzustandsverbinder: erst B1, dann B2],
+  [`kind`], [ja], [eins der Werte unter Bedeutung], [Art; sie legt die Ports fest: Weiche A, B1, B2; Kreuzung und Kreuzungsweichen A, B, C, D; Verbinder A, B; Bauzustandsverbinder A, B1, B2 #linebreak() `switch` Weiche: A Weichenanfang, B1 Zweiggleis, B2 Stammgleis #linebreak() `crossing` Kreuzung #linebreak() `single_slip` einfache Kreuzungsweiche #linebreak() `double_slip` doppelte Kreuzungsweiche #linebreak() `link` Verbinder zweier Gleisenden #linebreak() `stage_link` Bauzustandsverbinder: erst B1, dann B2],
   [`formVersion`], [ja], [ganze Zahl], [Version der Formtabellen, gegen die die Weiche gebaut ist],
   [`name`], [], [#link(<core-Text>)[`Text`]], [Name],
   [`number`], [], [Zahl], [Nummer],

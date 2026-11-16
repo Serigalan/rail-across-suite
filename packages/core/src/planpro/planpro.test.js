@@ -14,7 +14,7 @@ const project = () => ({
     { id: 't3', epsg: 25832, name: '3', elements: [straightElement(P(250), P(340, 20))] },
   ],
   switches: [{
-    switchId: 'w1', kind: 'turnout', name: 'W1', label: '300 – 1:9',
+    switchId: 'w1', kind: 'switch', name: 'W1', label: '300 – 1:9',
     ports: { A: { trackId: 't1', endpoint: 'END' }, B1: { trackId: 't3', endpoint: 'BEGIN' }, B2: { trackId: 't2', endpoint: 'BEGIN' } },
   }],
   endMarks: [{ id: 'e1', kind: 'buffer_stop', trackId: 't2', endpoint: 'END' }],

@@ -23,7 +23,7 @@ export function straight(id, x, y, bearing, length) {
 }
 
 const turnout = (name, a, b1, b2) => ({
-  switchId: name, kind: 'turnout', formVersion: 1, name,
+  switchId: name, kind: 'switch', formVersion: 1, name,
   ports: {
     A: { trackId: a[0], endpoint: a[1] },
     B1: { trackId: b1[0], endpoint: b1[1] },

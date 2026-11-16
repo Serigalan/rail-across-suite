@@ -72,7 +72,7 @@ function overlapCases() {
   out.push(rec('signalling.gradientAlong', S.gradientAlong, tracks, { trackId: 't2', station: 0 }, { trackId: 't1', station: 10 }, 0))
   out.push(rec('signalling.gradientAlong', S.gradientAlong, [{ id: 't1' }], { trackId: 't1', station: 0 }, { trackId: 't1', station: 10 }, 10))
   out.push(rec('signalling.gradientAlong', S.gradientAlong, tracks, { trackId: 't9', station: 0 }, { trackId: 't1', station: 10 }, 10))
-  const sw = (id, speed, a, b1, b2) => ({ id, kind: 'turnout', speed, ports: { A: { trackId: a }, B1: { trackId: b1 }, B2: { trackId: b2 } } })
+  const sw = (id, speed, a, b1, b2) => ({ id, kind: 'switch', speed, ports: { A: { trackId: a }, B1: { trackId: b1 }, B2: { trackId: b2 } } })
   const switches = [sw('w1', 60, 'a', 'l', 'm'), sw('w2', 40, 'x', 'l', 'y'), { switchId: 'w3', speed: 100, ports: { A: { trackId: 'm' }, B1: { trackId: 'n' } } }]
   for (const run of [['a', 'm'], ['a', 'l'], ['x', 'l', 'a'], ['a', 'm', 'n'], ['l', 'a'], ['n', 'm', 'a'], [], ['a']]) {
     out.push(rec('signalling.branchSpeedOnRun', S.branchSpeedOnRun, switches, run))

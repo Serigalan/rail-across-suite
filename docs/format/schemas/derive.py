@@ -40,9 +40,9 @@ def rename(props, old, new, required=None):
 ref = lambda target, desc=None: {'$ref': 'core#/$defs/Ref', 'x-target': target, **({'description': desc} if desc else {})}
 lifespan = {'$ref': 'core#/$defs/Lifespan'}
 
-# ── core 4.0 ──────────────────────────────────────────────────────────────────
+# ── core 5.0 ──────────────────────────────────────────────────────────────────
 core = load('core/3.1.schema.json')
-core['title'] = 'Rail-Data-Core, domain core 4.0'
+core['title'] = 'Rail-Data-Core, domain core 5.0'
 core['description'] = ('The base every layer depends on: the net (tracks, switches and connectors), what stands on '
                        'it for every discipline (end marks, stopping places) and the reference data (km lines, the '
                        'operational point register). Part of infra-data-1.0 in rail-across-1.0.')
@@ -68,8 +68,8 @@ hp['properties']['depId'].pop('x-target')
 hp['properties']['depId']['description'] = 'The id of the height point of the same track this one depends on.'
 sw = d['Switch']
 sw['description'] = ('A switch, crossing, slip, two-end connector (`link`) or construction stage connector '
-                     '(`stage_link`) at a node; its ports hold track ends. A switch: A its toe, B1 the main track, '
-                     'B2 the branch. A link joins two track ends where the plane changes or where a rebuilt part of '
+                     '(`stage_link`) at a node; its ports hold track ends. A switch: A its toe, B1 the branch, B2 '
+                     'the main track — as OSRD\'s point switch is written. A link joins two track ends where the plane changes or where a rebuilt part of '
                      'a track ties in; a stage link joins the track at A to the one at B1 while that is in service '
                      'and to the one at B2 from then on.')
 sw['properties']['kind'] = {'enum': ['switch', 'crossing', 'single_slip', 'double_slip', 'link', 'stage_link']}
@@ -106,7 +106,7 @@ d['KmLine'] = {
         'source': {'$ref': '#/$defs/Text'},
     },
 }
-write('core/4.0.schema.json', core)
+write('core/5.0.schema.json', core)
 
 # ── civil 3.0 ─────────────────────────────────────────────────────────────────
 civil = load('civil/2.1.schema.json')

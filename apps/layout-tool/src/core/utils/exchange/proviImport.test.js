@@ -103,7 +103,7 @@ describe('buildProviAxis — the elements between the main points', () => {
     const { built } = axis('623B')
     expect(built.units.map(u => u.name)).toEqual(['0603', '0611'])
     expect(built.units[0]).toMatchObject({
-      host: '63402L', branch: '623B', kind: 'turnout', label: '60-760-1:14',
+      host: '63402L', branch: '623B', kind: 'switch', label: '60-760-1:14',
       radius: 760, slope: 14, rail: 'UIC60', epsg: 5683,
     })
     expect(built.units[0].point).toEqual([3567648.852542, 5645254.581658])

@@ -86,7 +86,7 @@ describe('tracksOnFrom', () => {
 
   it.skipIf(!hasPek)('finds every turnout toe of the Bestand leading into two tracks', () => {
     const { tracks, switches } = loadPekExisting()
-    const turnouts = switches.filter(sw => sw.kind === 'turnout' && sw.ports?.A?.trackId)
+    const turnouts = switches.filter(sw => sw.kind === 'switch' && sw.ports?.A?.trackId)
     expect(turnouts.length).toBeGreaterThan(0)
     for (const sw of turnouts) {
       const on = tracksOnFrom(sw.ports?.A?.trackId, sw.ports?.A?.endpoint, tracks, switches)

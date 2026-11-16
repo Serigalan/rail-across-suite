@@ -110,7 +110,7 @@ pub fn branch_speed_on_run(switches: &[Value], track_ids: &[Value]) -> Option<(O
     for i in 0..track_ids.len().saturating_sub(1) {
         let pair = [&track_ids[i], &track_ids[i + 1]];
         for sw in switches {
-            if rail_across_js::get(sw, "kind").and_then(Value::as_str).unwrap_or("turnout") != "turnout" {
+            if rail_across_js::get(sw, "kind").and_then(Value::as_str).unwrap_or("switch") != "switch" {
                 continue;
             }
             let (Some(toe), Some(branch)) = (port_track(sw, "A"), port_track(sw, "B1")) else {

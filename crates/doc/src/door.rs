@@ -38,7 +38,7 @@ pub const FORMAT_NAME: &str = "infra-data-2.0";
 pub const OLD_FORMAT: &str = "rail-across";
 
 const ENVELOPE: &str = include_str!("../../../schemas/infra-data.schema.json");
-const CORE: &str = include_str!("../../../schemas/core/4.0.schema.json");
+const CORE: &str = include_str!("../../../schemas/core/5.0.schema.json");
 const CIVIL: &str = include_str!("../../../schemas/civil/3.0.schema.json");
 const SIGNALLING: &str = include_str!("../../../schemas/signalling/4.0.schema.json");
 const ELECTRIFICATION: &str = include_str!("../../../schemas/electrification/3.0.schema.json");
@@ -134,6 +134,8 @@ const PAST: &[(&str, &str, &str)] = &[
     ("signalling", "3.1", "sha256:2b365df5f72c616a99c70729f50afd5fdd243f14cff4798f78a70f0855a1e14d"),
     // Electrified ranges of tracks with their systems, before masts and contact wires (decision 0029, phase 3).
     ("electrification", "2.1", "sha256:45c09436f949eb966d091985b23378eb9736d0db4f2991957f78209f07dbf8a1"),
+    // A switch with B1 its main track (decision 0029, phase 1), before core 5.0 had B1 its branch again.
+    ("core", "4.0", "sha256:2dd6dee14dc22be99741f2b095a314185273f3662f809433d7639fe4c59f6abf"),
 ];
 
 /// The hash the schema of a domain's version goes by: this build's, or one of a version before (`PAST`).
@@ -527,6 +529,7 @@ const STEPS: &[Step] = &[
     Step { domains: REFERENCES_RESOLVED, apply: references_resolved },
     Step { domains: WORDS_AND_NAMES, apply: words_and_names },
     Step { domains: CONTACT_WIRES, apply: contact_wires },
+    Step { domains: SWITCH_PORTS, apply: switch_ports },
 ];
 
 const LIFESPANS_BY_DAY: &[(&str, &str, &str)] =
@@ -538,6 +541,8 @@ const REFERENCES_RESOLVED: &[(&str, &str, &str)] =
 const WORDS_AND_NAMES: &[(&str, &str, &str)] = &[("core", "3.1", "4.0"), ("civil", "2.1", "3.0"), ("signalling", "3.1", "4.0")];
 
 const CONTACT_WIRES: &[(&str, &str, &str)] = &[("electrification", "2.1", "3.0")];
+
+const SWITCH_PORTS: &[(&str, &str, &str)] = &[("core", "4.0", "5.0")];
 
 fn version_of<'a>(doc: &'a Value, name: &str) -> Option<&'a str> {
     doc["domains"].get(name)?.get("version")?.as_str()
@@ -614,6 +619,7 @@ fn words_and_names(doc: &Value) -> Value {
     let mut blobs = obj(&doc["blobs"]);
     let Some(Value::Object(domains)) = out.get_mut("domains") else { return out };
     crate::words::forward(domains);
+    crate::words::swap_switch_ports(domains);
     // A km line in one plane, its runs' points as blobs; every id a UUID (decision 0029, phase 2).
     crate::core_format::km_lines_to_document(domains, &mut blobs);
     crate::ids::forward(domains);
@@ -676,6 +682,20 @@ fn contact_wires(doc: &Value) -> Value {
     domain.insert("collections".into(), Value::Object(cols));
     domain.insert("version".into(), json!("3.0"));
     domain.insert("schema".into(), json!(hash_of("electrification", "3.0")));
+    out
+}
+
+/// Core 5.0 (decision 0029, phase 6): a switch's `B1` its branch and `B2` its main track again, as the suite always
+/// had them and the OSRD export writes them.
+fn switch_ports(doc: &Value) -> Value {
+    let mut out = doc.clone();
+    let Some(Value::Object(domains)) = out.get_mut("domains") else { return out };
+    crate::words::swap_switch_ports(domains);
+    for (name, _, to) in SWITCH_PORTS {
+        let Some(Value::Object(domain)) = domains.get_mut(*name) else { continue };
+        domain.insert("version".into(), json!(to));
+        domain.insert("schema".into(), json!(hash_of(name, to)));
+    }
     out
 }
 

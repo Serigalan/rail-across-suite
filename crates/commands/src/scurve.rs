@@ -961,7 +961,7 @@ pub fn build_s_curve(o: &Value) -> Value {
         .cloned()
         .unwrap_or_else(|| number(next_switch_number(&switches, &[js_number(Some(&no1))])));
     let identity = |old: Option<&Value>, no: &Value, form: &Value| -> Value {
-        let mut id = new_switch_fields("turnout").as_object().cloned().unwrap_or_default();
+        let mut id = new_switch_fields("switch").as_object().cloned().unwrap_or_default();
         id.insert("name".into(), json!(switch_designation(no, None)));
         id.insert("label".into(), form.get("label").cloned().unwrap_or(Value::Null));
         if let Some(o) = old {

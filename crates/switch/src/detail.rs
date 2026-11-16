@@ -410,7 +410,7 @@ fn chain_elements(start: Utm, bearing: f64, chain: &[Value], fields: &Object) ->
 pub fn form_detail(form: Option<&Value>, rail: Option<Value>, side: &str) -> Option<Value> {
     let form = form.filter(|f| f.get("art").and_then(Value::as_str) == Some("weiche"))?;
     let sw = json!({
-        "switchId": "detail", "kind": "turnout", "label": form.get("label"),
+        "switchId": "detail", "kind": "switch", "label": form.get("label"),
         "ports": { "A": { "trackId": "detail-a", "endpoint": "END" }, "B1": { "trackId": "detail-b", "endpoint": "BEGIN" }, "B2": { "trackId": "detail-m", "endpoint": "BEGIN" } },
     });
     let onward = get(form, "lds").and_then(Value::as_f64).unwrap_or(0.0) + SLEEPER_SPACING * 30.0 + 10.0;

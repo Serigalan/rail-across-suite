@@ -22,8 +22,8 @@ export const crossing = {
     { id: 'K1', epsg: 25832, ...inStation('op-k', '1'), elements: [straight(6000, 0, 6500, 0)] },
   ],
   switches: [
-    { switchId: 'Wa', kind: 'turnout', ports: { A: { trackId: 'L1', endpoint: 'END' }, B1: { trackId: 'W2', endpoint: 'BEGIN' }, B2: { trackId: 'W1', endpoint: 'BEGIN' } } },
-    { switchId: 'Wb', kind: 'turnout', ports: { A: { trackId: 'L2', endpoint: 'BEGIN' }, B1: { trackId: 'W2', endpoint: 'END' }, B2: { trackId: 'W1', endpoint: 'END' } } },
+    { switchId: 'Wa', kind: 'switch', ports: { A: { trackId: 'L1', endpoint: 'END' }, B1: { trackId: 'W2', endpoint: 'BEGIN' }, B2: { trackId: 'W1', endpoint: 'BEGIN' } } },
+    { switchId: 'Wb', kind: 'switch', ports: { A: { trackId: 'L2', endpoint: 'BEGIN' }, B1: { trackId: 'W2', endpoint: 'END' }, B2: { trackId: 'W1', endpoint: 'END' } } },
   ],
   platforms: [
     { id: 'pH', trackId: 'H1', startStation: 100, endStation: 300, operationalPointId: 'op-h' },

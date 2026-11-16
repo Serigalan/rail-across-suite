@@ -21,7 +21,7 @@ const net = {
     track('t2', [[[300, 0], [500, 0], 100]]),
     track('t3', [[[300, 0], [480, 40], 70]]),
   ],
-  switches: [{ switchId: 'w1', kind: 'turnout', formVersion: 1, speed: 60, ports: {
+  switches: [{ switchId: 'w1', kind: 'switch', formVersion: 1, speed: 60, ports: {
     A: { trackId: 't1', endpoint: 'END' }, B1: { trackId: 't3', endpoint: 'BEGIN' }, B2: { trackId: 't2', endpoint: 'BEGIN' },
   } }],
 }

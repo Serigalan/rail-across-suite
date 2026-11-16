@@ -1,5 +1,5 @@
 import ENVELOPE from '../../schemas/infra-data.schema.json' with { type: 'json' }
-import CORE from '../../schemas/core/4.0.schema.json' with { type: 'json' }
+import CORE from '../../schemas/core/5.0.schema.json' with { type: 'json' }
 import CIVIL from '../../schemas/civil/3.0.schema.json' with { type: 'json' }
 import SIGNALLING from '../../schemas/signalling/4.0.schema.json' with { type: 'json' }
 import ELECTRIFICATION from '../../schemas/electrification/3.0.schema.json' with { type: 'json' }

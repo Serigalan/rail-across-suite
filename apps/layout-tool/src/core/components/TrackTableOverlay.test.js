@@ -40,7 +40,7 @@ const TRACK = {
     arc({ radius: 500, cant: 0 }),
   ],
 }
-const SWITCH = { switchId: 'sw1', kind: 'turnout', name: 'W 12', label: '500 – 1:12', formVersion: 1 }
+const SWITCH = { switchId: 'sw1', kind: 'switch', name: 'W 12', label: '500 – 1:12', formVersion: 1 }
 
 
 /**

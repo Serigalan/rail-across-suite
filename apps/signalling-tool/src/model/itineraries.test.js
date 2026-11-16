@@ -13,8 +13,8 @@ const port = (trackId, endpoint) => ({ trackId, endpoint })
 const net = {
   tracks: [track('a', 200), track('m', 400), track('l', 420), track('b', 300)],
   switches: [
-    { switchId: 'w1', kind: 'turnout', ports: { A: port('a', 'END'), B1: port('l', 'BEGIN'), B2: port('m', 'BEGIN') } },
-    { switchId: 'w2', kind: 'turnout', ports: { A: port('b', 'BEGIN'), B1: port('l', 'END'), B2: port('m', 'END') } },
+    { switchId: 'w1', kind: 'switch', ports: { A: port('a', 'END'), B1: port('l', 'BEGIN'), B2: port('m', 'BEGIN') } },
+    { switchId: 'w2', kind: 'switch', ports: { A: port('b', 'BEGIN'), B1: port('l', 'END'), B2: port('m', 'END') } },
   ],
 }
 const ks = [{ system: 'ks', type: 'multiSection', function: 'exit', frames: [{ kind: 'screen', aspects: [{ aspect: 'Hp_0' }, { aspect: 'Ks_1' }] }] }]

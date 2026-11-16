@@ -365,7 +365,7 @@ impl Frame {
 }
 
 fn is_turnout(sw: &Value) -> bool {
-    get(sw, "kind").and_then(Value::as_str).unwrap_or("turnout") == "turnout"
+    get(sw, "kind").and_then(Value::as_str).unwrap_or("switch") == "switch"
 }
 
 /// The options of `turnoutSleepers`.

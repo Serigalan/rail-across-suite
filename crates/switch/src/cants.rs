@@ -17,7 +17,7 @@ const SAME_CANT: f64 = 0.001;
 const MAX_PASSES: usize = 24;
 
 fn is_turnout(sw: &Value) -> bool {
-    get(sw, "kind").and_then(Value::as_str).unwrap_or("turnout") == "turnout"
+    get(sw, "kind").and_then(Value::as_str).unwrap_or("switch") == "switch"
 }
 
 fn node(v: Option<&Value>) -> Option<[f64; 2]> {

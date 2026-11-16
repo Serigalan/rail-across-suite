@@ -710,7 +710,7 @@ fn convert(model: &Model) -> Result<Converted, String> {
         let state = get(node.as_deref());
         let sw = obj(vec![
             ("switchId", os(node)),
-            ("kind", s(art.as_deref().and_then(m::switch_kind).unwrap_or("turnout"))),
+            ("kind", s(art.as_deref().and_then(m::switch_kind).unwrap_or("switch"))),
             ("formVersion", Some(json!(1))),
             (
                 "name",

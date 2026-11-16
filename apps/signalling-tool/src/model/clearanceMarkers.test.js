@@ -8,7 +8,7 @@ import { detectionLayout } from './detectionLayout.js'
 const EPSG = 25832
 const P = (x, y = 0) => ({ easting: 500000 + x, northing: 5700000 + y, zone: EPSG })
 const track = (id, a, b) => ({ id, epsg: EPSG, elements: [straightElement(P(...a), P(...b))] })
-const turnout = (switchId, A, B1, B2) => ({ switchId, kind: 'turnout', formVersion: 1, ports: { A, B1, B2 } })
+const turnout = (switchId, A, B1, B2) => ({ switchId, kind: 'switch', formVersion: 1, ports: { A, B1, B2 } })
 const on = (trackId, station, direction = 'up') => ({ anchor: 'station', trackId, station, direction })
 
 // t1 runs 200 m east into the toe of w1; t2 goes on straight, t3 branches north-east.

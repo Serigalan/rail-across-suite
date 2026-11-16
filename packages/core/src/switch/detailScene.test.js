@@ -6,7 +6,7 @@ import { hasPekExisting, loadPekExisting } from '../../test/pekFixture.js'
 // Tracks only as long as the search needs them: an id and a length.
 const track = (id, length) => ({ id, elements: [{ length }] })
 const port = (trackId, endpoint) => ({ trackId, endpoint })
-const turnout = (switchId, ports) => ({ switchId, kind: 'turnout', ports })
+const turnout = (switchId, ports) => ({ switchId, kind: 'switch', ports })
 
 describe('the partners of a switch connection', () => {
   // W1's branch b runs 60 m to W2's branch; W3's branch c runs 400 m on to W4.

@@ -534,7 +534,7 @@ describe('keptRoutes', () => {
     ['A', 'B1', 'B2', 'B', 'C', 'D'].map(port => [port, { occupied: occupied.includes(port) }]))
 
   describe('a turnout', () => {
-    const sw = { kind: 'turnout' }
+    const sw = { kind: 'switch' }
 
     it('keeps the through route where a line runs over it', () => {
       expect(keptRoutes(sw, at('A', 'B2'))).toEqual(['main'])

@@ -86,7 +86,8 @@ function stored({ project, basePayload, document, ...rest }) {
 
 /** A kept copy as the tools read it — its documents through the door — or null where it cannot be read. */
 function copyOf(entry) {
-  if (entry?.format === OLD_FORMAT) return (({ format: _format, ...copy }) => copy)(entry)
+  // Read through the door as well, so that it holds the record's words of now.
+  if (entry?.format === OLD_FORMAT) return copyOf(stored((({ format: _format, ...copy }) => copy)(entry)))
   if (entry?.format !== FORMAT_NAME) return null
   const { document, baseDocument, format: _format, ...rest } = entry
   try {

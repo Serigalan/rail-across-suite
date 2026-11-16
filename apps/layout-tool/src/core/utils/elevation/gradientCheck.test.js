@@ -13,8 +13,8 @@ const line = (heights, { speed = 100, length = 2000, ...rest } = {}) => ({
 
 // The track `t1` runs from the branch of one turnout into the branch of another.
 const switches = [
-  { kind: 'turnout', ports: { A: { trackId: 'x', endpoint: 'END' }, B1: { trackId: 't1', endpoint: 'BEGIN' } }},
-  { kind: 'turnout', ports: { A: { trackId: 'y', endpoint: 'BEGIN' }, B1: { trackId: 't1', endpoint: 'END' } }},
+  { kind: 'switch', ports: { A: { trackId: 'x', endpoint: 'END' }, B1: { trackId: 't1', endpoint: 'BEGIN' } }},
+  { kind: 'switch', ports: { A: { trackId: 'y', endpoint: 'BEGIN' }, B1: { trackId: 't1', endpoint: 'END' } }},
 ]
 
 // A track connection 20 m long between those two turnouts: level to its

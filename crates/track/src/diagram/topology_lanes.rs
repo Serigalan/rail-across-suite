@@ -16,7 +16,7 @@ const MAX_SPAN: f64 = 6.0;
 
 fn port_side(kind: &str, port: &str) -> Option<usize> {
     match kind {
-        "turnout" => match port {
+        "switch" => match port {
             "A" => Some(0),
             "B1" | "B2" => Some(1),
             _ => None,
@@ -41,12 +41,12 @@ fn port_side(kind: &str, port: &str) -> Option<usize> {
 }
 
 fn has_sides(kind: &str) -> bool {
-    matches!(kind, "turnout" | "crossing" | "single_slip" | "double_slip" | "link" | "stage_link")
+    matches!(kind, "switch" | "crossing" | "single_slip" | "double_slip" | "link" | "stage_link")
 }
 
 fn through(kind: &str) -> &'static [(&'static str, &'static str)] {
     match kind {
-        "turnout" => &[("A", "B2")],
+        "switch" => &[("A", "B2")],
         "crossing" | "single_slip" | "double_slip" => &[("A", "C")],
         "link" => &[("A", "B")],
         "stage_link" => &[("A", "B1")],

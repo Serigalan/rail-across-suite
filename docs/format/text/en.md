@@ -61,7 +61,7 @@ variant, the operation in revisions of its own — and a file brings them togeth
     "format": "infra-data", "version": "1.0",
     "domains": {
       "core": {
-        "version": "4.0", "schema": "sha256:…",
+        "version": "5.0", "schema": "sha256:…",
         "fields": { … }, "collections": { … }
       },
       "civil":           { "version": "3.0", "dependsOn": ["core"], … },
@@ -101,7 +101,7 @@ and collections (`collections`). A **layer** is a domain of infra-data on top of
 <!-- cols: 16%, 22%, 1fr -->
 | Part | Domain | Content |
 |---|---|---|
-| infra-data-1.0 | `core` 4.0 | the net: tracks, switches and connectors, track ends (buffer stops, boundaries of the planning area), km lines, operational points, stopping places, named runs of tracks. The base of all others |
+| infra-data-1.0 | `core` 5.0 | the net: tracks, switches and connectors, track ends (buffer stops, boundaries of the planning area), km lines, operational points, stopping places, named runs of tracks. The base of all others |
 | | `civil` 3.0 | platforms and engineering structures (railway bridges, retaining walls, noise barriers), axes measured in point clouds, reference axes, title block, project picture |
 | | `signalling` 4.0 | signals with their logical signals, train detection, switch elements, routes, overlaps, flank protection, train protection, station boundaries, itineraries — exportable to PlanPro |
 | | `electrification` 3.0 | masts, suspension points, section insulators and the contact wires with their voltage |
@@ -241,7 +241,7 @@ it has, `kind` fixes:
 <!-- cols: 26%, 18%, 1fr -->
 | `kind` | Ports | Meaning |
 |---|---|---|
-| `switch` | `A`, `B1`, `B2` | switch: `A` the toe, `B1` the main track, `B2` the branch |
+| `switch` | `A`, `B1`, `B2` | switch: `A` the toe, `B1` the branch, `B2` the main track — as OSRD's point switch is written, so that an export passes the ports on as they are |
 | `crossing` | `A`, `B`, `C`, `D` | diamond crossing |
 | `single_slip`, `double_slip` | `A`, `B`, `C`, `D` | single and double slip |
 | `link` | `A`, `B` | connector: two track ends, where the plane changes or a rebuilt part ties in |
@@ -431,8 +431,9 @@ raises the version of its domain: the minor version for additions an older reade
 version. A reader brings an older file forward step by step, number by number; older states are brought forward
 once, not read leniently for ever.
 
-The versions of the domains continue the suite's counting: core 4.0, civil 3.0, signalling 4.0, electrification
-3.0; vehicles 1.0 and timetables 1.0 are the domain operations 1.0 of before, split in two.
+The versions of the domains continue the suite's counting: core 5.0, civil 3.0, signalling 4.0, electrification
+3.0; vehicles 1.0 and timetables 1.0 are the domain operations 1.0 of before, split in two. Core 4.0 had a switch's
+`B1` its main track; 5.0 has it the branch again, and a reader brings a 4.0 file forward by swapping the two.
 
 # An example
 
@@ -450,7 +451,7 @@ Halle-Trotha, where it stops on that track:
     "format": "infra-data", "version": "1.0",
     "domains": {
       "core": {
-        "version": "4.0", "schema": "sha256:1111…",
+        "version": "5.0", "schema": "sha256:1111…",
         "fields": { "id": "5dbd8fed-f8dc-4995-8934-9d71be69cae0", "title": "Halle-Trotha" },
         "collections": {
           "tracks": [ {
@@ -576,11 +577,10 @@ This specification is the target of the data model. As of 13 November 2026 the s
 from it in these points, each to be brought in line by its own step (decision 0028 and those after it):
 
 - The project server keeps a variant's infrastructure as a document of the envelope of before (infra-data 2.0:
-  its domains and its blobs, core 4.0, civil 3.0, signalling 4.0, electrification 3.0) and the operation as an
+  its domains and its blobs, core 5.0, civil 3.0, signalling 4.0, electrification 3.0) and the operation as an
   operations document (vehicles 1.0, timetables 1.0); the file rail-across-1.0 brings them together, and a file of
   before is still read.
-- The record the tools work on keeps the words of before — an element's kind as a number, a
-  `turnout` with `B1` its branch —, km lines in WGS 84 with the kilometrage per point, and ids of any form; the
+- The record the tools work on keeps the words of before — an element's kind as a number —, km lines in WGS 84 with the kilometrage per point, and ids of any form; the
   door converts it into the document and back (decision 0029, phase 6 takes that out). A km line of before is
   kept as points, not yet fitted with design elements.
 - A domain the reader does not know is kept; one of a later version of a domain it knows is refused, not read

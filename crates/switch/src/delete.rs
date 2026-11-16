@@ -291,7 +291,7 @@ pub fn plan_switch_deletion(sw: &Value, tracks: &[Value]) -> Value {
         return plan(&sid, "link", &[], &Updates::default(), vec![], 0, vec![], (0.0, 0.0), false);
     }
     let by = by_id(tracks);
-    if truthy(sw.get("kind")) && sw.get("kind").and_then(Value::as_str) != Some("turnout") {
+    if truthy(sw.get("kind")) && sw.get("kind").and_then(Value::as_str) != Some("switch") {
         return plan_crossing_deletion(sw, &by);
     }
     let parts = switch_parts(sw, &by);

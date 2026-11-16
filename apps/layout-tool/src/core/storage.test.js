@@ -352,7 +352,7 @@ describe('deleting several elements at once', () => {
       ],
       platforms: [{ id: 'pl', trackId: 't', startStation: 220, endStation: 280 }, { id: 'p2', trackId: 't', startStation: 50, endStation: 150 }],
     })
-    saveSwitch({ switchId: 'w', kind: 'turnout', ports: { A: { trackId: 't', endpoint: 'END' }, B1: { trackId: 'b', endpoint: 'BEGIN' }, B2: { trackId: 'x', endpoint: 'BEGIN' } } })
+    saveSwitch({ switchId: 'w', kind: 'switch', ports: { A: { trackId: 't', endpoint: 'END' }, B1: { trackId: 'b', endpoint: 'BEGIN' }, B2: { trackId: 'x', endpoint: 'BEGIN' } } })
     deleteElements([{ trackId: 't', elementIndex: 1 }])
     expect(loadSwitches()).toHaveLength(1)
     deleteElements([{ trackId: loadTracks().find(t => t.elements[0].startNode[0] === 200).id, elementIndex: 0 }])
@@ -391,7 +391,7 @@ describe('deleting a track with a switch on it', () => {
       { id: 'b', elements: [el({ switchBranch: true, switchId: 'w', switchRoute: 'branch' })] },
       { id: 'c', elements: [el({ switchBranch: true, switchId: 'w', switchRoute: 'main' }), el()] },
     ], switches: [] })
-    saveSwitch({ switchId: 'w', kind: 'turnout', ports: { A: { trackId: 'a', endpoint: 'END' }, B1: { trackId: 'b', endpoint: 'BEGIN' }, B2: { trackId: 'c', endpoint: 'BEGIN' } } })
+    saveSwitch({ switchId: 'w', kind: 'switch', ports: { A: { trackId: 'a', endpoint: 'END' }, B1: { trackId: 'b', endpoint: 'BEGIN' }, B2: { trackId: 'c', endpoint: 'BEGIN' } } })
     deleteTrack('a')
     expect(loadSwitches()).toEqual([])
     // b was nothing but the switch's own geometry and goes with it; c stays, unmarked.
@@ -575,7 +575,7 @@ describe('the heights at a turnout\'s WA and ldS (decision 384)', () => {
       ], heights: [{ station: 0, z: 100 }, { station: 60, z: 100.2 }] },
     ],
     switches: [{
-      switchId: 's1', kind: 'turnout', label: '500 – 1:12',
+      switchId: 's1', kind: 'switch', label: '500 – 1:12',
       ports: { B1: { trackId: 'b', endpoint: 'BEGIN' }, B2: { trackId: 'm', endpoint: 'BEGIN' } },
     }],
   })

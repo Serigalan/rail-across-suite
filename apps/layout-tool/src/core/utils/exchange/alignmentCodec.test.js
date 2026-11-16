@@ -86,7 +86,7 @@ describe('switches as RailJSON nodes', () => {
   const trackMap = { a: { id: 'a' }, b: { id: 'b' }, c: { id: 'c' }, d: { id: 'd' } }
 
   it('maps each kind to its OSRD type and back', () => {
-    for (const [kind, type] of [['turnout', 'point_switch'], ['crossing', 'crossing'],
+    for (const [kind, type] of [['switch', 'point_switch'], ['crossing', 'crossing'],
       ['single_slip', 'single_slip_switch'], ['double_slip', 'double_slip_switch'], ['link', 'link']]) {
       expect(kindForOsrdType(type)).toBe(kind)
       expect(switchesToPorts([{ kind, switchId: 'x' }], trackMap)[0].switch_type).toBe(type)
@@ -96,7 +96,7 @@ describe('switches as RailJSON nodes', () => {
 
   it('names a turnout\'s ports A/B1/B2 and a crossing\'s A1/A2/B1/B2', () => {
     const [turnout, crossing] = switchesToPorts([
-      { kind: 'turnout', switchId: 'w1', name: 'W 1', ports: { A: { trackId: 'a', endpoint: 'END' }, B1: { trackId: 'b', endpoint: 'BEGIN' }, B2: { trackId: 'c', endpoint: 'BEGIN' } }},
+      { kind: 'switch', switchId: 'w1', name: 'W 1', ports: { A: { trackId: 'a', endpoint: 'END' }, B1: { trackId: 'b', endpoint: 'BEGIN' }, B2: { trackId: 'c', endpoint: 'BEGIN' } }},
       { kind: 'crossing', switchId: 'k1', lifespan: { from: 'open' }, ports: { A: { trackId: 'a', endpoint: 'BEGIN' }, B: { trackId: 'b', endpoint: 'END' }, C: { trackId: 'c', endpoint: 'END' }, D: { trackId: 'd', endpoint: 'BEGIN' } }},
     ], trackMap)
     expect(turnout.ports).toEqual({
@@ -109,12 +109,12 @@ describe('switches as RailJSON nodes', () => {
   })
 
   it('leaves out ports on tracks that are not exported', () => {
-    const [sw] = switchesToPorts([{ kind: 'turnout', switchId: 'w', ports: { A: { trackId: 'gone', endpoint: 'END' }, B1: { trackId: 'b', endpoint: 'BEGIN' } }}], trackMap)
+    const [sw] = switchesToPorts([{ kind: 'switch', switchId: 'w', ports: { A: { trackId: 'gone', endpoint: 'END' }, B1: { trackId: 'b', endpoint: 'BEGIN' } }}], trackMap)
     expect(sw.ports).toEqual({ B1: { track: 'b', endpoint: 'BEGIN' } })
   })
 
   it('appends foreign switches unless a generated one has their id or label', () => {
-    const out = switchesToPorts([{ kind: 'turnout', switchId: 'w1', name: 'W 1' }], trackMap, [
+    const out = switchesToPorts([{ kind: 'switch', switchId: 'w1', name: 'W 1' }], trackMap, [
       { id: 'w1' }, { id: 'other', extensions: { sncf: { label: 'W 1' } } }, { id: 'kept' },
     ])
     expect(out.map(s => s.id)).toEqual(['w1', 'kept'])

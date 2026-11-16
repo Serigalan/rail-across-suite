@@ -29,7 +29,7 @@ fn els(t: &Value) -> &[Value] {
 }
 
 fn is_turnout(sw: &Value) -> bool {
-    !truthy(sw.get("kind")) || sw.get("kind").and_then(Value::as_str) == Some("turnout")
+    !truthy(sw.get("kind")) || sw.get("kind").and_then(Value::as_str) == Some("switch")
 }
 
 fn port_at(sw: &Value, track_id: &Value, endpoint: &str) -> Option<&'static str> {

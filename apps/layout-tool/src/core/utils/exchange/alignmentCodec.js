@@ -206,7 +206,7 @@ export function platformsToOperationalPoints(platforms, trackMap, foreign = []) 
  * whole reason the record carries a `kind` rather than counting its ports.
  */
 const OSRD_SWITCH_TYPES = {
-  turnout:     'point_switch',
+  switch:     'point_switch',
   crossing:    'crossing',
   single_slip: 'single_slip_switch',
   double_slip: 'double_slip_switch',
@@ -229,7 +229,7 @@ export const kindForOsrdType = (type) =>
  * (line 2, A2–B2).
  */
 const OSRD_PORT_NAMES = {
-  turnout:  { A: 'A', B1: 'B1', B2: 'B2' },
+  switch:  { A: 'A', B1: 'B1', B2: 'B2' },
   crossing: { A: 'A1', B: 'A2', C: 'B1', D: 'B2' },
   link:     { A: 'A', B: 'B' },
 }
@@ -246,7 +246,7 @@ function switchExtensions(sw) {
 
 export function switchesToPorts(switches, trackMap, foreign = []) {
   const out = switches.map((sw, i) => {
-    const names = OSRD_PORT_NAMES[sw.kind] ?? OSRD_PORT_NAMES.turnout
+    const names = OSRD_PORT_NAMES[sw.kind] ?? OSRD_PORT_NAMES.switch
     const ports = {}
     for (const { port } of portsOf(sw)) {
       const trackId = portTrack(sw, port), endpoint = portEnd(sw, port)
@@ -257,7 +257,7 @@ export function switchesToPorts(switches, trackMap, foreign = []) {
       id: sw.switchId ?? sw.name ?? `switch_${i}`,
       ports,
       extensions: switchExtensions(sw),
-      switch_type: OSRD_SWITCH_TYPES[sw.kind] ?? OSRD_SWITCH_TYPES.turnout,
+      switch_type: OSRD_SWITCH_TYPES[sw.kind] ?? OSRD_SWITCH_TYPES.switch,
       group_change_delay: 0,
     }
   })

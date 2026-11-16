@@ -198,7 +198,7 @@ function rebuildSwitch(sw, trackById) {
   // The crossing kinds have four ports and a geometry of their own — they are
   // rebuilt as the crossing they are (rebuildCrossing below) rather than as a
   // turnout wearing their name.
-  if (sw.switch_type && kindForOsrdType(sw.switch_type) !== 'turnout') {
+  if (sw.switch_type && kindForOsrdType(sw.switch_type) !== 'switch') {
     return rebuildCrossing(sw, trackById)
   }
 

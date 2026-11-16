@@ -45,7 +45,7 @@ const PORTS = {
 
 /** The turnout over a, b and m; `over.ports` is written port by port over its own. */
 export const turnout = ({ ports = {}, ...over } = {}) => ({
-  switchId: 's1', kind: 'turnout', label: 'TEST',
+  switchId: 's1', kind: 'switch', label: 'TEST',
   ...over,
   ports: Object.fromEntries(Object.entries({ ...PORTS, ...ports }).map(([k, v]) => [k, { ...PORTS[k], ...v }])),
 })

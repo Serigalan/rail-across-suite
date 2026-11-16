@@ -74,7 +74,7 @@ describe('locateMdbSwitches', () => {
 describe('placeMdbSwitches', () => {
   it('places the turnout the fixture carries', () => {
     expect(placed.switches).toHaveLength(1)
-    expect(placed.switches[0].kind).toBe('turnout')
+    expect(placed.switches[0].kind).toBe('switch')
     expect(placed.switches[0].label).toBe('190 – 1:7.5')
   })
 
@@ -368,7 +368,7 @@ describe('an imported switch is stored like a built one', () => {
   })
 
   it('takes its number from the project, not from the file', () => {
-    const busy = [{ switchId: 'x', kind: 'turnout', formVersion: 1, number: 1 }]
+    const busy = [{ switchId: 'x', kind: 'switch', formVersion: 1, number: 1 }]
     const res = placeMdbSwitches(payload, built.tracks, units, { existingSwitches: busy })
     expect(res.switches[0].number).not.toBe(1)
   })

@@ -115,7 +115,7 @@ export function ksStationCore() {
     fields: { id: 'p' },
     collections: {
       tracks: [track('t1', 250), track('t2', 150)],
-      switches: [{ id: 'w1', kind: 'turnout', formVersion: 1, ports: {} }],
+      switches: [{ id: 'w1', kind: 'switch', formVersion: 1, ports: {} }],
       operationalPoints: [{ id: 'op1', name: 'Halle-Trotha' }],
       platforms: [{ id: 'pl1' }],
       stoppingPlaces: ksStoppingPlaces(),

@@ -19,7 +19,7 @@ function straightTrack(id, { x = 0, y = 0, n = 2, len = 50, epsg = 25832 } = {})
 }
 
 const turnout = (switchId, a, b1, b2) => ({
-  switchId, kind: 'turnout', formVersion: 1, name: switchId,
+  switchId, kind: 'switch', formVersion: 1, name: switchId,
   ports: {
     A: { trackId: a[0], endpoint: a[1] },
     B1: { trackId: b1[0], endpoint: b1[1] },

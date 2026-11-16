@@ -171,7 +171,7 @@ describe.skipIf(!SERVER_BIN)('the step to infra-data-1.0 (decision 0021)', () =>
     db.close()
     expect(cli(file, ['migrate'])).toMatch(/data step 0021-infra-data: 2 Revisionen umgeschrieben, 0 nicht lesbar/)
     const { versions, docs: [old, kept] } = payloads(file)
-    expect(versions).toEqual([8, 8])
+    expect(versions).toEqual([9, 9])
     expect(old).toMatchObject({ format: 'infra-data', version: '2.0', domains: { core: { version: DOMAIN_VERSIONS.core }, civil: { version: DOMAIN_VERSIONS.civil } } })
     expect(old.domains.core.collections.tracks.map(t => t.id)).toEqual(doc.domains.core.collections.tracks.map(t => derivedId(t.id)).sort())
     expect(old.domains.civil.collections.platforms.map(p => p.id)).toEqual([derivedId('p1')])
@@ -192,7 +192,7 @@ describe.skipIf(!SERVER_BIN)('the step to infra-data-2.0 (decision 0025)', () =>
     db.close()
     expect(cli(file, ['migrate'])).toMatch(/data step 0025-infra-data-2.0: 2 Revisionen umgeschrieben, 0 nicht lesbar/)
     const { versions, docs: [doc] } = payloads(file)
-    expect(versions).toEqual([8, 8])
+    expect(versions).toEqual([9, 9])
     expect(Object.keys(doc.domains).sort()).toEqual(['civil', 'core', 'signalling'])
     expect(doc.domains.core.collections.stoppingPlaces.map(h => h.id)).toEqual([derivedId('hp-1'), derivedId('hp-2')].sort())
     expect(doc.domains.signalling.collections.stoppingPlaces).toBeUndefined()
@@ -249,7 +249,7 @@ describe.skipIf(!SERVER_BIN)('the step to lifespans by day (decision 0028)', () 
     db.close()
     expect(cli(file, ['migrate'])).toMatch(/data step 0028-lifespans-by-day: 2 Revisionen umgeschrieben, 0 nicht lesbar/)
     const { versions, docs: [after] } = payloads(file)
-    expect(versions).toEqual([8, 8])
+    expect(versions).toEqual([9, 9])
     expect(after.domains.core).toMatchObject({ version: DOMAIN_VERSIONS.core, schema: NOW['the sample'].domains.core.schema })
     expect(after.domains.civil.version).toBe(DOMAIN_VERSIONS.civil)
     expect(after.domains.core.fields.stages).toBeUndefined()
@@ -284,7 +284,7 @@ describe.skipIf(!SERVER_BIN)('the step to references that name something (decisi
     db.close()
     expect(cli(file, ['migrate'])).toMatch(/data step 0028-references: 1 Revisionen umgeschrieben, 0 nicht lesbar/)
     const { versions, docs: [after] } = payloads(file)
-    expect(versions).toEqual([8, 8])
+    expect(versions).toEqual([9, 9])
     expect(after.domains.signalling.version).toBe(DOMAIN_VERSIONS.signalling)
     expect(after.domains.signalling.collections.switchElements).toEqual([])
     expect(cli(file, ['migrate'])).toBe('')
@@ -312,7 +312,7 @@ describe.skipIf(!SERVER_BIN)('the step to core 4.0 (decision 0029, phases 1 and 
     db.close()
     expect(cli(file, ['migrate'])).toMatch(/data step 0029-core-4.0: 1 Revisionen umgeschrieben, 0 nicht lesbar/)
     const { versions, docs: [after] } = payloads(file)
-    expect(versions).toEqual([8, 8])
+    expect(versions).toEqual([9, 9])
     const core = after.domains.core
     expect(core.version).toBe(DOMAIN_VERSIONS.core)
     const [track] = core.collections.tracks
@@ -322,6 +322,33 @@ describe.skipIf(!SERVER_BIN)('the step to core 4.0 (decision 0029, phases 1 and 
     const [line] = core.collections.kmLines
     expect(line).toMatchObject({ id: derivedId('km-6050'), lineNumber: 6050, epsg: 25832, runs: [{ kmStart: 1200.5, counting: 'up' }] })
     expect(after.blobs[line.runs[0].points]).toHaveLength(2)
+    expect(cli(file, ['migrate'])).toBe('')
+  })
+})
+
+describe.skipIf(!SERVER_BIN)('the step to core 5.0 (decision 0029, phase 6)', () => {
+  it('gives a switch kept as core 4.0 its branch at B1 again, once, in place', async () => {
+    const { file, made } = await twoRevisions()
+    const db = new Database(file)
+    const [stored] = payloads(file).docs
+    // As a build of phase 1 kept it: core 4.0, a switch's B1 its main track.
+    const doc = structuredClone(stored)
+    const core = doc.domains.core
+    const [a, main, branch] = [derivedId('a'), derivedId('main'), derivedId('branch')]
+    const el = (x) => ({ elementType: 'straight', startNode: [500000 + x, 5600000], endNode: [500010 + x, 5600000], bearing: 90, length: 10 })
+    core.collections.tracks = [{ id: a, epsg: 25832, elements: [el(0)] }, { id: main, epsg: 25832, elements: [el(10)] }, { id: branch, epsg: 25832, elements: [el(10)] }]
+    core.version = '4.0'
+    core.schema = contentHash(JSON.parse(readFileSync(new URL('../../schemas/core/4.0.schema.json', import.meta.url), 'utf8')))
+    core.collections.switches = [{ id: derivedId('w1'), kind: 'switch', formVersion: 1, ports: {
+      A: { trackId: a, endpoint: 'END' }, B1: { trackId: main, endpoint: 'BEGIN' }, B2: { trackId: branch, endpoint: 'BEGIN' } } }]
+    db.prepare('UPDATE revision SET schema_version = 8, payload = ? WHERE id = ?').run(gzipSync(JSON.stringify(doc)), made.revisionId)
+    db.prepare("DELETE FROM data_migration WHERE name = '0029-switch-ports'").run()
+    db.close()
+    expect(cli(file, ['migrate'])).toMatch(/data step 0029-switch-ports: 1 Revisionen umgeschrieben, 0 nicht lesbar/)
+    const { versions, docs: [after] } = payloads(file)
+    expect(versions).toEqual([9, 9])
+    expect(after.domains.core.version).toBe('5.0')
+    expect(after.domains.core.collections.switches[0].ports).toMatchObject({ B1: { trackId: branch }, B2: { trackId: main } })
     expect(cli(file, ['migrate'])).toBe('')
   })
 })

@@ -200,7 +200,7 @@ describe('a switch the file leaves out', () => {
     const found = units.find(u => u.where.includes('Zweig.001'))
     expect(found.label).toBe('190 – 1:9')
     expect(found.radius).toBe(190)
-    expect(found.kind).toBe('turnout')
+    expect(found.kind).toBe('switch')
   })
 })
 

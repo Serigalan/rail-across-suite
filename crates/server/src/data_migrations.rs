@@ -9,7 +9,7 @@ use rusqlite::{Connection, OptionalExtension, params};
 use serde_json::{Value, json};
 
 use crate::checks::{check_kept, normalized_record};
-use crate::store::{STORED_FORMAT, STORED_FORMAT_1_0, STORED_FORMAT_LIFESPANS, STORED_FORMAT_REFERENCES, STORED_FORMAT_STAGES, Store, pack, unpack};
+use crate::store::{STORED_FORMAT, STORED_FORMAT_1_0, STORED_FORMAT_CORE_4_0, STORED_FORMAT_LIFESPANS, STORED_FORMAT_REFERENCES, STORED_FORMAT_STAGES, Store, pack, unpack};
 use crate::util::{hex, iso, random_bytes};
 
 /// The login of the user the server's own revisions name.
@@ -195,12 +195,19 @@ fn from_lifespans_by_day(db: &Connection, _now: i64) -> rusqlite::Result<String>
     through_the_door(db, STORED_FORMAT_LIFESPANS)
 }
 
-/// Every revision kept with its references naming something rewritten as core 4.0 states it, in place
-/// (decision 0029, phases 1 and 2): the kinds as words, the references ending in `Id`, a switch with `B1` its
-/// main track, every id a UUID, a km line in one plane as runs. One the door cannot read stays as it was, and
+/// Every revision kept with its references naming something rewritten as the door reads it, in place — core 4.0
+/// when the step came (decision 0029, phases 1 and 2): the kinds as words, the references ending in `Id`, every id
+/// a UUID, a km line in one plane as runs; core 5.0 since. One the door cannot read stays as it was, and
 /// is read through the door each time it is asked for.
 fn from_references(db: &Connection, _now: i64) -> rusqlite::Result<String> {
     through_the_door(db, STORED_FORMAT_REFERENCES)
+}
+
+/// Every revision kept as core 4.0 rewritten as core 5.0 states it, in place (decision 0029, phase 6): a switch's
+/// `B1` its branch and `B2` its main track again. One the door cannot read stays as it was, and is read through the
+/// door each time it is asked for.
+fn from_core_4_0(db: &Connection, _now: i64) -> rusqlite::Result<String> {
+    through_the_door(db, STORED_FORMAT_CORE_4_0)
 }
 
 /// Every revision of a project's operations kept with one domain `operations` rewritten in the two domains
@@ -345,7 +352,7 @@ pub fn run_data_migrations(db: &Connection, now: i64) -> rusqlite::Result<Vec<(S
         .collect::<Result<_, _>>()?;
     let mut ran = Vec::new();
     // In this order: a later step reads the revisions in the form the first gives them.
-    let steps: [(&str, fn(&Connection, i64) -> rusqlite::Result<String>); 11] = [
+    let steps: [(&str, fn(&Connection, i64) -> rusqlite::Result<String>); 12] = [
         ("0021-infra-data", to_infra_data),
         ("0020-node-tolerance-1um", close_node_gaps),
         ("0025-infra-data-2.0", from_infra_data_1_0),
@@ -363,6 +370,8 @@ pub fn run_data_migrations(db: &Connection, now: i64) -> rusqlite::Result<Vec<(S
         ("0029-core-4.0", from_references),
         // Operations in the domains vehicles and timetables (decision 0029, phase 4): every revision of operations.
         ("0029-operations", to_two_domains),
+        // Core 5.0 (decision 0029, phase 6): a switch's B1 its branch again, in every revision kept as core 4.0.
+        ("0029-switch-ports", from_core_4_0),
     ];
     for (name, step) in steps {
         if done.iter().any(|d| d == name) {

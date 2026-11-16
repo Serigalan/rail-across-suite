@@ -11,7 +11,7 @@ const newId = () => `new${++n}`
 describe('planning a RailJSON import', () => {
   const parsed = {
     tracks: [track('a', '6340.001'), track('b', '6340.002')],
-    switches: [{ switchId: 'w1', kind: 'turnout', ports: { A: { trackId: 'a' }, B1: { trackId: 'b' }, B2: { trackId: null } }}],
+    switches: [{ switchId: 'w1', kind: 'switch', ports: { A: { trackId: 'a' }, B1: { trackId: 'b' }, B2: { trackId: null } }}],
     endMarks: [{ id: 'm1', trackId: 'a', endpoint: 'BEGIN' }],
     infra: { routes: [1], switches: [{ id: 'f', ports: { A: { track: 'a', endpoint: 'END' } } }] },
   }

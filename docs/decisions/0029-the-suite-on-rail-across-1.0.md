@@ -48,5 +48,10 @@ documents of before forward by a step of the door and, where the project server 
   are named as the document's (`detectionPointIds`, `clearSectionIds`, `passOn.leftId`/`rightId`); the door still
   takes the names of before on the way in, as a working copy may hold them. Tracks and platforms followed: they name
   their operational point by `operationalPointId`, and state their kind and side as words (`line`/`station`,
-  `regular`/`opposite`); a height point names its dependency `depId`. An element's kind, the switch
-  ports, the km lines and the ids of any form follow in pieces of their own.
+  `regular`/`opposite`); a height point names its dependency `depId`. An element's kind, the km lines and the ids of
+  any form follow in pieces of their own.
+- A switch keeps its ports as the suite always had them and as OSRD writes a point switch: `B1` the branch, `B2` the
+  main track (2026-11-16). Phase 1 had turned them round; core 5.0 turns them back — a major version, as a reader of
+  4.0 would misread them —, the door brings a document of 4.0 forward by swapping the two, the project server its
+  revisions once (data step `0029-switch-ports`, format 9). The kind is named `switch` in the record as in the
+  document; a `turnout` of before is read on the way in.

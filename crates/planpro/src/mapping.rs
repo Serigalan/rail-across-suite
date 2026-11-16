@@ -238,16 +238,16 @@ table! {
 table! {
     /// `SWITCH_KIND`.
     switch_kind, switch_kind_key, {
-        "EW" => "turnout",
-        "ABW" => "turnout",
-        "IBW" => "turnout",
-        "ABW/IBW" => "turnout",
-        "IBW/ABW" => "turnout",
-        "DW" => "turnout",
-        "Eins. DW" => "turnout",
-        "Sym. ABW" => "turnout",
-        "Klothoidenweiche" => "turnout",
-        "Korbbogenweiche" => "turnout",
+        "EW" => "switch",
+        "ABW" => "switch",
+        "IBW" => "switch",
+        "ABW/IBW" => "switch",
+        "IBW/ABW" => "switch",
+        "DW" => "switch",
+        "Eins. DW" => "switch",
+        "Sym. ABW" => "switch",
+        "Klothoidenweiche" => "switch",
+        "Korbbogenweiche" => "switch",
     }
 }
 

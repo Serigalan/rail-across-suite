@@ -418,7 +418,7 @@ pub fn rebuild_switch_symbol(sw: &Value, by_id: ById) -> Value {
         return link_symbol(&Value::Object(rest), &tracks);
     }
     let kind = sw.get("kind").and_then(Value::as_str);
-    if truthy(sw.get("kind")) && kind != Some("turnout") {
+    if truthy(sw.get("kind")) && kind != Some("switch") {
         let Some(r) = crossing_routes_from_tracks(sw, by_id) else {
             return Value::Object(rest);
         };

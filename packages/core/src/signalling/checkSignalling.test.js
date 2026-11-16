@@ -222,7 +222,7 @@ describe('a route over the branch of a turnout', () => {
   })
 
   it('is one that passes from the toe to the branch, either way, not along the straight', () => {
-    const sw = (id, speed, a, b1, b2) => ({ id, kind: 'turnout', speed, ports: { A: { trackId: a }, B1: { trackId: b1 }, B2: { trackId: b2 } } })
+    const sw = (id, speed, a, b1, b2) => ({ id, kind: 'switch', speed, ports: { A: { trackId: a }, B1: { trackId: b1 }, B2: { trackId: b2 } } })
     const switches = [sw('w1', 60, 'a', 'l', 'm'), sw('w2', 40, 'x', 'l', 'y'), { switchId: 'w3', speed: 100, ports: { A: { trackId: 'm' }, B1: { trackId: 'n' } } }]
     expect(branchSpeedOnRun(switches, ['a', 'm'])).toBeNull()
     expect(branchSpeedOnRun(switches, ['a', 'l'])).toEqual({ speed: 60, switchIds: ['w1'] })

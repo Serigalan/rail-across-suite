@@ -127,11 +127,11 @@ const KIND_BY_PREFIX = {
   EBKW:  { kind: 'single_slip', nodes: 2, bogen: true },
   KR:    { kind: 'crossing',    nodes: 1 },
   BKR:   { kind: 'crossing',    nodes: 1 },
-  EW:    { kind: 'turnout',     nodes: 1 },
-  ABW:   { kind: 'turnout',     nodes: 1 },
-  IBW:   { kind: 'turnout',     nodes: 1 },
-  SYM:   { kind: 'turnout',     nodes: 1 },
-  DW:    { kind: 'turnout',     nodes: 1 },
+  EW:    { kind: 'switch',     nodes: 1 },
+  ABW:   { kind: 'switch',     nodes: 1 },
+  IBW:   { kind: 'switch',     nodes: 1 },
+  SYM:   { kind: 'switch',     nodes: 1 },
+  DW:    { kind: 'switch',     nodes: 1 },
 }
 
 /** Satzart 31 node types that carry a Bauteil. */
@@ -774,7 +774,7 @@ export function mdbSwitchInventory(payload) {
         errors.push(`${g.bst}/${g.nr}: Bauform nicht erkannt – „${form.raw || '(leer)'}“`)
         continue
       }
-      kind = g.typ === KNTYP_CROSSING ? 'crossing' : 'turnout'
+      kind = g.typ === KNTYP_CROSSING ? 'crossing' : 'switch'
       errors.push(`${g.bst}/${g.nr}: Bauform ohne Kennbuchstaben („${form.raw || '(leer)'}“) – `
         + `als ${kind === 'crossing' ? 'Kreuzung' : 'Weiche'} übernommen (Knotentyp ${g.typ}).`)
     }

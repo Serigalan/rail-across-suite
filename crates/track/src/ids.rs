@@ -81,7 +81,7 @@ pub fn build_type_fields(fields: &Value) -> Value {
 
 /// `switch.008`, or `crossing.008` for a crossing kind (`switchDesignation`).
 pub fn switch_designation(number: &Value, kind: Option<&str>) -> String {
-    let prefix = if kind.is_some_and(|k| !k.is_empty() && k != "turnout") {
+    let prefix = if kind.is_some_and(|k| !k.is_empty() && k != "switch") {
         "crossing"
     } else {
         "switch"

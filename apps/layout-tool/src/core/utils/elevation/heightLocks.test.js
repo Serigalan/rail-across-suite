@@ -29,7 +29,7 @@ function single() {
       { id: 'm', epsg: 5684, elements: [m1, straight(endOf(m1), 90, 30)], heights: [{ station: 0, z: 101.7 }, { station: 60, z: 102 }] },
       { id: 'b', epsg: 5684, elements: [b1, arc(endOf(b1), b1.endBearing, 30, -R)], heights: [{ station: 0, z: 101.7 }, { station: 60, z: 101.9 }] },
     ],
-    switches: [{ switchId: 's1', kind: 'turnout', label: 'TEST', ports: {
+    switches: [{ switchId: 's1', kind: 'switch', label: 'TEST', ports: {
       A: { trackId: 'a', endpoint: 'END' }, B1: { trackId: 'b', endpoint: 'BEGIN' }, B2: { trackId: 'm', endpoint: 'BEGIN' },
     } }],
   }

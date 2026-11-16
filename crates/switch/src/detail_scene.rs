@@ -21,7 +21,7 @@ const MAX_REACH: f64 = 250.0;
 type P = [f64; 2];
 
 fn is_turnout(sw: &Value) -> bool {
-    get(sw, "kind").and_then(Value::as_str).unwrap_or("turnout") == "turnout"
+    get(sw, "kind").and_then(Value::as_str).unwrap_or("switch") == "switch"
 }
 
 fn other(end: Option<&str>) -> &'static str {

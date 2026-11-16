@@ -71,7 +71,7 @@ function single(heights, { cant } = {}) {
       track('b', [b1, arc(endOf(b1), b1.endBearing, 30, -R, c)], heights.b),
     ],
     switches: [{
-      switchId: 's1', kind: 'turnout', label: 'TEST',
+      switchId: 's1', kind: 'switch', label: 'TEST',
       ports: {
         A: { trackId: 'a', endpoint: 'END' },
         B1: { trackId: 'b', endpoint: 'BEGIN' },
@@ -427,8 +427,8 @@ describe('a crossover: the connecting track the branch of both', () => {
         track('m2', [m2, straight(endOf(m2), 270, 70)], [{ station: 0, z: 100.4 }, { station: 100, z: 100.1 }]),
       ],
       switches: [
-        { switchId: 's1', kind: 'turnout', label: 'TEST', ports: { A: { trackId: 'a1', endpoint: 'END' }, B1: { trackId: 'x', endpoint: 'BEGIN' }, B2: { trackId: 'm1', endpoint: 'BEGIN' } } },
-        { switchId: 's2', kind: 'turnout', label: 'TEST', ports: { A: { trackId: 'a2', endpoint: 'END' }, B1: { trackId: 'x', endpoint: 'END' }, B2: { trackId: 'm2', endpoint: 'BEGIN' } } },
+        { switchId: 's1', kind: 'switch', label: 'TEST', ports: { A: { trackId: 'a1', endpoint: 'END' }, B1: { trackId: 'x', endpoint: 'BEGIN' }, B2: { trackId: 'm1', endpoint: 'BEGIN' } } },
+        { switchId: 's2', kind: 'switch', label: 'TEST', ports: { A: { trackId: 'a2', endpoint: 'END' }, B1: { trackId: 'x', endpoint: 'END' }, B2: { trackId: 'm2', endpoint: 'BEGIN' } } },
       ],
     }
   }

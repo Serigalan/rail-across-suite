@@ -92,7 +92,7 @@ describe('the link form before it writes anything', () => {
   it('has nothing to offer where every end is already a switch’s', () => {
     const tracks = acrossThePlanes()
     const sw = {
-      switchId: 'sw1', kind: 'turnout', formVersion: 1, name: 'W 1',
+      switchId: 'sw1', kind: 'switch', formVersion: 1, name: 'W 1',
       ports: { A: { trackId: 'a', endpoint: 'END' }, B1: { trackId: 'b', endpoint: 'BEGIN' } },
     }
     const { text } = render(tracks, [sw])

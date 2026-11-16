@@ -130,7 +130,7 @@ export function carveToForm(track, endpoint, cut, mark, length) {
  */
 export function switchTypeFor(unit) {
   if (unit.slope == null) return null
-  if (unit.kind && unit.kind !== 'turnout') {
+  if (unit.kind && unit.kind !== 'switch') {
     const radiusFits = (t) => {
       const legR = crossingLegRadius(t)
       if (legR == null) return t.R == null || t.R === unit.radius
@@ -604,7 +604,7 @@ export function placeMdbSwitches(payload, tracks, units,
     // A Kreuzung is located by the point its two routes cross at, a turnout by
     // its Weichenanfang — the database states the latter, the former follows
     // from the corners.
-    const crossing = unit.kind !== 'turnout'
+    const crossing = unit.kind !== 'switch'
     const found = locatorFor(coords, systems, tracksFor ? tracksFor(unit, current) : current, project)(unit,
       crossing ? (sys) => crossingCentre(coords, unit, sys) : null,
       crossing ? CROSSING_TOL : PLACE_TOL)

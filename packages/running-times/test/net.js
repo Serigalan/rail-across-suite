@@ -18,7 +18,7 @@ export const net = {
     { id: 'C1', epsg: 25832, ...station('op-c', '1'), elements: [straight(3000, 0, 3600, 0)] },
     { id: 'C2', epsg: 25832, ...station('op-c', '2'), elements: [straight(3000, 0, 3580, 150)] },
   ],
-  switches: [{ switchId: 'W1', kind: 'turnout', ports: { A: { trackId: 'L', endpoint: 'END' }, B1: { trackId: 'C1', endpoint: 'BEGIN' }, B2: { trackId: 'C2', endpoint: 'BEGIN' } } }],
+  switches: [{ switchId: 'W1', kind: 'switch', ports: { A: { trackId: 'L', endpoint: 'END' }, B1: { trackId: 'C1', endpoint: 'BEGIN' }, B2: { trackId: 'C2', endpoint: 'BEGIN' } } }],
   platforms: [
     { id: 'pA', trackId: 'A1', startStation: 100, endStation: 300, operationalPointId: 'op-a' },
     { id: 'pB', trackId: 'L', startStation: 1000, endStation: 1200, operationalPointId: 'op-b' },

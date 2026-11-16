@@ -17,7 +17,8 @@ cut as deleting it would have cut it), one of 3.1 to the words and names of the 
 (core 4.0, civil 3.0, signalling 4.0 — [decision 0029](../docs/decisions/0029-the-suite-on-rail-across-1.0.md),
 phase 1: the kinds as words, every reference ending in `Id`, no plane of an element's own, a switch with `B1` its
 main track and `B2` its branch; phase 2: every id a UUID in lower case — an id of before the one drawn from it —,
-a km line in one plane as runs from km jump to km jump, its points of before a blob). The record the tools work on
+a km line in one plane as runs from km jump to km jump, its points of before a blob), one of core 4.0 to core 5.0
+(phase 6: a switch's `B1` its branch and `B2` its main track again, as OSRD writes a point switch). The record the tools work on
 keeps the words, ids and km lines of before until it follows the document (decision 0029, phase 6); the
 conversion converts.
 
@@ -33,7 +34,8 @@ may carry one; the states a project passes through are worked out of them, never
 |---|---|
 | `rail-across.schema.json` | rail-across-1.0, one project as one JSON file (`.railacross.json`; [decision 0029](../docs/decisions/0029-the-suite-on-rail-across-1.0.md), phase 5): the project, the program that wrote it and when, the part infra-data-1.0 (the domains of `infra-data.schema.json`) and the part operations-1.0 (those of `operations.schema.json`), the blobs of both; no schemas carried, a domain the reader does not know kept |
 | `infra-data.schema.json` | infra-data-2.0, a project as one JSON file (`.railacross.json`): the domains, the schemas it carries, its blobs |
-| `core/4.0.schema.json` | Domain `core` 4.0: tracks, switches and connectors, end marks, km lines, the operational point register, the stopping places (passenger stops among them), the named runs of tracks (`trackPaths`); the core types `TrackEnd`, `TrackLocation`, `TrackRange`, `TrackPath`, `Lifespan` (by day), `Day`, `Ref` |
+| `core/5.0.schema.json` | Domain `core` 5.0: tracks, switches and connectors, end marks, km lines, the operational point register, the stopping places (passenger stops among them), the named runs of tracks (`trackPaths`); the core types `TrackEnd`, `TrackLocation`, `TrackRange`, `TrackPath`, `Lifespan` (by day), `Day`, `Ref` |
+| `core/4.0.schema.json` | core as it was before 5.0, for reference: a switch's `B1` its main track, `B2` its branch; the door swaps them |
 | `civil/3.0.schema.json` | Domain `civil` 3.0: platforms, each naming the stopping places at it; bridges, retaining walls and noise barriers; measured axes, reference axes, the plan header, the project picture |
 | `signalling/4.0.schema.json` | Domain `signalling` 4.0, after PlanPro 1.10: signals and boards with their logical signals (one per signalling system, as in OSRD), frames and aspects, detection points, track sections, switch elements, train and shunting routes with their setting and release times, overlaps, flank protection, the balises and magnets of train protection, train protection by ranges, station boundaries, itineraries ([decision 0011](../docs/decisions/0011-signalling-domain.md)); which systems, kinds, settings and aspects there are is the catalogue's (`packages/core/constraints/db-ril-301.json`) |
 | `electrification/3.0.schema.json` | Domain `electrification` 3.0: masts, the suspension points on them that hold a contact wire over a track, section insulators that part two wires, and the contact wires with their voltage; where a wire runs follows from what carries it ([decision 0029](../docs/decisions/0029-the-suite-on-rail-across-1.0.md), phase 3) |

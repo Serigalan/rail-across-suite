@@ -35,7 +35,7 @@ describe('parseMdbPayload', () => {
 describe('parseBauform', () => {
   it('reads prefix, rail, radius and slope from the usual spelling', () => {
     expect(parseSwitchForm('EW 54-190-1:9'))
-      .toMatchObject({ prefix: 'EW', kind: 'turnout', rail: 54, radius: 190, n: 9 })
+      .toMatchObject({ prefix: 'EW', kind: 'switch', rail: 54, radius: 190, n: 9 })
   })
 
   it('takes the decimal comma the source mixes with the point', () => {
@@ -45,7 +45,7 @@ describe('parseBauform', () => {
 
   it('ignores the qualifiers that describe the alignment, not the form', () => {
     expect(parseSwitchForm('tlw IBW 54-500-1:12 iU'))
-      .toMatchObject({ prefix: 'IBW', kind: 'turnout', rail: 54, radius: 500, n: 12 })
+      .toMatchObject({ prefix: 'IBW', kind: 'switch', rail: 54, radius: 500, n: 12 })
     expect(parseSwitchForm('IBW 54-500-1:14 z.T.i.U.').radius).toBe(500)
   })
 

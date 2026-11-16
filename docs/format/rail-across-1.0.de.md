@@ -71,7 +71,7 @@ Variante, den Betrieb in eigenen Revisionen —, eine Datei führt sie für den 
     "format": "infra-data", "version": "1.0",
     "domains": {
       "core": {
-        "version": "4.0", "schema": "sha256:…",
+        "version": "5.0", "schema": "sha256:…",
         "fields": { … }, "collections": { … }
       },
       "civil":           { "version": "3.0", "dependsOn": ["core"], … },
@@ -111,7 +111,7 @@ Werkzeug bearbeitet.
 
 | Teil | Domäne | Inhalt |
 |---|---|---|
-| infra-data-1.0 | `core` 4.0 | das Netz: Gleise, Weichen und Verbinder, Gleisenden (Prellböcke, Betrachtungsgrenzen), Kilometrierungslinien, Betriebsstellen, Halteplätze, benannte Gleisfolgen. Die Grundlage aller anderen |
+| infra-data-1.0 | `core` 5.0 | das Netz: Gleise, Weichen und Verbinder, Gleisenden (Prellböcke, Betrachtungsgrenzen), Kilometrierungslinien, Betriebsstellen, Halteplätze, benannte Gleisfolgen. Die Grundlage aller anderen |
 | | `civil` 3.0 | Bahnsteige und Ingenieurbauwerke (Eisenbahnüberführungen, Stützwände, Lärmschutzwände), in Punktwolken gemessene Achsen, Bestandsachsen, Schriftfeld, Projektbild |
 | | `signalling` 4.0 | Signale mit logischen Signalen, Gleisfreimeldung, Weichenelemente, Fahrstraßen, Durchrutschwege, Flankenschutz, Zugbeeinflussung, Bahnhofsgrenzen, Fahrwege — nach PlanPro exportierbar |
 | | `electrification` 3.0 | Masten, Aufhängepunkte, Streckentrennungen und die Fahrdrähte mit ihrer Spannung |
@@ -253,7 +253,7 @@ Ports es hat, legt `kind` fest:
 
 | `kind` | Ports | Bedeutung |
 |---|---|---|
-| `switch` | `A`, `B1`, `B2` | Weiche: `A` Weichenanfang, `B1` Stammgleis, `B2` Zweiggleis |
+| `switch` | `A`, `B1`, `B2` | Weiche: `A` Weichenanfang, `B1` Zweiggleis, `B2` Stammgleis — wie OSRD eine Weiche (`point_switch`) schreibt, sodass ein Export die Ports unverändert weitergibt |
 | `crossing` | `A`, `B`, `C`, `D` | Kreuzung |
 | `single_slip`, `double_slip` | `A`, `B`, `C`, `D` | einfache und doppelte Kreuzungsweiche |
 | `link` | `A`, `B` | Verbinder: zwei Gleisenden, wo die Ebene wechselt oder ein umgebautes Stück anschließt |
@@ -451,8 +451,10 @@ benennt — erhöht die Version seiner Domäne: die Nebenversion für Ergänzung
 sonst die Hauptversion. Ein Leser bringt eine ältere Datei Schritt für Schritt auf seinen Stand, von Nummer zu
 Nummer; ältere Stände werden einmal umgestellt, nicht dauerhaft nachsichtig gelesen.
 
-Die Versionen der Domänen setzen die Zählung der Suite fort: core 4.0, civil 3.0, signalling 4.0, electrification
-3.0; vehicles 1.0 und timetables 1.0 sind die bisherige Domäne operations 1.0, in zwei geteilt.
+Die Versionen der Domänen setzen die Zählung der Suite fort: core 5.0, civil 3.0, signalling 4.0, electrification
+3.0; vehicles 1.0 und timetables 1.0 sind die bisherige Domäne operations 1.0, in zwei geteilt. In core 4.0 war `B1`
+einer Weiche ihr Stammgleis; 5.0 macht es wieder zum Zweiggleis, und ein Leser bringt eine Datei in 4.0 auf den Stand,
+indem er beide tauscht.
 
 ## Ein Beispiel
 
@@ -470,7 +472,7 @@ einem Fahrzeug und einem Zug von der Grenze nach Halle-Trotha, wo er auf diesem 
     "format": "infra-data", "version": "1.0",
     "domains": {
       "core": {
-        "version": "4.0", "schema": "sha256:1111…",
+        "version": "5.0", "schema": "sha256:1111…",
         "fields": { "id": "5dbd8fed-f8dc-4995-8934-9d71be69cae0", "title": "Halle-Trotha" },
         "collections": {
           "tracks": [ {
@@ -596,11 +598,11 @@ Diese Spezifikation ist das Ziel des Datenmodells. Mit Stand 13. November 2026 w
 in diesen Punkten ab; jeder wird in einem eigenen Schritt angeglichen (Entscheidung 0028 und die folgenden):
 
 - Der Projektserver hält die Infrastruktur einer Variante als Dokument der Hülle von vorher (infra-data 2.0: ihre
-  Domänen und ihre Blobs, core 4.0, civil 3.0, signalling 4.0, electrification 3.0) und den Betrieb als Dokument
+  Domänen und ihre Blobs, core 5.0, civil 3.0, signalling 4.0, electrification 3.0) und den Betrieb als Dokument
   operations (vehicles 1.0, timetables 1.0); die Datei rail-across-1.0 führt sie zusammen, eine Datei von vorher
   wird weiter gelesen.
-- Der Record, mit dem die Werkzeuge arbeiten, behält das Vokabular von vorher — die Art eines Elements als Zahl,
-  eine `turnout` mit `B1` als Zweiggleis —, Kilometrierungslinien in WGS 84 mit dem
+- Der Record, mit dem die Werkzeuge arbeiten, behält das Vokabular von vorher — die Art eines Elements als Zahl —,
+  Kilometrierungslinien in WGS 84 mit dem
   Kilometer je Punkt und Kennungen jeder Form; die Tür wandelt ihn ins Dokument und zurück (Entscheidung 0029,
   Phase 6 nimmt das heraus). Eine Kilometrierungslinie von vorher steht als Punkte da, noch nicht mit
   Trassierungselementen angenähert.
@@ -611,7 +613,7 @@ in diesen Punkten ab; jeder wird in einem eigenen Schritt angeglichen (Entscheid
 
 ## Anhang: alle Properties und ihre Werte
 
-Der Anhang ist aus den Schemas der Spezifikation erzeugt (`rail-across.schema.json`, `core/4.0.schema.json`, `civil/3.0.schema.json`, `signalling/4.0.schema.json`, `electrification/3.0.schema.json`, `vehicles/1.0.schema.json`, `timetables/1.0.schema.json`, in `docs/format/schemas`). Für jeden Objekttyp nennt er jedes Property mit seinem Pfad (verschachtelte Objekte mit Punkt, Listeneinträge mit `[]`), ob es Pflicht ist, seinen Typ mit allen zulässigen Werten und seine Bedeutung. Ein Verweis auf einen Typ führt zu dessen Abschnitt; `→ core.tracks` nennt die Sammlung, in die eine Kennung zeigt — die Prüfung beim Einlesen stellt sicher, dass es das Objekt gibt.
+Der Anhang ist aus den Schemas der Spezifikation erzeugt (`rail-across.schema.json`, `core/5.0.schema.json`, `civil/3.0.schema.json`, `signalling/4.0.schema.json`, `electrification/3.0.schema.json`, `vehicles/1.0.schema.json`, `timetables/1.0.schema.json`, in `docs/format/schemas`). Für jeden Objekttyp nennt er jedes Property mit seinem Pfad (verschachtelte Objekte mit Punkt, Listeneinträge mit `[]`), ob es Pflicht ist, seinen Typ mit allen zulässigen Werten und seine Bedeutung. Ein Verweis auf einen Typ führt zu dessen Abschnitt; `→ core.tracks` nennt die Sammlung, in die eine Kennung zeigt — die Prüfung beim Einlesen stellt sicher, dass es das Objekt gibt.
 
 ### Die Datei rail-across-1.0
 
@@ -682,7 +684,7 @@ _Weitere Properties sind nicht erlaubt._
 | `fields` | ja | Objekt | Die eigenen Felder der Domäne (Aufbau im Schema der Domäne) |
 | `collections` | ja | Objekt; Schlüssel frei, Werte: Liste von Objekt | Die Sammlungen: je eine Liste von Objekten mit `id`, sortiert nach `id` |
 
-### Domäne core 4.0
+### Domäne core 5.0
 
 <a id="core-root"></a>
 
@@ -995,14 +997,14 @@ _Weitere Properties sind nicht erlaubt._
 
 #### Switch
 
-Eine Weiche, Kreuzung, Kreuzungsweiche, ein Verbinder (`link`) oder ein Bauzustandsverbinder (`stage_link`) an einem Knoten. Die Ports halten Gleisenden. Bei einer Weiche ist A der Weichenanfang, B1 das Stammgleis, B2 das Zweiggleis. Ein Verbinder verbindet zwei Gleisenden, wo die Ebene wechselt oder ein umgebauter Gleisteil anschließt; ein Bauzustandsverbinder verbindet das Gleis an A mit dem an B1, solange es in Betrieb ist, und danach mit dem an B2.
+Eine Weiche, Kreuzung, Kreuzungsweiche, ein Verbinder (`link`) oder ein Bauzustandsverbinder (`stage_link`) an einem Knoten. Die Ports halten Gleisenden. Bei einer Weiche ist A der Weichenanfang, B1 das Zweiggleis, B2 das Stammgleis, wie OSRD eine Weiche schreibt. Ein Verbinder verbindet zwei Gleisenden, wo die Ebene wechselt oder ein umgebauter Gleisteil anschließt; ein Bauzustandsverbinder verbindet das Gleis an A mit dem an B1, solange es in Betrieb ist, und danach mit dem an B2.
 
 _Weitere Properties sind nicht erlaubt._
 
 | Property | Pflicht | Typ und zulässige Werte | Bedeutung |
 |---|---|---|---|
 | `id` | ja | [`Id`](#core-Id) | Kennung des Objekts |
-| `kind` | ja | eins der Werte unter Bedeutung | Art; sie legt die Ports fest: Weiche A, B1, B2; Kreuzung und Kreuzungsweichen A, B, C, D; Verbinder A, B; Bauzustandsverbinder A, B1, B2<br>`switch` Weiche: A Weichenanfang, B1 Stammgleis, B2 Zweiggleis<br>`crossing` Kreuzung<br>`single_slip` einfache Kreuzungsweiche<br>`double_slip` doppelte Kreuzungsweiche<br>`link` Verbinder zweier Gleisenden<br>`stage_link` Bauzustandsverbinder: erst B1, dann B2 |
+| `kind` | ja | eins der Werte unter Bedeutung | Art; sie legt die Ports fest: Weiche A, B1, B2; Kreuzung und Kreuzungsweichen A, B, C, D; Verbinder A, B; Bauzustandsverbinder A, B1, B2<br>`switch` Weiche: A Weichenanfang, B1 Zweiggleis, B2 Stammgleis<br>`crossing` Kreuzung<br>`single_slip` einfache Kreuzungsweiche<br>`double_slip` doppelte Kreuzungsweiche<br>`link` Verbinder zweier Gleisenden<br>`stage_link` Bauzustandsverbinder: erst B1, dann B2 |
 | `formVersion` | ja | ganze Zahl | Version der Formtabellen, gegen die die Weiche gebaut ist |
 | `name` |  | [`Text`](#core-Text) | Name |
 | `number` |  | Zahl | Nummer |

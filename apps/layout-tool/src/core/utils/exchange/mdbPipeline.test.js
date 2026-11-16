@@ -21,14 +21,14 @@ describe('the MDB import pipeline', () => {
     expect(commit.addTracks.length).toBeGreaterThan(1)
     // Survey data, not built geometry: the chains join as the file has them.
     for (const tr of commit.addTracks) expect(tr.coordinates.length).toBeGreaterThan(1)
-    expect(commit.addSwitches.filter(sw => sw.kind === 'turnout')).toHaveLength(1)
+    expect(commit.addSwitches.filter(sw => sw.kind === 'switch')).toHaveLength(1)
     expect(Array.isArray(notes)).toBe(true)
   })
 
   it('leaves the switches out when asked to', async () => {
     const { commit, counts } = await runMdbImport({ payload, strecke: ALL_LINES, withSwitches: false, fill, newId })
     expect(counts.switches).toBe(0)
-    expect(commit.addSwitches.filter(sw => sw.kind === 'turnout')).toEqual([])
+    expect(commit.addSwitches.filter(sw => sw.kind === 'switch')).toEqual([])
   })
 
   it('names tracks around the ones the project already has', async () => {

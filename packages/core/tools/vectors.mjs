@@ -122,7 +122,7 @@ const DOCUMENT_CASES = [
   ['a lifespan that ends before it begins', (d) => { d.domains.core.collections.tracks[1].lifespan = { from: '2027-05-01', to: '2027-04-30' } }],
   ['a lifespan on a day there is none of', (d) => { d.domains.core.collections.tracks[1].lifespan = { from: '2027-02-30' } }],
   ['built for a while, the days open', (d) => { d.domains.core.collections.tracks[1].lifespan = { from: 'open', to: 'open' } }],
-  ['a domain of a later version', (d) => { d.domains.core.version = '5.0' }],
+  ['a domain of a later version', (d) => { d.domains.core.version = '6.0' }],
   ['a platform with its stations loose', (d) => { const p = d.domains.civil.collections.platforms[0]; p.startStation = p.at.startStation }],
   ['a platform in the core', (d) => { d.domains.core.collections.platforms = d.domains.civil.collections.platforms }],
   ['a collection missing', (d) => { delete d.domains.core.collections.kmLines }],

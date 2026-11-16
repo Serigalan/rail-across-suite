@@ -170,9 +170,9 @@ export function schematicNetwork(tracks, switches) {
       .map(pt => ({ port: pt.port, trackId: portTrack(sw, pt.port), end: portEnd(sw, pt.port) }))
       .filter(pt => byId.has(pt.trackId) && (pt.end === 'BEGIN' || pt.end === 'END'))
     if (!ports.length) continue
-    const kind = sw.kind ?? 'turnout'
+    const kind = sw.kind ?? 'switch'
     const through = isLinkSwitch(sw) ? ['A', 'B']
-      : kind === 'turnout' ? ['A', turnoutLinePort(sw)] : ['A', 'C']
+      : kind === 'switch' ? ['A', turnoutLinePort(sw)] : ['A', 'C']
     const node = { sw, ports, through: [], attach: [], link: isLinkSwitch(sw) }
     for (const pt of ports) {
       const key = endKey(pt.trackId, pt.end)

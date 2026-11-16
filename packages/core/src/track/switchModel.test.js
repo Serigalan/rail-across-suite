@@ -5,7 +5,7 @@ import {
 
 describe('the model’s vocabulary', () => {
   it('names the kinds a record can discriminate on, the turnout first', () => {
-    expect(SWITCH_KINDS).toEqual(['turnout', 'crossing', 'single_slip', 'double_slip', 'link', 'stage_link'])
+    expect(SWITCH_KINDS).toEqual(['switch', 'crossing', 'single_slip', 'double_slip', 'link', 'stage_link'])
     expect(SWITCH_KINDS).toContain(DEFAULT_SWITCH_KIND)
     expect(SWITCH_KINDS).toContain(LINK_KIND)
   })
@@ -42,10 +42,10 @@ describe('elementBelongsToSwitch', () => {
 
 describe('isModelledSwitch', () => {
   it('wants the id, the kind and the form version', () => {
-    expect(isModelledSwitch({ switchId: 'a', kind: 'turnout', formVersion: 1 })).toBe(true)
-    expect(isModelledSwitch({ kind: 'turnout', formVersion: 1 })).toBe(false)
+    expect(isModelledSwitch({ switchId: 'a', kind: 'switch', formVersion: 1 })).toBe(true)
+    expect(isModelledSwitch({ kind: 'switch', formVersion: 1 })).toBe(false)
     expect(isModelledSwitch({ switchId: 'a', formVersion: 1 })).toBe(false)
-    expect(isModelledSwitch({ switchId: 'a', kind: 'turnout' })).toBe(false)
+    expect(isModelledSwitch({ switchId: 'a', kind: 'switch' })).toBe(false)
     expect(isModelledSwitch(undefined)).toBe(false)
   })
 
@@ -80,14 +80,14 @@ describe('newSwitchFields', () => {
 
 describe('the ports and routes each kind has', () => {
   it('gives the turnout three ports and the crossing kinds four', () => {
-    expect(switchPorts('turnout').map(p => p.port)).toEqual(['A', 'B1', 'B2'])
+    expect(switchPorts('switch').map(p => p.port)).toEqual(['A', 'B1', 'B2'])
     for (const kind of ['crossing', 'single_slip', 'double_slip']) {
       expect(switchPorts(kind).map(p => p.port)).toEqual(['A', 'B', 'C', 'D'])
     }
   })
 
   it('reads and writes a port as { trackId, endpoint } under `ports` (decision 333)', () => {
-    const sw = { kind: 'turnout', ports: { A: { trackId: 'a', endpoint: 'END' } } }
+    const sw = { kind: 'switch', ports: { A: { trackId: 'a', endpoint: 'END' } } }
     expect(portTrack(sw, 'A')).toBe('a')
     expect(portEnd(sw, 'A')).toBe('END')
     expect(portTrack(sw, 'B1')).toBeNull()
@@ -99,7 +99,7 @@ describe('the ports and routes each kind has', () => {
 
   it('reads the ports off the record’s own kind', () => {
     expect(portsOf({ kind: 'crossing' })).toHaveLength(4)
-    expect(portsOf({ kind: 'turnout' })).toHaveLength(3)
+    expect(portsOf({ kind: 'switch' })).toHaveLength(3)
     // A record from before the kinds existed is a turnout, and so is nonsense.
     expect(portsOf({})).toEqual(SWITCH_PORTS)
     expect(portsOf({ kind: 'no_such_kind' })).toEqual(SWITCH_PORTS)
@@ -113,7 +113,7 @@ describe('the ports and routes each kind has', () => {
   })
 
   it('names the routes of each kind, the turnout’s pair first', () => {
-    expect(switchRoutes('turnout')).toEqual(['main', 'branch'])
+    expect(switchRoutes('switch')).toEqual(['main', 'branch'])
     expect(switchRoutes('crossing')).toEqual(['main', 'cross'])
     expect(switchRoutes('single_slip')).toEqual(['main', 'cross', 'slip1'])
     expect(switchRoutes('double_slip')).toEqual(['main', 'cross', 'slip1', 'slip2'])
@@ -135,7 +135,7 @@ describe('the ports and routes each kind has', () => {
       const ports = switchRoutePorts(kind)
       return ports[a].filter(p => ports[b].includes(p))
     }
-    expect(shared('turnout', 'main', 'branch')).toEqual(['A'])
+    expect(shared('switch', 'main', 'branch')).toEqual(['A'])
     expect(shared('crossing', 'main', 'cross')).toEqual([])
   })
 })
@@ -144,7 +144,7 @@ describe('the ports and routes each kind has', () => {
 // by the turnout, not by the shape of the alignment underneath it.
 describe('how a kind and its routes are named', () => {
   it('names each kind, both slips as a crossing switch', () => {
-    expect(switchKindLabelKey('turnout')).toBe('table_type_switch')
+    expect(switchKindLabelKey('switch')).toBe('table_type_switch')
     expect(switchKindLabelKey('crossing')).toBe('table_type_crossing')
     expect(switchKindLabelKey('single_slip')).toBe('table_type_crossing_switch')
     expect(switchKindLabelKey('double_slip')).toBe('table_type_crossing_switch')
@@ -167,17 +167,17 @@ describe('how a kind and its routes are named', () => {
     expect(switchKindLabelKey(LINK_KIND)).toBe('table_type_link')
     expect(switchRouteLabelKey(LINK_KIND, 'main')).toBe(null)
     expect(isLinkSwitch({ kind: LINK_KIND })).toBe(true)
-    expect(isLinkSwitch({ kind: 'turnout' })).toBe(false)
+    expect(isLinkSwitch({ kind: 'switch' })).toBe(false)
     expect(isLinkSwitch(undefined)).toBe(false)
   })
 
   it('names no route a kind does not have', () => {
-    expect(switchRouteLabelKey('turnout', 'cross')).toBe(null)
+    expect(switchRouteLabelKey('switch', 'cross')).toBe(null)
     expect(switchRouteLabelKey('crossing', 'branch')).toBe(null)
   })
 
   it('tells a turnout’s stem from a crossing’s through route', () => {
-    expect(switchRouteLabelKey('turnout', 'main')).toBe('table_route_stem')
+    expect(switchRouteLabelKey('switch', 'main')).toBe('table_route_stem')
     expect(switchRouteLabelKey('crossing', 'main')).toBe('table_route_through')
     expect(switchRouteLabelKey('double_slip', 'slip2')).toBe('table_route_slip')
   })

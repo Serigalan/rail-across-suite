@@ -424,7 +424,7 @@ describe('the designation of a crossing', () => {
     expect(switchDesignation(8, 'single_slip')).toBe('crossing.008')
     expect(switchDesignation(8, 'double_slip')).toBe('crossing.008')
     expect(switchDesignation(8)).toBe('switch.008')
-    expect(switchDesignation(8, 'turnout')).toBe('switch.008')
+    expect(switchDesignation(8, 'switch')).toBe('switch.008')
   })
 
   it('reads the number back out of either prefix', () => {

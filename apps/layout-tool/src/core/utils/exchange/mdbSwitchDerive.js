@@ -344,7 +344,7 @@ export function deriveMdbTurnouts(tracks, stated = [], { tol = ON_TOL } = {}) {
       }
       units.push({
         pad: null, bst: null, name: null, number: null,
-        kind: 'turnout', label: type.label,
+        kind: 'switch', label: type.label,
         radius: type.R, slope: type.ratio, rail: null,
         type, derived: true, where,
         point: node, epsg: track.epsg, offset: host.dist,

@@ -39,9 +39,9 @@ export namespace Document {
   }
 }
 
-/** Rail-Data-Core, domain core 4.0 */
+/** Rail-Data-Core, domain core 5.0 */
 export namespace Core {
-  /** The base every module depends on: the net (tracks, switches and connectors), what stands on it for every discipline (platforms, end marks) and the reference data (km lines, the operational point register). Written by the layout tool, carried by the core library. See docs/data-model.md. — 2.0 (decision 0025): the alignment and what every layer places things by; the platforms are civil's, the stopping places came in from signalling, the named runs of tracks from layout. — 3.0 (decision 0028): no construction stages; a lifespan states days. — 3.1 (decision 0028, phase C): every reference names an object of the collection its `x-target` names (the door's rule). — 4.0 (decision 0029, phase 1): the kinds as words, every reference ending in `Id`, no plane of an element's own, a switch with B1 its main track and B2 its branch; (phase 2) every id a UUID in lower case, a km line in one plane as runs from km jump to km jump. */
+  /** The base every module depends on: the net (tracks, switches and connectors), what stands on it for every discipline (platforms, end marks) and the reference data (km lines, the operational point register). Written by the layout tool, carried by the core library. See docs/data-model.md. — 2.0 (decision 0025): the alignment and what every layer places things by; the platforms are civil's, the stopping places came in from signalling, the named runs of tracks from layout. — 3.0 (decision 0028): no construction stages; a lifespan states days. — 3.1 (decision 0028, phase C): every reference names an object of the collection its `x-target` names (the door's rule). — 4.0 (decision 0029, phase 1): the kinds as words, every reference ending in `Id`, no plane of an element's own, a switch with B1 its main track and B2 its branch; (phase 2) every id a UUID in lower case, a km line in one plane as runs from km jump to km jump. — 5.0 (decision 0029, phase 6): a switch's B1 its branch and B2 its main track, as the suite always had them and the OSRD export writes them. */
   export type Root = {
     fields: Fields
     collections: {
@@ -194,7 +194,7 @@ export namespace Core {
       [name: string]: unknown
     }
   }
-  /** A switch, crossing, slip, two-end connector (`link`) or construction stage connector (`stage_link`) at a node; its ports hold track ends. A switch: A its toe, B1 the main track, B2 the branch. A link joins two track ends where the plane changes or where a rebuilt part of a track ties in; a stage link joins the track at A to the one at B1 while that exists and to the one at B2 from then on — never both: one track ends, the other begins (decision 0027). */
+  /** A switch, crossing, slip, two-end connector (`link`) or construction stage connector (`stage_link`) at a node; its ports hold track ends. A switch: A its toe, B1 the branch, B2 the main track — as OSRD's point switch is written. A link joins two track ends where the plane changes or where a rebuilt part of a track ties in; a stage link joins the track at A to the one at B1 while that exists and to the one at B2 from then on — never both: one track ends, the other begins (decision 0027). */
   export type Switch = {
     id: Id
     kind: "switch" | "crossing" | "single_slip" | "double_slip" | "link" | "stage_link"

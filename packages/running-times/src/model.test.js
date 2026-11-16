@@ -22,7 +22,7 @@ const record = {
     { id: 'T3', epsg: 25832, elements: [straight(E0 + 1000, N0, E0 + 1600, N0 + 300)] },
     { id: 'T4', epsg: 25832, elements: [straight(E0 + 2000, N0, E0 + 3000, N0)] },
   ],
-  switches: [{ switchId: 'S1', kind: 'turnout', ports: { A: { trackId: 'T1', endpoint: 'END' }, B1: { trackId: 'T2', endpoint: 'BEGIN' }, B2: { trackId: 'T3', endpoint: 'BEGIN' } } }],
+  switches: [{ switchId: 'S1', kind: 'switch', ports: { A: { trackId: 'T1', endpoint: 'END' }, B1: { trackId: 'T2', endpoint: 'BEGIN' }, B2: { trackId: 'T3', endpoint: 'BEGIN' } } }],
   signalling: {
     collections: {
       signals: [

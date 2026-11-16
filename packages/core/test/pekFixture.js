@@ -38,7 +38,7 @@ export function loadPek() {
     let n = 0
     for (const sw of project.switches ?? []) {
       sw.switchId = sw.switchId ?? `00000000-0000-4000-8000-${String(++n).padStart(12, '0')}`
-      sw.kind = sw.kind ?? 'turnout'
+      sw.kind = sw.kind ?? 'switch'
       sw.formVersion = sw.formVersion ?? 1
       ids.set(sw.name, sw.switchId)
       const ports = {}
@@ -77,8 +77,14 @@ const EXISTING_PATH = [
 
 export const hasPekExisting = EXISTING_PATH !== null
 
-/** A fresh copy of the Bestand project record (dehydrated), or null. */
+/**
+ * A fresh copy of the Bestand project record (dehydrated), or null — its
+ * switches named `switch`, as the record names them since decision 0029,
+ * phase 6, where the file says `turnout`.
+ */
 export function loadPekExisting() {
   if (!EXISTING_PATH) return null
-  return withStationPoints(JSON.parse(readFileSync(EXISTING_PATH, 'utf8')).projects[0])
+  const project = JSON.parse(readFileSync(EXISTING_PATH, 'utf8')).projects[0]
+  for (const sw of project.switches ?? []) if (sw.kind === 'turnout') sw.kind = 'switch'
+  return withStationPoints(project)
 }

@@ -188,7 +188,7 @@ fn utm_project() -> Value {
         "title": "UTM",
         "tracks": [track("line", line), track("on", on), track("branch", branch)],
         "switches": [{
-            "switchId": "w1", "kind": "turnout", "name": "W1", "label": "300 – 1:9",
+            "switchId": "w1", "kind": "switch", "name": "W1", "label": "300 – 1:9",
             "ports": {
                 "A": { "trackId": "line", "endpoint": "END" },
                 "B1": { "trackId": "branch", "endpoint": "BEGIN" },

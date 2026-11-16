@@ -146,7 +146,7 @@ describe.skipIf(!hasPekExisting)('PEK Bestand', () => {
     const project = hydrateProjects([loadPekExisting()])[0]
     const { tracks: ts, switches } = project
     // From a track with a switch at its end, as far on as the network goes.
-    const sw = switches.find(s => s.kind === 'turnout' && s.ports?.A?.trackId)
+    const sw = switches.find(s => s.kind === 'switch' && s.ports?.A?.trackId)
     const start = sw.ports?.A?.trackId
     const exit = sw.ports?.A?.endpoint
     const reachable = tracksOnFrom(start, exit, ts, switches)

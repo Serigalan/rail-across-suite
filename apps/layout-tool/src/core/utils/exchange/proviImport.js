@@ -54,7 +54,7 @@ const JUNCTION_TOL = 0.01
 const REACH_TOL = 0.5
 
 /** The switch forms the placement builds — the crossing kinds are not set yet. */
-const TURNOUT = 'turnout'
+const TURNOUT = 'switch'
 
 // ── Archive and records ─────────────────────────────────────────────────────
 

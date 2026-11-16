@@ -64,7 +64,7 @@ Variante, den Betrieb in eigenen Revisionen —, eine Datei führt sie für den 
     "format": "infra-data", "version": "1.0",
     "domains": {
       "core": {
-        "version": "4.0", "schema": "sha256:…",
+        "version": "5.0", "schema": "sha256:…",
         "fields": { … }, "collections": { … }
       },
       "civil":           { "version": "3.0", "dependsOn": ["core"], … },
@@ -106,7 +106,7 @@ Werkzeug bearbeitet.
 <!-- cols: 16%, 22%, 1fr -->
 | Teil | Domäne | Inhalt |
 |---|---|---|
-| infra-data-1.0 | `core` 4.0 | das Netz: Gleise, Weichen und Verbinder, Gleisenden (Prellböcke, Betrachtungsgrenzen), Kilometrierungslinien, Betriebsstellen, Halteplätze, benannte Gleisfolgen. Die Grundlage aller anderen |
+| infra-data-1.0 | `core` 5.0 | das Netz: Gleise, Weichen und Verbinder, Gleisenden (Prellböcke, Betrachtungsgrenzen), Kilometrierungslinien, Betriebsstellen, Halteplätze, benannte Gleisfolgen. Die Grundlage aller anderen |
 | | `civil` 3.0 | Bahnsteige und Ingenieurbauwerke (Eisenbahnüberführungen, Stützwände, Lärmschutzwände), in Punktwolken gemessene Achsen, Bestandsachsen, Schriftfeld, Projektbild |
 | | `signalling` 4.0 | Signale mit logischen Signalen, Gleisfreimeldung, Weichenelemente, Fahrstraßen, Durchrutschwege, Flankenschutz, Zugbeeinflussung, Bahnhofsgrenzen, Fahrwege — nach PlanPro exportierbar |
 | | `electrification` 3.0 | Masten, Aufhängepunkte, Streckentrennungen und die Fahrdrähte mit ihrer Spannung |
@@ -252,7 +252,7 @@ Ports es hat, legt `kind` fest:
 <!-- cols: 26%, 18%, 1fr -->
 | `kind` | Ports | Bedeutung |
 |---|---|---|
-| `switch` | `A`, `B1`, `B2` | Weiche: `A` Weichenanfang, `B1` Stammgleis, `B2` Zweiggleis |
+| `switch` | `A`, `B1`, `B2` | Weiche: `A` Weichenanfang, `B1` Zweiggleis, `B2` Stammgleis — wie OSRD eine Weiche (`point_switch`) schreibt, sodass ein Export die Ports unverändert weitergibt |
 | `crossing` | `A`, `B`, `C`, `D` | Kreuzung |
 | `single_slip`, `double_slip` | `A`, `B`, `C`, `D` | einfache und doppelte Kreuzungsweiche |
 | `link` | `A`, `B` | Verbinder: zwei Gleisenden, wo die Ebene wechselt oder ein umgebautes Stück anschließt |
@@ -451,8 +451,10 @@ benennt — erhöht die Version seiner Domäne: die Nebenversion für Ergänzung
 sonst die Hauptversion. Ein Leser bringt eine ältere Datei Schritt für Schritt auf seinen Stand, von Nummer zu
 Nummer; ältere Stände werden einmal umgestellt, nicht dauerhaft nachsichtig gelesen.
 
-Die Versionen der Domänen setzen die Zählung der Suite fort: core 4.0, civil 3.0, signalling 4.0, electrification
-3.0; vehicles 1.0 und timetables 1.0 sind die bisherige Domäne operations 1.0, in zwei geteilt.
+Die Versionen der Domänen setzen die Zählung der Suite fort: core 5.0, civil 3.0, signalling 4.0, electrification
+3.0; vehicles 1.0 und timetables 1.0 sind die bisherige Domäne operations 1.0, in zwei geteilt. In core 4.0 war `B1`
+einer Weiche ihr Stammgleis; 5.0 macht es wieder zum Zweiggleis, und ein Leser bringt eine Datei in 4.0 auf den Stand,
+indem er beide tauscht.
 
 # Ein Beispiel
 
@@ -470,7 +472,7 @@ einem Fahrzeug und einem Zug von der Grenze nach Halle-Trotha, wo er auf diesem 
     "format": "infra-data", "version": "1.0",
     "domains": {
       "core": {
-        "version": "4.0", "schema": "sha256:1111…",
+        "version": "5.0", "schema": "sha256:1111…",
         "fields": { "id": "5dbd8fed-f8dc-4995-8934-9d71be69cae0", "title": "Halle-Trotha" },
         "collections": {
           "tracks": [ {
@@ -596,11 +598,11 @@ Diese Spezifikation ist das Ziel des Datenmodells. Mit Stand 13. November 2026 w
 in diesen Punkten ab; jeder wird in einem eigenen Schritt angeglichen (Entscheidung 0028 und die folgenden):
 
 - Der Projektserver hält die Infrastruktur einer Variante als Dokument der Hülle von vorher (infra-data 2.0: ihre
-  Domänen und ihre Blobs, core 4.0, civil 3.0, signalling 4.0, electrification 3.0) und den Betrieb als Dokument
+  Domänen und ihre Blobs, core 5.0, civil 3.0, signalling 4.0, electrification 3.0) und den Betrieb als Dokument
   operations (vehicles 1.0, timetables 1.0); die Datei rail-across-1.0 führt sie zusammen, eine Datei von vorher
   wird weiter gelesen.
-- Der Record, mit dem die Werkzeuge arbeiten, behält das Vokabular von vorher — die Art eines Elements als Zahl,
-  eine `turnout` mit `B1` als Zweiggleis —, Kilometrierungslinien in WGS 84 mit dem
+- Der Record, mit dem die Werkzeuge arbeiten, behält das Vokabular von vorher — die Art eines Elements als Zahl —,
+  Kilometrierungslinien in WGS 84 mit dem
   Kilometer je Punkt und Kennungen jeder Form; die Tür wandelt ihn ins Dokument und zurück (Entscheidung 0029,
   Phase 6 nimmt das heraus). Eine Kilometrierungslinie von vorher steht als Punkte da, noch nicht mit
   Trassierungselementen angenähert.

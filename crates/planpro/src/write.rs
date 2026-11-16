@@ -963,8 +963,8 @@ pub fn write_planpro(project: &Value, options: &Value) -> Result<Value, String> 
             }
             continue;
         }
-        // A switch of core 4.0: B1 its main track, B2 its branch.
-        let (Some(a), Some(b1), Some(b2)) = (port("A"), port("B2"), port("B1")) else {
+        // A switch of core 5.0: B1 its branch, B2 its main track.
+        let (Some(a), Some(b1), Some(b2)) = (port("A"), port("B1"), port("B2")) else {
             plan.not_written("switches", id, "ports_not_on_tracks");
             continue;
         };
@@ -1391,7 +1391,8 @@ pub fn write_planpro(project: &Value, options: &Value) -> Result<Value, String> 
             let p = sw.get("ports")?.get(k)?;
             Some((str_of(p, "trackId")?.to_string(), endpoint_index(str_of(p, "endpoint"))?))
         };
-        let trunk = if port("B1").and_then(|key| node.conn.get(&key).copied()) == Some("Links") {
+        // B2 the main track, B1 the branch (core 5.0).
+        let trunk = if port("B2").and_then(|key| node.conn.get(&key).copied()) == Some("Links") {
             "links"
         } else {
             "rechts"
@@ -1407,8 +1408,8 @@ pub fn write_planpro(project: &Value, options: &Value) -> Result<Value, String> 
                 "0".into()
             })
         };
-        let straight = speed(design(port("B1")).or(design(port("A"))), "Geschwindigkeit_Stammgleis");
-        let branch = speed(num_of(sw, "speed").or(design(port("B2"))), "Geschwindigkeit_Zweiggleis");
+        let straight = speed(design(port("B2")).or(design(port("A"))), "Geschwindigkeit_Stammgleis");
+        let branch = speed(num_of(sw, "speed").or(design(port("B1"))), "Geschwindigkeit_Zweiggleis");
         let (left, right) = if trunk == "links" { (straight, branch) } else { (branch, straight) };
         let drives = match operation {
             Some("electricRemote" | "electricLocal" | "springBack") => "1",

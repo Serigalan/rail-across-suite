@@ -63,11 +63,21 @@ These rules apply:
 
 - A train **begins and ends** at a station or a track end only. A halt is no beginning and no end; a track end never
   lies on the way.
-- **Where a train stops:** on the track asked for at the middle of its platform, else at the middle of its stopping
-  place, else at the middle of the track. Without a track asked for, any track with a platform will do, and where it
-  only passes, any track of the station. A halt is the middle of its platforms.
+- **A train stops at a stopping place only** (`stoppingPlaces`), on the track asked for where a track is asked for.
+  This holds for its start and its end too.
+  - A **passenger train** stops only at a stopping place at a platform: one a platform names (`stoppingPlaceIds`), one
+    marked a passenger stop (`passengerStop`), or one along which a platform lies on its track.
+  - A **train without passengers** stops at any stopping place. These are the kinds Gz, Lz and Dz and the freight
+    kinds GC, KLV, EK and DGS; every other kind counts as a passenger train.
+  - Where a station has no such stopping place (on the track asked for), the train is not run and the point says
+    so.
+- **Where in the stopping place:** 10 m before its end, seen in the direction of travel. A stopping place shorter
+  than 20 m is stopped at in its middle. At a start, "the end" is the one the train leaves towards. The direction
+  follows from the way, so each stopping place gives two candidates, one per direction. With several candidates,
+  the one reached the shortest way is taken; at the start, the one with the shortest first leg.
+- **Where it only passes,** any track of the station will do.
 - **The train's head is what is computed.** A stopping train stands with its head at that point. Whether its rear
-  reaches beyond the platform is not checked.
+  reaches beyond the stopping place or the platform is not checked.
 - **A pass** is timed at the middle of what the station covers along the way.
 - **At a boundary of the planning area** a train runs in at the boundary's speed and out at most at it. Where the
   boundary has no speed, what the line and the train allow there applies. At a buffer stop it stands.
@@ -79,7 +89,7 @@ These rules apply:
   Diverging, switches and speeds cost nothing more.
 - **No reversing.** From a stop on, the train runs on in the direction it arrived in. A train that is to reverse is
   two trains.
-- **Several tracks of a station** are tried in turn, the one reached the shortest way first. Another is taken only
+- **Several tracks or stopping places of a station** are tried in turn, the one reached the shortest way first. Another is taken only
   where no way leads on from the first. At most 200 legs are tried.
 - **Preferred itinerary.** Where a point names an itinerary of the signalling (`itineraryId`), the train runs along
   its tracks, where the variant has it and it leads there. Else it runs the shortest way and says so.
@@ -395,6 +405,7 @@ Not computed, partly because parts of OSRD are not ported, partly because the su
 | Gravity | 9.81 m/s² | — |
 | Running time margin of a new train | 5 %, MARECO | train |
 | Dwell of a new point | 60 s | point `dwell` |
+| Stop before the end of a stopping place | 10 m, in the direction of travel | — |
 | Route setting time | 12 s | route, layer `routeTimes`, timetable `blockingTimes.setup` |
 | Route release time | 6 s | route, layer `routeTimes`, timetable `blockingTimes.release` |
 | Approach without an announcing signal | 1000 m | timetable `blockingTimes.approach` |
@@ -415,6 +426,7 @@ Not computed, partly because parts of OSRD are not ported, partly because the su
 | Way, grades, curves, speeds | `packages/running-times/src/path.js`, `route.js`, `request.js` |
 | Traction mode | `packages/running-times/src/traction.js` |
 | Places | `packages/running-times/src/stations.js` |
+| Where a train stops | `packages/timetables/src/timetable.js` (`routePoints`, `stoppingPlacesFor`, `stopsIn`) |
 | Vehicle | `packages/vehicles/src/vehicles.js` |
 | Clock, timetable times | `packages/timetables/src/timetable.js` |
 | Blocks, blocking times, dispatching | `packages/timetables/src/occupancy.js` |

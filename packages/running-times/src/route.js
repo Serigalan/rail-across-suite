@@ -31,9 +31,10 @@ export function routeThrough(record, points) {
 
 /**
  * A train's way through points each of which may be one of several places —
- * the tracks of a station —, never turning back. At each point the place
- * reached the shortest way is tried first, the others where it leads nowhere
- * further on (`tries` legs at the most). Returns { path, offsets, chosen } —
+ * the tracks of a station, a stopping place left either way —, never turning
+ * back. At each point the place reached the shortest way is tried first — at
+ * the start, the one the first leg is shortest from —, the others where it
+ * leads nowhere further on (`tries` legs at the most). Returns { path, offsets, chosen } —
  * `chosen` the place taken at each point —, or { failedAt } the furthest point
  * it found no way to (0 where the start has no place).
  *
@@ -65,7 +66,10 @@ export function routeVia(record, points, { tries = 200, legPath = null } = {}) {
     }
     return null
   }
-  for (const start of points[0] ?? []) {
+  // the start whose first leg is the shortest first: one place left either way is two
+  const first = (start) => Math.min(...(points[1] ?? []).map(to => legOf(1, start, start.direction ?? null, to)).filter(Boolean).map(pathLength))
+  const starts = points.length > 1 ? (points[0] ?? []).map(s => ({ s, d: first(s) })).sort((a, b) => a.d - b.d).map(x => x.s) : points[0] ?? []
+  for (const start of starts) {
     const found = go(1, [], [0], [start], start.direction ?? null)
     if (found) return found
     if (left <= 0) break

@@ -1,4 +1,4 @@
-import { crossingSpeed, legThrough, marginValue, pathAlong, pathLength, placeIdOf, placeOf, routeVia, simulationRequest, stationTargets, stationsAlong, timeAtPosition } from '@rail-across/running-times'
+import { crossingSpeed, directionOf, legThrough, marginValue, pathAlong, pathLength, placeIdOf, placeOf, routeVia, simulationRequest, stationTargets, stationsAlong, timeAtPosition } from '@rail-across/running-times'
 
 /**
  * The timetables of the suite (decision 0016): a project's trains, each with
@@ -33,6 +33,12 @@ import { crossingSpeed, legThrough, marginValue, pathAlong, pathLength, placeIdO
 
 /** The kinds of trains offered; any other is written as it is. */
 export const CATEGORIES = ['ICE', 'IC', 'EC', 'RE', 'RB', 'S', 'IRE', 'Gz', 'Lz', 'Dz']
+
+/** The kinds of trains that carry no passengers — freight, light engines, service trains —: they stop at any stopping place. */
+const NO_PASSENGERS = new Set(['GZ', 'GC', 'KLV', 'EK', 'DGS', 'LZ', 'DZ'])
+
+/** Whether a train carries passengers, by its kind: then it stops only at a stopping place at a platform. */
+export const carriesPassengers = (train) => !NO_PASSENGERS.has(String(train?.category ?? '').trim().toUpperCase())
 
 /** The colour of a kind of train in the graphical timetable. */
 export function categoryColor(category) {
@@ -119,10 +125,11 @@ export const trainTitle = (train) => [[train.category, train.number].filter(Bool
  * What keeps a train from being run, as [{ key, point? }] — `point` the index
  * of the point it is about: too few points, a first or last point that is no
  * station or end of the net (a train begins and ends at one only), an end on
- * the way, a station or track the variant does not have, no vehicle, a margin
- * that cannot be read.
+ * the way, a station or track the variant does not have, a stop — given the
+ * record — without a stopping place the train may stop at (stoppingPlacesFor),
+ * no vehicle, a margin that cannot be read.
  */
-export function trainProblems(train, stations, { vehicle = true } = {}) {
+export function trainProblems(train, stations, { vehicle = true, record = null } = {}) {
   const out = []
   const points = train.points ?? []
   if (points.length < 2) out.push({ key: 'too_few_points' })
@@ -133,6 +140,9 @@ export function trainProblems(train, stations, { vehicle = true } = {}) {
     else if (end && points.length >= 2 && station.kind === 'halt') out.push({ key: i === 0 ? 'start_not_station' : 'end_not_station', point: i })
     else if (!end && station.kind === 'end') out.push({ key: 'end_on_the_way', point: i })
     else if (p.trackId && !station.tracks.some(tr => tr.id === p.trackId) && !station.platforms.some(pl => pl.trackId === p.trackId)) out.push({ key: 'track_missing', point: i })
+    else if (record && station.kind !== 'end' && (p.stop || end) && !stoppingPlacesFor(record, station, train, p.trackId).length) {
+      out.push({ key: carriesPassengers(train) ? 'no_platform_stop' : 'no_stopping_place', point: i })
+    }
   })
   if (!vehicle) out.push({ key: 'no_vehicle' })
   if (marginValue(train.margin) == null) out.push({ key: 'margin_invalid' })
@@ -155,23 +165,62 @@ export function stoppingPlacesAt(record, station) {
 
 /**
  * The itineraries a train may prefer from its point `i` to the next: from a
- * stopping place of the one station to one of the other — on the track each
- * point asks for, where it asks for one.
+ * stopping place of the one station to one of the other it may stop at
+ * (stoppingPlacesFor) — on the track each point asks for, where it asks for one.
  */
 export function itineraryOptions(record, stations, train, i) {
   const a = train.points[i], b = train.points[i + 1]
   if (!a || !b) return []
-  const at = (p) => stoppingPlacesAt(record, placeOf(stations, p)).filter(h => !p.trackId || h.at.trackId === p.trackId).map(h => h.id)
+  const at = (p) => stoppingPlacesFor(record, placeOf(stations, p), train, p.trackId).map(h => h.id)
   const from = new Set(at(a)), to = new Set(at(b))
   return (record?.signalling?.collections?.itineraries ?? []).filter(it => from.has(it.startStoppingPlaceId) && to.has(it.targetStoppingPlaceId))
 }
 
-/** A stopping place's middle, where a train is in it. */
+/** Whether a stopping place is at a platform: a platform names it (decision 0028), it is a passenger stop, or a platform lies along it on its track. */
+export function atPlatform(record, h) {
+  if (h.passengerStop) return true
+  const lo = Math.min(h.at.startStation, h.at.endStation), hi = Math.max(h.at.startStation, h.at.endStation)
+  return (record?.platforms ?? []).some(p => p.stoppingPlaceIds?.includes(h.id)
+    || (p.trackId === h.at.trackId && Math.min(hi, Math.max(p.startStation, p.endStation)) > Math.max(lo, Math.min(p.startStation, p.endStation))))
+}
+
+/**
+ * The stopping places of a station a train may stop at: any, for a train
+ * that carries no passengers; for one that does, only those at a platform —
+ * on the track its point asks for, where it asks for one.
+ */
+export function stoppingPlacesFor(record, station, train, trackId = null) {
+  const passengers = carriesPassengers(train)
+  return stoppingPlacesAt(record, station).filter(h => (!trackId || h.at.trackId === trackId) && (!passengers || atPlatform(record, h)))
+}
+
+/** How far before the end of a stopping place a train stops, the way it runs [m]. */
+export const STOP_BEFORE_END = 10
+
+/**
+ * Where a train stands in a stopping place, its head: STOP_BEFORE_END before
+ * the end it runs towards — running up, before its higher end; down, past its
+ * lower —, at its middle where it is shorter than twice that. Two locations,
+ * one for each way.
+ */
+export function stopsIn(h) {
+  const lo = Math.min(h.at.startStation, h.at.endStation), hi = Math.max(h.at.startStation, h.at.endStation)
+  const middle = (lo + hi) / 2
+  return [
+    { trackId: h.at.trackId, station: Math.max(hi - STOP_BEFORE_END, middle), direction: 'up' },
+    { trackId: h.at.trackId, station: Math.min(lo + STOP_BEFORE_END, middle), direction: 'down' },
+  ]
+}
+
+/** A stopping place's middle. */
 const middleOf = (h) => ({ trackId: h.at.trackId, station: (h.at.startStation + h.at.endStation) / 2, direction: null })
+
+/** Where a train stands in a stopping place running the way `direction` says (stopsIn); both, where that is not known. */
+const stopIn = (h, direction) => stopsIn(h).filter(s => !direction || s.direction === direction)
 
 /**
  * The ways a train prefers, leg by leg (from its point i to i + 1): { from,
- * to, trackIds } — its two stopping places' middles and the run between —, or
+ * to, trackIds } — where it stands in its two stopping places (stopsIn) and the run between —, or
  * null where it prefers none or the variant does not have the one it names
  * (`missing` says which legs those are).
  */
@@ -183,15 +232,28 @@ export function preferredLegs(record, stations, train) {
     const places = record?.stoppingPlaces ?? []
     const from = places.find(h => h.id === it?.startStoppingPlaceId), to = places.find(h => h.id === it?.targetStoppingPlaceId)
     if (!it || !from || !to) { missing.push(i); return null }
-    return { from: middleOf(from), to: middleOf(to), trackIds: it.path.trackIds }
+    // the way it runs out of the one and into the other, along the itinerary
+    const run = pathAlong(record, it.path.trackIds, middleOf(from), middleOf(to))
+    return { from: stopIn(from, run?.length ? directionOf(run[0]) : null), to: stopIn(to, run?.length ? directionOf(run[run.length - 1]) : null), trackIds: it.path.trackIds }
   })
   return { legs, missing }
 }
 
-/** Where each point of a train may be on the net: its station's tracks (stationTargets), the ends stopping always. */
-export function routePoints(train, stations) {
+/**
+ * Where each point of a train may be on the net, the ends stopping always:
+ * where it stops, in a stopping place it may stop at (stoppingPlacesFor),
+ * STOP_BEFORE_END before its end the way it runs (stopsIn) — none, where the
+ * station has no such place —; where it passes, and at an end of the net,
+ * on its station's tracks (stationTargets).
+ */
+export function routePoints(record, stations, train) {
   const last = train.points.length - 1
-  return train.points.map((p, i) => stationTargets(placeOf(stations, p), { trackId: p.trackId, stop: p.stop || i === 0 || i === last }))
+  return train.points.map((p, i) => {
+    const place = placeOf(stations, p)
+    const stop = p.stop || i === 0 || i === last
+    if (!stop || !place || place.kind === 'end') return stationTargets(place, { trackId: p.trackId, stop })
+    return stoppingPlacesFor(record, place, train, p.trackId).flatMap(stopsIn)
+  })
 }
 
 /**
@@ -210,13 +272,13 @@ export function routePoints(train, stations) {
  * (legThrough); they come before a way it prefers.
  */
 export function trainRequest(record, stations, train, vehicle, holds = [], routes = []) {
-  const points = routePoints(train, stations)
+  const points = routePoints(record, stations, train)
   // A leg with a way preferred runs from its start's stopping place to its target's, along it where it leads there.
   const { legs, missing } = preferredLegs(record, stations, train)
   legs.forEach((leg, i) => {
     if (!leg) return
-    if (!legs[i - 1]) points[i] = [leg.from]
-    points[i + 1] = [leg.to]
+    if (!legs[i - 1]) points[i] = leg.from
+    points[i + 1] = leg.to
   })
   const taken = new Map()
   const route = routeVia(record, points, {
@@ -310,11 +372,16 @@ export function trainTimes(train, stations, made, result) {
     if (i >= 0) used.add(i)
     rows.push({ key: s.key, name: s.name, offset: i >= 0 ? route.offsets[i] : s.at, point: i >= 0 ? i : null, track: i >= 0 ? route.chosen[i].trackId : null })
   }
-  // points the stations along did not find — a station whose tracks the way only touches at their end
+  // points the stations along did not find — a station whose tracks the way only touches at their end, a halt stopped at
+  // off its platforms' middle —: the pass of that place nearest, else a row of their own
   train.points.forEach((p, i) => {
     if (used.has(i)) return
     const station = placeOf(stations, p)
-    rows.push({ key: station?.key ?? placeIdOf(p), name: station?.name ?? '?', offset: route.offsets[i], point: i, track: route.chosen[i].trackId })
+    const key = station?.key ?? placeIdOf(p)
+    const offset = route.offsets[i]
+    const pass = rows.filter(r => r.point == null && r.key === key).sort((a, b) => Math.abs(a.offset - offset) - Math.abs(b.offset - offset))[0]
+    if (pass) Object.assign(pass, { offset, point: i, track: route.chosen[i].trackId })
+    else rows.push({ key, name: station?.name ?? '?', offset, point: i, track: route.chosen[i].trackId })
   })
   rows.sort((a, b) => a.offset - b.offset || (a.point ?? 0) - (b.point ?? 0))
   return rows.map(r => {
@@ -342,7 +409,7 @@ export function trainTimes(train, stations, made, result) {
  * (trainRequest).
  */
 export async function runTrain(record, stations, train, vehicle, simulate, holds = [], routes = []) {
-  const problems = trainProblems(train, stations, { vehicle: Boolean(vehicle) })
+  const problems = trainProblems(train, stations, { vehicle: Boolean(vehicle), record })
   if (problems.length) return { problems }
   const made = trainRequest(record, stations, train, vehicle, holds, routes)
   if (made.failedAt != null) return { failedAt: made.failedAt }

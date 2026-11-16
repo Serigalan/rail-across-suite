@@ -30,6 +30,11 @@ export const crossing = {
     { id: 'pK', trackId: 'K1', startStation: 200, endStation: 400, operationalPointId: 'op-k' },
   ],
   operationalPoints: [{ id: 'op-h', name: 'H-Stadt' }, { id: 'op-w', name: 'W-Dorf' }, { id: 'op-k', name: 'K-Stadt' }],
+  // where trains stop: at the two platforms
+  stoppingPlaces: [
+    { id: 'hH', name: '1', operationalPointId: 'op-h', at: { anchor: 'station', trackId: 'H1', startStation: 100, endStation: 300 } },
+    { id: 'hK', name: '1', operationalPointId: 'op-k', at: { anchor: 'station', trackId: 'K1', startStation: 200, endStation: 400 } },
+  ],
   signalling: {
     fields: {},
     collections: {

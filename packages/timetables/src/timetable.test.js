@@ -4,7 +4,7 @@ import { newVehicle } from '@rail-across/vehicles'
 import { runWith, stationTargets, stationsOf } from '@rail-across/running-times'
 import { marked, net, WASM } from '../../running-times/test/net.js'
 import {
-  copyTrain, formatClock, itineraryOptions, newPoint, newTrain, numberAfter, parseClock, routePoints, runTrain, intervalCopies, trainProblems, trainRequest, trainTitle,
+  copyTrain, formatClock, itineraryOptions, newPoint, newTrain, numberAfter, parseClock, routePoints, runTrain, intervalCopies, stopsIn, trainProblems, trainRequest, trainTitle,
 } from './timetable.js'
 
 const stations = stationsOf(net)
@@ -38,7 +38,7 @@ describe('a train of the timetable', () => {
     // renamed on the variant: the point still finds it by its id, and is shown by the name it was given
     const renamed = stations.map(s => (s.id === c.id ? { ...s, name: 'C-City' } : s))
     expect(trainProblems(byId, renamed)).toEqual([])
-    expect(routePoints(byId, renamed)[1]).toEqual(stationTargets(c))
+    expect(routePoints(net, renamed, byId)[1].map(l => l.trackId)).toEqual(['C1', 'C1', 'C2', 'C2'])
     // a place the variant lacks is missing, whatever its name
     expect(trainProblems(byId, stations.filter(s => s.id !== c.id))).toEqual([{ key: 'station_missing', point: 1 }])
   })
@@ -70,6 +70,38 @@ describe('a train of the timetable', () => {
     expect(new Set([t.id, ...copies.map(c => c.id)]).size).toBe(3)
     expect(copyTrain(t).points[0].id).not.toBe(t.points[0].id)
     expect(trainTitle({ ...t, name: 'Bummler' })).toBe('RB 16001 · Bummler')
+  })
+})
+
+describe('where a train stops', () => {
+  // C-Stadt's track 1 with a stopping place beyond its platform too, for the trains that carry no passengers
+  const sidings = { ...net, stoppingPlaces: [...net.stoppingPlaces, { id: 'hC3', name: '3', operationalPointId: 'op-c', at: { anchor: 'station', trackId: 'C1', startStation: 520, endStation: 590 } }] }
+  const at = (t, i) => routePoints(sidings, stations, t)[i]
+
+  it('stands 10 m before the end of a stopping place the way it runs, at its middle where it is shorter than 20 m', () => {
+    expect(stopsIn({ at: { trackId: 'C1', startStation: 300, endStation: 500 } })).toEqual([
+      { trackId: 'C1', station: 490, direction: 'up' }, { trackId: 'C1', station: 310, direction: 'down' },
+    ])
+    expect(stopsIn({ at: { trackId: 'C1', startStation: 300, endStation: 312 } }).map(l => l.station)).toEqual([306, 306])
+  })
+
+  it('stops, carrying passengers, at a stopping place at a platform only; else at any', () => {
+    expect(at(train([['A-Dorf'], ['C-Stadt', { track: 'C1' }]]), 1)).toEqual(stopsIn(sidings.stoppingPlaces[2]))
+    expect(at(train([['A-Dorf'], ['C-Stadt', { track: 'C1' }]], { category: 'Gz' }), 1).map(l => l.station)).toEqual([490, 310, 580, 530])
+    // the halt's stopping place on the open line, named by its platform
+    expect(at(train([['A-Dorf'], ['B-Halt'], ['C-Stadt']]), 1).map(l => [l.trackId, l.station])).toEqual([['L', 1190], ['L', 1010]])
+    // where it passes, any track of the station
+    expect(at(train([['A-Dorf'], ['C-Stadt', { stop: false }], ['C-Stadt']]), 1)).toEqual(stationTargets(stations.find(s => s.name === 'C-Stadt'), { stop: false }))
+  })
+
+  it('says where there is no stopping place it may stop at', () => {
+    const bare = { ...sidings, stoppingPlaces: sidings.stoppingPlaces.filter(h => h.id === 'hA' || h.id === 'hC3') }
+    const problems = (t) => trainProblems(t, stations, { record: bare })
+    expect(problems(train([['A-Dorf'], ['C-Stadt']]))).toEqual([{ key: 'no_platform_stop', point: 1 }])
+    expect(problems(train([['A-Dorf'], ['C-Stadt']], { category: 'Gz' }))).toEqual([])
+    expect(problems(train([['A-Dorf'], ['C-Stadt', { track: 'C2' }]], { category: 'Gz' }))).toEqual([{ key: 'no_stopping_place', point: 1 }])
+    // a pass needs none
+    expect(problems(train([['A-Dorf'], ['B-Halt', { stop: false }], ['C-Stadt']], { category: 'Gz' }))).toEqual([])
   })
 })
 

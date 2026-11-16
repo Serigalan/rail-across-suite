@@ -66,11 +66,22 @@ Dafür gelten diese Regeln:
 
 - Ein Zug **beginnt und endet** nur in einem Bahnhof oder an einem Gleisende. Ein Haltepunkt ist kein Anfang und
   kein Ende, ein Gleisende liegt nie unterwegs.
-- **Wo ein Zug hält:** auf dem verlangten Gleis an der Mitte seines Bahnsteigs, sonst an der Mitte seines
-  Halteplatzes, sonst an der Mitte des Gleises. Ohne verlangtes Gleis kommt jedes Gleis mit Bahnsteig in Frage, und
-  wo er nur durchfährt, jedes Gleis des Bahnhofs. Ein Haltepunkt ist die Mitte seiner Bahnsteige.
+- **Ein Zug hält nur an einem Halteplatz** (`stoppingPlaces`), auf dem verlangten Gleis, wo ein Gleis verlangt ist.
+  Das gilt auch für Anfang und Ende.
+  - Ein **Personenzug** hält nur an einem Halteplatz an einem Bahnsteig. Das ist einer, den ein Bahnsteig nennt
+    (`stoppingPlaceIds`), einer, der als Personenhalt markiert ist (`passengerStop`), oder einer, neben dem auf
+    seinem Gleis ein Bahnsteig liegt.
+  - Ein **Zug ohne Fahrgäste** hält an jedem Halteplatz. Das sind die Gattungen Gz, Lz und Dz und die
+    Güterzuggattungen GC, KLV, EK und DGS. Jede andere Gattung zählt als Personenzug.
+  - Hat ein Bahnhof keinen solchen Halteplatz (auf dem verlangten Gleis), wird der Zug nicht gerechnet, und der
+    Punkt sagt das.
+- **Wo im Halteplatz:** 10 m vor seinem Ende, in Fahrtrichtung gesehen. An einem Halteplatz unter 20 m Länge hält
+  der Zug in der Mitte. Am Anfang ist „das Ende“ das, auf das der Zug zufährt. Die Fahrtrichtung ergibt sich aus
+  dem Weg, deshalb liefert jeder Halteplatz zwei Kandidaten, einen je Richtung. Von mehreren Kandidaten wird der auf
+  dem kürzesten Weg erreichte genommen, am Anfang der mit dem kürzesten ersten Abschnitt.
+- **Wo er nur durchfährt,** kommt jedes Gleis des Bahnhofs in Frage.
 - **Gerechnet wird die Zugspitze.** Ein haltender Zug steht mit der Spitze an diesem Punkt. Ob er dabei hinten über
-  den Bahnsteig hinausragt, wird nicht geprüft.
+  den Halteplatz oder den Bahnsteig hinausragt, wird nicht geprüft.
 - **Eine Durchfahrt** wird in der Mitte dessen gezeitet, was der Bahnhof entlang des Wegs abdeckt.
 - **An einer Betrachtungsgrenze** fährt ein Zug mit der Geschwindigkeit der Grenze ein und höchstens mit ihr aus. Hat
   die Grenze keine Geschwindigkeit, gilt, was Strecke und Zug dort zulassen. An einem Prellbock steht er.
@@ -82,8 +93,8 @@ Dafür gelten diese Regeln:
   die gefahrenen Meter. Abzweige, Weichen und Geschwindigkeiten kosten nichts zusätzlich.
 - **Kein Richtungswechsel.** Ab einem Halt fährt der Zug in der Richtung weiter, in der er ankam. Ein Zug, der
   wenden soll, sind zwei Züge.
-- **Mehrere Gleise eines Bahnhofs** werden der Reihe nach versucht, das auf dem kürzesten Weg erreichte zuerst. Ein
-  anderes kommt nur dann in Frage, wenn vom ersten aus kein Weg weiterführt. Höchstens 200 Teilwege werden versucht.
+- **Mehrere Gleise oder Halteplätze eines Bahnhofs** werden der Reihe nach versucht, zuerst der Kandidat, der auf
+  dem kürzesten Weg erreicht wird. Ein anderer kommt nur dann in Frage, wenn vom ersten aus kein Weg weiterführt. Höchstens 200 Teilwege werden versucht.
 - **Bevorzugter Fahrweg.** Nennt ein Punkt einen Fahrweg der Leit- und Sicherungstechnik (`itineraryId`), fährt der
   Zug entlang dessen Gleisen, sofern es ihn in der Variante gibt und er hinführt. Sonst fährt er den kürzesten Weg und
   meldet das.
@@ -409,6 +420,7 @@ Nicht gerechnet werden, teils weil OSRD-Teile nicht portiert sind, teils weil di
 | Erdbeschleunigung | 9,81 m/s² | — |
 | Fahrzeitzuschlag eines neuen Zuges | 5 %, MARECO | Zug |
 | Haltezeit eines neuen Punktes | 60 s | Punkt `dwell` |
+| Halt vor dem Ende eines Halteplatzes | 10 m, in Fahrtrichtung | — |
 | Fahrstraßenbildezeit | 12 s | Fahrstraße, Layer `routeTimes`, Fahrplan `blockingTimes.setup` |
 | Fahrstraßenauflösezeit | 6 s | Fahrstraße, Layer `routeTimes`, Fahrplan `blockingTimes.release` |
 | Annäherung ohne ankündigendes Signal | 1000 m | Fahrplan `blockingTimes.approach` |
@@ -429,6 +441,7 @@ Nicht gerechnet werden, teils weil OSRD-Teile nicht portiert sind, teils weil di
 | Weg, Neigungen, Bögen, Geschwindigkeiten | `packages/running-times/src/path.js`, `route.js`, `request.js` |
 | Traktionsart | `packages/running-times/src/traction.js` |
 | Orte | `packages/running-times/src/stations.js` |
+| Wo ein Zug hält | `packages/timetables/src/timetable.js` (`routePoints`, `stoppingPlacesFor`, `stopsIn`) |
 | Fahrzeug | `packages/vehicles/src/vehicles.js` |
 | Uhr, Fahrplanzeiten | `packages/timetables/src/timetable.js` |
 | Blöcke, Sperrzeiten, Disposition | `packages/timetables/src/occupancy.js` |

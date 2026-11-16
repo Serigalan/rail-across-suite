@@ -157,6 +157,8 @@ const de = {
   problem_end_on_the_way: 'Über einen Prellbock oder eine Betrachtungsgrenze fährt kein Zug hinweg: dort beginnt oder endet er nur.',
   problem_station_missing: 'Diese Betriebsstelle gibt es im Netz der Variante nicht.',
   problem_track_missing: 'Dieses Gleis gibt es in der Betriebsstelle nicht (mehr).',
+  problem_no_platform_stop: 'Hier gibt es (auf diesem Gleis) keinen Halteplatz an einem Bahnsteig — ein Zug mit Fahrgästen hält nur dort.',
+  problem_no_stopping_place: 'Hier gibt es (auf diesem Gleis) keinen Halteplatz, an dem der Zug halten könnte.',
   problem_no_vehicle: 'Dem Zug fehlt ein Fahrzeug.',
   problem_margin_invalid: 'Der Fahrzeitzuschlag ist nicht lesbar.',
 
@@ -388,6 +390,8 @@ const en = {
   problem_end_on_the_way: 'No train runs over a buffer stop or a boundary: it only begins or ends there.',
   problem_station_missing: 'This place is not in the variant\'s net.',
   problem_track_missing: 'This track is not (or no longer) in the place.',
+  problem_no_platform_stop: 'There is no stopping place at a platform here (on this track) — a train with passengers stops there only.',
+  problem_no_stopping_place: 'There is no stopping place here (on this track) for the train to stop at.',
   problem_no_vehicle: 'The train has no vehicle.',
   problem_margin_invalid: 'The running time margin cannot be read.',
 

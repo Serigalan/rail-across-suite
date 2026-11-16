@@ -43,7 +43,7 @@ export default function TrainSheet(props) {
 
 function Sheet({ t, language, train, run, timetables, stations, catalogue, record, net, mayEdit, titles, chartT, update, onCopy, onInterval, onDelete }) {
   const entry = catalogue.entries.find(e => e.key === train.vehicle) ?? null
-  const problems = trainProblems(train, stations, { vehicle: catalogue.loading || Boolean(entry) })
+  const problems = trainProblems(train, stations, { vehicle: catalogue.loading || Boolean(entry), record })
   const set = (patch) => update(tr => ({ ...tr, ...patch }))
   const ro = !mayEdit
   return (

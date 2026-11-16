@@ -3,12 +3,14 @@
 // 6000 (2500 m) with the halt B-Halt's platform on it, and the station
 // C-Stadt behind a turnout — track 1 straight on, track 2 on the branch,
 // each with a platform. The line rises 10 m; the design speed is 100 km/h.
-// The places are points of the register, each track and platform naming its own (decision 0028).
+// The places are points of the register, each track and platform naming its own (decision 0028); a stopping
+// place at each platform.
 const E0 = 500000, N0 = 5600000
 const straight = (x0, y0, x1, y1) => ({
   elementType: 'straight', startNode: [E0 + x0, N0 + y0], endNode: [E0 + x1, N0 + y1], length: Math.hypot(x1 - x0, y1 - y0),
   bearing: (Math.atan2(x1 - x0, y1 - y0) * 180 / Math.PI + 360) % 360, speed: 100,
 })
+const range = (trackId, startStation, endStation) => ({ anchor: 'station', trackId, startStation, endStation })
 const station = (point, number) => ({ trackType: 'station', operationalPointId: point, trackNumber: number })
 
 export const net = {
@@ -21,11 +23,18 @@ export const net = {
   switches: [{ switchId: 'W1', kind: 'switch', ports: { A: { trackId: 'L', endpoint: 'END' }, B1: { trackId: 'C1', endpoint: 'BEGIN' }, B2: { trackId: 'C2', endpoint: 'BEGIN' } } }],
   platforms: [
     { id: 'pA', trackId: 'A1', startStation: 100, endStation: 300, operationalPointId: 'op-a' },
-    { id: 'pB', trackId: 'L', startStation: 1000, endStation: 1200, operationalPointId: 'op-b' },
+    { id: 'pB', trackId: 'L', startStation: 1000, endStation: 1200, operationalPointId: 'op-b', stoppingPlaceIds: ['hB'] },
     { id: 'pC1', trackId: 'C1', startStation: 300, endStation: 500, operationalPointId: 'op-c' },
     { id: 'pC2', trackId: 'C2', startStation: 300, endStation: 500, operationalPointId: 'op-c' },
   ],
   operationalPoints: [{ id: 'op-a', name: 'A-Dorf' }, { id: 'op-b', name: 'B-Halt' }, { id: 'op-c', name: 'C-Stadt' }],
+  // where trains stop: one at each platform, the halt's on the open line, named by its platform
+  stoppingPlaces: [
+    { id: 'hA', name: '1', operationalPointId: 'op-a', at: range('A1', 100, 300) },
+    { id: 'hB', name: 'B', at: range('L', 1000, 1200) },
+    { id: 'hC1', name: '1', operationalPointId: 'op-c', at: range('C1', 300, 500) },
+    { id: 'hC2', name: '2', operationalPointId: 'op-c', at: range('C2', 300, 500) },
+  ],
 }
 
 /**

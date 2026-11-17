@@ -90,15 +90,14 @@ const KINK_MIN_GON = 5e-7
 
 /**
  * The entries of `curves`: one per arc as OSRD reads it (`radius`, `begin`,
- * `end`) — derived from the alignment, to be replaced by it. The first entry
- * carries the track's `horizontal_alignment`, the element chain from end to end,
+ * `end`) — derived from the alignment, to be replaced by it — and a last one
+ * that holds only the track's `horizontal_alignment`, the element chain from end to end,
  * by column over its N elements: `stationing` (N+1 stations, m), `coordinates`
  * (N+1 points, the last the end), `bearing_gon` (N+1: each element's own start,
  * the last its end — a kink is the step from an element's bearing to the next),
  * `element_type`, signed `begin_radius` / `end_radius` (null on a straight),
  * `begin_cant` / `end_cant` in mm and, where known, `design_speed_kmh`. Stations,
- * coordinates and cants are stated to the millimetre, bearings to 1e-7 gon. A
- * track without an arc has one entry of radius 0 to carry it.
+ * coordinates and cants are stated to the millimetre, bearings to 1e-7 gon.
  */
 export function curveEntries(track) {
   const els = track.elements ?? []
@@ -121,8 +120,7 @@ export function curveEntries(track) {
   const arcs = rows.flatMap((r, i) => (r.type === 'curve'
     ? [{ radius: round3(Math.abs(els[i].radius)), begin: round3(r.station_start_m), end: round3(r.station_start_m + r.length_m) }]
     : []))
-  const items = arcs.length ? arcs : [{ radius: 0, begin: 0, end: round3(end) }]
-  return items.map((item, k) => (k === 0 ? { ...item, horizontal_alignment: alignment } : item))
+  return [...arcs, { horizontal_alignment: alignment }]
 }
 
 /**
@@ -164,7 +162,7 @@ export function chainFromCurves(curves) {
 /**
  * The height points as the entries of `slopes`: one per stretch between two
  * points, with OSRD's gradient (‰, signed in the direction of the stations) —
- * derived from the points, to be replaced by them. The first entry carries the
+ * derived from the points, to be replaced by them — and a last one that holds only the
  * track's `vertical_alignment` by column: `epsg` (the height datum), `stationing`
  * (the stations of the points, m), `elevation` and `vertical_curve_radius` (null
  * where the gradient simply breaks), all to the millimetre.
@@ -177,15 +175,16 @@ export function slopeEntries(track, defaultEpsg) {
     elevation: points.map(p => round3(p.z)),
     vertical_curve_radius: points.map(p => round3(p.rv ?? null)),
   }
-  return points.slice(1).map((q, i) => {
+  if (!points.length) return []
+  const stretches = points.slice(1).map((q, i) => {
     const p = points[i]
     return {
       gradient: round3(((q.z - p.z) / (q.station - p.station)) * 1000),
       begin: round3(p.station),
       end: round3(q.station),
-      ...(i === 0 ? { vertical_alignment: alignment } : {}),
     }
   })
+  return [...stretches, { vertical_alignment: alignment }]
 }
 
 /** The height points the `vertical_alignment` of the entries of `slopes` states, in the shape of the track's own list; null where none does. */

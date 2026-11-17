@@ -68,15 +68,15 @@ Both carry the same element chain — what a polyline cannot express: type, stat
 at both ends of a ramp (from the neighbours, or the transition's own `cantStart`/`cantEnd`), design speed,
 and for a kinked straight its deflection angle. The **OSRD export** writes OSRD's own `track_sections` and gives
 their `curves` and `slopes` the design data. `curves` holds one item per arc as OSRD reads it (`radius`, `begin`,
-`end`, to be derived from the alignment and replaced by it); the first carries the track's `horizontal_alignment`,
-the element chain from end to end, by column over its N elements — `epsg`, `stationing` (N+1 stations),
-`coordinates` (N+1 points), `bearing_gon` (N+1: each element's start, the last its end; a kink is the step to the
-next one), `element_type` (`straight`, `arc`, `clothoid`, `bloss`), signed `begin_radius`/`end_radius`,
-`begin_cant`/`end_cant` (mm) and `design_speed_kmh` where known. A track without an arc has one curve of radius 0 to
-carry it. Stations, coordinates and cants are stated to the millimetre, bearings to 1e-7 gon. `slopes` holds one item
-per stretch between two height points (`gradient` in ‰, derived like the curve's values); the first carries the
-`vertical_alignment` by column — `epsg` (the height datum), `stationing`, `elevation` and `vertical_curve_radius`
-(null where the gradient simply breaks), to the millimetre. The import also
+`end`, to be derived from the alignment and replaced by it) and a last item that holds only the track's
+`horizontal_alignment`, the element chain from end to end, by column over its N elements — `epsg`, `stationing`
+(N+1 stations), `coordinates` (N+1 points), `bearing_gon` (N+1: each element's start, the last its end; a kink is the
+step to the next one), `element_type` (`straight`, `arc`, `clothoid`, `bloss`), signed `begin_radius`/`end_radius`,
+`begin_cant`/`end_cant` (mm) and `design_speed_kmh` where known. Stations, coordinates and cants are stated to the
+millimetre, bearings to 1e-7 gon. `slopes` holds one item per stretch between two height points (`gradient` in ‰,
+derived like the curve's values) and a last item with only the `vertical_alignment` by column — `epsg` (the height
+datum), `stationing`, `elevation` and `vertical_curve_radius` (null where the gradient simply breaks), to the
+millimetre. The import also
 reads the earlier DB alignment extension. The **exchange file** is RailJSON-shaped but carries the design data itself on
 each track section: the horizontal alignment from a native-CRS anchor and the vertical alignment as height
 points; it will not load in OSRD. The `olt` extension carries line category and track use.

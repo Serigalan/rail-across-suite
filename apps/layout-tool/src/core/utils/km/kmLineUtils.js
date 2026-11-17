@@ -7,6 +7,6 @@ export { kmForTrackPoint, kmOnRuns, planeRuns } from '@rail-across/core/track'
 /**
  * The id of the km line of a line number: the same on every device, so two
  * people fetching the same line get the same object, and a UUID as the format
- * has every id (decision 0029, phase 2).
+ * has every id (decision 0006).
  */
 export const kmLineId = (lineNumber) => derivedId(`km-${lineNumber}`)

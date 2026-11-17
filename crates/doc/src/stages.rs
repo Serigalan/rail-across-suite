@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Serigalan and the Rail-Across-Suite contributors
 // SPDX-License-Identifier: LGPL-3.0-only
 
-//! Lifespans by day, and the states of a project they make (decision 0028):
+//! Lifespans by day, and the states of a project they make (decision 0007):
 //! an object states the days it is in service — `lifespan: { from, to }`, the
 //! first and the last, the word "open" where the day is not known yet — and
 //! nothing keeps a list of stages. A project passes through states: the

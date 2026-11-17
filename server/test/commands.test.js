@@ -129,7 +129,7 @@ describe.skipIf(!SERVER_BIN)('the data steps', () => {
 
 // An infra-data 1.0 document as the core wrote it before 2.0 (schemas/vectors), frozen.
 const BEFORE_2_0 = JSON.parse(readFileSync(new URL('../../schemas/vectors/infra-data-1.0.json', import.meta.url), 'utf8')).documents
-// Documents as the core wrote them last before decision 0028, a register of stages in them (schemas/vectors), frozen.
+// Documents as the core wrote them last before decision 0007, a register of stages in them (schemas/vectors), frozen.
 const STAGES_2_0 = JSON.parse(readFileSync(new URL('../../schemas/vectors/infra-data-2.0-stages.json', import.meta.url), 'utf8')).documents
 // The same documents as the door reads them now (schemas/vectors).
 const NOW = Object.fromEntries(JSON.parse(readFileSync(new URL('../../schemas/vectors/documents.json', import.meta.url), 'utf8')).map(c => [c.name, c.document]))
@@ -158,7 +158,7 @@ const payloads = (file) => {
   return { versions: rows.map(r => r.schema_version), docs: rows.map(r => JSON.parse(gunzipSync(r.payload).toString())) }
 }
 
-describe.skipIf(!SERVER_BIN)('the step to infra-data-1.0 (decision 0021)', () => {
+describe.skipIf(!SERVER_BIN)('the step to infra-data-1.0 (decision 0006)', () => {
   it('rewrites the revisions kept as the core 1.0 document and as oltjson-1.1 records, once, in place — as today\'s documents now', async () => {
     const { file, made, second, track } = await twoRevisions()
     // As the two revisions were kept before: the old envelope, and an oltjson-1.1 record whose track is new.
@@ -182,7 +182,7 @@ describe.skipIf(!SERVER_BIN)('the step to infra-data-1.0 (decision 0021)', () =>
   })
 })
 
-describe.skipIf(!SERVER_BIN)('the step to infra-data-2.0 (decision 0025)', () => {
+describe.skipIf(!SERVER_BIN)('the step to infra-data-2.0 (decision 0008)', () => {
   it('rewrites the revisions kept as infra-data-1.0 documents, once, in place; one left is read through the door', async () => {
     const { file, made, second } = await twoRevisions()
     const db = new Database(file)
@@ -209,7 +209,7 @@ describe.skipIf(!SERVER_BIN)('the step to infra-data-2.0 (decision 0025)', () =>
   })
 })
 
-describe.skipIf(!SERVER_BIN)('the passenger stops and the runs in the core (decision 0025)', () => {
+describe.skipIf(!SERVER_BIN)('the passenger stops and the runs in the core (decision 0008)', () => {
   it('makes a stopping place a platform names a passenger stop and the runs the core\'s in the revisions kept before, once, in place', async () => {
     const { file, made } = await twoRevisions()
     const doc = structuredClone(STAGES_2_0['the sample with its signalling'])
@@ -236,7 +236,7 @@ describe.skipIf(!SERVER_BIN)('the passenger stops and the runs in the core (deci
   })
 })
 
-describe.skipIf(!SERVER_BIN)('the step to lifespans by day (decision 0028)', () => {
+describe.skipIf(!SERVER_BIN)('the step to lifespans by day (decision 0007)', () => {
   it('rewrites the revisions kept with a register of stages, once, in place; one left is read through the door', async () => {
     const { file, made, second } = await twoRevisions()
     const doc = structuredClone(STAGES_2_0['the sample'])
@@ -268,7 +268,7 @@ describe.skipIf(!SERVER_BIN)('the step to lifespans by day (decision 0028)', () 
   })
 })
 
-describe.skipIf(!SERVER_BIN)('the step to references that name something (decision 0028, phase C)', () => {
+describe.skipIf(!SERVER_BIN)('the step to references that name something (decision 0006)', () => {
   it('cuts what a revision kept with its lifespans by day names and lacks, once, in place', async () => {
     const { file, made } = await twoRevisions()
     // As a build of phase A kept the sample: its domains at 3.0 and 2.0, a switch element of a switch not there.
@@ -291,11 +291,11 @@ describe.skipIf(!SERVER_BIN)('the step to references that name something (decisi
   })
 })
 
-describe.skipIf(!SERVER_BIN)('the step to core 4.0 (decision 0029, phases 1 and 2)', () => {
+describe.skipIf(!SERVER_BIN)('the step to core 4.0 (decision 0006)', () => {
   it('writes what a revision kept as core 3.1 in the words, names and ids of rail-across-1.0, once, in place', async () => {
     const { file, made } = await twoRevisions()
     const schema = (path) => contentHash(JSON.parse(readFileSync(new URL(`../../schemas/${path}.schema.json`, import.meta.url), 'utf8')))
-    // As a build of decision 0028 kept a project: kinds as numbers, short ids, a km line in WGS 84.
+    // As a build of decision 0006 kept a project: kinds as numbers, short ids, a km line in WGS 84.
     const el = { elementType: 'straight', startNode: [500000, 5700000], endNode: [500100, 5700000], bearing: 90, length: 100 }
     const doc = {
       format: 'infra-data', version: '2.0', blobs: {},
@@ -326,7 +326,7 @@ describe.skipIf(!SERVER_BIN)('the step to core 4.0 (decision 0029, phases 1 and 
   })
 })
 
-describe.skipIf(!SERVER_BIN)('the step to core 5.0 (decision 0029, phase 6)', () => {
+describe.skipIf(!SERVER_BIN)('the step to core 5.0 (decision 0006)', () => {
   it('gives a switch kept as core 4.0 its branch at B1 again, once, in place', async () => {
     const { file, made } = await twoRevisions()
     const db = new Database(file)
@@ -353,7 +353,7 @@ describe.skipIf(!SERVER_BIN)('the step to core 5.0 (decision 0029, phase 6)', ()
   })
 })
 
-describe.skipIf(!SERVER_BIN)('the step to operations-1.0 (decision 0026)', () => {
+describe.skipIf(!SERVER_BIN)('the step to operations-1.0 (decision 0012)', () => {
   it('makes each project\'s timetables the first revision of its operations, once, their makers kept; one the door refuses stays behind', async () => {
     const { file, made } = await twoRevisions()
     const db = new Database(file)
@@ -374,7 +374,7 @@ describe.skipIf(!SERVER_BIN)('the step to operations-1.0 (decision 0026)', () =>
     ctx = await rustServer({ file })
     const anna = await signIn(ctx.app, 'anna')
     const { timetables } = (await anna('GET', `/api/projects/${made.project.id}/timetables`)).json()
-    // ids as the document names them: UUIDs (decision 0029, phase 2)
+    // ids as the document names them: UUIDs (decision 0006)
     expect(timetables.map(t => [t.id, t.name, t.version])).toEqual([[derivedId('tt-b'), 'Nacht', 1], [derivedId('tt-a'), 'Takt', 1]])
     expect(timetables[1]).toMatchObject({ createdAt: '2026-01-02T03:04:05.000Z', updatedAt: '2026-02-03T04:05:06.000Z', createdBy: { name: 'Anna' } })
     // a point of before names its station's point by an id drawn from its name (timetables 1.0)

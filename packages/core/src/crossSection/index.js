@@ -2,7 +2,7 @@
 // superstructure and the clearance contours of DB Ril 800.0130.
 //
 // The module is the core's Rust crate (crates/track, its cross section;
-// decision 0021, phase D): every function here is a call of the core's
+// decision 0005): every function here is a call of the core's
 // module, a track of the project it holds crossing as its name. Its
 // constants and the catalogue as the page lists it stay JavaScript.
 //

@@ -16,7 +16,7 @@ export function placesOf(record, t) {
     .filter(s => s.kind !== 'virtual' && s.at?.anchor === 'station' && s.name)
     .map(s => ({ id: `signal:${s.id}`, label: `${t('signal')} ${s.name}`, loc: { trackId: s.at.trackId, station: s.at.station, direction: s.at.direction ?? null } }))
     .sort(byLabel)
-  // A platform by its station — the point it names (decision 0028) — and its track's number.
+  // A platform by its station — the point it names (decision 0006) — and its track's number.
   const points = new Map((record?.operationalPoints ?? []).map(p => [p.id, p]))
   const tracks = new Map((record?.tracks ?? []).map(tr => [tr.id, tr]))
   const platforms = (record?.platforms ?? [])

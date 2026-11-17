@@ -1,10 +1,10 @@
 // SPDX-FileCopyrightText: 2026 Serigalan and the Rail-Across-Suite contributors
 // SPDX-License-Identifier: LGPL-3.0-only
 
-//! What infra-data-2.0's layers ask of the stopping places (decision 0025): they
+//! What infra-data-2.0's layers ask of the stopping places (decision 0008): they
 //! are the core's, a platform (civil) names those at it, passenger stops by that,
 //! and a station boundary is marked by a stopping place where it was marked by a
-//! platform. The record holds them as the document does (decision 0028); the
+//! platform. The record holds them as the document does (decision 0006); the
 //! door's step from infra-data 1.0 and the Civil-Tool's platforms go through here.
 
 use rail_across_js::{Object, get, js_string};
@@ -191,13 +191,13 @@ fn named_by(p: &Value) -> Vec<String> {
 
 /// The record with the stopping places at the platform `platform_id` as the
 /// Civil-Tool sets them where it puts, moves or deletes a platform (decision
-/// 0025): every stopping place at it a passenger stop, named by it
+/// 0008): every stopping place at it a passenger stop, named by it
 /// (`stoppingPlaceIds`) — unless another platform names it already —; one over
 /// the platform, of its station and stage, called `name`, where none is at it
 /// yet; one it named that is no longer at it named by the platform it is at now,
 /// else no passenger stop — which holds for every passenger stop no platform
 /// names, as after a platform was deleted. A stopping place is never deleted: it
-/// is one for every train, the Signalling-Tool's as much (decision 0024).
+/// is one for every train, the Signalling-Tool's as much (decision 0008).
 pub fn with_platform_stops(record: &Value, platform_id: &str, name: Option<&str>) -> Value {
     let mut platforms: Vec<Value> = record.get("platforms").and_then(Value::as_array).cloned().unwrap_or_default();
     let mut places: Vec<Value> = record.get("stoppingPlaces").and_then(Value::as_array).cloned().unwrap_or_default();

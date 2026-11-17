@@ -16,7 +16,7 @@ The shared model of Rail-Across-Suite in JavaScript: every module reads and writ
 | `commands` | what an edit commits: new tracks and switches, connecting, splicing, reconnecting | [commands](docs/commands.md) |
 | `survey` | measured axes, reference axes, shift values, alignment fit | [survey](docs/survey.md) |
 | `signalling` | the catalogue of signal aspects, signalling and train protection systems (DB Ril 301 after PlanPro 1.10: Ks and shunting signals, PZB and ETCS balises), the content check of the signalling domain, track sections derived over the net | [signalling](docs/signalling.md) |
-| `planpro` | writing a project as a PlanPro 1.10 plan: its net in DB_REF, switches and end marks, its signalling; no import (decision 0022) | [planpro](docs/planpro.md) |
+| `planpro` | writing a project as a PlanPro 1.10 plan: its net in DB_REF, switches and end marks, its signalling; no import (decision 0010) | [planpro](docs/planpro.md) |
 | `document` | the infra-data-1.0 document: domains, schemas, the door, conversion from and to the record, canonical JSON, hashes | [document](docs/document.md) |
 | `project` | the project record the app works on, the door to it from infra-data-1.0, settings, validation | [project](docs/project.md) |
 | `merge` | diff, three-way merge, carrying ids, carrying every domain's locations across a change of the net (R4) | [merge](docs/merge.md) |

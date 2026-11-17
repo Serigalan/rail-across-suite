@@ -1,6 +1,6 @@
 // The switch module's catalogue as the page lists it — the forms of DB Ril
 // 800.0120 (`constraints/db-ril-800-0120.json`) by kind and class — and its
-// constants (decision 0021, phase D: the functions are the core's Rust module,
+// constants (decision 0005: the functions are the core's Rust module,
 // crates/switch, which reads the same catalogue).
 import CATALOGUE from '../../constraints/db-ril-800-0120.json' with { type: 'json' }
 

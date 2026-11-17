@@ -84,7 +84,7 @@ export const runsSettled = (trains, runs) => trains.every(t => {
 })
 
 /**
- * The runs of a timetable in a construction scenario on a day (decision 0030;
+ * The runs of a timetable in a construction scenario on a day (decision 0014;
  * the Baubetriebs-Sim's), made in the background once the regular runs are
  * settled (`regular`, useRuns's on the same net): { runs, busy } — `runs` as
  * scenarioRuns gives them, or null until made. A train run on the net with

@@ -73,7 +73,7 @@ load_config() {
   # server) or "tags" (only prod-* tags with a green CI, production).
   RA_TRACK=${RA_TRACK:-main}
   RA_GITHUB_REPO=${RA_GITHUB_REPO:-Serigalan/rail-across-suite}
-  # The project server in Rust (crates/server, decision 0020), built by
+  # The project server in Rust (crates/server, decision 0005), built by
   # deploy.sh: the service, the cloud jobs and the command line are one binary.
   RA_CARGO=${RA_CARGO:-$(command -v cargo || echo "$HOME/.cargo/bin/cargo")}
   RA_SERVER_BIN=${RA_SERVER_BIN:-$RA_REPO/target/release/rail-across-server}
@@ -98,13 +98,13 @@ server_cli() {
 
 # The modules' apps, each built into its path of the site: "<app directory under apps/>:<path>".
 # shellcheck disable=SC2034  # used by deploy.sh
-# The Layout-Tool's app serves the Civil-Tool too (decision 0025): one build, two paths.
+# The Layout-Tool's app serves the Civil-Tool too (decision 0008): one build, two paths.
 MODULE_APPS=(layout-tool:layout layout-tool:civil signalling-tool:signalling catenary-tool:catenary simulation-tool:simulation vehicle-editor:vehicles timetable-editor:timetable capacity-sim:capacity construction-sim:construction)
 
 # The units of this instance, as installed (template rail-across-<x> → $RA_UNIT_PREFIX<x>).
 # shellcheck disable=SC2034  # used by setup.sh
 UNIT_TEMPLATES=(rail-across-server.service rail-across-cloudjobs.service rail-across-server-backup.service rail-across-server-backup.timer)
-# Units of earlier versions, taken out by deploy.sh and setup.sh: the Python optimizer service (decision 0019).
+# Units of earlier versions, taken out by deploy.sh and setup.sh: the Python optimizer service (decision 0005).
 # shellcheck disable=SC2034  # used by deploy.sh and setup.sh
 RETIRED_UNITS=(rail-across-optimizer.service)
 unit_name() { echo "$RA_UNIT_PREFIX${1#rail-across-}"; }

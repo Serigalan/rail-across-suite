@@ -1,12 +1,12 @@
 // SPDX-FileCopyrightText: 2026 Serigalan and the Rail-Across-Suite contributors
 // SPDX-License-Identifier: LGPL-3.0-only
 
-//! Core 4.0, its words and names (decision 0029, phase 1): what core 3.1, civil 2.1 and signalling 3.1 stated
+//! Core 4.0, its words and names (decision 0006): what core 3.1, civil 2.1 and signalling 3.1 stated
 //! as numbers is stated as words — an element's, a track's and a side's kind —, every reference is named for
 //! what it names and ends in `Id`, an element has no plane of its own, and a switch is a `switch`, no longer a
 //! `turnout`. `forward` makes the domains of a document so, `back` undoes what the record has not taken over
 //! yet: the door's step from 3.1 takes the one, the record — which keeps the old words until it follows the
-//! document (decision 0029, phase 6) — both. Core 4.0 had a switch's `B1` its main track and `B2` its branch;
+//! document (decision 0006) — both. Core 4.0 had a switch's `B1` its main track and `B2` its branch;
 //! core 5.0 has them as the suite always did and as the OSRD export writes them, `B1` the branch
 //! (`swap_switch_ports`).
 
@@ -20,7 +20,7 @@ const SIDES: &[(i64, &str)] = &[(1, "regular"), (2, "opposite")];
 /// The references renamed: (domain, collection, old name, new name).
 const NAMES: &[(&str, &str, &str, &str)] = &[];
 
-/// The references the record names as the document does since it follows it (decision 0029, phase 6): renamed
+/// The references the record names as the document does since it follows it (decision 0006): renamed
 /// on the way in only, for a record of before — a working copy may still hold one.
 const NAMES_FOLLOWED: &[(&str, &str, &str, &str)] = &[
     ("core", "tracks", "operationalPoint", "operationalPointId"),

@@ -29,12 +29,12 @@ export const useAxisSurveys = () => useSyncExternalStore(subscribe, axisSurveysO
 export const useReferenceAxes = () => useSyncExternalStore(subscribe, referenceAxesOf, referenceAxesOf)
 export const useRoutes = () => useSyncExternalStore(subscribe, routesOf, routesOf)
 const structuresOf = Object.fromEntries(['bridges', 'retainingWalls', 'noiseBarriers'].map(k => [k, part(k)]))
-/** The civil structures of a kind: 'bridges', 'retainingWalls' or 'noiseBarriers' (decision 0025). */
+/** The civil structures of a kind: 'bridges', 'retainingWalls' or 'noiseBarriers' (decision 0008). */
 export const useStructures = (kind) => useSyncExternalStore(subscribe, structuresOf[kind], structuresOf[kind])
 /** The ids of the tracks hidden on the map (a Set, kept on this device). */
 export const useHiddenTracks = () => useSyncExternalStore(subscribe, hiddenTracks, hiddenTracks)
 
-/** The construction stage the map shows, or null for all of them (decision 0027). */
+/** The construction stage the map shows, or null for all of them (decision 0007). */
 export const useMapStage = () => useSyncExternalStore(subscribe, mapStage, mapStage)
 
 /** The line numbers of the project's kilometrage lines hidden on the map (a Set, kept on this device). */

@@ -40,9 +40,9 @@ per `forward_auth` beim Projektserver (`/api/me`), ob die Anfrage eine gültige 
 
 Gerechnet wird im Browser: die Laufzeitsimulation (`sim/`), die Suche der erweiterten Weichenverbindung
 (`crossover/`) und der Optimierer (`optimizer/`: Zusammenfügen, Neu verbinden, Optimieren, Achse aus Punkten)
-sind Rust, als WebAssembly neben die Seiten gelegt ([Entscheidung 0019](../docs/decisions/0019-optimizer-in-rust.md)).
+sind Rust, als WebAssembly neben die Seiten gelegt ([Entscheidung 0005](../docs/decisions/0005-rust-computes-javascript-shows.md)).
 `deploy.sh` baut sie mit cargo (Ziel `wasm32-unknown-unknown`), dazu den Projektserver: ein Rust-Programm
-(`crates/server`, [Entscheidung 0020](../docs/decisions/0020-everything-in-rust.md)) für Dienst, Punktwolken-Aufträge und
+(`crates/server`, [Entscheidung 0005](../docs/decisions/0005-rust-computes-javascript-shows.md)) für Dienst, Punktwolken-Aufträge und
 Kommandozeile, `target/release/rail-across-server`; Node braucht nur noch der Build. Der Projektserver liest für das Layout-Tool die
 DGM1-Kacheln der Länder (`RA_TERRAIN_CACHE`) und wandelt Access-Dateien mit `mdb-export` um.
 

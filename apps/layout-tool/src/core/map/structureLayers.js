@@ -1,7 +1,7 @@
 import { offsetEdgeCoords } from '@rail-across/core/track'
 
 /**
- * The civil structures on the map (decision 0025): a bridge as a broad band
+ * The civil structures on the map (decision 0008): a bridge as a broad band
  * over its track, a retaining wall and a noise barrier as a line beside it at
  * their distance from the axis, on their side — each drawn from where it
  * begins to where it ends along its track, so it follows the track's curves.

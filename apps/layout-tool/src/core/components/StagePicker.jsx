@@ -6,7 +6,7 @@ import { setMapStage } from '../storage'
 import { dayLabel, isDayKey, stageLabel, stageOptions } from '../utils/stage'
 
 /**
- * The point in time the map shows (decision 0027): every stage at once, as
+ * The point in time the map shows (decision 0007): every stage at once, as
  * planned — the default —, or what is in service on a day, picked in a
  * calendar that marks the days something changes on; the existing and the
  * final state beside it, and those days as shortcuts. Beside the working

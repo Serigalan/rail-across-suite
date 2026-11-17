@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 
 //! The door for operations documents (operations-1.0; the roadmap, phase 4, O1;
-//! decision 0029, phase 4): what is the operation's, in two domains — `vehicles`
+//! decision 0006): what is the operation's, in two domains — `vehicles`
 //! 1.0, the vehicles a project's trains run with, each with its rolling stock as
 //! RailJSON, and `timetables` 1.0, the timetables and their trains, the kinds of
 //! trains, formations, connections, turnarounds, delay scenarios, studies. What
 //! comes in is checked here, what is written is checked the same way before it
 //! leaves; and the timetables as the suite keeps them (the record: `{ timetables:
-//! [{ id, name, data: { trains, dispatch } }], … }`, decision 0016) become a
+//! [{ id, name, data: { trains, dispatch } }], … }`, decision 0012) become a
 //! document and come back from one. A document of before — one domain
 //! `operations` 1.0, the vehicles as blobs, a train's point naming its place in
 //! one member — is brought to the two domains on its way in (`from_before`).
@@ -44,7 +44,7 @@ const ENVELOPE: &str = include_str!("../../../schemas/operations.schema.json");
 const VEHICLES: &str = include_str!("../../../schemas/vehicles/1.0.schema.json");
 const TIMETABLES: &str = include_str!("../../../schemas/timetables/1.2.schema.json");
 /// Timetables 1.0 and 1.1, each of which the next only adds to — 1.1 a point's `reverse`, `turnaround`; 1.2 the
-/// construction scenarios (decision 0030) —: a domain of either is brought forward step by step.
+/// construction scenarios (decision 0014) —: a domain of either is brought forward step by step.
 const TIMETABLES_1_0: &str = include_str!("../../../schemas/timetables/1.0.schema.json");
 const TIMETABLES_1_1: &str = include_str!("../../../schemas/timetables/1.1.schema.json");
 /// The operations of before: one domain `operations` 1.0, named by core 3.1's types.
@@ -339,7 +339,7 @@ fn renamed(v: &Value, from: &str, to: &str) -> Value {
     Value::Object(o)
 }
 
-/// A document of before (one domain `operations` 1.0) in the two domains of today (decision 0029, phase 4): the
+/// A document of before (one domain `operations` 1.0) in the two domains of today (decision 0006): the
 /// vehicles with their rolling stock in the object, one of the catalogue named by its key, a formation naming its
 /// vehicles by id; a train's point naming an operational point or an end mark — those in `end_marks` — by id, with
 /// its track and itinerary; a connection's and a delay rule's place an operational point, a study's stretch its
@@ -747,7 +747,7 @@ pub fn to_operations(record: &Value, check: bool) -> Result<Value> {
     let mut scenarios = Vec::new();
     let mut train_ids = HashSet::new();
     for t in list(record, "timetables") {
-        // Ids as the document states them, so that one given twice is found twice (decision 0029, phase 2).
+        // Ids as the document states them, so that one given twice is found twice (decision 0006).
         let tid = crate::ids::uuid_of(&js_string(t.get("id")));
         let data = t.get("data").cloned().unwrap_or(json!({}));
         let mut o = Object::new();
@@ -757,7 +757,7 @@ pub fn to_operations(record: &Value, check: bool) -> Result<Value> {
         put(&mut o, "dispatching", dispatching);
         put(&mut o, "blockingTimes", times);
         timetables.push(Value::Object(o));
-        // Its construction scenarios (decision 0030), naming it; a diversion's points as a train's.
+        // Its construction scenarios (decision 0014), naming it; a diversion's points as a train's.
         for sc in list(&data, "scenarios") {
             let mut o = obj(sc);
             o.insert("timetableId".into(), json!(tid));
@@ -971,7 +971,7 @@ pub fn from_operations(doc: &Value) -> Result<Value> {
         if !dispatch.is_empty() {
             data.insert("dispatch".into(), Value::Object(dispatch));
         }
-        // its construction scenarios, where it has any (decision 0030)
+        // its construction scenarios, where it has any (decision 0014)
         if let Some(scenarios) = scenarios_of.remove(&tid) {
             data.insert("scenarios".into(), Value::Array(scenarios));
         }

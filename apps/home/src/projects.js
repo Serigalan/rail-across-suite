@@ -78,7 +78,7 @@ function importedProjects(text, fileName = '') {
   let incoming
   try {
     const data = JSON.parse(text)
-    // a file rail-across-1.0 brings its infrastructure as a part (decision 0029, phase 5)
+    // a file rail-across-1.0 brings its infrastructure as a part (decision 0006)
     incoming = parseProjectsPayload(isProjectFile(data) ? fileParts(data).infra : data).projects
   } catch (err) {
     const code = err instanceof PayloadError && err.code === 'unsupported_version' ? 'import_version' : 'import_invalid'
@@ -123,8 +123,7 @@ export function importedFiles(files) {
 }
 
 /**
- * A variant's head as a backup file, the file rail-across-1.0 (decision 0029,
- * phase 5): self-contained, the picture embedded (a data URL, or none)
+ * A variant's head as a backup file, the file rail-across-1.0 (decision 0006): self-contained, the picture embedded (a data URL, or none)
  * instead of its hash on the server, the project's operations beside where
  * given (an operations document, operationsFile).
  */

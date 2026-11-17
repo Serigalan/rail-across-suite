@@ -123,7 +123,7 @@ fn carry(record: &Value, ctx: &Value) -> (Value, Vec<super::remap::Carried>) {
 /// Three-way merge of two states against their common ancestor (`mergeProject`).
 pub fn merge_project(o: &Value) -> Value {
     let (b, m, t) = (primary(&o["base"]), primary(&o["mine"]), primary(&o["theirs"]));
-    // What the three hold, object by object: every collection with ids and every layer's (decision 0028, phase D).
+    // What the three hold, object by object: every collection with ids and every layer's (decision 0006).
     let collections = collections_in(&[&b, &m, &t]);
     let layers = layers_in(&[&b, &m, &t]);
     let remaps_mine: Vec<Value> = o.get("remapsMine").and_then(Value::as_array).cloned().unwrap_or_default();

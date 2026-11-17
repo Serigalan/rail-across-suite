@@ -38,7 +38,7 @@ const NEW_INSULATOR = { trackId: null, station: null, before: null, after: null,
 
 /**
  * Working on the overhead contact line of a variant (electrification 3.0,
- * decision 0029): the rail on the left — the contact wires, the masts, the
+ * decision 0006): the rail on the left — the contact wires, the masts, the
  * section insulators, the check, at its foot undo and redo, the way back and
  * the settings —, the panel of the one chosen, and the plan of the net with
  * the wires in their voltages' colours where they run, and the masts. A stretch

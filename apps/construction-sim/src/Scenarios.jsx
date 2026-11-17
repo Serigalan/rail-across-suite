@@ -39,7 +39,7 @@ const signed = (s) => {
 }
 
 /**
- * The construction scenarios of the Baubetriebs-Sim (decision 0030): a
+ * The construction scenarios of the Baubetriebs-Sim (decision 0014): a
  * project's timetable run on the net of a day with stretches of track closed
  * for a while, trains taken out and diverted by hand. The closures are picked
  * on the plan — a click on a track where the closure begins, one where it

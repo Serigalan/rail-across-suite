@@ -24,10 +24,10 @@ fn is_collection(v: &Value) -> bool {
         .is_some_and(|items| !items.is_empty() && items.iter().all(|o| o.get("id").is_some() || o.get("switchId").is_some()))
 }
 
-/// The collections the records hold, in the order they first come (`collectionsIn`; decision 0028, phase
-/// D): every list of objects with ids at a record's top — "tracks" first —, and every list of the layers a
-/// record carries, by its path ("signalling.signals"). Nothing is listed by hand: what a record holds is
-/// merged and compared object by object.
+/// The collections the records hold, in the order they first come (`collectionsIn`; decision 0006): every
+/// list of objects with ids at a record's top — "tracks" first —, and every list of the layers a record carries,
+/// by its path ("signalling.signals"). Nothing is listed by hand: what a record holds is merged and compared object
+/// by object.
 pub fn collections_in(records: &[&Value]) -> Vec<String> {
     let mut out: Vec<String> = vec!["tracks".into()];
     let mut add = |name: String| {
@@ -198,7 +198,7 @@ pub fn object_label(name: &str, obj: Option<&Value>, tracks_by_id: Option<&Map<S
             or(&["name", "id"])
         }
         "switches" => or(&["name", "label", "switchId"]),
-        // A platform by its track: its station is a point of its own (decision 0028).
+        // A platform by its track: its station is a point of its own (decision 0006).
         "platforms" => match tracks_by_id.and_then(|m| m.get(&js_string(obj.get("trackId")))) {
             Some(t) => object_label("tracks", Some(t), None),
             None => obj.get("id").cloned().unwrap_or(Value::Null),

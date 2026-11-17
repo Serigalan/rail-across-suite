@@ -13,7 +13,7 @@ import { BOUNDARY } from '@rail-across/core/track'
 
 /**
  * Creating elements and track ends (buffer stops, boundaries of the planning
- * area) in one panel — the platforms are the Civil-Tool's (decision 0025): the menu keeps the headings, separated by the gray line, and a tool click opens that
+ * area) in one panel — the platforms are the Civil-Tool's (decision 0008): the menu keeps the headings, separated by the gray line, and a tool click opens that
  * tool's form. The groups share the panel the way the switch panel's tools do
  * — one menu, one back. Connecting to a track end is in the splice panel.
  */

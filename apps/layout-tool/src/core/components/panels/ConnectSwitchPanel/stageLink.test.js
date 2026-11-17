@@ -3,7 +3,7 @@ import { proposedRoles, stageLinkNote } from './stageLink'
 
 const end = (id, lifespan) => ({ track: { id, ...(lifespan ? { lifespan } : {}) }, endpoint: 'END' })
 
-describe('a construction stage connector (decision 0027)', () => {
+describe('a construction stage connector (decision 0007)', () => {
   it('proposes the roles by the tracks\' days: the one going B1, the one coming B2, the one staying A', () => {
     const ends = [end('new', { from: '2028-06-02' }), end('stays'), end('old', { to: '2028-06-01' })]
     const roles = proposedRoles(ends)

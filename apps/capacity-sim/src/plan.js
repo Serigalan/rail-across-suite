@@ -1,7 +1,7 @@
 import { extentsOf } from '@rail-across/timetables'
 
 /**
- * What the schematic plan of a stretch marks (decision 0030, point 1), as
+ * What the schematic plan of a stretch marks (decision 0014), as
  * stretches of track: the conflict areas the trains of the period both hold
  * and the elements that bind the critical chain — pure functions of the
  * analysis and the record.

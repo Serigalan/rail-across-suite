@@ -41,7 +41,7 @@ describe('the stations', () => {
     state = withPlatforms(state, station, ['pf1'], [])
     expect(state.collections.platforms[0].operationalPointId).toBe(station.id)
     expect(stationsOf(coreOf(state)).get(station.id).platforms).toEqual(['pf1'])
-    // Renamed, its platform names it still (decision 0028); taken off, the platform names none.
+    // Renamed, its platform names it still (decision 0006); taken off, the platform names none.
     state = withStation(state, { ...station, name: 'Könnern (Saale)' }, ['pf1'])
     expect(state.collections.platforms[0].operationalPointId).toBe(station.id)
     expect(stationsOf(coreOf(state)).get(station.id)).toMatchObject({ point: { name: 'Könnern (Saale)' }, platforms: ['pf1'] })
@@ -85,7 +85,7 @@ describe('the stations', () => {
     const back = parseProjectsPayload(doc).projects[0]
     expect(back.operationalPoints).toEqual([station])
     expect(back.platforms[0].operationalPointId).toBe(station.id)
-    // The door names every object by a UUID (decision 0029, phase 2): the signal s-a by the one drawn from it.
+    // The door names every object by a UUID (decision 0006): the signal s-a by the one drawn from it.
     expect(back.signalling.collections.signals.find(s => s.id === derivedId('s-a')).operationalPointId).toBe(station.id)
     // Deleting a signal leaves the parts of the core alone.
     expect(deleted(state, 'signals', 's-a').collections.operationalPoints).toEqual([station])

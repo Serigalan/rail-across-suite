@@ -51,7 +51,7 @@ function BandsPage({ trackId, onShow, onExit }) {
  * the alignment fit from a measured axis (AP 12.5). Last the bands of a track,
  * to read its alignment along it at one glance, and the shift values of a
  * track against a reference axis (Paket V). The optimizer and the alignment
- * fit run in the browser, in the optimizer module (decision 0019 of the
+ * fit run in the browser, in the optimizer module (decision 0005 of the
  * suite); a server may put more tools in (`panelTools` of 'check', Paket L).
  */
 export default function CheckPanel({ onShowRulebook, bandsTrackId, onShowBands }) {

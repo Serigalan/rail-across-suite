@@ -87,7 +87,7 @@ pub fn check_signalling(core: &Value, signalling: &Value) -> Value {
 }
 
 /// The same, with the platforms of `civil` beside the core (infra-data-2.0,
-/// decision 0025). The stopping places are the core's; the record keeps them in
+/// decision 0008). The stopping places are the core's; the record keeps them in
 /// its signalling, each naming its platform, and either is read: the
 /// signalling's where it holds them, else the core's, whose platforms name them.
 pub fn check_signalling_on(core: &Value, signalling: &Value, civil: &Value) -> Value {

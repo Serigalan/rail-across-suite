@@ -1,6 +1,6 @@
 name: Release desktop app
 
-# The desktop app as a GitHub release (decision 0021: it takes the place of the local build's zip): pushing a
+# The desktop app as a GitHub release (decision 0003: it takes the place of the local build's zip): pushing a
 # tag rail-across-suite-vX.Y (a version of the suite) or desktop-YYYY-MM-DD[.n] builds the app with the project
 # server in its process (crates/desktop) for Windows and attaches it to a release of that tag — the portable
 # package only, a ZIP of one folder (crates/desktop/portable/), no installer. It is built without mdb-export: the

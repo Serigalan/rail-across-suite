@@ -3,9 +3,9 @@
 
 //! The record the tools work on and the infra-data-2.0 document it is kept
 //! as, both ways, nothing lost (`coreFormat.js`): the domain `core` and the
-//! layers on it — `civil`, `signalling`, `electrification` (decision 0025) —,
+//! layers on it — `civil`, `signalling`, `electrification` (decision 0008) —,
 //! locations as one value each, a lifespan and an operational point as the
-//! object states them (decision 0028), named runs of tracks as the core's
+//! object states them (decision 0006), named runs of tracks as the core's
 //! `trackPaths`, the bulk point arrays as blobs named by their hash. The record keeps the platforms at its top and the
 //! stopping places in its signalling, each naming its platform; the document
 //! has the stopping places in the core and the platforms, naming them, in civil.
@@ -54,7 +54,7 @@ const COLLECTIONS: &[&str] = &[
     "retainingWalls",
     "noiseBarriers",
 ];
-/// The civil structures, kept in the record as the document has them (decision 0025).
+/// The civil structures, kept in the record as the document has them (decision 0008).
 pub const STRUCTURES: &[&str] = &["bridges", "retainingWalls", "noiseBarriers"];
 const ALWAYS: &[&str] = &["tracks", "switches", "platforms"];
 
@@ -281,7 +281,7 @@ pub fn operational_register(project_id: Option<&Value>, tracks: &[Value], platfo
 
 /// A record whose tracks and platforms state their station as text — what an
 /// importer reads from a file that knows no operational points, or a record of
-/// before decision 0028 — with the points those texts make (`withStationPoints`):
+/// before decision 0006 — with the points those texts make (`withStationPoints`):
 /// `operationalPoints` the register, each track and platform its `operationalPointId`,
 /// the texts gone — one that states its station as no text names none. The points
 /// the record has are kept, and a text names the one of its name and codes. A record
@@ -355,7 +355,7 @@ pub fn record_to_document(record: &Value, schema_hashes: &HashMap<&str, String>)
     let (mut domains, mut blobs) = record_domains(record, schema_hashes)?;
     km_lines_to_document(&mut domains, &mut blobs);
     // A record of before — a working copy, a test's fixture — may still hold the words and names of before or an id
-    // that is no UUID: the door takes them on the way in (decision 0029, phase 6).
+    // that is no UUID: the door takes them on the way in (decision 0006).
     crate::words::forward(&mut domains);
     crate::ids::forward(&mut domains);
     sorted_collections(&mut domains);
@@ -369,7 +369,7 @@ pub fn record_to_document(record: &Value, schema_hashes: &HashMap<&str, String>)
 }
 
 /// The km lines of a record's domains as core 4.0 states them: in one plane, their runs' points as blobs
-/// (decision 0029, phase 2); one without a point is no line.
+/// (decision 0006); one without a point is no line.
 pub(crate) fn km_lines_to_document(domains: &mut Object, blobs: &mut Object) {
     let Some(Value::Array(lines)) = domains
         .get_mut("core")
@@ -473,7 +473,7 @@ pub fn record_domains(record: &Value, schema_hashes: &HashMap<&str, String>) -> 
         .collect();
 
     // The stopping places are the core's, the platforms (civil) naming those at them, as in the record
-    // (decision 0028).
+    // (decision 0006).
     let mut signalling = get(record, "signalling").map(obj);
     let mut sig_cols = signalling
         .as_ref()

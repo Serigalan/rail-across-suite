@@ -27,7 +27,7 @@ points right to 0.01 ‰; angles to 10⁻⁹° are below a micrometre over 50 km
 place (`NODE_TOL`, `packages/core/src/geometry/tolerances.js`); positions are kept ten times finer, so a chain that
 joined still joins when read back. An import closes what a file misses by its quantisation, up to 2 mm, onto the points the file
 states (`importSnap.js` of the Layout-Tool); projects kept while the same place was 1 mm were closed once up to that
-millimetre by the server ([decision 0020](decisions/0020-everything-in-rust.md)).
+millimetre by the server ([decision 0005](decisions/0005-rust-computes-javascript-shows.md)).
 
 ## Tracks and locations
 

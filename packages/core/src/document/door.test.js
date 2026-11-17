@@ -26,12 +26,12 @@ const station = (extra = {}) => record({
 /** The record a record comes back as, through its document. */
 const roundTrip = (r) => fromDocument(JSON.parse(JSON.stringify(toDocument(r, { carrySchemas: true }))))
 
-// The schemas core, layout and signalling 1.0 had last, before infra-data-2.0 (decision 0025).
+// The schemas core, layout and signalling 1.0 had last, before infra-data-2.0 (decision 0008).
 const CORE_1_0 = 'sha256:14ac2357f8675371ff06e4f874b7b70ae3fbaa697127bf44f71c50f6382578b4'
 const LAYOUT_1_0 = 'sha256:b2280dcf6cfe779e148b6c402ac46eb4ff1e8d96b55e6e3abcb370ef48ff1f1b'
 const SIGNALLING_1_0 = 'sha256:b28ada7513c555fa4696ff2b41c73bb7565143854c08e2e9bfb067e99018910c'
 
-/** A 2.0 document as infra-data 1.0 wrote the same state: decision 0025 the other way. */
+/** A 2.0 document as infra-data 1.0 wrote the same state: decision 0008 the other way. */
 function oneZero(doc) {
   const d = structuredClone(doc)
   d.version = '1.0'
@@ -77,7 +77,7 @@ describe('a record as an infra-data-2.0 document', () => {
     expect(toDocument(record()).schemas).toBeUndefined()
   })
 
-  it('keeps a lifespan as the record states it, by day or open, and no register of stages (decision 0028)', () => {
+  it('keeps a lifespan as the record states it, by day or open, and no register of stages (decision 0007)', () => {
     const lives = [undefined, { from: '2027-05-01' }, { to: 'open' }, { from: 'open' }, { from: '2027-05-01', to: '2031-12-12' }]
     const r = record({ tracks: lives.map((lifespan, i) => track(`t${i}`, lifespan ? { lifespan } : {})) })
     const doc = toDocument(r)
@@ -105,7 +105,7 @@ describe('a record as an infra-data-2.0 document', () => {
     expect(roundTrip(r)).toEqual(withUuids(r))
   })
 
-  it('keeps the stations as the record states them: points with ids, named by tracks and platforms (decision 0028)', () => {
+  it('keeps the stations as the record states them: points with ids, named by tracks and platforms (decision 0006)', () => {
     const operationalPoints = [{ id: 'op-k', name: 'Könnern', rl100: 'LKO', uic: '8010195' }, { id: 'op-w', name: 'Wallwitz' }]
     const r = record({
       tracks: [track('a', { operationalPointId: 'op-k' }), track('b', { operationalPointId: 'op-k' }), track('c')],

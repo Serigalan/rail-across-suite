@@ -2,7 +2,7 @@ import { pathLength } from '@rail-across/running-times'
 import { DISPATCH, occupancy } from './occupancy.js'
 
 /**
- * A timetable run in a construction scenario (decision 0030): on the net of a
+ * A timetable run in a construction scenario (decision 0014): on the net of a
  * day, with the scenario's stretches of track closed while they hold, its
  * trains taken out left out, its trains diverted by hand on their points. A
  * train the closures touch is diverted the shortest way around them; one with

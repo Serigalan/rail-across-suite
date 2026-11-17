@@ -318,7 +318,7 @@ describe.skipIf(!hasPek)('mergeProject — validation (rules 6 and 7)', () => {
   })
 })
 
-describe('what the records hold, object by object (decision 0028, phase D)', () => {
+describe('what the records hold, object by object (decision 0006)', () => {
   const P = (x) => ({ easting: 500000 + x, northing: 5600000, zone: 25832 })
   const pieces = (...xs) => xs.slice(1).map((x, i) => straightElement(P(xs[i]), P(x)))
   const straight = (id, x0, x1) => ({ id, name: id, epsg: 25832, elements: pieces(x0, x1) })

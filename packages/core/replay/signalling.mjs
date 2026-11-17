@@ -1,7 +1,7 @@
 // The vectors of the signalling domain's content (crates/signalling): the
 // catalogue's lookups, overlaps and the speed a turnout allows a run, recorded
 // from the JavaScript the page keeps. The check's and the track sections'
-// vectors are frozen: their JavaScript is gone (decision 0020, step 10).
+// vectors are frozen: their JavaScript is gone (decision 0005).
 import * as S from '../src/signalling/index.js'
 import { ksStation } from '../test/signallingFixture.js'
 import { frozen, rec } from './record.mjs'

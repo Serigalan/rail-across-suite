@@ -1,6 +1,6 @@
 // merge — comparing and merging two states of a project (three-way merge,
 // id remapping), and carrying a domain's locations across a change of the net.
-// Computed by the core's Rust module (decision 0020, step 10: crates/commands'
+// Computed by the core's Rust module (decision 0005: crates/commands'
 // merge), called with the arguments as the JavaScript took them. Drawing the
 // comparison on the map is the app's (compare).
 //
@@ -31,7 +31,7 @@ export const resolve = viaRust('merge.resolve')
 
 /** The domains a record carries for others, by the name it holds them under. */
 export const CARRIED_DOMAINS = ['signalling', 'electrification']
-/** The civil structures the record keeps at its top, carried as a domain's locations are (decision 0025). */
+/** The civil structures the record keeps at its top, carried as a domain's locations are (decision 0008). */
 export const CARRIED_STRUCTURES = ['bridges', 'retainingWalls', 'noiseBarriers']
 
 const carryAfterWriteRust = viaRust('merge.carryAfterWrite')

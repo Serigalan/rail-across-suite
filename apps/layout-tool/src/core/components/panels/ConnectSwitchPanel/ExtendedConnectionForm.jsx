@@ -45,7 +45,7 @@ const keepsSides = (mids, sol) => mids.every((m, i) => m.type !== 'arc' || !m.si
   || Math.sign(-(sol.pieces[i]?.kappa ?? 0)) === m.side)
 
 /**
- * The extended switch connection (decision 0018): two turnouts of any form
+ * The extended switch connection (decision 0005): two turnouts of any form
  * of the catalogue, each its own — laid into its track, so in a curve an
  * inner- or outer-bent turnout —, and one to three elements between their
  * branches. Its search (crossover/, in Rust as WebAssembly) moves both toes

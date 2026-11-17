@@ -2,7 +2,7 @@ import { lifespanWithStatus, trackLength, trackStatus, VOLTAGES, wireStretches, 
 
 /**
  * The layer `electrification` as the tool edits it (electrification 3.0,
- * decision 0029, phase 3): pure functions from one state of the domain to the
+ * decision 0006): pure functions from one state of the domain to the
  * next. Masts stand beside a track; the suspension points on them hold a
  * contact wire over a track; section insulators part two wires, two circuits,
  * on a track. A wire carries a voltage — named as OSRD names a traction mode,
@@ -44,7 +44,7 @@ export function recordOf(record, domain) {
   return { ...record, electrification: empty ? undefined : domain }
 }
 
-// A UUID, as every id of the record (decision 0029, phase 6) — drawn by hand where the browser draws none.
+// A UUID, as every id of the record (decision 0006) — drawn by hand where the browser draws none.
 export const newId = () => (globalThis.crypto?.randomUUID?.() ?? '10000000-1000-4000-8000-100000000000'.replace(/[018]/g, c => (c ^ (Math.random() * 16) >> (c / 4)).toString(16)))
 
 const station = (trackId, at, extra = {}) => ({ anchor: 'station', trackId, station: at, ...extra })
@@ -114,7 +114,7 @@ export function withoutMast(domain, id) {
 /** The domain without one object of a collection, nothing else. */
 export const without = (domain, name, id) => withList(domain, name, list(domain, name).filter(o => o.id !== id))
 
-/** The planning status of an object, from its lifespan (decision 0028). */
+/** The planning status of an object, from its lifespan (decision 0007). */
 export const statusOf = (obj) => trackStatus(obj)
 
 /** The object with that planning status: new or removal with the day open where it states none, the days it states kept. */

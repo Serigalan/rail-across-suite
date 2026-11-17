@@ -302,7 +302,7 @@ function rebuildSwitch(sw, trackById) {
 const LIFESPAN_DAY = /^(\d{4}-\d{2}-\d{2}|open)$/
 
 /**
- * The lifespan the suite's extension states (decision 0028): its days as they
+ * The lifespan the suite's extension states (decision 0007): its days as they
  * are, a day or "open" each; a file of before states a planning status
  * instead, new or removal, which is the day open.
  */

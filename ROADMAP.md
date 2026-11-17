@@ -3,7 +3,7 @@
 Rail-Across-Suite is built around one shared data foundation, the **Rail-Data-Core**. Every module reads and
 writes it; none keeps a private model of the railway. The roadmap therefore starts with the core and adds
 modules only on top of it. The Open-Layout-Tool is the existing module and the source of the core's first
-version: its project format (oltjson-1.1, replaced by infra-data-1.0 with decision 0021) already held the track network.
+version: its project format (oltjson-1.1, replaced by infra-data-1.0 with decision 0006) already held the track network.
 
 The phases are ordered by dependency, not by date. A phase is done when its exit criteria hold.
 
@@ -20,16 +20,16 @@ Goal: agree on how decisions are made and bring the code into one repository bef
 
 Done:
 
-- One repository for core, modules and services ([decision 0001](docs/decisions/0001-one-repository.md));
+- One repository for core, modules and services ([decision 0001](docs/decisions/0001-one-repository-one-licence.md));
   directory layout in place.
 - `CODEOWNERS` (`.github/CODEOWNERS`); its review becomes required for `main` once a second maintainer is named.
-- Licences: code under Apache-2.0, documentation under CC BY 4.0 ([decision 0002](docs/decisions/0002-licences.md));
-  since then everything under LGPL-3.0-only, OSRD's licence ([decision 0015](docs/decisions/0015-lgpl.md)).
+- Licences: code under Apache-2.0, documentation under CC BY 4.0 ([decision 0001](docs/decisions/0001-one-repository-one-licence.md));
+  since then everything under LGPL-3.0-only, OSRD's licence ([decision 0001](docs/decisions/0001-one-repository-one-licence.md)).
 - [Contribution guide](CONTRIBUTING.md) with sign-off after the DCO; decision records (`docs/decisions/`).
 - [Glossary](docs/glossary.md) German ↔ English and [conventions](docs/conventions.md) (units, signs,
   coordinates, stations, precision), taken over from OLT.
 - A check that apps import packages and never each other (`npm run check`, run by CI).
-- Project named Rail-Across-Suite ([decision 0007](docs/decisions/0007-project-name.md)); the repository renamed
+- Project named Rail-Across-Suite ([decision 0002](docs/decisions/0002-project-name.md)); the repository renamed
   to `rail-across-suite` on GitHub.
 - [Data model](docs/data-model.md) reviewed by its code owner and accepted; the questions left open name the phase
   that decides them.
@@ -38,7 +38,7 @@ Done:
   service to `services/optimizer/`; CI and deployment scripts on the new paths. The toolkit gets a new server of
   its own; the running server of the Open-Layout-Tool is not migrated.
 - Large binary data out of the history, fetched by version and SHA-256
-  ([decision 0008](docs/decisions/0008-data-outside-history.md)): the NTv2 grids as release assets; the
+  ([decision 0001](docs/decisions/0001-one-repository-one-licence.md)): the NTv2 grids as release assets; the
   kilometrage tiles not published at all.
 - Third-party material listed in [THIRD-PARTY.md](THIRD-PARTY.md): the NTv2 grids with their licences; the
   kilometrage data outside the repository and every published build; the guideline is the project's own
@@ -47,7 +47,7 @@ Done:
 Open:
 
 - Upload the NTv2 grids as the assets of release `data-1` (until then they come from cdn.proj.org).
-- The name ([decision 0007](docs/decisions/0007-project-name.md)): *Across* checked in the registers of the DPMA
+- The name ([decision 0002](docs/decisions/0002-project-name.md)): *Across* checked in the registers of the DPMA
   and the EUIPO before the first release.
 
 **Exit:** the data model is reviewed, and every question left open names the phase that decides it; the
@@ -57,7 +57,7 @@ Open-Layout-Tool builds, tests and deploys from this repository.
 
 Goal: the core exists as a package of its own and OLT runs on it **without any change in behaviour** — what it
 keeps and exchanges is infra-data-1.0 (first called core 1.0), already in the data model's shape
-([decision 0009](docs/decisions/0009-core-1-0-in-the-data-model.md)).
+([decision 0006](docs/decisions/0006-the-format-rail-across-1.0.md)).
 
 Done:
 
@@ -86,13 +86,13 @@ Done:
   (`packages/core/types/document.d.ts`).
 - The one door: a document is checked whole (envelope, versions, schema hashes, every object against its schema,
   blob hashes) on the way in and on the way out. oltjson-1.1 was migrated at the door — the first step of the
-  migration chain —, losslessly both ways (the PEK data set was a test); since decision 0021 it is refused, and
+  migration chain —, losslessly both ways (the PEK data set was a test); since decision 0006 it is refused, and
   the format is called infra-data-1.0. Ids stay on tracks, not on their elements
-  ([decision 0004](docs/decisions/0004-ids-on-tracks.md)). Files and the project server hold infra-data-1.0 documents;
+  ([decision 0006](docs/decisions/0006-the-format-rail-across-1.0.md)). Files and the project server hold infra-data-1.0 documents;
   the server migrated its oltjson-1.1 revisions once (data step `0021-infra-data`). The app keeps its record as the
-  model it works on until phase C of decision 0021 moves the project into the core's module.
+  model it works on until phase C of decision 0005 moves the project into the core's module.
 - The shared vectors in `schemas/vectors/`: the door, canonical JSON, hashes and manifest, which the JavaScript core
-  and its Rust crates are held to (a Python core held to them too was taken out with decision 0020, step 10: nothing
+  and its Rust crates are held to (a Python core held to them too was taken out with decision 0005: nothing
   used it).
 
 Open:
@@ -107,7 +107,7 @@ pass. — Reached.
 
 Goal: the core can carry what the planned modules need, before they are written.
 
-The format has this phase's shape since its first version (decision 0009): domains, location types, lifespans, the
+The format has this phase's shape since its first version (decision 0006): domains, location types, lifespans, the
 register, canonical JSON and the manifest exist as data. What this phase adds is the behaviour behind them, and
 the app working on the document instead of its record.
 
@@ -127,25 +127,25 @@ the app working on the document instead of its record.
 - **Construction stages** in the core: the ordered stage list, lifespans `{ from, to }` on every object, the
   planning status derived from them, a stage as a view with every check run per stage, replacements naming
   their predecessor, containment as a check, and two-end connectors (`link`) also within one plane for parts
-  of a track that are rebuilt ([decision 0003](docs/decisions/0003-construction-stages.md)). The stage list and
+  of a track that are rebuilt ([decision 0007](docs/decisions/0007-lifespans-by-day.md)). The stage list and
   lifespans are in the format since its first version (oltjson-1.1's status converted when it was migrated: new =
   from the final stage, removal = up to it); the app holds and edits stages of a project's own.
-  *Done* ([decision 0027](docs/decisions/0027-construction-stages-by-their-days.md)): the stages by their days —
+  *Done* ([decision 0007](docs/decisions/0007-lifespans-by-day.md)): the stages by their days —
   a track's, switch's, platform's or end mark's first and last day in service, typed for a track in the
   Layout-Tool's track editor —, a record at a stage in the core, the Layout-Tool's map at a stage chosen beside
   the working copy's bar, the construction stage connector of three ends. *Done* ([decision
-  0028](docs/decisions/0028-one-model-lifespans-by-day.md), phase A): no stage list at all — a lifespan states
+  0007](docs/decisions/0007-lifespans-by-day.md)): no stage list at all — a lifespan states
   days, `"open"` where the day is not known yet, and the states of a project are worked out of the lifespans,
   the civil structures and the layers' objects among them.
 - The operational point register (in the format since its first version, drawn from the station texts) edited as such.
-  *Done* ([decision 0028](docs/decisions/0028-one-model-lifespans-by-day.md), phase B): the record holds the points
+  *Done* ([decision 0006](docs/decisions/0006-the-format-rail-across-1.0.md)): the record holds the points
   as objects with ids, a track and a platform name theirs; nothing is drawn from texts any more but what an
   import reads.
-- References checked at the door. *Done* ([decision 0028](docs/decisions/0028-one-model-lifespans-by-day.md),
-  phase C): every reference the schemas mark names an object; what a document of before named and lacked is cut
+- References checked at the door. *Done* ([decision 0006](docs/decisions/0006-the-format-rail-across-1.0.md)):
+  every reference the schemas mark names an object; what a document of before named and lacked is cut
   as a deletion would have cut it, and the Layout-Tool's store cuts the same after a write.
-- Merging over every collection. *Done* ([decision 0028](docs/decisions/0028-one-model-lifespans-by-day.md),
-  phase D): no list kept by hand — the layers' objects and the civil structures merge object by object, and
+- Merging over every collection. *Done* ([decision 0006](docs/decisions/0006-the-format-rail-across-1.0.md)):
+  no list kept by hand — the layers' objects and the civil structures merge object by object, and
   every collection that holds locations is carried after a track is split or joined.
 - Domains with ownership: `core` (net, platforms, end marks, structures, operational point register, designed
   kilometrage) and discipline domains that store references only into the core.
@@ -154,7 +154,7 @@ the app working on the document instead of its record.
   (`.railacross`) with its `mimetype` entry.
 - Server: rights per domain; a domain the author may not write may only change by carrying or by orphans
   moved to their plane position.
-- **Sketches** ([decision 0005](docs/decisions/0005-sketch-mode.md)): variants with a scope domain that hold only
+- **Sketches** ([decision 0008](docs/decisions/0008-core-and-layers.md)): variants with a scope domain that hold only
   the core and that domain; the takeover as a merge limited to the scope, with carrying through the id logs and
   orphans in the plane for the sketch's own tracks; the server's refusal to merge a sketch back; orphans as
   warnings, attached again by their plane position.
@@ -172,14 +172,14 @@ taken over with its signals carried or orphaned in the plane, and its crossover 
 
 Goal: prove the core with a second real module.
 
-- **Catenary-Tool** (`apps/catenary-tool/`, [decision 0025](docs/decisions/0025-layers-on-the-core.md)): the layer
+- **Catenary-Tool** (`apps/catenary-tool/`, [decision 0008](docs/decisions/0008-core-and-layers.md)): the layer
   `electrification` — first the electrified ranges of the tracks and their systems, then masts, cantilevers,
   contact wire height and stagger, tension and feeding sections — located objects and ranges along the track,
   reading geometry, cant and heights from the core. *Done:* the app on the variant's working copy, the electrified
   ranges planned on the map — a track and two stations typed or picked, a system, a planning status —, their check
   (off the track, overlapping, two systems meeting without a section), how much of the net is under wire; the ranges
   carried over every track edit (R4); written into RailJSON. *Next:* neutral sections, masts and cantilevers.
-- **Civil-Tool** (the Layout-Tool's app under `/civil/`, decision 0025): the layer `civil` — platforms, measured
+- **Civil-Tool** (the Layout-Tool's app under `/civil/`, decision 0008): the layer `civil` — platforms, measured
   axes and reference axes from the point clouds, the plan header, the project picture —, taken out of the
   Layout-Tool, which keeps the alignment alone. *Done:* one build, the tool by its path, a bridge as its mark; the
   platforms, each making the stopping place at it a passenger stop in the core or writing one, the cross sections
@@ -193,11 +193,11 @@ Goal: prove the core with a second real module.
   *Done:* the domain `signalling` 1.0 after PlanPro 1.10 with overlaps and flank protection, checked against the
   PlanPro plan P-Hausen; the catalogue of all Ril 301 aspects with the Ks and shunting signal kinds as logical signals after OSRD, and the balises and magnets of PZB and ETCS, in German and English; places and their logical signals, the speed signalled per route at the start signal (the design speed the core's), overlaps measured from speed and gradient (a draft of Ril 819.0202), platforms as station boundaries, the domain checked against OSRD's RailJSON; one working copy per variant in the browser for both tools; its content check
   with track sections derived over the net; the core carrying its locations on every track edit and merge (R4,
-  R7); writing PlanPro plans, valid against the XSD 1.10.0.3 and packed as `.planpro`, from the infra-data document (an import was tried and went: a plan holds too little of a project, decision 0022); the server checking the domain at check-in; the Signalling-Tool's first version,
+  R7); writing PlanPro plans, valid against the XSD 1.10.0.3 and packed as `.planpro`, from the infra-data document (an import was tried and went: a plan holds too little of a project, decision 0010); the server checking the domain at check-in; the Signalling-Tool's first version,
   setting objects as OSRD's editor does (snapped to a track, shown before the click) and drawing them beside their track,
   its panels with menus and pages as the Layout-Tool's — creating signals, train detection and balises apart from editing them in one overview
-  ([decision 0011](docs/decisions/0011-signalling-domain.md)) on the suite's look as a library, `@rail-across/ui`
-  ([decision 0012](docs/decisions/0012-ui-library.md)). *Next:* the values of Ril 819 and Ril 483, level
+  ([decision 0009](docs/decisions/0009-signalling.md)) on the suite's look as a library, `@rail-across/ui`
+  ([decision 0004](docs/decisions/0004-ui-library.md)). *Next:* the values of Ril 819 and Ril 483, level
   crossings, block and the other parts of a station plan; crossings and slips in the PlanPro export.
 
 **Signalling goes first**: it needs locations, ranges, functional objects and topology, and so tests the
@@ -219,7 +219,7 @@ Goal: a project's operation on its infrastructure — timetables, their running 
 and a station carry —, computed on the variant and its construction stage as they are, with no second model of the
 railway.
 
-- **Fahrplan-Editor** of the Fahrplan-Sim (`apps/timetable-editor/`, [decision 0016](docs/decisions/0016-timetables-of-a-project.md)):
+- **Fahrplan-Editor** of the Fahrplan-Sim (`apps/timetable-editor/`, [decision 0012](docs/decisions/0012-operations-timetables-and-vehicles.md)):
   *done:* a project's timetables on the server, laid on any of its variants; trains with number, kind, vehicle,
   departure and margin that begin and end at a station (the layout's station tracks) and stop at or pass stations
   and halts on the way, a departure waited for at a stop; their times from the running time simulation, a row for
@@ -229,18 +229,18 @@ railway.
   lets a train wait or take another route, drawn in the graphical timetable and played on the map. *Next:* times
   typed in and checked against the running times, connections and turnarounds (O4 below), the exchange with
   OSRD's timetables.
-- **Running times** in the Fahrplan-Sim (*Fahrzeit rechnen* of the Fahrplan-Editor, `apps/timetable-editor/src/runtime/` — once `apps/simulation-tool/` —, [decision 0013](docs/decisions/0013-running-times-in-rust.md)):
-  *done:* OSRD's envelope simulation ported to Rust (`sim/`, [decision 0015](docs/decisions/0015-lgpl.md)) and
+- **Running times** in the Fahrplan-Sim (*Fahrzeit rechnen* of the Fahrplan-Editor, `apps/timetable-editor/src/runtime/` — once `apps/simulation-tool/` —, [decision 0011](docs/decisions/0011-running-times.md)):
+  *done:* OSRD's envelope simulation ported to Rust (`sim/`, [decision 0001](docs/decisions/0001-one-repository-one-licence.md)) and
   held to OSRD's own test cases; a train over the net of a variant — its path over switches, the grades of the
   heights and curves (arcs and transitions, after Röckl), the design speeds and the speeds the signals signal, stops at signals, platforms and points
   on the map, a margin linear or after MARECO —, run in the browser as WebAssembly on the working copy; the
   speed and the time over the distance, the timetable of its stops, the run played on the map; the vehicles as
   OSRD's RailJSON rolling stock in a catalogue of the suite, edited in the Fahrzeug-Editor
-  (`apps/vehicle-editor/`), OSRD's example vehicles built in ([decision 0014](docs/decisions/0014-vehicles-in-osrds-form.md)). *Next:* the electrification of the net for
+  (`apps/vehicle-editor/`), OSRD's example vehicles built in ([decision 0012](docs/decisions/0012-operations-timetables-and-vehicles.md)). *Next:* the electrification of the net for
   the traction mode (infra-data-2.0 below), a train's formation in place of one vehicle (operations-1.0 below).
 - **Capacity simulation** — the Kapazitäts-Sim of the start page, an app of its own (`apps/capacity-sim/`,
-  [decision 0023](docs/decisions/0023-capacity-simulation-of-our-own.md)): the suite's own, on the running and
-  blocking times above; OSRD run as a service (decision 0006) went. *Next:* the steps K0 to K3 below, and the two
+  [decision 0013](docs/decisions/0013-capacity.md)): the suite's own, on the running and
+  blocking times above; OSRD run as a service (decision 0013) went. *Next:* the steps K0 to K3 below, and the two
   formats they need — operations-1.0 for what is the operation's, infra-data-2.0 for what is the railway's.
 
 ### What the capacity simulation reads, and what it lacks
@@ -260,7 +260,7 @@ railway.
 | what a study assumes: period, stretches, bounds, delays, runs | none | operations-1.0 |
 
 Timetables and vehicles are no part of an infra-data document, and stay none: a timetable is a project's, laid on
-any of its variants (decision 0016), and a result is derived, never stored (data model, S-R6).
+any of its variants (decision 0012), and a result is derived, never stored (data model, S-R6).
 
 ### Capacity simulation: K0 to K3
 
@@ -313,7 +313,7 @@ Each step answers a question of its own and is of use without the next.
   **K3a:** the chain from a timetable to its dispatched blocking times — the way over the net, the request to the
   simulation, the run, the occupancy; under 2 000 lines of JavaScript in `packages/running-times` and
   `packages/timetables` — in Rust, held to vectors frozen from the JavaScript; a measurement first, of what a run
-  costs and where it must run (decision 0021, point 6).
+  costs and where it must run (decision 0005).
   **K3b:** a study as a job of the server: its runs from a seed, the same seed the same figures.
   *Done when* a study without delays gives the timetable itself, and a study repeated gives what it gave.
 
@@ -346,7 +346,7 @@ on a variant, and one that finds nothing there is a finding at its train, not a 
 The document is the whole of a project's operations — what is exported, imported and hashed for the caches — and
 is kept in **revisions, as a variant's state is**: immutable, by hash, with a history and the comparison of two
 revisions. A timetable saved on its own makes a new revision of the operations; a save on a stale revision is
-refused, as it is today. This changes the counter per timetable of decision 0016; a record of its own says so
+refused, as it is today. This changes the counter per timetable of decision 0012; a record of its own says so
 when O2 is built.
 
 **A train pins its vehicles**: a formation names each by its key in the catalogue and its hash, and the document
@@ -367,7 +367,7 @@ the same key with another content takes it under its hash, beside the catalogue'
   by hand (`timetable_fault`); a `rail-across-timetables` 1.0 file still read, and turned on its way in; export
   and import as an operations file with the vehicles its trains run with. *Done when* every timetable of the
   server opens as it was, and a project exported here runs on another server with the same times.
-  *Done* ([decision 0026](docs/decisions/0026-operations-in-revisions.md)): the server keeps a project's operations
+  *Done* ([decision 0012](docs/decisions/0012-operations-timetables-and-vehicles.md)): the server keeps a project's operations
   in revisions (`operations_revision`), the timetables' API reading the head and writing revisions, a save on an
   older revision taken where its timetable is unchanged; the door in place of the checks by hand; data step
   `0026-operations`; the history and each revision's document under `/api/projects/<id>/operations`; the export an
@@ -385,7 +385,7 @@ the same key with another content takes it under its hash, beside the catalogue'
 
 ### infra-data-2.0
 
-The layers of [decision 0025](docs/decisions/0025-layers-on-the-core.md) and what the simulation needs of the
+The layers of [decision 0008](docs/decisions/0008-core-and-layers.md) and what the simulation needs of the
 railway itself, in the infrastructure's format. Planned as 1.1; it is 2.0 because the core and signalling change
 in ways a reader of 1.0 cannot leave unread (`schemas/README.md`). All of it in one version, with one step at the
 door (S-R10): an infra-data 1.0 document reads in as 2.0 with everything it held.
@@ -396,7 +396,7 @@ major one where any domain takes a major one. infra-data-2.0 is `core` 2.0, `sig
 
 | Domain | Change | For |
 |---|---|---|
-| `core` 2.0 | `platforms` leave it, for `civil`; `trackPaths` from `layout` (the Layout-Tool's runs), `stoppingPlaces` from `signalling`, written by the Signalling-Tool ([decision 0024](docs/decisions/0024-every-module-writes-the-core.md)), with `passengerStop` where the Civil-Tool puts a platform at one | the core is the alignment and what every layer places things by |
+| `core` 2.0 | `platforms` leave it, for `civil`; `trackPaths` from `layout` (the Layout-Tool's runs), `stoppingPlaces` from `signalling`, written by the Signalling-Tool ([decision 0008](docs/decisions/0008-core-and-layers.md)), with `passengerStop` where the Civil-Tool puts a platform at one | the core is the alignment and what every layer places things by |
 | `core` 2.0 | `endMarks[].headway`: how close trains follow at a planning boundary | trains entering from a net that is not in the model |
 | `civil` 1.0, new | what `layout` 1.0 held — `axisSurveys`, `referenceAxes`, the plan header, the project picture, the RailJSON objects an import brought along — and the `platforms`, each naming the stopping places at it (`stoppingPlaceIds`) | the Civil-Tool's; a platform put makes the stopping place at it a passenger stop (`passengerStop`, core), or writes one |
 | `electrification` 1.0, new | `electrifications`: a range of a track, its system, a lifespan | the traction mode along a train's way; where there is none, no wire — the Catenary-Tool's |
@@ -441,7 +441,7 @@ Signalling-Tool's next, phase 3), neutral sections (with the catenary), anything
 
 ### Order
 
-1. **I1, I2** — the layers of decision 0025 on infra-data-2.0, with the Civil-Tool and the Catenary-Tool. *Done*,
+1. **I1, I2** — the layers of decision 0008 on infra-data-2.0, with the Civil-Tool and the Catenary-Tool. *Done*,
    but the train protection's editor.
 2. **K0** — the blocking time as the format gives it; every later figure rests on it. *Done*, but the operation's
    sight time and reference cases B and C.
@@ -468,12 +468,12 @@ are the reference cases' where there is one.
 ## Phase 5 — Construction simulation
 
 Construction stages and lifespans are part of the core from phase 2
-([decision 0003](docs/decisions/0003-construction-stages.md)); this phase builds on them.
+([decision 0007](docs/decisions/0007-lifespans-by-day.md)); this phase builds on them.
 
 *Begun:* the Construction-Sim (`apps/construction-sim/`, `/construction/`, the start page's Baubetriebs-Sim): a
 variant's net stage by stage — the existing state, every day something is put into or taken out of service,
 the final state —, what comes into service with each and what leaves it, the stage connectors
-([decision 0027](docs/decisions/0027-construction-stages-by-their-days.md)).
+([decision 0007](docs/decisions/0007-lifespans-by-day.md)).
 
 - `construction` domain: closures, temporary speed restrictions and the tracks in operation per stage.
 - The stages' periods and the work between two stages — what ends and begins there — as the base of the
@@ -488,7 +488,7 @@ the final state —, what comes into service with each and what leaves it, the s
 | Exchange | RailJSON, railML 3, IFC 4.3, PlanPro, LandXML, Verm.ESN — translations at the edge, never the working format |
 | Rules | rule and form catalogues as data (as OLT's `constraints/`), shared by JavaScript and Rust |
 | Tests | chain invariants, shared vectors JS/Rust, real data sets, architecture checks for layers and domains |
-| Sketch mode | every app opens an infrastructure as a sketch of its own domain; the way back is the takeover ([decision 0005](docs/decisions/0005-sketch-mode.md)) |
+| Sketch mode | every app opens an infrastructure as a sketch of its own domain; the way back is the takeover ([decision 0008](docs/decisions/0008-core-and-layers.md)) |
 | Documentation | one page per core module and domain, with its decisions |
 
 See [docs/data-model.md](docs/data-model.md) for how the data is structured and stored.

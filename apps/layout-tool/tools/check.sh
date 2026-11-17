@@ -2,7 +2,7 @@
 # Everything CI runs (.github/workflows/ci.yml), locally: lint, dead code (knip), the modules of
 # src/core/utils, the docs, the unit and server tests, the build — and, where
 # cargo is found, the Rust modules: the crossover search and the optimizer with the shared
-# vectors and the cases they were held to (decisions 0018, 0019).
+# vectors and the cases they were held to (decision 0005).
 #
 #   npm run check            all of it
 #   npm run check -- --quick without the Rust modules' tests in release mode (≈ 1 min)

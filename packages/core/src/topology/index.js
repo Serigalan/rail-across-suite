@@ -1,6 +1,6 @@
 // topology — the diagram of the topological connections: graph, lanes along
 // the lines, label placement. Computed by the core's Rust module (decision
-// 0020, step 10: crates/track's topology), called with the arguments as the
+// 0005: crates/track's topology), called with the arguments as the
 // JavaScript took them; the Maps it answered with are given back as Maps.
 //
 // This file is the module's public face: code outside packages/core/src/topology/

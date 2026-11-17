@@ -3,7 +3,7 @@
 Every module of Rail-Across-Suite looks the same because its pages are made of the same parts. This package
 holds them: the colours and sizes once (`ui.css`, light and dark), and the React components every module's
 pages use. Its look is the Layout-Tool's — the icon rail in the primary colour, the white panel beside it, the
-buttons, fields and dialogs of its pages ([decision 0012](../../docs/decisions/0012-ui-library.md)).
+buttons, fields and dialogs of its pages ([decision 0004](../../docs/decisions/0004-ui-library.md)).
 
 ```js
 import '@rail-across/ui/ui.css'            // once, at the app's entry, before the app's own styles

@@ -2,12 +2,12 @@ import { formatClock } from '@rail-across/timetables'
 
 /**
  * A timetable's construction scenarios as the Baubetriebs-Sim changes them
- * (decision 0030): kept in the timetable's data (`data.scenarios`), each with
+ * (decision 0014): kept in the timetable's data (`data.scenarios`), each with
  * its closures, the trains taken out, the trains diverted by hand. Every
  * change gives a new object; nothing here runs a train.
  */
 
-// A UUID, as every id of the record (decision 0029, phase 6) — drawn by hand where the browser draws none.
+// A UUID, as every id of the record (decision 0006) — drawn by hand where the browser draws none.
 const newId = () => globalThis.crypto?.randomUUID?.() ?? '10000000-1000-4000-8000-100000000000'.replace(/[018]/g, c => (c ^ (Math.random() * 16) >> (c / 4)).toString(16))
 
 /** Today, as a day (`YYYY-MM-DD`). */

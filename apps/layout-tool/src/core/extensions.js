@@ -3,7 +3,7 @@
  * app. Where a server part has to appear — a tool in a panel, a terrain
  * source, the clouds on the server — core asks here, and
  * src/server/register.js puts it in before the first render. (There was a
- * build without the server, decision 277; since decision 0021 there is one
+ * build without the server, decision 277; since decision 0005 there is one
  * build, and what core reads here is always filled.)
  *
  * Two kinds:

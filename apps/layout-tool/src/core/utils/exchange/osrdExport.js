@@ -48,7 +48,7 @@ const EMPTY_INFRA = {
  * extensions.db. `project` is the project record (hydrated).
  */
 export function exportToOsrd(record) {
-  // RailJSON names a station by its name and number: the points' (decision 0028).
+  // RailJSON names a station by its name and number: the points' (decision 0006).
   const project = record && withStationTexts(record)
   const tracks    = project?.tracks ?? []
   const switches  = project?.switches ?? []
@@ -110,7 +110,7 @@ export function exportToOsrd(record) {
 }
 
 /**
- * The layer `electrification` (decisions 0025, 0029) as RailJSON's
+ * The layer `electrification` (decisions 0008 and 0006) as RailJSON's
  * electrifications: one per voltage, the stretches its contact wires run on
  * (from the first to the last point carrying them on a track) in both
  * directions — OSRD names a range by its voltage, as the layer does. Ranges on a track the export does not hold

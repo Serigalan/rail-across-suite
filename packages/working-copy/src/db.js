@@ -9,7 +9,7 @@ import { FORMAT_NAME, parseProjectsPayload, projectDocument } from '@rail-across
 //                   baseDocument, document, idLog, updatedAt, format } — the
 //                   state being edited and that of the revision it rests on,
 //                   for merging against, each as its infra-data-1.0 document
-//                   (decision 0021: the one format); the splits and joins
+//                   (decision 0006: the one format); the splits and joins
 //                   since (idLog).
 //
 // The suite's tools read and write a copy as { …, basePayload, project } with
@@ -55,7 +55,7 @@ export function openDb() {
   return dbPromise
 }
 
-// A copy kept before decision 0021 holds the records themselves, marked
+// A copy kept before decision 0006 holds the records themselves, marked
 // oltjson-1.1; it is read once as it is and kept again as documents. One of
 // any other format is not read: what the server keeps of that state is not
 // opened either.
@@ -98,7 +98,7 @@ function copyOf(entry) {
   }
 }
 
-/** The copies of `entries` kept before decision 0021, kept again as documents. */
+/** The copies of `entries` kept before decision 0006, kept again as documents. */
 async function migrate(entries) {
   const old = entries.filter(e => e?.format === OLD_FORMAT)
   if (!old.length) return

@@ -1,5 +1,4 @@
-// The point cloud import in Rust (crates/pointcloud-wasm; decision 0020, steps
-// 7 and 10): LAS, LAZ and E57 read, converted to the project's plane and tiled
+// The point cloud import in Rust (crates/pointcloud-wasm; decision 0005): LAS, LAZ and E57 read, converted to the project's plane and tiled
 // as the server's jobs do. The module is loaded once — in the browser's import
 // worker (loadPointCloudModule), in Node from its file (./nativeNode.js) — and
 // from then on every call is synchronous: the file is read through

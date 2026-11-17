@@ -34,8 +34,8 @@ describe('a file of timetables', () => {
   })
 })
 
-describe('an operations file (operations-1.0, decisions 0026, 0029)', () => {
-  // Ids as the door writes them: UUIDs (decision 0029, phase 2); a point names its place by id.
+describe('an operations file (operations-1.0, decisions 0012 and 0006)', () => {
+  // Ids as the door writes them: UUIDs (decision 0006); a point names its place by id.
   const point = (id, place) => ({ id: derivedId(id), operationalPointId: derivedId(place), trackId: null, stop: true, dwell: 60, departure: null, itineraryId: null })
   const train = (id, vehicle) => ({
     id: derivedId(id), number: '1', category: 'RE', name: '', vehicle, mode: null, comfort: 'STANDARD', departure: 3600, margin: '5 %', distribution: 'mareco',
@@ -72,7 +72,7 @@ describe('an operations file (operations-1.0, decisions 0026, 0029)', () => {
     expect(taken[0].data.trains.map(t => t.vehicle)).toEqual(['osrd:loco', 'new-1'])
   })
 
-  it('goes out as a file rail-across-1.0 of the operations alone, and reads back (decision 0029, phase 5)', () => {
+  it('goes out as a file rail-across-1.0 of the operations alone, and reads back (decision 0006)', () => {
     const file = operationsProjectFile(timetables, entries, { projectId: derivedId('p'), savedAt: '2026-11-14T08:00:00Z' })
     expect(file).toMatchObject({ format: 'rail-across', version: '1.0', projectId: derivedId('p'), savedAt: '2026-11-14T08:00:00Z' })
     expect(file.infraData).toBeUndefined()

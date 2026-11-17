@@ -7,7 +7,7 @@
  * `catalogLimit` evaluates the very rule a dialog is held to. The drift the
  * AP R.3 note was about — two independently maintained copies with no test
  * between them — is gone by construction. The optimizer has no copy either:
- * the app hands its module the very file it bundles (decision 0019 of the
+ * the app hands its module the very file it bundles (decision 0005 of the
  * suite), so the two halves of the one Ril cannot part company at all.
  */
 

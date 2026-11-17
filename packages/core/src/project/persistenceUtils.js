@@ -3,7 +3,7 @@ import { heldProject, holdProject, reuseFrom } from '../native/index.js'
 
 /**
  * The record the app works on in memory, and the door to it from the one
- * format of a project, infra-data-1.0 (decision 0021) — what a file holds,
+ * format of a project, infra-data-1.0 (decision 0006) — what a file holds,
  * what the project server keeps and what the browser keeps of a working copy.
  * The record is the document's content in the shape the app reads, plus the
  * display geometry the load derives (hydrateProjects):
@@ -44,7 +44,7 @@ import { heldProject, holdProject, reuseFrom } from '../native/index.js'
  * comes out as the record; anything else — an oltjson file among it — is
  * refused, and nothing behind the door has to ask again whether a record is
  * complete. The door and the document are the core's Rust module (crates/doc;
- * decision 0020, step 10); loading a record — its display geometry — is still
+ * decision 0005); loading a record — its display geometry — is still
  * the page's own.
  */
 
@@ -77,7 +77,7 @@ export const projectDocument = (record, { carrySchemas = false, check = true } =
 
 /**
  * The domains of a record's document in the words and names the record keeps
- * (decision 0029, phase 1): what a tool reads of the core beside its own layer
+ * (decision 0006): what a tool reads of the core beside its own layer
  * until the record follows the document. Not checked.
  */
 export const recordDomains = (record) => viaNative('project.recordDomains', { record: withoutDerived(record) })
@@ -86,7 +86,7 @@ export const recordDomains = (record) => viaNative('project.recordDomains', { re
  * The document of some tracks, as the data exchange panel exports them: a
  * project of these tracks alone, its schemas carried. An element's membership
  * in a switch of the project is not written — the file has no switches, and a
- * document names nothing it lacks (decision 0028, phase C): a branch comes
+ * document names nothing it lacks (decision 0006): a branch comes
  * back as a track of its own.
  */
 export const tracksDocument = (tracks) =>
@@ -113,7 +113,7 @@ const LAYER_PARTS = ['signalling', 'electrification', 'bridges', 'retainingWalls
 
 /**
  * The record (hydrated or not) with what its layers name and it lacks cut, as
- * the door cuts a document of before (decision 0028, phase C): an optional
+ * the door cuts a document of before (decision 0006): an optional
  * reference alone, an item of a list, else the object that requires it, on
  * until nothing dangles — a switch deleted takes its switch elements along,
  * and what is nothing without them. Only the layers change (LAYER_PARTS);
@@ -137,7 +137,7 @@ export function layersWithoutDangling(record) {
  * Rebuild all derived data: element geometry and renderCoords, the end bearing
  * of arcs and transitions where the record leaves it to them, track
  * coordinates, the switch symbols and the platform polygons — from the plane
- * data only, in the core's module (decision 0021, phase D). Nothing here
+ * data only, in the core's module (decision 0005). Nothing here
  * converts or repairs; what reaches this point has been through
  * parseProjectsPayload or was written by this tool. Each project of
  * `projects` takes the members worked out, as the load always gave them back
@@ -178,7 +178,7 @@ function withoutDerived(p) {
 /** The records as their documents keep them: derived data stripped, numbers rounded. */
 export const dehydrateProjects = (projects) => viaNative('project.dehydrateProjects', (projects ?? []).map(withoutDerived))
 
-// ── The project the core's module holds (decision 0021, phase C) ─────────────
+// ── The project the core's module holds (decision 0005) ─────────────
 
 /**
  * Hold `project` — the record the page has open — in the core's module, or let

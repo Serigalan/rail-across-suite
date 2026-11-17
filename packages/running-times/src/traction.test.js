@@ -3,7 +3,7 @@ import { electrifiedAlong, tractionFor, withoutWire } from './traction.js'
 
 // Two tracks run one after the other, T1 up 0…1000, T2 down 600…0.
 const path = [{ trackId: 'T1', start: 0, end: 1000 }, { trackId: 'T2', start: 600, end: 0 }]
-// A contact wire over a range of a track, carried at its ends (electrification 3.0, decision 0029).
+// A contact wire over a range of a track, carried at its ends (electrification 3.0, decision 0006).
 const range = (trackId, startStation, endStation, voltage = '15000V') => ({ id: `${trackId}-${startStation}`, trackId, startStation, endStation, voltage })
 const record = (...ranges) => ({ electrification: { fields: {}, collections: {
   contactWires: ranges.map(r => ({ id: r.id, voltage: r.voltage })),
@@ -17,7 +17,7 @@ const mode = (isElectric) => ({ is_electric: isElectric, default_curve: { speeds
 const hybrid = { effort_curves: { default_mode: 'thermal', modes: { thermal: mode(false), '15000V': mode(true) } } }
 const electricOnly = { effort_curves: { default_mode: '25000V', modes: { '25000V': mode(true), '15000V': mode(true) } } }
 
-describe('the traction along a way (decision 0025)', () => {
+describe('the traction along a way (decision 0008)', () => {
   it('lays the ranges under wire along the path, in running order', () => {
     expect(electrifiedAlong(record(range('T1', 200, 1000), range('T2', 0, 300, '25000V')), path)).toEqual([
       { begin: 200, end: 1000, system: '15000V' }, { begin: 1300, end: 1600, system: '25000V' },

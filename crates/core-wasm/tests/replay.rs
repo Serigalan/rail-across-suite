@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Serigalan and the Rail-Across-Suite contributors
 // SPDX-License-Identifier: LGPL-3.0-only
 
-//! The JavaScript core's calls replayed on the module (decision 0020): every
+//! The JavaScript core's calls replayed on the module (decision 0005): every
 //! vector file under `crates/*/tests/vectors/` (written by `npm run replay` in
 //! packages/core) is a list of `{ op, input, output | error }`, and each call
 //! has to come out as the JavaScript's did — members in any order, a refusal

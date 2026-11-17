@@ -5,7 +5,7 @@ import CATALOGUE from '../../constraints/db-ril-301.json' with { type: 'json' }
 // and magnets — the content the signalling schema leaves open. The schema says
 // a frame holds aspects by key, a signal has logical signals of systems, a
 // balise a system and kind with settings; packages/core/constraints/db-ril-301.json
-// says which keys there are (decision 0011). The keys of the aspects are
+// says which keys there are (decision 0009). The keys of the aspects are
 // PlanPro's names (Hp_0, Ks_1, Zs_3 …), so an export needs no table. Every
 // entry has a German `title` and an English `title_en`.
 

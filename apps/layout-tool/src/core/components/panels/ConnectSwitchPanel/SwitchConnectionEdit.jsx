@@ -15,7 +15,7 @@ import ExtendedConnectionForm from './ExtendedConnectionForm'
  * on it, the turnouts free to move along their tracks, their form and the
  * speed fixed. One of two turnouts of different forms, or with more than one
  * element between them, opens in the extended switch connection instead
- * (decision 0018). What cannot be edited says why; what the construction does
+ * (decision 0005). What cannot be edited says why; what the construction does
  * not lay as it lies opens all the same, with the reason (editStart `closes`).
  */
 export default function SwitchConnectionEdit({ onCommitted }) {

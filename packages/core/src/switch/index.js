@@ -2,7 +2,7 @@
 // the drawn symbol, where a turnout may lie, switch connections, connecting to
 // an open track end, and what stays when a switch is deleted.
 //
-// The module is the core's Rust crate `crates/switch` (decision 0021, phase D:
+// The module is the core's Rust crate `crates/switch` (decision 0005:
 // its JavaScript went, its vectors are frozen): every function here is a call
 // of the core's module — an argument that is a part of the project the module
 // holds crosses as its name, not as JSON (native holdProject). What stays

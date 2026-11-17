@@ -4,7 +4,7 @@ import { diffEntries, diffProject } from '@rail-across/core/merge'
  * What a working copy changed against the revision it rests on, as the
  * project's diff lists it (diffEntries): its tracks, switches, the layers'
  * objects and the rest object by object, a layer's fields as one entry
- * (decision 0028, phase D).
+ * (decision 0006).
  */
 export function localChanges(wc) {
   if (!wc?.basePayload || !wc.project) return []

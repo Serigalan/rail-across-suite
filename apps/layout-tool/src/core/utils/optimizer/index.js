@@ -1,4 +1,4 @@
-// optimizer — the track optimizer (decision 0019): the module of optimizer/
+// optimizer — the track optimizer (decision 0005): the module of optimizer/
 // (Rust, WebAssembly) beside the page, run in a worker of its own — splicing
 // and its spacing, reconnecting, optimizing, the alignment fit.
 //

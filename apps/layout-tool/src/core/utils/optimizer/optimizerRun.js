@@ -1,6 +1,6 @@
 /**
  * The track optimizer: rail-across-optimizer (optimizer/ of the repository,
- * decision 0019), built to WebAssembly and put beside the page
+ * decision 0005), built to WebAssembly and put beside the page
  * (`npm run optimizer`). It takes one message's JSON — { op, catalogue?,
  * request } — and gives back the answer's. The catalogue is the one the app
  * bundles; the module keeps it once handed over.

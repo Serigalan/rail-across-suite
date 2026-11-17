@@ -165,7 +165,7 @@ async function readGrid(grid, base) {
   const read = await proj4.nadgrid(grid.key, tiff).ready
   loaded.add(grid.key)
   subgridsOf.set(grid.key, read.subgrids)
-  // The core's Rust module converts on the same grid (decision 0020).
+  // The core's Rust module converts on the same grid (decision 0005).
   if (nativeReady()) callNative('geometry.loadGrid', { key: grid.key, subgrids: read.subgrids })
 }
 

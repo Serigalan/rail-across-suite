@@ -36,7 +36,7 @@ const ANSWER = {
   hints: [], rwMin: 1163.076122936535, score: 0.2,
 }
 
-describe('the request and the answers of the extended switch connection (decision 0018)', () => {
+describe('the request and the answers of the extended switch connection (decision 0005)', () => {
   it('is asked where the slider finds nothing', () => {
     const bounds = computeShiftBounds({ picks, speed: SPEED })
     expect(bounds.max > bounds.min).toBe(false)
@@ -61,7 +61,7 @@ describe('the request and the answers of the extended switch connection (decisio
     expect(Math.hypot(form.first[0].x, form.first[0].y)).toBeLessThan(1e-9)
   })
 
-  it('samples each turnout of its own form where a pair is named (Entscheidung 0018)', () => {
+  it('samples each turnout of its own form where a pair is named (Entscheidung 0005)', () => {
     const pair = ['500 – 1:12', '760 – 1:14'].map(label => SWITCH_TYPES.find(f => f.label === label))
     const req = crossoverRequest({ picks, speed: SPEED, form: pair })
     expect(req.forms).toHaveLength(1)

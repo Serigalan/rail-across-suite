@@ -1,6 +1,6 @@
 /**
  * The search of the extended switch connection: rail-across-crossover
- * (crossover/ of the repository, decision 0018), built to WebAssembly and
+ * (crossover/ of the repository, decision 0005), built to WebAssembly and
  * put beside the page (`npm run crossover`). It takes the request's JSON —
  * crossoverRequest of the core, with the elements or sequences asked for —
  * and gives back the answer's: { solutions } best first, or { error }.

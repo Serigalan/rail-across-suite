@@ -1,5 +1,5 @@
 // planpro — writing a project as a PlanPro 1.10 plan: its net, its switches and
-// end marks, and its signalling (decision 0011). Computed by the core's Rust
+// end marks, and its signalling (decision 0009). Computed by the core's Rust
 // module (crates/planpro, write.rs). The suite has no PlanPro import: a plan
 // holds too little of a project.
 //

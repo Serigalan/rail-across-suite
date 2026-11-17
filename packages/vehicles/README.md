@@ -1,7 +1,7 @@
 # @rail-across/vehicles — the suite's vehicles
 
 The vehicles of Rail-Across-Suite are OSRD's RailJSON rolling stock (`railjson_version` 3.4), kept as they are
-([decision 0014](../../docs/decisions/0014-vehicles-in-osrds-form.md)). This package holds what the Fahrzeug-Editor
+([decision 0012](../../docs/decisions/0012-operations-timetables-and-vehicles.md)). This package holds what the Fahrzeug-Editor
 (`apps/vehicle-editor/`) and the Fahrplan-Sim (`apps/simulation-tool/`) share of them:
 
 ```js

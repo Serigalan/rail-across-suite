@@ -27,7 +27,7 @@ export const SIMULATIONS = [
     id: 'capacitySim', route: 'capacity-sim', available: true, phase: 4, timetables: true,
     apps: [{ id: 'capacity', path: 'capacity/' }],
   },
-  // The construction stages by their days (decision 0027): the net stage by stage, read-only.
+  // The construction stages by their days (decision 0007): the net stage by stage, read-only.
   {
     id: 'constructionSim', route: 'construction-sim', available: true, phase: 5,
     apps: [{ id: 'construction', path: 'construction/' }],
@@ -48,7 +48,7 @@ export const MODULES = [...EDITORS, ...SIMULATIONS]
  */
 export const INFRASTRUCTURE_TOOLS = [
   { id: 'layout', available: true, path: 'layout/', storage: true, featured: true },
-  // The Layout-Tool's app as the Civil-Tool (decision 0025): the same build under its own path.
+  // The Layout-Tool's app as the Civil-Tool (decision 0008): the same build under its own path.
   { id: 'civil', available: true, path: 'civil/', storage: true },
   { id: 'signalling', available: true, path: 'signalling/', featured: true },
   { id: 'catenary', available: true, path: 'catenary/' },

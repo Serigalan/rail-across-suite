@@ -13,7 +13,7 @@ import useMapPick, { useSelectedOnMap } from '../../../map/useMapPick'
  * Left open, the status follows the switch's tracks (switchStatus), which is
  * what it is for most switches — only one renewed in a standing track, or
  * taken out where its tracks stay, needs a lifespan of its own (decision
- * 0028: a switch with none shows what its tracks say).
+ * 0007: a switch with none shows what its tracks say).
  */
 export default function SwitchStatusForm({ onCommitted }) {
   const { t, fill } = useI18n()

@@ -2,7 +2,7 @@
 // heights, switch records and their ports, links, track ends and buffer stops,
 // platforms, routes, splitting and joining tracks.
 //
-// The module is the core's Rust crate `crates/track` (decision 0021, phase D):
+// The module is the core's Rust crate `crates/track` (decision 0005):
 // its operations are calls of the core's module — an argument that is a part
 // of the project the module holds crosses as its name, not as JSON (native
 // holdProject). What stays JavaScript, measured: the small queries the pages

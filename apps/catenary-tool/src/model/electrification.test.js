@@ -13,7 +13,7 @@ const tracks = [straight('t1', 0, 1000), straight('t2', 50, 500)]
 const record = { id: 'p1', tracks, switches: [], platforms: [] }
 const empty = () => domainOf(record)
 
-describe('the overhead contact line of a net (electrification 3.0, decision 0029)', () => {
+describe('the overhead contact line of a net (electrification 3.0, decision 0006)', () => {
   it('is no layer of the record while it holds nothing', () => {
     expect(domainOf(record)).toEqual({ fields: {}, collections: { contactWires: [], masts: [], suspensionPoints: [], sectionInsulators: [] } })
     expect(recordOf(record, empty()).electrification).toBeUndefined()
@@ -65,7 +65,7 @@ describe('the overhead contact line of a net (electrification 3.0, decision 0029
     expect(cov.byVoltage['15000V']).toBeCloseTo(1000, 6)
   })
 
-  it('keeps the planning status as a lifespan, the day open (decision 0028), the masts of a new wire new too', () => {
+  it('keeps the planning status as a lifespan, the day open (decision 0007), the masts of a new wire new too', () => {
     const wire = withStatus(newWire({ voltage: '15000V' }), 'new')
     expect(statusOf(wire)).toBe('new')
     expect(wire.lifespan).toEqual({ from: 'open' })

@@ -50,7 +50,7 @@ deficiency for clothoid and Bloss, steepest and flattest mean ramp, clothoid as 
 (comparison radius at a curvature jump, jumps outside turnouts), HP.LN.01–03 (gradients), HP.AR.01–07
 (vertical curves).
 
-The same file is handed to the optimizer module (`optimizer/`, Rust, decision 0019 of the suite), which evaluates
+The same file is handed to the optimizer module (`optimizer/`, Rust, decision 0005 of the suite), which evaluates
 it with its own port of the expression language. Shared test vectors in `packages/core/constraints/tests/` hold the
 two implementations to the same answers (`ruleExpr.vectors.test.js`, `alignmentCheck.vectors.test.js`,
 `transitionLength.vectors.test.js` here, `optimizer/crates/optimizer/tests/vectors.rs` there).

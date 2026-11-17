@@ -81,7 +81,7 @@ function oltExtension(track) {
     // built of the defaults from begin to end states nothing (crossSectionUtils).
     rails:        track.rails?.length ? track.rails : null,
     sleepers:     track.sleepers?.length ? track.sleepers : null,
-    // The days it is in service (decision 0028); a track existing and staying states none.
+    // The days it is in service (decision 0006); a track existing and staying states none.
     lifespan:     track.lifespan ?? null,
     // What the Höhenplan rules ask of it; a track without a category of its
     // own runs on the project's, and one without a use is a main track.

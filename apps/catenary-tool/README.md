@@ -1,6 +1,6 @@
 # Catenary-Tool
 
-The tool of the layer `electrification` ([decision 0025](../../docs/decisions/0025-layers-on-the-core.md)): which ranges
+The tool of the layer `electrification` ([decision 0008](../../docs/decisions/0008-core-and-layers.md)): which ranges
 of the project's tracks lie under contact wire, and of which system — the voltage as OSRD names a traction mode
 (`15000V` the 15 kV 16.7 Hz of DB, `25000V`, `3000V`, `1500V`, `750V`, `600V`). The running time takes the traction
 mode along a train's way from it (roadmap, phase 4, I3). Later masts, cantilevers, contact wire and sections.

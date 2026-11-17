@@ -2,7 +2,7 @@
 
 `src/core/utils/stage/` · needs the core's `document`
 
-Which construction stages a project has and what stands at one (decisions 0027, 0028): the existing state,
+Which construction stages a project has and what stands at one (decision 0007): the existing state,
 a stage for every day something is put into or taken out of service, the final state. A track, switch,
 platform or end mark states the days it is in service in its `lifespan` — `from` the first, `to` the last,
 `"open"` where the day is not known yet, none where it exists and stays; its planning status is read off it.

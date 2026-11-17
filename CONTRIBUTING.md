@@ -24,7 +24,7 @@ Thank you for helping build Rail-Across-Suite. This page says how a change gets 
 - **Apps import packages, never each other.** What two apps need belongs in a package. Packages and the server
   never import an app. `npm run check` enforces it.
 - **The core is held to the shared test vectors** in `schemas/` — its JavaScript (`packages/core`) and its Rust
-  crates (`crates/`, decision 0020) alike. A change to one is a change to both.
+  crates (`crates/`, decision 0005) alike. A change to one is a change to both.
 - **Derived data is not stored**, references are ids, locations are one value — see the data model's rules.
 - Code, comments, documentation and commit messages are in English; texts the user reads go through
   translation keys (German and English).

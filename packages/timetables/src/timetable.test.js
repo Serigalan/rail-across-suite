@@ -114,7 +114,7 @@ describe('where a train stops', () => {
 describe('the way a train prefers', () => {
   // Stopping places on A-Dorf's track 1 and at C-Stadt's two platforms; an itinerary to each, and one whose run does not lead there.
   const range = (trackId, startStation, endStation) => ({ anchor: 'station', trackId, startStation, endStation })
-  // The stopping places the core's, each platform naming the one at it (decision 0028).
+  // The stopping places the core's, each platform naming the one at it (decision 0006).
   const signalled = {
     ...net,
     platforms: net.platforms.map(p => ({ pC1: { ...p, stoppingPlaceIds: ['hC1'] }, pC2: { ...p, stoppingPlaceIds: ['hC2'] } }[p.id] ?? p)),

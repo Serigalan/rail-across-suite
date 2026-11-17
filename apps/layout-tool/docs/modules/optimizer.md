@@ -2,7 +2,7 @@
 
 `src/core/utils/optimizer/` · needs nothing of the other modules
 
-The computations that build or change an alignment against the rule catalogue (decision 0019 of the suite):
+The computations that build or change an alignment against the rule catalogue (decision 0005 of the suite):
 "Zwei Gleise zusammenfügen" with or without a spacing to another track, "Bestehende Elemente neu verbinden",
 optimizing a track or one of its curves, the alignment and gradient fit from measured axis points.
 They are Rust — `optimizer/` of the repository, built to WebAssembly by `npm run optimizer` into

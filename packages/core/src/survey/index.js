@@ -1,6 +1,6 @@
 // survey — measured axes: axis points traced in point clouds, reference axes
 // (Bestandsachse), shift values against them, and the alignment fit request.
-// Computed by the core's Rust module (decision 0020, step 10: crates/survey),
+// Computed by the core's Rust module (decision 0005: crates/survey),
 // called with the arguments as the JavaScript took them.
 //
 // This file is the module's public face: code outside packages/core/src/survey/

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 
 //! The capacity of a stretch from a timetable's blocking times (the roadmap,
-//! phase 4, K1; decision 0023): the minimum headway of two trains that follow
+//! phase 4, K1; decision 0013): the minimum headway of two trains that follow
 //! each other, the timetable compressed after UIC Code 406 — each train as
 //! early after the ones before as their blocking times let it, in the order
 //! they run —, the occupancy time and rate it gives, the trains that set it,

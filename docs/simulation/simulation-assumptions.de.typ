@@ -355,7 +355,7 @@ Im Modus `wait` gilt:
 
 = Bauszenarien
 
-Ein Bauszenario gehört zu einem Fahrplan (Entscheidung 0030; `constructionScenarios` in timetables 1.2). Es sperrt Gleisstücke eine Zeit lang, nimmt Züge heraus und leitet Züge von Hand um. Die Baubetriebs-Sim fährt den Fahrplan darin für einen Tag und stellt jeden Zug neben seine Regelfahrt.
+Ein Bauszenario gehört zu einem Fahrplan (Entscheidung 0014; `constructionScenarios` in timetables 1.2). Es sperrt Gleisstücke eine Zeit lang, nimmt Züge heraus und leitet Züge von Hand um. Die Baubetriebs-Sim fährt den Fahrplan darin für einen Tag und stellt jeden Zug neben seine Regelfahrt.
 
 == Das Netz des Tages
 

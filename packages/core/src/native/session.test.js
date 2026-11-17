@@ -4,7 +4,7 @@ import { dehydrateProjects, heldKeptProject, heldProjectDocument, hydrateProject
 import { planElementChange, translateTracks } from '../commands/index.js'
 import { branchTrack, mainTrack, turnout } from '../../test/turnoutFixture.js'
 
-// The project the core's module holds (decision 0021, phase C): written by
+// The project the core's module holds (decision 0005): written by
 // what changed, lent to the operations that are handed its members.
 
 const deepFreeze = (v) => {
@@ -14,7 +14,7 @@ const deepFreeze = (v) => {
   }
   return v
 }
-// The turnout's tracks, a the one before it among them: a document names nothing it lacks (decision 0028).
+// The turnout's tracks, a the one before it among them: a document names nothing it lacks (decision 0006).
 const project = () => deepFreeze(hydrateProjects([{
   id: 'p', title: 'P', tracks: [mainTrack(), branchTrack(), { ...mainTrack(), id: 'a', name: 'a' }], switches: [turnout({ formVersion: 1, name: 'W1' })], platforms: [],
 }])[0])

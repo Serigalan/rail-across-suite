@@ -19,7 +19,7 @@ function reconstructTrack(track) {
 
 /**
  * Single tracks in and out: tracks picked on the map go into a file — an
- * infra-data-1.0 document of these tracks alone (decision 0021) —, and a
+ * infra-data-1.0 document of these tracks alone (decision 0006) —, and a
  * file's tracks come into the project — one whose id is already there is
  * asked about, one at a time.
  */

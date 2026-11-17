@@ -81,7 +81,7 @@ export function objectFeatures(record, collection, obj, status, props = {}) {
 
 /** Find an object of a collection in a record by its id. */
 export function findObject(record, collection, id) {
-  // A layer's collection by its path ("signalling.signals"); an object by its switchId or its id (decision 0028, phase D).
+  // A layer's collection by its path ("signalling.signals"); an object by its switchId or its id (decision 0006).
   const [layer, name] = collection.includes('.') ? collection.split('.') : [null, collection]
   const list = layer ? record?.[layer]?.collections?.[name] : record?.[name]
   return (list ?? []).find(o => String(o.switchId ?? o.id) === String(id)) ?? null

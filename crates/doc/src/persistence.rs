@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 
 //! The project record as it is kept and the door to it (`persistenceUtils.js`):
-//! infra-data-1.0 documents in (decision 0021: the one format), the record with
+//! infra-data-1.0 documents in (decision 0006: the one format), the record with
 //! its derived data stripped and its numbers kept to what they mean.
 
 use rail_across_geom::cant::stored_track_cants;
@@ -16,7 +16,7 @@ use crate::error::{PayloadError, Result};
 
 /// The records of a payload — an infra-data-1.0 document, one project —
 /// refused where it is not one (`parseProjectsPayload`): `unsupported_version`
-/// for another format or version (an oltjson file among them, decision 0021),
+/// for another format or version (an oltjson file among them, decision 0006),
 /// `invalid_payload` where it does not hold what it states.
 pub fn parse_projects_payload(data: &Value) -> Result<Vec<Value>> {
     Ok(vec![from_document(data)?])
@@ -27,7 +27,7 @@ pub fn project_document(record: &Value, carry_schemas: bool, check: bool) -> Res
     to_document(&dehydrate_project(record), carry_schemas, check)
 }
 
-/// The domains of a project record's document as the record holds them (decision 0029): what a tool reads of the
+/// The domains of a project record's document as the record holds them (decision 0006): what a tool reads of the
 /// core beside its own layer, with the record's ids and its km lines in WGS 84. Not checked: a tool reads it while
 /// it works.
 pub fn record_domains(record: &Value) -> Result<Value> {

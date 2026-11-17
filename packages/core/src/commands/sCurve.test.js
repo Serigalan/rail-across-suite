@@ -552,7 +552,7 @@ describe('a connection only the rulebook refuses (Entscheidung 361)', () => {
   })
 })
 
-describe('a connection of two turnouts of different forms (Entscheidung 0018)', () => {
+describe('a connection of two turnouts of different forms (Entscheidung 0005)', () => {
   const straight = (start, bearing, length) => {
     const end = utmEndRoute(start, bearing, length, null)
     return { elementType: 'straight', startNode: [start.easting, start.northing], endNode: [end.easting, end.northing],

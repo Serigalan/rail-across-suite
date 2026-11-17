@@ -8,7 +8,7 @@ import { heightAt, trackLength, tracksOnFrom } from '@rail-across/core/track'
  * [{ trackId, start, end }] in running order: each piece is run from `start`
  * to `end`, up where end > start.
  *
- * What is closed (decision 0030) a record states as `closed`, [{ trackId, lo,
+ * What is closed (decision 0014) a record states as `closed`, [{ trackId, lo,
  * hi }]: no path runs over a closed stretch — more than half a metre of it —,
  * a train may stop before it or start behind it.
  */

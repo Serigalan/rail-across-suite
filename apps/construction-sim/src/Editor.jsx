@@ -12,7 +12,7 @@ import { STATE_COLORS, stageLabel, timeline, trackState } from './model/stages.j
 import { HomeIcon, LogoIcon, ScenarioIcon, SettingsIcon, StagesIcon } from './icons.jsx'
 
 /**
- * The Construction-Sim (decision 0027; roadmap, phase 5): a variant's net
+ * The Construction-Sim (decision 0007; roadmap, phase 5): a variant's net
  * construction stage by construction stage. On the left the stages — the
  * existing state, every day something is put into or taken out of service,
  * the final state — each with what it changes; on the plan the net at the

@@ -4,7 +4,7 @@
 // Started from Explorer, no console window beside the app's (release builds).
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-//! Rail-Across-Suite on the desktop (decision 0020, step 9): the whole suite
+//! Rail-Across-Suite on the desktop (decision 0005): the whole suite
 //! in one Tauri window, the project server (`crates/server`) in this very
 //! process. The window loads the built suite from the URI scheme `rail`
 //! (`rail://localhost/`, `http://rail.localhost/` on Windows), and every

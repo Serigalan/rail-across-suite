@@ -1,6 +1,6 @@
 # @rail-across/running-times
 
-The running times of trains over a variant's net ([decision 0013](../../docs/decisions/0013-running-times-in-rust.md)),
+The running times of trains over a variant's net ([decision 0011](../../docs/decisions/0011-running-times.md)),
 shared by the Simulation-Tool and the Fahrplan-Editor:
 
 - **the way** (`path.js`, `route.js`): the shortest path over the net — over switches along their routes, links

@@ -85,7 +85,7 @@ export function snappedStation(domain, trackId, station, reach, t) {
 
 /**
  * A new stopping place on a stretch of a track, of a station or of the open
- * line — for every train: the platform at it the Civil-Tool sets (decision 0025).
+ * line — for every train: the platform at it the Civil-Tool sets (decision 0008).
  */
 export const newStoppingPlace = ({ name, operationalPointId, trackId, from, to }) => Object.fromEntries(Object.entries({
   id: newId(), name, operationalPointId, at: { anchor: 'station', trackId, startStation: from, endStation: to },

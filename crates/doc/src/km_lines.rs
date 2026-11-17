@@ -1,11 +1,11 @@
 // SPDX-FileCopyrightText: 2026 Serigalan and the Rail-Across-Suite contributors
 // SPDX-License-Identifier: LGPL-3.0-only
 
-//! Km lines as core 4.0 keeps them (decision 0029, phase 2): in one plane, as runs from km jump to km jump,
+//! Km lines as core 4.0 keeps them (decision 0006): in one plane, as runs from km jump to km jump,
 //! each with its kilometrage at the start and the way it counts — the run itself design elements, or the points
 //! a source gave where it gave no elements, held as a blob. The record keeps a km line as before, in WGS 84 with
 //! the kilometrage per point (`crs`, `clip`, `runs` as lists of points), until it follows the document
-//! (decision 0029, phase 6); this converts both ways.
+//! (decision 0006); this converts both ways.
 //!
 //! A line of before is written in the UTM plane of ETRS89 its first point lies in: a plane without a grid, so
 //! that every device writes the same numbers. Its points go into the plane to the tenth of a millimetre and come

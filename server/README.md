@@ -9,11 +9,11 @@ manages users. It never merges — it takes a revision only on top of the
 current head of a variant (decision 97) and checks it as the browser does
 (`parseProjectsPayload`, `validateProject`, decision 91 — in the core's crates).
 
-The server is Rust: `crates/server` (decision 0020, step 8) — axum, rusqlite, argon2id; the cloud jobs as
+The server is Rust: `crates/server` (decision 0005) — axum, rusqlite, argon2id; the cloud jobs as
 threads; the DGM1 terrain and the MDB import. It is the only one that runs: in the deployment (deploy/), in
 the desktop app (`crates/desktop`, in its own process) and in development. This directory holds the schema
 (`migrations/`, built into the binary) and the server's tests (`test/`), written for the Node server it
-replaced and run against this one since (decision 0020, step 10 took the Node server out).
+replaced and run against this one since (decision 0005 took the Node server out).
 
 ## Run
 
@@ -75,7 +75,7 @@ order on start.
 Steps that change the data rather than the schema are in `crates/server/src/data_migrations.rs`: each runs once when `serve` starts,
 before it listens, and is recorded in `data_migration` with what it did. The first closes every head of every variant
 still worked on where its joints missed by up to a millimetre, as a revision of its own by the inactive user `system`
-(decision 0020: the same place is 1 µm).
+(decision 0005: the same place is 1 µm).
 
 ## Tests
 

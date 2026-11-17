@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 
 //! PlanPro 1.10's enumerations and the values of the signalling domain they
-//! are read as (`mapping.js`, decision 0011): one table per attribute, read
+//! are read as (`mapping.js`, decision 0009): one table per attribute, read
 //! both ways — a key as its value, and a value as the key the export writes
 //! (the first key that reads as it).
 

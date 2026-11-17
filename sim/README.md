@@ -3,8 +3,8 @@
 The running time simulation of [OSRD](https://github.com/OpenRailAssociation/osrd), the Open Source Railway
 Designer of the OpenRail Association, ported from Kotlin/Java to Rust — for the browser (WebAssembly) and the
 command line. It is the simulation behind the suite's Fahrplan-Sim ([decision
-0013](../docs/decisions/0013-running-times-in-rust.md)); it was a repository of its own until the suite came under
-OSRD's licence ([decision 0015](../docs/decisions/0015-lgpl.md)).
+0011](../docs/decisions/0011-running-times.md)); it was a repository of its own until the suite came under
+OSRD's licence ([decision 0001](../docs/decisions/0001-one-repository-one-licence.md)).
 
 Ported from OSRD `core/` at commit `fda69ee1f8027175096371d258c563fc98f9295e` (2026-10-30). Every source file
 names the OSRD files it comes from.

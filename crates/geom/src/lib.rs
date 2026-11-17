@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Serigalan and the Rail-Across-Suite contributors
 // SPDX-License-Identifier: LGPL-3.0-only
 
-//! The geometry module of the core in Rust (decision 0020, step 2): the
+//! The geometry module of the core in Rust (decision 0005): the
 //! projected plane and the element — straights, arcs and transitions
 //! (clothoid, Bloss) —, their cants, the coordinate systems with the proj4
 //! port they convert on, parallels and plane changes, the chain invariants and

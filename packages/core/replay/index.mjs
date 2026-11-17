@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // npm run replay — the JavaScript core's calls recorded as vectors for the Rust
-// crates that replace it (decision 0020): each recorder below runs functions
+// crates that replace it (decision 0005): each recorder below runs functions
 // of the core on the fixtures and real data it is given, and writes what went
 // in and what came out to crates/<crate>/tests/vectors/<name>.json, where the
 // crate's tests replay them. Run again whenever the JavaScript changes; the

@@ -172,7 +172,7 @@ export default function AssignTracksForm({ onCommitted }) {
     setError(null)
     setDone({ count: ids.length, kind: to.kind ?? null, title: to.kind ? groupTitle(to) : '' })
     // What was just entered is a line or station of the project now — a new
-    // station a point of the record's (decision 0028) —, so the next tracks
+    // station a point of the record's (decision 0006) —, so the next tracks
     // are put there by picking it rather than typing it again.
     setChoice(trackGroupKey(loadTracks().find(tr => tr.id === ids[0]) ?? {}) ?? NEW)
     setEntry({ lineNumber: '', lineName: '', stationName: '', uicStation: '' })

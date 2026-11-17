@@ -4,7 +4,7 @@
 
 The project record as one thing: the record the app works on (hydration on load, dehydration on
 save), the door every payload passes into it — an infra-data-1.0 document, the one format ([document](document.md),
-decision 0021) —, the project settings (coordinate system, line category), the validation every merge
+decision 0005) —, the project settings (coordinate system, line category), the validation every merge
 result and every server revision must pass, and the short description of what one undo step did. The format
 itself — every field, and why it is shaped as it is — is described in [the data format](../../../apps/layout-tool/docs/data-format.md).
 
@@ -12,16 +12,16 @@ itself — every field, and why it is shaped as it is — is described in [the d
 
 | File | What it does |
 |---|---|
-| `persistenceUtils.js` | The record — the door, the document and keeping it through the core's module (decision 0020, step 10), loading it here: `parseProjectsPayload` (the door), `projectDocument` (a record as its infra-data-1.0 document), `hydrateProjects` (derive on load), `dehydrateProjects` (strip and round, as the document keeps it), `tracksDocument` and `parseTracksPayload` (track files, documents of some tracks) |
+| `persistenceUtils.js` | The record — the door, the document and keeping it through the core's module (decision 0005), loading it here: `parseProjectsPayload` (the door), `projectDocument` (a record as its infra-data-1.0 document), `hydrateProjects` (derive on load), `dehydrateProjects` (strip and round, as the document keeps it), `tracksDocument` and `parseTracksPayload` (track files, documents of some tracks) |
 | `projectSettings.js` | The project's coordinate system and line category; moving tracks into another plane with everything a switch joins to them |
-| `crates/project` (Rust) | Whether a record holds together (`validateProject`): errors and warnings, stably keyed; `newFindings` — through `index.js` (decision 0020, step 10) |
+| `crates/project` (Rust) | Whether a record holds together (`validateProject`): errors and warnings, stably keyed; `newFindings` — through `index.js` (decision 0005) |
 | `stepLabel.js` | What one step did, in a few words, worked out from the two states |
 
 ## Load, save, refuse
 
 `parseProjectsPayload` is **the one place that decides** whether a payload is taken. An infra-data-1.0 document goes
 through the document module's door and comes out as the record. Anything else — an oltjson file among it,
-whose format went with decision 0021, and a document of a later version than this build reads — is refused
+whose format went with decision 0006, and a document of a later version than this build reads — is refused
 with `unsupported_version` or `invalid_payload` (with what was found). Everything behind the door
 may take the model for granted instead of guarding each field.
 

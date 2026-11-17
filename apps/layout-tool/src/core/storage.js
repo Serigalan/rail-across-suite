@@ -125,7 +125,7 @@ function mutate(fn, { undo = true, unlock = false } = {}) {
   // (decision 384). A curve whose length counts takes the radius its
   // gradients ask for now (decision 266).
   // A station a form states as text is the point of that name, found or made
-  // (decision 0028): the record names its stations by their points. What the
+  // (decision 0006): the record names its stations by their points. What the
   // write took away takes along what named it in the layers — a switch its
   // switch elements, and what is nothing without them (phase C).
   const after = withoutDanglingAfter(before, withLengthRadii(before, withSwitchHeights(before,
@@ -149,7 +149,7 @@ function mutate(fn, { undo = true, unlock = false } = {}) {
 function setProject(project) {
   _project = deepFreeze(project)
   // The core's module holds the open project too, written by what changed
-  // (decision 0021, phase C): its operations are lent what they are handed of it.
+  // (decision 0005): its operations are lent what they are handed of it.
   holdProject(_project)
   // Coupled, every turnout fits (decision 384): where one does not — opened
   // so, or a write the coupling could not follow — the design mode is on.
@@ -715,7 +715,7 @@ export function forgetHiddenTracks() {
 
 export const hiddenTracks = () => _hiddenTracks.get()
 
-// The construction stage the map shows (decision 0027): null for every one
+// The construction stage the map shows (decision 0007): null for every one
 // at once, as planned — else 'existing', a day, 'final'. Kept for this
 // project in this session; another project starts with every one again.
 let _mapStage = { project: null, key: null }
@@ -1122,7 +1122,7 @@ export function loadPlatforms() {
 }
 
 // A platform put, moved or deleted details the stopping places at it in the
-// core, one step with it (decision 0025): those at it passenger stops it
+// core, one step with it (decision 0008): those at it passenger stops it
 // names, one over it called `stopName` where none is at it yet.
 
 // The station a platform form states as text is its point first, so the stopping place made over it names it too.
@@ -1138,7 +1138,7 @@ export function deletePlatform(platformId) {
   return mutate(p => withPlatformStops({ ...p, platforms: (p.platforms ?? []).filter(q => q.id !== platformId) }, platformId))
 }
 
-// ── bridges, retaining walls, noise barriers (civil, decision 0025) ─────────
+// ── bridges, retaining walls, noise barriers (civil, decision 0008) ─────────
 
 /** The civil structures of a kind: 'bridges', 'retainingWalls' or 'noiseBarriers'. */
 export const loadStructures = (kind) => _project?.[kind] ?? []

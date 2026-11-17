@@ -3,7 +3,7 @@ import { schematicLayout, schematicPlacer, schematicStrip } from '@rail-across/c
 import { areaColor, BINDING_COLOR } from './plan.js'
 
 /**
- * The schematic plan of a stretch (decision 0030, point 1): the variant's net
+ * The schematic plan of a stretch (decision 0014): the variant's net
  * as the core's schematic strip — its lines lanes along the longest, every
  * switch a diagonal —, on it the conflict areas coloured by how many trains
  * hold them and the binding elements of the critical chain, each with its

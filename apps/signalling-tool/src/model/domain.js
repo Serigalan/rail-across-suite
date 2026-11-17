@@ -21,7 +21,7 @@ const COLLECTIONS = [
  * The collections of the record's core the tool writes as well: the points of
  * the operational point register, the platforms, which name their station
  * (model/stations.js) and the stopping places at them, and the stopping places
- * (decision 0028: the core's, as in the document). The tool's state holds them
+ * (decision 0006: the core's, as in the document). The tool's state holds them
  * beside the domain's, so an edit of a station is one step with the rest.
  */
 const CORE_PARTS = ['operationalPoints', 'platforms', 'stoppingPlaces']
@@ -53,7 +53,7 @@ export const signallingOf = (state) => ({ fields: state.fields, collections: Obj
 /**
  * The record with the state laid on it: its domain and the parts of the core
  * the tool writes. A station renamed keeps its id, and its tracks and
- * platforms, which name it by that id, stay as they are (decision 0028).
+ * platforms, which name it by that id, stay as they are (decision 0006).
  */
 export function recordOf(record, state) {
   const { operationalPoints, platforms, stoppingPlaces } = state.collections
@@ -64,7 +64,7 @@ export function recordOf(record, state) {
 
 /**
  * The core of a record as the tool reads it, its platforms beside it: in
- * infra-data-2.0 they are civil's (decision 0025), and the stations, the
+ * infra-data-2.0 they are civil's (decision 0008), and the stations, the
  * stopping places and the check name them.
  */
 export function coreOf(record) {
@@ -75,7 +75,7 @@ export function coreOf(record) {
 /** The state with another domain — the parts of the core as they are. */
 export const withSignalling = (state, domain) => ({ fields: domain.fields, collections: { ...state.collections, ...signallingOf(domain).collections } })
 
-// A UUID, as every id of the record (decision 0029, phase 6) — drawn by hand where the browser draws none.
+// A UUID, as every id of the record (decision 0006) — drawn by hand where the browser draws none.
 export const newId = () => (globalThis.crypto?.randomUUID?.() ?? '10000000-1000-4000-8000-100000000000'.replace(/[018]/g, c => (c ^ (Math.random() * 16) >> (c / 4)).toString(16)))
 
 const withCollection = (domain, name, list) => ({ ...domain, collections: { ...domain.collections, [name]: list } })
@@ -140,7 +140,7 @@ export function deleted(domain, collection, id) {
   c.stationBoundaries = c.stationBoundaries
     .map(b => ({ ...b, marks: b.marks.filter(m => !is('signals', m.signalId) && !is('stoppingPlaces', m.stoppingPlaceId)) }))
     .filter(b => b.marks.length)
-  // The stopping places are the core's (decision 0028): one deleted goes, and the platform naming it names it no more.
+  // The stopping places are the core's (decision 0006): one deleted goes, and the platform naming it names it no more.
   if (gone.stoppingPlaces) {
     c.stoppingPlaces = (domain.collections.stoppingPlaces ?? []).filter(h => !is('stoppingPlaces', h.id))
     c.platforms = (domain.collections.platforms ?? []).map(p => (p.stoppingPlaceIds?.some(x => is('stoppingPlaces', x))
@@ -336,7 +336,7 @@ export const designationOf = (s, t) => labelOf('signals', s, t)
 /**
  * A short label of an object for lists and findings; a signal's with its
  * area's number (designationOf), a platform's by the station it names among
- * `points`, the operational points (decision 0028).
+ * `points`, the operational points (decision 0006).
  */
 export function labelOf(collection, obj, t, points = []) {
   if (!obj) return '—'

@@ -1,4 +1,4 @@
-// The Layout-Tool's one build (decision 0021): core and server. The server components dock onto
+// The Layout-Tool's one build (decision 0003): core and server. The server components dock onto
 // core first — before anything renders — through the extension points they fill.
 import './server/register'
 import { StrictMode } from 'react'
@@ -13,7 +13,7 @@ import { loadNtv2Grid } from '@rail-across/core/geometry'
 import { loadNative } from '@rail-across/core/native'
 import { EDITS_CIVIL, TOOL_NAME } from './core/tool'
 
-// One build, two tools (decision 0025): the page says which it is, by its
+// One build, two tools (decision 0008): the page says which it is, by its
 // name and its mark — the Civil-Tool's a bridge.
 document.title = `${TOOL_NAME} · Rail-Across-Suite`
 if (EDITS_CIVIL) document.querySelector('link[rel="icon"]')?.setAttribute('href', './civil-favicon.svg')
@@ -36,7 +36,7 @@ if (EDITS_CIVIL) document.querySelector('link[rel="icon"]')?.setAttribute('href'
 // The 3D view of the point clouds (phase 13) is a window of its own,
 // `#/cloud3d?…`: it opens no working copy and loads three.js as a chunk of its
 // own, which the app itself never fetches.
-// The core's Rust module (decision 0020) first, before anything renders; without it
+// The core's Rust module (decision 0005) first, before anything renders; without it
 // the core runs on its JavaScript.
 const native = loadNative(`${import.meta.env.BASE_URL}core-module/rail_across_core.wasm`)
 

@@ -6,17 +6,16 @@ import ELECTRIFICATION from '../../schemas/electrification/3.0.schema.json' with
 import { contentHash } from './canonical.js'
 import { viaNative } from './viaNative.js'
 
-// The one door for infra-data documents (decision 0021: the one format of
+// The one door for infra-data documents (decision 0006: the one format of
 // a project, what was "the core 1.0 document"): what comes in is checked here — the
 // file's shape, each domain's version and schema, every object against its
 // domain's schema and the rules a schema cannot state (a lifespan's days, a
 // reference naming an object of its collection), the
 // blobs against their hashes, a document of an earlier version brought to this
 // build's, version by version (an infra-data 1.0 document to the layers of
-// decision 0025, the stages of before to the days of decision 0028) — and
+// decision 0008, the stages of before to the days of decision 0007) — and
 // what is written is checked the same way before it leaves. Behind the door the model is taken
-// for granted. The door is the core's Rust module (crates/doc; decision 0020,
-// step 10 took its JavaScript out).
+// for granted. The door is the core's Rust module (crates/doc; decision 0005 took its JavaScript out).
 
 /** The file format's name and version, as the envelope states them. */
 export const FORMAT = 'infra-data'

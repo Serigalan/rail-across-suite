@@ -17,7 +17,7 @@ import CloseButton from './form/CloseButton'
  * **One rulebook is one entry**, however many faces it has. DB Ril 800.0110 is
  * the rules the app bundles (`ruleCatalogue.js`) and the very file the optimizer
  * applies — so it is listed once, the rules first, and under them the limits
- * the optimizer module (decision 0019 of the suite) says a run is held to at
+ * the optimizer module (decision 0005 of the suite) says a run is held to at
  * Regelwert and Ermessensgrenze, read out of the same file.
  */
 

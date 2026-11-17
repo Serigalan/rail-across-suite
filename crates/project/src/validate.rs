@@ -232,7 +232,7 @@ pub fn validate_project(project: &Value) -> Value {
 
     // platforms on their track, within its length
     for pf in arr(project, "platforms") {
-        // Named by its station: the operational point it names (decision 0028).
+        // Named by its station: the operational point it names (decision 0006).
         let point = pf
             .get("operationalPointId")
             .and_then(|id| arr(project, "operationalPoints").iter().find(|p| p.get("id") == Some(id)));

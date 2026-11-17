@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Serigalan and the Rail-Across-Suite contributors
 // SPDX-License-Identifier: LGPL-3.0-only
 
-//! The commands of the core in Rust (decision 0020, step 5): what the
+//! The commands of the core in Rust (decision 0005): what the
 //! dialogs commit, as pure functions of their inputs (`commands/`), and the
 //! three-way merge of project records (`merge/`).
 

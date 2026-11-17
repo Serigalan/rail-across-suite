@@ -4,7 +4,7 @@
 // box, a synthetic track scene); registration, plane mapping, slices, the
 // clearance check and scan, rail detection and tracing held to the JavaScript.
 // The readers' and the import's vectors are frozen: their JavaScript is gone
-// (decision 0020, step 10), and the clouds the rest runs on are imported by
+// (decision 0005), and the clouds the rest runs on are imported by
 // the Rust module.
 import { readFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
@@ -78,7 +78,7 @@ const memoryWriter = () => {
 /**
  * A file imported by the import module (crates/pointcloud-wasm) — the clouds
  * the JavaScript's sections, scans and traces below run on. The module took
- * the JavaScript import's place (decision 0020, step 10).
+ * the JavaScript import's place (decision 0005).
  */
 function importInto(file, { levels = [1], idlePoints, from, to } = {}) {
   const source = bytesSource(bytesOf(file))
@@ -181,7 +181,7 @@ function files() {
 
 /**
  * Vectors whose JavaScript is gone — the LAS, LAZ and E57 readers and the
- * import (decision 0020, step 10): kept as they were last recorded, the Rust
+ * import (decision 0005): kept as they were last recorded, the Rust
  * held to them from now on as to any other test.
  */
 const frozen = (name) => JSON.parse(readFileSync(join(REPO, 'crates/pointcloud/tests/vectors', `${name}.json`), 'utf8'))

@@ -38,7 +38,7 @@ fn tx(v: Option<&Value>) -> String {
 }
 
 /// A track's kind: line or station (`trackKind`) — as it states it, else a
-/// track naming an operational point is a station track (decision 0028).
+/// track naming an operational point is a station track (decision 0006).
 pub fn track_kind(track: &Value) -> Option<&'static str> {
     match track.get("trackType").and_then(Value::as_str) {
         Some("line") => return Some("line"),
@@ -233,7 +233,7 @@ pub fn track_list_label(track: &Value) -> String {
 
 /// The fields a track takes when assigned to a group (`assignmentFields`): a
 /// station's its point, or the station as typed (`stationName`, `uicStation`)
-/// where it is a new one, which the record makes a point of (decision 0028).
+/// where it is a new one, which the record makes a point of (decision 0006).
 pub fn assignment_fields(target: &Value) -> Value {
     let s = |k: &str| {
         let v = tx(target.get(k));
@@ -419,7 +419,7 @@ pub fn picked_station(v: f64) -> String {
 }
 
 /// The platform a form describes (`platformDraft`), its station as typed — the
-/// record makes it the point of that name and code (decision 0028).
+/// record makes it the point of that name and code (decision 0006).
 pub fn platform_draft(f: &Value) -> Value {
     let (s1, s2, front) = (js_number(f.get("start")), js_number(f.get("end")), js_number(f.get("frontOffset")));
     json!({

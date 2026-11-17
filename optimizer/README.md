@@ -1,7 +1,7 @@
 # optimizer — rail-across-optimizer
 
 The Layout-Tool's track optimizer in Rust, for the browser (WebAssembly). It replaced the Python service of the
-Layout-Tool ([decision 0019](../docs/decisions/0019-optimizer-in-rust.md)): optimizing a track, the splice with a
+Layout-Tool ([decision 0005](../docs/decisions/0005-rust-computes-javascript-shows.md)): optimizing a track, the splice with a
 spacing to a neighbouring track, reconnecting existing elements, the alignment and gradient fit from axis points.
 The Python service's tests and answers it was held to are kept here as test data (`tests/data/`).
 

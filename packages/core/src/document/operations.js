@@ -5,7 +5,7 @@ import { contentHash } from './canonical.js'
 import { viaNative } from './viaNative.js'
 
 // The door for operations documents (operations-1.0; the roadmap, phase 4,
-// O1; decision 0029, phase 4): the domains vehicles — the vehicles a
+// O1; decision 0006): the domains vehicles — the vehicles a
 // project's trains run with — and timetables — its timetables and their
 // trains, the kinds of trains, the formations, connections, turnarounds,
 // delay scenarios and studies. What comes in is

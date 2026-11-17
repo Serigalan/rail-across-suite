@@ -3,14 +3,14 @@ import { checkOperations, contentHash, derivedId, fromOperations, OPERATIONS_SCH
 import { loadNativeFile } from '../native/node.js'
 import TIMETABLES_1_0 from '../../schemas/timetables/1.0.schema.json' with { type: 'json' }
 
-// Ids as the door writes them: UUIDs (decision 0029); a point names its place by id (timetables 1.0).
+// Ids as the door writes them: UUIDs (decision 0006); a point names its place by id (timetables 1.0).
 const point = (id, place) => ({ id: derivedId(id), operationalPointId: derivedId(place), trackId: null, stop: true, dwell: 60, departure: null, itineraryId: null })
 const train = (id, departure) => ({
   id: derivedId(id), number: '1', category: 'RE', name: '', vehicle: 'osrd:x', mode: null, comfort: 'STANDARD',
   departure, margin: '5 %', distribution: 'mareco', points: [point(`${id}a`, 'a'), point(`${id}b`, 'b')],
 })
 
-describe.skipIf(!loadNativeFile())('operations-1.0 (O1; decision 0029, phase 4)', () => {
+describe.skipIf(!loadNativeFile())('operations-1.0 (O1; decision 0006)', () => {
   it('takes a project\'s timetables into a document and gives them back, the trains by departure', () => {
     const record = { timetables: [{ id: 't', name: 'Takt', data: { trains: [train('b', 7200), train('a', 3600)] } }] }
     const doc = toOperations(record)
@@ -52,7 +52,7 @@ describe.skipIf(!loadNativeFile())('operations-1.0 (O1; decision 0029, phase 4)'
     expect(() => checkOperations(doc)).toThrow(PayloadError)
   })
 
-  it('keeps a timetable\'s construction scenarios with it (timetables 1.2, decision 0030)', () => {
+  it('keeps a timetable\'s construction scenarios with it (timetables 1.2, decision 0014)', () => {
     const scenario = {
       id: derivedId('bs'), name: 'Sperrung',
       closures: [{ id: derivedId('sp'), at: { anchor: 'station', trackId: derivedId('t1'), startStation: 100, endStation: 400 }, firstDay: '2027-05-03', lastDay: '2027-05-07', window: { from: 79200, to: 18000 } }],

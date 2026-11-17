@@ -7,7 +7,7 @@ has them, in the suite's look. Its tile on the start page opens it (`vehicles/`)
 ## What it does
 
 The suite's vehicles are OSRD's RailJSON rolling stock, kept on the server beside the projects
-([decision 0014](../../docs/decisions/0014-vehicles-in-osrds-form.md), `/api/vehicles`); OSRD's eleven example
+([decision 0012](../../docs/decisions/0012-operations-timetables-and-vehicles.md), `/api/vehicles`); OSRD's eleven example
 vehicles are built in and copied, not changed (`@rail-across/vehicles`).
 
 - **The catalogue** (`src/FleetPanel.jsx`): the suite's and OSRD's under their categories, with a search;

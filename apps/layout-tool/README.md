@@ -52,7 +52,7 @@ suite's: sign in on its sign-in page (`apps/home`), or the tool says where to si
 
 Without a server, the Layout-Tool runs in the suite's desktop app: the whole suite in one window, the project
 server in the app's own process ([`crates/desktop`](../../crates/desktop/README.md)). There is no build that runs in
-the browser alone ([decision 0021](../../docs/decisions/0021-one-format-one-build-the-project-in-the-module.md)).
+the browser alone ([decision 0006](../../docs/decisions/0006-the-format-rail-across-1.0.md)).
 
 ## Running a server
 

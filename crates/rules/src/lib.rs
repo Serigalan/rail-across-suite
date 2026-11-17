@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Serigalan and the Rail-Across-Suite contributors
 // SPDX-License-Identifier: LGPL-3.0-only
 
-//! The rules module of the core in Rust (decision 0020, step 3): DB Ril
+//! The rules module of the core in Rust (decision 0005): DB Ril
 //! 800.0110 as a catalogue of rules in a small expression language
 //! ([`expr`], [`katalog`]), applied to an element chain as the element table
 //! applies it ([`pruefung`] — `alignmentCheck.js`), turned into the limits a

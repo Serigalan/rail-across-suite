@@ -117,7 +117,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   for (const f of found) console.error(`${f.file}:${f.line}: ${f.rule} ('${f.spec}')`)
   if (found.length) {
     console.error(`\n${found.length} import(s) across a boundary. Apps import packages, never each other; ` +
-      'packages, the server and the services never import an app (docs/decisions/0001-one-repository.md).')
+      'packages, the server and the services never import an app (docs/decisions/0001-one-repository-one-licence.md).')
     process.exit(1)
   }
   console.log('boundaries: ok')

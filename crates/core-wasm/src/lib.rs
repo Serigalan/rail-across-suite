@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Serigalan and the Rail-Across-Suite contributors
 // SPDX-License-Identifier: LGPL-3.0-only
 
-//! The core's crates as one WebAssembly module (decision 0020), with no
+//! The core's crates as one WebAssembly module (decision 0005), with no
 //! bindings generator — as the simulation and the optimizer: the caller
 //! allocates a buffer in the module's memory, writes the request's JSON
 //! (UTF-8) into it, calls `run`, and reads the answer's JSON from the pointer

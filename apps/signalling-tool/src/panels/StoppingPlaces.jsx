@@ -49,7 +49,7 @@ export function StoppingPlacesSection({ entry, domain, net, core, ops, select, m
     const taken = new Set(mine.map(h => h.name))
     let name = base
     for (let n = 2; taken.has(name); n++) name = `${base} (${n})`
-    // The platform at it the Civil-Tool sets, which makes it a passenger stop (decision 0025).
+    // The platform at it the Civil-Tool sets, which makes it a passenger stop (decision 0008).
     const h = newStoppingPlace({ name, operationalPointId: pointId ?? undefined, trackId: s.trackId, from: s.from, to: s.to })
     ops.add('stoppingPlaces', h)
     setSource(null)
@@ -102,7 +102,7 @@ export function StoppingPlacesSection({ entry, domain, net, core, ops, select, m
 /**
  * A stopping place: its name, its stretch, and where it belongs — a station,
  * a platform; whether it is a passenger stop, which the Civil-Tool's platform
- * at it says (decision 0025). Its two ends can be picked on the plan anew, on its track, as
+ * at it says (decision 0008). Its two ends can be picked on the plan anew, on its track, as
  * the Layout-Tool picks a platform's: each at a signal or detection point
  * within reach.
  */

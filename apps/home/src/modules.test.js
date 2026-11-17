@@ -61,7 +61,7 @@ describe('opening a project', () => {
     expect(openUrl({ id: 'x', available: false }, 'p1', 'v1')).toBeNull()
   })
 
-  it('opens a variant in the Civil-Tool and the Catenary-Tool beside the start page (decision 0025)', () => {
+  it('opens a variant in the Civil-Tool and the Catenary-Tool beside the start page (decision 0008)', () => {
     expect(openUrl(toolOf('civil'), 'p1', 'v1')).toBe('civil/?project=p1&variant=v1')
     expect(openUrl(toolOf('catenary'), 'p1', 'v1')).toBe('catenary/?project=p1&variant=v1')
     expect(toolUrl(toolOf('catenary'), { action: 'storage' })).toBeNull()

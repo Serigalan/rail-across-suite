@@ -9,7 +9,7 @@ red open ends) is `src/core/map/topologyLayer.js`.
 
 ## Files
 
-The computation is Rust (decision 0020, step 10): `index.js` calls the core's module for each function and
+The computation is Rust (decision 0005): `index.js` calls the core's module for each function and
 gives back as Maps what it answers as objects.
 
 | In the crate | What it does |

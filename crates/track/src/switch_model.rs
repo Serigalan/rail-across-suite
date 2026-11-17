@@ -9,7 +9,7 @@ use serde_json::{Value, json};
 use crate::util::{obj, text};
 
 pub const LINK_KIND: &str = "link";
-/// A construction stage connector (decision 0027): three track ends, A joined to B1 while that exists and to B2
+/// A construction stage connector (decision 0007): three track ends, A joined to B1 while that exists and to B2
 /// from then on — not a switch: never both at once.
 pub const STAGE_LINK_KIND: &str = "stage_link";
 pub const DEFAULT_SWITCH_KIND: &str = "switch";

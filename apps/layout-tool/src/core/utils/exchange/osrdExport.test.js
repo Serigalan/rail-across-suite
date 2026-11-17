@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { electrificationsOf } from './osrdExport'
 
 const range = (id, trackId, startStation, endStation, voltage) => ({ id, trackId, startStation, endStation, voltage })
-// Contact wires over ranges of tracks, each carried at its ends (electrification 3.0, decision 0029).
+// Contact wires over ranges of tracks, each carried at its ends (electrification 3.0, decision 0006).
 const wired = (ranges) => ({ fields: {}, collections: {
   contactWires: ranges.map(r => ({ id: r.id, voltage: r.voltage })),
   masts: [],
@@ -12,7 +12,7 @@ const wired = (ranges) => ({ fields: {}, collections: {
   sectionInsulators: [],
 } })
 
-describe('the electrification as RailJSON (decisions 0025, 0029)', () => {
+describe('the electrification as RailJSON (decisions 0008 and 0006)', () => {
   it('writes one electrification per system, its ranges both ways, on the tracks the export holds', () => {
     const project = {
       electrification: wired([

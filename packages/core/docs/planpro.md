@@ -5,8 +5,8 @@
 Writing a project as a PlanPro 1.10 plan, valid against PlanPro's XSD 1.10.0.3, in the container file PlanPro
 tools exchange (`.planpro`). The infra-data-1.0 document is the model: the plan says of it what PlanPro has a
 place for — the net, its geometry, heights and cant, lines, operational points, platforms, turnouts and end
-marks, and the signalling domain `signalling` 1.0 ([decision 0011](../../../docs/decisions/0011-signalling-domain.md)).
-There is no import ([decision 0022](../../../docs/decisions/0022-planpro-export-only.md)): a plan holds too little
+marks, and the signalling domain `signalling` 1.0 ([decision 0009](../../../docs/decisions/0009-signalling.md)).
+There is no import ([decision 0010](../../../docs/decisions/0010-planpro-export-only.md)): a plan holds too little
 of a project to be taken in.
 
     writePlanPro(project, { signalling, now, version, rulesDate, planning })

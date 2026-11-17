@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 
 //! The point cloud import as a WebAssembly module for the browser's import
-//! worker (decision 0020, steps 7 and 10): LAS, LAZ and E57 read, converted
+//! worker (decision 0005): LAS, LAZ and E57 read, converted
 //! to the project's plane and tiled by `crates/pointcloud`, as the server's
 //! jobs do. The file is read and the tiles are written through the page, by
 //! four functions it gives the module (`ra`): `read` (a worker's

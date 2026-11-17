@@ -1,6 +1,6 @@
 import { JOINT_TOL, portsOf, trackEndAt } from '@rail-across/core/track'
 
-// What a construction stage connector (decision 0027) needs of the net: the
+// What a construction stage connector (decision 0007) needs of the net: the
 // track ends meeting at a place, the roles their tracks' days propose, and
 // what those days say against the connector.
 
@@ -36,7 +36,7 @@ const isDay = (v) => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v)
 
 /**
  * The roles the ends take at a stage connector, as their tracks' lifespans
- * say (decision 0028): B1 the one that goes (in service until a day, or a
+ * say (decision 0006): B1 the one that goes (in service until a day, or a
  * removal), B2 the one that comes (in service from a day, or new), A the one
  * that stays.
  */

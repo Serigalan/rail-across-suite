@@ -8,7 +8,7 @@ around a shared data core. Short form: Rail-Across. Projects are exchanged as `.
 ## Repository
 
 One repository holds the core, every module and the server
-([decision 0001](docs/decisions/0001-one-repository.md)):
+([decision 0001](docs/decisions/0001-one-repository-one-licence.md)):
 
 | Directory | Content |
 |---|---|
@@ -17,19 +17,19 @@ One repository holds the core, every module and the server
 | `apps/` | the modules: the suite's start page, the Layout-Tool, the Signalling-Tool, the Fahrzeug-Editor, the Fahrplan-Editor — timetables and running times in one interface —, and the Simulation-Tool's old address leading on to it |
 | `server/` | the project server's schema and HTTP tests, and the Node server they were written against, kept as reference ([server/README.md](server/README.md)) |
 | `crates/desktop/` | the desktop app: the whole suite in one Tauri window, the project server in the same process without user management ([crates/desktop/README.md](crates/desktop/README.md)) |
-| `sim/`, `crossover/`, `optimizer/` | Rust, built to WebAssembly for the browser: the running time simulation, the search of the extended switch connection, the track optimizer — splicing, reconnecting, optimizing, the alignment fit ([decision 0019](docs/decisions/0019-optimizer-in-rust.md)) |
-| `crates/` | the core's Rust crates, one cargo workspace with `sim/`, `crossover/` and `optimizer/` (`Cargo.toml` at the root); built as the core's WebAssembly module, and the project server for all modules, `crates/server` ([decision 0020](docs/decisions/0020-everything-in-rust.md)) |
+| `sim/`, `crossover/`, `optimizer/` | Rust, built to WebAssembly for the browser: the running time simulation, the search of the extended switch connection, the track optimizer — splicing, reconnecting, optimizing, the alignment fit ([decision 0005](docs/decisions/0005-rust-computes-javascript-shows.md)) |
+| `crates/` | the core's Rust crates, one cargo workspace with `sim/`, `crossover/` and `optimizer/` (`Cargo.toml` at the root); built as the core's WebAssembly module, and the project server for all modules, `crates/server` ([decision 0005](docs/decisions/0005-rust-computes-javascript-shows.md)) |
 | `docs/` | data model, decisions, glossary, conventions |
 | `tools/` | repository checks (`npm run check`, with the packages' lint, `npm run lint`) |
 
 The JavaScript parts — apps, packages and the server's tests — are one npm workspace: `npm install` at the root installs
 them all, `npm run check` checks the repository's rules. Data kept out of the history is fetched per app
-([decision 0008](docs/decisions/0008-data-outside-history.md)), for the Layout-Tool with `npm run data` in
+([decision 0001](docs/decisions/0001-one-repository-one-licence.md)), for the Layout-Tool with `npm run data` in
 `apps/layout-tool/`.
 
 How to contribute: [CONTRIBUTING.md](CONTRIBUTING.md).
 
-The project was called Open-Rail-Designer until it was renamed ([decision 0007](docs/decisions/0007-project-name.md)).
+The project was called Open-Rail-Designer until it was renamed ([decision 0002](docs/decisions/0002-project-name.md)).
 
 ## Roadmap
 
@@ -44,7 +44,7 @@ example vehicles also 2022 The OSRD Contributors.
 - **Everything** — code, schemas, documentation, `architecture.svg` — under the
   [GNU Lesser General Public License v3.0 only](LICENSE) (`LGPL-3.0-only`), which builds on the
   [GNU General Public License v3.0](LICENSE-GPL) — the licence of OSRD, whose simulation core the suite carries
-  ([decision 0015](docs/decisions/0015-lgpl.md)).
+  ([decision 0001](docs/decisions/0001-one-repository-one-licence.md)).
 - **Third-party material** keeps its own licence, listed in [THIRD-PARTY.md](THIRD-PARTY.md).
 
 Contributions are made under this licence and signed off (`Signed-off-by:`) after the

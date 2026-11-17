@@ -14,7 +14,7 @@ use serde::Deserialize;
 #[derive(Debug, Clone, Default, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Element {
-    /// `straight`, `arc` or `transition` (decision 0029, phase 6).
+    /// `straight`, `arc` or `transition` (decision 0006).
     pub element_type: Option<String>,
     pub transition_type: Option<String>,
     pub radius: Option<f64>,

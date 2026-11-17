@@ -6,7 +6,7 @@ import { groupHeading, kmTrackName } from './index.js'
 import { buildTypeFields } from './index.js'
 
 const line = (id, lineNumber, extra = {}) => ({ id, name: id, trackType: 'line', lineNumber, ...extra })
-// A station track names its operational point (decision 0028); the points of these tests by their ids.
+// A station track names its operational point (decision 0006); the points of these tests by their ids.
 const station = (id, operationalPointId, extra = {}) => ({ id, name: id, trackType: 'station', operationalPointId, ...extra })
 const POINTS = [
   { id: 'op-k', name: 'Könnern', uic: '8010205' }, { id: 'op-h', name: 'Halle (Saale) Hbf' }, { id: 'op-w', name: 'Wallwitz' },

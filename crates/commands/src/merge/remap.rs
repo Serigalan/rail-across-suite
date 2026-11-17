@@ -293,7 +293,7 @@ pub fn carry_references(project: &Value, logs: &[&[Value]], old_tracks: &dyn Fn(
         }
     }
     // Every other collection of the record that holds locations — the civil structures among them, and any
-    // to come — is carried as a layer's are (decision 0028, phase D).
+    // to come — is carried as a layer's are (decision 0006).
     for name in super::collections::collections_in(&[project]).into_iter().filter(|n| !n.contains('.')) {
         if ["tracks", "switches", "platforms", "endMarks", "routes"].contains(&name.as_str()) {
             continue;

@@ -1,4 +1,4 @@
-// The running times of trains over a variant's net (decision 0013): the way
+// The running times of trains over a variant's net (decision 0011): the way
 // over the net, what the physics needs of it, the simulation module (OSRD's
 // simulation core in Rust, sim/), the stations along the way — for the
 // Simulation-Tool and the Fahrplan-Editor.

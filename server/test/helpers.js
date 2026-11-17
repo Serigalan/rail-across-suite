@@ -11,7 +11,7 @@ export const PW = 'correct horse battery'
 const httpFetch = globalThis.fetch
 
 /**
- * The tests run against the project server (crates/server, decision 0020)
+ * The tests run against the project server (crates/server, decision 0005)
  * over HTTP: each on a database file of its own, the server started in its
  * test mode, where it takes the clock from x-ra-test-now, the peer's address
  * from x-ra-test-remote, and answers /api/__test/* — users made, the cloud
@@ -148,7 +148,7 @@ export async function signIn(app, login, password = PW) {
 
 /**
  * A body whose `payload` is a record, with the payload as its infra-data-1.0
- * document — as every client sends it (decision 0021: the API takes documents
+ * document — as every client sends it (decision 0005: the API takes documents
  * only). The tests write records; one the schemas refuse goes as it is
  * written, for the server to refuse.
  */

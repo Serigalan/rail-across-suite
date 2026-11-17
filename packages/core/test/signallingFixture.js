@@ -99,7 +99,7 @@ export function ksStation({ operationalPointId = 'op1' } = {}) {
 
 /**
  * The station's stopping places — the core's, as the record and the document
- * hold them (decision 0028): track 1 between A and N1, and t2 up to the target.
+ * hold them (decision 0006): track 1 between A and N1, and t2 up to the target.
  */
 export function ksStoppingPlaces({ operationalPointId = 'op1' } = {}) {
   return [

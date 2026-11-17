@@ -3,7 +3,7 @@
 // 6000 (2500 m) with the halt B-Halt's platform on it, and the station
 // C-Stadt behind a turnout — track 1 straight on, track 2 on the branch,
 // each with a platform. The line rises 10 m; the design speed is 100 km/h.
-// The places are points of the register, each track and platform naming its own (decision 0028); a stopping
+// The places are points of the register, each track and platform naming its own (decision 0006); a stopping
 // place at each platform.
 const E0 = 500000, N0 = 5600000
 const straight = (x0, y0, x1, y1) => ({

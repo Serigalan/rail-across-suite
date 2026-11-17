@@ -601,14 +601,14 @@ Die Prüfsummen sind hier gekürzt; in einer Datei hat jede ihre 64 Hexziffern.
 ## Verhältnis zur heutigen Implementierung
 
 Diese Spezifikation ist das Ziel des Datenmodells. Mit Stand 13. November 2026 weicht die Implementierung der Suite
-in diesen Punkten ab; jeder wird in einem eigenen Schritt angeglichen (Entscheidung 0028 und die folgenden):
+in diesen Punkten ab; jeder wird in einem eigenen Schritt angeglichen (Entscheidung 0006 und die folgenden):
 
 - Der Projektserver hält die Infrastruktur einer Variante als Dokument der Hülle von vorher (infra-data 2.0: ihre
   Domänen und ihre Blobs, core 5.0, civil 3.0, signalling 4.0, electrification 3.0) und den Betrieb als Dokument
   operations (vehicles 1.0, timetables 1.2); die Datei rail-across-1.0 führt sie zusammen, eine Datei von vorher
   wird weiter gelesen.
 - Der Record, mit dem die Werkzeuge arbeiten, behält Kilometrierungslinien in WGS 84 mit dem Kilometer je Punkt;
-  die Tür wandelt sie ins Dokument und zurück (Entscheidung 0029, Phase 6 nimmt das heraus). Eine
+  die Tür wandelt sie ins Dokument und zurück (Entscheidung 0006 nimmt das heraus). Eine
   Kilometrierungslinie von vorher steht als Punkte da, noch nicht mit Trassierungselementen angenähert.
 - Eine Domäne, die der Leser nicht kennt, bleibt erhalten; eine spätere Version einer Domäne, die er kennt, lehnt er
   ab, statt sie mit der Version zu lesen, die er kennt.
@@ -2146,7 +2146,7 @@ _Weitere Properties sind nicht erlaubt._
 
 #### ConstructionScenario
 
-Ein Bauszenario eines Fahrplans (Entscheidung 0030): Gleisstücke, die eine Zeit lang gesperrt sind, die herausgenommenen Züge, die von Hand umgeleiteten Züge. Es ändert keine Infrastruktur, nur wie der Fahrplan gefahren wird, solange es gilt.
+Ein Bauszenario eines Fahrplans (Entscheidung 0014): Gleisstücke, die eine Zeit lang gesperrt sind, die herausgenommenen Züge, die von Hand umgeleiteten Züge. Es ändert keine Infrastruktur, nur wie der Fahrplan gefahren wird, solange es gilt.
 
 _Weitere Properties sind nicht erlaubt._
 

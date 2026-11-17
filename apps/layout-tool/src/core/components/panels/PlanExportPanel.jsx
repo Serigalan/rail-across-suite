@@ -77,7 +77,7 @@ export default function PlanExportPanel({ onShowPlanPreview }) {
       <PlanSheetFields o={o} set={set} />
       <PlanContentSection o={o} set={set} />
       <FormSection title={t('plan_titleblock')}>
-        {/* The title block is the civil layer's, filled in the Civil-Tool (decision 0025); the Layout-Tool prints it. */}
+        {/* The title block is the civil layer's, filled in the Civil-Tool (decision 0008); the Layout-Tool prints it. */}
         {EDITS_CIVIL ? <>
           <div className="form-field">
             <select value={header.style} onChange={e => changeHeader({ ...header, style: e.target.value })}>

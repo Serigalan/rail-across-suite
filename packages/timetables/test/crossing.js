@@ -8,7 +8,7 @@ const straight = (x0, y0, x1, y1) => ({
   elementType: 'straight', startNode: [E0 + x0, N0 + y0], endNode: [E0 + x1, N0 + y1], length: Math.hypot(x1 - x0, y1 - y0),
   bearing: (Math.atan2(x1 - x0, y1 - y0) * 180 / Math.PI + 360) % 360, speed: 100,
 })
-// The stations are points of the register, each track and platform naming its own (decision 0028).
+// The stations are points of the register, each track and platform naming its own (decision 0006).
 const inStation = (point, number) => ({ trackType: 'station', operationalPointId: point, trackNumber: number })
 const at = (trackId, station, direction) => ({ anchor: 'station', trackId, station, side: 'right', direction })
 const main = (id, trackId, station, direction) => ({ id, name: id, kind: 'real', at: at(trackId, station, direction), logicalSignals: ks })

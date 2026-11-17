@@ -5,7 +5,7 @@ import compoundCurve from '../../test/fixtures/optimizer_service_compound_curve.
 import { built, optimizer } from '../../test/optimizerModule'
 
 // The optimizer as the panel runs it: the module of optimizer/ (Rust, decision
-// 0019), as cargo built it — skipped where it has not been. The optimization
+// 0005), as cargo built it — skipped where it has not been. The optimization
 // itself is held to the service's test tracks in
 // optimizer/crates/optimizer/tests/optimize.rs; here the answer has to come
 // back as a track this app will take.

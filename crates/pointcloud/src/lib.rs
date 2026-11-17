@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Serigalan and the Rail-Across-Suite contributors
 // SPDX-License-Identifier: LGPL-3.0-only
 
-//! Point clouds in Rust (decision 0020, step 7; `packages/pointcloud`): LAS,
+//! Point clouds in Rust (decision 0005; `packages/pointcloud`): LAS,
 //! LAZ and E57 read in pieces, tiled at several voxel levels, cut into thin
 //! sections, searched for rail heads to trace a track, registered onto each
 //! other and checked against the clearance contour — what the project server

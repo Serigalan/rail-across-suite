@@ -120,7 +120,7 @@ export function titleBlockOf({ legend, kind, scale, lines }, { project, header, 
 
 /** The overview: the network as a strip along the kilometrage. */
 export function assembleSchematic(record, o, { t, language }) {
-  // The platforms' stations by name, as the plan writes them (decision 0028).
+  // The platforms' stations by name, as the plan writes them (decision 0006).
   const project = withStationTexts(record)
   const plan = buildSchematicPlan({
     tracks: project.tracks ?? [],

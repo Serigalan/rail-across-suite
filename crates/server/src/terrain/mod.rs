@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Serigalan and the Rail-Across-Suite contributors
 // SPDX-License-Identifier: LGPL-3.0-only
 
-//! Ground heights from the DGM1 of the Länder (`terrain/`, decision 0019):
+//! Ground heights from the DGM1 of the Länder (`terrain/`, decision 0005):
 //! the kilometre tiles fetched once, kept, read bilinearly for points and
 //! drawn into terrain-RGB relief tiles for the map.
 

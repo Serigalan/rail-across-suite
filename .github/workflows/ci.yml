@@ -33,7 +33,7 @@ jobs:
           cache: npm
       - run: npm ci --no-audit --no-fund
         working-directory: .
-      # The core's Rust crates as its WebAssembly module (decision 0020): the
+      # The core's Rust crates as its WebAssembly module (decision 0005): the
       # tests run on it where a function has moved, and hold it to the JavaScript.
       - run: rustup target add wasm32-unknown-unknown
       - run: npm run wasm
@@ -56,7 +56,7 @@ jobs:
           cache: npm
       - run: npm ci --no-audit --no-fund
         working-directory: .
-      # The core's Rust module (decision 0020), which the core's functions run on.
+      # The core's Rust module (decision 0005), which the core's functions run on.
       - run: rustup target add wasm32-unknown-unknown && node packages/core/scripts/wasm.mjs
         working-directory: .
       # The import as a WebAssembly module (crates/pointcloud-wasm), which the tests run.
@@ -94,7 +94,7 @@ jobs:
           cache: npm
       - run: npm ci --no-audit --no-fund
         working-directory: .
-      # The core's Rust module (decision 0020), which the core's functions run on.
+      # The core's Rust module (decision 0005), which the core's functions run on.
       - run: rustup target add wasm32-unknown-unknown && node packages/core/scripts/wasm.mjs
         working-directory: .
       - run: npm test
@@ -114,7 +114,7 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - run: rustup target add wasm32-unknown-unknown
       - run: cargo build --release -p rail-across-sim-wasm --target wasm32-unknown-unknown
-      # The core's Rust module (decision 0020), which the core's functions run on.
+      # The core's Rust module (decision 0005), which the core's functions run on.
       - run: node packages/core/scripts/wasm.mjs
       - run: npm test
         working-directory: packages/running-times
@@ -135,7 +135,7 @@ jobs:
           cache: npm
       - run: npm ci --no-audit --no-fund
         working-directory: .
-      # The core's Rust module (decision 0020), which the core's functions run on.
+      # The core's Rust module (decision 0005), which the core's functions run on.
       - run: rustup target add wasm32-unknown-unknown && node packages/core/scripts/wasm.mjs
         working-directory: .
       - run: npm test
@@ -170,14 +170,14 @@ jobs:
           cache: npm
       - run: npm ci --no-audit --no-fund
         working-directory: .
-      # The core's Rust module (decision 0020), which the core's functions run on.
+      # The core's Rust module (decision 0005), which the core's functions run on.
       - run: rustup target add wasm32-unknown-unknown && node packages/core/scripts/wasm.mjs
         working-directory: .
       - run: npm run lint
       - run: npm test
       - run: npm run build
 
-  # The Catenary-Tool (decision 0025).
+  # The Catenary-Tool (decision 0008).
   catenary-tool:
     runs-on: ubuntu-24.04
     defaults:
@@ -191,7 +191,7 @@ jobs:
           cache: npm
       - run: npm ci --no-audit --no-fund
         working-directory: .
-      # The core's Rust module (decision 0020), which the core's functions run on.
+      # The core's Rust module (decision 0005), which the core's functions run on.
       - run: rustup target add wasm32-unknown-unknown && node packages/core/scripts/wasm.mjs
         working-directory: .
       - run: npm run lint
@@ -212,7 +212,7 @@ jobs:
           cache: npm
       - run: npm ci --no-audit --no-fund
         working-directory: .
-      # The core's Rust module (decision 0020), which the capacity is computed in.
+      # The core's Rust module (decision 0005), which the capacity is computed in.
       - run: rustup target add wasm32-unknown-unknown && node packages/core/scripts/wasm.mjs
         working-directory: .
       - run: npx vitest run
@@ -221,7 +221,7 @@ jobs:
       - run: npm test
       - run: npm run build
 
-  # The Construction-Sim (decision 0027).
+  # The Construction-Sim (decision 0007).
   construction-sim:
     runs-on: ubuntu-24.04
     defaults:
@@ -235,14 +235,14 @@ jobs:
           cache: npm
       - run: npm ci --no-audit --no-fund
         working-directory: .
-      # The core's Rust module (decision 0020), which the stages are worked out in.
+      # The core's Rust module (decision 0005), which the stages are worked out in.
       - run: rustup target add wasm32-unknown-unknown && node packages/core/scripts/wasm.mjs
         working-directory: .
       - run: npm run lint
       - run: npm test
       - run: npm run build
 
-  # All of the suite's Rust, one cargo workspace (decision 0020): the
+  # All of the suite's Rust, one cargo workspace (decision 0005): the
   # simulation core with OSRD's cases, the crossover search, the optimizer with
   # the shared rule vectors, the core's crates with the vectors the JavaScript
   # core records; clippy and the format; the core's WebAssembly module.
@@ -257,7 +257,7 @@ jobs:
       - run: cargo build --release -p rail-across-core-wasm --target wasm32-unknown-unknown
 
   # The project server's tests (server/test) against it (crates/server,
-  # decision 0020) over HTTP, its command line and its jobs.
+  # decision 0005) over HTTP, its command line and its jobs.
   project-server:
     runs-on: ubuntu-24.04
     defaults:
@@ -271,14 +271,14 @@ jobs:
           cache: npm
       - run: npm ci --no-audit --no-fund
         working-directory: .
-      # The core's Rust module (decision 0020), which the core's functions run on.
+      # The core's Rust module (decision 0005), which the core's functions run on.
       - run: rustup target add wasm32-unknown-unknown && node packages/core/scripts/wasm.mjs
         working-directory: .
       - run: cargo build --release -p rail-across-server
         working-directory: .
       - run: npx vitest run
 
-  # The desktop app (decision 0020, step 9): Tauri with the project server in
+  # The desktop app (decision 0005): Tauri with the project server in
   # its own process, a cargo workspace of its own for WebKitGTK; its smoke
   # check under Xvfb loads a page through the app's URI scheme and asks the API.
   desktop:
@@ -354,7 +354,7 @@ jobs:
           cache: npm
       - run: npm ci --no-audit --no-fund
         working-directory: .
-      # The core's Rust module (decision 0020), which the core's functions run on.
+      # The core's Rust module (decision 0005), which the core's functions run on.
       - run: rustup target add wasm32-unknown-unknown && node packages/core/scripts/wasm.mjs
         working-directory: .
       - run: npm run lint
@@ -376,7 +376,7 @@ jobs:
           cache: npm
       - run: npm ci --no-audit --no-fund
         working-directory: .
-      # The core's Rust module (decision 0020), which the core's functions run on.
+      # The core's Rust module (decision 0005), which the core's functions run on.
       - run: rustup target add wasm32-unknown-unknown && node packages/core/scripts/wasm.mjs
         working-directory: .
       - run: rustup target add wasm32-unknown-unknown
@@ -399,7 +399,7 @@ jobs:
           cache: npm
       - run: npm ci --no-audit --no-fund
         working-directory: .
-      # The core's Rust module (decision 0020), which the core's functions run on.
+      # The core's Rust module (decision 0005), which the core's functions run on.
       - run: rustup target add wasm32-unknown-unknown && node packages/core/scripts/wasm.mjs
         working-directory: .
       - run: npm run lint
@@ -421,7 +421,7 @@ jobs:
       # One install for the whole workspace: apps, packages and the server.
       - run: npm ci --no-audit --no-fund
         working-directory: .
-      # The core's Rust module (decision 0020), which the core's functions run on.
+      # The core's Rust module (decision 0005), which the core's functions run on.
       - run: rustup target add wasm32-unknown-unknown && node packages/core/scripts/wasm.mjs
         working-directory: .
       - run: node tools/data.mjs
@@ -430,7 +430,7 @@ jobs:
       - run: npm run i18n:unused
       - run: node tools/modules.mjs
       - run: node tools/docs.mjs
-      # The Rust modules beside the page (decisions 0018, 0019), so the tests
+      # The Rust modules beside the page (decision 0005), so the tests
       # that run them run too and the builds carry them.
       - run: rustup target add wasm32-unknown-unknown
       - run: npm run crossover

@@ -7,7 +7,7 @@ import { directionOf } from './path.js'
  * its id — the id of its point of the operational point register (R10),
  * which names it; its name is only what it is shown by. A station (Bahnhof)
  * is the station tracks of one point (trackKind 'station', the point they
- * name, decision 0028), with the
+ * name, decision 0006), with the
  * platforms on them or of it; a halt (Haltepunkt) a point only platforms
  * are of — no track of its own, platforms on the line's tracks. A point of
  * the register with stopping places of the Signalling-Tool is a station too,
@@ -154,7 +154,7 @@ export const stationNamed = (stations, name) => {
 /** The station of that id among `stations`, or null. */
 export const stationById = (stations, id) => (id ? stations.find(s => s.id === id) ?? null : null)
 
-/** The id of the place a train's point names: its operational point's, or its end mark's (timetables 1.0, decision 0029). */
+/** The id of the place a train's point names: its operational point's, or its end mark's (timetables 1.0, decision 0006). */
 export const placeIdOf = (point) => point?.operationalPointId ?? point?.endMarkId ?? null
 
 /** The place a train's point names, by its id. */

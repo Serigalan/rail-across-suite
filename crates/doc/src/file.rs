@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Serigalan and the Rail-Across-Suite contributors
 // SPDX-License-Identifier: LGPL-3.0-only
 
-//! The file rail-across-1.0 (`.railacross.json`; decision 0029, phase 5): one
+//! The file rail-across-1.0 (`.railacross.json`; decision 0006): one
 //! project in one file — its infrastructure (the part infra-data-1.0) and its
 //! operation (the part operations-1.0), each part its domains, the blobs of both
 //! together; the envelope naming the project, the program that wrote the file and
@@ -117,7 +117,7 @@ fn check_envelope(file: &Value) -> Result<()> {
 }
 
 /// Whether a parsed file says it is one of rail-across — of any version: its parts beside its envelope. (The
-/// envelope of before decision 0021 had the same name, and its domains at its top.)
+/// envelope of before decision 0006 had the same name, and its domains at its top.)
 pub fn is_file(data: &Value) -> bool {
     data.get("format").and_then(Value::as_str) == Some(FORMAT) && (data.get("infraData").is_some() || data.get("operations").is_some())
 }

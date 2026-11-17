@@ -64,7 +64,7 @@ const trackName = (track) => (track ? track.name || trackLabel(track) : '')
 
 /**
  * Splice two tracks into one (R5.5; the construction is the optimizer
- * module's, computed in the browser for both builds — decision 0019 of the
+ * module's, computed in the browser for both builds — decision 0005 of the
  * suite —, the commit in commands/splice). Two elements are
  * picked, in either order; the splice finds which ends meet and which one
  * departs (AP S.2) and joins them by an arc, re-shaped arcs or a transition —
@@ -165,7 +165,7 @@ export default function SpliceElementPanel() {
     })
     : null
   // A request as the key carries it, solved by the optimizer module — held
-  // to a spacing with the neighbour's axis put in (decision 0019).
+  // to a spacing with the neighbour's axis put in (decision 0005).
   const solveRequest = (req, signal) => runOptimizer('splice',
     req.clearance ? { ...req, clearance: { ...req.clearance, ref: axis } } : req, { signal })
   useEffect(() => {

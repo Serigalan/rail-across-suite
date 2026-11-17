@@ -2,7 +2,7 @@ import { viaNative } from './viaNative.js'
 
 /**
  * The states a project passes through, worked out of its lifespans (decision
- * 0028): the existing one, one for every day something is put into or taken
+ * 0007): the existing one, one for every day something is put into or taken
  * out of service (a lifespan's `from`, the day after its `to` — of a track,
  * switch, platform, end mark, civil structure or an object of a layer), the
  * final one. Nothing of it is kept: there is no register of stages. The

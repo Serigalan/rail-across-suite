@@ -1,16 +1,16 @@
 // SPDX-FileCopyrightText: 2026 Serigalan and the Rail-Across-Suite contributors
 // SPDX-License-Identifier: LGPL-3.0-only
 
-//! The one door for infra-data documents (`door.js`; decision 0021 — what
+//! The one door for infra-data documents (`door.js`; decision 0006 — what
 //! was "the core 1.0 document"): what comes in is checked
 //! here — the file's shape, each domain's version and schema, every object
 //! against its domain's schema, the blobs against their hashes, what a schema
 //! cannot say (a lifespan's days) — and what is written is checked the same
 //! way before it leaves. A document of before is brought forward: an
-//! infra-data 1.0 document to 2.0, the layers of decision 0025 (S-R10), a
+//! infra-data 1.0 document to 2.0, the layers of decision 0008 (S-R10), a
 //! domain of an earlier schema of 2.0 to 2.0's last — both told apart by the
 //! schemas' hashes, as they were then —, and from there version by version
-//! (`STEPS`; decision 0028: every change of a schema raises the number).
+//! (`STEPS`; decision 0006: every change of a schema raises the number).
 
 use std::collections::{HashMap, HashSet};
 use std::sync::OnceLock;
@@ -32,7 +32,7 @@ pub const VERSION: &str = "2.0";
 pub const VERSION_BEFORE: &str = "1.0";
 /// The format's name as it is spoken of: infra-data-2.0.
 pub const FORMAT_NAME: &str = "infra-data-2.0";
-/// The envelope the same documents had before decision 0021 ("the core 1.0
+/// The envelope the same documents had before decision 0006 ("the core 1.0
 /// document"), which only the project server's one migration still reads
 /// (`upgrade_envelope`).
 pub const OLD_FORMAT: &str = "rail-across";
@@ -105,13 +105,13 @@ const LAYOUT_FIRST: &str = "sha256:b2280dcf6cfe779e148b6c402ac46eb4ff1e8d96b55e6
 /// and before it held the named runs of tracks, which civil 1.0 held first.
 const CORE_2_FIRST: &str = "sha256:53f47ced7884515ad1ed5ef2f19e4eb2b895a45b76797751110e99e2f4d08877";
 const CORE_2_SECOND: &str = "sha256:9a5f24df5585bebdd3386021af91aa98325de4c80c5d13fca7092d2eb79ae84f";
-/// Core 2.0 with the runs, before its stages had days and switches a stage link (decision 0027).
+/// Core 2.0 with the runs, before its stages had days and switches a stage link (decision 0007).
 const CORE_2_THIRD: &str = "sha256:3c3b80c99c8ba41e0ab2da7c00e1f821a0231e821afd11c2888b5350390bea5c";
 /// Civil 1.0 with the named runs of tracks.
 const CIVIL_FIRST: &str = "sha256:0b73763db4b8ca57f56472f4b8aeef8a8b02369f4f8a9e3f2b4072480c48b1fb";
 /// Civil 1.0 without the runs, before its bridges, retaining walls and noise barriers.
 const CIVIL_SECOND: &str = "sha256:252301f2051a66b451c4c6c8280af0e0f5aca2ca09fa6db2fcf53e9d8c402a60";
-/// The domains as infra-data 2.0 had them last, before versions counted (decision 0028): the version and the
+/// The domains as infra-data 2.0 had them last, before versions counted (decision 0006): the version and the
 /// schema each went by. What the steps by number start from.
 const CORE_2_LAST: &str = "sha256:98b48fc30ca564b929df9b839b49d918c4f6c5b2f7d29393cce8e268818a32e3";
 const CIVIL_LAST: &str = "sha256:976db8ee32fc843127777a4a90345dcb074d6cb962916ec0b4856b693a6d241b";
@@ -123,7 +123,7 @@ const PAST: &[(&str, &str, &str)] = &[
     ("civil", "1.0", CIVIL_LAST),
     ("signalling", "2.0", SIGNALLING_2_LAST),
     ("electrification", "1.0", ELECTRIFICATION_LAST),
-    // Lifespans by day, a reference free to name nothing (decision 0028, phase A).
+    // Lifespans by day, a reference free to name nothing (decision 0007).
     ("core", "3.0", "sha256:72e2181866b52fa05ca684e66c5b2e4fcc91fdf46f57ad63a0690ccfec210805"),
     ("civil", "2.0", "sha256:b96345ebf422de4fb8d7c1bf426b6db7468f5f85f36d531df86a2e0d17f4e03c"),
     ("signalling", "3.0", "sha256:cb1bad694c35458f33858b91d4893c137da0c378ce92a7a7217addbc13d27083"),
@@ -132,17 +132,17 @@ const PAST: &[(&str, &str, &str)] = &[
         "2.0",
         "sha256:812af795a72e4fec5e9f15cfec93bf2180907775ee98db987a9d8c92dfec2eb9",
     ),
-    // Every reference names an object, the kinds still numbers (decision 0028, phase C).
+    // Every reference names an object, the kinds still numbers (decision 0006).
     ("core", "3.1", "sha256:47b5516e9ea7bcf1e059a157091df3f9675d384f4daebe7e1d49c6ad590bcf2c"),
     ("civil", "2.1", "sha256:19ddfd584a19ab1a7011bd3d207b7838446482357c7a5933e0366a268f17f879"),
     ("signalling", "3.1", "sha256:2b365df5f72c616a99c70729f50afd5fdd243f14cff4798f78a70f0855a1e14d"),
-    // Electrified ranges of tracks with their systems, before masts and contact wires (decision 0029, phase 3).
+    // Electrified ranges of tracks with their systems, before masts and contact wires (decision 0006).
     (
         "electrification",
         "2.1",
         "sha256:45c09436f949eb966d091985b23378eb9736d0db4f2991957f78209f07dbf8a1",
     ),
-    // A switch with B1 its main track (decision 0029, phase 1), before core 5.0 had B1 its branch again.
+    // A switch with B1 its main track (decision 0006), before core 5.0 had B1 its branch again.
     ("core", "4.0", "sha256:2dd6dee14dc22be99741f2b095a314185273f3662f809433d7639fe4c59f6abf"),
 ];
 
@@ -455,7 +455,7 @@ fn sorted_by_id(mut items: Vec<Value>) -> Vec<Value> {
     items
 }
 
-/// infra-data 1.0, its domains at 1.0's last schemas, as infra-data 2.0 (decision 0025):
+/// infra-data 1.0, its domains at 1.0's last schemas, as infra-data 2.0 (decision 0008):
 /// `layout` and the platforms into `civil`; the stopping places out of `signalling` into
 /// the core, a stopping place's platform into the platform's `stoppingPlaceIds`; a
 /// boundary marked by a platform marked by the stopping place at it, one made over the
@@ -579,7 +579,7 @@ fn version_of<'a>(doc: &'a Value, name: &str) -> Option<&'a str> {
     doc["domains"].get(name)?.get("version")?.as_str()
 }
 
-/// Lifespans by day (decision 0028): a lifespan named construction stages of `core.fields.stages` — the first
+/// Lifespans by day (decision 0007): a lifespan named construction stages of `core.fields.stages` — the first
 /// the existing state, the last the final one, each between them beginning on its day —, and states days now.
 /// A `from` is the day its stage begins, a `to` the day before its stage does; the final stage is "open", as is
 /// a stage the list lacks or one without a day; a `from` at the existing state is no statement. The list goes.
@@ -632,7 +632,7 @@ fn lifespans_by_day(doc: &Value) -> Value {
     Value::Object(out)
 }
 
-/// References that name something (decision 0028, phase C): a document of before could hold a reference to an
+/// References that name something (decision 0006): a document of before could hold a reference to an
 /// object that was not there — the tools reported it instead —; it is cut as the deletion of that object would
 /// have cut it (`without_dangling`). The domains are at the step's versions after it.
 fn references_resolved(doc: &Value) -> Value {
@@ -646,7 +646,7 @@ fn references_resolved(doc: &Value) -> Value {
     out
 }
 
-/// Core 4.0 (decision 0029, phases 1 and 2): the kinds as words, the references ending in `Id`, no plane of an
+/// Core 4.0 (decision 0006): the kinds as words, the references ending in `Id`, no plane of an
 /// element's own, a switch with `B1` its main track (`words`); a km line in one plane as runs (`km_lines`), every id
 /// a UUID (`ids`). The domains are at the step's versions after it.
 fn words_and_names(doc: &Value) -> Value {
@@ -655,7 +655,7 @@ fn words_and_names(doc: &Value) -> Value {
     let Some(Value::Object(domains)) = out.get_mut("domains") else { return out };
     crate::words::forward(domains);
     crate::words::swap_switch_ports(domains);
-    // A km line in one plane, its runs' points as blobs; every id a UUID (decision 0029, phase 2).
+    // A km line in one plane, its runs' points as blobs; every id a UUID (decision 0006).
     crate::core_format::km_lines_to_document(domains, &mut blobs);
     crate::ids::forward(domains);
     crate::core_format::sorted_collections(domains);
@@ -668,7 +668,7 @@ fn words_and_names(doc: &Value) -> Value {
     out
 }
 
-/// Electrification 3.0 (decision 0029, phase 3): an electrified range of a track with its system becomes a
+/// Electrification 3.0 (decision 0006): an electrified range of a track with its system becomes a
 /// contact wire of that voltage, carried at both ends of the range by a suspension point on a mast there — where
 /// a wire runs follows from what carries it, so it runs where the range ran. Name and lifespan go with the wire,
 /// the lifespan with the masts and points too; their ids are drawn from the range's.
@@ -722,7 +722,7 @@ fn contact_wires(doc: &Value) -> Value {
     out
 }
 
-/// Core 5.0 (decision 0029, phase 6): a switch's `B1` its branch and `B2` its main track again, as the suite always
+/// Core 5.0 (decision 0006): a switch's `B1` its branch and `B2` its main track again, as the suite always
 /// had them and the OSRD export writes them.
 fn switch_ports(doc: &Value) -> Value {
     let mut out = doc.clone();
@@ -1072,7 +1072,7 @@ pub fn check_document(given: &Value) -> Result<Value> {
         }
     }
     found.extend(switch_branches_without_switch(&doc));
-    // What the schema cannot say of a reference: it names an object of its collection (decision 0028, phase C).
+    // What the schema cannot say of a reference: it names an object of its collection (decision 0006).
     if found.is_empty() {
         for r in dangling(&doc) {
             found.push(format!(
@@ -1091,7 +1091,7 @@ pub fn check_document(given: &Value) -> Result<Value> {
 }
 
 /// What the schema cannot say: an element marked as a switch's branch names
-/// the switch it belongs to (the rule the record's door held before decision 0021).
+/// the switch it belongs to (the rule the record's door held before decision 0006).
 fn switch_branches_without_switch(doc: &Value) -> Vec<String> {
     let tracks = doc["domains"]["core"]["collections"]["tracks"].as_array().cloned().unwrap_or_default();
     let mut found = Vec::new();
@@ -1135,10 +1135,10 @@ pub fn from_document(doc: &Value) -> Result<Value> {
     document_to_record(&check_document(doc)?)
 }
 
-/// A document of the envelope before decision 0021 (`format: "rail-across"`,
+/// A document of the envelope before decision 0006 (`format: "rail-across"`,
 /// no version) in today's (`format: "infra-data"`, `version: "1.0"`) — the
 /// domains are the same. Anything else comes back as it was. Only the project
-/// server's migration of its revisions calls this (decision 0021, point 2).
+/// server's migration of its revisions calls this (decision 0006).
 pub fn upgrade_envelope(doc: &Value) -> Value {
     match doc {
         Value::Object(o) if o.get("format").and_then(Value::as_str) == Some(OLD_FORMAT) => {

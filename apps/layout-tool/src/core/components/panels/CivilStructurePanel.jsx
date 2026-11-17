@@ -12,7 +12,7 @@ import FormSection from '../form/FormSection'
 import InfoTip from '../form/InfoTip'
 
 /**
- * What each kind of civil structure states (decision 0025): its kinds, whether
+ * What each kind of civil structure states (decision 0008): its kinds, whether
  * it stands on a side of the track at a distance from its axis, its height,
  * and for a bridge its spans, what it crosses and the clear height under it.
  */

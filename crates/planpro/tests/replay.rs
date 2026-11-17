@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 
 //! The reader's vectors, recorded from its JavaScript before it went (decision
-//! 0020, step 10), replayed on the crate: the reader is no part of the
+//! 0005), replayed on the crate: the reader is no part of the
 //! WebAssembly module any more — only the check of the export — so this test,
 //! not `crates/core-wasm/tests/replay.rs`, replays them. Each case is
 //! `{ op, input, output | error }`, compared as that test compares them.

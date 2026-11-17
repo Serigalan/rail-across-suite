@@ -1,4 +1,4 @@
-//! operations-1.0 (the roadmap, phase 4, O1; decision 0029, phase 4): the
+//! operations-1.0 (the roadmap, phase 4, O1; decision 0006): the
 //! timetables as the suite keeps them into a document of the domains vehicles
 //! and timetables and back, a document of before brought to them, the door's
 //! verdicts, and the vectors the JavaScript wrote (schemas/vectors/operations.json)

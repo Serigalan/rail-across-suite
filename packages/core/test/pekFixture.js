@@ -15,7 +15,7 @@ import { withStationPoints } from '../src/document/stations.js'
  * `switchId`, `kind`, `formVersion` and its `ports`, every switch element the
  * id of the switch its `switchName` names — and no name of its own after that
  * —, every transition both its cant ends, which it took from its neighbours,
- * and its stations, stated as text, operational points (decision 0028).
+ * and its stations, stated as text, operational points (decision 0006).
  */
 const CANDIDATES = [
   process.env.OLT_PEK_FIXTURE,
@@ -30,7 +30,7 @@ const SIDES = { 1: 'regular', 2: 'opposite' }
 
 /**
  * A record of before in the words the record states since it follows the
- * document (decision 0029, phase 6) — what the door would make of it: an
+ * document (decision 0006) — what the door would make of it: an
  * element's kind, a track's kind and side as words, a switch `switch` where
  * it says `turnout`.
  */
@@ -87,7 +87,7 @@ export function loadPek() {
 /**
  * The same line as it stands, at larger scale (113 tracks, 69 switches, two
  * double-track networks with crossovers) — a project file the
- * Open-Layout-Tool exported before decision 0021, its record read directly. Looked for under OLT_PEK_EXISTING_FIXTURE or the project
+ * Open-Layout-Tool exported before decision 0006, its record read directly. Looked for under OLT_PEK_EXISTING_FIXTURE or the project
  * notes; tests that need it are skipped where it is not there.
  */
 const EXISTING_PATH = [

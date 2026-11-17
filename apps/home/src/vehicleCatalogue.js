@@ -1,6 +1,6 @@
 /**
  * The suite's vehicle catalogue as the start page needs it for a project's
- * operations file (decision 0026): every vehicle there is — OSRD's built in,
+ * operations file (decision 0012): every vehicle there is — OSRD's built in,
  * the server's —, to carry those the trains run with on export, and to make one
  * a file brings that the catalogue lacks on import. Loaded only when asked.
  */

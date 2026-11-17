@@ -7,7 +7,7 @@ which is why it is a package of its own.
 
 The import is Rust: `crates/pointcloud` (the readers — LAZ through the `laz` crate —, the tiles, the levels,
 the conversion to the project's plane), built as a WebAssembly module by `crates/pointcloud-wasm` (`npm run
-wasm`, into `wasm/`) and called through `src/native.js` (decision 0020, steps 7 and 10). Every call is
+wasm`, into `wasm/`) and called through `src/native.js` (decision 0005). Every call is
 synchronous: the file is read through `source.readSync(offset, length)` — a worker's `FileReaderSync` — and
 each level's tiles go to `writers[level].append(bytes)`, which answers where it put them. The project server's
 jobs run the same crate natively.

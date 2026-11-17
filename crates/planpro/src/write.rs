@@ -238,7 +238,7 @@ fn point(v: Option<&Value>) -> Option<(f64, f64)> {
     Some((a.first()?.as_f64()?, a.get(1)?.as_f64()?))
 }
 
-/// The states of the plan an object is in (start, target), from its lifespan (decision 0028): the start
+/// The states of the plan an object is in (start, target), from its lifespan (decision 0007): the start
 /// state is the existing one — what states no first day —, the target the final one — what states no last.
 fn states(v: &Value) -> (bool, bool) {
     use rail_across_doc::stages::{State, stands};
@@ -875,7 +875,7 @@ pub fn write_planpro(project: &Value, options: &Value) -> Result<Value, String> 
     let core = &doc["domains"]["core"];
     let fields = &core["fields"];
     let c = |k: &str| core.get("collections").map(|c| list(c, k)).unwrap_or(&[]);
-    // The platforms are civil's in infra-data-2.0 (decision 0025); a document of 1.0 had them in the core.
+    // The platforms are civil's in infra-data-2.0 (decision 0008); a document of 1.0 had them in the core.
     let civil = &doc["domains"]["civil"];
     let platforms: Vec<&Value> = c("platforms")
         .iter()
@@ -1300,7 +1300,7 @@ pub fn write_planpro(project: &Value, options: &Value) -> Result<Value, String> 
     // ── signalling ──
     let empty = json!({});
     // The editor holds its domain in the record's words and ids; the document states them as core 4.0 does
-    // (decision 0029, phases 1 and 2).
+    // (decision 0006).
     let given = options.get("signalling").filter(|d| d.is_object()).map(|d| {
         let mut domains = serde_json::Map::new();
         domains.insert("signalling".into(), d.clone());

@@ -40,7 +40,7 @@ export default function record() {
     const [hydrated] = hydrateProjects([clone(r)])
     kept.push(call('project.dehydrateProjects', [hydrated], () => dehydrateProjects([hydrated])))
   }
-  // Another format — an oltjson file among them — is refused (decision 0021).
+  // Another format — an oltjson file among them — is refused (decision 0006).
   const oltjson = { format: 'oltjson', version: '1.1', projects: [] }
   kept.push(call('project.parseProjectsPayload', oltjson, () => parseProjectsPayload(oltjson)))
   const tracks = tracksDocument([mainTrack()])

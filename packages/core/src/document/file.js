@@ -1,6 +1,6 @@
 import { viaNative } from './viaNative.js'
 
-// The file rail-across-1.0 (`.railacross.json`; decision 0029, phase 5): one
+// The file rail-across-1.0 (`.railacross.json`; decision 0006): one
 // project in one file — its infrastructure (the part infra-data-1.0) and its
 // operation (the part operations-1.0), the blobs of both together, the
 // envelope naming the project, the program that wrote it and when; no schemas

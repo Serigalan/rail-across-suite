@@ -56,7 +56,7 @@ export function TrackTableBar({ title, length, days, cap, onCap, onMaxSpeeds, on
 }
 
 /**
- * The days a whole track is in service (decisions 0027, 0028): its lifespan's
+ * The days a whole track is in service (decision 0007): its lifespan's
  * first and last, each a browser date field (ISO 8601), empty where the
  * lifespan states none or "open". They are the track's and not an element's,
  * so they stand in the table's head and not in a column. `onChange(key, day)`

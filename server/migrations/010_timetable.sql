@@ -1,4 +1,4 @@
--- The timetables of a project, for the Fahrplan-Editor (decision 0016): its
+-- The timetables of a project, for the Fahrplan-Editor (decision 0012): its
 -- trains — their numbers, vehicles, departures, the stations they start at,
 -- stop at, pass and end at — as JSON (data), beside the project's variants,
 -- not in a revision: a timetable is laid on any variant of its project, the

@@ -1,5 +1,5 @@
 -- A project's operations in revisions (operations-1.0; the roadmap, phase 4,
--- O2; decision 0026): each revision the whole operations document of the
+-- O2; decision 0012): each revision the whole operations document of the
 -- project — its timetables and their trains, the kinds of trains, the
 -- formations, … — immutable, numbered per project, by hash, as a variant's
 -- states are. A timetable saved makes a new revision; `changed` names the

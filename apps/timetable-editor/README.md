@@ -1,7 +1,7 @@
 # Fahrplan-Editor
 
 The timetables of a project, laid on the net of one of its variants
-([decision 0016](../../docs/decisions/0016-timetables-of-a-project.md)). The start page lists the projects under
+([decision 0012](../../docs/decisions/0012-operations-timetables-and-vehicles.md)). The start page lists the projects under
 *Fahrplan-Sim* and opens a variant here, `timetable/?project=<id>&variant=<id>` (`&action=view` its head alone,
 `&timetable=<id>&train=<id>` the timetable and train shown). The net is this browser's working copy of the variant
 where there is one, else its head, and only read; the timetables are the project's, on the server.

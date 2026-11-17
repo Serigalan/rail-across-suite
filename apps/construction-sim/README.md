@@ -1,12 +1,12 @@
 # Construction-Sim
 
-The Baubetriebs-Sim of Rail-Across-Suite ([decision 0027](../../docs/decisions/0027-construction-stages-by-their-days.md);
+The Baubetriebs-Sim of Rail-Across-Suite ([decision 0007](../../docs/decisions/0007-lifespans-by-day.md);
 [roadmap](../../ROADMAP.md), phase 5): a variant's net construction stage by construction stage — the existing
 state, every day something is put into or taken out of service, the final state. For each stage the map shows
 what is in service then, what comes into service that day (red) and what leaves it after (orange); the list says
 it track by track and connector by connector.
 
-Its **construction scenarios** ([decision 0030](../../docs/decisions/0030-conflict-areas-and-construction-scenarios.md))
+Its **construction scenarios** ([decision 0013](../../docs/decisions/0013-capacity.md))
 run a project's timetable on the net of a day: stretches of track closed for a while — picked on the plan, all day or
 in a daily window (possession) —, trains taken out, trains diverted by hand on their points. Each train says how it
 fares — as planned, diverted around a closure, diverted by hand, not runnable, taken out — beside its regular run:

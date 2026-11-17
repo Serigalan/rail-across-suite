@@ -9,7 +9,7 @@ axis points (the fit itself runs in the optimizer module).
 
 ## Files
 
-The computation is Rust (decision 0020, step 10): `index.js` calls the core's module for each function
+The computation is Rust (decision 0005): `index.js` calls the core's module for each function
 (`crates/survey`); its JavaScript is gone, the vectors it was held to are frozen.
 
 | In `crates/survey/src/` | What it does |

@@ -1,37 +1,52 @@
 # Decisions
 
-Each decision that shapes the repository or the shared data gets a record here: what was decided, why, and what
-it costs. A record is not rewritten when a decision changes; a new one replaces it and says so.
+Each decision that shapes the repository or the shared data has a record here: what was decided, why, and what it
+costs. A record states the decision **as it holds now**. When a decision changes, its record is rewritten, and a
+decision overruled goes; the way there is in the history of the repository. The records were put in this order on
+2026-11-17, from the thirty kept until then.
 
-| No. | Decision | Status |
-|---|---|---|
-| [0001](0001-one-repository.md) | One repository for the core, all modules and the services | accepted |
-| [0002](0002-licences.md) | Code under Apache-2.0, documentation under CC BY 4.0, contributions signed off | replaced by 0015 |
-| [0003](0003-construction-stages.md) | Construction stages as lifespans on one state | accepted |
-| [0004](0004-ids-on-tracks.md) | Ids on tracks, not on their elements | accepted |
-| [0005](0005-sketch-mode.md) | A sketch mode in every module | accepted |
-| [0006](0006-capacity-on-osrd.md) | Open-Capacity-Sim builds on OSRD | replaced by 0023 |
-| [0007](0007-project-name.md) | The project's name: Rail-Across-Suite | accepted |
-| [0008](0008-data-outside-history.md) | Large data outside the history, fetched by version and hash | accepted |
-| [0009](0009-core-1-0-in-the-data-model.md) | core 1.0 has the data model's shape from the start | accepted |
-| [0010](0010-one-suite-modules-by-task.md) | One suite on one server, signing in first; modules named by their task | accepted |
-| [0011](0011-signalling-domain.md) | The signalling domain follows PlanPro and OSRD, its content is a catalogue | accepted |
-| [0012](0012-ui-library.md) | One look for every module, as a library (`@rail-across/ui`) | accepted |
-| [0013](0013-running-times-in-rust.md) | Running times with OSRD's simulation core, ported to Rust | proposed |
-| [0014](0014-vehicles-in-osrds-form.md) | The suite's vehicles, in OSRD's form, beside the projects | proposed |
-| [0015](0015-lgpl.md) | Everything under LGPL-3.0-only, OSRD's simulation core in the repository | accepted |
-| [0016](0016-timetables-of-a-project.md) | Timetables belong to a project; a train begins and ends at a station | proposed |
-| [0017](0017-stations-in-the-signalling-tool.md) | The Signalling-Tool creates the stations, in the core's register | accepted |
-| [0018](0018-crossover-search-in-rust.md) | The switch connection: one element in JavaScript, the extended one searched in Rust | accepted |
-| [0019](0019-optimizer-in-rust.md) | The optimizer in Rust, in the browser; the Python service goes | accepted |
-| [0020](0020-everything-in-rust.md) | Everything in Rust: the core, the point clouds and the server, one crate set for server and desktop | proposed |
-| [0021](0021-one-format-one-build-the-project-in-the-module.md) | One format (infra-data-1.0), one build, the project in the core's module | accepted |
-| [0022](0022-planpro-export-only.md) | PlanPro: export only; the reader stays as the export's check | accepted |
-| [0023](0023-capacity-simulation-of-our-own.md) | The capacity simulation is the suite's own, on the Fahrplan-Sim's blocking times | accepted |
-| [0024](0024-every-module-writes-the-core.md) | Every module writes the core where its work needs it, through the core library | accepted |
-| [0025](0025-layers-on-the-core.md) | Layers on the core: the alignment in the Layout-Tool; signalling, electrification and civil each in a tool of its own | accepted |
-| [0026](0026-operations-in-revisions.md) | A project's operations in revisions, as one operations-1.0 document | accepted |
-| [0027](0027-construction-stages-by-their-days.md) | Construction stages by their days, and a connector for a track rebuilt | accepted |
-| [0028](0028-one-model-lifespans-by-day.md) | One model, lifespans by day, and a format that counts its versions | accepted |
-| [0029](0029-the-suite-on-rail-across-1.0.md) | The suite on rail-across-1.0: the door first, the record after, in six phases | accepted |
-| [0030](0030-conflict-areas-and-construction-scenarios.md) | Conflict areas in the Kapazitäts-Sim, construction scenarios with closures in the Baubetriebs-Sim | accepted |
+A record has up to three parts beside its reasons:
+
+- **Decision** — what holds and is built;
+- **Decided, not built yet** — what holds and is still to be built;
+- **Open** — what is not decided yet, to be taken up again.
+
+| No. | Decision |
+|---|---|
+| [0001](0001-one-repository-one-licence.md) | One repository, one licence (LGPL-3.0-only), large data outside the history |
+| [0002](0002-project-name.md) | The project's name: Rail-Across-Suite |
+| [0003](0003-one-suite-one-server.md) | One suite on one server, signing in first, modules named by their task, one build |
+| [0004](0004-ui-library.md) | One look for every module, as a library (`@rail-across/ui`) |
+| [0005](0005-rust-computes-javascript-shows.md) | What computes is Rust, what shows is JavaScript; the open project lives in the core's module |
+| [0006](0006-the-format-rail-across-1.0.md) | The format rail-across-1.0: one model, versions that count, a door that checks |
+| [0007](0007-lifespans-by-day.md) | Lifespans by day: one record for every state of the project |
+| [0008](0008-core-and-layers.md) | The core and its layers: who writes what |
+| [0009](0009-signalling.md) | Signalling after PlanPro and OSRD, its content a catalogue; the stations |
+| [0010](0010-planpro-export-only.md) | PlanPro: export only |
+| [0011](0011-running-times.md) | Running times with OSRD's envelope simulation, ported to Rust |
+| [0012](0012-operations-timetables-and-vehicles.md) | The operation: timetables and vehicles of a project, in revisions |
+| [0013](0013-capacity.md) | Capacity: the suite's own simulation, with conflict areas and binding elements |
+| [0014](0014-construction-scenarios.md) | Construction scenarios in the Baubetriebs-Sim |
+
+## Decided, not built yet
+
+| Where | What |
+|---|---|
+| [0003](0003-one-suite-one-server.md) | the plan's title block with the Rail-Across mark |
+| [0006](0006-the-format-rail-across-1.0.md) | the km lines in the record as in the document, in design elements |
+| [0010](0010-planpro-export-only.md) | PlanPro: crossings and slips, the drawing (`layout.xml`), kilometres along lines |
+| [0012](0012-operations-timetables-and-vehicles.md) | vehicles per project; target times; turnarounds from one train into another |
+| [0013](0013-capacity.md) | the search for a free train path; studies of many runs as a job on the server |
+
+## Open
+
+| Where | What |
+|---|---|
+| [0002](0002-project-name.md) | the trademark; a zip container and its media type — before the first public release |
+| [0005](0005-rust-computes-javascript-shows.md) | the page's views in the document's terms; the rest of the JavaScript core |
+| [0008](0008-core-and-layers.md) | rights per layer; sketches — once several disciplines work apart on one project |
+| [0009](0009-signalling.md) | the values of Ril 819.0202 and Ril 483 |
+| [0010](0010-planpro-export-only.md) | PlanPro's licence (RailPL); the stated values checked in a PlanPro tool — before the first public release |
+| [0011](0011-running-times.md) | what is not ported from OSRD |
+| [0012](0012-operations-timetables-and-vehicles.md) | connections; periodic patterns; delay scenarios and stochastic runs |
+| [0014](0014-construction-scenarios.md) | speed restrictions at the site, works trains, a diversion's fitness |

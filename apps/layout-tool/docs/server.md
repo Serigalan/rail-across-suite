@@ -23,7 +23,7 @@ Operation (setup, deploy, backups, several instances, production releases) is de
 **Edited and computed in the browser wherever it works without a server; the server stores, versions and checks.**
 No computation is held twice: what builds an alignment against the rules — splicing, reconnecting, optimizing,
 the alignment fit — is the optimizer module in Rust, run in the browser in both builds ([optimizer](modules/optimizer.md),
-decision 0019 of the suite), and the project server (Rust, `crates/server`, decision 0020) runs the core's crates —
+decision 0005 of the suite), and the project server (Rust, `crates/server`, decision 0005) runs the core's crates —
 held to the browser's JavaScript by the replay vectors — for parsing, validation and point-cloud jobs. A panel that needs the server says so when it is not
 there instead of silently doing nothing.
 
@@ -127,7 +127,7 @@ request — not by Caddy's file server, whose forward-auth only checks the sign-
 
 ## What the project server reads for the Layout-Tool
 
-Computing happens in the browser — the optimizer module in Rust ([optimizer](modules/optimizer.md), decision 0019
+Computing happens in the browser — the optimizer module in Rust ([optimizer](modules/optimizer.md), decision 0005
 of the suite). What a browser cannot read, the project server reads for the app (`crates/server/src/routes/terrain.rs`),
 behind the session:
 
@@ -146,7 +146,7 @@ behind the session:
 - **The browser merges, the server only appends on the head** and checks.
 - **Members per project; 404 for the unauthorised.**
 - **Point clouds: shared per project on the server, chunked uploads with hashes, served with membership checks.**
-- **Computing in the browser, in Rust; reading for the browser on the project server** (decision 0019 of the
+- **Computing in the browser, in Rust; reading for the browser on the project server** (decision 0005 of the
   suite): one service to run, and the optimizer in the desktop app the same.
 - **The DGM1 relief is drawn from the tiles the server already reads for heights**, not from the Länder's own
   hillshade WMS: only a height per pixel gives the same colour scale, legend and hillshade as DGM5, so the two

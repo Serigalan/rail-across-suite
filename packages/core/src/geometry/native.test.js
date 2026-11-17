@@ -7,7 +7,7 @@ import { transformPlanePoint, utmToWgs84, wgs84ToUTM } from './coordinateUtils.j
 import { callNative } from '../native/index.js'
 import { loadNativeFile } from '../native/node.js'
 
-// The proj4 port of the geometry crate (decision 0020, step 2) on the NTv2
+// The proj4 port of the geometry crate (decision 0005) on the NTv2
 // grids, held to proj4js: the grids are read once by the JavaScript and handed
 // to the module, and both convert the same points — inside the grids, and past
 // their edge, where both fall back to the 7-parameter shift.

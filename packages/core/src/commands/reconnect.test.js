@@ -15,7 +15,7 @@ const AXIS_SPACING = 0.01
 // The search is the optimizer module's (optimizer/…/reconnect.rs); what is tested
 // here is the app's half — the stretch, the old axis, the request and the
 // track written back. Track and answers were recorded from the optimizer
-// service before the module replaced it (decision 0019 of the suite): straight 50, straight 200, a
+// service before the module replaced it (decision 0005 of the suite): straight 50, straight 200, a
 // curve R 800 with 60 m transitions, straight 200, straight 50.
 
 const EPSG = 25832

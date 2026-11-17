@@ -3,12 +3,12 @@ import { checkOperations, contentHash, fileParts, fromOperations, isOperationsFi
 /**
  * A project's timetables as a file of their own, beside the project's backup
  * file: the infra-data document holds the infrastructure, and a timetable is
- * the project's, not a variant's record (decision 0016). Such a file goes
+ * the project's, not a variant's record (decision 0012). Such a file goes
  * out with a project's export, or alone from the Fahrplan-Sim; it comes in
  * with a backup file — into the project or template made of it — or alone,
  * into a project or template there is.
  *
- * It is an **operations-1.0** document (`.operations.json`, decision 0026):
+ * It is an **operations-1.0** document (`.operations.json`, decision 0012):
  * the project's operations in the envelope of infra-data, the vehicles its
  * trains run with carried, so it runs on another server with the same times.
  * The file of before is still read, and turned on its way in:
@@ -93,8 +93,7 @@ export function operationsFile(timetables, entries = []) {
 }
 
 /**
- * The file rail-across-1.0 of a project's operations alone (decision 0029,
- * phase 5): `timetables` and the vehicles of `entries` as operationsFile has
+ * The file rail-across-1.0 of a project's operations alone (decision 0006): `timetables` and the vehicles of `entries` as operationsFile has
  * them, the envelope naming the project (`projectId`) and when it was saved.
  */
 export const operationsProjectFile = (timetables, entries = [], meta = {}) =>

@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Serigalan and the Rail-Across-Suite contributors
 // SPDX-License-Identifier: LGPL-3.0-only
 
-//! Reading a PlanPro 1.10 plan (`planpro.js`, decision 0011): the net it is
+//! Reading a PlanPro 1.10 plan (`planpro.js`, decision 0009): the net it is
 //! drawn on and its signalling, as the suite's record holds them. The suite
 //! has no PlanPro import any more — too little of a project is in a plan; the
 //! reader stays as the check of the export (`write.rs`, tests/export.rs).
@@ -502,7 +502,7 @@ fn convert(model: &Model) -> Result<Converted, String> {
     let get = |id: Option<&str>| model.get(id);
     let id_of = |el: &El| lower(val(el, "Identitaet")).unwrap_or_default();
     // A plan knows two states and no days: what is only in the target is newly built, what is only in the
-    // start removed, the day open (decision 0028).
+    // start removed, the day open (decision 0006).
     let lifespan_of = |o: &Obj| -> Option<Value> {
         if o.start && o.target {
             None

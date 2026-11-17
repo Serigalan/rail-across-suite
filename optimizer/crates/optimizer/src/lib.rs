@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 
 //! The track optimizer of the Layout-Tool, in Rust, for the browser
-//! (WebAssembly; decision 0019 — it replaced the Python service): splicing
+//! (WebAssembly; decision 0005 — it replaced the Python service): splicing
 //! two tracks and its spacing to a neighbour ([`splice`], [`clearance`]),
 //! reconnecting existing elements ([`reconnect`]), optimizing a track
 //! ([`optimize`]), the alignment and gradient fit from axis points
@@ -28,7 +28,7 @@ pub mod splice;
 pub mod track;
 
 // The rule catalogue, the check and the limits are the core's (crates/rules,
-// decision 0020) — one check for the app and the optimizer.
+// decision 0005) — one check for the app and the optimizer.
 pub use rail_across_rules::{alignment_check, catalogue, element, expr, limits, load_catalogue, rules};
 
 use serde_json::{Value, json};

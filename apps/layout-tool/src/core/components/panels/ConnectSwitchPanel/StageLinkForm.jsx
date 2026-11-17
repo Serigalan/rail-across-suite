@@ -10,7 +10,7 @@ import CommitBar from '../../form/CommitBar'
 const ROLES = ['A', 'B1', 'B2']
 
 /**
- * A construction stage connector (decision 0027): three track ends at one
+ * A construction stage connector (decision 0007): three track ends at one
  * place joined without a switch — the track at A to the one at B1 while that
  * is in service, and to the one at B2 from the day it is. A click on the map
  * near the place finds the ends meeting there; their tracks' days propose

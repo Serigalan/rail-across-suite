@@ -4,7 +4,7 @@ import { PayloadError } from './payloadError.js'
 /**
  * Operation `op` of the core's module, a PayloadError it answers with thrown
  * as the PayloadError the JavaScript would throw — so a caller cannot tell
- * which of the two answered (decision 0020).
+ * which of the two answered (decision 0005).
  */
 export function viaNative(op, input) {
   try {

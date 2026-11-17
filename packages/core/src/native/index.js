@@ -1,4 +1,4 @@
-// native — the core's Rust crates as one WebAssembly module (decision 0020):
+// native — the core's Rust crates as one WebAssembly module (decision 0005):
 // the face through which a module of the core that has moved to Rust is
 // called. The module is loaded once — in the browser before the first page
 // renders (loadNative), in Node from its file (./node.js) — and from then on
@@ -84,7 +84,7 @@ export function unloadNative() {
 /** As the replay recorded a call's arguments: a Map as an object, a Set as an array. */
 const mapsAndSets = (_, x) => (x instanceof Map ? Object.fromEntries(x) : x instanceof Set ? [...x] : x)
 
-// ── The project the module holds (decision 0021, phase C) ───────────────────
+// ── The project the module holds (decision 0005) ───────────────────
 //
 // The page hands the module the project it has open once (holdProject) and,
 // after every step, only what the step changed — by reference: the record is
@@ -231,7 +231,7 @@ export function callNative(op, input = null) {
 }
 
 /**
- * A function of the core that has moved to Rust (decision 0020, step 10):
+ * A function of the core that has moved to Rust (decision 0005):
  * called with its arguments as the JavaScript took them — operation `op`
  * takes them as the replay recorded them, positional — and answering what the
  * JavaScript answered, as JSON. `revive(result, args)` gives back what JSON

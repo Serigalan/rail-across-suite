@@ -1,4 +1,4 @@
-//! The file rail-across-1.0 (decision 0029, phase 5): a project's infrastructure and operations in one file
+//! The file rail-across-1.0 (decision 0006): a project's infrastructure and operations in one file
 //! and out again, each part through its door; a domain the reader does not know kept as it came.
 
 use rail_across_doc::door::check_document;

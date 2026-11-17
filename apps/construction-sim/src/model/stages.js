@@ -1,8 +1,8 @@
 import { recordAtStage, stagesOf } from '@rail-across/core/document'
 
 /**
- * The construction stages of a variant and what each changes (decisions
- * 0027, 0028): the existing state, every day something is put into or taken
+ * The construction stages of a variant and what each changes (decision
+ * 0007): the existing state, every day something is put into or taken
  * out of service, the final state — for each what stands then, what comes
  * into service with it and what left service with it. The core works the
  * stages out of the lifespans; nothing else of the record is needed.

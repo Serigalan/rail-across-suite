@@ -27,7 +27,7 @@ impl Checked {
 }
 
 /// `checkRecord`: a payload — an infra-data-1.0 document, the one format
-/// (decision 0021) — taken through the door, its record validated.
+/// (decision 0006) — taken through the door, its record validated.
 pub fn check_record(payload: &Value) -> Result<Checked, ApiError> {
     if !payload.is_object() {
         return Err(ApiError::new(422, "invalid_payload"));
@@ -43,7 +43,7 @@ pub fn check_kept(record: Value) -> Result<Checked, ApiError> {
     let (mut errors, mut warnings) = (list("errors"), list("warnings"));
     if rail_across_js::truthy(record.get("signalling")) {
         project_document(&record, false, true).map_err(|e| ApiError::new(422, &e.code))?;
-        // The signalling's check reads the domains in the words the record keeps (decision 0029, phase 1).
+        // The signalling's check reads the domains in the words the record keeps (decision 0006).
         let domains = rail_across_doc::persistence::record_domains(&record).map_err(|e| ApiError::new(422, &e.code))?;
         let found = rail_across_signalling::check::check_signalling_on(&domains["core"], &domains["signalling"], &domains["civil"]);
         let keyed = |f: &Value| {

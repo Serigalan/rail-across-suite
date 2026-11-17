@@ -3,7 +3,7 @@
 // appears as a string anywhere under src/ or in the packages whose findings,
 // messages and labels the app translates (packages/core/src, the basemaps'
 // labelKeys in packages/basemaps/src) and the core's crates, whose answers carry
-// the codes the app translates (crates/, decision 0020), or when it starts with a prefix
+// the codes the app translates (crates/, decision 0005), or when it starts with a prefix
 // that a key is built from at runtime: `status_${s}`, t(`admin_err_${code}`),
 // or a prefix handed on as a string ending in "_" ('admin_err_'), or when it is
 // another literal with a suffix put after it at runtime: t(`${key}_hint`).

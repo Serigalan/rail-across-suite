@@ -26,7 +26,7 @@ pub struct Settings {
     pub cloud_root: Option<PathBuf>,
     /// Tests: the clock comes from `x-ra-test-now`, the peer from `x-ra-test-remote`, and /api/__test answers.
     pub test_mode: bool,
-    /// The local package (decision 0020 point 5): no user management, one implicit local user.
+    /// The local package (decision 0005): no user management, one implicit local user.
     pub local: bool,
     /// The built suite served beside the API, one origin (as Caddy does in production).
     pub static_root: Option<PathBuf>,

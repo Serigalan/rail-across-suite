@@ -1,4 +1,4 @@
-//! infra-data-2.0's layers (decision 0025): a document is the core and what is
+//! infra-data-2.0's layers (decision 0008): a document is the core and what is
 //! planned on it, every layer may be missing; an infra-data 1.0 document reads
 //! in as 2.0 — the platforms and layout into civil, the stopping places into the
 //! core, a boundary marked by a platform marked by the stopping place at it.
@@ -17,7 +17,7 @@ fn domains(doc: &Value) -> Vec<String> {
     doc["domains"].as_object().unwrap().keys().cloned().collect()
 }
 
-/// The UUID a short id of a fixture goes by in a document (decision 0029, phase 2).
+/// The UUID a short id of a fixture goes by in a document (decision 0006).
 fn u(id: &str) -> String {
     rail_across_doc::ids::uuid_of(id)
 }
@@ -67,7 +67,7 @@ fn the_stopping_places_in_the_core_and_the_platform_naming_them() {
         json!([u("hp-2")])
     );
     assert!(doc["domains"]["signalling"]["collections"].get("stoppingPlaces").is_none());
-    // and the record holds them as the document does (decision 0028)
+    // and the record holds them as the document does (decision 0006)
     let record = document_to_record(&doc).unwrap();
     assert!(find(&record["stoppingPlaces"], "hp-2").get("platformId").is_none());
     assert_eq!(find(&record["platforms"], "p1")["stoppingPlaceIds"], json!([u("hp-2")]));

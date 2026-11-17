@@ -1,4 +1,4 @@
-// What the door makes of a fixture's short ids (decision 0029, phase 2): every
+// What the door makes of a fixture's short ids (decision 0006): every
 // id a UUID, the one drawn from it (derivedId), every reference to it the same.
 // For tests that state a record with ids like 't1' and expect it back.
 import { uuidOf } from '../src/document/ids.js'
@@ -6,7 +6,7 @@ import { uuidOf } from '../src/document/ids.js'
 /** The UUID an id goes by in a document. */
 export const u = uuidOf
 
-// The record names some references as before (decision 0029, phase 1): not ending in Id.
+// The record names some references as before (decision 0006): not ending in Id.
 const BEFORE = new Set(['operationalPoint', 'dep', 'boundedBy', 'clearSections'])
 const isReference = (key, parent) => key === 'id' || key.endsWith('Id') || key.endsWith('Ids') || BEFORE.has(key) ||
   (parent === 'passOn' && (key === 'left' || key === 'right'))

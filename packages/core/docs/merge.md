@@ -10,7 +10,7 @@ plain Node (a test holds it to that), as everything the project server might sha
 
 ## Files
 
-The computation is Rust (decision 0020, step 10): `index.js` calls the core's module for each function. Its
+The computation is Rust (decision 0005): `index.js` calls the core's module for each function. Its
 JavaScript is gone; `carryAfterWrite` goes to the module only for a write that changed the tracks of a record
 carrying a domain, with just what the carrying reads.
 

@@ -1,5 +1,5 @@
 /**
- * A project's timetables on the project server (decision 0016), same origin
+ * A project's timetables on the project server (decision 0012), same origin
  * as the page — the session is an HttpOnly cookie the browser sends by
  * itself. A timetable: { id, projectId, name, version, data: { trains },
  * createdBy, updatedBy, updatedAt, mayEdit }. A save names the version it

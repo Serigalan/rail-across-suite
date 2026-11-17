@@ -37,7 +37,7 @@ export default function EditPropertiesForm({ onCommitted }) {
       setField('lineNumber',  track.lineNumber  ?? '')
       setField('lineName',    track.lineName    ?? '')
       setField('side',        SIDE_NAMES[track.side]        ?? 'sorting')
-      // The station is the point the track names (decision 0028); a name typed
+      // The station is the point the track names (decision 0006); a name typed
       // is the point of that name, found or made, when the form is taken.
       const point = pointOf(currentProject(), track)
       setField('stationName', point?.name ?? '')
@@ -67,7 +67,7 @@ export default function EditPropertiesForm({ onCommitted }) {
 
     // Only the selected track is written — the properties describe this track,
     // and a neighbour that happens to connect to it may well be a different line.
-    // The status is the lifespan's (decision 0028): existing none, the days typed in the track table kept.
+    // The status is the lifespan's (decision 0007): existing none, the days typed in the track table kept.
     const newTracks = tracks.map(track => track.id !== selectedTrackId ? track : withLifespan({
       ...track,
       name,

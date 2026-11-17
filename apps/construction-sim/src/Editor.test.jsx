@@ -15,7 +15,7 @@ const record = {
   switches: [{ switchId: 'v', kind: 'stage_link', ports: { A: { trackId: 'a', endpoint: 'END' }, B1: { trackId: 'b', endpoint: 'BEGIN' }, B2: { trackId: 'c', endpoint: 'BEGIN' } } }],
 }
 
-describe('the Construction-Sim (decision 0027)', () => {
+describe('the Construction-Sim (decision 0007)', () => {
   it('lays out the stages and what each changes', () => {
     const stages = timeline(record)
     expect(stages.map(s => s.key)).toEqual(['existing', '2028-06-02', 'final'])
@@ -47,7 +47,7 @@ describe('the Construction-Sim (decision 0027)', () => {
   })
 })
 
-describe('a construction scenario as the Baubetriebs-Sim changes it (decision 0030)', () => {
+describe('a construction scenario as the Baubetriebs-Sim changes it (decision 0014)', () => {
   it('closes a stretch of a track on a day, all day or in a possession, and names it', () => {
     let sc = newScenario('S')
     const c = newClosure({ trackId: 't1', from: 412.34, to: 100 }, '2027-05-03')

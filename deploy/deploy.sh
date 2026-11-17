@@ -88,12 +88,12 @@ if [ "$build" = 1 ]; then
   (cd apps/layout-tool && node tools/data.mjs)
 
   step "Point cloud module (crates/pointcloud-wasm)"
-  # The point cloud import in Rust (decision 0020), which the Layout-Tool's
+  # The point cloud import in Rust (decision 0005), which the Layout-Tool's
   # import worker bundles: the build needs it.
   node packages/pointcloud/scripts/wasm.mjs || die "the point cloud module did not build"
 
   step "Core module (crates/)"
-  # The core's Rust crates as one WebAssembly module (decision 0020): put
+  # The core's Rust crates as one WebAssembly module (decision 0005): put
   # beside every page of the suite, which loads it before it renders, and in
   # packages/core/wasm/ for the project server. Without it the suite deploys
   # all the same, and the core runs on its JavaScript.
@@ -115,7 +115,7 @@ if [ "$build" = 1 ]; then
   if ! (cd apps/capacity-sim && node ../../packages/running-times/scripts/sim.mjs); then
     echo "WARNING: no simulation module — the Kapazitäts-Sim cannot run trains" >&2
   fi
-  # The Baubetriebs-Sim runs them in a construction scenario (decision 0030).
+  # The Baubetriebs-Sim runs them in a construction scenario (decision 0014).
   if ! (cd apps/construction-sim && node ../../packages/running-times/scripts/sim.mjs); then
     echo "WARNING: no simulation module — the Baubetriebs-Sim cannot run trains" >&2
   fi
@@ -129,7 +129,7 @@ if [ "$build" = 1 ]; then
   fi
 
   step "Optimizer module (optimizer/)"
-  # The Layout-Tool's track optimizer in Rust (decision 0019): splicing,
+  # The Layout-Tool's track optimizer in Rust (decision 0005): splicing,
   # reconnecting, optimizing, the alignment fit — built to WebAssembly and put
   # beside its page. Without it those dialogs say the module is missing.
   if ! (cd apps/layout-tool && node tools/optimizer.mjs); then
@@ -137,7 +137,7 @@ if [ "$build" = 1 ]; then
   fi
 
   step "Project server (crates/server)"
-  # The project server in Rust (decision 0020): the service, the cloud jobs
+  # The project server in Rust (decision 0005): the service, the cloud jobs
   # and the command line, one binary, run by the service user.
   "$RA_CARGO" build --release -p rail-across-server || die "the project server did not build"
   as_user test -x "$RA_SERVER_BIN" || die "$RA_USER cannot run $RA_SERVER_BIN — make the checkout readable (chmod -R a+rX)"
@@ -184,7 +184,7 @@ if [ "$restart" = 1 ]; then
     server_cli backup "$copy"
   fi
   # The units as the templates of this checkout have them — a service of an
-  # earlier version taken out (the Python optimizer, decision 0019), the
+  # earlier version taken out (the Python optimizer, decision 0005), the
   # environment of the others rendered again. Not before setup.sh made them.
   if [ -f "/etc/systemd/system/$(unit_name rail-across-server.service)" ]; then
     step "systemd units"

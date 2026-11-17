@@ -69,7 +69,7 @@ describe('a path over the net', () => {
     expect(via.path.map(p => p.trackId)).toEqual(['T1', 'T2'])
   })
 
-  it('runs over nothing closed, stopping before a closed stretch or starting behind it (decision 0030)', () => {
+  it('runs over nothing closed, stopping before a closed stretch or starting behind it (decision 0014)', () => {
     const closed = { ...record, closed: [{ trackId: 'T2', lo: 400, hi: 600 }] }
     expect(findPath(closed, { trackId: 'T1', station: 100, direction: 'up' }, { trackId: 'T4', station: 500 })).toBeNull()
     expect(findPath(closed, { trackId: 'T1', station: 100, direction: 'up' }, { trackId: 'T2', station: 400 })).not.toBeNull()

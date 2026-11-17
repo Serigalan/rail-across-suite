@@ -50,7 +50,7 @@ function useSide(head, stage, trains, catalogue, dispatch, options) {
  * and rate against the recommended bound, the trains that set it, the minimum
  * headways by kind — and its stations' tracks as long as they are held; a
  * second variant or stage beside it. It only reads: nothing here is saved,
- * the results are derived (decision 0023, point 4).
+ * the results are derived (decision 0013).
  */
 export default function Editor({ project, variants, initialVariant }) {
   const { t, language, setLanguage } = useTexts()

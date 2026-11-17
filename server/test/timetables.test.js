@@ -77,7 +77,7 @@ describe('timetables', () => {
 
     const into = await max('POST', `/api/projects/${made.project.id}/timetables/import`, { timetables: file })
     expect(into.statusCode).toBe(201)
-    // one revision of the project's operations more: the version is its number (decision 0026)
+    // one revision of the project's operations more: the version is its number (decision 0012)
     expect(into.json().timetables).toMatchObject([{ name: 'Takt', version: 2, data: { trains: [{ number: '16001' }] } }, { name: 'Nacht', version: 2 }])
     expect((await max('POST', `/api/projects/${made.project.id}/timetables/import`, { timetables: [{ name: ' ' }] })).json()).toEqual({ error: 'name_required' })
     expect((await max('POST', `/api/projects/${made.project.id}/timetables/import`, {})).json()).toEqual({ error: 'timetable_invalid' })
@@ -94,7 +94,7 @@ describe('timetables', () => {
     expect((await max('POST', `/api/projects/${adas.id}/timetables/import`, { timetables: file })).statusCode).toBe(404)
   })
 
-  it('are kept as revisions of the project\'s operations: a save on an older one is taken where its timetable is as it was there (decision 0026)', async () => {
+  it('are kept as revisions of the project\'s operations: a save on an older one is taken where its timetable is as it was there (decision 0012)', async () => {
     ctx = await setup()
     const max = await signIn(ctx.app, 'max')
     const ada = await signIn(ctx.app, 'ada')

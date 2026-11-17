@@ -3,7 +3,7 @@
 `packages/core/src/signalling/` · needs `track`
 
 The content of the domain `signalling` 1.0 ([schema](../../../schemas/signalling/1.0.schema.json),
-[decision 0011](../../../docs/decisions/0011-signalling-domain.md)) that its schema leaves open: which signal
+[decision 0009](../../../docs/decisions/0009-signalling.md)) that its schema leaves open: which signal
 aspects there are, which signalling systems and which kind of signal shows what in them, which train
 protection systems with which balises and magnets and their settings — the catalogue of DB Ril 301 after
 PlanPro 1.10: Ks and shunting signals, PZB and ETCS ([`constraints/db-ril-301.json`](../constraints/db-ril-301.json))
@@ -23,7 +23,7 @@ settings: a new signalling system (H/V, Sv) is a new entry under `systeme`, a ne
 | File | What it does |
 |---|---|
 | `catalogue.js` | Stays JavaScript with `overlaps.js` and `switchSpeeds.js`: the page asks them for every signal and route it draws, and each call to the module would carry the whole domain. The catalogue: an aspect by its key (`aspectOf`), what a kind of signal of a system shows (`signalKindOf`) and what a screen of several logical signals shows (`screenOf`), a train protection system and its kinds (`protectionSystemOf`, `baliseKindOf`), how settings stand to what is declared (`settingsProblems`), whether a symbol fits, which aspects stand on a board of their own, an entry's title in a language (`titleIn`) |
-| `crates/signalling` (Rust) | `checkSignalling({ core, signalling })`: the findings of the domain on the core it stands on, `{ errors, warnings }` as validateProject gives them; the extent of the track detection sections, derived over the net from their points (`trackSectionExtents`, `netParts`) — called through `index.js` (decision 0020, step 10; their JavaScript is gone, their vectors frozen) |
+| `crates/signalling` (Rust) | `checkSignalling({ core, signalling })`: the findings of the domain on the core it stands on, `{ errors, warnings }` as validateProject gives them; the extent of the track detection sections, derived over the net from their points (`trackSectionExtents`, `netParts`) — called through `index.js` (decision 0005; their JavaScript is gone, their vectors frozen) |
 | `overlaps.js` | What an overlap needs: the speed a route's start signal signals for it (`signallingSpeedOf`), or — a route from a planning boundary, a virtual start there acting inward — the boundary's speed as the layout sets it (`boundaryStartSpeed`, `routeSpeedOf`; the check and the PlanPro export read it the same way), the length a speed and gradient ask (`overlapLength`, catalogue `durchrutschweg`), the gradient over a run from the tracks' heights (`gradientAlong`) |
 | `switchSpeeds.js` | The turnouts a run passes on their branch and the slowest speed they allow there (`branchSpeedOnRun`; a turnout's own, else its form's — `switchBranchSpeed`) |
 
@@ -80,7 +80,7 @@ each ending at a counting head of its own a metre or so beyond the other's. Wher
 by all its points (a section reaching to a track end), the one holding fewest points of other sections is it;
 where none is, `section_extent_differs` names the points that enclose nothing with the others.
 
-On P-Hausen (decision 0011), 44 of the 56 sections come out as PlanPro's Gleis_Abschnitt states them, 7 differ
+On P-Hausen (decision 0009), 44 of the 56 sections come out as PlanPro's Gleis_Abschnitt states them, 7 differ
 by their overlap at the ends, and the two 700 m track circuits come out at the length their FMA_Anlage states
 (PlanPro's Gleis_Abschnitt gives 297 m).
 

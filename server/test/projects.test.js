@@ -44,7 +44,7 @@ describe('projects', () => {
     expect(h.payload).toMatchObject({ id: project.id, title: 'Halle–Könnern', tracks: [] })
   })
 
-  it('keeps a revision as an infra-data-2.0 document and hands it out as one (decisions 0021, 0025, 0028)', async () => {
+  it('keeps a revision as an infra-data-2.0 document and hands it out as one (decisions 0006 and 0008)', async () => {
     const { max } = await start()
     const { variantId } = await newProject(max, { tracks: [straight('t1')] })
     const { document } = await head(max, variantId)
@@ -178,7 +178,7 @@ describe('variants and revisions', () => {
     expect(res.json()).toMatchObject({ error: 'invalid_record', errors: [expect.objectContaining({ code: 'platform_out_of_range' })] })
   })
 
-  it('refuses a record that names what it lacks, at the door (decision 0028, phase C)', async () => {
+  it('refuses a record that names what it lacks, at the door (decision 0006)', async () => {
     const { max } = await start()
     const { variantId, revisionId } = await newProject(max, { tracks: [straight('t1')] })
     const h = await head(max, variantId)

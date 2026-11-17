@@ -1,4 +1,4 @@
--- The suite's vehicles, for the Fahrplan-Sim (decision 0014): a catalogue
+-- The suite's vehicles, for the Fahrplan-Sim (decision 0012): a catalogue
 -- for everyone signed in, beside the projects, not in a project's record. A
 -- vehicle is kept as OSRD's RailJSON rolling stock (data, JSON) — its
 -- physics, its tractive effort curves, its metadata —, so that it goes to

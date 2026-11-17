@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { BUILT_IN } from './builtIn.js'
 
 /**
- * The suite's vehicles on the project server (decision 0014), same origin as
+ * The suite's vehicles on the project server (decision 0012), same origin as
  * the page — the session is an HttpOnly cookie the browser sends by itself —,
  * and with OSRD's example vehicles the catalogue to choose from. An entry:
  * { key, source: 'osrd' | 'suite', vehicle, notes, id, version, mayEdit, createdBy }.

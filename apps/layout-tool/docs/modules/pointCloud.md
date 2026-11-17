@@ -8,7 +8,7 @@ gigabytes loaded onto the project server and prepared there — on the server, o
 its own process; there are no clouds of one device only — cut into thin slices for the cross section, checked
 against the clearance contour, searched for rail heads to trace a track's measured axis, and re-referenced onto
 each other. The pure functions are the package `@rail-across/pointcloud` (`packages/pointcloud/`): readers and
-tiling are its Rust module (`crates/pointcloud-wasm`, decision 0020 of the suite), the same crate the project
+tiling are its Rust module (`crates/pointcloud-wasm`, decision 0005 of the suite), the same crate the project
 server's jobs run; sections, rail detection and trace, registration and clearance are its JavaScript. This module
 keeps what only the browser does and re-exports the rest. A function of the package that reads tiles takes each
 cloud with its `source`; `cloudReading.js` gives it the server's (`cloudSource.js`).

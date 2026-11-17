@@ -236,7 +236,7 @@ const OSRD_PORT_NAMES = {
 OSRD_PORT_NAMES.single_slip = OSRD_PORT_NAMES.crossing
 OSRD_PORT_NAMES.double_slip = OSRD_PORT_NAMES.crossing
 
-/** A switch's label, and its lifespan where it states one of its own (decision 0028). */
+/** A switch's label, and its lifespan where it states one of its own (decision 0007). */
 function switchExtensions(sw) {
   const ext = {}
   if (sw.name) ext.sncf = { label: sw.name }

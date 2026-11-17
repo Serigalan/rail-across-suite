@@ -1,7 +1,7 @@
 import { recordAtStage, stagesOf } from '@rail-across/core/document'
 
 /**
- * The map at a construction stage (decisions 0027, 0028): which stages a
+ * The map at a construction stage (decision 0007): which stages a
  * project has — the existing state, every day something is put into or taken
  * out of service, the final state — and which of its tracks and switches
  * stand at one. The core works it out on what the stages need of the record

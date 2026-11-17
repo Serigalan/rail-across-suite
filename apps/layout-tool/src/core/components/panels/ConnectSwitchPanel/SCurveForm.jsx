@@ -27,7 +27,7 @@ const DEFAULT_TYPE = Math.max(0,
  * The switch connection dialog: two turnouts of the form the speed falls back
  * through and one element between their branches — a straight where the
  * tracks allow one, which the slider is laid on first and snaps to, else an
- * arc (decision 0018). Any other configuration is the extended switch
+ * arc (decision 0005). Any other configuration is the extended switch
  * connection's, which `onExtended(picks)` opens on the two picks made here.
  *
  * `edit` ({ found, apart, start } of commands/crossoverEdit) opens it on a
@@ -171,7 +171,7 @@ export default function SCurveForm({ onCommitted, onExtended = null, edit = null
             <select value={speedIdx} onChange={e => { setCarveError(null); setSpeedIdx(Number(e.target.value)) }}>
               {/* A speed without a connection where the slider stands stays
                   selectable: the reason shows, and the extended switch
-                  connection may still find one (decision 0018). */}
+                  connection may still find one (decision 0005). */}
               {CONNECTION_SPEEDS.map((sp, i) => (
                 <option key={sp} value={i}>
                   {connections[i] && !connections[i].valid ? fill('scurve_speed_none_here', { v: String(sp) }) : `${sp} km/h`}

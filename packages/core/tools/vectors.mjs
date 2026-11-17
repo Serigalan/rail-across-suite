@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // The shared test vectors of schemas/vectors/: what the core makes of
 // canonical JSON (its JavaScript), the schema check (frozen since its
-// JavaScript went, decision 0020 step 10) and whole documents (through the
+// JavaScript went, decision 0005) and whole documents (through the
 // door, the core's module), written down so crates/doc is held to them (data
 // model, S-R3; CONTRIBUTING).
 //
@@ -43,7 +43,7 @@ const canonicalVectors = () => CANONICAL_INPUTS.map(json => {
 
 // ── The schema check ────────────────────────────────────────────────────────
 
-// Its JavaScript is gone (decision 0020, step 10): schema.json stays as it was
+// Its JavaScript is gone (decision 0005): schema.json stays as it was
 // last written from it, and crates/doc is held to it.
 const schemaVectors = () => JSON.parse(readFileSync(join(OUT, 'schema.json'), 'utf8'))
 
@@ -102,7 +102,7 @@ function atPlatform(parts) {
 
 // infra-data 1.0 documents as the core wrote them before 2.0, frozen: the door reads them as today's.
 const BEFORE = JSON.parse(readFileSync(join(OUT, 'infra-data-1.0.json'), 'utf8')).documents
-// infra-data 2.0 documents as the core wrote them last before decision 0028, frozen: a register of stages, the lifespans naming them.
+// infra-data 2.0 documents as the core wrote them last before decision 0007, frozen: a register of stages, the lifespans naming them.
 const STAGES = JSON.parse(readFileSync(join(OUT, 'infra-data-2.0-stages.json'), 'utf8')).documents
 
 /** [name, change, options] — a document made from the sample, changed so the door refuses it (or not). */
@@ -173,7 +173,7 @@ const BEFORE_CASES = [
   ['infra-data 1.0: no layout', 'the sample', (d) => { delete d.domains.layout }],
 ]
 
-/** [name, change] — a document with its register of stages (frozen), changed or not: the door reads its lifespans by day (decision 0028). */
+/** [name, change] — a document with its register of stages (frozen), changed or not: the door reads its lifespans by day (decision 0007). */
 const STAGES_CASES = [
   ['stages: the sample', 'the sample', () => {}],
   ['stages: the sample, carrying its schemas', 'the sample, carrying its schemas', () => {}],

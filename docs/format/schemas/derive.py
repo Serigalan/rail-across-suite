@@ -211,7 +211,7 @@ vehicles = {
             'description': ('A vehicle (a traction unit or a unit of coaches): where it came from and its rolling stock — without '
                             'one, a vehicle of the suite\'s catalogue named by its key; a file that travels carries it.'),
             'type': 'object', 'required': ['id'], 'additionalProperties': False,
-            # Without its rolling stock a vehicle is one of the suite's catalogue, named by its key (decision 0029, phase 4).
+            # Without its rolling stock a vehicle is one of the suite's catalogue, named by its key (decision 0006).
             'anyOf': [{'required': ['rollingStock']}, {'required': ['key']}],
             'properties': {
                 'id': {'$ref': 'core#/$defs/Id'},

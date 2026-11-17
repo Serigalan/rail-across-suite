@@ -51,7 +51,7 @@ const ringFC = (ring, type) => ring
  * off the track's own gradient at the platform's ends and never stored.
  *
  * Put or moved, it makes the stopping place at it a passenger stop in the core,
- * or one over it where none is at it yet (decision 0025; storage, savePlatform).
+ * or one over it where none is at it yet (decision 0008; storage, savePlatform).
  *
  * An existing platform can be picked from the list to be edited or deleted; the
  * record keeps only its plane data (track, stations, side, height), and the

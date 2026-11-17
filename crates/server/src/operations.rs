@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Serigalan and the Rail-Across-Suite contributors
 // SPDX-License-Identifier: LGPL-3.0-only
 
-//! A project's operations in revisions (operations-1.0, O2; decision 0026):
+//! A project's operations in revisions (operations-1.0, O2; decision 0012):
 //! each revision the whole operations document, numbered per project, by hash.
 //! The timetables are read from the head, and a timetable saved, made, brought
 //! in or deleted is a new revision; the door checks each before it is kept.
@@ -62,7 +62,7 @@ fn record_of(payload: &[u8]) -> Result<Value, ApiError> {
     from_operations(&doc).map_err(|_| ApiError::new(500, "internal"))
 }
 
-/// The key a refusal of the door is told by (what the checks by hand said before, decision 0016).
+/// The key a refusal of the door is told by (what the checks by hand said before, decision 0012).
 pub fn fault_of(err: &PayloadError) -> &'static str {
     let path = err.details.first().map(String::as_str).unwrap_or("");
     if path.contains("/collections/trains/") {

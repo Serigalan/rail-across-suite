@@ -123,7 +123,7 @@
   width: 160px;
 }
 
-/* The days the whole track is in service (decision 0027), in the table's head
+/* The days the whole track is in service (decision 0007), in the table's head
    — the bar's, or a route's track heading —: wide enough for the browser's date field. */
 .track-table-days { display: inline-flex; align-items: center; gap: 8px; margin-right: auto; margin-left: 20px; white-space: nowrap; font-size: var(--fs-s); }
 .track-table-days-lead { font-weight: 600; color: var(--color-text); }

@@ -110,7 +110,7 @@ const _cache = { lang: null, generation: null, tracks: new Map(), switches: new 
 export function renderTracksOnMap(map, project, { fit = false, topology = false } = {}) {
   if (!map || !project) return
   const hidden = hiddenTracks()
-  // At a construction stage, only what stands then (decision 0027).
+  // At a construction stage, only what stands then (decision 0007).
   const stage = mapStage()
   const at = stage ? stageMembers(project, stage) : null
   const staged = at ? (project.tracks ?? []).filter(tr => at.tracks.has(tr.id)) : (project.tracks ?? [])
@@ -361,7 +361,7 @@ export function renderTracksOnMap(map, project, { fit = false, topology = false 
   // The network diagram is of the whole network, hidden tracks or not.
   showTopology(map, { on: topology, tracks: allTracks, switches: (project.switches ?? []).filter(sw => !at || !sw.switchId || at.switches.has(sw.switchId)), endMarks, color: getColor() })
 
-  // The civil structures beside and over the tracks (decision 0025), on the tracks shown.
+  // The civil structures beside and over the tracks (decision 0008), on the tracks shown.
   renderStructuresOnMap(map, project, tracks)
 
   updateLabels(map)

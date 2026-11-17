@@ -2,7 +2,7 @@ import { deleted, newId } from './domain.js'
 
 /**
  * The stations, as the tool edits them: points of the record's operational
- * point register (R10, `operationalPoints`; decision 0028), which the tool
+ * point register (R10, `operationalPoints`; decision 0006), which the tool
  * writes as well as the signalling — the points and which station each
  * platform is of.
  *

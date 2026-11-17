@@ -1,5 +1,5 @@
 // What the project server reads for the Layout-Tool because a browser cannot
-// (decision 0019 of the suite): the Länder's DGM1 — heights for points, relief
+// (decision 0005 of the suite): the Länder's DGM1 — heights for points, relief
 // tiles for the map — and the conversion of an Access file for the MDB import
 // (crates/server/src/routes/terrain.rs).
 

@@ -8,7 +8,7 @@ clothoid), the routes it adds, the drawn symbol, crossings and crossing switches
 slider of the dialogs, and what remains of the tracks when a switch is deleted. The record itself — kinds,
 ports, element marks — is in the `track` module; what the dialogs commit is in `commands`.
 
-The module is the core's Rust crate `crates/switch` ([decision 0021](../../../docs/decisions/0021-one-format-one-build-the-project-in-the-module.md),
+The module is the core's Rust crate `crates/switch` ([decision 0006](../../../docs/decisions/0006-the-format-rail-across-1.0.md),
 phase D): `index.js` calls it for every function — a form of the catalogue in an answer given back as the
 catalogue's own object, a test's `formOf` handed over as a table of the forms its switches name —; the
 catalogue as the pickers list it and the constants (`constants.js`) stay JavaScript.
@@ -27,7 +27,7 @@ catalogue as the pickers list it and the constants (`constants.js`) stay JavaScr
 | `crates/switch/src/detail_scene.rs` | A laid turnout in detail with its surroundings: the partners of a switch connection, the turnouts close by and the tracks there, in the turnout's frame |
 | `crates/switch/src/placement.rs` | Where a turnout lies on a track: the toe at a station, the through route over as many elements as it covers; why it cannot lie somewhere |
 | `crates/switch/src/cants.rs` | The cant of a turnout's two routes kept together after every write (`coupleSwitchCants`) |
-| `crates/switch/src/connection.rs` (Rust; the solvers of the dialogs moved there with decision 0020, step 10, called through `index.js`) | The switch connection: two turnouts facing each other on two tracks and the element(s) between them |
+| `crates/switch/src/connection.rs` (Rust; the solvers of the dialogs moved there with decision 0005, called through `index.js`) | The switch connection: two turnouts facing each other on two tracks and the element(s) between them |
 | `crates/switch/src/mid_chain.rs` (Rust) | One to three elements between the two branches of a switch connection, two of their values sought |
 | `crates/switch/src/connect.rs` (Rust) | Connecting a turnout's branch or a crossing's leg to an open track end by refitting the element there, or the last two laid anew |
 | `crates/switch/src/slider.rs` (Rust) | The valid stretches and snap points of the position slider — a snap point is a node's own station, not one rounded off it, so a turnout settled on it leaves no sliver of an element |
@@ -231,7 +231,7 @@ permitted cant deficiency, or when the cant at the two ends of the middle elemen
 element carries one value, a step would be a ramp of no length.
 
 **Up to three intermediate elements** (`crates/switch/src/mid_chain.rs`). Instead of one arc the extended switch connection
-(decision 0018) may lay one to three elements, each a straight, an arc or a transition, each with length (and an arc's radius) given or
+(decision 0005) may lay one to three elements, each a straight, an arc or a transition, each with length (and an arc's radius) given or
 left open. A radius is given with its sign, as the element table shows one — + right, − left, in the
 direction the connection runs from the first turnout to the second — and that fixes the side it bends to
 (`side` in the spec, Entscheidung 368); an open radius finds its side. Exactly two values are sought; the third unknown is s₂. Transitions run between the curvatures
@@ -258,7 +258,7 @@ one. They are snaps of the slider, and `preferredShift` lays the connection on a
 element change where one gives it, else the straight nearest to the click) and only then on the element
 change behind the toe; a straight a toe would be pushed off (`settleConnection`) does not count.
 
-**The search of the extended switch connection** (decision 0018, Entscheidung 358). The switch
+**The search of the extended switch connection** (decision 0005, Entscheidung 358). The switch
 connection's dialog lays one element; every other configuration — each turnout of its own form, one to three
 elements, values given or sought — is searched by the module of `crossover/` (Rust, WebAssembly, in the
 browser): both toes free on their elements, the elements between closed by least squares and SLSQP under
@@ -280,7 +280,7 @@ valid the slider spans the shifts at which one is overridable (`computeShiftBoun
 take one form instead of the speed's fallback chain: an existing connection is laid again with its own
 turnouts' form (see `crates/commands/src/crossover_edit.rs`).
 
-**Two forms** (decision 0018). `form` may also be a pair [first turnout's, second turnout's] (`formPair`): each
+**Two forms** (decision 0005). `form` may also be a pair [first turnout's, second turnout's] (`formPair`): each
 turnout is then its own form laid into its own track, with its own branch, through route and ldS. The result
 names both (`switchType`, `switchType2`, `throughLength`, `throughLength2`, `L1`, `L2`), the samples of
 `connectionBranchEnds` the second form's at the second branch end (`sw2`, `through2`), and `buildSCurve` writes

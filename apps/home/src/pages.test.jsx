@@ -65,7 +65,7 @@ describe('the infrastructure editor', () => {
     expect(card({})).not.toContain('lokale Änderung')
   })
 
-  it('opens the projects in the Civil-Tool and the Catenary-Tool, each a layer of its own (decision 0025)', () => {
+  it('opens the projects in the Civil-Tool and the Catenary-Tool, each a layer of its own (decision 0008)', () => {
     const civil = de(<Infrastructure toolId="civil" user={{ id: 1, role: 'user' }} projects={projects} />)
     expect(civil).toContain('Projekte öffnen im Civil-Tool')
     expect(civil).toContain('href="civil/?project=p1&amp;variant=v1"')

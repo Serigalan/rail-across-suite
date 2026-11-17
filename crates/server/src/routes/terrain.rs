@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Serigalan and the Rail-Across-Suite contributors
 // SPDX-License-Identifier: LGPL-3.0-only
 
-//! What the Layout-Tool cannot do in the browser (`routes/terrain.js`, decision 0019):
+//! What the Layout-Tool cannot do in the browser (`routes/terrain.js`, decision 0005):
 //! the Länder's DGM1 for points and as relief tiles, and the MDB import.
 
 use serde_json::Value;

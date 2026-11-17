@@ -76,7 +76,7 @@ fn as_written(record: &Value) -> Value {
     }
     fn walk(v: &Value, ids: &HashSet<String>) -> Value {
         match v {
-            // The document names every object by a UUID (decision 0029, phase 2), and PlanPro by that.
+            // The document names every object by a UUID (decision 0006), and PlanPro by that.
             Value::String(s) if ids.contains(s) => json!(planpro_id(&rail_across_doc::ids::uuid_of(s))),
             Value::Array(a) => Value::Array(a.iter().map(|x| walk(x, ids)).collect()),
             Value::Object(o) => Value::Object(o.iter().map(|(k, x)| (k.clone(), walk(x, ids))).collect()),

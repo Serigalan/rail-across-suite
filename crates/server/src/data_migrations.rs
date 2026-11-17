@@ -86,7 +86,7 @@ fn close_node_gaps(db: &Connection, now: i64) -> rusqlite::Result<String> {
             }
             let Ok(checked) = check_kept(record) else { continue };
             let author = system_user(db, now)?;
-            let message = format!("{closed} Stöße bis 1 mm geschlossen – derselbe Ort ist jetzt 1 µm (Entscheidung 0020).");
+            let message = format!("{closed} Stöße bis 1 mm geschlossen – derselbe Ort ist jetzt 1 µm (Entscheidung 0005).");
             if let Ok(Ok(_)) = store.check_in(
                 &v,
                 v.head_revision_id,
@@ -105,11 +105,11 @@ fn close_node_gaps(db: &Connection, now: i64) -> rusqlite::Result<String> {
     Ok(format!("{written} Revisionen, {joints} Stöße"))
 }
 
-/// The document a revision kept before decision 0021 holds: one of the
+/// The document a revision kept before decision 0006 holds: one of the
 /// envelope before it (`schema_version` 3) with today's envelope, one kept as
 /// an oltjson-1.1 record or file (2) turned into one — its planning statuses
 /// lifespans with their days open, its station texts operational points
-/// (decision 0028) —; None where it is neither.
+/// (decision 0006) —; None where it is neither.
 pub fn infra_data_of(version: i64, payload: &Value) -> Option<Value> {
     match version {
         3 => {
@@ -128,7 +128,7 @@ pub fn infra_data_of(version: i64, payload: &Value) -> Option<Value> {
     }
 }
 
-/// An oltjson-1.1 record's planning statuses as lifespans (decision 0028): new
+/// An oltjson-1.1 record's planning statuses as lifespans (decision 0007): new
 /// begins on a day open, removal ends on one, existing states none.
 fn lived(record: &Value) -> Value {
     let mut out = record.clone();
@@ -145,7 +145,7 @@ fn lived(record: &Value) -> Value {
     out
 }
 
-/// Every revision kept in a format before decision 0021 rewritten as its
+/// Every revision kept in a format before decision 0006 rewritten as its
 /// infra-data-1.0 document, in place: a revision stays the state it was, only
 /// its form changes. One that cannot be read stays as it was and is refused
 /// as `format_outdated`, as before.
@@ -171,7 +171,7 @@ fn to_infra_data(db: &Connection, _now: i64) -> rusqlite::Result<String> {
 }
 
 /// Every revision kept as an infra-data-1.0 document rewritten as today's,
-/// in place (decision 0025): the platforms and the layout into civil, the
+/// in place (decision 0008): the platforms and the layout into civil, the
 /// stopping places into the core. One the door cannot read stays as it was,
 /// and is read through the door each time it is asked for.
 fn from_infra_data_1_0(db: &Connection, _now: i64) -> rusqlite::Result<String> {
@@ -180,8 +180,8 @@ fn from_infra_data_1_0(db: &Connection, _now: i64) -> rusqlite::Result<String> {
 
 /// Every revision kept as an infra-data-2.0 document with its register of
 /// construction stages rewritten as today's, in place: its domains of an
-/// earlier schema of 2.0 brought to 2.0's last (decisions 0025, 0027), and its
-/// lifespans stated by day, without the register (decision 0028). One the door
+/// earlier schema of 2.0 brought to 2.0's last (decisions 0008 and 0007), and its
+/// lifespans stated by day, without the register (decision 0007). One the door
 /// cannot read stays as it was, and is read through the door each time it is
 /// asked for.
 fn from_infra_data_2_0(db: &Connection, _now: i64) -> rusqlite::Result<String> {
@@ -189,7 +189,7 @@ fn from_infra_data_2_0(db: &Connection, _now: i64) -> rusqlite::Result<String> {
 }
 
 /// Every revision kept with its lifespans by day rewritten as today's, in
-/// place (decision 0028, phase C): a reference that names nothing — the tools
+/// place (decision 0006): a reference that names nothing — the tools
 /// reported one instead before — cut as the deletion of what it named would
 /// have cut it. One the door cannot read stays as it was, and is read through
 /// the door each time it is asked for.
@@ -198,14 +198,14 @@ fn from_lifespans_by_day(db: &Connection, _now: i64) -> rusqlite::Result<String>
 }
 
 /// Every revision kept with its references naming something rewritten as the door reads it, in place — core 4.0
-/// when the step came (decision 0029, phases 1 and 2): the kinds as words, the references ending in `Id`, every id
+/// when the step came (decision 0006): the kinds as words, the references ending in `Id`, every id
 /// a UUID, a km line in one plane as runs; core 5.0 since. One the door cannot read stays as it was, and
 /// is read through the door each time it is asked for.
 fn from_references(db: &Connection, _now: i64) -> rusqlite::Result<String> {
     through_the_door(db, STORED_FORMAT_REFERENCES)
 }
 
-/// Every revision kept as core 4.0 rewritten as core 5.0 states it, in place (decision 0029, phase 6): a switch's
+/// Every revision kept as core 4.0 rewritten as core 5.0 states it, in place (decision 0006): a switch's
 /// `B1` its branch and `B2` its main track again. One the door cannot read stays as it was, and is read through the
 /// door each time it is asked for.
 fn from_core_4_0(db: &Connection, _now: i64) -> rusqlite::Result<String> {
@@ -213,7 +213,7 @@ fn from_core_4_0(db: &Connection, _now: i64) -> rusqlite::Result<String> {
 }
 
 /// Every revision of a project's operations kept with one domain `operations` rewritten in the two domains
-/// `vehicles` and `timetables`, in place (decision 0029, phase 4): a train's point naming an end mark of the
+/// `vehicles` and `timetables`, in place (decision 0006): a train's point naming an end mark of the
 /// project's infrastructure — any revision of any variant — by `endMarkId`, else its operational point. One the
 /// door cannot read stays as it was, and is read through the door each time it is asked for.
 fn to_two_domains(db: &Connection, _now: i64) -> rusqlite::Result<String> {
@@ -286,8 +286,8 @@ fn through_the_door(db: &Connection, from: i64) -> rusqlite::Result<String> {
     Ok(format!("{written} Revisionen umgeschrieben, {left} nicht lesbar"))
 }
 
-/// Every project's timetables kept as rows of `timetable` (decision 0016) made
-/// the first revision of its operations (operations-1.0, O2; decision 0026),
+/// Every project's timetables kept as rows of `timetable` (decision 0012) made
+/// the first revision of its operations (operations-1.0, O2; decision 0012),
 /// each timetable under its id, its maker and last saver kept. One the door
 /// does not take is left out — it stays in its row — and counted.
 fn to_operations(db: &Connection, now: i64) -> rusqlite::Result<String> {
@@ -323,7 +323,7 @@ fn to_operations(db: &Connection, now: i64) -> rusqlite::Result<String> {
                 left += 1;
                 continue;
             }
-            // The timetable under the id its document names it by (decision 0029, phase 2).
+            // The timetable under the id its document names it by (decision 0006).
             let id = rail_across_doc::ids::uuid_of(id);
             list.push(json!({ "id": id, "name": name, "data": data }));
             ids.push(id);
@@ -362,19 +362,19 @@ pub fn run_data_migrations(db: &Connection, now: i64) -> rusqlite::Result<Vec<(S
         ("0025-infra-data-2.0", from_infra_data_1_0),
         ("0025-passenger-stops-and-runs", from_infra_data_2_0),
         ("0026-operations", to_operations),
-        // The core's schema with days on its stages (decision 0027): the revisions named by it, as they were.
+        // The core's schema with days on its stages (decision 0007): the revisions named by it, as they were.
         ("0027-stage-days", from_infra_data_2_0),
         // Civil's schema with bridges, retaining walls and noise barriers: the revisions named by it, as they were.
         ("0027-civil-structures", from_infra_data_2_0),
-        // No stages, the lifespans by day (decision 0028): every revision kept before it.
+        // No stages, the lifespans by day (decision 0007): every revision kept before it.
         ("0028-lifespans-by-day", from_infra_data_2_0),
-        // A reference names something (decision 0028, phase C): every revision a build of phase A or B kept.
+        // A reference names something (decision 0006): every revision a build of phase A or B kept.
         ("0028-references", from_lifespans_by_day),
-        // Core 4.0 of rail-across-1.0 (decision 0029, phases 1 and 2): every revision kept before it.
+        // Core 4.0 of rail-across-1.0 (decision 0006): every revision kept before it.
         ("0029-core-4.0", from_references),
-        // Operations in the domains vehicles and timetables (decision 0029, phase 4): every revision of operations.
+        // Operations in the domains vehicles and timetables (decision 0006): every revision of operations.
         ("0029-operations", to_two_domains),
-        // Core 5.0 (decision 0029, phase 6): a switch's B1 its branch again, in every revision kept as core 4.0.
+        // Core 5.0 (decision 0006): a switch's B1 its branch again, in every revision kept as core 4.0.
         ("0029-switch-ports", from_core_4_0),
     ];
     for (name, step) in steps {

@@ -74,7 +74,7 @@ WE and ldS as dots; the wheel zooms about the pointer, a drag moves, a sleeper u
 and its stations. Around a laid turnout the partners of a switch connection, the turnouts close by and the
 tracks there are drawn with it (switch "Surroundings" in the header).
 
-**Switch connections** (`ConnectSwitchPanel/SCurveForm.jsx`, `ExtendedConnectionForm.jsx`, decision 0018 of the
+**Switch connections** (`ConnectSwitchPanel/SCurveForm.jsx`, `ExtendedConnectionForm.jsx`, decision 0005 of the
 suite): the switch connection is two turnouts and one element between them, on a slider of the first toe that
 lays it on a straight between the turnouts first. The extended one takes each turnout of its own form, one to
 three elements between them — every sequence, or the ones set with their lengths and radii given or left to it

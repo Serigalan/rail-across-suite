@@ -1,5 +1,5 @@
 // npm run wasm — builds the core's Rust crates as one WebAssembly module
-// (crates/core-wasm; decision 0020) and puts it in packages/core/wasm/, where
+// (crates/core-wasm; decision 0005) and puts it in packages/core/wasm/, where
 // the core's face loads it from in Node (src/native), and in every directory
 // named — an app's public/core-module/, which its page loads it from.
 // RA_CORE_WASM names a module file to take as it is. Without a module the core

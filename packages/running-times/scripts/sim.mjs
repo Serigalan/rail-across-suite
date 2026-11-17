@@ -1,7 +1,7 @@
 // npm run sim, in an app that runs trains (the Simulation-Tool, the Fahrplan-
 // Editor) — puts the simulation module beside the app's page, in public/sim/
 // of the directory it is run in (or the one named): OSRD's simulation core
-// ported to Rust (sim/, decision 0013), built to WebAssembly with cargo. The
+// ported to Rust (sim/, decision 0011), built to WebAssembly with cargo. The
 // app loads it as a file of its own, which can be swapped for another build
 // of it — RA_SIM_WASM names a module file to take as it is.
 import { execFileSync } from 'node:child_process'
@@ -14,7 +14,7 @@ const here = dirname(fileURLToPath(import.meta.url))
 const out = resolve(process.argv[2] ?? 'public/sim')
 const target = join(out, 'rail_across_sim.wasm')
 const sim = resolve(here, '../../../sim')
-// One cargo workspace for the repository (decision 0020): its target/ is at the root.
+// One cargo workspace for the repository (decision 0005): its target/ is at the root.
 const built = join(sim, '../target/wasm32-unknown-unknown/release/rail_across_sim_wasm.wasm')
 
 let source = process.env.RA_SIM_WASM ? resolve(process.env.RA_SIM_WASM) : null

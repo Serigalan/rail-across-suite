@@ -18,7 +18,7 @@ describe('the files chosen to import', () => {
     expect(tt).toEqual([{ name: 'Takt', data: { trains: [] } }])
   })
 
-  it('read an operations file beside a backup file, with the vehicles it carries (decision 0026)', () => {
+  it('read an operations file beside a backup file, with the vehicles it carries (decision 0012)', () => {
     const loco = { railjson_version: '3.3', name: 'Lok', mass: 84000, effort_curves: { modes: { '15000V': { is_electric: true, curves: [{}] } } } }
     const train = { id: 't1', number: '1', category: 'RE', name: '', vehicle: 'osrd:loco', mode: null, comfort: 'STANDARD', departure: 3600, margin: '', distribution: 'mareco', points: [] }
     const file = operationsFile([{ id: 'x', name: 'Takt', data: { trains: [train] } }], [{ key: 'osrd:loco', vehicle: loco }])
@@ -31,7 +31,7 @@ describe('the files chosen to import', () => {
     expect(vehicles).toMatchObject([{ key: 'osrd:loco', vehicle: loco }])
   })
 
-  it('read one file rail-across-1.0 that holds the project and its operations (decision 0029, phase 5)', () => {
+  it('read one file rail-across-1.0 that holds the project and its operations (decision 0006)', () => {
     const loco = { railjson_version: '3.3', name: 'Lok', effort_curves: { modes: { thermal: { is_electric: false, curves: [{}] } } } }
     const train = { id: derivedId('t1'), number: '1', category: 'RE', name: '', vehicle: 'osrd:loco', mode: null, comfort: 'STANDARD', departure: 3600, margin: '', distribution: 'mareco', points: [] }
     const operations = operationsFile([{ id: 'x', name: 'Takt', data: { trains: [train] } }], [{ key: 'osrd:loco', vehicle: loco }])
@@ -50,7 +50,7 @@ describe('the files chosen to import', () => {
     expect(code([{ name: 'x.json', text: JSON.stringify({ ...timetables, version: '9.0' }) }])).toBe('timetables_version')
   })
 
-  it('refuse an oltjson-1.1 file: the one format is infra-data-1.0 (decision 0021)', () => {
+  it('refuse an oltjson-1.1 file: the one format is infra-data-1.0 (decision 0006)', () => {
     const oltjson = { format: 'oltjson', version: '1.1', projects: [record] }
     const code = (files) => { try { importedFiles(files); return null } catch (err) { return err.code } }
     expect(code([{ name: 'Strecke.railacross.json', text: JSON.stringify(oltjson) }])).toBe('import_version')

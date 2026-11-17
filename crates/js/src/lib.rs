@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 
 //! JSON values with the meaning JavaScript gives them — what the core's crates
-//! need to answer exactly as the JavaScript core they replace (decision 0020):
+//! need to answer exactly as the JavaScript core they replace (decision 0005):
 //! a number written as ECMAScript writes it, a string escaped as
 //! `JSON.stringify` escapes it, canonical JSON after RFC 8785, keys compared by
 //! their UTF-16 code units, and the reading of a member that may be absent,

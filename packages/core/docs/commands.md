@@ -10,7 +10,7 @@ input, show previews and findings, and claim names and numbers.
 
 ## Files
 
-The commands are Rust (decision 0020, step 10): `index.js` calls `crates/commands` for each — on an action of
+The commands are Rust (decision 0005): `index.js` calls `crates/commands` for each — on an action of
 the user's, or a preview when a value of a form changes —, giving back as it was what the module passed
 through untouched. The element table's view and the element roles stay JavaScript beside their Rust (the
 page works them out on every render of the table, from all tracks), as do `connectRemedies` (it asks its
@@ -22,7 +22,7 @@ into both.
 | `crates/commands/src/tracks.rs` | Create element, connect straight/curve, parallels | New tracks; straights, arcs and transitions appended at a track end; parallel tracks |
 | `crates/commands/src/switches.rs` | Switch on track, crossing on track | A turnout or crossing laid into a track at a station: split track, carved through route, new branch tracks, switch record |
 | `crates/commands/src/scurve.rs` | Switch connection (Weichenverbindung) | Both turnouts and the connecting track between two tracks, for a toe position (shift) on track 1; the range of valid shifts and the snaps |
-| `crates/commands/src/crossover.rs` | Extended switch connection | The request of its search (both branch ends sampled, the limits; decision 0018) and an answer adopted as shift, middle elements and seed |
+| `crates/commands/src/crossover.rs` | Extended switch connection | The request of its search (both branch ends sampled, the limits; decision 0005) and an answer adopted as shift, middle elements and seed |
 | `crates/commands/src/crossover_edit.rs` | Edit switch connection | Which track is a switch connection, the connection taken apart in memory (the turnouts deleted, their lines joined), where the dialog starts on it, and the commit that replaces it |
 | `crates/commands/src/connect.rs` | Connect a turnout to a track | The turnout on the host and the refitted connecting element (see `crates/switch/src/connect.rs`) |
 | `crates/commands/src/connect.rs` | Connect a crossing to a track | The same for one end of a crossing's cross route |

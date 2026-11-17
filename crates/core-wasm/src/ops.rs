@@ -45,7 +45,7 @@ fn flag(input: &Value, key: &str, otherwise: bool) -> bool {
 }
 
 /// Runs operation `op` on `input`. What the input names of the project the
-/// module holds (`{"$held": …}`, decision 0021) is lent to the operation for
+/// module holds (`{"$held": …}`, decision 0005) is lent to the operation for
 /// the call and taken back after it (`ops_session::lend`).
 pub fn run(op: &str, mut input: Value) -> Result<Value, Failure> {
     if let Some(answer) = crate::ops_session::run_owned(op, &mut input) {
@@ -131,7 +131,7 @@ fn run_on(op: &str, input: &Value) -> Result<Value, Failure> {
         "document.withoutDangling" => {
             let doc = core_format::record_to_document(input, door::schema_hashes())?;
             let (doc, cut) = door::without_dangling(&doc);
-            // The record holds the UUIDs its document names things by (decision 0029, phase 6); an id of before
+            // The record holds the UUIDs its document names things by (decision 0006); an id of before
             // comes back as the one drawn from it, as from any save. Its collections keep their order.
             let mut record = core_format::document_to_record(&doc)?;
             rail_across_doc::ids::in_order_of(&mut record, input);
@@ -159,7 +159,7 @@ fn run_on(op: &str, input: &Value) -> Result<Value, Failure> {
         }
         "operations.toOperations" => Ok(rail_across_doc::operations::to_operations(&input["record"], flag(input, "check", true))?),
         "operations.fromOperations" => Ok(rail_across_doc::operations::from_operations(input)?),
-        // the file rail-across-1.0 (decision 0029, phase 5)
+        // the file rail-across-1.0 (decision 0006)
         "file.toFile" => Ok(rail_across_doc::file::to_file(
             input.get("infra").filter(|v| v.is_object()),
             input.get("operations").filter(|v| v.is_object()),

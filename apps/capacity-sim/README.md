@@ -1,6 +1,6 @@
 # Kapazitäts-Sim
 
-The capacity simulation of Rail-Across-Suite (roadmap, phase 4, K1; [decision 0023](../../docs/decisions/0023-capacity-simulation-of-our-own.md)):
+The capacity simulation of Rail-Across-Suite (roadmap, phase 4, K1; [decision 0013](../../docs/decisions/0013-capacity.md)):
 a project's timetable run over a variant's net at a stage, as the Fahrplan-Editor runs it, and from the trains'
 blocking times
 
@@ -10,7 +10,7 @@ blocking times
 - the **minimum headways** of the trains that follow each other there, by kind;
 - the **conflict areas** — what two or more trains of the period hold — and the **binding elements** of the
   critical chain — where each train's blocking time touches the one's before —, on a schematic plan of the variant
-  ([decision 0030](../../docs/decisions/0030-conflict-areas-and-construction-scenarios.md), point 1);
+  ([decision 0013](../../docs/decisions/0013-capacity.md));
 - how long each track and track section of a **station** is held;
 - the same for **another variant or stage** beside it.
 

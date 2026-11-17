@@ -8,7 +8,7 @@ import { built, solveSplice } from '../../test/optimizerModule'
 import { buildSplice, picksAtSpeed, spliceFromAnswer, splicePick, spliceRequest } from '@rail-across/core/commands'
 
 // The splice as the dialog runs it: the optimizer module (optimizer/ of the
-// repository, decision 0019), as cargo built it — skipped where it has not
+// repository, decision 0005), as cargo built it — skipped where it has not
 // been. The module itself is held against the 243 answers the Python service
 // gave (optimizer/crates/optimizer/tests/splice.rs); here are the app's own
 // cases and the merged track the answers lead to, checked like any other.

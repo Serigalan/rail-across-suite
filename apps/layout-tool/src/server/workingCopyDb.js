@@ -10,7 +10,7 @@ import { WORKING, done as txDone, openDb, request as req } from '@rail-across/wo
 //   workingCopies – keyPath `variantId`, one entry per variant a user has
 //                   opened: the state being edited and that of the revision
 //                   it rests on, for merging against, each kept as its
-//                   infra-data-1.0 document (decision 0021) and read here as
+//                   infra-data-1.0 document (decision 0006) and read here as
 //                   { variantId, projectId, base, basePayload, project, idLog,
 //                   updatedAt } with the records.
 //

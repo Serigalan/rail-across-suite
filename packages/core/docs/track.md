@@ -7,7 +7,7 @@ along a track, the switch record and its ports, links, marks at track ends, plat
 operations that split, join and reverse tracks. Nothing here reads or writes the store — that is what lets
 the importers, the merge and the project server use the same code.
 
-The module is the core's Rust crate `crates/track` ([decision 0021](../../../docs/decisions/0021-one-format-one-build-the-project-in-the-module.md),
+The module is the core's Rust crate `crates/track` ([decision 0006](../../../docs/decisions/0006-the-format-rail-across-1.0.md),
 phase D): `index.js` calls it for every function, an argument that is a part of the project the module holds
 crossing as its name (`native` holdProject). What stays JavaScript, measured: the small queries the pages ask
 point by point, per signal or per frame — a point, an element or a height at a station, a switch's ports, a
@@ -45,7 +45,7 @@ A track is a chain of elements in one plane (`epsg`) plus metadata:
 
 - **Identity and naming:** `id` (UUID), `name`, `trackType` (1 line track, 2 station track); a line
   track carries `lineNumber`, `lineName`, `side`; a station track `operationalPoint` (the id of its
-  station, a point of the record's `operationalPoints`, decision 0028) and `trackNumber`. A new line track is named from the kilometrage of its middle (`km` module).
+  station, a point of the record's `operationalPoints`, decision 0006) and `trackNumber`. A new line track is named from the kilometrage of its middle (`km` module).
 - **Use and rules:** `trackUse` (`siding`, otherwise main track), `lineCategory` only where the track
   overrides the project's.
 - **Heights:** `heights` (below) and `heightEpsg`, the vertical datum (DHHN2016 by default).

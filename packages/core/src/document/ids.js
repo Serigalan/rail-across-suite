@@ -2,7 +2,7 @@ import { derivedId } from './canonical.js'
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 
-/** Whether `id` is a UUID in lower case, as every id of a document and the record is (decision 0029). */
+/** Whether `id` is a UUID in lower case, as every id of a document and the record is (decision 0006). */
 export const isUuid = (id) => typeof id === 'string' && UUID.test(id)
 
 /**

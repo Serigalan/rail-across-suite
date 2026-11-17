@@ -1,8 +1,8 @@
 // project — the project record as a whole: the record the app works on (load,
 // hydrate), the door to it from infra-data-1.0 documents (the one format,
-// decision 0021), project settings, validation, what one step did. The
+// decision 0005), project settings, validation, what one step did. The
 // door, keeping a record and the validation are the core's Rust module
-// (decision 0020, step 10); loading one, the settings and the step labels —
+// (decision 0005); loading one, the settings and the step labels —
 // what the page asks for every track and history step it shows — stay here.
 //
 // This file is the module's public face: code outside packages/core/src/project/
@@ -25,7 +25,7 @@ export { describeStep, stepTrackIds } from './stepLabel.js'
 /**
  * The findings of a record — what validateProject's rules 6 and 7 say of
  * it, { errors, warnings } — computed by the core's Rust module
- * (crates/project; decision 0020, step 10).
+ * (crates/project; decision 0005).
  */
 export const validateProject = viaRust('project.validateProject')
 /** The findings of `now` that `before` did not have (by their keys). */

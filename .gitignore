@@ -9,7 +9,7 @@ __pycache__/
 apps/home/dist/
 /.tmp-build-*/
 
-# The cargo workspace's builds (decision 0020), and those of before it
+# The cargo workspace's builds (decision 0005), and those of before it
 /target/
 sim/target/
 crossover/target/

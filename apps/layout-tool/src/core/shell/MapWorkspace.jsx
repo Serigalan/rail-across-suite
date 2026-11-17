@@ -65,7 +65,7 @@ export default function MapWorkspace({ onHome, beforeHome, homeKey, resetKey = 0
   const project = useProject()
   // The tracks hidden on the map — a redraw when that changes, like a write.
   const hidden = useHiddenTracks()
-  // …and the construction stage it shows (decision 0027).
+  // …and the construction stage it shows (decision 0007).
   const stage = useMapStage()
   const projectRef = useRef(project)
   useEffect(() => { projectRef.current = project }, [project])

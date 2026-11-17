@@ -10,7 +10,7 @@ import answers from '../../test/fixtures/splice_answers.json' with { type: 'json
 // The construction is the optimizer module's (optimizer/…/splice.rs); what is tested
 // here is the app's half — the request it sends and the track it builds from
 // the answer. The answers are real ones, recorded from the optimizer service
-// for the very same picks before the module replaced it (decision 0019 of the
+// for the very same picks before the module replaced it (decision 0005 of the
 // suite); the module gives the same (apps/layout-tool …/optimizer/splice.test.js).
 
 const EPSG = 25832

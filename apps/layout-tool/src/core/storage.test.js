@@ -658,8 +658,8 @@ describe('a vertical curve whose length counts (decision 266)', () => {
   })
 })
 
-describe('a platform and the stopping places at it (decision 0025)', () => {
-  // The stopping places the core's, the platform naming those at it (decision 0028).
+describe('a platform and the stopping places at it (decision 0008)', () => {
+  // The stopping places the core's, the platform naming those at it (decision 0006).
   const stops = () => currentProject().stoppingPlaces ?? []
   const named = () => currentProject().platforms?.find(p => p.id === 'pf1')?.stoppingPlaceIds ?? []
   const platform = (from, to) => ({ id: 'pf1', trackId: 't1', startStation: from, endStation: to, side: 'left' })
@@ -687,7 +687,7 @@ describe('a platform and the stopping places at it (decision 0025)', () => {
   })
 })
 
-describe('bridges, retaining walls and noise barriers in the store (decision 0025)', () => {
+describe('bridges, retaining walls and noise barriers in the store (decision 0008)', () => {
   const el = (length) => ({ elementType: 'straight', length, bearing: 90, startNode: [500000, 5600000], endNode: [500000 + length, 5600000] })
 
   it('keeps them, and carries them with their track when it is turned round', () => {
@@ -701,7 +701,7 @@ describe('bridges, retaining walls and noise barriers in the store (decision 002
   })
 })
 
-describe('a station a form states as text (decision 0028)', () => {
+describe('a station a form states as text (decision 0006)', () => {
   it('is the point of that name, found or made, in the same step', () => {
     openProject({ id: 'p1', tracks: [], switches: [], operationalPoints: [{ id: 'op-k', name: 'Könnern', rl100: 'LKO' }] })
     saveTrack({ id: 't1', elements: [], trackType: 'station', stationName: 'Könnern' })
@@ -732,13 +732,13 @@ describe('a station a form states as text (decision 0028)', () => {
   })
 })
 
-describe('what a write takes away (decision 0028, phase C)', () => {
+describe('what a write takes away (decision 0006)', () => {
   it('takes along what the layers name of it: a switch deleted, its switch element and what needs that', async () => {
     const { ksStation, ksStoppingPlaces } = await import('@rail-across/core/test/signallingFixture.js')
     const { u, withUuids } = await import('@rail-across/core/test/uuids.js')
     const signalling = ksStation()
     const track = (id) => ({ id, epsg: 25832, elements: [{ elementType: 'straight', startNode: [500000, 5600000], endNode: [500100, 5600000], bearing: 90, length: 100 }] })
-    // The record holds UUIDs, as one read from its document does (decision 0029, phase 6).
+    // The record holds UUIDs, as one read from its document does (decision 0006).
     openProject(withUuids({
       id: 'p1', tracks: [track('t1'), track('t2')], operationalPoints: [{ id: 'op1', name: 'Halle-Trotha' }],
       switches: [{ switchId: 'w1', kind: 'link', formVersion: 1, ports: { A: { trackId: 't1', endpoint: 'END' }, B: { trackId: 't2', endpoint: 'BEGIN' } } }],

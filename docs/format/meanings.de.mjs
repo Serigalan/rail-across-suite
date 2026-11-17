@@ -615,7 +615,7 @@ export default {
   'timetables:root.collections.delayScenarios': 'Verspätungsszenarien',
   'timetables:root.collections.studies': 'Kapazitätsuntersuchungen',
   'timetables:root.collections.constructionScenarios': 'Bauszenarien (timetables 1.2)',
-  'TYPE:timetables:ConstructionScenario': 'Ein Bauszenario eines Fahrplans (Entscheidung 0030): Gleisstücke, die eine Zeit lang gesperrt sind, die herausgenommenen Züge, die von Hand umgeleiteten Züge. Es ändert keine Infrastruktur, nur wie der Fahrplan gefahren wird, solange es gilt.',
+  'TYPE:timetables:ConstructionScenario': 'Ein Bauszenario eines Fahrplans (Entscheidung 0014): Gleisstücke, die eine Zeit lang gesperrt sind, die herausgenommenen Züge, die von Hand umgeleiteten Züge. Es ändert keine Infrastruktur, nur wie der Fahrplan gefahren wird, solange es gilt.',
   'timetables:ConstructionScenario.timetableId': 'der Fahrplan, zu dem es gehört',
   'timetables:ConstructionScenario.closures': 'die gesperrten Gleisstücke',
   'timetables:ConstructionScenario.cancelledTrainIds': 'die herausgenommenen Züge: sie fahren nicht',

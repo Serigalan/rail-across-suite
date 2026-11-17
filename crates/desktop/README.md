@@ -1,6 +1,6 @@
 # rail-across-desktop
 
-Rail-Across-Suite on the desktop (decision 0020, step 9): the whole suite in one Tauri window, the project
+Rail-Across-Suite on the desktop (decision 0005): the whole suite in one Tauri window, the project
 server (`crates/server`) in the same process. The window loads the built suite from the URI scheme `rail`
 (`rail://localhost/`; `http://rail.localhost/` on Windows); every request on it — pages and the API under
 `/api` — is answered by the server's router in this process. No port, no child process, no Node.

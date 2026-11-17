@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Serigalan and the Rail-Across-Suite contributors
 // SPDX-License-Identifier: LGPL-3.0-only
 
-//! The suite's vehicles for the Fahrplan-Sim (`routes/vehicles.js`, decision 0014).
+//! The suite's vehicles for the Fahrplan-Sim (`routes/vehicles.js`, decision 0012).
 
 use rusqlite::{OptionalExtension, Row, params};
 use serde_json::{Value, json};

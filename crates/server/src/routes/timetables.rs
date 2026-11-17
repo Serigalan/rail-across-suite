@@ -1,9 +1,9 @@
 // SPDX-FileCopyrightText: 2026 Serigalan and the Rail-Across-Suite contributors
 // SPDX-License-Identifier: LGPL-3.0-only
 
-//! The timetables of a project, for the Fahrplan-Editor (decision 0016): read from
+//! The timetables of a project, for the Fahrplan-Editor (decision 0012): read from
 //! the head of the project's operations and kept as a new revision of them
-//! (operations-1.0, O2; decision 0026). A timetable's version is the number of
+//! (operations-1.0, O2; decision 0012). A timetable's version is the number of
 //! the revision it was read from; a save on an older one is taken where the
 //! timetable is as it was there — someone saved another meanwhile —, and refused
 //! where it changed since.

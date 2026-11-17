@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url'
 import { CATALOGUE } from '@rail-across/core/rules'
 import { runWith } from '../utils/optimizer/optimizerRun'
 
-// The optimizer module (optimizer/ of the repository, decision 0019) for the
+// The optimizer module (optimizer/ of the repository, decision 0005) for the
 // tests, as cargo built it — `built` false where it has not been, and the
 // tests that need it are skipped. `optimizer(op, request)` answers in place,
 // the catalogue handed over with every request.

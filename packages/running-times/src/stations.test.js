@@ -89,7 +89,7 @@ describe('the stations of a net', () => {
     expect(new Set(before.map(s => s.id)).size).toBe(before.length)
     // the same ids from the project's document
     const read = (record) => parseProjectsPayload(JSON.parse(JSON.stringify(projectDocument(record)))).projects[0]
-    // the document names every object by a UUID (decision 0029, phase 2): a short id by the one drawn from it
+    // the document names every object by a UUID (decision 0006): a short id by the one drawn from it
     expect(stationsOf(read(project)).map(s => [s.id, s.name])).toEqual(before.map(s => [derivedId(s.id), s.name]))
     // renamed: the same id under the new name, its tracks with it
     const renamed = read({ ...project, ...renamedStation(project, c.id, { name: 'C-City' }) })

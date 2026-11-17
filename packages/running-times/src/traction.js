@@ -2,7 +2,7 @@ import { wireStretches } from '@rail-across/core/track'
 
 /**
  * The traction a train runs with along its way, from the electrification of
- * the net (the layer `electrification`, decisions 0025, 0029): which stretches
+ * the net (the layer `electrification`, decisions 0008 and 0006): which stretches
  * of a path lie under contact wire of which voltage — a wire running where its
  * suspension points and section insulators carry it —, and the vehicle's mode
  * to run with — the one asked for, else the vehicle's electric mode that has wire the

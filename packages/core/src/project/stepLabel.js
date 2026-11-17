@@ -20,7 +20,7 @@ function delta(before, after, key = 'id') {
 const SETTINGS_FIELDS = ['title', 'description', 'lineCategory', 'crsSystem', 'epsg', 'gaugeProfile']
 
 const switchName = (sw) => sw.name || sw.label || sw.switchId?.slice(0, 8) || '?'
-/** A platform by its station, the point it names in `record` (decision 0028). */
+/** A platform by its station, the point it names in `record` (decision 0006). */
 const platformName = (p, record) => {
   const point = (record?.operationalPoints ?? []).find(o => o.id === p.operationalPointId)
   return [point?.rl100, point?.name].filter(Boolean).join(' · ') || p.id?.slice(0, 8) || '?'

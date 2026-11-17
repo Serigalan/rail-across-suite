@@ -40,7 +40,7 @@ export function rng(seed) {
 
 /**
  * The vectors of `crates/<crate>/tests/vectors/<name>.json` as last recorded:
- * those whose JavaScript is gone (decision 0020, step 10) are kept so, and the
+ * those whose JavaScript is gone (decision 0005) are kept so, and the
  * Rust is held to them from then on as to any other test.
  */
 export const frozen = (crate, name) =>

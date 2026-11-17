@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Serigalan and the Rail-Across-Suite contributors
 // SPDX-License-Identifier: LGPL-3.0-only
 
-//! The stations of a record (`stations.js`; decision 0028): a station or halt
+//! The stations of a record (`stations.js`; decision 0006): a station or halt
 //! is a point of the record's operational point register, an object with an id
 //! of its own, and a track or platform names its point by `operationalPointId`.
 //! Its name and codes are the point's, stated once.

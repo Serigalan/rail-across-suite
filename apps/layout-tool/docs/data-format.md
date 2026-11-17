@@ -1,8 +1,8 @@
 # The project record and its format, infra-data-1.0
 
-A project has one format, **infra-data-1.0** ([decision 0021](../../../docs/decisions/0021-one-format-one-build-the-project-in-the-module.md)):
+A project has one format, **infra-data-1.0** ([decision 0006](../../../docs/decisions/0006-the-format-rail-across-1.0.md)):
 the document of the Rail-Data-Core ([document](../../../packages/core/docs/document.md), the schemas in
-[`schemas/`](../../../schemas/README.md), [decision 0009](../../../docs/decisions/0009-core-1-0-in-the-data-model.md)).
+[`schemas/`](../../../schemas/README.md), [decision 0006](../../../docs/decisions/0006-the-format-rail-across-1.0.md)).
 An exported file, the project server's revisions and the browser's working copies are documents. In memory the
 Layout-Tool works on the document's content as **the record** — the shape the app reads (plus derived display
 data), converted from and to the document without loss. This page specifies the record and gives the reasons for
@@ -22,7 +22,7 @@ its shape. The code is `packages/core/src/project/persistenceUtils.js` (see
 
 The door (`parseProjectsPayload`) takes an infra-data-1.0 document, checks it against its schemas and gives its
 record. Anything else is refused as `unsupported_version` — an oltjson file among it: that format went with
-decision 0021, and a project kept in it is opened from a server that migrated it. A document that names the
+decision 0006, and a project kept in it is opened from a server that migrated it. A document that names the
 format but does not hold it (a switch without `kind` or `formVersion`, a switch's branch without its `switchId`, a
 field the format does not have) is refused as `invalid_payload`, with what was found. That check is the one door:
 everything behind it may take the model for granted.
@@ -66,7 +66,7 @@ everything behind it may take the model for granted.
 | `planHeader` | the editable title block of the plan export |
 | `imageHash` / `image` | the project picture: SHA-256 of a blob on the server, or a data URL in files and local projects |
 | `osrd` | passthrough of RailJSON objects the app does not model, handed back on export |
-| `signalling` | the signalling domain `{ fields, collections }` of another tool, carried as it came and never edited here ([decision 0011](../../../docs/decisions/0011-signalling-domain.md)) |
+| `signalling` | the signalling domain `{ fields, collections }` of another tool, carried as it came and never edited here ([decision 0009](../../../docs/decisions/0009-signalling.md)) |
 
 Collections, each keyed by its own id (which is also how the merge compares them):
 
@@ -78,7 +78,7 @@ Collections, each keyed by its own id (which is also how the merge compares them
 | `endMarks` | `id` | buffer stops and planning-area boundaries at free track ends |
 | `routes` | `id` | named runs of tracks |
 | `kmLines` | `lineNumber` | the stretch of each DB line around the project, with kilometrage |
-| `operationalPoints` | `id` | stations of the register that the tracks' and platforms' station names do not make by themselves — created in the Signalling-Tool, with codes no object states, renamed, or named by the signalling; `{ id, name, rl100, uic }` ([decision 0017](../../../docs/decisions/0017-stations-in-the-signalling-tool.md)) |
+| `operationalPoints` | `id` | stations of the register that the tracks' and platforms' station names do not make by themselves — created in the Signalling-Tool, with codes no object states, renamed, or named by the signalling; `{ id, name, rl100, uic }` ([decision 0009](../../../docs/decisions/0009-signalling.md)) |
 | `axisSurveys` | `id` | measured axis points traced in point clouds |
 | `referenceAxes` | `id` | reference axes (Bestandsachsen) as centimetre points |
 
@@ -99,7 +99,7 @@ Collections, each keyed by its own id (which is also how the merge compares them
 
 - `trackType` 1 = line track (`lineNumber`, `lineName`, `side`), 2 = station track (`operationalPoint`,
   `trackNumber`). A station is a point of the record's `operationalPoints` (`{ id, name, rl100?, uic? }`), named
-  by its id; a station a form states as text is made the point of that name by the store (decision 0028).
+  by its id; a station a form states as text is made the point of that name by the store (decision 0006).
 - `lifespan` `{ from?, to? }`, days or `"open"` (absent = existing and staying); `trackUse` only `siding` (absent = main track);
   `lineCategory` only where the track overrides the project's.
 - `epsg` — the **one** plane all its elements are stated in; `heightEpsg` the vertical datum of its heights
@@ -289,7 +289,7 @@ gzip-compressed. Binary formats would save little after compression and cost ins
 **Old data is migrated once, not read tolerantly.** A loader that accepts several versions spreads "this
 field might be missing" through all code behind it. Instead, one door checks the version, and what was kept in an
 earlier form is migrated once, an explicit, tested step (data model, S-R10): the server's revisions by a data step,
-the browser's working copies when they are opened (decision 0021). Behind the door only the current form exists;
+the browser's working copies when they are opened (decision 0006). Behind the door only the current form exists;
 what is not migrated is refused with a message (the server answers `409 format_outdated` for such rows).
 
 ## Why not an existing format

@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Serigalan and the Rail-Across-Suite contributors
 // SPDX-License-Identifier: LGPL-3.0-only
 
-//! An element's kind as the record states it since it follows the document (decision 0029, phase 6): a word,
+//! An element's kind as the record states it since it follows the document (decision 0006): a word,
 //! `straight`, `arc` or `transition`, as core 5.0 has it. An element without one is a straight.
 
 use serde_json::Value;

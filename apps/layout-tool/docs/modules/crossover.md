@@ -2,7 +2,7 @@
 
 `src/core/utils/crossover/` · needs nothing of the other modules
 
-The search behind "Erweiterte Weichenverbindung" (decision 0018 of the suite): two turnouts, each of its own form,
+The search behind "Erweiterte Weichenverbindung" (decision 0005 of the suite): two turnouts, each of its own form,
 and one to three elements between their branches, both toes moved along the elements picked. The search itself
 is Rust — `crossover/` of the repository, built to WebAssembly by `npm run crossover` into `public/crossover/` —
 and runs in a worker here, off the page's thread. The request is the core's (`commands` — in Rust, `crates/commands/src/crossover.rs`

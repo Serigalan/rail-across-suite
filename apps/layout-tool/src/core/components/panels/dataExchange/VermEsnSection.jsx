@@ -69,7 +69,7 @@ export default function VermEsnSection() {
   const [errors, setErrors] = useState([])
   const [notes, setNotes] = useState([])
   const [done, setDone] = useState(null)
-  // An axis read as a reference axis is the civil layer's (decision 0025): the Civil-Tool reads it so, the Layout-Tool as tracks.
+  // An axis read as a reference axis is the civil layer's (decision 0008): the Civil-Tool reads it so, the Layout-Tool as tracks.
   const asReference = EDITS_CIVIL
   const [range, setRange] = useState(null)          // { from, to } in the TRA's stationing
 

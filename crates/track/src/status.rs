@@ -16,7 +16,7 @@ use crate::util::text;
 
 pub const STATUSES: [&str; 3] = ["existing", "new", "removal"];
 
-/// What an object's lifespan says of it (decision 0028): new where it states a first day, removal where it
+/// What an object's lifespan says of it (decision 0007): new where it states a first day, removal where it
 /// states only a last one — nothing where it states neither, the object existing and staying.
 fn stated(o: Option<&Value>) -> Option<&'static str> {
     let lifespan = o?.get("lifespan")?;

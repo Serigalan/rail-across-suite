@@ -1,4 +1,4 @@
-// Which tool of the suite this page is (decision 0025): the Layout-Tool, which
+// Which tool of the suite this page is (decision 0008): the Layout-Tool, which
 // lays out the alignment — the core —, or the Civil-Tool, which edits the
 // civil layer on it: platforms, runs of tracks, surveys and reference axes,
 // the plan header. One build, served under /layout/ and /civil/; each tool

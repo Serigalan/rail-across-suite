@@ -6,8 +6,7 @@ import { callNative } from '../native/index.js'
 import { loadNativeFile } from '../native/node.js'
 import { hasPek, loadPek, hasPekExisting, loadPekExisting } from '../../test/pekFixture.js'
 
-// The switch module and the project's validation in Rust (decision 0020,
-// step 4), held to the JavaScript on real planning data — read at run time,
+// The switch module and the project's validation in Rust (decision 0005), held to the JavaScript on real planning data — read at run time,
 // never recorded into the vectors (the data is not the repository's).
 
 const ulp = (x) => (x === 0 ? Number.MIN_VALUE : 2 ** (Math.floor(Math.log2(Math.abs(x))) - 52))

@@ -431,7 +431,7 @@ function TimesCard({ t, language, train, run, stations, problems, ro, update }) 
   const time = rows ? rows[rows.length - 1].arrival - rows[0].departure : null
   const dwell = rows ? rows.reduce((s, r) => s + (r.arrival != null && r.departure != null ? r.departure - r.arrival : 0), 0) : 0
   const gaps = run?.properties?.gaps
-  // The mode the run was computed with, where the wire along the way chose it or lacks for it (decision 0025).
+  // The mode the run was computed with, where the wire along the way chose it or lacks for it (decision 0008).
   const traction = run?.properties?.traction
   const trackLabel = (row) => {
     const station = stationById(stations, row.key)

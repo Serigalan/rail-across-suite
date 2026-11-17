@@ -113,7 +113,7 @@ pub fn dir_of(bearing_deg: f64) -> Pt {
 }
 
 // The curvature of a signed radius and the centre of an arc are the core's
-// (crates/geom, decision 0020); the integrators here stay the optimizer's own —
+// (crates/geom, decision 0005); the integrators here stay the optimizer's own —
 // Gauss–Legendre and Horner, tuned for the thousands of trial geometries a run
 // evaluates and held to the Python answers.
 use rail_across_geom::transition::to_kappa as kappa;

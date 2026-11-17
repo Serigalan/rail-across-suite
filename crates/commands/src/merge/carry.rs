@@ -327,7 +327,7 @@ pub fn carry_domain(domain: &Value, ctx: &Ctx) -> (Value, Vec<Moved>) {
     (d, carried)
 }
 
-/// The layers whose locations every write of the net carries (R4): the signalling and the electrification (decision 0025).
+/// The layers whose locations every write of the net carries (R4): the signalling and the electrification (decision 0008).
 pub const CARRIED_DOMAINS: [&str; 2] = ["signalling", "electrification"];
 
 /// A record after one write of the net, its domains' locations carried (`carryAfterWrite`).
@@ -339,7 +339,7 @@ pub fn carry_after_write(before: &Value, after: &Value) -> Value {
         .into_iter()
         .filter(|n| after.get(*n).and_then(|d| d.get("collections")).is_some_and(|c| truthy(Some(c))))
         .collect();
-    // The civil structures the record keeps at its top are carried as a domain of their own (decision 0025).
+    // The civil structures the record keeps at its top are carried as a domain of their own (decision 0008).
     let structures: Map<String, Value> = STRUCTURES
         .iter()
         .filter_map(|n| {

@@ -1,5 +1,5 @@
 // Reading a chosen point cloud file off the main thread, before it is loaded
-// onto the server: the Rust module (crates/pointcloud-wasm, decision 0020)
+// onto the server: the Rust module (crates/pointcloud-wasm, decision 0005)
 // reads the file synchronously, through FileReaderSync, which only a worker
 // has. Messages in and out:
 //   { type: 'header', file } answers { type: 'header', header }

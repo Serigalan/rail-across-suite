@@ -4,7 +4,7 @@ import { uuidOf } from '@rail-across/core/document'
 /**
  * What a parsed RailJSON or alignment exchange file (osrdImport) adds to a
  * project: its tracks — under the UUID drawn from the file's id, as every id
- * of the record is one (decision 0029, phase 6), or a fresh one where the
+ * of the record is one (decision 0006), or a fresh one where the
  * project already has it; renamed where the name is taken — the switches and
  * buffer stops on them, repointed to those ids, and the passthrough of
  * everything the app does not model (`osrd`), its references to those tracks

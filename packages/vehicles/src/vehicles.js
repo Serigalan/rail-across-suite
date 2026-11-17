@@ -3,7 +3,7 @@
  * running time needs (mass, length, top speed, the resistance to movement
  * A + B·v + C·v² in N with v in m/s, the service braking deceleration, the
  * tractive effort over speed per traction mode and comfort) and what names
- * and sorts a vehicle. The suite keeps them in this form (decision 0014), so
+ * and sorts a vehicle. The suite keeps them in this form (decision 0012), so
  * they go to OSRD and come from it as they are; what the tool does not edit
  * is kept along.
  */

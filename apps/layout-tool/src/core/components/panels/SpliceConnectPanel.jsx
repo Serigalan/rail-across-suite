@@ -20,7 +20,7 @@ const ReconnectPanel = lazy(() => import('./splice/ReconnectPanel'))
  * what keeps their click handlers from meeting. Optimizing is in the check panel.
  *
  * Splicing and reconnecting are computed in the browser by the optimizer
- * module (decision 0019 of the suite) and are there in both builds; a server
+ * module (decision 0005 of the suite) and are there in both builds; a server
  * may put more tools beside them (`panelTools` of 'splice', Paket L).
  */
 export default function SpliceConnectPanel() {

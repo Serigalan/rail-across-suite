@@ -112,14 +112,14 @@ location type it does not know refuses the edit, rather than leaving references 
 
 **F11 — A part of a track is rebuilt in stage 3, and a signal stands on the old part.** The track is split at the
 tie-in points; the old part ends in stage 3 (`to: 3`), the new part begins there, each joined by a connector of
-its own ([decision 0003](decisions/0003-construction-stages.md)). The signal on the old part would outlive its
+its own ([decision 0007](decisions/0007-lifespans-by-day.md)). The signal on the old part would outlive its
 track: from stage 3 on it would stand on nothing. The layout tool must not end or move it — it is signalling's
 work.
 → Containment (R13): an object exists only while what it refers to exists. What would outlive its target is a
 finding for its owner, who ends the signal with its track or puts a new one on the new part that `replaces` it.
 
 **F12 — A signalling sketch with an extra crossover is taken over.** In a sketch
-([decision 0005](decisions/0005-sketch-mode.md)) the signalling planner adds a crossover to try a concept and puts
+([decision 0008](decisions/0008-core-and-layers.md)) the signalling planner adds a crossover to try a concept and puts
 signals on it. The integrated model has no such tracks. Merging the sketch would bring its tracks along; leaving
 its signals behind would lose the work.
 → A sketch returns only through a takeover limited to its scope domain (R14): signals on tracks that descend from
@@ -153,7 +153,7 @@ The track editor must carry every reference into the net (F1), so it needs every
 
 **S5 — A track planner without signalling rights lays a turnout into a track with signals.** The check-in
 changes the signalling domain: the signals' references are carried onto the new tracks. The server must accept
-that but nothing more. Every module may write the core ([decision 0024](decisions/0024-every-module-writes-the-core.md)), so such
+that but nothing more. Every module may write the core ([decision 0008](decisions/0008-core-and-layers.md)), so such
 changes come from any of them; the server holds each to what the core library carries.
 → A changed domain that the author may not write must equal the base carried through the id log, which the
 server recomputes (S-R5) — the Open-Layout-Tool already checks measured axes against a right in this way.
@@ -161,7 +161,7 @@ server recomputes (S-R5) — the Open-Layout-Tool already checks measured axes a
 **S6 — Twelve construction stages.** As variants (the Open-Layout-Tool's decision), the existing and the final
 state exist once per stage: a survey correction of the existing state means twelve merges, and a stage plan
 would have to refer to variants from outside the revisions.
-→ Stages are lifespans on one state ([decision 0003](decisions/0003-construction-stages.md), R12, R13): the
+→ Stages are lifespans on one state ([decision 0007](decisions/0007-lifespans-by-day.md), R12, R13): the
 record holds existing, final and temporary objects once; a stage is a view; the stage list is part of the record.
 
 **S7 — A capacity simulation result.** It follows from the timetable, signalling and core, for one construction
@@ -171,13 +171,13 @@ stage.
 **S8 — Alice and Bob change the same track at once.** Alice changes the radius of one arc, Bob the cant of another
 arc of the same track. Elements have no ids, so a track's `elements` are one value in the merge: a conflict, one
 side is taken, the other change is made again. A track is edited by one person at a time, so this is rare.
-→ Ids on tracks, not on their elements ([decision 0004](decisions/0004-ids-on-tracks.md)).
+→ Ids on tracks, not on their elements ([decision 0006](decisions/0006-the-format-rail-across-1.0.md)).
 
 ## 3. Rules for references
 
 | # | Rule | Cases |
 |---|---|---|
-| R1 | Every collection belongs to one **domain**; a module writes the domains it owns and the core, where its work needs it, through the core library ([decision 0024](decisions/0024-every-module-writes-the-core.md)) — the Signalling-Tool the stations of the register ([decision 0017](decisions/0017-stations-in-the-signalling-tool.md)) and the stopping places, the Civil-Tool a stopping place at a platform as a passenger stop ([decision 0025](decisions/0025-layers-on-the-core.md)). Another discipline's domain only the core library changes: carrying references (R4) and moving orphans to their plane position (R7). | F6 |
+| R1 | Every collection belongs to one **domain**; a module writes the domains it owns and the core, where its work needs it, through the core library ([decision 0008](decisions/0008-core-and-layers.md)) — the Signalling-Tool the stations of the register ([decision 0009](decisions/0009-signalling.md)) and the stopping places, the Civil-Tool a stopping place at a platform as a passenger stop ([decision 0008](decisions/0008-core-and-layers.md)). Another discipline's domain only the core library changes: carrying references (R4) and moving orphans to their plane position (R7). | F6 |
 | R2 | A domain stores references only into itself or into a declared dependency; the **dependency graph is acyclic**. Inside a domain references may go any way (tracks ↔ switches, as today). | F7 |
 | R3 | **References are declared, not guessed.** A schema marks every reference with a core type: `TrackLocation`, `TrackRange`, `TrackEnd`, `TrackPath`, `Lifespan` (stage ids from the core's stage list) or `Ref` (a bare UUID; the schema names its target type). The schema travels with the data (by hash in the manifest). | F1, F10 |
 | R4 | **One remap.** Whenever the net changes ids or stations (split, join, reverse, delete, a length change before an object, a plane change) or the stage list loses a stage (lifespans that name it move to the following stage), the core carries every declared reference in every domain, in the same step, and records the changed ids in the id log. No module writes its own remap. A build that cannot carry a domain refuses the edit. | F1, F3, F10 |
@@ -190,7 +190,7 @@ side is taken, the other change is made again. A track is edited by one person a
 | R11 | **A location states its anchor**: `station` (follows the track), `km` (keeps its kilometrage) or `plane` (stays where it is). The anchor's value is stored, the others are derived. Objects drawn in a tool default to `station`; existing, imported objects to the form they were delivered in (plane or km). | F9 |
 | R12 | **Objects have a lifespan** `{ from, to }` over the ordered construction stages of the core; the planning status (existing, new, removal, temporary) is derived from it. A stage is a view; every stage is checked as a network, and its errors count like all others (only new ones block). Objects do not change between stages: a change is a replacement that names its predecessor in `replaces`. The stage list is part of the core and written by the layout tool; the `construction` domain adds sequences and closures that refer to the stages. | S6 |
 | R13 | **Containment.** An object exists only while what it refers to exists (a connector while its tracks do, a signal while its track does). What would outlive its target is a finding for its owner, never changed for them. | F11, S6 |
-| R14 | **Sketches return only through a takeover.** A sketch holds the core and one scope domain and may change its core freely; it is never merged back. A takeover merges the scope domain's objects, all or selected, into a target variant: carried through the id logs where tracks descend from the same base, orphaned with their plane position where they stand on the sketch's own tracks. Changes the sketch made to the core are never taken over; they are listed as proposals for the layout tool. In the layout tool the scope is the core and `layout`, and the takeover is the regular merge ([decision 0005](decisions/0005-sketch-mode.md)). | F12 |
+| R14 | **Sketches return only through a takeover.** A sketch holds the core and one scope domain and may change its core freely; it is never merged back. A takeover merges the scope domain's objects, all or selected, into a target variant: carried through the id logs where tracks descend from the same base, orphaned with their plane position where they stand on the sketch's own tracks. Changes the sketch made to the core are never taken over; they are listed as proposals for the layout tool. In the layout tool the scope is the core and `layout`, and the takeover is the regular merge ([decision 0008](decisions/0008-core-and-layers.md)). | F12 |
 
 Findings caused by another domain's change (an orphaned signal, a mast now too close) do not block that
 change's check-in; they are listed for the owner of the affected domain. A check-in is blocked only by new errors
@@ -205,30 +205,30 @@ core, and derived results above them:
 | Level | Domain | Written by | Content |
 |---|---|---|---|
 | derived | — | — | stage views, coordination checks, simulation results, reverse index — caches keyed by input hashes, never in a revision |
-| discipline | `civil` | Civil-Tool | platforms, named track paths, surveys, reference axes, plan header, project picture — `layout` 1.0 before infra-data-2.0 ([decision 0025](decisions/0025-layers-on-the-core.md)) |
-| discipline | `signalling` | signalling-tool | signals and boards, detection points, track sections, switch elements, train and shunting routes, overlaps, flank protection, balises and magnets (PZB, ETCS), station boundaries; the speeds signalled per route at the signals ([decision 0011](decisions/0011-signalling-domain.md)) |
+| discipline | `civil` | Civil-Tool | platforms, named track paths, surveys, reference axes, plan header, project picture — `layout` 1.0 before infra-data-2.0 ([decision 0008](decisions/0008-core-and-layers.md)) |
+| discipline | `signalling` | signalling-tool | signals and boards, detection points, track sections, switch elements, train and shunting routes, overlaps, flank protection, balises and magnets (PZB, ETCS), station boundaries; the speeds signalled per route at the signals ([decision 0009](decisions/0009-signalling.md)) |
 | discipline | `electrification` | Catenary-Tool | electrified ranges and their systems; later masts, cantilevers, wires, sections, El signals |
-| discipline | `operations` | Fahrplan-Editor | train runs, timetable, rolling stock — a project's, kept beside its variants and not in a variant's record ([decision 0016](decisions/0016-timetables-of-a-project.md)); as a format of its own, operations-1.0, in the [roadmap](../ROADMAP.md)'s phase 4 |
+| discipline | `operations` | Fahrplan-Editor | train runs, timetable, rolling stock — a project's, kept beside its variants and not in a variant's record ([decision 0012](decisions/0012-operations-timetables-and-vehicles.md)); as a format of its own, operations-1.0, in the [roadmap](../ROADMAP.md)'s phase 4 |
 | discipline | `construction` | open-construction-sim | closures, temporary speed restrictions, tracks in operation per stage |
-| base | `core` | every module, through the core library ([decision 0024](decisions/0024-every-module-writes-the-core.md)) | **reference**: coordinate systems, km lines and designed kilometrage, operational point register, catalogue versions (rules, switch forms, profiles) · **net**: tracks (elements, heights, cant, superstructure), switches and connectors (links, construction stage connectors) · **context**: end marks, stopping places (from infra-data-2.0; platforms until then); bridges, retaining walls and noise barriers are civil's ([decision 0025](decisions/0025-layers-on-the-core.md)), tunnels and level crossings still to come · **stages**: the ordered construction stages, those between the existing and the final state each from its day ([decision 0027](decisions/0027-construction-stages-by-their-days.md)) · **types**: `TrackLocation`, `TrackRange`, `TrackEnd`, `TrackPath`, `Lifespan`, `Ref` |
+| base | `core` | every module, through the core library ([decision 0008](decisions/0008-core-and-layers.md)) | **reference**: coordinate systems, km lines and designed kilometrage, operational point register, catalogue versions (rules, switch forms, profiles) · **net**: tracks (elements, heights, cant, superstructure), switches and connectors (links, construction stage connectors) · **context**: end marks, stopping places (from infra-data-2.0; platforms until then); bridges, retaining walls and noise barriers are civil's ([decision 0008](decisions/0008-core-and-layers.md)), tunnels and level crossings still to come · **stages**: the ordered construction stages, those between the existing and the final state each from its day ([decision 0007](decisions/0007-lifespans-by-day.md)) · **types**: `TrackLocation`, `TrackRange`, `TrackEnd`, `TrackPath`, `Lifespan`, `Ref` |
 | project | — | server | variants and sketches, approvals, comments — they refer into revisions, never back |
 
 Discipline domains store references only into the core (R2, R9). The capacity simulation writes no domain: it is
-the suite's own, and its results are derived ([decision 0023](decisions/0023-capacity-simulation-of-our-own.md)).
+the suite's own, and its results are derived ([decision 0013](decisions/0013-capacity.md)).
 
 - **Connectors with two ends** (`link`) join two track ends at a node: where the plane changes, and where a
-  rebuilt part of a track ties in ([decision 0003](decisions/0003-construction-stages.md)).
+  rebuilt part of a track ties in ([decision 0007](decisions/0007-lifespans-by-day.md)).
 - **A document is the core and what is planned on it.** infra-data is the envelope; the core is in every
   document. The discipline domains — `signalling`, `electrification`, `civil` (`layout` in infra-data-1.0) and
-  those after them, each written in its tool ([decision 0025](decisions/0025-layers-on-the-core.md)) — build on the core
+  those after them, each written in its tool ([decision 0008](decisions/0008-core-and-layers.md)) — build on the core
   alone and may each be missing: a module opens and edits a document without the domains it does not need,
   shows nothing of those that are missing and carries those that are there (R4, S-R7). A domain that holds
   nothing is written as missing.
 - **The core is written by every module that needs it**, through the core library (R4,
-  [decision 0024](decisions/0024-every-module-writes-the-core.md)): the Layout-Tool the alignment, the
+  [decision 0008](decisions/0008-core-and-layers.md)): the Layout-Tool the alignment, the
   Signalling-Tool the stations and the stopping places. End marks, stopping places and structures are in the core
   because several disciplines place things relative to them; the platforms are civil engineering's, in `civil`
-  from infra-data-2.0 ([decision 0025](decisions/0025-layers-on-the-core.md)).
+  from infra-data-2.0 ([decision 0008](decisions/0008-core-and-layers.md)).
 - **One physical thing, several discipline objects.** A turnout is a core switch (geometry, form, topology); the
   signalling domain has its own switch element referring to it (drive, position detection, interlocking name),
   as PlanPro models it. Each discipline names it in its own terms; the core switch carries the geometry once.
@@ -289,11 +289,11 @@ blobs: canonical JSON of each collection · bulk point arrays · schemas · imag
 | S-R2 | Bulk arrays (reference axes, axis surveys, later measurement runs) are blobs referenced by hash from their object. Point clouds and images stay outside, as today. | S1 |
 | S-R3 | **Canonical bytes**: numbers rounded to the field's precision first, then serialised after RFC 8785 (JCS); set-like collections sorted by id, sequences (`elements`, `heights`) kept in order (the schema says which). The hash is SHA-256 of the uncompressed bytes; compression is a storage detail. Shared test vectors for JavaScript and Python. | S2 |
 | S-R4 | Revisions are immutable; variants are named heads; the browser merges, the server appends and checks (as in the Open-Layout-Tool). | — |
-| S-R5 | **The server checks per domain**: the author's right for every changed domain, the core writable by every module's right (decision 0024); a changed domain the author may not write must equal the base carried through the id log (R4), with its orphans moved to their plane position (R7). A domain whose own and dependency hashes are unchanged is not validated again. | S5 |
+| S-R5 | **The server checks per domain**: the author's right for every changed domain, the core writable by every module's right (decision 0008); a changed domain the author may not write must equal the base carried through the id log (R4), with its orphans moved to their plane position (R7). A domain whose own and dependency hashes are unchanged is not validated again. | S5 |
 | S-R6 | **Derived results are caches keyed by input hashes** (coordination findings, simulation results, reverse index), never in a revision; a simulation result also by its construction stage. An **approval** pins a domain hash plus the hashes of its dependencies; whether a later change affects it is decided by the diff, restricted to the approved stages and area. | S3, S7 |
 | S-R7 | **Partial loading is for reading.** Editing the core loads every domain of the document that references it — except in a sketch, which holds no other domains (S-R11). | S4, F12 |
 | S-R8 | **Project level, outside revisions**: variants and sketches, approvals, comments. They refer into revisions; revisions never refer to them. | S3, F12 |
-| S-R9 | **Exchange**: a zip container with the extension `.railacross`, holding the manifest, the canonical collection files, schemas and blobs. Its first entry is an uncompressed file `mimetype` with `application/vnd.rail-across+zip`, so programs recognise it by its content, as OpenDocument and EPUB do. A single-file JSON for small projects (`.railacross.json`) holds the same canonical documents and gives the same hashes ([decision 0007](decisions/0007-project-name.md)). | — |
+| S-R9 | **Exchange**: a zip container with the extension `.railacross`, holding the manifest, the canonical collection files, schemas and blobs. Its first entry is an uncompressed file `mimetype` with `application/vnd.rail-across+zip`, so programs recognise it by its content, as OpenDocument and EPUB do. A single-file JSON for small projects (`.railacross.json`) holds the same canonical documents and gives the same hashes ([decision 0002](decisions/0002-project-name.md)). | — |
 | S-R10 | **Versions**: each domain has its own version; the one door runs an explicit, tested migration chain per domain. Behind the door only the current version exists. | F10 |
 | S-R11 | **Sketches** are variants marked as sketch, with their scope domain and the revision they start from; their revisions hold the core and the scope domain only, so with hashes per collection the copied core costs nothing. The server refuses to merge a sketch into a regular variant; a takeover is checked in on the target like any change. A sketch is visible to its author until shared with the project's members. | F12 |
 
@@ -319,14 +319,14 @@ In the core, all three become one remap for every location (R4).
 
 **Model changes** the Open-Layout-Tool goes through, each brought to existing data by a step of the migration
 chain at the one door (S-R10). The format has them since core 1.0, the first step of the chain
-([decision 0009](decisions/0009-core-1-0-in-the-data-model.md)); the app's own model follows in phase 2:
+([decision 0006](decisions/0006-the-format-rail-across-1.0.md)); the app's own model follows in phase 2:
 
 | oltjson-1.1 | Core after phase 2 |
 |---|---|
 | `stationName`, `uicStation`, `code` as text (F6) | references to the operational point register |
 | `status`: `existing`, `new`, `removal` | `lifespan`: none, `from` the final stage, `to` the final stage; the status is derived (R12) |
 | `routes`, named runs of tracks | `trackPaths` in the core (the `layout` domain before infra-data-2.0), of the core type `TrackPath` |
-| `link` only where the plane changes | two-end connector also within one plane, for rebuilt parts (decision 0003) |
+| `link` only where the plane changes | two-end connector also within one plane, for rebuilt parts (decision 0007) |
 | platform and end mark fields of their own | the core location types `TrackRange` and `TrackEnd` |
 | one record for everything | the `core` and `layout` domains in the hash tree (section 5) |
 
@@ -334,15 +334,15 @@ chain at the one door (S-R10). The format has them since core 1.0, the first ste
 
 | Question | Answer | Recorded in |
 |---|---|---|
-| Where does the Rail-Data-Core live? | in this repository, with the modules: R3, R4 and S-R10 need all modules on the same core version | [decision 0001](decisions/0001-one-repository.md) |
+| Where does the Rail-Data-Core live? | in this repository, with the modules: R3, R4 and S-R10 need all modules on the same core version | [decision 0001](decisions/0001-one-repository-one-licence.md) |
 | Which module tests the generalised core first? | signalling: locations, ranges, functional objects and topology at once | [roadmap, phase 3](../ROADMAP.md#phase-3--first-new-infrastructure-modules) |
-| Do the elements of a track get ids? | no; ids on tracks, a track is edited by one person at a time | [decision 0004](decisions/0004-ids-on-tracks.md) |
-| How are construction stages held? | as lifespans on one state, not as variants | [decision 0003](decisions/0003-construction-stages.md) |
+| Do the elements of a track get ids? | no; ids on tracks, a track is edited by one person at a time | [decision 0006](decisions/0006-the-format-rail-across-1.0.md) |
+| How are construction stages held? | as lifespans on one state, not as variants | [decision 0007](decisions/0007-lifespans-by-day.md) |
 | Who approves a change to the core schema? | for now @serigalan, the code owner of `packages/` and `schemas/` | [CODEOWNERS](../.github/CODEOWNERS) |
-| How does one try something without the other disciplines? | in a sketch, which returns only through a takeover | [decision 0005](decisions/0005-sketch-mode.md) |
-| What does capacity simulation build on? | the Fahrplan-Sim's running times and blocking times; it is the suite's own (OSRD as a service, decision 0006, went) | [decision 0023](decisions/0023-capacity-simulation-of-our-own.md) |
-| What are the project and its files called? | Rail-Across-Suite; files `.railacross` | [decision 0007](decisions/0007-project-name.md) |
-| How is the signalling domain structured? | after PlanPro 1.10; like OSRD every signalling and train protection system is in a catalogue, a signal has a logical signal per system (Ks, shunting signals; PZB and ETCS balises first), overlaps and flank protection from 1.0 | [decision 0011](decisions/0011-signalling-domain.md) |
+| How does one try something without the other disciplines? | in a sketch, which returns only through a takeover | [decision 0008](decisions/0008-core-and-layers.md) |
+| What does capacity simulation build on? | the Fahrplan-Sim's running times and blocking times; it is the suite's own (OSRD as a service, decision 0013, went) | [decision 0013](decisions/0013-capacity.md) |
+| What are the project and its files called? | Rail-Across-Suite; files `.railacross` | [decision 0002](decisions/0002-project-name.md) |
+| How is the signalling domain structured? | after PlanPro 1.10; like OSRD every signalling and train protection system is in a catalogue, a signal has a logical signal per system (Ks, shunting signals; PZB and ETCS balises first), overlaps and flank protection from 1.0 | [decision 0009](decisions/0009-signalling.md) |
 
 ## 8. Open questions
 

@@ -22,7 +22,7 @@ import AxisFitPanel from './AxisFitPanel'
 import BackButton from '../BackButton'
 
 // The rulebook a run is held to: the one this bundle carries, which the
-// optimizer module is handed (decision 0019 of the suite).
+// optimizer module is handed (decision 0005 of the suite).
 const RULEBOOKS = [{ id: CATALOGUE.catalog.id, name: CATALOGUE.catalog.title, version: CATALOGUE.catalog.katalog_version }]
 
 const OPTIMIZE_PREVIEW_SOURCE = 'optimize-preview-source'

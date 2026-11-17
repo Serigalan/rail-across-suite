@@ -27,7 +27,7 @@ const CANT_KEYS = new Set(['cant', 'cantStart', 'cantEnd'])
 // The table's columns — a route's track heading spans all of them.
 const TABLE_COLUMNS = 17
 
-/** The days a track is in service, as its lifespan states them (decision 0028). */
+/** The days a track is in service, as its lifespan states them (decision 0007). */
 const lifeOf = (tr) => tr?.lifespan ?? {}
 const isDay = (v) => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v)
 
@@ -97,7 +97,7 @@ export default function TrackTableOverlay({
   // what Save puts back — the working copy holds all of them, touched or not —
   // and what makes the table dirty.
   const [changed, setChanged] = useState([])
-  // …and those whose days in service it changed (decision 0027).
+  // …and those whose days in service it changed (decision 0007).
   const [lifeChanged, setLifeChanged] = useState([])
   // A one-off word to the user about something that happened to the table
   // rather than in it: an undo took its edits away, or what a merge did — a
@@ -370,7 +370,7 @@ export default function TrackTableOverlay({
     }
   }
 
-  // When a track is in service (decisions 0027, 0028): its first day and its
+  // When a track is in service (decisions 0007 and 0006): its first day and its
   // last — the whole track's, so typed in the table's head (in a route's, at
   // each of its tracks' headings) rather than in a row. A first day makes it
   // new, a last day alone a removal; a day emptied leaves it so, the day open;

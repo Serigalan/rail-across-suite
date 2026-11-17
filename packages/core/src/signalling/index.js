@@ -3,10 +3,10 @@
 // 1.10: Ks and shunting signals, PZB and ETCS balises), the check of what the
 // schema cannot say — references, locations, what each signal may show,
 // routes, overlaps, flank protection, balises, station boundaries — and the
-// extent of the track sections over the net (decision 0011).
+// extent of the track sections over the net (decision 0009).
 //
 // The check and the track sections are computed by the core's Rust module
-// (decision 0020, step 10: crates/signalling). The catalogue's lookups, the
+// (decision 0005: crates/signalling). The catalogue's lookups, the
 // overlap lengths and the speeds stay JavaScript: the page asks them for every
 // signal and route it draws, and each call would carry the whole domain across
 // (12 µs a call at the least) — over the catalogue that both read

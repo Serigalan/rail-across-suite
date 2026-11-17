@@ -18,7 +18,7 @@ import { RailJsonIcon, TracksExchangeIcon, VermEsnIcon } from '../icons'
 import { EDITS_CIVIL } from '../../tool'
 
 // The formats of every session, each a page of its own, as the other panels' options —
-// in the Civil-Tool (decision 0025) the one that brings a civil object: Verm.ESN's
+// in the Civil-Tool (decision 0008) the one that brings a civil object: Verm.ESN's
 // axis as a reference axis; what brings tracks is the Layout-Tool's.
 const FORMATS = [
   { id: 'tracks', icon: TracksExchangeIcon, titleKey: 'data_exchange_tracks', Component: TracksSection },

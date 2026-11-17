@@ -1,6 +1,6 @@
 // The Fahrzeug-Editor is a module of Rail-Across-Suite: the account is the
 // suite's, the vehicles a catalogue of the suite beside the projects
-// (decision 0014). Its tile on the start page opens it; `?vehicle=<key>`
+// (decision 0012). Its tile on the start page opens it; `?vehicle=<key>`
 // opens one vehicle — the Fahrplan-Sim links a train's vehicle so. The way
 // back leads to the start page.
 

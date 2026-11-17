@@ -462,7 +462,7 @@ In mode `wait`:
 
 # Construction scenarios
 
-A construction scenario belongs to one timetable (decision 0030; `constructionScenarios` in timetables 1.2). It
+A construction scenario belongs to one timetable (decision 0014; `constructionScenarios` in timetables 1.2). It
 closes stretches of track for a while, takes trains out and diverts trains by hand. The Baubetriebs-Sim runs the
 timetable in it for one day and sets each train beside its regular run.
 

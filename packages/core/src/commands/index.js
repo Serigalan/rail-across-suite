@@ -2,7 +2,7 @@
 // tracks, laying switches and crossings, connecting, the S-curve, splicing and
 // reconnecting, editing the element table's geometry, the extended switch
 // connection and the optimizer's apply. Computed by the core's Rust module
-// (decision 0020, step 10: crates/commands), called with the arguments as the
+// (decision 0005: crates/commands), called with the arguments as the
 // JavaScript took them — each on an action of the user's, or a preview when a
 // value of the form changes.
 //
@@ -25,7 +25,7 @@ export { connectRemedies } from './connectRemedies.js'
 
 // The element table (Entscheidung 375): its rows over a route or a track, the
 // roles the elements may take, an edit of a row written back — the core's
-// module (decision 0021, phase D).
+// module (decision 0005).
 export const elementRoles = command('elementRoles')
 export const intermediateSpan = command('intermediateSpan')
 export const rolesFor = command('rolesFor')
@@ -123,7 +123,7 @@ const planElementChangeOf = command('planElementChange')
  * What changing element `index` of track `trackId` would do. On the project the
  * core's module holds (its tracks and switches as the page has them), only the
  * tracks it touched cross back and the others stay the very objects they are
- * (decision 0021, phase C); on any other tracks, as the command.
+ * (decision 0005); on any other tracks, as the command.
  */
 export function planElementChange(tracks, switches, trackId, index, change) {
   const held = heldProject()

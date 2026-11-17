@@ -1,6 +1,6 @@
 # @rail-across/timetables
 
-A project's timetables ([decision 0016](../../docs/decisions/0016-timetables-of-a-project.md)), for the
+A project's timetables ([decision 0012](../../docs/decisions/0012-operations-timetables-and-vehicles.md)), for the
 Fahrplan-Editor:
 
 - **the model** (`timetable.js`): a train — number, kind, name, a vehicle of the catalogue (`@rail-across/vehicles`)

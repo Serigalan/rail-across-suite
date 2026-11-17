@@ -1,7 +1,7 @@
 import { crossingSpeed, directionOf, legThrough, marginValue, pathAlong, pathLength, placeIdOf, placeOf, routeVia, simulationRequest, stationTargets, stationsAlong, timeAtPosition } from '@rail-across/running-times'
 
 /**
- * The timetables of the suite (decision 0016): a project's trains, each with
+ * The timetables of the suite (decision 0012): a project's trains, each with
  * its number and kind, its vehicle of the catalogue, its departure and
  * margin, and its points — the station it starts at, the stations and halts
  * it stops at or passes, the station it ends at —, each place named by its
@@ -66,13 +66,13 @@ export function categoryColor(category) {
   return '#5f6473'
 }
 
-// A UUID, as every id of the record (decision 0029, phase 6) — drawn by hand where the browser draws none.
+// A UUID, as every id of the record (decision 0006) — drawn by hand where the browser draws none.
 const newId = () => globalThis.crypto?.randomUUID?.() ?? '10000000-1000-4000-8000-100000000000'.replace(/[018]/g, c => (c ^ (Math.random() * 16) >> (c / 4)).toString(16))
 
 export const newTimetable = () => ({ trains: [] })
 
 /**
- * A timetable's data with its construction scenarios (decision 0030) naming
+ * A timetable's data with its construction scenarios (decision 0014) naming
  * only trains it has: a train taken out or diverted that is no longer there
  * is dropped from them, so that the timetable can be kept.
  */
@@ -87,7 +87,7 @@ export function withScenariosOfItsTrains(data) {
   return { ...data, scenarios }
 }
 
-/** What a point names a place of stationsOf by (timetables 1.0, decision 0029): an end of the net its end mark, else its operational point. */
+/** What a point names a place of stationsOf by (timetables 1.0, decision 0006): an end of the net its end mark, else its operational point. */
 const placeRef = (place) => (place.kind === 'end' ? { endMarkId: place.id } : { operationalPointId: place.id })
 
 /** A new point at `place`, a place of stationsOf. */
@@ -188,7 +188,7 @@ export function stoppingPlacesAt(record, station) {
   if (!station || station.kind === 'end') return []
   const tracks = new Set(station.tracks.map(tr => tr.id))
   const platforms = new Set(station.platforms.map(p => p.id))
-  // A stopping place's platform is the one naming it (decision 0028).
+  // A stopping place's platform is the one naming it (decision 0006).
   const named = new Set((record?.platforms ?? []).filter(p => platforms.has(p.id)).flatMap(p => p.stoppingPlaceIds ?? []))
   const mine = (h) => (station.pointId && h.operationalPointId ? h.operationalPointId === station.pointId : tracks.has(h.at.trackId) || named.has(h.id))
   return (record?.stoppingPlaces ?? []).filter(mine)
@@ -207,7 +207,7 @@ export function itineraryOptions(record, stations, train, i) {
   return (record?.signalling?.collections?.itineraries ?? []).filter(it => from.has(it.startStoppingPlaceId) && to.has(it.targetStoppingPlaceId))
 }
 
-/** Whether a stopping place is at a platform: a platform names it (decision 0028), it is a passenger stop, or a platform lies along it on its track. */
+/** Whether a stopping place is at a platform: a platform names it (decision 0006), it is a passenger stop, or a platform lies along it on its track. */
 export function atPlatform(record, h) {
   if (h.passengerStop) return true
   const lo = Math.min(h.at.startStation, h.at.endStation), hi = Math.max(h.at.startStation, h.at.endStation)

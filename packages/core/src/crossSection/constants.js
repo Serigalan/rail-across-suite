@@ -1,5 +1,5 @@
 // The cross section's constants and the catalogue of Ril 800.0130 as the page
-// lists it (decision 0021, phase D: the functions are the core's Rust module,
+// lists it (decision 0005: the functions are the core's Rust module,
 // crates/track's cross section, which reads the same catalogue).
 
 import CROSS_SECTION_CATALOGUE from '../../constraints/db-ril-800-0130.json' with { type: 'json' }

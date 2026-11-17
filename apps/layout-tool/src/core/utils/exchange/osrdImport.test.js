@@ -166,7 +166,7 @@ describe('a crossing switch through the exchange file', () => {
   }
 })
 
-describe('the lifespans through the exchange file (decision 0028)', () => {
+describe('the lifespans through the exchange file (decision 0007)', () => {
   const form = SWITCH_TYPES.find(f => f.label === '300 – 1:9')
 
   it('come back on the tracks and on a switch that states its own', () => {

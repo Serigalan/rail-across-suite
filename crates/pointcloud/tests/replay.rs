@@ -1,8 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Serigalan and the Rail-Across-Suite contributors
 // SPDX-License-Identifier: LGPL-3.0-only
 
-//! The JavaScript point clouds' calls replayed on the crate (decision 0020,
-//! step 7): every vector file under `tests/vectors/` (written by `npm run
+//! The JavaScript point clouds' calls replayed on the crate (decision 0005): every vector file under `tests/vectors/` (written by `npm run
 //! replay pointcloud` in packages/core) is a list of `{ op, input, output |
 //! error }`, compared as `crates/core-wasm/tests/replay.rs` compares them —
 //! which leaves this crate's vectors to this test, the crate being no part

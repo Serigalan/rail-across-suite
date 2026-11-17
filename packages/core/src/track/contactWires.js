@@ -1,4 +1,4 @@
-// Where a contact wire runs (electrification 3.0, decision 0029, phase 3): it
+// Where a contact wire runs (electrification 3.0, decision 0006): it
 // is not kept, it follows from what carries it — on a track, a wire runs from
 // its first to its last carrying point there, the suspension points and the
 // section insulators that name it. The voltage over a stretch of track is the

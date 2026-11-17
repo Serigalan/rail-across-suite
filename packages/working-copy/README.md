@@ -11,7 +11,7 @@ import { getWorkingCopy, putWorkingCopy, localChangeCount } from '@rail-across/w
 
 | Part | What it does |
 |---|---|
-| `getWorkingCopy(variantId)`, `getAllWorkingCopies()`, `putWorkingCopy(record)`, `deleteWorkingCopy(variantId)` | The store: DB `olt`, version 2, object store `workingCopies`, keyed by `variantId` — the state being edited and that of the revision it rests on, each kept as its infra-data-1.0 document (decision 0021), read and written as `{ variantId, projectId, base, basePayload, project, idLog, updatedAt }` with the records; the splits and joins since. A copy kept before (records marked `oltjson-1.1`) is read once and kept again as documents; one of any other format is not read. |
+| `getWorkingCopy(variantId)`, `getAllWorkingCopies()`, `putWorkingCopy(record)`, `deleteWorkingCopy(variantId)` | The store: DB `olt`, version 2, object store `workingCopies`, keyed by `variantId` — the state being edited and that of the revision it rests on, each kept as its infra-data-1.0 document (decision 0006), read and written as `{ variantId, projectId, base, basePayload, project, idLog, updatedAt }` with the records; the splits and joins since. A copy kept before (records marked `oltjson-1.1`) is read once and kept again as documents; one of any other format is not read. |
 | `openDb`, `request`, `done`, `WORKING` | The database and two promise helpers, for a tool that lists or empties more of it (the Layout-Tool's local storage dialog). |
 | `localChanges(wc)` | What the copy changed against its base, as the core's project diff lists it (`diffEntries`). |
 | `localChangeCount(wc)`, `domainChanges(before, after)` | How many changes it holds, the signalling counted object by object. |

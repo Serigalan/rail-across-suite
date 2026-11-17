@@ -1,6 +1,6 @@
 // The track module's small queries — a point at a station, a height, a
 // switch's ports, a label — kept in JavaScript beside its crate (decision
-// 0021, phase D): the pages ask them point by point, per signal and per frame,
+// 0005): the pages ask them point by point, per signal and per frame,
 // and across to the module each would cost at least 12 µs against well under
 // one here (a coordinate conversion: 2 µs here, 12.7 µs there). They are held
 // to the crate's answers by its frozen vectors (src/track/queries.test.js).
@@ -463,7 +463,7 @@ export const platformLength = (platform) =>
   Math.abs((platform?.endStation ?? 0) - (platform?.startStation ?? 0))
 
 /**
- * What an object's lifespan says of it (decision 0028): new where it states a
+ * What an object's lifespan says of it (decision 0007): new where it states a
  * first day, removal where it states only a last one — null where it states
  * neither, the object existing and staying.
  */
@@ -531,7 +531,7 @@ export function switchNumberOf(sw) {
   return match ? Number(match[1]) : null
 }
 
-// A track's kind as the record states it (core 4.0, decision 0029, phase 6).
+// A track's kind as the record states it (core 4.0, decision 0006).
 const LINE = 'line'
 const STATION = 'station'
 
@@ -561,7 +561,7 @@ export function trackTypeName(track, fallback) {
 
 /**
  * The group a track falls in: `line:6340`, `station:<the id of its
- * operational point>` (decision 0028), or null where its kind names nothing
+ * operational point>` (decision 0006), or null where its kind names nothing
  * to group it under.
  */
 export function trackGroupKey(track) {

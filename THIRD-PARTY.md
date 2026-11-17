@@ -35,7 +35,7 @@ them names its source where it lies.
 The catalogue of signal aspects (`packages/core/constraints/db-ril-301.json`, `begriffe`) lists the 192 aspects
 of PlanPro 1.10.0.3.3's `Signalbegriffe_Ril_301.xsd` by their names there, with their short names, their titles
 (the XSD's Langbezeichnung, else the first clause of its Beschreibung) and the symbols its enumerations allow
-([decision 0011](docs/decisions/0011-signalling-domain.md)). The PlanPro export (`crates/planpro/src/write.rs`)
+([decision 0009](docs/decisions/0009-signalling.md)). The PlanPro export (`crates/planpro/src/write.rs`)
 names the objects, attributes and enumeration values of PlanPro 1.10.0.3 it writes, and the order of the
 Container, as the XSD has them. No file of PlanPro is in the repository; the export was checked against the XSD
 outside it. PlanPro is
@@ -53,14 +53,14 @@ released under the BSD licence — the code scipy uses.
 
 ## Libraries built into the point cloud crate
 
-`crates/pointcloud` (the server's point clouds, decision 0020 step 7) is built with the Rust crates
+`crates/pointcloud` (the server's point clouds, decision 0005) is built with the Rust crates
 [laz](https://crates.io/crates/laz) 0.9 (laz-rs, a port of LASzip, © Thomas Montaigu, under Apache-2.0),
 [flate2](https://crates.io/crates/flate2) 1.1 and its backend
 [miniz_oxide](https://crates.io/crates/miniz_oxide) 0.9 (both under MIT or Apache-2.0, miniz_oxide also Zlib).
 
 ## Libraries built into the project server
 
-`crates/server` (decision 0020 step 8) is built with, among others, [axum](https://crates.io/crates/axum),
+`crates/server` (decision 0005) is built with, among others, [axum](https://crates.io/crates/axum),
 [tokio](https://crates.io/crates/tokio), [tokio-util](https://crates.io/crates/tokio-util) (MIT),
 [rusqlite](https://crates.io/crates/rusqlite) (MIT) with SQLite itself built in (public domain),
 [argon2](https://crates.io/crates/argon2), [sha2](https://crates.io/crates/sha2),
@@ -74,16 +74,16 @@ rail-across-server` lists the rest.
 
 | Software | Used for | Licence |
 |---|---|---|
-| [OSRD](https://github.com/OpenRailAssociation/osrd), OpenRail Association | exchange: the Layout-Tool reads and writes its RailJSON; the suite does not run it ([decision 0023](docs/decisions/0023-capacity-simulation-of-our-own.md)) | LGPL-3.0 |
+| [OSRD](https://github.com/OpenRailAssociation/osrd), OpenRail Association | exchange: the Layout-Tool reads and writes its RailJSON; the suite does not run it ([decision 0013](docs/decisions/0013-capacity.md)) | LGPL-3.0 |
 
 ## OSRD's work in the repository
 
-Under OSRD's licence, LGPL-3.0, which is the suite's ([decision 0015](docs/decisions/0015-lgpl.md)):
+Under OSRD's licence, LGPL-3.0, which is the suite's ([decision 0001](docs/decisions/0001-one-repository-one-licence.md)):
 
 | What | Where | From OSRD |
 |---|---|---|
-| The envelope simulation, ported from Kotlin/Java to Rust — every file names the OSRD files it comes from | `sim/`; its WebAssembly module is built by `packages/running-times/scripts/sim.mjs` into `public/sim/` of the Fahrplan-Editor (which computes a single train's running time too, what the Simulation-Tool did) and goes with each build beside its `NOTICE.txt` and the licence texts, a file of its own that can be replaced ([decision 0013](docs/decisions/0013-running-times-in-rust.md)) | `core/` at commit `fda69ee1`, © 2022 The OSRD Contributors |
-| The eleven example vehicles, unchanged | `packages/vehicles/data/osrd/`, the suite's built-in vehicles ([decision 0014](docs/decisions/0014-vehicles-in-osrds-form.md)) | `tests/data/rolling_stocks/realistic/` at the same commit |
+| The envelope simulation, ported from Kotlin/Java to Rust — every file names the OSRD files it comes from | `sim/`; its WebAssembly module is built by `packages/running-times/scripts/sim.mjs` into `public/sim/` of the Fahrplan-Editor (which computes a single train's running time too, what the Simulation-Tool did) and goes with each build beside its `NOTICE.txt` and the licence texts, a file of its own that can be replaced ([decision 0011](docs/decisions/0011-running-times.md)) | `core/` at commit `fda69ee1`, © 2022 The OSRD Contributors |
+| The eleven example vehicles, unchanged | `packages/vehicles/data/osrd/`, the suite's built-in vehicles ([decision 0012](docs/decisions/0012-operations-timetables-and-vehicles.md)) | `tests/data/rolling_stocks/realistic/` at the same commit |
 
 ## Project pictures
 
@@ -94,5 +94,5 @@ The default project pictures (`apps/home/public/project-images/`) use country ou
 ## Not third-party
 
 - `Leitfaden_Trassierung.pdf` and its HTML versions are the project's own work, under LGPL-3.0-only like the
-  rest of the project (published under CC BY 4.0 before decision 0015).
+  rest of the project (published under CC BY 4.0 before decision 0001).
 - The values from the DB guidelines (Ril 800.0110, 800.0120, 800.0130) in the rule catalogues may be taken over.

@@ -11,7 +11,7 @@ const record = {
   platforms: [{ id: 'p1', trackId: 't3', operationalPointId: 'op-b' }],
 }
 
-describe('the stations of a record by their ids (decision 0028)', () => {
+describe('the stations of a record by their ids (decision 0006)', () => {
   it('are the record\'s points, each track and platform naming its own', () => {
     const { points, pointOf: of } = stationRegister(record)
     expect(points).toEqual(record.operationalPoints)

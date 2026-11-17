@@ -191,7 +191,7 @@ describe('parseProjectsPayload', () => {
     expect(parseProjectsPayload(payloadOf(project())).projects).toHaveLength(1)
   })
 
-  it('says what it takes: { format: infra-data, version: 2.0 } (decisions 0021, 0025)', () => {
+  it('says what it takes: { format: infra-data, version: 2.0 } (decisions 0006 and 0008)', () => {
     expect(payloadOf(project())).toMatchObject({ format: 'infra-data', version: '2.0' })
     expect(FORMAT_NAME).toBe('infra-data-2.0')
   })
@@ -271,7 +271,7 @@ describe('parseTracksPayload (R0.5)', () => {
     expect(code(() => parseTracksPayload(bad({ elements: [el({ length: -1 })] })))).toBe('invalid_payload')
   })
 
-  it('writes the tracks alone: a switch branch comes back as a track of its own (decision 0028)', () => {
+  it('writes the tracks alone: a switch branch comes back as a track of its own (decision 0006)', () => {
     const t = tracksDocument([track({ elements: [el({ switchBranch: true, switchId: 's1' })] })])
     const [back] = parseTracksPayload(t)
     expect(back.elements[0]).not.toHaveProperty('switchId')

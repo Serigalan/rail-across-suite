@@ -12,7 +12,7 @@ the track-spacing rule of the optimizer module.
 
 | File | What it does |
 |---|---|
-| `crates/track/src/cross_section.rs` (Rust; decision 0021, phase D) | The section at a station: cant angle and pivot, superstructure by station, rail and sleeper profiles, neighbouring tracks and platforms on the section line, fitting the drawing |
+| `crates/track/src/cross_section.rs` (Rust; decision 0005) | The section at a station: cant angle and pivot, superstructure by station, rail and sleeper profiles, neighbouring tracks and platforms on the section line, fitting the drawing |
 | `constants.js` and `crates/track/src/cross_section.rs` | The clearance contours of DB Ril 800.0130 A01 (`packages/core/constraints/db-ril-800-0130.json`): outline and intrusion areas, mirrored into closed rings |
 
 ## The frame

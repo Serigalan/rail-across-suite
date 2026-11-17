@@ -3,7 +3,7 @@
 
 //! Splicing two elements into one chain — the construction of "Zwei Gleise
 //! zusammenfügen" (the former Python service's splice.py and the app's
-//! solveSplice.js, which it replaces both; decision 0019). Reconnecting
+//! solveSplice.js, which it replaces both; decision 0005). Reconnecting
 //! existing elements ([`crate::reconnect`]) builds its arcs with it too.
 //!
 //! The two picked elements come in the plane of their track (one CRS for
@@ -131,7 +131,7 @@ pub struct El {
 }
 
 impl El {
-    /// The kind as the record states it (decision 0029, phase 6): 0 a straight, 1 an arc, 2 a transition.
+    /// The kind as the record states it (decision 0006): 0 a straight, 1 an arc, 2 a transition.
     pub fn kind_word(&self) -> &'static str {
         match self.kind {
             1 => "arc",

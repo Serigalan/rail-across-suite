@@ -1,6 +1,6 @@
 # @rail-across/capacity
 
-The capacity of a stretch from a timetable's blocking times (the roadmap, phase 4, K1; decision 0023), for the
+The capacity of a stretch from a timetable's blocking times (the roadmap, phase 4, K1; decision 0013), for the
 Kapazitäts-Sim (`apps/capacity-sim/`):
 
 - `recordAtStage(record, stage)` — a variant's record as it is at the existing or the final stage;

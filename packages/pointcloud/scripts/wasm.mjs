@@ -1,5 +1,5 @@
 // npm run wasm — builds the point cloud import as a WebAssembly module
-// (crates/pointcloud-wasm; decision 0020) and puts it in wasm/, where the
+// (crates/pointcloud-wasm; decision 0005) and puts it in wasm/, where the
 // browser's import worker takes it from (bundled as an asset) and the tests
 // load it in Node. RA_POINTCLOUD_WASM names a module file to take as it is.
 //

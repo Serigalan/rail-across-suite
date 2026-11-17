@@ -3,7 +3,7 @@ import { switchMatches, trackMatches } from './index.js'
 
 const line = { id: 'a', name: '6340.12393', lineNumber: '6340', lineName: 'Halle – Bebra', trackType: 'line_track' }
 const station = { id: 'b', name: 'Gl. 3', operationalPointId: 'op-k', trackNumber: '3', trackType: 'station_track' }
-// Its station is the point it names (decision 0028), handed to the search.
+// Its station is the point it names (decision 0006), handed to the search.
 const point = { id: 'op-k', name: 'Könnern', uic: '8010205' }
 
 describe('search', () => {

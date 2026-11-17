@@ -589,7 +589,7 @@ export function switchMisfits(project, opts) {
 
 // ── Making and taking away dependencies (the design mode) ───────────────────
 
-/** A point id not yet in the project: a UUID, as every id of the record (decision 0029, phase 6). */
+/** A point id not yet in the project: a UUID, as every id of the record (decision 0006). */
 function newPointId(project) {
   const ids = pointIds(project)
   for (;;) {

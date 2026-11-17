@@ -39,7 +39,7 @@ const CivilStructurePanel = lazy(() => import('../components/panels/CivilStructu
  *   props(s)    what it takes from the shell `s` (state and handlers in App)
  *   onEnter(s)  runs when the panel is opened, onLeave(s) when it is left
  *   overlay     the map overlay that belongs to the panel and closes with it
- *   tools       the tools that show it (decision 0025): 'layout', the alignment,
+ *   tools       the tools that show it (decision 0008): 'layout', the alignment,
  *               and 'civil', the civil layer; without, both
  */
 const ALL_PANELS = [
@@ -97,9 +97,9 @@ const ALL_PANELS = [
       onShowDetail: (target) => (target ? s.openOverlay({ kind: 'switchDetail', ...target }) : s.closeOverlay('switchDetail')),
     }),
   },
-  // The civil layer's own (decision 0025): the platforms, and the named runs of tracks.
+  // The civil layer's own (decision 0008): the platforms, and the named runs of tracks.
   { id: 'platforms', tools: ['civil'], group: 'design', icon: PlatformsIcon, titleKey: 'platform_title', place: 'top', Component: CivilPlatformsPanel },
-  // The civil structures (decision 0025): bridges, retaining walls, noise barriers.
+  // The civil structures (decision 0008): bridges, retaining walls, noise barriers.
   { id: 'bridges', tools: ['civil'], group: 'structures', icon: BridgeIcon, titleKey: 'civil_bridges', place: 'top', Component: CivilStructurePanel, props: () => ({ kind: 'bridges' }) },
   { id: 'retainingWalls', tools: ['civil'], group: 'structures', icon: RetainingWallIcon, titleKey: 'civil_retainingWalls', place: 'top', Component: CivilStructurePanel, props: () => ({ kind: 'retainingWalls' }) },
   { id: 'noiseBarriers', tools: ['civil'], group: 'structures', icon: NoiseBarrierIcon, titleKey: 'civil_noiseBarriers', place: 'top', Component: CivilStructurePanel, props: () => ({ kind: 'noiseBarriers' }) },

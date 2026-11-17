@@ -288,7 +288,7 @@ describe.skipIf(!cantFiles.length)('the Verm.ESN test axes with cant ramps (memo
 })
 
 describe.skipIf(!hasPekExisting)('PEK Bestand', () => {
-  // As the server keeps it since decision 0020: its joints under a millimetre
+  // As the server keeps it since decision 0005: its joints under a millimetre
   // closed (closeLegacyGaps). The file's own gaps of up to 0.9 mm would
   // otherwise be closed by the import on the way back.
   const loadClosed = () => closeLegacyGaps(loadPekExisting())

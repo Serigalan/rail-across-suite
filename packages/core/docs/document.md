@@ -5,7 +5,7 @@
 A project as the Rail-Data-Core keeps it and hands it on: the **infra-data-1.0 document**, in the shape of the
 [data model](../../../docs/data-model.md) — the domains `core` and `layout`, and `signalling` where a project has it, each with its version, its JSON
 Schema, its fields and its collections; locations as one value each; lifespans by day and the stations as
-operational points with ids, as the record states them (decision 0028); named runs of tracks as
+operational points with ids, as the record states them (decision 0006); named runs of tracks as
 `TrackPath`s; bulk point arrays as blobs named by their hash. The schemas are in [`schemas/`](../../../schemas/README.md)
 at the root of the repository (linked into the package), with the test vectors that hold the core's Rust crates
 (`crates/doc`) to the same results.
@@ -18,8 +18,8 @@ writes canonical JSON and content hashes. The `project` module opens the door fo
 
 | File | What it does |
 |---|---|
-| `stations.js` | The stations of a record by their ids (decision 0028): `stationRegister` (the record's points, and which point a track or platform names), `pointOf`, `renamedStation` (a point renamed, keeping its id), `stationPoint` (the point a name names, found or made), `withStationPoints` (station texts an importer reads made points), `withStationTexts` (the points' names for a format that names stations by text) |
-| `door.js` | The one door, the core's Rust module (`crates/doc`; decision 0020, step 10 took its JavaScript out): `checkDocument` (envelope, domain versions and schema hashes — a domain of an earlier schema of its version brought to this one first: core before `designSpeed` and before an end mark's name and speed, signalling's five earlier schemas —, every object against its domain's schema, ids unique per collection, blobs against their hashes), `toDocument` (a record as a checked document, the schemas carried where it travels), `fromDocument` (a checked document as the record) |
+| `stations.js` | The stations of a record by their ids (decision 0006): `stationRegister` (the record's points, and which point a track or platform names), `pointOf`, `renamedStation` (a point renamed, keeping its id), `stationPoint` (the point a name names, found or made), `withStationPoints` (station texts an importer reads made points), `withStationTexts` (the points' names for a format that names stations by text) |
+| `door.js` | The one door, the core's Rust module (`crates/doc`; decision 0005 took its JavaScript out): `checkDocument` (envelope, domain versions and schema hashes — a domain of an earlier schema of its version brought to this one first: core before `designSpeed` and before an end mark's name and speed, signalling's five earlier schemas —, every object against its domain's schema, ids unique per collection, blobs against their hashes), `toDocument` (a record as a checked document, the schemas carried where it travels), `fromDocument` (a checked document as the record) |
 | `coreFormat.js` | What the page still works out itself: the default construction stages and the operational point register the station texts make (the record ↔ document conversion, both ways and lossless, is `crates/doc`'s) |
 | `crates/doc/src/schema.rs` | The part of JSON Schema the domain schemas use — no more; a schema with another keyword is refused when it is registered |
 | `canonical.js` | Canonical JSON after RFC 8785, content hashes (`sha256:` + hex), ids of UUID form drawn from a text |
@@ -52,8 +52,8 @@ it differs from the record the app works on in memory:
 | the record | infra-data-1.0 (the document) |
 |---|---|
 | one object with everything | `core`: the net, what stands on it, reference data; `layout`: what only the layout tool needs |
-| `lifespan` `{ from?, to? }`, days or `"open"` (decision 0028) | `lifespan`, the same |
-| `operationalPoint` (tracks, platforms), `operationalPoints` `{ id, name, rl100?, uic? }` (decision 0028) | the same |
+| `lifespan` `{ from?, to? }`, days or `"open"` (decision 0007) | `lifespan`, the same |
+| `operationalPoint` (tracks, platforms), `operationalPoints` `{ id, name, rl100?, uic? }` (decision 0006) | the same |
 | a platform's `trackId`, `startStation`, `endStation`, `side` | `at`: a `TrackRange` `{ anchor: 'station', trackId, startStation, endStation, side }` |
 | an end mark's `trackId`, `endpoint` | `at`: a `TrackEnd` `{ trackId, endpoint }` |
 | a switch's `switchId` | `id`, like every object of every collection |
@@ -74,7 +74,7 @@ is the same bytes. Where the record says one thing two ways, the document says i
 text is no station, `null` in a field of a track, switch, platform or end
 mark an absent field (in an element, `null` keeps its meaning — a straight end).
 
-**One model.** The record states what the document states (decision 0028): the stations are points with ids,
+**One model.** The record states what the document states (decision 0006): the stations are points with ids,
 which tracks and platforms name; a lifespan states its days, and the stages are worked out of them (`stagesOf`).
 Nothing is drawn from texts at the door. What an importer reads as station texts is made points of once
 (`withStationPoints`), and what writes a format that names stations by text takes them from the points
@@ -86,7 +86,7 @@ hash it is filed under.
 
 ## Decisions
 
-- **core 1.0 has the data model's shape from the start** ([decision 0009](../../../docs/decisions/0009-core-1-0-in-the-data-model.md)).
+- **core 1.0 has the data model's shape from the start** ([decision 0006](../../../docs/decisions/0006-the-format-rail-across-1.0.md)).
 - **The record stays the app's working model in phase 1**; files and the project server hold documents.
 - **A schema check of our own**, the part of JSON Schema the schemas use, the same in JavaScript and Python.
 - **Canonical JSON and SHA-256 written out in plain code**, so both languages make the same bytes and hashes.

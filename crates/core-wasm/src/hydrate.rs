@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Serigalan and the Rail-Across-Suite contributors
 // SPDX-License-Identifier: LGPL-3.0-only
 
-//! Loading a record (`hydrateProjects`, decision 0021, phase D): the display
+//! Loading a record (`hydrateProjects`, decision 0005): the display
 //! geometry derived from the plane data alone — every element's geometry and
 //! render coordinates, the end bearing an arc or a transition leaves to its
 //! values, each track's coordinates, the switch symbols and the platform

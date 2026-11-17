@@ -1,7 +1,7 @@
 import { viaNative } from './viaNative.js'
 
 /**
- * The stations of a record by their ids (decision 0028). A station or halt is
+ * The stations of a record by their ids (decision 0006). A station or halt is
  * a point of the record's operational point register (`operationalPoints`,
  * R10), an object with an id of its own; a track or platform names its point
  * by `operationalPointId`. Its name and codes are the point's, stated once. The
@@ -80,7 +80,7 @@ export function withStationPoints(record) {
 /**
  * The record with the stopping places at the platform `platformId` as the
  * Civil-Tool sets them where it puts, moves or deletes a platform (decision
- * 0025): those at it passenger stops it names, one over it called `name` where
+ * 0008): those at it passenger stops it names, one over it called `name` where
  * none is at it yet, those no longer at it neither — never one deleted, they
  * are for every train (crates/doc, layers).
  */

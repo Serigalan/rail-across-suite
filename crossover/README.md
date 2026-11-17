@@ -4,7 +4,7 @@ The search of the Layout-Tool's extended switch connection ("Erweiterte Weichenv
 browser (WebAssembly): two turnouts facing each other on two tracks — each of any form of the catalogue, laid
 into its track, so in a curve an inner- or outer-bent one — and one to three elements between their branches.
 It moves both toes on the elements they were picked on and chooses the elements between: straights, arcs and
-transitions, each value sought or given ([decision 0018](../docs/decisions/0018-crossover-search-in-rust.md)).
+transitions, each value sought or given ([decision 0005](../docs/decisions/0005-rust-computes-javascript-shows.md)).
 
 The turnout geometry stays in the app's core: it samples both branch ends over the elements
 (`connectionBranchEnds`, `crossoverRequest` in `packages/core/src/commands/crossover.js`) and sends them with the

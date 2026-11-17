@@ -13,7 +13,7 @@ const here = dirname(fileURLToPath(import.meta.url))
 const out = resolve(process.argv[2] ?? join(here, '../public/crossover'))
 const target = join(out, 'rail_across_crossover.wasm')
 const crate = resolve(here, '../../../crossover')
-// One cargo workspace for the repository (decision 0020): its target/ is at the root.
+// One cargo workspace for the repository (decision 0005): its target/ is at the root.
 const built = join(crate, '../target/wasm32-unknown-unknown/release/rail_across_crossover_wasm.wasm')
 
 let source = process.env.RA_CROSSOVER_WASM ? resolve(process.env.RA_CROSSOVER_WASM) : null

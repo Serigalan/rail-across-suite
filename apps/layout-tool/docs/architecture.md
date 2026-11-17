@@ -21,10 +21,10 @@
   **`crossover/`** — the Rust modules beside the page ([optimizer](modules/optimizer.md),
   [crossover](modules/crossover.md)); the suite's **`deploy/`** — operation.
 
-One build (`vite build`, entry `src/main.jsx` → `dist/`; [decision 0021](../../../docs/decisions/0021-one-format-one-build-the-project-in-the-module.md)).
+One build (`vite build`, entry `src/main.jsx` → `dist/`; [decision 0003](../../../docs/decisions/0003-one-suite-one-server.md)).
 It runs on the suite's server, or bundled with the project server in the desktop app (`crates/desktop`) — working
 without a network is the desktop app's. (A local build that ran in the browser alone, without a server, went with
-decision 0021.)
+decision 0003.)
 
 ## Layers and their rules
 
@@ -93,7 +93,7 @@ own module, and a worker only the server build needs lives in `src/server` (the 
 1. **Start.** The NTv2 base grids are loaded first (hydration converts historic datums), then the store.
 2. **Open.** A project — an infra-data-1.0 document (see [data format](data-format.md)) — passes `parseProjectsPayload` and comes out as the record, is
    hydrated (display geometry derived) and becomes the store's open project. The core's module holds it too
-   ([decision 0021](../../../docs/decisions/0021-one-format-one-build-the-project-in-the-module.md), phase C).
+   ([decision 0005](../../../docs/decisions/0005-rust-computes-javascript-shows.md)).
 3. **Edit.** A panel gathers input, calls a command (`@rail-across/core/commands`), checks the result against the rules and
    hands it to a store function. The store applies it immutably, applies consequences (turnout height coupling,
    route repair, end-mark pruning, length-governed curves) in the same undo step, notifies subscribers, writes the

@@ -3,16 +3,16 @@
 One directory per module with its own build, named after the module: `home/` (the suite's start page: the
 sign-in, the user administration, the modules and the projects), `layout-tool/` (the Layout-Tool, which was
 the Open-Layout-Tool before it moved here in phase 0 — the alignment; the same build serves the Civil-Tool under `/civil/`, the
-civil layer: platforms, surveys, the title block, [decision 0025](../docs/decisions/0025-layers-on-the-core.md)), `signalling-tool/` (the Signalling-Tool),
+civil layer: platforms, surveys, the title block, [decision 0008](../docs/decisions/0008-core-and-layers.md)), `signalling-tool/` (the Signalling-Tool),
 `simulation-tool/` (once the running times of the Fahrplan-Sim, now a page that leads on to the Fahrplan-Editor's
-*Fahrzeit rechnen*, [decision 0013](../docs/decisions/0013-running-times-in-rust.md)), `vehicle-editor/` (the Fahrzeug-Editor: the
-suite's vehicles in OSRD's form, [decision 0014](../docs/decisions/0014-vehicles-in-osrds-form.md)),
+*Fahrzeit rechnen*, [decision 0011](../docs/decisions/0011-running-times.md)), `vehicle-editor/` (the Fahrzeug-Editor: the
+suite's vehicles in OSRD's form, [decision 0012](../docs/decisions/0012-operations-timetables-and-vehicles.md)),
 `timetable-editor/` (the Fahrplan-Editor of the Fahrplan-Sim: a project's timetables, trains from station to station, and a single train's running time computed in the same interface,
-[decision 0016](../docs/decisions/0016-timetables-of-a-project.md)), `catenary-tool/` (the Catenary-Tool: the electrification,
-[decision 0025](../docs/decisions/0025-layers-on-the-core.md)), `capacity-sim/` (the Kapazitäts-Sim, the suite's own capacity simulation: headways and occupancy after UIC 406,
-[decision 0023](../docs/decisions/0023-capacity-simulation-of-our-own.md), [roadmap](../ROADMAP.md) phase 4), `construction-sim/` (the Baubetriebs-Sim: the net construction stage by construction stage,
-[decision 0027](../docs/decisions/0027-construction-stages-by-their-days.md)) ([decision 0010](../docs/decisions/0010-one-suite-modules-by-task.md)). An app imports packages, never another app
-([decision 0001](../docs/decisions/0001-one-repository.md)).
+[decision 0012](../docs/decisions/0012-operations-timetables-and-vehicles.md)), `catenary-tool/` (the Catenary-Tool: the electrification,
+[decision 0008](../docs/decisions/0008-core-and-layers.md)), `capacity-sim/` (the Kapazitäts-Sim, the suite's own capacity simulation: headways and occupancy after UIC 406,
+[decision 0013](../docs/decisions/0013-capacity.md), [roadmap](../ROADMAP.md) phase 4), `construction-sim/` (the Baubetriebs-Sim: the net construction stage by construction stage,
+[decision 0007](../docs/decisions/0007-lifespans-by-day.md)) ([decision 0003](../docs/decisions/0003-one-suite-one-server.md)). An app imports packages, never another app
+([decision 0001](../docs/decisions/0001-one-repository-one-licence.md)).
 
 ## The projects of the infrastructure and its tools
 
@@ -39,5 +39,5 @@ project, its signalling with it.
 ## One look
 
 Every app's pages are made of the suite's library, [`@rail-across/ui`](../packages/ui/README.md): its colours,
-buttons, fields, dialogs, lists and the shell of a tool ([decision 0012](../docs/decisions/0012-ui-library.md)).
+buttons, fields, dialogs, lists and the shell of a tool ([decision 0004](../docs/decisions/0004-ui-library.md)).
 The start page and the Signalling-Tool use it; the Layout-Tool, whose look it takes, moves to it page by page.

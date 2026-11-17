@@ -59,8 +59,8 @@ if [ "$(node_major)" -lt 22 ]; then
 fi
 [ "$(node_major)" -ge 22 ] || die "Node.js 22 or newer is needed"
 
-# The project server and the modules beside the pages are Rust (decisions
-# 0019, 0020): cargo for root, who runs deploy.sh, with the WebAssembly target.
+# The project server and the modules beside the pages are Rust (decision
+# 0005): cargo for root, who runs deploy.sh, with the WebAssembly target.
 if [ ! -x "$RA_CARGO" ]; then
   step "Rust (rustup)"
   curl -fsSL https://sh.rustup.rs | sh -s -- -y --profile minimal

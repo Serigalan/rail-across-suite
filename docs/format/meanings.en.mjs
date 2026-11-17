@@ -615,7 +615,7 @@ export default {
   'timetables:root.collections.delayScenarios': 'Delay scenarios',
   'timetables:root.collections.studies': 'Capacity studies',
   'timetables:root.collections.constructionScenarios': 'Construction scenarios (timetables 1.2)',
-  'TYPE:timetables:ConstructionScenario': 'A construction scenario of a timetable (decision 0030): stretches of track closed for a while, the trains taken out, the trains diverted by hand. It changes no infrastructure, only how the timetable is run while it holds.',
+  'TYPE:timetables:ConstructionScenario': 'A construction scenario of a timetable (decision 0014): stretches of track closed for a while, the trains taken out, the trains diverted by hand. It changes no infrastructure, only how the timetable is run while it holds.',
   'timetables:ConstructionScenario.timetableId': 'The timetable it is of',
   'timetables:ConstructionScenario.closures': 'The stretches of track closed',
   'timetables:ConstructionScenario.cancelledTrainIds': 'The trains taken out: they do not run',

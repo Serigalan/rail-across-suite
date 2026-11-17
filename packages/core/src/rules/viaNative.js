@@ -1,6 +1,6 @@
 import { callNative, nativeReady } from '../native/index.js'
 
-// The catalogue applied in the core's Rust module (decision 0020, step 3):
+// The catalogue applied in the core's Rust module (decision 0005):
 // what the rules read of an element goes across — its display geometry stays
 // here —, and what comes back is the JavaScript's own shape. Only the search
 // for the highest speed goes across: it applies the catalogue some fifty

@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Serigalan and the Rail-Across-Suite contributors
 // SPDX-License-Identifier: LGPL-3.0-only
 
-//! Every id a UUID in lower case (decision 0029, phase 2): an id of before that is none — a km line's
+//! Every id a UUID in lower case (decision 0006): an id of before that is none — a km line's
 //! `km-6050`, a short id a tool or a test gave — becomes the UUID drawn from it (`derived_id`), and every
 //! reference to it the same, since a reference is named for what it names and ends in `Id` or `Ids` (phase 1).
 //! The same id gives the same UUID on every device; a UUID in capitals is written in lower case.
@@ -75,7 +75,7 @@ pub fn forward(domains: &mut Object) {
 }
 
 /// A record come back from its document with each collection in the order the record had it: what was there before
-/// keeps its place, what is new follows (decision 0029, phase 6 — the document sorts by id, the record keeps the
+/// keeps its place, what is new follows (decision 0006 — the document sorts by id, the record keeps the
 /// order it was given).
 pub fn in_order_of(record: &mut Value, before: &Value) {
     fn order(list: &mut Value, before: Option<&Value>) {

@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Serigalan and the Rail-Across-Suite contributors
 // SPDX-License-Identifier: LGPL-3.0-only
 
-//! The project held in the module's memory (decision 0020, step 5; decision
-//! 0021, phase C): the page opens it once and from then on writes only what a
+//! The project held in the module's memory (decision 0005; decision
+//! 0005): the page opens it once and from then on writes only what a
 //! step changed (`session.write`), and every operation that takes the
 //! project's tracks, switches or any other member of it is handed them from
 //! here — the page names them (`{"$held": "tracks"}`) instead of carrying them

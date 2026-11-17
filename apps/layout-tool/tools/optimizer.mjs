@@ -1,7 +1,7 @@
 // npm run optimizer — puts the track optimizer beside the Layout-Tool's page,
 // in public/optimizer-module/ (or the directory named): optimizer/ of the
 // repository, built to WebAssembly with cargo (rustup, target
-// wasm32-unknown-unknown; decision 0019). The app loads it as a file of its
+// wasm32-unknown-unknown; decision 0005). The app loads it as a file of its
 // own; RA_OPTIMIZER_WASM names a module file to take as it is.
 import { execFileSync } from 'node:child_process'
 import { copyFileSync, existsSync, mkdirSync, writeFileSync } from 'node:fs'
@@ -13,7 +13,7 @@ const here = dirname(fileURLToPath(import.meta.url))
 const out = resolve(process.argv[2] ?? join(here, '../public/optimizer-module'))
 const target = join(out, 'rail_across_optimizer.wasm')
 const crate = resolve(here, '../../../optimizer')
-// One cargo workspace for the repository (decision 0020): its target/ is at the root.
+// One cargo workspace for the repository (decision 0005): its target/ is at the root.
 const built = join(crate, '../target/wasm32-unknown-unknown/release/rail_across_optimizer_wasm.wasm')
 
 let source = process.env.RA_OPTIMIZER_WASM ? resolve(process.env.RA_OPTIMIZER_WASM) : null

@@ -155,7 +155,7 @@ gauge:
 
 - An **arc** has its resistance over its whole length.
 - A **transition** is cut into pieces of at most 10 m, each with the radius at its middle. The curvature runs from
-  `1/r1` to `1/r2` linearly on a clothoid, as `3t² − 2t³` on a Bloss curve.
+  `1 / r1` to `1 / r2` linearly on a clothoid, as `3 t² − 2 t³` on a Bloss curve.
 - The resistance counts as a rise **in both directions**: on a fall it lessens the effective fall.
 - Cant plays no part in the resistance. The vehicle's gauge and wheelbase do not enter.
 - Switches have their curve resistance as far as their branch is stored as a track with arc elements.
@@ -255,7 +255,7 @@ a = (F + G − R(v)) / (m · ρ)
 ```
 
 - **Time step** 2 s. A step's mean acceleration is estimated after Runge-Kutta, then a Newton step
-  `Δx = v · Δt + a · Δt² / 2` follows. A step that would fall below zero is shortened.
+  `Δ x = v · Δ t + (a · Δ t²) / 2` follows. A step that would fall below zero is shortened.
 - **Accelerating:** full tractive effort.
 - **Holding:** just as much effort as resistance and grade ask for. Where full effort is not enough, the train slows
   down and catches up afterwards.

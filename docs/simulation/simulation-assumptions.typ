@@ -123,7 +123,7 @@ A train stops only at a *stopping place* (`stoppingPlaces` of the Signalling-Too
 == From the heights
 
 - A track's height runs *straight between its height points*. *Vertical curves* do not enter the grade: at a height point the grade jumps from one tangent to the other.
-- The grade of a piece between two cuts is `(z(b) − z(a)) / (b − a) · 1000` in ‰, signed by the direction of travel. The cuts are the height points, the element ends and the ends of the way's pieces.
+- The grade of a piece between two cuts is $(z(b) − z(a)) / (b − a) · 1000$ in ‰, signed by the direction of travel. The cuts are the height points, the element ends and the ends of the way's pieces.
 - *A track without heights* (fewer than two height points) is taken as level and reported as a gap.
 
 == Curves as a grade
@@ -132,13 +132,13 @@ The resistance of a curve is added to the grade as an *equivalent grade*, after 
 
 #tbl((30%, 1fr),
   [Radius r], [Curve resistance w in ‰],
-  [r ≥ 300 m], [`650 / (r − 55)`],
-  [30 m \< r \< 300 m], [`500 / (r − 30)`],
+  [r ≥ 300 m], [$650 / (r − 55)$],
+  [30 m \< r \< 300 m], [$500 / (r − 30)$],
   [r ≤ 30 m, straight], [0],
 )
 
 - An *arc* has its resistance over its whole length.
-- A *transition* is cut into pieces of at most 10 m, each with the radius at its middle. The curvature runs from `1/r1` to `1/r2` linearly on a clothoid, as `3t² − 2t³` on a Bloss curve.
+- A *transition* is cut into pieces of at most 10 m, each with the radius at its middle. The curvature runs from $1 / r_1$ to $1 / r_2$ linearly on a clothoid, as $3 t² − 2 t³$ on a Bloss curve.
 - The resistance counts as a rise *in both directions*: on a fall it lessens the effective fall.
 - Cant plays no part in the resistance. The vehicle's gauge and wheelbase do not enter.
 - Switches have their curve resistance as far as their branch is stored as a track with arc elements.
@@ -148,7 +148,7 @@ The resistance of a curve is added to the grade as an *equivalent grade*, after 
 
 == Averaged under the train
 
-The running time calculation takes not the grade under the head but the *mean grade under the whole train*, from its tail to its head. The train is taken as a band of mass spread evenly over its length. Before the start of the way, the tail is cut off at the way's beginning. The force of the grade is `G = −m · g · sin(arctan(i / 1000))` with g = 9.81 m/s². It acts in accelerating, holding, coasting and braking alike.
+The running time calculation takes not the grade under the head but the *mean grade under the whole train*, from its tail to its head. The train is taken as a band of mass spread evenly over its length. Before the start of the way, the tail is cut off at the way's beginning. The force of the grade is $G = −m · g · sin(arctan(i / 1000))$ with g = 9.81 m/s². It acts in accelerating, holding, coasting and braking alike.
 
 = Speeds
 
@@ -168,7 +168,7 @@ The running time calculation takes not the grade under the head but the *mean gr
 - *A limit holds until the train's tail has left it.* Behind a speed restriction, the train accelerates only once it has left it with its whole length.
 - *Before a lower limit the train brakes* so that its head reaches it at its beginning. The braking curve depends on the grade (see "Braking").
 - The driver is *ideal*: they brake at the last possible moment, accelerate with full effort and have no reaction time. Announcements (Lf 6, Zs 3v, distant signals) need no effect of their own: where braking begins follows from the physics.
-- *Entry speed* at a boundary: the boundary's, at most the train's top speed, and at most so fast that it can still brake down to every limit along the way: `√(v² + 2 · 0.8 · γ · s)` with γ the vehicle's braking deceleration and s the distance to the limit. The factor 0.8 leaves room for a fall.
+- *Entry speed* at a boundary: the boundary's, at most the train's top speed, and at most so fast that it can still brake down to every limit along the way: $sqrt(v² + 2 · 0.8 · γ · s)$ with γ the vehicle's braking deceleration and s the distance to the limit. The factor 0.8 leaves room for a fall.
 - The speed profile shown is the one without the train's length.
 
 = The train
@@ -183,7 +183,7 @@ A vehicle is rolling stock in OSRD's RailJSON. The simulation reads of it:
   [`length`], [length in m (for averaging the grade, for the limits, for clearing the blocks and for a reversal)],
   [`max_speed`], [top speed in m/s],
   [`inertia_coefficient`], [mass factor ρ for the rotating masses, else 1.05],
-  [`rolling_resistance`], [resistance to movement after Davis: `A + B · v + C · v²` in N, v in m/s],
+  [`rolling_resistance`], [resistance to movement after Davis: $A + B · v + C · v²$ in N, v in m/s],
   [`const_gamma`], [service braking deceleration γ on the level in m/s²],
   [`effort_curves`], [tractive effort over speed, per traction mode and comfort],
 )
@@ -206,11 +206,9 @@ A vehicle is rolling stock in OSRD's RailJSON. The simulation reads of it:
 
 The train is a point mass at its head, on which three forces act: the tractive effort F, the resistance to movement R(v) and the force of the grade G from the mean grade with the curves. Its acceleration is
 
-```
-a = (F + G − R(v)) / (m · ρ)
-```
+$ a = (F + G − R(v)) / (m · ρ) $
 
-- *Time step* 2 s. A step's mean acceleration is estimated after Runge-Kutta, then a Newton step `Δx = v · Δt + a · Δt² / 2` follows. A step that would fall below zero is shortened.
+- *Time step* 2 s. A step's mean acceleration is estimated after Runge-Kutta, then a Newton step $Δ x = v · Δ t + (a · Δ t²) / 2$ follows. A step that would fall below zero is shortened.
 - *Accelerating:* full tractive effort.
 - *Holding:* just as much effort as resistance and grade ask for. Where full effort is not enough, the train slows down and catches up afterwards.
 - *Coasting:* no tractive effort.
@@ -220,15 +218,13 @@ a = (F + G − R(v)) / (m · ρ)
 
 The train brakes at the vehicle's service deceleration γ on the level, *plus the grade under the train*:
 
-```
-a = −γ + G / (m · ρ)
-```
+$ a = −γ + G / (m · ρ) $
 
 - G is the force of the grade as in accelerating, averaged under the train, with the curves. A rise shortens the braking distance, a fall lengthens it.
 - *Example:* at γ = 0.6 m/s² from 100 km/h the train needs about 643 m on the level and about 760 m on a fall of 10 ‰.
 - *On any fall, at least a tenth of γ is left*, so that a train always comes to a stand.
 - The deceleration does not depend on the speed. Resistance to movement does not help braking.
-- OSRD's constant braking, which ignores the grade (`a = −γ`), stays selectable in the calculation (`braking` `constant`); the suite does not use it.
+- OSRD's constant braking, which ignores the grade ($a = −γ$), stays selectable in the calculation (`braking` `constant`); the suite does not use it.
 
 == The three runs
 
@@ -276,7 +272,7 @@ The suite gives the calculation no arrival times, only stops with how long the t
 = Blocks
 
 - *A block* is the stretch of a train's way from one main signal acting in its direction of travel to the next. The first block begins at the start, the last ends at the end; a reversal ends one block and begins the next. Without main signals the whole way is one block.
-- *Overlap:* a block reaches beyond its end signal by the longest of the overlaps stored for that signal. The simulation does not work out their length itself. The catalogue after Ril 301 proposes it in the Signalling-Tool: 50 m up to 40 km/h, 100 m up to 60 km/h, 200 m above; longer on a fall steeper than 5 ‰ (`L = L0 · 0.75 / (0.75 − 9.81 · |i| / 1000)`, rounded up to 10 m). This table is a draft, not checked against the Ril 819.0202 in force.
+- *Overlap:* a block reaches beyond its end signal by the longest of the overlaps stored for that signal. The simulation does not work out their length itself. The catalogue after Ril 301 proposes it in the Signalling-Tool: 50 m up to 40 km/h, 100 m up to 60 km/h, 200 m above; longer on a fall steeper than 5 ‰ ($L = L_0 · 0.75 / (0.75 − 9.81 · |i| / 1000)$, rounded up to 10 m). This table is a draft, not checked against the Ril 819.0202 in force.
 - *Track detection:* where the variant has track sections, a block holds every section it touches by more than 0.5 m. The sections' extent follows from their detection points over the net. Stretches no section covers the block holds as stretches of track.
 - *Conflict:* two trains conflict where they hold the same section at the same time, or stretches of the same track that overlap by more than 0.5 m.
 - *Route times:* a block's setting and release time are those of the train route from its signal to the next, else the layer's (`routeTimes`), else the timetable's (`blockingTimes`), else 12 s and 6 s.

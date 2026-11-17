@@ -42,11 +42,11 @@ Gerechnet wird in vier Werkzeugen:
 
 Die Simulation folgt sechs Grundsätzen:
 
-- *Die Physik von OSRD.* Die Fahrzeitrechnung ist die Hüllkurvensimulation von OSRD, dem Open Source Railway Designer der OpenRail Association, nach Rust portiert (`sim/`, Stand OSRD `fda69ee1`). Was OSRD rechnet, rechnet die Suite gleich, mit einer Ausnahme: Gebremst wird abhängig von der Neigung. Was nicht portiert ist, steht in Abschnitt „Grenzen“.
-- *Die Infrastruktur, wie sie entworfen ist.* Neigungen, Bögen, Geschwindigkeiten, Halteplätze und Bahnsteige kommen aus den Entwurfswerten von Layout-Tool und Signalling-Tool, nicht aus gezeichneten Linien. Wo Daten fehlen, rechnet die Simulation mit einem neutralen Wert (eben, ohne Grenze) und *meldet die Lücke*, statt etwas zu erfinden. Nur wo ein Zug gar nicht halten kann, wird er nicht gerechnet.
-- *Das Netz eines Tages.* Es gibt, was die Lebensdauern aus dem Layout-Tool an diesem Tag in Betrieb setzen. Ein Bauszenario sperrt darüber hinaus Gleisstücke eine Zeit lang.
+- *Die Physik von OSRD.* Die Fahrzeitrechnung ist die Hüllkurvensimulation von OSRD, dem Open Source Railway Designer der OpenRail Association, nach Rust portiert (`sim/`, Stand OSRD `fda69ee1`). Was OSRD rechnet, rechnet die Suite genauso, mit einer Ausnahme: Sie bremst abhängig von der Neigung. Was nicht portiert ist, steht in Abschnitt „Grenzen“.
+- *Die Infrastruktur, wie sie entworfen ist.* Neigungen, Bögen, Geschwindigkeiten, Halteplätze und Bahnsteige kommen aus den Entwurfswerten von Layout-Tool und Signalling-Tool, nicht aus gezeichneten Linien. Wo Daten fehlen, rechnet die Simulation mit einem neutralen Wert (eben, ohne Grenze) und *meldet die Lücke*, statt etwas zu erfinden. Nur wenn ein Zug gar nicht halten kann, wird er nicht gerechnet.
+- *Das Netz eines Tages.* Es gilt, was die Lebensdauern aus dem Layout-Tool an diesem Tag in Betrieb setzen. Ein Bauszenario sperrt darüber hinaus Gleisstücke eine Zeit lang.
 - *Erst jeder Zug für sich, dann alle zusammen.* Jeder Zug wird zuerst allein gerechnet. Seine Fahrt ergibt seine Sperrzeiten; erst die Disposition bringt die Züge zusammen und rechnet einen Zug neu, wo er warten oder umgeleitet werden muss.
-- *Bestimmt, nicht zufällig.* Dieselben Eingaben geben dieselben Ergebnisse. Es gibt keine Zufallsgrößen und keine Streuung.
+- *Deterministisch, nicht zufällig.* Dieselben Eingaben ergeben dieselben Ergebnisse. Es gibt keine Zufallsgrößen und keine Streuung.
 - *SI-Einheiten.* Meter, Sekunden, m/s, m/s², kg, N; Neigungen in ‰ (m/km), Steigung positiv in Fahrtrichtung. Uhrzeiten sind Sekunden ab Mitternacht des Fahrplantags. Geschwindigkeiten des Formats in km/h werden beim Einlesen in m/s umgerechnet.
 
 = Vom Fahrplan zur Belegung
@@ -76,7 +76,7 @@ Ein Punkt eines Zuges nennt eine Betriebsstelle (`operationalPointId`) oder ein 
 )
 
 - Ein Zug *beginnt und endet* nur in einem Bahnhof oder an einem Gleisende. Ein Haltepunkt ist kein Anfang und kein Ende, ein Gleisende liegt nie unterwegs.
-- *Wo er nur durchfährt,* kommt jedes Gleis des Bahnhofs in Frage. Eine Durchfahrt wird in der Mitte dessen gezeitet, was der Bahnhof entlang des Wegs abdeckt.
+- *Wo er nur durchfährt,* kommt jedes Gleis des Bahnhofs in Frage. Eine Durchfahrt wird in der Mitte dessen angesetzt, was der Bahnhof entlang des Wegs abdeckt.
 - *An einer Betrachtungsgrenze* fährt ein Zug mit der Geschwindigkeit der Grenze ein und höchstens mit ihr aus. Hat die Grenze keine Geschwindigkeit, gilt, was Strecke und Zug dort zulassen. An einem Prellbock steht er.
 
 = Wo ein Zug hält
@@ -92,14 +92,14 @@ Ein Zug hält nur an einem *Halteplatz* (`stoppingPlaces` aus dem Signalling-Too
 )
 
 - *Züge ohne Fahrgäste* sind die Gattungen Gz, Lz und Dz und die Güterzuggattungen GC, KLV, EK und DGS. Jede andere Gattung zählt als Personenzug.
-- Hat ein Bahnhof keinen Halteplatz, den der Zug nutzen darf (auf dem verlangten Gleis), wird der Zug nicht gerechnet, und der Punkt sagt das.
+- Hat ein Bahnhof keinen Halteplatz, den der Zug nutzen darf (auf dem verlangten Gleis), wird der Zug nicht gerechnet; der Punkt meldet das.
 
 == Wo im Halteplatz
 
 - *10 m vor seinem Ende, in Fahrtrichtung gesehen.* An einem Halteplatz unter 20 m Länge hält der Zug in der Mitte. Am Anfang ist „das Ende“ das, auf das der Zug zufährt.
 - Die Fahrtrichtung ergibt sich aus dem Weg, deshalb liefert jeder Halteplatz *zwei Kandidaten*, einen je Richtung.
-- Von mehreren Kandidaten wird der auf dem kürzesten Weg erreichte genommen, am Anfang der mit dem kürzesten ersten Abschnitt. Ein anderer kommt nur dann in Frage, wenn vom ersten aus kein Weg weiterführt. Höchstens 200 Teilwege werden versucht.
-- *Gerechnet wird die Zugspitze.* Ein haltender Zug steht mit der Spitze an diesem Punkt. Ob er dabei hinten über den Halteplatz oder den Bahnsteig hinausragt, wird nicht geprüft.
+- Von mehreren Kandidaten wird der genommen, den der kürzeste Weg erreicht, am Anfang der mit dem kürzesten ersten Abschnitt. Ein anderer kommt nur dann in Frage, wenn vom ersten aus kein Weg weiterführt. Es werden höchstens 200 Teilwege versucht.
+- *Maßgebend ist die Zugspitze.* Ein haltender Zug steht mit der Spitze an diesem Punkt. Ob er dabei hinten über den Halteplatz oder den Bahnsteig hinausragt, wird nicht geprüft.
 
 = Der Weg über das Netz
 
@@ -115,7 +115,7 @@ Ein Zug hält nur an einem *Halteplatz* (`stoppingPlaces` aus dem Signalling-Too
 - Ein Punkt unterwegs kann einen Richtungswechsel verlangen (`reverse`). Am ersten und letzten Punkt gibt es keinen.
 - Der Zug *hält dort* (an einem Halteplatz, wie bei jedem Halt), steht seine *Wendezeit* (`turnaround`, ohne Angabe 300 s; die Haltezeit zählt dann nicht) und fährt in Gegenrichtung weiter.
 - *Seine neue Spitze ist dort, wo sein Schluss stand,* eine Zuglänge zurück auf dem Weg, auf dem er kam. Der Weg springt deshalb an dieser Stelle, und das Stück, auf dem der Zug stand, wird nicht noch einmal befahren.
-- Die Fahrzeitrechnung sieht die ganze Fahrt als einen Weg. Für die erste Zuglänge nach dem Richtungswechsel gelten deshalb als Neigung unter dem Zug und als Grenzen, die der Zugschluss räumen muss, die des Stücks, wie der Zug hineingefahren ist. Die signalisierten Geschwindigkeiten werden auf jedem Teil für sich gesucht.
+- Die Fahrzeitrechnung behandelt die ganze Fahrt als einen Weg. Für die erste Zuglänge nach dem Richtungswechsel gelten deshalb als Neigung unter dem Zug und als Grenzen, die der Zugschluss räumen muss, die des Stücks, auf dem der Zug eingefahren ist. Die signalisierten Geschwindigkeiten werden auf jedem Teil für sich gesucht.
 - Wie die Blöcke am Richtungswechsel getrennt werden, steht unter „Sperrzeiten“.
 
 = Neigungen
@@ -123,7 +123,7 @@ Ein Zug hält nur an einem *Halteplatz* (`stoppingPlaces` aus dem Signalling-Too
 == Aus den Höhen
 
 - Die Höhe eines Gleises liegt *linear zwischen seinen Höhenpunkten*. *Ausrundungen* (Neigungswechsel mit Halbmesser) gehen nicht in die Neigung ein: Am Höhenpunkt springt die Neigung von der einen Tangente auf die andere.
-- Die Neigung eines Stücks zwischen zwei Schnittstellen ist `(z(b) − z(a)) / (b − a) · 1000` in ‰, mit dem Vorzeichen der Fahrtrichtung. Schnittstellen sind die Höhenpunkte, die Elementgrenzen und die Enden der Stücke des Wegs.
+- Die Neigung eines Stücks zwischen zwei Schnittstellen ist $(z(b) − z(a)) / (b − a) · 1000$ in ‰, mit dem Vorzeichen der Fahrtrichtung. Schnittstellen sind die Höhenpunkte, die Elementgrenzen und die Enden der Stücke des Wegs.
 - *Ein Gleis ohne Höhen* (weniger als zwei Höhenpunkte) gilt als eben und wird als Lücke gemeldet.
 
 == Bögen als Steigung
@@ -132,13 +132,13 @@ Der Bogenwiderstand wird als *gleichwertige Steigung* zur Neigung addiert, nach 
 
 #tbl((30%, 1fr),
   [Halbmesser r], [Bogenwiderstand w in ‰],
-  [r ≥ 300 m], [`650 / (r − 55)`],
-  [30 m \< r \< 300 m], [`500 / (r − 30)`],
+  [r ≥ 300 m], [$650 / (r − 55)$],
+  [30 m \< r \< 300 m], [$500 / (r − 30)$],
   [r ≤ 30 m, Gerade], [0],
 )
 
 - Ein *Kreisbogen* hat seinen Widerstand auf ganzer Länge.
-- Ein *Übergangsbogen* wird in Stücke von höchstens 10 m geteilt, jedes mit dem Halbmesser in seiner Mitte. Die Krümmung verläuft bei der Klothoide linear von `1/r1` nach `1/r2`, beim Bloss-Bogen nach `3t² − 2t³`.
+- Ein *Übergangsbogen* wird in Stücke von höchstens 10 m geteilt, jedes mit dem Halbmesser in seiner Mitte. Die Krümmung verläuft bei der Klothoide linear von $1 / r_1$ nach $1 / r_2$, beim Bloss-Bogen nach $3 t² − 2 t³$.
 - Der Widerstand zählt *in beide Richtungen* als Steigung: Im Gefälle verringert er das wirksame Gefälle.
 - Die Überhöhung spielt für den Widerstand keine Rolle. Spurweite und Achsstand des Fahrzeugs gehen nicht ein.
 - Weichen haben ihren Bogenwiderstand, soweit ihr Zweig als Gleis mit Bogenelementen gespeichert ist.
@@ -148,7 +148,7 @@ Der Bogenwiderstand wird als *gleichwertige Steigung* zur Neigung addiert, nach 
 
 == Unter dem Zug gemittelt
 
-Die Fahrzeitrechnung nimmt nicht die Neigung unter der Spitze, sondern die *mittlere Neigung unter dem ganzen Zug*, von Schluss bis Spitze. Der Zug gilt dabei als gleichmäßig über seine Länge verteiltes Band. Vor dem Anfang des Wegs wird der Schluss am Wegbeginn abgeschnitten. Die Hangabtriebskraft ist `G = −m · g · sin(arctan(i / 1000))` mit g = 9,81 m/s². Sie wirkt beim Beschleunigen, Halten, Rollen und Bremsen gleichermaßen.
+Die Fahrzeitrechnung nimmt nicht die Neigung unter der Spitze, sondern die *mittlere Neigung unter dem ganzen Zug*, von Schluss bis Spitze. Der Zug gilt dabei als gleichmäßig über seine Länge verteiltes Band. Reicht der Zug über den Wegbeginn zurück, wird der Schluss am Wegbeginn abgeschnitten. Die Hangabtriebskraft ist $G = −m · g · sin(arctan(i / 1000))$ mit g = 9,81 m/s². Sie wirkt beim Beschleunigen, Halten, Rollen und Bremsen gleichermaßen.
 
 = Geschwindigkeiten
 
@@ -166,9 +166,9 @@ Die Fahrzeitrechnung nimmt nicht die Neigung unter der Spitze, sondern die *mitt
 
 - Aus allen Grenzen wird das *strengste Geschwindigkeitsprofil* gebildet (MRSP).
 - *Eine Grenze gilt, bis der Zugschluss sie verlassen hat.* Hinter einer Langsamfahrstelle beschleunigt der Zug also erst, wenn er sie mit ganzer Länge verlassen hat.
-- *Vor einer niedrigeren Grenze bremst der Zug so*, dass die Spitze sie an ihrem Beginn erreicht. Die Bremskurve hängt von der Neigung ab (siehe „Bremsen“).
+- *Vor einer niedrigeren Grenze bremst der Zug so*, dass seine Spitze am Beginn der Grenze deren Geschwindigkeit erreicht. Die Bremskurve hängt von der Neigung ab (siehe „Bremsen“).
 - Der Fahrer gilt als *ideal*: Er bremst im letztmöglichen Augenblick, beschleunigt mit voller Zugkraft und hat keine Reaktionszeit. Ankündigungen (Lf 6, Zs 3v, Vorsignale) brauchen keine eigene Wirkung, denn der Bremseinsatz folgt aus der Physik.
-- *Einfahrgeschwindigkeit* an einer Grenze: die der Grenze, höchstens die Höchstgeschwindigkeit des Zuges und höchstens so schnell, dass er vor jeder Grenze im Weg noch auf sie herunterbremsen kann: `√(v² + 2 · 0,8 · γ · s)` mit γ der Bremsverzögerung des Fahrzeugs und s dem Abstand bis zur Grenze. Der Faktor 0,8 lässt Raum für ein Gefälle.
+- *Einfahrgeschwindigkeit* an einer Grenze: Sie ist die der Grenze, höchstens die Höchstgeschwindigkeit des Zuges und höchstens so hoch, dass der Zug vor jeder Grenze im Weg noch auf deren Geschwindigkeit herunterbremsen kann: $sqrt(v² + 2 · "0,8" · γ · s)$ mit γ als Bremsverzögerung des Fahrzeugs und s als Abstand bis zur Grenze. Der Faktor 0,8 lässt Raum für ein Gefälle.
 - Das angezeigte Geschwindigkeitsprofil ist das ohne Zuglänge.
 
 = Der Zug
@@ -183,20 +183,20 @@ Ein Fahrzeug ist Rollmaterial im RailJSON von OSRD. Die Simulation liest daraus:
   [`length`], [Länge in m (für das Mitteln der Neigung, die Grenzen, das Räumen der Blöcke und den Richtungswechsel)],
   [`max_speed`], [Höchstgeschwindigkeit in m/s],
   [`inertia_coefficient`], [Massenfaktor ρ für die drehenden Massen, sonst 1,05],
-  [`rolling_resistance`], [Laufwiderstand nach Davis: `A + B · v + C · v²` in N, v in m/s],
+  [`rolling_resistance`], [Laufwiderstand nach Davis: $A + B · v + C · v²$ in N, v in m/s],
   [`const_gamma`], [Betriebsbremsverzögerung γ in der Ebene in m/s²],
   [`effort_curves`], [Zugkraft über Geschwindigkeit, je Traktionsart und Komfort],
 )
 
-- *Zugkraftkurve:* zwischen ihren Punkten linear. Unter dem ersten Punkt gilt dessen Zugkraft, über dem letzten ebenfalls dessen. Gewählt wird die Kurve für den Komfort des Zuges, sonst die für den Standardkomfort, sonst die Vorgabekurve der Traktionsart.
+- *Zugkraftkurve:* zwischen ihren Punkten linear. Unterhalb des ersten Punkts gilt dessen Zugkraft, oberhalb des letzten ebenso die des letzten. Gewählt wird die Kurve für den Komfort des Zuges, sonst die für den Standardkomfort, sonst die Vorgabekurve der Traktionsart.
 - *Ein Fahrzeug je Zug.* Gerechnet wird eine Zugbildung aus genau einem Triebfahrzeug. Zugbildungen aus mehreren Fahrzeugen, eine Wagenzuglast, Bremsstellung und Bremshundertstel werden gespeichert, aber nicht gerechnet. Ein Zug mit einer solchen Zugbildung lässt sich noch nicht fahren.
-- Ein Laufwiderstand, dessen Beiwerte alle unter eins liegen, wird beim Einlesen als N/kg gelesen und mit der Masse multipliziert. Die Beispielfahrzeuge von OSRD sind so angegeben.
-- Kein Haftwert: Die Zugkraft ist nicht durch die Reibung zwischen Rad und Schiene begrenzt. Nebenverbraucher und Leistungsgrenzen der Oberleitung zählen nicht.
+- Ein Laufwiderstand, dessen Beiwerte alle unter eins liegen, wird beim Einlesen als N/kg verstanden und mit der Masse multipliziert. Die Beispielfahrzeuge von OSRD sind so angegeben.
+- *Kein Haftwert:* Die Zugkraft wird nicht durch die Reibung zwischen Rad und Schiene begrenzt. Nebenverbraucher und Leistungsgrenzen der Oberleitung zählen nicht.
 
 == Traktionsart
 
 - Die Traktionsart ist die des Zuges, wo er eine nennt.
-- Sonst, wo die Oberleitung geplant ist: die elektrische Traktionsart des Fahrzeugs, deren Spannung den *ganzen Weg* unter Fahrdraht hat; sonst die thermische; sonst die Vorgabe des Fahrzeugs. Ist im Netz gar kein Fahrdraht geplant, fährt jedes Fahrzeug in seiner Vorgabe.
+- Sonst, wo die Oberleitung geplant ist: die elektrische Traktionsart des Fahrzeugs, deren Spannung der Fahrdraht auf dem *ganzen Weg* führt; sonst die thermische; sonst die Vorgabe des Fahrzeugs. Ist im Netz gar kein Fahrdraht geplant, fährt jedes Fahrzeug in seiner Vorgabe.
 - *Eine Traktionsart für den ganzen Weg.* Einen Wechsel unterwegs gibt es nicht. Fährt ein Zug elektrisch über ein Stück ohne passenden Fahrdraht, fährt er dort trotzdem, und die Stücke werden gemeldet. Das gilt auch für eine Umleitung.
 - Unter Fahrdraht liegt, was die Tragpunkte und Streckentrenner eines Fahrdrahts tragen. Die Spannung des Fahrdrahts muss gleich dem Namen der Traktionsart sein (`15000V`).
 
@@ -206,11 +206,9 @@ Ein Fahrzeug ist Rollmaterial im RailJSON von OSRD. Die Simulation liest daraus:
 
 Der Zug ist ein Massenpunkt an seiner Spitze, auf den drei Kräfte wirken: die Zugkraft F, der Laufwiderstand R(v) und die Hangabtriebskraft G aus der mittleren Neigung mit den Bögen. Seine Beschleunigung ist
 
-```
-a = (F + G − R(v)) / (m · ρ)
-```
+$ a = (F + G − R(v)) / (m · ρ) $
 
-- *Zeitschritt* 2 s. Die mittlere Beschleunigung eines Schritts wird nach Runge-Kutta geschätzt, dann folgt ein Newton-Schritt `Δx = v · Δt + a · Δt² / 2`. Ein Schritt, der unter null fallen würde, wird gekürzt.
+- *Zeitschritt* 2 s. Die mittlere Beschleunigung eines Schritts wird nach Runge-Kutta geschätzt, dann folgt ein Newton-Schritt $Δ x = v · Δ t + (a · Δ t²) / 2$. Ein Schritt, der unter null fallen würde, wird gekürzt.
 - *Beschleunigen:* volle Zugkraft.
 - *Halten:* gerade so viel Zugkraft, wie Widerstand und Neigung verlangen. Reicht die volle Zugkraft nicht, wird der Zug langsamer und holt danach wieder auf.
 - *Rollen:* ohne Zugkraft.
@@ -220,15 +218,13 @@ a = (F + G − R(v)) / (m · ρ)
 
 Der Zug bremst mit der Betriebsbremsverzögerung γ des Fahrzeugs in der Ebene, *zuzüglich der Neigung unter dem Zug*:
 
-```
-a = −γ + G / (m · ρ)
-```
+$ a = −γ + G / (m · ρ) $
 
 - G ist die Hangabtriebskraft wie beim Beschleunigen, unter dem Zug gemittelt, mit den Bögen. Eine Steigung verkürzt den Bremsweg, ein Gefälle verlängert ihn.
 - *Beispiel:* Mit γ = 0,6 m/s² aus 100 km/h braucht der Zug in der Ebene etwa 643 m, in einem Gefälle von 10 ‰ etwa 760 m.
 - *In jedem Gefälle bleibt mindestens ein Zehntel von γ*, damit ein Zug immer zum Stehen kommt.
-- Von der Geschwindigkeit hängt die Verzögerung nicht ab. Der Laufwiderstand hilft beim Bremsen nicht mit.
-- OSRDs konstante Bremsung, die die Neigung nicht beachtet (`a = −γ`), bleibt in der Rechnung wählbar (`braking` `constant`); die Suite nutzt sie nicht.
+- Die Verzögerung hängt nicht von der Geschwindigkeit ab. Der Laufwiderstand hilft beim Bremsen nicht mit.
+- OSRDs konstante Bremsung, die die Neigung nicht beachtet ($a = −γ$), bleibt als Einstellung der Rechnung wählbar (`braking` `constant`), wird von der Suite aber nicht genutzt.
 
 == Die drei Fahrten
 
@@ -239,18 +235,18 @@ a = −γ + G / (m · ρ)
   [`final`], [die Fahrt, die auch vorgegebene Ankunftszeiten hält; der Fahrplan nimmt diese],
 )
 
-Die Suite gibt der Rechnung keine Ankunftszeiten vor, nur Halte mit der Zeit, die der Zug steht. `final` ist daher die Fahrt mit Zuschlag. Die Abfahrtszeiten des Fahrplans wirken erst danach (siehe „Uhr“).
+Die Suite gibt der Rechnung keine Ankunftszeiten vor, sondern nur Halte mit ihrer Standzeit. `final` ist daher die Fahrt mit Zuschlag. Die Abfahrtszeiten des Fahrplans wirken erst danach (siehe „Uhr“).
 
 == Zuschlag
 
-- Ein Zug hat einen Fahrzeitzuschlag: in Prozent der Fahrzeit (`5 %`), in Minuten je 100 km (`4 min/100km`) oder keinen. Ein neuer Zug hat 5 % nach MARECO.
-- Der Zuschlag gilt *für den ganzen Weg* als ein Bereich. Die Abschnitte zwischen den Halten werden für sich gerechnet.
-- *MARECO* (Vorgabe) verteilt den Zuschlag energiesparend: Die Höchstgeschwindigkeit wird gedeckelt, und vor dem Bremsen rollt der Zug. Deckel und Rollbeginn werden durch Intervallhalbierung gesucht, bis die Zielzeit erreicht ist. Unter 1 m/s wird der Zug nicht verlangsamt.
+- Ein Zug hat einen Fahrzeitzuschlag in Prozent der Fahrzeit (`5 %`) oder in Minuten je 100 km (`4 min/100km`), oder er hat keinen. Ein neuer Zug erhält 5 % nach MARECO.
+- Der Zuschlag wird *für den ganzen Weg* als ein Bereich angesetzt. Die Abschnitte zwischen den Halten werden für sich gerechnet.
+- *MARECO* (Vorgabe) verteilt den Zuschlag energiesparend: Die Höchstgeschwindigkeit wird begrenzt, und vor dem Bremsen rollt der Zug. Grenze und Rollbeginn werden durch Intervallhalbierung gesucht, bis die Zielzeit erreicht ist. Unter 1 m/s wird der Zug nicht verlangsamt.
 - *Linear* verlangsamt alle Geschwindigkeiten im gleichen Verhältnis.
 
 == Halte
 
-- Ein Zug hält an jedem Punkt, der einen Halt oder einen Richtungswechsel verlangt, und immer an seinem Ende, außer er fährt dort über eine Grenze aus. Er bremst an der Haltestelle auf null (siehe „Wo ein Zug hält“).
+- Ein Zug hält an jedem Punkt, der einen Halt oder einen Richtungswechsel verlangt, und immer an seinem Ende, außer er fährt dort über eine Grenze aus. Er bremst dort auf null (siehe „Wo ein Zug hält“).
 - Er steht die *Haltezeit* (`dwell`, bei einem neuen Punkt 60 s) oder beim Richtungswechsel die *Wendezeit* (`turnaround`, ohne Angabe 300 s) und fährt mit voller Zugkraft wieder an.
 - Zwei Halte an derselben Stelle werden einer, mit der längeren Zeit.
 - Die Mindesthaltezeit eines Punktes (`leastDwell`) wird gespeichert, aber noch nicht gerechnet.
@@ -259,16 +255,16 @@ Die Suite gibt der Rechnung keine Ankunftszeiten vor, nur Halte mit der Zeit, di
 = Uhr
 
 - Ein Zug fährt zur Abfahrtszeit seines ersten Punkts ab.
-- *Abfahrtszeit an einem Punkt:* Käme der Zug früher weg, wartet er bis zu ihr. Der Rest seiner Fahrt verschiebt sich um die Wartezeit. Neu gerechnet wird dafür nicht, denn ein längerer Halt ändert die Fahrt nicht. Das gilt auch am Richtungswechsel: Die Wendezeit ist das Mindeste, was er dort steht.
+- *Abfahrtszeit an einem Punkt:* Könnte der Zug früher abfahren, wartet er bis zu dieser Zeit. Der Rest seiner Fahrt verschiebt sich um die Wartezeit. Neu gerechnet wird dafür nicht, denn ein längerer Halt ändert die Fahrt nicht. Das gilt auch am Richtungswechsel: Die Wendezeit ist die Mindeststandzeit dort.
 - Für jeden Ort des Wegs gibt es Ankunft und Abfahrt. Bei einer Durchfahrt sind beide gleich.
 - Uhrzeiten über 24:00 gehören zum nächsten Tag und werden nicht umgebrochen.
 
 = Signale
 
-- *Hauptsignal* ist ein reales Signal mit einem logischen Signal, das kein Vorsignal, Vorsignalwiederholer und kein Sperrsignal (Rangiersignal) ist. Nur Hauptsignale begrenzen Blöcke.
+- *Hauptsignal* ist ein reales Signal mit einem logischen Signal, das weder Vorsignal noch Vorsignalwiederholer noch Sperrsignal (Rangiersignal) ist. Nur Hauptsignale begrenzen Blöcke.
 - *Ankündigend* ist ein reales Signal mit einem Vorsignal, Vorsignalwiederholer oder Mehrabschnittssignal (Ks). Es bestimmt, wo ein Zug den nächsten Block anfordert.
 - Ein Signal wirkt in seiner Richtung (`at.direction`, ohne Angabe in Stationierungsrichtung) oder in beide. Es kann an mehreren Stellen stehen (`alsoAt`).
-- *Signale steuern die Fahrt nicht über Begriffe.* Die Simulation stellt keine Signalbegriffe (Hp 0, Ks 2) und bildet kein Fahrerverhalten an Signalen nach. Ein Signal wirkt auf die Fahrt nur auf zwei Wegen: über die Geschwindigkeit, die es signalisiert, und über die Disposition, die einen Zug vor ihm warten lässt.
+- *Signale steuern die Fahrt nicht über Begriffe.* Die Simulation stellt keine Signalbegriffe (Hp 0, Ks 2) und bildet kein Fahrerverhalten an Signalen nach. Ein Signal wirkt nur auf zwei Wegen auf die Fahrt: über die Geschwindigkeit, die es signalisiert, und über die Disposition, die einen Zug vor ihm warten lässt.
 - *Warten an einem Signal* ist ein geplanter Halt einige Meter davor. Der Zug bremst wie vor jedem Halt, nicht schon ab dem Vorsignal, und fährt nach der Wartezeit mit voller Zugkraft an.
 - *Fiktive Signale* an Betrachtungsgrenzen beginnen oder beenden Fahrstraßen ohne reales Signal.
 - Die *Sichtweite* eines ankündigenden Signals ist `sight.required`, sonst `sight.minimum`.
@@ -276,7 +272,7 @@ Die Suite gibt der Rechnung keine Ankunftszeiten vor, nur Halte mit der Zeit, di
 = Blöcke
 
 - *Ein Block* ist das Stück des Wegs eines Zuges von einem Hauptsignal, das in seiner Fahrtrichtung wirkt, bis zum nächsten. Der erste Block beginnt am Start, der letzte endet am Ziel; ein Richtungswechsel beendet einen Block und beginnt den nächsten. Ohne Hauptsignale ist der ganze Weg ein Block.
-- *Durchrutschweg:* Ein Block reicht über sein Endsignal hinaus um den längsten der Durchrutschwege, die für dieses Signal gespeichert sind. Die Simulation rechnet ihre Länge nicht selbst. Der Katalog nach Ril 301 schlägt sie im Signalling-Tool vor: 50 m bis 40 km/h, 100 m bis 60 km/h, darüber 200 m; in einem Gefälle steiler als 5 ‰ länger (`L = L0 · 0,75 / (0,75 − 9,81 · |i| / 1000)`, auf 10 m aufgerundet). Diese Tabelle ist ein Entwurf und nicht gegen die gültige Ril 819.0202 geprüft.
+- *Durchrutschweg:* Ein Block reicht über sein Endsignal hinaus um den längsten der Durchrutschwege, die für dieses Signal gespeichert sind. Die Simulation rechnet ihre Länge nicht selbst. Der Katalog nach Ril 301 schlägt sie im Signalling-Tool vor: 50 m bis 40 km/h, 100 m bis 60 km/h, darüber 200 m; in einem Gefälle steiler als 5 ‰ länger ($L = L_0 · 0,75 / (0,75 − 9,81 · |i| / 1000)$, auf 10 m aufgerundet). Diese Tabelle ist ein Entwurf und nicht gegen die gültige Ril 819.0202 geprüft.
 - *Gleisfreimeldung:* Hat die Variante Freimeldeabschnitte, hält ein Block jeden Abschnitt, den er auf mehr als 0,5 m berührt. Die Ausdehnung der Abschnitte folgt aus ihren Freimeldepunkten über das Netz. Stücke, die kein Abschnitt deckt, hält der Block als Gleisstück.
 - *Konflikt:* Zwei Züge stehen im Konflikt, wo sie zur selben Zeit denselben Abschnitt halten oder Stücke desselben Gleises, die sich um mehr als 0,5 m überdecken.
 - *Fahrstraßenzeiten:* Bilde- und Auflösezeit eines Blocks sind die der Zugfahrstraße von seinem Signal zum nächsten, sonst die des Layers (`routeTimes`), sonst die des Fahrplans (`blockingTimes`), sonst 12 s und 6 s.
@@ -294,7 +290,7 @@ Ein Zug hält einen Block von dem Augenblick, in dem er ihn frei vorfinden muss,
   [Auflösezeit], [danach; 6 s, wo nichts anderes gilt],
 )
 
-- Die *Annäherungsfahrzeit* ist die der wirklichen Fahrt des Zuges. Eine Sichtzeit in Sekunden (`sight` in `blockingTimes`) wird gespeichert, aber noch nicht gerechnet.
+- Die *Annäherungsfahrzeit* ist die der tatsächlichen Fahrt des Zuges. Eine Sichtzeit in Sekunden (`sight` in `blockingTimes`) wird gespeichert, aber noch nicht gerechnet.
 - *Erster Block:* ab der Abfahrt, abzüglich der Bildezeit. *Halt in der Annäherung:* Steht der Zug innerhalb der Annäherung, fordert er den Block erst bei seiner Abfahrt dort an.
 - *Letzter Block:* bis zur Ankunft am Ziel und der Auflösezeit.
 - *Richtungswechsel:* Die Blöcke werden dort getrennt wie an einem Ende und einem Anfang.
@@ -314,13 +310,13 @@ Ein Fahrplan sagt, was geschieht, wo sich Züge begegnen (`dispatching.mode`):
 Im Modus `wait` gilt:
 
 - Ein Zug fordert seinen nächsten Block an, wenn er sich dessen Signal nähert, also zu Beginn der Sperrzeit. Er bekommt ihn, wenn keiner seiner Abschnitte von den Blöcken gehalten wird, die andere schon bekommen haben.
-- Vom letzten Block eines anderen Zuges, der seinen nächsten noch nicht hat, gilt als gehalten, was dieser auch dann noch hielte, wenn er vor dem nächsten Signal zum Stehen käme. Der Durchrutschweg gilt nur bis eine Weile nach diesem Halt als gehalten.
-- *Gehalten:* Der Zug nimmt eine andere Zugfahrstraße vom selben Signal, die frei ist und weiter zu seinem Ziel führt, etwa ins andere Bahnhofsgleis, um dort zu kreuzen. Gibt es keine, wartet er auf die Fahrstraße, die zuerst frei wird: länger an seinem letzten Halt zwischen dem vorigen Signal und dem Signal des Blocks, soweit der in der Annäherung liegt (sein Start zählt dazu, dann fährt er später ab); sonst 10 m vor dem Signal. Auf seinen ersten Block wartet er am Start.
+- Vom letzten Block eines anderen Zuges, der den nächsten noch nicht hat, gilt als gehalten, was dieser Zug auch dann noch hielte, wenn er vor dem nächsten Signal zum Stehen käme. Der Durchrutschweg gilt nur bis kurz nach diesem Halt als gehalten.
+- *Wird ein Zug gehalten,* nimmt er eine andere Zugfahrstraße vom selben Signal, die frei ist und weiter zu seinem Ziel führt, etwa ins andere Bahnhofsgleis, um dort zu kreuzen. Gibt es keine, wartet er auf die Fahrstraße, die zuerst frei wird, und zwar länger an seinem letzten Halt zwischen dem vorigen Signal und dem Signal des Blocks, soweit dieser in der Annäherung liegt (sein Start zählt dazu, dann fährt er später ab), sonst 10 m vor dem Signal. Auf seinen ersten Block wartet er am Start.
 - Ein Zug, der wartet oder umgeleitet wird, wird *neu gerechnet*: Die Wartezeit ist ein Halt, die Umleitung ein anderer Weg.
-- *Grenzen:* Die Disposition trifft höchstens 80 Entscheidungen je Zug (für alle Züge zusammen, zuzüglich 50), und ein Zug fordert einen Block höchstens 20-mal neu an. Danach fahren die übrigen Züge, wie sie fahren würden, und was bleibt, wird als Konflikt gemeldet.
-- *Verspätung* ist, wie viel später ein Zug ankommt als allein gefahren.
-- *Zugfolge an einer Grenze:* Hat eine Betrachtungsgrenze eine Mindestzugfolgezeit (`headway`), wird ein Zug gemeldet, der dort früher nach dem vorigen einfährt. Er wird dafür nicht verschoben.
-- Die Disposition optimiert nicht. Sie tauscht keine Reihenfolgen über „wer zuerst anfordert“ hinaus und hält keine Anschlüsse und keine Wenden von einem Zug in einen anderen.
+- *Grenzen:* Die Disposition trifft höchstens 80 Entscheidungen je Zug (für alle Züge zusammen, zuzüglich 50), und ein Zug fordert einen Block höchstens 20-mal neu an. Danach fahren die übrigen Züge so, wie sie allein führen, und was dann noch kollidiert, wird als Konflikt gemeldet.
+- *Verspätung* ist die Zeit, um die ein Zug später ankommt, als er allein gefahren wäre.
+- *Zugfolge an einer Grenze:* Hat eine Betrachtungsgrenze eine Mindestzugfolgezeit (`headway`), wird ein Zug gemeldet, der weniger als diese Zeit nach dem vorigen dort einfährt. Er wird dafür nicht verschoben.
+- Die Disposition optimiert nicht. Sie ändert keine Reihenfolgen über „wer zuerst anfordert“ hinaus und sichert keine Anschlüsse und keine Wenden von einem Zug in einen anderen.
 
 = Kapazität nach UIC 406
 
@@ -339,13 +335,13 @@ Im Modus `wait` gilt:
   [Mischverkehr], [75 %], [60 %],
 )
 
-- *Mindestzugfolgezeit:* für je zwei Züge, die etwas gemeinsam halten, in beiden Reihenfolgen, wie früh der zweite nach dem ersten am Anfang sein darf, ohne dass sich ihre Sperrzeiten überdecken. Die Werte werden nach Gattungen zusammengefasst.
+- *Mindestzugfolgezeit:* für je zwei Züge, die etwas gemeinsam belegen, in beiden Reihenfolgen: wie früh der zweite nach dem ersten am Anfang sein darf, ohne dass sich ihre Sperrzeiten überdecken. Die Werte werden nach Gattungen zusammengefasst.
 
 == Ausschlaggebende Belegungselemente und Konfliktbereiche
 
 - *Die kritische Kette* sind die verdichteten Züge hintereinander: Jeder liegt so früh, wie der davor es zulässt.
-- *Ausschlaggebendes Belegungselement:* Für jeden Zug der Kette nach dem ersten das Element, an dem seine Sperrzeit die des Zuges berührt, an den er gebunden ist. Von allem, was beide belegen, ist es das, an dem er am wenigsten früher kommen könnte. Es wird mit dem Block beider Züge angegeben und mit dem Augenblick, in dem der eine es freigibt und der andere es belegt, wie verdichtet. Ein Element ist ein Freimeldeabschnitt oder, wo es keine gibt, ein Gleisstück.
-- *Konfliktbereich:* was zwei oder mehr Züge des Zeitraums belegen. Das ist ein Freimeldeabschnitt oder ein Gleisstück, in dem sich die belegten Stücke um mehr als 0,5 m überlappen, als eines genommen. Zu jedem Bereich gehören die Züge, die ihn belegen, und die Vereinigung der Zeiten, in denen er belegt ist.
+- *Ausschlaggebendes Belegungselement:* Für jeden Zug der Kette außer dem ersten ist es das Element, an dem seine Sperrzeit die des Zuges berührt, an den er gebunden ist. Unter allem, was beide belegen, ist es das, an dem er am wenigsten früher kommen könnte. Angegeben werden es mit dem Block beider Züge und der Augenblick, in dem der eine es freigibt und der andere es belegt, in der verdichteten Lage. Ein Element ist ein Freimeldeabschnitt oder, wo es keine gibt, ein Gleisstück.
+- *Konfliktbereich:* was zwei oder mehr Züge des Zeitraums belegen. Das ist ein Freimeldeabschnitt oder ein Gleisstück, in dem sich die belegten Stücke um mehr als 0,5 m überlappen; diese zählen als eines. Zu jedem Bereich gehören die Züge, die ihn belegen, und die Vereinigung der Zeiten, in denen er belegt ist.
 - *Im Lageplan:* Die Kapazitäts-Sim zeichnet die Bereiche und die ausschlaggebenden Elemente in einen schematischen Lageplan der Gleise der Variante: jeden Bereich gefärbt nach der Zahl der Züge, die ihn belegen, die ausschlaggebenden Elemente nummeriert.
 
 == Bahnhöfe und Bauzustände
@@ -359,14 +355,14 @@ Ein Bauszenario gehört zu einem Fahrplan (Entscheidung 0014; `constructionScena
 
 == Das Netz des Tages
 
-- *Was es gibt,* ist die Variante im Bauzustand dieses Tages, wie die Lebensdauern aus dem Layout-Tool sie ergeben. Ein Gleis, das noch nicht oder nicht mehr in Betrieb ist, gibt es nicht; ein Szenario muss es nicht sperren.
+- *Was es gibt,* enthält die Variante im Bauzustand dieses Tages, wie ihn die Lebensdauern aus dem Layout-Tool ergeben. Ein Gleis, das noch nicht oder nicht mehr in Betrieb ist, gibt es nicht; ein Szenario muss es nicht sperren.
 - *Die Regelfahrten* sind die Züge des Fahrplans auf diesem Netz, disponiert wie im Fahrplan-Editor, ohne jede Sperrung.
 
 == Sperrungen
 
 - *Eine Sperrung* sperrt ein Stück eines Gleises, von einer Stationierung bis zu einer anderen.
 - *Wann:* vom ersten bis zum letzten Tag, ganztägig oder in einem täglichen Zeitfenster (Sperrpause). Ein Fenster, dessen Ende vor seinem Beginn liegt, reicht über Mitternacht in den nächsten Tag. Eine Sperrung des Vortags reicht deshalb in die frühen Stunden des Tages; gilt sie auch am Folgetag, zählt sie für die Fahrten über Mitternacht.
-- *Kein Weg führt über ein gesperrtes Stück*, nicht um mehr als 0,5 m. Der Rest des Gleises bleibt nutzbar: Ein Zug kann vor der Sperrung halten oder hinter ihr beginnen.
+- *Kein Weg führt über mehr als 0,5 m eines gesperrten Stücks.* Der Rest des Gleises bleibt nutzbar: Ein Zug kann vor der Sperrung halten oder hinter ihr beginnen.
 
 == Welche Züge betroffen sind
 
@@ -375,14 +371,14 @@ Ein Bauszenario gehört zu einem Fahrplan (Entscheidung 0014; `constructionScena
 
 == Umleitung
 
-- *Automatisch:* Ein betroffener Zug fährt den kürzesten Weg, mit dem gesperrt, was ihn betrifft, und behält seine Punkte: seine Halte, Richtungswechsel und Abfahrtszeiten. Wo der Umweg eine weitere Sperrung berührt, wird auch diese für ihn gesperrt, höchstens dreimal.
-- *Von Hand:* Eine von Hand gesetzte Umleitung fährt den Zug auf ihren eigenen Punkten — Weg, Halte, Richtungswechsel, Fahrwege — und geht der gerechneten vor. Was sie berührt, wird für ihn gesperrt wie für jeden.
-- *Nicht fahrbar:* Ein Zug, für den kein Weg bleibt, sagt, an welchem Punkt er keinen fand. Ein Punkt auf einem gesperrten Stück oder einer, der nur darüber erreichbar ist, lässt sich nicht halten; eine Umleitung von Hand ohne ihn schon.
+- *Automatisch:* Ein betroffener Zug fährt den kürzesten Weg, auf dem gesperrt ist, was ihn betrifft, und behält seine Punkte: seine Halte, Richtungswechsel und Abfahrtszeiten. Wo der Umweg eine weitere Sperrung berührt, wird auch diese für ihn gesperrt, höchstens dreimal.
+- *Von Hand:* Eine von Hand gesetzte Umleitung führt den Zug über ihre eigenen Punkte (Weg, Halte, Richtungswechsel, Fahrwege) und geht der gerechneten vor. Was sie berührt, wird für den Zug gesperrt wie für jeden.
+- *Nicht fahrbar:* Ein Zug, für den kein Weg bleibt, sagt, an welchem Punkt er keinen fand. Ein Punkt auf einem gesperrten Stück oder einer, der nur darüber erreichbar ist, lässt sich nicht beibehalten; eine Umleitung von Hand ohne ihn dagegen schon.
 - *Herausgenommen:* Ein herausgenommener Zug fährt nicht und belegt nichts.
 
 == Das Szenario fahren
 
-- Die fahrenden Züge, die regulären eingeschlossen, bekommen das Netz von der Disposition wie im Fahrplan-Editor (siehe „Disposition“), jeder auf seinem Netz mit dem, was für ihn gesperrt ist. Ein umgeleiteter Zug kann deshalb einen nicht betroffenen aufhalten.
+- Die Disposition teilt den fahrenden Zügen, auch den regulären, das Netz zu wie im Fahrplan-Editor (siehe „Disposition“), jedem auf seinem Netz mit dem, was für ihn gesperrt ist. Ein umgeleiteter Zug kann deshalb einen nicht betroffenen aufhalten.
 - Jeder Zug endet in einem Zustand:
 
 #tbl((22%, 1fr),
@@ -394,11 +390,11 @@ Ein Bauszenario gehört zu einem Fahrplan (Entscheidung 0014; `constructionScena
   [herausgenommen], [fährt nicht],
 )
 
-- *Neben dem Fahrplan:* Für jeden Zug seine Ankunft im Szenario und regulär, die Änderung seiner Fahrzeit, seine Verspätung (wie viel später er ankommt als in seiner Regelfahrt), seine Wartezeiten und seine Konflikte.
+- *Neben dem Fahrplan:* Für jeden Zug stehen seine Ankunft im Szenario und regulär, die Änderung seiner Fahrzeit, seine Verspätung (um wie viel später er ankommt als in seiner Regelfahrt), seine Wartezeiten und seine Konflikte.
 
 = Grenzen
 
-Nicht gerechnet werden, teils weil OSRD-Teile nicht portiert sind, teils weil die Suite sie noch nicht nutzt:
+Nicht gerechnet wird Folgendes, teils weil Teile von OSRD nicht portiert sind, teils weil die Suite sie noch nicht nutzt:
 
 - Bremskurven von ETCS und LZB, Fahrerverhalten an Signalen, Signalbegriffe, die Signalisierungssimulation;
 - Wechsel der Traktionsart unterwegs, elektrische Profile, Leistungsgrenzen, Schutzstrecken;
@@ -406,7 +402,7 @@ Nicht gerechnet werden, teils weil OSRD-Teile nicht portiert sind, teils weil di
 - Ausrundungen in der Neigung, eine Bremsverzögerung abhängig von der Geschwindigkeit, der Haftwert;
 - ob das Ende eines haltenden Zuges noch in den Halteplatz oder an den Bahnsteig passt;
 - ob ein Gleis in einer Richtung befahren werden darf (Gleiswechselbetrieb);
-- Anschlüsse, Wenden von einem Zug in einen anderen, Verspätungsszenarien und stochastische Läufe einer Untersuchung (`runs`, `seed`) — sie werden gespeichert;
+- Anschlüsse, Wenden von einem Zug in einen anderen, Verspätungsszenarien und stochastische Läufe einer Untersuchung (`runs`, `seed`; sie werden gespeichert);
 - die Mindesthaltezeit (`leastDwell`) und die Sichtzeit (`sight`);
 - vorgegebene Ankunftszeiten in der Fahrzeitrechnung;
 - im Bauszenario: Langsamfahrstellen an der Baustelle, Bauzüge und ob eine Umleitung über Weg, Traktion und Halte hinaus für den Zug geeignet ist.

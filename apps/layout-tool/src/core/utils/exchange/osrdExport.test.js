@@ -55,23 +55,24 @@ describe('the alignment in curves and slopes', () => {
   const file = exportToOsrd({ tracks: [track] })
   const section = file.track_sections[0]
 
-  it('writes one curve per arc, its values derived from the alignment it carries', () => {
+  it('writes one curve per arc as OSRD reads it, the first carrying the alignment of the whole track', () => {
     expect(section.curves.map(c => [c.radius, c.begin, c.end])).toEqual([[249, 140, 220], [500, 310, 370]])
-    const first = section.curves[0].horizontal_alignment
-    expect(first.epsg).toBe(EPSG)
-    expect(first.element_type).toEqual(['line', 'clothoid', 'arc', 'clothoid', 'line'])
-    expect(first.offsets).toEqual([0, 100, 140, 220, 260, 310])
-    expect(first.coordinates).toHaveLength(6)
-    expect(first.bearing).toHaveLength(6)
-    expect(first.radius_begin).toEqual([null, null, 249, 249, null])
-    expect(first.cant_end).toEqual([0, 80, 80, 0, 0])
+    expect(section.curves[1].horizontal_alignment).toBeUndefined()
+    const a = section.curves[0].horizontal_alignment
+    expect(a.epsg).toBe(EPSG)
+    expect(a.element_type).toEqual(['straight', 'clothoid', 'arc', 'clothoid', 'straight', 'arc'])
+    expect(a.stationing).toEqual([0, 100, 140, 220, 260, 310, 370])
+    expect(a.coordinates).toHaveLength(7)
+    expect(a.bearing_gon).toHaveLength(7)
+    expect(a.begin_radius).toEqual([null, null, 249, 249, null, -500])
+    expect(a.end_cant).toEqual([0, 80, 80, 0, 0, 0])
     expect(section.extensions.db).toBeUndefined()
   })
 
   it('writes one slope per stretch of the heights, the first carrying the heights by column', () => {
     expect(section.slopes).toEqual([
       { gradient: 10.9, begin: 0, end: 200, vertical_alignment: {
-        epsg: 7837, offsets: [0, 200, 370], elevation: [116.12, 118.3, 117.5], vertical_curve_radius: [null, 4000, null],
+        epsg: 7837, stationing: [0, 200, 370], elevation: [116.12, 118.3, 117.5], vertical_curve_radius: [null, 4000, null],
       } },
       { gradient: -4.706, begin: 200, end: 370 },
     ])

@@ -10,7 +10,7 @@ import {
 import {
   newSwitchFields, switchElementMark, LINK_KIND, TRACK_SIDE_OF, TRACK_TYPE_OF, LINE_CATEGORIES, STATUSES, lifespanWithStatus,
 } from '@rail-across/core/track'
-import { kindForOsrdType, bufferStopsToEndMarks } from './alignmentCodec'
+import { kindForOsrdType, bufferStopsToEndMarks, chainFromCurves, heightsFromSlopes } from './alignmentCodec'
 import { withSignedCants } from './fileCants'
 
 const GON2DEG = 9 / 10
@@ -364,7 +364,7 @@ export function parseOsrdRailJson(data) {
   sections.forEach((section, si) => {
     const label = section.id ?? `#${si + 1}`
     const legacy = section.extensions?.db?.alignment
-    const alignment = section.horizontal_alignment ?? legacy
+    const alignment = section.horizontal_alignment ?? chainFromCurves(section.curves) ?? legacy
     if (!alignment) {
       errors.push(`${label}: keine horizontal_alignment – ohne sie ist die Geometrie nicht exakt rekonstruierbar.`)
       return
@@ -462,7 +462,8 @@ export function parseOsrdRailJson(data) {
     // The vertical alignment is the track's own list, stationed along it — it
     // is taken as it is, with no element to fit it to.
     const vertical = section.vertical_alignment ?? {}
-    const heights = (Array.isArray(vertical.vertical_points) ? vertical.vertical_points : [])
+    const fromSlopes = section.vertical_alignment ? null : heightsFromSlopes(section.slopes)
+    const heights = fromSlopes?.points ?? (Array.isArray(vertical.vertical_points) ? vertical.vertical_points : [])
       .map(p => ({
         station: Number(p.station_point_m),
         z: Number(p.elevation),
@@ -470,7 +471,7 @@ export function parseOsrdRailJson(data) {
       }))
       .filter(p => Number.isFinite(p.station) && Number.isFinite(p.z))
       .sort((a, b) => a.station - b.station)
-    const heightEpsg = Number(vertical.vertical_reference?.epsg) || undefined
+    const heightEpsg = fromSlopes?.epsg ?? (Number(vertical.vertical_reference?.epsg) || undefined)
 
     // Per-track passthrough: keep what the export does not regenerate. The
     // sncf fields the app writes itself and an empty loading gauge are

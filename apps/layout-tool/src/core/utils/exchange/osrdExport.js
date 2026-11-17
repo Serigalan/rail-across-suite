@@ -1,36 +1,14 @@
 import { withStationTexts } from '@rail-across/core/document'
-import { wireStretches } from '@rail-across/core/track'
+import { wireStretches, DEFAULT_HEIGHT_EPSG } from '@rail-across/core/track'
 import {
-  exact, round3, buildCoords, totalLength,
-  horizontalElements, startAnchor, endAnchor, switchesToPorts,
+  exact, round3, buildCoords, totalLength, curveEntries, slopeEntries,
+  switchesToPorts,
   platformsToOperationalPoints, endMarksToBufferStops,
 } from './alignmentCodec'
 
 // The OSRD instance this tool's exports are meant for — used by the Data
 // Exchange and Info panels.
 export const OSRD_URL = 'https://osrd.open-layout-tool.org/'
-
-/**
- * DB alignment extension: the design data OSRD's own track_section fields
- * cannot carry — native CRS anchor, gon bearings, and the element chain with
- * signed radii and cants. Read back by osrdImport.
- */
-function dbAlignment(track) {
-  const els = track.elements ?? []
-  if (!els.length) return null
-  const start = startAnchor(track), end = endAnchor(track)
-  return {
-    length_m: exact(totalLength(track)),
-    horizontal_reference: {
-      epsg: start.epsg,
-      easting_m:  start.easting,
-      northing_m: start.northing,
-      bearing_start_gon: start.bearing_gon,
-      bearing_end_gon:   end.bearing_gon,
-    },
-    horizontal_elements: horizontalElements(track),
-  }
-}
 
 /** RailJSON schema this exporter writes. */
 const RAILJSON_VERSION = '3.5.4'
@@ -44,8 +22,9 @@ const EMPTY_INFRA = {
 }
 
 /**
- * RailJSON for OSRD: what it models in its own fields, the rest in
- * extensions.db. `project` is the project record (hydrated).
+ * RailJSON for OSRD: what it models in its own fields, the design data of
+ * the alignment in its `curves` and `slopes` (see curveEntries), the rest in
+ * the extensions. `project` is the project record (hydrated).
  */
 export function exportToOsrd(record) {
   // RailJSON names a station by its name and number: the points' (decision 0006).
@@ -57,25 +36,17 @@ export function exportToOsrd(record) {
 
   // ── track_sections ──────────────────────────────────────────────────────
   const trackSections = tracks.map(track => {
-    const curves = []
-    let station = 0
-    for (const el of track.elements ?? []) {
-      const begin = station
-      station += el.length
-      if (el.elementType === 'arc') curves.push({ end: round3(station), begin: round3(begin), radius: Math.abs(el.radius) })
-    }
-
     // Anything carried over from an import (loading gauge, foreign extensions)
     // sits underneath; the regenerated fields win.
     const kept = track.osrd ?? {}
     return {
-      slopes: [],
       loading_gauge_limits: [],
       ...kept,
       id: track.id,
       geo: { type: 'LineString', coordinates: buildCoords(track) },
       length: round3(totalLength(track)),
-      curves,
+      curves: curveEntries(track),
+      slopes: slopeEntries(track, DEFAULT_HEIGHT_EPSG),
       extensions: {
         source: null,
         ...(kept.extensions ?? {}),
@@ -86,7 +57,6 @@ export function exportToOsrd(record) {
           track_name:   String(track.name      ?? '').trim() || 'default_track',
           track_number: Number(track.trackNumber) || 1,
         },
-        db: { alignment: dbAlignment(track) },
       },
     }
   })

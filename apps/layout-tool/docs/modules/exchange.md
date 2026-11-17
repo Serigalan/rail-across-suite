@@ -16,7 +16,7 @@ converted on the server.
 | File | Direction | Format |
 |---|---|---|
 | `alignmentCodec.js` | both | The element chain as an exchange file states it, shared by the two RailJSON-shaped writers and their reader |
-| `osrdExport.js` | out | OSRD RailJSON (schema 4.0.0) with the DB alignment extension, for an OSRD instance |
+| `osrdExport.js` | out | OSRD RailJSON (schema 4.0.0) with the alignment in `curves` and `slopes`, for an OSRD instance |
 | `exchangeExport.js` | out | The alignment exchange file: RailJSON-shaped, the design data on each track section |
 | `osrdImport.js` | in | Both of the above; rebuilds switches, crossings and links from RailJSON nodes |
 | `railJsonImport.js` | in | What a parsed RailJSON adds to a project: fresh ids, renamed tracks, repointed switches and buffer stops, passthrough of unmodelled objects |
@@ -66,9 +66,17 @@ converted on the server.
 
 Both carry the same element chain — what a polyline cannot express: type, station, length, signed radii, cant
 at both ends of a ramp (from the neighbours, or the transition's own `cantStart`/`cantEnd`), design speed,
-and for a kinked straight its deflection angle. The **OSRD export** writes OSRD's own `track_sections` (with
-its derived curves and slopes) and puts the design data into a DB alignment extension (native CRS anchor, gon
-bearings, the element chain). The **exchange file** is RailJSON-shaped but carries the design data itself on
+and for a kinked straight its deflection angle. The **OSRD export** writes OSRD's own `track_sections` and gives
+their `curves` and `slopes` the design data. A curve (one per arc, `radius`/`begin`/`end` as OSRD reads them, to be
+derived from the alignment and replaced by it) carries a `horizontal_alignment`: the element chain from the arc's
+leading transition up to the next curve's (the first also what lies before, the last what lies after; a track without
+an arc is one curve of radius 0), by column — `epsg`, `offsets` (N+1 stations), `coordinates` (N+1 points),
+`bearing` (N+1 gon: each element's start, the last its end; a kink is the step to the next one), `element_type`
+(`line`, `arc`, `clothoid`, `bloss`), signed `radius_begin`/`radius_end`, `cant_begin`/`cant_end` (mm) and
+`design_speed_kmh` where known. Stations, coordinates and cants are stated to the millimetre, bearings to 1e-7 gon.
+A slope (one per stretch between two height points, `gradient` in ‰) carries a `vertical_alignment` with the
+elevation at `begin` and `end`, a point's `vertical_curve_radius`, and the height datum `epsg`. The import also
+reads the earlier DB alignment extension. The **exchange file** is RailJSON-shaped but carries the design data itself on
 each track section: the horizontal alignment from a native-CRS anchor and the vertical alignment as height
 points; it will not load in OSRD. The `olt` extension carries line category and track use.
 

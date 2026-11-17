@@ -299,7 +299,7 @@ its own:
 
 | Format | What it lacks as the project format |
 |---|---|
-| OSRD RailJSON | Track sections carry polylines and derived curves/slopes, not the design chain; no vertical tangent polygon with vertical curves, no cant ramps, no switch forms of Ril 800.0120 (a switch is a node), no platforms as stationed objects, no variants. The app writes it with a DB alignment extension and keeps unmodelled objects as passthrough. |
+| OSRD RailJSON | OSRD itself reads polylines and the derived curves/slopes, not the design chain; no vertical tangent polygon with vertical curves, no cant ramps, no switch forms of Ril 800.0120 (a switch is a node), no platforms as stationed objects, no variants. The app writes the design data into `curves` and `slopes` (`horizontal_alignment`, `vertical_alignment`) and keeps unmodelled objects as passthrough. |
 | Verm.ESN (TRA/GRA) | One axis per file pair, binary, no plane or datum stated, no topology, no switches, platforms or metadata. |
 | ProVI, Gleislage CSV, DB ASCII (MDB) | Interfaces of other programs and of the DB inventory, each covering part of the model; read, not written (except Verm.ESN). |
 | LandXML | Alignments and profiles, but no switch forms, track topology, cant ramps as the DB rules see them, or the objects the tool adds (end marks, routes, surveys); verbose XML. |

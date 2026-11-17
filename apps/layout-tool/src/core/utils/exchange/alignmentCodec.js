@@ -18,6 +18,7 @@ const DEG2GON = 10 / 9
 export const exact  = (n) => (n == null ? null : Math.round(n * 1e9) / 1e9)
 export const round3 = (n) => (n == null ? null : Math.round(n * 1e3) / 1e3)
 export const round4 = (n) => (n == null ? null : Math.round(n * 1e4) / 1e4)
+const round7 = (n) => (n == null ? null : Math.round(n * 1e7) / 1e7)
 
 /** The track's polyline: the elements' display geometry, joints not repeated. */
 export function buildCoords(track) {
@@ -74,6 +75,148 @@ export function horizontalElements(track) {
     station += el.length ?? 0
     return out
   })
+}
+
+// ── OSRD's curves and slopes carrying the design data ─────────────────────────
+// RailJSON's `curves` (one per arc: radius, begin, end) and `slopes` (one per
+// constant gradient) stay what OSRD reads. Each entry also carries the design
+// data of its stretch — `horizontal_alignment` on a curve, `vertical_alignment`
+// on a slope — and OSRD's own values are derived from it, to be replaced by it.
+
+const TYPE_OUT = { straight: 'line', curve: 'arc', clothoid: 'clothoid', bloss: 'bloss' }
+const TYPE_IN  = { line: 'straight', arc: 'curve', clothoid: 'clothoid', bloss: 'bloss' }
+// A kink the 7 decimals of a bearing cannot tell from rounding.
+const KINK_MIN_GON = 5e-7
+
+/**
+ * The track's element chain split into the entries of `curves`: one per arc, with
+ * the transition leading into it (one between two arcs goes to the second); the
+ * first entry also takes what lies before it, each the straights and transitions
+ * after it up to the next. A track without an arc is one entry of radius 0.
+ *
+ * An entry's `horizontal_alignment` lists its N elements by column: `offsets`
+ * (N+1 stations, m), `coordinates` (N+1 points, the last the end), `bearing`
+ * (N+1 gon: each element's own start, the last its end — a kink is the step
+ * from an element's bearing to the next), `element_type`, signed `radius_begin` /
+ * `radius_end` (null on a line) and `cant_begin` / `cant_end` in mm. Stations,
+ * coordinates and cants are stated to the millimetre, bearings to 1e-7 gon.
+ */
+export function curveEntries(track) {
+  const els = track.elements ?? []
+  if (!els.length) return []
+  const rows = horizontalElements(track)
+  const isArc = (i) => els[i].elementType === 'arc'
+  const starts = []
+  els.forEach((_, i) => {
+    if (!isArc(i)) return
+    starts.push(i > 0 && els[i - 1].elementType === 'transition' && !isArc(i - 1) && !starts.includes(i - 1) ? i - 1 : i)
+  })
+  const cuts = starts.length ? [0, ...starts.slice(1)] : [0]
+  const epsg = Number(track.epsg) || null
+  return cuts.map((from, k) => {
+    const to = k + 1 < cuts.length ? cuts[k + 1] : els.length
+    const part = els.slice(from, to), rowsOf = rows.slice(from, to)
+    const last = part[part.length - 1]
+    const arc = starts.length ? els.findIndex((_, i) => isArc(i) && i >= from && i < to) : -1
+    const station = (i) => rows[i].station_start_m
+    const alignment = {
+      epsg,
+      offsets: [...rowsOf.map(r => round3(r.station_start_m)), round3(station(to - 1) + rows[to - 1].length_m)],
+      coordinates: [...part.map(e => e.startNode), last.endNode].map(([x, y]) => [round3(x), round3(y)]),
+      bearing: [...part.map(e => round7(e.bearing * DEG2GON)), round7((last.endBearing ?? last.bearing) * DEG2GON)],
+      element_type: rowsOf.map(r => TYPE_OUT[r.type]),
+      radius_begin: rowsOf.map(r => r.radius_m ?? r.radius_start_m ?? null),
+      radius_end:   rowsOf.map(r => r.radius_m ?? r.radius_end_m ?? null),
+      cant_begin: rowsOf.map(r => r.cant_start_mm ?? 0),
+      cant_end:   rowsOf.map(r => r.cant_end_mm ?? 0),
+    }
+    if (rowsOf.some(r => r.design_speed_kmh)) alignment.design_speed_kmh = rowsOf.map(r => r.design_speed_kmh ?? null)
+    const [b, e] = arc >= 0
+      ? [station(arc), station(arc) + rows[arc].length_m]
+      : [0, station(els.length - 1) + rows[els.length - 1].length_m]
+    return {
+      radius: arc >= 0 ? round3(Math.abs(els[arc].radius)) : 0,
+      begin: round3(b),
+      end: round3(e),
+      horizontal_alignment: alignment,
+    }
+  })
+}
+
+/**
+ * The element chain the entries of `curves` state, as the import chains it from
+ * the anchor: `{ horizontal_reference, horizontal_elements }`, or null where no
+ * entry carries a `horizontal_alignment`. A kink of a straight is the step from its
+ * bearing to the next one.
+ */
+export function chainFromCurves(curves) {
+  const parts = (Array.isArray(curves) ? curves : [])
+    .map(c => c?.horizontal_alignment)
+    .filter(a => Array.isArray(a?.offsets) && a.offsets.length > 1)
+    .sort((a, b) => a.offsets[0] - b.offsets[0])
+  if (!parts.length) return null
+  const wrap = (d) => ((d + 540) % 360) - 180
+  const items = []
+  for (const a of parts) {
+    for (let i = 0; i + 1 < a.offsets.length; i++) {
+      const type = TYPE_IN[a.element_type?.[i]] ?? 'straight'
+      const item = { type, length_m: a.offsets[i + 1] - a.offsets[i] }
+      const [r1, r2] = [a.radius_begin?.[i] ?? null, a.radius_end?.[i] ?? null]
+      if (type === 'curve') item.radius_m = r1
+      if (type === 'clothoid' || type === 'bloss') { item.radius_start_m = r1; item.radius_end_m = r2 }
+      if (a.cant_begin?.[i]) item.cant_start_mm = a.cant_begin[i]
+      if (a.cant_end?.[i]) item.cant_end_mm = a.cant_end[i]
+      if (a.design_speed_kmh?.[i]) item.design_speed_kmh = a.design_speed_kmh[i]
+      if (type === 'straight') {
+        const kink = wrap((a.bearing[i + 1] - a.bearing[i]) / DEG2GON)
+        if (Math.abs(kink * DEG2GON) > KINK_MIN_GON) item.kink_gon = exact(kink * DEG2GON)
+      }
+      items.push(item)
+    }
+  }
+  const first = parts[0], last = parts[parts.length - 1]
+  const [e0, n0] = first.coordinates[0], [e1, n1] = last.coordinates[last.coordinates.length - 1]
+  return {
+    horizontal_reference: {
+      epsg: first.epsg, start_easting: e0, start_northing: n0, bearing_start_gon: first.bearing[0],
+      end_easting: e1, end_northing: n1, bearing_end_gon: last.bearing[last.bearing.length - 1],
+    },
+    horizontal_elements: items,
+  }
+}
+
+/**
+ * The height points as the entries of `slopes`: one per stretch between two
+ * points, with OSRD's gradient (‰, signed in the direction of the stations) and
+ * the elevations at both ends, a point's vertical curve radius on the end that
+ * is it. The height datum is stated in each entry.
+ */
+export function slopeEntries(track, defaultEpsg) {
+  const points = track.heights ?? []
+  const epsg = Number(track.heightEpsg) || defaultEpsg
+  const at = (p) => ({ elevation: exact(p.z), ...(p.rv == null ? {} : { vertical_curve_radius: exact(p.rv) }) })
+  return points.slice(1).map((q, i) => {
+    const p = points[i]
+    return {
+      gradient: round3(((q.z - p.z) / (q.station - p.station)) * 1000),
+      begin: round3(p.station),
+      end: round3(q.station),
+      vertical_alignment: { begin: at(p), end: at(q), epsg },
+    }
+  })
+}
+
+/** The height points the entries of `slopes` state, in the shape of the track's own list; null where none carries a `vertical_alignment`. */
+export function heightsFromSlopes(slopes) {
+  const list = (Array.isArray(slopes) ? slopes : []).filter(s => s?.vertical_alignment).sort((a, b) => a.begin - b.begin)
+  if (!list.length) return null
+  const points = new Map()
+  const put = (station, v) => {
+    const old = points.get(station) ?? {}
+    points.set(station, { station, z: Number(v.elevation), ...(old.rv != null ? { rv: old.rv } : {}), ...(v.vertical_curve_radius == null ? {} : { rv: Number(v.vertical_curve_radius) }) })
+  }
+  for (const s of list) { put(s.begin, s.vertical_alignment.begin ?? {}); put(s.end, s.vertical_alignment.end ?? {}) }
+  return { points: [...points.values()], epsg: Number(list[0].vertical_alignment.epsg) || undefined }
 }
 
 /** Where the track begins in its own CRS, with the gon bearing it leaves in. */

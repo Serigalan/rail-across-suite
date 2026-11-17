@@ -68,10 +68,12 @@ describe('the alignment in curves and slopes', () => {
     expect(section.extensions.db).toBeUndefined()
   })
 
-  it('writes one slope per stretch of the heights, with the elevations at its ends', () => {
+  it('writes one slope per stretch of the heights, the first carrying the heights by column', () => {
     expect(section.slopes).toEqual([
-      { gradient: 10.9, begin: 0, end: 200, vertical_alignment: { begin: { elevation: 116.12 }, end: { elevation: 118.3, vertical_curve_radius: 4000 }, epsg: 7837 } },
-      { gradient: -4.706, begin: 200, end: 370, vertical_alignment: { begin: { elevation: 118.3, vertical_curve_radius: 4000 }, end: { elevation: 117.5 }, epsg: 7837 } },
+      { gradient: 10.9, begin: 0, end: 200, vertical_alignment: {
+        epsg: 7837, offsets: [0, 200, 370], elevation: [116.12, 118.3, 117.5], vertical_curve_radius: [null, 4000, null],
+      } },
+      { gradient: -4.706, begin: 200, end: 370 },
     ])
   })
 

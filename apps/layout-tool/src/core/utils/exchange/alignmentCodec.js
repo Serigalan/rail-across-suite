@@ -187,36 +187,40 @@ export function chainFromCurves(curves) {
 
 /**
  * The height points as the entries of `slopes`: one per stretch between two
- * points, with OSRD's gradient (‰, signed in the direction of the stations) and
- * the elevations at both ends, a point's vertical curve radius on the end that
- * is it. The height datum is stated in each entry.
+ * points, with OSRD's gradient (‰, signed in the direction of the stations) —
+ * derived from the points, to be replaced by them. The first entry carries the
+ * track's `vertical_alignment` by column: `epsg` (the height datum), `offsets`
+ * (the stations of the points, m), `elevation` and `vertical_curve_radius` (null
+ * where the gradient simply breaks), all to the millimetre.
  */
 export function slopeEntries(track, defaultEpsg) {
   const points = track.heights ?? []
-  const epsg = Number(track.heightEpsg) || defaultEpsg
-  const at = (p) => ({ elevation: exact(p.z), ...(p.rv == null ? {} : { vertical_curve_radius: exact(p.rv) }) })
+  const alignment = {
+    epsg: Number(track.heightEpsg) || defaultEpsg,
+    offsets: points.map(p => round3(p.station)),
+    elevation: points.map(p => round3(p.z)),
+    vertical_curve_radius: points.map(p => round3(p.rv ?? null)),
+  }
   return points.slice(1).map((q, i) => {
     const p = points[i]
     return {
       gradient: round3(((q.z - p.z) / (q.station - p.station)) * 1000),
       begin: round3(p.station),
       end: round3(q.station),
-      vertical_alignment: { begin: at(p), end: at(q), epsg },
+      ...(i === 0 ? { vertical_alignment: alignment } : {}),
     }
   })
 }
 
-/** The height points the entries of `slopes` state, in the shape of the track's own list; null where none carries a `vertical_alignment`. */
+/** The height points the `vertical_alignment` of the entries of `slopes` states, in the shape of the track's own list; null where none does. */
 export function heightsFromSlopes(slopes) {
-  const list = (Array.isArray(slopes) ? slopes : []).filter(s => s?.vertical_alignment).sort((a, b) => a.begin - b.begin)
-  if (!list.length) return null
-  const points = new Map()
-  const put = (station, v) => {
-    const old = points.get(station) ?? {}
-    points.set(station, { station, z: Number(v.elevation), ...(old.rv != null ? { rv: old.rv } : {}), ...(v.vertical_curve_radius == null ? {} : { rv: Number(v.vertical_curve_radius) }) })
-  }
-  for (const s of list) { put(s.begin, s.vertical_alignment.begin ?? {}); put(s.end, s.vertical_alignment.end ?? {}) }
-  return { points: [...points.values()], epsg: Number(list[0].vertical_alignment.epsg) || undefined }
+  const a = (Array.isArray(slopes) ? slopes : []).map(s => s?.vertical_alignment).find(v => Array.isArray(v?.offsets))
+  if (!a) return null
+  const points = a.offsets.map((station, i) => ({
+    station, z: Number(a.elevation?.[i]),
+    ...(a.vertical_curve_radius?.[i] == null ? {} : { rv: Number(a.vertical_curve_radius[i]) }),
+  }))
+  return { points, epsg: Number(a.epsg) || undefined }
 }
 
 /** Where the track begins in its own CRS, with the gon bearing it leaves in. */

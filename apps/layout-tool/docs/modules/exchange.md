@@ -74,8 +74,10 @@ an arc is one curve of radius 0), by column — `epsg`, `offsets` (N+1 stations)
 `bearing` (N+1 gon: each element's start, the last its end; a kink is the step to the next one), `element_type`
 (`line`, `arc`, `clothoid`, `bloss`), signed `radius_begin`/`radius_end`, `cant_begin`/`cant_end` (mm) and
 `design_speed_kmh` where known. Stations, coordinates and cants are stated to the millimetre, bearings to 1e-7 gon.
-A slope (one per stretch between two height points, `gradient` in ‰) carries a `vertical_alignment` with the
-elevation at `begin` and `end`, a point's `vertical_curve_radius`, and the height datum `epsg`. The import also
+A slope (one per stretch between two height points, `gradient` in ‰, derived like the curve's values) is
+followed by the heights: the first carries a `vertical_alignment` by column — `epsg` (the height datum), `offsets`
+(the stations of the points), `elevation` and `vertical_curve_radius` (null where the gradient simply breaks), to the
+millimetre. The import also
 reads the earlier DB alignment extension. The **exchange file** is RailJSON-shaped but carries the design data itself on
 each track section: the horizontal alignment from a native-CRS anchor and the vertical alignment as height
 points; it will not load in OSRD. The `olt` extension carries line category and track use.

@@ -32,7 +32,7 @@
 
 = Zweck
 
-rail-across-1.0 beschreibt ein Eisenbahnprojekt in *einer* JSON-Datei (`.railacross.json`): seine Infrastruktur und seinen Betrieb. Es ist die Grundlage des Datenmodells der Rail-Across-Suite: Was hier steht, ist das, was die Werkzeuge halten, austauschen und versionieren.
+rail-across-1.0 beschreibt ein Eisenbahnprojekt in *einer* JSON-Datei: seine Infrastruktur und seinen Betrieb. Es ist die Grundlage des Datenmodells der Rail-Across-Suite: Was hier steht, ist das, was die Werkzeuge halten, austauschen und versionieren.
 
 - *infra-data-1.0* hält den Planungsstand der Infrastruktur: das Gleisnetz mit seiner Trassierung und seinen Höhen, Weichen und Gleisenden, Bezugsdaten wie Kilometrierungslinien und Betriebsstellen, die Halteplätze — und darauf die Layer der Fachgebiete: Bahnsteige und Ingenieurbauwerke (`civil`), die Leit- und Sicherungstechnik (`signalling`), die Oberleitung (`electrification`).
 - *operations-1.0* hält den Betrieb: die Fahrzeuge (`vehicles`) und die Fahrpläne mit ihren Zügen, Zuggattungen, Zugbildungen, Anschlüssen und Wenden, Verspätungsszenarien und Kapazitätsuntersuchungen (`timetables`).
@@ -55,12 +55,14 @@ Das Format folgt sieben Grundsätzen:
 
 #tbl((20%, 24%, 1fr),
   [Name], [Endung], [Inhalt],
-  [rail-across-1.0], [`.railacross.json`], [die Datei: das Projekt, das erzeugende Programm und der Zeitpunkt, die Teile, die Blobs],
+  [rail-across-1.0], [`.railacross` (Container), `.railacross.json`], [die Datei: das Projekt, das erzeugende Programm und der Zeitpunkt, die Teile, die Blobs],
   [infra-data-1.0], [— (ein Teil der Datei)], [die Domäne `core` und die Layer `civil`, `signalling`, `electrification`],
   [operations-1.0], [— (ein Teil der Datei)], [die Domänen `vehicles` und `timetables`],
 )
 
 Eine Datei hält einen Teil oder beide. Ein Projektserver hält sie getrennt — die Infrastruktur in Revisionen je Variante, den Betrieb in eigenen Revisionen —, eine Datei führt sie für den Austausch zusammen.
+
+Ausgetauscht wird eine Datei in einem *Container* `.railacross`: einem Zip-Archiv, dessen erster Eintrag `mimetype` ist — unkomprimiert und ohne Zusatzfeld gespeichert, mit dem Inhalt `application/vnd.rail-across+zip`, sodass der Medientyp ab Byte 38 steht — und dessen zweiter die Datei selbst ist, `project.json`, komprimiert. Entpackt ist `project.json` Byte für Byte die Datei. Das JSON allein, mit der Endung `.railacross.json`, wird ebenso gelesen. Leerraum im JSON hat keine Bedeutung; ein Leser nimmt eine eingerückte und eine kompakte Datei gleich.
 
 == Die Hülle
 

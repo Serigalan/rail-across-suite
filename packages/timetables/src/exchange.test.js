@@ -56,7 +56,7 @@ describe('an operations file (operations-1.0, decisions 0012 and 0006)', () => {
     const read = readTimetables(JSON.stringify(file))
     expect(read.timetables).toEqual([{ name: 'Takt', data: { trains: [train('t1', 'osrd:loco'), train('t2', 'own-1')] } }])
     expect(read.vehicles.map(v => v.key).sort()).toEqual(['osrd:loco', 'own-1'])
-    expect(operationsFileName('Halle')).toBe('Halle – Fahrpläne.railacross.json')
+    expect(operationsFileName('Halle')).toBe('Halle – Fahrpläne.railacross')
     // the file of before is still read
     expect(readTimetables(JSON.stringify(timetablesFile(timetables))).timetables).toEqual([{ name: 'Takt', data: timetables[0].data }])
   })

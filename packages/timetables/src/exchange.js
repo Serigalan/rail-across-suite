@@ -1,4 +1,4 @@
-import { checkOperations, contentHash, fileParts, fromOperations, isOperationsFile, isProjectFile, projectFile, toOperations } from '@rail-across/core/document'
+import { checkOperations, CONTAINER_EXTENSION, contentHash, fileParts, fromOperations, isOperationsFile, isProjectFile, projectFile, toOperations } from '@rail-across/core/document'
 
 /**
  * A project's timetables as a file of their own, beside the project's backup
@@ -100,7 +100,7 @@ export const operationsProjectFile = (timetables, entries = [], meta = {}) =>
   projectFile({ operations: operationsFile(timetables, entries) }, { savedAt: new Date().toISOString(), ...meta })
 
 /** The name a project's operations are saved under, alone. */
-export const operationsFileName = (title) => `${title} – Fahrpläne.railacross.json`
+export const operationsFileName = (title) => `${title} – Fahrpläne${CONTAINER_EXTENSION}`
 
 /**
  * What a parsed file of timetables brings — an operations file, or one of

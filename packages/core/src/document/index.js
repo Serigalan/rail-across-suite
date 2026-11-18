@@ -22,6 +22,7 @@ export {
 } from './door.js'
 export { PayloadError } from './payloadError.js'
 export { FILE_FORMAT, FILE_VERSION, fileParts, isProjectFile, projectFile } from './file.js'
+export { CONTAINER_ENTRY, CONTAINER_EXTENSION, CONTAINER_TYPE, fileText, isContainer, toContainer } from './container.js'
 export { sha256Hex, sha256OfText } from './sha256.js'
 export { viaNative } from './viaNative.js'
 export {

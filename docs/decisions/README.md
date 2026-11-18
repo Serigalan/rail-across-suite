@@ -42,7 +42,7 @@ A record has up to three parts beside its reasons:
 
 | Where | What |
 |---|---|
-| [0002](0002-project-name.md) | the trademark; a zip container and its media type — before the first public release |
+| [0002](0002-project-name.md) | the trademark; the container's media type registered — before the first public release |
 | [0005](0005-rust-computes-javascript-shows.md) | the page's views in the document's terms; the rest of the JavaScript core |
 | [0008](0008-core-and-layers.md) | rights per layer; sketches — once several disciplines work apart on one project |
 | [0009](0009-signalling.md) | the values of Ril 819.0202 and Ril 483 |

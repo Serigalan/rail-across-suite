@@ -26,6 +26,7 @@ writes canonical JSON and content hashes. The `project` module opens the door fo
 | `sha256.js` | SHA-256, synchronous, in plain JavaScript (the browser's `crypto.subtle` only answers asynchronously) |
 | `manifest.js` | The manifest of a document — per domain the hash of its fields and of each collection, the hash tree of the data model — and the document's hash |
 | `payloadError.js` | `PayloadError`: the code the UI translates, and the breaches found |
+| `container.js` | The container `.railacross` (decision 0002): `toContainer` (a file rail-across-1.0 zipped, `mimetype` first and stored so the media type stands at byte 38, then the file itself as the entry project.json), `isContainer` (told by the first bytes), `fileText` (a chosen file's JSON text — the file a container holds, or the bytes as they are) |
 
 ## The document
 

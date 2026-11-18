@@ -3,7 +3,7 @@
 // variants, who may change what, and the backup files a project goes out
 // and comes in as — its timetables in a file beside. All of it is the
 // server's, the core's and the timetables'; nothing here knows a tool.
-import { fileParts, isProjectFile, projectFile } from '@rail-across/core/document'
+import { CONTAINER_EXTENSION, fileParts, isProjectFile, projectFile } from '@rail-across/core/document'
 import { parseProjectsPayload, PayloadError, projectDocument, withImportSystem } from '@rail-across/core/project'
 import { isTimetablesData, timetablesOf } from '@rail-across/timetables/exchange'
 
@@ -87,7 +87,7 @@ function importedProjects(text, fileName = '') {
   return incoming.map(p => {
     const { image, id: _id, ...record } = withImportSystem(p)
     return {
-      title: p.title || fileName.replace(/(\.railacross)?\.json$/i, ''),
+      title: p.title || fileName.replace(/\.railacross(\.json)?$|\.json$/i, ''),
       description: p.description ?? '',
       record,
       image: image ?? null,
@@ -134,4 +134,4 @@ export function exportedDocument(record, { title, image = null, operations = nul
 }
 
 /** The name a backup file is saved under. */
-export const exportFileName = (project, variant) => `${project.title} – ${variant.name}.railacross.json`
+export const exportFileName = (project, variant) => `${project.title} – ${variant.name}${CONTAINER_EXTENSION}`

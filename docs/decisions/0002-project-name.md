@@ -1,12 +1,16 @@
 # 0002 — The project's name: Rail-Across-Suite
 
-Status: **accepted** · as of 2026-11-17
+Status: **accepted** · as of 2026-11-18
 
 ## Decision
 
 - The project is called **Rail-Across-Suite**, with the subtitle *railway planning across disciplines*. In running
   text and in speech its short form is **Rail-Across**.
-- A project is exchanged as **rail-across-1.0** in one file ending in **`.railacross.json`** (0006).
+- A project is exchanged as **rail-across-1.0** (0006) in a zip container ending in **`.railacross`**. Its first
+  entry is `mimetype`, stored uncompressed and without an extra field, holding `application/vnd.rail-across+zip`
+  — so the media type stands at byte 38, and a program tells the file by its content, as OpenDocument and EPUB
+  are told —; its second is the file itself, `project.json`, compressed. Unzipped, `project.json` is the file
+  byte for byte. A file `.railacross.json` alone — the same JSON, not zipped — is read as well.
 - The modules are named by their task: Layout-Tool, Signalling-Tool, … (0003). "Open" is no part of a module's
   name; the suite's name says what it is.
 
@@ -18,6 +22,9 @@ Status: **accepted** · as of 2026-11-17
 - *Across* says what is particular about the project: one model across all disciplines. *Rail* names the field,
   *Suite* says that it is a set of applications.
 - Neither the name nor its short form met a product in the searches, and `.railacross` is unambiguous.
+- The container makes a file a fraction of its JSON: the line Halle–Könnern of the desktop app's template is
+  670 kB as JSON written without indentation and 183 kB compressed. Compression is lossless, so long, readable
+  keys cost next to nothing, and a container can carry further entries beside the file should that be wanted.
 
 ## Names considered
 
@@ -40,6 +47,5 @@ Searched on 2026-10-29 against existing products and file extensions; no tradema
 
 - **The trademark.** *Across* is a brand of Across Systems GmbH for translation software — another market, but
   software as well. The name is checked in the registers of the DPMA and the EUIPO.
-- **A container and its media type.** Whether a zip container `.railacross` comes beside the JSON file — its first
-  entry an uncompressed `mimetype` holding `application/vnd.rail-across+zip`, as OpenDocument and EPUB identify
-  themselves —, and if so, its media type registered with the IANA.
+- **The media type registered.** `application/vnd.rail-across+zip` is registered with the IANA in the vendor
+  tree.

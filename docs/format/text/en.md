@@ -1,6 +1,6 @@
 # Purpose
 
-rail-across-1.0 describes a railway project in **one** JSON file (`.railacross.json`): its infrastructure and its
+rail-across-1.0 describes a railway project in **one** JSON file: its infrastructure and its
 operation. It is the basis of the data model of the Rail-Across-Suite: what is written here is what the tools
 keep, exchange and version.
 
@@ -41,12 +41,18 @@ The format follows seven principles:
 <!-- cols: 20%, 24%, 1fr -->
 | Name | Extension | Content |
 |---|---|---|
-| rail-across-1.0 | `.railacross.json` | the file: the project, the program that wrote it and when, the parts, the blobs |
+| rail-across-1.0 | `.railacross` (container), `.railacross.json` | the file: the project, the program that wrote it and when, the parts, the blobs |
 | infra-data-1.0 | — (a part of the file) | the domain `core` and the layers `civil`, `signalling`, `electrification` |
 | operations-1.0 | — (a part of the file) | the domains `vehicles` and `timetables` |
 
 A file holds one part or both. A project server keeps them apart — the infrastructure in revisions per
 variant, the operation in revisions of its own — and a file brings them together for exchange.
+
+A file is exchanged in a **container** `.railacross`: a zip archive whose first entry is `mimetype`, stored
+uncompressed and without an extra field, holding `application/vnd.rail-across+zip` — so the media type stands at
+byte 38 —, and whose second is the file itself, `project.json`, compressed. Unzipped, `project.json` is the file
+byte for byte. The JSON alone, ending in `.railacross.json`, is read as well. Whitespace in the JSON has no
+meaning; a reader takes an indented file and a compact one alike.
 
 ## The envelope
 

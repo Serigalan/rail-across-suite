@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { currentProject } from '../../../storage'
 import { parseProjectsPayload, PayloadError } from '@rail-across/core/project'
-import { readFileText } from '../../../utils/common'
+import { fileParts, isProjectFile } from '@rail-across/core/document'
+import { readProjectFileText } from '../../../utils/common'
 import { useI18n } from '../../../locales/i18nContext'
 import { useProject } from '../../../hooks/useStore'
 import FilePickButton from '../../form/FilePickButton'
@@ -20,7 +21,8 @@ export default function CompareSection({ onShowCompare }) {
   const compare = async (file) => {
     setError(null)
     try {
-      const { projects } = parseProjectsPayload(JSON.parse(await readFileText(file)))
+      const data = JSON.parse(await readProjectFileText(file))
+      const { projects } = parseProjectsPayload(isProjectFile(data) ? fileParts(data).infra : data)
       const theirs = projects.find(p => p.id === project?.id) ?? projects[0]
       if (!theirs) { setError(t('compare_no_project')); return }
       const { image: _image, ...before } = theirs
@@ -36,7 +38,7 @@ export default function CompareSection({ onShowCompare }) {
 
   return (
     <ExchangeSection title={t('compare_with_file')} description={t('compare_with_file_desc')}>
-      <FilePickButton accept=".json,application/json" disabled={!project} onFile={compare}>
+      <FilePickButton accept=".railacross,.json,application/json" disabled={!project} onFile={compare}>
         {t('compare_with_file')}
       </FilePickButton>
       {error && <p className="msg-error msg-small">{error}</p>}

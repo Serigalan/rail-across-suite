@@ -1,18 +1,20 @@
 import { useState } from 'react'
 import { exportProjectDocument } from '../../../storage'
 import { PayloadError } from '@rail-across/core/project'
-import { downloadJSON } from '../../../utils/common'
+import { CONTAINER_EXTENSION, projectFile } from '@rail-across/core/document'
+import { downloadContainer } from '../../../utils/common'
 import { useI18n } from '../../../locales/i18nContext'
 import { useProject, useTracks } from '../../../hooks/useStore'
 import MessageList from '../../form/MessageList'
 import ExchangeSection from './ExchangeSection'
 
 /**
- * The whole project as a file: its infra-data-1.0 document (.railacross.json). A
- * project the document's schemas refuse is not written at first, and what
- * they found is shown — a click that does nothing would leave the user
- * guessing. It can then be written anyway, to be looked at or mended
- * elsewhere; the import will refuse it as it stands.
+ * The whole project as a file rail-across-1.0 in its container (.railacross;
+ * decision 0002). A project the document's schemas refuse is not written at
+ * first, and what they found is shown — a click that does nothing would leave
+ * the user guessing. It can then be written anyway, its document as it stands
+ * in the container, to be looked at or mended elsewhere; the import will
+ * refuse it as it stands.
  */
 export default function ProjectSection() {
   const { t, fill } = useI18n()
@@ -23,7 +25,9 @@ export default function ProjectSection() {
   const exportIt = ({ check = true } = {}) => {
     setErrors([])
     try {
-      downloadJSON(exportProjectDocument({ check }), `${project.title || 'project'}.railacross.json`)
+      const doc = exportProjectDocument({ check })
+      const file = check ? projectFile({ infra: doc }, { savedAt: new Date().toISOString() }) : doc
+      downloadContainer(file, `${project.title || 'project'}${CONTAINER_EXTENSION}`)
     } catch (err) {
       setErrors([t('data_exchange_export_failed'), ...(err instanceof PayloadError ? err.details.slice(0, 5) : [err.message])])
     }

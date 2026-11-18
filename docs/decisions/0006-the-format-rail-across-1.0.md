@@ -4,7 +4,7 @@ Status: **accepted** · as of 2026-11-17 · the specification is [rail-across-1.
 
 ## Decision
 
-1. **One file, two parts.** A project is exchanged as **rail-across-1.0** (`.railacross.json`): an envelope naming
+1. **One file, two parts.** A project is exchanged as **rail-across-1.0** (in its container `.railacross`, 0002): an envelope naming
    the project (`projectId`), the program that wrote it and when (`generator`, `savedAt`), and two parts —
    **infra-data-1.0** with the domain `core` and the layers `civil`, `signalling` and `electrification` (0008), and
    **operations-1.0** with the domains `vehicles` and `timetables` (0012) — and the bulk data both share as blobs,

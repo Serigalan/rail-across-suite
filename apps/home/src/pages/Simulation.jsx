@@ -10,7 +10,7 @@ import { splitProjects, variantTree } from '../projects'
 import { useLocalChanges } from '../localChanges'
 import { ProjectHead, VariantLine } from './projects/ProjectCard'
 import { CopyTemplateDialog } from './projects/dialogs'
-import { download } from '../download'
+import { chosenText, download, FILE_ACCEPT } from '../download'
 
 /**
  * The page of a module that works on a variant — the Fahrplan-Sim —: what it
@@ -56,7 +56,7 @@ export default function Simulation({ route, user, projects, onReload = async () 
     if (!files.length || !project) return
     say(null)
     try {
-      const read = (await Promise.all(files.map(f => f.text()))).map(readTimetables)
+      const read = (await Promise.all(files.map(chosenText))).map(readTimetables)
       const vehicles = read.flatMap(r => r.vehicles)
       let timetables = read.flatMap(r => r.timetables)
       // The vehicles the file carries that the catalogue lacks, made in it first.
@@ -83,7 +83,7 @@ export default function Simulation({ route, user, projects, onReload = async () 
         <span className="ra-mode-icon"><ModuleIcon id={module.id} /></span>
         <span className="ra-mode-text">{t(`module_${module.id}_open`)}</span>
       </div>
-      <input ref={fileRef} type="file" accept=".json,application/json" multiple hidden onChange={importTimetables} />
+      <input ref={fileRef} type="file" accept={FILE_ACCEPT} multiple hidden onChange={importTimetables} />
       {error && <p className="ui-error ra-line" role="alert">{error}</p>}
       {notice && <p className="ui-ok" role="status">{notice}</p>}
       {projects.error && <p className="ui-error" role="alert">{t('projects_error')}</p>}

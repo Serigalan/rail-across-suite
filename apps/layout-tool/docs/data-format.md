@@ -29,7 +29,7 @@ everything behind it may take the model for granted.
 
 | Where | How the project is kept |
 |---|---|
-| Exported file (*.railacross.json) | the infra-data-1.0 document, carrying its schemas; the project image embedded as data URL `image` |
+| Exported file (*.railacross) | the file rail-across-1.0 in its container (decision 0002), its part infra-data-1.0 the project's document; the project image embedded as data URL `image`. Written anyway against the schemas' findings, the container holds the document as it stands, carrying its schemas |
 | Exported tracks (*_tracks.railacross.json) | an infra-data-1.0 document of these tracks alone |
 | Browser | IndexedDB `olt` › `workingCopies`: the document being edited and that of its base revision (`@rail-across/working-copy`) |
 | Project server | table `revision`: the infra-data-1.0 document gzip-compressed in `payload`, `schema_version` 4; the image as a blob referenced by `imageHash`. Rows of the forms before (3, the core 1.0 document; 2, oltjson-1.1) are rewritten once by the data step `0021-infra-data`; any other is refused as `format_outdated` |

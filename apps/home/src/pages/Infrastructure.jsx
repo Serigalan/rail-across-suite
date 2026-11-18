@@ -6,6 +6,7 @@ import { api } from '../api'
 import { useTexts } from '../i18n'
 import { errorText } from '../useAction'
 import { importedFiles, splitProjects } from '../projects'
+import { chosenText, FILE_ACCEPT } from '../download'
 import { withCarriedVehicles } from '@rail-across/timetables/exchange'
 import { catalogueEntries, createVehicle } from '../vehicleCatalogue'
 import { splitDataUrl } from '../projectImages'
@@ -126,7 +127,7 @@ export default function Infrastructure({ toolId, more = false, user, projects, o
     say(null)
     let incoming
     try {
-      incoming = importedFiles(await Promise.all(files.map(async f => ({ name: f.name, text: await f.text() }))))
+      incoming = importedFiles(await Promise.all(files.map(async f => ({ name: f.name, text: await chosenText(f) }))))
     } catch (err) {
       setError(errorText(t, err.code))
       return
@@ -169,7 +170,7 @@ export default function Infrastructure({ toolId, more = false, user, projects, o
       <div className="home-section-head">
         <h2>{t('projects')}</h2>
         <div className="home-section-actions">
-          <input ref={importRef} type="file" accept=".json,application/json" multiple hidden onChange={handleImport(false)} />
+          <input ref={importRef} type="file" accept={FILE_ACCEPT} multiple hidden onChange={handleImport(false)} />
           <button type="button" className="ui-btn ui-btn-primary" onClick={() => { say(null); setDialog({ kind: 'new' }) }}>{t('project_new')}</button>
           <button type="button" className="ui-btn" onClick={() => importRef.current?.click()}>{t('project_import')}</button>
         </div>
@@ -200,7 +201,7 @@ export default function Infrastructure({ toolId, more = false, user, projects, o
           <h2>{t('templates')}</h2>
           {isAdmin && (
             <div className="home-section-actions">
-              <input ref={templateRef} type="file" accept=".json,application/json" multiple hidden onChange={handleImport(true)} />
+              <input ref={templateRef} type="file" accept={FILE_ACCEPT} multiple hidden onChange={handleImport(true)} />
               <button type="button" className="ui-btn ui-btn-primary" onClick={() => templateRef.current?.click()}>{t('template_import')}</button>
             </div>
           )}

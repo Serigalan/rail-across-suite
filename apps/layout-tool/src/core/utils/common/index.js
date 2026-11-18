@@ -6,7 +6,7 @@
 // the module's own business. See docs/modules/common.md.
 
 export { niceStep, stepDecimals, ticks } from './chartAxes'
-export { downloadBlob, downloadJSON, downloadText, readFileBuffer, readFileText } from './fileUtils'
+export { downloadBlob, downloadContainer, downloadJSON, downloadText, readFileBuffer, readFileText, readProjectFileText } from './fileUtils'
 export { clamp, formatNumber } from './format'
 export { isMultilineTarget, isProjectRedo, isProjectUndo } from './keyboard'
 export { fileToLogo } from './logoImage'

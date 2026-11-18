@@ -39,8 +39,11 @@ calculation. Two reasons:
 - A zone guessed from a point can be the wrong plane altogether. Germany's tracks are surveyed in
   Gauss-Krüger strips of different datums; the same coordinate means different places in each.
 
-The one exception in the whole app are the kilometrage lines (`km` module): foreign reference data, kept in
-WGS84 as delivered.
+The kilometrage lines are held in a plane too (decision 0006): `crates/geom/src/km_line.rs` reads a line in
+either form a project holds it in — in its plane, each run with its design elements or its points, or in WGS84
+as records of before and the line files shipped with the app give it — and gives its runs in a plane or in
+WGS84 to draw (`kmLineRuns`), a line of WGS84 in the UTM plane of its first point (`kmLineInPlane`), and the
+kilometre at a point: on a run of elements the station along them, on a run of points between them.
 
 ### Coordinate systems
 

@@ -152,13 +152,13 @@ export function mdbKmLines(payload, lines, box) {
     const clipped = box ? clipRuns(runs, box) : runs
     if (!clipped.length) continue
     const lineNumber = /^\d+$/.test(line) ? Number(line) : line
-    // The design keeps the runs the box touches whole: elements are not cut, and the door draws the line from them.
+    // In its plane, as the document keeps a km line (decision 0006): the runs the box touches, whole — elements
+    // are not cut. A line laid out in more than one plane stays in WGS84, cut to the box.
     const kept = design.get(line)
     const touched = kept ? kept.runs.filter((_, i) => !box || clipRuns([runs[i]], box).length) : []
-    out.push({
-      id: kmLineId(lineNumber), lineNumber, crs: 'EPSG:4326', clip: box, runs: clipped, source: 'mdb',
-      ...(touched.length ? { design: { epsg: kept.epsg, runs: touched } } : {}),
-    })
+    out.push(touched.length
+      ? { id: kmLineId(lineNumber), lineNumber, epsg: kept.epsg, runs: touched, source: 'mdb' }
+      : { id: kmLineId(lineNumber), lineNumber, crs: 'EPSG:4326', clip: box, runs: clipped, source: 'mdb' })
   }
   return out
 }

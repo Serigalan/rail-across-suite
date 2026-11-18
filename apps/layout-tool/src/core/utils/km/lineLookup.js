@@ -1,5 +1,6 @@
 import { fetchKmLine, clipRuns, kmDataUrl } from './kmLineSource'
 import { planeRuns, kmOnRuns } from './kmLineUtils'
+import { kmLineRuns } from '@rail-across/core/track'
 import { utmToWgs84, arcPlanePoints } from '@rail-across/core/geometry'
 
 /**
@@ -173,7 +174,7 @@ async function lineDataIn(lineNumber, box, epsg, local = null) {
   const lineName = file?.lineName ?? local?.lineName ?? null
   const clipped = local?.source ? [] : clipRuns(file?.chainage, box)
   if (clipped.length) return { runs: planeRuns({ runs: clipped }, epsg), lineName }
-  const own = local ? clipRuns(local.runs, box) : []
+  const own = local ? clipRuns(kmLineRuns(local), box) : []
   return { runs: own.length ? planeRuns({ runs: own }, epsg) : null, lineName }
 }
 

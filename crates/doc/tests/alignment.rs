@@ -162,17 +162,21 @@ mod km_lines {
     use super::*;
     use rail_across_doc::core_format::document_to_record;
     use rail_across_doc::door::{check_document, to_document};
+    use rail_across_geom::km_line::{km_at, wgs84_runs};
 
-    /// A record with a km line whose design gives one run by its elements, another by its points.
-    fn record(design_rows: Vec<Value>) -> Value {
+    const POINTS: &str = r#"[[500600.0, 5700000.0, 13000.0], [500700.0, 5700000.0, 12900.0]]"#;
+
+    /// A record with a km line in its plane: one run by its elements, another by its points.
+    fn record(rows: Vec<Value>) -> Value {
+        let points: Value = serde_json::from_str(POINTS).unwrap();
         json!({
             "id": "p", "tracks": [], "switches": [], "platforms": [],
             "kmLines": [{
-                "id": "km-6050", "lineNumber": 6050, "crs": "EPSG:4326", "runs": [], "source": "vermesn",
-                "design": { "epsg": 25832, "runs": [
-                    { "kmStart": 12400.0, "counting": "up", "elements": design_rows },
-                    { "kmStart": 13000.0, "counting": "down", "points": [[500600.0, 5700000.0, 13000.0], [500700.0, 5700000.0, 12900.0]] },
-                ] },
+                "id": "km-6050", "lineNumber": 6050, "epsg": 25832, "source": "vermesn",
+                "runs": [
+                    { "kmStart": 12400.0, "counting": "up", "elements": rows },
+                    { "kmStart": 13000.0, "counting": "down", "points": points },
+                ],
             }],
         })
     }
@@ -190,7 +194,7 @@ mod km_lines {
     }
 
     #[test]
-    fn a_km_line_with_its_design_goes_by_column_and_comes_back() {
+    fn a_km_line_goes_by_column_and_comes_back_in_its_plane() {
         let doc = to_document(&record(rows()), false, true).unwrap_or_else(|e| panic!("refused ({e})"));
         let line = &doc["domains"]["core"]["collections"]["kmLines"][0];
         assert_eq!(line["epsg"], 25832);
@@ -200,17 +204,68 @@ mod km_lines {
         assert!(line["runs"][1]["points"].is_string(), "the run of points a blob");
         let back = document_to_record(&check_document(&doc).unwrap()).unwrap();
         let km = &back["kmLines"][0];
-        assert_eq!(km["design"]["epsg"], 25832);
-        let elements = km["design"]["runs"][0]["elements"].as_array().unwrap();
+        assert_eq!(km["epsg"], 25832);
+        assert!(
+            km.get("crs").is_none() && km.get("design").is_none(),
+            "the record holds the line as the document does"
+        );
+        let elements = km["runs"][0]["elements"].as_array().unwrap();
         assert_eq!(elements.len(), 6);
         assert!(elements.iter().all(|e| e.get("cant").is_none()), "a km line has no cant");
-        assert_eq!(km["design"]["runs"][1]["points"].as_array().unwrap().len(), 2);
-        assert!(km["runs"][0].as_array().unwrap().len() > 40, "the run drawn in WGS 84 from its elements");
+        assert_eq!(km["runs"][1]["points"].as_array().unwrap().len(), 2);
         assert_eq!(to_document(&back, false, true).unwrap(), doc);
     }
 
     #[test]
-    fn a_km_lines_design_that_does_not_hold_together_is_refused() {
+    fn a_record_of_before_is_read_by_its_design_or_its_points() {
+        let doc = to_document(&record(rows()), false, true).unwrap();
+        // The record of the last build: the points of WGS 84 to draw, the line itself beside them.
+        let mut before = record(rows());
+        let line = before["kmLines"][0].take();
+        before["kmLines"][0] = json!({
+            "id": line["id"], "lineNumber": line["lineNumber"], "source": line["source"], "crs": "EPSG:4326",
+            "runs": [[[9.0, 51.4, 12400.0], [9.001, 51.4, 12470.0]]],
+            "design": { "epsg": line["epsg"], "runs": line["runs"] },
+        });
+        assert_eq!(to_document(&before, false, true).unwrap(), doc);
+        // A record of before that, its points of WGS 84 alone: a run of points in the UTM plane of the first.
+        before["kmLines"][0].as_object_mut().unwrap().shift_remove("design");
+        let points = to_document(&before, false, true).unwrap();
+        let line = &points["domains"]["core"]["collections"]["kmLines"][0];
+        assert_eq!(line["epsg"], 25832);
+        assert!(line["runs"][0]["points"].is_string());
+    }
+
+    #[test]
+    fn a_kilometre_on_elements_is_the_station_along_them() {
+        let line = record(rows())["kmLines"][0].clone();
+        // 30 m along the arc (it begins at 160 m): the kilometre 12400 + 190, the point on the axis.
+        let arc = &line["runs"][0]["elements"][2];
+        let start = (arc["startNode"][0].as_f64().unwrap(), arc["startNode"][1].as_f64().unwrap());
+        let at = arc_end(start, arc["bearing"].as_f64().unwrap(), 30.0, arc["radius"].as_f64().unwrap());
+        let (km, offset) = km_at(&line, [at.0, at.1], 25832).unwrap();
+        assert!((km - 12590.0).abs() < 1e-6, "{km}");
+        assert!(offset < 1e-6);
+        // On the run of points, between them; counting down.
+        let (km, _) = km_at(&line, [500650.0, 5700001.0], 25832).unwrap();
+        assert!((km - 12950.0).abs() < 1e-9, "{km}");
+        // Drawn in WGS 84 from its elements.
+        assert!(wgs84_runs(&line, 5.0)[0].len() > 80);
+    }
+
+    /// Where an arc of signed radius `r` leads from `start` on `bearing` after `length`.
+    fn arc_end(start: (f64, f64), bearing: f64, length: f64, r: f64) -> (f64, f64) {
+        let s = rail_across_geom::element::Utm {
+            e: start.0,
+            n: start.1,
+            zone: 0,
+        };
+        let e = rail_across_geom::element::end_point_curved(s, bearing, length, r);
+        (e.e, e.n)
+    }
+
+    #[test]
+    fn a_km_lines_elements_that_do_not_hold_together_are_refused() {
         let mut design = rows();
         design[3]["startNode"][0] = json!(design[3]["startNode"][0].as_f64().unwrap() + 0.005);
         let e = to_document(&record(design), false, true).unwrap_err();

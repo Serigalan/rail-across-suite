@@ -33,7 +33,7 @@ the plan export of the PEK Bestand asked them 15,000 times and took 4.5 s, here 
 | `crates/track/src/platforms.rs` | Platforms anchored to a track by two stations; stationing helpers (`pointAtStation`, `stationOnTrack`, `pointOnElement`); carrying platforms when their track turns round or goes into another (`carryPlatforms`, `flipPlatforms`) |
 | `crates/track/src/platforms.rs` | The platform dialog's fields and the record they make |
 | `crates/track/src/routes.rs` | Routes: named runs of connected tracks with their own stationing |
-| `crates/track/src/topology.rs` | The kilometrage of a track point against the project's kilometrage lines (`project.kmLines`), measured in the track's plane |
+| `crates/track/src/topology.rs` | The kilometrage of a track point against the project's kilometrage lines (`project.kmLines`), measured in the track's plane — on a line's design elements exactly, on its points between them (`crates/geom/src/km_line.rs`); `kmLineRuns` and `kmLineInPlane` for drawing a line and for holding a fetched one in its plane |
 | `crates/track/src/groups.rs` | Grouping tracks by line or station for lists and assignment; the name of a line track from its kilometrage |
 | `crates/track/src/status.rs` | Planning status (existing / new / removal) of tracks and switches |
 | `crates/track/src/bands.rs` | Curvature, cant and speed bands over the station |

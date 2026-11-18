@@ -11,6 +11,7 @@ import { FILTER_NONE } from '../map/pick'
 import { highlightTopology, zoomToTopologyTracks } from '../map/topologyLayer'
 import { selectionHighlight } from '@rail-across/core/topology'
 import { ensureKmLines } from '../utils/km'
+import { fitShippedKmLine } from '../utils/exchange'
 import { isMultilineTarget, isProjectRedo, isProjectUndo, loadSettings, saveSettings } from '../utils/common'
 import { escapeAction, frontHandler } from './escape'
 import useKmLineHover from '../hooks/useKmLineHover'
@@ -246,11 +247,12 @@ export default function MapWorkspace({ onHome, beforeHome, homeKey, resetKey = 0
   }
 
   // The kilometrage lines the tracks name are fetched in the background,
-  // after every change of the tracks and once on opening. Nothing on screen
-  // waits for them — they are read when a plan is drawn.
+  // after every change of the tracks and once on opening, and fitted into
+  // design elements where their points allow (decision 0006). Nothing on
+  // screen waits for them — they are read when a plan is drawn.
   const syncKmLines = useCallback(() => {
     const asked = currentProject()
-    ensureKmLines(asked)
+    ensureKmLines(asked, { fit: fitShippedKmLine })
       .then(({ save, remove, errors }) => {
         // Another project may have been opened while the lines were fetched.
         if (currentProject()?.id !== asked?.id) return

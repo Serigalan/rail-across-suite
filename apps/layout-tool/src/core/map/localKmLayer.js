@@ -1,3 +1,4 @@
+import { kmLineRuns } from '@rail-across/core/track'
 import { toMercator } from '../utils/km'
 import { PALETTE } from '../styles/palette'
 import { textFont } from './kmLineLayer'
@@ -35,7 +36,7 @@ export function localKmFeatures(kmLines) {
   const marks = []
   for (const kmLine of kmLines ?? []) {
     const lineNumber = String(kmLine.lineNumber)
-    for (const run of kmLine.runs ?? []) {
+    for (const run of kmLineRuns(kmLine)) {
       if (run.length < 2) continue
       lines.push({
         type: 'Feature', properties: { lineNumber },
@@ -143,7 +144,7 @@ export function localKmAt(map, event, kmLines, tolerance = 8) {
   let best = null
   for (const kmLine of kmLines) {
     if (!near.has(String(kmLine.lineNumber))) continue
-    for (const run of kmLine.runs ?? []) {
+    for (const run of kmLineRuns(kmLine)) {
       for (let i = 1; i < run.length; i++) {
         const [alon, alat, akm] = run[i - 1]
         const [blon, blat, bkm] = run[i]
@@ -178,7 +179,7 @@ export function localLineDistances(kmLines, centre) {
   const nearest = new Map()
   for (const kmLine of kmLines ?? []) {
     const lineNumber = String(kmLine.lineNumber)
-    for (const run of kmLine.runs ?? []) {
+    for (const run of kmLineRuns(kmLine)) {
       for (let i = 0; i < run.length; i++) {
         const [ax, ay] = toMercator(run[i][0], run[i][1])
         const [bx, by] = i + 1 < run.length ? toMercator(run[i + 1][0], run[i + 1][1]) : [ax, ay]

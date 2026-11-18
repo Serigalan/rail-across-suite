@@ -1,3 +1,4 @@
+import { kmLineRuns } from '@rail-across/core/track'
 import { setKmLinesHidden, setTracksHidden } from '../../../storage'
 import { useHiddenKmLines, useHiddenTracks, useProject, useTracks } from '../../../hooks/useStore'
 import GroupedTrackList from '../GroupedTrackList'
@@ -10,10 +11,10 @@ const SOURCE_KEYS = { vermesn: 'track_visibility_km_source_vermesn', mdb: 'track
 /** A kilometrage in kilometres to the metre: 163417.026 m → "163,417". */
 const kmText = (metres) => (metres / 1000).toFixed(3).replace('.', ',')
 
-/** The kilometrages a line covers, lowest and highest, or null. */
+/** The kilometrages a line covers, lowest and highest, or null — its elements' or its points'. */
 function kmRange(kmLine) {
   let lo = Infinity, hi = -Infinity
-  for (const run of kmLine.runs ?? []) {
+  for (const run of kmLineRuns(kmLine)) {
     for (const [, , km] of run) {
       if (km < lo) lo = km
       if (km > hi) hi = km

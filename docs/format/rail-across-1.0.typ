@@ -479,7 +479,7 @@ The hashes are shortened here; in a file each has its 64 hex digits.
 This specification is the target of the data model. As of 13 November 2026 the suite's implementation differs from it in these points, each to be brought in line by its own step (decision 0006 and those after it):
 
 - The project server keeps a variant's infrastructure as a document of the envelope of before (infra-data 2.0: its domains and its blobs, core 6.0, civil 3.0, signalling 4.0, electrification 3.0) and the operation as an operations document (vehicles 1.0, timetables 1.2); the file rail-across-1.0 brings them together, and a file of before is still read.
-- The record the tools work on keeps km lines in WGS 84 with the kilometrage per point, for drawing and reading the kilometrage, and beside it the design elements a source gave (`design`); the door writes the design by column. A km line of before, and one shipped with the app, is kept as points, not yet fitted with design elements.
+- A km line shipped with the app is fitted into design elements when it is fetched only where the fit stays within 1 cm of every point; its files give points a centimetre apart at best, so its runs mostly keep their points.
 - A domain the reader does not know is kept; one of a later version of a domain it knows is refused, not read with the version it knows.
 
 #pagebreak()

@@ -294,13 +294,12 @@ export const kmDesignElement = (el) => Object.fromEntries(KM_ELEMENT_KEYS.filter
 
 /**
  * Kilometrage lines (readAxis, with their `name` and `epsg`) as the `kmLines`
- * a project keeps (mdbKmLine): one per line number, WGS84 runs of
- * `[lon, lat, metres]` from the elements' drawn lines, a new run wherever the
- * kilometrage jumps — and beside them the line's design (`design`: its plane
- * and per run its kilometrage at the start, the way it counts and its
- * elements), which the project keeps as core 6.0 states a km line (decision
- * 0006). Marked `source: 'vermesn'`, so the shipped line of that number is not
- * fetched over it.
+ * a project keeps, as the document keeps a km line (decision 0006): one per
+ * line number, in its plane, a run wherever the kilometrage jumps, each with
+ * its kilometrage at the start, the way it counts and its design elements. The
+ * axes of one line in two planes give it in WGS84 instead, runs of
+ * `[lon, lat, metres]` from the elements' drawn lines. Marked
+ * `source: 'vermesn'`, so the shipped line of that number is not fetched over it.
  */
 export function kmLineEntries(kmAxes) {
   const byNumber = new Map()
@@ -335,10 +334,9 @@ export function kmLineEntries(kmAxes) {
       at = s0 + len
     })
   }
-  return [...byNumber].map(([lineNumber, { runs, design, epsg }]) => ({
-    id: kmLineId(lineNumber), lineNumber, crs: 'EPSG:4326', runs: runs.filter(r => r.length >= 2), source: 'vermesn',
-    ...(epsg && design.length ? { design: { epsg, runs: design } } : {}),
-  }))
+  return [...byNumber].map(([lineNumber, { runs, design, epsg }]) => (epsg && design.length
+    ? { id: kmLineId(lineNumber), lineNumber, epsg, runs: design, source: 'vermesn' }
+    : { id: kmLineId(lineNumber), lineNumber, crs: 'EPSG:4326', runs: runs.filter(r => r.length >= 2), source: 'vermesn' }))
 }
 
 // ── Batch (.zip) ────────────────────────────────────────────────────────────

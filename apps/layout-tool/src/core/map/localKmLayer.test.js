@@ -15,6 +15,18 @@ describe('localKmFeatures', () => {
     expect(marks.features[0].properties.lineNumber).toBe('6340')
   })
 
+  it('draws a line held in its plane from its elements, and one of points from its points', () => {
+    const straight = { elementType: 'straight', startNode: [500000, 5700000], endNode: [500250, 5700000], bearing: 90, length: 250 }
+    const { lines, marks } = localKmFeatures([{
+      lineNumber: 6050, epsg: 25832, runs: [
+        { kmStart: 12400, counting: 'up', elements: [straight] },
+        { kmStart: 13000, counting: 'down', points: [[500600, 5700000, 13000], [500700, 5700000, 12900]] },
+      ],
+    }])
+    expect(lines.features).toHaveLength(2)
+    expect(marks.features.map(f => f.properties.label)).toEqual(['12,4', '12,5', '12,6', '12,9', '13,0'])
+  })
+
   it('has nothing for no lines', () => {
     expect(localKmFeatures(undefined).lines.features).toEqual([])
   })

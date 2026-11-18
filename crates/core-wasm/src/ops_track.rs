@@ -230,6 +230,13 @@ pub fn run(op: &str, input: &Value) -> Option<Result<Value, Failure>> {
                 .map(|r| r.into_iter().map(|p| json!([number(p[0]), number(p[1]), number(p[2])])).collect::<Vec<_>>())
                 .collect::<Vec<_>>()
         )),
+        "track.kmLineRuns" => ok(json!(
+            tp::km_line_runs(a.v(0))
+                .into_iter()
+                .map(|r| r.into_iter().map(|p| json!([number(p[0]), number(p[1]), number(p[2])])).collect::<Vec<_>>())
+                .collect::<Vec<_>>()
+        )),
+        "track.kmLineInPlane" => ok(rail_across_geom::km_line::in_plane(a.v(0)).unwrap_or(Value::Null)),
         "track.kmForTrackPoint" => ok(tp::km_for_track_point(
             &a.list(0),
             a.v(1),

@@ -6,7 +6,7 @@
 
 use std::collections::{HashMap, HashSet, VecDeque};
 
-use rail_across_geom::coords::{crs_name, plane_to_wgs84, transform_grid_bearing, transform_plane_point, wgs84_to_plane};
+use rail_across_geom::coords::{crs_name, plane_to_wgs84, transform_grid_bearing, transform_plane_point};
 use rail_across_geom::element::resolve_end_bearing;
 use rail_across_js::{Object, cmp_utf16, js_round, js_string, number, strict_eq, truthy};
 use serde_json::{Value, json};
@@ -528,29 +528,15 @@ pub fn link_symbol(sw: &Value, tracks: &[Value]) -> Value {
 
 // ── Kilometrage (kmLines.js) ────────────────────────────────────────────────
 
-/// A kilometrage line's runs in a plane (`planeRuns`).
+/// A kilometrage line's runs in a plane as points [easting, northing, km] (`planeRuns`): from either form a
+/// project holds a line in (`km_line`), a run of elements sampled.
 pub fn plane_runs(km_line: &Value, epsg: i64) -> Vec<Vec<[f64; 3]>> {
-    km_line
-        .get("runs")
-        .and_then(Value::as_array)
-        .into_iter()
-        .flatten()
-        .map(|run| {
-            run.as_array()
-                .into_iter()
-                .flatten()
-                .map(|p| {
-                    let (lon, lat, km) = (
-                        p[0].as_f64().unwrap_or(f64::NAN),
-                        p[1].as_f64().unwrap_or(f64::NAN),
-                        p[2].as_f64().unwrap_or(f64::NAN),
-                    );
-                    let (e, n) = wgs84_to_plane(lon, lat, epsg).unwrap_or((f64::NAN, f64::NAN));
-                    [e, n, km]
-                })
-                .collect()
-        })
-        .collect()
+    rail_across_geom::km_line::plane_runs(km_line, epsg, rail_across_geom::km_line::DRAW_STEP)
+}
+
+/// A kilometrage line's runs in WGS 84 as [lon, lat, km] (`kmLineRuns`): what a map draws, from either form.
+pub fn km_line_runs(km_line: &Value) -> Vec<Vec<[f64; 3]>> {
+    rail_across_geom::km_line::wgs84_runs(km_line, rail_across_geom::km_line::DRAW_STEP)
 }
 
 /// The kilometre nearest a plane point on runs (`kmOnRuns`): (km, offset).
@@ -585,7 +571,8 @@ pub fn km_for_track_point(km_lines: &[Value], track: &Value, point: [f64; 2]) ->
     let candidates: Vec<&Value> = if named.is_empty() { km_lines.iter().collect() } else { named };
     let mut best: Option<(f64, f64, Value)> = None;
     for line in candidates {
-        let Some((km, offset)) = km_on_runs(&plane_runs(line, epsg(track)), point) else {
+        // On a run of elements exactly, on a run of points between them (`km_line::km_at`).
+        let Some((km, offset)) = rail_across_geom::km_line::km_at(line, point, epsg(track)) else {
             continue;
         };
         if best.as_ref().is_some_and(|b| offset >= b.1) {

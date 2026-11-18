@@ -15,6 +15,7 @@
  * where the kilometrage is actually read off (kmLineUtils).
  */
 
+import { kmLineInPlane, kmLineRuns } from '@rail-across/core/track'
 import { kmLineId } from './kmLineUtils'
 
 // Guarded, so the module also loads outside Vite — the clipping below is what
@@ -87,6 +88,29 @@ const contains = ([aMinLon, aMinLat, aMaxLon, aMaxLat], [minLon, minLat, maxLon,
   aMinLon <= minLon && aMinLat <= minLat && aMaxLon >= maxLon && aMaxLat >= maxLat
 
 /**
+ * Whether a kept stretch of a line still covers the box around the tracks: the
+ * box the line was cut to, read off its own extent widened by twice the margin
+ * — along the line it reaches the box's border, across it the tracks lie within
+ * the margin of it. The line is held in its plane (decision 0006) and keeps no
+ * box of its own.
+ */
+function covers(line, box) {
+  let minLon = Infinity, minLat = Infinity, maxLon = -Infinity, maxLat = -Infinity
+  for (const run of kmLineRuns(line)) {
+    for (const [lon, lat] of run) {
+      if (lon < minLon) minLon = lon
+      if (lon > maxLon) maxLon = lon
+      if (lat < minLat) minLat = lat
+      if (lat > maxLat) maxLat = lat
+    }
+  }
+  if (!Number.isFinite(minLon)) return false
+  const dLat = 2 * MARGIN_M / 111320
+  const dLon = 2 * MARGIN_M / (111320 * Math.cos(((minLat + maxLat) / 2) * Math.PI / 180))
+  return contains([minLon - dLon, minLat - dLat, maxLon + dLon, maxLat + dLat], box)
+}
+
+/**
  * The parts of `runs` inside `box`, each kept as its own run.
  *
  * A run leaving and re-entering the box becomes two, which costs nothing: runs
@@ -121,10 +145,16 @@ export function clipRuns(runs, box) {
  * have since grown out of. Lines no track names any more are to be dropped.
  * Nothing is written here: the caller stores `save` and removes `remove`.
  *
+ * A fetched line is kept as the document keeps a km line (decision 0006): in
+ * the UTM plane its first point lies in, its runs as points — each fitted into
+ * design elements by `fit(line)` where one is given (importFit
+ * fitShippedKmLine), which keeps a run's points where the fit misses them.
+ *
  * @param {{ tracks?: object[], kmLines?: object[] }} project
+ * @param {{ fit?: (line: object) => Promise<object> }} [options]
  * @returns {Promise<{ save: object[], remove: string[], added: string[], errors: Array<{ lineNumber, code }> }>}
  */
-export async function ensureKmLines(project) {
+export async function ensureKmLines(project, { fit = null } = {}) {
   const tracks = project?.tracks ?? []
   const box = projectBox(tracks)
   const result = { save: [], remove: [], added: [], errors: [] }
@@ -145,7 +175,7 @@ export async function ensureKmLines(project) {
     // shipped line over it.
     const covering = held.filter((l) => String(l.lineNumber) === lineNumber)
     if (covering.some((l) => l.source)) continue
-    if (covering.length && covering.every((l) => l.clip && contains(l.clip, box))) continue
+    if (covering.length && covering.every((l) => covers(l, box))) continue
 
     let file
     try {
@@ -159,13 +189,8 @@ export async function ensureKmLines(project) {
       // The id follows from the line number: two people fetching the same
       // line for the same tracks get the same record, which a merge then
       // takes as one rather than as two new ones that differ.
-      result.save.push({
-        id: kmLineId(file.lineNumber),
-        lineNumber: file.lineNumber,
-        crs: file.crs ?? 'EPSG:4326',
-        clip: box,
-        runs: clipped,
-      })
+      const line = kmLineInPlane({ id: kmLineId(file.lineNumber), lineNumber: file.lineNumber, runs: clipped })
+      result.save.push(fit ? await fit(line) : line)
       result.added.push(lineNumber)
     } else {
       result.errors.push({ lineNumber, code: 'out_of_range' })   // the line runs elsewhere entirely

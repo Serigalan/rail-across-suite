@@ -4,22 +4,31 @@ import { vehicleUrl } from '../suite.js'
 import { formatDistance } from '@rail-across/running-times'
 
 /**
- * The train to simulate: its vehicle from the catalogue — shown in the
+ * The net it runs over — the variant's, or one of OSRD's the server holds,
+ * offered where there is one —; the train to simulate: its vehicle from the catalogue — shown in the
  * Fahrzeug-Editor, in a tab of its own —, with the traction
  * mode it runs in — the net does not say yet where there is which overhead
  * line — and the comfort its curve is for; where it starts, the stops on the way
- * with how long it stands, where it ends — each a signal, a platform or a
- * point picked on the map —, its margin and how it is spread; the path
+ * with how long it stands, where it ends — each a signal, a platform, a
+ * station of OSRD's net or a point picked on the map —, its margin and how it is spread; the path
  * found over the net, what the net lacks along it, and the button that runs it.
  */
 export default function RuntimeTrain(props) {
-  const { t, language, places, catalogue, entry, vehicle, chooseVehicle, modes, mode, comforts, comfort, setTraction, start, setStart, end, setEnd, stops, setStops, margin, setMargin, marginText, distribution, setDistribution, picking, setPicking, route, run, stale, busy, go } = props
+  const { t, language, nets, netId, chooseNet, netLoading, netError, places, catalogue, entry, vehicle, chooseVehicle, modes, mode, comforts, comfort, setTraction, start, setStart, end, setEnd, stops, setStops, margin, setMargin, marginText, distribution, setDistribution, picking, setPicking, route, run, stale, busy, go } = props
   const length = route?.path ? route.offsets.at(-1) : null
   const gaps = run?.properties?.gaps
   const traction = run?.properties?.traction
   return (
-    <Panel title={t('section_train')} intro={t('section_train_intro')}
+    <Panel title={t('section_train')} intro={t(netId == null ? 'section_train_intro' : 'section_train_intro_osrd')}
       foot={<Button variant="primary" disabled={!route?.path || marginText == null || busy || !vehicle} onClick={go}>{busy ? t('running') : t('run')}</Button>}>
+      {(nets.length > 0 || netId != null) && (
+        <Section title={t('net')}>
+          <SelectField wide label={t('net')} value={netId} empty={t('net_variant')} onChange={chooseNet}
+            options={[...nets.map(n => ({ value: n.id, label: t('net_osrd', { name: n.name }) })), ...(netId != null && !nets.some(n => n.id === netId) ? [{ value: netId, label: netId }] : [])]} />
+          {netLoading && <p className="ui-muted">{t('net_loading')}</p>}
+          {netError && <Message tone="error">{t('net_failed')}</Message>}
+        </Section>
+      )}
       <Section title={t('vehicle')} actions={entry && <a className="ui-link" href={vehicleUrl(entry.key)} target="_blank" rel="noopener" title={t('vehicle_show_title')}>{t('vehicle_show')}</a>}>
         {catalogue.loading ? <p className="ui-muted">{t('loading')}</p> : !vehicle ? <Message tone="warn">{t('fleet_empty')}</Message> : <>
           <div className="ui-fields">
@@ -67,22 +76,24 @@ export default function RuntimeTrain(props) {
       )}
       {gaps && !stale && (gaps.heights.length > 0 || gaps.speed.length > 0) && (
         <Message tone="info">
-          {[gaps.heights.length && t('gaps_heights', { length: formatDistance(gaps.heights.reduce((s, g) => s + g.end - g.begin, 0), language) }),
-            gaps.speed.length && t('gaps_speed', { length: formatDistance(gaps.speed.reduce((s, g) => s + g.end - g.begin, 0), language) })].filter(Boolean).join(' ')}
+          {[gaps.heights.length && t(netId == null ? 'gaps_heights' : 'gaps_heights_osrd', { length: formatDistance(gaps.heights.reduce((s, g) => s + g.end - g.begin, 0), language) }),
+            gaps.speed.length && t(netId == null ? 'gaps_speed' : 'gaps_speed_osrd', { length: formatDistance(gaps.speed.reduce((s, g) => s + g.end - g.begin, 0), language) })].filter(Boolean).join(' ')}
         </Message>
       )}
     </Panel>
   )
 }
 
-/** A place: chosen from the signals and platforms, or picked on the map. */
+/** The places to choose from: OSRD's stations, the signals and the platforms. */
+const listed = (places) => [...(places.stations ?? []), ...places.signals, ...places.platforms]
+
+/** A place: chosen from the stations, signals and platforms, or picked on the map. */
 function PlaceField({ label, place, onChange, kind, places, picking, setPicking, t }) {
   const options = [
-    ...places.signals.map(p => ({ value: p.id, label: p.label })),
-    ...places.platforms.map(p => ({ value: p.id, label: p.label })),
+    ...listed(places).map(p => ({ value: p.id, label: p.label })),
     ...(place?.id.startsWith('map:') ? [{ value: place.id, label: place.label }] : []),
   ]
-  const find = (id) => [...places.signals, ...places.platforms].find(p => p.id === id) ?? (place?.id === id ? place : null)
+  const find = (id) => listed(places).find(p => p.id === id) ?? (place?.id === id ? place : null)
   return (
     <div className="sim-place">
       <SelectField wide label={label} value={place?.id ?? null} empty={t('choose')} options={options} onChange={(id) => onChange(id ? find(id) : null)} />
@@ -93,7 +104,7 @@ function PlaceField({ label, place, onChange, kind, places, picking, setPicking,
 
 /** A stop added: a place from the lists, or one picked on the map. */
 function AddStop({ places, picking, setPicking, setStops, t }) {
-  const all = [...places.signals, ...places.platforms]
+  const all = listed(places)
   return (
     <div className="sim-place">
       <SelectField wide label={t('add_stop')} value={null} empty={t('choose')} options={all.map(p => ({ value: p.id, label: p.label }))}

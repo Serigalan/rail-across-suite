@@ -24,6 +24,8 @@ pub struct Settings {
     pub secure_cookie: bool,
     pub trust_proxy: Vec<String>,
     pub cloud_root: Option<PathBuf>,
+    /// OSRD's nets as RailJSON files, laid there by hand (`RA_SERVER_OSRD`).
+    pub osrd_root: Option<PathBuf>,
     /// Tests: the clock comes from `x-ra-test-now`, the peer from `x-ra-test-remote`, and /api/__test answers.
     pub test_mode: bool,
     /// The local package (decision 0005): no user management, one implicit local user.
@@ -67,6 +69,7 @@ impl Default for Settings {
             secure_cookie: true,
             trust_proxy: vec!["127.0.0.1".into(), "::1".into()],
             cloud_root: None,
+            osrd_root: None,
             test_mode: false,
             local: false,
             static_root: None,

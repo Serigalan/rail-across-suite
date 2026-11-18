@@ -120,7 +120,7 @@ export default function RunChart({ run, profile, length, offsets, labels, at, t,
         {result
           ? <Tabs value={view} onChange={setView} options={[{ value: 'speed', label: t('chart_speed') }, { value: 'time', label: t('chart_time') }]} label={t('chart')} />
           : <span className="sim-chart-title">{t('chart_profile')}</span>}
-        {result && <RunLegend view={view} t={t} />}
+        {result && <RunLegend view={view} osrd={run.properties?.speedLimits?.[0]?.source === 'osrd'} t={t} />}
         {readout && <span className="sim-readout">{readout}</span>}
       </div>
       <div ref={box} className="sim-chart-box" onPointerMove={onMove} onPointerLeave={() => setHover(null)}>
@@ -132,11 +132,13 @@ export default function RunChart({ run, profile, length, offsets, labels, at, t,
 }
 
 /** The lines of the run in their words: the speed's four, the time's two. */
-function RunLegend({ view, t }) {
-  const lines = view === 'speed' ? ['design', 'signalled', 'base', 'final'] : ['base', 'final']
+function RunLegend({ view, osrd, t }) {
+  const lines = view === 'speed' ? (osrd ? ['design', 'base', 'final'] : ['design', 'signalled', 'base', 'final']) : ['base', 'final']
+  // Over a net of OSRD's the speeds are its speed sections', and no signal signals one.
+  const label = (k) => t(osrd && k === 'design' ? 'chart_design_osrd' : `chart_${k}`)
   return (
     <div className="sim-legend">
-      {lines.map(k => <span key={k} className="sim-legend-item"><svg width="22" height="8" aria-hidden="true"><line x1="0" y1="4" x2="22" y2="4" className={`sim-line-${k}`} /></svg>{t(`chart_${k}`)}</span>)}
+      {lines.map(k => <span key={k} className="sim-legend-item"><svg width="22" height="8" aria-hidden="true"><line x1="0" y1="4" x2="22" y2="4" className={`sim-line-${k}`} /></svg>{label(k)}</span>)}
     </div>
   )
 }

@@ -13,7 +13,7 @@
 //!   rail-across-server cloudjobs run <job>          prepare one cloud
 //!   rail-across-server cloudjobs exec <run>         one long run
 //!
-//! The database is RA_SERVER_DB (default ./rail-across.sqlite), the clouds RA_SERVER_CLOUDS.
+//! The database is RA_SERVER_DB (default ./rail-across.sqlite), the clouds RA_SERVER_CLOUDS, OSRD's nets RA_SERVER_OSRD.
 
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -45,6 +45,15 @@ fn clouds_path(db: &str) -> PathBuf {
         let abs = std::fs::canonicalize(Path::new(db).parent().filter(|p| !p.as_os_str().is_empty()).unwrap_or(Path::new(".")))
             .unwrap_or_else(|_| PathBuf::from("."));
         abs.join("clouds")
+    })
+}
+
+/// OSRD's nets (`RA_SERVER_OSRD`): by default `osrd/` beside the database.
+fn osrd_path(db: &str) -> PathBuf {
+    env("RA_SERVER_OSRD").map(PathBuf::from).unwrap_or_else(|| {
+        let abs = std::fs::canonicalize(Path::new(db).parent().filter(|p| !p.as_os_str().is_empty()).unwrap_or(Path::new(".")))
+            .unwrap_or_else(|_| PathBuf::from("."));
+        abs.join("osrd")
     })
 }
 
@@ -136,6 +145,7 @@ fn serve(db: &str, args: &[String]) {
     let mut settings = Settings {
         secure_cookie: env("RA_SERVER_INSECURE_COOKIE").as_deref() != Some("1"),
         cloud_root: clouds.clone(),
+        osrd_root: Some(osrd_path(db)),
         test_mode: env("RA_SERVER_TEST").as_deref() == Some("1"),
         ..Settings::default()
     };

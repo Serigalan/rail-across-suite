@@ -40,7 +40,11 @@ where there is one, else its head, and only read; the timetables are the project
   its own — a vehicle, a start, stops and an end among signals, platforms and points picked on the map, a margin —,
   its result (running times, the times at its stops, energy, the run played on the map), the speed and the height
   over its way under the map. It keeps its state while the timetables are shown; `&section=runtime` opens it, and the
-  Simulation-Tool's old address (`simulation/`) leads on to it.
+  Simulation-Tool's old address (`simulation/`) leads on to it. Instead of the variant's net it runs over one of
+  **OSRD's nets** the server holds (RailJSON files laid into its directory by hand, `RA_SERVER_OSRD`), where there
+  is one: chosen under *Netz*, it is shown on the map, its operational points are the places to start, stop and
+  end at besides points on the map, and its slopes, curves, speed sections and electrification are what the train
+  runs with.
 - **Bildfahrplan**: every train along the way of one, the stations across at their distances, the time downwards;
   under each, the blocks it holds over time (Sperrzeitentreppe), red where two trains hold one at once.
 

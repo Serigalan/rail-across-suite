@@ -4,6 +4,7 @@ import { runtimeTexts } from './texts.js'
 import { RuntimePanel } from './Runtime.jsx'
 import { useRuntime } from './useRuntime.js'
 import RuntimeResult from './RuntimeResult.jsx'
+import RuntimeTrain from './RuntimeTrain.jsx'
 import RunChart from './RunChart.jsx'
 import { formatTime, pointAt } from '@rail-across/running-times'
 import { linkedRequest, vehicleUrl } from '../suite.js'
@@ -46,6 +47,21 @@ describe('computing a running time', () => {
     expect(html).toContain('Hausen Gl. 1')
     expect(html).toContain('energiesparend (MARECO)')
     expect(html).toMatch(/<button[^>]*disabled[^>]*>Fahrzeit rechnen/)
+  })
+
+  it('offers the server\'s OSRD nets, and on one its stations as the places', () => {
+    const props = {
+      t, language: 'de', nets: [{ id: 'morocco.railjson', name: 'morocco' }], netId: 'morocco.railjson', chooseNet: () => {}, netLoading: false, netError: null,
+      places: { signals: [], platforms: [], stations: [{ id: 'osrd:1', label: 'Casa Voyageurs', loc: { trackId: 'a', station: 0 } }] },
+      catalogue: { entries: [], loading: true }, start: null, end: null, stops: [], margin: '5', marginText: '5%', distribution: 'mareco', picking: null, route: null, run: null,
+    }
+    const html = de(<RuntimeTrain {...props} />)
+    expect(html).toContain('<option value="">Netz der Variante</option>')
+    expect(html).toMatch(/<option value="morocco.railjson" selected="">OSRD: morocco<\/option>/)
+    expect(html).toContain('Casa Voyageurs')
+    expect(html).toContain('ein OSRD-Netz des Servers')
+    // without nets on the server, the variant's net alone and no choice
+    expect(de(<RuntimeTrain {...props} nets={[]} netId={null} places={{ signals: [], platforms: [] }} />)).not.toContain('>Netz der Variante</option>')
   })
 
   it('shows the running times and the timetable of a run', () => {

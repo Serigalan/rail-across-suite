@@ -353,6 +353,8 @@ fn start_main(app: &tauri::AppHandle, smoke: bool) -> Result<(), String> {
         let settings = Settings {
             secure_cookie: false,
             cloud_root: Some(clouds.clone()),
+            // OSRD's nets for Fahrzeit rechnen: RailJSON files laid into `osrd/` of the working files.
+            osrd_root: Some(data.join("osrd")),
             local: true,
             static_root: Some(site.clone()),
             ..Settings::default()

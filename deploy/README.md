@@ -138,6 +138,7 @@ und verliert dabei die `import`-Zeile — danach wieder anfügen und `docker res
 | Gelände-Kacheln (Cache) | `/var/lib/rail-across/terrain-cache` |
 | NTv2-Gitter für PROJ | `/var/lib/rail-across/share/proj/` |
 | Punktwolken | `/var/lib/rail-across/clouds/<Projekt>/<Wolke>/` (`RA_CLOUDS`), **nicht** in der täglichen Kopie |
+| OSRD-Netze für *Fahrzeit rechnen* | `/var/lib/rail-across/osrd/<Name>.json` (`RA_OSRD`): RailJSON-Dateien, von Hand hineingelegt, lesbar für den Dienstnutzer; **nicht** in der täglichen Kopie |
 
 Dazu vor jedem Neustart durch `deploy.sh` eine Kopie `rail-across-JJJJ-MM-TT-predeploy-HHMMSS.sqlite`. Gesichert
 wird nur auf dieser Maschine. Wiederherstellen: `systemctl stop rail-across-server rail-across-cloudjobs`,

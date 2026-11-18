@@ -21,15 +21,27 @@ import { electrifiedAlong, tractionFor } from './traction.js'
  * planning area. `turns` the offsets where the train turns: the signals'
  * speeds are found on each part run one way.
  */
-export function simulationRequest(record, path, { vehicle, traction = {}, stops = [], margin = null, startSpeed = 0, endSpeed = null, timeStep = 2, turns = [] }) {
+export function simulationRequest(record, path, opts) {
   const properties = pathProperties(record, path)
-  const signalled = turnsApart(path, turns)
+  const signalled = turnsApart(path, opts.turns ?? [])
     .flatMap(part => signalledSpeeds(record, part.path).map(l => ({ ...l, begin: l.begin + part.offset, end: l.end + part.offset })))
+  const planned = (record?.electrification?.collections?.contactWires ?? []).length > 0
+  return requestFrom(properties, { ...opts, signalled, electrified: electrifiedAlong(record, path), planned })
+}
+
+/**
+ * The request from what a way holds, whatever net it runs over — the
+ * variant's (simulationRequest) or one of OSRD's (osrd.js): `properties`
+ * pathProperties' { length, gradients, speedLimits, gaps }, `signalled` the
+ * speeds the signals signal along it, `electrified` the ranges under wire
+ * (electrifiedAlong's), `planned` whether the net's electrification is
+ * planned at all; the train and its run as simulationRequest takes them.
+ */
+export function requestFrom(properties, { signalled = [], electrified = [], planned = false, vehicle, traction = {}, stops = [], margin = null, startSpeed = 0, endSpeed = null, timeStep = 2 }) {
   const length = properties.length
   const limits = governedLimits(properties.speedLimits, signalled)
   if (endSpeed != null && Number.isFinite(endSpeed)) limits.push({ begin: Math.max(0, length - 1), end: length, speed: endSpeed, source: 'boundary' })
-  const planned = (record?.electrification?.collections?.contactWires ?? []).length > 0
-  const chosen = tractionFor(vehicle, traction.mode ?? null, electrifiedAlong(record, path), length, planned)
+  const chosen = tractionFor(vehicle, traction.mode ?? null, electrified, length, planned)
   const rollingStock = rollingStockOf(vehicle, { ...traction, mode: chosen.mode })
   const schedule = stops.map(s => ({
     path_offset: Math.min(Math.max(s.offset, 0), length),

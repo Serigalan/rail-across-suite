@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { DEFAULT_BASEMAP, findBasemap } from '@rail-across/basemaps'
-import { netGeoJSON, pathGeoJSON } from '@rail-across/running-times'
+import { netGeoJSON } from '@rail-across/running-times'
 
 /**
- * The map: the net on the suite's basemap, the train's path over it, the
+ * The map: the net on the suite's basemap — the variant's or one of OSRD's —,
+ * the train's path over it (`pathData`, GeoJSON), the
  * places it starts, stops and ends at, and — while a run is played — the
  * train. While a place is being picked, a click on the map gives the point
  * and how many metres a few pixels are there, to find the track within reach.
@@ -18,7 +19,7 @@ const pointsGeoJSON = (points) => ({
   features: points.filter(p => p.lngLat).map(p => ({ type: 'Feature', properties: { kind: p.kind }, geometry: { type: 'Point', coordinates: p.lngLat } })),
 })
 
-export default function RuntimeMap({ record, net, path, points, train, picking, onPick, fitKey, t }) {
+export default function RuntimeMap({ net, pathData, points, train, picking, onPick, fitKey, t }) {
   const box = useRef(null)
   const map = useRef(null)
   const [ready, setReady] = useState(false)
@@ -64,7 +65,7 @@ export default function RuntimeMap({ record, net, path, points, train, picking, 
   }, [])
 
   useEffect(() => { if (ready) map.current.getSource('net').setData(netGeoJSON(net)) }, [ready, net])
-  useEffect(() => { if (ready) map.current.getSource('path').setData(path ? pathGeoJSON(net, record, path) : EMPTY) }, [ready, net, record, path])
+  useEffect(() => { if (ready) map.current.getSource('path').setData(pathData ?? EMPTY) }, [ready, pathData])
   useEffect(() => { if (ready) map.current.getSource('points').setData(pointsGeoJSON(points)) }, [ready, points])
   useEffect(() => { if (ready) map.current.getSource('train').setData(train ? pointsGeoJSON([{ kind: 'train', lngLat: train }]) : EMPTY) }, [ready, train])
   useEffect(() => { if (ready) map.current.getCanvas().style.cursor = picking ? 'crosshair' : '' }, [ready, picking])

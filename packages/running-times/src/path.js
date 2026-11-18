@@ -197,7 +197,7 @@ function elementSpans(track) {
 }
 
 /** Merges neighbouring ranges of the same value. */
-function merged(ranges, same = (a, b) => a.value === b.value) {
+export function merged(ranges, same = (a, b) => a.value === b.value) {
   const out = []
   for (const r of ranges) {
     const last = out[out.length - 1]

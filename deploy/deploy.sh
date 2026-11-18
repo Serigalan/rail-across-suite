@@ -200,6 +200,8 @@ if [ "$restart" = 1 ]; then
       render "deploy/templates/$t" "/etc/systemd/system/$(unit_name "$t")"
     done
     systemctl daemon-reload
+    # A directory of the data a later version added (setup.sh makes it on a new instance).
+    [ -d "$RA_OSRD" ] || install -d -m 0750 -o "$RA_USER" -g "$(id -gn "$RA_USER")" "$RA_OSRD"
   fi
   step "Restart"
   for u in "${services[@]}"; do

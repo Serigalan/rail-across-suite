@@ -16,7 +16,12 @@ shared by the Simulation-Tool and the Fahrplan-Editor:
   train may begin and end, over a boundary at its speed (`crossingSpeed`, the request's `startSpeed`, `endSpeed`); where a train may be at one, and the stations along a way;
 - **the simulation module** (`engine.js`): OSRD's simulation core in Rust (`sim/`) as WebAssembly, loaded from
   `sim/rail_across_sim.wasm` beside the app's page;
-- the map's lines and the formats of times and distances (`places.js`, `format.js`).
+- the map's lines and the formats of times and distances (`places.js`, `format.js`);
+- **a net of OSRD's** (`osrd.js`), a RailJSON infrastructure run over instead of a variant's: its track sections
+  joined by its switches' routes and links, the way through its operational points' parts (`osrdRoute`), its
+  slopes with its curves' resistance, its speed sections the way the train runs and its electrification as the
+  request takes them (`osrdSimulationRequest`, over `requestFrom` as `simulationRequest`); signals signal no
+  speed there, as in OSRD's own run.
 
 An app that runs trains puts the module beside its page with `npm run sim`, which runs
 [`scripts/sim.mjs`](scripts/sim.mjs) in the app's directory: it builds `sim/` with cargo (rustup, target

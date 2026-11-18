@@ -1,7 +1,8 @@
 // The suite's project server, same origin as the page: the session is an
 // HttpOnly cookie the browser sends by itself. Of the infrastructure the tool
 // only reads: the user, the projects, a variant's head — an infra-data-1.0 document,
-// through the core's door (parseProjectsPayload) as in every module. The
+// through the core's door (parseProjectsPayload) as in every module —, and OSRD's
+// nets the server holds, RailJSON as it lies there. The
 // timetables it writes are @rail-across/timetables' (timetableApi).
 import { parseProjectsPayload } from '@rail-across/core/project'
 
@@ -35,4 +36,8 @@ export const api = {
   projects: () => get('/projects').then(r => r.projects ?? []),
   /** A variant's head: { variant, revision, record }. */
   head: (variantId) => get(`/variants/${enc(variantId)}/head`).then(r => ({ ...r, record: parseProjectsPayload(r.payload).projects[0] })),
+  /** OSRD's nets the server holds for Fahrzeit rechnen: [{ id, name, size, updatedAt }]. */
+  osrdNets: () => get('/osrd').then(r => r.nets ?? []),
+  /** One of them: its RailJSON infrastructure. */
+  osrdNet: (id) => get(`/osrd/${enc(id)}`),
 }

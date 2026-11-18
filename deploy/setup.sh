@@ -85,7 +85,7 @@ if ! id "$RA_USER" >/dev/null 2>&1; then
   useradd --system --home-dir "$RA_DATA" --shell /usr/sbin/nologin "$RA_USER"
 fi
 install -d -m 0750 -o "$RA_USER" -g "$(id -gn "$RA_USER")" "$RA_DATA"
-for d in "$RA_BACKUPS" "$RA_TERRAIN_CACHE" "$RA_CLOUDS" "$RA_DATA/share/proj" "$(dirname "$RA_DB")"; do
+for d in "$RA_BACKUPS" "$RA_TERRAIN_CACHE" "$RA_CLOUDS" "$RA_OSRD" "$RA_DATA/share/proj" "$(dirname "$RA_DB")"; do
   install -d -m 0750 -o "$RA_USER" -g "$(id -gn "$RA_USER")" "$d"
 done
 # The service user only reads the checkout; the build is done as root. A

@@ -11,6 +11,7 @@ use crate::http::{ApiError, Res, Resp, matches};
 pub mod admin;
 pub mod auth;
 pub mod clouds;
+pub mod osrd;
 pub mod projects;
 pub mod runs;
 pub mod shares;
@@ -76,6 +77,8 @@ const ROUTES: &[(&str, &str, Handler)] = &[
     ("GET", "/api/share/:token/head", shares::head),
     ("GET", "/api/share/:token/clouds/:cid/:level/index", shares::index),
     ("POST", "/api/share/:token/clouds/:cid/:level/ranges", shares::ranges),
+    ("GET", "/api/osrd", osrd::list),
+    ("GET", "/api/osrd/:id", osrd::get),
     ("GET", "/api/vehicles", vehicles::list),
     ("GET", "/api/vehicles/:id", vehicles::get),
     ("POST", "/api/vehicles", vehicles::create),

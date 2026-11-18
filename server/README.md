@@ -56,6 +56,7 @@ prepares point clouds with `crates/pointcloud` — held to the browser's JavaScr
 |---|---|---|
 | `RA_SERVER_DB` | `rail-across.sqlite` | database file (SQLite, WAL) |
 | `RA_SERVER_CLOUDS` | `clouds/` beside the database | point clouds: uploads and tiles |
+| `RA_SERVER_OSRD` | `osrd/` beside the database | OSRD's nets for *Fahrzeit rechnen*: RailJSON files (`<name>.json`) laid there by hand, listed under `GET /api/osrd` and handed out under `GET /api/osrd/<name>` to whoever is signed in |
 | `RA_SERVER_HOST` | `127.0.0.1` | bind address |
 | `RA_SERVER_PORT` | `8787` | port |
 | `RA_SERVER_TRUST_PROXY` | `127.0.0.1,::1` | addresses/CIDR ranges whose `X-Forwarded-For` is believed (the reverse proxy) |

@@ -1,6 +1,6 @@
 # 0011 — Running times with OSRD's envelope simulation, ported to Rust
 
-Status: **accepted** · as of 2026-11-17 · what it computes: [assumptions of the simulation](../simulation/simulation-assumptions.md)
+Status: **accepted** · as of 2026-11-18 · what it computes: [assumptions of the simulation](../simulation/simulation-assumptions.md)
 
 ## Decision
 
@@ -21,6 +21,11 @@ Status: **accepted** · as of 2026-11-17 · what it computes: [assumptions of th
    not use it.
 5. **Its results are held to OSRD's own test cases** (MaxEffortEnvelopeTest, AllowanceTests) where the port
    follows OSRD, and to cases worked out by hand where it differs.
+6. **A running time is also computed over a net of OSRD's.** The server holds RailJSON infrastructures laid into
+   a directory of its own by hand (`RA_SERVER_OSRD`); *Fahrzeit rechnen* runs over one of them instead of the
+   variant's net: its operational points the places, the way over its switches' routes and links, its slopes,
+   curves, speed sections and electrification what the train runs with. Its signals signal no speed, as in OSRD's
+   own run.
 
 ## Why
 

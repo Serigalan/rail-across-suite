@@ -25,9 +25,9 @@ const RUST_BIN = process.env.RA_SERVER_BIN ?? ['release', 'debug']
  * A server on a fresh database with a clock the test turns, and an admin
  * and a user who have changed their start passwords already.
  */
-export async function setup({ cloudRoot = null } = {}) {
+export async function setup({ cloudRoot = null, env = {} } = {}) {
   const clock = { t: Date.parse('2026-10-01T08:00:00Z') }
-  const { app, db } = await rustServer({ cloudRoot, clock })
+  const { app, db } = await rustServer({ cloudRoot, clock, env })
   await app.auth.createUser({ login: 'ada', name: 'Ada Admin', password: PW, role: 'admin', mustChangePassword: false })
   await app.auth.createUser({ login: 'max', name: 'Max Muster', password: PW, role: 'user', mustChangePassword: false })
   return { app, db, clock }

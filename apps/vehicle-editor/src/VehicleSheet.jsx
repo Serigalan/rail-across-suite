@@ -17,7 +17,7 @@ function errorText(t, code) {
 
 /** The vehicle's RailJSON as a file to save. */
 function download(vehicle) {
-  const blob = new Blob([JSON.stringify(toOsrd(vehicle), null, 2)], { type: 'application/json' })
+  const blob = new Blob([JSON.stringify(toOsrd(vehicle))], { type: 'application/json' })
   const a = document.createElement('a')
   a.href = URL.createObjectURL(blob)
   a.download = `${(vehicle.name || 'vehicle').replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-|-$/g, '').toLowerCase() || 'vehicle'}.json`

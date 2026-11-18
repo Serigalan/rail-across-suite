@@ -9,7 +9,7 @@ export function downloadBlob(blob, filename) {
 }
 
 export function downloadJSON(data, filename) {
-  const content = typeof data === 'string' ? data : JSON.stringify(data, null, 2)
+  const content = typeof data === 'string' ? data : JSON.stringify(data)
   downloadBlob(new Blob([content], { type: 'application/json' }), filename)
 }
 

@@ -15,6 +15,7 @@ set -euo pipefail
 # shellcheck source=deploy/lib.sh
 . "$(dirname "$0")/lib.sh"
 
+args=("$@")
 parse_common "$@"
 pull=0 restart=1 build=1 ref='' force=0
 set -- "${REST[@]+"${REST[@]}"}"
@@ -72,7 +73,15 @@ if [ "$build" = 1 ]; then
     [ -z "$ref" ] || die "--ref is for RA_TRACK=tags; this instance follows main (--pull)"
     if [ "$pull" = 1 ]; then
       step "git pull"
+      before=$(git rev-parse HEAD)
       git pull --ff-only
+      # What the pull brought runs with its own scripts: lib.sh and the
+      # templates may name settings the ones already read do not know.
+      if [ "$(git rev-parse HEAD)" != "$before" ]; then
+        again=()
+        for a in "${args[@]}"; do [ "$a" = --pull ] || again+=("$a"); done
+        exec "$RA_REPO/deploy/deploy.sh" "${again[@]+"${again[@]}"}"
+      fi
     fi
   fi
 

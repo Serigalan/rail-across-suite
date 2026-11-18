@@ -76,7 +76,8 @@ die Datei danach löschen. Weitere Nutzer legt ein Admin in der Nutzerverwaltung
 cd /opt/rail-across-suite && deploy/deploy.sh --pull
 ```
 
-Installiert die npm-Abhängigkeiten nur, wenn sich `package-lock.json` geändert hat, baut die Rust-Module, baut die Site neben
+Hat `--pull` etwas geholt, startet sich `deploy.sh` mit den geholten Skripten neu: `lib.sh` und die Vorlagen
+können Einstellungen nennen, die die schon gelesenen nicht kennen. Installiert die npm-Abhängigkeiten nur, wenn sich `package-lock.json` geändert hat, baut die Rust-Module, baut die Site neben
 `dist/` und gleicht sie dann hinein ab (die Seite ist während des Builds nie leer): je Modul seine App unter
 seinem Pfad (`MODULE_APPS` in `lib.sh`), dann die Startseite an die Wurzel. Danach eine Kopie der Datenbank
 (`backups/rail-across-JJJJ-MM-TT-predeploy-HHMMSS.sqlite`), Neustart der Dienste, Prüfung von `/api/health` und

@@ -6,6 +6,7 @@ import { axisLine, END_TOL, endMismatch, gradientOnTrack } from './vermEsnKmGrad
 import { withFileCants } from './fileCants'
 import { snapImportedChain, snapImportedLastEnd } from './importSnap'
 import { kmLineId } from '../km'
+import { placeMdbSwitches } from './mdbSwitchPlacement'
 
 const RECORD_SIZE = 78
 const GRA_RECORD_SIZE = 36   // the header is one record long, too
@@ -473,3 +474,17 @@ export function buildVermEsnBatch(pairs, { epsg, heightEpsg = null, takenNames =
   }
   return { tracks, kmLines: kmLineEntries([...used]), files }
 }
+
+/**
+ * The switches of a Verm.ESN batch, read off its geometry: the format states
+ * none, but a track that begins or ends on another one and leaves it at an
+ * angle is a turnout there (mdbSwitchDerive) — its form named by its radius and
+ * end slope from the catalogue (Ril 800.0120), and named in the notes where its
+ * routes sit off that form. The tracks come back parted at each toe, the
+ * routes marked: { tracks, switches, notes }.
+ */
+export function vermEsnSwitches(tracks, { existingSwitches = [], newId } = {}) {
+  const placed = placeMdbSwitches({ points: [] }, tracks, [], { derive: true, inventory: null, existingSwitches, newId })
+  return { tracks: placed.tracks, switches: placed.switches, notes: placed.errors }
+}
+

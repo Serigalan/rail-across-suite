@@ -21,6 +21,7 @@ Ported from the service and held to what it was held to:
 | `reconnect` | `reconnect.py` | "Bestehende Elemente neu verbinden": the splice nearest the old axis within a tolerance |
 | `track`, `optimize` | `track_io.py`, `optimize.py`, `api.py` | a track's curve groups, the per-curve baseline, the joint search over windows; the report |
 | `alignment`, `gradient` | `alignment_fit.py`, `gradient_fit.py` | an alignment, its gradient and cant from measured axis points |
+| `fit` | — | an imported track made to hold together (decision 0006): its coordinates fixed, straights through their points and merged within 5 mm, curves between them with their radii and transitions, a compound or reverse curve only within 1 mm, the curve at a track's end from its first point and bearing, a switch's routes as they are |
 | `numerics` | scipy | Nelder–Mead, Brent's bounded search and Differential Evolution as scipy has them, with a seeded generator of its own |
 | `poly` | `alignment_fit.py` | points measured against a polyline, with a k-d tree |
 | `rules` | — | the catalogue with its limits at both levels, built once per catalogue |

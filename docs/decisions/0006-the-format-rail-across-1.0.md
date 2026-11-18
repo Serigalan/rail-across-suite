@@ -50,23 +50,24 @@ Status: **accepted** · as of 2026-11-18 · the specification is [rail-across-1.
     to its own start, not chained from the track's first one: a length a source rounds to the millimetre would
     otherwise carry on from element to element. A document of before is brought forward the same way; a track
     whose elements lie further apart is refused with it.
-12. **The project server rewrites what it keeps once** for every change of the format, at its start after the
+12. **An import fits a track before it is kept** (the optimizer's `fit`, run by every import dialog). The
+    coordinates are what is fixed; bearings and stations are fitted to them. The straights are laid through their
+    points; two straights in a row with different bearings become one where the joint between them lies less than
+    5 mm off the line through their outer points, else two with a kink. The arcs are then fitted between their
+    two straights, tangent to both, keeping their radius — their length changes a little; the transitions keep
+    their lengths, also where a transition comes in pieces. A curve group without a straight within it — a
+    compound curve, a reverse curve — is fitted as one group, and only where it stays within 1 mm of the points
+    it had. A track's first and last point stay exactly where they were; where it begins or ends with a curve,
+    its first point and bearing stay, and the curve runs into the line of the next straight. A sliver a cut left,
+    shorter than a millimetre, goes. The routes of a switch keep their form, and the form is checked: a switch
+    read off the geometry whose radius or end slope lies more than 1 % off its catalogue form is reported. What
+    stays as it lay is named in the import report — and refused at the door where it does not hold together.
+13. **The project server rewrites what it keeps once** for every change of the format, at its start after the
     update (a data step, `crates/server/src/data_migrations.rs`), so no stored revision is of a version the door
     no longer takes in place.
 
 ## Decided, not built yet
 
-- **An import fits a track before it is kept.** The coordinates are what is fixed; bearings and stations are fitted
-  to them. The straights are laid through their points. Two straights in a row with different bearings become one
-  where the joint between them lies less than 5 mm off the line through their outer points, else two with a kink.
-  The arcs are then fitted between their two straights, tangent to both, keeping their radius — their length
-  changes a little. The transitions are fitted with their lengths. A curve group without a straight within it — a
-  compound curve, a reverse curve — is fitted as one group, and only where it stays within 1 mm of the points it
-  had. A track's first and last point stay exactly where they were; where it begins or ends with a curve, its first
-  point and bearing stay, and the curve runs into the line of the next straight. The routes of a switch keep their
-  form; they are checked against it (radius, end slope such as 1:9). Built in the optimizer's geometry, which fits
-  curve groups between tangents already (`fit_curve_group`, `fit_compound_group`, `fit_s_group`), and run by the
-  import dialogs before they commit.
 - **The km lines in the record as in the document**, their runs by column as a track's plan, without cant and
   design speed (`horizontalAlignment` per run, its stations from 0 at the run's start; `points` where a source
   gives points only). The record holds a km line as the format does — one plane,

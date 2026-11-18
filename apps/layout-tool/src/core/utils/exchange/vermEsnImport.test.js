@@ -3,7 +3,10 @@ import { zipSync } from 'fflate'
 import {
   parseRecords, buildElements, parseGradient, gradientHeights, gradientHeightCode, readVermEsnArchive, buildVermEsnBatch,
   readAxis, gradientReferences, referencedHeights, readKmLines, batchReferences, kmLineEntries, kmLineNumber,
+  vermEsnSwitches,
 } from './vermEsnImport'
+import { arcFrom, straightFrom } from '@rail-across/core/geometry'
+import { reverseTrack } from '@rail-across/core/track'
 import { kmLineId } from '../km'
 
 /** A GRA file: header (num = number of points), then station, height, radius, tangent length, point number. */
@@ -246,5 +249,50 @@ describe('Verm.ESN gradient along the kilometrage line', () => {
     const own = buildVermEsnBatch(archive.pairs, { epsg: 5683, kmAxes: axes, references: new Map([['Gleis_1', null]]) })
     expect(own.tracks[0].heights).toBeUndefined()
     expect(own.kmLines).toEqual([])
+  })
+})
+
+describe('the switches of a Verm.ESN batch, read off its geometry', () => {
+  const EPSG = 5683
+  const at = (e, n) => ({ easting: e, northing: n, zone: EPSG })
+  const node = (p) => at(p[0], p[1])
+  /** A chain from `start` on `bearing`: each piece [length] for a straight, [length, radius] for an arc. */
+  const chain = (start, bearing, pieces) => {
+    const out = []
+    let p = start
+    let b = bearing
+    for (const [length, radius] of pieces) {
+      const el = radius ? arcFrom(p, b, length, radius) : straightFrom(p, b, length)
+      out.push(el)
+      p = node(el.endNode)
+      b = radius ? (b + length / radius * 180 / Math.PI + 360) % 360 : b
+    }
+    return out
+  }
+  const track = (id, elements) => ({ id, name: id, epsg: EPSG, elements })
+  const ALPHA = Math.atan(1 / 9)
+  const P0 = at(3593000, 5650000)
+
+  it('reads a turnout whose branch is the track running through, the one ending there its main track', () => {
+    // Two surveys on each other up to the toe: the through track leaves on R 190, the other runs on straight.
+    const host = track('h', chain(P0, 90, [[100], [190 * ALPHA, 190], [30]]))
+    const main = track('m', chain(node(host.elements[0].endNode), 90, [[60]]))
+    const { switches, notes } = vermEsnSwitches([host, main])
+    expect(switches.map(sw => sw.label)).toEqual(['190 – 1:9'])
+    expect(notes[0]).toMatch(/aus der Geometrie gelesen/)
+    const { ports } = switches[0]
+    expect(ports.B2.trackId).toBe('m')
+    expect([ports.A.trackId, ports.B1.trackId]).not.toContain('m')
+  })
+
+  it('reads a bent turnout from a branch arriving at its toe, against the stem\'s arc behind the toe', () => {
+    // A 190 – 1:9 bent on the stem's R 910 just behind the toe, the branch arriving there: its curvature is the
+    // form's against the stem's arc, read in the direction the branch runs.
+    const toe = at(3593100, 5650000)
+    const back = arcFrom(toe, 270, 30, -910)
+    const host = track('h', [...chain(node(back.endNode), (270 - 30 / 910 * 180 / Math.PI + 180) % 360, [[30, 910]]), ...chain(toe, 90, [[60]])])
+    const branch = reverseTrack(track('b', chain(toe, 270, [[190 * ALPHA, 1 / (1 / 190 - 1 / 910)], [20]])))
+    const { switches } = vermEsnSwitches([host, branch])
+    expect(switches.map(sw => sw.label)).toEqual(['190 – 1:9'])
   })
 })

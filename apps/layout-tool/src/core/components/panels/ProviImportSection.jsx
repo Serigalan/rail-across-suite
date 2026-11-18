@@ -6,6 +6,7 @@ import {
   proviSwitchCandidates, proviProject, PROVI_FRAMES, placeMdbSwitches,
 } from '../../utils/exchange'
 import { fitToTracks } from '../../map/mapRenderUtils'
+import { fitImportedTracks } from '../../utils/exchange'
 import { useI18n } from '../../locales/i18nContext'
 import { useMap } from '../../map/MapContext'
 import { useProject } from '../../hooks/useStore'
@@ -75,7 +76,7 @@ export default function ProviImportSection({ onReport }) {
     setBusy('importing')
     // The work is synchronous and takes seconds for a whole archive: the busy
     // label is drawn first.
-    setTimeout(() => {
+    setTimeout(async () => {
       try {
         const names = axes.map(a => a.name).filter(n => chosen.has(n))
         const built = buildProviTracks(files, names, { fallbackFrame: frame })
@@ -110,12 +111,15 @@ export default function ProviImportSection({ onReport }) {
         }
         if (fanned) lines.push(fill('data_exchange_mdb_fanned', { n: fanned }))
 
+        // The tracks fitted to hold together before they are kept, the switches' routes as they are (decision 0006).
+        const fitted = await fitImportedTracks(addTracks)
+        lines.push(...fitted.notes)
         const readableLines = lines.map(readable)
         setNotes(readableLines)
         onReport?.(`ProVI · ${fileName}`, { tracks: addTracks.length, switches: placed.switches.length }, readableLines)
         if (addTracks.length) {
-          commitImport({ addTracks, addSwitches: [...placed.switches, ...links] })
-          fitToTracks(map?.current, addTracks)
+          commitImport({ addTracks: fitted.tracks, addSwitches: [...placed.switches, ...links] })
+          fitToTracks(map?.current, fitted.tracks)
         }
       } catch (err) {
         console.error('ProVI import error:', err)

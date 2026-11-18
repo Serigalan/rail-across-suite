@@ -660,6 +660,7 @@
   "data_exchange_vermesn_km_empty": "The kilometrage line contains no readable elements.",
   "data_exchange_vermesn_km_misses": "The perpendiculars from the kilometrage line do not meet the track – the gradient stays referred to the track axis.",
   "data_exchange_vermesn_km_lines": "Kilometrage lines added to the project: {lines}",
+  "data_exchange_vermesn_switches": "Switches read off the geometry and placed: {n}",
   "data_exchange_vermesn_reference": "Gradient referred to",
   "data_exchange_vermesn_reference_track": "Track axis",
   "data_exchange_vermesn_reference_km": "Kilometrage line {name}",

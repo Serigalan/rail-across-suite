@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react'
-import { commitImport } from '../../../storage'
+import { commitImport, loadSwitches } from '../../../storage'
+import { fitImportedTracks } from '../../../utils/exchange'
 import { HEIGHT_DATUMS, heightDatumLabel } from '@rail-across/core/track'
 import {
-  batchReferences, buildVermEsnBatch, gradientHeightCode, readKmLines, readVermEsnArchive,
+  batchReferences, buildVermEsnBatch, gradientHeightCode, readKmLines, readVermEsnArchive, vermEsnSwitches,
 } from '../../../utils/exchange'
 import { readFileBuffer } from '../../../utils/common'
 import { REFERENCE_MAX_LENGTH, buildReferenceAxis, referenceStretches } from '@rail-across/core/survey'
@@ -35,6 +36,7 @@ export default function VermEsnBatch({ epsg }) {
   const [errors, setErrors] = useState([])
   const [notes, setNotes] = useState([])
   const [done, setDone] = useState(null)
+  const [working, setWorking] = useState(false)
 
   const readZip = async (file) => {
     setDone(null); setErrors([]); setNotes([])
@@ -64,8 +66,8 @@ export default function VermEsnBatch({ epsg }) {
   const refOf = (name) => (chosen.has(name) ? chosen.get(name) : references.get(name)?.[0] ?? '') || ''
   const ready = !!project && !!batch && (!withGra || !!heightEpsg)
 
-  const importIt = () => {
-    if (!ready) return
+  const importIt = async () => {
+    if (!ready || working) return
     const { tracks: built, kmLines, files } = buildVermEsnBatch(batch.pairs, {
       epsg: Number(epsg), heightEpsg: withGra ? Number(heightEpsg) : null,
       takenNames: tracks.map(tr => tr.name).filter(Boolean),
@@ -89,7 +91,15 @@ export default function VermEsnBatch({ epsg }) {
         }))
       }
     }
-    if (built.length) commitImport({ addTracks: built, addKmLines: kmLines, addReferenceAxes: axes })
+    // Verm.ESN states no switches: they are read off where one track leaves another, then every track is
+    // fitted to hold together, the routes of the switches as they are (decision 0006).
+    setWorking(true)
+    const sw = built.length ? vermEsnSwitches(built, { existingSwitches: loadSwitches() }) : { tracks: [], switches: [], notes: [] }
+    const fitted = await fitImportedTracks(sw.tracks)
+    setWorking(false)
+    if (fitted.tracks.length) {
+      commitImport({ addTracks: fitted.tracks, addSwitches: sw.switches, addKmLines: kmLines, addReferenceAxes: axes })
+    }
     const failed = files.filter(f => !f.imported)
     const counts = { tracks: built.length, heights: files.filter(f => f.heights > 0).length, axes: axes.length }
     setDone(built.length
@@ -102,6 +112,9 @@ export default function VermEsnBatch({ epsg }) {
       ...(kmLines.length ? [fill('data_exchange_vermesn_km_lines', { lines: kmLines.map(l => l.lineNumber).join(', ') })] : []),
       ...files.flatMap(f => f.notes.map(note => `${f.graFile}: ${note}`)),
       ...axisNotes,
+      ...(sw.switches.length ? [fill('data_exchange_vermesn_switches', { n: sw.switches.length })] : []),
+      ...sw.notes,
+      ...fitted.notes,
     ])
     setBatch(null)
   }
@@ -180,7 +193,7 @@ export default function VermEsnBatch({ epsg }) {
         <span>{t('data_exchange_vermesn_batch_reference')}</span>
         <InfoTip text={t('data_exchange_vermesn_batch_reference_hint')} />
       </label>
-      <button className="ui-btn ui-btn-primary ui-btn-block mt-6" disabled={!ready} onClick={importIt}>
+      <button className="ui-btn ui-btn-primary ui-btn-block mt-6" disabled={!ready || working} onClick={importIt}>
         {batch ? fill('data_exchange_vermesn_batch_import_n', { n: batch.pairs.length }) : t('data_exchange_import')}
       </button>
       {done && <p className="msg-ok msg-small">{done}</p>}

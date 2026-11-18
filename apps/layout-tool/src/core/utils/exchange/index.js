@@ -25,5 +25,6 @@ export {
 export { exportVermEsn } from './vermEsnExport'
 export {
   batchReferences, buildVermEsnBatch, gradientHeightCode, gradientReferences, kmLineEntries, kmLineNumber,
-  parseGradient, readAxis, readKmLines, readVermEsnArchive, referencedHeights,
+  parseGradient, readAxis, readKmLines, readVermEsnArchive, referencedHeights, vermEsnSwitches,
 } from './vermEsnImport'
+export { fitImportedTracks } from './importFit'

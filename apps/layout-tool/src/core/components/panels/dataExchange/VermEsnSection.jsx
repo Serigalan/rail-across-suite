@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { commitImport, saveReferenceAxis } from '../../../storage'
+import { fitImportedTracks } from '../../../utils/exchange'
 import { EDITS_CIVIL } from '../../../tool'
 import { generateId, rebuildCoords, HEIGHT_DATUMS, heightDatumLabel } from '@rail-across/core/track'
 import {
@@ -164,7 +165,7 @@ export default function VermEsnSection() {
     setKm(null)
   }
 
-  const importIt = () => {
+  const importIt = async () => {
     if (!ready) return
     if (asReference) { importReference(); return }
     const axis = readAxis(tra.buffer, epsg)
@@ -173,15 +174,15 @@ export default function VermEsnSection() {
     if (errs.length || !elements.length) return
     const { heights, notes: hNotes } = reference ? referencedHeights(reference, axis) : { heights: null, notes: [] }
     const kmUsed = reference?.ref ? kmAxis : null
-    setNotes(hNotes)
-    commitImport({
-      addTracks: [{
-        id: generateId(), epsg: Number(epsg), coordinates: rebuildCoords(elements), elements,
-        ...(kmUsed ? { lineNumber: kmLineNumber(kmUsed.name) } : {}),
-        ...(heights ? { heights, heightEpsg: Number(graHeightEpsg) } : {}),
-      }],
-      addKmLines: kmUsed ? kmLineEntries([kmUsed]) : [],
-    })
+    // Fitted to hold together before it is kept (decision 0006).
+    const fitted = await fitImportedTracks([{
+      id: generateId(), name: tra.name.replace(/\.tra$/i, ''), epsg: Number(epsg), coordinates: rebuildCoords(elements), elements,
+      ...(kmUsed ? { lineNumber: kmLineNumber(kmUsed.name) } : {}),
+      ...(heights ? { heights, heightEpsg: Number(graHeightEpsg) } : {}),
+    }])
+    setNotes([...hNotes, ...fitted.notes])
+    const { name: _name, ...track } = fitted.tracks[0]
+    commitImport({ addTracks: [track], addKmLines: kmUsed ? kmLineEntries([kmUsed]) : [] })
     setDone(fill(heights ? 'data_exchange_vermesn_done_heights' : 'data_exchange_vermesn_done',
       { name: tra.name, count: elements.length, heights: heights?.length ?? 0 }))
     setTra(null)

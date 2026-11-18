@@ -32,6 +32,7 @@ converted on the server.
 | `mdbAxisCleanup.js` | in | Axis fragments the MDB states twice, left out before switches are placed |
 | `mdbSwitchPlacement.js` | in | The MDB's switch inventory placed onto the imported tracks |
 | `mdbSwitchDerive.js` | in | Turnouts the inventory does not state, read from the alignment |
+| `importFit.js` | in | Imported tracks fitted to hold together before they are kept (the optimizer's `fit`) |
 | `mdbPipeline.js` | in | The whole MDB import: tracks, plane, switches, links, buffer stops, notes |
 | `speedRanges.js` | out | The highest speeds along a run (a named route or a track) from the elements' design speed, in ranges of at least 800 m laid for the highest average speed — Σ length / speed least, by dynamic programming over the speed changes and a 10 m grid —, in steps of 5 or 10 km/h (rounded down first, so the ranges are laid for the speeds they show), with their kilometres; a CSV table (`;`, decimal comma) or an SVG diagram to scale in millimetres — a length scale (mm per km of the run, 100 = 1:10 000) and a height scale (mm per km/h) |
 
@@ -104,6 +105,12 @@ whose elements do not join is left out as the single import refuses it; a GRA wi
 Each track can also come in a second time as a reference axis (Bestandsachse, see `survey`) of the same name
 and gradient, to compare the edited track with — in the same undo step; an axis over 2 km becomes several
 reference axes of about equal length (`survey/referenceStretches`).
+
+Verm.ESN states no switches. A batch reads them off its geometry, as the MDB import reads those its inventory
+lacks (`vermEsnSwitches`, see derived turnouts below): where one track begins or ends on another and leaves it
+at an angle, or two lie on each other up to a toe where one of them leaves on a turnout's arc. Every imported
+track is then fitted to hold together (`importFit.js`, the optimizer's `fit`; decision 0006) — the coordinates
+fixed, the switches' routes as they are —, as are the tracks of the single import, ProVI, MDB and RailJSON.
 
 A TRA whose name ends in a digit and `S` (`6340S`, `6311-001S`) is a **kilometrage line**, not a track. A
 gradient is often stationed along it rather than along its track: each point is then laid off on the line
@@ -222,7 +229,12 @@ where it is silent or guesses, the delivered files decide.
   curvature, `κ_form = κ_branch − κ_stem` and `1:n = 1/tan(L·|κ_form|)`; ends without angle (a chain cut
   elsewhere, a stretch surveyed twice) are counted, not turned into switches. Crossings are not derived: in
   plan a level crossing and a flyover are the same picture. A measured form the catalogue does not know is
-  reported, not bent onto the nearest.
+  reported, not bent onto the nearest. The stem's curvature is read on the element the branch runs along —
+  where the toe lies on a joint, the one on the branch's side —, and of the lengths a branch's arc may end at
+  (a bent turnout's closure curve often runs on on its radius) the one that names a form. Where the ending
+  track runs on straight and the track running through leaves on the arc, the roles are the other way round:
+  the through track carries the branch and is parted at the toe, the ending track is the main route. A form
+  more than 1 % off its catalogue radius or end slope is set and reported with what it measures.
 - **Branch against its form.** A stated turnout's surveyed branch is walked from the toe metre by metre and
   measured against the stem — offset and station — and compared with the form's branch at the same distance
   (`switchBranchPointAt`). More than 1 cm across or 5 cm along (ProVI's limits) is reported with both values;

@@ -538,7 +538,7 @@ function noteUnplaced(tracks, coords, systems, unit, reason) {
  * turnouts whose branch strays from their form as `{ name, across, along }`.
  */
 export function placeMdbSwitches(payload, tracks, units,
-  { existingSwitches = [], newId, derive = false, tracksFor = null, project = projectOnTrack } = {}) {
+  { existingSwitches = [], newId, derive = false, inventory = 'Satzart 31', tracksFor = null, project = projectOnTrack } = {}) {
   const errors = []
   const switches = []
   // Placed turnouts whose branch strays from their form (branchDeviation).
@@ -583,12 +583,16 @@ export function placeMdbSwitches(payload, tracks, units,
         }
       }
     }
-    const found = deriveMdbTurnouts(current, stated)
+    const found = deriveMdbTurnouts(current, stated, { inventory })
     all = [...units, ...found.units]
     if (found.units.length) {
-      errors.push(`${found.units.length} Weichen ergänzt, die in Satzart 31 fehlen – `
-        + 'ein Gleis endet dort mitten auf einem anderen. Die Bauform ist aus der '
-        + 'Geometrie gelesen, nicht aus der Datei.')
+      errors.push(inventory
+        ? `${found.units.length} Weichen ergänzt, die in ${inventory} fehlen – `
+          + 'ein Gleis endet dort mitten auf einem anderen. Die Bauform ist aus der '
+          + 'Geometrie gelesen, nicht aus der Datei.'
+        : `${found.units.length} Weichen aus der Geometrie gelesen – ein Gleis beginnt oder endet `
+          + 'dort mitten auf einem anderen und zweigt ab. Die Bauform ist aus Radius und Neigung bestimmt '
+          + 'und im Weichenkatalog nachgesehen.')
     }
     errors.push(...found.errors)
   }
@@ -615,6 +619,8 @@ export function placeMdbSwitches(payload, tracks, units,
       placed = placeCrossingUnit(found, unit, type, current, makeId)
     } else if (type.symmetric && !found.through.length && found.starting.length === 3) {
       placed = placeAtToe(found, unit, type, current)
+    } else if (unit.branchThrough) {
+      placed = placeBranchThrough(found, unit, type, current, makeId, project)
     } else {
       const shape = chooseShape(found, type)
       if (shape.reason) { give(unit, `${shape.reason} – nicht gesetzt.`); continue }
@@ -700,6 +706,70 @@ function placeAtToe(found, unit, type, tracks) {
         A: { trackId: approach.track.id, endpoint: approach.endpoint },
         B1: { trackId: branchCarved.id, endpoint: branch.endpoint },
         B2: { trackId: stemCarved.id, endpoint: stem.endpoint },
+      },
+    },
+  }
+}
+
+/**
+ * A turnout whose branch is the track running through the toe and whose main
+ * track is the one ending there (mdbSwitchDerive: two surveys on each other up
+ * to the toe). The through track is parted at the toe; the piece the main track
+ * runs alongside is the branch, carved to the form's branch length, the other
+ * piece leads up to the toe (A), and the main track is carved to the form's
+ * straight length.
+ */
+function placeBranchThrough(found, unit, type, tracks, makeId, project = projectOnTrack) {
+  const legs = found.starting.map(c => ({ ...c, bearing: outwardBearing(c.track, c.endpoint) }))
+  const main = legs.find(c => c.track.id === unit.mainTrackId) ?? legs[0]
+  if (!main || found.through.length !== 1) {
+    return { error: `${found.through.length} durchlaufende und ${found.starting.length} beginnende Gleise – nicht gesetzt.` }
+  }
+  const host = found.through[0]
+  const track = tracks.find(t => t.id === host.track.id) ?? host.track
+  const hit = project(track, found.point)
+  const at = elementAtStation(track.elements, hit.station)
+  if (!at) return { error: 'Weichenpunkt liegt nicht auf dem Gleis – nicht gesetzt.' }
+  // The branch runs along the through track the way the main track leaves the toe.
+  const reversed = angleTo(main.bearing, at.el.bearing) > 90
+  const branchLen = switchBranchLength(type)
+  const place = placeSwitchOnTrack(track, hit.station, reversed, branchLen)
+  if (place.error) return { error: `${refusal(place.error)} – nicht gesetzt.` }
+  const names = new Set(tracks.map(t => t.name).filter(Boolean))
+  const split = place.joint != null
+    ? splitTrackAtJoint(track, place.joint, place.bearing, names)
+    : splitElementAt(track, place.elIdx,
+      place.cutsClothoid ? { ...place.toeUtm, station: place.s } : place.toeUtm, place.bearing, names)
+
+  const identity = { ...newSwitchFields(), name: unit.name, label: type.label }
+  const branch = carveToForm(split.ahead, split.aheadEndpoint, place.endUtm, switchElementMark(identity, 'branch'), branchLen)
+  if (!branch) return { error: 'kein Platz für die Zweiglänge – nicht gesetzt.' }
+  const mainTrack = snapImportedEnd(tracks.find(t => t.id === main.track.id) ?? main.track, main.endpoint, place.toeUtm)
+  const straightLen = switchStraightLength(type)
+  const total = trackLength(mainTrack)
+  if (total < straightLen) return { error: 'Stammgleis kürzer als die Weichenform – nicht gesetzt.' }
+  const mainAt = elementAtStation(mainTrack.elements, main.endpoint === 'BEGIN' ? straightLen : total - straightLen)
+  if (!mainAt) return { error: 'Weichenende liegt nicht auf dem Stammgleis – nicht gesetzt.' }
+  const mainCarved = carveToForm(mainTrack, main.endpoint, pointAtStationUtm(mainAt.el, mainAt.s, mainTrack.epsg),
+    switchElementMark(identity, 'main'), straightLen)
+  if (!mainCarved) return { error: 'Stammroute nicht schneidbar – nicht gesetzt.' }
+
+  const pieces = split.tracks
+    .map(t => (t.id === branch.id ? branch : t))
+    .map(t => ({ ...t, id: t.id ?? makeId() }))
+  const behind = pieces.find(t => t.id !== branch.id)
+  return {
+    tracks: tracks.filter(t => t.id !== track.id && t.id !== mainTrack.id).concat(pieces, mainCarved),
+    remaps: [{ oldId: track.id, newId: [pieces[0].id, pieces[1].id] }],
+    record: {
+      ...identity,
+      trailing: false, speed: type.speed,
+      kind: unit.kind,
+      pad: unit.pad,
+      ports: {
+        A: { trackId: behind.id, endpoint: split.behindEndpoint },
+        B1: { trackId: branch.id, endpoint: split.aheadEndpoint },
+        B2: { trackId: mainCarved.id, endpoint: main.endpoint },
       },
     },
   }

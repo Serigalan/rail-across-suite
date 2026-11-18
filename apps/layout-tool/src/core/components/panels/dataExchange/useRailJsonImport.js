@@ -3,6 +3,7 @@ import { commitImport, loadEndMarks, loadTracks } from '../../../storage'
 import { parseOsrdRailJson, planRailJsonImport } from '../../../utils/exchange'
 import { fitToTracks } from '../../../map/mapRenderUtils'
 import { readFileText } from '../../../utils/common'
+import { fitImportedTracks } from '../../../utils/exchange'
 import { useI18n } from '../../../locales/i18nContext'
 import { useMap } from '../../../map/MapContext'
 
@@ -25,7 +26,10 @@ export default function useRailJsonImport() {
       setErrors(parsed.errors)
       if (!parsed.tracks.length) return
       const { osrd, ...commit } = planRailJsonImport(parsed, { existingTracks: loadTracks(), existingMarks: loadEndMarks() })
-      commitImport({ ...commit, patch: { osrd } })
+      // The tracks fitted to hold together before they are kept (decision 0006).
+      const fitted = await fitImportedTracks(commit.addTracks)
+      setErrors([...parsed.errors, ...fitted.notes])
+      commitImport({ ...commit, addTracks: fitted.tracks, patch: { osrd } })
       // The import usually lands far outside the current view — show it.
       fitToTracks(map?.current, commit.addTracks)
     } catch (err) {

@@ -18,6 +18,7 @@
 
 pub mod alignment;
 pub mod clearance;
+pub mod fit;
 pub mod geometry;
 pub mod gradient;
 pub mod numerics;
@@ -56,6 +57,7 @@ fn load_rules(catalogue: &Value) -> Result<&'static rules::Rules<'static>, Strin
 /// * `reconnect` — "Bestehende Elemente neu verbinden" ([`reconnect::reconnect_payload`])
 /// * `optimize` — a track or one curve of it at a higher speed ([`optimize::optimize_payload`])
 /// * `align` — an alignment and its gradient from measured axis points ([`alignment::align_payload`])
+/// * `fit` — imported tracks made to hold together, their coordinates fixed ([`fit::fit_payload`])
 /// * `limits` — what a run is held to at both levels, for the rulebook popup
 ///
 /// A request that is not one answers `{"error": "invalid_request", "detail"}`.
@@ -73,6 +75,7 @@ pub fn run_json(text: &str) -> String {
             Some("reconnect") => reconnect::reconnect_payload(rules, request),
             Some("optimize") => optimize::optimize_payload(rules, request),
             Some("align") => alignment::align_payload(request),
+            Some("fit") => fit::fit_payload(request),
             Some("limits") => Ok(json!({
                 "id": rules.catalogue.id, "name": rules.catalogue.title, "version": rules.catalogue.version,
                 "grenzwerte": {"reg": rules.reg.describe(), "discretion": rules.discretion.describe()},

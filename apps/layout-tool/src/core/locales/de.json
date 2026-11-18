@@ -660,6 +660,7 @@
   "data_exchange_vermesn_km_empty": "Die Kilometerlinie enthält keine lesbaren Elemente.",
   "data_exchange_vermesn_km_misses": "Die Lote von der Kilometerlinie treffen das Gleis nicht – die Gradiente bleibt auf die Gleisachse bezogen.",
   "data_exchange_vermesn_km_lines": "Kilometerlinien ins Projekt übernommen: {lines}",
+  "data_exchange_vermesn_switches": "Weichen aus der Geometrie gesetzt: {n}",
   "data_exchange_vermesn_reference": "Gradiente bezogen auf",
   "data_exchange_vermesn_reference_track": "Gleisachse",
   "data_exchange_vermesn_reference_km": "Kilometerlinie {name}",

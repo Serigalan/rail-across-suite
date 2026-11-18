@@ -197,17 +197,74 @@ function signedRadius(el, forward, s = null) {
  * elements on one radius is one arc.
  */
 function branchArc(track, endpoint) {
+  return branchArcs(track, endpoint).at(-1) ?? null
+}
+
+/**
+ * The arcs a branch may leave its toe on: its signed radius with the length up
+ * to each joint of the chain of elements on that radius, shortest first. A
+ * survey cuts a turnout's branch where the turnout ends, and a bent turnout's
+ * closure curve often runs on on the same radius: the first joint is then the
+ * turnout's end, and the whole chain would make its frog angle too wide.
+ */
+function branchArcs(track, endpoint) {
   const els = endpoint === 'BEGIN' ? track.elements : [...track.elements].reverse()
   const forward = endpoint === 'BEGIN'
   const signedR = signedRadius(els[0], forward)
-  if (signedR == null) return null
+  if (signedR == null) return []
+  const out = []
   let length = 0
   for (const el of els) {
     const r = signedRadius(el, forward)
     if (r == null || Math.abs(r - signedR) / Math.abs(signedR) > 0.01) break
     length += el.length ?? 0
+    out.push({ signedR, length })
   }
-  return { signedR, length }
+  return out
+}
+
+/**
+ * A turnout whose branch is the track running through and whose main track is
+ * the one ending there — two surveys lying on each other up to the toe, where
+ * the through track leaves on an arc and the other runs on: the form the arc
+ * makes against the ending track, the best the catalogue has, or null. Read only
+ * where the toe lies on a joint of the through track, as a survey cuts it there.
+ */
+function branchOnHost(host, track, endpoint) {
+  const runs = branchRuns(track, endpoint, host.el)
+  const at = stemAt(host, runs)
+  const JOINT = 1e-3
+  if (!(runs ? at.s <= JOINT : at.s >= (at.el.length ?? 0) - JOINT)) return null
+  const els = host.track.elements
+  const step = runs ? 1 : -1
+  const signedR = signedRadius(at.el, runs)
+  if (signedR == null) return null
+  const arcs = []
+  let length = 0
+  for (let i = els.indexOf(at.el); i >= 0 && i < els.length; i += step) {
+    const r = signedRadius(els[i], runs)
+    if (r == null || Math.abs(r - signedR) / Math.abs(signedR) > 0.01) break
+    length += els[i].length ?? 0
+    arcs.push({ signedR, length })
+  }
+  const own = endpoint === 'BEGIN' ? track.elements[0] : track.elements[track.elements.length - 1]
+  const stem = signedRadius(own, endpoint === 'BEGIN')
+  const fits = arcs.map(arc => formFromGeometry(stem, arc)).map(m => ({ m, type: formInCatalogue(m) })).filter(c => c.type)
+  return fits.sort((a, b) => formScore(a.type, a.m) - formScore(b.type, b.m))[0] ?? null
+}
+
+/**
+ * The element of the stem the branch leaves along, and the station on it: where
+ * the toe lies on a joint of the stem, the element on the side the branch runs
+ * to — not the one before the joint, whose curvature is no part of the turnout.
+ */
+function stemAt(host, runs) {
+  const els = host.track.elements
+  const i = els.indexOf(host.el)
+  const JOINT = 1e-3
+  if (runs && host.s >= (host.el.length ?? 0) - JOINT && i + 1 < els.length) return { el: els[i + 1], s: 0 }
+  if (!runs && host.s <= JOINT && i > 0) return { el: els[i - 1], s: els[i - 1].length ?? 0 }
+  return { el: host.el, s: host.s }
 }
 
 /**
@@ -233,7 +290,27 @@ export function formFromGeometry(stemSignedR, arc) {
 const R_TOL = 0.05
 const N_TOL = 0.10
 
+/**
+ * How far a switch's radius and end slope may sit from its form before the
+ * report names it [relative]: a turnout is built to its form, and its routes in
+ * a survey are that form to the millimetre — more is a form the file states
+ * other than the catalogue's, or a route surveyed off it.
+ */
+const FORM_CHECK_TOL = 0.01
+
+/** What a switch's routes measure against its form, or null where they are the form (FORM_CHECK_TOL). */
+function formDeviation(type, measured) {
+  if (!type || !measured) return null
+  const dR = type.R ? Math.abs(type.R - measured.R) / type.R : 0
+  const dn = Math.abs(type.ratio - measured.ratio) / type.ratio
+  if (dR <= FORM_CHECK_TOL && dn <= FORM_CHECK_TOL) return null
+  return `gemessen ${measuredText(measured)} – Radius ${(dR * 100).toFixed(1)} %, Endneigung ${(dn * 100).toFixed(1)} % neben der Form`
+}
+
 /** The catalogue form a measured one is, or null where the catalogue has none. */
+/** How far a measured form sits from a catalogue form: the relative misses of radius and frog angle together. */
+const formScore = (type, measured) => Math.abs(type.R - measured.R) / type.R + Math.abs(type.ratio - measured.ratio) / type.ratio
+
 export function formInCatalogue(measured) {
   if (!measured) return null
   let best = null
@@ -303,8 +380,11 @@ const measuredText = (m) => `R ≈ ${m.R.toFixed(0)} m, 1:${m.ratio.toFixed(1)}`
  * place where a track parts from another and the form could not be named —
  * which is the list of what the Weichenkatalog is still missing — and
  * `running`, the ends that lie on another track without parting from it.
+ * `inventory` names where a file states its switches, for the report: none
+ * where it states none at all (Verm.ESN), and every switch is the geometry's.
  */
-export function deriveMdbTurnouts(tracks, stated = [], { tol = ON_TOL } = {}) {
+export function deriveMdbTurnouts(tracks, stated = [], { tol = ON_TOL, inventory = 'Satzart 31' } = {}) {
+  const missing = inventory ? `Weiche fehlt in ${inventory}` : 'Weiche aus der Geometrie'
   const grid = trackGrid(tracks)
   const seen = pointIndex(stated)
   const units = []
@@ -321,24 +401,51 @@ export function deriveMdbTurnouts(tracks, stated = [], { tol = ON_TOL } = {}) {
       if (!host) continue
       if (seen.has(track.epsg, node, SAME_TOL)) continue
 
-      const stem = signedRadius(host.el, branchRuns(track, endpoint, host.el), host.s)
-      const measured = formFromGeometry(stem, branchArc(track, endpoint))
+      const runs = branchRuns(track, endpoint, host.el)
+      const at = stemAt(host, runs)
+      const stem = signedRadius(at.el, runs, at.s)
+      // Of the lengths the branch's arc may end at, the one that names a form; else the whole arc, to say what it measures.
+      const fits = branchArcs(track, endpoint).map(arc => formFromGeometry(stem, arc))
+        .map(m => ({ m, type: formInCatalogue(m) })).filter(c => c.type)
+      const measured = fits.sort((a, b) => formScore(a.type, a.m) - formScore(b.type, b.m))[0]?.m
+        ?? formFromGeometry(stem, branchArc(track, endpoint))
       // No angle between the two: one track running into the middle of another
       // is a chain cut elsewhere or the same stretch surveyed twice, not a
       // turnout. Nothing is placed and nothing is claimed.
-      if (!measured || measured.ratio > MAX_RATIO) { running++; continue }
+      if (!measured || measured.ratio > MAX_RATIO) {
+        // Or the other way round: the track running through is the branch, the one ending here its main track.
+        const swapped = branchOnHost(host, track, endpoint)
+        if (!swapped) { running++; continue }
+        seen.add(track.epsg, node)
+        const at = `${track.name ?? '?'} (${endpoint === 'BEGIN' ? 'Anfang' : 'Ende'}) an ${host.track.name ?? '?'} bei ${host.station.toFixed(0)} m`
+        const off = formDeviation(swapped.type, swapped.m)
+        if (off) errors.push(`${at}: ${swapped.type.label} gesetzt, ${off}.`)
+        units.push({
+          pad: null, bst: null, name: null, number: null,
+          kind: 'switch', label: swapped.type.label,
+          radius: swapped.type.R, slope: swapped.type.ratio, rail: null,
+          type: swapped.type, derived: true, where: at,
+          point: node, epsg: track.epsg, offset: host.dist,
+          pads: [], padBySuffix: {}, flagged: false,
+          // The through track carries the branch, the ending one is the main track.
+          branchThrough: true, mainTrackId: track.id,
+        })
+        continue
+      }
 
       seen.add(track.epsg, node)
       const where = `${track.name ?? '?'} (${endpoint === 'BEGIN' ? 'Anfang' : 'Ende'}) `
         + `auf ${host.track.name ?? '?'} bei ${host.station.toFixed(0)} m`
       const type = formInCatalogue(measured)
       if (!type) {
-        errors.push(`${where}: Weiche fehlt in Satzart 31, ${measuredText(measured)} `
+        errors.push(`${where}: ${missing}, ${measuredText(measured)} `
           + '– diese Form steht nicht im Weichenkatalog. Nicht gesetzt.')
         continue
       }
+      const off = formDeviation(type, measured)
+      if (off) errors.push(`${where}: ${type.label} gesetzt, ${off}.`)
       if (trackLength(track) < switchBranchLength(type)) {
-        errors.push(`${where}: Weiche fehlt in Satzart 31, ${type.label} – das Zweiggleis ist `
+        errors.push(`${where}: ${missing}, ${type.label} – das Zweiggleis ist `
           + `mit ${trackLength(track).toFixed(1)} m kürzer als die Weichenform. Nicht gesetzt.`)
         continue
       }

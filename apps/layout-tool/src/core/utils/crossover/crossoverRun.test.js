@@ -11,7 +11,7 @@ import { instantiateCrossover, runWith } from './crossoverRun'
 const buildConnectionElements = viaRust('switch.buildConnectionElements', reuseFrom)
 
 // The search as the dialog runs it, through the module cargo built
-// (crossover/target/…) — skipped where it has not been built.
+// (target/…) — skipped where it has not been built.
 const MODULE = fileURLToPath(new URL(
   '../../../../../../target/wasm32-unknown-unknown/release/rail_across_crossover_wasm.wasm', import.meta.url))
 const built = existsSync(MODULE)

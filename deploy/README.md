@@ -112,7 +112,7 @@ Seit 2026-10-30, unter `https://railacross.open-layout-tool.org/`:
 | | |
 |---|---|
 | Konfiguration | `/etc/rail-across/rail-across.env` |
-| Checkout | `/opt/rail-across-suite` (folgt `dev`) |
+| Checkout | `/opt/rail-across-suite` (folgt `main`) |
 | Units, Nutzer | `rail-across-*`, `rail-across` |
 | Ports (an 172.18.0.1) | 8789 (Projektserver) |
 | Daten | `/var/lib/rail-across` |

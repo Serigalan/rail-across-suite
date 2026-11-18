@@ -13,10 +13,10 @@ Thank you for helping build Rail-Across-Suite. This page says how a change gets 
 
 ## How a change gets in
 
-1. Branch from `dev`. `main` holds what is released; `dev` collects the work towards it.
+1. Branch from `main`.
 2. Keep a change to one subject. A refactoring and a feature are two changes.
 3. Run the checks before you push: `npm run check` (today: the import boundaries between apps and packages).
-4. Open a pull request against `dev`. The owners named in [`.github/CODEOWNERS`](.github/CODEOWNERS) are asked
+4. Open a pull request against `main`. The owners named in [`.github/CODEOWNERS`](.github/CODEOWNERS) are asked
    for a review; a change to `packages/`, `schemas/`, the data model or the decisions needs theirs.
 
 ## Rules for code

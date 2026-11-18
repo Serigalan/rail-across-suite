@@ -204,20 +204,7 @@ export namespace Core {
   }
   /** Bulk data kept as a blob: the SHA-256 of its canonical JSON. */
   export type BlobRef = string
-  /** A design element of a km line: what a track element states of its geometry, without the parts that only a track has. */
-  export type KmElement = {
-    elementType: "straight" | "arc" | "transition"
-    startNode: Point
-    endNode: Point
-    bearing?: number
-    endBearing?: number
-    length: number
-    radius?: number | null
-    r1?: number | null
-    r2?: number | null
-    transitionType?: "clothoid" | "bloss"
-  }
-  /** A run of a km line without a km jump: its kilometrage at the start and the way it counts along the run, and the run itself — design elements, or the points a source gave where it gave no elements. */
+  /** A run of a km line without a km jump: its kilometrage at the start and the way it counts along the run, and the run itself — its plan by column, or the points a source gave where it gave no elements. */
   export type KmRun =  | 
   /** Foreign reference data: the axis of a line around the project, in one plane, as runs from km jump to km jump. */
   export type KmLine = {
@@ -286,6 +273,20 @@ export namespace Core {
     switchId?: Ref
     /** Why an import could not build the switch this element belongs to: form, number, reason. */
     switchHint?: Text
+  }
+  /** A km line run's plan by column, as a track's (HorizontalAlignment) without what only a track has: over N design elements stationing, coordinates and bearingGon hold N+1 values, from 0 at the run's start; the element types and the radii at both ends N. */
+  export type KmAlignment = {
+    /** The station of each element's start and of the run's end [m], from 0 at the run's start; the kilometrage is kmStart plus or minus it. */
+    stationing: Array<number>
+    /** The point of each element's start and of the run's end, [E, N] in the line's plane [m]. */
+    coordinates: Array<Point>
+    /** The bearing of each element at its start and of the run at its end [gon], clockwise from grid north. */
+    bearingGon: Array<number>
+    elementType: Array<"straight" | "arc" | "clothoid" | "bloss">
+    /** The radius at each element's start [m], signed: + curving right; null on a straight end. */
+    beginRadius: Array<number | null>
+    /** The radius at each element's end [m], signed; an arc's is its start's. */
+    endRadius: Array<number | null>
   }
 }
 

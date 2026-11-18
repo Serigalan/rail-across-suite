@@ -7,7 +7,7 @@
    "domains": {
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -400,7 +400,7 @@
     },
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:5408144d512d65e415a7b577d171b1ca743d2ed18a701b0d8b0632d7657bc286",
@@ -414,7 +414,7 @@
     }
    }
   },
-  "hash": "sha256:837c30da8504df7f06e57cc83f9d03fa834486c9e0d386b35f035879aeddfc52"
+  "hash": "sha256:cc3dbb2ba313ebe744586c4e5a901cf8986cfc6d7eb38d57f6a613aa3d93e6d9"
  },
  {
   "name": "the sample, carrying its schemas",
@@ -424,7 +424,7 @@
    "domains": {
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -799,7 +799,7 @@
     ]
    },
    "schemas": {
-    "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5": {
+    "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f": {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
      "$id": "core",
      "title": "Rail-Data-Core, domain core 6.0",
@@ -1422,68 +1422,8 @@
        "type": "string",
        "pattern": "^sha256:[0-9a-f]{64}$"
       },
-      "KmElement": {
-       "description": "A design element of a km line: what a track element states of its geometry, without the parts that only a track has.",
-       "type": "object",
-       "required": [
-        "elementType",
-        "startNode",
-        "endNode",
-        "length"
-       ],
-       "additionalProperties": false,
-       "properties": {
-        "elementType": {
-         "enum": [
-          "straight",
-          "arc",
-          "transition"
-         ]
-        },
-        "startNode": {
-         "$ref": "#/$defs/Point"
-        },
-        "endNode": {
-         "$ref": "#/$defs/Point"
-        },
-        "bearing": {
-         "type": "number"
-        },
-        "endBearing": {
-         "type": "number"
-        },
-        "length": {
-         "type": "number",
-         "minimum": 0
-        },
-        "radius": {
-         "type": [
-          "number",
-          "null"
-         ]
-        },
-        "r1": {
-         "type": [
-          "number",
-          "null"
-         ]
-        },
-        "r2": {
-         "type": [
-          "number",
-          "null"
-         ]
-        },
-        "transitionType": {
-         "enum": [
-          "clothoid",
-          "bloss"
-         ]
-        }
-       }
-      },
       "KmRun": {
-       "description": "A run of a km line without a km jump: its kilometrage at the start and the way it counts along the run, and the run itself — design elements, or the points a source gave where it gave no elements.",
+       "description": "A run of a km line without a km jump: its kilometrage at the start and the way it counts along the run, and the run itself — its plan by column, or the points a source gave where it gave no elements.",
        "type": "object",
        "required": [
         "kmStart"
@@ -1499,12 +1439,8 @@
           "down"
          ]
         },
-        "elements": {
-         "type": "array",
-         "items": {
-          "$ref": "#/$defs/KmElement"
-         },
-         "minItems": 1
+        "horizontalAlignment": {
+         "$ref": "#/$defs/KmAlignment"
         },
         "points": {
          "$ref": "#/$defs/BlobRef"
@@ -1513,7 +1449,7 @@
        "oneOf": [
         {
          "required": [
-          "elements"
+          "horizontalAlignment"
          ]
         },
         {
@@ -1803,6 +1739,79 @@
         "switchHint": {
          "$ref": "#/$defs/Text",
          "description": "Why an import could not build the switch this element belongs to: form, number, reason."
+        }
+       }
+      },
+      "KmAlignment": {
+       "description": "A km line run's plan by column, as a track's (HorizontalAlignment) without what only a track has: over N design elements stationing, coordinates and bearingGon hold N+1 values, from 0 at the run's start; the element types and the radii at both ends N.",
+       "type": "object",
+       "required": [
+        "stationing",
+        "coordinates",
+        "bearingGon",
+        "elementType",
+        "beginRadius",
+        "endRadius"
+       ],
+       "additionalProperties": false,
+       "properties": {
+        "stationing": {
+         "description": "The station of each element's start and of the run's end [m], from 0 at the run's start; the kilometrage is kmStart plus or minus it.",
+         "type": "array",
+         "items": {
+          "type": "number"
+         },
+         "minItems": 2
+        },
+        "coordinates": {
+         "description": "The point of each element's start and of the run's end, [E, N] in the line's plane [m].",
+         "type": "array",
+         "items": {
+          "$ref": "#/$defs/Point"
+         },
+         "minItems": 2
+        },
+        "bearingGon": {
+         "description": "The bearing of each element at its start and of the run at its end [gon], clockwise from grid north.",
+         "type": "array",
+         "items": {
+          "type": "number"
+         },
+         "minItems": 2
+        },
+        "elementType": {
+         "type": "array",
+         "items": {
+          "enum": [
+           "straight",
+           "arc",
+           "clothoid",
+           "bloss"
+          ]
+         },
+         "minItems": 1
+        },
+        "beginRadius": {
+         "description": "The radius at each element's start [m], signed: + curving right; null on a straight end.",
+         "type": "array",
+         "items": {
+          "type": [
+           "number",
+           "null"
+          ]
+         },
+         "minItems": 1
+        },
+        "endRadius": {
+         "description": "The radius at each element's end [m], signed; an arc's is its start's.",
+         "type": "array",
+         "items": {
+          "type": [
+           "number",
+           "null"
+          ]
+         },
+         "minItems": 1
         }
        }
       }
@@ -2209,7 +2218,7 @@
     },
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:5408144d512d65e415a7b577d171b1ca743d2ed18a701b0d8b0632d7657bc286",
@@ -2223,7 +2232,7 @@
     }
    }
   },
-  "hash": "sha256:837c30da8504df7f06e57cc83f9d03fa834486c9e0d386b35f035879aeddfc52"
+  "hash": "sha256:cc3dbb2ba313ebe744586c4e5a901cf8986cfc6d7eb38d57f6a613aa3d93e6d9"
  },
  {
   "name": "another format",
@@ -2233,7 +2242,7 @@
    "domains": {
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -2619,7 +2628,7 @@
    "domains": {
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -3005,7 +3014,7 @@
    "domains": {
     "core": {
      "version": "2.5",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -3391,7 +3400,7 @@
    "domains": {
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -3859,7 +3868,7 @@
     },
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:5408144d512d65e415a7b577d171b1ca743d2ed18a701b0d8b0632d7657bc286",
@@ -3873,7 +3882,7 @@
     }
    }
   },
-  "hash": "sha256:243fd26205e645472064a6431266deca9afe90a942283f66c576d6f71ba64b7d"
+  "hash": "sha256:ac54c9470e7b6a2ea51b60377246e4e9555b3976a3c0d5495149c723a146157f"
  },
  {
   "name": "a schema hash that is not the version's",
@@ -3883,7 +3892,7 @@
    "domains": {
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -4269,7 +4278,7 @@
    "domains": {
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -4644,7 +4653,7 @@
     ]
    },
    "schemas": {
-    "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5": {
+    "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f": {
      "$id": "core"
     },
     "sha256:630ee99b24bb57f9f2abd7697c2103359fc6bbf784effbb6a78d1d15f695849d": {
@@ -5041,7 +5050,7 @@
    "domains": {
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -5397,7 +5406,7 @@
    "domains": {
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -5780,7 +5789,7 @@
    "domains": {
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -6242,7 +6251,7 @@
    "domains": {
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -6629,7 +6638,7 @@
    "domains": {
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -7015,7 +7024,7 @@
    "domains": {
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -7408,7 +7417,7 @@
     },
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:5408144d512d65e415a7b577d171b1ca743d2ed18a701b0d8b0632d7657bc286",
@@ -7422,7 +7431,7 @@
     }
    }
   },
-  "hash": "sha256:443c52e73abd21708d95dcbf7ca5dbb0048c1bb23542762c06eb1b42901862c5"
+  "hash": "sha256:9ded7b9a321b157561dba5d2255b021460a6dc6496fb61362818a192de53f245"
  },
  {
   "name": "a track's plan with a column too long",
@@ -7432,7 +7441,7 @@
    "domains": {
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -7819,7 +7828,7 @@
    "domains": {
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -8205,7 +8214,7 @@
    "domains": {
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -8591,7 +8600,7 @@
    "domains": {
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -8985,7 +8994,7 @@
    "domains": {
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -9371,7 +9380,7 @@
    "domains": {
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -9758,7 +9767,7 @@
    "domains": {
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -10144,7 +10153,7 @@
    "domains": {
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -10538,7 +10547,7 @@
     },
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:5408144d512d65e415a7b577d171b1ca743d2ed18a701b0d8b0632d7657bc286",
@@ -10552,7 +10561,7 @@
     }
    }
   },
-  "hash": "sha256:7a5b30e090a60696867c8bef4caaf43be36c0fb307595cbf46163d0e53a45b04"
+  "hash": "sha256:469560d96b3987b3d95334c78c0b908ee21e343be8d33097a3e4a88ac3d925ff"
  },
  {
   "name": "a domain of a later version",
@@ -10562,7 +10571,7 @@
    "domains": {
     "core": {
      "version": "7.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -10948,7 +10957,7 @@
    "domains": {
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -11335,7 +11344,7 @@
    "domains": {
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -11736,7 +11745,7 @@
    "domains": {
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -12246,7 +12255,7 @@
    "domains": {
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -12564,7 +12573,7 @@
    "domains": {
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:5408144d512d65e415a7b577d171b1ca743d2ed18a701b0d8b0632d7657bc286",
@@ -12578,7 +12587,7 @@
     }
    }
   },
-  "hash": "sha256:d41695dba2f62397c78d0ed7b5aa0b7ac7861d6ad2f1d74d778d7b535e6c89ec"
+  "hash": "sha256:8f59780a0269f1cc62b7ba879c4badd3bfc2423518f22bca1d166c290fab5490"
  },
  {
   "name": "the sample with its signalling",
@@ -12588,7 +12597,7 @@
    "domains": {
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -13482,7 +13491,7 @@
     },
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:5408144d512d65e415a7b577d171b1ca743d2ed18a701b0d8b0632d7657bc286",
@@ -13516,7 +13525,7 @@
     }
    }
   },
-  "hash": "sha256:e1da1dbf085d6a4204787bc292352f083f18b5ea08cca817bb46b9d7a46244f6"
+  "hash": "sha256:b8c862991cb4e97c18de91382d4fdb1c028e341d62313ae36da399ae4c6071df"
  },
  {
   "name": "the sample with its signalling, carrying its schemas",
@@ -13526,7 +13535,7 @@
    "domains": {
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -14402,7 +14411,7 @@
     ]
    },
    "schemas": {
-    "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5": {
+    "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f": {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
      "$id": "core",
      "title": "Rail-Data-Core, domain core 6.0",
@@ -15025,68 +15034,8 @@
        "type": "string",
        "pattern": "^sha256:[0-9a-f]{64}$"
       },
-      "KmElement": {
-       "description": "A design element of a km line: what a track element states of its geometry, without the parts that only a track has.",
-       "type": "object",
-       "required": [
-        "elementType",
-        "startNode",
-        "endNode",
-        "length"
-       ],
-       "additionalProperties": false,
-       "properties": {
-        "elementType": {
-         "enum": [
-          "straight",
-          "arc",
-          "transition"
-         ]
-        },
-        "startNode": {
-         "$ref": "#/$defs/Point"
-        },
-        "endNode": {
-         "$ref": "#/$defs/Point"
-        },
-        "bearing": {
-         "type": "number"
-        },
-        "endBearing": {
-         "type": "number"
-        },
-        "length": {
-         "type": "number",
-         "minimum": 0
-        },
-        "radius": {
-         "type": [
-          "number",
-          "null"
-         ]
-        },
-        "r1": {
-         "type": [
-          "number",
-          "null"
-         ]
-        },
-        "r2": {
-         "type": [
-          "number",
-          "null"
-         ]
-        },
-        "transitionType": {
-         "enum": [
-          "clothoid",
-          "bloss"
-         ]
-        }
-       }
-      },
       "KmRun": {
-       "description": "A run of a km line without a km jump: its kilometrage at the start and the way it counts along the run, and the run itself — design elements, or the points a source gave where it gave no elements.",
+       "description": "A run of a km line without a km jump: its kilometrage at the start and the way it counts along the run, and the run itself — its plan by column, or the points a source gave where it gave no elements.",
        "type": "object",
        "required": [
         "kmStart"
@@ -15102,12 +15051,8 @@
           "down"
          ]
         },
-        "elements": {
-         "type": "array",
-         "items": {
-          "$ref": "#/$defs/KmElement"
-         },
-         "minItems": 1
+        "horizontalAlignment": {
+         "$ref": "#/$defs/KmAlignment"
         },
         "points": {
          "$ref": "#/$defs/BlobRef"
@@ -15116,7 +15061,7 @@
        "oneOf": [
         {
          "required": [
-          "elements"
+          "horizontalAlignment"
          ]
         },
         {
@@ -15406,6 +15351,79 @@
         "switchHint": {
          "$ref": "#/$defs/Text",
          "description": "Why an import could not build the switch this element belongs to: form, number, reason."
+        }
+       }
+      },
+      "KmAlignment": {
+       "description": "A km line run's plan by column, as a track's (HorizontalAlignment) without what only a track has: over N design elements stationing, coordinates and bearingGon hold N+1 values, from 0 at the run's start; the element types and the radii at both ends N.",
+       "type": "object",
+       "required": [
+        "stationing",
+        "coordinates",
+        "bearingGon",
+        "elementType",
+        "beginRadius",
+        "endRadius"
+       ],
+       "additionalProperties": false,
+       "properties": {
+        "stationing": {
+         "description": "The station of each element's start and of the run's end [m], from 0 at the run's start; the kilometrage is kmStart plus or minus it.",
+         "type": "array",
+         "items": {
+          "type": "number"
+         },
+         "minItems": 2
+        },
+        "coordinates": {
+         "description": "The point of each element's start and of the run's end, [E, N] in the line's plane [m].",
+         "type": "array",
+         "items": {
+          "$ref": "#/$defs/Point"
+         },
+         "minItems": 2
+        },
+        "bearingGon": {
+         "description": "The bearing of each element at its start and of the run at its end [gon], clockwise from grid north.",
+         "type": "array",
+         "items": {
+          "type": "number"
+         },
+         "minItems": 2
+        },
+        "elementType": {
+         "type": "array",
+         "items": {
+          "enum": [
+           "straight",
+           "arc",
+           "clothoid",
+           "bloss"
+          ]
+         },
+         "minItems": 1
+        },
+        "beginRadius": {
+         "description": "The radius at each element's start [m], signed: + curving right; null on a straight end.",
+         "type": "array",
+         "items": {
+          "type": [
+           "number",
+           "null"
+          ]
+         },
+         "minItems": 1
+        },
+        "endRadius": {
+         "description": "The radius at each element's end [m], signed; an arc's is its start's.",
+         "type": "array",
+         "items": {
+          "type": [
+           "number",
+           "null"
+          ]
+         },
+         "minItems": 1
         }
        }
       }
@@ -17065,7 +17083,7 @@
     },
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:5408144d512d65e415a7b577d171b1ca743d2ed18a701b0d8b0632d7657bc286",
@@ -17099,7 +17117,7 @@
     }
    }
   },
-  "hash": "sha256:e1da1dbf085d6a4204787bc292352f083f18b5ea08cca817bb46b9d7a46244f6"
+  "hash": "sha256:b8c862991cb4e97c18de91382d4fdb1c028e341d62313ae36da399ae4c6071df"
  },
  {
   "name": "signalling depending on nothing",
@@ -17109,7 +17127,7 @@
    "domains": {
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -17993,7 +18011,7 @@
    "domains": {
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -18879,7 +18897,7 @@
    "domains": {
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -19773,7 +19791,7 @@
     },
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:5408144d512d65e415a7b577d171b1ca743d2ed18a701b0d8b0632d7657bc286",
@@ -19807,7 +19825,7 @@
     }
    }
   },
-  "hash": "sha256:e1da1dbf085d6a4204787bc292352f083f18b5ea08cca817bb46b9d7a46244f6"
+  "hash": "sha256:b8c862991cb4e97c18de91382d4fdb1c028e341d62313ae36da399ae4c6071df"
  },
  {
   "name": "signalling without its overlaps",
@@ -19817,7 +19835,7 @@
    "domains": {
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -20674,7 +20692,7 @@
    "domains": {
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -21586,7 +21604,7 @@
    "domains": {
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -22476,7 +22494,7 @@
    "domains": {
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -23387,7 +23405,7 @@
     },
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:5408144d512d65e415a7b577d171b1ca743d2ed18a701b0d8b0632d7657bc286",
@@ -23422,7 +23440,7 @@
     }
    }
   },
-  "hash": "sha256:2781ecd1dec81650084d7a05a8ea879e7b51c81853bd493e3098ad458311c0ba"
+  "hash": "sha256:6e687911afaf16d6c24d0182448bf82bb1f0c156511248ee2b076f88b211fc11"
  },
  {
   "name": "the sample with its electrification",
@@ -23432,7 +23450,7 @@
    "domains": {
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -23891,7 +23909,7 @@
     },
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:5408144d512d65e415a7b577d171b1ca743d2ed18a701b0d8b0632d7657bc286",
@@ -23919,7 +23937,7 @@
     }
    }
   },
-  "hash": "sha256:20c4dab6030b0b70515b5824539b4da4ea389e2f8692059d073ed2395d12a9e0"
+  "hash": "sha256:dad1018b7a2293018a9fea4001e25462a3bba972c58a7339a24fcabf1a87ae32"
  },
  {
   "name": "a contact wire of no voltage",
@@ -23929,7 +23947,7 @@
    "domains": {
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -24380,7 +24398,7 @@
    "domains": {
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -24832,7 +24850,7 @@
    "domains": {
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -25226,7 +25244,7 @@
     },
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:1db543e36f0368206d47d0d233366f7da604041daf7808edaaf9fdb5651ff9e1",
@@ -25240,7 +25258,7 @@
     }
    }
   },
-  "hash": "sha256:a17ec3a34d1344c8013b3071bbfd5c70179b7c3eddc0ef3e7ce5a50aaa4d05ee"
+  "hash": "sha256:f8832f10bad0be2bf2dcaeac28d3028552fde605a3e2c95b8d776d31c3b18450"
  },
  {
   "name": "a track of a station that is not there",
@@ -25250,7 +25268,7 @@
    "domains": {
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -25636,7 +25654,7 @@
    "domains": {
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": {
       "id": "b0d5c1a2-6f3e-4c77-9d0a-2f1e3c4b5a69",
       "title": "Halle-Trotha",
@@ -26859,7 +26877,7 @@
     },
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:5408144d512d65e415a7b577d171b1ca743d2ed18a701b0d8b0632d7657bc286",
@@ -26873,7 +26891,7 @@
     }
    }
   },
-  "hash": "sha256:268af177c0de30ff55eccfcf84587b2f93aeb945a54775fd575029140ee9c432"
+  "hash": "sha256:c82546be2a222d7c750730091a6177af2137aea1d1c4d87edda54096c30234dd"
  },
  {
   "name": "infra-data 1.0: the sample with its signalling",
@@ -27717,7 +27735,7 @@
     },
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:5408144d512d65e415a7b577d171b1ca743d2ed18a701b0d8b0632d7657bc286",
@@ -27751,7 +27769,7 @@
     }
    }
   },
-  "hash": "sha256:eea7104d7cae547b92c67bfcee03633825329930ca51434dc2123aea6de35660"
+  "hash": "sha256:34bb8f3bba1e67e931db8c96bc1671f0538c30b7de02aac5149bbc45026abc39"
  },
  {
   "name": "infra-data 1.0: a stopping place at a platform, a boundary marked by it",
@@ -28599,7 +28617,7 @@
     },
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:5408144d512d65e415a7b577d171b1ca743d2ed18a701b0d8b0632d7657bc286",
@@ -28633,7 +28651,7 @@
     }
    }
   },
-  "hash": "sha256:8b773897bc0b2098028f9df8644dabf60f5e17c5bc3068e7ea709769b89e3979"
+  "hash": "sha256:848cbce91617c396fe6c3f05af3dd6af39ec98ae8fc3a41706ecad77973200dc"
  },
  {
   "name": "infra-data 1.0: a boundary marked by a platform no stopping place is at",
@@ -29480,7 +29498,7 @@
     },
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:5408144d512d65e415a7b577d171b1ca743d2ed18a701b0d8b0632d7657bc286",
@@ -29514,7 +29532,7 @@
     }
    }
   },
-  "hash": "sha256:a6510687f5a882e02657c5801a4174ae2488ae503434ccb624e54a0626560fc2"
+  "hash": "sha256:048e1702d97db09178e868c37409ee4289c94147c26449a66611486f59e76cd3"
  },
  {
   "name": "infra-data 1.0: core as written before the design speed took its name",
@@ -29860,7 +29878,7 @@
     },
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:5408144d512d65e415a7b577d171b1ca743d2ed18a701b0d8b0632d7657bc286",
@@ -29874,7 +29892,7 @@
     }
    }
   },
-  "hash": "sha256:268af177c0de30ff55eccfcf84587b2f93aeb945a54775fd575029140ee9c432"
+  "hash": "sha256:c82546be2a222d7c750730091a6177af2137aea1d1c4d87edda54096c30234dd"
  },
  {
   "name": "infra-data 1.0: a domain this build does not read",
@@ -30878,7 +30896,7 @@
     },
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:5408144d512d65e415a7b577d171b1ca743d2ed18a701b0d8b0632d7657bc286",
@@ -30892,7 +30910,7 @@
     }
    }
   },
-  "hash": "sha256:3d0ef3216a83179e0ec03896397da0acb92e4a969f0e7c6df56bbd4e50741b7d"
+  "hash": "sha256:a589be820e607766e9498c5ced2580e8312637421abdb674ebcc85c7c37397a5"
  },
  {
   "name": "stages: the sample",
@@ -31239,7 +31257,7 @@
     },
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:5408144d512d65e415a7b577d171b1ca743d2ed18a701b0d8b0632d7657bc286",
@@ -31253,7 +31271,7 @@
     }
    }
   },
-  "hash": "sha256:268af177c0de30ff55eccfcf84587b2f93aeb945a54775fd575029140ee9c432"
+  "hash": "sha256:c82546be2a222d7c750730091a6177af2137aea1d1c4d87edda54096c30234dd"
  },
  {
   "name": "stages: the sample, carrying its schemas",
@@ -32873,7 +32891,7 @@
     },
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:5408144d512d65e415a7b577d171b1ca743d2ed18a701b0d8b0632d7657bc286",
@@ -32887,7 +32905,7 @@
     }
    }
   },
-  "hash": "sha256:268af177c0de30ff55eccfcf84587b2f93aeb945a54775fd575029140ee9c432"
+  "hash": "sha256:c82546be2a222d7c750730091a6177af2137aea1d1c4d87edda54096c30234dd"
  },
  {
   "name": "stages: the sample with its signalling",
@@ -33735,7 +33753,7 @@
     },
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:5408144d512d65e415a7b577d171b1ca743d2ed18a701b0d8b0632d7657bc286",
@@ -33769,7 +33787,7 @@
     }
    }
   },
-  "hash": "sha256:6af3ad640619426afb1b612dca726b0876ab64e6f1da8ffd5fec136a06383076"
+  "hash": "sha256:5aafebca5f672eac8f0861cd3918a879e2ab07cda549e8783a1331ef13600fc6"
  },
  {
   "name": "stages: the sample with its electrification",
@@ -34139,7 +34157,7 @@
     },
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:5408144d512d65e415a7b577d171b1ca743d2ed18a701b0d8b0632d7657bc286",
@@ -34167,7 +34185,7 @@
     }
    }
   },
-  "hash": "sha256:6dae9ada4db755298cbbdeea25d9cb67ca325970389ecadf8e839a31c2c25403"
+  "hash": "sha256:69d3ed6522006806f77690d3a9dd53ac9945b1c1462814e691eefea3a215f4d0"
  },
  {
   "name": "stages: a stage with its day, a track out of service with it and one into",
@@ -34519,7 +34537,7 @@
     },
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:5408144d512d65e415a7b577d171b1ca743d2ed18a701b0d8b0632d7657bc286",
@@ -34533,7 +34551,7 @@
     }
    }
   },
-  "hash": "sha256:9e06479c0a3261d6a5b566d1b9ed4cae1bd0008199b6fd6e596fe3b3d302d5eb"
+  "hash": "sha256:2af179b922aaec91f46cb04d0b50a8e2bcea67157a793347e8e0953dd8d21037"
  },
  {
   "name": "stages: a lifespan naming a stage that is not there",
@@ -34880,7 +34898,7 @@
     },
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:5408144d512d65e415a7b577d171b1ca743d2ed18a701b0d8b0632d7657bc286",
@@ -34894,7 +34912,7 @@
     }
    }
   },
-  "hash": "sha256:268af177c0de30ff55eccfcf84587b2f93aeb945a54775fd575029140ee9c432"
+  "hash": "sha256:c82546be2a222d7c750730091a6177af2137aea1d1c4d87edda54096c30234dd"
  },
  {
   "name": "stages: a signal of the final state",
@@ -35745,7 +35763,7 @@
     },
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:5408144d512d65e415a7b577d171b1ca743d2ed18a701b0d8b0632d7657bc286",
@@ -35779,7 +35797,7 @@
     }
    }
   },
-  "hash": "sha256:6069fdb5965da816f80c61e5c6e7df45610dd059bb7e5543b425d4b8485bdda5"
+  "hash": "sha256:4dfa7d8731c736ad9ca9d12c89aedda80e810aba7280f44b3618c92827e1b5e5"
  },
  {
   "name": "stages: civil of a version that does not go with the core's",
@@ -37287,7 +37305,7 @@
     },
     "core": {
      "version": "6.0",
-     "schema": "sha256:a3f71ef4646bdbdb21d5c3498833c42c63e8d4843b9dc6c5bb5c8c5436856dc5",
+     "schema": "sha256:1e9d36b3093eb5c714adb2a16b98fd59cd7276efc0a81f5baaf43dbc9e260e5f",
      "fields": "sha256:40dfb40ef7a6f449892723f32566cbed685da906a7bb5fb8b897cf0925adda0c",
      "collections": {
       "endMarks": "sha256:5408144d512d65e415a7b577d171b1ca743d2ed18a701b0d8b0632d7657bc286",
@@ -37321,6 +37339,6 @@
     }
    }
   },
-  "hash": "sha256:9fa7b7fed8b52e4f4caab6667670dad13a92dc6489657f4d420da9fb8cf26076"
+  "hash": "sha256:9e2cb0ec283320a5ec35657c8037d24e25a51d58da35901662f5191ce173f449"
  }
 ]

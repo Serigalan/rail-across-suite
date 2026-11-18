@@ -545,7 +545,7 @@ const STEPS: &[Step] = &[
     },
     Step {
         domains: WORDS_AND_NAMES,
-        apply: |d| Ok(words_and_names(d)),
+        apply: words_and_names,
     },
     Step {
         domains: CONTACT_WIRES,
@@ -657,14 +657,16 @@ fn references_resolved(doc: &Value) -> Value {
 /// Core 4.0 (decision 0006): the kinds as words, the references ending in `Id`, no plane of an
 /// element's own, a switch with `B1` its main track (`words`); a km line in one plane as runs (`km_lines`), every id
 /// a UUID (`ids`). The domains are at the step's versions after it.
-fn words_and_names(doc: &Value) -> Value {
+fn words_and_names(doc: &Value) -> Result<Value> {
     let mut out = doc.clone();
     let mut blobs = obj(&doc["blobs"]);
-    let Some(Value::Object(domains)) = out.get_mut("domains") else { return out };
+    let Some(Value::Object(domains)) = out.get_mut("domains") else {
+        return Ok(out);
+    };
     crate::words::forward(domains);
     crate::words::swap_switch_ports(domains);
     // A km line in one plane, its runs' points as blobs; every id a UUID (decision 0006).
-    crate::core_format::km_lines_to_document(domains, &mut blobs);
+    crate::core_format::km_lines_to_document(domains, &mut blobs)?;
     crate::ids::forward(domains);
     crate::core_format::sorted_collections(domains);
     for (name, _, to) in WORDS_AND_NAMES {
@@ -673,7 +675,7 @@ fn words_and_names(doc: &Value) -> Value {
         domain.insert("schema".into(), json!(hash_of(name, to)));
     }
     out.as_object_mut().expect("document").insert("blobs".into(), Value::Object(blobs));
-    out
+    Ok(out)
 }
 
 /// Electrification 3.0 (decision 0006): an electrified range of a track with its system becomes a
@@ -745,7 +747,7 @@ fn switch_ports(doc: &Value) -> Value {
 }
 
 /// Core 6.0 (decision 0006): a track's plan by column (`horizontalAlignment`) instead of its list of elements,
-/// chained from its first start point. Refused where an element ends more than 1 mm from where it was stated:
+/// each element held to its own start point, and a km line's runs the same way. Refused where an element ends more than 1 mm from where it was stated:
 /// what lies further apart is no plan the columns can hold.
 fn alignment_columns(doc: &Value) -> Result<Value> {
     let mut out = doc.clone();
@@ -753,6 +755,7 @@ fn alignment_columns(doc: &Value) -> Result<Value> {
         return Ok(out);
     };
     crate::core_format::tracks_by_column(domains)?;
+    crate::core_format::km_runs_by_column(domains)?;
     for (name, _, to) in ALIGNMENT_COLUMNS {
         let Some(Value::Object(domain)) = domains.get_mut(*name) else { continue };
         domain.insert("version".into(), json!(to));
@@ -1124,6 +1127,15 @@ fn alignment_breaches(doc: &Value) -> Vec<String> {
         let Some(alignment) = track.get("horizontalAlignment") else { continue };
         for b in crate::alignment::breaches(alignment) {
             found.push(format!("/domains/core/collections/tracks/{i}/horizontalAlignment: {b}"));
+        }
+    }
+    let lines = doc["domains"]["core"]["collections"]["kmLines"].as_array().cloned().unwrap_or_default();
+    for (i, line) in lines.iter().enumerate() {
+        for (k, run) in line["runs"].as_array().into_iter().flatten().enumerate() {
+            let Some(alignment) = run.get("horizontalAlignment") else { continue };
+            for b in crate::alignment::breaches(alignment) {
+                found.push(format!("/domains/core/collections/kmLines/{i}/runs/{k}/horizontalAlignment: {b}"));
+            }
         }
     }
     found

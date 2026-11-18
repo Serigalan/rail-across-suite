@@ -286,15 +286,17 @@ gleichermaßen brauchen. Ein **Personenhalt** (`passengerStop`) ist er, wo ein B
 
 Eine **Kilometrierungslinie** (`kmLines`) sind fremde Bezugsdaten: die Achse einer Strecke um das Projekt mit ihrer
 Kilometrierung. Sie wird **in Trassierungselementen** gespeichert, wie ein Gleis: in einer Ebene (`epsg`), als
-Läufe von Kilometersprung zu Kilometersprung (`runs`). Ein Lauf nennt seinen Kilometer am Anfang (`kmStart`, m)
-und wie er entlang des Laufs zählt (`counting`: `up` steigend oder `down` fallend); der Kilometer eines Punkts ist
-der Anfangswert plus oder minus die laufende Länge bis zu ihm.
+Läufe von Kilometersprung zu Kilometersprung (`runs`). Ein Lauf nennt seinen Kilometer am Anfang (`kmStart`, m),
+wie er entlang des Laufs zählt (`counting`: `up` steigend oder `down` fallend) und seine Trassierung in Spalten
+(`horizontalAlignment`) wie ein Gleis — ohne Überhöhung, Entwurfsgeschwindigkeit und Elementangaben, die nur ein
+Gleis hat; seine Stationen beginnen mit 0 am Anfang des Laufs. Der Kilometer eines Punkts ist der Anfangswert plus
+oder minus seine Station.
 
 Das ist weit kleiner als eine Polylinie mit einem Punkt alle paar Meter, und genau, wo die Quelle Elemente angibt —
 die Streckenachsen der DB sind in Elementen entworfen wie die Gleise. Dieselbe Rechnung dient Gleisen und
 Kilometrierungslinien. Für ein Gleis in einer anderen Ebene wird die Achse in diese umgerechnet. Wo eine Quelle nur
-Punkte liefert, hält ein Lauf sie als Blob (`points`: `[Rechtswert, Hochwert, Kilometer]` je Punkt), bis er mit
-Elementen angenähert ist.
+Punkte liefert, hält ein Lauf stattdessen sie als Blob (`points`: `[Rechtswert, Hochwert, Kilometer]` je Punkt),
+bis er mit Elementen angenähert ist.
 
 ## Weitere Sammlungen
 
@@ -512,10 +514,10 @@ einem Fahrzeug und einem Zug von der Grenze nach Halle-Trotha, wo er auf diesem 
           } ],
           "kmLines": [ {
             "id": "0f9e8d7c-6b5a-4f3e-8d2c-1b0a9f8e7d6c", "lineNumber": 6050, "epsg": 5684,
-            "runs": [ { "kmStart": 12400.0, "counting": "up", "elements": [
-              { "elementType": "straight", "bearing": 90, "length": 250,
-                "startNode": [4497050.0, 5706220.0],
-                "endNode": [4497300.0, 5706220.0] } ] } ]
+            "runs": [ { "kmStart": 12400.0, "counting": "up", "horizontalAlignment": {
+              "stationing": [0, 250], "coordinates": [[4497050.0, 5706220.0], [4497300.0, 5706220.0]],
+              "bearingGon": [100, 100], "elementType": ["straight"],
+              "beginRadius": [null], "endRadius": [null] } } ]
           } ],
           "operationalPoints": [ {
             "id": "b64cfd92-f881-43ad-82d7-f0d78ef78747", "name": "Halle-Trotha",
@@ -616,8 +618,9 @@ in diesen Punkten ab; jeder wird in einem eigenen Schritt angeglichen (Entscheid
   Domänen und ihre Blobs, core 6.0, civil 3.0, signalling 4.0, electrification 3.0) und den Betrieb als Dokument
   operations (vehicles 1.0, timetables 1.2); die Datei rail-across-1.0 führt sie zusammen, eine Datei von vorher
   wird weiter gelesen.
-- Der Record, mit dem die Werkzeuge arbeiten, behält Kilometrierungslinien in WGS 84 mit dem Kilometer je Punkt;
-  die Tür wandelt sie ins Dokument und zurück (Entscheidung 0006 nimmt das heraus). Eine
-  Kilometrierungslinie von vorher steht als Punkte da, noch nicht mit Trassierungselementen angenähert.
+- Der Record, mit dem die Werkzeuge arbeiten, behält Kilometrierungslinien in WGS 84 mit dem Kilometer je Punkt,
+  zum Zeichnen und Ablesen der Kilometrierung, und daneben die Trassierungselemente, die eine Quelle geliefert hat
+  (`design`); die Tür schreibt die Elemente in Spalten. Eine Kilometrierungslinie von vorher und eine mit der App
+  ausgelieferte steht als Punkte da, noch nicht mit Trassierungselementen angenähert.
 - Eine Domäne, die der Leser nicht kennt, bleibt erhalten; eine spätere Version einer Domäne, die er kennt, lehnt er
   ab, statt sie mit der Version zu lesen, die er kennt.

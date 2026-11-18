@@ -39,3 +39,22 @@ export async function fitImportedTracks(tracks, { run = runOptimizer } = {}) {
   })
   return { tracks: out, notes }
 }
+
+/**
+ * Imported kilometrage lines whose design runs (`design`, mdbKmLine and
+ * kmLineEntries) are fitted as tracks are, each run on its own: a km line's
+ * plan by column holds together as a track's does (decision 0006). Returns
+ * { lines, notes }; a line without a design comes back as it is.
+ */
+export async function fitImportedKmLines(lines, { run = runOptimizer } = {}) {
+  const runs = lines.flatMap((line, i) => (line.design?.runs ?? [])
+    .map((r, k) => ({ id: `${i}:${k}`, name: `Km-Linie ${line.lineNumber}, Lauf ${k + 1}`, epsg: line.design.epsg, elements: r.elements }))
+    .filter(r => r.elements?.length))
+  if (!runs.length) return { lines, notes: [] }
+  const fitted = await fitImportedTracks(runs, { run })
+  const byId = new Map(fitted.tracks.map(t => [t.id, t.elements.map(plain)]))
+  const out = lines.map((line, i) => (line.design
+    ? { ...line, design: { ...line.design, runs: line.design.runs.map((r, k) => (byId.has(`${i}:${k}`) ? { ...r, elements: byId.get(`${i}:${k}`) } : r)) } }
+    : line))
+  return { lines: out, notes: fitted.notes }
+}

@@ -35,10 +35,13 @@ Status: **accepted** · as of 2026-11-18 · the specification is [rail-across-1.
    branch, `B2` the main track.
 9. **Operational points are objects** with ids of their own. A track, a platform, a signal refers to its point
    (`operationalPointId`); the point's name and codes are its own, stated once.
-10. **Km lines are foreign reference data in design elements**, as a track is: in one plane (the UTM plane of
-    ETRS89 a line's first point lies in), as runs from km jump to km jump, each with its kilometrage at the start
-    (`kmStart`) and the way it counts (`counting`). Where a source delivers points only, a run holds them as a blob
-    (`[easting, northing, km]`) until they are fitted.
+10. **Km lines are foreign reference data in design elements**, as a track is: in one plane, as runs from km jump
+    to km jump, each with its kilometrage at the start (`kmStart`), the way it counts (`counting`) and its plan by
+    column (`horizontalAlignment`, as a track's without cant, design speed and details). The elements are taken as
+    the source delivers them: the DB's ASCII interface (MDB, record type 24) and the Verm.ESN import state start
+    point, bearing, length and radii, and the record keeps them beside the line's points (`design`), fitted at the
+    import as a track is. Where a source delivers points only, a run holds them as a blob
+    (`[easting, northing, km]`, in the UTM plane of ETRS89 the line's first point lies in) until they are fitted.
 11. **A track's plan stands by column** (`horizontalAlignment`, core 6.0), as the OSRD export states it: over N
     elements `stationing`, `coordinates` and `bearingGon` hold N+1 values — each element's start, the last the
     track's end —, the element types, radii and cants at both ends N; the design speed N where an element states
@@ -68,15 +71,12 @@ Status: **accepted** · as of 2026-11-18 · the specification is [rail-across-1.
 
 ## Decided, not built yet
 
-- **The km lines in the record as in the document**, their runs by column as a track's plan, without cant and
-  design speed (`horizontalAlignment` per run, its stations from 0 at the run's start; `points` where a source
-  gives points only). The record holds a km line as the format does — one plane,
-  runs, design elements —, no longer as WGS 84 points with a kilometrage each. The elements are taken as the source
-  delivers them: the DB's ASCII interface (MDB, record type 24) and the VermESN import state start point, bearing,
-  length and radii, which are kept instead of being turned into points. Only a source of points alone — the line
-  files shipped with the app (`tiles/km/`) — is fitted into elements, with the fit the optimizer has for axis
-  points; where the fit stays within 1 cm of every point, the elements are kept and the points dropped, else the
-  run keeps its points. With that, record and document are one model throughout (point 2).
+- **The km lines in the record as in the document.** The record still keeps a km line as WGS 84 points with a
+  kilometrage each, which every tool draws and reads, and carries the design beside it; the tools are to read the
+  design itself, so that record and document are one model throughout (point 2). Only a source of points alone —
+  the line files shipped with the app (`tiles/km/`) — is then fitted into elements, with the fit the optimizer has
+  for axis points; where the fit stays within 1 cm of every point, the elements are kept and the points dropped,
+  else the run keeps its points.
 
 ## Why
 

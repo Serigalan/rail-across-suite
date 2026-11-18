@@ -204,9 +204,12 @@ the direction it runs each one is derived from where they meet.
 ### Km line, axis survey, reference axis
 
 - `kmLines`: `{ id: "km-<lineNumber>", lineNumber, crs: "EPSG:4326", clip: [w, s, e, n], runs: [[[lon,
-  lat, km], …], …], source? }` — foreign reference data in WGS84, the runs of the line clipped to the box
-  around the project's tracks; the third value is the kilometrage in metres. `source: "mdb"` marks a line
-  taken from an imported file, which is kept instead of the shipped one.
+  lat, km], …], …], source?, design? }` — foreign reference data in WGS84, the runs of the line clipped to the box
+  around the project's tracks; the third value is the kilometrage in metres. `source: "mdb"` (or `"vermesn"`)
+  marks a line taken from an imported file, which is kept instead of the shipped one. `design: { epsg, runs:
+  [{ kmStart, counting, elements | points }] }` is the line as the file gave it, in its plane: per run its
+  design elements, or its points `[easting, northing, km]` — what the document keeps by column (core 6.0); where
+  a line has it, its WGS84 runs are drawn from it.
 - `axisSurveys`: `{ id, name, epsg, rail, guide, cloudNames, cloudRefs?, createdAt, step, gaps, points: { e0,
   n0, z0, st, de, dn, zl, zr, ga, q } }` — parallel arrays of whole millimetres (see [survey](../../../packages/core/docs/survey.md)).
 - `referenceAxes`: `{ id, name, epsg, heightEpsg, source, points: { s0, step, count, e0, n0, de, dn, z } }` —

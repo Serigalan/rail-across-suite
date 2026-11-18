@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { commitImport, loadSwitches } from '../../../storage'
-import { fitImportedTracks } from '../../../utils/exchange'
+import { fitImportedKmLines, fitImportedTracks } from '../../../utils/exchange'
 import { HEIGHT_DATUMS, heightDatumLabel } from '@rail-across/core/track'
 import {
   batchReferences, buildVermEsnBatch, gradientHeightCode, readKmLines, readVermEsnArchive, vermEsnSwitches,
@@ -96,9 +96,10 @@ export default function VermEsnBatch({ epsg }) {
     setWorking(true)
     const sw = built.length ? vermEsnSwitches(built, { existingSwitches: loadSwitches() }) : { tracks: [], switches: [], notes: [] }
     const fitted = await fitImportedTracks(sw.tracks)
+    const lines = await fitImportedKmLines(kmLines)
     setWorking(false)
     if (fitted.tracks.length) {
-      commitImport({ addTracks: fitted.tracks, addSwitches: sw.switches, addKmLines: kmLines, addReferenceAxes: axes })
+      commitImport({ addTracks: fitted.tracks, addSwitches: sw.switches, addKmLines: lines.lines, addReferenceAxes: axes })
     }
     const failed = files.filter(f => !f.imported)
     const counts = { tracks: built.length, heights: files.filter(f => f.heights > 0).length, axes: axes.length }
@@ -115,6 +116,7 @@ export default function VermEsnBatch({ epsg }) {
       ...(sw.switches.length ? [fill('data_exchange_vermesn_switches', { n: sw.switches.length })] : []),
       ...sw.notes,
       ...fitted.notes,
+      ...lines.notes,
     ])
     setBatch(null)
   }

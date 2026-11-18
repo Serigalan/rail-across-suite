@@ -3,7 +3,7 @@ import { commitImport, loadSwitches, loadTracks } from '../../core/storage'
 import { EPSG_OPTIONS } from '@rail-across/core/geometry'
 import { ALL_LINES } from '../../core/utils/exchange'
 import { importMdb } from '../mdb/mdbImportJob'
-import { fitImportedTracks } from '../../core/utils/exchange'
+import { fitImportedKmLines, fitImportedTracks } from '../../core/utils/exchange'
 import { useI18n } from '../../core/locales/i18nContext'
 import { useProject } from '../../core/hooks/useStore'
 import FilePickButton from '../../core/components/form/FilePickButton'
@@ -45,6 +45,8 @@ export default function MdbSection({ dbref = false, onReport }) {
       // The tracks fitted to hold together before they are kept (decision 0006).
       const fitted = commit?.addTracks?.length ? await fitImportedTracks(commit.addTracks) : null
       if (fitted) notes.push(...fitted.notes)
+      const lines = commit?.addKmLines?.length ? await fitImportedKmLines(commit.addKmLines) : null
+      if (lines) notes.push(...lines.notes)
       // Every import leaves its report behind, whether it placed anything or
       // not — that is the run whose messages someone comes back to.
       mdb.setErrors(notes)
@@ -53,7 +55,9 @@ export default function MdbSection({ dbref = false, onReport }) {
         ...counts, lines: notes,
       })
       // One commit, one undo step — a whole database is thousands of tracks.
-      if (commit) commitImport(fitted ? { ...commit, addTracks: fitted.tracks } : commit)
+      if (commit) {
+        commitImport({ ...commit, ...(fitted ? { addTracks: fitted.tracks } : {}), ...(lines ? { addKmLines: lines.lines } : {}) })
+      }
     } catch (err) {
       mdb.setErrors([err?.name === 'AbortError' ? t('run_aborted') : `${t('import_parse_error')}: ${err.message}`])
     } finally {

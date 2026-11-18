@@ -235,9 +235,9 @@ A *stopping place* (`stoppingPlaces`) is where trains stop: a stretch of one tra
 
 == Km lines
 
-A *km line* (`kmLines`) is foreign reference data: the axis of a line around the project with its kilometrage. It is kept *in design elements*, as a track is: in one plane (`epsg`), as runs from km jump to km jump (`runs`). A run states its kilometrage at the start (`kmStart`, m) and the way it counts along the run (`counting`: `up` or `down`); the kilometrage of a point is the start value plus or minus the running length up to it.
+A *km line* (`kmLines`) is foreign reference data: the axis of a line around the project with its kilometrage. It is kept *in design elements*, as a track is: in one plane (`epsg`), as runs from km jump to km jump (`runs`). A run states its kilometrage at the start (`kmStart`, m) and the way it counts along the run (`counting`: `up` or `down`), and its plan by column (`horizontalAlignment`) as a track does — without cant, design speed and element details, which only a track has; its stations begin with 0 at the run's start. The kilometrage of a point is the start value plus or minus its station.
 
-That is far smaller than a polyline with a point every few metres, and exact where the source states elements — the DB's line axes are designed in elements as the tracks are. The same calculation serves tracks and km lines. For a track in another plane, the axis is transformed into it. Where a source delivers points only, a run holds them as a blob (`points`: `[easting, northing, km]` per point) until it is fitted with elements.
+That is far smaller than a polyline with a point every few metres, and exact where the source states elements — the DB's line axes are designed in elements as the tracks are. The same calculation serves tracks and km lines. For a track in another plane, the axis is transformed into it. Where a source delivers points only, a run holds them as a blob (`points`: `[easting, northing, km]` per point) instead, until it is fitted with elements.
 
 == Further collections
 
@@ -379,10 +379,10 @@ A file with a track of a straight and an arc, new from 1 May 2027, a boundary at
           } ],
           "kmLines": [ {
             "id": "0f9e8d7c-6b5a-4f3e-8d2c-1b0a9f8e7d6c", "lineNumber": 6050, "epsg": 5684,
-            "runs": [ { "kmStart": 12400.0, "counting": "up", "elements": [
-              { "elementType": "straight", "bearing": 90, "length": 250,
-                "startNode": [4497050.0, 5706220.0],
-                "endNode": [4497300.0, 5706220.0] } ] } ]
+            "runs": [ { "kmStart": 12400.0, "counting": "up", "horizontalAlignment": {
+              "stationing": [0, 250], "coordinates": [[4497050.0, 5706220.0], [4497300.0, 5706220.0]],
+              "bearingGon": [100, 100], "elementType": ["straight"],
+              "beginRadius": [null], "endRadius": [null] } } ]
           } ],
           "operationalPoints": [ {
             "id": "b64cfd92-f881-43ad-82d7-f0d78ef78747", "name": "Halle-Trotha",
@@ -479,7 +479,7 @@ The hashes are shortened here; in a file each has its 64 hex digits.
 This specification is the target of the data model. As of 13 November 2026 the suite's implementation differs from it in these points, each to be brought in line by its own step (decision 0006 and those after it):
 
 - The project server keeps a variant's infrastructure as a document of the envelope of before (infra-data 2.0: its domains and its blobs, core 6.0, civil 3.0, signalling 4.0, electrification 3.0) and the operation as an operations document (vehicles 1.0, timetables 1.2); the file rail-across-1.0 brings them together, and a file of before is still read.
-- The record the tools work on keeps km lines in WGS 84 with the kilometrage per point; the door converts them into the document and back (decision 0006 takes that out). A km line of before is kept as points, not yet fitted with design elements.
+- The record the tools work on keeps km lines in WGS 84 with the kilometrage per point, for drawing and reading the kilometrage, and beside it the design elements a source gave (`design`); the door writes the design by column. A km line of before, and one shipped with the app, is kept as points, not yet fitted with design elements.
 - A domain the reader does not know is kept; one of a later version of a domain it knows is refused, not read with the version it knows.
 
 #pagebreak()
@@ -908,39 +908,19 @@ Bulk data as a blob: the SHA-256 of its canonical JSON.
 
 Value: text; pattern `^sha256:[0-9a-f]{64}$`
 
-=== KmElement <core-KmElement>
-
-A design element of a km line: what a track element states of its geometry, without what only a track has.
-
-_No further properties are allowed._
-
-#table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
-  [Property], [Required], [Type and allowed values], [Meaning],
-  [`elementType`], [yes], [one of the values under Meaning], [Kind of element #linebreak() `straight` straight #linebreak() `arc` circular arc #linebreak() `transition` transition curve],
-  [`startNode`], [yes], [#link(<core-Point>)[`Point`]], [Start point in the line's plane \[m\]],
-  [`endNode`], [yes], [#link(<core-Point>)[`Point`]], [End point \[m\]],
-  [`bearing`], [], [number], [Bearing at the start \[°, clockwise from grid north\]],
-  [`endBearing`], [], [number], [Bearing at the end, only at a kink],
-  [`length`], [yes], [number; ≥ 0], [Length \[m\]],
-  [`radius`], [], [number or null], [Radius of the arc \[m\], signed (+ curving right)],
-  [`r1`], [], [number or null], [Radius at the start of the transition \[m\]; `null` = straight end],
-  [`r2`], [], [number or null], [Radius at the end of the transition \[m\]; `null` = straight end],
-  [`transitionType`], [], [one of the values under Meaning], [Shape of the transition #linebreak() `clothoid` clothoid #linebreak() `bloss` Bloss curve],
-)
-
 === KmRun <core-KmRun>
 
-A run of a km line without a km jump: its kilometrage at the start, the way it counts along the run, and the run itself — as design elements, or as the points a source gave where it gave no elements.
+A run of a km line without a km jump: its kilometrage at the start, the way it counts along the run, and the run itself — its plan by column, or the points a source gave where it gave no elements.
 
 _No further properties are allowed._
 
-exactly one of `elements`, `points` is stated
+exactly one of `horizontalAlignment`, `points` is stated
 
 #table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
   [Property], [Required], [Type and allowed values], [Meaning],
   [`kmStart`], [yes], [number], [Kilometrage at the start of the run \[m\]],
   [`counting`], [], [one of the values under Meaning], [How the kilometrage counts along the run #linebreak() `up` ascending #linebreak() `down` descending],
-  [`elements`], [], [list of #link(<core-KmElement>)[`KmElement`]\; at least 1 entry], [The design elements from the start to the end],
+  [`horizontalAlignment`], [], [#link(<core-KmAlignment>)[`KmAlignment`]], [The run's plan by column, from its start to its end],
   [`points`], [], [#link(<core-BlobRef>)[`BlobRef`]], [The points `[easting, northing, km]` as a blob, where the source states no elements],
 )
 
@@ -980,6 +960,22 @@ _No further properties are allowed._
   [`switchRoute`], [], [one of the values under Meaning], [Which route of the switch #linebreak() `main` main track #linebreak() `branch` branch track #linebreak() `cross` crossing leg #linebreak() `slip1` first curve of a slip #linebreak() `slip2` second curve of a slip],
   [`switchId`], [], [#link(<core-Ref>)[`Ref`] → `core.​switches`], [The switch],
   [`switchHint`], [], [#link(<core-Text>)[`Text`]], [Why an import could not build the switch: form, number, reason],
+)
+
+=== KmAlignment <core-KmAlignment>
+
+A km line run's plan by column, as a track's without cant and design speed: over N design elements stationing, coordinates and bearingGon hold N+1 values, from 0 at the run's start; the element types and the radii at both ends N.
+
+_No further properties are allowed._
+
+#table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
+  [Property], [Required], [Type and allowed values], [Meaning],
+  [`stationing`], [yes], [list of number; at least 2 entries], [Station of each element's start and of the run's end \[m\], from 0; the kilometrage is kmStart plus or minus it],
+  [`coordinates`], [yes], [list of #link(<core-Point>)[`Point`]\; at least 2 entries], [Point of each element's start and of the run's end, in the line's plane \[m\]],
+  [`bearingGon`], [yes], [list of number; at least 2 entries], [Bearing at each element's start and at the run's end \[gon, clockwise from grid north\]],
+  [`elementType`], [yes], [list of one of `straight`, `arc`, `clothoid`, `bloss`; at least 1 entry], [Kind of each element: straight, arc, clothoid or bloss (transitions)],
+  [`beginRadius`], [yes], [list of number or null; at least 1 entry], [Radius at each element's start \[m\], signed (+ curving right); `null` = straight end],
+  [`endRadius`], [yes], [list of number or null; at least 1 entry], [Radius at each element's end \[m\]; an arc's is its start's],
 )
 
 == Layer civil 3.0

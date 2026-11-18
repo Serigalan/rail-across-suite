@@ -2,6 +2,7 @@ import { buildElement } from './trackPositionCsvImport'
 import { elementTypeName, epsgForLagesystem, normLine } from './mdbImport'
 import { mdbStation } from './mdbGradient'
 import { clipRuns, kmLineId } from '../km'
+import { kmDesignElement } from './vermEsnImport'
 
 /**
  * The kilometrage line of the DB ASCII interface (Satzart 24) as the
@@ -42,8 +43,8 @@ function step([lon1, lat1], [lon2, lat2]) {
   return Math.hypot((lon2 - lon1) * 111320 * k, (lat2 - lat1) * 110574)
 }
 
-/** The vertices of one element with their kilometrage, or null where it cannot be laid out. */
-function vertices(el, coords) {
+/** One element laid out: its vertices with their kilometrage, the element in its plane and that plane, or null. */
+function laidOut(el, coords) {
   const typ = elementTypeName(el.typ)
   const epsg = epsgForLagesystem(el.sys)
   const start = coords.get(padKey(el.pad1, el.sys))
@@ -58,14 +59,19 @@ function vertices(el, coords) {
   const along = [0]
   for (let i = 1; i < line.length; i++) along.push(along[i - 1] + step(line[i - 1], line[i]))
   const total = along[along.length - 1] || 1
-  return line.map(([lon, lat], i) => [round(lon, 8), round(lat, 8), round(akm + (ekm - akm) * along[i] / total, 3)])
+  const vertices = line.map(([lon, lat], i) => [round(lon, 8), round(lat, 8), round(akm + (ekm - akm) * along[i] / total, 3)])
+  return { vertices, element: kmDesignElement(built), epsg, akm, ekm }
 }
 
 /**
  * The lines of the file as runs, keyed by line number: Map(line → runs).
  * `lines` limits it to these line numbers (strings, as normLine spells them).
+ * A Map given as `design` takes per line its design as core 6.0 keeps a km
+ * line (decision 0006): `{ epsg, runs }`, each run with its kilometrage at the
+ * start, the way it counts and its elements in their plane — none for a line
+ * laid out in more than one plane.
  */
-export function mdbKmRuns(payload, lines = null) {
+export function mdbKmRuns(payload, lines = null, { design = null } = {}) {
   const coords = new Map()
   for (const p of payload?.points ?? []) {
     if (Number.isFinite(p?.y) && Number.isFinite(p?.x)) coords.set(padKey(p.pad, p.sys), [p.y, p.x])
@@ -99,24 +105,35 @@ export function mdbKmRuns(payload, lines = null) {
       into.add(el.pad2)
     }
     const runs = []
+    const designRuns = []
+    const planes = new Set()
     const used = new Set()
     const walk = (first) => {
       let run = []
-      const close = () => { if (run.length >= 2) runs.push(run); run = [] }
+      let designRun = null
+      const close = () => {
+        if (run.length >= 2) { runs.push(run); if (designRun) designRuns.push(designRun) }
+        run = []; designRun = null
+      }
       for (let el = first; el && !used.has(el); el = next.get(el.pad2)?.find(e => !used.has(e))) {
         used.add(el)
         if (Number(el.typ) === EKTYP_JUMP) { close(); continue }
-        const v = vertices(el, coords)
-        if (!v) { close(); continue }
+        const laid = laidOut(el, coords)
+        if (!laid) { close(); continue }
+        const v = laid.vertices
         const last = run[run.length - 1]
         if (last && Math.abs(last[2] - v[0][2]) > SAME_KM) close()
         run = run.length ? [...run, ...v.slice(1)] : v
+        designRun ??= { kmStart: laid.akm, counting: laid.ekm < laid.akm ? 'down' : 'up', elements: [] }
+        designRun.elements.push(laid.element)
+        planes.add(laid.epsg)
       }
       close()
     }
     for (const el of elements) if (!into.has(el.pad1)) walk(el)
     for (const el of elements) if (!used.has(el)) walk(el)
     if (runs.length) out.set(line, runs)
+    if (design && designRuns.length && planes.size === 1) design.set(line, { epsg: [...planes][0], runs: designRuns })
   }
   return out
 }
@@ -129,12 +146,19 @@ export function mdbKmRuns(payload, lines = null) {
  */
 export function mdbKmLines(payload, lines, box) {
   const wanted = new Set([...lines].map(normLine))
+  const design = new Map()
   const out = []
-  for (const [line, runs] of mdbKmRuns(payload, wanted)) {
+  for (const [line, runs] of mdbKmRuns(payload, wanted, { design })) {
     const clipped = box ? clipRuns(runs, box) : runs
     if (!clipped.length) continue
     const lineNumber = /^\d+$/.test(line) ? Number(line) : line
-    out.push({ id: kmLineId(lineNumber), lineNumber, crs: 'EPSG:4326', clip: box, runs: clipped, source: 'mdb' })
+    // The design keeps the runs the box touches whole: elements are not cut, and the door draws the line from them.
+    const kept = design.get(line)
+    const touched = kept ? kept.runs.filter((_, i) => !box || clipRuns([runs[i]], box).length) : []
+    out.push({
+      id: kmLineId(lineNumber), lineNumber, crs: 'EPSG:4326', clip: box, runs: clipped, source: 'mdb',
+      ...(touched.length ? { design: { epsg: kept.epsg, runs: touched } } : {}),
+    })
   }
   return out
 }

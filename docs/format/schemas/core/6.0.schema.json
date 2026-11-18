@@ -744,68 +744,8 @@
       "type": "string",
       "pattern": "^sha256:[0-9a-f]{64}$"
     },
-    "KmElement": {
-      "description": "A design element of a km line: what a track element states of its geometry, without the parts that only a track has.",
-      "type": "object",
-      "required": [
-        "elementType",
-        "startNode",
-        "endNode",
-        "length"
-      ],
-      "additionalProperties": false,
-      "properties": {
-        "elementType": {
-          "enum": [
-            "straight",
-            "arc",
-            "transition"
-          ]
-        },
-        "startNode": {
-          "$ref": "#/$defs/Point"
-        },
-        "endNode": {
-          "$ref": "#/$defs/Point"
-        },
-        "bearing": {
-          "type": "number"
-        },
-        "endBearing": {
-          "type": "number"
-        },
-        "length": {
-          "type": "number",
-          "minimum": 0
-        },
-        "radius": {
-          "type": [
-            "number",
-            "null"
-          ]
-        },
-        "r1": {
-          "type": [
-            "number",
-            "null"
-          ]
-        },
-        "r2": {
-          "type": [
-            "number",
-            "null"
-          ]
-        },
-        "transitionType": {
-          "enum": [
-            "clothoid",
-            "bloss"
-          ]
-        }
-      }
-    },
     "KmRun": {
-      "description": "A run of a km line without a km jump: its kilometrage at the start and the way it counts along the run, and the run itself — design elements, or the points a source gave where it gave no elements.",
+      "description": "A run of a km line without a km jump: its kilometrage at the start and the way it counts along the run, and the run itself — its plan by column, or the points a source gave where it gave no elements.",
       "type": "object",
       "required": [
         "kmStart"
@@ -821,12 +761,8 @@
             "down"
           ]
         },
-        "elements": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/KmElement"
-          },
-          "minItems": 1
+        "horizontalAlignment": {
+          "$ref": "#/$defs/KmAlignment"
         },
         "points": {
           "$ref": "#/$defs/BlobRef"
@@ -835,7 +771,7 @@
       "oneOf": [
         {
           "required": [
-            "elements"
+            "horizontalAlignment"
           ]
         },
         {
@@ -1002,6 +938,79 @@
         "switchHint": {
           "$ref": "#/$defs/Text",
           "description": "Why an import could not build the switch this element belongs to: form, number, reason."
+        }
+      }
+    },
+    "KmAlignment": {
+      "description": "A km line run's plan by column, as a track's (HorizontalAlignment) without what only a track has: over N design elements stationing, coordinates and bearingGon hold N+1 values, from 0 at the run's start; the element types and the radii at both ends N.",
+      "type": "object",
+      "required": [
+        "stationing",
+        "coordinates",
+        "bearingGon",
+        "elementType",
+        "beginRadius",
+        "endRadius"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "stationing": {
+          "description": "The station of each element's start and of the run's end [m], from 0 at the run's start; the kilometrage is kmStart plus or minus it.",
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2
+        },
+        "coordinates": {
+          "description": "The point of each element's start and of the run's end, [E, N] in the line's plane [m].",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Point"
+          },
+          "minItems": 2
+        },
+        "bearingGon": {
+          "description": "The bearing of each element at its start and of the run at its end [gon], clockwise from grid north.",
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2
+        },
+        "elementType": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "straight",
+              "arc",
+              "clothoid",
+              "bloss"
+            ]
+          },
+          "minItems": 1
+        },
+        "beginRadius": {
+          "description": "The radius at each element's start [m], signed: + curving right; null on a straight end.",
+          "type": "array",
+          "items": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "minItems": 1
+        },
+        "endRadius": {
+          "description": "The radius at each element's end [m], signed; an arc's is its start's.",
+          "type": "array",
+          "items": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "minItems": 1
         }
       }
     }

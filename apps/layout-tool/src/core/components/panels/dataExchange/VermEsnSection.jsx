@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { commitImport, saveReferenceAxis } from '../../../storage'
-import { fitImportedTracks } from '../../../utils/exchange'
+import { fitImportedKmLines, fitImportedTracks } from '../../../utils/exchange'
 import { EDITS_CIVIL } from '../../../tool'
 import { generateId, rebuildCoords, HEIGHT_DATUMS, heightDatumLabel } from '@rail-across/core/track'
 import {
@@ -125,7 +125,7 @@ export default function VermEsnSection() {
 
   // What the gradient can be stationed along, best first — only asked where
   // a kilometrage line is there to choose.
-  const kmAxis = useMemo(() => (km ? { ...readAxis(km.buffer, epsg), name: km.name.replace(/\.tra$/i, '') } : null), [km, epsg])
+  const kmAxis = useMemo(() => (km ? { ...readAxis(km.buffer, epsg), name: km.name.replace(/\.tra$/i, ''), epsg: Number(epsg) } : null), [km, epsg])
   const references = useMemo(() => {
     if (!tra || !gra) return null
     return gradientReferences(readAxis(tra.buffer, epsg), gra.points, kmAxis ? [kmAxis] : [])
@@ -180,9 +180,10 @@ export default function VermEsnSection() {
       ...(kmUsed ? { lineNumber: kmLineNumber(kmUsed.name) } : {}),
       ...(heights ? { heights, heightEpsg: Number(graHeightEpsg) } : {}),
     }])
-    setNotes([...hNotes, ...fitted.notes])
+    const lines = await fitImportedKmLines(kmUsed ? kmLineEntries([kmUsed]) : [])
+    setNotes([...hNotes, ...fitted.notes, ...lines.notes])
     const { name: _name, ...track } = fitted.tracks[0]
-    commitImport({ addTracks: [track], addKmLines: kmUsed ? kmLineEntries([kmUsed]) : [] })
+    commitImport({ addTracks: [track], addKmLines: lines.lines })
     setDone(fill(heights ? 'data_exchange_vermesn_done_heights' : 'data_exchange_vermesn_done',
       { name: tra.name, count: elements.length, heights: heights?.length ?? 0 }))
     setTra(null)

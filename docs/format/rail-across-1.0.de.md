@@ -287,15 +287,17 @@ gleichermaßen brauchen. Ein **Personenhalt** (`passengerStop`) ist er, wo ein B
 
 Eine **Kilometrierungslinie** (`kmLines`) sind fremde Bezugsdaten: die Achse einer Strecke um das Projekt mit ihrer
 Kilometrierung. Sie wird **in Trassierungselementen** gespeichert, wie ein Gleis: in einer Ebene (`epsg`), als
-Läufe von Kilometersprung zu Kilometersprung (`runs`). Ein Lauf nennt seinen Kilometer am Anfang (`kmStart`, m)
-und wie er entlang des Laufs zählt (`counting`: `up` steigend oder `down` fallend); der Kilometer eines Punkts ist
-der Anfangswert plus oder minus die laufende Länge bis zu ihm.
+Läufe von Kilometersprung zu Kilometersprung (`runs`). Ein Lauf nennt seinen Kilometer am Anfang (`kmStart`, m),
+wie er entlang des Laufs zählt (`counting`: `up` steigend oder `down` fallend) und seine Trassierung in Spalten
+(`horizontalAlignment`) wie ein Gleis — ohne Überhöhung, Entwurfsgeschwindigkeit und Elementangaben, die nur ein
+Gleis hat; seine Stationen beginnen mit 0 am Anfang des Laufs. Der Kilometer eines Punkts ist der Anfangswert plus
+oder minus seine Station.
 
 Das ist weit kleiner als eine Polylinie mit einem Punkt alle paar Meter, und genau, wo die Quelle Elemente angibt —
 die Streckenachsen der DB sind in Elementen entworfen wie die Gleise. Dieselbe Rechnung dient Gleisen und
 Kilometrierungslinien. Für ein Gleis in einer anderen Ebene wird die Achse in diese umgerechnet. Wo eine Quelle nur
-Punkte liefert, hält ein Lauf sie als Blob (`points`: `[Rechtswert, Hochwert, Kilometer]` je Punkt), bis er mit
-Elementen angenähert ist.
+Punkte liefert, hält ein Lauf stattdessen sie als Blob (`points`: `[Rechtswert, Hochwert, Kilometer]` je Punkt),
+bis er mit Elementen angenähert ist.
 
 ### Weitere Sammlungen
 
@@ -512,10 +514,10 @@ einem Fahrzeug und einem Zug von der Grenze nach Halle-Trotha, wo er auf diesem 
           } ],
           "kmLines": [ {
             "id": "0f9e8d7c-6b5a-4f3e-8d2c-1b0a9f8e7d6c", "lineNumber": 6050, "epsg": 5684,
-            "runs": [ { "kmStart": 12400.0, "counting": "up", "elements": [
-              { "elementType": "straight", "bearing": 90, "length": 250,
-                "startNode": [4497050.0, 5706220.0],
-                "endNode": [4497300.0, 5706220.0] } ] } ]
+            "runs": [ { "kmStart": 12400.0, "counting": "up", "horizontalAlignment": {
+              "stationing": [0, 250], "coordinates": [[4497050.0, 5706220.0], [4497300.0, 5706220.0]],
+              "bearingGon": [100, 100], "elementType": ["straight"],
+              "beginRadius": [null], "endRadius": [null] } } ]
           } ],
           "operationalPoints": [ {
             "id": "b64cfd92-f881-43ad-82d7-f0d78ef78747", "name": "Halle-Trotha",
@@ -616,9 +618,10 @@ in diesen Punkten ab; jeder wird in einem eigenen Schritt angeglichen (Entscheid
   Domänen und ihre Blobs, core 6.0, civil 3.0, signalling 4.0, electrification 3.0) und den Betrieb als Dokument
   operations (vehicles 1.0, timetables 1.2); die Datei rail-across-1.0 führt sie zusammen, eine Datei von vorher
   wird weiter gelesen.
-- Der Record, mit dem die Werkzeuge arbeiten, behält Kilometrierungslinien in WGS 84 mit dem Kilometer je Punkt;
-  die Tür wandelt sie ins Dokument und zurück (Entscheidung 0006 nimmt das heraus). Eine
-  Kilometrierungslinie von vorher steht als Punkte da, noch nicht mit Trassierungselementen angenähert.
+- Der Record, mit dem die Werkzeuge arbeiten, behält Kilometrierungslinien in WGS 84 mit dem Kilometer je Punkt,
+  zum Zeichnen und Ablesen der Kilometrierung, und daneben die Trassierungselemente, die eine Quelle geliefert hat
+  (`design`); die Tür schreibt die Elemente in Spalten. Eine Kilometrierungslinie von vorher und eine mit der App
+  ausgelieferte steht als Punkte da, noch nicht mit Trassierungselementen angenähert.
 - Eine Domäne, die der Leser nicht kennt, bleibt erhalten; eine spätere Version einer Domäne, die er kennt, lehnt er
   ab, statt sie mit der Version zu lesen, die er kennt.
 
@@ -1092,42 +1095,21 @@ Große Daten als Blob: der SHA-256 ihres kanonischen JSON.
 
 Wert: Text; Muster `^sha256:[0-9a-f]{64}$`
 
-<a id="core-KmElement"></a>
-
-#### KmElement
-
-Ein Trassierungselement einer Kilometrierungslinie: was ein Element eines Gleises über seine Geometrie angibt, ohne das, was nur ein Gleis hat.
-
-_Weitere Properties sind nicht erlaubt._
-
-| Property | Pflicht | Typ und zulässige Werte | Bedeutung |
-|---|---|---|---|
-| `elementType` | ja | eins der Werte unter Bedeutung | Art des Elements<br>`straight` Gerade<br>`arc` Kreisbogen<br>`transition` Übergangsbogen |
-| `startNode` | ja | [`Point`](#core-Point) | Anfangspunkt in der Ebene der Linie [m] |
-| `endNode` | ja | [`Point`](#core-Point) | Endpunkt [m] |
-| `bearing` |  | Zahl | Richtungswinkel am Anfang [°, von Gitternord im Uhrzeigersinn] |
-| `endBearing` |  | Zahl | Richtungswinkel am Ende, nur bei einem Knick |
-| `length` | ja | Zahl; ≥ 0 | Länge [m] |
-| `radius` |  | Zahl oder null | Radius des Kreisbogens [m], vorzeichenbehaftet (+ Rechtsbogen) |
-| `r1` |  | Zahl oder null | Radius am Anfang des Übergangsbogens [m]; `null` = gerades Ende |
-| `r2` |  | Zahl oder null | Radius am Ende des Übergangsbogens [m]; `null` = gerades Ende |
-| `transitionType` |  | eins der Werte unter Bedeutung | Form des Übergangsbogens<br>`clothoid` Klothoide<br>`bloss` Bloss-Kurve |
-
 <a id="core-KmRun"></a>
 
 #### KmRun
 
-Ein Lauf einer Kilometrierungslinie ohne Kilometersprung: sein Kilometer am Anfang, wie er entlang des Laufs zählt, und der Lauf selbst — als Trassierungselemente, oder als die Punkte, die eine Quelle ohne Elemente geliefert hat.
+Ein Lauf einer Kilometrierungslinie ohne Kilometersprung: sein Kilometer am Anfang, wie er entlang des Laufs zählt, und der Lauf selbst — seine Trassierung in Spalten, oder die Punkte, die eine Quelle ohne Elemente geliefert hat.
 
 _Weitere Properties sind nicht erlaubt._
 
-genau eins von `elements`, `points` ist angegeben
+genau eins von `horizontalAlignment`, `points` ist angegeben
 
 | Property | Pflicht | Typ und zulässige Werte | Bedeutung |
 |---|---|---|---|
 | `kmStart` | ja | Zahl | Kilometer am Anfang des Laufs [m] |
 | `counting` |  | eins der Werte unter Bedeutung | wie die Kilometrierung entlang des Laufs zählt<br>`up` steigend<br>`down` fallend |
-| `elements` |  | Liste von [`KmElement`](#core-KmElement); mindestens 1 Eintrag | die Trassierungselemente vom Anfang zum Ende |
+| `horizontalAlignment` |  | [`KmAlignment`](#core-KmAlignment) | die Trassierung des Laufs in Spalten, vom Anfang zum Ende |
 | `points` |  | [`BlobRef`](#core-BlobRef) | die Punkte `[Rechtswert, Hochwert, Kilometer]` als Blob, wo die Quelle keine Elemente nennt |
 
 <a id="core-HorizontalAlignment"></a>
@@ -1169,6 +1151,23 @@ _Weitere Properties sind nicht erlaubt._
 | `switchRoute` |  | eins der Werte unter Bedeutung | welche Strecke der Weiche<br>`main` Stammgleis<br>`branch` Zweiggleis<br>`cross` Kreuzungsstrang<br>`slip1` erster Bogen einer Kreuzungsweiche<br>`slip2` zweiter Bogen |
 | `switchId` |  | [`Ref`](#core-Ref) → `core.switches` | die Weiche |
 | `switchHint` |  | [`Text`](#core-Text) | warum ein Import die Weiche nicht bilden konnte: Form, Nummer, Grund |
+
+<a id="core-KmAlignment"></a>
+
+#### KmAlignment
+
+Die Trassierung eines Laufs einer Kilometrierungslinie in Spalten, wie die eines Gleises ohne Überhöhung und Entwurfsgeschwindigkeit: Bei N Trassierungselementen haben stationing, coordinates und bearingGon N+1 Werte, ab 0 am Anfang des Laufs; die Elementarten und die Radien an beiden Enden N.
+
+_Weitere Properties sind nicht erlaubt._
+
+| Property | Pflicht | Typ und zulässige Werte | Bedeutung |
+|---|---|---|---|
+| `stationing` | ja | Liste von Zahl; mindestens 2 Einträge | Station am Anfang jedes Elements und am Ende des Laufs [m], ab 0; der Kilometer ist kmStart plus oder minus sie |
+| `coordinates` | ja | Liste von [`Point`](#core-Point); mindestens 2 Einträge | Punkt am Anfang jedes Elements und am Ende des Laufs, in der Ebene der Linie [m] |
+| `bearingGon` | ja | Liste von Zahl; mindestens 2 Einträge | Richtung am Anfang jedes Elements und am Ende des Laufs [gon, von Gitternord im Uhrzeigersinn] |
+| `elementType` | ja | Liste von eins von `straight`, `arc`, `clothoid`, `bloss`; mindestens 1 Eintrag | Art jedes Elements: Gerade, Kreisbogen, Klothoide oder Bloss-Kurve (Übergangsbögen) |
+| `beginRadius` | ja | Liste von Zahl oder null; mindestens 1 Eintrag | Radius am Anfang jedes Elements [m], vorzeichenbehaftet (+ Rechtsbogen); `null` = gerades Ende |
+| `endRadius` | ja | Liste von Zahl oder null; mindestens 1 Eintrag | Radius am Ende jedes Elements [m]; beim Kreisbogen der des Anfangs |
 
 ### Layer civil 3.0
 

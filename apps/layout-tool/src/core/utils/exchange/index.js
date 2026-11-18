@@ -28,3 +28,4 @@ export {
   parseGradient, readAxis, readKmLines, readVermEsnArchive, referencedHeights, vermEsnSwitches,
 } from './vermEsnImport'
 export { fitImportedTracks } from './importFit'
+export { fitImportedKmLines } from './importFit'

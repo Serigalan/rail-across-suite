@@ -288,27 +288,41 @@ export function referencedHeights(reference, axis) {
   return { heights: fitted.heights, notes: [...lost, ...fitted.notes] }
 }
 
+/** What a design element of a kilometrage line states: its geometry, nothing a track has beside it. */
+const KM_ELEMENT_KEYS = ['elementType', 'startNode', 'endNode', 'bearing', 'endBearing', 'length', 'radius', 'r1', 'r2', 'transitionType']
+export const kmDesignElement = (el) => Object.fromEntries(KM_ELEMENT_KEYS.filter(k => el[k] !== undefined).map(k => [k, el[k]]))
+
 /**
- * Kilometrage lines (readAxis, with their `name`) as the `kmLines` a project
- * keeps (mdbKmLine): one per line number, WGS84 runs of `[lon, lat, metres]`
- * from the elements' drawn lines, a new run wherever the kilometrage jumps.
- * Marked `source: 'vermesn'`, so the shipped line of that number is not
+ * Kilometrage lines (readAxis, with their `name` and `epsg`) as the `kmLines`
+ * a project keeps (mdbKmLine): one per line number, WGS84 runs of
+ * `[lon, lat, metres]` from the elements' drawn lines, a new run wherever the
+ * kilometrage jumps — and beside them the line's design (`design`: its plane
+ * and per run its kilometrage at the start, the way it counts and its
+ * elements), which the project keeps as core 6.0 states a km line (decision
+ * 0006). Marked `source: 'vermesn'`, so the shipped line of that number is not
  * fetched over it.
  */
 export function kmLineEntries(kmAxes) {
   const byNumber = new Map()
   for (const km of kmAxes) {
     const lineNumber = kmLineNumber(km.name)
-    if (!byNumber.has(lineNumber)) byNumber.set(lineNumber, [])
-    const runs = byNumber.get(lineNumber)
+    if (!byNumber.has(lineNumber)) byNumber.set(lineNumber, { runs: [], design: [], epsg: km.epsg ?? null })
+    const entry = byNumber.get(lineNumber)
+    const { runs } = entry
+    if (entry.epsg !== (km.epsg ?? null)) entry.epsg = null   // axes of one line in two planes: no design
     let run = null
+    let designRun = null
     let at = null
     km.elements.forEach((el, i) => {
       const coords = el.geometry?.coordinates ?? []
       const len = el.length ?? 0
       if (coords.length < 2 || !(len > 0)) return
       const s0 = km.stations?.[i] ?? at ?? km.startStation
-      if (!run || Math.abs(s0 - at) > 0.01) { run = []; runs.push(run) }
+      if (!run || Math.abs(s0 - at) > 0.01) {
+        run = []; runs.push(run)
+        designRun = { kmStart: s0, counting: 'up', elements: [] }; entry.design.push(designRun)
+      }
+      designRun.elements.push(kmDesignElement(el))
       const along = [0]
       for (let k = 1; k < coords.length; k++) {
         along.push(along[k - 1] + Math.hypot(coords[k][0] - coords[k - 1][0], coords[k][1] - coords[k - 1][1]))
@@ -321,8 +335,9 @@ export function kmLineEntries(kmAxes) {
       at = s0 + len
     })
   }
-  return [...byNumber].map(([lineNumber, runs]) => ({
+  return [...byNumber].map(([lineNumber, { runs, design, epsg }]) => ({
     id: kmLineId(lineNumber), lineNumber, crs: 'EPSG:4326', runs: runs.filter(r => r.length >= 2), source: 'vermesn',
+    ...(epsg && design.length ? { design: { epsg, runs: design } } : {}),
   }))
 }
 
@@ -387,7 +402,7 @@ export function readKmLines(kmLines, epsg) {
   for (const km of kmLines) {
     const axis = readAxis(km.tra, epsg)
     if (axis.errors.length || !axis.elements.length) errors.push({ file: km.traFile, errors: axis.errors })
-    else axes.push({ ...axis, name: km.name, traFile: km.traFile })
+    else axes.push({ ...axis, name: km.name, traFile: km.traFile, epsg: Number(epsg) })
   }
   return { axes, errors }
 }

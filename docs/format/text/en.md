@@ -274,13 +274,14 @@ line, for every train. It belongs to the core because signalling, platforms and 
 A **km line** (`kmLines`) is foreign reference data: the axis of a line around the project with its
 kilometrage. It is kept **in design elements**, as a track is: in one plane (`epsg`), as runs from km jump to km
 jump (`runs`). A run states its kilometrage at the start (`kmStart`, m) and the way it counts along the run
-(`counting`: `up` or `down`); the kilometrage of a point is the start value plus or minus the running length up
-to it.
+(`counting`: `up` or `down`), and its plan by column (`horizontalAlignment`) as a track does — without cant,
+design speed and element details, which only a track has; its stations begin with 0 at the run's start. The
+kilometrage of a point is the start value plus or minus its station.
 
 That is far smaller than a polyline with a point every few metres, and exact where the source states elements —
 the DB's line axes are designed in elements as the tracks are. The same calculation serves tracks and km lines.
 For a track in another plane, the axis is transformed into it. Where a source delivers points only, a run holds
-them as a blob (`points`: `[easting, northing, km]` per point) until it is fitted with elements.
+them as a blob (`points`: `[easting, northing, km]` per point) instead, until it is fitted with elements.
 
 ## Further collections
 
@@ -493,10 +494,10 @@ Halle-Trotha, where it stops on that track:
           } ],
           "kmLines": [ {
             "id": "0f9e8d7c-6b5a-4f3e-8d2c-1b0a9f8e7d6c", "lineNumber": 6050, "epsg": 5684,
-            "runs": [ { "kmStart": 12400.0, "counting": "up", "elements": [
-              { "elementType": "straight", "bearing": 90, "length": 250,
-                "startNode": [4497050.0, 5706220.0],
-                "endNode": [4497300.0, 5706220.0] } ] } ]
+            "runs": [ { "kmStart": 12400.0, "counting": "up", "horizontalAlignment": {
+              "stationing": [0, 250], "coordinates": [[4497050.0, 5706220.0], [4497300.0, 5706220.0]],
+              "bearingGon": [100, 100], "elementType": ["straight"],
+              "beginRadius": [null], "endRadius": [null] } } ]
           } ],
           "operationalPoints": [ {
             "id": "b64cfd92-f881-43ad-82d7-f0d78ef78747", "name": "Halle-Trotha",
@@ -597,8 +598,9 @@ from it in these points, each to be brought in line by its own step (decision 00
   its domains and its blobs, core 6.0, civil 3.0, signalling 4.0, electrification 3.0) and the operation as an
   operations document (vehicles 1.0, timetables 1.2); the file rail-across-1.0 brings them together, and a file of
   before is still read.
-- The record the tools work on keeps km lines in WGS 84 with the kilometrage per point; the door converts them into
-  the document and back (decision 0006 takes that out). A km line of before is
-  kept as points, not yet fitted with design elements.
+- The record the tools work on keeps km lines in WGS 84 with the kilometrage per point, for drawing and reading
+  the kilometrage, and beside it the design elements a source gave (`design`); the door writes the design by
+  column. A km line of before, and one shipped with the app, is kept as points, not yet fitted with design
+  elements.
 - A domain the reader does not know is kept; one of a later version of a domain it knows is refused, not read
   with the version it knows.

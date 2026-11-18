@@ -353,7 +353,7 @@ pub fn by_id(list: &mut [Value]) {
 /// The infra-data-2.0 document of a record (dehydrated), every collection sorted by id (`recordToDocument`).
 pub fn record_to_document(record: &Value, schema_hashes: &HashMap<&str, String>) -> Result<Value> {
     let (mut domains, mut blobs) = record_domains(record, schema_hashes)?;
-    km_lines_to_document(&mut domains, &mut blobs);
+    km_lines_to_document(&mut domains, &mut blobs)?;
     // A record of before — a working copy, a test's fixture — may still hold the words and names of before or an id
     // that is no UUID: the door takes them on the way in (decision 0006).
     crate::words::forward(&mut domains);
@@ -398,26 +398,62 @@ pub(crate) fn tracks_by_column(domains: &mut Object) -> Result<()> {
     }
 }
 
-/// The km lines of a record's domains as core 4.0 states them: in one plane, their runs' points as blobs
-/// (decision 0006); one without a point is no line.
-pub(crate) fn km_lines_to_document(domains: &mut Object, blobs: &mut Object) {
+/// The runs of a document's km lines by column, as core 6.0 states them, where core 5.0 gave their design
+/// elements by row (`alignment::to_km_columns`). Refused where a run's elements do not hold together.
+pub(crate) fn km_runs_by_column(domains: &mut Object) -> Result<()> {
     let Some(Value::Array(lines)) = domains
         .get_mut("core")
         .and_then(|c| c.get_mut("collections"))
         .and_then(|c| c.get_mut("kmLines"))
     else {
-        return;
+        return Ok(());
+    };
+    let mut apart = Vec::new();
+    for (i, line) in lines.iter_mut().enumerate() {
+        for (k, run) in line.get_mut("runs").and_then(Value::as_array_mut).into_iter().flatten().enumerate() {
+            let Some(o) = run.as_object_mut() else { continue };
+            let Some(rows) = o.shift_remove("elements") else { continue };
+            match crate::alignment::to_km_columns(rows.as_array().map(Vec::as_slice).unwrap_or(&[])) {
+                Ok(Some(columns)) => {
+                    o.insert("horizontalAlignment".into(), columns);
+                }
+                Ok(None) => {}
+                Err(found) => apart.extend(found.into_iter().map(|f| format!("/domains/core/collections/kmLines/{i}/runs/{k}: {f}"))),
+            }
+        }
+    }
+    if apart.is_empty() {
+        Ok(())
+    } else {
+        Err(PayloadError::with("invalid_payload", apart))
+    }
+}
+
+/// The km lines of a record's domains as core 6.0 states them: in one plane, their runs by column where the
+/// record gives their design, else their points as blobs (decision 0006); one without a point is no line.
+/// Refused where a design's elements do not hold together.
+pub(crate) fn km_lines_to_document(domains: &mut Object, blobs: &mut Object) -> Result<()> {
+    let Some(Value::Array(lines)) = domains
+        .get_mut("core")
+        .and_then(|c| c.get_mut("collections"))
+        .and_then(|c| c.get_mut("kmLines"))
+    else {
+        return Ok(());
     };
     let mut blob = |value: &Value| -> Value {
         let hash = content_hash(value);
         blobs.insert(hash.clone(), value.clone());
         Value::String(hash)
     };
-    *lines = lines
-        .iter()
-        .map(|l| crate::km_lines::to_document(l, &mut blob))
-        .filter(|l| l.get("epsg").is_some())
-        .collect();
+    let mut out = Vec::with_capacity(lines.len());
+    for line in lines.iter() {
+        let line = crate::km_lines::to_document(line, &mut blob)?;
+        if line.get("epsg").is_some() {
+            out.push(line);
+        }
+    }
+    *lines = out;
+    Ok(())
 }
 
 /// The domains of a record's document and its blobs, in the words, names and ids the record keeps, every

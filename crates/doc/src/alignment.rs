@@ -228,6 +228,19 @@ pub fn to_columns(rows: &[Value]) -> Result<Option<Value>, Vec<String>> {
     if found.is_empty() { Ok(Some(out)) } else { Err(found) }
 }
 
+/// The columns of a km line run's rows (core 6.0's KmAlignment): a track's, without its cants, design speeds
+/// and details, which a km line does not have.
+pub fn to_km_columns(rows: &[Value]) -> Result<Option<Value>, Vec<String>> {
+    Ok(to_columns(rows)?.map(|mut columns| {
+        if let Some(o) = columns.as_object_mut() {
+            for k in ["beginCant", "endCant", "designSpeed", "elementDetails"] {
+                o.shift_remove(k);
+            }
+        }
+        columns
+    }))
+}
+
 fn column<'a>(a: &'a Value, key: &str) -> &'a [Value] {
     a.get(key).and_then(Value::as_array).map(Vec::as_slice).unwrap_or(&[])
 }
@@ -245,6 +258,8 @@ pub fn to_rows(alignment: &Value) -> Vec<Value> {
     let bearings = column(alignment, "bearingGon");
     let types = column(alignment, "elementType");
     let speeds = alignment.get("designSpeed").and_then(Value::as_array);
+    // A km line's run has no cants.
+    let with_cant = alignment.get("beginCant").is_some();
     let mut rows: Vec<Object> = Vec::new();
     for (i, kind) in types.iter().enumerate() {
         let kind = kind.as_str().unwrap_or("straight");
@@ -284,10 +299,10 @@ pub fn to_rows(alignment: &Value) -> Vec<Value> {
             f(column(alignment, "beginCant").get(i)).unwrap_or(0.0),
             f(column(alignment, "endCant").get(i)).unwrap_or(0.0),
         );
-        if kind == "clothoid" || kind == "bloss" || cs != ce {
+        if with_cant && (kind == "clothoid" || kind == "bloss" || cs != ce) {
             o.insert("cantStart".into(), number(cs));
             o.insert("cantEnd".into(), number(ce));
-        } else if cs != 0.0 || kind == "arc" {
+        } else if with_cant && (cs != 0.0 || kind == "arc") {
             o.insert("cant".into(), number(cs));
         }
         if let Some(s) = speeds.and_then(|s| s.get(i)).filter(|s| !s.is_null()) {
@@ -319,7 +334,8 @@ pub fn breaches(alignment: &Value) -> Vec<String> {
         }
     }
     for key in ["beginRadius", "endRadius", "beginCant", "endCant", "designSpeed"] {
-        if (key != "designSpeed" || alignment.get(key).is_some()) && column(alignment, key).len() != n {
+        let optional = matches!(key, "beginCant" | "endCant" | "designSpeed");
+        if (!optional || alignment.get(key).is_some()) && column(alignment, key).len() != n {
             out.push(format!("{key}: holds {} values, not {n}", column(alignment, key).len()));
         }
     }

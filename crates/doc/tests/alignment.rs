@@ -157,3 +157,63 @@ fn the_plan_of_the_draft_holds_together() {
     });
     assert_eq!(breaches(&plan), Vec::<String>::new());
 }
+
+mod km_lines {
+    use super::*;
+    use rail_across_doc::core_format::document_to_record;
+    use rail_across_doc::door::{check_document, to_document};
+
+    /// A record with a km line whose design gives one run by its elements, another by its points.
+    fn record(design_rows: Vec<Value>) -> Value {
+        json!({
+            "id": "p", "tracks": [], "switches": [], "platforms": [],
+            "kmLines": [{
+                "id": "km-6050", "lineNumber": 6050, "crs": "EPSG:4326", "runs": [], "source": "vermesn",
+                "design": { "epsg": 25832, "runs": [
+                    { "kmStart": 12400.0, "counting": "up", "elements": design_rows },
+                    { "kmStart": 13000.0, "counting": "down", "points": [[500600.0, 5700000.0, 13000.0], [500700.0, 5700000.0, 12900.0]] },
+                ] },
+            }],
+        })
+    }
+
+    fn rows() -> Vec<Value> {
+        rough_closed()
+            .into_iter()
+            .map(|mut r| {
+                for k in ["cant", "cantStart", "cantEnd", "designSpeed", "role", "switchId", "switchRoute", "switchBranch"] {
+                    r.as_object_mut().unwrap().shift_remove(k);
+                }
+                r
+            })
+            .collect()
+    }
+
+    #[test]
+    fn a_km_line_with_its_design_goes_by_column_and_comes_back() {
+        let doc = to_document(&record(rows()), false, true).unwrap_or_else(|e| panic!("refused ({e})"));
+        let line = &doc["domains"]["core"]["collections"]["kmLines"][0];
+        assert_eq!(line["epsg"], 25832);
+        let plan = &line["runs"][0]["horizontalAlignment"];
+        assert_eq!(plan["stationing"], json!([0, 100, 160, 260, 320, 370, 420]));
+        assert!(plan.get("beginCant").is_none() && plan.get("designSpeed").is_none(), "{plan}");
+        assert!(line["runs"][1]["points"].is_string(), "the run of points a blob");
+        let back = document_to_record(&check_document(&doc).unwrap()).unwrap();
+        let km = &back["kmLines"][0];
+        assert_eq!(km["design"]["epsg"], 25832);
+        let elements = km["design"]["runs"][0]["elements"].as_array().unwrap();
+        assert_eq!(elements.len(), 6);
+        assert!(elements.iter().all(|e| e.get("cant").is_none()), "a km line has no cant");
+        assert_eq!(km["design"]["runs"][1]["points"].as_array().unwrap().len(), 2);
+        assert!(km["runs"][0].as_array().unwrap().len() > 40, "the run drawn in WGS 84 from its elements");
+        assert_eq!(to_document(&back, false, true).unwrap(), doc);
+    }
+
+    #[test]
+    fn a_km_lines_design_that_does_not_hold_together_is_refused() {
+        let mut design = rows();
+        design[3]["startNode"][0] = json!(design[3]["startNode"][0].as_f64().unwrap() + 0.005);
+        let e = to_document(&record(design), false, true).unwrap_err();
+        assert!(e.details.iter().any(|d| d.contains("6050, run 0, element 2")), "{:?}", e.details);
+    }
+}

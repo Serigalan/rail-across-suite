@@ -105,7 +105,7 @@ describe('switches as RailJSON nodes', () => {
     expect(turnout.extensions).toEqual({ sncf: { label: 'W 1' } })
     expect(Object.keys(crossing.ports).sort()).toEqual(['A1', 'A2', 'B1', 'B2'])
     expect(crossing.ports.B1).toEqual({ track: 'c', endpoint: 'END' })
-    expect(crossing.extensions).toEqual({ olt: { lifespan: { from: 'open' } } })
+    expect(crossing.extensions).toEqual({ railacross: { lifespan: { from: 'open' } } })
   })
 
   it('leaves out ports on tracks that are not exported', () => {
@@ -135,7 +135,7 @@ describe('buffer stops', () => {
     expect(rest).toEqual([])
     expect(bs).toEqual({
       id: 'b1', track: 't1', position: round3(total - 10 - BUFFER_STOP_LENGTH),
-      extensions: { olt: { type: 6, brake_length: 10, end: 'END' } },
+      extensions: { railacross: { type: 6, brake_length: 10, end: 'END' } },
     })
   })
 
@@ -145,6 +145,13 @@ describe('buffer stops', () => {
       { id: 'b2', kind: BUFFER_STOP, trackId: 't1', endpoint: 'BEGIN', type: 4, brakeLength: 0 },
     ]
     expect(bufferStopsToEndMarks(endMarksToBufferStops(marks, trackMap), trackMap)).toEqual(marks)
+  })
+
+  it('reads the buffer stops of a file of before, its extension named olt', () => {
+    const [mark] = bufferStopsToEndMarks([
+      { id: 'b1', track: 't1', position: 5, extensions: { olt: { type: 4, brake_length: 7, end: 'END' } } },
+    ], trackMap)
+    expect(mark).toEqual({ id: 'b1', kind: BUFFER_STOP, trackId: 't1', endpoint: 'END', type: 4, brakeLength: 7 })
   })
 
   it('takes a foreign stop near an end for that end, and leaves one mid-track', () => {

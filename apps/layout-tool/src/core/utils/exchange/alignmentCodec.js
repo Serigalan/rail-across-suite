@@ -248,7 +248,7 @@ const slug = (s) => String(s).trim().toLowerCase()
  * `position` are both metres along the track from its BEGIN.
  *
  * What OSRD's own fields lose — the extent, the side, the edge distances and
- * the height over top of rail — rides along in the part's `olt` extension, so
+ * the height over top of rail — rides along in the part's `railacross` extension, so
  * the app's own exchange file states the platform fully while the RailJSON
  * fields stay what OSRD expects. It is still written and never read back (see
  * osrdImport, which keeps a file's own operational points in the passthrough
@@ -288,7 +288,7 @@ export function platformsToOperationalPoints(platforms, trackMap, foreign = []) 
     group.parts.push({
       track: p.trackId,
       position: round3((p.startStation + p.endStation) / 2),
-      extensions: { sncf: null, olt: platformExtension(p) },
+      extensions: { sncf: null, railacross: platformExtension(p) },
       local_track_name: String(track.name ?? '').trim() || track.id,
       uic: Number(track.uicStation) || null,
       owner: track.owner,
@@ -362,7 +362,7 @@ OSRD_PORT_NAMES.double_slip = OSRD_PORT_NAMES.crossing
 function switchExtensions(sw) {
   const ext = {}
   if (sw.name) ext.sncf = { label: sw.name }
-  if (sw.lifespan) ext.olt = { lifespan: sw.lifespan }
+  if (sw.lifespan) ext.railacross = { lifespan: sw.lifespan }
   return Object.keys(ext).length ? ext : null
 }
 
@@ -394,7 +394,7 @@ export function switchesToPorts(switches, trackMap, foreign = []) {
 /**
  * The buffer stops of a project as RailJSON `buffer_stops`: one per mark, at
  * its buffer face — the point a train meets, which is what OSRD's position
- * states. Type and brake length ride in `extensions.olt`; ones an imported
+ * states. Type and brake length ride in `extensions.railacross`; ones an imported
  * file brought along stay unless a generated stop takes their id.
  */
 export function endMarksToBufferStops(endMarks, trackMap, foreign = []) {
@@ -406,7 +406,7 @@ export function endMarksToBufferStops(endMarks, trackMap, foreign = []) {
       id: mark.id,
       track: mark.trackId,
       position: round3(bufferStopStations(totalLength(track), mark).face),
-      extensions: { olt: { type: mark.type ?? null, brake_length: mark.brakeLength ?? 0, end: mark.endpoint } },
+      extensions: { railacross: { type: mark.type ?? null, brake_length: mark.brakeLength ?? 0, end: mark.endpoint } },
     })
   }
   const generatedIds = new Set(out.map(b => b.id))
@@ -430,17 +430,18 @@ export function bufferStopsToEndMarks(bufferStops, trackMap) {
     const position = Number(bs?.position)
     if (!track || !bs.id || !Number.isFinite(position)) continue
     const total = totalLength(track)
-    const olt = bs.extensions?.olt ?? {}
-    const endpoint = olt.end === 'BEGIN' || olt.end === 'END'
-      ? olt.end
+    // `olt` is what files of before name it.
+    const own = bs.extensions?.railacross ?? bs.extensions?.olt ?? {}
+    const endpoint = own.end === 'BEGIN' || own.end === 'END'
+      ? own.end
       : (position <= total / 2 ? 'BEGIN' : 'END')
     const behind = endpoint === 'BEGIN' ? position : total - position
-    if (olt.end == null && behind > BUFFER_STOP_REACH) continue
-    const stated = Number(olt.brake_length)
+    if (own.end == null && behind > BUFFER_STOP_REACH) continue
+    const stated = Number(own.brake_length)
     const brakeLength = Number.isFinite(stated) && stated >= 0
       ? stated
       : Math.max(0, Math.round((behind - BUFFER_STOP_LENGTH) * 10) / 10)
-    const type = BUFFER_STOP_TYPES.includes(Number(olt.type)) ? Number(olt.type) : DEFAULT_BUFFER_STOP_TYPE
+    const type = BUFFER_STOP_TYPES.includes(Number(own.type)) ? Number(own.type) : DEFAULT_BUFFER_STOP_TYPE
     marks.push({ id: bs.id, kind: BUFFER_STOP, trackId: track.id, endpoint, type, brakeLength })
   }
   return marks

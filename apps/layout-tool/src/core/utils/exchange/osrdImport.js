@@ -306,13 +306,13 @@ const LIFESPAN_DAY = /^(\d{4}-\d{2}-\d{2}|open)$/
  * are, a day or "open" each; a file of before states a planning status
  * instead, new or removal, which is the day open.
  */
-function lifespanOf(olt) {
-  const l = olt.lifespan
+function lifespanOf(own) {
+  const l = own.lifespan
   if (l && typeof l === 'object') {
     const days = Object.fromEntries(['from', 'to'].filter(k => LIFESPAN_DAY.test(l[k] ?? '')).map(k => [k, l[k]]))
     return Object.keys(days).length ? days : undefined
   }
-  return STATUSES.includes(olt.status) ? lifespanWithStatus(undefined, olt.status) : undefined
+  return STATUSES.includes(own.status) ? lifespanWithStatus(undefined, own.status) : undefined
 }
 
 /**
@@ -340,7 +340,7 @@ function lifespanOf(olt) {
  * export can hand it back: infra-level objects (signals, routes, detectors, …)
  * come back as `infra`, per-track leftovers (loading gauge, foreign extensions)
  * as `track.osrd`. Only what the export regenerates is dropped there — id,
- * geo, length, the alignments, curves/slopes, and the sncf/olt extensions —
+ * geo, length, the alignments, curves/slopes, and the sncf/railacross extensions —
  * so nothing is stored twice.
  *
  * Returns { tracks, errors, infra, switches } with tracks in the app's element
@@ -481,7 +481,8 @@ export function parseOsrdRailJson(data) {
       horizontal_alignment: _h, vertical_alignment: _v, loading_gauge_limits,
       extensions: sectionExt, ...sectionRest
     } = section
-    const { db: _db, olt = {}, sncf = {}, source, ...extRest } = sectionExt ?? {}
+    // `olt` is what files of before name the app's own extension.
+    const { db: _db, olt: before = {}, railacross: own = before, sncf = {}, source, ...extRest } = sectionExt ?? {}
     const { line_code: _lc, line_name: _ln, track_name: _tn, track_number: _tnr, ...sncfRest } = sncf
     if (Object.keys(sncfRest).length) extRest.sncf = sncfRest
     if (source != null) extRest.source = source
@@ -497,16 +498,16 @@ export function parseOsrdRailJson(data) {
         lineNumber: sncf.line_code && sncf.line_code !== 9900 ? String(sncf.line_code) : undefined,
         lineName: sncf.line_name && sncf.line_name !== 'default_name' ? sncf.line_name : undefined,
         trackNumber: sncf.track_number != null ? String(sncf.track_number) : undefined,
-        owner:       olt.owner ?? undefined,
-        trackType:   TRACK_TYPE_OF[olt.track_type],
-        side:        TRACK_SIDE_OF[olt.side],
-        stationName: olt.station_name ?? undefined,
-        uicStation:  olt.uic_station ?? undefined,
-        rails:       olt.rails?.length ? olt.rails : undefined,
-        sleepers:    olt.sleepers?.length ? olt.sleepers : undefined,
-        lifespan:    lifespanOf(olt),
-        lineCategory: LINE_CATEGORIES.includes(olt.line_category) ? olt.line_category : undefined,
-        trackUse:    olt.track_use === 'siding' ? 'siding' : undefined,
+        owner:       own.owner ?? undefined,
+        trackType:   TRACK_TYPE_OF[own.track_type],
+        side:        TRACK_SIDE_OF[own.side],
+        stationName: own.station_name ?? undefined,
+        uicStation:  own.uic_station ?? undefined,
+        rails:       own.rails?.length ? own.rails : undefined,
+        sleepers:    own.sleepers?.length ? own.sleepers : undefined,
+        lifespan:    lifespanOf(own),
+        lineCategory: LINE_CATEGORIES.includes(own.line_category) ? own.line_category : undefined,
+        trackUse:    own.track_use === 'siding' ? 'siding' : undefined,
         heightEpsg,
       }),
       epsg,
@@ -519,7 +520,7 @@ export function parseOsrdRailJson(data) {
   const switches = (Array.isArray(infra.switches) ? infra.switches : [])
     .map(sw => {
       const record = rebuildSwitch(sw, trackById)
-      const lifespan = lifespanOf(sw.extensions?.olt ?? {})
+      const lifespan = lifespanOf(sw.extensions?.railacross ?? sw.extensions?.olt ?? {})
       return record && lifespan ? { ...record, lifespan } : record
     })
     .filter(Boolean)

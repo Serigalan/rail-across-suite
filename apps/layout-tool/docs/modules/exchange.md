@@ -79,7 +79,7 @@ datum), `stationing`, `elevation` and `vertical_curve_radius` (null where the gr
 millimetre. The import also
 reads the earlier DB alignment extension. The **exchange file** is RailJSON-shaped but carries the design data itself on
 each track section: the horizontal alignment from a native-CRS anchor and the vertical alignment as height
-points; it will not load in OSRD. The `olt` extension carries line category and track use.
+points; it will not load in OSRD. The `railacross` extension carries line category and track use.
 
 On import a RailJSON switch is a node whose ports only say which ends meet; the app rebuilds the body from the
 branch (port B1): its arc gives node, tangent, radius and arc length, and the form is matched by radius and

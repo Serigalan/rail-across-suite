@@ -183,7 +183,9 @@ describe('the lifespans through the exchange file (decision 0007)', () => {
     const { tracks, switches } = turnout(form)
     const infra = buildInfra(tracks, switches, [], {})
     const branch = infra.track_sections.find(s => s.id === 'branch')
-    branch.extensions.olt = { ...branch.extensions.olt, status: 'new' }
+    // a file of before names the app's extension `olt`
+    const { railacross, ...rest } = branch.extensions
+    branch.extensions = { ...rest, olt: { ...railacross, status: 'new' } }
     infra.switches[0].extensions = { ...infra.switches[0].extensions, olt: { status: 'removal' } }
     const back = parseOsrdRailJson(infra)
     expect(back.tracks.find(t => t.id === 'branch').lifespan).toEqual({ from: 'open' })

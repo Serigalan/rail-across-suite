@@ -70,7 +70,7 @@ function verticalAlignment(track) {
 }
 
 /** The track properties the sncf extension has no field for; empty values are left out. */
-function oltExtension(track) {
+function ownExtension(track) {
   const fields = {
     owner:        track.owner ?? null,
     track_type:   TYPE_NAMES[track.trackType] ?? null,
@@ -106,8 +106,8 @@ export function buildInfra(tracks, switches, platforms = [], foreign = {}, endMa
     // regenerate sits underneath; curves and slopes are OSRD's derived fields
     // and have no place here.
     const { curves: _c, slopes: _s, loading_gauge_limits, extensions: keptExt = {}, ...leftovers } = track.osrd ?? {}
-    const { source = null, sncf: keptSncf = {}, olt: _o, db: _db, ...extLeftovers } = keptExt
-    const olt = oltExtension(track)
+    const { source = null, sncf: keptSncf = {}, olt: _o, railacross: _r, db: _db, ...extLeftovers } = keptExt
+    const railacross = ownExtension(track)
     return {
       id: track.id,
       geo: { type: 'LineString', coordinates: buildCoords(track) },
@@ -125,7 +125,7 @@ export function buildInfra(tracks, switches, platforms = [], foreign = {}, endMa
           track_name:   String(track.name      ?? '').trim() || 'default_track',
           track_number: Number(track.trackNumber) || 1,
         },
-        ...(olt ? { olt } : {}),
+        ...(railacross ? { railacross } : {}),
         ...extLeftovers,
       },
     }

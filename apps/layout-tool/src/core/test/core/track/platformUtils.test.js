@@ -67,7 +67,7 @@ describe('the platform in an operational point', () => {
     const [op] = platformsToOperationalPoints(platforms, trackMap)
     expect(op.parts).toHaveLength(1)
     expect(op.parts[0].position).toBe(110)          // the point a train is dispatched against
-    expect(op.parts[0].extensions.olt).toEqual({
+    expect(op.parts[0].extensions.railacross).toEqual({
       start_station_m: 10,
       end_station_m: 210,
       side: 'right',
@@ -79,7 +79,7 @@ describe('the platform in an operational point', () => {
 
   it('states no height for a platform that carries none, rather than inventing one', () => {
     const [op] = platformsToOperationalPoints([{ ...platforms[0], height: undefined }], trackMap)
-    expect(op.parts[0].extensions.olt.height_mm).toBe(null)
+    expect(op.parts[0].extensions.railacross.height_mm).toBe(null)
   })
 
   it('leaves a platform whose track is gone out — it has no position', () => {

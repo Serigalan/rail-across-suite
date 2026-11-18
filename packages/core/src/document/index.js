@@ -18,7 +18,7 @@ export { pointOf, renamedStation, stationPoint, stationRegister, withPlatformSto
 export { recordAtStage, stagesOf } from './stages.js'
 export { documentHash, manifestOf } from './manifest.js'
 export {
-  checkDocument, FORMAT, FORMAT_NAME, FORMAT_VERSION, fromDocument, SCHEMA_HASHES, schemaOf, toDocument,
+  checkDocument, FORMAT, FORMAT_NAME, FORMAT_VERSION, fromDocument, SCHEMA_HASHES, schemaOf, toDocument, withTracksByRow,
 } from './door.js'
 export { PayloadError } from './payloadError.js'
 export { FILE_FORMAT, FILE_VERSION, fileParts, isProjectFile, projectFile } from './file.js'

@@ -406,7 +406,7 @@ mod stage_days {
         doc["domains"]["civil"] = json!({ "version": "2.0", "schema": civil, "dependsOn": ["core"], "fields": {}, "collections": {} });
         assert_eq!(check_document(&doc).unwrap_err().code, "unsupported_version");
         let mut doc = to_document(&record(), false, true).unwrap();
-        doc["domains"]["core"]["version"] = json!("6.0");
+        doc["domains"]["core"]["version"] = json!("7.0");
         let e = check_document(&doc).unwrap_err();
         assert_eq!(e.code, "unsupported_version");
         assert!(e.details[0].contains("newer than this program reads"), "{:?}", e.details);
@@ -574,7 +574,7 @@ mod references {
 
 #[test]
 fn a_switch_of_core_4_0_has_its_branch_at_b1_again() {
-    // A switch of core 5.0: B1 its branch, B2 its main track, as the record and the OSRD export have them.
+    // A switch of core 5.0 and since: B1 its branch, B2 its main track, as the record and the OSRD export have them.
     let mut now = check_document(&case("the core alone")).unwrap();
     let tracks: Vec<Value> = now["domains"]["core"]["collections"]["tracks"]
         .as_array()
@@ -588,13 +588,20 @@ fn a_switch_of_core_4_0_has_its_branch_at_b1_again() {
         "ports": { "A": end(0, "END"), "B1": end(2, "BEGIN"), "B2": end(1, "BEGIN") },
     }]);
     let now = check_document(&now).unwrap();
-    assert_eq!(now["domains"]["core"]["version"], "5.0");
+    assert_eq!(now["domains"]["core"]["version"], "6.0");
     // The same switch as core 4.0 stated it, B1 its main track: read, it is the one of 5.0.
     let mut before = now.clone();
     let core = &mut before["domains"]["core"];
     core["version"] = json!("4.0");
     core["schema"] = json!("sha256:2dd6dee14dc22be99741f2b095a314185273f3662f809433d7639fe4c59f6abf");
     core["collections"]["switches"][0]["ports"] = json!({ "A": end(0, "END"), "B1": end(1, "BEGIN"), "B2": end(2, "BEGIN") });
+    // Core 4.0 had its tracks' elements by row, as 5.0 still did.
+    for t in core["collections"]["tracks"].as_array_mut().unwrap() {
+        let rows = rail_across_doc::alignment::to_rows(&t["horizontalAlignment"]);
+        let o = t.as_object_mut().unwrap();
+        o.shift_remove("horizontalAlignment");
+        o.insert("elements".into(), Value::Array(rows));
+    }
     assert_eq!(check_document(&before).unwrap(), now);
     // The record keeps the ports as they are, and names the kind as the document does.
     let record = document_to_record(&now).unwrap();

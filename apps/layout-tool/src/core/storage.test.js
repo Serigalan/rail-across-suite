@@ -389,7 +389,7 @@ describe('deleting a track with a switch on it', () => {
     openProject({ id: 'unmark', tracks: [
       { id: 'a', elements: [el()] },
       { id: 'b', elements: [el({ switchBranch: true, switchId: 'w', switchRoute: 'branch' })] },
-      { id: 'c', elements: [el({ switchBranch: true, switchId: 'w', switchRoute: 'main' }), el()] },
+      { id: 'c', elements: [el({ switchBranch: true, switchId: 'w', switchRoute: 'main' }), el({ startNode: [10, 0], endNode: [20, 0] })] },
     ], switches: [] })
     saveSwitch({ switchId: 'w', kind: 'switch', ports: { A: { trackId: 'a', endpoint: 'END' }, B1: { trackId: 'b', endpoint: 'BEGIN' }, B2: { trackId: 'c', endpoint: 'BEGIN' } } })
     deleteTrack('a')
@@ -414,8 +414,8 @@ describe('a project kept where its opener says', () => {
     expect(saved[0]).toMatchObject({ projectId: 'kp', note: 1 })
     // The project as its infra-data-1.0 document, made by the core's module from what it holds.
     expect(saved[0].document).toMatchObject({ format: 'infra-data', version: '2.0' })
-    expect(saved[0].document.domains.core.collections.tracks[0].elements[0].geometry).toBeUndefined()
-    expect(saved[0].document.domains.core.collections.tracks[0].elements).toHaveLength(1)
+    expect(saved[0].document.domains.core.collections.tracks[0].horizontalAlignment).not.toHaveProperty('geometry')
+    expect(saved[0].document.domains.core.collections.tracks[0].horizontalAlignment.elementType).toEqual(['straight'])
     expect(saved[0].updatedAt).toEqual(expect.any(String))
     await closeStoredProject()
     expect(currentStoredProject()).toBeNull()

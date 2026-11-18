@@ -10,7 +10,8 @@ use serde_json::{Value, json};
 
 use crate::checks::{check_kept, normalized_record};
 use crate::store::{
-    STORED_FORMAT, STORED_FORMAT_1_0, STORED_FORMAT_CORE_4_0, STORED_FORMAT_LIFESPANS, STORED_FORMAT_REFERENCES, STORED_FORMAT_STAGES, Store, pack, unpack,
+    STORED_FORMAT, STORED_FORMAT_1_0, STORED_FORMAT_CORE_4_0, STORED_FORMAT_CORE_5_0, STORED_FORMAT_LIFESPANS, STORED_FORMAT_REFERENCES, STORED_FORMAT_STAGES,
+    Store, pack, unpack,
 };
 use crate::util::{hex, iso, random_bytes};
 
@@ -212,6 +213,13 @@ fn from_core_4_0(db: &Connection, _now: i64) -> rusqlite::Result<String> {
     through_the_door(db, STORED_FORMAT_CORE_4_0)
 }
 
+/// Every revision kept as core 5.0 rewritten as core 6.0 states it, in place (decision 0006): a track's plan by
+/// column. One whose elements lie more than a millimetre apart the door does not read: it stays as it was, and is
+/// refused each time it is asked for.
+fn from_core_5_0(db: &Connection, _now: i64) -> rusqlite::Result<String> {
+    through_the_door(db, STORED_FORMAT_CORE_5_0)
+}
+
 /// Every revision of a project's operations kept with one domain `operations` rewritten in the two domains
 /// `vehicles` and `timetables`, in place (decision 0006): a train's point naming an end mark of the
 /// project's infrastructure — any revision of any variant — by `endMarkId`, else its operational point. One the
@@ -356,7 +364,7 @@ pub fn run_data_migrations(db: &Connection, now: i64) -> rusqlite::Result<Vec<(S
         .collect::<Result<_, _>>()?;
     let mut ran = Vec::new();
     // In this order: a later step reads the revisions in the form the first gives them.
-    let steps: [(&str, fn(&Connection, i64) -> rusqlite::Result<String>); 12] = [
+    let steps: [(&str, fn(&Connection, i64) -> rusqlite::Result<String>); 13] = [
         ("0021-infra-data", to_infra_data),
         ("0020-node-tolerance-1um", close_node_gaps),
         ("0025-infra-data-2.0", from_infra_data_1_0),
@@ -376,6 +384,8 @@ pub fn run_data_migrations(db: &Connection, now: i64) -> rusqlite::Result<Vec<(S
         ("0029-operations", to_two_domains),
         // Core 5.0 (decision 0006): a switch's B1 its branch again, in every revision kept as core 4.0.
         ("0029-switch-ports", from_core_4_0),
+        // Core 6.0 (decision 0006): a track's plan by column, in every revision kept as core 5.0.
+        ("0030-alignment-columns", from_core_5_0),
     ];
     for (name, step) in steps {
         if done.iter().any(|d| d == name) {

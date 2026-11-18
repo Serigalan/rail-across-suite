@@ -38,7 +38,7 @@ pub const FORMAT_NAME: &str = "infra-data-2.0";
 pub const OLD_FORMAT: &str = "rail-across";
 
 const ENVELOPE: &str = include_str!("../../../schemas/infra-data.schema.json");
-const CORE: &str = include_str!("../../../schemas/core/5.0.schema.json");
+const CORE: &str = include_str!("../../../schemas/core/6.0.schema.json");
 const CIVIL: &str = include_str!("../../../schemas/civil/3.0.schema.json");
 const SIGNALLING: &str = include_str!("../../../schemas/signalling/4.0.schema.json");
 const ELECTRIFICATION: &str = include_str!("../../../schemas/electrification/3.0.schema.json");
@@ -144,6 +144,8 @@ const PAST: &[(&str, &str, &str)] = &[
     ),
     // A switch with B1 its main track (decision 0006), before core 5.0 had B1 its branch again.
     ("core", "4.0", "sha256:2dd6dee14dc22be99741f2b095a314185273f3662f809433d7639fe4c59f6abf"),
+    // A track's elements as a list of rows, before its plan stood by column (decision 0006).
+    ("core", "5.0", "sha256:76349bdf72d4b4aaec478e323fea7c2a249bb784d79e4d26905c07ab715a2c6e"),
 ];
 
 /// The hash the schema of a domain's version goes by: this build's, or one of a version before (`PAST`).
@@ -527,7 +529,7 @@ fn to_2_0(doc: &Value) -> Value {
 /// document that holds them at the versions it starts from.
 struct Step {
     domains: &'static [(&'static str, &'static str, &'static str)],
-    apply: fn(&Value) -> Value,
+    apply: fn(&Value) -> Result<Value>,
 }
 
 /// The steps in their order. A step applies where a domain it names is at the version it starts from; the
@@ -535,23 +537,27 @@ struct Step {
 const STEPS: &[Step] = &[
     Step {
         domains: LIFESPANS_BY_DAY,
-        apply: lifespans_by_day,
+        apply: |d| Ok(lifespans_by_day(d)),
     },
     Step {
         domains: REFERENCES_RESOLVED,
-        apply: references_resolved,
+        apply: |d| Ok(references_resolved(d)),
     },
     Step {
         domains: WORDS_AND_NAMES,
-        apply: words_and_names,
+        apply: |d| Ok(words_and_names(d)),
     },
     Step {
         domains: CONTACT_WIRES,
-        apply: contact_wires,
+        apply: |d| Ok(contact_wires(d)),
     },
     Step {
         domains: SWITCH_PORTS,
-        apply: switch_ports,
+        apply: |d| Ok(switch_ports(d)),
+    },
+    Step {
+        domains: ALIGNMENT_COLUMNS,
+        apply: alignment_columns,
     },
 ];
 
@@ -574,6 +580,8 @@ const WORDS_AND_NAMES: &[(&str, &str, &str)] = &[("core", "3.1", "4.0"), ("civil
 const CONTACT_WIRES: &[(&str, &str, &str)] = &[("electrification", "2.1", "3.0")];
 
 const SWITCH_PORTS: &[(&str, &str, &str)] = &[("core", "4.0", "5.0")];
+
+const ALIGNMENT_COLUMNS: &[(&str, &str, &str)] = &[("core", "5.0", "6.0")];
 
 fn version_of<'a>(doc: &'a Value, name: &str) -> Option<&'a str> {
     doc["domains"].get(name)?.get("version")?.as_str()
@@ -734,6 +742,23 @@ fn switch_ports(doc: &Value) -> Value {
         domain.insert("schema".into(), json!(hash_of(name, to)));
     }
     out
+}
+
+/// Core 6.0 (decision 0006): a track's plan by column (`horizontalAlignment`) instead of its list of elements,
+/// chained from its first start point. Refused where an element ends more than 1 mm from where it was stated:
+/// what lies further apart is no plan the columns can hold.
+fn alignment_columns(doc: &Value) -> Result<Value> {
+    let mut out = doc.clone();
+    let Some(Value::Object(domains)) = out.get_mut("domains") else {
+        return Ok(out);
+    };
+    crate::core_format::tracks_by_column(domains)?;
+    for (name, _, to) in ALIGNMENT_COLUMNS {
+        let Some(Value::Object(domain)) = domains.get_mut(*name) else { continue };
+        domain.insert("version".into(), json!(to));
+        domain.insert("schema".into(), json!(hash_of(name, to)));
+    }
+    Ok(out)
 }
 
 /// A reference of a domain's collection: the domain, and the reference as the schema walk gives it, its paths
@@ -932,7 +957,7 @@ fn stepped(doc: Value) -> Result<Value> {
         if !wrong.is_empty() {
             return Err(PayloadError::with("invalid_payload", wrong));
         }
-        doc = (step.apply)(&doc);
+        doc = (step.apply)(&doc)?;
     }
     Ok(doc)
 }
@@ -1071,6 +1096,7 @@ pub fn check_document(given: &Value) -> Result<Value> {
             }
         }
     }
+    found.extend(alignment_breaches(&doc));
     found.extend(switch_branches_without_switch(&doc));
     // What the schema cannot say of a reference: it names an object of its collection (decision 0006).
     if found.is_empty() {
@@ -1090,16 +1116,29 @@ pub fn check_document(given: &Value) -> Result<Value> {
     Ok(doc)
 }
 
+/// What the schema cannot say of a track's plan by column: that it holds together (`alignment::breaches`).
+fn alignment_breaches(doc: &Value) -> Vec<String> {
+    let tracks = doc["domains"]["core"]["collections"]["tracks"].as_array().cloned().unwrap_or_default();
+    let mut found = Vec::new();
+    for (i, track) in tracks.iter().enumerate() {
+        let Some(alignment) = track.get("horizontalAlignment") else { continue };
+        for b in crate::alignment::breaches(alignment) {
+            found.push(format!("/domains/core/collections/tracks/{i}/horizontalAlignment: {b}"));
+        }
+    }
+    found
+}
+
 /// What the schema cannot say: an element marked as a switch's branch names
 /// the switch it belongs to (the rule the record's door held before decision 0006).
 fn switch_branches_without_switch(doc: &Value) -> Vec<String> {
     let tracks = doc["domains"]["core"]["collections"]["tracks"].as_array().cloned().unwrap_or_default();
     let mut found = Vec::new();
     for (i, track) in tracks.iter().enumerate() {
-        for (j, el) in track["elements"].as_array().into_iter().flatten().enumerate() {
-            if el.get("switchBranch") == Some(&Value::Bool(true)) && !el.get("switchId").is_some_and(|id| rail_across_js::truthy(Some(id))) {
+        for (j, row) in track["horizontalAlignment"]["elementDetails"].as_array().into_iter().flatten().enumerate() {
+            if row.get("switchBranch") == Some(&Value::Bool(true)) && !row.get("switchId").is_some_and(|id| rail_across_js::truthy(Some(id))) {
                 found.push(format!(
-                    "/domains/core/collections/tracks/{i}/elements/{j}: is a switch's branch without its switchId"
+                    "/domains/core/collections/tracks/{i}/horizontalAlignment/elementDetails/{j}: is a switch's branch without its switchId"
                 ));
             }
         }

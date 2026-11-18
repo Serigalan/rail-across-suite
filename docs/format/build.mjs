@@ -22,7 +22,7 @@ const DATE = { en: '13 November 2026', de: '13. November 2026', short: { en: '20
 /** The schemas in the order of the appendix: [name, file, heading key, root title key]. */
 const PARTS = [
   ['rail-across', 'rail-across.schema.json', 'file', 'theFile'],
-  ['core', 'core/5.0.schema.json', 'domain', 'domainDocument'],
+  ['core', 'core/6.0.schema.json', 'domain', 'domainDocument'],
   ['civil', 'civil/3.0.schema.json', 'layer', 'layerDocument'],
   ['signalling', 'signalling/4.0.schema.json', 'layer', 'layerDocument'],
   ['electrification', 'electrification/3.0.schema.json', 'layer', 'layerDocument'],

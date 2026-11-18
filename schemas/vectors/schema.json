@@ -214,21 +214,41 @@
   "value": {
    "id": "628b49d9-6dcd-897a-830d-d4f597705899",
    "epsg": 25832,
-   "elements": [
-    {
-     "elementType": "straight",
-     "startNode": [
+   "horizontalAlignment": {
+    "stationing": [
+     0,
+     100
+    ],
+    "coordinates": [
+     [
       500000,
       5700000
      ],
-     "endNode": [
+     [
       500100,
       5700000
-     ],
-     "bearing": 90,
-     "length": 100
-    }
-   ]
+     ]
+    ],
+    "bearingGon": [
+     100,
+     100
+    ],
+    "elementType": [
+     "straight"
+    ],
+    "beginRadius": [
+     null
+    ],
+    "endRadius": [
+     null
+    ],
+    "beginCant": [
+     0
+    ],
+    "endCant": [
+     0
+    ]
+   }
   },
   "valid": true,
   "paths": []
@@ -238,11 +258,36 @@
   "value": {
    "id": "628b49d9-6dcd-897a-830d-d4f597705899",
    "epsg": 25832,
-   "elements": []
+   "horizontalAlignment": {
+    "stationing": [
+     0
+    ],
+    "coordinates": [
+     [
+      500000,
+      5700000
+     ]
+    ],
+    "bearingGon": [
+     100
+    ],
+    "elementType": [],
+    "beginRadius": [],
+    "endRadius": [],
+    "beginCant": [],
+    "endCant": []
+   }
   },
   "valid": false,
   "paths": [
-   "/elements"
+   "/horizontalAlignment/bearingGon",
+   "/horizontalAlignment/beginCant",
+   "/horizontalAlignment/beginRadius",
+   "/horizontalAlignment/coordinates",
+   "/horizontalAlignment/elementType",
+   "/horizontalAlignment/endCant",
+   "/horizontalAlignment/endRadius",
+   "/horizontalAlignment/stationing"
   ]
  },
  {
@@ -250,21 +295,41 @@
   "value": {
    "id": "628b49d9-6dcd-897a-830d-d4f597705899",
    "epsg": 25832.5,
-   "elements": [
-    {
-     "elementType": "straight",
-     "startNode": [
+   "horizontalAlignment": {
+    "stationing": [
+     0,
+     100
+    ],
+    "coordinates": [
+     [
       500000,
       5700000
      ],
-     "endNode": [
+     [
       500100,
       5700000
-     ],
-     "bearing": 90,
-     "length": 100
-    }
-   ],
+     ]
+    ],
+    "bearingGon": [
+     100,
+     100
+    ],
+    "elementType": [
+     "straight"
+    ],
+    "beginRadius": [
+     null
+    ],
+    "endRadius": [
+     null
+    ],
+    "beginCant": [
+     0
+    ],
+    "endCant": [
+     0
+    ]
+   },
    "trackType": 3
   },
   "valid": false,
@@ -278,29 +343,48 @@
   "value": {
    "id": "628b49d9-6dcd-897a-830d-d4f597705899",
    "epsg": 25832,
-   "elements": [
-    {
-     "elementType": "straight",
-     "startNode": [
+   "horizontalAlignment": {
+    "stationing": [
+     0,
+     100
+    ],
+    "coordinates": [
+     [
       500000,
       5700000
      ],
-     "endNode": [
+     [
       500100,
       5700000
-     ],
-     "bearing": 90,
-     "length": 100,
-     "radius": null,
-     "r1": "x",
-     "geometry": {}
-    }
-   ]
+     ]
+    ],
+    "bearingGon": [
+     100,
+     100
+    ],
+    "elementType": [
+     "transition"
+    ],
+    "beginRadius": [
+     "x"
+    ],
+    "endRadius": [
+     null
+    ],
+    "beginCant": [
+     0
+    ],
+    "endCant": [
+     0
+    ],
+    "geometry": {}
+   }
   },
   "valid": false,
   "paths": [
-   "/elements/0",
-   "/elements/0/r1"
+   "/horizontalAlignment",
+   "/horizontalAlignment/beginRadius/0",
+   "/horizontalAlignment/elementType/0"
   ]
  },
  {

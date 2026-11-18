@@ -1,5 +1,5 @@
 import ENVELOPE from '../../schemas/infra-data.schema.json' with { type: 'json' }
-import CORE from '../../schemas/core/5.0.schema.json' with { type: 'json' }
+import CORE from '../../schemas/core/6.0.schema.json' with { type: 'json' }
 import CIVIL from '../../schemas/civil/3.0.schema.json' with { type: 'json' }
 import SIGNALLING from '../../schemas/signalling/4.0.schema.json' with { type: 'json' }
 import ELECTRIFICATION from '../../schemas/electrification/3.0.schema.json' with { type: 'json' }
@@ -54,6 +54,13 @@ export const toDocument = (record, { carrySchemas = false, check = true } = {}) 
 
 /** The record an infra-data document holds, once the door has checked it. */
 export const fromDocument = (doc) => viaNative('document.fromDocument', doc)
+
+/**
+ * A document with its tracks' elements by row, as core 5.0 stated them —
+ * for what reads a track element by element, or writes a format of before
+ * (crates/doc, with_tracks_by_row). Not checked: it is no document of this build.
+ */
+export const withTracksByRow = (doc) => viaNative('document.withTracksByRow', doc)
 
 /** The schema of a domain this build reads, by name ("core", "civil", "signalling", "electrification"), and the envelope's ("infra-data"). */
 export const schemaOf = (name) => (name === FORMAT ? ENVELOPE : DOMAIN_SCHEMAS[name])

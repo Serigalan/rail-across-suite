@@ -20,7 +20,7 @@ use crate::error::{PayloadError, Result};
 use crate::layers;
 
 /// The domains this build reads and writes, with their versions.
-pub const DOMAIN_VERSIONS: &[(&str, &str)] = &[("core", "5.0"), ("civil", "3.0"), ("signalling", "4.0"), ("electrification", "3.0")];
+pub const DOMAIN_VERSIONS: &[(&str, &str)] = &[("core", "6.0"), ("civil", "3.0"), ("signalling", "4.0"), ("electrification", "3.0")];
 
 /// The version of domain `name` this build reads, where it reads it.
 pub fn domain_version(name: &str) -> Option<&'static str> {
@@ -358,6 +358,7 @@ pub fn record_to_document(record: &Value, schema_hashes: &HashMap<&str, String>)
     // that is no UUID: the door takes them on the way in (decision 0006).
     crate::words::forward(&mut domains);
     crate::ids::forward(&mut domains);
+    tracks_by_column(&mut domains)?;
     sorted_collections(&mut domains);
     // The domains this build does not know, as they came (rail-across-1.0): written back unchanged.
     for (name, domain) in get(record, "keptDomains").and_then(Value::as_object).into_iter().flatten() {
@@ -366,6 +367,35 @@ pub fn record_to_document(record: &Value, schema_hashes: &HashMap<&str, String>)
         }
     }
     Ok(json!({ "format": crate::door::FORMAT, "version": crate::door::VERSION, "domains": Value::Object(domains), "blobs": Value::Object(blobs) }))
+}
+
+/// The tracks of a document's domains with their plan by column, as core 6.0 states it (`alignment::to_columns`;
+/// decision 0006): their elements chained from the first start point. Refused where an element ends more than
+/// 1 mm from where it is stated, naming each such track and element.
+pub(crate) fn tracks_by_column(domains: &mut Object) -> Result<()> {
+    let Some(Value::Array(tracks)) = domains.get_mut("core").and_then(|c| c.get_mut("collections")).and_then(|c| c.get_mut("tracks")) else {
+        return Ok(());
+    };
+    let mut apart = Vec::new();
+    for (i, t) in tracks.iter_mut().enumerate() {
+        let Some(track) = t.as_object_mut() else { continue };
+        let Some(rows) = track.shift_remove("elements") else { continue };
+        match crate::alignment::to_columns(rows.as_array().map(Vec::as_slice).unwrap_or(&[])) {
+            Ok(Some(columns)) => {
+                track.insert("horizontalAlignment".into(), columns);
+            }
+            Ok(None) => {}
+            Err(found) => {
+                let name = js_string(track.get("name").or(track.get("id")));
+                apart.extend(found.into_iter().map(|f| format!("/domains/core/collections/tracks/{i}: {name}, {f}")));
+            }
+        }
+    }
+    if apart.is_empty() {
+        Ok(())
+    } else {
+        Err(PayloadError::with("invalid_payload", apart))
+    }
 }
 
 /// The km lines of a record's domains as core 4.0 states them: in one plane, their runs' points as blobs
@@ -592,9 +622,36 @@ pub(crate) fn sorted_collections(domains: &mut Object) {
 
 // ── Document → record ───────────────────────────────────────────────────────
 
+/// A document with its tracks' elements by row, as core 5.0 stated them: for what reads a track element by element.
+pub fn with_tracks_by_row(doc: &Value) -> Value {
+    let mut out = doc.clone();
+    if let Some(Value::Object(domains)) = out.get_mut("domains") {
+        tracks_by_row(domains);
+    }
+    out
+}
+
+/// The tracks of a document's domains with their elements by row again (`alignment::to_rows`), as the record
+/// keeps them; a track without a plan has no element.
+fn tracks_by_row(domains: &mut Object) {
+    let Some(Value::Array(tracks)) = domains.get_mut("core").and_then(|c| c.get_mut("collections")).and_then(|c| c.get_mut("tracks")) else {
+        return;
+    };
+    for track in tracks.iter_mut().filter_map(Value::as_object_mut) {
+        let rows = track
+            .shift_remove("horizontalAlignment")
+            .map(|a| crate::alignment::to_rows(&a))
+            .unwrap_or_default();
+        if !track.contains_key("elements") {
+            track.insert("elements".into(), Value::Array(rows));
+        }
+    }
+}
+
 /// The record an infra-data-2.0 document holds — the inverse of record_to_document (`documentToRecord`).
 pub fn document_to_record(doc: &Value) -> Result<Value> {
     let mut domains = obj(&doc["domains"]);
+    tracks_by_row(&mut domains);
     crate::words::back(&mut domains);
     let doc = &json!({ "domains": Value::Object(domains), "blobs": doc.get("blobs").cloned().unwrap_or(json!({})) });
     let core = &doc["domains"]["core"];

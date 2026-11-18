@@ -77,7 +77,7 @@ A file is exchanged in a *container* `.railacross`: a zip archive whose first en
     "format": "infra-data", "version": "1.0",
     "domains": {
       "core": {
-        "version": "5.0", "schema": "sha256:…",
+        "version": "6.0", "schema": "sha256:…",
         "fields": { … }, "collections": { … }
       },
       "civil":           { "version": "3.0", "dependsOn": ["core"], … },
@@ -114,7 +114,7 @@ A *domain* is a field of its own, with its own schema and its own version. It ha
 
 #tbl((16%, 22%, 1fr),
   [Part], [Domain], [Content],
-  [infra-data-1.0], [`core` 5.0], [the net: tracks, switches and connectors, track ends (buffer stops, boundaries of the planning area), km lines, operational points, stopping places, named runs of tracks. The base of all others],
+  [infra-data-1.0], [`core` 6.0], [the net: tracks, switches and connectors, track ends (buffer stops, boundaries of the planning area), km lines, operational points, stopping places, named runs of tracks. The base of all others],
   [], [`civil` 3.0], [platforms and engineering structures (railway bridges, retaining walls, noise barriers), axes measured in point clouds, reference axes, title block, project picture],
   [], [`signalling` 4.0], [signals with their logical signals, train detection, switch elements, routes, overlaps, flank protection, train protection, station boundaries, itineraries — exportable to PlanPro],
   [], [`electrification` 3.0], [masts, suspension points, section insulators and the contact wires with their voltage],
@@ -127,7 +127,7 @@ The domains of operations name the infrastructure by id: operational points, tra
 == Collections and objects
 
 - A collection is a list of objects with `id`, *sorted by `id`*. The same state thus gives the same bytes and the same hash.
-- Sequences within an object (`elements`, `heights`, the points of a train) keep their order; it means something.
+- Sequences within an object (the columns of a track's plan, `heights`, the points of a train) keep their order; it means something.
 - Every object allows only the properties its schema names (`additionalProperties: false`).
 - *Ids are always UUIDs in lower case*, unique in their collection — also where an import draws them from something it read (a km line from its line number, a station from its name): then as a UUID drawn from that.
 
@@ -190,24 +190,23 @@ A domain a reader does not know it keeps whole and writes back unchanged. A doma
 
 == Tracks and design elements
 
-A track (`tracks`) has a plane (`epsg`) in which all its elements are stated, a vertical reference (`heightEpsg`), the sequence of its design elements (`elements`) and its heights (`heights`). A station track (`trackType: "station"`) names its operational point (`operationalPointId`) and its track number, a line track (`trackType: "line"`) its line and which track of the line it is (`side`: `regular` or `opposite`).
+A track (`tracks`) has a plane (`epsg`) in which its plan is stated, a vertical reference (`heightEpsg`), its plan by column (`horizontalAlignment`) and its heights (`heights`). A station track (`trackType: "station"`) names its operational point (`operationalPointId`) and its track number, a line track (`trackType: "line"`) its line and which track of the line it is (`side`: `regular` or `opposite`).
 
-*An element has no station and no polyline.* The station of a point is the running sum of the lengths from the beginning of the track. The geometry follows from the start point, the bearing and the design values. An element has no plane of its own: it is in its track's.
+*The plan by column.* A track's design elements are not a list of objects but columns, as the OSRD export states them. Over N elements `stationing`, `coordinates` and `bearingGon` hold N+1 values — each element's start, the last the track's end —, the other columns N.
 
-#tbl((22%, 26%, 26%, 1fr),
-  [Value], [`straight`], [`arc`], [`transition`],
-  [`startNode`, `endNode`], [`[E, N]` in m], [`[E, N]` in m], [`[E, N]` in m],
-  [`bearing`], [bearing at the start, degrees clockwise from grid north], [the same], [the same],
-  [`length`], [m], [m, arc length], [m],
-  [`radius`], [—], [m, signed: + curving right], [—],
-  [`r1`, `r2`], [—], [—], [radii at start and end, signed; `null` = straight end],
-  [`transitionType`], [—], [—], [`clothoid` or `bloss`],
-  [`cant`], [mm, the same at both ends], [mm], [—],
-  [`cantStart`, `cantEnd`], [mm, where the cant changes along the element], [the same], [mm, always both],
-  [`endBearing`], [only at a kink], [only where it differs], [only where it differs],
+#tbl((26%, 1fr),
+  [Column], [Content],
+  [`stationing`], [the station of each element's start and of the track's end, m from 0; an element's length is the difference],
+  [`coordinates`], [the point of each element's start and of the track's end, `[E, N]` in m],
+  [`bearingGon`], [the bearing at each element's start and at the track's end, gon, clockwise from grid north],
+  [`elementType`], [`straight`, `arc`, `clothoid` or `bloss`],
+  [`beginRadius`, `endRadius`], [the radius at each element's start and end, m, signed: + curving right; `null` for a straight end; an arc's two are the same],
+  [`beginCant`, `endCant`], [the cant at each element's start and end, mm, signed by the raised rail seen in the direction of stationing],
+  [`designSpeed`], [the design speed of each element, km/h, `null` where it states none; missing where no element states one],
+  [`elementDetails`], [what few elements carry, by row with the element's index (`element`, from 0): the marking of a switch's route (`switchId`, `switchRoute`, `switchBranch`), the role in changes (`role`), reasons for rule findings (`reasons`)],
 )
 
-An element states its cant as `cant` *or* as `cantStart` and `cantEnd`, never both. A missing cant is 0. The cant is signed by the raised rail, seen in the direction of stationing. Besides, an element has its design speed (`designSpeed`, km/h), its role in changes (`role`), reasons for rule findings (`reasons`) and, on the routes of a switch, the marking `switchBranch`, `switchRoute`, `switchId`. An element marked as a route of a switch names its switch.
+*No gap, no kink after a curve.* Each element begins where the one before ends. Only a straight may leave in another direction than it runs: its kink is the step from its bearing to the next one. An arc or a transition ends on the bearing the next element begins on. A reader checks each element from its own start point: its values lead to the next point within 1 mm, and an arc or a transition ends on the next bearing within what a millimetre of length makes of it on its sharpest curvature. What lies further apart is refused; an import that brings such data fits it first.
 
 == Heights
 
@@ -226,7 +225,7 @@ An object of the collection `switches` sits at a node. Its *ports* hold track en
   [`stage_link`], [`A`, `B1`, `B2`], [construction stage connector: the track at `A` is joined to the one at `B1` while that is in service, and to the one at `B2` from then on],
 )
 
-The routes of a switch are the elements of the tracks at it marked with `switchId` and `switchRoute` (`main`, `branch`). The form is stated in `label` (e.g. `300 – 1:9`) and refers to a catalogue of forms, `formVersion` naming its version. The symbol of the switch is not stored.
+The routes of a switch are the elements of the tracks at it marked in their `elementDetails` with `switchId` and `switchRoute` (`main`, `branch`). The form is stated in `label` (e.g. `300 – 1:9`) and refers to a catalogue of forms, `formVersion` naming its version. The symbol of the switch is not stored.
 
 == Operational points and stopping places
 
@@ -338,7 +337,7 @@ Besides, the tools check the content as engineering asks: whether locations lie 
 
 *A schema is a version.* Every change of a schema — also one that only changes a rule the schema names — raises the version of its domain: the minor version for additions an older reader may skip, else the major version. A reader brings an older file forward step by step, number by number; older states are brought forward once, not read leniently for ever.
 
-The versions of the domains continue the suite's counting: core 5.0, civil 3.0, signalling 4.0, electrification 3.0; vehicles 1.0 and timetables 1.0 are the domain operations 1.0 of before, split in two. Core 4.0 had a switch's `B1` its main track; 5.0 has it the branch again, and a reader brings a 4.0 file forward by swapping the two. Timetables 1.1 adds a train's reversal to its point (`reverse`, `turnaround`); a reader brings a 1.0 file forward as it is. Timetables 1.2 adds the construction scenarios (`constructionScenarios`); a reader brings a 1.1 file forward with none.
+The versions of the domains continue the suite's counting: core 6.0, civil 3.0, signalling 4.0, electrification 3.0; vehicles 1.0 and timetables 1.0 are the domain operations 1.0 of before, split in two. Core 4.0 had a switch's `B1` its main track; 5.0 has it the branch again, and a reader brings a 4.0 file forward by swapping the two. Core 5.0 had a track's elements as a list of objects; 6.0 states its plan by column, and a reader brings a 5.0 file forward element by element, closing a gap within a millimetre and refusing a track whose elements lie further apart. Timetables 1.1 adds a train's reversal to its point (`reverse`, `turnaround`); a reader brings a 1.0 file forward as it is. Timetables 1.2 adds the construction scenarios (`constructionScenarios`); a reader brings a 1.1 file forward with none.
 
 = An example
 
@@ -354,22 +353,22 @@ A file with a track of a straight and an arc, new from 1 May 2027, a boundary at
     "format": "infra-data", "version": "1.0",
     "domains": {
       "core": {
-        "version": "5.0", "schema": "sha256:1111…",
+        "version": "6.0", "schema": "sha256:1111…",
         "fields": { "id": "5dbd8fed-f8dc-4995-8934-9d71be69cae0", "title": "Halle-Trotha" },
         "collections": {
           "tracks": [ {
             "id": "6e1f2a3b-0c4d-4e5f-8a6b-7c8d9e0f1a2b", "name": "6050.001",
             "trackType": "line", "lineNumber": 6050, "epsg": 5684, "heightEpsg": 7837,
             "lifespan": { "from": "2027-05-01" },
-            "elements": [
-              { "elementType": "straight", "bearing": 90, "length": 100, "designSpeed": 100,
-                "startNode": [4497120.512, 5706210.004],
-                "endNode": [4497220.512, 5706210.004] },
-              { "elementType": "arc", "bearing": 90, "length": 100, "radius": 600,
-                "cant": 60, "designSpeed": 100,
-                "startNode": [4497220.512, 5706210.004],
-                "endNode": [4497320.050, 5706201.690] }
-            ],
+            "horizontalAlignment": {
+              "stationing": [0, 100, 200],
+              "coordinates": [[4497120.512, 5706210.004], [4497220.512, 5706210.004], [4497320.05, 5706201.69]],
+              "bearingGon": [100, 100, 110.610329539],
+              "elementType": ["straight", "arc"],
+              "beginRadius": [null, 600], "endRadius": [null, 600],
+              "beginCant": [0, 60], "endCant": [0, 60],
+              "designSpeed": [100, 100]
+            },
             "heights": [ { "station": 0, "z": 108.55 }, { "station": 200, "z": 109.15 } ]
           } ],
           "switches": [],
@@ -479,14 +478,14 @@ The hashes are shortened here; in a file each has its 64 hex digits.
 
 This specification is the target of the data model. As of 13 November 2026 the suite's implementation differs from it in these points, each to be brought in line by its own step (decision 0006 and those after it):
 
-- The project server keeps a variant's infrastructure as a document of the envelope of before (infra-data 2.0: its domains and its blobs, core 5.0, civil 3.0, signalling 4.0, electrification 3.0) and the operation as an operations document (vehicles 1.0, timetables 1.2); the file rail-across-1.0 brings them together, and a file of before is still read.
+- The project server keeps a variant's infrastructure as a document of the envelope of before (infra-data 2.0: its domains and its blobs, core 6.0, civil 3.0, signalling 4.0, electrification 3.0) and the operation as an operations document (vehicles 1.0, timetables 1.2); the file rail-across-1.0 brings them together, and a file of before is still read.
 - The record the tools work on keeps km lines in WGS 84 with the kilometrage per point; the door converts them into the document and back (decision 0006 takes that out). A km line of before is kept as points, not yet fitted with design elements.
 - A domain the reader does not know is kept; one of a later version of a domain it knows is refused, not read with the version it knows.
 
 #pagebreak()
 = Appendix: every property and its values <appendix>
 
-The appendix is generated from the specification's schemas (`rail-across.schema.json`, `core/5.0.schema.json`, `civil/3.0.schema.json`, `signalling/4.0.schema.json`, `electrification/3.0.schema.json`, `vehicles/1.0.schema.json`, `timetables/1.2.schema.json`, in `docs/format/schemas`). For every type it names every property with its path (nested objects with a dot, list entries with `[]`), whether it is required, its type with every value it allows, and its meaning. A reference to a type leads to its section; `→ core.tracks` names the collection an id points into — the check on reading makes sure the object is there.
+The appendix is generated from the specification's schemas (`rail-across.schema.json`, `core/6.0.schema.json`, `civil/3.0.schema.json`, `signalling/4.0.schema.json`, `electrification/3.0.schema.json`, `vehicles/1.0.schema.json`, `timetables/1.2.schema.json`, in `docs/format/schemas`). For every type it names every property with its path (nested objects with a dot, list entries with `[]`), whether it is required, its type with every value it allows, and its meaning. A reference to a type leads to its section; `→ core.tracks` names the collection an id points into — the check on reading makes sure the object is there.
 
 == The file rail-across-1.0
 
@@ -553,7 +552,7 @@ _No further properties are allowed._
   [`collections`], [yes], [object; keys free, values: list of object], [The collections: each a list of objects with `id`, sorted by `id`],
 )
 
-== Domain core 5.0
+== Domain core 6.0
 
 === Domain document <core-root>
 
@@ -735,37 +734,6 @@ _No further properties are allowed._
   [`gaugeProfile`], [], [#link(<core-Text>)[`Text`]], [Clearance gauge],
 )
 
-=== Element <core-Element>
-
-A design element of a track: straight, arc or transition, in its track's plane. No station and no polyline: stations are the running sum of the lengths, the geometry is derived.
-
-_No further properties are allowed._
-
-#table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
-  [Property], [Required], [Type and allowed values], [Meaning],
-  [`elementType`], [yes], [one of the values under Meaning], [Kind of element #linebreak() `straight` straight #linebreak() `arc` circular arc #linebreak() `transition` transition curve],
-  [`startNode`], [yes], [#link(<core-Point>)[`Point`]], [Start point in the track's plane \[m\]],
-  [`endNode`], [yes], [#link(<core-Point>)[`Point`]], [End point \[m\]],
-  [`bearing`], [], [number], [Bearing at the start \[°, clockwise from grid north\]],
-  [`endBearing`], [], [number], [Bearing at the end, only where it differs from what the design values give (a kink)],
-  [`length`], [yes], [number; ≥ 0], [Length \[m\], of an arc its arc length],
-  [`radius`], [], [number or null], [Radius of the arc \[m\], signed (+ curving right)],
-  [`r1`], [], [number or null], [Radius at the start of the transition \[m\], signed; `null` = straight end],
-  [`r2`], [], [number or null], [Radius at the end of the transition \[m\]; `null` = straight end],
-  [`transitionType`], [], [one of the values under Meaning], [Shape of the transition #linebreak() `clothoid` clothoid #linebreak() `bloss` Bloss curve],
-  [`cant`], [], [number], [Cant \[mm\], the same at both ends; signed by the raised rail],
-  [`cantStart`], [], [number], [Cant at the start \[mm\], where it changes along the element (then no `cant`)],
-  [`cantEnd`], [], [number], [Cant at the end \[mm\]],
-  [`cantException`], [], [#link(<core-Text>)[`Text`]], [Reason for a cant of 100–120 mm in a switch],
-  [`role`], [], [one of the values under Meaning], [How the element follows changes; without one it is fixed #linebreak() `follow` following element: length and radius given, all behind it follows #linebreak() `intermediate` intermediate element: radius given, computed anew between its neighbours],
-  [`reasons`], [], [object; keys free, values: text], [Written reason for each rule finding, under the rule's id],
-  [`designSpeed`], [], [number; ≥ 0 or null], [Design speed \[km/h\] the element is laid out for and checked against; `null` or missing = unknown],
-  [`switchBranch`], [], [boolean], [Belongs to a route of a switch],
-  [`switchRoute`], [], [one of the values under Meaning], [Which route of the switch #linebreak() `main` main track #linebreak() `branch` branch track #linebreak() `cross` crossing leg #linebreak() `slip1` first curve of a slip #linebreak() `slip2` second curve of a slip],
-  [`switchId`], [], [#link(<core-Ref>)[`Ref`] → `core.​switches`], [The switch],
-  [`switchHint`], [], [#link(<core-Text>)[`Text`]], [Why an import could not build the switch: form, number, reason],
-)
-
 === HeightPoint <core-HeightPoint>
 
 A point of a track's vertical tangent polygon.
@@ -821,7 +789,7 @@ _No further properties are allowed._
   [`lifespan`], [], [#link(<core-Lifespan>)[`Lifespan`]], [Lifespan: the days in service; without one, the object exists and stays],
   [`epsg`], [yes], [#link(<core-Epsg>)[`Epsg`]], [The one plane all its elements are stated in],
   [`heightEpsg`], [], [#link(<core-Epsg>)[`Epsg`]], [Vertical reference of the heights (e.g. 7837 = DHHN2016)],
-  [`elements`], [yes], [list of #link(<core-Element>)[`Element`]\; at least 1 entry], [Design elements from the beginning to the end],
+  [`horizontalAlignment`], [yes], [#link(<core-HorizontalAlignment>)[`HorizontalAlignment`]], [The plan by column, from the start to the end],
   [`heights`], [], [list of #link(<core-HeightPoint>)[`HeightPoint`]], [Vertical tangent polygon],
   [`rails`], [], [list of #link(<core-Superstructure>)[`Superstructure`]], [Rail profiles over ranges of stations],
   [`sleepers`], [], [list of #link(<core-Superstructure>)[`Superstructure`]], [Sleepers over ranges of stations],
@@ -974,6 +942,44 @@ exactly one of `elements`, `points` is stated
   [`counting`], [], [one of the values under Meaning], [How the kilometrage counts along the run #linebreak() `up` ascending #linebreak() `down` descending],
   [`elements`], [], [list of #link(<core-KmElement>)[`KmElement`]\; at least 1 entry], [The design elements from the start to the end],
   [`points`], [], [#link(<core-BlobRef>)[`BlobRef`]], [The points `[easting, northing, km]` as a blob, where the source states no elements],
+)
+
+=== HorizontalAlignment <core-HorizontalAlignment>
+
+A track's plan by column, as the OSRD export states it: over N design elements stationing, coordinates and bearingGon hold N+1 values — each element's start, the last the track's end —, the other columns N. Each element begins where the one before ends; only a straight may leave in another direction (a kink).
+
+_No further properties are allowed._
+
+#table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
+  [Property], [Required], [Type and allowed values], [Meaning],
+  [`stationing`], [yes], [list of number; at least 2 entries], [Station of each element's start and of the track's end \[m\], from 0; an element's length is the difference],
+  [`coordinates`], [yes], [list of #link(<core-Point>)[`Point`]\; at least 2 entries], [Point of each element's start and of the track's end, in the track's plane \[m\]],
+  [`bearingGon`], [yes], [list of number; at least 2 entries], [Bearing at each element's start and at the track's end \[gon, clockwise from grid north\]],
+  [`elementType`], [yes], [list of one of `straight`, `arc`, `clothoid`, `bloss`; at least 1 entry], [Kind of each element: straight, arc, clothoid or bloss (transitions)],
+  [`beginRadius`], [yes], [list of number or null; at least 1 entry], [Radius at each element's start \[m\], signed (+ curving right); `null` = straight end],
+  [`endRadius`], [yes], [list of number or null; at least 1 entry], [Radius at each element's end \[m\]; an arc's is its start's],
+  [`beginCant`], [yes], [list of number; at least 1 entry], [Cant at each element's start \[mm\], signed by the raised rail],
+  [`endCant`], [yes], [list of number; at least 1 entry], [Cant at each element's end \[mm\]],
+  [`designSpeed`], [], [list of number; ≥ 0 or null; at least 1 entry], [Design speed of each element \[km/h\]; `null` = unknown; missing where no element states one],
+  [`elementDetails`], [], [list of #link(<core-ElementDetail>)[`ElementDetail`]\; at least 1 entry], [What few elements carry, by row],
+)
+
+=== ElementDetail <core-ElementDetail>
+
+What an element carries beyond the columns, under its index: the marking of a switch's route, its role in changes, reasons for rule findings.
+
+_No further properties are allowed._
+
+#table(columns: (24%, 11%, 1fr, 1.25fr), fill: (_, y) => if y == 0 { luma(232) },
+  [Property], [Required], [Type and allowed values], [Meaning],
+  [`element`], [yes], [integer; ≥ 0], [Index of the element in the columns, from 0],
+  [`cantException`], [], [#link(<core-Text>)[`Text`]], [Reason for a cant of 100–120 mm in a switch],
+  [`role`], [], [one of the values under Meaning], [How the element follows changes; without one it is fixed #linebreak() `follow` following element: length and radius given, all behind it follows #linebreak() `intermediate` intermediate element: radius given, computed anew between its neighbours],
+  [`reasons`], [], [object; keys free, values: text], [Written reason for each rule finding, under the rule's id],
+  [`switchBranch`], [], [boolean], [Belongs to a route of a switch],
+  [`switchRoute`], [], [one of the values under Meaning], [Which route of the switch #linebreak() `main` main track #linebreak() `branch` branch track #linebreak() `cross` crossing leg #linebreak() `slip1` first curve of a slip #linebreak() `slip2` second curve of a slip],
+  [`switchId`], [], [#link(<core-Ref>)[`Ref`] → `core.​switches`], [The switch],
+  [`switchHint`], [], [#link(<core-Text>)[`Text`]], [Why an import could not build the switch: form, number, reason],
 )
 
 == Layer civil 3.0

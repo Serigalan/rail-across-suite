@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { canonicalJson, contentHash } from './canonical.js'
-import { checkDocument, fromDocument, SCHEMA_HASHES, toDocument } from './door.js'
+import { checkDocument, fromDocument, SCHEMA_HASHES, toDocument, withTracksByRow } from './door.js'
 import { DOMAIN_VERSIONS } from './coreFormat.js'
 import { documentHash, manifestOf } from './manifest.js'
 import { hasPek, loadPek } from '../../test/pekFixture.js'
@@ -33,7 +33,8 @@ const SIGNALLING_1_0 = 'sha256:b28ada7513c555fa4696ff2b41c73bb7565143854c08e2e9b
 
 /** A 2.0 document as infra-data 1.0 wrote the same state: decision 0008 the other way. */
 function oneZero(doc) {
-  const d = structuredClone(doc)
+  // Its tracks' elements by row, as every core before 6.0 had them.
+  const d = withTracksByRow(structuredClone(doc))
   d.version = '1.0'
   delete d.schemas
   const { core, civil, signalling } = d.domains
@@ -169,8 +170,8 @@ describe('the door', () => {
 
   it('names an element\'s design speed designSpeed in the document, and speed in the record', () => {
     const doc = toDocument(record({ tracks: [track('t1', { elements: [el(0, 100, { speed: 80 })] })] }))
-    expect(doc.domains.core.collections.tracks[0].elements[0]).toMatchObject({ designSpeed: 80 })
-    expect(doc.domains.core.collections.tracks[0].elements[0]).not.toHaveProperty('speed')
+    expect(doc.domains.core.collections.tracks[0].horizontalAlignment.designSpeed).toEqual([80])
+    expect(doc.domains.core.collections.tracks[0].horizontalAlignment).not.toHaveProperty('speed')
     expect(fromDocument(doc).tracks[0].elements[0]).toMatchObject({ speed: 80 })
     // A document of the core before the name: its element's speed is read as the design speed.
     const before = oneZero(doc)

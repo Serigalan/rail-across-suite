@@ -39,7 +39,7 @@ export namespace Document {
   }
 }
 
-/** Rail-Data-Core, domain core 5.0 */
+/** Rail-Data-Core, domain core 6.0 */
 export namespace Core {
   /** The base every module depends on: the net (tracks, switches and connectors), what stands on it for every discipline (platforms, end marks) and the reference data (km lines, the operational point register). Written by the layout tool, carried by the core library. See docs/data-model.md. — 2.0 (decision 0025): the alignment and what every layer places things by; the platforms are civil's, the stopping places came in from signalling, the named runs of tracks from layout. — 3.0 (decision 0028): no construction stages; a lifespan states days. — 3.1 (decision 0028, phase C): every reference names an object of the collection its `x-target` names (the door's rule). — 4.0 (decision 0029, phase 1): the kinds as words, every reference ending in `Id`, no plane of an element's own, a switch with B1 its main track and B2 its branch; (phase 2) every id a UUID in lower case, a km line in one plane as runs from km jump to km jump. — 5.0 (decision 0029, phase 6): a switch's B1 its branch and B2 its main track, as the suite always had them and the OSRD export writes them. */
   export type Root = {
@@ -119,34 +119,6 @@ export namespace Core {
     lineCategory?: LineCategory
     gaugeProfile?: Text
   }
-  /** One design element of a track: straight, arc or transition. No station, no polyline: stations are the running sum of the lengths, drawn geometry is derived. */
-  export type Element = {
-    elementType: "straight" | "arc" | "transition"
-    startNode: Point
-    endNode: Point
-    bearing?: number
-    endBearing?: number
-    length: number
-    radius?: number | null
-    r1?: number | null
-    r2?: number | null
-    transitionType?: "clothoid" | "bloss"
-    cant?: number
-    cantStart?: number
-    cantEnd?: number
-    cantException?: Text
-    role?: "follow" | "intermediate"
-    reasons?: {
-      [name: string]: string
-    }
-    /** The design speed of the element [km/h], which the layout tool lays it out for and checks it against (the signalling domain states the speeds it signals, signallingSpeed, on its signals). */
-    designSpeed?: number | null
-    switchBranch?: boolean
-    switchRoute?: "main" | "branch" | "cross" | "slip1" | "slip2"
-    switchId?: Ref
-    /** Why an import could not build the switch this element belongs to: form, number, reason. */
-    switchHint?: Text
-  }
   /** A point of a track's vertical tangent polygon: station [m], height of the rail that is not raised [m], vertical curve radius and what governs it, and how it depends on another point. */
   export type HeightPoint = {
     station: number
@@ -181,7 +153,7 @@ export namespace Core {
     lifespan?: Lifespan
     epsg: Epsg
     heightEpsg?: Epsg
-    elements: Array<Element>
+    horizontalAlignment: HorizontalAlignment
     heights?: Array<HeightPoint>
     rails?: Array<Superstructure>
     sleepers?: Array<Superstructure>
@@ -278,6 +250,42 @@ export namespace Core {
     id: Id
     name?: Text
     path: TrackPath
+  }
+  /** A track's plan by column (decision 0006), as the OSRD export states it. Over N elements stationing, coordinates and bearingGon hold N+1 values — each element's start, the last the track's end —, the other columns N. Each element begins where the one before ends, and only a straight may leave in another direction than it runs (a kink: the step from its bearing to the next). */
+  export type HorizontalAlignment = {
+    /** The station of each element's start and of the track's end [m], from 0. */
+    stationing: Array<number>
+    /** The point of each element's start and of the track's end, [E, N] in the track's plane [m]. */
+    coordinates: Array<Point>
+    /** The bearing of each element at its start and of the track at its end [gon], clockwise from grid north. */
+    bearingGon: Array<number>
+    elementType: Array<"straight" | "arc" | "clothoid" | "bloss">
+    /** The radius at each element's start [m], signed: + curving right; null on a straight end. */
+    beginRadius: Array<number | null>
+    /** The radius at each element's end [m], signed; an arc's is its start's. */
+    endRadius: Array<number | null>
+    /** The cant at each element's start [mm], signed by the raised rail seen in the direction of stationing. */
+    beginCant: Array<number>
+    /** The cant at each element's end [mm]. */
+    endCant: Array<number>
+    /** The design speed of each element [km/h], null where it states none; missing where no element states one. */
+    designSpeed?: Array<number | null>
+    elementDetails?: Array<ElementDetail>
+  }
+  /** What few elements carry, by row: the routes of a switch, a role in changes, reasons for rule findings. */
+  export type ElementDetail = {
+    /** The index of the element in the columns, from 0. */
+    element: number
+    cantException?: Text
+    role?: "follow" | "intermediate"
+    reasons?: {
+      [name: string]: string
+    }
+    switchBranch?: boolean
+    switchRoute?: "main" | "branch" | "cross" | "slip1" | "slip2"
+    switchId?: Ref
+    /** Why an import could not build the switch this element belongs to: form, number, reason. */
+    switchHint?: Text
   }
 }
 

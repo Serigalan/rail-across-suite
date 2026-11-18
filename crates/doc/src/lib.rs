@@ -10,6 +10,7 @@
 //! Each function answers as its namesake in `packages/core/src` does; the
 //! vectors the JavaScript records hold it to that.
 
+pub mod alignment;
 pub mod canonical;
 pub mod core_format;
 pub mod door;

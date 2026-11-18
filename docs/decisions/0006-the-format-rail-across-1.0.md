@@ -1,6 +1,6 @@
 # 0006 — The format rail-across-1.0: one model, versions that count, a door that checks
 
-Status: **accepted** · as of 2026-11-17 · the specification is [rail-across-1.0](../format/rail-across-1.0.md)
+Status: **accepted** · as of 2026-11-18 · the specification is [rail-across-1.0](../format/rail-across-1.0.md)
 
 ## Decision
 
@@ -12,7 +12,7 @@ Status: **accepted** · as of 2026-11-17 · the specification is [rail-across-1.
    variant, the operation in revisions per project.
 2. **One model.** What is kept is what is worked on: an object states the same in the record the tools work on and
    in the document, the document adding only what a file needs (the envelope, the blobs).
-3. **Versions are numbers that count.** Every change of a schema raises its domain's version (today `core` 5.0,
+3. **Versions are numbers that count.** Every change of a schema raises its domain's version (today `core` 6.0,
    `civil` 3.0, `signalling` 4.0, `electrification` 3.0, `vehicles` 1.0, `timetables` 1.2). A file of an earlier
    version is brought forward number by number at the door. A schema's hash is kept for integrity only, and a file
    carries no schemas.
@@ -23,7 +23,8 @@ Status: **accepted** · as of 2026-11-17 · the specification is [rail-across-1.
 5. **What a build does not know, it passes through.** A domain or a member of a later or foreign writer is kept as
    it came and written back. A later version of a domain the reader knows is refused, not misread.
 6. **Ids.** Every id is a UUID in lower case; an id of before is replaced by the UUID drawn from it. A track has an
-   id, its elements do not: a track's `elements` and its `heights` are one value each in diff and merge. A height
+   id, its elements do not: a track's plan (`horizontalAlignment`) and its `heights` are one value each in diff and
+   merge. A height
    point has an id only where another depends on it.
 7. **Merging and carrying are generic**: over every collection of objects with ids, by what the schemas mark as
    references, member by member — not by a list kept by hand. Two people changing different signals do not
@@ -38,13 +39,37 @@ Status: **accepted** · as of 2026-11-17 · the specification is [rail-across-1.
     ETRS89 a line's first point lies in), as runs from km jump to km jump, each with its kilometrage at the start
     (`kmStart`) and the way it counts (`counting`). Where a source delivers points only, a run holds them as a blob
     (`[easting, northing, km]`) until they are fitted.
-11. **The project server rewrites what it keeps once** for every change of the format, at its start after the
+11. **A track's plan stands by column** (`horizontalAlignment`, core 6.0), as the OSRD export states it: over N
+    elements `stationing`, `coordinates` and `bearingGon` hold N+1 values — each element's start, the last the
+    track's end —, the element types, radii and cants at both ends N; the design speed N where an element states
+    one; what few elements carry (a switch's route, a role, reasons) by row in `elementDetails`. The names are
+    camelCase as everywhere in rail-across; only the OSRD export writes them in snake_case. There is no gap and
+    no kink after an arc or a transition: each element is checked from its own start point — its values lead to
+    the next point within 1 mm, an arc or a transition ends on the next bearing within what a millimetre of length
+    makes of it —, a gap within the millimetre is closed, what lies further apart is refused. Each element is held
+    to its own start, not chained from the track's first one: a length a source rounds to the millimetre would
+    otherwise carry on from element to element. A document of before is brought forward the same way; a track
+    whose elements lie further apart is refused with it.
+12. **The project server rewrites what it keeps once** for every change of the format, at its start after the
     update (a data step, `crates/server/src/data_migrations.rs`), so no stored revision is of a version the door
     no longer takes in place.
 
 ## Decided, not built yet
 
-- **The km lines in the record as in the document.** The record holds a km line as the format does — one plane,
+- **An import fits a track before it is kept.** The coordinates are what is fixed; bearings and stations are fitted
+  to them. The straights are laid through their points. Two straights in a row with different bearings become one
+  where the joint between them lies less than 5 mm off the line through their outer points, else two with a kink.
+  The arcs are then fitted between their two straights, tangent to both, keeping their radius — their length
+  changes a little. The transitions are fitted with their lengths. A curve group without a straight within it — a
+  compound curve, a reverse curve — is fitted as one group, and only where it stays within 1 mm of the points it
+  had. A track's first and last point stay exactly where they were; where it begins or ends with a curve, its first
+  point and bearing stay, and the curve runs into the line of the next straight. The routes of a switch keep their
+  form; they are checked against it (radius, end slope such as 1:9). Built in the optimizer's geometry, which fits
+  curve groups between tangents already (`fit_curve_group`, `fit_compound_group`, `fit_s_group`), and run by the
+  import dialogs before they commit.
+- **The km lines in the record as in the document**, their runs by column as a track's plan, without cant and
+  design speed (`horizontalAlignment` per run, its stations from 0 at the run's start; `points` where a source
+  gives points only). The record holds a km line as the format does — one plane,
   runs, design elements —, no longer as WGS 84 points with a kilometrage each. The elements are taken as the source
   delivers them: the DB's ASCII interface (MDB, record type 24) and the VermESN import state start point, bearing,
   length and radii, which are kept instead of being turned into points. Only a source of points alone — the line
@@ -68,3 +93,7 @@ Status: **accepted** · as of 2026-11-17 · the specification is [rail-across-1.
   exported again from a server that migrated it.
 - Collections are sets, sorted by id: the order objects were drawn in is not kept.
 - Every format change is a step at the door and a data step on the server.
+- A track whose elements lie more than a millimetre apart is no longer read. On the project server of 18 November
+  2026 that holds Bahnhof Erfurt (831 joints up to 2.9 cm apart), the Machbarkeitsstudie KHB and Wallau–Erndtebrück
+  (arcs and transitions ending up to 1.67° off the next element): their revisions stay as they were kept, refused
+  until they are imported again and fitted.

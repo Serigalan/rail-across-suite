@@ -108,6 +108,7 @@ fn run_on(op: &str, input: &Value) -> Result<Value, Failure> {
             flag(input, "check", true),
         )?),
         "document.fromDocument" => Ok(door::from_document(input)?),
+        "document.withTracksByRow" => Ok(core_format::with_tracks_by_row(input)),
         "document.recordToDocument" => Ok(core_format::record_to_document(&input["record"], door::schema_hashes())?),
         "document.manifestOf" => Ok(manifest::manifest_of(input)),
         "document.documentHash" => Ok(json!(manifest::document_hash(input))),

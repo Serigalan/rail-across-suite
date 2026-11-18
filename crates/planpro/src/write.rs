@@ -865,13 +865,14 @@ impl Planning {
 /// (`projectNumber`, `planner`, `organisation`, `location` — the leading
 /// operational point —, `stage`, `index`, `number`, `informative`, `kind`).
 pub fn write_planpro(project: &Value, options: &Value) -> Result<Value, String> {
-    let made;
-    let doc = if project.get("format").and_then(Value::as_str) == Some("infra-data") {
-        project
+    let given = if project.get("format").and_then(Value::as_str) == Some("infra-data") {
+        project.clone()
     } else {
-        made = rail_across_doc::door::to_document(project, false, false).map_err(|e| format!("planpro: not a project: {e:?}"))?;
-        &made
+        rail_across_doc::door::to_document(project, false, false).map_err(|e| format!("planpro: not a project: {e:?}"))?
     };
+    // The net is written element by element: the tracks' plans by row.
+    let by_row = rail_across_doc::core_format::with_tracks_by_row(&given);
+    let doc = &by_row;
     let core = &doc["domains"]["core"];
     let fields = &core["fields"];
     let c = |k: &str| core.get("collections").map(|c| list(c, k)).unwrap_or(&[]);

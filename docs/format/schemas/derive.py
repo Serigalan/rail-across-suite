@@ -106,7 +106,7 @@ d['KmLine'] = {
         'source': {'$ref': '#/$defs/Text'},
     },
 }
-write('core/5.0.schema.json', core)
+write('core/5.0.schema.json', core)  # core 6.0 (a track's plan by column) is edited in place since
 
 # ── civil 3.0 ─────────────────────────────────────────────────────────────────
 civil = load('civil/2.1.schema.json')

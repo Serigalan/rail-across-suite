@@ -209,7 +209,7 @@ describe('parseProjectsPayload', () => {
   it('refuses an element role or reasons the format does not have (Entscheidung 371)', () => {
     for (const bad of [{ role: 'fixed' }, { role: 3 }, { reasons: 'text' }, { reasons: ['a'] }, { reasons: { 'LP.KS.02': 4 } }]) {
       const doc = payloadOf(project())
-      Object.assign(doc.domains.core.collections.tracks[0].elements[0], bad)
+      doc.domains.core.collections.tracks[0].horizontalAlignment.elementDetails = [{ element: 0, ...bad }]
       expect(() => parseProjectsPayload(doc), JSON.stringify(bad)).toThrow('invalid_payload')
     }
     const [record] = project()
@@ -266,9 +266,10 @@ describe('parseTracksPayload (R0.5)', () => {
     expect(code(() => parseTracksPayload([track()]))).toBe('unsupported_version')
     expect(code(() => parseTracksPayload({ projects: [] }))).toBe('unsupported_version')
     const bad = (extra) => projectDocument({ id: 'tracks', tracks: [track(extra)] }, { check: false })
-    expect(code(() => parseTracksPayload(bad({ elements: [el({ elementType: 7 })] })))).toBe('invalid_payload')
-    expect(code(() => parseTracksPayload(bad({ elements: [el({ endNode: [1, 'x'] })] })))).toBe('invalid_payload')
-    expect(code(() => parseTracksPayload(bad({ elements: [el({ length: -1 })] })))).toBe('invalid_payload')
+    const plan = (change) => { const doc = bad(); change(doc.domains.core.collections.tracks[0].horizontalAlignment); return doc }
+    expect(code(() => parseTracksPayload(plan(a => { a.elementType = [7] })))).toBe('invalid_payload')
+    expect(code(() => parseTracksPayload(plan(a => { a.coordinates[1] = [1, 'x'] })))).toBe('invalid_payload')
+    expect(code(() => parseTracksPayload(plan(a => { a.stationing[1] = -1 })))).toBe('invalid_payload')
   })
 
   it('writes the tracks alone: a switch branch comes back as a track of its own (decision 0006)', () => {

@@ -71,7 +71,7 @@ gleich.
     "format": "infra-data", "version": "1.0",
     "domains": {
       "core": {
-        "version": "5.0", "schema": "sha256:…",
+        "version": "6.0", "schema": "sha256:…",
         "fields": { … }, "collections": { … }
       },
       "civil":           { "version": "3.0", "dependsOn": ["core"], … },
@@ -113,7 +113,7 @@ Werkzeug bearbeitet.
 <!-- cols: 16%, 22%, 1fr -->
 | Teil | Domäne | Inhalt |
 |---|---|---|
-| infra-data-1.0 | `core` 5.0 | das Netz: Gleise, Weichen und Verbinder, Gleisenden (Prellböcke, Betrachtungsgrenzen), Kilometrierungslinien, Betriebsstellen, Halteplätze, benannte Gleisfolgen. Die Grundlage aller anderen |
+| infra-data-1.0 | `core` 6.0 | das Netz: Gleise, Weichen und Verbinder, Gleisenden (Prellböcke, Betrachtungsgrenzen), Kilometrierungslinien, Betriebsstellen, Halteplätze, benannte Gleisfolgen. Die Grundlage aller anderen |
 | | `civil` 3.0 | Bahnsteige und Ingenieurbauwerke (Eisenbahnüberführungen, Stützwände, Lärmschutzwände), in Punktwolken gemessene Achsen, Bestandsachsen, Schriftfeld, Projektbild |
 | | `signalling` 4.0 | Signale mit logischen Signalen, Gleisfreimeldung, Weichenelemente, Fahrstraßen, Durchrutschwege, Flankenschutz, Zugbeeinflussung, Bahnhofsgrenzen, Fahrwege — nach PlanPro exportierbar |
 | | `electrification` 3.0 | Masten, Aufhängepunkte, Streckentrennungen und die Fahrdrähte mit ihrer Spannung |
@@ -128,7 +128,7 @@ infra-data derselben Datei oder eine Variante auf einem Server.
 
 - Eine Sammlung ist eine Liste von Objekten mit `id`, **sortiert nach `id`**. Derselbe Stand ergibt so dieselben
   Bytes und dieselbe Prüfsumme.
-- Folgen innerhalb eines Objekts (`elements`, `heights`, die Punkte eines Zugs) behalten ihre Reihenfolge, sie
+- Folgen innerhalb eines Objekts (die Spalten einer Trassierung, `heights`, die Punkte eines Zugs) behalten ihre Reihenfolge, sie
   haben eine Bedeutung.
 - Jedes Objekt erlaubt nur die Properties, die sein Schema nennt (`additionalProperties: false`).
 - **Kennungen sind immer UUIDs in Kleinbuchstaben**, eindeutig in ihrer Sammlung — auch wo ein Import sie aus
@@ -215,34 +215,34 @@ lesen; er sagt das und lehnt die Datei ab.
 
 ## Gleise und Trassierungselemente
 
-Ein Gleis (`tracks`) hat eine Ebene (`epsg`), in der alle seine Elemente angegeben sind, ein Höhenbezugssystem
-(`heightEpsg`), die Folge seiner Trassierungselemente (`elements`) und seine Höhen (`heights`). Ein Bahnhofsgleis
+Ein Gleis (`tracks`) hat eine Ebene (`epsg`), in der seine Trassierung angegeben ist, ein Höhenbezugssystem
+(`heightEpsg`), seine Trassierung in Spalten (`horizontalAlignment`) und seine Höhen (`heights`). Ein Bahnhofsgleis
 (`trackType: "station"`) nennt seine Betriebsstelle (`operationalPointId`) und seine Gleisnummer, ein Streckengleis
 (`trackType: "line"`) seine Strecke und welches Gleis der Strecke es ist (`side`: `regular` Richtungsgleis oder
 `opposite` Gegenrichtungsgleis).
 
-**Ein Element hat keine Station und keine Polylinie.** Die Station eines Punkts ist die laufende Summe der Längen
-vom Gleisanfang. Die Geometrie folgt aus dem Anfangspunkt, der Richtung und den Entwurfswerten. Ein Element hat
-keine eigene Ebene: Es liegt in der seines Gleises.
+**Die Trassierung in Spalten.** Die Trassierungselemente eines Gleises sind keine Liste von Objekten, sondern
+Spalten, wie sie der OSRD-Export schreibt. Bei N Elementen haben `stationing`, `coordinates` und `bearingGon` N+1
+Werte — den Anfang jedes Elements, der letzte das Gleisende —, die übrigen Spalten N.
 
-<!-- cols: 22%, 26%, 26%, 1fr -->
-| Wert | `straight` (Gerade) | `arc` (Kreisbogen) | `transition` (Übergangsbogen) |
-|---|---|---|---|
-| `startNode`, `endNode` | `[E, N]` in m | `[E, N]` in m | `[E, N]` in m |
-| `bearing` | Richtung am Anfang, Grad, von Gitternord im Uhrzeigersinn | ebenso | ebenso |
-| `length` | m | m, Bogenlänge | m |
-| `radius` | — | m, vorzeichenbehaftet: + Rechtsbogen | — |
-| `r1`, `r2` | — | — | Radien am Anfang und Ende, vorzeichenbehaftet; `null` = gerades Ende |
-| `transitionType` | — | — | `clothoid` oder `bloss` |
-| `cant` | mm, an beiden Enden gleich | mm | — |
-| `cantStart`, `cantEnd` | mm, wo die Überhöhung entlang des Elements wechselt | ebenso | mm, immer beide |
-| `endBearing` | nur bei einem Knick | nur wenn abweichend | nur wenn abweichend |
+<!-- cols: 26%, 1fr -->
+| Spalte | Inhalt |
+|---|---|
+| `stationing` | die Station am Anfang jedes Elements und am Gleisende, m ab 0; die Länge eines Elements ist die Differenz |
+| `coordinates` | der Punkt am Anfang jedes Elements und am Gleisende, `[E, N]` in m |
+| `bearingGon` | die Richtung am Anfang jedes Elements und am Gleisende, gon, von Gitternord im Uhrzeigersinn |
+| `elementType` | `straight` (Gerade), `arc` (Kreisbogen), `clothoid` oder `bloss` (Übergangsbogen) |
+| `beginRadius`, `endRadius` | der Radius am Anfang und Ende jedes Elements, m, vorzeichenbehaftet: + Rechtsbogen; `null` für ein gerades Ende; bei einem Kreisbogen beide gleich |
+| `beginCant`, `endCant` | die Überhöhung am Anfang und Ende jedes Elements, mm, vorzeichenbehaftet nach der überhöhten Schiene, in Stationierungsrichtung gesehen |
+| `designSpeed` | die Entwurfsgeschwindigkeit jedes Elements, km/h, `null` wo es keine angibt; fehlt, wo kein Element eine angibt |
+| `elementDetails` | was wenige Elemente tragen, zeilenweise mit dem Index des Elements (`element`, ab 0): die Markierung einer Weichenstrecke (`switchId`, `switchRoute`, `switchBranch`), die Rolle bei Änderungen (`role`), Begründungen zu Regelhinweisen (`reasons`) |
 
-Ein Element gibt seine Überhöhung als `cant` **oder** als `cantStart` und `cantEnd` an, nie beides. Eine fehlende
-Überhöhung ist 0. Die Überhöhung ist vorzeichenbehaftet nach der überhöhten Schiene, in Stationierungsrichtung
-gesehen. Dazu kommen die Entwurfsgeschwindigkeit (`designSpeed`, km/h), die Rolle bei Änderungen (`role`),
-Begründungen zu Regelhinweisen (`reasons`) und an Weichenstrecken die Markierung `switchBranch`, `switchRoute`,
-`switchId`. Ein als Weichenstrecke markiertes Element nennt seine Weiche.
+**Keine Lücke, kein Knick nach einem Bogen.** Jedes Element beginnt, wo das vorige endet. Nur eine Gerade darf in
+eine andere Richtung weiterführen, als sie läuft: Ihr Knick ist der Schritt von ihrer Richtung zur nächsten. Ein
+Kreis- oder Übergangsbogen endet in der Richtung, in der das nächste Element beginnt. Ein Leser prüft jedes Element
+von seinem eigenen Anfangspunkt aus: Seine Werte führen auf 1 mm genau zum nächsten Punkt, und ein Kreis- oder
+Übergangsbogen endet in der nächsten Richtung, so genau, wie ein Millimeter Länge bei seiner stärksten Krümmung
+ausmacht. Was weiter auseinanderliegt, wird abgewiesen; ein Import, der solche Daten bringt, passt sie vorher ein.
 
 ## Höhen
 
@@ -265,8 +265,8 @@ Ports es hat, legt `kind` fest:
 | `link` | `A`, `B` | Verbinder: zwei Gleisenden, wo die Ebene wechselt oder ein umgebautes Stück anschließt |
 | `stage_link` | `A`, `B1`, `B2` | Bauzustandsverbinder: das Gleis an `A` ist mit dem an `B1` verbunden, solange es in Betrieb ist, danach mit dem an `B2` |
 
-Die Strecken einer Weiche sind die Elemente der angeschlossenen Gleise, die mit `switchId` und `switchRoute`
-(`main`, `branch`) markiert sind. Die Form steht in `label` (z. B. `300 – 1:9`) und verweist auf einen Formkatalog,
+Die Strecken einer Weiche sind die Elemente der angeschlossenen Gleise, die in ihren `elementDetails` mit
+`switchId` und `switchRoute` (`main`, `branch`) markiert sind. Die Form steht in `label` (z. B. `300 – 1:9`) und verweist auf einen Formkatalog,
 `formVersion` nennt dessen Version. Das Symbol der Weiche wird nicht gespeichert.
 
 ## Betriebsstellen und Halteplätze
@@ -461,10 +461,12 @@ benennt — erhöht die Version seiner Domäne: die Nebenversion für Ergänzung
 sonst die Hauptversion. Ein Leser bringt eine ältere Datei Schritt für Schritt auf seinen Stand, von Nummer zu
 Nummer; ältere Stände werden einmal umgestellt, nicht dauerhaft nachsichtig gelesen.
 
-Die Versionen der Domänen setzen die Zählung der Suite fort: core 5.0, civil 3.0, signalling 4.0, electrification
+Die Versionen der Domänen setzen die Zählung der Suite fort: core 6.0, civil 3.0, signalling 4.0, electrification
 3.0; vehicles 1.0 und timetables 1.0 sind die bisherige Domäne operations 1.0, in zwei geteilt. In core 4.0 war `B1`
 einer Weiche ihr Stammgleis; 5.0 macht es wieder zum Zweiggleis, und ein Leser bringt eine Datei in 4.0 auf den Stand,
-indem er beide tauscht. Timetables 1.1 ergänzt den Punkt eines Zuges um den Richtungswechsel (`reverse`,
+indem er beide tauscht. In core 5.0 waren die Elemente eines Gleises eine Liste von Objekten; 6.0 gibt seine
+Trassierung in Spalten an, und ein Leser bringt eine Datei in 5.0 Element für Element auf den Stand: Eine Lücke bis
+1 mm schließt er, ein Gleis, dessen Elemente weiter auseinanderliegen, lehnt er ab. Timetables 1.1 ergänzt den Punkt eines Zuges um den Richtungswechsel (`reverse`,
 `turnaround`); ein Leser übernimmt eine Datei in 1.0 unverändert. Timetables 1.2 ergänzt die Bauszenarien
 (`constructionScenarios`); ein Leser übernimmt eine Datei in 1.1 ohne welche.
 
@@ -484,22 +486,22 @@ einem Fahrzeug und einem Zug von der Grenze nach Halle-Trotha, wo er auf diesem 
     "format": "infra-data", "version": "1.0",
     "domains": {
       "core": {
-        "version": "5.0", "schema": "sha256:1111…",
+        "version": "6.0", "schema": "sha256:1111…",
         "fields": { "id": "5dbd8fed-f8dc-4995-8934-9d71be69cae0", "title": "Halle-Trotha" },
         "collections": {
           "tracks": [ {
             "id": "6e1f2a3b-0c4d-4e5f-8a6b-7c8d9e0f1a2b", "name": "6050.001",
             "trackType": "line", "lineNumber": 6050, "epsg": 5684, "heightEpsg": 7837,
             "lifespan": { "from": "2027-05-01" },
-            "elements": [
-              { "elementType": "straight", "bearing": 90, "length": 100, "designSpeed": 100,
-                "startNode": [4497120.512, 5706210.004],
-                "endNode": [4497220.512, 5706210.004] },
-              { "elementType": "arc", "bearing": 90, "length": 100, "radius": 600,
-                "cant": 60, "designSpeed": 100,
-                "startNode": [4497220.512, 5706210.004],
-                "endNode": [4497320.050, 5706201.690] }
-            ],
+            "horizontalAlignment": {
+              "stationing": [0, 100, 200],
+              "coordinates": [[4497120.512, 5706210.004], [4497220.512, 5706210.004], [4497320.05, 5706201.69]],
+              "bearingGon": [100, 100, 110.610329539],
+              "elementType": ["straight", "arc"],
+              "beginRadius": [null, 600], "endRadius": [null, 600],
+              "beginCant": [0, 60], "endCant": [0, 60],
+              "designSpeed": [100, 100]
+            },
             "heights": [ { "station": 0, "z": 108.55 }, { "station": 200, "z": 109.15 } ]
           } ],
           "switches": [],
@@ -611,7 +613,7 @@ Diese Spezifikation ist das Ziel des Datenmodells. Mit Stand 13. November 2026 w
 in diesen Punkten ab; jeder wird in einem eigenen Schritt angeglichen (Entscheidung 0006 und die folgenden):
 
 - Der Projektserver hält die Infrastruktur einer Variante als Dokument der Hülle von vorher (infra-data 2.0: ihre
-  Domänen und ihre Blobs, core 5.0, civil 3.0, signalling 4.0, electrification 3.0) und den Betrieb als Dokument
+  Domänen und ihre Blobs, core 6.0, civil 3.0, signalling 4.0, electrification 3.0) und den Betrieb als Dokument
   operations (vehicles 1.0, timetables 1.2); die Datei rail-across-1.0 führt sie zusammen, eine Datei von vorher
   wird weiter gelesen.
 - Der Record, mit dem die Werkzeuge arbeiten, behält Kilometrierungslinien in WGS 84 mit dem Kilometer je Punkt;

@@ -101,20 +101,16 @@ describe.skipIf(!SERVER_BIN)('the data steps', () => {
     return file
   }
 
-  it('close a millimetre joint as a revision of their own, by the server, once', async () => {
+  it('find no millimetre joint left: the door closes one as the revision is written (core 6.0)', async () => {
     const file = await withProject([straight([500000, 5600000], [500100, 5600000]), straight([500100.0005, 5600000], [500200, 5600000])])
-    expect(cli(file, ['migrate'])).toMatch(/data step 0020-node-tolerance-1um: 1 Revisionen, 1 Stöße/)
+    expect(cli(file, ['migrate'])).toMatch(/data step 0020-node-tolerance-1um: 0 Revisionen, 0 Stöße/)
     const db = new Database(file)
-    const head = db.prepare('SELECT number, message, author_id, payload FROM revision ORDER BY id DESC LIMIT 1').get()
-    expect(head.number).toBe(2)
-    expect(head.message).toMatch(/1 Stöße bis 1 mm geschlossen/)
-    const system = db.prepare("SELECT id, active FROM user WHERE login = 'system'").get()
-    expect(head.author_id).toBe(system.id)
-    expect(system.active).toBe(0)
-    const [first, second] = JSON.parse(gunzipSync(head.payload).toString()).domains.core.collections.tracks[0].elements
-    expect(second.startNode).toEqual(first.endNode)
+    const head = db.prepare('SELECT number, payload FROM revision ORDER BY id DESC LIMIT 1').get()
+    expect(head.number).toBe(1)
+    // The first straight ends where the second begins: the columns have no room for the joint.
+    const plan = JSON.parse(gunzipSync(head.payload).toString()).domains.core.collections.tracks[0].horizontalAlignment
+    expect(plan.coordinates).toEqual([[500000, 5600000], [500100.0005, 5600000], [500200, 5600000]])
     db.close()
-    expect(cli(file, ['migrate'])).toBe('')
   })
 
   it('write nothing, and make no user, where every joint is closed', async () => {
@@ -171,7 +167,7 @@ describe.skipIf(!SERVER_BIN)('the step to infra-data-1.0 (decision 0006)', () =>
     db.close()
     expect(cli(file, ['migrate'])).toMatch(/data step 0021-infra-data: 2 Revisionen umgeschrieben, 0 nicht lesbar/)
     const { versions, docs: [old, kept] } = payloads(file)
-    expect(versions).toEqual([9, 9])
+    expect(versions).toEqual([10, 10])
     expect(old).toMatchObject({ format: 'infra-data', version: '2.0', domains: { core: { version: DOMAIN_VERSIONS.core }, civil: { version: DOMAIN_VERSIONS.civil } } })
     expect(old.domains.core.collections.tracks.map(t => t.id)).toEqual(doc.domains.core.collections.tracks.map(t => derivedId(t.id)).sort())
     expect(old.domains.civil.collections.platforms.map(p => p.id)).toEqual([derivedId('p1')])
@@ -192,7 +188,7 @@ describe.skipIf(!SERVER_BIN)('the step to infra-data-2.0 (decision 0008)', () =>
     db.close()
     expect(cli(file, ['migrate'])).toMatch(/data step 0025-infra-data-2.0: 2 Revisionen umgeschrieben, 0 nicht lesbar/)
     const { versions, docs: [doc] } = payloads(file)
-    expect(versions).toEqual([9, 9])
+    expect(versions).toEqual([10, 10])
     expect(Object.keys(doc.domains).sort()).toEqual(['civil', 'core', 'signalling'])
     expect(doc.domains.core.collections.stoppingPlaces.map(h => h.id)).toEqual([derivedId('hp-1'), derivedId('hp-2')].sort())
     expect(doc.domains.signalling.collections.stoppingPlaces).toBeUndefined()
@@ -249,7 +245,7 @@ describe.skipIf(!SERVER_BIN)('the step to lifespans by day (decision 0007)', () 
     db.close()
     expect(cli(file, ['migrate'])).toMatch(/data step 0028-lifespans-by-day: 2 Revisionen umgeschrieben, 0 nicht lesbar/)
     const { versions, docs: [after] } = payloads(file)
-    expect(versions).toEqual([9, 9])
+    expect(versions).toEqual([10, 10])
     expect(after.domains.core).toMatchObject({ version: DOMAIN_VERSIONS.core, schema: NOW['the sample'].domains.core.schema })
     expect(after.domains.civil.version).toBe(DOMAIN_VERSIONS.civil)
     expect(after.domains.core.fields.stages).toBeUndefined()
@@ -284,7 +280,7 @@ describe.skipIf(!SERVER_BIN)('the step to references that name something (decisi
     db.close()
     expect(cli(file, ['migrate'])).toMatch(/data step 0028-references: 1 Revisionen umgeschrieben, 0 nicht lesbar/)
     const { versions, docs: [after] } = payloads(file)
-    expect(versions).toEqual([9, 9])
+    expect(versions).toEqual([10, 10])
     expect(after.domains.signalling.version).toBe(DOMAIN_VERSIONS.signalling)
     expect(after.domains.signalling.collections.switchElements).toEqual([])
     expect(cli(file, ['migrate'])).toBe('')
@@ -312,16 +308,47 @@ describe.skipIf(!SERVER_BIN)('the step to core 4.0 (decision 0006)', () => {
     db.close()
     expect(cli(file, ['migrate'])).toMatch(/data step 0029-core-4.0: 1 Revisionen umgeschrieben, 0 nicht lesbar/)
     const { versions, docs: [after] } = payloads(file)
-    expect(versions).toEqual([9, 9])
+    expect(versions).toEqual([10, 10])
     const core = after.domains.core
     expect(core.version).toBe(DOMAIN_VERSIONS.core)
     const [track] = core.collections.tracks
     expect(track).toMatchObject({ id: derivedId('t1'), trackType: 'station', operationalPointId: derivedId('op1') })
-    expect(track.elements[0]).toMatchObject({ elementType: 'straight' })
-    expect(track.elements[0]).not.toHaveProperty('epsg')
+    expect(track.horizontalAlignment.elementType).toEqual(['straight'])
+    expect(track).not.toHaveProperty('elements')
     const [line] = core.collections.kmLines
     expect(line).toMatchObject({ id: derivedId('km-6050'), lineNumber: 6050, epsg: 25832, runs: [{ kmStart: 1200.5, counting: 'up' }] })
     expect(after.blobs[line.runs[0].points]).toHaveLength(2)
+    expect(cli(file, ['migrate'])).toBe('')
+  })
+})
+
+describe.skipIf(!SERVER_BIN)('the step to core 6.0 (decision 0006)', () => {
+  it('writes a track kept by row by column, once, in place, and leaves one whose elements lie apart', async () => {
+    const { file, made, second } = await twoRevisions()
+    const [stored] = payloads(file).docs
+    const core5 = contentHash(JSON.parse(readFileSync(new URL('../../schemas/core/5.0.schema.json', import.meta.url), 'utf8')))
+    const el = (x0, x1, gap = 0) => ({ elementType: 'straight', startNode: [500000 + x0 + gap, 5600000], endNode: [500000 + x1, 5600000], bearing: 90, length: x1 - x0 - gap })
+    // As a build of phase 1 kept it: core 5.0, a track's elements by row.
+    const byRow = (elements) => {
+      const doc = structuredClone(stored)
+      Object.assign(doc.domains.core, { version: '5.0', schema: core5 })
+      const [t] = doc.domains.core.collections.tracks
+      doc.domains.core.collections.tracks = [{ id: t.id, epsg: 25832, elements }]
+      return gzipSync(JSON.stringify(doc))
+    }
+    const db = new Database(file)
+    const put = db.prepare('UPDATE revision SET schema_version = 9, payload = ? WHERE id = ?')
+    put.run(byRow([el(0, 50), el(50, 100)]), made.revisionId)
+    put.run(byRow([el(0, 50), el(50, 100, 0.005)]), second)
+    db.prepare("DELETE FROM data_migration WHERE name = '0030-alignment-columns'").run()
+    db.close()
+    expect(cli(file, ['migrate'])).toMatch(/data step 0030-alignment-columns: 1 Revisionen umgeschrieben, 1 nicht lesbar/)
+    const { versions, docs: [after] } = payloads(file)
+    expect(versions).toEqual([10, 9])
+    expect(after.domains.core.version).toBe(DOMAIN_VERSIONS.core)
+    expect(after.domains.core.collections.tracks[0].horizontalAlignment).toMatchObject({
+      stationing: [0, 50, 100], elementType: ['straight', 'straight'],
+    })
     expect(cli(file, ['migrate'])).toBe('')
   })
 })
@@ -346,8 +373,8 @@ describe.skipIf(!SERVER_BIN)('the step to core 5.0 (decision 0006)', () => {
     db.close()
     expect(cli(file, ['migrate'])).toMatch(/data step 0029-switch-ports: 1 Revisionen umgeschrieben, 0 nicht lesbar/)
     const { versions, docs: [after] } = payloads(file)
-    expect(versions).toEqual([9, 9])
-    expect(after.domains.core.version).toBe('5.0')
+    expect(versions).toEqual([10, 10])
+    expect(after.domains.core.version).toBe(DOMAIN_VERSIONS.core)
     expect(after.domains.core.collections.switches[0].ports).toMatchObject({ B1: { trackId: branch }, B2: { trackId: main } })
     expect(cli(file, ['migrate'])).toBe('')
   })

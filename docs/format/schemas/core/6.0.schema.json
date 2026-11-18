@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "core",
-  "title": "Rail-Data-Core, domain core 5.0",
+  "title": "Rail-Data-Core, domain core 6.0",
   "description": "The base every layer depends on: the net (tracks, switches and connectors), what stands on it for every discipline (end marks, stopping places) and the reference data (km lines, the operational point register). Part of infra-data-1.0 in rail-across-1.0.",
   "type": "object",
   "required": [
@@ -317,118 +317,6 @@
         }
       }
     },
-    "Element": {
-      "description": "One design element of a track: straight, arc or transition. No station, no polyline: stations are the running sum of the lengths, drawn geometry is derived.",
-      "type": "object",
-      "required": [
-        "elementType",
-        "startNode",
-        "endNode",
-        "length"
-      ],
-      "additionalProperties": false,
-      "properties": {
-        "elementType": {
-          "enum": [
-            "straight",
-            "arc",
-            "transition"
-          ]
-        },
-        "startNode": {
-          "$ref": "#/$defs/Point"
-        },
-        "endNode": {
-          "$ref": "#/$defs/Point"
-        },
-        "bearing": {
-          "type": "number"
-        },
-        "endBearing": {
-          "type": "number"
-        },
-        "length": {
-          "type": "number",
-          "minimum": 0
-        },
-        "radius": {
-          "type": [
-            "number",
-            "null"
-          ]
-        },
-        "r1": {
-          "type": [
-            "number",
-            "null"
-          ]
-        },
-        "r2": {
-          "type": [
-            "number",
-            "null"
-          ]
-        },
-        "transitionType": {
-          "enum": [
-            "clothoid",
-            "bloss"
-          ]
-        },
-        "cant": {
-          "type": "number"
-        },
-        "cantStart": {
-          "type": "number"
-        },
-        "cantEnd": {
-          "type": "number"
-        },
-        "cantException": {
-          "$ref": "#/$defs/Text"
-        },
-        "role": {
-          "enum": [
-            "follow",
-            "intermediate"
-          ]
-        },
-        "reasons": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
-          }
-        },
-        "designSpeed": {
-          "description": "The design speed of the element [km/h], which the layout tool lays it out for and checks it against (the signalling domain states the speeds it signals, signallingSpeed, on its signals).",
-          "type": [
-            "number",
-            "null"
-          ],
-          "minimum": 0
-        },
-        "switchBranch": {
-          "type": "boolean"
-        },
-        "switchRoute": {
-          "enum": [
-            "main",
-            "branch",
-            "cross",
-            "slip1",
-            "slip2"
-          ]
-        },
-        "switchId": {
-          "$ref": "#/$defs/Ref",
-          "x-target": "core.switches"
-        },
-        "switchHint": {
-          "$ref": "#/$defs/Text",
-          "description": "Why an import could not build the switch this element belongs to: form, number, reason."
-        }
-      }
-    },
     "HeightPoint": {
       "description": "A point of a track's vertical tangent polygon: station [m], height of the rail that is not raised [m], vertical curve radius and what governs it, and how it depends on another point.",
       "type": "object",
@@ -508,7 +396,7 @@
       "required": [
         "id",
         "epsg",
-        "elements"
+        "horizontalAlignment"
       ],
       "additionalProperties": false,
       "properties": {
@@ -561,12 +449,8 @@
         "heightEpsg": {
           "$ref": "#/$defs/Epsg"
         },
-        "elements": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Element"
-          },
-          "minItems": 1
+        "horizontalAlignment": {
+          "$ref": "#/$defs/HorizontalAlignment"
         },
         "heights": {
           "type": "array",
@@ -960,6 +844,166 @@
           ]
         }
       ]
+    },
+    "HorizontalAlignment": {
+      "description": "A track's plan by column (decision 0006), as the OSRD export states it. Over N elements stationing, coordinates and bearingGon hold N+1 values — each element's start, the last the track's end —, the other columns N. Each element begins where the one before ends, and only a straight may leave in another direction than it runs (a kink: the step from its bearing to the next).",
+      "type": "object",
+      "required": [
+        "stationing",
+        "coordinates",
+        "bearingGon",
+        "elementType",
+        "beginRadius",
+        "endRadius",
+        "beginCant",
+        "endCant"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "stationing": {
+          "description": "The station of each element's start and of the track's end [m], from 0.",
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2
+        },
+        "coordinates": {
+          "description": "The point of each element's start and of the track's end, [E, N] in the track's plane [m].",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Point"
+          },
+          "minItems": 2
+        },
+        "bearingGon": {
+          "description": "The bearing of each element at its start and of the track at its end [gon], clockwise from grid north.",
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2
+        },
+        "elementType": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "straight",
+              "arc",
+              "clothoid",
+              "bloss"
+            ]
+          },
+          "minItems": 1
+        },
+        "beginRadius": {
+          "description": "The radius at each element's start [m], signed: + curving right; null on a straight end.",
+          "type": "array",
+          "items": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "minItems": 1
+        },
+        "endRadius": {
+          "description": "The radius at each element's end [m], signed; an arc's is its start's.",
+          "type": "array",
+          "items": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "minItems": 1
+        },
+        "beginCant": {
+          "description": "The cant at each element's start [mm], signed by the raised rail seen in the direction of stationing.",
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 1
+        },
+        "endCant": {
+          "description": "The cant at each element's end [mm].",
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 1
+        },
+        "designSpeed": {
+          "description": "The design speed of each element [km/h], null where it states none; missing where no element states one.",
+          "type": "array",
+          "items": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "minItems": 1
+        },
+        "elementDetails": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ElementDetail"
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "ElementDetail": {
+      "description": "What few elements carry, by row: the routes of a switch, a role in changes, reasons for rule findings.",
+      "type": "object",
+      "required": [
+        "element"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "element": {
+          "description": "The index of the element in the columns, from 0.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "cantException": {
+          "$ref": "#/$defs/Text"
+        },
+        "role": {
+          "enum": [
+            "follow",
+            "intermediate"
+          ]
+        },
+        "reasons": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "switchBranch": {
+          "type": "boolean"
+        },
+        "switchRoute": {
+          "enum": [
+            "main",
+            "branch",
+            "cross",
+            "slip1",
+            "slip2"
+          ]
+        },
+        "switchId": {
+          "$ref": "#/$defs/Ref",
+          "x-target": "core.switches"
+        },
+        "switchHint": {
+          "$ref": "#/$defs/Text",
+          "description": "Why an import could not build the switch this element belongs to: form, number, reason."
+        }
+      }
     }
   }
 }

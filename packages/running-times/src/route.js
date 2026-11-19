@@ -8,7 +8,7 @@ const boardSpeed = (s) => aspectSpeed(LF7, [...(s.frames ?? []), ...(s.logicalSi
   .flatMap(f => f.aspects ?? []).find(a => a.aspect === 'Lf_7')?.symbol)
 
 /** A path with a leg run on: the leg's pieces after it, a piece that goes on the last one's track merged into it — the way it ran, from where it ended. */
-function joined(path, leg) {
+export function joined(path, leg) {
   const out = path.map(p => ({ ...p }))
   for (const piece of leg) {
     const last = out[out.length - 1]
@@ -41,10 +41,154 @@ export function backAlong(path, length) {
  * the way, its end —, never turning back: from a stop on, the direction it
  * arrived in. Returns { path, offsets } — the offsets of the points along
  * the path —, or { failedAt } the index of the first point it found no way to.
+ * `weights` as findPath's.
  */
-export function routeThrough(record, points) {
-  const found = routeVia(record, points.map(p => [p]))
+export function routeThrough(record, points, { weights = null } = {}) {
+  const found = routeVia(record, points.map(p => [p]), { weights })
   return found.path ? { path: found.path, offsets: found.offsets } : found
+}
+
+/** How much of path `a` runs where path `b` runs too, on the same track [m]. */
+export function sharedLength(a, b) {
+  const onB = new Map()
+  for (const p of b) {
+    if (!onB.has(p.trackId)) onB.set(p.trackId, [])
+    onB.get(p.trackId).push([Math.min(p.start, p.end), Math.max(p.start, p.end)])
+  }
+  let shared = 0
+  for (const p of a) {
+    const lo = Math.min(p.start, p.end), hi = Math.max(p.start, p.end)
+    for (const [l, h] of onB.get(p.trackId) ?? []) shared += Math.max(0, Math.min(hi, h) - Math.max(lo, l))
+  }
+  return shared
+}
+
+/** How far apart the points are a corridor is drawn by [m]. */
+const CORRIDOR_STEP = 10
+
+/** The point [lng, lat] at a station along a drawn line [{ s, lngLat }]. */
+function pointOn(pts, s) {
+  if (s <= pts[0].s) return pts[0].lngLat
+  for (let i = 1; i < pts.length; i++) {
+    if (s <= pts[i].s) {
+      const a = pts[i - 1], b = pts[i]
+      const u = b.s > a.s ? (s - a.s) / (b.s - a.s) : 0
+      return [a.lngLat[0] + u * (b.lngLat[0] - a.lngLat[0]), a.lngLat[1] + u * (b.lngLat[1] - a.lngLat[1])]
+    }
+  }
+  return pts[pts.length - 1].lngLat
+}
+
+/** Points [lng, lat] every `step` m or less along a path drawn over `lines`, each piece's ends among them. */
+function pointsAlong(lines, path, step) {
+  const out = []
+  for (const p of path) {
+    const pts = lines.get(p.trackId)
+    if (!pts) continue
+    const n = Math.max(1, Math.ceil(Math.abs(p.end - p.start) / step))
+    for (let i = 0; i <= n; i++) out.push(pointOn(pts, p.start + (p.end - p.start) * i / n))
+  }
+  return out
+}
+
+/**
+ * The corridor `width` m either side of a path drawn over `lines` (trackId →
+ * [{ s, lngLat }], as netLines and osrdNet draw a net): { along(trackId) —
+ * whether most of a track lies in it, the track beside on a line of two as
+ * much as the path's own —, share(path) — how much of another path runs in
+ * it, 0 to 1 }.
+ */
+export function corridorOf(lines, path, width = 25) {
+  const pts = pointsAlong(lines, path, CORRIDOR_STEP)
+  const kx = 111320 * Math.cos((pts[0]?.[1] ?? 0) * Math.PI / 180), ky = 110540
+  // the points in cells `width` wide, a cell's key a number: x and y of the cell
+  const cells = new Map()
+  const keyOf = (cx, cy) => cx * 4194304 + cy
+  let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity
+  for (const [lng, lat] of pts) {
+    const x = lng * kx, y = lat * ky, key = keyOf(Math.floor(x / width), Math.floor(y / width))
+    if (!cells.has(key)) cells.set(key, [])
+    cells.get(key).push(x, y)
+    x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y)
+  }
+  const holds = ([lng, lat]) => {
+    const x = lng * kx, y = lat * ky
+    if (x < x0 - width || x > x1 + width || y < y0 - width || y > y1 + width) return false
+    const cx = Math.floor(x / width), cy = Math.floor(y / width)
+    for (let i = -1; i <= 1; i++) {
+      for (let j = -1; j <= 1; j++) {
+        const xy = cells.get(keyOf(cx + i, cy + j))
+        if (!xy) continue
+        for (let k = 0; k < xy.length; k += 2) if ((xy[k] - x) ** 2 + (xy[k + 1] - y) ** 2 <= width * width) return true
+      }
+    }
+    return false
+  }
+  const known = new Map()
+  const along = (trackId) => {
+    if (known.has(trackId)) return known.get(trackId)
+    const line = lines.get(trackId)
+    let inside = false
+    if (line) {
+      // points along it, the ends first: decided as soon as most of them are in, or out
+      const s0 = line[0].s, len = line[line.length - 1].s - s0
+      const n = Math.min(20, Math.max(2, Math.ceil(len / 100)))
+      const order = [0, n, ...Array.from({ length: n - 1 }, (_, i) => i + 1)]
+      const most = Math.floor((n + 1) / 2) + 1
+      let k = 0, out = 0
+      for (const i of order) {
+        if (holds(pointOn(line, s0 + len * i / n))) k++
+        else out++
+        if (k >= most || out > n + 1 - most) break
+      }
+      inside = k >= most
+    }
+    known.set(trackId, inside)
+    return inside
+  }
+  const share = (other) => {
+    const q = pointsAlong(lines, other, 50)
+    return q.length ? q.filter(holds).length / q.length : 1
+  }
+  return { along, share }
+}
+
+/** A path's tracks as a corridor: the path's own tracks along it, its share what runs on them. */
+function tracksOf(path) {
+  const ids = new Set(path.map(p => p.trackId))
+  return { along: (trackId) => ids.has(trackId), share: (other) => sharedLength(other, path) / Math.max(pathLength(other), 1e-9) }
+}
+
+/**
+ * The shortest way and up to `count - 1` others (the penalty method): the
+ * tracks along every way found are made dearer by `penalty` and the way is
+ * searched again; a way found so is taken where it is at most `stretch`
+ * times as long as the shortest and runs at most `overlap` of its length
+ * along each one taken before. Along a way is in its corridor (corridorOf)
+ * where `lines` draws the net — so that the track beside it on a line of two
+ * is no other way —, else on its own tracks. `routeWith(weights)` finds a
+ * way with the tracks weighed so ((trackId) → factor; null the shortest): {
+ * path, offsets, … } or { failedAt }; `first`, where given, is what it found
+ * with none. Returns the ways in the order found, the shortest first — that
+ * one alone where it has no path —, `rounds` searches after it at the most.
+ */
+export function alternativeRoutes(routeWith, { first = null, count = 3, rounds = 8, penalty = 1.5, stretch = 1.6, overlap = 0.7, lines = null, width = 25 } = {}) {
+  const shortest = first ?? routeWith(null)
+  if (!shortest?.path) return [shortest]
+  const along = (path) => (lines ? corridorOf(lines, path, width) : tracksOf(path))
+  const found = [{ way: shortest, corridor: along(shortest.path) }]
+  const weighed = [found[0].corridor]   // every way found, taken or not
+  const most = pathLength(shortest.path) * stretch
+  for (let i = 0; i < rounds && found.length < count; i++) {
+    const now = [...weighed]
+    const way = routeWith((trackId) => now.reduce((f, c) => (c.along(trackId) ? f * penalty : f), 1))
+    if (!way?.path) break
+    const corridor = along(way.path)
+    weighed.push(corridor)
+    if (pathLength(way.path) > most) continue
+    if (found.every(f => f.corridor.share(way.path) <= overlap)) found.push({ way, corridor })
+  }
+  return found.map(f => f.way)
 }
 
 /**
@@ -64,15 +208,17 @@ export function routeThrough(record, points) {
  * other way, from where its tail stood — `length` [m] back along the way
  * (backAlong) —, so that the path jumps there: the stretch the train stood on
  * is not run again.
+ *
+ * `weights`, where given, weighs the tracks of the shortest way (findPath).
  */
-export function routeVia(record, points, { tries = 200, legPath = null, reverses = [], length = 0 } = {}) {
+export function routeVia(record, points, { tries = 200, legPath = null, reverses = [], length = 0, weights = null } = {}) {
   const turns = new Set(reverses)
   let failedAt = 1
   let left = tries
   const legs = new Map()
   const legOf = (i, from, direction, to) => {
     const key = `${i}|${from.trackId}:${from.station}:${direction}>${to.trackId}:${to.station}:${to.direction}`
-    if (!legs.has(key)) legs.set(key, legPath?.(i, from, direction, to) ?? findPath(record, { ...from, direction }, to))
+    if (!legs.has(key)) legs.set(key, legPath?.(i, from, direction, to) ?? findPath(record, { ...from, direction }, to, { weights }))
     return legs.get(key)
   }
   const go = (i, path, offsets, chosen, direction) => {

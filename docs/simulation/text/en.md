@@ -113,6 +113,18 @@ point asks for one. This holds for its start, its stops, its reversals and its e
 - **Closed stretches.** In a construction scenario, no way runs over a closed stretch of track by more than 0.5 m
   (see "Construction scenarios"). This holds for the shortest way, for a preferred itinerary and for a route the
   dispatching sends a train over.
+- **Over a net of OSRD's.** *Fahrzeit rechnen* over a RailJSON net searches each leg once, from every part of the
+  start (later: from where the last leg arrived, the way it arrived) to every part of the next place, by A*: the
+  estimate of what is left is 90 % of the straight line to the nearest target, below what a track runs even where
+  a section is a few per cent shorter than drawn. It finds the same way as Dijkstra. Only where a stop reached so
+  leads nowhere further on are its other parts tried, a search for each.
+- **Alternative routes.** *Fahrzeit rechnen* computes the train over the shortest way and up to two others (penalty
+  method): every track lying along a way found — in a corridor of 25 m either side, so that the track beside it on
+  a line of two counts as the same way — costs 1.5 times as much per way, and the way is searched again, 8 times at
+  the most. A way found so is taken where it is at most 60 % longer than the shortest and runs at most 70 % of its
+  length in the corridor of each way taken before. Each route is simulated; the shortest by length and the fastest
+  by running time are marked, and each can be shown. A route is named after an operational point it alone passes,
+  the one with the most parts. Where none differs enough, the shortest way stands alone.
 
 ## Reversal
 

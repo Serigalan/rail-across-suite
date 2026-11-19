@@ -1,6 +1,6 @@
-import { curveResistance, merged } from './path.js'
+import { curveResistance, merged, pathLength } from './path.js'
 import { requestFrom } from './request.js'
-import { routeVia } from './route.js'
+import { joined, routeVia } from './route.js'
 
 /**
  * A net of OSRD's — a RailJSON infrastructure, as the server keeps them for
@@ -139,47 +139,101 @@ function heap() {
 }
 
 /**
- * The shortest path over an OSRD net from one location to another, or null
- * where none leads there; as findPath over a variant's: where a location
- * has no direction, both are tried.
+ * How much of the straight line to a target a way at least runs: the
+ * search's estimate of what is left (A*) stays below what is run, where a
+ * section is shorter than its drawn line by a few per cent.
  */
-export function osrdFindPath(net, from, to) {
+const AHEAD_SHARE = 0.9
+
+/**
+ * The shortest way from any of the locations `froms` to any of `tos` — the
+ * parts of a station either side — in one search: { path, from, to,
+ * direction }, the location it left from and the one it reached, the way it
+ * runs there; or null where none leads there. Where a location has no
+ * direction, both are tried. `weights` ((trackId) → a factor of 1 or more)
+ * makes a section dearer than its length: the search for another way.
+ *
+ * A* over (section, the way it is run), entered at its one end: the cost
+ * what is run to there, the estimate the straight line from there to the
+ * nearest target.
+ */
+function search(net, froms, tos, weights = null) {
   const lengthOf = (id) => net.tracks.get(id)?.length
-  if (lengthOf(from?.trackId) == null || lengthOf(to?.trackId) == null) return null
-  const fits = (dir) => !to.direction || to.direction === dir
+  const factor = (id) => (weights ? weights(id) : 1)
+  const starts = froms.filter(f => lengthOf(f?.trackId) != null)
+  const targets = tos.filter(t => lengthOf(t?.trackId) != null)
+  if (!starts.length || !targets.length) return null
+  const byTrack = new Map()
+  for (const t of targets) {
+    if (!byTrack.has(t.trackId)) byTrack.set(t.trackId, [])
+    byTrack.get(t.trackId).push(t)
+  }
+  const aims = targets.map(t => osrdLngLatAt(net, t)).filter(Boolean)
+  const estimate = (trackId, dir) => {
+    const pts = net.lines.get(trackId)
+    const at = dir === 'up' ? pts[0].lngLat : pts[pts.length - 1].lngLat
+    let near = Infinity
+    for (const aim of aims) near = Math.min(near, haversine(at, aim))
+    return near * AHEAD_SHARE
+  }
+  const fits = (to, dir) => !to.direction || to.direction === dir
+
   let best = null
-  for (const direction of from.direction ? [from.direction] : ['up', 'down']) {
-    if (from.trackId === to.trackId && fits(direction)) {
-      const ahead = direction === 'up' ? to.station - from.station : from.station - to.station
-      if (ahead >= 0 && (!best || ahead < best.cost)) best = { cost: ahead, path: [{ trackId: from.trackId, start: from.station, end: to.station }] }
-    }
-    // Dijkstra over (section, the way it is run), entered at its one end: the cost what is run to there.
-    const leaveAt = direction === 'up' ? lengthOf(from.trackId) : 0
-    const first = { trackId: from.trackId, start: from.station, end: leaveAt }
-    const queue = heap()
-    const done = new Set()
-    const enter = (trackId, endpoint, cost, prev) => queue.push({ trackId, dir: endpoint === 'BEGIN' ? 'up' : 'down', cost, prev })
-    for (const nx of net.next.get(`${from.trackId}:${direction === 'up' ? 'END' : 'BEGIN'}`) ?? []) enter(nx.trackId, nx.endpoint, Math.abs(leaveAt - from.station), null)
-    while (queue.size) {
-      const cur = queue.pop()
-      if (best && cur.cost >= best.cost) break
-      const key = `${cur.trackId}:${cur.dir}`
-      if (done.has(key)) continue
-      done.add(key)
-      const length = lengthOf(cur.trackId)
-      const entry = cur.dir === 'up' ? 0 : length
-      if (cur.trackId === to.trackId && fits(cur.dir)) {
-        const cost = cur.cost + Math.abs(to.station - entry)
-        if (!best || cost < best.cost) {
-          const pieces = [{ trackId: cur.trackId, start: entry, end: to.station }]
-          for (let p = cur.prev; p; p = p.prev) pieces.unshift({ trackId: p.trackId, start: p.dir === 'up' ? 0 : lengthOf(p.trackId), end: p.dir === 'up' ? lengthOf(p.trackId) : 0 })
-          best = { cost, path: [first, ...pieces] }
-        }
+  const reach = (cost, found) => { if (!best || cost < best.cost) best = { cost, ...found } }
+  const queue = heap()
+  const done = new Map()   // `${trackId}:${dir}` → the least cost it was entered at
+  const enter = (trackId, endpoint, cost, prev) => {
+    const dir = endpoint === 'BEGIN' ? 'up' : 'down'
+    const key = `${trackId}:${dir}`
+    if (done.has(key) && done.get(key) <= cost) return
+    done.set(key, cost)
+    queue.push({ trackId, dir, cost: cost + estimate(trackId, dir), run: cost, prev })
+  }
+  for (const from of starts) {
+    for (const direction of from.direction ? [from.direction] : ['up', 'down']) {
+      const length = lengthOf(from.trackId)
+      for (const to of byTrack.get(from.trackId) ?? []) {
+        const ahead = direction === 'up' ? to.station - from.station : from.station - to.station
+        if (ahead >= 0 && fits(to, direction)) reach(ahead * factor(from.trackId), { from, to, direction, pieces: [{ trackId: from.trackId, start: from.station, end: to.station }] })
       }
-      for (const nx of net.next.get(`${cur.trackId}:${cur.dir === 'up' ? 'END' : 'BEGIN'}`) ?? []) enter(nx.trackId, nx.endpoint, cur.cost + length, cur)
+      const leaveAt = direction === 'up' ? length : 0
+      const first = { from, piece: { trackId: from.trackId, start: from.station, end: leaveAt } }
+      for (const nx of net.next.get(`${from.trackId}:${direction === 'up' ? 'END' : 'BEGIN'}`) ?? []) enter(nx.trackId, nx.endpoint, Math.abs(leaveAt - from.station) * factor(from.trackId), first)
     }
   }
-  return best ? best.path.filter(p => Math.abs(p.end - p.start) > 1e-6) : null
+  const piecesTo = (cur) => {
+    const out = []
+    let p = cur
+    for (; p.trackId != null; p = p.prev) out.unshift({ trackId: p.trackId, start: p.dir === 'up' ? 0 : lengthOf(p.trackId), end: p.dir === 'up' ? lengthOf(p.trackId) : 0 })
+    return { from: p.from, pieces: [p.piece, ...out] }
+  }
+  while (queue.size) {
+    const cur = queue.pop()
+    if (best && cur.cost >= best.cost) break
+    if (done.get(`${cur.trackId}:${cur.dir}`) < cur.run) continue
+    const length = lengthOf(cur.trackId)
+    const entry = cur.dir === 'up' ? 0 : length
+    for (const to of byTrack.get(cur.trackId) ?? []) {
+      if (!fits(to, cur.dir)) continue
+      const cost = cur.run + Math.abs(to.station - entry) * factor(cur.trackId)
+      if (best && cost >= best.cost) continue
+      const { from, pieces } = piecesTo(cur.prev)
+      reach(cost, { from, to, direction: cur.dir, pieces: [...pieces, { trackId: cur.trackId, start: entry, end: to.station }] })
+    }
+    const on = cur.run + length * factor(cur.trackId)
+    for (const nx of net.next.get(`${cur.trackId}:${cur.dir === 'up' ? 'END' : 'BEGIN'}`) ?? []) enter(nx.trackId, nx.endpoint, on, cur)
+  }
+  if (!best) return null
+  return { path: best.pieces.filter(p => Math.abs(p.end - p.start) > 1e-6), from: best.from, to: best.to, direction: best.direction }
+}
+
+/**
+ * The shortest path over an OSRD net from one location to another, or null
+ * where none leads there; as findPath over a variant's: where a location
+ * has no direction, both are tried. `weights` as search's.
+ */
+export function osrdFindPath(net, from, to, { weights = null } = {}) {
+  return search(net, [from], [to], weights)?.path ?? null
 }
 
 /**
@@ -187,10 +241,66 @@ export function osrdFindPath(net, from, to) {
  * start, the stops on the way, its end, each with its locations (`locs`:
  * the parts of an operational point; a point picked on the map its one) —
  * as routeVia finds it over a variant's: { path, offsets, chosen }, or {
- * failedAt }.
+ * failedAt }. Each leg is one search from where the last one arrived, the
+ * way it arrived, to any part of the next place — the first from any part
+ * of the start. Where a stop reached so leads nowhere further on, routeVia
+ * tries its other parts, a search for each. `weights` as search's.
  */
-export function osrdRoute(net, places) {
-  return routeVia(null, places.map(p => p.locs ?? [p.loc]), { legPath: (_i, from, direction, to) => osrdFindPath(net, { ...from, direction }, to) ?? false })
+export function osrdRoute(net, places, { weights = null } = {}) {
+  const points = places.map(p => p.locs ?? [p.loc])
+  if (!points[0]?.length) return { failedAt: 0 }
+  let path = []
+  const offsets = [0], chosen = []
+  let froms = points[0]
+  for (let i = 1; i < points.length; i++) {
+    const found = search(net, froms, points[i], weights)
+    if (!found) {
+      if (i === 1) return { failedAt: 1 }
+      return routeVia(null, points, { legPath: (_i, from, direction, to) => search(net, [{ ...from, direction }], [to], weights)?.path ?? false })
+    }
+    if (i === 1) chosen.push(found.from)
+    path = joined(path, found.path)
+    offsets.push(pathLength(path))
+    chosen.push(found.to)
+    froms = [{ ...found.to, direction: found.direction }]
+  }
+  return { path, offsets, chosen }
+}
+
+/**
+ * The operational point each of several paths over an OSRD net passes and
+ * none of the others does — the one with the most parts, the nearest to the
+ * middle of its path among equals —: a name to tell them apart by, or null
+ * where a path passes none of its own.
+ */
+export function osrdViaPlaces(net, paths) {
+  const passed = paths.map(path => {
+    const pieces = new Map()
+    let at = 0
+    for (const p of path ?? []) {
+      if (!pieces.has(p.trackId)) pieces.set(p.trackId, [])
+      pieces.get(p.trackId).push({ lo: Math.min(p.start, p.end), hi: Math.max(p.start, p.end), at, start: p.start })
+      at += Math.abs(p.end - p.start)
+    }
+    const out = new Map()   // place id → its offset along the path
+    for (const place of net.places) {
+      for (const loc of place.locs) {
+        const on = pieces.get(loc.trackId)?.find(q => loc.station >= q.lo - 1e-6 && loc.station <= q.hi + 1e-6)
+        if (on) { out.set(place.id, on.at + Math.abs(loc.station - on.start)); break }
+      }
+    }
+    return { out, length: at }
+  })
+  const byId = new Map(net.places.map(p => [p.id, p]))
+  return passed.map(({ out, length }, i) => {
+    let pick = null
+    for (const [id, offset] of out) {
+      if (passed.some((o, j) => j !== i && o.out.has(id))) continue
+      const parts = byId.get(id).locs.length, off = Math.abs(offset - length / 2)
+      if (!pick || parts > pick.parts || (parts === pick.parts && off < pick.off)) pick = { id, parts, off }
+    }
+    return pick ? byId.get(pick.id).label : null
+  })
 }
 
 /** The point [lng, lat] at an offset along a section's drawn line. */

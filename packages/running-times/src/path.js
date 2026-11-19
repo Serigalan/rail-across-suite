@@ -32,9 +32,11 @@ export const pathOpen = (record, path) => {
 /**
  * The shortest path from one location to another — over switches along
  * their routes, links and joints (tracksOnFrom) —, or null where none leads
- * there. Where a location has no direction, both are tried.
+ * there. Where a location has no direction, both are tried. `weights`
+ * ((trackId) → a factor of 1 or more) makes a track dearer than its length:
+ * the search for another way.
  */
-export function findPath(record, from, to) {
+export function findPath(record, from, to, { weights = null } = {}) {
   const tracks = record?.tracks ?? []
   const switches = record?.switches ?? []
   const lengths = new Map(tracks.map(t => [t.id, trackLength(t)]))
@@ -42,6 +44,7 @@ export function findPath(record, from, to) {
   const fits = (want, direction) => !want || want === direction
   const closed = record?.closed ?? []
   const open = (trackId, a, b) => !closed.length || openWay(closed, trackId, a, b)
+  const factor = (trackId) => (weights ? weights(trackId) : 1)
   let best = null
   for (const direction of from.direction ? [from.direction] : ['up', 'down']) {
     // Dijkstra over (track, the way it is run); the cost what is run.
@@ -51,11 +54,11 @@ export function findPath(record, from, to) {
     const tryTarget = (trackId, dir, enter, path, cost) => {
       if (trackId !== to.trackId || !fits(to.direction, dir)) return
       const ahead = dir === 'up' ? to.station - enter : enter - to.station
-      if (ahead >= 0 && open(trackId, enter, to.station)) reach([...path, { trackId, start: enter, end: to.station }], cost + ahead)
+      if (ahead >= 0 && open(trackId, enter, to.station)) reach([...path, { trackId, start: enter, end: to.station }], cost + ahead * factor(trackId))
     }
     tryTarget(from.trackId, direction, from.station, [], 0)
     const leaveAt = direction === 'up' ? lengths.get(from.trackId) : 0
-    if (open(from.trackId, from.station, leaveAt)) queue.push({ trackId: from.trackId, direction, cost: Math.abs(leaveAt - from.station), path: [{ trackId: from.trackId, start: from.station, end: leaveAt }] })
+    if (open(from.trackId, from.station, leaveAt)) queue.push({ trackId: from.trackId, direction, cost: Math.abs(leaveAt - from.station) * factor(from.trackId), path: [{ trackId: from.trackId, start: from.station, end: leaveAt }] })
     while (queue.length) {
       queue.sort((a, b) => a.cost - b.cost)
       const cur = queue.shift()
@@ -70,7 +73,7 @@ export function findPath(record, from, to) {
         const enter = dir === 'up' ? 0 : length
         tryTarget(next.trackId, dir, enter, cur.path, cur.cost)
         if (cur.path.length > 400 || !open(next.trackId, 0, length)) continue
-        queue.push({ trackId: next.trackId, direction: dir, cost: cur.cost + length, path: [...cur.path, { trackId: next.trackId, start: enter, end: length - enter }] })
+        queue.push({ trackId: next.trackId, direction: dir, cost: cur.cost + length * factor(next.trackId), path: [...cur.path, { trackId: next.trackId, start: enter, end: length - enter }] })
       }
     }
   }

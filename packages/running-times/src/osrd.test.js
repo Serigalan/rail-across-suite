@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { newVehicle } from '@rail-across/vehicles'
 import { nearestLocation } from './places.js'
 import { pathLength } from './path.js'
-import { osrdFindPath, osrdHeightProfile, osrdLngLatAt, osrdNet, osrdPathGeoJSON, osrdProperties, osrdRoute, osrdSimulationRequest } from './osrd.js'
+import { osrdFindPath, osrdHeightProfile, osrdLngLatAt, osrdNet, osrdPathGeoJSON, osrdProperties, osrdRoute, osrdSimulationRequest, osrdViaPlaces } from './osrd.js'
+import { alternativeRoutes } from './route.js'
 
 // A small RailJSON net near the equator, a degree of longitude some 111 km: a
 // runs east 1000 m into a point switch, whose B1 leads on to b (east) and
@@ -84,6 +85,13 @@ describe('a net of OSRD', () => {
     expect(osrdHeightProfile(there).every(q => q.height == null)).toBe(true)
   })
 
+  it('reaches the nearest of several targets from the nearest of several starts in one search', () => {
+    const [ost, west] = net.places
+    const route = osrdRoute(net, [ost, west])
+    expect(route.chosen[0]).toMatchObject({ trackId: 'c', station: 400 })   // 1300 m to West, not 2900 from d
+    expect(route.offsets).toEqual([0, 1300])
+  })
+
   it('makes the request the simulation takes, its mode by the wire', () => {
     const path = osrdFindPath(net, { trackId: 'a', station: 0, direction: 'up' }, { trackId: 'b', station: 1000 })
     const vehicle = newVehicle()
@@ -94,5 +102,64 @@ describe('a net of OSRD', () => {
     expect(request.margins).toEqual({ boundaries: [], values: ['5%'] })
     expect(properties.signalled).toEqual([])
     expect(properties.traction.unpowered).toEqual(expect.any(Array))
+  })
+})
+
+// A line of two tracks and a way around it: s runs east 1000 m into P1, which
+// leads straight on to m (3000 m) or over k (20 m) into P3; P3 leads on to mp,
+// the track beside m 4 m north of it, or to n, bent 1000 m north. j (20 m)
+// and P4, P5 bring them together again into e, east 1000 m. The station Mitte
+// lies on m, Nord on n. Drawn true to scale, a metre a metre on the map: the
+// search's estimate is the straight line on it.
+const xy = (x, y) => [x / 111195, y / 111195]
+const polyline = (...pts) => {
+  const coordinates = pts.map(([x, y]) => xy(x, y))
+  const length = pts.slice(1).reduce((s, p, i) => s + Math.hypot(p[0] - pts[i][0], p[1] - pts[i][1]), 0)
+  return { geo: { type: 'LineString', coordinates }, length }
+}
+const ways = osrdNet({
+  version: '3.5.3',
+  track_sections: [
+    { id: 's', ...polyline([0, 0], [1000, 0]) },
+    { id: 'm', ...polyline([1000, 0], [4000, 0]) },
+    { id: 'k', ...polyline([1000, 0], [1020, 4]) },
+    { id: 'mp', ...polyline([1020, 4], [3980, 4]) },
+    { id: 'n', ...polyline([1020, 4], [2500, 1000], [3980, 4]) },
+    { id: 'j', ...polyline([3980, 4], [4000, 0]) },
+    { id: 'e', ...polyline([4000, 0], [5000, 0]) },
+  ],
+  switches: [
+    { id: 'P1', switch_type: 'point_switch', ports: { A: { track: 's', endpoint: 'END' }, B1: { track: 'm', endpoint: 'BEGIN' }, B2: { track: 'k', endpoint: 'BEGIN' } } },
+    { id: 'P3', switch_type: 'point_switch', ports: { A: { track: 'k', endpoint: 'END' }, B1: { track: 'mp', endpoint: 'BEGIN' }, B2: { track: 'n', endpoint: 'BEGIN' } } },
+    { id: 'P5', switch_type: 'point_switch', ports: { A: { track: 'j', endpoint: 'BEGIN' }, B1: { track: 'mp', endpoint: 'END' }, B2: { track: 'n', endpoint: 'END' } } },
+    { id: 'P4', switch_type: 'point_switch', ports: { A: { track: 'e', endpoint: 'BEGIN' }, B1: { track: 'm', endpoint: 'END' }, B2: { track: 'j', endpoint: 'END' } } },
+  ],
+  operational_points: [
+    { id: 'op-m', name: 'Mitte', parts: [{ track: 'm', position: 1500 }] },
+    { id: 'op-n', name: 'Nord', parts: [{ track: 'n', position: 1700 }] },
+  ],
+})
+
+describe('other routes over a net of OSRD', () => {
+  const via = [{ loc: { trackId: 's', station: 0, direction: 'up' } }, { loc: { trackId: 'e', station: 1000 } }]
+  const routeWith = (weights) => osrdRoute(ways, via, { weights })
+  const tracks = (r) => r.path.map(p => p.trackId)
+
+  it('takes the way around as the other route, not the track beside the shortest', () => {
+    const routes = alternativeRoutes(routeWith, { lines: ways.lines })
+    expect(routes.map(tracks)).toEqual([['s', 'm', 'e'], ['s', 'k', 'n', 'j', 'e']])
+    expect(routes[0].offsets.at(-1)).toBeCloseTo(5000, 6)
+    expect(osrdViaPlaces(ways, routes.map(r => r.path))).toEqual(['Mitte', 'Nord'])
+  })
+
+  it('takes the track beside as another where only the tracks are compared', () => {
+    expect(alternativeRoutes(routeWith).map(tracks)[1]).toEqual(['s', 'k', 'mp', 'j', 'e'])
+  })
+
+  it('finds the shortest with A* as without an estimate, weighed or not', () => {
+    const plain = osrdFindPath(ways, via[0].loc, via[1].loc)
+    expect(tracks({ path: plain })).toEqual(['s', 'm', 'e'])
+    const weighed = osrdFindPath(ways, via[0].loc, via[1].loc, { weights: (id) => (id === 'm' || id === 'mp' ? 3 : 1) })
+    expect(tracks({ path: weighed })).toEqual(['s', 'k', 'n', 'j', 'e'])
   })
 })

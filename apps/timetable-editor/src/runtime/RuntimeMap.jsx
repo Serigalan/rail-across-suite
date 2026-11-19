@@ -1,30 +1,36 @@
 import { useEffect, useRef, useState } from 'react'
 import { DEFAULT_BASEMAP, findBasemap } from '@rail-across/basemaps'
 import { netGeoJSON } from '@rail-across/running-times'
+import { ROUTE_COLORS } from './useRuntime.js'
 
 /**
  * The map: the net on the suite's basemap — the variant's or one of OSRD's —,
- * the train's path over it (`pathData`, GeoJSON), the
- * places it starts, stops and ends at, and — while a run is played — the
- * train. While a place is being picked, a click on the map gives the point
- * and how many metres a few pixels are there, to find the track within reach.
+ * the train's routes over it (`pathData`, GeoJSON: a feature per route, its
+ * index `route` and whether it is the one `shown`), each in its colour, the
+ * one shown broad, the others thin and dashed — a click on one of them shows
+ * it (`onChoose`) —; the places it starts, stops and ends at, and — while a
+ * run is played — the train. While a place is being picked, a click on the
+ * map gives the point and how many metres a few pixels are there, to find
+ * the track within reach.
  */
 
 const PICK_PX = 14
 const EMPTY = { type: 'FeatureCollection', features: [] }
 const COLORS = { start: '#1f9e3a', stop: '#d68910', end: '#c0392b' }
+const routeColor = ['match', ['get', 'route'], 1, ROUTE_COLORS[1], 2, ROUTE_COLORS[2], ROUTE_COLORS[0]]
 
 const pointsGeoJSON = (points) => ({
   type: 'FeatureCollection',
   features: points.filter(p => p.lngLat).map(p => ({ type: 'Feature', properties: { kind: p.kind }, geometry: { type: 'Point', coordinates: p.lngLat } })),
 })
 
-export default function RuntimeMap({ net, pathData, points, train, picking, onPick, fitKey, t }) {
+export default function RuntimeMap({ net, pathData, points, train, picking, onPick, onChoose, fitKey, t }) {
   const box = useRef(null)
   const map = useRef(null)
   const [ready, setReady] = useState(false)
   const handlers = useRef({})
   handlers.current.pick = picking ? onPick : null
+  handlers.current.choose = picking ? null : onChoose
 
   useEffect(() => {
     let gone = false
@@ -44,7 +50,11 @@ export default function RuntimeMap({ net, pathData, points, train, picking, onPi
         m.addSource('train', { type: 'geojson', data: EMPTY })
         m.addLayer({ id: 'net-casing', type: 'line', source: 'net', paint: { 'line-color': '#ffffff', 'line-width': 4.5, 'line-opacity': 0.8 }, layout: { 'line-cap': 'round' } })
         m.addLayer({ id: 'net', type: 'line', source: 'net', paint: { 'line-color': '#2a2d3a', 'line-width': 2.2 }, layout: { 'line-cap': 'round' } })
-        m.addLayer({ id: 'path', type: 'line', source: 'path', paint: { 'line-color': '#303383', 'line-width': 7, 'line-opacity': 0.55 }, layout: { 'line-cap': 'round', 'line-join': 'round' } })
+        m.addLayer({
+          id: 'path-other', type: 'line', source: 'path', filter: ['!', ['get', 'shown']],
+          paint: { 'line-color': routeColor, 'line-width': 4, 'line-opacity': 0.7, 'line-dasharray': [2, 1.5] }, layout: { 'line-join': 'round' },
+        })
+        m.addLayer({ id: 'path', type: 'line', source: 'path', filter: ['get', 'shown'], paint: { 'line-color': routeColor, 'line-width': 7, 'line-opacity': 0.6 }, layout: { 'line-cap': 'round', 'line-join': 'round' } })
         m.addLayer({
           id: 'points', type: 'circle', source: 'points',
           paint: { 'circle-radius': 7, 'circle-color': ['match', ['get', 'kind'], 'start', COLORS.start, 'end', COLORS.end, COLORS.stop], 'circle-stroke-color': '#ffffff', 'circle-stroke-width': 2 },
@@ -52,6 +62,13 @@ export default function RuntimeMap({ net, pathData, points, train, picking, onPi
         m.addLayer({ id: 'train', type: 'circle', source: 'train', paint: { 'circle-radius': 8, 'circle-color': '#303383', 'circle-stroke-color': '#ffffff', 'circle-stroke-width': 3 } })
         if (!gone) setReady(true)
       })
+      // Another route shown by a click on it; the pointer says it can be.
+      m.on('click', 'path-other', (e) => {
+        const route = e.features?.[0]?.properties?.route
+        if (handlers.current.choose && route != null) handlers.current.choose(Number(route))
+      })
+      m.on('mouseenter', 'path-other', () => { if (handlers.current.choose) m.getCanvas().style.cursor = 'pointer' })
+      m.on('mouseleave', 'path-other', () => { if (handlers.current.choose) m.getCanvas().style.cursor = '' })
       m.on('click', (e) => {
         const pick = handlers.current.pick
         if (!pick) return

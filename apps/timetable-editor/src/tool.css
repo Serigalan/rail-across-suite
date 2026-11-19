@@ -172,6 +172,9 @@ html, body { margin: 0; background: var(--ui-surface); }
 .sim-range { width: 100%; }
 .sim-at-line { margin: 4px 0 8px; font-variant-numeric: tabular-nums; }
 .sim-credit { font-size: var(--ui-fs-s); margin-top: 16px; }
+/* A route in the list: its colour on the map, and whether it is the shortest or the fastest. */
+.sim-route-mark { display: block; width: 18px; height: 5px; border-radius: 3px; }
+.sim-route-badges { display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
 
 /* The timetable played on the map. */
 .tt-live-clock { font-size: 28px; font-weight: 600; font-variant-numeric: tabular-nums; margin: 0 0 4px; }

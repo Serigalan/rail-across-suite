@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { heightProfile, lngLatAt, locationAt, marginValue, nearestLocation, netLines, osrdHeightProfile, osrdLngLatAt, osrdPathGeoJSON, osrdRoute, osrdSimulationRequest, pathGeoJSON, placesOf, pointAt, routeThrough, simulate, simulationRequest } from '@rail-across/running-times'
+import { alternativeRoutes, heightProfile, lngLatAt, locationAt, marginValue, nearestLocation, netLines, osrdHeightProfile, osrdLngLatAt, osrdPathGeoJSON, osrdRoute, osrdSimulationRequest, osrdViaPlaces, pathGeoJSON, pathLength, placesOf, pointAt, routeThrough, simulate, simulationRequest } from '@rail-across/running-times'
 import { comfortsOf } from '@rail-across/vehicles'
 import { keepVehicle, keptVehicle } from '../suite.js'
 import { useOsrdNet, useOsrdNets } from './useOsrd.js'
@@ -10,15 +10,38 @@ const FIRST_VEHICLE = 'osrd:emu-regional-train'
 /** A net with nothing to draw: one of OSRD's while it loads. */
 const NO_NET = { lines: new Map(), bounds: null }
 
+/** The ways a train is computed over: the shortest and up to two others (alternativeRoutes). */
+const ROUTES = 3
+
+/** The colours of the routes, by their index, on the map and in the list: the shortest's the path's colour of before. */
+export const ROUTE_COLORS = ['#303383', '#0e7c86', '#b5528c']
+
+/** The routes' paths on the map as one collection: each a feature with its index and whether it is the one shown. */
+function routesGeoJSON(paths, toGeoJSON, shown) {
+  return {
+    type: 'FeatureCollection',
+    features: paths.flatMap((path, i) => toGeoJSON(path).features.map(f => ({ ...f, properties: { route: i, shown: i === shown } }))),
+  }
+}
+
+/** Of the routes run, the index of the one whose `value` is least, or null. */
+function leastOf(routes, value) {
+  let best = null
+  routes.forEach((r, i) => { const v = value(r); if (v != null && (best == null || v < value(routes[best]))) best = i })
+  return best
+}
+
 /**
  * Computing the running time of one train on its own, beside the timetables
  * (Fahrzeit rechnen, what the Simulation-Tool was): a train — a vehicle of
  * the suite's catalogue (the Fahrzeug-Editor's), in a traction mode and
  * comfort —, where it starts, stops and ends — signals, platforms or points
- * picked on the map —, the margin it runs with; its path found over the net,
- * and the run simulated by rail-across-sim (OSRD's simulation core in Rust):
- * the fastest run, the run with its margin, the times at its stops, the speed
- * and the height over the distance, played on the map. The net is the
+ * picked on the map —, the margin it runs with; its path found over the net —
+ * the shortest, and on computing up to two other routes (alternativeRoutes) —,
+ * and the run over each simulated by rail-across-sim (OSRD's simulation core
+ * in Rust): the fastest run, the run with its margin, the times at its stops,
+ * the speed and the height over the distance, played on the map, of the route
+ * shown (`choice`, at first the fastest). The net is the
  * variant's, or one of OSRD's the server holds (`netId`, osrd.js of
  * @rail-across/running-times): its operational points the places, its
  * slopes, curves, speed sections and electrification what the train runs
@@ -36,7 +59,9 @@ export function useRuntime({ record, catalogue, t, language, onResult }) {
   const [margin, setMargin] = useState('5')
   const [distribution, setDistribution] = useState('mareco')
   const [picking, setPicking] = useState(null)   // 'start' | 'end' | 'stop' | null
-  const [run, setRun] = useState(null)   // { result, request, properties, path, offsets, labels, key } | { error, key }
+  // { routes: [{ result, request, properties, path, offsets, chosen, labels, length, via } | { error, path, offsets, chosen, length, via }], key } | { error, key }
+  const [runs, setRuns] = useState(null)
+  const [choice, setChoice] = useState(0)   // the route shown
   const [busy, setBusy] = useState(false)
   const [moment, setMoment] = useState(0)   // the time played [s]
   const [fitKey, setFitKey] = useState(0)
@@ -63,7 +88,7 @@ export function useRuntime({ record, catalogue, t, language, onResult }) {
   const chooseNet = (id) => {
     if (id === netId) return
     setNetId(id)
-    setStart(null); setEnd(null); setStops([]); setRun(null); setPicking(null)
+    setStart(null); setEnd(null); setStops([]); setRuns(null); setPicking(null)
   }
   const lngLatOf = (loc) => (netId == null ? lngLatAt(record, loc) : osrd ? osrdLngLatAt(osrd, loc) : null)
   const entry = catalogue.entries.find(e => e.key === vehicleKey) ?? catalogue.entries.find(e => e.key === FIRST_VEHICLE) ?? catalogue.entries[0] ?? null
@@ -75,7 +100,14 @@ export function useRuntime({ record, catalogue, t, language, onResult }) {
   const chooseVehicle = (key) => { setVehicleKey(key); keepVehicle(key); setTraction(tr => ({ ...tr, mode: null })) }
   const marginText = marginValue(margin)
   const key = JSON.stringify([netId, entry?.key, entry?.version, mode, comfort, chosen.map(p => p?.id), stops.map(s => s.duration), marginText, distribution])
-  const stale = run && run.key !== key
+  const stale = runs && runs.key !== key
+  // The route shown, as the panels and the chart take a run: its result, or its error.
+  const routes = runs?.routes ?? null
+  const current = routes ? Math.min(choice, routes.length - 1) : 0
+  const run = routes ? { ...routes[current], key: runs.key } : runs
+  const fastest = routes ? leastOf(routes, r => r.result?.final.total_time) : null
+  const shortest = routes ? leastOf(routes, r => r.length) : null
+  const choose = (i) => { setChoice(i); setMoment(0) }
 
   const pickOnMap = (lngLat, reach) => {
     const loc = nearestLocation(net, lngLat, reach)
@@ -88,22 +120,43 @@ export function useRuntime({ record, catalogue, t, language, onResult }) {
     setPicking(null)
   }
 
-  const go = async () => {
-    if (!route?.path || marginText == null || !vehicle) return
-    const stopsSpec = [...stops.map((s, i) => ({ offset: route.offsets[i + 1], duration: s.duration ?? 0 })), { offset: route.offsets.at(-1), duration: 0 }]
+  /** Each route simulated: its run, or its error. */
+  const simulateRoute = async (way, via) => {
+    const stopsSpec = [...stops.map((s, i) => ({ offset: way.offsets[i + 1], duration: s.duration ?? 0 })), { offset: way.offsets.at(-1), duration: 0 }]
     const opts = { vehicle, traction: { mode, comfort }, stops: stopsSpec, margin: { value: marginText, distribution } }
-    const { request, properties } = netId == null ? simulationRequest(record, route.path, opts) : osrdSimulationRequest(osrd, route.path, opts)
-    setBusy(true)
+    const { request, properties } = netId == null ? simulationRequest(record, way.path, opts) : osrdSimulationRequest(osrd, way.path, opts)
+    const found = { path: way.path, offsets: way.offsets, chosen: way.chosen ?? null, length: pathLength(way.path), via }
     try {
       const result = await simulate(request)
-      if (result.error) setRun({ error: result.error, key })
+      return result.error ? { ...found, error: result.error } : { ...found, result, request, properties, labels: chosen.map(p => p.label) }
+    } catch (err) {
+      return { ...found, error: { code: err.code ?? 'internal', message: String(err.message ?? err) } }
+    }
+  }
+
+  const go = async () => {
+    if (!route?.path || marginText == null || !vehicle) return
+    setBusy(true)
+    try {
+      // the button says it computes before the routes are searched, which holds the page a moment on a large net
+      await new Promise(resolve => setTimeout(resolve, 0))
+      const via = [start, ...stops.map(s => s.place), end]
+      const ways = alternativeRoutes(
+        netId == null ? (weights) => routeThrough(record, via.map(p => p.loc), { weights }) : (weights) => osrdRoute(osrd, via, { weights }),
+        { first: route, count: ROUTES, lines: net.lines },
+      )
+      const names = netId == null ? ways.map(() => null) : osrdViaPlaces(osrd, ways.map(w => w.path))
+      const done = []
+      for (const [i, way] of ways.entries()) done.push(await simulateRoute(way, names[i]))
+      if (!done.some(r => r.result)) setRuns({ error: done[0].error, key })
       else {
-        setRun({ result, request, properties, path: route.path, offsets: route.offsets, labels: chosen.map(p => p.label), key })
+        setRuns({ routes: done, key })
+        setChoice(leastOf(done, r => r.result?.final.total_time) ?? 0)
         setMoment(0)
         onResult?.()
       }
     } catch (err) {
-      setRun({ error: { code: err.code ?? 'internal', message: String(err.message ?? err) }, key })
+      setRuns({ error: { code: err.code ?? 'internal', message: String(err.message ?? err) }, key })
     } finally {
       setBusy(false)
     }
@@ -115,15 +168,24 @@ export function useRuntime({ record, catalogue, t, language, onResult }) {
   // The way the chart shows: the run's, else the one found; its heights along it.
   const way = ok ? { path: ok.path, offsets: ok.offsets, labels: ok.labels } : route?.path ? { path: route.path, offsets: route.offsets, labels: chosen.map(p => p?.label) } : null
   const profile = useMemo(() => (way ? (netId == null ? heightProfile(record, way.path) : osrdHeightProfile(way.path)) : null), [record, netId, way?.path]) // eslint-disable-line react-hooks/exhaustive-deps
-  // A station of OSRD's is shown at the part the way takes, else at its first.
-  const mapPoints = chosen.map((p, i) => p && { kind: i === 0 ? 'start' : i === chosen.length - 1 ? 'end' : 'stop', lngLat: lngLatOf(route?.chosen?.[i] ?? p.loc) }).filter(Boolean)
+  // The routes run, while they are the train's; else the shortest way found.
+  const shownRoutes = routes && !stale ? routes : null
+  const shown = shownRoutes ? current : 0
+  // A station of OSRD's is shown at the part the way shown takes, else at its first.
+  const takes = shownRoutes ? shownRoutes[shown].chosen : route?.chosen
+  const mapPoints = chosen.map((p, i) => p && { kind: i === 0 ? 'start' : i === chosen.length - 1 ? 'end' : 'stop', lngLat: lngLatOf(takes?.[i] ?? p.loc) }).filter(Boolean)
   const pathData = useMemo(
-    () => (!route?.path ? null : netId == null ? pathGeoJSON(net, record, route.path) : osrd ? osrdPathGeoJSON(osrd, route.path) : null),
-    [route, netId, net, record, osrd],
+    () => {
+      const paths = shownRoutes ? shownRoutes.map(r => r.path) : route?.path ? [route.path] : null
+      if (!paths) return null
+      if (netId == null) return routesGeoJSON(paths, (path) => pathGeoJSON(net, record, path), shown)
+      return osrd ? routesGeoJSON(paths, (path) => osrdPathGeoJSON(osrd, path), shown) : null
+    },
+    [route, shownRoutes, shown, netId, net, record, osrd],
   )
   const netNotice = netId == null ? (record.tracks?.length ? null : 'empty_net') : loaded.loading ? 'net_loading' : loaded.error ? 'net_failed' : null
-  const panelProps = { t, language, record, nets: nets.nets, netId, chooseNet, netLoading: loaded.loading, netError: loaded.error, places, catalogue, entry, vehicle, chooseVehicle, modes, mode, comforts, comfort, setTraction, start, setStart, end, setEnd, stops, setStops, margin, setMargin, marginText, distribution, setDistribution, picking, setPicking, route, run, stale, busy, go, moment, setMoment, at }
-  const viewProps = { t, language, record, net, netNotice, pathData, mapPoints, train, picking, setPicking, pickOnMap, fitKey, setFitKey, way, ok, profile, at }
+  const panelProps = { t, language, record, nets: nets.nets, netId, chooseNet, netLoading: loaded.loading, netError: loaded.error, places, catalogue, entry, vehicle, chooseVehicle, modes, mode, comforts, comfort, setTraction, start, setStart, end, setEnd, stops, setStops, margin, setMargin, marginText, distribution, setDistribution, picking, setPicking, route, run, routes, choice: current, choose, fastest, shortest, stale, busy, go, moment, setMoment, at }
+  const viewProps = { t, language, record, net, netNotice, pathData, mapPoints, train, picking, setPicking, pickOnMap, choose: shownRoutes ? choose : null, fitKey, setFitKey, way, ok, profile, at }
   return { panelProps, viewProps }
 
 }

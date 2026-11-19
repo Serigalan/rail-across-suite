@@ -123,6 +123,19 @@ Punkt eines verlangt. Das gilt für seinen Anfang, seine Halte, seine Richtungsw
 - **Gesperrte Stücke.** In einem Bauszenario führt kein Weg um mehr als 0,5 m über ein gesperrtes Gleisstück (siehe
   „Bauszenarien“). Das gilt für den kürzesten Weg, für einen bevorzugten Fahrweg und für eine Fahrstraße, über die
   die Disposition einen Zug schickt.
+- **Über ein OSRD-Netz.** *Fahrzeit rechnen* über ein RailJSON-Netz sucht jeden Abschnitt der Fahrt einmal, von jedem
+  Teil des Starts (danach: von dort, wo der letzte ankam, in seiner Richtung) zu jedem Teil des nächsten Orts, nach
+  A*: Die Schätzung des Rests ist 90 % der Luftlinie zum nächsten Ziel, unter dem, was ein Gleis fährt, auch wo ein
+  Abschnitt einige Prozent kürzer ist als gezeichnet. Sie findet denselben Weg wie Dijkstra. Nur wo ein so erreichter
+  Halt nicht weiterführt, werden seine anderen Teile versucht, eine Suche für jeden.
+- **Alternativrouten.** *Fahrzeit rechnen* rechnet den Zug über den kürzesten Weg und bis zu zwei weitere
+  (Strafkostenverfahren): Jedes Gleis entlang eines gefundenen Wegs — in einem Korridor von 25 m zu beiden Seiten,
+  damit das Nachbargleis einer zweigleisigen Strecke als derselbe Weg zählt — kostet je Weg das 1,5-Fache, und der Weg
+  wird erneut gesucht, höchstens 8-mal. Ein so gefundener Weg wird genommen, wenn er höchstens 60 % länger ist als der
+  kürzeste und höchstens 70 % seiner Länge im Korridor jedes zuvor genommenen verläuft. Jede Route wird simuliert; die
+  nach Länge kürzeste und die nach Fahrzeit schnellste sind markiert, und jede lässt sich anzeigen. Eine Route heißt
+  nach einer Betriebsstelle, die nur sie passiert, der mit den meisten Teilen. Unterscheidet sich keine genug, bleibt
+  der kürzeste Weg allein.
 
 ### Richtungswechsel
 

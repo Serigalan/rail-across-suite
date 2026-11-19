@@ -1,7 +1,8 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { curveResistance, findPath, heightProfile, locationAt, offsetOnPath, pathAlong, pathLength, pathProperties, transitionRadius } from './path.js'
-import { routeThrough, routeVia, signalledSpeeds } from './route.js'
+import { alternativeRoutes, routeThrough, routeVia, signalledSpeeds } from './route.js'
+import { netLines } from './places.js'
 import { governedLimits, marginValue, simulationRequest } from './request.js'
 import { newVehicle } from '@rail-across/vehicles'
 import { runWith } from './engine.js'
@@ -47,6 +48,31 @@ describe('a path over the net', () => {
     expect(back[0].end).toBe(0)
     // from the branch onto the straight route: no way over the turnout
     expect(findPath(record, { trackId: 'T3', station: 10, direction: 'down' }, { trackId: 'T2', station: 10 })).toBeNull()
+  })
+
+  it('finds another way where its tracks are weighed dearer, and offers it as an alternative', () => {
+    // T1 into S1: straight on T2 (1000 m), or over T3 bent north (some 1414 m); both into S2 and on to T4.
+    const twoWays = {
+      tracks: [
+        { id: 'T1', epsg: 25832, elements: [straight(E0, N0, E0 + 1000, N0)] },
+        { id: 'T2', epsg: 25832, elements: [straight(E0 + 1000, N0, E0 + 2000, N0)] },
+        { id: 'T3', epsg: 25832, elements: [straight(E0 + 1000, N0, E0 + 1500, N0 + 500), straight(E0 + 1500, N0 + 500, E0 + 2000, N0)] },
+        { id: 'T4', epsg: 25832, elements: [straight(E0 + 2000, N0, E0 + 3000, N0)] },
+      ],
+      switches: [
+        { switchId: 'S1', kind: 'switch', ports: { A: { trackId: 'T1', endpoint: 'END' }, B1: { trackId: 'T2', endpoint: 'BEGIN' }, B2: { trackId: 'T3', endpoint: 'BEGIN' } } },
+        { switchId: 'S2', kind: 'switch', ports: { A: { trackId: 'T4', endpoint: 'BEGIN' }, B1: { trackId: 'T2', endpoint: 'END' }, B2: { trackId: 'T3', endpoint: 'END' } } },
+      ],
+    }
+    const from = { trackId: 'T1', station: 100, direction: 'up' }, to = { trackId: 'T4', station: 500 }
+    const ids = (path) => path.map(p => p.trackId)
+    expect(ids(findPath(twoWays, from, to))).toEqual(['T1', 'T2', 'T4'])
+    expect(ids(findPath(twoWays, from, to, { weights: (id) => (id === 'T2' ? 2 : 1) }))).toEqual(['T1', 'T3', 'T4'])
+    const routes = alternativeRoutes((weights) => routeThrough(twoWays, [from, to], { weights }), { lines: netLines(twoWays).lines })
+    expect(routes.map(r => ids(r.path))).toEqual([['T1', 'T2', 'T4'], ['T1', 'T3', 'T4']])
+    expect(routes[1].offsets.at(-1)).toBeCloseTo(900 + 2 * Math.hypot(500, 500) + 500, 6)
+    // a way more than 60 % longer is none: here the detour is some 21 % longer
+    expect(alternativeRoutes((weights) => routeThrough(twoWays, [from, to], { weights }), { lines: netLines(twoWays).lines, stretch: 1.1 })).toHaveLength(1)
   })
 
   it('keeps a target ahead on the same track to that track', () => {

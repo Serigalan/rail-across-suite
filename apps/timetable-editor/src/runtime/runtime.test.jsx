@@ -71,6 +71,29 @@ describe('computing a running time', () => {
     expect(html).toContain('1 kWh')
   })
 
+  it('lists the routes computed, the shortest and the fastest marked, the one shown chosen', () => {
+    const slower = { ...run, result: { ...run.result, final: report(1.3) } }
+    const routes = [
+      { ...slower, length: 1000, via: null },
+      { ...run, length: 1200, via: 'Nord' },
+      { length: 1500, via: 'Süd', error: { code: 'internal', message: 'x' } },
+    ]
+    const html = de(<RuntimeResult t={t} language="de" run={{ ...routes[1], key: 'k' }} routes={routes} choice={1} choose={() => {}} fastest={1} shortest={0}
+      stale={false} moment={0} setMoment={() => {}} at={pointAt(run.result.final, 0)} />)
+    expect(html).toContain('<span class="ui-grow">Routen</span>')
+    expect(html).toContain('Route A')
+    expect(html).toContain('Route B über Nord')
+    expect(html).toContain('Route C über Süd')
+    expect(html).toMatch(/Route A.*kürzeste/)
+    expect(html).toMatch(/Route B über Nord.*schnellste/)
+    expect(html).toContain('2:49')   // 130 s × 1.3, route A
+    expect(html).toContain('Fahrzeit nicht gerechnet')
+    expect(html).toMatch(/aria-selected="true"[^>]*>(?:(?!aria-selected).)*Route B/)
+    // one route alone: none other found
+    expect(de(<RuntimeResult t={t} language="de" run={{ ...routes[0], key: 'k' }} routes={routes.slice(0, 1)} choice={0} choose={() => {}} fastest={0} shortest={0}
+      stale={false} moment={0} setMoment={() => {}} at={null} />)).toContain('Keine Alternativroute gefunden')
+  })
+
   it('draws the run over the distance, and under it the height along the same stretch', () => {
     const profile = [{ position: 0, height: 100 }, { position: 600, height: 106 }, { position: 600, height: null }, { position: 1000, height: null }]
     const chart = (r) => de(<RunChart run={r} profile={profile} length={1000} offsets={run.offsets} labels={run.labels} at={null} t={t} language="de" />)

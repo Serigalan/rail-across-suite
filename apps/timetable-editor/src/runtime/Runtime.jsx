@@ -27,7 +27,7 @@ export function RuntimeView({ bar, viewProps: v }) {
           </div>
         )}
         {v.netNotice && <div className="tool-notice"><Message tone={v.netNotice === 'net_failed' ? 'error' : 'info'}>{t(v.netNotice)}</Message></div>}
-        <RuntimeMap net={v.net} pathData={v.pathData} points={v.mapPoints} train={v.train} picking={v.picking} onPick={v.pickOnMap} fitKey={v.fitKey} t={t} />
+        <RuntimeMap net={v.net} pathData={v.pathData} points={v.mapPoints} train={v.train} picking={v.picking} onPick={v.pickOnMap} onChoose={v.choose} fitKey={v.fitKey} t={t} />
       </div>
       {v.way && <RunChart run={v.ok} profile={v.profile} length={v.ok ? v.ok.request.path.length : pathLength(v.way.path)} offsets={v.way.offsets} labels={v.way.labels} at={v.at} t={t} language={v.language} />}
     </div>

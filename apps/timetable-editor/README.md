@@ -37,9 +37,10 @@ where there is one, else its head, and only read; the timetables are the project
 - **Speed and height**: under a train's page, its speed over its way — allowed, fastest, with its margin — and
   under it the height of the tracks along it, the stations it passes marked.
 - **Fahrzeit rechnen** (`src/runtime/`, what the Simulation-Tool was): in the same rail, a single train computed on
-  its own — a vehicle, a start, stops and an end among signals, platforms and points picked on the map, a margin —,
-  its result (running times, the times at its stops, energy, the run played on the map), the speed and the height
-  over its way under the map. It keeps its state while the timetables are shown; `&section=runtime` opens it, and the
+  its own — a vehicle, a start, stops and an end among signals, platforms and points picked on the map, a margin —
+  over the shortest way and up to two alternative routes, the shortest and the fastest of them marked, each shown on
+  the map at a click; of the route shown its result (running times, the times at its stops, energy, the run played on
+  the map), the speed and the height over its way under the map. It keeps its state while the timetables are shown; `&section=runtime` opens it, and the
   Simulation-Tool's old address (`simulation/`) leads on to it. Instead of the variant's net it runs over one of
   **OSRD's nets** the server holds (RailJSON files laid into its directory by hand, `RA_SERVER_OSRD`), where there
   is one: chosen under *Netz*, it is shown on the map, its operational points are the places to start, stop and

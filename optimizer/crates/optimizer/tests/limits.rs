@@ -108,7 +108,8 @@ fn limits_at_both_levels() {
     assert_eq!(reg.jump_speed(100.0, 120.0, true), Some(120.0));
 
     assert!(Level::parse("approval").is_err());
-    assert_eq!(reg.forms, [("clothoid", true), ("bloss", false)]);
+    // a Bloss transition carries its curved ramp, so LP.UB.02 holds at either level
+    assert_eq!(reg.forms, [("clothoid", true), ("bloss", true)]);
     assert_eq!(erm.forms, [("clothoid", true), ("bloss", true)]);
 }
 

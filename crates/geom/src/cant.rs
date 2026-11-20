@@ -59,6 +59,20 @@ fn or_zero(x: f64) -> f64 {
     if x == 0.0 || x.is_nan() { 0.0 } else { x }
 }
 
+/// The share of a cant ramp reached at `t` (0…1) along it: a Bloss transition
+/// carries the curved ramp (geschwungene Rampe) of its own form,
+/// 3t² − 2t³; a clothoid, and an arc or a straight the cant changes along,
+/// the straight one, t. A Bloss transition and its curved ramp always go
+/// together, as its curvature and its cant change as one.
+pub fn ramp_share(bloss: bool, t: f64) -> f64 {
+    if bloss { t * t * (3.0 - 2.0 * t) } else { t }
+}
+
+/// Whether an element's cant ramp is the curved one: a Bloss transition's.
+pub fn curved_ramp(el: &Value) -> bool {
+    is_transition(el) && get(el, "transitionType").and_then(Value::as_str) == Some("bloss")
+}
+
 /// An arc or a straight with the cant `start` at its start and `end` at its end (`withCantRamp`).
 pub fn with_cant_ramp(el: &Value, start: f64, end: f64) -> Value {
     let mut rest = without(el, &["cantStart", "cantEnd", "cant"]);

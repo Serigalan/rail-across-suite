@@ -106,7 +106,9 @@ Every element has `startNode` and `endNode` (`[E, N]` in the track's plane). Con
 - **Signed radius**: positive = right-hand curve (clockwise seen in the running direction), negative =
   left; `null` or 0 is straight. Internally curvature κ = −1/R.
 - **Cant** (`cant`, mm) is signed by the raised rail; it sits on arcs (and a canted straight). Every
-  element has a cant at its start and its end (`cantEnds`), linear between them. A transition's ends take
+  element has a cant at its start and its end (`cantEnds`), linear between them — except on a Bloss
+  transition, which carries the curved ramp (geschwungene Rampe) of its own form, u₁ + (u₂ − u₁)·(3t² − 2t³),
+  in the cant band and wherever the cant at a station is read (`sectionAtStation`). A transition's ends take
   the cant of the neighbouring elements (`transitionCantEnds`) unless it states its own
   `cantStart`/`cantEnd` — typed in the element table, brought by an import, or kept by a piece a cut left
   without those neighbours. An element of one radius whose cant changes along it is an arc (or a straight)

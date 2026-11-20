@@ -162,6 +162,7 @@ fn what_a_run_cannot_take_is_said() {
         assert_eq!(got["error"], "unsupported_topology", "{got}");
         assert!(got["message"].as_str().unwrap().contains("Keine optimierbaren Bögen"), "{got}");
     }
+    // A Bloss transition carries its curved ramp: it is no longer refused at the Regelwert.
     let got = optimize_payload(&rules, &serde_json::json!({"track": {"elements": [], "epsg": 25832}, "uebergang": "bloss"})).unwrap();
-    assert!(got["message"].as_str().unwrap().contains("LP.UB.02"), "{got}");
+    assert!(!got["message"].as_str().unwrap().contains("LP.UB.02"), "{got}");
 }

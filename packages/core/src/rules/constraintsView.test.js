@@ -198,7 +198,7 @@ describe('optimizerLimitRows', () => {
       reg: {
         stufe: 'reg', schlechtesteStufe: 'hint', geschwindigkeiten: [40.0, 300.0],
         uMax: 160.0, uMaxWeiche: 100.0, uStep: 5.0, ufMax: [130.0], ufMaxWeiche: [110.0],
-        uebergangsbogen: ['clothoid'],
+        uebergangsbogen: ['clothoid', 'bloss'],
       },
       discretion: {
         stufe: 'discretion', schlechtesteStufe: 'warning', geschwindigkeiten: [40.0, 300.0],
@@ -225,9 +225,8 @@ describe('optimizerLimitRows', () => {
     expect(byLabel.constraints_limit_uf.reg.app).toEqual([130])
     expect(byLabel.constraints_limit_uf.discretion.app).toEqual([130, 150])
     expect(byLabel.constraints_limit_worst.reg.app).toBe('hint')
-    // LP.UB.02 calls a Bloss curve on this app's straight ramp a Sonderfall —
-    // worse than the Regelwert admits; the Ermessensgrenze lets it past.
-    expect(byLabel.constraints_limit_forms.reg.app).toEqual(['clothoid'])
+    // A Bloss curve carries its curved ramp: LP.UB.02 holds, at either level.
+    expect(byLabel.constraints_limit_forms.reg.app).toEqual(['clothoid', 'bloss'])
     expect(byLabel.constraints_limit_forms.discretion.app).toEqual(['clothoid', 'bloss'])
   })
 

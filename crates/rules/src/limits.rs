@@ -73,14 +73,10 @@ impl Level {
     }
 
     /// The rule scopes this level lets a run past whatever they say. At the
-    /// Ermessensgrenze that is the cant ramp (LP.UB.02): it judges the ramp's
-    /// *form* against the transition's, and in this app every ramp is
-    /// straight (decision 47), so a Bloss transition is a Sonderfall there by
-    /// the app's model, not by a limit of the Ril. The client decided
-    /// (decision 57) that a run at the Ermessensgrenze still proposes Bloss
-    /// transitions — their lengths and gradients are held to LP.UB.04/06/07/08
-    /// like any other — and the element table then shows each one as the
-    /// Sonderfall it is.
+    /// Ermessensgrenze that is the cant ramp (LP.UB.02), a Sonderfall where
+    /// the cant changes off a transition. A transition the run hands out
+    /// always carries the ramp of its own form — straight on a clothoid,
+    /// curved on a Bloss transition —, so LP.UB.02 holds for either.
     fn tolerated(self) -> &'static [&'static str] {
         match self {
             Level::Reg => &[],
@@ -523,13 +519,13 @@ impl<'k> Limits<'k> {
     }
 
     /// May a run hand out a transition of this form? LP.UB.02 asks whether
-    /// the ramp matches it, and in this app the ramp is always straight — so
-    /// it matches a clothoid only. At the Ermessensgrenze that question is
-    /// let past.
+    /// the ramp matches it, and a transition's ramp always has its form: the
+    /// straight ramp a clothoid's, the curved one (geschwungene Rampe) a
+    /// Bloss transition's.
     fn form_admitted(&self, form: &str) -> Result<bool, Error> {
         let base = self.catalogue.scope(&[
             ("model.ramp_on_transition", true.into()),
-            ("model.ramp_form_matches", (form == "clothoid").into()),
+            ("model.ramp_form_matches", matches!(form, "clothoid" | "bloss").into()),
         ]);
         let rules: Vec<&Rule> = self
             .ramp_rules

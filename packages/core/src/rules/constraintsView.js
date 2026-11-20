@@ -34,8 +34,9 @@ const PHYSICS_WHERE_USED = {
 export const LIMIT_SEVERITIES = { reg: 'hint', discretion: 'warning' }
 
 // The rule scopes a level lets a run past — grenzen.py's TOLERIERT: at the
-// Ermessensgrenze a run proposes Bloss transitions although LP.UB.02 calls one
-// on this app's straight ramp a Sonderfall (ROADMAP, decision 57).
+// Ermessensgrenze the cant ramp (LP.UB.02). A transition's ramp has its form,
+// straight on a clothoid and curved on a Bloss transition, so the rule holds
+// for both forms at either level.
 const TOLERATED = { reg: [], discretion: ['cant_ramp'] }
 
 const DESIGN_SPEEDS = (() => {
@@ -63,7 +64,7 @@ function appLimits(level) {
   const allowed = severityRank(LIMIT_SEVERITIES[level])
   const formOk = (form) => TOLERATED[level].includes(ruleById('LP.UB.02').applies_to.scope)
     || severityRank(evaluateRule(ruleById('LP.UB.02'), {
-      'model.ramp_on_transition': true, 'model.ramp_form_matches': form === 'clothoid',
+      'model.ramp_on_transition': true, 'model.ramp_form_matches': form === 'clothoid' || form === 'bloss',
     }).severity) <= allowed
   const uMax = catalogLimit('LP.KB.01', 'max', { 'element.cant': 0 })
   return {

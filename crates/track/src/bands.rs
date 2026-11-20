@@ -8,7 +8,7 @@
 use rail_across_geom::kind::is_transition;
 use std::collections::HashMap;
 
-use rail_across_geom::cant::{cant_ends, transition_cant_ends, with_cant_edit};
+use rail_across_geom::cant::{cant_ends, curved_ramp, ramp_share, transition_cant_ends, with_cant_edit};
 use rail_across_geom::coords::plane_to_wgs84;
 use rail_across_js::{get, js_string, number, strict_eq};
 use rail_across_rules::bundled::worst_severity;
@@ -72,15 +72,23 @@ pub fn curvature_band(els: &[Value]) -> Vec<Value> {
     out
 }
 
-/// The cant band [mm] (`cantBand`).
+/// The cant band [mm] (`cantBand`): straight between an element's ends, the
+/// curved ramp of a Bloss transition sampled as its curvature is.
 pub fn cant_band(els: &[Value]) -> Vec<Value> {
-    element_spans(els)
-        .into_iter()
-        .flat_map(|(i, from, to)| {
-            let (s, e) = cant_ends(els, i);
-            [pt(from, Some(s)), pt(to, Some(e))]
-        })
-        .collect()
+    let mut out = Vec::new();
+    for (i, from, to) in element_spans(els) {
+        let (s, e) = cant_ends(els, i);
+        if curved_ramp(&els[i]) && (e - s).abs() > 0.0 {
+            for n in 0..=BLOSS_STEPS {
+                let t = n as f64 / BLOSS_STEPS as f64;
+                out.push(pt(from + t * (to - from), Some(s + (e - s) * ramp_share(true, t))));
+            }
+        } else {
+            out.push(pt(from, Some(s)));
+            out.push(pt(to, Some(e)));
+        }
+    }
+    out
 }
 
 /// The speed band [km/h] (`speedBand`).

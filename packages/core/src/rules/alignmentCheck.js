@@ -193,16 +193,17 @@ export function boundaryScope(elements, i) {
  *   cant that jumps at a joint is not a ramp at all, and is what LP.UB.01 is
  *   for); on a transition it is the rule's case, on an arc or a straight whose
  *   cant changes along it (decision 355) the Sonderfall LP.UB.02 names;
- * - and it is always **straight**: every reader of the cant between two ends
- *   interpolates linearly (crossSectionUtils, switchPlacement). That matches
- *   the clothoid and does not match the Bloß curve, which asks for a curved
- *   ramp — so a Bloß transition is a Sonderfall here, and truthfully so: the
- *   app draws a straight ramp on it.
+ * - and on a transition it has the transition's form: straight on a
+ *   clothoid, curved (geschwungene Rampe, 3t² − 2t³) on a Bloss transition —
+ *   the two always go together, and every reader of the cant along a
+ *   transition follows it (the core's cant band and sectionAtStation) — so
+ *   its form always matches.
  */
 export function rampScope(elements, i) {
   return {
     'model.ramp_on_transition': isTransition(elements[i]),
-    'model.ramp_form_matches': formOf(elements[i]) === 'clothoid',
+    // a transition's ramp has its form: straight on a clothoid, curved on a Bloss transition
+    'model.ramp_form_matches': elements[i]?.elementType === 'transition',
   }
 }
 

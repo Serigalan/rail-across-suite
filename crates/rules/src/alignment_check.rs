@@ -251,9 +251,12 @@ pub fn check_track(catalogue: &Catalogue, els: &[Element], only: Option<&[usize]
         let du = base.iter().find(|(n, _)| *n == "physics.delta_u").and_then(|(_, v)| v.as_num()).unwrap_or(0.0);
         if du > 0.0 {
             // A ramp on an arc or a straight is LP.UB.02's Sonderfall (decision 355).
+            // On a transition the ramp has the transition's form — the straight
+            // ramp on a clothoid, the curved one on a Bloss transition —, so it
+            // always matches.
             let ramp = [
                 ("model.ramp_on_transition", el.is_transition().into()),
-                ("model.ramp_form_matches", (el.form() == Some("clothoid")).into()),
+                ("model.ramp_form_matches", el.is_transition().into()),
             ];
             apply(catalogue, &ramp_rules, &ramp, None, &[], &at, &mut findings)?;
         }

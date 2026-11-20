@@ -241,15 +241,13 @@ describe('what the checker finds', () => {
     expect(firing(checkTrack(els).perElement[0])).toContain('LP.KB.05:error')
   })
 
-  it('a straight ramp drawn on a Bloß curve', () => {
+  it('a Bloß curve with its curved ramp', () => {
     const els = clean()
     els[1] = { ...els[1], transitionType: 'bloss' }
     const out = checkTrack(els)
-    // The app interpolates cant linearly on every transition, so the ramp on a
-    // Bloß curve is the wrong shape — a Sonderfall, and truthfully one.
-    expect(ids(out.ramps[0])).toEqual(['LP.UB.02:special_case'])
+    // A Bloß curve carries the curved ramp of its own form: the ramp matches it.
+    expect(firing(out.ramps[0])).toEqual([])
     expect(firing(out.perElement[1])).toContain('LP.UB.09:hint')
-    expect(out.severity).toBe('special_case')
   })
 
   it('a cant ramp far too steep for its speed', () => {
@@ -302,10 +300,11 @@ describe('hasRuleError', () => {
   // The catalogue says of a Sonderfall that it wants an experienced hand, not
   // that it is forbidden — so a Bloß transition still commits.
   it('is false for a Sonderfall, which ranks below an error', () => {
-    const bloss = clean()
-    bloss[1] = { ...bloss[1], transitionType: 'bloss' }
-    expect(checkTrack(bloss).severity).toBe('special_case')
-    expect(hasRuleError(bloss)).toBe(false)
+    // a cant ramp along the arc, off the transition: LP.UB.02's Sonderfall
+    const offRamp = clean()
+    offRamp[2] = { ...offRamp[2], cant: undefined, cantStart: 65, cantEnd: 70 }
+    expect(checkTrack(offRamp).severity).toBe('special_case')
+    expect(hasRuleError(offRamp)).toBe(false)
   })
 
   it('is false for a hint alone', () => {

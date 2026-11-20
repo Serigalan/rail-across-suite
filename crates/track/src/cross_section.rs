@@ -7,7 +7,7 @@
 use rail_across_geom::kind::is_transition;
 use std::sync::LazyLock;
 
-use rail_across_geom::cant::{cant_ends, transition_cant_ends};
+use rail_across_geom::cant::{cant_ends, curved_ramp, ramp_share, transition_cant_ends};
 use rail_across_geom::coords::{plane_to_wgs84, transform_plane_point};
 use rail_across_js::{get, js_number, number, truthy};
 use serde_json::{Value, json};
@@ -353,11 +353,14 @@ pub fn section_at_station(track: &Value, station: f64) -> Value {
         let s = clamp(station - start, 0.0, len);
         let t = if len > 0.0 { s / len } else { 0.0 };
         if is_transition(el) {
+            // A Bloss transition changes its curvature and its cant along its
+            // own curve (the curved ramp), a clothoid both straight.
             let (c1, c2) = transition_cant_ends(els, i);
             let k = |key: &str| get(el, key).map(|r| 1.0 / js_number(Some(r))).unwrap_or(0.0);
             let (k1, k2) = (k("r1"), k("r2"));
-            let kk = k1 + t * (k2 - k1);
-            return json!({ "elIdx": i, "station": number(start + s), "cant": number(c1 + t * (c2 - c1)), "radius": if kk.abs() > 1e-9 { number(1.0 / kk) } else { Value::Null } });
+            let share = ramp_share(curved_ramp(el), t);
+            let kk = k1 + share * (k2 - k1);
+            return json!({ "elIdx": i, "station": number(start + s), "cant": number(c1 + share * (c2 - c1)), "radius": if kk.abs() > 1e-9 { number(1.0 / kk) } else { Value::Null } });
         }
         let (c1, c2) = cant_ends(els, i);
         return json!({ "elIdx": i, "station": number(start + s), "cant": number(c1 + t * (c2 - c1)), "radius": get(el, "radius").cloned().unwrap_or(Value::Null) });

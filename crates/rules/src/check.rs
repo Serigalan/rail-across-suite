@@ -114,7 +114,7 @@ fn ramp_entry(els: &[Element], i: usize) -> Result<Option<Json>, Error> {
     }
     let base = [
         ("model.ramp_on_transition", el.is_transition().into()),
-        ("model.ramp_form_matches", (el.form() == Some("clothoid")).into()),
+        ("model.ramp_form_matches", el.is_transition().into()),
     ];
     let k = catalogue();
     let (results, severity) = evaluate_rules(&k.rules_for_scope("cant_ramp"), &base, None, &[])?;
@@ -247,7 +247,7 @@ pub fn verdict_errors(els: &[Element], i: usize, context: Context) -> Result<Vec
         if du0 > 0.0 {
             let ramp = [
                 ("model.ramp_on_transition", el.is_transition().into()),
-                ("model.ramp_form_matches", (el.form() == Some("clothoid")).into()),
+                ("model.ramp_form_matches", el.is_transition().into()),
             ];
             apply(&k.rules_for_scope("cant_ramp"), &ramp, None, &[], "ramp")?;
         }

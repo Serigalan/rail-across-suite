@@ -92,9 +92,9 @@ disagreement with the layout.
 - Cant is stored signed with the curve; the rules read its magnitude. Over a reverse transition the cross
   level really travels from one rail to the other, so the ramp height and the change of deficiency are
   **signed sums**, not differences of magnitudes (a too-short reverse clothoid passed before).
-- A transition's cant ramp is always straight in this model (cant lives at element ends and is interpolated
-  linearly), so it matches a clothoid and not a Bloss curve; LP.UB.02 reports a Bloss curve as a special
-  case, which is a true statement about the model.
+- A transition's cant ramp has the transition's form: straight on a clothoid, curved (geschwungene Rampe,
+  3t² − 2t³ like its curvature) on a Bloss curve — the two always go together. So LP.UB.02 finds the form
+  matching on either; it is a special case only where the cant changes off a transition.
 
 **V_max.** `ruleMaxSpeed(elements, i)` (`speed.js`, Entscheidung 372) is the fastest design speed on the
 5 km/h step within LP.ALL.01 at which `elementVerdict` — the element's own rules, its ramp and the joints

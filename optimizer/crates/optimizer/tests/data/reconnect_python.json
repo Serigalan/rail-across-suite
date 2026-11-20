@@ -187,7 +187,7 @@
     "within": true,
     "max": 0.0007,
     "rms": 0.0003,
-    "worst": "special_case",
+    "worst": "hint",
     "elements": 5
    },
    {
@@ -200,7 +200,7 @@
     "within": false,
     "max": 0.1928,
     "rms": 0.0819,
-    "worst": "special_case",
+    "worst": "hint",
     "elements": 5
    },
    {
@@ -213,7 +213,7 @@
     "within": false,
     "max": 0.2394,
     "rms": 0.0982,
-    "worst": "special_case",
+    "worst": "warning",
     "elements": 5
    },
    {

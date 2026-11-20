@@ -50,7 +50,7 @@ export function bandSpecs(track, t) {
     ...verticalCurves(points).flatMap(c => c.map(p => p.station)),
   ])].sort((a, b) => a - b).map(s => ({ s, v: gradientAt(points, s) }))
 
-  const lateral = lateralAccelerationBand(elements, { curvature, cant, speed })
+  const lateral = lateralAccelerationBand(elements, { curvature, cant, speed, spans })
 
   const specs = {
     curvature: {

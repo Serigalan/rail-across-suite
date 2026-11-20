@@ -34,7 +34,7 @@ export default function BandExportDialog({ band, spec, track, length, view, boun
       texts: {
         title: spec.title,
         subtitle: fill('bands_export_subtitle', { track: name, from: m(range.from), to: m(range.to) }),
-        note: spec.rightUp ? t('bands_right_up') : '',
+        note: [spec.rightUp && t('bands_right_up'), spec.note].filter(Boolean).join(' · '),
         station: t('elevation_station'),
         empty: spec.empty || '',
       },

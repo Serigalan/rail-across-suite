@@ -1,9 +1,10 @@
 import {
   trackProfile, verticalCurves, gradientAt, curvatureBand, cantBand, speedBand, bandValueAt, bandRuns, elementSpans,
 } from '@rail-across/core/track'
+import { REFERENCE_VEHICLE, lateralAccelerationBand } from './lateralAcceleration'
 
-/** The bands of a track, top to bottom. */
-export const BAND_ORDER = ['curvature', 'cant', 'height', 'speed']
+/** The bands of a track, top to bottom; one whose inputs are missing is left out (bandSpecs). */
+export const BAND_ORDER = ['curvature', 'cant', 'height', 'speed', 'lateral']
 
 /** A value range padded a little, symmetric about 0 where the band is signed. */
 export function bandScale(range, { signed, min }) {
@@ -30,7 +31,9 @@ const gradeLabel = (perMille) => {
  * valueAt }) — the radius of an arc and the length of a transition, the cant
  * where it holds, the gradient of every stretch, the speed of each run —, and
  * whether it is signed (right curves and their cant above the zero line).
- * `t` names them.
+ * The lateral acceleration of the reference vehicle (lateralAcceleration.js)
+ * is a band only where speed, curvature and cant are all given; else it is
+ * not among `specs` at all, nor in `order`. `t` names them.
  */
 export function bandSpecs(track, t) {
   const elements = track?.elements
@@ -46,6 +49,8 @@ export function bandSpecs(track, t) {
     ...points.map(p => p.station),
     ...verticalCurves(points).flatMap(c => c.map(p => p.station)),
   ])].sort((a, b) => a - b).map(s => ({ s, v: gradientAt(points, s) }))
+
+  const lateral = lateralAccelerationBand(elements, { curvature, cant, speed })
 
   const specs = {
     curvature: {
@@ -81,6 +86,18 @@ export function bandSpecs(track, t) {
       scaleOf: (range) => [0, Math.max(40, range?.[1] ?? 0) * 1.2],
       runs: bandRuns(speed).map(r => ({ from: r.from, to: r.to, text: `${r.v}`, valueAt: () => r.v })),
     },
+    ...(lateral && {
+      lateral: {
+        points: lateral, signed: true, title: t('bands_lateral'), unit: 'm/s²', rightUp: true,
+        note: t('bands_lateral_vehicle').replace('{h}', String(REFERENCE_VEHICLE.height).replace('.', ',')),
+        scaleOf: (range) => bandScale(range, { signed: true, min: 0.5 }),
+        // the value in the middle of each arc
+        runs: spans.filter(sp => sp.el.elementType === 'arc' && sp.el.radius).map(sp => ({
+          from: sp.from, to: sp.to, text: (bandValueAt(lateral, (sp.from + sp.to) / 2) ?? 0).toFixed(2), valueAt: (s) => bandValueAt(lateral, s),
+        })),
+      },
+    }),
   }
-  return { specs, spans, length, points, bands: { curvature, cant, speed, height } }
+  const order = BAND_ORDER.filter(b => specs[b])
+  return { specs, order, spans, length, points, bands: { curvature, cant, speed, height, lateral } }
 }

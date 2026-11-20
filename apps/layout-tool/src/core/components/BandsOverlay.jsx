@@ -16,7 +16,7 @@ import { clamp, niceStep, stepDecimals, ticks } from '../utils/common'
 import { useDrag, useElementSize, useOverlayHeight, useWheelZoom } from './chart/useChartViewport'
 import CloseButton from './form/CloseButton'
 import NumberInput from './form/NumberInput'
-import { BAND_ORDER, bandSpecs } from './bands/bandSpecs'
+import { bandSpecs } from './bands/bandSpecs'
 import BandExportDialog from './bands/BandExportDialog'
 import SpeedExportDialog from './bands/SpeedExportDialog'
 
@@ -26,7 +26,7 @@ const MIN_OVERLAY_PX = 260
 // room than the others — it carries the most.
 const BAND_TITLE = 16
 const BAND_GAP = 6
-const BAND_WEIGHTS = { curvature: 1, cant: 1, height: 1.5, speed: 1 }
+const BAND_WEIGHTS = { curvature: 1, cant: 1, height: 1.5, speed: 1, lateral: 1 }
 // Narrower than this and a run's label is left out.
 const LABEL_MIN_PX = 44
 const CURSOR_SOURCE = 'bands-cursor-source'
@@ -119,6 +119,7 @@ export default function BandsOverlay({ trackId, onClose }) {
   const elements = track?.elements
   const built = bandSpecs(track, t)
   const { specs, length, points } = built
+  const order = built.order
   const bands = { ...built.bands, spans: built.spans }
 
   // What the rules say: the alignment catalogue by band, the Höhenplan's on
@@ -262,6 +263,7 @@ export default function BandsOverlay({ trackId, onClose }) {
     const k = bandValueAt(bands.curvature, cursor)
     const u = bandValueAt(bands.cant, cursor)
     const speed = bandValueAt(bands.speed, cursor)
+    const aq = bands.lateral ? bandValueAt(bands.lateral, cursor) : null
     const z = points.length ? trackHeightAt(tracks, switches, track, cursor) : null
     const radius = k == null || Math.abs(k) < 1e-6 ? '∞' : Math.round(1000 / k)
     return (
@@ -272,6 +274,7 @@ export default function BandsOverlay({ trackId, onClose }) {
           `u ${u == null ? '–' : Math.round(u)} mm`,
           `z ${z == null ? '–' : z.toFixed(3)} m`,
           `V ${speed == null ? '–' : speed} km/h`,
+          ...(bands.lateral ? [`a_q ${aq == null ? '–' : aq.toFixed(2)} m/s²`] : []),
         ].join(' · ')}
       </span>
     )
@@ -281,7 +284,6 @@ export default function BandsOverlay({ trackId, onClose }) {
     if (!size || plotW <= 0) return null
     const right = size.w - MARGIN.right
     const bottom = size.h - MARGIN.bottom
-    const order = BAND_ORDER
     const per = (bottom - order.length * (BAND_TITLE + BAND_GAP))
       / order.reduce((sum, b) => sum + BAND_WEIGHTS[b], 0)
     let y = 0
@@ -338,7 +340,7 @@ export default function BandsOverlay({ trackId, onClose }) {
         return vStretches.filter(st => points[st.index - 1] && points[st.index])
           .map(st => ({ key: `hs${st.index}`, from: points[st.index - 1].station, to: points[st.index].station, entry: st }))
       }
-      return found[b].spans.map(f => ({ key: `s${f.index}`, from: spanOf(f.index).from, to: spanOf(f.index).to, entry: f }))
+      return (found[b]?.spans ?? []).map(f => ({ key: `s${f.index}`, from: spanOf(f.index).from, to: spanOf(f.index).to, entry: f }))
     }
     const findingsAt = (b) => new Map((showFindings && found[b] ? found[b].spans : []).map(f => [f.index, f]))
 
@@ -360,7 +362,8 @@ export default function BandsOverlay({ trackId, onClose }) {
             <g key={b}>
               <text x={MARGIN.left} y={top - 4} fontSize="11" fontWeight="600" fill={PALETTE.textDark}>
                 {spec[b].title} <tspan fontWeight="400" fill={PALETTE.muted}>[{spec[b].unit}]</tspan>
-                {(b === 'curvature' || b === 'cant') && <tspan fontWeight="400" fill={PALETTE.muted}> · {t('bands_right_up')}</tspan>}
+                {spec[b].rightUp && <tspan fontWeight="400" fill={PALETTE.muted}> · {t('bands_right_up')}</tspan>}
+                {spec[b].note && <tspan fontWeight="400" fill={PALETTE.muted}> · {spec[b].note}</tspan>}
               </text>
               <rect x={MARGIN.left} y={top} width={plotW} height={bot - top} fill="none" stroke={PALETTE.axis} />
               {ticks(lo, hi, step).map(val => (

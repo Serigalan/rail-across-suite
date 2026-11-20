@@ -12,7 +12,7 @@ import { niceStep, stepDecimals, ticks } from '../common'
 export const BAND_SVG_MM_PER_KM = 100
 
 /** How many millimetres one unit of each band is high, unless another is given. */
-export const BAND_SVG_MM_PER_UNIT = { curvature: 10, cant: 0.2, height: 2, speed: 0.5 }
+export const BAND_SVG_MM_PER_UNIT = { curvature: 10, cant: 0.2, height: 2, speed: 0.5, lateral: 20 }
 
 /** A label is left out where its stretch is narrower than this [mm]. */
 const LABEL_MIN_MM = 9

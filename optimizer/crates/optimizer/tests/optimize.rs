@@ -166,3 +166,24 @@ fn what_a_run_cannot_take_is_said() {
     let got = optimize_payload(&rules, &serde_json::json!({"track": {"elements": [], "epsg": 25832}, "uebergang": "bloss"})).unwrap();
     assert!(!got["message"].as_str().unwrap().contains("LP.UB.02"), "{got}");
 }
+
+#[test]
+fn the_clothoid_alone_is_tried_where_it_is_asked_for() {
+    let catalogue = common::catalogue();
+    let rules = Rules::new(&catalogue).unwrap();
+    let data: Value = serde_json::from_str(include_str!("data/optimize_python.json")).unwrap();
+    let run = &data["runs"][0];
+    let mut request = run["request"].clone();
+    let name = request["track"].as_str().unwrap().to_string();
+    request["track"] = data["tracks"][&name].clone();
+    request["grenzwert"] = "reg".into();
+    request["maxiter"] = 5.into();
+    request["uebergang"] = "bestand".into();
+    let got = optimize_payload(&rules, &request).unwrap();
+    assert_eq!(got["variant"], "Bestand", "{}", got["variant"]);
+    // asked for both, a Bloss transition is tried at the Regelwert too
+    request["uebergang"] = "bloss".into();
+    let got = optimize_payload(&rules, &request).unwrap();
+    assert!(got.get("error").is_none(), "{got}");
+    assert_eq!(got["variant"], "Bloss");
+}

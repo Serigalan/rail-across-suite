@@ -817,15 +817,17 @@ fn unsupported(message: impl Into<String>) -> Json {
     json!({"error": "unsupported_topology", "message": message.into()})
 }
 
-/// The transition profiles a run tries: the ramps as they lie, and all of
-/// them Bloss — the latter only where the level admits a Bloss transition.
+/// The transition profiles a run tries: "bestand" the transitions as they
+/// lie, a new one a clothoid — the standard form; "auto" that and all of them
+/// Bloss with their curved ramps, the faster one; "bloss" all of them Bloss.
+/// A Bloss profile only where the level admits a Bloss transition.
 fn variants_for(transition: &str, gz: &Limits) -> Result<Vec<&'static str>, String> {
     let bloss_ok = gz.forms.iter().any(|(f, ok)| *f == "bloss" && *ok);
     match transition {
         "auto" => Ok(if bloss_ok { vec!["bestand", "bloss"] } else { vec!["bestand"] }),
         "bestand" => Ok(vec!["bestand"]),
         "bloss" if bloss_ok => Ok(vec!["bloss"]),
-        "bloss" => Err("Blossbögen schlägt ein Lauf nur an der Ermessensgrenze vor (LP.UB.02: die Überhöhungsrampe ist in dieser App immer gerade).".into()),
+        "bloss" => Err("Blossbögen sind auf dieser Stufe nicht zugelassen (LP.UB.02).".into()),
         other => Err(format!("unbekanntes Übergangsbogen-Profil: {other}")),
     }
 }

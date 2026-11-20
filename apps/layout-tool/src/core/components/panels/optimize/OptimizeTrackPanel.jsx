@@ -17,6 +17,7 @@ import { PALETTE } from '../../../styles/palette'
 import CommitBar from '../../form/CommitBar'
 import useElapsed from '../../../hooks/useElapsed'
 import OptimizeSettings from './OptimizeSettings'
+import { defaultTransition } from './transitionChoice'
 import OptimizeResult from './OptimizeResult'
 import AxisFitPanel from './AxisFitPanel'
 import BackButton from '../BackButton'
@@ -65,7 +66,8 @@ export default function OptimizeTrackPanel({ initialPage = 'menu', onExit, onSho
   const [label, setLabel]         = useState('')
   // What the run is held to (OptimizeSettings). vMax '' sets no target, open
   // upwards. The rulebook is the one this bundle carries — the module runs on it.
-  const [settings, setSettings]   = useState({ corridorCm: 50, grenzwert: 'reg', vMax: '' })
+  // uebergang null: the level's default (defaultTransition), the clothoid at the Regelwert.
+  const [settings, setSettings]   = useState({ corridorCm: 50, grenzwert: 'reg', vMax: '', uebergang: null })
   const setSetting = (key, value) => setSettings(prev => ({ ...prev, [key]: value }))
   const [selectHint, setSelectHint] = useState(null)
   const [running, setRunning]     = useState(false)
@@ -75,7 +77,8 @@ export default function OptimizeTrackPanel({ initialPage = 'menu', onExit, onSho
 
   // A result only counts for the parameters it was computed with — derived
   // from the parameter key rather than through an invalidation effect.
-  const runKey = [mode, trackId, elementIdx, settings.corridorCm, settings.grenzwert, settings.vMax, phase].join('|')
+  const uebergang = settings.uebergang ?? defaultTransition(settings.grenzwert)
+  const runKey = [mode, trackId, elementIdx, settings.corridorCm, settings.grenzwert, settings.vMax, uebergang, phase].join('|')
   const result = run?.key === runKey ? run.result ?? null : null
   const runError = run?.key === runKey ? run.error ?? null : null
 
@@ -129,7 +132,7 @@ export default function OptimizeTrackPanel({ initialPage = 'menu', onExit, onSho
     setRun(null)
     setRunning(true)
     abortRef.current = new AbortController()
-    runOptimizer('optimize', optimizeRequest(track, { ...settings, elementIdx: mode === 'element' ? elementIdx : null }), { signal: abortRef.current.signal })
+    runOptimizer('optimize', optimizeRequest(track, { ...settings, uebergang, elementIdx: mode === 'element' ? elementIdx : null }), { signal: abortRef.current.signal })
       .then(res => {
         if (res.error) setRun({ key, error: optimizeErrorText(t, res.error, res.message) })
         else setRun({ key, result: { ...res, elements: reconstructElements(res.elements, track.epsg) } })

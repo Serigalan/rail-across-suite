@@ -8,9 +8,17 @@ use rail_across_track::heights::truncate_heights;
 use rail_across_track::model::rebuild_coords;
 use serde_json::{Value, json};
 
-/// The request for a run of the optimizer (`optimizeRequest`).
+/// The request for a run of the optimizer (`optimizeRequest`): `uebergang`
+/// the transition profiles it tries — "bestand", the clothoid and each
+/// transition as it lies; "auto", that and all of them Bloss, the faster
+/// one; "auto" unless the dialog says.
 pub fn optimize_request(track: &Value, o: &Value) -> Value {
-    let mut out = json!({ "track": track, "corridorCm": o.get("corridorCm"), "grenzwert": o.get("grenzwert"), "uebergang": "auto", "maxiter": 100 });
+    let uebergang = o
+        .get("uebergang")
+        .and_then(Value::as_str)
+        .filter(|u| ["auto", "bestand", "bloss"].contains(u))
+        .unwrap_or("auto");
+    let mut out = json!({ "track": track, "corridorCm": o.get("corridorCm"), "grenzwert": o.get("grenzwert"), "uebergang": uebergang, "maxiter": 100 });
     let v = js_number(o.get("vMax"));
     if v > 0.0 {
         out["vMax"] = rail_across_js::number(v);

@@ -2,13 +2,16 @@ import { useI18n } from '../../../locales/i18nContext'
 import ReadOnlyField from '../../form/ReadOnlyField'
 import AdvancedInfo from '../../form/AdvancedInfo'
 import NumberInput from '../../form/NumberInput'
+import InfoTip from '../../form/InfoTip'
+import { defaultTransition } from './transitionChoice'
 import { splitUnit } from '../../../locales/i18n'
 
 /**
  * What a run is held to: the corridor the track may move in, a target speed,
  * the level of the rulebook — Regelwert or Ermessensgrenze; the deficiency,
- * the ramps and every other limit follow from it on the server — and which
- * rulebook. `s` holds the settings, `set(key, value)` changes one.
+ * the ramps and every other limit follow from it on the server —, the forms
+ * of transition it may propose (`uebergang`, null for the level's default)
+ * and which rulebook. `s` holds the settings, `set(key, value)` changes one.
  */
 export default function OptimizeSettings({ label, what, s, set, rulebooks, onShowRulebook }) {
   const { t } = useI18n()
@@ -36,6 +39,13 @@ export default function OptimizeSettings({ label, what, s, set, rulebooks, onSho
         {s.grenzwert === 'discretion' && (
           <span className="msg-warn msg-small">{t('optimize_grenzwert_discretion_hint')}</span>
         )}
+      </div>
+      <div className="form-field">
+        <label>{t('optimize_transition')}<InfoTip text={t('optimize_transition_hint')} /></label>
+        <select value={s.uebergang ?? defaultTransition(s.grenzwert)} onChange={e => set('uebergang', e.target.value)}>
+          <option value="bestand">{t('optimize_transition_clothoid')}</option>
+          <option value="auto">{t('optimize_transition_auto')}</option>
+        </select>
       </div>
       {rulebooks.length > 1 && (
         <div className="form-field">

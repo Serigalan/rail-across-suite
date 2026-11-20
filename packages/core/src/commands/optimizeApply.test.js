@@ -21,6 +21,12 @@ describe('the optimizer request', () => {
     expect(optimizeRequest(track, { corridorCm: 30, grenzwert: 'discretion', vMax: '120', regelwerkId: 'db', elementIdx: 1 }))
       .toMatchObject({ vMax: 120, regelwerk: 'db', targetElementIdx: 1 })
   })
+
+  it('sends the transition profiles chosen: the clothoid alone, or the faster of it and Bloss', () => {
+    expect(optimizeRequest(track, { corridorCm: 30, grenzwert: 'reg', uebergang: 'bestand' }).uebergang).toBe('bestand')
+    expect(optimizeRequest(track, { corridorCm: 30, grenzwert: 'reg', uebergang: 'auto' }).uebergang).toBe('auto')
+    expect(optimizeRequest(track, { corridorCm: 30, grenzwert: 'reg', uebergang: 'other' }).uebergang).toBe('auto')
+  })
 })
 
 describe('the optimized track', () => {

@@ -763,7 +763,7 @@
         { "else": "warning" }
       ],
       "notes": [
-        "Gilt für Abschnitte von Bahnhofsgleisen, in denen Züge zum Halten kommen oder Schienenfahrzeuge abgestellt werden können, bei Neubauten. Siehe auch Ril 813.0201.",
+        "Gilt für Abschnitte von Bahnhofsgleisen, in denen Züge zum Halten kommen oder Schienenfahrzeuge abgestellt werden können, bei Neubauten. Siehe auch das Regelwerk für Personenbahnhöfe.",
         "„soll nicht überschreiten“: der Wert ist ein Regelwert, eine Überschreitung ist zu begründen."
       ],
       "source": { "ref": "RIL_800_0110", "section": "Kap. 10, S. 23" },
@@ -787,7 +787,7 @@
         { "else": "warning" }
       ],
       "notes": [
-        "Tunnellänge bis 1000 m mindestens 2 ‰, über 1000 m mindestens 4 ‰ (Fußnoten 38 und 39 der Ril).",
+        "Tunnellänge bis 1000 m mindestens 2 ‰, über 1000 m mindestens 4 ‰ (Fußnoten 38 und 39 des Regelwerks).",
         "„soll betragen“: der Wert ist ein Regelwert, eine Unterschreitung ist zu begründen."
       ],
       "source": { "ref": "RIL_800_0110", "section": "Kap. 10, S. 23" },
@@ -938,9 +938,9 @@
         { "else": "warning" }
       ],
       "notes": [
-        "Neigungswechsel, auch deren Ausrundungen, sollen nicht zwischen Weichenanfang und letzter durchgehender Schwelle liegen; die Ril lässt sie in Weichen mit r_a mindestens Regelwert zu (HP.AR.07), das Werkzeug verlangt für jeden eine Begründung.",
+        "Neigungswechsel, auch deren Ausrundungen, sollen nicht zwischen Weichenanfang und letzter durchgehender Schwelle liegen; das Regelwerk lässt sie in Weichen mit r_a mindestens Regelwert zu (HP.AR.07), das Werkzeug verlangt für jeden eine Begründung.",
         "Mit einer Begründung am Höhenpunkt ist die Regel eingehalten (Entscheidung 261).",
-        "Bis zur ldS liegen Stamm- und Zweiggleis auf einer Ebene; jeder Höhenpunkt dazwischen hat auf derselben Schwelle einen Partner im anderen Gleis (db-ril-800-0120, lds; Entscheidungen 256–259)."
+        "Bis zur ldS liegen Stamm- und Zweiggleis auf einer Ebene; jeder Höhenpunkt dazwischen hat auf derselben Schwelle einen Partner im anderen Gleis (Weichen-Regelwerk, ldS; Entscheidungen 256–259)."
       ],
       "source": { "ref": "RIL_800_0110", "section": "Kap. 10; Festlegung des Auftraggebers vom 2026-10-06 und 2026-10-09" },
       "status": "confirmed"
@@ -963,7 +963,7 @@
         { "else": "error" }
       ],
       "notes": [
-        "Die Ril lässt Ausrundungen in Weichen nur mit r_a mindestens Regelwert (Tabelle 12, wie HP.AR.03) zu; darunter ist es ein Fehler, den keine Begründung aufhebt (Entscheidung 262)."
+        "Das Regelwerk lässt Ausrundungen in Weichen nur mit r_a mindestens Regelwert (Tabelle 12, wie HP.AR.03) zu; darunter ist es ein Fehler, den keine Begründung aufhebt (Entscheidung 262)."
       ],
       "source": { "ref": "RIL_800_0110", "section": "Kap. 10; Festlegung des Auftraggebers vom 2026-10-09" },
       "status": "confirmed"

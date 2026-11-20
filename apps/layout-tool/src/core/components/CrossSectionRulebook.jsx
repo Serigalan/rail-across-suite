@@ -1,6 +1,5 @@
 import {
   CROSS_SECTION_CATALOGUE, GAUGE_PROFILES, gaugeProfileRing, gaugeProfileAreas, gaugeProfileLabelKey,
-  CLEARANCE_SOURCE,
 } from '@rail-across/core/crossSection'
 import { useI18n } from '../locales/i18nContext'
 import { PALETTE } from '../styles/palette'
@@ -55,7 +54,7 @@ function ProfileDrawing({ profile }) {
     <figure className="querschnitt-figure">
       <figcaption className="constraints-value">{t(gaugeProfileLabelKey(profile.id))}</figcaption>
       <svg viewBox={viewBox} className="querschnitt-svg" role="img"
-        aria-label={`${t(gaugeProfileLabelKey(profile.id))} · ${CLEARANCE_SOURCE}`}>
+        aria-label={`${t('constraints_querschnitt_lichtraum')} · ${t(gaugeProfileLabelKey(profile.id))}`}>
         <path d={`${path(ring)} Z`} fill="rgba(48,51,131,0.08)" stroke="var(--color-primary)"
           strokeWidth="1.6" {...line} />
         {areas.map((a, i) => (

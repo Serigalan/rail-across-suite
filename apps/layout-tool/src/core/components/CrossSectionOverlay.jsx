@@ -12,7 +12,7 @@ import TerrainSourceSelect from './TerrainSourceSelect'
 import {
   crossSection, fitSection, superstructureAt, sectionAtStation, platformSection, placeSection,
   sectionNeighbours, sectionLinePoints, sectionLevels, sectionOrigin, FORMATION_EDGE, RAILS, SLEEPERS,
-  gaugeProfile, gaugeProfileRing, gaugeProfileAreas, gaugeProfileLabelKey, CLEARANCE_SOURCE,
+  gaugeProfile, gaugeProfileRing, gaugeProfileAreas, gaugeProfileLabelKey,
   DEFAULT_GAUGE_PROFILE,
 } from '@rail-across/core/crossSection'
 import {
@@ -646,7 +646,7 @@ export default function CrossSectionOverlay({ at, onAtChange, onClose, detached 
           )
         }))}
         <text x={X(0)} y={Y(zMax) - 8} fontSize="11" fill={PALETTE.label} textAnchor="middle">
-          {`${t(gaugeProfileLabelKey(profile.id))} · ${CLEARANCE_SOURCE}`}
+          {`${t('constraints_querschnitt_lichtraum')} · ${t(gaugeProfileLabelKey(profile.id))}`}
         </text>
         <text x={MARGIN / 2} y={size.h - 8} fontSize="11" fill={terrainState.runs ? TERRAIN_COLOR : PALETTE.muted}>
           {terrainState.text}

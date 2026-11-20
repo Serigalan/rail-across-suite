@@ -4,7 +4,7 @@ import { projectLineCategory } from '../../../utils/elevation'
 import { dominantSystem, projectSystemSetting, systemChoices } from '@rail-across/core/project'
 import { crsSystemName } from '@rail-across/core/geometry'
 import {
-  GAUGE_PROFILES, DEFAULT_GAUGE_PROFILE, gaugeProfileLabelKey, CLEARANCE_SOURCE,
+  GAUGE_PROFILES, DEFAULT_GAUGE_PROFILE, gaugeProfileLabelKey,
 } from '@rail-across/core/crossSection'
 import { useI18n } from '../../../locales/i18nContext'
 import FormSection from '../../form/FormSection'
@@ -55,7 +55,7 @@ export default function ProjectDefaultsSection({ project }) {
         <select id="project-gauge" value={project.gaugeProfile ?? DEFAULT_GAUGE_PROFILE}
           onChange={e => updateProject({ gaugeProfile: e.target.value })}>
           {Object.keys(GAUGE_PROFILES).map(key => (
-            <option key={key} value={key}>{`${t(gaugeProfileLabelKey(key))} · ${CLEARANCE_SOURCE}`}</option>
+            <option key={key} value={key}>{t(gaugeProfileLabelKey(key))}</option>
           ))}
         </select>
       </div>

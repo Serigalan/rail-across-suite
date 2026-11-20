@@ -55,8 +55,16 @@ describe('the keys the element table derives', () => {
 
   it('say in the V_max hint that it is the rule catalogue\'s, and which rules go unnamed in the cell', () => {
     for (const lang of languages) {
-      expect(translations[lang].table_max_speed_hint, lang).toMatch(/800\.0110/)
+      const rulebook = translations[lang]['regelwerk_title_db-ril-800-0110']
+      expect(translations[lang].table_max_speed_hint.toLowerCase(), lang).toContain(rulebook.toLowerCase())
       expect(translations[lang].table_max_speed_fixed, lang).toContain('{rules}')
+    }
+  })
+
+  it('name a rulebook by what it is about, never by the number of one railway\'s guideline', () => {
+    for (const lang of languages) {
+      const numbered = Object.entries(translations[lang]).filter(([, text]) => /\bRil\b|\b8[0-9]{2}\.[0-9]{4}/.test(text))
+      expect(numbered, lang).toEqual([])
     }
   })
 

@@ -9,7 +9,6 @@ import OsrdSection from './dataExchange/OsrdSection'
 import CsvSection from './dataExchange/CsvSection'
 import { extensionsOf } from '../../extensions'
 import AlignmentSection from './dataExchange/AlignmentSection'
-import SpeedRangesSection from './dataExchange/SpeedRangesSection'
 import ImportReports from './dataExchange/ImportReports'
 import useImportReports from './dataExchange/useImportReports'
 import ProviImportSection from './ProviImportSection'
@@ -82,7 +81,6 @@ export default function DataExchangePanel({ onShowCompare }) {
             <ImportReports reports={reports.reports} onClear={reports.clear} />
           </>}
           <AlignmentSection />
-          <SpeedRangesSection />
         </>
       )}
       <div className="panel-dot-row">

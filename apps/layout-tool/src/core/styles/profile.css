@@ -553,3 +553,47 @@
   font-size: var(--fs-xs); font-weight: 600; color: var(--color-text-soft); vertical-align: 1px;
 }
 .profile-point-lead { margin: 4px 0 8px; }
+
+/* Each band's export, at the right end of its title (BandsOverlay). */
+.bands-export-btn {
+  position: absolute;
+  height: 15px;
+  padding: 0 5px;
+  border: 1px solid var(--color-border-soft);
+  border-radius: 3px;
+  background: #fff;
+  color: var(--color-text-soft);
+  font-family: var(--font-ui);
+  font-size: 10px;
+  line-height: 13px;
+  cursor: pointer;
+}
+
+.bands-export-btn:hover,
+.bands-export-btn:focus-visible {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* The export dialogs behind the bands. */
+.modal.band-export-dialog {
+  width: min(460px, calc(100vw - 32px));
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  gap: 10px;
+}
+
+.band-export-dialog .modal-message {
+  font-size: var(--fs-s);
+  color: var(--color-text-soft);
+}
+
+.band-export-dialog .modal-actions {
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.band-export-table {
+  max-height: 200px;
+  overflow-y: auto;
+}

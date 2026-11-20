@@ -1,10 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { updateTrack } from '../storage'
 import { useProject, useSwitches, useTracks } from '../hooks/useStore'
-import {
-  trackProfile, verticalCurves, gradientAt, curvatureBand, cantBand, speedBand, bandValueAt,
-  bandRuns, bandRange, elementSpans, bandFindings, withBandValue, withCantEnds, pointAtStation,
-} from '@rail-across/core/track'
+import { bandValueAt, bandRange, bandFindings, withBandValue, withCantEnds, pointAtStation } from '@rail-across/core/track'
 import { checkTrack, ruleById, severityLabelKey, worstSeverity, maxSpeeds } from '@rail-across/core/rules'
 import { trackHeightAt } from '@rail-across/core/switch'
 import { checkVertical } from '../utils/elevation'
@@ -19,6 +16,9 @@ import { clamp, niceStep, stepDecimals, ticks } from '../utils/common'
 import { useDrag, useElementSize, useOverlayHeight, useWheelZoom } from './chart/useChartViewport'
 import CloseButton from './form/CloseButton'
 import NumberInput from './form/NumberInput'
+import { BAND_ORDER, bandSpecs } from './bands/bandSpecs'
+import BandExportDialog from './bands/BandExportDialog'
+import SpeedExportDialog from './bands/SpeedExportDialog'
 
 const MARGIN = { left: 60, right: 20, bottom: 34 }
 const MIN_OVERLAY_PX = 260
@@ -43,17 +43,6 @@ const CURSOR_LAYERS = [{
   },
 }]
 
-/** A value range padded a little, symmetric about 0 where the band is signed. */
-function bandScale(range, { signed, min }) {
-  if (signed) {
-    const m = Math.max(min, ...(range ?? [0, 0]).map(Math.abs)) * 1.15
-    return [-m, m]
-  }
-  const [lo, hi] = range ?? [0, min]
-  const pad = Math.max((hi - lo) * 0.12, min / 2)
-  return [lo - pad, hi + pad]
-}
-
 /** A polyline through the band's points, broken where a value is null. */
 function bandPath(points, X, Y) {
   let d = ''
@@ -70,11 +59,6 @@ const flagged = (entry) => entry?.severity && entry.severity !== 'ok'
 
 // The bands a value can be typed in, with the unit it is typed in.
 const EDIT_UNIT = { cant: 'mm', speed: 'km/h' }
-
-const gradeLabel = (perMille) => {
-  const v = Number(perMille.toFixed(1)) || 0
-  return `${v > 0 ? '+' : ''}${v.toFixed(1)} ‰`
-}
 
 /**
  * The bands of one track under each other (Prüfen): its curvature, cant,
@@ -102,6 +86,11 @@ const gradeLabel = (perMille) => {
  * tinted over the element, or a line at the joint for a rule on a boundary —
  * and the Höhenplan's on the gradient, as the profile draws them. Each
  * says in its tooltip what was found.
+ *
+ * Each band can be given out as an SVG drawing to scale: a small button at
+ * its title opens the export — for the speed band its ranges as a CSV table
+ * or a diagram (SpeedExportDialog), for the others the band itself
+ * (BandExportDialog), over the whole track or the stretch in view.
  */
 export default function BandsOverlay({ trackId, onClose }) {
   const { t, fill } = useI18n()
@@ -124,18 +113,13 @@ export default function BandsOverlay({ trackId, onClose }) {
   const [draft, setDraft] = useState('')
   const [draftEnd, setDraftEnd] = useState('')   // a transition's cant at its end
   const [showFindings, setShowFindings] = useState(true)
+  const [exporting, setExporting] = useState(null)   // the band whose export is open
 
   // Recomputed on every render, like the profile: a few points per element.
   const elements = track?.elements
-  const bands = {
-    curvature: curvatureBand(elements),
-    cant: cantBand(elements),
-    speed: speedBand(elements),
-    spans: elementSpans(elements),
-  }
-  const length = bands.spans.length ? bands.spans[bands.spans.length - 1].to : 0
-  const profile = track ? trackProfile(track) : null
-  const points = profile?.points ?? []
+  const built = bandSpecs(track, t)
+  const { specs, length, points } = built
+  const bands = { ...built.bands, spans: built.spans }
 
   // What the rules say: the alignment catalogue by band, the Höhenplan's on
   // the gradient.
@@ -297,7 +281,7 @@ export default function BandsOverlay({ trackId, onClose }) {
     if (!size || plotW <= 0) return null
     const right = size.w - MARGIN.right
     const bottom = size.h - MARGIN.bottom
-    const order = ['curvature', 'cant', 'height', 'speed']
+    const order = BAND_ORDER
     const per = (bottom - order.length * (BAND_TITLE + BAND_GAP))
       / order.reduce((sum, b) => sum + BAND_WEIGHTS[b], 0)
     let y = 0
@@ -308,13 +292,7 @@ export default function BandsOverlay({ trackId, onClose }) {
       return [b, { top, bottom: top + h }]
     }))
 
-    // The built gradient: the tangent polygon, and the parabola where a
-    // vertical curve rounds a change.
-    const heightBand = points.length < 2 ? [] : [...new Set([
-      ...points.map(p => p.station),
-      ...verticalCurves(points).flatMap(c => c.map(p => p.station)),
-    ])].sort((a, b) => a - b).map(s => ({ s, v: gradientAt(points, s) }))
-    const speedRange = bandRange(bands.speed)
+    const heightBand = bands.height
     // The stretch in view: the height plan is scaled to it, so a zoomed-in
     // gradient does not lie flat on a scale made for the whole track; the
     // other bands keep theirs, to compare one curve with the next.
@@ -324,13 +302,9 @@ export default function BandsOverlay({ trackId, onClose }) {
       ...inView.map(s => ({ s, v: bandValueAt(heightBand, clamp(s, 0, length)) })),
     ] : []
 
-    const spec = {
-      curvature: { points: bands.curvature, scale: bandScale(bandRange(bands.curvature), { signed: true, min: 0.5 }), title: t('bands_curvature'), unit: '1/km' },
-      cant:      { points: bands.cant, scale: bandScale(bandRange(bands.cant), { signed: true, min: 20 }), title: t('bands_cant'), unit: 'mm' },
-      height:    { points: heightBand, scale: bandScale(bandRange(heightInView), { signed: false, min: 1 }), title: t('bands_height'), unit: 'm' },
-      // From 0, so a step reads as the share of the speed it is.
-      speed:     { points: bands.speed, scale: [0, Math.max(40, speedRange?.[1] ?? 0) * 1.2], title: t('bands_speed'), unit: 'km/h' },
-    }
+    const spec = Object.fromEntries(order.map(b => [b, {
+      ...specs[b], scale: specs[b].scaleOf(bandRange(b === 'height' ? heightInView : specs[b].points)),
+    }]))
     const yOf = (b) => {
       const { top, bottom: bot } = rows[b]
       const [lo, hi] = spec[b].scale
@@ -353,19 +327,7 @@ export default function BandsOverlay({ trackId, onClose }) {
     // The labels of each band: the radius of an arc and the length of a
     // transition, the cant where it holds, the gradient of every stretch, the
     // speed of each run.
-    const labels = {
-      curvature: bands.spans.filter(sp => sp.el.elementType === 'transition' || sp.el.radius).flatMap(sp => label(sp.from, sp.to,
-        sp.el.elementType === 'transition' ? `L ${sp.el.length.toFixed(1)}` : `R ${Math.round(Math.abs(sp.el.radius))}`,
-        (s) => bandValueAt(bands.curvature, s))),
-      cant: bandRuns(bands.cant).filter(r => r.v !== 0)
-        .flatMap(r => label(r.from, r.to, `u ${Math.round(Math.abs(r.v))}`, () => r.v)),
-      height: points.slice(1).map((b, i) => ({ a: points[i], b }))
-        .filter(({ a, b }) => b.station > a.station)
-        .flatMap(({ a, b }) => label(a.station, b.station,
-          gradeLabel((b.z - a.z) / (b.station - a.station) * 1000),
-          (s) => a.z + (b.z - a.z) * (s - a.station) / (b.station - a.station))),
-      speed: bandRuns(bands.speed).flatMap(r => label(r.from, r.to, `${r.v}`, () => r.v)),
-    }
+    const labels = Object.fromEntries(order.map(b => [b, specs[b].runs.flatMap(r => label(r.from, r.to, r.text, r.valueAt))]))
 
     // What the rules found, per band: over an element or a stretch of the
     // gradient, at a joint, at a gradient change.
@@ -380,12 +342,9 @@ export default function BandsOverlay({ trackId, onClose }) {
     }
     const findingsAt = (b) => new Map((showFindings && found[b] ? found[b].spans : []).map(f => [f.index, f]))
 
-    const empty = {
-      height: !heightBand.length && t('bands_no_heights'),
-      speed: !speedRange && t('bands_no_speed'),
-    }
+    const empty = Object.fromEntries(order.map(b => [b, specs[b].empty]))
 
-    return (
+    return (<>
       <svg ref={svgRef} className={`profile-svg${drag.dragging ? ' dragging' : ''}`} width={size.w} height={size.h}
         {...drag.handlers} onPointerMove={onPointerMove} onPointerLeave={() => setCursor(null)} onDoubleClick={fit}>
         <defs>
@@ -497,7 +456,16 @@ export default function BandsOverlay({ trackId, onClose }) {
         ))}
         <text x={right} y={bottom + 27} fontSize="11" fill={PALETTE.muted} textAnchor="end">{t('elevation_station')} [m]</text>
       </svg>
-    )
+      {/* each band's export, at the right end of its title */}
+      {order.map(b => (
+        <button key={`x${b}`} type="button" className="bands-export-btn"
+          style={{ top: rows[b].top - BAND_TITLE, right: MARGIN.right }}
+          title={fill('bands_export_title', { band: spec[b].title })} aria-label={fill('bands_export_title', { band: spec[b].title })}
+          onClick={() => setExporting(b)}>
+          SVG
+        </button>
+      ))}
+    </>)
   }
 
   return (
@@ -555,6 +523,12 @@ export default function BandsOverlay({ trackId, onClose }) {
       <div className="profile-body" ref={bodyRef}>
         {drawing()}
       </div>
+      {exporting === 'speed' && <SpeedExportDialog trackId={trackId} onClose={() => setExporting(null)} />}
+      {exporting && exporting !== 'speed' && (
+        <BandExportDialog band={exporting} spec={specs[exporting]} track={track} length={length}
+          view={plotW > 0 ? [Math.max(0, v.x0), Math.min(length, v.x0 + plotW / v.k)] : null}
+          boundaries={bands.spans.slice(1).map(sp => sp.from)} onClose={() => setExporting(null)} />
+      )}
     </div>
   )
 }

@@ -22,6 +22,7 @@ export { planRailJsonImport } from './railJsonImport'
 export {
   MIN_RANGE, SPEED_STEPS, SVG_SCALE, averageSpeed, runOf, speedProfile, speedRanges, speedRangesCsv, speedRangesSvg, speedRangesSvgSize, withKm,
 } from './speedRanges'
+export { BAND_SVG_MM_PER_KM, BAND_SVG_MM_PER_UNIT, bandSvg, bandSvgSize } from './bandSvg'
 export { exportVermEsn } from './vermEsnExport'
 export {
   batchReferences, buildVermEsnBatch, gradientHeightCode, gradientReferences, kmLineEntries, kmLineNumber,
